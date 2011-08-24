@@ -87,7 +87,7 @@ proc MLDPn::Launch { } {
    MLDPn::CreateScriptInput
 
    #----- Launch meteorological fields script for RSMC response.
-   if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
+   if { $Sim(SrcType) == "ACCIDENT" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
@@ -111,10 +111,10 @@ proc MLDPn::Launch { } {
       set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi"
       set mem 20G
 
-      exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+      exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDPn.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
-      eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
+      eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDPn.in -mach $Model::Param(Host) \
          -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
 
@@ -126,9 +126,11 @@ proc MLDPn::Launch { } {
 
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
-      exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in" >$Sim(Path)/tmp/Model_Launch.sh
+      exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDPn.in" >$Sim(Path)/tmp/Model_Launch.sh
       exec ssh -n $Model::Param(Host) $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
    }
+   exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
+
    return True
 }
 
@@ -153,7 +155,7 @@ proc MLDPn::CreateScriptInput { } {
    #----- Create ASCII file containing directives for launching entire job.
    set file [open $Sim(Path)/tmp/Model_MLDPn.in w 0644]
 
-   puts $file "#----- Logger specific parameters"
+   puts $file "\n#----- Logger specific parameters\n"
    puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
    puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDPn.out"
@@ -165,12 +167,10 @@ proc MLDPn::CreateScriptInput { } {
       puts $file "LOG_JOBCLASS=INTERACTIVE"
    }
 
-   puts $file ""
-   puts $file "#----- Job general parameters"
+   puts $file "\n#----- Job general parameters\n"
    puts $file "MODEL_SOFTWARE=SPI"
    puts $file "MODEL_NAME=MLDPn"
    puts $file "MODEL_USER=$GDefs(FrontEndUser)"
-   puts $file ""
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
@@ -180,15 +180,13 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "MODEL_POOL=$Model::Param(Pool)"
    puts $file "MODEL_CLEAN=1"
    puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
-   puts $file ""
-   puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
-   puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
+   puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)"
+   puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)"
+   puts $file "MODEL_SEED=$Sim(Seed)"
 
-   if { [string compare $Sim(RestartLastDate) "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)0000"] == 1 } {
-      puts $file "MODEL_ISRESTARTABLE=1"
-   }
-   puts $file ""
-   puts $file "#----- Model specific parameters"
+   puts $file "MODEL_RESTARTABLE=1"
+
+   puts $file "\n#----- Model specific parameters\n"
 
    if { $Sim(ReNewMeteo)!="" } {
       puts $file "MLDP_METEO=$Sim(ReNewMeteo)"
@@ -199,6 +197,7 @@ proc MLDPn::CreateScriptInput { } {
    }
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
    puts $file "MLDP_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
+   puts $file "MLDP_RESULT=$Sim(PathRun)/results"
 
    close $file
 }
@@ -244,7 +243,7 @@ proc MLDPn::ParamsCheck { Tab No } {
 
    #----- Validate output and model time steps but not if we are relaunching.
    if { $Sim(ReNewMeteo)=="" } {
-      if { ![MLDPn::ValidateNbSrc] || ![MLDPn::ValidateTimeSteps] || ![MLDPn::ValidateSimulationDuration] || ![MLDPn::ValidateOtherParams] } {
+      if { ![MLDPn::ValidateTimeSteps] || ![MLDPn::ValidateSimulationDuration] || ![MLDPn::ValidateOtherParams] } {
          TabFrame::Select $Tab 0
          return False
       }
@@ -267,9 +266,6 @@ proc MLDPn::ParamsCheck { Tab No } {
    if { !$Sim(IsRestart) } {
       MLDPn::ScenarioPromptSave
    }
-
-   #----- Set isotopes information for pool of simulation.
-   #MLDPn::SetIsotopesInfo
 
    #----- Format useful information for pool encoding
    MLDPn::UpdatePoolLists
@@ -309,7 +305,6 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-21s= %-10.1f # Internal model time step \[s\]" MDL_DT_INT [expr $MLDPn::Sim(ModelTimeStepMin)*60].0]]
    puts $file [format "%-21s= %-10.1f # Ratio of diffusion time step over Lagrangian time scale \[dimensionless\]" MDL_DT_SUR_TL $Sim(DtOverTl)]
    puts $file [format "%-21s= %-10.1f # Diffusion time step minimum value \[s\]" MDL_DT_BAS $Sim(DtMin)]
-   puts $file [format "%-21s= %-10.4f # Bottom reflection level of particles in the atmosphere \[hybrid|eta|sigma\]" MDL_HYBB $Sim(ReflectionLevel)]
    puts $file [format "%-21s= %-10.2f # Horizontal wind velocity variance for mesoscale fluctuations \[m2/s2\]" MDL_SIG2_V $Sim(VarMesoscale)]
    puts $file [format "%-21s= %-10.1f # Lagrangian time scale \[s\]" MDL_TL_V $Sim(Timescale)]
    puts $file [format "%-21s= %-10s # Flag indicating if including horizontal diffusion in free atmosphere" MDL_INCLUDEHORIZDIFF $Sim(IsIncludeHorizDiff)]
@@ -322,6 +317,10 @@ proc MLDPn::CreateModelInput { } {
       puts $file [format "%-8s= %-15s %15.2e %15.2e %15.2e" EMI_ISO [lindex $iso 0] [lindex $iso 1] [lindex $iso 2] [lindex $iso 3]]
    }
 
+   if { $Sim(RestartTrialDate) } {
+      puts $file [format "%-21s= %-25s # Time(s) at which to produce a restart \[UTC\]: YearMonthDayHourMinute" MDL_RESTART_TIME [clock format $Sim(RestartTrialDate) -format "%Y%m%d%H%M" -timezone :UTC]]
+   }
+
    puts $file "\n#----- Source parameters\n"
    foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
       puts $file [format "%-21s= %-25s # Source name" SRC_NAME $name]
@@ -329,7 +328,7 @@ proc MLDPn::CreateModelInput { } {
       puts $file [format "%-21s= %-12.6f %-12.6f # Latitude and longitude coordinate of the sources \[degrees\]" SRC_COORD $lat $lon]
       puts $file [format "%-21s= %-25s # Emission date-time \[UTC\]: YearMonthDayHourMinute" SRC_TIME $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)]
 
-      if { $Sim(SrcType) == "volcano" } {
+      if { $Sim(SrcType) == "VOLCANO" } {
          puts $file [format "%-21s= %-25s # Total released mass for volcanic eruption \[micrograms\]" SRC_EMI_MASS_VOLCANO $Sim(EmMass)]
       }
 
@@ -345,7 +344,7 @@ proc MLDPn::CreateModelInput { } {
       }
       puts $file [format "%-21s= %s # Cumulative fraction \[0,1\] of number of particles within vertical emission plume column" SRC_COLUMN $distr]
 
-      for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+      for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
          set emti [expr $Sim(EmInter.$i)*3600]
 
          if { $Sim(EmIsEm.$i) } {
@@ -368,8 +367,8 @@ proc MLDPn::CreateModelInput { } {
 
          set rates {}
          switch $Sim(SrcType) {
-             volcano  { set rates $mass }
-             accident {
+             VOLCANO  { set rates $mass }
+             ACCIDENT {
                 for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
                    lappend rates [format "%-9e" $Sim(EmRate.$i.$j)]
                 }
@@ -377,7 +376,11 @@ proc MLDPn::CreateModelInput { } {
              default { set rates $Sim(EmRate.$i) }
          }
 
-         puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s # Nb Parcel, Duration, Height, Radius, Mass/Rate for each isotope" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
+         if { $i==$Sim(EmInterStart) } {
+            puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s # Nb Parcel, Duration, Height, Radius, Mass/Rate for each isotope" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
+         } else {
+            puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
+         }
       }
    }
 
@@ -388,7 +391,7 @@ proc MLDPn::CreateModelInput { } {
    }
    set sizeLast [expr [llength [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
    set IsComputeSV "FALSE"
-   if { $Sim(SrcType) == "volcano" && $sizeIdx != $sizeLast } {
+   if { $Sim(SrcType) == "VOLCANO" && $sizeIdx != $sizeLast } {
       set IsComputeSV "TRUE"
    }
    puts $file [format "%-20s= %-10s # Flag indicating if computing gravitational settling velocities" PRC_COMPUTESV $IsComputeSV]
@@ -396,7 +399,7 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-20s= %-10s # Particle diameter size boundaries \[microns\], and Fraction \[0,1\] of total number of particles for each size bin" PRC_BINS ""]
 
    switch $Sim(SrcType) {
-      "volcano" {
+      "VOLCANO" {
          #----- Number of particle diameter intervals.
          switch $sizeIdx {
             0 { set dist $Sim(DistSpurrSept1992) ;#----- Spurr September 1992 size distribution. }
@@ -407,8 +410,8 @@ proc MLDPn::CreateModelInput { } {
             default { set dist $Sim(DistRedoubt1989) }
          }
       }
-      "accident" -
-      "virus" { set dist $Sim(DistRedoubt1989) }
+      "ACCIDENT" -
+      "VIRUS" { set dist $Sim(DistRedoubt1989) }
    }
 
    foreach { diam frac } $dist {
@@ -417,20 +420,23 @@ proc MLDPn::CreateModelInput { } {
 
    puts $file "\n#----- Output parameters\n"
    puts $file [format "%-15s= %-10.1f # Output time step \[s\]" OUT_DT [expr $Sim(OutputTimeStepMin)*60]]
-   puts $file [format "%-15s= %s # Output grid definition" OUT_GRID $Sim(PathRun)/tmp/grid.fstd]
+   puts $file [format "%-15s= %s # Output grid definition" OUT_GRID $Sim(PathRun)/tmp/grid.in]
    puts $file [format "%-15s= %s # Concentration vertical levels \[m\]" OUT_CVLEVELS $Sim(OutCV)]
-   if { $Sim(SrcType) == "volcano" } {
+   if { $Sim(SrcType) == "VOLCANO" } {
       puts $file [format "%-15s= %s # Aviation vertical levels \[feet\]" OUT_AVLEVELS $Sim(OutAV)]
    }
    puts $file [format "%-15s= %s # Variables to be saved in output" OUT_VARS $Sim(OutVar)]
 
-   puts $file "\n#----- Meteorological input standard file\n"
-   puts $file "MET_FILES ="
+   puts $file "\n#----- Meteorological parameters\n"
+   puts $file [format "%-11s= %-10.4f # Bottom reflection level of particles in the atmosphere \[hybrid|eta|sigma\]" MET_BOTTOM $Sim(ReflectionLevel)]
+   puts $file "MET_FILES  =            # Meteorological input files"
    for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
       puts $file "$Sim(PathRun)/meteo/[file tail [lindex $Sim(MeteoDataFiles) $i]].std"
    }
 
-  close $file
+   close $file
+
+   exec ln -s $Sim(PathRun)/meteo/[file tail [lindex $Sim(MeteoDataFiles) 0]].std $Sim(PathRun)/tmp/grid.in
 }
 
 #----------------------------------------------------------------------------
@@ -469,7 +475,7 @@ proc MLDPn::GetMetData { } {
 
    #----- Get available meteorological files.
    if { $Sim(IsRestart) } {
-      set Sim(RunStamp) $Sim(RestartStamp)
+      set Sim(RunStamp) [fstdstamp fromseconds $Sim(RestartDate)]
    } else {
       set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
    }
@@ -479,14 +485,13 @@ proc MLDPn::GetMetData { } {
    Dialog::WaitDestroy
 
    #----- Check for restart date at last trial
-   if { $MetData::Data(TA)==-1 } {
-      set Sim(RestartLastDate) "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)0000"
-   } else {
-      set lastDate [expr [fstdstamp toseconds $Sim(RunStamp)] + $Sim(Duration)*3600]
+   set Sim(RestartTrialDate) 0
 
-      #----- If the date of the last trial date is later than the end of the simulation
-      if { $MetData::Data(TA) > $lastDate } {
-         set Sim(RestartLastDate) [clock format $lastDate -format "%Y%m%d%H%M%S" -timezone :UTC]
+   if { $MetData::Data(TA)!=-1 } {
+
+      #----- If the date of the last trial date is earlierr than the end of the simulation
+      if { $MetData::Data(TA) < [expr [fstdstamp toseconds $Sim(RunStamp)] + $Sim(Duration)*3600] } {
+         set Sim(RestartTrialDate) $MetData::Data(TA)
       }
    }
 
@@ -658,9 +663,9 @@ proc MLDPn::ScenarioList { } {
 
    #----- Initialize scenario directory.
    switch $Sim(SrcType) {
-      "accident" { set Sim(EmDirScenario) "$Sim(EmDir)/MLDPn/accident" }
-      "volcano"  { set Sim(EmDirScenario) "$Sim(EmDir)/MLDPn/volcan" }
-      "virus"    { set Sim(EmDirScenario) "$Sim(EmDir)/MLDPn/virus" }
+      "ACCIDENT" { set Sim(EmDirScenario) "$Sim(EmDir)/ACCIDENT" }
+      "VOLCANO"  { set Sim(EmDirScenario) "$Sim(EmDir)/VOLCANO" }
+      "VIRUS"    { set Sim(EmDirScenario) "$Sim(EmDir)/VIRUS" }
    }
 
    if { ![file isdirectory $Sim(EmDirScenario)] } {
@@ -702,7 +707,7 @@ proc MLDPn::ScenarioClear { } {
    #----- Reset counters
    set Sim(EmNbIntervals)  $Sim(EmInterStart)
 
-   if { $Sim(SrcType) == "accident" } {
+   if { $Sim(SrcType) == "ACCIDENT" } {
       set Sim(EmNbIso)     0
       set Sim(EmIsoInfo)   {}
    }
@@ -789,10 +794,6 @@ proc MLDPn::ScenarioSelect { } {
    variable Sim
    variable Tmp
 
-   if { $Sim(IsRestart) } {
-      return
-   }
-
    #----- Does directory exists?
    if { ![file isdirectory $Sim(EmDirScenario)] } {
       Dialog::Error .modelnew $Error(ScenarioDirectory)
@@ -809,7 +810,7 @@ proc MLDPn::ScenarioSelect { } {
 
    #----- Read global parameters
 
-   if { $Sim(SrcType) == "volcano" } {
+   if { $Sim(SrcType) == "VOLCANO" } {
       gets $f Sim(EmSizeDist)
       gets $f Sim(EmDensity)
    }
@@ -850,7 +851,7 @@ proc MLDPn::ScenarioSelect { } {
          gets $f Sim(EmRadius.$i)
 
          switch $Sim(SrcType) {
-            "volcano" {
+            "VOLCANO" {
                gets $f Sim(EmMassMode.$i)
                if { $Sim(EmMassMode.$i) } {
                   gets $f Sim(EmMass.$i)
@@ -866,10 +867,10 @@ proc MLDPn::ScenarioSelect { } {
                   }
                }
             }
-            "virus" {
+            "VIRUS" {
                gets $f Sim(EmRate.$i)
             }
-            "accident" {
+            "ACCIDENT" {
                for {set j 0} {$j<$Sim(EmNbIso)} {incr j} {
                   gets $f Sim(EmRate.$i.$j)
                }
@@ -880,14 +881,14 @@ proc MLDPn::ScenarioSelect { } {
          set Sim(EmHeight.$i)          $Sim(EmHeight)
          set Sim(EmRadius.$i)          $Sim(EmRadius)
          switch $Sim(SrcType) {
-            "volcano" {
+            "VOLCANO" {
                set Sim(EmMassMode.$i)  0
                set Sim(EmMass.$i)      0
             }
-            "virus" {
+            "VIRUS" {
                set Sim(EmRate.$i)      0.0
             }
-            "accident" {
+            "ACCIDENT" {
                for {set j 0} {$j<$Sim(EmNbIso)} {incr j} {
                   set Sim(EmRate.$i.$j) 0.0
                }
@@ -898,6 +899,7 @@ proc MLDPn::ScenarioSelect { } {
    close $f
 
    set Sim(ScenarioHasChanged) 0
+
    MLDPn::GraphUpdate
 }
 
@@ -922,7 +924,7 @@ proc MLDPn::ScenarioWrite { } {
 
    #----- Write global parameters
 
-   if { $Sim(SrcType) == "volcano" } {
+   if { $Sim(SrcType) == "VOLCANO" } {
       puts $f $Sim(EmSizeDist)
       puts $f $Sim(EmDensity)
    }
@@ -956,17 +958,17 @@ proc MLDPn::ScenarioWrite { } {
          puts $f $Sim(EmRadius.$i)
 
          switch $Sim(SrcType) {
-            "volcano" {
+            "VOLCANO" {
                puts $f $Sim(EmMassMode.$i)
                if { $Sim(EmMassMode.$i) } {
                   puts $f $Sim(EmMass.$i)
                }
             }
-            "virus" {
+            "VIRUS" {
                puts $f $Sim(EmRate.$i)
             }
-            "accident" {
-               for {set j 0} {$j<$Sim(EmNbIso)} {incr j} {
+            "ACCIDENT" {
+               for { set j 0 } { $j<$Sim(EmNbIso) } { incr j } {
                   puts $f $Sim(EmRate.$i.$j)
                }
             }
@@ -1009,6 +1011,7 @@ proc MLDPn::File { Info Path Type Back } {
    set files      ""
    set prevsecs   -1
    set hasNext    1
+
    while { $hasNext } {
       Info::Decode ::MLDPn::Tmp $Info
 
@@ -1017,27 +1020,13 @@ proc MLDPn::File { Info Path Type Back } {
       set simsecs [clock scan $simdate -format "%Y%m%d%H" -timezone :UTC]
       set file    ${simdate}_000
 
-      #----- Apply a filter to prevent overlapping results
-      if { $prevsecs>0 && $prevsecs<$simsecs+$Tmp(Duration)*3600 } {
-         set filterDisp [list "RANGE DATEV $simsecs $prevsecs {fstdstamp toseconds}"]
-         set filterMet  [list "RANGE DATEV $simsecs [expr $prevsecs-1] {fstdstamp toseconds}"]
-      } else {
-         set filterDisp ""
-         set filterMet  ""
-      }
-      set prevsecs $simsecs
-
-      set pos        [list "$simpath/results/${file}.pos" $filterDisp]  ; #----- Particle positions result output file.
-      set metfields  [list "$simpath/results/${file}m"    $filterMet]   ; #----- Meteorological fields for RSMC response.
-      set metlist    [glob -nocomplain $simpath/meteo/*]                ; #----- Meteorological files required for launching model.
-      set metfiles   {}
-      foreach metfile $metlist {
-         lappend metfiles [list $metfile $filterMet]
-      }
+      set pos        [glob $simpath/results/${file}_???]  ;#----- Particle positions result output file.
+      set metfields  $simpath/results/${file}_000m        ;#----- Meteorological fields for RSMC response.
+      set metfiles   [glob -nocomplain $simpath/meteo/*]  ;#----- Meteorological files required for launching model.
 
       switch $Type {
-         "all"     { lappend files $pos $metfields; set files [concat $files $metfiles] }
-         "result"  { lappend files $pos }
+         "all"     { set files [concat $files $pos $metfields $metfiles] }
+         "result"  { set files [concat $files $pos] }
          "meteo"   { set files [concat $files $metfiles] }
          "metf"    { lappend files $metfields }
       }
@@ -1149,6 +1138,7 @@ proc MLDPn::SetAccidentDate { } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::GetDistributionNP { } {
    variable Sim
 
@@ -1168,14 +1158,14 @@ proc MLDPn::GetDistributionNP { } {
       set mass 0
       if { $Sim(EmIsEm.$i) } {
          switch $Sim(SrcType) {
-            "volcano" {
+            "VOLCANO" {
                set mass $Sim(EmMass.$i)
             }
-            "virus" {
+            "VIRUS" {
                set mass [expr $Sim(EmRate.$i) * $Sim(EmInter.$i)]
             }
-            "accident" {
-               for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
+            "ACCIDENT" {
+               for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
                   set mass [expr $mass + $Sim(EmRate.$i.$j)*$Sim(EmInter.$i)]
                }
             }
@@ -1242,30 +1232,30 @@ proc MLDPn::UpdatePoolLists { } {
    }
 
    #----- Fill lists with current emission scenario data
-   for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
       lappend Sim(EmInterList)            $Sim(EmInter.$i)
       lappend Sim(EmIsEmList)             $Sim(EmIsEm.$i)
       lappend Sim(EmHeightList)           $Sim(EmHeight.$i)
       lappend Sim(EmRadiusList)           $Sim(EmRadius.$i)
 
       switch $Sim(SrcType) {
-         "volcano" {
+         "VOLCANO" {
             lappend Sim(EmMassModeList)   $Sim(EmMassMode.$i)
             lappend Sim(EmMassList)       $Sim(EmMass.$i)
          }
-         "accident" {
-            for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
+         "ACCIDENT" {
+            for { set j 0 } {$j < $Sim(EmNbIso) } { incr j } {
                lappend Sim(EmRateList)    $Sim(EmRate.$i.$j)
             }
          }
-         "virus" {
+         "VIRUS" {
             lappend Sim(EmRateList)       $Sim(EmRate.$i)
          }
       }
    }
 
    #----- Build list of isotopes.
-   if { $Sim(SrcType) == "accident" } {
+   if { $Sim(SrcType) == "ACCIDENT" } {
       set Sim(EmIsoSymbol) {}
       foreach iso $Sim(EmIsoInfo) {
          lappend Sim(EmIsoSymbol) [lindex $iso 0]
@@ -1277,7 +1267,7 @@ proc MLDPn::UpdatePoolLists { } {
 # Nom        : <MLDPn::InitNew>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Initialise un tableau de defintions de simulation pour une
+# But        : Initialise un tableau de defintions de simulation pour une$Sim(ESCanvas)
 #              nouvelle simulation.
 #
 # Parametres :
@@ -1294,103 +1284,115 @@ proc MLDPn::InitNew { Type } {
    variable Sim
    variable Tmp
 
-   set Sim(GridSrc)  [lindex $Sim(Name) 0] ;#----- Name of first source.
-   set Sim(Mode)     prog                  ;#----- Type of meteorological data.
-   set Sim(Backward) False
+   set Sim(GridSrc)              [lindex $Sim(Name) 0]               ;#----- Name of first source.
+   set Sim(Mode)                 prog                                ;#----- Type of meteorological data.
+   set Sim(Backward)             False                               ;#----- Inverse mode.
+   set Sim(DiffKernel)           ORDER0                              ;#----- Diffusion kernel.
+   set Sim(Duration)             72                                  ;#----- Simulation duration [hr].
+   set Sim(OutputTimeStepMin)    60                                  ;#----- Output time step [min].
+   set Sim(ModelTimeStepMin)     10                                  ;#----- Internal model time step [min].
+   set Sim(Scale)                MESO                                ;#----- Grid resolution string.
+   set Sim(Meteo)                glb                                 ;#----- Meteorological model.
+   set Sim(Delta)                1                                   ;#----- Time interval for meteorological data files [hr].
+   set Sim(EmNumberParticles)    100000                              ;#----- Number of particles.
+   set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+   set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
+   set Sim(RestartDates)        { }
 
-   if { $Sim(Model)=="MLDP0" || $Sim(Model)=="MLDPn" } {
-      set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
-      set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
-      set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
-      set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
-      set Sim(Meteo)                glb                                 ; #----- Meteorological model.
-      set Sim(Delta)                3                                   ; #----- Time interval for meteorological data files [hr].
-      set Sim(VarMesoscale)         1.00                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-      set Sim(Timescale)            10800                               ; #----- Lagrangian time scale [s].
-      set Sim(ReflectionLevel)      0.9999                              ; #----- Reflection level [hyb|eta|sig].
-      set Sim(EmNumberParticles)    50000                               ; #----- Number of particles.
-      set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
-      set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
-      set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
-      set Sim(DtOverTl)             1.0
-      set Sim(DtMin)                1.0
-      set Sim(ListOutCV)           { "1 200 400 600 2000 4000" \
-                                     "1 500 1000 1500 2000 3000 4000 5000" \
-                                     "1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000" \
-                                     "1 500 1000" \
-                                     "1 1000" \
-                                     "1 1000 2000 5000 10000" \
-                                     "1 1000 2000 5000 10000 15000" \
-                                     "1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
-                                     "1 2000 4000 6000 8000 10000" \
-                                     "1 100 200 300 400 500 600 700 800 900 1000" \
-                                     "1 100 1000" \
-                                     "1 100 500 1000" \
-                                     "1 50 100" \
-                                     "1 50 100 500 1000" \
-                                     "1 50 100 1000" \
-                                     "1 10 50 100" \
-                                     "1 10 50 100 1000" \
-                                     "1 10 100 1000" }
-
-      #----- Set source type according to experiment data type.
-      if { $Type==0 || $Type==3 } {
-         #----- Volcano (0) or fire (3) source.
-         set Sim(SrcType) "volcano"
-         set Sim(OutVar)               { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
-      } elseif { $Type== 4 } {
-         #----- Virus (4) source.
-         set Sim(SrcType)  "virus"
-         set Sim(Duration) 48
-         set Sim(Meteo)    reg
-         set Sim(OutVar)               { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF TA TDA TTA TOU }
-      } else {
-         #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
-         set Sim(SrcType) "accident"
-         set Sim(OutputTimeStepMin) 180
-         set Sim(OutVar)               { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF TA TDA TTA TOU }
-      }
+   #----- Set source type according to experiment data type.
+   if { $Type==0 || $Type==3 } {
+      #----- Volcano (0) or fire (3) source.
+      set Sim(SrcType)           VOLCANO
+      set Sim(OutVar)            { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
+      set Sim(EmHeight)          10000.0
+      set Sim(EmRadius)          1000.0
+      set Sim(EmIsoSymbol)       TRACER
+      set Sim(EmNbIso)           1
+      set Sim(EmIsoInfo)         { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
+   } elseif { $Type== 4 } {
+      #----- Virus (4) source.
+      set Sim(SrcType)           VIRUS
+      set Sim(OutVar)            { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF TA TDA TTA TOU }
+      set Sim(Duration)          48
+      set Sim(Meteo)             reg
+      set Sim(VirusType)         [lindex $Sim(ListVirusType) 0]
+      set Sim(VirusSymbol)       [lindex $Sim(ListVirusSymbol) 0]
+      set Sim(EmHeight)          100.0
+      set Sim(EmRadius)          100.0
+      set Sim(EmIsoSymbol)       [lindex [lindex $Sim(ListVirusName) $GDefs(Lang)] 0]
+      set Sim(EmNbIso)           1
+      set Sim(VirusType)         [lindex $Sim(ListVirusType) 0]
+      set Sim(VirusSymbol)       [lindex $Sim(ListVirusSymbol) 0]
+      set Sim(Scale)             EFINE
+      set Sim(EmIsoInfo)         "$Sim(VirusSymbol) 1.00e+38 1.00e-03 3.00e-05"
    } else {
-      set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
-      set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
-      set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
-      set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
-      set Sim(Meteo)                reg                                 ; #----- Meteorological model.
-      set Sim(Delta)                1                                   ; #----- Time interval for meteorological data files [hr].
-      set Sim(VarMesoscale)         0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-      set Sim(Timescale)            2700                                ; #----- Lagrangian time scale [s].
-      set Sim(ReflectionLevel)      0.9990                              ; #----- Reflection level [hyb|eta|sig].
-      set Sim(EmNumberParticles)    100000                              ; #----- Number of particles.
-      set Sim(ListScale)             { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
-      set Sim(ListMeteoModel)        { glb reg }
-      set Sim(ListReflectionLevel)   { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
-      set Sim(DtOverTl)               0.1
-      set Sim(DtMin)                  0.1
-      set Sim(ListOutCV)          { "0 200 400 600 800 1000" \
-                                    "0 500 1000 1500 2000 3000 4000 5000" \
-                                    "0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000" \
-                                    "0 500 1000" \
-                                    "0 1000" \
-                                    "0 1000 2000 5000 10000" \
-                                    "0 1000 2000 5000 10000 15000" \
-                                    "0 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000" \
-                                    "0 100 200 300 400 500 600 700 800 900 1000" \
-                                    "0 100 1000" \
-                                    "0 100 500 1000" \
-                                    "0 50 100" \
-                                    "0 50 100 500 1000" \
-                                    "0 50 100 1000" \
-                                    "0 10 50 100" \
-                                    "0 10 50 100 1000" \
-                                    "0 10 100 1000" }
+      #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
+      set Sim(SrcType)           ACCIDENT
+      set Sim(OutVar)            { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF TA TDA TTA TOU }
+      set Sim(OutputTimeStepMin) 180
+      set Sim(Duration)          12                                  ; #----- Simulation duration [hr].
+      set Sim(OutputTimeStepMin) 30                                  ; #----- Output time step [min].
+      set Sim(ModelTimeStepMin)  5                                   ; #----- Internal model time step [min].
+      set Sim(Scale)             VFINE                               ; #----- Grid resolution string.
+      set Sim(Meteo)             reg                                 ; #----- Meteorological model.
+      set Sim(EmHeight)          500.0
+      set Sim(EmRadius)          100.0
+      set Sim(EmNbIso)           0
+      set Sim(EmIsoInfo)         {}
+   }
 
-      #----- Set source type according to experiment data type.
-      if { $Type== 4 } {
-         #----- Virus (4) source.
-         set Sim(SrcType) "virus"
-      } else {
-         #----- Voilcano (0), Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
-         set Sim(SrcType) "accident"
+   switch $Sim(DiffKernel) {
+      ORDER0 {
+         set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+         set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
+         set Sim(ReflectionLevel)      0.9999                              ;#----- Reflection level [hyb|eta|sig].
+         set Sim(DtOverTl)             1.0
+         set Sim(DtMin)                1.0
+         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
+         set Sim(ListOutCV)           { { 1 200 400 600 2000 4000 }  \
+                                        { 1 500 1000 1500 2000 3000 4000 5000 } \
+                                        { 1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
+                                        { 1 500 1000 } \
+                                        { 1 1000 } \
+                                        { 1 1000 2000 5000 10000 } \
+                                        { 1 1000 2000 5000 10000 15000 } \
+                                        { 1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
+                                        { 1 2000 4000 6000 8000 10000 } \
+                                        { 1 100 200 300 400 500 600 700 800 900 1000 } \
+                                        { 1 100 1000 } \
+                                        { 1 100 500 1000 } \
+                                        { 1 50 100 } \
+                                        { 1 50 100 500 1000 } \
+                                        { 1 50 100 1000 } \
+                                        { 1 10 50 100 } \
+                                        { 1 10 50 100 1000 } \
+                                        { 1 10 100 1000 } }
+      }
+      ORDER1 -
+      VARIABLE {
+         set Sim(VarMesoscale)        0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+         set Sim(Timescale)           2700                                ; #----- Lagrangian time scale [s].
+         set Sim(ReflectionLevel)     0.9990                              ; #----- Reflection level [hyb|eta|sig].
+         set Sim(DtOverTl)            0.1
+         set Sim(DtMin)               0.1
+         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
+         set Sim(ListOutCV)           { { 0 200 400 600 800 1000 } \
+                                        { 0 500 1000 1500 2000 3000 4000 5000 } \
+                                        { 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
+                                        { 0 500 1000 } \
+                                        { 0 1000 } \
+                                        { 0 1000 2000 5000 10000 } \
+                                        { 0 1000 2000 5000 10000 15000 } \
+                                        { 0 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
+                                        { 0 100 200 300 400 500 600 700 800 900 1000 } \
+                                        { 0 100 1000 } \
+                                        { 0 100 500 1000 } \
+                                        { 0 50 100 } \
+                                        { 0 50 100 500 1000 } \
+                                        { 0 50 100 1000 } \
+                                        { 0 10 50 100 } \
+                                        { 0 10 50 100 1000 } \
+                                        { 0 10 100 1000 } }
       }
    }
 
@@ -1409,51 +1411,27 @@ proc MLDPn::InitNew { Type } {
    set Sim(EmInterStart)         0                                   ; #----- Starting index for emission intervals.
    set Sim(EmEffectiveDuration)  0.0                                 ; #----- Effective emission duration, only release periods [s].
    set Sim(EmTotalDuration)      0.0                                 ; #----- Total emission duration, including release and lull periods [s].
-   set Sim(EmNbIso)              0                                   ; #----- Number of isotopes.
    set Sim(EmIsoSymbol)          ""                                  ; #----- List of isotopes.
    set Sim(EmIsoQuantity)        ""                                  ; #----- Total release quantity for each isotope.
    set Sim(EmGlobalNP)           $Sim(EmNumberParticles)             ; #----- Number of particules to distribute amongst emission intervals.
    set Sim(EmRateMode)           0                                   ; #----- Mode of the release rate. 0 is "unit/h", 1 is "unit"
    set Sim(EmInterMode)          0                                   ; #----- Mode of the interval duration. 0 is "(h)", 1 is "(s)"
-   set Sim(RestartLastDate)      -1
+   set Sim(RestartTrialDate)     0
    set Sim(BubbleId)             -1
    set Sim(BubbleShowingId)      -1
-
-   #----- Initialize maximum plume height [m] and column radius [m].
-   if { $Sim(SrcType) == "volcano" } {        ;#----- Volcano source type.
-      set Sim(EmHeight)    10000.0
-      set Sim(EmRadius)    1000.0
-      set Sim(EmIsoSymbol) TRACER
-      set Sim(EmNbIso)     1
-      set Sim(EmIsoInfo)   { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
-   } elseif { $Sim(SrcType) == "accident" } { ;#----- Accident source type.
-      set Sim(EmHeight)    500.0
-      set Sim(EmRadius)    100.0
-      set Sim(EmIsoInfo)   {}
-   } elseif { $Sim(SrcType) == "virus" } {    ;#----- Virus source type.
-      set Sim(EmHeight)    100.0
-      set Sim(EmRadius)    100.0
-      set Sim(EmIsoSymbol) [lindex [lindex $Sim(ListVirusName) $GDefs(Lang)] 0]
-      set Sim(EmNbIso)     1
-      set Sim(VirusType)   [lindex $Sim(ListVirusType) 0]
-      set Sim(VirusSymbol) [lindex $Sim(ListVirusSymbol) 0]
-      set Sim(Scale)       "EFINE"
-      set Sim(EmIsoInfo)   ""
-      lappend Sim(EmIsoInfo) "$Sim(VirusSymbol) 1.00e+38 1.00e-03 3.00e-05"
-   }
 
    set NA [lindex $Sim(NotAvailable) $GDefs(Lang)]
 
    #----- Initialize unused variables to "not available" for pool information.
-   if { $Sim(SrcType) == "accident" || $Sim(SrcType) == "virus" } {
+   if { $Sim(SrcType) == "ACCIDENT" || $Sim(SrcType) == "VIRUS" } {
       set Sim(EmDensityDefault)  2.500e+12
       set Sim(EmMass)     $NA
       set Sim(EmSizeDistDefault) $NA
    }
 
-   if { $Sim(SrcType) == "volcano" } {
+   if { $Sim(SrcType) == "VOLCANO" } {
       set Sim(EmDensityDefault)       2.500e+12 ; #----- Particle density [microgram/m3].
-      set Sim(EmSizeDistDefault)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3] ; #----- Particle size distribution.
+      set Sim(EmSizeDistDefault)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] end] ; #----- Particle size distribution.
       set Sim(EmIsoQuantity)   $NA
    }
 
@@ -1473,6 +1451,117 @@ proc MLDPn::InitNew { Type } {
    set Sim(RestartFile) ""
 
    MLDPn::UpdateEmissionStartingTime
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::InitCont>
+# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But        : Initialise les paramètres nécessaire au lancement de
+#              l'interface de continuation d'une simulation.
+#
+# Parametres :
+#     <Type> : Le type de la source.
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDPn::InitCont { Type } {
+   global GDefs
+   variable Sim
+   variable Error
+
+   #----- Initialize variables needed to the graphical interface
+
+   set Sim(ListScale)         { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+   set Sim(EmNumberParticles) 100000
+
+   set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)
+   set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)
+   set Sim(ListOutCV)               $Sim(OutCV)
+   set Sim(ListMeteoModel)          $Sim(Meteo)
+   set Sim(IsResFileSizeChecked)    0
+   set Sim(IsMetFileSizeChecked)    0
+   set Sim(EmVerticalDistDefault)   [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0]
+   set Sim(BubbleId)                -1
+   set Sim(BubbleShowingId)         -1
+   set Sim(RestartTrialDate)        0
+
+   #----- Initialize default values
+
+   switch $Sim(SrcType) {
+      "VOLCANO" {
+         set Sim(EmHeight)          10000.0
+         set Sim(EmRadius)          1000.0
+         set Sim(EmIsoInfo)         { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
+         set Sim(EmSizeDistDefault) [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3]
+         set Sim(EmDensityDefault)  2.500e+12
+      }
+      "VIRUS" {
+         set Sim(EmHeight)          100.0
+         set Sim(EmRadius)          100.0
+         set Sim(EmIsoInfo)         {}
+         lappend Sim(EmIsoInfo)     "[lindex $Sim(ListVirusSymbol) [lsearch -exact [lindex $Sim(ListVirusName) $GDefs(Lang)] $Sim(EmIsoSymbol)]] 1.00e+38 1.00e-03 3.00e-05"
+      }
+      "ACCIDENT" {
+         set Sim(EmHeight)          500.0
+         set Sim(EmRadius)          100.0
+
+         set Sim(EmIsoInfo)         {}
+         set i 0
+         foreach iso $Sim(EmIsoSymbol) {
+            set Sim(EmIso$i) $iso
+            set desc [IsoBox::Get $iso]
+            lappend Sim(EmIsoInfo) "[lindex $desc 0] [lindex $desc 2] [lindex $desc 5] [lindex $desc 4]"
+            incr i
+         }
+      }
+   }
+   set Sim(ScenarioHasChanged) 0
+
+   set Sim(AccSeconds) [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)" -format "%Y%m%d%H%M" -timezone :UTC]
+
+   #----- Restart stuff
+
+   set Sim(IsRestart)      1
+   set Sim(NoPrev)         $Sim(NoSim)
+   set Sim(RestartFile)    $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.rst
+   set Sim(EmInterStart)   $Sim(EmNbIntervals)
+
+   #----- Get restart valid date from restart file
+
+   set pathbase $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)
+   set pathprev $Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)
+   if { [fstdfile open RSTFILE read $pathbase/$pathprev/results/$Sim(RestartFile)] == "" } {
+      fstdfile close RSTFILE
+      Dialog::Error . $Error(NoRestartFile)
+      return
+   }
+
+   set Sim(RestartDates) [fstdfile info RSTFILE DATEV]
+
+   for { set i 0 } { $i < [llength $Sim(RestartDates)] } { incr i } {
+      lset Sim(RestartDates) $i [expr [lindex $Sim(RestartDates) $i]-$Sim(AccSeconds)]
+   }
+   set Sim(RestartDate)  [lindex $Sim(RestartDates) end]
+
+   fstdfile close RSTFILE
+   if { [llength $Sim(RestartDates)] != 1 } {
+      Dialog::Error . $Error(NoRestartFile)
+      return
+   }
+#   set Sim(EmScenario)     "Rst [clock format $Sim(RestartSeconds) -format "%Y%m%d %H%M UTC" -timezone :UTC]"
+
+#   set Sim(EmNbIntervals) 0
+#   set Sim(RestartPrevDates) [MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool -1 $Sim(RestartSeconds) $Sim(NoPrev)]
+#   lappend Sim(RestartPrevDates) [expr ($Sim(RestartSeconds)-$Sim(AccSeconds))/3600.0]
+#   set Sim(EmInterStart) $Sim(EmNbIntervals)
+
+   #----- Reconstruct from restart date to end date.
+#   MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool $Sim(RestartSeconds) -1 $Sim(NoPrev)
 }
 
 #----------------------------------------------------------------------------
@@ -1665,10 +1754,10 @@ proc MLDPn::UpdateListVerticalLevels { } {
       lappend newoutcv [lreplace $list 0 0 $firstlevel]
    }
 
-   set Sim(ListOutCV)  $newoutcv                          ; #----- Update list of vertical levels.
+   set Sim(ListOutCV)  $newoutcv                              ; #----- Update list of vertical levels.
    Option::Set $Sim(OutCVFrm) $Sim(ListOutCV)
    set Sim(OutCV)      [lreplace $Sim(OutCV) 0 0 $firstlevel] ; #----- Update vertical levels.
-   set Sim(PrevReflectionLevel) $Sim(ReflectionLevel)                           ; #----- Reset previous reflection level.
+   set Sim(PrevReflectionLevel) $Sim(ReflectionLevel)         ; #----- Reset previous reflection level.
 }
 
 #----------------------------------------------------------------------------
@@ -1693,7 +1782,7 @@ proc MLDPn::ComputeMass { Id } {
    variable Tmp
 
    #----- Verify if source is a volcano type.
-   if { $Sim(SrcType)!="volcano" } {
+   if { $Sim(SrcType)!="VOLCANO" } {
       return 0
    }
 
@@ -1738,6 +1827,7 @@ proc MLDPn::ComputeMass { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::EmissionIntervalApply { Id } {
    variable Sim
    variable Tmp
@@ -1771,11 +1861,11 @@ proc MLDPn::EmissionIntervalApply { Id } {
    set Sim(EmRadius.$Id)            $Tmp(EmRadius.$Id)
 
    switch $Sim(SrcType) {
-      "volcano" {
+      "VOLCANO" {
          set Sim(EmMass.$Id)        $Tmp(EmMass.$Id)
          set Sim(EmMassMode.$Id)    $Tmp(EmMassMode.$Id)
       }
-      "accident" {
+      "ACCIDENT" {
          set Sim(EmNbIso)           $Tmp(EmNbIso)
          set Sim(EmIsoInfo)         $Tmp(EmIsoInfo)
 
@@ -1787,7 +1877,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
             }
          }
       }
-      "virus" {
+      "VIRUS" {
          set Sim(EmRate.$Id)        $Tmp(EmRate.$Id)
       }
    }
@@ -1810,6 +1900,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::EmissionIntervalEdit { Id } {
    variable Sim
    variable Tmp
@@ -1838,11 +1929,11 @@ proc MLDPn::EmissionIntervalEdit { Id } {
    set Tmp(EmRadius.$Id)            $Sim(EmRadius.$Id)
 
    switch $Sim(SrcType) {
-      "volcano" {
+      "VOLCANO" {
          set Tmp(EmMass.$Id)        $Sim(EmMass.$Id)
          set Tmp(EmMassMode.$Id)    $Sim(EmMassMode.$Id)
       }
-      "accident" {
+      "ACCIDENT" {
          set Tmp(EmNbIso)           $Sim(EmNbIso)
          set Tmp(EmIsoInfo)         $Sim(EmIsoInfo)
 
@@ -1855,7 +1946,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
             }
          }
       }
-      "virus" {
+      "VIRUS" {
          set Tmp(EmRate.$Id)        $Sim(EmRate.$Id)
          set Tmp(EmRateMode.$Id)    0
       }
@@ -1898,16 +1989,16 @@ proc MLDPn::EmissionIntervalDelete { Id } {
       set Sim(EmRadius.$i0)            $Sim(EmRadius.$i)
 
       switch $Sim(SrcType) {
-         "volcano" {
+         "VOLCANO" {
             set Sim(EmMass.$i0)        $Sim(EmMass.$i)
             set Sim(EmMassMode.$i0)    $Sim(EmMassMode.$i)
          }
-         "accident" {
+         "ACCIDENT" {
             for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
                set Sim(EmRate.$i0.$j)  $Sim(EmRate.$i.$j)
             }
          }
-         "virus" {
+         "VIRUS" {
             set Sim(EmRate.$i0)        $Sim(EmRate.$i)
          }
       }
@@ -1967,7 +2058,7 @@ proc MLDPn::EmissionIntervalAdd { } {
    }
 
    switch $Sim(SrcType) {
-      "volcano" {
+      "VOLCANO" {
          if { $Sim(EmNbIntervals) > 0 } {
             set Tmp(EmMassMode.$id)    $Sim(EmMassMode.0)
             if { $Sim(EmMassMode.0) } {
@@ -1980,7 +2071,7 @@ proc MLDPn::EmissionIntervalAdd { } {
             ComputeMass $id
          }
       }
-      "accident" {
+      "ACCIDENT" {
          set Tmp(EmNbIso)     $Sim(EmNbIso)
          set Tmp(EmIsoInfo)   $Sim(EmIsoInfo)
 
@@ -1994,7 +2085,7 @@ proc MLDPn::EmissionIntervalAdd { } {
             }
          }
       }
-      "virus" {
+      "VIRUS" {
          set Tmp(EmRate.$id)     0.0
          set Tmp(EmRateMode.$id) 0
       }
@@ -2152,14 +2243,14 @@ proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
       set Sim(EmHeight.$i)             [lindex $Tmp(EmHeightList)          $idx]
       set Sim(EmRadius.$i)             [lindex $Tmp(EmRadiusList)          $idx]
       switch $Sim(SrcType) {
-         "volcano" {
+         "VOLCANO" {
             set Sim(EmMassMode.$i)     [lindex $Tmp(EmMassModeList)        $idx]
             set Sim(EmMass.$i)         [lindex $Tmp(EmMassList)            $idx]
          }
-         "virus" {
+         "VIRUS" {
             set Sim(EmRate.$i)         [lindex $Tmp(EmRateList)            $idx]
          }
-         "accident" {
+         "ACCIDENT" {
             for {set j 0} {$j < $Tmp(EmNbIso)} {incr j} {
                set Sim(EmRate.$i.$j)   [lindex $Tmp(EmRateList) [expr $idx*$Tmp(EmNbIso) + $j]]
             }
@@ -2184,14 +2275,14 @@ proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
       set Sim(EmHeight.$i)          $Sim(EmHeight)
       set Sim(EmRadius.$i)          $Sim(EmRadius)
       switch $Sim(SrcType) {
-         "volcano" {
+         "VOLCANO" {
             set Sim(EmMassMode.$i)  0
             set Sim(EmMass.$i)      0
          }
-         "virus" {
+         "VIRUS" {
             set Sim(EmRate.$i)      0.0
          }
-         "accident" {
+         "ACCIDENT" {
             for {set j 0} {$j < $Tmp(EmNbIso)} {incr j} {
                set Sim(EmRate.$i.$j) 0.0
             }
@@ -2203,121 +2294,3 @@ proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
 
    return [lsort -real -unique $rstlst]
 }
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::InitCont>
-# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
-#
-# But        : Initialise les paramètres nécessaire au lancement de
-#              l'interface de continuation d'une simulation.
-#
-# Parametres :
-#     <Type> : Le type de la source.
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::InitCont { Type } {
-   global GDefs
-   variable Sim
-   variable Error
-
-   #----- Initialize variables needed to the graphical interface
-
-   if { $Sim(Model)=="MLDP0" || $Sim(Model)=="MLDPn" } {
-      set Sim(ListScale) { "HEMI  (50 km, 687x687)" "MESO  (33 km, 229x229)" "FINE  (15 km, 503x503)" "VFINE (10 km, 229x229)" "EFINE (5 km,  457x457)" }
-      set Sim(EmNumberParticles) 50000
-   } else {
-      set Sim(ListScale) { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" }
-      set Sim(EmNumberParticles) 100000
-   }
-   set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)
-   set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)
-   set Sim(ListOutCV)               $Sim(OutCV)
-   set Sim(ListMeteoModel)          $Sim(Meteo)
-   set Sim(IsResFileSizeChecked)    0
-   set Sim(IsMetFileSizeChecked)    0
-   set Sim(EmVerticalDistDefault)   [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0]
-   set Sim(BubbleId)                -1
-   set Sim(BubbleShowingId)         -1
-   set Sim(RestartLastDate)         -1
-
-   #----- Initialize default values
-
-   switch $Sim(SrcType) {
-      "volcano" {
-         set Sim(EmHeight)    10000.0
-         set Sim(EmRadius)    1000.0
-         set Sim(EmIsoInfo)   { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
-         set Sim(EmSizeDistDefault)      [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3]
-         set Sim(EmDensityDefault)       2.500e+12 ; #----- Particle density [microgram/m3].
-      }
-      "virus" {
-         set Sim(EmHeight)    100.0
-         set Sim(EmRadius)    100.0
-         set Sim(EmIsoInfo)   {}
-         lappend Sim(EmIsoInfo) "[lindex $Sim(ListVirusSymbol) [lsearch -exact [lindex $Sim(ListVirusName) $GDefs(Lang)] $Sim(EmIsoSymbol)]] 1.00e+38 1.00e-03 3.00e-05"
-      }
-      "accident" {
-         set Sim(EmHeight)    500.0
-         set Sim(EmRadius)    100.0
-
-         set Sim(EmIsoInfo)   {}
-         set i 0
-         foreach iso $Sim(EmIsoSymbol) {
-            set Sim(EmIso$i) $iso
-            set desc [IsoBox::Get $iso]
-            lappend Sim(EmIsoInfo) "[lindex $desc 0] [lindex $desc 2] [lindex $desc 5] [lindex $desc 4]"
-            incr i
-         }
-      }
-   }
-   set Sim(ScenarioHasChanged) 0
-
-   set Sim(AccSeconds) [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)" -format "%Y%m%d%H%M" -timezone :UTC]
-
-   #----- Restart stuff
-
-   set Sim(IsRestart)      1
-   set Sim(NoPrev)         $Sim(NoSim)
-   set Sim(RestartFile)    "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.rst"
-   set Sim(EmInterStart)   $Sim(EmNbIntervals)
-   #set Sim(RestartStamp)   [fstdstamp fromdate [string range $Sim(RestartLastDate) 0 7] [string range $Sim(RestartLastDate) 8 end]00]
-
-   #----- Get restart valid date from restart file
-
-   set pathbase $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)
-   set pathprev $Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)
-   if { [fstdfile open RSTFILE read $pathbase/$pathprev/results/$Sim(RestartFile)] == "" } {
-      fstdfile close RSTFILE
-      set Sim(RestartOk) 0
-      Dialog::Error . $Error(NoRestartFile)
-      return
-   }
-   set date [fstdfile info RSTFILE DATEV]
-   fstdfile close RSTFILE
-   if { [llength $date] != 1 } {
-      set Sim(RestartOk) 0
-      Dialog::Error . $Error(NoRestartFile)
-      return
-   }
-   set Sim(RestartSeconds) $date
-   set Sim(RestartStamp)   [fstdstamp fromseconds $date]
-   set Sim(EmScenario)     "Rst [clock format $Sim(RestartSeconds) -format "%Y%m%d %H%M UTC" -timezone :UTC]"
-
-   #----- Reconstruct sim until restart date
-
-   set Sim(EmNbIntervals) 0
-   set Sim(RestartPrevDates) [MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool -1 $Sim(RestartSeconds) $Sim(NoPrev)]
-   lappend Sim(RestartPrevDates) [expr ($Sim(RestartSeconds)-$Sim(AccSeconds))/3600.0]
-   set Sim(EmInterStart) $Sim(EmNbIntervals)
-
-   #----- Reconstruct from restart date to end date.
-   MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool $Sim(RestartSeconds) -1 $Sim(NoPrev)
-
-   set Sim(RestartOk) 1
-}
-

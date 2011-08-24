@@ -1312,7 +1312,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
       "NEW" {
          $Data(Modelbase)::ParamsNew .modelnew.params True
          if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params True
+            $Data(Modelbase)::ParamsEmission .modelnew.params
          }
          set $Data(Modelbase)::Sim(NoSim) $Data(No)
       }
@@ -1321,7 +1321,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
          Info::Decode $Data(Modelbase)::Sim "$Data(Info)"
          $Data(Modelbase)::ParamsNew .modelnew.params True
          if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params True
+            $Data(Modelbase)::ParamsEmission .modelnew.params
          }
       }
    }

@@ -104,7 +104,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          pack $tabframe.others.opt.event -side top -ipady 1 -fill x
 
          #----- Virus Source Type.
-         if { $Sim(SrcType) == "virus" } {
+         if { $Sim(SrcType) == "VIRUS" } {
             Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(EmIsoSymbol) MLDPn::Sim(VirusID) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "set MLDPn::Sim(VirusType) \[lindex \$MLDPn::Sim(ListVirusType) \$MLDPn::Sim(VirusID)\]"
             pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
             Bubble::Create $tabframe.others.opt.virus $Bubble(Virus)
@@ -202,17 +202,17 @@ proc MLDPn::IsEmissionToggle { Id Base } {
    if { $Tmp(EmIsEm.$Id) } {
       pack $Base.emdetails -after $Base.isemission
 
-      if { $Sim(SrcType) == "accident" } {
+      if { $Sim(SrcType) == "ACCIDENT" } {
          pack .emintdetails.frm.iso -after .emintdetails.frm.emint -side top -anchor w -padx 5 -fill x -pady 5
       }
    } else {
       pack forget $Base.emdetails
 
-      if { $Sim(SrcType) == "accident" } {
+      if { $Sim(SrcType) == "ACCIDENT" } {
          pack forget .emintdetails.frm.iso
 
          #----- Set rates to 0 because it is not an emission interval
-         for {set i 0} {$i < $Tmp(EmNbIso)} {incr i} {
+         for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
             set Tmp(EmRate.$Id.$i) 0.0
          }
       }
@@ -325,7 +325,7 @@ proc MLDPn::IsoDetailsUpdate { Id } {
       return
    }
 
-   for {set i 0} {$i < $Tmp(EmNbIso)} {incr i} {
+   for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
       #----- If frame already exists, update it
       if { [winfo exists $base.$i] } {
          $base.$i.btn configure -text $Tmp(EmIso$i)
@@ -395,7 +395,7 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
    set Sim(EmissionGlobalFrame) $base
    labelframe .emintdetails.frm.glb -text "[lindex $Lbl(GlobalParameters) $GDefs(Lang)]"
 
-      if { $MLDPn::Sim(SrcType) == "volcano" } {
+      if { $MLDPn::Sim(SrcType) == "VOLCANO" } {
          #----- Particles size distribution.
          Option::Create  $base.size [lindex $Lbl(EmSizeDist) $GDefs(Lang)] MLDPn::Tmp(EmSizeDist) \
             0 -1 [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)] ""
@@ -495,7 +495,7 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
          Bubble::Create $base.emdetails.radius $Bubble(EmRadius)
 
          #----- Total released mass [microgram].
-         if { $Sim(SrcType) == "volcano" } {
+         if { $Sim(SrcType) == "VOLCANO" } {
             Option::Create  $base.emdetails.mass [lindex $Lbl(EmMass) $GDefs(Lang)] [list MLDPn::Tmp(EmMass.$Id) MLDPn::Tmp(EmMassMode.$Id)] \
                 0 -1 [lindex $MLDPn::Sim(ListEmMassMode) $GDefs(Lang)] "MLDPn::EnableDisableMass $base.emdetails.mass $Id"
             #----- Configure background and foreground entry wigdet when disabled.
@@ -504,7 +504,7 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
             bind $base.emdetails.mass.b <Button-1> "MLDPn::ComputeMass $Id"
             pack $base.emdetails.mass -side top -anchor w -padx 2 -fill x
             Bubble::Create $base.emdetails.mass $Bubble(MassMode)
-         } elseif { $Sim(SrcType) == "virus" } {
+         } elseif { $Sim(SrcType) == "VIRUS" } {
             frame $base.emdetails.rate
                label $base.emdetails.rate.lbl -relief flat -anchor w -text "[lindex $Lbl(ReleaseRate) $GDefs(Lang)]"
                entry $base.emdetails.rate.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmRate.$Id)
@@ -522,11 +522,11 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
    Bubble::Create $base $Bubble(EmissionDetails)
 
    #----- Isotopes release rate
-   if { $Sim(SrcType) == "accident" } {
+   if { $Sim(SrcType) == "ACCIDENT" } {
       labelframe .emintdetails.frm.iso -text "Isotopes"
       set base .emintdetails.frm.iso
       set Sim(EmissionIsoFrame) $base
-         for {set i 0} {$i < $Tmp(EmNbIso)} {incr i} {
+         for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
             frame $base.$i
                button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
                button $base.$i.btn -relief flat -anchor w -text $Tmp(EmIso$i) -command "IsoBox::Create .emintdetails \"MLDPn::IsoUpdate $i\"; MLDPn::IsoDetailsUpdate $Id" -width 8
@@ -596,7 +596,8 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
-proc MLDPn::ParamsEmission { Tab { Auto False } } {
+
+proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
    global GDefs
    variable Sim
    variable Msg
@@ -607,7 +608,7 @@ proc MLDPn::ParamsEmission { Tab { Auto False } } {
    wm resizable .modelnew 1 1
 
    #----- Get the list of available scenarios.
-   if { [MLDPn::ScenarioList] && !$Sim(IsRestart) } {
+   if { [MLDPn::ScenarioList] } {
       MLDPn::ScenarioSelect
    }
 
@@ -675,30 +676,39 @@ proc MLDPn::ParamsEmission { Tab { Auto False } } {
    pack $tabframe.scenario -side top -padx 5 -fill both -expand True
    #Bubble::Create $tabframe.scenario $Bubble(EmissionScenario)
 
-   #----- Create histogram
+   if { $Mode=="CONT" } {
+      #----- Disable scenario management buttons
 
-   if { ![graphitem is ES_RST] } {
-      vector    create ES_VECTX
-      vector    create ES_VECTY
-      graphaxis create ES_AXISX
-      graphaxis create ES_AXISY
-      graphitem create ES_GRAPHITEM
-
-      graphitem create ES_RST
-      vector create ES_RSTX
-      vector create ES_RSTY
+      $Sim(ScenarioFrame).button.new configure -state disabled
+      $Sim(ScenarioFrame).button.save configure -state disabled
+      $Sim(ScenarioFrame).button.delete configure -state disabled
+      ComboBox::Disable $Sim(ScenarioFrame).name.ent
    }
 
-   graphitem configure ES_RST -type HISTOGRAM -fill "#FFFFFF00" -outline "#FF0000" -width 1 -transparency 25 \
-      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_RSTX -ydata ES_RSTY
-   graphitem configure ES_GRAPHITEM -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
-      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_VECTX -ydata ES_VECTY
+   #----- Create histogram
 
-   graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash .
+   if { ![graphitem is ES_SIMDUR] } {
+      graphaxis create ES_AXISX
+      graphaxis create ES_AXISY
+
+      vector    create ES_INTERX
+      vector    create ES_INTERY
+      graphitem create ES_INTER
+
+      vector    create ES_SIMDURX
+      vector    create ES_SIMDURY
+      graphitem create ES_SIMDUR
+   }
+
+   graphitem configure ES_INTER -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_INTERX -ydata ES_INTERY
+   graphitem configure ES_SIMDUR -type HISTOGRAM -outline #BAECFF -width 1 -font XFONT12 -fill #E6F8FF -stipple @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_SIMDURX -ydata ES_SIMDURY
+
+   graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash . -format T+HHMM -spacing 20
    graphaxis configure ES_AXISY -format INTEGER -width 1 -unit "[lindex $Lbl(AxisY) $GDefs(Lang)]" -highoffset 2
 
-   $Sim(ESCanvas) create graph -x 0 -y 0 -anchor nw -legend False -title [lindex $Lbl(Scenario) $GDefs(Lang)] \
-      -item { ES_GRAPHITEM ES_RST } -tags ES_GRAPH -command GRAPH_CMD
+   $Sim(ESCanvas) create graph -x 0 -y 0 -anchor nw -legend False -item { ES_INTER ES_SIMDUR } -tags ES_GRAPH -command GRAPH_CMD
 
    set Sim(BubbleId) [OneTimeBubble::Create]
 
@@ -707,14 +717,7 @@ proc MLDPn::ParamsEmission { Tab { Auto False } } {
    bind $Sim(ESCanvas) <Leave> "OneTimeBubble::Hide $MLDPn::Sim(BubbleId); set MLDPn::Sim(BubbleShowingId) -1"
    bind $Sim(ESCanvas) <Configure> "$Sim(ESCanvas) configure -width %w -height %h; $Sim(ESCanvas) itemconfigure ES_GRAPH -width %w -height %h"
 
-   if { $Sim(IsRestart) } {
-      #----- Add most recent (current) restart marker
-      lappend rstlst [expr ($Sim(RestartSeconds)-$Sim(AccSeconds))/3600.0]
-      graphaxis configure ES_AXISX \
-         -highlight        $rstlst \
-         -highlightcolor   "#FF0000" \
-         -highlightwidth   2
-   }
+   graphaxis configure ES_AXISX -highlight $Sim(RestartDates) -highlightcolor #FF0000 -highlightwidth 2
 
    MLDPn::GraphUpdate
 }
@@ -738,16 +741,14 @@ proc MLDPn::ParamsEmission { Tab { Auto False } } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::GraphAction { Type X Y RootX RootY } {
    global GDefs
    variable Sim
    variable Lbl
 
-   $Sim(ESCanvas) itemconfigure ES_GRAPH -update 1
-   update idletasks
-
    #----- Get x value on the graph
-   set x [lindex [split [GRAPH_CMD -unproject $X $Y False ES_GRAPHITEM]] 0]
+   set x [lindex [split [GRAPH_CMD -unproject $X $Y False ES_INTER]] 0]
    if { $x == "" } {
       OneTimeBubble::Hide $Sim(BubbleId)
       set Sim(BubbleShowingId) -1
@@ -758,7 +759,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
    set time 0
    set id 0
    while { $id < $Sim(EmNbIntervals) } {
-      set time [expr $time + $Sim(EmInter.$id)]
+      set time [expr $time + $Sim(EmInter.$id)*3600.0]
       if { $x <= $time } {
          break
       }
@@ -791,7 +792,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
          #----- Generate bubble text
          set bubtxt ""
          append bubtxt "*** [lindex $Lbl(GlobalParameters) $GDefs(Lang)] ***\n"
-         if { $Sim(SrcType) == "volcano" } {
+         if { $Sim(SrcType) == "VOLCANO" } {
             append bubtxt "[lindex $Lbl(EmSizeDist) $GDefs(Lang)] : $Sim(EmSizeDist)\n"
             append bubtxt "[lindex $Lbl(EmDensity) $GDefs(Lang)] : $Sim(EmDensity)\n"
          }
@@ -809,16 +810,16 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
             append bubtxt "[lindex $Lbl(EmHeight) $GDefs(Lang)] : $Sim(EmHeight.$id)\n"
             append bubtxt "[lindex $Lbl(EmRadius) $GDefs(Lang)] : $Sim(EmRadius.$id)\n"
             switch $Sim(SrcType) {
-               "volcano" {
+               "VOLCANO" {
                   append bubtxt "[lindex $Lbl(EmMass) $GDefs(Lang)] : [format %.7g $Sim(EmMass.$id)]\n"
                }
-               "virus" {
+               "VIRUS" {
                   append bubtxt "[format %.20s [lindex $Lbl(ReleaseRate) $GDefs(Lang)]](u/h) : [format %.7g $Sim(EmRate.$id)]\n"
                }
-               "accident" {
+               "ACCIDENT" {
                   set units   [lindex $Lbl(ReleaseRateUnit0) $GDefs(Lang)]
                   set length  [expr 25 - [string length $units]]
-                  for {set i 0} {$i < $Sim(EmNbIso)} {incr i} {
+                  for { set i 0 } { $i < $Sim(EmNbIso) } { incr i } {
                      append bubtxt "[format %-*s $length $Sim(EmIso$i)]$units : [format %.7g $Sim(EmRate.$id.$i)]\n"
                   }
                }
@@ -857,6 +858,7 @@ proc MLDPn::GraphZoom { Factor } {
 
    $Sim(ESCanvas) configure -scrollregion "0.0 0.0 $width $height" -xscrollincrement 10 -yscrollincrement 10
    $Sim(ESCanvas) itemconfigure ES_GRAPH -width $width -height $height
+
    update idletasks
 }
 
@@ -873,20 +875,23 @@ proc MLDPn::GraphZoom { Factor } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::GraphUpdate { } {
    global GDefs
    variable Sim
    variable Lbl
 
    #----- This case can happen if the .modelnew window was closed before the .emintdetails one
-   if { [vector is ES_VECTX] && [vector is ES_VECTY] } {
-      vector clear ES_VECTX
-      vector clear ES_VECTY
-   } else {
+   if { ![vector is ES_INTERX] || ![winfo exists $Sim(ESCanvas)] } {
       return
    }
 
-   if { $Sim(EmNbIntervals) < 1 } {
+   vector clear ES_INTERX
+   vector clear ES_INTERY
+   vector clear ES_SIMDURX
+   vector clear ES_SIMDURY
+
+   if { $Sim(EmNbIntervals)<1 } {
       $Sim(ESCanvas) itemconfigure ES_GRAPH -update 1
       update idletasks
       return
@@ -900,11 +905,11 @@ proc MLDPn::GraphUpdate { } {
    set heights    {}
    set nplst      {}
    set curnplst   [MLDPn::GetDistributionNP]
-   set simsecs [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
+   set simsecs    [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
 
    #----- Make the lists of data points
+   for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
 
-   for {set i 0} {$i < $Sim(EmNbIntervals)} {incr i} {
       #----- Height (Y axis)
       if { $Sim(EmIsEm.$i) } {
          lappend heights $Sim(EmHeight.$i)
@@ -913,7 +918,7 @@ proc MLDPn::GraphUpdate { } {
       }
 
       #----- Time (X axis)
-      set totTime [expr $totTime + $Sim(EmInter.$i)]
+      set totTime [expr $totTime + $Sim(EmInter.$i)*3600]
       lappend times $totTime
 
       #----- Calculate total number of particles
@@ -935,105 +940,55 @@ proc MLDPn::GraphUpdate { } {
    }
 
    #----- Set grey intensity depending on particles repartition (more particules = closer to black)
-
    set idx 0
    set i 0
    foreach np $nplst {
       if { $Sim(EmIsEm.$i) } {
          set ratio 0.0
          if { $totNP != 0 } {
-            set ratio [expr double($np) / double($totNP)]
+            set ratio [expr double($np)/double($totNP)]
          }
          set color [expr 255 - int($ratio*255.0)]
       } else {
          set color 255
       }
-      set color [format "#%02X%02X%02X" $color $color $color]
-      lappend colors $color
+
+      lappend colors [format "#%02X%02X%02X" $color $color $color]
       incr i
    }
 
    #----- refill vectors with updated values
+   vector append ES_INTERX $times
+   vector append ES_INTERY $heights
 
-   vector append ES_VECTX $times
-   vector append ES_VECTY $heights
-
-   #----- Add possibly missing interesting values to the list of intervals
-
+   #----- Set simulation length indicator
    if { $Sim(IsRestart) } {
-      lappend times [expr ($Sim(RestartSeconds)-$Sim(AccSeconds))/3600.0 + $Sim(Duration)]
+      lappend times [set time [expr $Sim(RestartDate) + $Sim(Duration)*3600]]
+      vector append ES_SIMDURX [list 0.0 $Sim(RestartDate) $time]
+      vector append ES_SIMDURY [list [vector stats ES_INTERY -max] [vector stats ES_INTERY -max]]
+      set durcolors { #00B7FF #E6F8FF }
    } else {
-      lappend times [expr $simsecs/3600.0 + $Sim(Duration) - $Sim(AccSeconds)/3600.0]
+      lappend times [set time [expr $simsecs + $Sim(Duration)*3600 - $Sim(AccSeconds)]]
+      vector append ES_SIMDURX [list 0.0 $time]
+      vector append ES_SIMDURY [vector stats ES_INTERY -max]
+      set durcolors {}
    }
    lappend heights 0.0
 
    #----- Keep only unique values and get maximum values for both axis
 
+   set times   [concat $times $Sim(RestartDates)]
    set times   [lsort -real -unique $times]
    set heights [lsort -real -unique $heights]
 
-   set maxTime    [lindex $times end]
-   set maxHeight  [lindex $heights end]
-
-   #----- Fromat entries
-
-   set i 0
-   foreach time $times {
-      lset times $i [format "%.2f" $time]
-      incr i
-   }
-   set i 0
-   foreach height $heights {
-      lset heights $i [expr int($height)]
-      incr i
-   }
-
    #----- Update axis intervals and histogram bar's color
-
-   set since "$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)"
-   graphaxis configure ES_AXISX \
-      -unit       "[lindex $Lbl(AxisX) $GDefs(Lang)]\n$since" \
-      -intervals  $times \
-      -grid       [lrange $times 0 end-1] \
-      -min        0.0 \
-      -max        $maxTime
-
-   graphaxis configure ES_AXISY \
-      -intervals  $heights \
-      -min        0.0 \
-      -max        $maxHeight
-
-   graphitem configure ES_GRAPHITEM -colors $colors
-
-   #----- Update restart's wannabe graphical miracle (previous restart markers)
-
-   vector clear ES_RSTX
-   vector clear ES_RSTY
-
-   set markers 0
-   #----- Add a marker where next restart will begin
-   if { $Sim(RestartLastDate) != -1 } {
-      set mrk [clock scan $Sim(RestartLastDate) -format "%Y%m%d%H%M%S" -timezone :UTC]
-      if { $mrk > $simsecs } {
-         set mrk [expr ($mrk-$Sim(AccSeconds))/3600.0]
-         set max [expr ($simsecs-$Sim(AccSeconds))/3600.0 + $Sim(Duration)]
-         set mrk [expr $mrk>$max ? $max : $mrk]
-         lappend markers $mrk
-      }
-   }
-   #----- Add previous restart dates markers
-   if { $Sim(IsRestart) } {
-      set markers [concat $Sim(RestartPrevDates) $markers]
-   }
-   set markers [lsort -real -unique $markers]
-   set len [llength $markers]
-   if { $len > 0 } {
-      vector append ES_RSTX $markers
-      vector append ES_RSTY [lrepeat [expr $len>1 ? $len-1 : $len] [expr $maxHeight + 10000]]
-   }
+   graphaxis configure ES_AXISX -intervals $times -grid [lrange $times 0 end-1] -min 0.0 -max [lindex $times end] \
+      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)"
+   graphaxis configure ES_AXISY -intervals $heights -min 0.0 -max [lindex $heights end]
+   graphitem configure ES_INTER  -colors $colors
+   graphitem configure ES_SIMDUR -colors $durcolors
 
    #----- Force graph update
-
    $Sim(ESCanvas) itemconfigure ES_GRAPH -update 1
    update idletasks
 }
@@ -1054,9 +1009,9 @@ proc MLDPn::GraphUpdate { } {
 
 proc MLDPn::ParamsClean { } {
 
-   graphitem free ES_GRAPHITEM ES_RST
+   graphitem free ES_INTER ES_SIMDUR
    graphaxis free ES_AXISX ES_AXISY
-   vector    free ES_VECTX ES_VECTY ES_RSTX ES_RSTY
+   vector    free ES_INTERX ES_INTERY ES_SIMDURX ES_SIMDURY
 
    trace remove variable MLDPn::Sim(EmNbIntervals) write MLDPn::UpdateIntervalPickerList
 }
@@ -1211,6 +1166,8 @@ proc MLDPn::PopUp { X Y } {
    variable Tmp
    variable Lbl
 
+   set MLDPn::Sim(Model) MLDPn
+
    if { ![winfo exists .mldppopup] } {
       menu .mldppopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mldppopup add command -label MLDPn -background $GDefs(ColorHighLight) \
@@ -1257,8 +1214,8 @@ proc MLDPn::PopUp { X Y } {
       0 {                                             #----- Continuable
          .mldppopup entryconfigure 1 -state normal     ;#Product
          .mldppopup entryconfigure 2 -state normal     ;#Data
-         .mldppopup entryconfigure 4 -state normal   ;#Continue
-         .mldppopup entryconfigure 5 -state disabled   ;#Relaunch
+         .mldppopup entryconfigure 4 -state normal     ;#Continue
+         .mldppopup entryconfigure 5 -state normal     ;#Relaunch
          .mldppopup entryconfigure 7 -state normal     ;#Suppress
       }
       1 {                                             #----- Etat Termine
@@ -1336,15 +1293,17 @@ proc MLDPn::ParamsCont { Parent } {
    #----- Disable params that shouldn't be modified
 
    set base $Sim(TabframeModel)
+
    #----- Start time
    Calendar::Disable $base.time.date
    Clock::Disable $base.time.hour
+
    #----- Integration
    Option::Disable $base.integ.opt.ots
    Option::Disable $base.integ.opt.mts
    #----- Other
    Option::Disable $base.others.opt.event
-   if { $Sim(SrcType) == "virus" } {
+   if { $Sim(SrcType) == "VIRUS" } {
       Option::Disable $base.others.opt.virus
    }
    Option::Disable $base.others.opt.grid.res
@@ -1357,17 +1316,6 @@ proc MLDPn::ParamsCont { Parent } {
    Option::Disable $base.others.opt.varmesoscale
    Option::Disable $base.others.opt.timescale
    Option::Disable $base.others.opt.reflect
-
-   #----- Emission Tab
-
-   MLDPn::ParamsEmission $Parent
-
-   #----- Disable scenario management buttons
-
-   $Sim(ScenarioFrame).button.new configure -state disabled
-   $Sim(ScenarioFrame).button.save configure -state disabled
-   $Sim(ScenarioFrame).button.delete configure -state disabled
-   ComboBox::Disable $Sim(ScenarioFrame).name.ent
 }
 
 #----------------------------------------------------------------------------
@@ -1390,8 +1338,8 @@ proc MLDPn::EmissionDetailsRestart { } {
 
    #----- Disable isotopes modifications
 
-   if { $Sim(SrcType) == "accident" } {
-      for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
+   if { $Sim(SrcType) == "ACCIDENT" } {
+      for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
          $base.iso.$j.del configure -state disabled
          $base.iso.$j.btn configure -state disabled
       }

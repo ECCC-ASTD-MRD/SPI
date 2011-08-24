@@ -177,7 +177,7 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
    Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
 }
 
-proc MLDP::ParamsEmission { Tab { Auto False } } {
+proc MLDP::ParamsEmission { Tab { Mode NEW } } {
    global GDefs
    variable Sim
    variable Msg

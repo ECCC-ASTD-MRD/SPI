@@ -529,14 +529,10 @@ proc Model::ParamsCheck { Model { Get True } } {
    variable Error
 
    #----- Set host architecture.
-   if { $Param(Host)==$GDefs(Host) } {
-      set Param(Arch) $env(ARCH)
-   } else {
-      if { [catch { set Param(Arch) [exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) uname -s] } ] } {
-         Dialog::Error . $Error(Host)
-         set Param(Host) $GDefs(Host)
-         set Param(Arch) $env(ARCH)
-      }
+   if { [catch { set Param(Arch) [exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) uname -s] } ] } {
+      Dialog::Error . $Error(Host)
+      set Param(Host) $GDefs(Host)
+      set Param(Arch) [exec  uname -s]
    }
 
    #----- Set flag indicating if using 'soumet' command or not.
@@ -780,8 +776,8 @@ proc Model::ParamsCPUModel { } {
       "Linux"  {
          set Param(NbMPItasks)        1
          set Param(ListNbMPItasks)    { 1 }
-         set Param(NbOMPthreads)      $Param(NbCPUsMeteo)
-         set Param(ListNbOMPthreads)  $Param(ListNbCPUsMeteo)
+         set Param(NbOMPthreads)      2
+         set Param(ListNbOMPthreads)  { 1 2 4 8 }
          set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
          set Param(ListOMPthreadFact) { 1 }
          set Param(NbCPUsMeteo)       1
@@ -1047,9 +1043,6 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
       "NEW" {
          ${Data(Modelbase)}::InitNew $Exp::Data(Type)
          ${Data(Modelbase)}::ParamsNew .modelnew.params
-         if { [info proc ::${Data(Modelbase)}::ParamsEmission]!="" } {
-            ${Data(Modelbase)}::ParamsEmission .modelnew.params
-         }
       }
       "CONT" {
          #----- For this, we have to get the parametres from the previous simulation
@@ -1058,11 +1051,15 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
          ${Data(Modelbase)}::ParamsCont .modelnew.params
       }
       "RENEW" {
+         ${Data(Modelbase)}::InitNew $Exp::Data(Type)
          #----- For this, we have to point the meteo the renewed simulation's meteo
          Info::Decode ::${Data(Modelbase)}::Sim $Exp::Data(SelectSim)
          set ::${Data(Modelbase)}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/meteo
-         ${Data(Modelbase)}::ParamsEmission .modelnew.params
       }
+   }
+
+   if { [info proc ::${Data(Modelbase)}::ParamsEmission]!="" } {
+      ${Data(Modelbase)}::ParamsEmission .modelnew.params $Mode
    }
    Model::ParamsGridDefine $Data(Modelbase) $Mode
 
@@ -1099,14 +1096,14 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.params.queue $Bubble(Queue)
 
-   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" } {
+   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" || $sim(Model)=="MLDPn" } {
       #----- Nb CPUs for meteorological preprocessing.
       Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] Model::Param(NbCPUsMeteo) 0 -1 $Model::Param(ListNbCPUsMeteo) ""
       pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x
       Bubble::Create $tabframe.params.metcpu $Bubble(MetCPU)
    }
 
-   if { $sim(Model)=="MLDP1" } {
+   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
 
       #----- Nb MPI tasks for model.
       Option::Create $tabframe.params.mpi [lindex $Lbl(NbMPItasks) $GDefs(Lang)] Model::Param(NbMPItasks) 0 -1 $Model::Param(ListNbMPItasks) ""
@@ -1117,7 +1114,9 @@ proc Model::ParamsLaunch { Model Frame } {
       Option::Create $tabframe.params.omp [lindex $Lbl(NbOMPthreads) $GDefs(Lang)] Model::Param(NbOMPthreads) 0 -1 $Model::Param(ListNbOMPthreads) ""
       pack $tabframe.params.omp -side top -anchor w -padx 2 -fill x
       Bubble::Create $tabframe.params.omp $Bubble(NbOMPthreads)
+   }
 
+   if { $sim(Model)=="MLDP1" } {
       #----- OMP thread factor.
       Option::Create $tabframe.params.smt [lindex $Lbl(OMPthreadFact) $GDefs(Lang)] Model::Param(OMPthreadFact) 0 -1 $Model::Param(ListOMPthreadFact) ""
       pack $tabframe.params.smt -side top -anchor w -padx 2 -fill x

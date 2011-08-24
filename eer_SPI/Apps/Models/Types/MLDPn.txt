@@ -387,12 +387,6 @@ namespace eval MLDPn {
    set Warning(OutCV2)   { "\tAnciens niveaux verticaux  :" "\tOld vertical levels :" }
    set Warning(OutCV3)   { "\tNouveaux niveaux verticaux :" "\tNew vertical levels :" }
 
-   set Warning(NbSrc1)            { "Le nombre de sources associées à cette expérience doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de sources         :" \
-                                    "The number of sources associated to this experiment must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of sources         :" }
-   set Warning(NbSrc2)            { "\tNombre maximum de sources :" "\tMaximum number of sources :" }
-   set Warning(NbSrc3)            { "\nSeules les" "\nOnly the first" }
-   set Warning(NbSrc4)            { "premières sources seront considérées dans la modélisation. Par conséquent, les autres seront ignorées." \
-                                    "sources will be considered in the modelling. Therefore, the others will be ignored." }
    set Warning(Overwrite)         { "Ce scénario d'émission existe déjà. Voulez-vous vraiment le remplacer?\n\n\tNom du scénario :" \
                                     "This emission scenario already exists. Do you realy wish to overwrite it?\n\n\tScenario Name :" }
    set Warning(Save)              { "Des changements ont été apportés au scénario d'émission.\nVoulez-vous sauvegarder les changements apportés à ce scénario d'émission?\n\n\tNom du scénario : " \

@@ -73,7 +73,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
       return 0
    }
    #----- Validate density (if needed).
-   if { $Sim(SrcType) == "volcano" } {
+   if { $Sim(SrcType) == "VOLCANO" } {
       if { ![MLDPn::ValidateDensity] } {
          focus $Sim(EmissionGlobalFrame).density.ent
          return 0
@@ -107,7 +107,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
       }
 
       switch $Sim(SrcType) {
-         "volcano" {
+         "VOLCANO" {
             #----- Mass
             ComputeMass $Id
             if { ![MLDPn::ValidateMass $Id] } {
@@ -115,7 +115,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
                return 0
             }
          }
-         "accident" {
+         "ACCIDENT" {
             #----- Number of isotopes
             if { $Tmp(EmNbIso) <= 0 } {
                Dialog::Error .emintdetails $Error(NbIsotopes)
@@ -123,7 +123,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
             }
             #----- Release rates
             set flag 0
-            for {set i 0} {$i < $Tmp(EmNbIso)} {incr i} {
+            for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
                if { ![MLDPn::ValidateReleaseRate $Tmp(EmRate.$Id.$i)] } {
                   focus $Sim(EmissionIsoFrame).$i.ent
                   return 0
@@ -145,7 +145,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
                set Tmp(EmIsEm.$Id) 0
             }
          }
-         "virus" {
+         "VIRUS" {
             #----- Release rate
             if { ![MLDPn::ValidateReleaseRate $Tmp(EmRate.$Id)] } {
                focus $Sim(EmissionIntervalFrame).emdetails.rate.ent
@@ -323,34 +323,6 @@ proc MLDPn::ValidateMass { Id } {
       return 0
    }
 
-   return 1
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::ValidateNbSrc>
-# Creation   : 7 July 2006 - A. Malo - CMC/CMOE
-#
-# But        : Validate number of sources.
-#
-# Parametres :
-#
-# Retour     :
-#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::ValidateNbSrc { } {
-   global GDefs
-   variable Warning
-   variable Lbl
-   variable Sim
-
-   #----- Verify if number of sources is less than (or equal to) maximum number of sources.
-   if { [llength $Sim(Name)] > $Sim(MaxNbSrc) } {
-      Dialog::Error .modelnew $Warning(NbSrc1) " [llength $Sim(Name)].\n[lindex $Warning(NbSrc2) $GDefs(Lang)] $Sim(MaxNbSrc).\n[lindex $Warning(NbSrc3) $GDefs(Lang)] $Sim(MaxNbSrc) [lindex $Warning(NbSrc4) $GDefs(Lang)]"
-   }
    return 1
 }
 
@@ -557,6 +529,7 @@ proc MLDPn::ValidateRadius { Id } {
 #       écrite par Alain Malo.
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateReleaseRate { Rate } {
    global GDefs
    variable Error
@@ -590,6 +563,7 @@ proc MLDPn::ValidateReleaseRate { Rate } {
 #       écrite par Alain Malo.
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateDuration { Duration Parent } {
    global GDefs
    variable Error
@@ -917,6 +891,7 @@ proc MLDPn::ValidateTimeSteps { } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateTotalNumberParticles { Id } {
    global GDefs
    variable Sim
@@ -994,6 +969,7 @@ proc MLDPn::ValidateTotalNumberParticles { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateEmissionDuration { Id } {
    variable Tmp
    variable Sim
@@ -1064,6 +1040,7 @@ proc MLDPn::ValidateEmissionDuration { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateScenarioDuration { } {
    global GDefs
    variable Error
@@ -1118,7 +1095,7 @@ proc MLDPn::ValidateDurationsVsModelTimeStep { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDPn::ValidateTotalNumberParticles>
+# Nom        : <MLDPn::ValidateLullPeriods>
 # Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
 #
 # But        : Validate the position of lull periods in the emission timeline.
@@ -1130,6 +1107,7 @@ proc MLDPn::ValidateDurationsVsModelTimeStep { } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateLullPeriods { } {
    variable Sim
    variable Error
@@ -1182,6 +1160,7 @@ proc MLDPn::ValidateLullPeriods { } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateEmissionQuantity { } {
    global GDefs
    variable Sim
@@ -1190,10 +1169,10 @@ proc MLDPn::ValidateEmissionQuantity { } {
    set lst {}
 
    switch $Sim(SrcType) {
-      "volcano" {
+      "VOLCANO" {
          return 1
       }
-      "virus" {
+      "VIRUS" {
          set quantity 0.0
 
          #----- Compute total release quantity.
@@ -1209,15 +1188,15 @@ proc MLDPn::ValidateEmissionQuantity { } {
 
          set Sim(EmIsoQuantity) [format "%.7e" $quantity]
       }
-      "accident" {
+      "ACCIDENT" {
          #----- Initialize total release quantity.
-         for {set j 0} {$j < $Sim(EmNbIso)} {incr j} { ;#----- Loop over isotopes.
+         for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
             set quantity($j) 0
          }
 
          #----- Compute total release quantity for each isotope.
-         for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {    ;#----- Loop over isotopes.
-            for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} { ;#----- Loop over number of release time intervals.
+         for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
+            for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
                set quantity($j) [expr $quantity($j) + $Sim(EmInter.$i) * double($Sim(EmRate.$i.$j))]
             }
 
@@ -1229,7 +1208,7 @@ proc MLDPn::ValidateEmissionQuantity { } {
 
          #----- Build list of total release quantity for each isotope.
          set Sim(EmIsoQuantity) {}
-         for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
+         for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
             lappend Sim(EmIsoQuantity) [format "%.7e" $quantity($j)]
          }
       }
