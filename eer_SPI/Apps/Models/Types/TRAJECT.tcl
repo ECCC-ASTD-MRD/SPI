@@ -200,6 +200,7 @@ proc TRAJECT::CreateModelInput { } {
    } else {
       set unit PRESSURE
    }
+   set Sim(Particles) {}
 
    #----- Creation du fichier de directives
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
@@ -213,6 +214,9 @@ proc TRAJECT::CreateModelInput { } {
 
    puts $f "\n#----- Source parameters\n"
    foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+      foreach level $Sim(Level) {
+         lappend Sim(Particles) [list $lon $lat $level $name]
+      }
       puts $f [format "%-20s= %-22s # Source name" SRC_NAME $name]
       puts $f [format "%-20s= %-9.7f %-10.7f # Latitude and longitude coordinate of the sources \[degrees\]" SRC_COORD $lat $lon]
       puts $f [format "%-20s= %-22s # Levels of starting parcel" SRC_LEVEL $Sim(Level)]
@@ -248,7 +252,7 @@ proc TRAJECT::CreateScriptInput { } {
 
    set file [open $Sim(Path)/tmp/Model_TRAJECT.in w 0644]
 
-   puts $file "#----- Logger specific parameters"
+   puts $file "\n#----- Logger specific parameters\n"
    puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
    puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
    puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
@@ -260,13 +264,11 @@ proc TRAJECT::CreateScriptInput { } {
       puts $file "LOG_JOBCLASS=INTERACTIVE"
    }
 
-   puts $file ""
-   puts $file "#----- Job general parameters"
+   puts $file "\n#----- Job general parameters\n"
    puts $file "MODEL_SOFTWARE=SPI"
    puts $file "MODEL_NAME=$Sim(Model)"
    puts $file "MODEL_TYPE=\"\""
    puts $file "MODEL_USER=$GDefs(FrontEndUser)"
-   puts $file ""
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
@@ -276,8 +278,8 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "MODEL_POOL=$Model::Param(Pool)"
    puts $file "MODEL_CLEAN=1"
    puts $file "MODEL_TRACE=$Exp::Param(Path)/trace"
-   puts $file ""
-   puts $file "#----- Model specific parameters"
+
+   puts $file "\n#----- Model specific parameters\n"
    puts $file "TRAJECT_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
    puts $file "TRAJECT_RESULT=$Sim(PathRun)/results/traject.points"
 
