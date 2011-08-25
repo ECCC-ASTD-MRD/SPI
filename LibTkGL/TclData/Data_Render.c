@@ -1478,7 +1478,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    glLineWidth(Field->Spec->Width);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
-   if (Field->Spec->MapAll && Field->Spec->Map->Alpha) {
+   if (Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) {
       glEnable(GL_BLEND);
    }
 
@@ -1514,7 +1514,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   /*If the speed if between the defined range*/
                   Def_GetMod(Field->Def,idx,len);
                   if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                     if (Field->Spec->MapAll) {
+                     if (Field->Spec->MapAll && Field->Spec->Map) {
                         VAL2COL(idc,Field->Spec,len);
                         if (Interp) {
                            CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
@@ -1553,7 +1553,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                Def_GetMod(Field->Def,idx,len);
                Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
                if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll) {
+                  if (Field->Spec->MapAll && Field->Spec->Map) {
                      VAL2COL(idc,Field->Spec,len);
                      if (Interp) {
                         CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
@@ -1655,7 +1655,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          while (n--) {
             if (Field->Spec->GridVector) {
                if (x[n]<=Field->Spec->Max && x[n]>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll) {
+                  if (Field->Spec->MapAll && Field->Spec->Map) {
                      VAL2COL(idc,Field->Spec,x[n]);
                      if (Interp) {
                         CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
@@ -1671,7 +1671,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             } else {
                len=hypot(x[n],y[n]);
                if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll) {
+                  if (Field->Spec->MapAll && Field->Spec->Map) {
                      VAL2COL(idc,Field->Spec,len);
                      if (Interp) {
                         CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
