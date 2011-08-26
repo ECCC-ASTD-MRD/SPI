@@ -35,9 +35,9 @@
 
 #include <stdio.h>
 
-enum GRAPHFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH };
+enum GRAPHFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH,GRAXTPLUSHHMM };
 
-static CONST char *GRAPHFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH" };
+static CONST char *GRAPHFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH","T+HHMM" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -1053,6 +1053,7 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
          case GRAXHH:   sprintf(String,"%02i",tsec->tm_hour); break;
          case GRAXTMINUSHH: sprintf(String,"T-%.0fH",(Axis->Max-Value)/3600.0); break;
          case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-Axis->Min)/3600.0); break;
+         case GRAXTPLUSHHMM: sprintf(String,"T+%.0f:%02.0f",(Value-Axis->Min)/3600.0,fmod((Value-Axis->Min),60.0)); break;
          case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
          case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
          case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;

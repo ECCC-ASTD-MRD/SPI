@@ -382,11 +382,11 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case FREE:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_bfree*(fs.f_bsize/1024))));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_bfree*(fs.f_bsize/1024.0))));
             break;
 
          case USED:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_blocks-fs.f_bfree)*(fs.f_bsize/1024)));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(((double)fs.f_blocks-fs.f_bfree)*(fs.f_bsize/1024.0)));
             break;
 
          case BLOCKSIZE:

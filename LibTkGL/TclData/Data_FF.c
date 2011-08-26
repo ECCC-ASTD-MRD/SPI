@@ -1035,7 +1035,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
                gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
 
             glReadPixels(pix[0],pix[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-            if (s&0x2) break;
+           if (s&0x2) break;
             c=0;
          }
          c++;
@@ -1080,7 +1080,12 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
          rk2[1]=VertexVal(Ref,Def,1,X,Y+rk1[1],Z);
          rk2[2]=ZDim?VertexVal(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
       }
+      /*Check for 0 length vector*/
+      if (rk2[0]==0.0 && rk2[1]==0.0 && rk2[2]==0.0) {
+         break;
+      }
       Vect_Normalize(rk2);
+
       RK(rk2,step,rk2)
       RKT(d,rk1,rk2)
 
