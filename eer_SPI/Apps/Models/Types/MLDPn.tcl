@@ -475,7 +475,7 @@ proc MLDPn::GetMetData { } {
 
    #----- Get available meteorological files.
    if { $Sim(IsRestart) } {
-      set Sim(RunStamp) [fstdstamp fromseconds $Sim(RestartDate)]
+      set Sim(RunStamp) [fstdstamp fromseconds [expr $Sim(RestartDate)+$Sim(AccSeconds)]]
    } else {
       set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
    }
@@ -1476,15 +1476,10 @@ proc MLDPn::InitCont { Type } {
 
    #----- Initialize variables needed to the graphical interface
 
-   set Sim(ListScale)         { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
-   set Sim(EmNumberParticles) 100000
-
    set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(ListOutCV)               $Sim(OutCV)
    set Sim(ListMeteoModel)          $Sim(Meteo)
-   set Sim(IsResFileSizeChecked)    0
-   set Sim(IsMetFileSizeChecked)    0
    set Sim(EmVerticalDistDefault)   [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0]
    set Sim(BubbleId)                -1
    set Sim(BubbleShowingId)         -1
@@ -1494,22 +1489,12 @@ proc MLDPn::InitCont { Type } {
 
    switch $Sim(SrcType) {
       "VOLCANO" {
-         set Sim(EmHeight)          10000.0
-         set Sim(EmRadius)          1000.0
-         set Sim(EmIsoInfo)         { "VOLCAN 1.00e+38 1.00e-03 3.00e-05" }
          set Sim(EmSizeDistDefault) [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] 3]
-         set Sim(EmDensityDefault)  2.500e+12
       }
       "VIRUS" {
-         set Sim(EmHeight)          100.0
-         set Sim(EmRadius)          100.0
-         set Sim(EmIsoInfo)         {}
          lappend Sim(EmIsoInfo)     "[lindex $Sim(ListVirusSymbol) [lsearch -exact [lindex $Sim(ListVirusName) $GDefs(Lang)] $Sim(EmIsoSymbol)]] 1.00e+38 1.00e-03 3.00e-05"
       }
       "ACCIDENT" {
-         set Sim(EmHeight)          500.0
-         set Sim(EmRadius)          100.0
-
          set Sim(EmIsoInfo)         {}
          set i 0
          foreach iso $Sim(EmIsoSymbol) {

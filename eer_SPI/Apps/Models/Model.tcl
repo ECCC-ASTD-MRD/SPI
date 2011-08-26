@@ -1039,9 +1039,10 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    set Param(Host) $Param(Host$Data(Modelbase))
 
    #----- Model specific parameters
+   ${Data(Modelbase)}::InitNew $Exp::Data(Type)
+
    switch $Mode {
       "NEW" {
-         ${Data(Modelbase)}::InitNew $Exp::Data(Type)
          ${Data(Modelbase)}::ParamsNew .modelnew.params
       }
       "CONT" {
@@ -1051,7 +1052,6 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
          ${Data(Modelbase)}::ParamsCont .modelnew.params
       }
       "RENEW" {
-         ${Data(Modelbase)}::InitNew $Exp::Data(Type)
          #----- For this, we have to point the meteo the renewed simulation's meteo
          Info::Decode ::${Data(Modelbase)}::Sim $Exp::Data(SelectSim)
          set ::${Data(Modelbase)}::Sim(ReNewMeteo) [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/meteo
@@ -1231,16 +1231,17 @@ proc Model::ParamsCheckDiskSpace { Path Max } {
    variable Warning
    variable Lbl
 
-   #----- Get disk space information.
-   set fsinfo [system filesystem $Path -free -used]
-   set free [lindex $fsinfo 0]
-   set used [lindex $fsinfo 1]
+   #----- Get disk space information. Have to catch it since on 32 bit Linux, this value can be too large
+   if { ![catch { set fsinfo [system filesystem $Path -free -used] } ] } {
+      set free [lindex $fsinfo 0]
+      set used [lindex $fsinfo 1]
 
-   if { [expr $free/(1024.0*1024.0)]<$Max } {
-      set Max [expr $Max*1024.0*1024.0] ; #----- Convert GB to KB.
-      set info "\n\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskCritical) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvailable) $GDefs(Lang)] : [Convert::KBytes2Human $free]\n[lindex $Warning(DiskUsed) $GDefs(Lang)] : [Convert::KBytes2Human $used]"
-      if { [Dialog::Default .modelnew 700 WARNING $Warning(DiskSpace) "$info" 1 $Lbl(Yes) $Lbl(No)] } {
-         return False
+      if { [expr $free/(1024.0*1024.0)]<$Max } {
+         set Max [expr $Max*1024.0*1024.0] ; #----- Convert GB to KB.
+         set info "\n\n[lindex $Warning(DiskPath) $GDefs(Lang)] : $Path\n[lindex $Warning(DiskCritical) $GDefs(Lang)] : [Convert::KBytes2Human $Max]\n[lindex $Warning(DiskAvailable) $GDefs(Lang)] : [Convert::KBytes2Human $free]\n[lindex $Warning(DiskUsed) $GDefs(Lang)] : [Convert::KBytes2Human $used]"
+         if { [Dialog::Default .modelnew 700 WARNING $Warning(DiskSpace) "$info" 1 $Lbl(Yes) $Lbl(No)] } {
+            return False
+         }
       }
    }
    return True
