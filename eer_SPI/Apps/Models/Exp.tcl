@@ -1053,6 +1053,8 @@ proc Exp::BlankTransmit { } {
 
    if { $rsmc_arg!="" } {
 
+      #----- effacer les produits du RSMC Montreal sur notre site web.
+
       set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } MsgCatch ]
 
       if { $ErrCatch != 0 } {
@@ -1079,13 +1081,13 @@ proc Exp::BlankTransmit { } {
          }
       }
 
-      #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
+      #----- imposer le lead sur tout les sites mirroirs.
 
-      if { $Exp::Data(RSMCLead)==34 } {
-         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc34.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } MsgCatch ]
+      if { $Exp::Data(RSMCLead)!=99 } {
+         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } MsgCatch ]
 
          if { $ErrCatch != 0 } {
-            Log::Print ERROR "Problem to copy the lead as III/IV on the mirror RSMC web pages.\n\n$MsgCatch"
+            Log::Print ERROR "Problem to copy the lead ( $Exp::Data(RSMCLead) ) on the mirror RSMC web pages.\n\n$MsgCatch"
          }
       }
    }
@@ -1155,13 +1157,13 @@ proc Exp::ProductRSMCBlank { } {
 
    labelframe .blank.l -text "Lead RSMC"
       frame .blank.l.r -relief sunken -bd 1
-         radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised
-         radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised
-         radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised
+         radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
          radiobutton .blank.l.r.lead34 -variable Exp::Data(RSMCLead) -text "III/IV" -value 34 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised
-         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised
-		 .blank.l.r.lead99 select
+         radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         .blank.l.r.lead99 select
 
          pack .blank.l.r.lead99 .blank.l.r.lead16 .blank.l.r.lead2 .blank.l.r.lead34 .blank.l.r.lead5 .blank.l.r.lead0 -side left -ipady 2
 
