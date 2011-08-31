@@ -51,8 +51,8 @@ namespace eval Exp {
 
    #----- RSMC stuff.
 
-   set Bubble(Color)    { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal" "Red  : impact all RSMC web sites\nGray : impact only RSMC Montreal web site" }
-   set Bubble(ColorE)   { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal\n\nn.a.  : n'affecte pas le status lead\nnull  : elimine completement le lead\nautre : affecte le lead selon la region" "Red  : impact all RSMC web sites\nGray : impact only RSMC Montreal web site\n\nn.a.  : no impact on the lead\nnull  : getrid the lead\nother : impact lead by region" }
+   set Bubble(Color)    { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal" "Red  : impacts all RSMC web sites\nGray : impacts only RSMC Montreal web site" }
+   set Bubble(ColorE)   { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal\n\nn.a.  : n'affecte pas le status lead\nnull  : elimine completement le lead\nautre : affecte le lead selon la region" "Red  : impacts all RSMC web sites\nGray : impacts only RSMC Montreal web site\n\nn.a.  : no impact on the lead\nnull  : gets rid of lead\nother : impacts lead by region" }
 
    set Lbl(Cancel)      { "Annuler" "Cancel" }
    set Lbl(Send)        { "Transmettre" "Transmit" }
