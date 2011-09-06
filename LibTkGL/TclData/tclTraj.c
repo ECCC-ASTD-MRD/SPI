@@ -70,7 +70,7 @@ int TclTraj_Init(Tcl_Interp *Interp) {
    }
    Tcl_CreateObjCommand(Interp,"trajectory",Traj_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

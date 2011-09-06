@@ -59,6 +59,9 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
 */
 int Tcldata_Init(Tcl_Interp *Interp) {
 
+   if (Tcl_PkgProvide(Interp,"TclData",LIB_VER)!=TCL_OK)
+      return(TCL_ERROR);
+
    /*Initialisation du package viewport*/
    if (Projection_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
@@ -134,8 +137,6 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    if (!TDataInit++) {
       Tcl_InitHashTable(&TData_Table,TCL_STRING_KEYS);
    }
-
-   Tcl_PkgProvide(Interp,"TclData",LIB_VER);
 
    return(TCL_OK);
 }

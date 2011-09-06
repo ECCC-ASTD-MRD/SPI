@@ -1667,6 +1667,12 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
    if (!FSTDInit++) {
       Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
 
+      /*Force UU-VV relashionship*/
+      FSTDVectorTable[0].UU=strdup("UU");
+      FSTDVectorTable[0].VV=strdup("VV");
+      FSTDVectorTable[0].WW=NULL;
+      FSTDVectorTableSize++;
+
       c_fstopc("MSGLVL","WARNIN",0);
       c_fstopc("TOLRNC","SYSTEM",0);
    }

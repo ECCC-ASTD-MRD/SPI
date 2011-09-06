@@ -74,7 +74,7 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
    Tcl_CreateObjCommand(Interp,"gdalfile",GDAL_FileCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"gdalband",GDAL_BandCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

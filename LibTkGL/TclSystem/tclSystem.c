@@ -63,9 +63,11 @@ static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 */
 int Tclsystem_Init(Tcl_Interp *Interp) {
 
+   if (Tcl_PkgProvide(Interp,"TclSystem",VERSION)!=TCL_OK)
+      return(TCL_ERROR);
+
    Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
-   Tcl_PkgProvide(Interp,"TclSystem",VERSION);
    return(TCL_OK);
 }
 

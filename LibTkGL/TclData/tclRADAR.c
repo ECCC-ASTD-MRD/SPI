@@ -83,7 +83,7 @@ int TclRadar_Init(Tcl_Interp *Interp) {
    if (!RadarInit++) {
       Tcl_InitHashTable(&Radar_FileTable,TCL_STRING_KEYS);
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

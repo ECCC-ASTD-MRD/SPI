@@ -87,7 +87,7 @@ int TclDataSpec_Init(Tcl_Interp *Interp) {
    }
    Tcl_CreateObjCommand(Interp,"dataspec",DataSpec_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1394,7 +1394,6 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->HighLine)  Tk_FreeColor(to->HighLine);
    if (to->HighFill)  Tk_FreeColor(to->HighFill);
    if (to->Font)      Tk_FreeFont(to->Font);
-   if (to->Stipple)   glBitmapFree(to->Stipple);
 
    if (to->InterpDegree) free(to->InterpDegree);
    if (to->ExtrapDegree) free(to->ExtrapDegree);
@@ -1676,7 +1675,7 @@ int DataSpec_Free(TDataSpec *Spec){
    if (Spec->HighLine)    Tk_FreeColor(Spec->HighLine);
    if (Spec->HighFill)    Tk_FreeColor(Spec->HighFill);
    if (Spec->Font)        Tk_FreeFont(Spec->Font);
-   if (Spec->Stipple)     glBitmapFree(Spec->Stipple);
+
    if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
    if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);
 

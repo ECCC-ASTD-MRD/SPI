@@ -659,9 +659,13 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
 */
 void glBitmapFree(T_glBitmap *Bitmap) {
 
-   free(Bitmap->Data);
-   free(Bitmap->Name);
-   free(Bitmap);
+   if (Bitmap) {
+      if (Bitmap->Data) free(Bitmap->Data);
+      if (Bitmap->Name) free(Bitmap->Name);
+
+      free(Bitmap);
+      Bitmap=NULL;
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -709,7 +713,7 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *V
    }
 
    *pbitmap=bitmap;
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

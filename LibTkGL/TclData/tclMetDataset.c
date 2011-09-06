@@ -650,8 +650,11 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             sset->BSeq=bufr_create_sequence(NULL);
             pbcd=(BufrDescriptor**)arr_get(set->tmplte->gabarit,0);
             for (c=0;c<arr_count(set->tmplte->gabarit);c++) {
-               bufr_add_descriptor_to_sequence(sset->BSeq,bufr_dupl_descriptor(pbcd[c]));
+               bcv=bufr_dupl_descriptor(pbcd[c]);
+               bufr_add_descriptor_to_sequence(sset->BSeq,bcv);
             }
+
+            // Apply Table C
             sset->BDDO=bufr_apply_Tables(NULL,sset->BSeq,set->tmplte,NULL,&f);
             sset->Node=lst_firstnode(sset->BSeq->list);
 
@@ -660,12 +663,13 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_AppendResult(Interp,"Error while applying BUFR tables (libECBUFR error code: ",buf,")",(char*)NULL);
                return(TCL_ERROR);
             }
+
             break;
 
          case SUBSETEND:
             if ((sset=MetDatasubset_Get(Name))) {
                bufr_add_datasubset(set,sset->BSeq,sset->BDDO);
-               bufr_free_BufrDDOp(sset->BDDO);
+//               bufr_free_BufrDDOp(sset->BDDO);sset->BDDO=NULL;
                TclY_HashDel(&MetDatasubsetTable,Name);
                free(sset);
             }

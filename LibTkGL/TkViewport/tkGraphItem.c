@@ -838,8 +838,9 @@ void GraphItem_Clear(TGraphItem *Item) {
    if (Item->Text)        Tk_FreeTextLayout(Item->Text);
    if (Item->Colors)      Tcl_DecrRefCount(Item->Colors);
 
-   if (Item->Stipple) glBitmapFree(Item->Stipple);
-   if (Item->Bitmap)  glBitmapFree(Item->Bitmap);
+   // We keep bitmap cached so don't free them
+//   if (Item->Stipple) glBitmapFree(Item->Stipple);
+//   if (Item->Bitmap)  glBitmapFree(Item->Bitmap);
 
    if (Item->ImageString) free(Item->ImageString);
    if (Item->Orient)      free(Item->Orient);

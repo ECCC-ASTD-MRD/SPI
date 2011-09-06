@@ -1035,5 +1035,5 @@ int ProjCam_Init(Tcl_Interp *Interp){
    }
    Tcl_CreateObjCommand(Interp,"projcam",ProjCam_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
-   return TCL_OK;
+   return(TCL_OK);
 }

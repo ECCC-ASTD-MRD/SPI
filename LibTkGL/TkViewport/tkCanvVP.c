@@ -207,6 +207,9 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
 
    Tcl_ThreadId tid;
 
+   if (Tcl_PkgProvide(Interp,"TkViewport",LIB_VER)!=TCL_OK)
+      return(TCL_ERROR);
+
    Tk_glCreateItemType(&tkViewportType);
 
    /*Initialisation du package fichier standard*/
@@ -230,7 +233,6 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
 
    memset(ViewportTable,0x0,VPMAX*sizeof(ViewportItem*));
 
-   Tcl_PkgProvide(Interp,"TkViewport",LIB_VER);
    return(TCL_OK);
 }
 
