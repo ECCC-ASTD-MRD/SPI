@@ -9,6 +9,9 @@ uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
 
+//varying   vec3          LightDir;
+//varying   vec3          Normal;
+
 vec4 texture2DRectBi(sampler2DRect Tex,vec2 ST) {
 
    vec4 st;
@@ -34,6 +37,10 @@ void main() {
    int   n;
    vec4  inter,frg;
    float dd;
+
+//   vec3  cf;
+//   float intensity;
+//   vec3  normal;
 
    // Get value, nearest or linear
    if (Bi!=0) {
@@ -71,4 +78,10 @@ void main() {
       frg.a*=gl_Color.a;
       gl_FragColor=frg;
    }
+
+//   normal = normalize(Normal);
+//   intensity = max(dot(normal,LightDir),0.0);
+
+//   cf=intensity;
+//   gl_FragColor = vec4(gl_FragColor.rgb*cf,gl_FragColor.a*gl_FrontMaterial.diffuse.a);
 }

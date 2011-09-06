@@ -9,6 +9,9 @@ uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
 
+//varying   vec3          LightDir;
+//varying   vec3          Normal;
+
 vec4 CylinCheck(vec4 Vr) {
 
    vec4 vr=Vr;
@@ -30,4 +33,7 @@ void main() {
    gl_Position    = gl_ModelViewProjectionMatrix*CylinCheck(gl_Vertex);
    gl_TexCoord[0] = gl_MultiTexCoord0;
    gl_FrontColor  = gl_Color;
+
+//   LightDir      = normalize(vec3(gl_LightSource[0].position));
+//  Normal        = gl_Position.xyz;
 }
