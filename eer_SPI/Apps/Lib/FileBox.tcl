@@ -205,7 +205,7 @@ proc FileBox::GetContent { { Path "" } } {
    #----- Cleanup de la boite
    .filebox.files.list delete 0 end
 
-   set Param(Size) 0.0
+   set Param(Size) 0
    set Param(Spec) [string trim $Param(Spec)]
    set Param(Nb) 0
    set lines ""
@@ -224,25 +224,22 @@ proc FileBox::GetContent { { Path "" } } {
    #----- Recuperer les repertoires
    eval set dirs \[lsort -dictionary \[glob -nocomplain -directory \"$Param(Path)\" -types d -tails $dpattern\]\]
    foreach dir $dirs {
-      if { [catch { file stat $Param(Path)/$dir info } ] } {
-         continue
+      catch {
+         set size [file size $Param(Path)/$dir]
+        .filebox.files.list insert end [format "%-$Param(Width)s %8s %10i" ${dir}/ [file attributes $Param(Path)/$dir -owner] $size]
+         incr Param(Size) $size
+         incr Param(Nb)
       }
-      .filebox.files.list insert end [format "%-$Param(Width)s %8s %10i" ${dir}/ [file attributes $Param(Path)/$dir -owner] $info(size)]
-      set Param(Size) [expr $Param(Size)+$info(size)]
-      incr Param(Nb)
    }
 
    #----- Recuperer les fichiers
    eval set files \[glob -nocomplain -directory \"$Param(Path)\" -types f -tails $pattern\]
    foreach file $files {
-      if { [catch { set size [file stat $Param(Path)/$file info] } ] } {
-         continue
-      }
-
-      if { $Param(Spec)=="" || [string match -nocase $Param(Spec) $file] } {
+     if { $Param(Spec)=="" || [string match -nocase $Param(Spec) $file] } {
          catch {
-            lappend lines [format "%-$Param(Width)s %8s %10i" $file [file attributes $Param(Path)/$file -owner] $info(size)]
-            set Param(Size) [expr $Param(Size)+$info(size)]
+            set size [file size $Param(Path)/$file]
+            lappend lines [format "%-$Param(Width)s %8s %10i" $file [file attributes $Param(Path)/$file -owner] $size]
+            incr Param(Size) $size
             incr Param(Nb)
          }
       }
