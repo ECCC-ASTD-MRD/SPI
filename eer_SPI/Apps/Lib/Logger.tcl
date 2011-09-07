@@ -119,7 +119,7 @@ proc Log::Start { Job Version { Input "" } } {
       catch { Log::Print MUST "   Job ID              : $env(JOB_ID)" }
       if { [file exists $Input] } {
          set secs [file mtime $Input]
-         Log_Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
+         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
       }
    }
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
@@ -339,7 +339,7 @@ proc Log::Mail { Subject File { Address { } } } {
          set err [catch { eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
       }
       if { $err } {
-         Log_Print ERROR "Problems while mailing info to $address:\n\n\t"
+         Log::Print ERROR "Problems while mailing info to $address:\n\n\t"
       }
    }
 }
