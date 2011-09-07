@@ -337,9 +337,11 @@ proc Watch::CreateBranchWatch { Canvas Project Exp X Y } {
    global GDefs
    variable Data
 
+   set coords {}
    foreach src [lindex $Data(Sources$Project) [lsearch -exact $Data(Exps$Project) $Exp]] {
       lappend coords "[lindex $src 0] ([lindex $src 1],[lindex $src 2])"
    }
+
    set tag $Project$Exp
 
    set y1 [set y0 [expr $Y+10]]
@@ -1174,6 +1176,7 @@ proc Watch::ReadProject { Project } {
          set Data(Results$Project$exp$model$nosim) [glob -nocomplain $Param(Path)/$Project/data/*_$exp/${model}.${nosim}.*]
       }
       set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
+      set Data(Exps$Project)    [lsort -unique $Data(Exps$Project)]
    }
    set Data(Type) [Watch::GetType $Project]
 
