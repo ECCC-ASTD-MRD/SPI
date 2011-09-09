@@ -35,7 +35,7 @@ catch { file delete -force DataOut/FSTD_DrainDensity.fstd }
 fstdfile open FSTDOUT write DataOut/FSTD_DrainDensity.fstd
 fstdfile open FSTDIN  read  DataIn/noire.fst
 
-#----- Copier les TIC TACT
+#----- Copier les TIC TAC
 
 fstdfield read TIC FSTDIN -1 "" -1 -1 -1  "" ">>"
 fstdfield read TAC FSTDIN -1 "" -1 -1 -1  "" "^^"

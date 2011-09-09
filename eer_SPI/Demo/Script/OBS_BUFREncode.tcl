@@ -33,8 +33,8 @@ set Data(Length) 144                                 ;#Forecast period
 set Data(Incr)   -3                                  ;#Time increment
 set Data(Gen)    46                                  ;#Generating application
 set Data(Year)   2011                                ;#Initial model run year
-set Data(Month)  08                                  ;#Initial model run month
-set Data(Day)    01                                  ;#Initial model run day
+set Data(Month)  09                                  ;#Initial model run month
+set Data(Day)    06                                  ;#Initial model run day
 set Data(Hour)   00                                  ;#Initial model run hour
 set Data(Minute) 00                                  ;#Initial model run minute
 
