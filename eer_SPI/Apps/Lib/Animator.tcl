@@ -87,7 +87,7 @@ namespace eval Animator {
 
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
 
-   set Fly(Speed)         5               ;#Vitesse du vol
+   set Fly(Speed)         0.01            ;#Vitesse du vol
    set Fly(List)          {}              ;#Liste des pointrs de controles
    set Fly(Frame)         0
    set Fly(WayNo)         0
@@ -96,8 +96,6 @@ namespace eval Animator {
    set Fly(From)          ""                          ;#Liste des positions
    set Fly(Up)            ""                          ;#Liste des aspects
    set Fly(Show)          0                           ;#Affichage des fly points
-   set Fly(Lat)           ""                          ;#Liste des latitudes
-   set Fly(Lon)           ""                          ;#Liste des longitudes
    set Fly(Path)          DEFAULT                     ;#Path courant
    set Fly(Paths)        { AROUND CIRCLE TO THROUGH }
 
@@ -255,7 +253,7 @@ proc Animator::Window { { Parent .} } {
             listbox $Data(Tab2).way.list.box -relief sunken -bd 1 -selectmode single -width 1 -height 1 -background white  -exportselection False\
                -listvariable Animator::Fly(List) -yscrollcommand "$Data(Tab2).way.list.scroll set"
             scrollbar $Data(Tab2).way.list.scroll -bd 1 -width 10 -command "$Data(Tab2).way.list.box yview"
-            scale $Data(Tab2).way.list.speed -from 600 -to 0.1 -resolution 0.1 -variable Animator::Fly(Speed) -relief raised -bd 1 \
+            scale $Data(Tab2).way.list.speed -from 0.1 -to 0.001 -resolution 0.001 -variable Animator::Fly(Speed) -relief raised -bd 1 \
                -relief flat -orient vertical -width 15 -sliderlength 10 -command { Animator::FlyPath $Page::Data(Frame) $Animator:::Fly(Path); catch }  -showvalue false
             pack $Data(Tab2).way.list.box -side left -fill both -expand true
             pack $Data(Tab2).way.list.scroll $Data(Tab2).way.list.speed -side left -fill y
@@ -824,11 +822,13 @@ proc Animator::Play { } {
       #----- Fly around
 
       if { $Fly(Length) } {
-         set frame [expr $Play(Idx)*($Fly(Speed)/100.0)]
-         projcam define $Play(Page) -fly $frame
+         set frame [expr $Play(Idx)*$Fly(Speed)]
+         set coords [projcam define $Play(Page) -fly $frame]
+         set lat [lindex $coords 0]
+         set lon [lindex $coords 1]
 
-         if { [llength $Fly(Lat)] } {
-            projection configure $Play(Page) -location $Fly(Lat) [expr $Fly(Lon)+$frame]
+         if { $lat!=-999 } {
+            projection configure $Play(Page) -location $lat $lon
          }
       }
 
@@ -1168,8 +1168,7 @@ proc Animator::FlyPath { Cam Type } {
    set plen $Fly(Length)
 
    set Fly(Controls) {}
-   set Fly(Lat)      ""
-   set Fly(Lon)      ""
+   set Fly(Coords)   {}
    set Fly(From)     ""
    set Fly(Up)       ""
    set Fly(Length)   0
@@ -1203,10 +1202,10 @@ proc Animator::FlyPath { Cam Type } {
          lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
       }
       "AROUND" {
-         projcam define $Cam -path ""
-         set Fly(Lon) $Viewport::Map(Lon)
-         set Fly(Lat) $Viewport::Map(Lat)
-         set Fly(Length) 360
+         set ll [projection configure $Cam -location]
+         foreach lon { 0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 -170 -160 -150 -140 -130 -120 -110 -100 -90 -80 -70 -60 -50 -40 -30 -20 -10 } {
+            lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens) [lindex $ll 0] [expr [lindex $ll 1]+$lon]]
+          }
       }
       "TO" {
          projcam configure $Cam -from $cam(From) -up $cam(Up)
@@ -1230,7 +1229,7 @@ proc Animator::FlyPath { Cam Type } {
       }
       "DEFAULT" {
          foreach idx $Fly(List) {
-            lappend Fly(Controls) [list [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2] [lindex $ProjCam::Data(Params$idx) 3]]
+            lappend Fly(Controls) [list [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2] [lindex $ProjCam::Data(Params$idx) 3] [lindex $ProjCam::Data(Params$idx) end-1] [lindex $ProjCam::Data(Params$idx) end]]
          }
       }
    }
@@ -1242,7 +1241,7 @@ proc Animator::FlyPath { Cam Type } {
       set Fly(Length) [expr [llength $Fly(Controls)]-1]
    }
 
-   set Fly(Length) [expr int($Fly(Length)*(100.0/$Fly(Speed)))]
+   set Fly(Length) [expr int($Fly(Length)/$Fly(Speed))]
    if { $plen!=$Fly(Length) } {
       Animator::Limits
    }
