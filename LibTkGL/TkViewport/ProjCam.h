@@ -41,10 +41,12 @@
 #include <tk.h>
 #include "tkglCanvas.h"
 #include "Vector.h"
+#include "GeoRef.h"
 
 typedef struct ProjCam {
    struct ProjCam *Controls;
    Vect3d          From,To,Up,Basis;
+   Coord           Focal;
    int             NbC;
    int             Show;
    int             Update;
@@ -61,6 +63,5 @@ void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta);
 void ProjCam_ParamsInit(ProjCam *Cam);
 void ProjCam_Fly(ProjCam *Cam);
 void ProjCam_Place(ProjCam *Cam);
-void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size);
 
 #endif

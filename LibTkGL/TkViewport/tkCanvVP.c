@@ -1266,7 +1266,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
          /*Effectuer le rendue des champs*/
          Projection_Render(NULL,vp,proj,GL_ALL);
-         ProjCam_Project(vp->Cam,proj);
+         ProjCam_Render(vp->Cam,proj);
 
          /*Rendue des donnees raster*/
          for (i=0;i<vp->DataItem.Nb;i++) {

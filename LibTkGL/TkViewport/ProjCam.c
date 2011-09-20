@@ -46,7 +46,8 @@ static int  ProjCam_Destroy(Tcl_Interp *Interp,char *Name);
 static int  ProjCam_Copy(Tcl_Interp *Interp,ProjCam *Cam,char *Name);
 
 int  ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List);
-void ProjCam_Project(ProjCam *Cam,Projection *Proj);
+void ProjCam_Render(ProjCam *Cam,Projection *Proj);
+void ProjCam_RenderPos(Vect3d From,Vect3d To,Vect3d Up,double Size);
 
 /*----------------------------------------------------------------------------
  * Nom      : <ProjCam_Get>
@@ -354,6 +355,10 @@ static int ProjCam_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
          case FLY:
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&cam->Frame);
             ProjCam_Fly(cam);
+            obj=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(cam->Focal.Lat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(cam->Focal.Lon));
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case CIRCLEFROM:
@@ -471,9 +476,10 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
 
    /*Initialise les parametres de la camera*/
 
-   Vect_Init(cam->From    ,0.0,0.0,2.0);
-   Vect_Init(cam->To      ,0.0,0.0,1.0);
-   Vect_Init(cam->Up      ,0.0,1.0,0.0);
+   Vect_Init(cam->From,0.0,0.0,2.0);
+   Vect_Init(cam->To  ,0.0,0.0,1.0);
+   Vect_Init(cam->Up  ,0.0,1.0,0.0);
+
    cam->Lens         = 1.0;
    cam->NbC          = 0;
    cam->Frame        = 0;
@@ -481,6 +487,7 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
    cam->Update       = 0;
    cam->Pix          = 0.0;
    cam->Controls     = NULL;
+   cam->Focal.Lat=cam->Focal.Lon=-999;
 
    ProjCam_ParamsInit(cam);
 
@@ -709,7 +716,7 @@ int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List) {
 
       Tcl_ListObjIndex(Interp,List,i,&list);
       Tcl_ListObjLength(Interp,list,&nc);
-      if (nc!=4) {
+      if (nc!=4 && nc!=6) {
          Tcl_AppendResult(Interp,"ProjCam_Control:: Invalid number of values",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -740,6 +747,15 @@ int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List) {
 
       Tcl_ListObjIndex(Interp,list,3,&param);
       Tcl_GetDoubleFromObj(Interp,param,&Cam->Controls[n].Lens);
+
+      if (nc>4) {
+         Tcl_ListObjIndex(Interp,list,4,&param);
+         Tcl_GetDoubleFromObj(Interp,param,&Cam->Controls[n].Focal.Lat);
+         Tcl_ListObjIndex(Interp,list,5,&param);
+         Tcl_GetDoubleFromObj(Interp,param,&Cam->Controls[n].Focal.Lon);
+      } else {
+         Cam->Controls[n].Focal.Lat=Cam->Controls[n].Focal.Lon=-999;
+      }
    }
 
    /*Copy control point for interpolation purposes*/
@@ -803,7 +819,8 @@ int ProjCam_Path(Tcl_Interp *Interp,ProjCam *Cam,Tcl_Obj *List) {
 void ProjCam_Fly(ProjCam *Cam) {
 
    int     idx;
-   double  d;
+   double  d,dx,dir;
+   Coord   loc0,loc1;
 
    if (!Cam->Controls) {
       return;
@@ -813,10 +830,12 @@ void ProjCam_Fly(ProjCam *Cam) {
       return;
    }
 
+   /*Calculate interpolation indexes*/
    idx=floor(Cam->Frame);
    d=Cam->Frame-idx;
    idx++;
 
+   /*Interpolate orientation vectors with hermite curve*/
    Cam->From[0]=InterpHermite(Cam->Controls[idx-1].From[0],Cam->Controls[idx].From[0],Cam->Controls[idx+1].From[0],Cam->Controls[idx+2].From[0],d,0.0,0.0);
    Cam->From[1]=InterpHermite(Cam->Controls[idx-1].From[1],Cam->Controls[idx].From[1],Cam->Controls[idx+1].From[1],Cam->Controls[idx+2].From[1],d,0.0,0.0);
    Cam->From[2]=InterpHermite(Cam->Controls[idx-1].From[2],Cam->Controls[idx].From[2],Cam->Controls[idx+1].From[2],Cam->Controls[idx+2].From[2],d,0.0,0.0);
@@ -830,6 +849,26 @@ void ProjCam_Fly(ProjCam *Cam) {
    Cam->Up[2]=InterpHermite(Cam->Controls[idx-1].Up[2],Cam->Controls[idx].Up[2],Cam->Controls[idx+1].Up[2],Cam->Controls[idx+2].Up[2],d,0.0,0.0);
 
    Cam->Lens=InterpHermite(Cam->Controls[idx-1].Lens,Cam->Controls[idx].Lens,Cam->Controls[idx+1].Lens,Cam->Controls[idx+2].Lens,d,0.0,0.0);
+
+   /*Interpolate focal point displacement*/
+   if (d==0 || Cam->Controls[idx].Focal.Lat==-999) {
+      Cam->Focal.Lat=Cam->Controls[idx].Focal.Lat;
+      Cam->Focal.Lon=Cam->Controls[idx].Focal.Lon;
+   } else {
+      loc0.Lat=DEG2RAD(Cam->Controls[idx].Focal.Lat);loc0.Lon=DEG2RAD(Cam->Controls[idx].Focal.Lon);
+      loc1.Lat=DEG2RAD(Cam->Controls[idx+1].Focal.Lat);loc1.Lon=DEG2RAD(Cam->Controls[idx+1].Focal.Lon);
+
+      dx=DIST(0.0,loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon);
+      dir=-COURSE(loc0.Lat,loc0.Lon,loc1.Lat,loc1.Lon);
+
+      dx=M2RAD(dx*d);
+
+      loc1.Lat=asin(sin(loc0.Lat)*cos(dx)+cos(loc0.Lat)*sin(dx)*cos(dir));
+      loc1.Lon=fmod(loc0.Lon+(atan2(sin(dir)*sin(dx)*cos(loc0.Lat),cos(dx)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+
+      Cam->Focal.Lat=RAD2DEG(loc1.Lat);
+      Cam->Focal.Lon=RAD2DEG(loc1.Lon);
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -853,7 +892,7 @@ void ProjCam_Place(ProjCam *Cam) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <ProjCam_Project>
+ * Nom      : <ProjCam_Render>
  * Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Afficher le path et les orientations.
@@ -867,7 +906,7 @@ void ProjCam_Place(ProjCam *Cam) {
  *
  *----------------------------------------------------------------------------
 */
-void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
+void ProjCam_Render(ProjCam *Cam,Projection *Proj) {
 
    int    j;
    double d,p;
@@ -882,7 +921,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
    glLineWidth(2.0f);
    glColor3f(1.0f,0.0f,0.0f);
 
-   /* Set To vector position */
+   /*Set To vector position */
    Proj->Type->Locate(Proj,Proj->Lat,Proj->Lon,1);
 
    /* Draw de Path */
@@ -905,7 +944,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
 
    d=Cam->Aspect*0.01;
 
-   /* Draw current position* an aspect*/
+   /*Draw current position* an aspect*/
    if (Cam->Frame>0 && Cam->Frame<Cam->NbC) {
       j=floor(Cam->Frame);
       p=Cam->Frame-j;
@@ -921,13 +960,13 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
       up[1]=InterpHermite(Cam->Controls[j-1].Up[1],Cam->Controls[j].Up[1],Cam->Controls[j+1].Up[1],Cam->Controls[j+2].Up[1],p,0.0,0.0);
       up[2]=InterpHermite(Cam->Controls[j-1].Up[2],Cam->Controls[j].Up[2],Cam->Controls[j+1].Up[2],Cam->Controls[j+2].Up[2],p,0.0,0.0);
 
-      ProjCam_Render(from,to,up,d*2);
+      ProjCam_RenderPos(from,to,up,d*2);
    }
 
    /* Draw the position and aspect */
    j=0;
    while(j++<Cam->NbC) {
-      ProjCam_Render(Cam->Controls[j].From,Cam->Controls[j].To,Cam->Controls[j].Up,d);
+      ProjCam_RenderPos(Cam->Controls[j].From,Cam->Controls[j].To,Cam->Controls[j].Up,d);
    }
 
    /* Draw the To position */
@@ -938,7 +977,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <ProjCam_Render>
+ * Nom      : <ProjCam_RenderPos>
  * Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Afficher la position de la camera et son orientation
@@ -955,7 +994,7 @@ void ProjCam_Project(ProjCam *Cam,Projection *Proj) {
  *
  *----------------------------------------------------------------------------
 */
-void ProjCam_Render(Vect3d From,Vect3d To,Vect3d Up,double Size) {
+void ProjCam_RenderPos(Vect3d From,Vect3d To,Vect3d Up,double Size) {
 
    Vect3d tmp;
 
