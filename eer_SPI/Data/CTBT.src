@@ -41,7 +41,7 @@ KWP40   :Kuwait City                   :Kuwait              :29.340000:N: 47.910
 RN041   :Misratah                      :Libya               :32.370000:N: 15.090000:E:     0
 MYP42   :Kuala Lumpur                  :Malaysia            : 4.480000:N:101.370000:E:  1555
 MRP43   :Nouakchott                    :Mauritania          :18.140000:N: 15.920000:W:    10
-RN044   :Baja California               :Mexico              :28.000000:N:113.000000:W:     0
+MXP44   :Baja California               :Mexico              :27.957117:N:114.062611:W:     4 
 MNP45   :Ulan-Bator                    :Mongolia            :47.890000:N:106.330000:E:  1729
 NZP46   :Chatham Island                :New Zealand         :43.820000:S:176.480000:W:    22
 NZP47   :Kaitaia                       :New Zealand         :35.070000:S:173.290000:E:    86
