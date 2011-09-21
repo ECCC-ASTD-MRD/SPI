@@ -1480,7 +1480,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       for(n=0;n<scan.N;n++){
          /*Get the value of the data field at this latlon coordinate*/
          val=scan.D[n];
-         if (val!=(float)Field->Def->NoData) {
+         if (!isnan(val) && val!=(float)Field->Def->NoData) {
             if (Field->Spec->Map) {
                VAL2COL(idx,Field->Spec,val);
 
