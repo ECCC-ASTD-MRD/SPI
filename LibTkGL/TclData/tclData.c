@@ -566,6 +566,18 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    /* Est-ce que le champs existe et si oui, verifier les dimensions */
    if (Def) {
       field=Data_Valid(Interp,Name,Field->Def->NI,Field->Def->NJ,Field->Def->NK,DSIZE(Field->Def->Data),Field->Def->Type);
+      field->Def->Container=Field->Def->Container;
+      field->Def->CellDim=Field->Def->CellDim;
+      field->Def->NoData=Field->Def->NoData;
+      field->Def->Type=Field->Def->Type;
+      field->Def->Level=Field->Def->Level;
+      field->Def->Sample=Field->Def->Sample;
+
+      memcpy(field->Def->Limits,Field->Def->Limits,6*sizeof(int));
+      field->Def->CoordLimits[0][0]=Field->Def->CoordLimits[0][0];
+      field->Def->CoordLimits[0][1]=Field->Def->CoordLimits[0][1];
+      field->Def->CoordLimits[1][0]=Field->Def->CoordLimits[1][0];
+      field->Def->CoordLimits[1][1]=Field->Def->CoordLimits[1][1];
    } else {
       field=Data_Valid(Interp,Name,0,0,0,0,Field->Def->Type);
    }
@@ -573,7 +585,6 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
   if (!field)
       return(NULL);
 
-   /*Copier le champs par bloc de memoire*/
    Field->Set(field);
    Field->Copy(field->Head,Field->Head);
 

@@ -189,7 +189,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->Mask=NULL;
       def->Pres=NULL;
       def->Pick=def->Poly=NULL;
-      def->Sample=def->Sample;
+      def->Sample=Def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
       def->CoordLimits[0][0]=Def->CoordLimits[0][0];
