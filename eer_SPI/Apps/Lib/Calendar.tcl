@@ -103,7 +103,10 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
    global GDefs
    variable Data
 
-   eval set Data(Second) \$$Var
+   eval set sec \$$Var
+   if { $sec!="" && [string is integer $sec] } {
+       set Data(Second) $sec
+   }
    set Data(Date$Frame) [DateStuff::StringDateOnlyFromSeconds $Data(Second) $GDefs(Lang)]
 
    frame $Frame

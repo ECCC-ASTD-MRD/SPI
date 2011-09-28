@@ -111,13 +111,13 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -430,15 +430,19 @@ proc Graph::Scatter::Graph { GR } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
    if { $graph(Uniform) } {
-      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
-         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
-      graphaxis configure axisy$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
-         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
+      graphaxis configure axisy$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
    } else {
-      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $Graph::Font(Angle) \
-         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
-      graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
+      graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+         -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
+      -format $graph(YFormat) -decimal $graph(YDecimals)
    }
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
@@ -504,6 +508,12 @@ proc Graph::Scatter::Init { Frame } {
       set Graph(YInter)  ""               ;#Liste des niveau specifie par l'usager
       set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
       set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(XFormat)   NONE
+      set Graph(YFormat)   NONE
+      set Graph(XDecimals) 0
+      set Graph(YDecimals) 0
+      set Graph(XAngle)    0
+      set Graph(YAngle)    0                                                   ;
 
       #----- Constantes relatives au Graph
 
@@ -536,57 +546,29 @@ proc Graph::Scatter::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
 
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.sel -relief sunken -bd 1
-         checkbutton $Parent.scale.sel.stat -text [lindex $Graph::Lbl(Stat) $GDefs(Lang)] -variable Graph::Scatter::Scatter${GR}::Graph(Stat) \
+   labelframe $Parent.par -text [lindex $Graph::Lbl(Params) $GDefs(Lang)]
+      frame $Parent.par.sel -relief sunken -bd 1
+         checkbutton $Parent.par.sel.stat -text [lindex $Graph::Lbl(Stat) $GDefs(Lang)] -variable Graph::Scatter::Scatter${GR}::Graph(Stat) \
             -onvalue True -offvalue False -command "Graph::Scatter::Stats $GR" -indicatoron false -bd 1
-         checkbutton $Parent.scale.sel.sel -text [lindex $Graph::Lbl(Select) $GDefs(Lang)] -indicatoron false \
+         checkbutton $Parent.par.sel.sel -text [lindex $Graph::Lbl(Select) $GDefs(Lang)] -indicatoron false \
             -command "Graph::Scatter::DrawPercent $GR" -bd 1 -variable Graph::Scatter::Scatter${GR}::Graph(Range)
-         pack  $Parent.scale.sel.stat -side top -fill x
-      frame $Parent.scale.equiv -relief sunken -bd 1
-         checkbutton $Parent.scale.equiv.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::ParamsScaleUniform Scatter $GR" -bd 1 -variable Graph::Scatter::Scatter${GR}::Graph(Uniform)
-         pack $Parent.scale.equiv.same -side top -fill x
-      frame $Parent.scale.valx -relief sunken -bd 1
-         label $Parent.scale.valx.lbl -text "X"
-         checkbutton $Parent.scale.valx.scale -text Log -indicatoron false \
-            -command "Graph::Scatter::Graph $GR" -bd 1 \
-            -variable Graph::Scatter::Scatter${GR}::Graph(XScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valx.list -textvariable Graph::Scatter::Scatter${GR}::Graph(XInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valx.lbl -side left -fill y
-         pack $Parent.scale.valx.list -side left -fill x  -expand true
-         pack $Parent.scale.valx.scale -side left -fill y
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::Scatter::Graph $GR" -bd 1 \
-            -variable Graph::Scatter::Scatter${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::Scatter::Scatter${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
-      pack $Parent.scale.sel $Parent.scale.equiv $Parent.scale.valx -side top -padx 2 -pady 2 -fill x
-   pack $Parent.scale -side top -fill x
-
-   labelframe $Parent.fit -text [lindex $Graph::Lbl(Fit) $GDefs(Lang)]
-      frame $Parent.fit.sel -relief sunken -bd 1
-         checkbutton $Parent.fit.sel.linear -text [lindex $Graph::Lbl(Linear) $GDefs(Lang)] -indicatoron false \
+         checkbutton $Parent.par.sel.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false -onvalue True -offvalue False \
+            -command "Graph::ParamsAxisUniform Scatter $GR" -bd 1 -variable Graph::Scatter::Scatter${GR}::Graph(Uniform)
+         checkbutton $Parent.par.sel.fitlinear -text [lindex $Graph::Lbl(FitLinear) $GDefs(Lang)] -indicatoron false \
             -command "Graph::Scatter::Graph $GR" -bd 1 -variable Graph::Scatter::Scatter${GR}::Graph(Fit) -onvalue LINEAR -offvalue ""
-         pack $Parent.fit.sel.linear -side top -fill x
-      pack $Parent.fit.sel -side top -fill x
-   pack $Parent.fit -side top -fill x
+         pack $Parent.par.sel.stat $Parent.par.sel.same $Parent.par.sel.fitlinear -side top -fill x
+      pack $Parent.par.sel -side top -fill x
+   pack $Parent.par -side top -fill x -padx 5 -pady 5
 
-   Graph::ParamsScaleUniform Scatter $GR
+   Graph::ParamsAxis $Parent $GR Scatter X
+   Graph::ParamsAxis $Parent $GR Scatter Y
 
-   Bubble::Create $Parent.scale.sel.stat $Graph::Bubble(Stat)
-   Bubble::Create $Parent.scale.sel.sel  $Graph::Bubble(Select)
-   Bubble::Create $Parent.scale.equiv    $Graph::Bubble(Uniform)
-   Bubble::Create $Parent.scale.valx     $Graph::Bubble(ScaleX)
-   Bubble::Create $Parent.scale.valy     $Graph::Bubble(ScaleY)
-   Bubble::Create $Parent.fit.sel        $Graph::Bubble(Fit)
+   Graph::ParamsAxisUniform Scatter $GR
 
-   bind $Parent.scale.valx.list <Return>     "Graph::Scatter::Graph $GR"
-   bind $Parent.scale.valy.list <Return>     "Graph::Scatter::Graph $GR"
+   Bubble::Create $Parent.par.sel.stat       $Graph::Bubble(Stat)
+   Bubble::Create $Parent.par.sel.sel        $Graph::Bubble(Select)
+   Bubble::Create $Parent.par.sel.same       $Graph::Bubble(Uniform)
+   Bubble::Create $Parent.par.sel.fitlinear  $Graph::Bubble(Fit)
 }
 
 proc Graph::Scatter::Stats { GR } {

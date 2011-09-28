@@ -21,7 +21,7 @@
 #    Graph::Contingency::MoveInit       { Frame VP }
 #    Graph::Contingency::Move           { Frame VP }
 #    Graph::Contingency::MoveDone       { Frame VP }
-#    Graph::Contingency::Graph          { GR }
+#    Graph::Contingency::Graph          { GR { Update True } }
 #    Graph::Contingency::Init           { Frame }
 #    Graph::Contingency::Page           { GR }
 #    Graph::Contingency::Params         { Parent GR }
@@ -111,6 +111,9 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
    set data(Canvas)    $Frame.page.canvas
    set data(Frame)     $Frame
    set data(TimeMatch) True
+
+   set data(Select)    ""
+   set data(Obs)       ""
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -298,7 +301,7 @@ proc Graph::Contingency::MoveDone { Frame VP } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Contingency::Graph { GR } {
+proc Graph::Contingency::Graph { GR { Update True } } {
    variable Data
 
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
@@ -309,13 +312,12 @@ proc Graph::Contingency::Graph { GR } {
    }
 
    #----- Recalculer les limites du graph
-
    set graph(X0) [expr 110+$Graph::Data(X$GR)]
    set graph(X1) [expr $Graph::Data(X$GR)+$Graph::Data(Width$GR)-70]
    set graph(Y1) [expr 105+$Graph::Data(Y$GR)]
 
-   set rx [llength $graph(RXList)]
-   set ry [llength $graph(RYList)]
+   set rx [llength $graph(XInter)]
+   set ry [llength $graph(YInter)]
 
    set graph(DX) [expr double($graph(X1)-$graph(X0))/($rx-1)]
    if { $rx==$ry } {
@@ -326,8 +328,12 @@ proc Graph::Contingency::Graph { GR } {
       set graph(Y0) [expr $graph(Y1)+($ry-1)*$graph(DY)]
    }
 
-   #----- Afficher le graph
+   #----- This graph need to update data on some specific occasion
+   if { $Update } {
+      Graph::Contingency::Update $data(FrameData) $GR
+   }
 
+   #----- Afficher le graph
    Graph::Contingency::Page      $GR
    Graph::Contingency::DrawScale $GR
    Graph::Contingency::DrawData  $GR
@@ -374,8 +380,8 @@ proc Graph::Contingency::Init { Frame } {
       #----- Constantes relatives au Graph
 
       set Graph(Uniform)  True                                                   ;#Echelle equivalente
-      set Graph(RXList)   "0 40 60 80 200"                                       ;#Groupes en X
-      set Graph(RYList)   "0 40 60 80 200"                                       ;#Groupes en Y
+      set Graph(XInter)   "0 40 60 80 200"                                       ;#Groupes en X
+      set Graph(YInter)   "0 40 60 80 200"                                       ;#Groupes en Y
       set Graph(UnitY)    "Desc Y"                                               ;#Descriptif de l'echelle des valeur en Y
       set Graph(UnitX)    "Desc X"                                               ;#Descriptif de l'echelle des valeur en X
       set Graph(Title)   [lindex $Graph::Contingency::Lbl(Title) $GDefs(Lang)] ;#Entete du graph
@@ -413,8 +419,8 @@ proc Graph::Contingency::Page { GR } {
    set graph(X1) [expr $Graph::Data(X$GR)+$Graph::Data(Width$GR)-70]
    set graph(Y1) [expr 105+$Graph::Data(Y$GR)]
 
-   set rx [llength $graph(RXList)]
-   set ry [llength $graph(RYList)]
+   set rx [llength $graph(XInter)]
+   set ry [llength $graph(YInter)]
 
    set graph(DX) [expr double($graph(X1)-$graph(X0))/($rx-1)]
    if { $rx==$ry } {
@@ -476,39 +482,23 @@ proc Graph::Contingency::Page { GR } {
 proc Graph::Contingency::Params { Parent GR } {
    global GDefs
 
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.time -relief sunken -bd 1
-         checkbutton $Parent.scale.time.same -text [lindex $Graph::Lbl(TimeMatch) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Contingency::Update $Page::Data(Frame) $GR" -bd 1 -onvalue True -offvalue False \
+   labelframe $Parent.par -text [lindex $Graph::Lbl(Params) $GDefs(Lang)]
+      frame $Parent.par.sel -relief sunken -bd 1
+         checkbutton $Parent.par.sel.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false -onvalue True -offvalue False\
+            -command "Graph::ParamsAxisUniform Contingency $GR" -bd 1 -variable Graph::Contingency::Contingency${GR}::Graph(Uniform)
+         checkbutton $Parent.par.sel.time -text [lindex $Graph::Lbl(TimeMatch) $GDefs(Lang)] -indicatoron false \
+            -command "Graph::Contingency::Graph $GR" -bd 1 -onvalue True -offvalue False \
             -variable Graph::Contingency::Contingency${GR}::Data(TimeMatch)
-         pack $Parent.scale.time.same -side top -fill x
-      frame $Parent.scale.equiv -relief sunken -bd 1
-         checkbutton $Parent.scale.equiv.same -text [lindex $Graph::Lbl(Same) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::ParamsScaleUniform Contingency $GR" -bd 1 -onvalue True -offvalue False \
-            -variable Graph::Contingency::Contingency${GR}::Graph(Uniform)
-         pack $Parent.scale.equiv.same -side top -fill x
-      frame $Parent.scale.valx -relief sunken -bd 1
-      entry $Parent.scale.valx.list -textvariable Graph::Contingency::Contingency${GR}::Graph(RXList) -bg $GDefs(ColorLight) -relief flat -width 1
-         label $Parent.scale.valx.lbl -text "X"
-         pack $Parent.scale.valx.lbl -side left -fill y
-         pack $Parent.scale.valx.list -side left -fill x -expand true
-      frame $Parent.scale.valy -relief sunken -bd 1
-         entry $Parent.scale.valy.list -textvariable Graph::Contingency::Contingency${GR}::Graph(RYList) -bg $GDefs(ColorLight) -relief flat -width 1
-         label $Parent.scale.valy.lbl -text "Y"
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-      pack $Parent.scale.time $Parent.scale.equiv $Parent.scale.valx -side top -padx 2 -pady 2 -fill x
+         pack $Parent.par.sel.same $Parent.par.sel.time -side top -fill x
+      pack $Parent.par.sel -side top -fill x
+   pack $Parent.par -side top -fill x -padx 5 -pady 5
 
-   Graph::ParamsScaleUniform Contingency $GR
+   Graph::ParamsAxis $Parent $GR Contingency X INTERVAL
+   Graph::ParamsAxis $Parent $GR Contingency Y INTERVAL
+   Graph::ParamsAxisUniform Contingency $GR
 
-   Bubble::Create $Parent.scale.equiv $Graph::Bubble(Uniform)
-   Bubble::Create $Parent.scale.valx  $Graph::Bubble(ScaleX)
-   Bubble::Create $Parent.scale.valy  $Graph::Bubble(ScaleY)
-
-   bind $Parent.scale.valx.list <Return> "Graph::Contingency::Update \$Graph::Contingency::Contingency${GR}::Data(FrameData)  $GR"
-   bind $Parent.scale.valy.list <Return> "Graph::Contingency::Update \$Graph::Contingency::Contingency${GR}::Data(FrameData)  $GR"
-
-   pack $Parent.scale -side top -fill x  -pady 5
+   Bubble::Create $Parent.par.sel.same       $Graph::Bubble(Uniform)
+   Bubble::Create $Parent.par.sel.fitlinear  $Graph::Bubble(TimeMatch)
 }
 
 #-------------------------------------------------------------------------------
@@ -612,7 +602,7 @@ proc Graph::Contingency::ItemDefine { GR Pos Coords { Update True } } {
 
    if { $Update } {
       Graph::Contingency::ItemData $GR $Pos $item $data(Data)
-      Graph::Contingency::Graph $GR
+      Graph::Contingency::Graph $GR False
    }
    Graph::UnIdle $GR Contingency
 }
@@ -671,8 +661,8 @@ proc Graph::Contingency::Clear { GR } {
 
    #----- Initialiser les listes
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    for { set i 0 } { $i <=$rx } { incr i } {
       for { set j 0 } { $j<=$ry } { incr j } {
@@ -691,7 +681,7 @@ proc Graph::Contingency::ItemData { GR Pos Item Data } {
    SPI::Progress 0
 
    if { $graph(Uniform) } {
-      set graph(RYList) $graph(RXList)
+      set graph(YInter) $graph(XInter)
    }
 
    Graph::Contingency::Clear $GR
@@ -737,8 +727,8 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    #----- Dans le cas d'un champs, on en extrait les valeurs aux position de l'observation
 
@@ -769,7 +759,7 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
 
          set ik 0
          for { set i 0 } { $i < $rx } { incr i } {
-            if { $val0>=[lindex $graph(RXList) $i] && $val0<[lindex $graph(RXList) [expr $i+1]] } {
+            if { $val0>=[lindex $graph(XInter) $i] && $val0<[lindex $graph(XInter) [expr $i+1]] } {
                set ik 1
                break
             }
@@ -777,7 +767,7 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
 
          set jk 0
          for { set j 0 } { $j < $ry } { incr j } {
-            if { $val1>=[lindex $graph(RYList) $j] && $val1<[lindex $graph(RYList) [expr $j+1]] } {
+            if { $val1>=[lindex $graph(YInter) $j] && $val1<[lindex $graph(YInter) [expr $j+1]] } {
                set jk 1
                break
             }
@@ -829,8 +819,8 @@ proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
    set graph(UnitX) "[fstdfield configure $Data0 -desc] Model"
    set graph(UnitY) "[fstdfield configure $Data1 -desc] Model"
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    SPI::Progress 5
 
@@ -850,7 +840,7 @@ proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
 
          set ik 0
          for { set i 0 } { $i < $rx } { incr i } {
-            if { $val0>=[lindex $graph(RXList) $i] && $val0<[lindex $graph(RXList) [expr $i+1]] } {
+            if { $val0>=[lindex $graph(XInter) $i] && $val0<[lindex $graph(XInter) [expr $i+1]] } {
                set ik 1
                break
             }
@@ -858,7 +848,7 @@ proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
 
          set jk 0
          for { set j 0 } { $j < $ry } { incr j } {
-            if { $val1>=[lindex $graph(RYList) $j] && $val1<[lindex $graph(RYList) [expr $j+1]] } {
+            if { $val1>=[lindex $graph(YInter) $j] && $val1<[lindex $graph(YInter) [expr $j+1]] } {
                set jk 1
                break
             }
@@ -883,8 +873,8 @@ proc Graph::Contingency::ItemDataVector { GR Data0 Data1 } {
    set graph(UnitX) ""
    set graph(UnitY) ""
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    SPI::Progress 5
 
@@ -893,7 +883,7 @@ proc Graph::Contingency::ItemDataVector { GR Data0 Data1 } {
       set ik 0
       if { [set val0 [vector get $Data0 $n]]!="-" } {
          for { set i 0 } { $i < $rx } { incr i } {
-            if { $val0>=[lindex $graph(RXList) $i] && $val0<[lindex $graph(RXList) [expr $i+1]] } {
+            if { $val0>=[lindex $graph(XInter) $i] && $val0<[lindex $graph(XInter) [expr $i+1]] } {
                set ik 1
                break
             }
@@ -903,7 +893,7 @@ proc Graph::Contingency::ItemDataVector { GR Data0 Data1 } {
       set jk 0
       if { [set val1 [vector get $Data1 $n]]!="-" } {
          for { set j 0 } { $j < $ry } { incr j } {
-            if { $val1>=[lindex $graph(RYList) $j] && $val1<[lindex $graph(RYList) [expr $j+1]] } {
+            if { $val1>=[lindex $graph(YInter) $j] && $val1<[lindex $graph(YInter) [expr $j+1]] } {
                set jk 1
                break
             }
@@ -1106,8 +1096,8 @@ proc Graph::Contingency::DrawData { GR } {
       return
    }
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    #----- Inscrire les donnees du tableau
 
@@ -1174,7 +1164,7 @@ proc Graph::Contingency::DrawScale { GR } {
    set tag $Page::Data(Tag)$GR
 
    #----- Aficher les boites
-   if { [set rx [expr [llength $graph(RXList)]-1]]>0 } {
+   if { [set rx [expr [llength $graph(XInter)]-1]]>0 } {
 
       for { set i 0 } { $i < $rx } { incr i } {
 
@@ -1182,19 +1172,19 @@ proc Graph::Contingency::DrawScale { GR } {
          $data(Canvas) create line $x [expr $graph(Y1)-5] $x [expr $graph(Y1)-45] -fill black -tags "$tag SCALE$GR"
          $data(Canvas) create line $x [expr $graph(Y0)+5] $x [expr $graph(Y0)+25] -fill black -tags "$tag SCALE$GR"
 
-         set lbl "[lindex $graph(RXList) $i] - [lindex $graph(RXList) [expr $i+1]]"
+         set lbl "[lindex $graph(XInter) $i] - [lindex $graph(XInter) [expr $i+1]]"
          $data(Canvas) create text [expr $x-$graph(DX)/2.0] [expr $graph(Y1)-20] -text $lbl -fill $Graph::Color(Scale) -font $Graph::Font(Axis) -tags "$tag SCALE$GR"
       }
    }
 
-   if { [set ry [expr [llength $graph(RYList)]-1]]>0 } {
+   if { [set ry [expr [llength $graph(YInter)]-1]]>0 } {
 
       for { set j 0 } { $j < $ry } { incr j } {
          set y [expr $graph(Y1)+($j+1)*$graph(DY)]
          $data(Canvas) create line [expr $graph(X0)-5] $y [expr $graph(X0)-95] $y -fill black -tags "$tag SCALE$GR"
          $data(Canvas) create line [expr $graph(X1)+5] $y [expr $graph(X1)+55] $y -fill black -tags "$tag SCALE$GR"
 
-         set lbl "[lindex $graph(RYList) $j] - [lindex $graph(RYList) [expr $j+1]]"
+         set lbl "[lindex $graph(YInter) $j] - [lindex $graph(YInter) [expr $j+1]]"
          $data(Canvas) create text [expr $graph(X0)-45] [expr $y-$graph(DY)/2.0] -text $lbl -fill $Graph::Color(Scale) -font $Graph::Font(Axis) -tags "$tag SCALE$GR"
       }
    }
@@ -1227,8 +1217,8 @@ proc Graph::Contingency::DrawStat { GR } {
 
    set tag $Page::Data(Tag)$GR
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    if { $rx!=$ry || $data(TIJ)==0 } {
       return
@@ -1236,7 +1226,7 @@ proc Graph::Contingency::DrawStat { GR } {
 
    set stats { BUST BIAS POD FAR REL CSI }
    set len   [llength $stats]
-   set rx    [expr [llength $graph(RXList)]-1]
+   set rx    [expr [llength $graph(XInter)]-1]
 
    $data(Canvas) create rectangle $graph(X0) [expr $graph(Y0)+30] $graph(X1) [expr $graph(Y0)+30+$graph(DY)*($len+3)] \
       -outline black -tags "$tag"
@@ -1343,8 +1333,8 @@ proc Graph::Contingency::Stat { GR } {
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
-   set rx [expr [llength $graph(RXList)]-1]
-   set ry [expr [llength $graph(RYList)]-1]
+   set rx [expr [llength $graph(XInter)]-1]
+   set ry [expr [llength $graph(YInter)]-1]
 
    if { $rx!=$ry || $data(TIJ)==0 } {
       return
@@ -1364,7 +1354,7 @@ proc Graph::Contingency::Stat { GR } {
    }
 
    set c 0.0
-   set n [expr [llength $graph(RXList)]-1]
+   set n [expr [llength $graph(XInter)]-1]
 
    for { set i 0 } { $i <$rx } { incr i } {
       set diag         [expr double([llength $data(R$i,$i)])]
@@ -1377,7 +1367,7 @@ proc Graph::Contingency::Stat { GR } {
       }
 
       if { $data(TJ$i)!=0.0 } {
-         set no            [expr ([llength $graph(RXList)]-1)-($i+1)]
+         set no            [expr ([llength $graph(XInter)]-1)-($i+1)]
          set data(BUST$i)  [expr [llength $data(R$i,$no)]/double($data(TJ$i))]
          set data(REL$i)   [expr $diag/$data(TJ$i)]
       }

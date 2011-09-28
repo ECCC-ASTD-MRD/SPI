@@ -72,10 +72,9 @@ namespace eval Graph {
    variable Bubble
    variable Param
 
-   set Font(Select)    [font create -family courier -size -8   -weight bold]
+   set Font(Select)    [font create -family courier -size -10  -weight bold]
    set Font(Axis)      [font create -family courier -size -10  -weight bold]
    set Font(Graph)     [font create -family courier -size -14  -weight bold]
-   set Font(Angle)     0
 
    set Color(Select) #FF0000
    set Color(Axis)   #000000
@@ -89,14 +88,23 @@ namespace eval Graph {
    set Color(Graph)  #FFFFFF
    set Color(Frame)  #FFFFFF
 
-   set Grid(Color)   #C7C7C7
-   set Grid(Width)   1
-   set Grid(Dash)    "."
+   set Grid(XColor)   #C7C7C7
+   set Grid(XWidth)   0
+   set Grid(XDash)    "."
+   set Grid(YColor)   #C7C7C7
+   set Grid(YWidth)   0
+   set Grid(YDash)    "."
 
    set Width(Frame)  1
 
    set Param(Dock)        True
    set Param(Geom)        { 175x630+[winfo rootx .]+[winfo rooty .] }
+
+   set Param(AxisFormats)     { NONE FIT INTEGER FLOAT EXPONENT }
+   set Param(AxisFormatsTime) { NONE DATE TIME DATETIME TIME/DATE 00HH/DDMM 00HH/MMDD HH/DDMM HH HHMM DDMM MMDD T-HH T+HH T+HHMM }
+   set Param(AxisTypes)       { LINEAR LOG LN }
+   set Param(AxisZs)          { GRID PRESSURE }
+
 
    set Data(Nb)           0                      ;#Nombre de graph
    set Data(Type)         ""                     ;#Type du graph courant
@@ -115,6 +123,11 @@ namespace eval Graph {
    set Data(Stats)       { R2 VARx VARy VARxy RMSE NRMSE ME NME MNE LMNE MB NMB MNB LMNB MFB MFE a b Ea Eb AVGx AVGy MINx MAXx MINy MAXy NA RNA n }
    set Data(Funcs)       { scor svarx svary scov srmse snrmse sme snme smne slmne smb snmb smnb slmnb smfb smfe srega sregb serra serrb savgx savgy sminx smaxx sminy smaxy sna srna snb }
 
+   set Graph(ParamsGraph) True
+   set Graph(ParamsAxisX) True
+   set Graph(ParamsAxisY) True
+   set Graph(ParamsItem)  True
+   set Graph(ParamsObs)   False
    set Graph(Identitys)   { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
    set Graph(Dashs)       { \"\" "_" "." ".._" "..._" "...__" }
 
@@ -153,14 +166,12 @@ namespace eval Graph {
    set Lbl(Add)        { "Ajouter" "Add" }
    set Lbl(Cancel)     { "Annuler" "Cancel" }
    set Lbl(Del)        { "Supprimer" "Delete" }
-   set Lbl(Fit)        { "Régression" "Regression" }
    set Lbl(Item)       { "Item" "Item" }
    set Lbl(Graph)      { "Graphique" "Graph" }
    set Lbl(Outline)    { "Ligne" "Line" }
    set Lbl(Fill)       { "Remplissage" "Fill" }
    set Lbl(Icon)       { "Icône" "Icon" }
    set Lbl(Type)       { "Type        " "Type        " }
-   set Lbl(Linear)     { "Linéaire" "Linear" }
    set Lbl(Title)      { "Titre" "Title" }
    set Lbl(Value)      { "Valeurs" "Values" }
    set Lbl(Update)     { "Info auto" "Info update" }
@@ -168,9 +179,11 @@ namespace eval Graph {
    set Lbl(Font)       { "Police" "Font" }
    set Lbl(Info)       { "Info" "Info" }
    set Lbl(Axis)       { "Axe" "Axis" }
-   set Lbl(Grid)       { "Grille" "Grid" }
+   set Lbl(Grid)       { "Marqueurs" "Markers" }
    set Lbl(Unit)       { "Unité" "Unit" }
    set Lbl(Since)      { "Depuis" "Since" }
+   set Lbl(FitLinear)  { "Régression Linéaire" "Linear regression" }
+   set Lbl(Params)     { "Parametres" "Parameters" }
 
    set Lbl(Background) { "Arrière" "Background" }
    set Lbl(Frame)      { "Pourtour" "Frame" }
@@ -192,9 +205,10 @@ namespace eval Graph {
    set Lbl(Obs)        { "Observations" "Observations" }
    set Lbl(Points)     { "Points" "Vertex" }
    set Lbl(Pos)        { "Position" "Position" }
-   set Lbl(Proj)       { "Projection" "Projection" }
-   set Lbl(Res)        { "Résolution" "Resolution" }
-   set Lbl(Same)       { "Uniforme" "Uniform" }
+   set Lbl(Proj)       { "Afficher dans la vue" "Display in viewport" }
+   set Lbl(Section)    { "Section" "Section" }
+   set Lbl(Res)        { "Résolution (m)" "Resolution (m)" }
+   set Lbl(Same)       { "Echelle Uniforme" "Uniform scale" }
    set Lbl(Scale)      { "Échelle" "Scale" }
    set Lbl(Sec)        { "Sec"   "Sec" }
    set Lbl(Select)     { "Sélection" "Select" }
@@ -203,14 +217,17 @@ namespace eval Graph {
    set Lbl(Val)        { "Valeur" "Value" }
    set Lbl(Values)     { "Valeurs aux points" "Local values" }
    set Lbl(TimeMatch)  { "Valider les temps" "Validate time" }
+   set Lbl(Inter)      { "Intervalles" "Intervals" }
+   set Lbl(Format)     { "Format" "Format" }
+   set Lbl(Decimals)   { "Décimales" "Decimals" }
+   set Lbl(ZType)      { "Elévation" "Height" }
+   set Lbl(Angle)      { "Angle" "Angle" }
 
    #----- Bulles d'aides
 
    set Bubble(Back)      { "Paramêtres de l'arrière plan du graph" "Graph background parameters" }
    set Bubble(Frame)     { "Paramêtres du contour du graph" "Graph frame parameters" }
-   set Bubble(Grid)      { "Paramêtres de grillage des axes" "Axis grid parameters" }
    set Bubble(Pick)      { "Paramêtres de la sélection interactive" "Interactive selection parameters" }
-   set Bubble(Axis)      { "Paramêtres des axes" "Axis parameters" }
    set Bubble(Mode)      { "Mode de sélection de coordonées dans la projection" "Coordinate selection mode" }
    set Bubble(Reset)     { "Réinitialiser le graph" "Reinitialize the graph" }
    set Bubble(Sheet)     { "Affichage des données du graph" "Display graph data" }
@@ -233,12 +250,18 @@ namespace eval Graph {
    set Bubble(Select)    { "Affichage d'un interval de sélection" "Displays an interval of selection" }
    set Bubble(Stat)      { "Affichage de statistiques relatives au graph" "Displays graph statistics" }
    set Bubble(IP3)       { "Validation du IP3 lors de la recherche des champs temporels" "Validate IP3 when looking ro temporal fields" }
-   set Bubble(Date)      { "Affichage des dates ou du temps écoulé depuis le debut" "Display date or time elapsed since the beginning" }
-   set Bubble(ScaleY)    { "Spécification des intervals de l'échelle en Y" "Specify the Y axis intervals" }
-   set Bubble(ScaleX)    { "Spécification des intervals de l'échelle en X" "Specify the X axis intervals" }
    set Bubble(Date0)     { "Spécification de la date de début\nformat: YYYMMDD HHMMSS" "Specify the start date\nformat: YYYMMDD HHMMSS" }
    set Bubble(Date1)     { "Spécification de la date de fin\nformat: YYYMMDD HHMMSS" "Specify the end date\nformat: YYYMMDD HHMMSS" }
    set Bubble(Uniform)   { "Permet de fixer l'échelle des deux axes aux mêmes intervals" "Fix the two scales to the same intervals" }
+   set Bubble(TimeMatch) { "Vérification de la concordandes des temps entre les paires de données" "Make sure time is matching between sets" }
+
+   set Bubble(AxisInter)     { "Spécification des intervals de l'axe" "Specify the axis intervals" }
+   set Bubble(AxisType)      { "Fonction de distribution des valeurs de l'axe" "Axis value distribution function" }
+   set Bubble(AxisZType)     { "Type de coordonnée verticale" "Vertical coordinate type" }
+   set Bubble(AxisFormat)    { "Format des valeurs de l'axe" "Axis value format" }
+   set Bubble(AxisDecimals)  { "Nombre de décimales des valeurs de l'axe" "Number of decimals for axis values" }
+   set Bubble(AxisMark)      { "Paramêtres de marquage des axes" "Axis markers parameters" }
+   set Bubble(AxisAngle)     { "Angle des libelles" "Labels angle" }
 }
 
 package require MetStat
@@ -545,13 +568,11 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
          Graph::${Type}::Clean $GR
       }
 
-      upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+      upvar #0 Graph::${Type}::${Type}${GR}::Data data
 
       #----- Supprimer les pointeurs
       $Frame.page.canvas delete $Page::Data(Tag)$GR
-      if { $data(FrameData)!="" } {
-         $data(FrameData).page.canvas delete GRAPH[string toupper $Type]$GR
-      }
+      catch { $data(FrameData).page.canvas delete GRAPH[string toupper $Type]$GR }
 
       #----- Supprimer les items
       foreach pos $data(Pos) {
@@ -709,14 +730,9 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
          pack .graphparams.dock.info -side left -fill x -expand true
       pack .graphparams.dock -side bottom -fill x
 
-      frame $Data(Tab).font
-      pack $Data(Tab).font -side bottom -fill x -anchor s
-
       Bubble::Create $Data(Tab).head.sel   $Bubble(Mode)
       Bubble::Create $Data(Tab).head.reset $Bubble(Reset)
       Bubble::Create $Data(Tab).head.data  $Bubble(Sheet)
-
-      Graph::ParamsGraph $Data(Tab).font
    }
 
    #----- Inserer les parametres du graph
@@ -730,7 +746,7 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
 
       destroy $Data(Tab).graph
       frame $Data(Tab).graph
-      pack $Data(Tab).graph -before $Data(Tab).font -side top -fill both -expand true
+      pack $Data(Tab).graph -after $Data(Tab).head -side top -fill both -expand true
 
       #----- Force le mode selection du graph actif si besoin est
 
@@ -750,7 +766,267 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
             SPI::ToolMode SPI Zoom
          }
       }
+      Graph::ParamsGraph $Data(Tab).graph
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ParamsAxis>
+# Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Fenetre de parametrage des axes
+#
+# Parametres :
+#   <Type>   : Type de graph
+#   <GR>     : Identificateur du Graph
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+   variable Param
+
+   if  { ![winfo exists  $Parent.scale${Axis}] } {
+      checkbutton $Parent.scale${Axis}toggle -text "[lindex $Lbl(Scale) $GDefs(Lang)] $Axis" -compound right -variable Graph::Graph(ParamsAxis$Axis) -onvalue True -offvalue False \
+         -command "Graph::ParamsAxis $Parent $GR $Type $Axis $Mode" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+      labelframe $Parent.scale${Axis} -labelwidget $Parent.scale${Axis}toggle
+   }
+
+   if { $Graph::Graph(ParamsAxis$Axis) } {
+
+      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      destroy $Parent.scale${Axis}.lbl
+
+      if { $Mode!="MARK" } {
+         if { $Mode=="TIME" } {
+
+            frame $Parent.scale${Axis}.t0
+               label $Parent.scale${Axis}.t0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)] -width 12 -anchor w
+#               Calendar::Create $Parent.scale${Axis}.t0.val [lindex $Graph::Lbl(From) $GDefs(Lang)] Graph::${Type}::${Type}${GR}::Data(Date0) -1 "Graph::${Type}::Graph $GR"
+               entry $Parent.scale${Axis}.t0.val -textvariable Graph::${Type}::${Type}${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1
+               pack  $Parent.scale${Axis}.t0.lbl -side left
+               pack  $Parent.scale${Axis}.t0.val  -side left -fill x -expand true
+
+            frame $Parent.scale${Axis}.t1
+               label $Parent.scale${Axis}.t1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)] -width 12 -anchor w
+               entry $Parent.scale${Axis}.t1.val -textvariable Graph::${Type}::${Type}${GR}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1
+               pack  $Parent.scale${Axis}.t1.lbl -side left
+               pack  $Parent.scale${Axis}.t1.val  -side left -fill x -expand true
+
+            pack $Parent.scale${Axis}.t0 $Parent.scale${Axis}.t1 -side top -fill x
+#            Bubble::Create $Parent.scale${Axis}.t0.val  $Graph::Bubble(Date0)
+            Bubble::Create $Parent.scale${Axis}.t1.val  $Graph::Bubble(Date1)
+
+            bind $Parent.scale${Axis}.t0.val <Return>    "Graph::${Type}::Graph $GR"
+            bind $Parent.scale${Axis}.t1.val <Return>    "Graph::${Type}::Graph $GR"
+         } else {
+            frame $Parent.scale${Axis}.inter
+               label $Parent.scale${Axis}.inter.lbl -text "[lindex $Lbl(Inter) $GDefs(Lang)]" -width 12 -anchor w
+               entry $Parent.scale${Axis}.inter.val -textvariable Graph::${Type}::${Type}${GR}::Graph(${Axis}Inter) -bg $GDefs(ColorLight) -relief sunken -width 1
+               pack $Parent.scale${Axis}.inter.lbl -side left
+               pack $Parent.scale${Axis}.inter.val -side left -fill x -expand True -padx 2
+            Bubble::Create $Parent.scale${Axis}.inter.val $Graph::Bubble(AxisInter)
+            bind $Parent.scale${Axis}.inter.val <Return> "Graph::${Type}::Graph $GR"
+            pack $Parent.scale${Axis}.inter -side top -fill x
+         }
+
+         if { $Mode!="INTERVAL" && $Mode!="TIME" } {
+            frame $Parent.scale${Axis}.type
+               label $Parent.scale${Axis}.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -width 12 -anchor w
+               ComboBox::Create $Parent.scale${Axis}.type.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Scale) noedit unsorted nodouble -1 $Graph::Param(AxisTypes) 10 5 \
+                  Graph::${Type}::Graph $GR
+               pack $Parent.scale${Axis}.type.lbl -side left
+               pack $Parent.scale${Axis}.type.val -side left -fill x -expand True -padx 2
+               Bubble::Create $Parent.scale${Axis}.type.val $Graph::Bubble(AxisType)
+            pack $Parent.scale${Axis}.type -side top -fill x
+
+            frame $Parent.scale${Axis}.format
+               label $Parent.scale${Axis}.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 12 -anchor w
+               if { $Mode=="TIME" } {
+                  ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormatsTime) 10 5 \
+                     Graph::${Type}::Graph $GR
+               } else {
+                  ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormats) 10 5 \
+                     Graph::${Type}::Graph $GR
+               }
+               pack $Parent.scale${Axis}.format.lbl -side left
+               pack $Parent.scale${Axis}.format.val -side left -fill x -expand True -padx 2
+               Bubble::Create $Parent.scale${Axis}.format.val $Graph::Bubble(AxisFormat)
+            pack $Parent.scale${Axis}.format -side top -fill x
+
+            frame $Parent.scale${Axis}.dec
+               label $Parent.scale${Axis}.dec.lbl -text [lindex $Lbl(Decimals) $GDefs(Lang)] -width 12 -anchor w
+               spinbox $Parent.scale${Axis}.dec.val -textvariable Graph::${Type}::${Type}${GR}::Graph(${Axis}Decimals) -from 0 -to 10 -increment 1 -wrap True -width 5 \
+                  -bg $GDefs(ColorLight) -command "Graph::${Type}::Graph $GR"
+               pack $Parent.scale${Axis}.dec.lbl -side left
+               pack $Parent.scale${Axis}.dec.val -side left -fill x -expand True -padx 2
+               Bubble::Create $Parent.scale${Axis}.dec.val $Graph::Bubble(AxisDecimals)
+            pack $Parent.scale${Axis}.dec -side top -fill x
+         }
+
+         if { $Mode!="INTERVAL" && $Mode=="VERTICAL" } {
+            frame $Parent.scale${Axis}.z
+               label $Parent.scale${Axis}.z.lbl -text [lindex $Lbl(ZType) $GDefs(Lang)] -width 12 -anchor w
+               ComboBox::Create $Parent.scale${Axis}.z.val Graph::${Type}::${Type}${GR}::Graph(ZType) noedit unsorted nodouble -1 $Graph::Param(AxisZs) 10 5 \
+                  Graph::${Type}::Update \$Graph::${Type}::${Type}${GR}::Data(FrameData)
+               pack $Parent.scale${Axis}.z.lbl -side left
+               pack $Parent.scale${Axis}.z.val -side left -fill x -expand True -padx 2
+            pack $Parent.scale${Axis}.z -side top -fill x
+            Bubble::Create $Parent.scale${Axis}.z.val $Graph::Bubble(AxisZType)
+         }
+      }
+
+      if { $Mode!="INTERVAL" } {
+         frame $Parent.scale${Axis}.grid
+            label $Parent.scale${Axis}.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 12 -anchor w
+            ColorBox::CreateSel $Parent.scale${Axis}.grid.col Graph::Grid(${Axis}Color) "Graph::${Type}::Graph $GR"
+            IcoMenu::Create $Parent.scale${Axis}.grid.sz $GDefs(Dir)/Resources/Bitmap \
+               "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+               Graph::Grid(${Axis}Width) { Graph::Configure } $Graph::Grid(${Axis}Width) -relief groove -bd 2
+            IcoMenu::CreateDef $Parent.scale${Axis}.grid.dash $GDefs(Dir)/Resources/Bitmap \
+               { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
+               Graph::Grid(${Axis}Dash) { Graph::Configure } $Graph::Grid(${Axis}Dash) -relief groove -bd 2
+            pack $Parent.scale${Axis}.grid.lbl $Parent.scale${Axis}.grid.col $Parent.scale${Axis}.grid.sz $Parent.scale${Axis}.grid.dash -side left
+            pack $Parent.scale${Axis}.grid.dash -side left -fill x -expand True
+         pack $Parent.scale${Axis}.grid -side top -fill x
+         Bubble::Create $Parent.scale${Axis}.grid $Graph::Bubble(AxisMark)
+
+         frame $Parent.scale${Axis}.angle
+            label $Parent.scale${Axis}.angle.lbl -text [lindex $Lbl(Angle) $GDefs(Lang)] -width 12 -anchor w
+            scale $Parent.scale${Axis}.angle.val -from -90 -to 90 -resolution 10 -variable Graph::${Type}::${Type}${GR}::Graph(${Axis}Angle) -showvalue false \
+               -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command "Graph::${Type}::Graph $GR; catch "
+            pack $Parent.scale${Axis}.angle.lbl -side left
+            pack $Parent.scale${Axis}.angle.val -side left -fill x -expand True
+         pack $Parent.scale${Axis}.angle -side top -fill x
+         Bubble::Create $Parent.scale${Axis}.angle $Graph::Bubble(AxisAngle)
+      }
+   } else {
+      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      destroy $Parent.scale${Axis}.inter $Parent.scale${Axis}.type $Parent.scale${Axis}.format $Parent.scale${Axis}.dec $Parent.scale${Axis}.z \
+         $Parent.scale${Axis}.grid $Parent.scale${Axis}.t0 $Parent.scale${Axis}.t1 $Parent.scale${Axis}.angle
+      label $Parent.scale${Axis}.lbl -text "" -width 12 -anchor w
+      pack $Parent.scale${Axis}.lbl -side left
+   }
+
+   pack $Parent.scale${Axis} -side top -fill x -padx 5 -pady 5 -anchor n
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ParamsAxisUniform>
+# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Desactiver certains widgets dnas le cas d'echelle uniforme
+#
+# Parametres :
+#   <Type>   : Type de graph
+#   <GR>     : Indentificateur du Graph
+#   <Update> : Mettre a jour le graph
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::ParamsAxisUniform { Type GR { Update True }  } {
+   variable Data
+
+   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+
+   if { $graph(Uniform) } {
+      pack forget $Data(Tab).graph.scaleY
+   } else {
+      pack $Data(Tab).graph.scaleY -after $Data(Tab).graph.scaleX -side top -fill x -padx 5 -pady 5
+   }
+
+   if { $Update } {
+      Graph::${Type}::Update $data(FrameData) $GR
+   }
+   Graph::${Type}::Graph $GR
+}
+
+proc Graph::ParamsItem { Parent } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+   variable Graph
+
+   set Data(Frame) $Parent
+
+   if  { ![winfo exists $Parent.item] } {
+      checkbutton $Parent.itemtoggle -text [lindex $Lbl(Item) $GDefs(Lang)] -compound right -variable Graph::Graph(ParamsItem) -onvalue True -offvalue False\
+         -command "Graph::ParamsItem $Parent" -indicatoron False -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+      labelframe $Parent.item -labelwidget $Parent.itemtoggle
+   }
+
+   if { $Graph::Graph(ParamsItem) } {
+
+      destroy $Parent.item.lbl
+      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+
+      frame $Parent.item.sel
+         listbox $Parent.item.sel.list -yscrollcommand [list $Parent.item.sel.scroll set] -listvariable Graph::Data(Items)\
+            -height 3  -bd 1 -relief sunken -bg $GDefs(ColorLight) -exportselection 0 -selectmode single
+         scrollbar $Parent.item.sel.scroll -orient vertical -command [list $Parent.item.sel.list yview] -bd 1 -width 10
+         pack $Parent.item.sel.list -side left -fill both -expand true
+         pack $Parent.item.sel.scroll -side right -fill y
+      frame $Parent.item.line
+         label $Parent.item.line.lbl -text [lindex $Lbl(Outline) $GDefs(Lang)] -width 12 -anchor w
+         ColorBox::CreateSel $Parent.item.line.col Graph::Item(Outline) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
+         IcoMenu::Create $Parent.item.line.width $GDefs(Dir)/Resources/Bitmap { zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm }\
+             "0 1 2 3 4 5" Graph::Item(Width) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Width) -relief groove -bd 2
+         IcoMenu::CreateDef $Parent.item.line.dash $GDefs(Dir)/Resources/Bitmap \
+            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
+             Graph::Item(Dash) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Dash) -relief groove -bd 2
+         pack  $Parent.item.line.lbl $Parent.item.line.col $Parent.item.line.width $Parent.item.line.dash -side left
+      frame $Parent.item.fill
+         label $Parent.item.fill.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -width 12 -anchor w
+         ColorBox::CreateSel $Parent.item.fill.col Graph::Item(FillColor) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
+         IcoMenu::CreateDef $Parent.item.fill.stipple $GDefs(Dir)/Resources/Bitmap \
+            { zeroth.xbm stipple0.xbm stipple1.xbm stipple2.xbm stipple3.xbm stipple4.xbm stipple5.xbm stipple6.xbm stipple7.xbm stipple8.xbm } \
+            { -1 "" @$GDefs(Dir)/Resources/Bitmap/stipple1-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple2-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple3-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple4-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple5-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple7-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm } \
+             Graph::Item(Stipple) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Stipple) -relief groove -bd 2
+         pack  $Parent.item.fill.lbl $Parent.item.fill.col $Parent.item.fill.stipple -side left
+                  frame $Parent.item.icon
+         label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
+         IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/Resources/Bitmap \
+            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm } \
+            $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } \
+            0 -relief groove -bd 2
+         IcoMenu::Create $Parent.item.icon.size $GDefs(Dir)/Resources/Bitmap \
+            "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 2 4 6 8 10" \
+             Graph::Item(Size) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Size) -relief groove -bd 2
+         pack $Parent.item.icon.lbl $Parent.item.icon.sel $Parent.item.icon.size -side left
+      frame $Parent.item.value
+         label $Parent.item.value.lbl -text [lindex $Lbl(Value) $GDefs(Lang)] -width 12 -anchor w
+         checkbutton $Parent.item.value.sel -variable Graph::Item(Value) -relief raised -bd 1 -onvalue True -offvalue False  -selectcolor "" -relief groove -bd 1\
+            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
+         button $Parent.item.value.font -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
+            -command "FontBox::Create $Parent.item.value.font { Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item) } $Graph::Item(Font)"
+         pack $Parent.item.value.lbl $Parent.item.value.sel $Parent.item.value.font -side left
+
+      Option::Create $Parent.item.type [lindex $Lbl(Type) $GDefs(Lang)] ::Graph::Item(Type) 0 -1 \
+         $Graph::Item(Types) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
+
+      pack $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value -side top -fill x -padx 2
+
+      Bubble::Create $Parent.item.sel.list $Bubble(ItemList)
+      Bubble::Create $Parent.item.line     $Bubble(ItemLine)
+      Bubble::Create $Parent.item.fill     $Bubble(ItemFill)
+      Bubble::Create $Parent.item.icon     $Bubble(ItemIcon)
+      Bubble::Create $Parent.item.type     $Bubble(ItemType)
+
+      bind $Parent.item.sel.list <ButtonRelease-1>  { set Graph::Data(Item) [%W get [%W nearest %y]] ; Graph::ItemSelect $Graph::Data(Item) }
+   } else {
+      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      destroy $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value
+      label $Parent.item.lbl -text "" -width 12 -anchor w
+      pack $Parent.item.lbl -side left
+   }
+   pack $Parent.item -side top -fill both -padx 5 -pady 5 -anchor n
 }
 
 #-------------------------------------------------------------------------------
@@ -848,39 +1124,6 @@ proc Graph::ParamsOff { Frame Type GR } {
       }
    }
    set Data(Graph) [Page::UnRegister $Frame Graph::$Type $GR]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Graph::ParamsScaleUniform>
-# Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Desactiver certains widgets dnas le cas d'echelle uniforme
-#
-# Parametres :
-#   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
-#   <Update> : Mettre a jour le graph
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Graph::ParamsScaleUniform { Type GR { Update True }  } {
-   variable Data
-
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
-
-   if { $graph(Uniform) } {
-      pack forget $Data(Tab).graph.scale.valy
-   } else {
-      pack $Data(Tab).graph.scale.valy -side top -padx 2 -pady 2 -fill x
-   }
-
-   if { $Update } {
-      Graph::${Type}::Update $data(FrameData) $GR
-   }
-   Graph::${Type}::Graph $GR
 }
 
 #-------------------------------------------------------------------------------
@@ -1060,72 +1303,6 @@ proc Graph::ItemSelect { Item } {
 #   $Data(Frame).item.line.width configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $Graph(WidthBitmap) $Graph::Item(Width)]
 }
 
-proc Graph::ParamsItem { Parent } {
-   global GDefs
-   variable Lbl
-   variable Bubble
-   variable Data
-   variable Graph
-
-   set Data(Frame) $Parent
-
-   labelframe $Parent.item -text [lindex $Graph::Lbl(Item) $GDefs(Lang)]
-
-      frame $Parent.item.sel
-         listbox $Parent.item.sel.list -yscrollcommand [list $Parent.item.sel.scroll set] -listvariable Graph::Data(Items)\
-            -height 3  -bd 1 -relief sunken -bg $GDefs(ColorLight) -exportselection 0 -selectmode single
-         scrollbar $Parent.item.sel.scroll -orient vertical -command [list $Parent.item.sel.list yview] -bd 1 -width 10
-         pack $Parent.item.sel.list -side left -fill both -expand true
-         pack $Parent.item.sel.scroll -side right -fill y
-      frame $Parent.item.line
-         label $Parent.item.line.lbl -text [lindex $Lbl(Outline) $GDefs(Lang)] -width 12 -anchor w
-         ColorBox::CreateSel $Parent.item.line.col Graph::Item(Outline) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
-         IcoMenu::Create $Parent.item.line.width $GDefs(Dir)/Resources/Bitmap { zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm }\
-             "0 1 2 3 4 5" Graph::Item(Width) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Width) -relief groove -bd 2
-         IcoMenu::CreateDef $Parent.item.line.dash $GDefs(Dir)/Resources/Bitmap \
-            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
-             Graph::Item(Dash) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Dash) -relief groove -bd 2
-         pack  $Parent.item.line.lbl $Parent.item.line.col $Parent.item.line.width $Parent.item.line.dash -side left
-      frame $Parent.item.fill
-         label $Parent.item.fill.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -width 12 -anchor w
-         ColorBox::CreateSel $Parent.item.fill.col Graph::Item(FillColor) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
-         IcoMenu::CreateDef $Parent.item.fill.stipple $GDefs(Dir)/Resources/Bitmap \
-            { zeroth.xbm stipple0.xbm stipple1.xbm stipple2.xbm stipple3.xbm stipple4.xbm stipple5.xbm stipple6.xbm stipple7.xbm stipple8.xbm } \
-            { -1 "" @$GDefs(Dir)/Resources/Bitmap/stipple1-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple2-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple3-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple4-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple5-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple7-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm } \
-             Graph::Item(Stipple) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Stipple) -relief groove -bd 2
-         pack  $Parent.item.fill.lbl $Parent.item.fill.col $Parent.item.fill.stipple -side left
-                  frame $Parent.item.icon
-         label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
-         IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/Resources/Bitmap \
-            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm } \
-            $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } \
-            0 -relief groove -bd 2
-         IcoMenu::Create $Parent.item.icon.size $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 2 4 6 8 10" \
-             Graph::Item(Size) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Size) -relief groove -bd 2
-         pack $Parent.item.icon.lbl $Parent.item.icon.sel $Parent.item.icon.size -side left
-      frame $Parent.item.value
-         label $Parent.item.value.lbl -text [lindex $Lbl(Value) $GDefs(Lang)] -width 12 -anchor w
-         checkbutton $Parent.item.value.sel -variable Graph::Item(Value) -relief raised -bd 1 -onvalue True -offvalue False  -selectcolor "" -relief groove -bd 1\
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
-         button $Parent.item.value.font -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
-            -command "FontBox::Create $Parent.item.value.font { Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item) } $Graph::Item(Font)"
-         pack $Parent.item.value.lbl $Parent.item.value.sel $Parent.item.value.font -side left
-
-     Option::Create $Parent.item.type [lindex $Lbl(Type) $GDefs(Lang)] ::Graph::Item(Type) 0 -1 \
-         $Graph::Item(Types) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
-
-      pack $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value -side top -fill x -padx 2
-   pack $Parent.item -side top -fill both -padx 5 -pady 5
-
-   Bubble::Create $Parent.item.sel.list $Bubble(ItemList)
-   Bubble::Create $Parent.item.line     $Bubble(ItemLine)
-   Bubble::Create $Parent.item.fill     $Bubble(ItemFill)
-   Bubble::Create $Parent.item.icon     $Bubble(ItemIcon)
-   Bubble::Create $Parent.item.type     $Bubble(ItemType)
-
-   bind $Parent.item.sel.list <ButtonRelease-1>  { set Graph::Data(Item) [%W get [%W nearest %y]] ; Graph::ItemSelect $Graph::Data(Item) }
-}
 
 proc Graph::ParamsPos { Parent } {
    global GDefs
@@ -1179,18 +1356,19 @@ proc Graph::PosSet { GR Type } {
 
    upvar #0 Graph::${Type}::${Type}${GR}::Data data
 
+
    if { [winfo exist $Data(Frame).pos.sel] } {
       ComboBox::DelAll $Data(Frame).pos.sel
       ComboBox::AddList $Data(Frame).pos.sel $data(Pos)
    }
 
-   set Data(Pos)  [lindex $data(Pos) end]
-   set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
-
-   if { [winfo exist $Data(Frame).item.sel.list] } {
-      $Data(Frame).item.sel.list selection set 0
+   if { [set Data(Pos)  [lindex $data(Pos) end]]!="" } {
+      set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
+      if { [winfo exist $Data(Frame).item.sel.list] } {
+         $Data(Frame).item.sel.list selection set 0
+      }
+      Graph::ItemSelect $Graph::Data(Item)
    }
-   Graph::ItemSelect $Graph::Data(Item)
 }
 
 proc Graph::PosDel { GR Type } {
@@ -1250,7 +1428,17 @@ proc Graph::ParamsGraph { Parent } {
    variable Lbl
    variable Bubble
 
-   labelframe $Parent.graph -text [lindex $Lbl(Graph) $GDefs(Lang)]
+   if  { ![winfo exists  $Parent.graph] } {
+      checkbutton $Parent.graphtoggle -text [lindex $Lbl(Graph) $GDefs(Lang)] -compound right -variable Graph::Graph(ParamsGraph) -onvalue True -offvalue False \
+         -command "Graph::ParamsGraph $Parent" -indicatoron False -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+      labelframe $Parent.graph -labelwidget $Parent.graphtoggle
+   }
+
+   if { $Graph::Graph(ParamsGraph) } {
+
+      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      destroy $Parent.graph.lbl
+
       frame $Parent.graph.info
          label $Parent.graph.info.lbl -text [lindex $Lbl(Info) $GDefs(Lang)] -width 12 -anchor w
          button $Parent.graph.info.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
@@ -1262,33 +1450,17 @@ proc Graph::ParamsGraph { Parent } {
          button $Parent.graph.axis.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.graph.axis.sel Graph::Configure $Graph::Font(Axis)"
          ColorBox::CreateSel $Parent.graph.axis.col ::Graph::Color(Axis) Graph::Configure
-         scale  $Parent.graph.axis.angle -from -45 -to 45 -resolution 10 -variable Graph::Font(Angle) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command "Graph::Configure ; catch "
          pack $Parent.graph.axis.lbl $Parent.graph.axis.col $Parent.graph.axis.sel -side left
-         pack $Parent.graph.axis.angle -side left -fill x
       frame $Parent.graph.select
          label $Parent.graph.select.lbl -text [lindex $Lbl(Select) $GDefs(Lang)] -width 12 -anchor w
          button $Parent.graph.select.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico -relief groove \
             -command "FontBox::Create $Parent.graph.select.sel Graph::Configure $Graph::Font(Select)"
          ColorBox::CreateSel $Parent.graph.select.col Graph::Color(Select) Graph::Configure
          checkbutton $Parent.graph.select.coord -bitmap @$GDefs(Dir)/Resources/Bitmap/coord.ico -relief groove \
-            -variable Graph::Data(ShowCoord) -indicatoron false -command Graph::Configure
-#         checkbutton $Parent.graph.select.grid -bitmap @$GDefs(Dir)/Resources/Bitmap/grid.ico -relief groove \
-#            -variable Graph::Data(ShowGrid) -indicatoron false -command Graph::Configure
+            -variable Graph::Data(ShowCoord) -indicatoron false -command Graph::Configure -onvalue True -offvalue False
          pack $Parent.graph.select.lbl $Parent.graph.select.col $Parent.graph.select.sel $Parent.graph.select.coord -side left
       pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select -side top
 
-      frame $Parent.graph.grid
-         label $Parent.graph.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 12 -anchor w
-         ColorBox::CreateSel $Parent.graph.grid.col Graph::Grid(Color) Graph::Configure
-         IcoMenu::Create $Parent.graph.grid.sz $GDefs(Dir)/Resources/Bitmap \
-            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-            Graph::Grid(Width) { Graph::Configure } $Graph::Grid(Width) -relief groove -bd 2
-         IcoMenu::CreateDef $Parent.graph.grid.dash $GDefs(Dir)/Resources/Bitmap \
-            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
-            Graph::Grid(Dash) { Graph::Configure } $Graph::Grid(Dash) -relief groove -bd 2
-         pack $Parent.graph.grid.lbl $Parent.graph.grid.col $Parent.graph.grid.sz $Parent.graph.grid.dash -side left
-         pack $Parent.graph.grid.dash -side left -fill x -expand True
       frame $Parent.graph.color
          label $Parent.graph.color.lbl -text [lindex $Lbl(Background) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.graph.color.col Graph::Color(Fill) Graph::Configure
@@ -1308,17 +1480,21 @@ proc Graph::ParamsGraph { Parent } {
          checkbutton  $Parent.graph.ip3.sel -text [lindex $Lbl(IP3) $GDefs(Lang)] -indicatoron false \
             -command "" -bd 1 -variable Graph::Data(IP3) -onvalue True -offvalue False
          pack $Parent.graph.ip3.sel -side left -fill x -expand true
-      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.grid $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 -side top  -fill x
-   pack $Parent.graph -side top -fill both -padx 5 -pady 5
+      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 -side top  -fill x
 
-   Bubble::Create $Parent.graph.info   $Bubble(Info)
-   Bubble::Create $Parent.graph.axis   $Bubble(Axis)
-   Bubble::Create $Parent.graph.select $Bubble(Pick)
-   Bubble::Create $Parent.graph.grid   $Bubble(Grid)
-   Bubble::Create $Parent.graph.color  $Bubble(Back)
-   Bubble::Create $Parent.graph.frame  $Bubble(Frame)
-   Bubble::Create $Parent.graph.update $Bubble(Update)
-   Bubble::Create $Parent.graph.ip3    $Bubble(IP3)
+      Bubble::Create $Parent.graph.info   $Bubble(Info)
+      Bubble::Create $Parent.graph.select $Bubble(Pick)
+      Bubble::Create $Parent.graph.color  $Bubble(Back)
+      Bubble::Create $Parent.graph.frame  $Bubble(Frame)
+      Bubble::Create $Parent.graph.update $Bubble(Update)
+      Bubble::Create $Parent.graph.ip3    $Bubble(IP3)
+   } else {
+      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      destroy $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3
+      label $Parent.graph.lbl -text "" -width 12 -anchor w
+      pack $Parent.graph.lbl -side left
+   }
+   pack $Parent.graph -side top -fill x -pady 5 -padx 5 -anchor n
 }
 
 #----------------------------------------------------------------------------
@@ -1338,30 +1514,47 @@ proc Graph::ParamsGraph { Parent } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::ParamsObs { Parent Type GR } {
+proc Graph::ParamsObs { Parent GR Type } {
    global GDefs
    variable Lbl
    variable Bubble
 
-   labelframe $Parent.obs -text [lindex $Lbl(Obs) $GDefs(Lang)]
-      entry $Parent.obs.sel  -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Graph::${Type}::${Type}${GR}::Data(ObsToken)
-      frame $Parent.obs.list
-         listbox $Parent.obs.list.box -relief sunken -bd 1 -bg $GDefs(ColorLight) -height 4 \
-            -yscrollcommand [list $Parent.obs.list.scroll set] -width 20
-         scrollbar $Parent.obs.list.scroll -command "$Parent.obs.list.box yview" -width 10 -bd 1
-         pack $Parent.obs.list.box -side left -fill both -expand true
-         pack $Parent.obs.list.scroll -side left -fill y
-      pack $Parent.obs.sel  -side top -fill x -padx 2
-      pack $Parent.obs.list -side top  -fill both -expand true -padx 2
-   pack $Parent.obs -side top -fill both -expand true -pady 5 -padx 5
+   if  { ![winfo exists  $Parent.obs] } {
+      checkbutton $Parent.obstoggle -text [lindex $Lbl(Obs) $GDefs(Lang)] -compound right -variable Graph::Graph(ParamsObs) -onvalue True -offvalue False \
+         -command "Graph::ParamsObs $Parent $GR $Type" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+      labelframe $Parent.obs -labelwidget $Parent.obstoggle
+   }
 
-   Bubble::Create $Parent.obs.sel  $Bubble(ObsSearch)
-   Bubble::Create $Parent.obs.list $Bubble(ObsList)
+   if { $Graph::Graph(ParamsObs) } {
 
-   Graph::ParamsObsSearch $Type $GR
+      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      destroy $Parent.obs.lbl
 
-   bind $Parent.obs.list.box <B1-ButtonRelease> "Graph::ParamsObsSelect $Type $GR \[%W get \[%W nearest %y\]\]"
-   bind $Parent.obs.sel <Any-KeyRelease> "Graph::ParamsObsSearch $Type $GR"
+         entry $Parent.obs.sel  -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Graph::${Type}::${Type}${GR}::Data(ObsToken)
+         frame $Parent.obs.list
+            listbox $Parent.obs.list.box -relief sunken -bd 1 -bg $GDefs(ColorLight) -height 4 \
+               -yscrollcommand [list $Parent.obs.list.scroll set] -width 20
+            scrollbar $Parent.obs.list.scroll -command "$Parent.obs.list.box yview" -width 10 -bd 1
+            pack $Parent.obs.list.box -side left -fill both -expand true
+            pack $Parent.obs.list.scroll -side left -fill y
+         pack $Parent.obs.sel  -side top -fill x -padx 2
+         pack $Parent.obs.list -side top  -fill both -expand true -padx 2
+
+      Bubble::Create $Parent.obs.sel  $Bubble(ObsSearch)
+      Bubble::Create $Parent.obs.list $Bubble(ObsList)
+
+      Graph::ParamsObsSearch $Type $GR
+
+      bind $Parent.obs.list.box <B1-ButtonRelease> "Graph::ParamsObsSelect $Type $GR \[%W get \[%W nearest %y\]\]"
+      bind $Parent.obs.sel <Any-KeyRelease> "Graph::ParamsObsSearch $Type $GR"
+      pack $Parent.obs -side top -fill both -expand true -pady 5 -padx 5 -anchor n
+   } else {
+      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      destroy $Parent.obs.sel $Parent.obs.list
+      label $Parent.obs.lbl -text "" -width 12 -anchor w
+      pack $Parent.obs.lbl -side left
+      pack $Parent.obs -side top -fill x -pady 5 -padx 5 -anchor n
+   }
 }
 
 #----------------------------------------------------------------------------

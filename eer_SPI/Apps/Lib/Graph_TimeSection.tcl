@@ -42,8 +42,6 @@ namespace eval Graph::TimeSection { } {
    variable Msg
 
    set Lbl(Title)     { "Profil temporel" "Time profile" }
-   set Lbl(Grid)      { "Grille" "Grid" }
-   set Lbl(Pres)      { "Pression" "Pressure" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
@@ -114,13 +112,13 @@ proc Graph::TimeSection::Create { Frame X0 Y0 Width Height Active Full } {
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -376,11 +374,10 @@ proc Graph::TimeSection::Graph { GR } {
          set data(Time)  D
       }
 
-      graphaxis configure axisx$GR -angle $Graph::Font(Angle)
    } else {
-      set data(Time)    DATE
-      set graph(UnitX)  [lindex $Graph::Lbl(Date) $GDefs(Lang)]
-      graphaxis configure axisx$GR -angle 45
+      set data(Time)   DATE
+      set graph(UnitX) [lindex $Graph::Lbl(Date) $GDefs(Lang)]
+      set grap(XAngle) 45
    }
 
    set xinter {}
@@ -411,16 +408,18 @@ proc Graph::TimeSection::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -labels $xdates \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -labels $xdates -angle $graph(XAngle) \
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    if { $Graph::Data(Update) } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
+      -format $graph(YFormat) -decimal $graph(YDecimals)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
   $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
@@ -470,15 +469,21 @@ proc Graph::TimeSection::Init { Frame } {
 
       #----- Constantes relatives au Graph
 
-      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
-      set Graph(UnitX)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] X"     ;#Descriptif de l'echelle des valeur en X
-      set Graph(YScale)   LINEAR                                          ;#Type d'echelle en Y
-      set Graph(XScale)   LINEAR                                          ;#Type d'echelle en Y
-      set Graph(XInter)   ""                                              ;#Liste des niveau specifie par l'usager
-      set Graph(YInter)   ""                                              ;#Liste des niveau specifie par l'usager
-      set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZType)    GRID             ;#Type de niveaux (GRID,PRESSSURE)
+      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitX)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] X"     ;#Descriptif de l'echelle des valeur en X
+      set Graph(YScale)    LINEAR                                          ;#Type d'echelle en Y
+      set Graph(XScale)    LINEAR                                          ;#Type d'echelle en Y
+      set Graph(XInter)    ""                                              ;#Liste des niveau specifie par l'usager
+      set Graph(YInter)    ""                                              ;#Liste des niveau specifie par l'usager
+      set Graph(ZXInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZYInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZType)     GRID             ;#Type de niveaux (GRID,PRESSSURE)
+      set Graph(XFormat)   NONE
+      set Graph(YFormat)   NONE
+      set Graph(XDecimals) 0
+      set Graph(YDecimals) 0
+      set Graph(XAngle)    0
+      set Graph(YAngle)    0                                                   ;
    }
    return $gr
 }
@@ -506,47 +511,8 @@ proc Graph::TimeSection::Params { Parent GR } {
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
 
    Graph::ParamsPos  $Parent
-
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.time -relief sunken -bd 1
-         checkbutton $Parent.scale.time.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::TimeSection::Graph $GR" -bd 1 \
-            -variable Graph::TimeSection::TimeSection${GR}::Data(DateF) -onvalue False -offvalue True
-         pack $Parent.scale.time.date -side top -fill x
-      frame $Parent.scale.date0
-         entry $Parent.scale.date0.ent -textvariable Graph::TimeSection::TimeSection${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
-         label $Parent.scale.date0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)]
-         pack  $Parent.scale.date0.lbl -side left -fill y
-         pack $Parent.scale.date0.ent -side left -fill both -expand true
-      frame $Parent.scale.date1
-         entry $Parent.scale.date1.ent -textvariable Graph::TimeSection::TimeSection${GR}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
-         label $Parent.scale.date1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)]
-         pack  $Parent.scale.date1.lbl -side left -fill y
-         pack $Parent.scale.date1.ent -side left -fill both  -expand true
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::TimeSection::Graph $GR" -bd 1 \
-            -variable Graph::TimeSection::TimeSection${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::TimeSection::TimeSection${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
-      frame $Parent.scale.type -relief sunken -bd 1
-         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::TimeSection::Graph $GR" -bd 1 -variable Graph::TimeSection::TimeSection${GR}::Graph(ZType) -value GRID
-         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::TimeSection::Graph $GR" -bd 1 -variable Graph::TimeSection::TimeSection${GR}::Graph(ZType) -value PRESSURE
-         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
-      pack $Parent.scale.time $Parent.scale.date0 $Parent.scale.date1 $Parent.scale.valy $Parent.scale.type -side top -padx 2 -pady 2 -fill x
-   pack $Parent.scale -side top -fill x -padx 5
-
-   Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
-   Bubble::Create $Parent.scale.valy      $Graph::Bubble(ScaleY)
-   Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
-   Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
-
-   bind $Parent.scale.valy.list <Return>    "Graph::TimeSection::Graph $GR"
+   Graph::ParamsAxis $Parent $GR TimeSection X TIME
+   Graph::ParamsAxis $Parent $GR TimeSection Y VERTICAL
 }
 
 #-------------------------------------------------------------------------------

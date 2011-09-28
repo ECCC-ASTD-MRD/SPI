@@ -107,13 +107,13 @@ proc Graph::Compare::Create { Frame X0 Y0 Width Height Active Full } {
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -291,13 +291,15 @@ proc Graph::Compare::Graph { GR } {
 
    set id [graphaxis configure axisx$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $data(DescPos) -angle $Graph::Font(Angle)  \
-      -lowoffset 0.1 -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $data(DescPos) -angle $graph(XAngle)  \
+      -lowoffset 0.1 -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale)-modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-      -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisy$GR -type $graph(YScale)-modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $$graph(YAngle) \
+      -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
+      -format $graph(YFormat) -decimal $graph(YDecimals)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
@@ -343,13 +345,19 @@ proc Graph::Compare::Init { Frame } {
 
       #----- Constantes relatives au Graph
 
-      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"         ;#Descriptif de l'echelle des valeur en Y
-      set Graph(UnitX)    ""                                                  ;#Descriptif de l'echelle des valeur en Y
-      set Graph(XScale)   LINEAR                                              ;#Type d'echelle en X
-      set Graph(YScale)   LINEAR                                              ;#Type d'echelle en Y
-      set Graph(XInter)   ""                                                  ;#Liste des niveau specifie par l'usager
-      set Graph(YInter)   ""                                                  ;#Liste des niveau specifie par l'usager
-      set Graph(ZYInter)  ""                                                  ;#Liste des Niveaux (Mode Zoom)
+      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"         ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitX)     ""                                                  ;#Descriptif de l'echelle des valeur en Y
+      set Graph(XScale)    LINEAR                                              ;#Type d'echelle en X
+      set Graph(YScale)    LINEAR                                              ;#Type d'echelle en Y
+      set Graph(XInter)    ""                                                  ;#Liste des niveau specifie par l'usager
+      set Graph(YInter)    ""                                                  ;#Liste des niveau specifie par l'usager
+      set Graph(ZYInter)   ""                                                  ;#Liste des Niveaux (Mode Zoom)
+      set Graph(XFormat)   NONE
+      set Graph(YFormat)   NONE
+      set Graph(XDecimals) 0
+      set Graph(YDecimals) 0                                                   ;
+      set Graph(XAngle)    0
+      set Graph(YAngle)    0                                                   ;
    }
    return $gr
 }
@@ -369,31 +377,11 @@ proc Graph::Compare::Init { Frame } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Compare::Params { Parent GR } {
-   global   GDefs
-
-   upvar #0 Graph::Compare::Compare${GR}::Data  data
 
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
-
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::Compare::Graph $GR" -bd 1 \
-            -variable Graph::Compare::Compare${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::Compare::Compare${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
-      pack $Parent.scale.valy -side top -padx 2 -pady 2 -fill x
-   pack $Parent.scale -side top -fill x -padx 5
-
-   Graph::ParamsObs $Parent Compare $GR
-
-   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
-
-   bind $Parent.scale.valy.list <Return>  "Graph::Compare::Graph $GR"
+   Graph::ParamsAxis $Parent $GR Compare Y
+   Graph::ParamsObs  $Parent $GR Compare
 }
 
 #-------------------------------------------------------------------------------

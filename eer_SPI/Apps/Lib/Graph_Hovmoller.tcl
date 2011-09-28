@@ -113,13 +113,13 @@ proc Graph::Hovmoller::Create { Frame X0 Y0 Width Height Active Full } {
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -294,8 +294,8 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    set graph(XInter) $data(DCoords)
    set graph(XLabel) [lrange $Graph::Graph(Identitys) 0 [expr [llength $data(DCoords)]-1]]
 
-   if { $data(DateF) } {
-      set diff [expr $data(YMax)-$data(YMin)]
+   if { $graph(XFormat)=="NONE" } {
+     set diff [expr $data(YMax)-$data(YMin)]
 
       if { $diff <= 120 } {
          set graph(UnitY) "[lindex $Graph::Lbl(Since) $GDefs(Lang)] [DateStuff::StringDateFromSeconds $data(YMin) $GDefs(Lang)] ([lindex $Graph::Lbl(Sec) $GDefs(Lang)])"
@@ -311,11 +311,10 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
          set data(Time)  D
       }
 
-      graphaxis configure axisy$GR -angle $Graph::Font(Angle)
    } else {
       set data(Time)    DATE
       set graph(UnitY)  [lindex $Graph::Lbl(Date) $GDefs(Lang)]
-      graphaxis configure axisy$GR -angle 45
+      set graph(YAngle) 45
    }
 
    set yinter {}
@@ -346,7 +345,8 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $graph(XLabel) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis) -angle $Graph::Font(Angle)
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) -angle $graph(Xangle) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    if { $Graph::Data(Update) } {
@@ -354,7 +354,8 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -labels $ydates \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) -angle $graph(YAngle) \
+      -format $graph(YFormat) -decimal $graph(YDecimals)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
@@ -391,7 +392,6 @@ proc Graph::Hovmoller::Init { Frame } {
       variable Graph
 
       set Data(Items)    {}           ;#Liste des items
-      set Data(IP3)             True      ;#Valider les IP3
       set Data(Pos)      {}           ;#Liste des positions
       set Data(Data)     {}           ;#Liste des champs selectionnees
       set Data(Proj)     0            ;#Mode projection
@@ -402,17 +402,25 @@ proc Graph::Hovmoller::Init { Frame } {
       set Data(FCoords)  {}           ;#Liste des coordonnees de coupe (Follow mode)
       set Data(Coords)   {}           ;#Liste des coordonnees de coupe
       set Data(Field)    ""           ;#Champs de coupe
+      set Data(Date0)           ""
+      set Data(Date1)           ""
 
       #----- Constantes relatives au Graph
 
-      set Graph(YScale)   LINEAR                                               ;#Type d'echelle en Y
-      set Graph(XScale)   LINEAR                                               ;#Type d'echelle en Y
-      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
-      set Graph(UnitX)    "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
-      set Graph(XInter)   ""               ;#Liste des niveau specifie par l'usager
-      set Graph(YInter)   ""               ;#Liste des niveau specifie par l'usager
-      set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(YScale)    LINEAR                                               ;#Type d'echelle en Y
+      set Graph(XScale)    LINEAR                                               ;#Type d'echelle en Y
+      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitX)     "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
+      set Graph(XInter)    ""               ;#Liste des niveau specifie par l'usager
+      set Graph(YInter)    ""               ;#Liste des niveau specifie par l'usager
+      set Graph(ZXInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZYInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(XFormat)   NONE
+      set Graph(YFormat)   NONE
+      set Graph(XDecimals) 0
+      set Graph(YDecimals) 0
+      set Graph(XAngle)    0
+      set Graph(YAngle)    0                                                   ;
    }
    return $gr
 }
@@ -438,46 +446,24 @@ proc Graph::Hovmoller::Params { Parent GR } {
 
    upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data data
 
-   labelframe $Parent.res -text [lindex $Graph::Lbl(Res) $GDefs(Lang)]
-      entry $Parent.res.cur -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
-      scale $Parent.res.sc  -variable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -resolution 1 -width 16 -sliderlength 8 -showvalue False\
-         -orient horizontal -bd 1 -from 1 -to 100000
-      checkbutton $Parent.res.auto -text * -indicatoron false -bd 1 -variable Graph::Hovmoller::Hovmoller${GR}::Data(ResBest) \
-         -onvalue True -offvalue False -command "Graph::Hovmoller::Resolution; Graph::Hovmoller::Graph $GR True"
-      pack  $Parent.res.sc -side left -fill x -expand true -padx 2
-      pack  $Parent.res.cur $Parent.res.auto -side left -padx 2
-   pack $Parent.res -side top -fill x -pady 5
+   labelframe $Parent.params -text [lindex $Graph::Lbl(Section) $GDefs(Lang)]
+      frame $Parent.params.res
+         label $Parent.params.res.lbl -text [lindex $Graph::Lbl(Res) $GDefs(Lang)] -width 14 -anchor w
+         entry $Parent.params.res.val -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
+         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Hovmoller::Hovmoller${GR}::Data(ResBest) \
+            -onvalue True -offvalue False -command "Graph::Hovmoller::Resolution; Graph::Hovmoller::Graph $GR True"
+         pack $Parent.params.res.lbl -side left
+         pack $Parent.params.res.val -side left -fill x -expand True
+         pack $Parent.params.res.auto -side left
+      pack $Parent.params.res -side top -fill x
+   pack $Parent.params -side top -fill x -padx 5 -pady 5
 
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.type -relief sunken -bd 1
-         checkbutton $Parent.scale.type.ip3 -text [lindex $Graph::Lbl(IP3) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Hovmoller::Update $data(FrameData) $GR" -bd 1 \
-            -variable Graph::Hovmoller::Hovmoller${GR}::Data(IP3) -onvalue True -offvalue False
-         checkbutton $Parent.scale.type.date -text [lindex $Graph::Lbl(Date) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Hovmoller::Graph $GR" -bd 1 \
-            -variable Graph::Hovmoller::Hovmoller${GR}::Data(DateF) -onvalue False -offvalue True
-         pack $Parent.scale.type.ip3 $Parent.scale.type.date -side top -fill x
+   Graph::ParamsAxis $Parent $GR Hovmoller X MARK
+   Graph::ParamsAxis $Parent $GR Hovmoller Y TIME
 
-      frame $Parent.scale.date0
-         entry $Parent.scale.date0.ent -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
-         label $Parent.scale.date0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)]
-         pack  $Parent.scale.date0.lbl -side left -fill y
-         pack $Parent.scale.date0.ent -side left -fill both -expand true
-      frame $Parent.scale.date1
-         entry $Parent.scale.date1.ent -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1 -width 15
-         label $Parent.scale.date1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)]
-         pack  $Parent.scale.date1.lbl -side left -fill y
-         pack $Parent.scale.date1.ent -side left -fill both  -expand true
-      pack $Parent.scale.type $Parent.scale.date0 $Parent.scale.date1 -side top -padx 2 -pady 2 -fill x
-   pack $Parent.scale -side top -fill x -padx 5
+   Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)
 
-   Bubble::Create $Parent.scale.type.date $Graph::Bubble(Date)
-   Bubble::Create $Parent.scale.type.ip3  $Graph::Bubble(IP3)
-   Bubble::Create $Parent.scale.date0     $Graph::Bubble(Date0)
-   Bubble::Create $Parent.scale.date1     $Graph::Bubble(Date1)
-
-   bind $Parent.scale.date0.ent <Return>    "Graph::Hovmoller::Graph $GR"
-   bind $Parent.scale.date1.ent <Return>    "Graph::Hovmoller::Graph $GR"
+   bind $Parent.params.res.val <Return> "Graph::Hovmoller::Graph $GR True"
 }
 
 #-------------------------------------------------------------------------------
@@ -844,7 +830,7 @@ proc Graph::Hovmoller::Data { GR { Data { } } { Files { } } } {
          set fids $Files
       }
 
-      if { $data(IP3) } {
+      if { $Graph::Data(IP3) } {
          set ip3 [fstdfield define $item -IP3]
       } else {
          set ip3 -1

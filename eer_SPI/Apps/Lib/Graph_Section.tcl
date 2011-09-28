@@ -42,8 +42,6 @@ namespace eval Graph::Section { } {
    variable Msg
 
    set Lbl(Title)     { "Coupe verticale" "Vertical cross-section" }
-   set Lbl(Grid)      { "Grille" "Grid" }
-   set Lbl(Pres)      { "Pression" "Pressure" }
 
    set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
@@ -116,13 +114,13 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
 
    set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
       -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(Color) \
-      -dash $Graph::Grid(Dash) -position LL -width 1 -unit $id
+   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
 
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
@@ -311,15 +309,17 @@ proc Graph::Section::Graph { GR { Pos False } } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $graph(XLabel) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color)  -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis) -angle $Graph::Font(Angle)
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) -angle $graph(XAngle) \
+      -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    if { $Graph::Data(Update) } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $Graph::Font(Angle) \
-      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(Color) -dash $Graph::Grid(Dash) -gridwidth $Graph::Grid(Width) -color $Graph::Color(Axis)
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+      -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
+      -format $graph(YFormat) -decimal $graph(YDecimals)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
@@ -373,15 +373,21 @@ proc Graph::Section::Init { Frame } {
 
       #----- Constantes relatives au Graph
 
-      set Graph(YScale)   LINEAR                                               ;#Type d'echelle en Y
-      set Graph(XScale)   LINEAR                                               ;#Type d'echelle en Y
-      set Graph(UnitY)    "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"          ;#Descriptif de l'echelle des valeur en Y
-      set Graph(UnitX)    "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
-      set Graph(XInter)   ""               ;#Liste des niveau specifie par l'usager
-      set Graph(YInter)   ""               ;#Liste des niveau specifie par l'usager
-      set Graph(ZXInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZYInter)  ""               ;#Liste des Niveaux (Mode Zoom)
-      set Graph(ZType)    GRID             ;#Type de niveaux (GRID,PRESSSURE)
+      set Graph(YScale)    LINEAR                                               ;#Type d'echelle en Y
+      set Graph(XScale)    LINEAR                                               ;#Type d'echelle en Y
+      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"          ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitX)     "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
+      set Graph(XInter)    ""               ;#Liste des niveau specifie par l'usager
+      set Graph(YInter)    ""               ;#Liste des niveau specifie par l'usager
+      set Graph(ZXInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZYInter)   ""               ;#Liste des Niveaux (Mode Zoom)
+      set Graph(ZType)     GRID             ;#Type de niveaux (GRID,PRESSSURE)
+      set Graph(XFormat)   NONE
+      set Graph(YFormat)   NONE
+      set Graph(XDecimals) 0
+      set Graph(YDecimals) 0
+      set Graph(XAngle)    0
+      set Graph(YAngle)    0                                                   ;
    }
    return $gr
 }
@@ -403,51 +409,30 @@ proc Graph::Section::Params { Parent GR } {
    global   GDefs
    variable Lbl
 
-   labelframe $Parent.disp -text [lindex $Graph::Lbl(Disp) $GDefs(Lang)]
-      frame $Parent.disp.mode -relief sunken -bd 1
-         checkbutton $Parent.disp.mode.proj  -text [lindex $Graph::Lbl(Proj) $GDefs(Lang)] -variable Graph::Section::Section${GR}::Data(Proj) -bd 1\
+   labelframe $Parent.params -text [lindex $Graph::Lbl(Section) $GDefs(Lang)]
+      frame $Parent.params.res
+         label $Parent.params.res.lbl -text [lindex $Graph::Lbl(Res) $GDefs(Lang)] -width 14 -anchor w
+         entry $Parent.params.res.val -textvariable Graph::Section::Section${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
+         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Section::Section${GR}::Data(ResBest) \
+            -onvalue True -offvalue False -command "Graph::Section::Resolution; Graph::Section::Graph $GR True"
+         pack $Parent.params.res.lbl -side left
+         pack $Parent.params.res.val -side left -fill x -expand True
+         pack $Parent.params.res.auto -side left
+
+      frame $Parent.params.disp -relief sunken -bd 1
+         checkbutton $Parent.params.disp.proj -text [lindex $Graph::Lbl(Proj) $GDefs(Lang)] -variable Graph::Section::Section${GR}::Data(Proj) -bd 1\
             -onvalue 1 -offvalue 0 -indicatoron false -command "Graph::Section::FieldShow $GR"
-         pack $Parent.disp.mode.proj -side top -fill x
-      pack $Parent.disp.mode -side top -fill x
-   pack $Parent.disp -side top -fill x -pady 5
+         pack $Parent.params.disp.proj -side top -fill x
+      pack $Parent.params.res $Parent.params.disp -side top -fill x
+   pack $Parent.params -side top -fill x -padx 5 -pady 5
 
-   labelframe $Parent.res -text [lindex $Graph::Lbl(Res) $GDefs(Lang)]
-      entry $Parent.res.cur -textvariable Graph::Section::Section${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
-      scale $Parent.res.sc  -variable Graph::Section::Section${GR}::Data(Res) -resolution 1 -width 16 -sliderlength 8 -showvalue False\
-         -orient horizontal -bd 1 -from 1 -to 100000
-      checkbutton $Parent.res.auto -text * -indicatoron false -bd 1 -variable Graph::Section::Section${GR}::Data(ResBest) \
-         -onvalue True -offvalue False -command "Graph::Section::Resolution; Graph::Section::Graph $GR True"
-      pack  $Parent.res.sc -side left -fill x -expand true -padx 2
-      pack  $Parent.res.cur $Parent.res.auto -side left -padx 2
-   pack $Parent.res -side top -fill x -pady 5
+   Graph::ParamsAxis $Parent $GR Section X MARK
+   Graph::ParamsAxis $Parent $GR Section Y VERTICAL
 
-   labelframe $Parent.scale -text [lindex $Graph::Lbl(Scale) $GDefs(Lang)]
-      frame $Parent.scale.valy -relief sunken -bd 1
-         label $Parent.scale.valy.lbl -text "Y"
-         checkbutton $Parent.scale.valy.scale -text Log -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 \
-            -variable Graph::Section::Section${GR}::Graph(YScale)  -onvalue LOGARITHMIC -offvalue LINEAR
-         entry $Parent.scale.valy.list -textvariable Graph::Section::Section${GR}::Graph(YInter) -bg $GDefs(ColorLight) -relief flat -width 1
-         pack $Parent.scale.valy.lbl -side left -fill y
-         pack $Parent.scale.valy.list -side left -fill x  -expand true
-         pack $Parent.scale.valy.scale -side left -fill y
-      pack $Parent.scale.valy -side top -padx 2 -pady 2 -fill x
-      frame $Parent.scale.type -relief sunken -bd 1
-         radiobutton $Parent.scale.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value GRID
-         radiobutton $Parent.scale.type.pres -text [lindex $Lbl(Pres) $GDefs(Lang)] -indicatoron false \
-            -command "Graph::Section::Graph $GR" -bd 1 -variable Graph::Section::Section${GR}::Graph(ZType) -value PRESSURE
-         pack $Parent.scale.type.grid $Parent.scale.type.pres -side left -fill x -expand True
-      pack $Parent.scale.type -side top -padx 2 -fill x
-   pack $Parent.scale -side top -fill x -padx 5 -pady 5
+   Bubble::Create $Parent.params.disp.proj $Graph::Bubble(Viewport)
+   Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)
 
-   Bubble::Create $Parent.disp.mode  $Graph::Bubble(Viewport)
-   Bubble::Create $Parent.scale.valy $Graph::Bubble(ScaleY)
-   Bubble::Create $Parent.res.list   $Graph::Bubble(Sample)
-
-   bind $Parent.res.cur         <Return>          "Graph::Section::Graph $GR True"
-   bind $Parent.res.sc          <ButtonRelease-1> "Graph::Section::Graph $GR True"
-   bind $Parent.scale.valy.list <Return>          "Graph::Section::Graph $GR"
+   bind $Parent.params.res.val <Return> "Graph::Section::Graph $GR True"
 }
 
 #-------------------------------------------------------------------------------
