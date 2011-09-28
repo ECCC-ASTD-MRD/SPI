@@ -165,6 +165,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    int        idx,n;
    TData     *field0,*field1;
    TDataSpec *spec;
+   double     nd,val;
 
    static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","NORMALIZED_COUNT","COUNT","NOP",NULL };
    static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
@@ -283,8 +284,8 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case CLEAR:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld");
+         if(Objc<4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld [value]");
             return(TCL_ERROR);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
@@ -292,8 +293,13 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
             return(TCL_ERROR);
          }
+         nd=field0->Def->NoData;
 
+         if (Objc>3) {
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&field0->Def->NoData);
+         }
          DataDef_Clear(field0->Def);
+         field0->Def->NoData=nd;
          break;
 
       case IS:

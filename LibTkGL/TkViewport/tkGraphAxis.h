@@ -97,6 +97,7 @@ typedef struct TGraphAxis {
    int            Spacing;       /*Espacement des labels*/
    int            Format;        /*Format de l'axe*/
    int            Mod;           /*Forcer les limites modulo l'increment*/
+   int            Decimals;      /*Number of decimals*/
 
    int            Order;         /*Ordre de grandeur des valeurs*/
    char           Done;          /*Flag de completion de process*/

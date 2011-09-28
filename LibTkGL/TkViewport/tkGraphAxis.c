@@ -35,9 +35,9 @@
 
 #include <stdio.h>
 
-enum GRAPHFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH,GRAXTPLUSHHMM };
+enum GRAPHFORMATS { GRAXNONE,GRAXFIT,GRAXINTEGER,GRAXFLOAT,GRAXEXPONENT,GRAXDATE,GRAXTIME,GRAXDATETIME,GRAXTIMEDATE,GRAX00HHDDMM,GRAX00HHMMDD,GRAXHHDDMM,GRAXHH,GRAXHHMM,GRAXDDMM,GRAXMMDD,GRAXTMINUSHH,GRAXTPLUSHH,GRAXTPLUSHHMM };
 
-static CONST char *GRAPHFORMATS_STRING[] = { "NONE","FIT","INTEGER","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH","T+HHMM" };
+static CONST char *GRAPHFORMATS_STRING[] = { "NONE","FIT","INTEGER","FLOAT","EXPONENT","DATE","TIME","DATETIME","TIME/DATE","00HH/DDMM","00HH/MMDD","HH/DDMM","HH","HHMM","DDMM","MMDD","T-HH","T+HH","T+HHMM" };
 static Tcl_HashTable GraphAxisTable;
 
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -178,8 +178,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-grid","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-spacing",NULL };
-   enum                opt { COLOR,WIDTH,GRID,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,SPACING };
+   static CONST char *sopt[] = { "-color","-width","-grid","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-decimal","-spacing",NULL };
+   enum                opt { COLOR,WIDTH,GRID,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,DECIMAL,SPACING };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -528,6 +528,15 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case DECIMAL:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(axis->Decimals));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&axis->Decimals);
+               axis->Decimals=axis->Decimals<0?0:axis->Decimals>10?10:axis->Decimals;
+            }
+            break;
+
          case SPACING:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(axis->Spacing));
@@ -584,6 +593,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Numbered=1;
    axis->Spacing=5;
    axis->Format=0;
+   axis->Decimals=0;
    axis->Dash.number=0;
    axis->Justify=TK_JUSTIFY_CENTER;
    axis->Anchor=TK_ANCHOR_CENTER;
@@ -1058,6 +1068,34 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
          case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
          case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
          case GRAXINTEGER: Value=lround(Value);sprintf(String,"%.0f",Value);break;
+         case GRAXFLOAT:
+            switch(Axis->Decimals) {
+               case 10: sprintf(String,"%.10f",Value);break;
+               case  9: sprintf(String,"%.9f",Value);break;
+               case  8: sprintf(String,"%.8f",Value);break;
+               case  7: sprintf(String,"%.7f",Value);break;
+               case  6: sprintf(String,"%.6f",Value);break;
+               case  5: sprintf(String,"%.5f",Value);break;
+               case  4: sprintf(String,"%.4f",Value);break;
+               case  3: sprintf(String,"%.3f",Value);break;
+               case  2: sprintf(String,"%.2f",Value);break;
+               case  1: sprintf(String,"%.1f",Value);break;
+               case  0: sprintf(String,"%.0f",Value);break;
+            } break;
+         case GRAXEXPONENT:
+            switch(Axis->Decimals) {
+               case 10: sprintf(String,"%.10e",Value);break;
+               case  9: sprintf(String,"%.9e",Value);break;
+               case  8: sprintf(String,"%.8e",Value);break;
+               case  7: sprintf(String,"%.7e",Value);break;
+               case  6: sprintf(String,"%.6e",Value);break;
+               case  5: sprintf(String,"%.5e",Value);break;
+               case  4: sprintf(String,"%.4e",Value);break;
+               case  3: sprintf(String,"%.3e",Value);break;
+               case  2: sprintf(String,"%.2e",Value);break;
+               case  1: sprintf(String,"%.1e",Value);break;
+               case  0: sprintf(String,"%.0e",Value);break;
+            } break;
          case GRAXFIT: DOrder=0; val=Value; while (fmod(val*=10.0,1.0)>0.01) DOrder--; DOrder-=Axis->Order;
          default:
            if (Axis->Type!='I') {

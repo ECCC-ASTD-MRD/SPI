@@ -745,7 +745,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                                                 Tcl_ListObjAppendElement(Interp,subsubsub,Tcl_NewDoubleObj(VAL2SPEC(spec,MetObs_GetData(data,e,v,t))));
                                              }
                                           }
-                                           Tcl_ListObjAppendElement(Interp,subsub,subsubsub);
+                                          Tcl_ListObjAppendElement(Interp,subsub,subsubsub);
                                        }
                                     }
                                  }
@@ -797,7 +797,11 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         valf=(float*)malloc(nv*sizeof(float));
                         for(v=0;v<nv;v++) {
                            Tcl_ListObjIndex(Interp,Objv[i],v,&obj);
-                           Tcl_GetDoubleFromObj(Interp,obj,&val);
+                           if (Tcl_GetDoubleFromObj(Interp,obj,&val)==TCL_ERROR) {
+                              Tcl_AppendResult(Interp,"\n   MetObs_Define: Invalid value for element: ",Tcl_GetString(obj),(char*)NULL);
+                              free(valf);
+                              return(TCL_ERROR);
+                           }
                            valf[v]=val;
                         }
                      }
