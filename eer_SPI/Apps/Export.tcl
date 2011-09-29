@@ -67,6 +67,7 @@ namespace eval Export::Raster {
    variable Data
    variable Lbl
    variable Bubble
+   variable Error
 
    set Data(Image)   0
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
@@ -98,6 +99,8 @@ namespace eval Export::Raster {
    set Lbl(Data)     { "Données" "Data" }
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
+
+   set Error(Size)    { "Les dimensions sont invaldes, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
 
    set Bubble(Lat0)   { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
    set Bubble(Lon0)   { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
@@ -141,10 +144,16 @@ namespace eval Export::Vector {
 
 proc Export::Raster::Export { Path Format } {
    variable Data
+   variable Error
 
    set no   0
    set file [file rootname $Path]
    set ext  [file extension $Path]
+
+   if { $Export::Data(DX)==0 || $Export::Data(DY)==0 } {
+     Dialog::Error .export $Error(Size)
+     return False
+   }
 
    foreach field $FSTD::Data(List) {
 
@@ -175,6 +184,7 @@ proc Export::Raster::Export { Path Format } {
          incr no
       }
    }
+   return True
 }
 
 #----------------------------------------------------------------------------
@@ -241,6 +251,7 @@ proc Export::Vector::Export { Path Format } {
          incr no
       }
    }
+   return True
 }
 
 #----------------------------------------------------------------------------
@@ -293,10 +304,14 @@ proc Export::Raster::Option { Frame } {
       entry $Frame.area.lon1 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Data(Lon1)
       pack $Frame.area.lbl $Frame.area.lat0 $Frame.area.lon0 $Frame.area.lat1 $Frame.area.lon1 -side left -fill y
       pack $Frame.area.mode -side left -fill x -expand true
+      bind $Frame.area.lat0 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+      bind $Frame.area.lat1 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+      bind $Frame.area.lon0 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+      bind $Frame.area.lon1 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
 
    frame $Frame.res
       label $Frame.res.lbl -text [lindex $Lbl(Res) $GDefs(Lang)] -width 10 -anchor w
-      entry $Frame.res.sel  -bd 1 -bg $GDefs(ColorLight) -width 6 -textvariable Export::Data(Res)
+      entry $Frame.res.sel  -bd 1 -bg $GDefs(ColorLight) -width 6 -textvariable Export::Data(Res) -validate focusout -validatecommand { Export::SetDim %P }
       label $Frame.res.dim -textvariable Export::Data(Dim) -anchor w
       pack $Frame.res.lbl $Frame.res.sel -side left
       pack $Frame.res.dim -side left -fill x -expand True
@@ -490,19 +505,32 @@ proc Export::SetDim { Res } {
    variable Data
 
    set Data(Res) $Res
+   set Data(Dim) " deg = -"
+   set Data(DY)  0
+   set Data(DX)  0
 
-   set dlat [expr $Export::Data(Lat1)-$Export::Data(Lat0)]
-   set dlon [expr $Export::Data(Lon1)-$Export::Data(Lon0)]
-
-   set Data(DY) [expr abs(int($dlat/$Res))]
-   set Data(DX) [expr abs(int($dlon/$Res))]
-
-   if { $Data(DX)>1 && $Data(DY)>1 } {
-      set Data(DLat) [expr $dlat/($Data(DY)-1)]
-      set Data(DLon) [expr $dlon/($Data(DX)-1)]
-
-      set Data(Dim) " deg = $Data(DX) x $Data(DY)"
+   if { ![string is double $Res] } {
+      return True
    }
+
+   set t [catch {
+
+      set dlat [expr $Export::Data(Lat1)-$Export::Data(Lat0)]
+      set dlon [expr $Export::Data(Lon1)-$Export::Data(Lon0)]
+
+      set dy [expr abs(int($dlat/$Res))]
+      set dx [expr abs(int($dlon/$Res))]
+
+      if { $dx>1 && $dy>1 } {
+         set Data(DLat) [expr $dlat/($dy-1)]
+         set Data(DLon) [expr $dlon/($dx-1)]
+
+         set Data(DY)  $dy
+         set Data(DX)  $dx
+         set Data(Dim) " deg = $Data(DX) x $Data(DY)"
+      }
+   }]
+   return True
 }
 
 #----------------------------------------------------------------------------
@@ -595,10 +623,14 @@ proc Export::Do { } {
    .export configure -cursor watch
    update idletasks
 
-   eval Export::${Data(Type)}::Export $Data(Path) \$format
+   eval set proc Export::${Data(Type)}::Export
+   set ok [$proc $Data(Path) $format]
 
    .export configure -cursor left_ptr
-   Export::Close
+
+   if { $ok } {
+      Export::Close
+   }
 }
 
 #----------------------------------------------------------------------------
