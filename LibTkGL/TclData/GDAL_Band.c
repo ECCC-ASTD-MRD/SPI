@@ -1339,6 +1339,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
             CMap_Free(Band->Spec->Map);
          CMap_Incr(Field->Spec->Map);
          Band->Spec->Map=Field->Spec->Map;
+         Band->Tex.Indexed=1;
       }
    }
 
@@ -1462,6 +1463,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
             CMap_Free(Band->Spec->Map);
          CMap_Incr(Field->Spec->Map);
          Band->Spec->Map=Field->Spec->Map;
+         Band->Tex.Indexed=1;
       }
    }
 
