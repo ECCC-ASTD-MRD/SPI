@@ -2474,7 +2474,7 @@ void MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item){
    TMetLoc      *loc;
    TMetElem     *elem;
    TMetElemData *data;
-   int           n,e,v,t=0;
+   int           n,e,v,t=0,s=0;
    double        min,max;
    float         val;
 
@@ -2497,6 +2497,7 @@ void MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item){
                         if (MET_VALID(val,Obs->NoData)) {
                            min=min<val?min:val;
                            max=max>val?max:val;
+                           s=1;
                         }
 //                     }
                   }
@@ -2508,9 +2509,11 @@ void MetObs_GetStat(TMetObs *Obs,TMetModelItem *Item){
       loc=loc->Next;
    }
 
-   if (!(Item->Spec->MinMax&DATASPEC_MINSET)) Item->Spec->Min=min;
-   if (!(Item->Spec->MinMax&DATASPEC_MAXSET)) Item->Spec->Max=max;
-   if (!(Item->Spec->MinMax&DATASPEC_MINSET)) Item->Spec->Min=Item->Spec->Max<Item->Spec->Min?Item->Spec->Max:Item->Spec->Min;
+   if (s) {
+      if (!(Item->Spec->MinMax&DATASPEC_MINSET)) Item->Spec->Min=min;
+      if (!(Item->Spec->MinMax&DATASPEC_MAXSET)) Item->Spec->Max=max;
+      if (!(Item->Spec->MinMax&DATASPEC_MINSET)) Item->Spec->Min=Item->Spec->Max<Item->Spec->Min?Item->Spec->Max:Item->Spec->Min;
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -2595,7 +2598,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       if ((spec=Obs->Model->Items[i].Spec)) {
 
          /*Get value limits*/
-         if (isnan(spec->Min) || isnan(spec->Max))
+         if (isnan(spec->Min) || isnan(spec->Max) || spec->Min==spec->Max)
             MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
          /*Keep model limits*/
@@ -2744,8 +2747,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               valid=MET_VALID(val,Obs->NoData);
 
                               if (valid) {
-                                 if (val<spec->Min || val>spec->Max)
+                                 if (val<spec->Min || val>spec->Max) {
                                     continue;
+                                 }
                                  if (spec->InterNb && val<spec->Inter[0])
                                     continue;
                               }
