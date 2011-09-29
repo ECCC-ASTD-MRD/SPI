@@ -657,7 +657,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case CLEAR:
-         if(Objc<4) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"band [values]");
             return(TCL_ERROR);
          }

@@ -284,7 +284,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case CLEAR:
-         if(Objc<4) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld [value]");
             return(TCL_ERROR);
          }
