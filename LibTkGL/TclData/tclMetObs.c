@@ -1148,6 +1148,8 @@ static int MetObs_FreeHash(Tcl_Interp *Interp,char *Name) {
    TMetObs *obs=NULL;
 
    if ((obs=(TMetObs*)TclY_HashDel(&MetObsTable,Name))) {
+      if (obs->Model)
+            MetModel_FreeHash(Interp,obs->Model->Name);
       MetObs_Free(obs);
    }
    return(TCL_OK);
