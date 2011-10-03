@@ -478,6 +478,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    }
 
    if (Field->Ref->Grid[0]=='V') {
+
       FSTD_FieldReadMesh(Field);
       if (!Field->Ref->Lat || !Field->Ref->Lon) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Section coordinates not defined");
@@ -490,7 +491,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       for (j=0;j<Field->Def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
-         if (head->FID) {
+         if (head->FID && Field->Spec->Topo) {
             ip1=FSTD_Level2IP(Field->Ref->Levels[j],Field->Ref->LevelType);
             EZLock_RPNField();
             idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
@@ -518,7 +519,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             Vect_Init(Field->Ref->Pos[Level][idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
          }
       }
-      if (Proj) {
+
+if (Proj) {
          ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
       }
       FSTD_FileUnset(NULL,head->FID);
