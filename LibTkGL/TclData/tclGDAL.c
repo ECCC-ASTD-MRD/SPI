@@ -998,6 +998,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    double      x,y,lat0,lon0,lat1,lon1;
    int         n,idx,i,in;
+   const char  **list;
    char        buf[256],**meta,*dri=NULL;
    static CONST char *sopt[] = { "open","close","createcopy","format","driver","width","height","georef","metadata","project","unproject","within","filename","colorinterp","error",NULL };
    enum                opt { OPEN,CLOSE,CREATECOPY,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,COLORINTERP,ERROR };
@@ -1064,22 +1065,33 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case METADATA:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+         if(Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id [metadata]");
             return(TCL_ERROR);
          }
          if (!(file=GDAL_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         meta=GDALGetMetadata(file->Set,NULL);
-         if (CSLCount(meta)) {
-            obj=Tcl_NewListObj(0,NULL);
-            for (i=0;meta[i];i++) {
-               strtrim(meta[i],' ');
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(meta[i],-1));
+         if (Objc==4) {
+            if (file->Meta)
+               Tcl_Free((char*)file->Meta);
+
+            file->Meta=NULL;
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[3]),&n,&file->Meta)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Invalid list of metadata",(char*)NULL);
+               return(TCL_ERROR);
             }
-            Tcl_SetObjResult(Interp,obj);
-//            CSLDestroy(meta);
+         } else {
+            meta=GDALGetMetadata(file->Set,NULL);
+            if (CSLCount(meta)) {
+               obj=Tcl_NewListObj(0,NULL);
+               for (i=0;meta[i];i++) {
+                  strtrim(meta[i],' ');
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(meta[i],-1));
+               }
+               Tcl_SetObjResult(Interp,obj);
+   //            CSLDestroy(meta);
+            }
          }
          break;
 
@@ -1254,11 +1266,13 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
          snprintf(subid,1024,"%s%04i",Id,si/2);
          GDAL_FileClose(Interp,subid);
       }
-
+      if (file->Meta)
+         GDALSetMetadata(file->Set,file->Meta,NULL);
       GDALClose(file->Set);
       if (file->Ref)
          GeoRef_Destroy(Interp,file->Ref->Name);
 
+      Tcl_Free((char*)file->Meta);
       free(file->Id);
       free(file->Name);
       free(file);
@@ -1443,6 +1457,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    file->Sub=si;
    file->Set=set;
    file->Ref=NULL;
+   file->Meta=NULL;
 
    /* Get the georeference */
    if (band && Mode!='w' && Mode!='W') {

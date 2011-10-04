@@ -52,6 +52,7 @@ typedef struct GDAL_File {
 
    TGeoRef     *Ref;       /*GeoReference*/
    char        *Name;
+   char       **Meta;
    char        *Id;
    char         Mode;
    int          Sub;
