@@ -659,16 +659,15 @@ int ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref) {
        Ref->Coef[0]=ig2/1000.0f;
        Ref->Coef[1]=0.0f;
        Ref->Ref=ig1;
-   } else {
-      fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybrid: Could not find HY field (c_fstinf).\n");
+       Ref->Version=0;
    }
    EZUnLock_RPNField();
    return(l>=0);
 }
 
-int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
+int ZRef_DecodeRPNTocToc(int Unit,int DateV,TGeoRef *Ref) {
 
-   int   key,l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit;
+   int   key,l,deet,ip1,ip2,ip3,ig1,ig2,ig3,ig4,bit,skip;
    int   idayo,dty,swa,lng,dlf,ubc,ex1,ex2, ex3;
    int   npas,j,ni,nj,nk,k;
    char  typ[3],grd[2];
@@ -679,14 +678,15 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
    EZLock_RPNField();
    key=l=c_fstinf(Unit,&ni,&nj,&nk,-1,"",-1,-1,-1,"X","!!");
    if (l>=0) {
-       l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
-                    &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
-       if (l>=0) {
+      l=c_fstprm(key,&idayo,&deet,&npas,&ni,&nj,&nk,&bit,&dty,&ip1,&ip2,&ip3,typ,var,lbl,grd,
+                 &ig1,&ig2,&ig3,&ig4,&swa,&lng,&dlf,&ubc,&ex1,&ex2,&ex3);
+      if (l>=0) {
+         Ref->Version=ig1;
          Ref->Ref=1000.0;
-         Ref->Top=ig2/100.0;
+         Ref->Top=ig2/10.0;
          Ref->ETop=0.0;
-         Ref->Coef[0]=ig3/1000.0f;
-         Ref->Coef[1]=ig4/1000.0f;
+         Ref->Coef[0]=0.0f;
+         Ref->Coef[1]=0.0f;
 
          buf=(double*)malloc(ni*nj*sizeof(double));
          if (!Ref->A) Ref->A=(float*)malloc(Ref->LevelNb*sizeof(float));
@@ -694,8 +694,18 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
 
          l=c_fstluk(buf,key,&ni,&nj,&nk);
          if (l>=0) {
+            /* Read in header info*/
+            switch(Ref->Version) {
+               case 1001: skip=2; break;
+               case 1002: skip=2; Ref->Top=buf[1*ni]/100.0; break;
+               case 2001: skip=1; break;
+               case 5001: skip=3; Ref->Top=buf[1*ni]/100.0; Ref->Ref=buf[1*ni+1]/100.0; Ref->Coef[0]=buf[1*ni+2]; break;
+               case 5002: skip=3; Ref->Top=buf[1*ni]/100.0; Ref->Ref=buf[1*ni+1]/100.0; Ref->Coef[0]=buf[1*ni+2]; Ref->Coef[1]=buf[2*ni]; break;
+            }
+
+            /* Find corresponding level */
             for(k=0;k<Ref->LevelNb;k++) {
-               for(j=0;j<nj;j++) {
+               for(j=skip;j<nj;j++) {
                   if (buf[j*ni]==FSTD_Level2IP(Ref->Levels[k],Ref->LevelType)) {
                      Ref->A[k]=buf[j*ni+1];
                      Ref->B[k]=buf[j*ni+2];
@@ -703,18 +713,16 @@ int ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref) {
                   }
                }
                if (j==nj) {
-                  fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find level %g in lookup table.\n",Ref->Levels[k]);
+                  fprintf(stdout,"(WARNING) ZRef_DecodeRPNTocToc: Could not find level %g in lookup table.\n",Ref->Levels[k]);
                }
             }
          } else {
-            fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not read !! field (c_fstluk).\n");
+            fprintf(stdout,"(WARNING) ZRef_DecodeRPNTocToc: Could not read !! field (c_fstluk).\n");
          }
          free(buf);
       } else {
-         fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not get info on !! field (c_fstprm).\n");
+         fprintf(stdout,"(WARNING) ZRef_DecodeRPNTocToc: Could not get info on !! field (c_fstprm).\n");
       }
-   } else {
-      fprintf(stdout,"(WARNING) ZRef_DecodeRPNHybridStaggered: Could not find !! field (c_fstinf).\n");
    }
    EZUnLock_RPNField();
    return(l>=0);
@@ -753,7 +761,7 @@ int ZRef_DecodeRPNLevelParams(TData *Field) {
 
          if (ZRef_DecodeRPNHybrid(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
             i=1;
-         } else if (ZRef_DecodeRPNHybridStaggered(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
+         } else if (ZRef_DecodeRPNTocToc(fid->Id,((FSTD_Head*)Field->Head)->DATEV,Field->Ref)) {
             i=1;
          }
          FSTD_FileUnset(NULL,fid);

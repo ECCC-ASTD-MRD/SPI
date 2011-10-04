@@ -733,17 +733,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
             if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
                if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
-                  /*In case of hybrid staggered, read !!SF, otherwise, use P0*/
-                  if (cut->Ref->RefFrom->A) {
-                     if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"!!SF",-1))) {
-                        Field[f]->Def->Pres=0x1;
-                        p=0;
-                     }
-                  } else {
-                     if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
-                        Field[f]->Def->Pres=0x1;
-                        p=0;
-                     }
+                 if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
+                     Field[f]->Def->Pres=0x1;
+                     p=0;
                   }
                   FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
                }
@@ -1448,7 +1440,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    int       n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int       nb,len,nobj;
    unsigned long npt;
-   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd;
+   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd,min,max;
    float     val,val1,*levels;
    char      buf[32],mode='L';
 
@@ -2329,9 +2321,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                if (Field->Ref && Field->Ref->Hgt) {
                   obj=Tcl_NewListObj(0,NULL);
                   if (Field->Ref->Grid[0]=='V') {
-                     for (index=0;index<Field->Def->NI*Field->Def->NJ;index+=Field->Def->NI) {
+                     min=1e32;
+                     max=-1e32;
+                     for (index=0;index<Field->Def->NI*Field->Def->NJ;index++) {
+                        min=min<Field->Ref->Hgt[index]?min:Field->Ref->Hgt[index];
+                        max=max>Field->Ref->Hgt[index]?max:Field->Ref->Hgt[index];
+                     }
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
+                     for (index=Field->Def->NI;index<Field->Def->NI*(Field->Def->NJ-1);index+=Field->Def->NI) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
                      }
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                   } else {
                      for (index=0;index<Field->Def->NK;index++) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
@@ -2494,33 +2494,48 @@ double Data_Level2Meter(int Type,double Level) {
 
 double Data_Level2Pressure(TGeoRef *Ref,const double Level,double P0,int K) {
 
-   double pres=-1.0;
+   double pres=-1.0,ref,top;
 
-   switch(Ref->LevelType) {
-      case LVL_PRES:
-         pres=Level;
-         break;
+   /*Calculus are done in Pa*/
+   P0*=100.0;
+   ref=Ref->Ref*100.0;
+   top=Ref->Top*100.0;
 
-      case LVL_SIGMA:
-         pres=P0*Level;
-         break;
+   switch(Ref->Version) {
+      case 0:
+         switch(Ref->LevelType) {
+            case LVL_PRES:
+               pres=Level;
+               break;
 
-      case LVL_ETA:
-         pres=Ref->Top+(P0-Ref->Top)*Level;
-         break;
+            case LVL_SIGMA:
+               pres=P0*Level;
+               break;
 
-      case LVL_HYBRID:
-         if (Ref->A && Ref->B) {
-            pres=exp(Ref->A[K]+Ref->B[K]*P0)/100.0;
-         } else {
-            pres=Ref->Ref*Level+(P0-Ref->Ref)*pow((Level-Ref->Top/Ref->Ref)/(1.0-Ref->Top/Ref->Ref),Ref->Coef[0]);
+            case LVL_ETA:
+               pres=top+(P0-top)*Level;
+               break;
+
+            case LVL_HYBRID:
+               pres=ref*Level+(P0-ref)*pow((Level-top/ref)/(1.0-top/ref),Ref->Coef[0]);
+               break;
+
+            default:
+               fprintf(stderr,"(ERROR) Data_Level2Pressure: invalid type entry");
          }
          break;
 
+      case 1001: pres=Ref->B[K]*P0; break;                          // Sigma
+      case 1002:                                                    // Eta
+      case 1003:                                                    // Hybrid normalized
+      case 5001: pres=Ref->A[K]+Ref->B[K]*P0; break;                // Hybrid
+      case 2001: pres=Ref->A[K]; break;                             // Pressure
+      case 5002: pres=exp(Ref->A[K]+Ref->B[K]*log(P0/ref)); break;  // Hybrid momentum
       default:
-         fprintf(stderr,"(ERROR) FSTD_Level2Pressure: invalid type entry");
+         fprintf(stderr,"(ERROR) Data_Level2Pressure: invalid type entry");
    }
-   return(pres);
+
+   return(pres/100.0);
 }
 
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {

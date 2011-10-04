@@ -111,7 +111,7 @@ void    FSTD_DataMap(TData *Field,int Idx);
 
 int    ZRef_DecodeRPNLevelParams(TData *Field);
 int    ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref);
-int    ZRef_DecodeRPNHybridStaggered(int Unit,int DateV,TGeoRef *Ref);
+int    ZRef_DecodeRPNTocToc(int Unit,int DateV,TGeoRef *Ref);
 
 Vect3d*    FSTD_Grid(TData *Field,void *Proj,int Level);
 void       FSTD_HeadCopy(void *To,void *From);

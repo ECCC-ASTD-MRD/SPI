@@ -124,9 +124,10 @@ typedef struct TGeoRef {
    float *Levels;       /*Levels list*/
    int    LevelType;    /*Type of levels*/
    int    LevelNb;      /*Number of Levels*/
-   float  Top;         /*Pressure at top of atmosphere*/
-   float  Ref;         /*Refference pressure*/
-   float  Coef[2];     /*Hybrid level coefficient*/
+   int    Version;      /*Level definition version*/
+   float  Top;          /*Pressure at top of atmosphere*/
+   float  Ref;          /*Refference pressure*/
+   float  Coef[2];      /*Hybrid level coefficient*/
    float  ETop;         /*Eta coordinate a top*/
    float  *A,*B;        /*Pressure calculation factors*/
 

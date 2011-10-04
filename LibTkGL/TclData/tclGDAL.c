@@ -998,7 +998,6 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    double      x,y,lat0,lon0,lat1,lon1;
    int         n,idx,i,in;
-   const char  **list;
    char        buf[256],**meta,*dri=NULL;
    static CONST char *sopt[] = { "open","close","createcopy","format","driver","width","height","georef","metadata","project","unproject","within","filename","colorinterp","error",NULL };
    enum                opt { OPEN,CLOSE,CREATECOPY,FORMAT,DRIVER,WIDTH,HEIGHT,GEOREF,METADATA,PROJECT,UNPROJECT,WITHIN,FILENAME,COLORINTERP,ERROR };

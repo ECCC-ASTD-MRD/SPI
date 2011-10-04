@@ -1097,6 +1097,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       if (Ref->Levels)       free(Ref->Levels);       Ref->Levels=NULL;
       if (Ref->A)            free(Ref->A);            Ref->A=NULL;
       if (Ref->B)            free(Ref->B);            Ref->B=NULL;
+      Ref->Version=0;
    }
 
    if (Ref->String)       free(Ref->String);       Ref->String=NULL;
@@ -1288,6 +1289,7 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref->R=Ref->R;
    ref->ResR=Ref->ResR;
    ref->ResA=Ref->ResA;
+   ref->Version=Ref->Version;
 
    GeoRef_Put(NULL,NULL,ref);
    return(ref);
@@ -1352,6 +1354,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->Top=ref->Ref=ref->ETop=0.0;
    ref->Coef[0]=ref->Coef[1]=1.0;
    ref->A=ref->B=NULL;
+   ref->Version=0;
    ref->IG1==Ref->IG1;
    ref->IG2==Ref->IG2;
    ref->IG3==Ref->IG3;
@@ -1472,6 +1475,7 @@ TGeoRef* GeoRef_New() {
    ref->Top=ref->Ref=ref->ETop=0.0;
    ref->Coef[0]=ref->Coef[1]=1.0;
    ref->A=ref->B=NULL;
+   ref->Version=0;
 
    /*RDR Specific*/
    ref->Loc.Lat=-999;
