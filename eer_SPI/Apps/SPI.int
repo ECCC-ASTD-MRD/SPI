@@ -260,7 +260,6 @@ proc SPI::ParamsApply { } {
    Page::Update        $Page::Data(Frame)
    Page::UpdateCommand $Page::Data(Frame)
 
-   update idletasks
    $Page::Data(Canvas) config -cursor left_ptr
    . config -cursor left_ptr
    .params.command.apply configure -state disabled
