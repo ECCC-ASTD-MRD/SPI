@@ -492,11 +492,11 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref->IG2=IG2;
    ref->IG3=IG3;
    ref->IG4=IG4;
-   ref->LevelType=Type;
-   ref->LevelNb=NK;
-   ref->Levels=(float*)calloc(ref->LevelNb+1,sizeof(float));
+   ref->ZRef.Type=Type;
+   ref->ZRef.LevelNb=NK;
+   ref->ZRef.Levels=(float*)calloc(ref->ZRef.LevelNb+1,sizeof(float));
    if (Levels)
-      memcpy(ref->Levels,Levels,ref->LevelNb*sizeof(float));
+      memcpy(ref->ZRef.Levels,Levels,ref->ZRef.LevelNb*sizeof(float));
 
    return(GeoRef_Find(ref));
 }

@@ -366,7 +366,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                            for(k=0;k<FSIZE3D(band->Def);k++) {
                               Def_Set(band->Def,0,k,0);
                            }
-                           GeoRef_Resize(band->Ref,band->Def->NI,band->Def->NJ,nk,band->Ref->LevelType,band->Ref->Levels);
+                           GeoRef_Resize(band->Ref,band->Def->NI,band->Def->NJ,nk,band->Ref->ZRef.Type,band->Ref->ZRef.Levels);
                         }
                      }
                   }

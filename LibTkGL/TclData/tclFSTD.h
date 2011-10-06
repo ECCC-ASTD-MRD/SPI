@@ -104,14 +104,8 @@ void   FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom);
 int    FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress);
 void   FSTD_FieldSet(TData *Data);
 
-double  FSTD_IP2Meter(int IP);
-double  FSTD_IP2Level(int IP,int *Type);
-int     FSTD_Level2IP(float Level,int Type);
-void    FSTD_DataMap(TData *Field,int Idx);
-
-int    ZRef_DecodeRPNLevelParams(TData *Field);
-int    ZRef_DecodeRPNHybrid(int Unit,int DateV,TGeoRef *Ref);
-int    ZRef_DecodeRPNTocToc(int Unit,int DateV,TGeoRef *Ref);
+void   FSTD_DataMap(TData *Field,int Idx);
+int    FSTD_DecodeRPNLevelParams(TData *Field);
 
 Vect3d*    FSTD_Grid(TData *Field,void *Proj,int Level);
 void       FSTD_HeadCopy(void *To,void *From);

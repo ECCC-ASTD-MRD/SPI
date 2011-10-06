@@ -58,8 +58,8 @@ int      GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
 */
 double GeoRef_RDRHeight(TGeoRef *Ref,double Azimuth,double Bin,double Sweep) {
 
-   if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<Ref->LevelNb) {
-      return(Ref->Loc.Elev+sin(DEG2RAD(Ref->Levels[(int)Sweep]))*((int)Bin*Ref->ResR));
+   if (Bin>=0 && Bin<Ref->R && Sweep>=0 && Sweep<Ref->ZRef.LevelNb) {
+      return(Ref->Loc.Elev+sin(DEG2RAD(Ref->ZRef.Levels[(int)Sweep]))*((int)Bin*Ref->ResR));
    } else {
       return(0);
    }
@@ -279,11 +279,11 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
 
    GeoRef_Size(ref,0,0,0,360/ResA,R-1,NTheta-1,0);
 
-   ref->LevelType=LVL_ANGLE;
-   ref->LevelNb=NTheta;
-   ref->Levels=(float*)calloc(ref->LevelNb+1,sizeof(float));
+   ref->ZRef.Type=LVL_ANGLE;
+   ref->ZRef.LevelNb=NTheta;
+   ref->ZRef.Levels=(float*)calloc(ref->ZRef.LevelNb+1,sizeof(float));
    if (Theta)
-      memcpy(ref->Levels,Theta,ref->LevelNb*sizeof(float));
+      memcpy(ref->ZRef.Levels,Theta,ref->ZRef.LevelNb*sizeof(float));
 
    ref->Project=GeoRef_RDRProject;
    ref->UnProject=GeoRef_RDRUnProject;

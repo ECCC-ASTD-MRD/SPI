@@ -524,8 +524,8 @@ void Data_GetStat(TData *Field){
          Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imin,jmin)];
          Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imax,jmax)];
       }  else {
-         Field->Stat->MinLoc.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmin]);
-         Field->Stat->MaxLoc.Elev=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[kmax]);
+         Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
+         Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
       }
    }
 }
@@ -650,13 +650,13 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       /*If those are 3D fields*/
       if (Field[f]->Def->NK>1) {
 
-         /*Try to read HY for hybrid levels*/
-         if (!ZRef_DecodeRPNLevelParams(Field[f])) {
+         /*Decode vertical level parameters*/
+         if (!FSTD_DecodeRPNLevelParams(Field[f])) {
             Tcl_AppendResult(Interp,"Data_Cut: (WARNING) Could not find level paramaters from file",(char*)NULL);
          }
 
          /*Check if we need to get the pressure levels*/
-         if (Field[f]->Ref->LevelType==LVL_PRES || Field[f]->Ref->LevelType==LVL_ANGLE || Field[f]->Ref->LevelType==LVL_GALCHEN || Field[f]->Ref->LevelType==LVL_MASL || Field[f]->Ref->LevelType==LVL_MAGL || Field[f]->Ref->LevelType==LVL_UNDEF) {
+         if (Field[f]->Ref->ZRef.Type==LVL_PRES || Field[f]->Ref->ZRef.Type==LVL_ANGLE || Field[f]->Ref->ZRef.Type==LVL_GALCHEN || Field[f]->Ref->ZRef.Type==LVL_MASL || Field[f]->Ref->ZRef.Type==LVL_MAGL || Field[f]->Ref->ZRef.Type==LVL_UNDEF) {
             p=0;
          }
       } else {
@@ -675,15 +675,15 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
    cut->Ref->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
-   cut->Ref->LevelType=Field[0]->Ref->LevelType;
-   cut->Ref->ETop=Field[0]->Ref->ETop;
-   cut->Ref->Top=Field[0]->Ref->Top;
-   cut->Ref->Ref=Field[0]->Ref->Ref;
-   cut->Ref->Coef[0]=Field[0]->Ref->Coef[0];
-   cut->Ref->Coef[1]=Field[0]->Ref->Coef[1];
+   cut->Ref->ZRef.Type=Field[0]->Ref->ZRef.Type;
+   cut->Ref->ZRef.ETop=Field[0]->Ref->ZRef.ETop;
+   cut->Ref->ZRef.PTop=Field[0]->Ref->ZRef.PTop;
+   cut->Ref->ZRef.PRef=Field[0]->Ref->ZRef.PRef;
+   cut->Ref->ZRef.RCoef[0]=Field[0]->Ref->ZRef.RCoef[0];
+   cut->Ref->ZRef.RCoef[1]=Field[0]->Ref->ZRef.RCoef[1];
 
-   cut->Ref->Levels=(float*)malloc(Field[0]->Def->NK*sizeof(float));
-   memcpy(cut->Ref->Levels,Field[0]->Ref->Levels,Field[0]->Def->NK*sizeof(float));
+   cut->Ref->ZRef.Levels=(float*)malloc(Field[0]->Ref->ZRef.LevelNb*sizeof(float));
+   memcpy(cut->Ref->ZRef.Levels,Field[0]->Ref->ZRef.Levels,Field[0]->Ref->ZRef.LevelNb*sizeof(float));
 
    if (Field[0]->Spec) {
       if (Field[0]->Spec->Desc) cut->Spec->Desc=strdup(Field[0]->Spec->Desc);
@@ -710,7 +710,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
    /*If we are in pressure coordinates, allocate pressure array*/
    if (p) {
-      cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Def->NK*sizeof(float));
+      cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Ref->ZRef.LevelNb*sizeof(float));
       if (!cut->Ref->Hgt) {
          Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for pressure correspondance",(char*)NULL);
          return(TCL_ERROR);
@@ -768,7 +768,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                /*Convert level to pressure*/
                if (Field[f]->Def->Pres>0x1 && cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
-                  cut->Ref->Hgt[idx]=Data_Level2Pressure(Field[f]->Ref,Field[f]->Ref->Levels[k],p0,k);
+                  cut->Ref->Hgt[idx]=ZRef_K2Pressure(&Field[f]->Ref->ZRef,p0,k);
                }
 
                /*If it is vectors, reproject along xsection axis*/
@@ -1131,7 +1131,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
 
    if (Data) {
       if (Pos && Data->Ref && Data->Ref->Pos) {
-         for(n=0;n<Data->Ref->LevelNb;n++) {
+         for(n=0;n<Data->Ref->ZRef.LevelNb;n++) {
             if (Data->Ref->Pos[n]) {
                free(Data->Ref->Pos[n]);
                Data->Ref->Pos[n]=NULL;
@@ -2253,7 +2253,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                   obj=Tcl_NewListObj(0,NULL);
                   for (index=0;index<nb;index++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Levels[index]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels[index]));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
@@ -2276,7 +2276,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   levels[index]=dv;
                }
                ((FSTD_Head*)Field->Head)->IP1=-1;
-               Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->LevelType:LVL_UNDEF),levels);
+               Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),levels);
                free(levels);
             }
             break;
@@ -2286,14 +2286,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Level));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&n);
-               if (n<0 || n>=Field->Ref->LevelNb) {
+               if (n<0 || n>=Field->Ref->ZRef.LevelNb) {
                   Tcl_AppendResult(Interp,"Data_Stat: Invalid level index",(char*)NULL);
                   return(TCL_ERROR);
                }
                if (n!=Field->Def->Level) {
-                  if (Field->Ref->LevelType==LVL_ANGLE) {
-                     Field->Ref->CTH=cos(DEG2RAD(Field->Ref->Levels[n]));
-                     Field->Ref->STH=sin(DEG2RAD(Field->Ref->Levels[n]));
+                  if (Field->Ref->ZRef.Type==LVL_ANGLE) {
+                     Field->Ref->CTH=cos(DEG2RAD(Field->Ref->ZRef.Levels[n]));
+                     Field->Ref->STH=sin(DEG2RAD(Field->Ref->ZRef.Levels[n]));
                   }
                   Field->Def->Level=n;
 
@@ -2307,12 +2307,12 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case LEVELTYPE:
             if (Objc==1) {
                if (Field->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(type[Field->Ref->LevelType],-1));
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(type[Field->Ref->ZRef.Type],-1));
             } else {
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],type,"type",0,&index)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,index,(Field->Ref?Field->Ref->Levels:NULL));
+               Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,index,(Field->Ref?Field->Ref->ZRef.Levels:NULL));
             }
             break;
 
@@ -2413,129 +2413,43 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case TOP:
             if (Objc==1) {
-               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
-                  ZRef_DecodeRPNLevelParams(Field);
+               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+                  FSTD_DecodeRPNLevelParams(Field);
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Top));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PTop));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->Top=tmpd;
+               Field->Ref->ZRef.PTop=tmpd;
             }
             break;
 
          case REF:
             if (Objc==1) {
-               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
-                  ZRef_DecodeRPNLevelParams(Field);
+               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+                  FSTD_DecodeRPNLevelParams(Field);
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Ref));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PRef));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->Ref=tmpd;
+               Field->Ref->ZRef.PRef=tmpd;
             }
             break;
 
          case COEF:
             if (Objc==1) {
-               if (Field->Ref->Top==0.0 && Field->Ref->Ref==0.0) {
-                  ZRef_DecodeRPNLevelParams(Field);
+               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+                  FSTD_DecodeRPNLevelParams(Field);
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->Coef[0]));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->Coef[0]=tmpd;
+               Field->Ref->ZRef.RCoef[0]=tmpd;
             }
             break;
 
       }
    }
    return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Data_Level2Meter>
- * Creation : Avril 2004 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Derminer le niveaux en metre a d'un niveaux d'un autre type
- *
- * Parametres :
- *  <Type>    : Type de niveau.
- *  <Level>   : Valeur du niveau.
- *
- * Retour:
- *  <niveau>  : Niveau en metres
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double Data_Level2Meter(int Type,double Level) {
-
-   /* Dans le cas d'un niveau 0 (Mauvaise habitude premise pour sigma et eta a 0)*/
-   if (Type==LVL_PRES && Level==0) {
-      return(0);
-   }
-
-   switch(Type) {
-      case LVL_MASL    : return (Level); break;
-      case LVL_ETA     :
-      case LVL_SIGMA   : return (SIGMA2METER(Level)); break;
-      case LVL_PRES    : return (PRESS2METER(Level)); break;
-      case LVL_UNDEF   : return (Level); break;
-      case LVL_MAGL    : return (Level); break;
-      case LVL_HYBRID  : return (SIGMA2METER(Level)); break;
-      case LVL_THETA   : return (SIGMA2METER(Level)); break;
-      case LVL_GALCHEN : return (Level); break;
-      case LVL_ANGLE   : return (Level); break;
-   }
-
-   return(0.0);
-}
-
-double Data_Level2Pressure(TGeoRef *Ref,const double Level,double P0,int K) {
-
-   double pres=-1.0,ref,top;
-
-   /*Calculus are done in Pa*/
-   P0*=100.0;
-   ref=Ref->Ref*100.0;
-   top=Ref->Top*100.0;
-
-   switch(Ref->Version) {
-      case 0:
-         switch(Ref->LevelType) {
-            case LVL_PRES:
-               pres=Level;
-               break;
-
-            case LVL_SIGMA:
-               pres=P0*Level;
-               break;
-
-            case LVL_ETA:
-               pres=top+(P0-top)*Level;
-               break;
-
-            case LVL_HYBRID:
-               pres=ref*Level+(P0-ref)*pow((Level-top/ref)/(1.0-top/ref),Ref->Coef[0]);
-               break;
-
-            default:
-               fprintf(stderr,"(ERROR) Data_Level2Pressure: invalid type entry");
-         }
-         break;
-
-      case 1001: pres=Ref->B[K]*P0; break;                          // Sigma
-      case 1002:                                                    // Eta
-      case 1003:                                                    // Hybrid normalized
-      case 5001: pres=Ref->A[K]+Ref->B[K]*P0; break;                // Hybrid
-      case 2001: pres=Ref->A[K]; break;                             // Pressure
-      case 5002: pres=exp(Ref->A[K]+Ref->B[K]*log(P0/ref)); break;  // Hybrid momentum
-      default:
-         fprintf(stderr,"(ERROR) Data_Level2Pressure: invalid type entry");
-   }
-
-   return(pres/100.0);
 }
 
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {

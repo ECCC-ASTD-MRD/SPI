@@ -45,7 +45,8 @@ static int           FSTDInit=0;
 
 static TFSTDVector FSTDVectorTable[256];
 static int         FSTDVectorTableSize=0;
-static int         FSTDIP1MODE=3;
+
+extern int ZREF_IP1MODE;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -180,7 +181,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       case PRESSURE:
 
          if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"field p0");
+            Tcl_WrongNumArgs(Interp,2,Objv,"field p0(pa)");
             return(TCL_ERROR);
          }
 
@@ -193,8 +194,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
 
-         if (field->Ref->Top==0.0 && field->Ref->Ref==0.0) {
-            if (!ZRef_DecodeRPNLevelParams(field)) {
+         if (field->Ref->ZRef.PTop==0.0 && field->Ref->ZRef.PRef==0.0) {
+            if (!FSTD_DecodeRPNLevelParams(field)) {
                Tcl_AppendResult(Interp,"Could not find level paramaters from file",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -206,7 +207,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                for(i=0;i<field->Def->NI;i++) {
                   idx++;
                   Def_Get(p0->Def,0,idx,tmp);
-                  tmp=Data_Level2Pressure(field->Ref,field->Ref->Levels[k],tmp,k);
+                  tmp=ZRef_K2Pressure(&field->Ref->ZRef,tmp,k);
                   Def_Set(field->Def,0,idxk+idx,tmp);
                }
             }
@@ -262,7 +263,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          if(Objc==3) {
             Tcl_GetIntFromObj(Interp,Objv[2],&ip1);
-            level=FSTD_IP2Level(ip1,&kind);
+            level=ZRef_IP2Level(ip1,&kind);
             switch(kind) {
                case LVL_MASL  : sprintf(buf,"%.1f  m (Meter above sea level)",level); break;
                case LVL_SIGMA : sprintf(buf,"%.4f sg (Sigma)",level); break;
@@ -280,7 +281,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
                return(TCL_ERROR);
             }
-            ip1=FSTD_Level2IP(tmp,n);
+            ip1=ZRef_Level2IP(tmp,n);
             Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip1));
          }
          break;
@@ -399,16 +400,16 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
       case IP1MODE:
          if (Objc==2) {
-            if (FSTDIP1MODE==2) {
+            if (ZREF_IP1MODE==2) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEW",-1));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj("OLD",-1));
             }
          } else {
             if (strcmp(Tcl_GetString(Objv[2]),"NEW")==0) {
-               FSTDIP1MODE=2;
+               ZREF_IP1MODE=2;
             } else if  (strcmp(Tcl_GetString(Objv[2]),"OLD")==0) {
-               FSTDIP1MODE=3;
+               ZREF_IP1MODE=3;
             } else {
                Tcl_AppendResult(Interp,"Wrong mode, must be NEW or OLD",(char*)NULL);
                return(TCL_ERROR);
@@ -438,7 +439,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                   Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
                   return(TCL_ERROR);
                }
-               ip1=FSTD_Level2IP(tmpd,n);
+               ip1=ZRef_Level2IP(tmpd,n);
             }
 
             Tcl_GetIntFromObj(Interp,Objv[7],&ip2);
@@ -520,7 +521,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
                return(TCL_ERROR);
             }
-            ip1=FSTD_Level2IP(tmpd,n);
+            ip1=ZRef_Level2IP(tmpd,n);
          }
 
          Tcl_GetIntFromObj(Interp,Objv[6],&ip2);
@@ -728,9 +729,9 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                }
                /*Check compatibility between source and destination*/
                if (!DataDef_Compat(field0->Def,field1->Def)) {
-                  field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->LevelType,field1->Ref->Levels);
+                  field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->ZRef.Type,field1->Ref->ZRef.Levels);
                }
-               field0->Ref->LevelType=field1->Ref->LevelType;
+               field0->Ref->ZRef.Type=field1->Ref->ZRef.Type;
                FSTD_FieldSetTo(field0,field1);
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
             } else if (n>=5 && n<=18) {
@@ -756,7 +757,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                            for(key=0;key<FSIZE3D(field0->Def);key++) {
                               Def_Set(field0->Def,0,key,0);
                            }
-                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->LevelType,field0->Ref->Levels);
+                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
                         }
                      }
                   }
@@ -825,7 +826,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                            for(k=0;k<FSIZE3D(field0->Def);k++) {
                               Def_Set(field0->Def,0,k,0);
                            }
-                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->LevelType,field0->Ref->Levels);
+                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
                         }
                      }
                   }
@@ -1348,120 +1349,6 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
 
    EZUnLock_RPNFile();
    return(ok);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_IP2Meter>
- * Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer une valeur IP1 en elevation en metres.
- *
- * Parametres :
- *  <IP>      : Valeur IP1
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double FSTD_IP2Meter(int IP) {
-
-   int   mode=-1,flag=0,kind;
-   float level=0.0;
-   char  format;
-
-   /*Si c'est 0 on force a 0 metre car 0 mb=outter space*/
-   if (IP==0)
-      return(0);
-
-#ifdef LNK_FSTD
-   /*Convertir en niveau reel*/
-   f77name(convip)(&IP,&level,&kind,&mode,&format,&flag);
-#endif
-
-   return(Data_Level2Meter(kind,level));
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_IP2Level>
- * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer un IP1 en niveau.
- *
- * Parametres :
- *  <Level>   : Valeur du niveau
- *  <Type>    : Type de niveau (Coordonnees)
- *
- * Retour:
- *  <IP>      : Niveau
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-double FSTD_IP2Level(int IP,int *Type) {
-
-   int    mode=-1,flag=0;
-   float  level=0.0;
-   char   format;
-
-#ifdef LNK_FSTD
-   /*Convertir en niveau reel*/
-   f77name(convip)(&IP,&level,Type,&mode,&format,&flag);
-#endif
-
-   return(level);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <FSTD_Level2IP>
- * Creation : Mai 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Transfomer un niveau en IP1.
- *
- * Parametres :
- *  <Level>   : Valeur du niveau
- *  <Type>    : Type de niveau (Coordonnees)
- *
- * Retour:
- *  <IP>      : IP1
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int FSTD_Level2IP(float Level,int Type) {
-
-   int    flag=0,ip=0,mode;
-   char   format;
-
-   if (Type<0) {
-      return(-1);
-   } else {
-#ifdef LNK_FSTD
-
-      /*ETA | THETA -> SIGMA*/
-      if (Type==LVL_ETA || Type==LVL_THETA) {
-         Type=LVL_SIGMA;
-      }
-
-      /*GALCHEN -> MASL*/
-      if (Type==LVL_GALCHEN) {
-         Type=LVL_MAGL;
-      }
-
-     /*Convertir en niveau reel*/
-      if (Type==LVL_HYBRID || Type==LVL_MAGL) {
-         mode=2;
-      } else {
-         mode=FSTDIP1MODE;
-      }
-
-      f77name(convip)(&ip,&Level,&Type,&mode,&format,&flag);
-#endif
-      return(ip);
-   }
 }
 
 /*----------------------------------------------------------------------------

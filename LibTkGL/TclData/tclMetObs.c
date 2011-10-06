@@ -2685,7 +2685,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             glPushName(n);
 
             /*Get station height*/
-            z=Data_Level2Meter(loc->Level,loc->Coord.Elev);
+            z=ZRef_Level2Meter(loc->Coord.Elev,loc->Level);
 
             /*Loop on the model items*/
             skip=1;

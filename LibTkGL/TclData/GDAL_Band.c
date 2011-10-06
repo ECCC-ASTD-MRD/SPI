@@ -1343,12 +1343,12 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
       }
    }
 
-   if(!Field->Ref) {
+   if (!Field->Ref) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing GeoRef",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   if(!Field->Ref->Levels) {
+   if (!Field->Ref->ZRef.Levels) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing Levels",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -1357,7 +1357,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
    if (Scale) {
       levels=(float*)malloc(Field->Def->NJ * sizeof(float));
       for(z=0; z<Field->Def->NJ; ++z) {
-         levels[z] = ScaleValue(Field->Ref->Levels[0], Field->Ref->Levels[Field->Def->NJ-1], Field->Ref->Levels[z]);
+         levels[z] = ScaleValue(Field->Ref->ZRef.Levels[0], Field->Ref->ZRef.Levels[Field->Def->NJ-1], Field->Ref->ZRef.Levels[z]);
       }
    }
 

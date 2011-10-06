@@ -631,18 +631,18 @@ double Graph_Expand(TData *Data,double Y) {
 
    if (Data->Ref->Grid[0]=='V') {
       for(j=0;j<Data->Def->NJ;j++) {
-         if (Data->Ref->Levels[0]>Data->Ref->Levels[Data->Def->NJ-1]) {
-            if (Y>=Data->Ref->Levels[j]) {
+         if (Data->Ref->ZRef.Levels[0]>Data->Ref->ZRef.Levels[Data->Def->NJ-1]) {
+            if (Y>=Data->Ref->ZRef.Levels[j]) {
                break;
             }
          } else {
-            if (Y<=Data->Ref->Levels[j]) {
+            if (Y<=Data->Ref->ZRef.Levels[j]) {
                break;
             }
          }
       }
 
-      Y=j+(Y-Data->Ref->Levels[j-1])/(Data->Ref->Levels[j]-Data->Ref->Levels[j-1]);
+      Y=j+(Y-Data->Ref->ZRef.Levels[j-1])/(Data->Ref->ZRef.Levels[j]-Data->Ref->ZRef.Levels[j-1]);
    }
    return(Y);
 }
@@ -879,7 +879,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
       gr->NSide=gr->ISide=0;
       gr->CB->NbData=0;
       if (gr->CB->Data) free(gr->CB->Data);gr->CB->Data=NULL;
-      
+
       if (gr->NItem) {
 
          /*Clear preprocess stage*/
@@ -895,13 +895,13 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             if ((axisx=GraphAxis_Get(item->XAxis))) axisx->Done=NOTDONE;
             if ((axisy=GraphAxis_Get(item->YAxis))) axisy->Done=NOTDONE;
          }
-         
+
          /*Process axis*/
          a=mx=my=0;
          if (gr->Type[0]!='T') {
             for(i=0;i<gr->NItem;i++) {
                item=GraphItem_Get(gr->Item[i]);
-               
+
                axisx=GraphAxis_Get(item->XAxis);
                if (axisx && !(axisx->Done&DONEX)) {
                   idx=axisx->Pos[0]=='L'?0:1;
@@ -912,7 +912,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
                   a++;
                   axisx->Done|=DONEX;
                }
-              
+
                axisy=GraphAxis_Get(item->YAxis);
                if (axisy && !(axisy->Done&DONEY)) {
                   idx=axisy->Pos[1]=='L'?0:1;

@@ -145,7 +145,4 @@ int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[
 
 int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
 
-double    Data_Level2Meter(int Type,double Level);
-double    Data_Level2Pressure(TGeoRef *Ref,const double Level,double P0,int K);
-
 #endif

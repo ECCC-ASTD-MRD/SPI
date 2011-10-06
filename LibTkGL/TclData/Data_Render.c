@@ -73,13 +73,13 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 
    int k,nk;
 
-   if (Field->Ref->LevelNb==1) {
+   if (Field->Ref->ZRef.LevelNb==1) {
       if (Field->ReadCube) Field->ReadCube(NULL,Field,0,0.0,0.0,NULL);
       Data_PreInit(Field);
    }
 
    nk=0;
-   for(k=0;k<Field->Ref->LevelNb;k++) {
+   for(k=0;k<Field->Ref->ZRef.LevelNb;k++) {
       if (Field->Ref->Pos && Field->Ref->Pos[k]) {
          nk++;
       } else {
@@ -88,7 +88,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
          }
       }
    }
-   return(nk==Field->Ref->LevelNb);
+   return(nk==Field->Ref->ZRef.LevelNb);
 }
 
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
@@ -1537,7 +1537,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                      /*Resize the arrow on the speed*/
                      size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                      if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[j]),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],ZRef_Level2Meter(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
                      if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
@@ -1566,7 +1566,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
@@ -1665,7 +1665,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,x[n]);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,x[n]),y[n],size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,x[n]),y[n],size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             } else {
@@ -1681,7 +1681,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                   size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                   if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Field->Def->Level]),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
+                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
                   if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
             }
@@ -1875,7 +1875,7 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
          Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r]/Field->Ref->ResR,&loc.Lat,&loc.Lon,1,1);
          Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
 
-         h=sin(DEG2RAD(Field->Ref->Levels[0]))*Field->Spec->Range[r];
+         h=sin(DEG2RAD(Field->Ref->ZRef.Levels[0]))*Field->Spec->Range[r];
 
          glTranslated(0.0,0.0,ZM(Proj,h));
          glScalef(VP->Ratio,VP->Ratio,1.0);

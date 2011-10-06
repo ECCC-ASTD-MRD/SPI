@@ -1011,7 +1011,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
             switch(Mode) {
                case REF_COOR : Ref->Project(Ref,X,Y,&Stream[idx][0],&Stream[idx][1],0,1);
                                n=floor(Z);
-                               Stream[idx][2]=Data_Level2Meter(Ref->LevelType,ILIN(Ref->Levels[n],Ref->Levels[n+1],Z-n));
+                               Stream[idx][2]=ZRef_Level2Meter(ILIN(Ref->ZRef.Levels[n],Ref->ZRef.Levels[n+1],Z-n),Ref->ZRef.Type);
                                break;
 
                case REF_PROJ : VertexLoc(Ref,Def,Stream[idx],X,Y,Z);

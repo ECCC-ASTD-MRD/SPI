@@ -121,15 +121,7 @@ typedef struct TGeoRef {
    int     IG1,IG2,IG3,IG4;                               /*Grid descriptor id*/
    Vect3d **Pos;                                          /*Coordonnees des points de grilles (World)*/
 
-   float *Levels;       /*Levels list*/
-   int    LevelType;    /*Type of levels*/
-   int    LevelNb;      /*Number of Levels*/
-   int    Version;      /*Level definition version*/
-   float  Top;          /*Pressure at top of atmosphere*/
-   float  Ref;          /*Refference pressure*/
-   float  Coef[2];      /*Hybrid level coefficient*/
-   float  ETop;         /*Eta coordinate a top*/
-   float  *A,*B;        /*Pressure calculation factors*/
+   TZRef  ZRef;
 
    Coord  Loc;                                            /*(Radar) Localisation du centre de reference*/
    double CTH,STH;                                        /*(Radar) sin and cos of sweep angle*/

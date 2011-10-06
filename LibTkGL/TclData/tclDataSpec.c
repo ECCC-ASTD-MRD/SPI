@@ -1404,7 +1404,10 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->TopoFactor=from->TopoFactor;
    to->ExtrudeFactor=from->ExtrudeFactor;
    to->Set=from->Set;
+
    to->Map=from->Map;
+   CMap_Incr(to->Map);
+
    to->MapFactor=from->MapFactor;
    to->MapAll=from->MapAll;
    to->MapAbove=from->MapAbove;
@@ -1681,6 +1684,8 @@ int DataSpec_Free(TDataSpec *Spec){
 
    if (Spec->InterpDegree) free(Spec->InterpDegree);
    if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);
+
+   if (Spec->Map) CMap_Free(Spec->Map);
 
    free(Spec);
    return(1);

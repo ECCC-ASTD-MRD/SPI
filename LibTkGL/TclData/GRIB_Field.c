@@ -98,7 +98,7 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
 
    /*Allocate memory for various levels*/
    if (!Field->Ref->Pos)
-      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->LevelNb,sizeof(Vect3d*));
+      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));
 
    if (!Field->Ref->Pos[Level]) {
       Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
@@ -108,7 +108,7 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
       }
    }
 
-   z=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Levels[Level]);
+   z=ZRef_Level2Meter(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type);
    for (i=0;i<Field->Def->NI;i++) {
       for (j=0;j<Field->Def->NJ;j++) {
 
@@ -119,7 +119,7 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
          Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
 
          if (Field->Ref->Hgt) {
-            coord.Elev+=Data_Level2Meter(Field->Ref->LevelType,Field->Ref->Hgt[idx]);
+            coord.Elev+=ZRef_Level2Meter(Field->Ref->Hgt[idx],Field->Ref->ZRef.Type);
          } else {
             coord.Elev+=z;
          }
@@ -246,9 +246,9 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&head->IP1);
                if (!Field->Ref) {
-//                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->LevelType:LVL_UNDEF),(Field->Ref?Field->Ref->Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+                  //                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),(Field->Ref?Field->Ref->ZRef.Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
                }
-               Field->Ref->Levels[Field->Def->Level]=FSTD_IP2Level(head->IP1,&Field->Ref->LevelType);
+               Field->Ref->ZRef.Levels[Field->Def->Level]=ZRef_IP2Level(head->IP1,&Field->Ref->ZRef.Type);
             }
             break;
 
@@ -283,7 +283,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
               } else {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
                      Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
@@ -324,7 +324,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->LevelType,ref->Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
+                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
@@ -457,7 +457,7 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
 //         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
-//         head.IP1=FSTD_Level2IP(lval,lval2);
+//         head.IP1=ZRef_Level2IP(lval,lval2);
          head.IP1=lval;
 
    /*Get message info*/
@@ -538,22 +538,22 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    }
 
    err=grib_get_long(head.Handle,"level",&lval);
-   field->Ref->Levels[0]=lval;
+   field->Ref->ZRef.Levels[0]=lval;
    err=grib_get_long(head.Handle,"typeOfLevel",&lval);
    switch(lval) {
       case   1:
       case 103:
-      case 106: field->Ref->LevelType=LVL_MAGL; break;
+      case 106: field->Ref->ZRef.Type=LVL_MAGL; break;
       case 100:
-      case 108: field->Ref->LevelType=LVL_PRES; break;
+      case 108: field->Ref->ZRef.Type=LVL_PRES; break;
       case 101:
       case 102:
-      case 160: field->Ref->LevelType=LVL_MASL; break;
-      case 104: field->Ref->LevelType=LVL_SIGMA; break;
-      case 105: field->Ref->LevelType=LVL_HYBRID; break;
-      case 107: field->Ref->LevelType=LVL_THETA; break;
-      case 111: field->Ref->LevelType=LVL_ETA; break;
-      default: field->Ref->LevelType=LVL_UNDEF;
+      case 160: field->Ref->ZRef.Type=LVL_MASL; break;
+      case 104: field->Ref->ZRef.Type=LVL_SIGMA; break;
+      case 105: field->Ref->ZRef.Type=LVL_HYBRID; break;
+      case 107: field->Ref->ZRef.Type=LVL_THETA; break;
+      case 111: field->Ref->ZRef.Type=LVL_ETA; break;
+      default: field->Ref->ZRef.Type=LVL_UNDEF;
    }
 
    len=GRIB_STRLEN;
@@ -698,7 +698,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          }
 
 //         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
-//         head.IP1=FSTD_Level2IP(lval,lval2);
+//         head.IP1=ZRef_Level2IP(lval,lval2);
          head.IP1=lval;
 
          /*Calculer la date de validitee du champs*/

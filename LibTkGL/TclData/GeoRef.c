@@ -1094,10 +1094,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
    if (New) {
       if (Ref->Name)         free(Ref->Name);         Ref->Name=NULL;
-      if (Ref->Levels)       free(Ref->Levels);       Ref->Levels=NULL;
-      if (Ref->A)            free(Ref->A);            Ref->A=NULL;
-      if (Ref->B)            free(Ref->B);            Ref->B=NULL;
-      Ref->Version=0;
+      ZRef_Free(&Ref->ZRef);
    }
 
    if (Ref->String)       free(Ref->String);       Ref->String=NULL;
@@ -1113,7 +1110,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    Ref->IG1=Ref->IG2=Ref->IG3=Ref->IG4=0;
 
    if (Ref->Pos) {
-      for(n=0;n<Ref->LevelNb;n++) {
+      for(n=0;n<Ref->ZRef.LevelNb;n++) {
          if (Ref->Pos[n]) free(Ref->Pos[n]);
       }
       free(Ref->Pos);
@@ -1234,10 +1231,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
       if (Ref0->BD!=Ref1->BD || Ref0->X0!=Ref1->X0 || Ref0->X1!=Ref1->X1 || Ref0->Y0!=Ref1->Y0 || Ref0->Y1!=Ref1->Y1 || Ref0->Z0!=Ref1->Z0 || Ref0->Z1!=Ref1->Z1)
          return(0);
 
-   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1] || (Dim==3 && Ref0->LevelType!=Ref1->LevelType))
+   if (Ref0->Grid[0]!=Ref1->Grid[0] || Ref0->Grid[1]!=Ref1->Grid[1])
       return(0);
 
-   if (Dim==3 && ((Ref0->LevelNb!=Ref1->LevelNb) || (Ref0->Levels && memcmp(Ref0->Levels,Ref1->Levels,Ref0->LevelNb*sizeof(float))!=0)))
+   if (Dim==3 && !ZRef_Equal(&Ref0->ZRef,&Ref1->ZRef))
       return(0);
 
    if (Ref0->Id>-1 && Ref1->Id>-1 && Ref0->Id!=Ref1->Id)
@@ -1289,7 +1286,6 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref->R=Ref->R;
    ref->ResR=Ref->ResR;
    ref->ResA=Ref->ResA;
-   ref->Version=Ref->Version;
 
    GeoRef_Put(NULL,NULL,ref);
    return(ref);
@@ -1342,23 +1338,18 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref=GeoRef_New();
    GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->Z0,Ref->X1,Ref->Y1,Ref->Z1,Ref->BD);
 
-   ref->LevelNb=Ref->LevelNb;
-   ref->Levels=(float*)malloc(ref->LevelNb*sizeof(float));
-   memcpy(ref->Levels,Ref->Levels,ref->LevelNb*sizeof(float));
    ref->Grid[0]=Ref->Grid[0];
    ref->Project=Ref->Project;
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
    ref->Type=Ref->Type;
 
-   ref->Top=ref->Ref=ref->ETop=0.0;
-   ref->Coef[0]=ref->Coef[1]=1.0;
-   ref->A=ref->B=NULL;
-   ref->Version=0;
    ref->IG1==Ref->IG1;
    ref->IG2==Ref->IG2;
    ref->IG3==Ref->IG3;
    ref->IG4==Ref->IG4;
+
+   ZRef_Copy(&ref->ZRef,&Ref->ZRef);
 
    switch(ref->Grid[0]) {
       case 'R' :
@@ -1389,11 +1380,11 @@ TGeoRef *GeoRef_Resize(TGeoRef *Ref,int NI,int NJ,int NK,int Type,float *Levels)
    }
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
-   ref->LevelNb=(Ref && Ref->Grid[0]=='V')?NJ:NK;
-   ref->LevelType=Type;
-   ref->Levels=(float*)realloc(ref->Levels,ref->LevelNb*sizeof(float));
+   ref->ZRef.LevelNb=(Ref && Ref->Grid[0]=='V')?NJ:NK;
+   ref->ZRef.Type=Type;
+   ref->ZRef.Levels=(float*)realloc(ref->ZRef.Levels,ref->ZRef.LevelNb*sizeof(float));
    if (Levels)
-      memcpy(ref->Levels,Levels,ref->LevelNb*sizeof(float));
+      memcpy(ref->ZRef.Levels,Levels,ref->ZRef.LevelNb*sizeof(float));
 
    return(GeoRef_Find(ref));
 }
@@ -1469,14 +1460,6 @@ TGeoRef* GeoRef_New() {
    ref->LLExtent.MaxX=-1e32;
    ref->LLExtent.MaxY=-1e32;
 
-   ref->Levels=NULL;
-   ref->LevelType=LVL_UNDEF;
-   ref->LevelNb=0;
-   ref->Top=ref->Ref=ref->ETop=0.0;
-   ref->Coef[0]=ref->Coef[1]=1.0;
-   ref->A=ref->B=NULL;
-   ref->Version=0;
-
    /*RDR Specific*/
    ref->Loc.Lat=-999;
    ref->Loc.Lon=-999;
@@ -1492,6 +1475,9 @@ TGeoRef* GeoRef_New() {
    ref->UnProject=GeoRef_UnProject;
    ref->Value=NULL;
    ref->Distance=NULL;
+
+   /*Vertical reference*/
+   ZRef_Init(&ref->ZRef);
 
    return(ref);
 }

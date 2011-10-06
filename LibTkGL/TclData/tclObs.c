@@ -766,17 +766,17 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
             j=1;
 
             /* Get the right level*/
-            for(k=Ref->LevelNb-1;k>=0;k--) {
-              if (Obs->Loc->Coord[i].Elev>Ref->Levels[k])
+            for(k=Ref->ZRef.LevelNb-1;k>=0;k--) {
+              if (Obs->Loc->Coord[i].Elev>Ref->ZRef.Levels[k])
                   break;
             }
-            if (k==Ref->LevelNb-1) {
-               dk=Ref->Levels[k]-Ref->Levels[k-1];
-               pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
+            if (k==Ref->ZRef.LevelNb-1) {
+               dk=Ref->ZRef.Levels[k]-Ref->ZRef.Levels[k-1];
+               pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-Ref->ZRef.Levels[k])/dk);
                j=0;
             } else {
-               dk=Ref->Levels[k+1]-Ref->Levels[k];
-               pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->Levels[k])/dk);
+               dk=Ref->ZRef.Levels[k+1]-Ref->ZRef.Levels[k];
+               pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->ZRef.Levels[k])/dk);
             }
 
             /*Get the horizontal position*/
@@ -1910,7 +1910,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             glPushName(i);
             glPushMatrix();
             Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
-            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev));
+            z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
             glTranslated(0.0,0.0,z);
 
             sz=VP->Ratio*(Obs->Spec->Size*0.5+Obs->Spec->Width);
@@ -1980,7 +1980,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             glPushName(i);
             glPushMatrix();
             Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
-            z=ZM(Proj,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev));
+            z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
             glTranslated(0.0,0.0,z);
 
             if (Interp) {
@@ -2090,7 +2090,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       if (idx>=0 || (!OBSVALID(val) && (!Obs->Spec->InterNb && Obs->Spec->Max==((float*)Obs->Def->Data[0])[Obs->Max] && Obs->Spec->Min==((float*)Obs->Def->Data[0])[Obs->Min]))) {
 
          /*Project coordinates to 2D screen space*/
-         co.Elev=Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev);
+         co.Elev=ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType);
          co.Lat=Obs->Loc->Coord[i].Lat;
          co.Lon=Obs->Loc->Coord[i].Lon;
 
@@ -2202,7 +2202,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
 
    for(i=0;i<Obs->Loc->Nb;i++) {
       glPushName(i);
-      Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,Data_Level2Meter(Obs->LevelType,Obs->Loc->Coord[i].Elev),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
+      Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
       glPopName();
    }
 
