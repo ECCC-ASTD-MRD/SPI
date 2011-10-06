@@ -53,7 +53,7 @@ set tests {
    GDAL_Basic.tcl
    GDAL_Functions.tcl
    GDAL_Slope.tcl
-   { GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 }
+   { GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 0 0 100 100 }
    OBS_BUFR.tcl
    OBS_BURP.tcl
    OBS_CSV2OBS.tcl
@@ -76,6 +76,7 @@ set tests {
    OGR_Rasterize.tcl
    OGR_Simplify.tcl
    OGR_TZCheck.tcl
+   OGR_POESFrequency2FSTD.tcl
    { OGR_Export2txt.tcl DataIn/land_bg_p.shp }
    RADAR_Functions.tcl
    RADAR_EchoTop.tcl

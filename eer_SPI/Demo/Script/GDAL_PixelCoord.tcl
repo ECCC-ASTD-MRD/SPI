@@ -25,13 +25,20 @@ package require TclData
 puts \n[file tail [info script]]
 
 set file [lindex $argv 0]
+set x0   [lindex $argv 1]
+set y0   [lindex $argv 2]
+set x1   [lindex $argv 3]
+set y1   [lindex $argv 4]
+
+#set x1 [gdalband define BAND -width]
+#set y1 [gdalband define BAND -height]
 
 #----- Ouverture du fichier
 set bands [gdalfile open FILE read $file]
 gdalband read BAND $bands
 
-for { set x 0 } { $x<[gdalband define BAND -width] } { incr x } {
-   for { set y 0 } { $y<[gdalband define BAND -height] } { incr y } {
+for { set x $x0 } { $x<$x1 } { incr x } {
+   for { set y $y0} { $y<$y1 } { incr y } {
       set coords [gdalband stats BAND -gridpoint $x $y]
       set val    [gdalband stats BAND -gridvalue $x $y]
 

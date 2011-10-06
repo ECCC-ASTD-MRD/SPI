@@ -44,6 +44,12 @@ fstdfield ip1mode NEW
 set fields [fstdfile open MESO read $file]
 fstdfile open MESOSTRATO write $file.hyb
 
+#----- Copy grid descriptors
+fstdfield read TIC MESO -1 "" -1 -1 -1 "" >>
+fstdfield read TAC MESO -1 "" -1 -1 -1 "" ^^
+fstdfield write TIC MESOSTRATO 0 True
+fstdfield write TAC MESOSTRATO 0 True
+
 #----- Read surface pressure, we need it to go from ETA to HYBRID
 fstdfield read P0 MESO -1 "" -1 -1 -1 "" "P0"
 
