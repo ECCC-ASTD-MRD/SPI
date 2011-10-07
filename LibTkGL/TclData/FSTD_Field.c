@@ -646,7 +646,9 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
          if (FSTD_FileSet(NULL,fid)<0)
             return(i);
 
+         EZLock_RPNField();
          i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
+         EZUnLock_RPNField();
 
          FSTD_FileUnset(NULL,fid);
       }
