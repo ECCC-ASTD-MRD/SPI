@@ -1280,9 +1280,6 @@ proc Exp::ProductRSMCJointData { } {
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
       set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
-   } elseif { $region == "5" } {
-      exec echo "5" > $path/leadrsmc.txt
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
    } else {
       file delete -force $path/leadrsmc.txt
    }
