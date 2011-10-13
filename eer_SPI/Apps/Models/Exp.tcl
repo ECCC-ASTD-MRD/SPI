@@ -1293,7 +1293,7 @@ proc Exp::ProductRSMCJointData { } {
    if { $run == "Unavailable" } {
       exec echo "Unavailable" > $path/CA_DATE.TXT
    } else {
-      exec echo [clock format [clock seconds] -format "${run}_%H%M" -gmt true] > $path/CA_DATE.TXT
+      exec echo [clock format [clock seconds] -format "%Y%m%d${run}_%H%M" -gmt true] > $path/CA_DATE.TXT
    }
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
