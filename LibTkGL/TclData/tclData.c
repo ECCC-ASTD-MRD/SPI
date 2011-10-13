@@ -219,8 +219,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
 
-         if (!field0->Stat)
-            Data_GetStat(field0);
+         Data_PreInit(field0);
 
          if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
             if (Objc==4) {

@@ -1058,7 +1058,7 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
       }
 
       /*If the tile is empty, use the best previous resolution*/
-      if (!(next->Flag&GEOTEX_DATA)) {
+      if (next && !(next->Flag&GEOTEX_DATA)) {
             next=best;
       }
 
@@ -1110,22 +1110,22 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
 
    Tcl_MutexLock(&MUTEX_GEOTEX);
    tile=GeoTex_Pick(Tex,Tex->Res,&x,&y);
+   nc=Tex->Type==GL_LUMINANCE?1:Tex->Type==GL_RGB?3:4;
 
    if (tile && tile->Ny) {
-      nc=Tex->Type==GL_LUMINANCE?1:Tex->Type==GL_RGB?3:4;
       t=(y*tile->Nx+x)*nc;
 
       for(c=0;c<nc;c++) {
-         if (tile) {
-            GeoTex_Val(Tex->Dim,tile->Data,c,t,val);
-            if (Tex->Dim<GL_FLOAT) {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(val));
-            } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
-            }
+         GeoTex_Val(Tex->Dim,tile->Data,c,t,val);
+         if (Tex->Dim<GL_FLOAT) {
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(val));
          } else {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val));
          }
+      }
+   } else {
+      for(c=0;c<nc;c++) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
       }
    }
    Tcl_MutexUnlock(&MUTEX_GEOTEX);
