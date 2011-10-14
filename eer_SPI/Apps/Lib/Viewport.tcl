@@ -655,6 +655,8 @@ proc Viewport::ConfigSet { Frame } {
    }
 
    if { [info exists Miniport::Data(Mini$Frame)] } {
+      Miniport::Projection $Frame
+
       projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
@@ -2984,6 +2986,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
          $Frame.page.canvas itemconf $vp -data [FieldCalc::Operand $vp $Data(Data$vp)]
       }
    }
+
    Miniport::UpdateData $Frame $VP
    update idletasks
 

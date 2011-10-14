@@ -39,8 +39,9 @@ namespace eval Miniport { } {
    set Lbl(Relative)   { "Relatif" "Relative" }
    set Lbl(Cursor)     { "Suivre le curseur" "Follow mouse" }
    set Lbl(Color)      { "Couleur de la région visible" "Color of view area" }
-   set Lbl(Ortho)      { "Orthographique" "Orthographic" }
-   set Lbl(Cylin)      { "Cylindrique" "Cylindric" }
+   set Lbl(Ortho)      { "Projection Orthographique" "Orthographic projection" }
+   set Lbl(Cylin)      { "Projection Cylindrique" "Cylindric projection" }
+   set Lbl(Same)       { "Projection maitre" "Master projection" }
 }
 
 #----------------------------------------------------------------------------
@@ -86,7 +87,7 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
    set Viewport::Data(CursorMINI$Frame)   True         ;#Suivre le curseur en mode zoom in (Magnifier)
    set Viewport::Data(ColorMINI$Frame)    black        ;#Couleur du rectangle de position
    set Viewport::Data(LocationMINI$Frame) True         ;#Afficher le rectangle de position
-   set Viewport::Data(TypeMINI$Frame)     orthographic ;#Projection
+   set Viewport::Data(TypeMINI$Frame)     same         ;#Projection
 
    $Frame.page.canvas configure -cursor watch
    update idletasks
@@ -138,10 +139,12 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
       $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Relative) $GDefs(Lang)] -variable Viewport::Data(RelativeMINI$Frame) \
          -onvalue True -offvalue False -command "Page::Update $Frame"
       $Frame.bf$wtag.menu add separator
-      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Ortho) $GDefs(Lang)] -value orthographic -variable  Viewport::Data(TypeMINI$Frame) \
-         -command "projection configure MINI$Frame -type orthographic; $Frame.page.canvas itemconf MINI$Frame -update True"
-      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Cylin) $GDefs(Lang)] -value cylindric -variable  Viewport::Data(TypeMINI$Frame) \
-         -command "projection configure MINI$Frame -type cylindric; $Frame.page.canvas itemconf MINI$Frame -update True"
+      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Same) $GDefs(Lang)] -value same -variable Viewport::Data(TypeMINI$Frame) \
+         -command "Miniport::Projection $Frame"
+      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Ortho) $GDefs(Lang)] -value orthographic -variable Viewport::Data(TypeMINI$Frame) \
+         -command "Miniport::Projection $Frame"
+      $Frame.bf$wtag.menu add radiobutton -label [lindex $Lbl(Cylin) $GDefs(Lang)] -value cylindric -variable Viewport::Data(TypeMINI$Frame) \
+         -command "Miniport::Projection $Frame"
       $Frame.bf$wtag.menu add separator
       $Frame.bf$wtag.menu add checkbutton -label [lindex $Lbl(Data) $GDefs(Lang)] -variable Viewport::Data(DataMINI$Frame) \
          -onvalue True -offvalue False -command "Viewport::UpdateData $Frame"
@@ -183,6 +186,41 @@ proc Miniport::Create { Frame X0 Y0 Width Height Active Z { Lat -999 } { Lon -99
 
    update idletasks
    $Frame.page.canvas configure -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Miniport::Projection>
+# Creation : Octobre 2011 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajuster les parametres relatifs a la projection
+#
+# Parametres :
+#   <Frame>  : Indentificateur de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Miniport::Projection { Frame } {
+
+   set wtag $Page::Data(Tag)MINI
+
+   if { $Viewport::Data(TypeMINI$Frame)=="same" } {
+      projection configure MINI$Frame -type [projection configure $Frame -type] -georef [projection configure $Frame -georef]
+      catch { $Frame.bf$wtag.menu entryconfigure 7 -state normal }
+  } else {
+      #----- We can only show the data when the projection is the same
+      set type [projection configure $Frame -type]
+      if { $type!="$Viewport::Data(TypeMINI$Frame)" } {
+         set Viewport::Data(DataMINI$Frame) False
+         $Frame.page.canvas itemconf MINI$Frame -data {}
+         catch { $Frame.bf$wtag.menu entryconfigure 7 -state disabled }
+      }
+
+      projection configure MINI$Frame -type $Viewport::Data(TypeMINI$Frame) -data {} -georef ""
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -344,6 +382,7 @@ proc Miniport::UpdateData { Frame { VP "" } } {
          $Frame.page.canvas itemconf MINI$Frame -data {}
       }
    }
+   Miniport::Projection $Frame
 }
 
 #----------------------------------------------------------------------------
