@@ -320,7 +320,6 @@ proc Page::Activate { Frame { Force 0 } } {
       }
       set SPI::Data(ShowColorBar)  [ColorBar::Active $Frame]
       set SPI::Data(ShowDataBar)   [DataBar::Active $Frame]
-      set SPI::Data(ShowMini)      [info exists Miniport::Data(Mini$Frame)]
    }
 
    #----- Update des outils
@@ -753,11 +752,7 @@ proc SPI::LayoutSaveItems { Frame File } {
 
    #----- Les viewports
    Viewport::Write $Frame $File
-
-   set SPI::Data(ShowMini$Frame)  [info exists Miniport::Data(Mini$Frame)]
-   if { $SPI::Data(ShowMini$Frame) } {
-      Miniport::Write $Frame $File
-   }
+   Miniport::Write $Frame $File
 
    #----- Graphs
    Graph::Write $Frame $File

@@ -380,7 +380,7 @@ proc Page::ActiveWrap { Frame Object } {
    variable Data
 
    if { $Object!="" } {
-      set tag $Data(Tag)$Object
+      set tag $Data(Tag)[string map { . "" } $Object]
 
       catch {
          $Frame.bs$tag configure -fg red
@@ -411,7 +411,7 @@ proc Page::ActiveUnWrap { Frame Object } {
    global   GDefs
    variable Data
 
-   set tag $Data(Tag)$Object
+   set tag $Data(Tag)[string map { . "" } $Object]
 
    catch {
       $Frame.bs$tag configure -fg black
@@ -1679,10 +1679,12 @@ proc Page::Update { { Frame "" } { VP True } } {
          $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
       }
 
-      if { $vp!="" && [info exists Miniport::Data(Mini$Frame)] } {
-         Miniport::Lens $Frame
-         Miniport::Coverage $Frame $vp
-         $Frame.page.canvas itemconf MINI$Frame -update True
+      if { $vp!="" } {
+         foreach mini $Miniport::Data(Mini$Frame) {
+            Miniport::Lens $Frame $mini
+            Miniport::Coverage $Frame $mini $vp
+            $Frame.page.canvas itemconf $mini -update True
+         }
          $Frame.page.canvas raise $Page::Data(Tag)MINI$Frame
       }
    }

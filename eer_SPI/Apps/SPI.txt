@@ -59,7 +59,7 @@ namespace eval SPI {
    set Lbl(DataBar)        { "Légende des données" "Data legend" }
    set Lbl(Logo)           { "Logo" "Logo" }
    set Lbl(Link)           { "Pointeur commun" "Cursor link" }
-   set Lbl(Miniport)       { "Encart/Loupe" " Inset/Magnifier" }
+   set Lbl(Miniport)       { "Ajouter un Encart/Loupe" " Add Inset/Magnifier" }
    set Lbl(Name)           { "Nom" "Name" }
    set Lbl(New)            { "Nouveau" "New" }
    set Lbl(No)             { "Non" "No" }

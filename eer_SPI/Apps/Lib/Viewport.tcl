@@ -654,15 +654,15 @@ proc Viewport::ConfigSet { Frame } {
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
    }
 
-   if { [info exists Miniport::Data(Mini$Frame)] } {
-      Miniport::Projection $Frame
+   foreach mini $Miniport::Data(Mini$Frame) {
+      Miniport::Projection $Frame $mini
 
-      projection configure MINI$Frame -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      projection configure $mini -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
-     $Frame.page.canvas itemconfigure MINI$Frame -font $Resources(Font) -bg $Resources(Bkg) \
+     $Frame.page.canvas itemconfigure $mini -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -741,14 +741,14 @@ proc Viewport::Follow { Frame VP X Y } {
                $frame.page.canvas create line $x [expr $Data(Y$vp)+$Data(Height$vp)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
             }
          }
-         if { [info exists Miniport::Data(Mini$frame)] } {
-            if { [set xy [MINI$frame -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
+         foreach mini $Miniport::Data(Mini$frame) {
+            if { [set xy [$mini -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
                set x [lindex $xy 0]
                set y [lindex $xy 1]
-               $frame.page.canvas create line $Data(XMINI$frame) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line [expr $Data(XMINI$frame)+$Data(WidthMINI$frame)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x $Data(YMINI$frame) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x [expr $Data(YMINI$frame)+$Data(HeightMINI$frame)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $Data(X$mini) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line [expr $Data(X$mini)+$Data(Width$mini)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x $Data(Y$mini) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $x [expr $Data(Y$mini)+$Data(Height$mini)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
             }
          }
       }
@@ -769,12 +769,13 @@ proc Viewport::Follow { Frame VP X Y } {
    if { $Map(LatCursor)==-999.0 || $Map(LonCursor)==-999.0 } {
       return 0
    } else {
-      #----- Auto refresf du MiniPort
-
-      if { [info exists Miniport::Data(Mini$Frame)] && "$VP"!="MINI$Frame"} {
-         Miniport::Lens $Frame
-         Miniport::UpdateData $Frame $VP
-         Miniport::Coverage $Frame $VP
+      if { [string range $VP 0 3]!="MINI" } {
+         #----- Auto refresh du MiniPort
+         foreach mini $Miniport::Data(Mini$Frame) {
+            Miniport::Lens $Frame $mini
+            Miniport::UpdateData $Frame $mini $VP
+            Miniport::Coverage $Frame $mini $VP
+         }
       }
       return 1
    }
@@ -2071,8 +2072,8 @@ proc Viewport::Resolution { Frame Res } {
             }
          }
 
-         if { [info exists Miniport::Data(Mini$Frame)] } {
-            $Frame.page.canvas itemconf MINI$Frame -update True
+         foreach mini $Miniport::Data(Mini$Frame) {
+            $Frame.page.canvas itemconf $mini -update True
          }
          update idletasks
       }
@@ -2790,10 +2791,11 @@ proc Viewport::Setup { Frame } {
       set Data(Data$Frame) {}              ;#Liste des donnees
    }
 
-   set Data(VP$Frame)       ""             ;#Viewport courant dans un frame
-   set Map(Type$Frame)      $Map(Type)     ;#Type de projection
-   set Map(GeoRef$Frame)    $Map(GeoRef)   ;#Georef associee
-   set Data(Seconds$Frame)  0
+   set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
+   set Map(Type$Frame)              $Map(Type)     ;#Type de projection
+   set Map(GeoRef$Frame)            $Map(GeoRef)   ;#Georef associee
+   set Data(Seconds$Frame)          0              ;#Frame per second counter
+   set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
    if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
       font create FONT$Frame -family courier -weight bold -size -10
@@ -2987,7 +2989,9 @@ proc Viewport::UpdateData { Frame { VP { } } } {
       }
    }
 
-   Miniport::UpdateData $Frame $VP
+   foreach mini $Miniport::Data(Mini$Frame) {
+      Miniport::UpdateData $Frame $mini $VP
+   }
    update idletasks
 
    #----- Dans le cas d'une projection "GRID", reevaluer

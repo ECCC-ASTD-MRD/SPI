@@ -861,8 +861,9 @@ proc Animator::Play { } {
       }
 
       #----- Appeler la fonction de mises a jour des informations
-
-      Miniport::UpdateData $Play(Page)
+      foreach mini $Miniport::Data(Mini$Frame) {
+         Miniport::UpdateData $Play(Page) $mini
+      }
       Page::Update $Play(Page) [expr [llength $Play(Frames)]?0:1]
       Page::UpdateCommand $Play(Page)
 
