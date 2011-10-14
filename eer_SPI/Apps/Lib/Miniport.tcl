@@ -292,23 +292,7 @@ proc Miniport::Coverage { Frame Mini { VP "" } } {
 
       $Frame.page.canvas itemconfigure AREA$Mini -fill $Viewport::Data(Color$Mini)
 
-      if { [projcam configure $Mini -lens]<[projcam configure $Frame -lens] } {
-
-         #----- Coverage dans le miniport
-
-         set x0  [expr $Viewport::Data(X$VP)+1]
-         set y0  [expr $Viewport::Data(Y$VP)+1]
-         set x1  [expr $x0+$Viewport::Data(Width$VP)-1]
-         set y1  [expr $y0+$Viewport::Data(Height$VP)-1]
-
-         set ll0 [$VP -unproject $x0 $y0]
-         set ll1 [$VP -unproject $x1 $y0]
-         set ll2 [$VP -unproject $x1 $y1]
-         set ll3 [$VP -unproject $x0 $y1]
-
-         set xy  [$Mini -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
-            [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]]
-      } else {
+      if { [projcam configure $Mini -lens]>[projcam configure $Frame -lens] } {
 
          #----- Coverage dans le viewport
 
@@ -322,10 +306,32 @@ proc Miniport::Coverage { Frame Mini { VP "" } } {
          set ll2 [$Mini -unproject $x1 $y1]
          set ll3 [$Mini -unproject $x0 $y1]
 
-         set xy  [$VP -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
-            [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]]
+         set xy [lindex  [$VP -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
+            [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]] 0]
+
+      } else {
+
+         #----- Coverage dans le miniport
+
+         set x0  [expr $Viewport::Data(X$VP)+1]
+         set y0  [expr $Viewport::Data(Y$VP)+1]
+         set x1  [expr $x0+$Viewport::Data(Width$VP)-1]
+         set y1  [expr $y0+$Viewport::Data(Height$VP)-1]
+
+         set ll0 [$VP -unproject $x0 $y0]
+         set ll1 [$VP -unproject $x1 $y0]
+         set ll2 [$VP -unproject $x1 $y1]
+         set ll3 [$VP -unproject $x0 $y1]
+
+         set xy  [lindex [$Mini -projectline TRUE [list [lindex $ll0 0] [lindex $ll0 1] 0.0 [lindex $ll1 0] [lindex $ll1 1] 0.0 \
+            [lindex $ll2 0] [lindex $ll2 1] 0.0 [lindex $ll3 0] [lindex $ll3 1] 0.0 [lindex $ll0 0] [lindex $ll0 1] 0.0]] 0]
       }
-      catch { $Frame.page.canvas coords AREA$Mini [lindex $xy 0] }
+
+      if { [llength $xy]<4 } {
+         $Frame.page.canvas coords AREA$Mini $Viewport::Data(X$Mini) $Viewport::Data(Y$Mini) $Viewport::Data(X$Mini) $Viewport::Data(Y$Mini)
+      } else {
+         $Frame.page.canvas coords AREA$Mini $xy
+      }
       $Frame.page.canvas raise AREA$Mini $Mini
    } else {
       $Frame.page.canvas coords AREA$Mini $Viewport::Data(X$Mini) $Viewport::Data(Y$Mini) $Viewport::Data(X$Mini) $Viewport::Data(Y$Mini)
@@ -357,11 +363,13 @@ proc Miniport::Lens { Frame Mini } {
 
    projcam configure $Mini -lens $lens
 
-   if { $lens<[projcam configure $Frame -lens] || $Viewport::Data(Cursor$Mini) } {
-      eval projection configure $Mini -location [projection configure $Frame -location]
-   }
-   if { [projcam configure $Mini -lens]>[projcam configure $Frame -lens] && $Viewport::Data(Cursor$Mini) } {
-      projection configure $Mini -location $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
+   if { $Viewport::Data(Cursor$Mini) } {
+      if { $lens<[projcam configure $Frame -lens] } {
+         eval projection configure $Mini -location [projection configure $Frame -location]
+      }
+      if { [projcam configure $Mini -lens]>[projcam configure $Frame -lens] } {
+         projection configure $Mini -location $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
+      }
    }
 }
 
