@@ -58,7 +58,7 @@ int GeoRef_Init(Tcl_Interp *Interp) {
 
 void GeoRef_Incr(TGeoRef *Ref) {
    Tcl_MutexLock(&MUTEX_GEOREF);
-   Ref->NRef++;
+   if (Ref) Ref->NRef++;
    Tcl_MutexUnlock(&MUTEX_GEOREF);
 }
 
