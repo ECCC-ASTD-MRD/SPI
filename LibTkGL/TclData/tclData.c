@@ -597,6 +597,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
    if (field->Spec && Field->Spec) {
       field->Spec->Map=Field->Spec->Map;
+      CMap_Incr(field->Spec->Map);
 
       if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
       if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);

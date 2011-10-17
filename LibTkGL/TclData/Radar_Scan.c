@@ -239,7 +239,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
 
                if (loc.Lat!=Rad->Ref->Loc.Lat || loc.Lon!=Rad->Ref->Loc.Lon  || loc.Elev!=Rad->Ref->Loc.Elev) {
                   ref=Rad->Ref;
-                  Rad->Ref=GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->Levels);
+                  Rad->Ref=GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->ZRef.Levels);
                   GeoRef_Destroy(Interp,ref->Name);
                   Data_Clean(Rad,1,1,1);
                   th=DEG2RAD(head->Data->volScan[head->Scan]->sweep[Rad->Def->Level]->elevationAngle);
@@ -447,7 +447,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
 
    /*Allocate memory for various levels*/
    if (!Rad->Ref->Pos)
-      Rad->Ref->Pos=(Vect3d**)calloc(Rad->Ref->LevelNb,sizeof(Vect3d*));
+      Rad->Ref->Pos=(Vect3d**)calloc(Rad->Ref->ZRef.LevelNb,sizeof(Vect3d*));
 
    if (!Rad->Ref->Pos[Level]) {
       Rad->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Rad->Def)*sizeof(Vect3d));
@@ -461,7 +461,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    if (Rad->Ref->Grid[0]=='V') {
       for (j=0;j<Rad->Def->NJ;j++) {
          idxi=j*Rad->Def->NI;
-         th=DEG2RAD(Rad->Ref->Levels[j]);
+         th=DEG2RAD(Rad->Ref->ZRef.Levels[j]);
          sth=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
             coord.Lat=Rad->Ref->Lat[i];

@@ -984,7 +984,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   ref=NULL;
                } else if (!(ref=GeoRef_Get(Tcl_GetString(Objv[i])))) {
                   Tcl_AppendResult(Interp,"\n   Projection_Config: Georeference unknown (",Tcl_GetString(Objv[i]),")",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                if (ref!=proj->Ref) {
                   if (proj->Ref)
