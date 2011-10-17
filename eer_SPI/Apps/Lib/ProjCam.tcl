@@ -1004,7 +1004,10 @@ proc ProjCam::ZoomIn { Cam Frame VP { Factor 0 } } {
    } else {
       #----- Extraire les coordonnees du rectangle de zoom du viewport actif
 
-      set cr [$Frame.page.canvas coord RECTZOOM]
+      if { [llength [set cr [$Frame.page.canvas coord RECTZOOM]]]!=4 } {
+         return
+      }
+
       $Frame.page.canvas delete RECTZOOM TARGETX TARGETY
       set x  [lindex $cr 0]
       set y  [lindex $cr 1]

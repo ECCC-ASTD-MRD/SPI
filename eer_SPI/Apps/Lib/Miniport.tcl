@@ -290,6 +290,11 @@ proc Miniport::Coverage { Frame Mini { VP "" } } {
          set VP $Miniport::Data(VP$Frame)
       }
 
+      #----- Make sure viewport is well initialiazed
+      if { ![llength [info command $VP]] } {
+         return
+      }
+
       $Frame.page.canvas itemconfigure AREA$Mini -fill $Viewport::Data(Color$Mini)
 
       if { [projcam configure $Mini -lens]>[projcam configure $Frame -lens] } {
