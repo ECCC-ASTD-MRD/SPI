@@ -572,8 +572,8 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj       *obj,*sub;
 
 
-   static CONST char *sopt[] = { "-name","-arch","-os","-osrelease","-osversion","-uptime","-loads","-totalmem","-freemem","-sharedmem","-buffermem","-totalswap","-freeswap","-process","-totalhigh","-freehigh","-memunit",NULL };
-   enum               opt { SNAME,SARCH,SOS,SRELEASE,SVERSION,UPTIME,LOADS,TOTALMEM,FREEMEM,SHAREDMEM,BUFFERMEM,TOTALSWAP,FREESWAP,PROCESS,TOTALHIGH,FREEHIGH,MEMUNIT };
+   static CONST char *sopt[] = { "-name","-arch","-os","-osrelease","-osversion","-nbcpu","-uptime","-loads","-totalmem","-freemem","-sharedmem","-buffermem","-totalswap","-freeswap","-process","-totalhigh","-freehigh","-memunit",NULL };
+   enum               opt { SNAME,SARCH,SOS,SRELEASE,SVERSION,NBCPU,UPTIME,LOADS,TOTALMEM,FREEMEM,SHAREDMEM,BUFFERMEM,TOTALSWAP,FREESWAP,PROCESS,TOTALHIGH,FREEHIGH,MEMUNIT };
 
    /*Fill the ps structures*/
    if (sysinfo(&psysinfo)<0) {
@@ -604,6 +604,9 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.version,-1)); break;
          case SARCH:
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(putsname.machine,-1)); break;
+
+         case NBCPU:
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(sysconf(_SC_NPROCESSORS_ONLN))); break;
 
          case UPTIME:
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(psysinfo.uptime)); break;
