@@ -209,7 +209,7 @@ proc Mapper::Del { } {
       if { [gdalband is $object] } {
          gdalband free $object
          gdalfile close $Data(Id$object)
-         ogrgeometry free MASK$object  MASKRING$object 
+         ogrgeometry free MASK$object  MASKRING$object
       } elseif { [ogrlayer is $object] } {
          ogrlayer free $object
          ogrfile close $Data(Id$object)
@@ -462,7 +462,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
       set Data(Band$id) $bands
    }
 
-   set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
+   set Data(Job) [lindex $Msg(Read) $GDefs(Lang)]
    update idletasks;
 
    if { ![llength $Bands] } {
@@ -479,7 +479,7 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    #----- Check for generic naming
    for { set i 0 } { $i<[llength $Bands] } { incr i } {
       if { [lindex [lindex $Bands $i] 0]=="" } {
-         lset Bands $i $Data(Id$id)
+         lset Bands $i 0 $Data(Id$id)
       }
    }
 
@@ -1299,7 +1299,7 @@ proc Mapper::AsProject { File } {
       puts $File "Mapper::Window\n"
 
       if { [winfo exists .mapperparams] } {
-         puts $File "Mapper::Params True [$Data(Tab1).select.list curselection]"
+         puts $File "Mapper::Params True $Mapper::Data(Object)"
          puts $File "wm geometry .mapperparams =[wm geometry .mapperparams]"
          puts $File "TabFrame::Select .mapperparams.tab [TabFrame::Current .mapperparams.tab]\n"
       }
