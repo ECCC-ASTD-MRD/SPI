@@ -2085,12 +2085,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       return
    }
 
-   if { [file exists $File] } {
-      if { ![Dialog::Default . 300 WARNING $Msg(Exist) "\n\t$File\n" 0 $Lbl(No) $Lbl(Yes)] } {
-         return ""
-      }
-   }
-
    set SPI::Project(File) $File
 
   #----- Check for extension

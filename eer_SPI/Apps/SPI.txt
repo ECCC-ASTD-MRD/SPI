@@ -190,7 +190,6 @@ namespace eval SPI {
    set Msg(Page)           { "Ajouter cet item dans une nouvelle fênetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
    set Msg(Locked)         { "La mise-en-page de la page courante ne peut être changée, que voulez-vous faire ?"
                              "Current page layout cannot be changed, what do you want to do ?" }
-   set Msg(Exist)          { "Un fichier de ce nom existe déja, voulez vous le remplacer ?" "This file already exists, do you want to replace it ?" }
 
    #----- Definitions des titres
 
