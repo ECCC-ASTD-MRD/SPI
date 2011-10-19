@@ -130,7 +130,7 @@ namespace eval FileBox {
    set Msg(Right)        { "Vous n'avez pas la permission d'accéder a ce répertoire:"
                            "You do not have the right to access this path:" }
    set Msg(Del)          { "Voulez-vous vraiment supprimer ces fichiers ?" "Do you really want to suppress these files ?" }
-   set Msg(Overwrite)    { "Voulez-vous écraser ce fichier ?" "Do you want to overwrite this file ?" }
+   set Msg(Overwrite)    { "Un fichier avec ne nom existe déja, voulez-vous écraser ce fichier ?" "A file by this name already exists, Do you want to overwrite this file ?" }
 
    #----- Definitions des Erreurs
 
@@ -439,8 +439,8 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
    #----- Creation des evenements
 
 #   bind .filebox.path.name.select <Return>           { + FileBox::GetContent }
-   bind .filebox.file.name        <Return>           " FileBox::Select 1 "
-   bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
+#   bind .filebox.file.name        <Return>           { FileBox::Select 1 }
+#   bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
    bind .filebox.files.list       <Button-3>         { FileBox::Popup %X %Y %y}
    bind .filebox.type.pattern     <Return>           { FileBox::GetContent }
    bind .filebox.file.pattern     <Return>           { FileBox::GetContent }
@@ -853,14 +853,20 @@ proc FileBox::Select { Ok } {
           set Param(Result) $result
        }
       "Save" {
+         set ext [file extension [lindex [lindex [lindex $Param(Types) 0] end] 0]]
+
          if { [string trim $Param(Filename)]!="" } {
             if { [file isfile $Param(Path)/$Param(Filename)] } {
               if { [Dialog::Default .filebox 200 WARNING $Msg(Overwrite) "\n\n$Param(Path)/$Param(Filename)" 0 $Lbl(No) $Lbl(Yes)] } {
                   set Param(Result) [FileBox::Filename $Param(Path)/$Param(Filename)]
                }
 
-             #----- Si le path est bon
+            } elseif { [file isfile $Param(Path)/$Param(Filename)$ext] } {
+              if { [Dialog::Default .filebox 200 WARNING $Msg(Overwrite) "\n\n$Param(Path)/$Param(Filename)$ext" 0 $Lbl(No) $Lbl(Yes)] } {
+                  set Param(Result) [FileBox::Filename $Param(Path)/$Param(Filename)$ext]
+               }
 
+             #----- Si le path est bon
              } else {
                 if { [file writable [file dirname $Param(Path)/$Param(Filename)]] } {
                    set Param(Result) [FileBox::Filename $Param(Path)/$Param(Filename)]
