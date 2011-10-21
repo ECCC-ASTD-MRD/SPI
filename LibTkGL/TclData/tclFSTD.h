@@ -40,10 +40,11 @@
 #include "EZVrInt.h"
 
 #define FSTD_NKMAX     1024
-#define FSTD_LISTALL   0
-#define FSTD_LISTVAR   1
-#define FSTD_LISTDATEV 2
-#define FSTD_LISTIP1   3
+#define FSTD_LISTALL    0
+#define FSTD_LISTVAR    1
+#define FSTD_LISTTYPVAR 2
+#define FSTD_LISTDATEV  3
+#define FSTD_LISTIP1    4
 
 typedef struct TFSTDVector {
    char  *UU,*VV,*WW;
