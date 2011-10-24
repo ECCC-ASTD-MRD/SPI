@@ -440,7 +440,7 @@ proc FileBox::Create { Parent Path Mode Types { File "" } } {
 
 #   bind .filebox.path.name.select <Return>           { + FileBox::GetContent }
 #   bind .filebox.file.name        <Return>           { FileBox::Select 1 }
-#   bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
+   bind .filebox.files.list       <ButtonRelease-1>  { FileBox::SelectList }
    bind .filebox.files.list       <Button-3>         { FileBox::Popup %X %Y %y}
    bind .filebox.type.pattern     <Return>           { FileBox::GetContent }
    bind .filebox.file.pattern     <Return>           { FileBox::GetContent }
