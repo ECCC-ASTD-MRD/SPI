@@ -1309,8 +1309,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                strncpy(head->NOMVAR,Tcl_GetString(Objv[++i]),4);
                head->NOMVAR[4]='\0';
-               if (Field->Spec->Desc) free(Field->Spec->Desc);
-               Field->Spec->Desc=strdup(head->NOMVAR);
             }
             break;
 
