@@ -89,7 +89,7 @@ proc MLDPn::Launch { } {
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "ACCIDENT" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
+      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
    if { $Model::Param(IsUsingSoumet) } {
@@ -127,7 +127,7 @@ proc MLDPn::Launch { } {
    } else {
       Log::Print INFO "Launching model on $Model::Param(Host)"
       exec echo "#!/bin/sh\n\n$env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDPn.in" >$Sim(Path)/tmp/Model_Launch.sh
-      exec ssh -n $Model::Param(Host) $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDP.in &
+      exec ssh -n $Model::Param(Host) $env(EER_DIRSCRIPT)/Model.sh $Sim(Path)/tmp/Model_MLDPn.in &
    }
    exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
 
@@ -183,7 +183,6 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)"
    puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)"
    puts $file "MODEL_SEED=$Sim(Seed)"
-
    puts $file "MODEL_RESTARTABLE=1"
 
    puts $file "\n#----- Model specific parameters\n"
@@ -227,9 +226,6 @@ proc MLDPn::ParamsCheck { Tab No } {
    if { $No == $Sim(ScenarioTabNo) } {
       if { [TabFrame::Previous $Tab]==0 && $Sim(ReNewMeteo)=="" } {
          MLDPn::UpdateEmissionStartingTime
-         if { ![MLDPn::GetMetData] } {
-            return False
-         }
       }
       MLDPn::GraphUpdate
    }
@@ -250,7 +246,7 @@ proc MLDPn::ParamsCheck { Tab No } {
    }
 
    #----- Make sure there is an emission
-   if { $Sim(EmNbIntervals)<=$Sim(EmInterStart) && !$Sim(IsRestart)} {
+   if { $Sim(EmNbIntervals)<=$Sim(EmInterStart) && $Sim(Restart)=="" } {
       Dialog::Error .modelnew $Error(NoEmission)
       TabFrame::Select $Tab $Sim(ScenarioTabNo)
       return False
@@ -263,7 +259,7 @@ proc MLDPn::ParamsCheck { Tab No } {
    }
 
    #----- Check if we need to save if we are leaving the scenario tab
-   if { !$Sim(IsRestart) } {
+   if { $Sim(Restart)=="" } {
       MLDPn::ScenarioPromptSave
    }
 
@@ -312,13 +308,18 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-21s= %-10s # Diffusion kernel selection method (VARIABLE or kernel name)" MDL_KERNEL $Sim(DiffKernel)]
    puts $file [format "%-21s= %-10s # Backward simulation" MDL_RETRO $Sim(Backward)]
 
+   if { $Sim(RestartTrialDate) } {
+      puts $file [format "%-21s= %-25s # Time(s) at which to produce a restart \[UTC\]: YearMonthDayHourMinute" MDL_RESTART_TIME [clock format $Sim(RestartTrialDate) -format "%Y%m%d%H%M" -timezone :UTC]]
+   }
+
+   if { $Sim(RestartFile)!="" } {
+      puts $file [format "%-21s= %-25s # Restart file" MDL_RESTART_FILE $Sim(RestartFile)]
+      puts $file [format "%-21s= %-25s # Restart number" MDL_RESTART_NO [lindex $Sim(Restart) 1]]
+   }
+
    puts $file "\n#----- Emission parameters\n\n#----- Chemical symbol of radionuclide, Radioactive half-life period \[s\] , Dry deposition velocity \[m/s\], Wet scavenging rate \[s-1\]"
    foreach iso $Sim(EmIsoInfo) {
       puts $file [format "%-8s= %-15s %15.2e %15.2e %15.2e" EMI_ISO [lindex $iso 0] [lindex $iso 1] [lindex $iso 2] [lindex $iso 3]]
-   }
-
-   if { $Sim(RestartTrialDate) } {
-      puts $file [format "%-21s= %-25s # Time(s) at which to produce a restart \[UTC\]: YearMonthDayHourMinute" MDL_RESTART_TIME [clock format $Sim(RestartTrialDate) -format "%Y%m%d%H%M" -timezone :UTC]]
    }
 
    puts $file "\n#----- Source parameters\n"
@@ -344,19 +345,22 @@ proc MLDPn::CreateModelInput { } {
       }
       puts $file [format "%-21s= %s # Cumulative fraction \[0,1\] of number of particles within vertical emission plume column" SRC_COLUMN $distr]
 
-      for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
+      for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
          set emti [expr $Sim(EmInter.$i)*3600]
 
          if { $Sim(EmIsEm.$i) } {
             set height  $Sim(EmHeight.$i)
             set radius  $Sim(EmRadius.$i)
-            set np      [expr $Sim(EmIsAutoNP) ? 0 : $Sim(EmNumberParticles.$i)]
-            if { $Sim(EmMassMode.$i) == 0 } {
-               set mass SPARKS
-            } elseif { $Sim(EmMassMode.$i) == 1 } {
-               set mass MASTIN
-            } else {
-               set mass [format "%-9e" $Sim(EmMass.$i)]
+            set np      $Sim(EmNumberParticles.$i)
+
+            if { $Sim(SrcType)=="VOLCANO" } {
+               if { $Sim(EmMassMode.$i) == 0 } {
+                  set mass SPARKS
+               } elseif { $Sim(EmMassMode.$i) == 1 } {
+                  set mass MASTIN
+               } else {
+                  set mass [format "%-9e" $Sim(EmMass.$i)]
+               }
             }
          } else {
             set height  0.0
@@ -376,7 +380,7 @@ proc MLDPn::CreateModelInput { } {
              default { set rates $Sim(EmRate.$i) }
          }
 
-         if { $i==$Sim(EmInterStart) } {
+         if { $i==0 } {
             puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s # Nb Parcel, Duration, Height, Radius, Mass/Rate for each isotope" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
          } else {
             puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
@@ -474,8 +478,8 @@ proc MLDPn::GetMetData { } {
    }
 
    #----- Get available meteorological files.
-   if { $Sim(IsRestart) } {
-      set Sim(RunStamp) [fstdstamp fromseconds [expr $Sim(RestartDate)+$Sim(AccSeconds)]]
+   if { $Sim(Restart)!="" } {
+      set Sim(RunStamp) [fstdstamp fromseconds [expr $Sim(RestartDelta)+$Sim(AccSeconds)]]
    } else {
       set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
    }
@@ -490,7 +494,8 @@ proc MLDPn::GetMetData { } {
    if { $MetData::Data(TA)!=-1 } {
 
       #----- If the date of the last trial date is earlierr than the end of the simulation
-      if { $MetData::Data(TA) < [expr [fstdstamp toseconds $Sim(RunStamp)] + $Sim(Duration)*3600] } {
+      set sec [fstdstamp toseconds $Sim(RunStamp)]
+      if { $MetData::Data(TA)>$sec && $MetData::Data(TA)<[expr $sec+$Sim(Duration)*3600] } {
          set Sim(RestartTrialDate) $MetData::Data(TA)
       }
    }
@@ -540,7 +545,7 @@ proc MLDPn::ScenarioSaveAs { } {
    }
 
    #----- If file already exists, ask user for overwrite
-   if { [file isfile $Sim(EmDirScenario)/$Tmp(EmScenario).txt] } {
+   if { [file isfile $Sim(EmDir)/$Sim(SrcType)/$Tmp(EmScenario).txt] } {
       if { ![Dialog::Default .modelnew 400 WARNING $Warning(Overwrite) " $Tmp(EmScenario)" 0 $Lbl(Cancel) $Lbl(Overwrite)] } {
          return 0
       } else {
@@ -601,7 +606,7 @@ proc MLDPn::ScenarioSave { } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDPn::ScenarioPromptSave { {Force False} } {
+proc MLDPn::ScenarioPromptSave { { Force False } } {
    variable Warning
    variable Error
    variable Lbl
@@ -661,21 +666,16 @@ proc MLDPn::ScenarioList { } {
    #----- Initialize list of emission scenario.
    set Sim(EmList) {}
 
-   #----- Initialize scenario directory.
-   switch $Sim(SrcType) {
-      "ACCIDENT" { set Sim(EmDirScenario) "$Sim(EmDir)/ACCIDENT" }
-      "VOLCANO"  { set Sim(EmDirScenario) "$Sim(EmDir)/VOLCANO" }
-      "VIRUS"    { set Sim(EmDirScenario) "$Sim(EmDir)/VIRUS" }
-   }
+   if { $Sim(Restart)=="" } {
+      if { ![file isdirectory $Sim(EmDir)/$Sim(SrcType)] } {
+         Dialog::Error .modelnew $Error(ScenarioDirectory)
+         return 0
+      }
 
-   if { ![file isdirectory $Sim(EmDirScenario)] } {
-      Dialog::Error .modelnew $Error(ScenarioDirectory)
-      return 0
-   }
-
-   #----- Add names of the emission scenarios to the list of scenarios.
-   foreach path [glob -nocomplain $Sim(EmDirScenario)/*.txt] {
-      lappend Sim(EmList) [file tail [file rootname $path]]
+      #----- Add names of the emission scenarios to the list of scenarios.
+      foreach path [glob -nocomplain $Sim(EmDir)/$Sim(SrcType)/*.txt] {
+         lappend Sim(EmList) [file tail [file rootname $path]]
+      }
    }
    return [expr [llength $Sim(EmList)] ? 1 : 0]
 }
@@ -700,7 +700,7 @@ proc MLDPn::ScenarioList { } {
 proc MLDPn::ScenarioClear { } {
    variable Sim
 
-   if { $Sim(IsRestart) } {
+   if { $Sim(Restart)!="" } {
       return
    }
 
@@ -713,11 +713,11 @@ proc MLDPn::ScenarioClear { } {
    }
 
    #----- Reset global parameters
-   set Sim(EmSizeDist)     $Sim(EmSizeDistDefault)
-   set Sim(EmDensity)      $Sim(EmDensityDefault)
-   set Sim(EmVerticalDist) $Sim(EmVerticalDistDefault)
-   set Sim(EmIsAutoNP)     $Sim(EmIsAutoNPDefault)
-   set Sim(EmGlobalNP)     $Sim(EmNumberParticles)
+   set Sim(EmSizeDist)        $Sim(EmSizeDistDefault)
+   set Sim(EmDensity)         $Sim(EmDensityDefault)
+   set Sim(EmVerticalDist)    $Sim(EmVerticalDistDefault)
+   set Sim(EmIsAutoNP)        $Sim(EmIsAutoNPDefault)
+   set Sim(EmNumberParticles) $Sim(EmDefaultNumberParticles)
 
    #----- Set flag to indicate that scenario has been changed
    set Sim(ScenarioHasChanged) 1
@@ -757,7 +757,7 @@ proc MLDPn::ScenarioDelete { } {
    }
 
    #----- Delete scenario file.
-   file delete -force $Sim(EmDirScenario)/$Sim(EmScenario).txt
+   file delete -force $Sim(EmDir)/$Sim(SrcType)/$Sim(EmScenario).txt
 
    #----- Delete scenario name from the combo box.
    ComboBox::Del $MLDPn::Sim(ScenarioFrame).name.ent $Sim(EmScenario)
@@ -795,18 +795,18 @@ proc MLDPn::ScenarioSelect { } {
    variable Tmp
 
    #----- Does directory exists?
-   if { ![file isdirectory $Sim(EmDirScenario)] } {
+   if { ![file isdirectory $Sim(EmDir)/$Sim(SrcType)] } {
       Dialog::Error .modelnew $Error(ScenarioDirectory)
       return 0
    }
 
    #----- Does scenario has a file?
-   if { ![file isfile $Sim(EmDirScenario)/$Sim(EmScenario).txt] } {
+   if { ![file isfile $Sim(EmDir)/$Sim(SrcType)/$Sim(EmScenario).txt] } {
       Dialog::Error .modelnew $Error(ScenarioNotAvailable)
       return 0
    }
 
-   set f [open $Sim(EmDirScenario)/$Sim(EmScenario).txt r]
+   set f [open $Sim(EmDir)/$Sim(SrcType)/$Sim(EmScenario).txt r]
 
    #----- Read global parameters
 
@@ -816,18 +816,14 @@ proc MLDPn::ScenarioSelect { } {
    }
    gets $f Sim(EmVerticalDist)
    gets $f Sim(EmIsAutoNP)
-   if { $Sim(EmIsAutoNP) } {
-      gets $f Sim(EmGlobalNP)
-   } else {
-      set Sim(EmGlobalNP) $Sim(EmNumberParticles)
-   }
+   gets $f Sim(EmNumberParticles)
 
    #----- Read Isotopes
 
    set Sim(EmIsoInfo) ""
    gets $f Sim(EmNbIso)
 
-   for {set i 0} {$i<$Sim(EmNbIso)} {incr i} {
+   for { set i 0 } { $i<$Sim(EmNbIso) } { incr i } {
       gets $f line
       lappend Sim(EmIsoInfo) $line
       set Sim(EmIso$i)   [lindex $line 0]
@@ -837,16 +833,12 @@ proc MLDPn::ScenarioSelect { } {
 
    gets $f Sim(EmNbIntervals)
 
-   for {set i 0} {$i<$Sim(EmNbIntervals)} {incr i} {
+   for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
       gets $f Sim(EmInter.$i)
       gets $f Sim(EmIsEm.$i)
 
       if { $Sim(EmIsEm.$i) } {
-         if { !$Sim(EmIsAutoNP) } {
-            gets $f Sim(EmNumberParticles.$i)
-         } else {
-            set Sim(EmNumberParticles.$i) $Sim(EmNumberParticles)
-         }
+         gets $f Sim(EmNumberParticles.$i)
          gets $f Sim(EmHeight.$i)
          gets $f Sim(EmRadius.$i)
 
@@ -877,7 +869,7 @@ proc MLDPn::ScenarioSelect { } {
             }
          }
       } else {
-         set Sim(EmNumberParticles.$i) $Sim(EmNumberParticles)
+         set Sim(EmNumberParticles.$i) $Sim(EmDefaultNumberParticles)
          set Sim(EmHeight.$i)          $Sim(EmHeight)
          set Sim(EmRadius.$i)          $Sim(EmRadius)
          switch $Sim(SrcType) {
@@ -889,7 +881,7 @@ proc MLDPn::ScenarioSelect { } {
                set Sim(EmRate.$i)      0.0
             }
             "ACCIDENT" {
-               for {set j 0} {$j<$Sim(EmNbIso)} {incr j} {
+               for { set j 0 } { $j<$Sim(EmNbIso) } { incr j } {
                   set Sim(EmRate.$i.$j) 0.0
                }
             }
@@ -920,7 +912,7 @@ proc MLDPn::ScenarioSelect { } {
 proc MLDPn::ScenarioWrite { } {
    variable Sim
 
-   set f [open $Sim(EmDirScenario)/$Sim(EmScenario).txt w]
+   set f [open $Sim(EmDir)/$Sim(SrcType)/$Sim(EmScenario).txt w]
 
    #----- Write global parameters
 
@@ -930,9 +922,7 @@ proc MLDPn::ScenarioWrite { } {
    }
    puts $f $Sim(EmVerticalDist)
    puts $f $Sim(EmIsAutoNP)
-   if { $Sim(EmIsAutoNP) } {
-      puts $f $Sim(EmGlobalNP)
-   }
+   puts $f $Sim(EmNumberParticles)
 
    #----- Write Isotopes
 
@@ -946,14 +936,12 @@ proc MLDPn::ScenarioWrite { } {
 
    puts $f $Sim(EmNbIntervals)
 
-   for {set i 0} {$i<$Sim(EmNbIntervals)} {incr i} {
+   for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
       puts $f $Sim(EmInter.$i)
       puts $f $Sim(EmIsEm.$i)
 
       if { $Sim(EmIsEm.$i) } {
-         if { !$Sim(EmIsAutoNP) } {
-            puts $f $Sim(EmNumberParticles.$i)
-         }
+         puts $f $Sim(EmNumberParticles.$i)
          puts $f $Sim(EmHeight.$i)
          puts $f $Sim(EmRadius.$i)
 
@@ -1017,16 +1005,14 @@ proc MLDPn::File { Info Path Type Back } {
 
       set simpath $Path/[Info::Path $Info]
       set simdate "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)"
-      set simsecs [clock scan $simdate -format "%Y%m%d%H" -timezone :UTC]
-      set file    ${simdate}_000
 
-      set pos        [glob $simpath/results/${file}_???]  ;#----- Particle positions result output file.
-      set metfields  $simpath/results/${file}_000m        ;#----- Meteorological fields for RSMC response.
+      set results    [glob $simpath/results/${simdate}_???]  ;#----- Particle positions result output file.
+      set metfields  $simpath/results/${simdate}_000m        ;#----- Meteorological fields for RSMC response.
       set metfiles   [glob -nocomplain $simpath/meteo/*]  ;#----- Meteorological files required for launching model.
 
       switch $Type {
-         "all"     { set files [concat $files $pos $metfields $metfiles] }
-         "result"  { set files [concat $files $pos] }
+         "all"     { set files [concat $files $results $metfields $metfiles] }
+         "result"  { set files [concat $files $results] }
          "meteo"   { set files [concat $files $metfiles] }
          "metf"    { lappend files $metfields }
       }
@@ -1038,7 +1024,7 @@ proc MLDPn::File { Info Path Type Back } {
       }
    }
 
-   return $files
+   return [lreverse $files]
 }
 
 #----------------------------------------------------------------------------
@@ -1123,8 +1109,8 @@ proc MLDPn::SetAccidentDate { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDPn::GetDistributionNP>
-# Creation   : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
+# Nom        : <MLDPn::DistributeParcels>
+# Creation   : Aout 2010 - E. Legault-Ouellet & J.P. Gauthier - CMC/CMOE
 #
 # But        : Retourne la liste de la repartition des particules pour les
 #              differtentes intervalles tel que le ferait le mecanisme de
@@ -1139,14 +1125,17 @@ proc MLDPn::SetAccidentDate { } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDPn::GetDistributionNP { } {
+proc MLDPn::DistributeParcels { } {
    variable Sim
 
    set nplst   {}
    set masslst {}
 
    if { !$Sim(EmIsAutoNP) } {
-      for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+      set Sim(EmNumberParticles) 0
+
+      for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
+         incr Sim(EmNumberParticles) $Sim(EmNumberParticles.$i)
          lappend nplst $Sim(EmNumberParticles.$i)
       }
       return $nplst
@@ -1154,7 +1143,7 @@ proc MLDPn::GetDistributionNP { } {
 
    #----- Calculate intervals and total released mass
    set totmass 0
-   for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
       set mass 0
       if { $Sim(EmIsEm.$i) } {
          switch $Sim(SrcType) {
@@ -1179,21 +1168,27 @@ proc MLDPn::GetDistributionNP { } {
    set totnp 0
    set idx -1
    set i $Sim(EmInterStart)
-   set massp [expr $totmass/double($Sim(EmGlobalNP))] ;#----- Mass of one particle
+   set massp [expr $totmass/double($Sim(EmNumberParticles))] ;#----- Mass of one particle
    foreach mass $masslst {
       if { $Sim(EmIsEm.$i) } {
-         lappend nplst [expr int($mass/$massp)]
+         set Sim(EmNumberParticles.$i) [expr int($mass/$massp)]
+         lappend nplst $Sim(EmNumberParticles.$i)
          set totnp [expr $totnp + [lindex $nplst end]]
          set idx [expr $i - $Sim(EmInterStart)]
       } else {
-         lappend nplst 0
+         set Sim(EmNumberParticles.$i) 0
       }
       incr i
    }
 
    #----- Since values are rounded, this make sure we don't "forget" particles
    if { $idx != -1 } {
-      lset nplst $idx [expr [lindex $nplst $idx] + $Sim(EmGlobalNP) - $totnp]
+      incr i -1
+      while { !$Sim(EmIsEm.$i) } {
+         incr i -1
+      }
+      set Sim(EmNumberParticles.$i) [expr $Sim(EmNumberParticles.$i) + $Sim(EmNumberParticles) - $totnp]
+      lset nplst $idx $Sim(EmNumberParticles.$i)
    }
 
    return $nplst
@@ -1215,44 +1210,6 @@ proc MLDPn::GetDistributionNP { } {
 
 proc MLDPn::UpdatePoolLists { } {
    variable Sim
-
-   #----- Empty lists
-   set Sim(EmInterList)             {}
-   set Sim(EmIsEmList)              {}
-   set Sim(EmNumberParticlesList)   [MLDPn::GetDistributionNP]
-   set Sim(EmHeightList)            {}
-   set Sim(EmRadiusList)            {}
-
-   set Sim(EmMassModeList)          {}
-   set Sim(EmMassList)              {}
-   set Sim(EmRateList)              {}
-
-   if { !$Sim(EmIsAutoNP) } {
-      set $Sim(EmGlobalNP) 0
-   }
-
-   #----- Fill lists with current emission scenario data
-   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
-      lappend Sim(EmInterList)            $Sim(EmInter.$i)
-      lappend Sim(EmIsEmList)             $Sim(EmIsEm.$i)
-      lappend Sim(EmHeightList)           $Sim(EmHeight.$i)
-      lappend Sim(EmRadiusList)           $Sim(EmRadius.$i)
-
-      switch $Sim(SrcType) {
-         "VOLCANO" {
-            lappend Sim(EmMassModeList)   $Sim(EmMassMode.$i)
-            lappend Sim(EmMassList)       $Sim(EmMass.$i)
-         }
-         "ACCIDENT" {
-            for { set j 0 } {$j < $Sim(EmNbIso) } { incr j } {
-               lappend Sim(EmRateList)    $Sim(EmRate.$i.$j)
-            }
-         }
-         "VIRUS" {
-            lappend Sim(EmRateList)       $Sim(EmRate.$i)
-         }
-      }
-   }
 
    #----- Build list of isotopes.
    if { $Sim(SrcType) == "ACCIDENT" } {
@@ -1294,10 +1251,9 @@ proc MLDPn::InitNew { Type } {
    set Sim(Scale)                MESO                                ;#----- Grid resolution string.
    set Sim(Meteo)                glb                                 ;#----- Meteorological model.
    set Sim(Delta)                1                                   ;#----- Time interval for meteorological data files [hr].
-   set Sim(EmNumberParticles)    100000                              ;#----- Number of particles.
    set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
    set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
-   set Sim(RestartDates)        { }
+   set Sim(RestartDeltas)       { }
 
    #----- Set source type according to experiment data type.
    if { $Type==0 || $Type==3 } {
@@ -1330,11 +1286,6 @@ proc MLDPn::InitNew { Type } {
       set Sim(SrcType)           ACCIDENT
       set Sim(OutVar)            { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF TA TDA TTA TOU }
       set Sim(OutputTimeStepMin) 180
-      set Sim(Duration)          12                                  ; #----- Simulation duration [hr].
-      set Sim(OutputTimeStepMin) 30                                  ; #----- Output time step [min].
-      set Sim(ModelTimeStepMin)  5                                   ; #----- Internal model time step [min].
-      set Sim(Scale)             VFINE                               ; #----- Grid resolution string.
-      set Sim(Meteo)             reg                                 ; #----- Meteorological model.
       set Sim(EmHeight)          500.0
       set Sim(EmRadius)          100.0
       set Sim(EmNbIso)           0
@@ -1409,11 +1360,10 @@ proc MLDPn::InitNew { Type } {
    set Sim(EmList)               {}                                  ; #----- List of emission scenarios.
    set Sim(EmNbIntervals)        0                                   ; #----- Number of emission intervals.
    set Sim(EmInterStart)         0                                   ; #----- Starting index for emission intervals.
-   set Sim(EmEffectiveDuration)  0.0                                 ; #----- Effective emission duration, only release periods [s].
-   set Sim(EmTotalDuration)      0.0                                 ; #----- Total emission duration, including release and lull periods [s].
+   set Sim(EmEffectiveDuration)  0                                   ; #----- Effective emission duration, only release periods [s].
+   set Sim(EmTotalDuration)      0                                   ; #----- Total emission duration, including release and lull periods [s].
    set Sim(EmIsoSymbol)          ""                                  ; #----- List of isotopes.
    set Sim(EmIsoQuantity)        ""                                  ; #----- Total release quantity for each isotope.
-   set Sim(EmGlobalNP)           $Sim(EmNumberParticles)             ; #----- Number of particules to distribute amongst emission intervals.
    set Sim(EmRateMode)           0                                   ; #----- Mode of the release rate. 0 is "unit/h", 1 is "unit"
    set Sim(EmInterMode)          0                                   ; #----- Mode of the interval duration. 0 is "(h)", 1 is "(s)"
    set Sim(RestartTrialDate)     0
@@ -1447,8 +1397,9 @@ proc MLDPn::InitNew { Type } {
    set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
 
    #----- Restart stuff
-   set Sim(IsRestart)   0
    set Sim(RestartFile) ""
+   set Sim(Restarts)    {}
+   set Sim(Restart)     ""
 
    MLDPn::UpdateEmissionStartingTime
 }
@@ -1479,7 +1430,8 @@ proc MLDPn::InitCont { Type } {
    set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(ListOutCV)               $Sim(OutCV)
-   set Sim(ListMeteoModel)          $Sim(Meteo)
+#   set Sim(ListMeteoModel)          $Sim(Meteo)
+   set Sim(ListMeteoModel)          { glb reg glb100 reg24 }
    set Sim(EmVerticalDistDefault)   [lindex [lindex $Sim(ListEmVerticalDist) $GDefs(Lang)] 0]
    set Sim(BubbleId)                -1
    set Sim(BubbleShowingId)         -1
@@ -1506,47 +1458,47 @@ proc MLDPn::InitCont { Type } {
       }
    }
    set Sim(ScenarioHasChanged) 0
-
-   set Sim(AccSeconds) [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)" -format "%Y%m%d%H%M" -timezone :UTC]
+   set Sim(NoPrev)            $Sim(NoSim)
+   set Sim(EmInterStart)      $Sim(EmNbIntervals)
+   set Sim(AccSeconds)        [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)$Sim(AccMin)" -format "%Y%m%d%H%M" -timezone :UTC]
 
    #----- Restart stuff
-
-   set Sim(IsRestart)      1
-   set Sim(NoPrev)         $Sim(NoSim)
-   set Sim(RestartFile)    $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.rst
-   set Sim(EmInterStart)   $Sim(EmNbIntervals)
-
-   #----- Get restart valid date from restart file
-
    set pathbase $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)
    set pathprev $Sim(Model).$Sim(NoSim).$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay).$Sim(AccHour)$Sim(AccMin)
-   if { [fstdfile open RSTFILE read $pathbase/$pathprev/results/$Sim(RestartFile)] == "" } {
+
+   set Sim(RestartFile)  $pathbase/$pathprev/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.rst
+
+   #----- Get restart valid date from restart file
+   if { [catch { fstdfile open RSTFILE read $Sim(RestartFile) }] } {
       fstdfile close RSTFILE
       Dialog::Error . $Error(NoRestartFile)
       return
    }
 
-   set Sim(RestartDates) [fstdfile info RSTFILE DATEV]
+   set Sim(RestartDeltas) [fstdfile info RSTFILE DATEV]
+   set Sim(RestartNos)    [fstdfile info RSTFILE TYPVAR]
 
-   for { set i 0 } { $i < [llength $Sim(RestartDates)] } { incr i } {
-      lset Sim(RestartDates) $i [expr [lindex $Sim(RestartDates) $i]-$Sim(AccSeconds)]
+   for { set i 0 } { $i < [llength $Sim(RestartDeltas)] } { incr i } {
+      set t [expr [lindex $Sim(RestartDeltas) $i]-$Sim(AccSeconds)]
+      lset Sim(RestartDeltas) $i $t
+
+      lappend Sim(Restarts) [set Sim(Restart) "Restart [lindex $Sim(RestartNos) $i] T+[expr $t/3600]"]
    }
-   set Sim(RestartDate)  [lindex $Sim(RestartDates) end]
+   set Sim(RestartDelta)  [lindex $Sim(RestartDeltas) end]
 
    fstdfile close RSTFILE
-   if { [llength $Sim(RestartDates)] != 1 } {
+   if { ![llength $Sim(RestartDeltas)] } {
       Dialog::Error . $Error(NoRestartFile)
       return
    }
-#   set Sim(EmScenario)     "Rst [clock format $Sim(RestartSeconds) -format "%Y%m%d %H%M UTC" -timezone :UTC]"
 
-#   set Sim(EmNbIntervals) 0
-#   set Sim(RestartPrevDates) [MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool -1 $Sim(RestartSeconds) $Sim(NoPrev)]
-#   lappend Sim(RestartPrevDates) [expr ($Sim(RestartSeconds)-$Sim(AccSeconds))/3600.0]
-#   set Sim(EmInterStart) $Sim(EmNbIntervals)
+   MLDPn::ScenarioSelect
+
+   #----- We can't distribute parcels automatically if user adds an interval
+   set Sim(EmIsAutoNP) 0
 
    #----- Reconstruct from restart date to end date.
-#   MLDPn::ReconstructPrevSim $pathbase/$Sim(Model).pool $Sim(RestartSeconds) -1 $Sim(NoPrev)
+   MLDPn::ScenarioPad
 }
 
 #----------------------------------------------------------------------------
@@ -1570,7 +1522,7 @@ proc MLDPn::IsoDelete { Idx Id } {
    variable Tmp
    variable Sim
 
-   if { $Sim(IsRestart) } {
+   if { $Sim(Restart)!="" } {
       return
    }
 
@@ -1624,7 +1576,7 @@ proc MLDPn::IsoUpdate { Idx Line } {
    variable Tmp
    variable Sim
 
-   if { $Sim(IsRestart) || $Idx>$Tmp(EmNbIso) || [llength $Line]!=11 } {
+   if { $Sim(Restart)!="" || $Idx>$Tmp(EmNbIso) || [llength $Line]!=11 } {
       return
    }
 
@@ -1666,7 +1618,7 @@ proc MLDPn::IsoAdd { Line } {
    variable Warning
    variable Lbl
 
-   if { $Sim(IsRestart) } {
+   if { $Sim(Restart)!="" } {
       return
    }
 
@@ -1686,7 +1638,7 @@ proc MLDPn::IsoAdd { Line } {
             lappend Tmp(EmIsoInfo) "$symbol $halflife $drydepvel $wetscavrate"
 
             #----- Set to 0 the release rate of all emission intervals for this isotope
-            for {set i $Sim(EmInterStart)} {$i < $Tmp(EmNbIntervals)} {incr i} {
+            for { set i $Sim(EmInterStart) } { $i < $Tmp(EmNbIntervals) } { incr i } {
                set Tmp(EmRate.$i.$Tmp(EmNbIso))       0.0
                set Tmp(EmRateMode.$i.$Tmp(EmNbIso))   0
             }
@@ -1835,7 +1787,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
    set Sim(EmDensity)         $Tmp(EmDensity)
    set Sim(EmVerticalDist)    $Tmp(EmVerticalDist)
    set Sim(EmIsAutoNP)        $Tmp(EmIsAutoNP)
-   set Sim(EmGlobalNP)        $Tmp(EmGlobalNP)
+   set Sim(EmNumberParticles) $Tmp(EmNumberParticles)
 
    #----- Save emission interval details
 
@@ -1857,7 +1809,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
          for {set i 0} {$i < $Tmp(EmNbIso)} {incr i} {
             set Sim(EmIso$i)        $Tmp(EmIso$i)
 
-            for {set j $Sim(EmInterStart)} {$j < $Tmp(EmNbIntervals)} {incr j} {
+            for { set j $Sim(EmInterStart) } { $j < $Tmp(EmNbIntervals) } { incr j } {
                set Sim(EmRate.$j.$i)  $Tmp(EmRate.$j.$i)
             }
          }
@@ -1902,7 +1854,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
    set Tmp(EmDensity)         $Sim(EmDensity)
    set Tmp(EmVerticalDist)    $Sim(EmVerticalDist)
    set Tmp(EmIsAutoNP)        $Sim(EmIsAutoNP)
-   set Tmp(EmGlobalNP)        $Sim(EmGlobalNP)
+   set Tmp(EmNumberParticles) $Sim(EmNumberParticles)
 
    #----- Save emission interval details
 
@@ -1926,7 +1878,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
             set Tmp(EmIso$i)           $Sim(EmIso$i)
             set Tmp(EmRateMode.$Id.$i) 0
 
-            for {set j $Sim(EmInterStart)} {$j < $Sim(EmNbIntervals)} {incr j} {
+            for { set j $Sim(EmInterStart) } { $j < $Sim(EmNbIntervals) } { incr j } {
                set Tmp(EmRate.$j.$i)   $Sim(EmRate.$j.$i)
             }
          }
@@ -2023,7 +1975,7 @@ proc MLDPn::EmissionIntervalAdd { } {
    set Tmp(EmDensity)         $Sim(EmDensity)
    set Tmp(EmVerticalDist)    $Sim(EmVerticalDist)
    set Tmp(EmIsAutoNP)        $Sim(EmIsAutoNP)
-   set Tmp(EmGlobalNP)        $Sim(EmGlobalNP)
+   set Tmp(EmNumberParticles) $Sim(EmDefaultNumberParticles)
 
    #----- Init emission interval details
 
@@ -2037,7 +1989,7 @@ proc MLDPn::EmissionIntervalAdd { } {
    } else {
       set Tmp(EmInter.$id)             1
       set Tmp(EmIsEm.$id)              1
-      set Tmp(EmNumberParticles.$id)   $Sim(EmNumberParticles)
+      set Tmp(EmNumberParticles.$id)   $Sim(EmDefaultNumberParticles)
       set Tmp(EmHeight.$id)            $Sim(EmHeight)
       set Tmp(EmRadius.$id)            $Sim(EmRadius)
    }
@@ -2065,7 +2017,7 @@ proc MLDPn::EmissionIntervalAdd { } {
             set Tmp(EmRate.$id.$i)     0.0
             set Tmp(EmRateMode.$id.$i) 0
 
-            for {set j $Sim(EmInterStart)} {$j < $Sim(EmNbIntervals)} {incr j} {
+            for { set j $Sim(EmInterStart) } { $j < $Sim(EmNbIntervals) } {  incr j } {
                set Tmp(EmRate.$j.$i) $Sim(EmRate.$j.$i)
             }
          }
@@ -2080,185 +2032,39 @@ proc MLDPn::EmissionIntervalAdd { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDPn::GetIntervalFractionNP>
-# Creation   : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
+# Nom        : <MLDPn::ScenarioPad>
+# Creation   : Aout 2011 - J,P,Gauthier - CMC/CMOE
 #
-# But        : Retourne le nombre de particules qui ont ete emises dans un
-#              interval incomplet (arrive lors des restarts).
-#
-# Parametres :
-#  <From>      : L'heure du debut (dans le referentiel de l'intervalle).
-#  <To>        : L'heure de fin (dans le referentiel de l'intervalle).
-#  <NP>        : Le nombre de aprticules de l'intervalle.
-#  <Duration>  : La duree de l'intervalle (en heures).
-#  <IMTS>      : La duree du pas de temps interne du model (Internal Model
-#                Time Step) en heures.
-#
-# Retour     : La date du dernier trial au format YYYYMMDDhhmmss.
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::GetIntervalFractionNP { From To NP Duration IMTS } {
-   set nbts    [expr int($Duration/$IMTS)]            ;#----- Number of time steps
-   set idxfrom [expr $From<0 ? 0 : int($From/$IMTS)]  ;#----- Index from
-   set idxto   [expr $To<0 ? $nbts : int($To/$IMTS)]  ;#----- Index to
-   set np      [expr int(double($NP)/$nbts)]          ;#----- Number of particles per steps
-   set lastnp  [expr $NP - $np*$nbts]                 ;#----- Number of particles not included in steps
-
-   set totnp [expr ($idxto-$idxfrom)*$np]
-   if { $idxto == $nbts } {
-      incr totnp $lastnp
-   }
-
-   return $totnp
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::ReconstructPrevSim>
-# Creation   : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
-#
-# But        : Reconstruit la partie de la simulation precedante qui n'est
-#              pas inclue dans le restart et ajoute cette partie au scenario
-#              d'emission courant.
+# But        : Emplir le reste de l'emission jusqu'au restart dans le cas ou on
+#              ajoute un intrval d'emmissions.
 #
 # Parametres :
-#  <File>    : Path complet vers le fichier contenant les lignes de pool.
-#  <DateFrom>: Date (en secondes) a partir de laquelle la reconstruction doit
-#              se faire. (-1 = la date d'accident)
-#  <DateTo>  : Date (en secondes) jusqu'a laquelle la reconstruction doit se
-#              se rendre (-1 = fin de la dernière simulation).
-#  <NoPrev>  : Numero de la simulation precedante.
 #
 # Retour     :
 #  <restarts>: Liste des dates de restart, en heures, relatives a la date de
 #              l'accident.
 #
 # Remarques  :
-#     - Dans le cas de resultats superposes (frequent avec les restarts), les
-#       intervalles seront pris de la simlation la plus recente.
 #
 #----------------------------------------------------------------------------
 
-proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
-   variable Tmp
+proc MLDPn::ScenarioPad { } {
    variable Sim
 
-   set rstlst ""
-
-   #----- Get sim pool line
-
-   set line [Info::Find $File $Sim(Model) NoSim $NoPrev]
-   if { $line=="" || [llength $line]>1 } { ;#----- this should never happen
-      return
+   #----- Caclulate length of emission scenario
+   set dtemi 0
+   for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
+      incr dtemi [expr $Sim(EmInter.$i)*3600]
    }
-   Info::Decode ::MLDPn::Tmp [lindex $line 0]
-
-   #----- Get acc and sim date in hours
-
-   set dateAcc $Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay)$Tmp(AccHour)$Tmp(AccMin)
-   set dateAcc [expr [clock scan $dateAcc -format "%Y%m%d%H%M" -timezone :UTC] / 3600.0]
-   set dateSim $Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)
-   set dateSim [expr [clock scan $dateSim -format "%Y%m%d%H" -timezone :UTC] / 3600.0]
-
-   set dateStart [expr $dateSim>$dateAcc ? $dateSim : $dateAcc]
-
-   #----- Get reconstruction time interval
-
-   set DateFrom [expr $DateFrom<0 ? $dateAcc : $DateFrom/3600.0]
-   set DateTo   [expr $DateTo<0 ? $dateSim+$Tmp(Duration) : $DateTo/3600.0]
-
-   #----- Make sure this sim has data useful to the reconstruction
-
-   if { $dateSim+$Tmp(Duration)<$DateFrom || $dateStart>=$DateTo } {
-      return
-   }
-
-   #----- If reconstruction starting date is anterior to this sim's starting date
-   #----- we add previous sim's reconstruction before this one's reconstruction.
-
-   if { $DateFrom<$dateSim && $Tmp(NoPrev)!=-1 } {
-      set rstlst [MLDPn::ReconstructPrevSim $File [expr $DateFrom*3600] [expr $dateStart*3600] $Tmp(NoPrev)]
-      Info::Decode ::MLDPn::Tmp [lindex $line 0] ;#----- previous call unpacked its sim on top of ours
-   }
-   if { $dateSim > $dateAcc } {
-      lappend rstlst [expr $dateSim - $dateAcc]
-   }
-
-   #----- Add pertinent intervals from this sim
-
-   set idx     -1
-   set i       $Sim(EmNbIntervals)
-   set totTime $dateStart
-
-   foreach inter $Tmp(EmInterList) np $Tmp(EmNumberParticlesList) {
-      incr idx
-      set totTime [expr $totTime + $inter]
-      set dur     $inter
-      set np      [lindex $Tmp(EmNumberParticlesList) $idx]
-
-      #----- Skip intervals that are not part of asked timeframe
-      if { $totTime <= $DateFrom } {
-         continue
-      }
-      #----- If we were in the middle of an interval, only add part of it
-      set from -1
-      if { $totTime-$DateFrom < $inter } {
-         set dur [expr $totTime - $DateFrom]
-         set from [expr $inter - $dur]
-      }
-      #----- If we are passed end time, only add the part until end time.
-      set to -1
-      if { $totTime > $DateTo } {
-         set dur [expr $dur - $totTime + $DateTo]
-         set to [expr $inter - $totTime + $DateTo]
-      }
-      if { $dur <= 0 } {
-         continue
-      }
-      #----- Adjust number of particles to represent modifications to interval's duration
-      if { $from!=-1 || $to!=-1 } {
-         set np [MLDPn::GetIntervalFractionNP $from $to $np $inter [expr $Tmp(ModelTimeStepMin)/60.0]]
-      }
-
-      set Sim(EmInter.$i)              $dur
-      set Sim(EmIsEm.$i)               [lindex $Tmp(EmIsEmList)            $idx]
-      set Sim(EmNumberParticles.$i)    $np
-      set Sim(EmHeight.$i)             [lindex $Tmp(EmHeightList)          $idx]
-      set Sim(EmRadius.$i)             [lindex $Tmp(EmRadiusList)          $idx]
-      switch $Sim(SrcType) {
-         "VOLCANO" {
-            set Sim(EmMassMode.$i)     [lindex $Tmp(EmMassModeList)        $idx]
-            set Sim(EmMass.$i)         [lindex $Tmp(EmMassList)            $idx]
-         }
-         "VIRUS" {
-            set Sim(EmRate.$i)         [lindex $Tmp(EmRateList)            $idx]
-         }
-         "ACCIDENT" {
-            for {set j 0} {$j < $Tmp(EmNbIso)} {incr j} {
-               set Sim(EmRate.$i.$j)   [lindex $Tmp(EmRateList) [expr $idx*$Tmp(EmNbIso) + $j]]
-            }
-         }
-      }
-
-      incr i
-
-      if { $totTime >= $DateTo } {
-         break
-      }
-   }
-   set Sim(EmNbIntervals) $i
 
    #----- Pad remaining time with a lull interval
-
-   set padFrom [expr $DateFrom>$totTime ? $DateFrom : $totTime]
-   if { $padFrom < $DateTo } {
-      set Sim(EmInter.$i)           [expr $DateTo - $padFrom]
+   if { $Sim(RestartDelta)>$dtemi } {
+      set Sim(EmInter.$i)           [expr ($Sim(RestartDelta)-$dtemi)/3600]
       set Sim(EmIsEm.$i)            0
-      set Sim(EmNumberParticles.$i) $Sim(EmNumberParticles)
+      set Sim(EmNumberParticles.$i) $Sim(EmDefaultNumberParticles)
       set Sim(EmHeight.$i)          $Sim(EmHeight)
       set Sim(EmRadius.$i)          $Sim(EmRadius)
+
       switch $Sim(SrcType) {
          "VOLCANO" {
             set Sim(EmMassMode.$i)  0
@@ -2268,7 +2074,7 @@ proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
             set Sim(EmRate.$i)      0.0
          }
          "ACCIDENT" {
-            for {set j 0} {$j < $Tmp(EmNbIso)} {incr j} {
+            for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
                set Sim(EmRate.$i.$j) 0.0
             }
          }
@@ -2276,6 +2082,4 @@ proc MLDPn::ReconstructPrevSim { File DateFrom DateTo NoPrev } {
 
       incr Sim(EmNbIntervals)
    }
-
-   return [lsort -real -unique $rstlst]
 }

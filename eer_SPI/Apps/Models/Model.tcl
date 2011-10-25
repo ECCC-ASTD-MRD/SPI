@@ -681,10 +681,10 @@ proc Model::ParamsMetData { Model } {
    } else {
       set simdate   $firstdate
    }
-   set sim(SimYear)     [clock format $simdate -format "%Y" -gmt True]
-   set sim(SimMonth)    [clock format $simdate -format "%m" -gmt True]
-   set sim(SimDay)      [clock format $simdate -format "%d" -gmt True]
-   set sim(SimHour)     [clock format $simdate -format "%H" -gmt True]
+   set sim(MetYear)     [clock format $simdate -format "%Y" -gmt True]
+   set sim(MetMonth)    [clock format $simdate -format "%m" -gmt True]
+   set sim(MetDay)      [clock format $simdate -format "%d" -gmt True]
+   set sim(MetHour)     [clock format $simdate -format "%H" -gmt True]
 
    #----- Validate emission time according to available meteorological data files.
    set first [lindex [lindex $sim(Data) 0] 0]

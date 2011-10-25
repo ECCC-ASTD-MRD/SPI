@@ -120,7 +120,13 @@ proc TRAJECT::GetMetData { } {
    Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
-   return [Model::ParamsMetData TRAJECT]
+   if { [set ok [Model::ParamsMetData TRAJECT]] } {
+      set Sim(SimYear)   $Sim(MetYear)
+      set Sim(SimMonth)  $Sim(MetMonth)
+      set Sim(SimDay)    $Sim(MetDay)
+      set Sim(SimHour)   $Sim(MetHour)
+   }
+   return $ok
 }
 
 #-------------------------------------------------------------------------------
@@ -346,7 +352,7 @@ proc TRAJECT::Launch { } {
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) \
          -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1
-      simulation define $id -tag $info -loglevel 3 -logfile $Sim(Path)/tmp/traject.log
+      simulation define $id -tag $info -loglevel $Model::Param(LogLevel) -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch ulation within a new thread
       eval set tid1 \[thread::create \{ load $GDefs(Dir)/Lib/$env(ARCH)/libTclSim[info sharedlibextension] TclSim\; simulation run $id\}\]

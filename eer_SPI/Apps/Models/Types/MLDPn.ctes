@@ -69,6 +69,7 @@ namespace eval MLDPn {
    set Sim(RunningTimeCPU)       10800                         ;#----- CPU running time for the job to end [s].
 
    set Sim(EmMaxNumberParticles) 2000000                       ;#----- Maximum number of particles.
+   set Sim(EmDefaultNumberParticles) 100000                    ;#----- Maximum number of particles.
    set Sim(EmMaxIso)             20                            ;#----- Maximum number of isotopes.
    set Sim(EmDir)                "$env(HOME)/.spi/Scenario"    ;#----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ;#----- Small value.

@@ -58,6 +58,7 @@ proc MLDPn::ValidateMassInputParams { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::ValidateEmissionIntervalDetails { Id } {
    variable Warning
    variable Error
@@ -351,7 +352,7 @@ proc MLDPn::ValidateNumberParticles { {Id ""} } {
    variable Sim
 
    if { $Tmp(EmIsAutoNP) } {
-      set var "EmGlobalNP"
+      set var "EmNumberParticles"
    } else {
       set var "EmNumberParticles.$Id"
    }
@@ -364,12 +365,6 @@ proc MLDPn::ValidateNumberParticles { {Id ""} } {
       return 0
    } elseif { $number == 0 || $Tmp($var) < 1000 } {
       Dialog::Error .emintdetails $Error(EmNumberParticles) " $Tmp($var)."
-      return 0
-   }
-
-   #----- Verify if number of particles is an integer multiple number of 1000.
-   if { [expr fmod($Tmp($var),1000)] > $Sim(EmEpsilon) } {
-      Dialog::Error .emintdetails $Error(EmNumberParticles2) " $Tmp($var)."
       return 0
    }
 
@@ -902,11 +897,11 @@ proc MLDPn::ValidateTotalNumberParticles { Id } {
 
    #----- Count Total number of particles
    if { $Tmp(EmIsAutoNP) } {
-      set totnp $Tmp(EmGlobalNP)
+      set totnp $Sim(EmNumberParticles)
    } else {
       #----- Count previous particles from previous "stable" parameters
       set totnp 0
-      for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+      for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
          if { $Sim(EmIsEm.$i) } {
             set totnp [expr $totnp + $Sim(EmNumberParticles.$i)]
          }
@@ -924,7 +919,7 @@ proc MLDPn::ValidateTotalNumberParticles { Id } {
    if { $totnp > $Sim(EmMaxNumberParticles) } {
       if { $Tmp(EmIsEm.$Id) } {
          #----- Calculate allowed number of particles
-         set newnp [expr ($Tmp(EmIsAutoNP)?$Tmp(EmGlobalNP):$Tmp(EmNumberParticles.$Id)) + $Sim(EmMaxNumberParticles) - $totnp]
+         set newnp [expr ($Tmp(EmIsAutoNP)?$Tmp(EmNumberParticles):$Tmp(EmNumberParticles.$Id)) + $Sim(EmMaxNumberParticles) - $totnp]
          if { $newnp <= 0 } {
             #----- We can't correct the problem at this level
             Dialog::Error .emintdetails $Error(EmNumberParticles3) "$totnp\n[lindex $Error(EmNumberParticles4) $GDefs(Lang)] $Sim(EmMaxNumberParticles)"
@@ -939,7 +934,7 @@ proc MLDPn::ValidateTotalNumberParticles { Id } {
          #----- Correct number of particles
          if { $Tmp(EmIsAutoNP) } {
             set totnp $newnp
-            set Tmp(EmGlobalNP) $newnp
+            set Tmp(EmNumberParticles) $newnp
          } else {
             set totnp [expr $totnp - $Tmp(EmNumberParticles.$Id) + $newnp]
             set Tmp(EmNumberParticles.$Id) $newnp
@@ -984,7 +979,7 @@ proc MLDPn::ValidateEmissionDuration { Id } {
    #----- Calculate total and effective emission duration of previous intervals
    set totdur 0
    set effdur 0
-   for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
       set totdur [expr $totdur + $Sim(EmInter.$i)]
       if { $Sim(EmIsEm.$i) } {
          set effdur [expr $effdur + $Sim(EmInter.$i)]
@@ -998,29 +993,6 @@ proc MLDPn::ValidateEmissionDuration { Id } {
    } else { ;#----- Adding mode
       set totdur [expr $totdur + $Tmp(EmInter.$Id)]
       set effdur [expr $effdur + $Tmp(EmIsEm.$Id)?$Tmp(EmInter.$Id):0]
-   }
-
-   #----- Check if total emission duration is greater than simulation duration
-   if { $totdur > $simdur } {
-      #----- Calculate allowed emission duration
-      set newdur [expr $Tmp(EmInter.$Id) + $simdur - $totdur]
-      if { $newdur <= 0 } {
-         #----- We can't correct the problem at this level
-         Dialog::Error .modelnew $Error(Duration_lt_Zero)
-         return 0
-      }
-
-      #----- Ask user if we correct the duration of this interval
-      if { [Dialog::Default .emintdetails 400 WARNING $Warning(Emdur_gt_Simdur) "\n$Tmp(EmInter.$Id) h --> $newdur h" 0 $Lbl(Yes) $Lbl(No)] } {
-         return 0
-      }
-
-      #----- Correct durations
-      set totdur [expr $totdur - $Tmp(EmInter.$Id) + $newdur]
-      if { $Tmp(EmIsEm.$Id) } {
-         set effdur [expr $effdur - $Tmp(EmInter.$Id) + $newdur]
-      }
-      set Tmp(EmInter.$Id) $newdur
    }
 
    set Tmp(EmEffectiveDuration)  [expr $effdur * 3600]
@@ -1052,7 +1024,7 @@ proc MLDPn::ValidateScenarioDuration { } {
 
    set totdur 0
    set effdur 0
-   for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
       set totdur [expr $totdur + $Sim(EmInter.$i)]
 
       if { $Sim(EmIsEm.$i) } {
@@ -1085,7 +1057,8 @@ proc MLDPn::ValidateScenarioDuration { } {
 proc MLDPn::ValidateDurationsVsModelTimeStep { } {
    variable Sim
 
-   for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
+
       #----- Validate emission duration value.
       if { ![MLDPn::ValidateDuration $Sim(EmInter.$i) .modelnew] } {
          return 0
@@ -1115,8 +1088,8 @@ proc MLDPn::ValidateLullPeriods { } {
    set lst {}
 
    #----- Check for lull periods at the beginning of the scenario
-   if { !$Sim(IsRestart) } {
-      for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+   if { $Sim(Restart)=="" } {
+      for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
          if { $Sim(EmIsEm.$i) } {
             break
          } else {
@@ -1128,20 +1101,20 @@ proc MLDPn::ValidateLullPeriods { } {
          Dialog::Error .modelnew $Error(LullAtStart) [join $lst ", "]
          return 0
       }
-   }
 
-   #----- Check for lull periods at the end of the scenario
-   for {set i [expr $Sim(EmNbIntervals)-1]} {$i >= $Sim(EmInterStart)} {incr i -1} {
-      if { $Sim(EmIsEm.$i) } {
-         break
-      } else {
-         lappend lst [expr $i + 1]
+      #----- Check for lull periods at the end of the scenario
+      for { set i [expr $Sim(EmNbIntervals)-1] } { $i >= $Sim(EmInterStart) } { incr i -1 } {
+         if { $Sim(EmIsEm.$i) } {
+            break
+         } else {
+            lappend lst [expr $i + 1]
+         }
       }
-   }
 
-   if { [llength $lst] } {
-      Dialog::Error .modelnew $Error(LullAtEnd) [join $lst ", "]
-      return 0
+      if { [llength $lst] } {
+         Dialog::Error .modelnew $Error(LullAtEnd) [join $lst ", "]
+         return 0
+      }
    }
 
    return 1
@@ -1176,12 +1149,12 @@ proc MLDPn::ValidateEmissionQuantity { } {
          set quantity 0.0
 
          #----- Compute total release quantity.
-         for {set i $Sim(EmInterStart)} {$i < $Sim(EmNbIntervals)} {incr i} {
+         for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
             set quantity [expr $quantity + $Sim(EmInter.$i) * double($Sim(EmRate.$i))]
          }
 
          #----- Make sure we arrive at a positive value
-         if { $quantity<0.0 || $quantity==0.0 && !$Sim(IsRestart) } {
+         if { $quantity<0.0 || $quantity==0.0 && $Sim(Restart)=="" } {
             Dialog::Error .modelnew $Error(TotalQuantityVirus)
             return 0
          }
@@ -1200,7 +1173,7 @@ proc MLDPn::ValidateEmissionQuantity { } {
                set quantity($j) [expr $quantity($j) + $Sim(EmInter.$i) * double($Sim(EmRate.$i.$j))]
             }
 
-            if { $quantity($j)<0.0 || $quantity($j)==0.0 && !$Sim(IsRestart)  } {
+            if { $quantity($j)<0.0 || $quantity($j)==0.0 && $Sim(Restart)==""  } {
                Dialog::Error .modelnew $Error(TotalQuantityAccident) "[lindex $Error(TotalQuantity2) $GDefs(Lang)] [lindex [lindex $Sim(EmIsoInfo) $j] 0]"
                return 0
             }

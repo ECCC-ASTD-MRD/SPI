@@ -39,7 +39,7 @@ namespace eval MLDPn {
    set Lbl(Model)               { "Modèle" "Model" }
    set Lbl(Source)              { "Source" "Source" }
    set Lbl(Start)               { "Temps de départ (UTC)" "Starting Time (UTC)" }
-   set Lbl(Date)                { "Date" "Date" }
+   set Lbl(Date)                { "Date   " "Date   " }
    set Lbl(Delta)               { "Delta (HR)" "Delta (HR)" }
    set Lbl(Hour)                { "Heure " "Hour " }
    set Lbl(At)                  { "A " "At " }
@@ -54,7 +54,8 @@ namespace eval MLDPn {
    set Lbl(Scale)               { "Grille      "     "Grid       " }
    set Lbl(Meteo)               { "Météorologie"     "Meteorology" }
    set Lbl(MeteoDelta)          { " Dt (h)"          " Dt (h)" }
-   set Lbl(OutCV)               { "Niveaux  (m)"     "Levels  (m)" }
+   set Lbl(OutCV)               { "Niveaux CV  (m)"     "Levels CV  (m)" }
+   set Lbl(OutAV)               { "Niveaux AV (ft)"     "Levels AV (ft)" }
    set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
@@ -137,6 +138,7 @@ namespace eval MLDPn {
    set Bubble(MoveGrid2)              { "Permettre de modifier l'emplacement de\nla grille sur la sphère terrestre." "Allow to modify the location of\nthe grid on the earth's sphere." }
    set Bubble(ModifyPath)             { "Permettre de modifier les répertoires\ndes modèles météorologiques." "Allow to modify the meteorological\nmodels directories." }
    set Bubble(OutCV)                  { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
+   set Bubble(OutAV)                  { "Liste des niveaux verticaux aviations servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical aviation levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
    set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modelling of mesoscale fluctuations." }
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
@@ -146,7 +148,7 @@ namespace eval MLDPn {
    set Bubble(EmDensity)              { "Densité d'une particule (µg/m³)." "Particle density (µg/m³)." }
    set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
    set Bubble(EmIsAutoNP)             { "Détermine la répartition des particules (automatique ou manuelle).\nLa répartition automatique distribue les particules en fonction de la masse de chaque interval d'émission." "Switch between automatic or manual particles distribution.\nAutomatic distribution is done proportionnaly to the released mass of emission intervals." }
-   set Bubble(EmGlobalNP)             { "Nombre de particules à être automatiquement réparties parmis les intervals d'émission." "Number of particles to be distributed amongst emission intervals" }
+   set Bubble(EmNumberParticles)      { "Nombre de particules à être automatiquement réparties parmis les intervals d'émission." "Number of particles to be distributed amongst emission intervals" }
 
    set Bubble(EmissionDetails)        { "Paramètre de l'interval d'émission courant." "Current emission interval parameters." }
    set Bubble(DurationInter)          { "Durée de l'intervalle." "Interval duration." }
@@ -259,8 +261,6 @@ namespace eval MLDPn {
 
    set Error(EmNumberParticles)                 { "Le nombre de particules doit être un nombre entier positif et supérieur ou égal à 1000.\n\n\tNombre de particules :" \
                                                   "The number of particles must be a positive integer number greater or equal to 1000.\n\n\tNumber of particles :" }
-   set Error(EmNumberParticles2)                { "Le nombre de particules doit être un nombre entier multiple de 1000.\n\n\tNombre de particules :" \
-                                                  "The number of particles must be an integer multiple number of 1000.\n\n\tNumber of particles :" }
    set Error(EmNumberParticles3)                { "Le nombre de particules doit être inférieur (ou égal) à la valeur limite maximale déclarée dans le programme.\n\n\tNombre de particules         :" \
                                                   "The number of particles must be less than (or equal to) maximum limit value declared in the program.\n\n\tNumber of particles         :" }
    set Error(EmNumberParticles4)                { "\tNombre maximum de particules :" \
@@ -366,8 +366,6 @@ namespace eval MLDPn {
                                     "The emission scenario is invalid because it ends with one or more lull periods. Changes are required for the following intervals : " }
    set Error(NoEmission)          { "Le scénario d'émission est invalide puisqu'il ne contient aucune période d'émission. Veuillez ajouter au moins une période d'émission." \
                                     "The emission scenario is invalid because there's no emission at all. Please add at least one emission to this scenario." }
-   set Error(Duration_lt_Zero)    { "Aucune durée ne pourra être acceptée pour cet intervalle puisque la durée combinée des intervalles déjà présents est égale ou supérieure à la durée de la simulation." \
-                                    "No duration will be accepted for this interval because the sum of all preceding intervals is either greater or equal to simulation duration." }
    set Error(Emdur)               { "Durée de l'émission    :" "Emission duration   :" }
    set Error(Simdur)              { "Durée de la simulation :" "Simulation duration :" }
    set Error(NoRestartFile)       { "Le fichier restart est soit introuvable, soit invalide." "Restart file is either invalid or could not be found." }
@@ -404,8 +402,6 @@ namespace eval MLDPn {
 
    set Warning(NP_gt_Max)         { "Le nombre de particules total est supérieur au nombre maximum permis. Voulez-vous appliquer le changement suivant au nombre de particule de cet interval pour rectifier la situation ?" \
                                     "The total number of particles is greater than the maximum number of particles. Do you want to apply the following change to the number of particles of this interval to correct this situation ?" }
-   set Warning(Emdur_gt_Simdur)   { "La durée totale d'émission est supérieure à la durée de la simulation. Voulez-vous appliquer le changement suivant à l'interval d'émission pour rectifier la situation ?" \
-                                    "The total duration of emission is greater than the total simulation duration. Do you want to apply the following change to the emission interval to correct this situation ?" }
    set Warning(SwitchEm2LullA)    { "La totalité des taux de relâchement des isotopes de cet interval étant nuls, cet interval sera considéré comme une période d'accalmie. Voulez-vous continuer ?" \
                                     "All release rates for this time interval are null. Therefore, this interval will be considered as a lull period. Do you want to continue ?" }
    set Warning(SwitchEm2LullV)    { "Le taux de relâchement de cet interval étant nul, cet interval sera considéré comme une période d'accalmie. Voulez-vous continuer ?" \

@@ -52,13 +52,13 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
       labelframe $tabframe.time -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.
-         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDPn::Sim(AccSeconds) 24 "MLDPn::SetAccidentDate"
-         Clock::Create $tabframe.time.hour "" MLDPn::Sim(AccHour) MLDPn::Sim(AccMin)
-         pack $tabframe.time.date -side left -anchor w -padx 2 -fill x
-         pack $tabframe.time.hour -side left -padx 2
+         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDPn::Sim(AccSeconds) -1 "MLDPn::SetAccidentDate"
+         Clock::Create $tabframe.time.date.hour "" MLDPn::Sim(AccHour) MLDPn::Sim(AccMin)
+         pack $tabframe.time.date -side top -anchor w -padx 2 -fill x -expand True
+         pack $tabframe.time.date.hour -side right
 
          Bubble::Create $tabframe.time.date $Bubble(StartDate)
-         Bubble::Create $tabframe.time.hour $Bubble(StartHour)
+         Bubble::Create $tabframe.time.date.hour $Bubble(StartHour)
 
       pack $tabframe.time -side top -padx 5 -pady 5 -fill x
       Bubble::Create $tabframe.time $Bubble(StartTime)
@@ -137,13 +137,19 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          pack $tabframe.others.opt.met.path  -side left
          pack $tabframe.others.opt.met       -side top -fill x
 
-         #----- Vertical levels [m].
-         Option::Create $tabframe.others.opt.levels [lindex $Lbl(OutCV) $GDefs(Lang)] MLDPn::Sim(OutCV) 1 -1 $MLDPn::Sim(ListOutCV) "MLDPn::UpdateListVerticalLevels"
-         set MLDPn::Sim(OutCVFrm) $tabframe.others.opt.levels
-         set MLDPn::Sim(OutCVsEnt) $tabframe.others.opt.levels.e
-         pack $tabframe.others.opt.levels -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.levels.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.levels.e <Button-1> "MLDPn::UpdateListVerticalLevels"
+         #----- Vertical levels CV [m].
+         Option::Create $tabframe.others.opt.cvlevels [lindex $Lbl(OutCV) $GDefs(Lang)] MLDPn::Sim(OutCV) 1 -1 $MLDPn::Sim(ListOutCV) "MLDPn::UpdateListVerticalLevels"
+         set MLDPn::Sim(OutCVFrm) $tabframe.others.opt.cvlevels
+         set MLDPn::Sim(OutCVsEnt) $tabframe.others.opt.cvlevels.e
+         pack $tabframe.others.opt.cvlevels -side top -ipady 1 -fill x
+         bind $tabframe.others.opt.cvlevels.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
+         bind $tabframe.others.opt.cvlevels.e <Button-1> "MLDPn::UpdateListVerticalLevels"
+
+         if { $Sim(SrcType)=="VOLCANO" } {
+            #----- Vertical levels AV [m].
+            Option::Create $tabframe.others.opt.avlevels [lindex $Lbl(OutAV) $GDefs(Lang)] MLDPn::Sim(OutAV) 1 -1 {} ""
+            pack $tabframe.others.opt.avlevels -side top -ipady 1 -fill x
+        }
 
          #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          Option::Create $tabframe.others.opt.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDPn::Sim(VarMesoscale) 1 -1 $MLDPn::Sim(ListVarMesoscale) ""
@@ -173,10 +179,212 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    Bubble::Create $tabframe.others.opt.met.model     $Bubble(Meteo)
    Bubble::Create $tabframe.others.opt.met.delta     $Bubble(MeteoDelta)
    Bubble::Create $tabframe.others.opt.met.path      $Bubble(ModifyPath)
-   Bubble::Create $tabframe.others.opt.levels        $Bubble(OutCV)
+   Bubble::Create $tabframe.others.opt.cvlevels      $Bubble(OutCV)
+   Bubble::Create $tabframe.others.opt.avlevels      $Bubble(OutAV)
    Bubble::Create $tabframe.others.opt.varmesoscale  $Bubble(VarMesoscale)
    Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
    Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::ParamsEmission>
+# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But        : Cree l'onglet concernant le scenario d'emission.
+#
+# Parametres :
+#   <Tab>    : Boite d'onglet dans laquelle ajouter les onglets
+#   <Auto>   : Mode Auto
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
+   global GDefs
+   variable Sim
+   variable Msg
+   variable Lbl
+   variable Bubble
+
+   wm geom [winfo toplevel $Tab] =320x415
+   wm resizable .modelnew 1 1
+
+   #----- Get the list of available scenarios.
+   if { [MLDPn::ScenarioList] } {
+      MLDPn::ScenarioSelect
+   }
+
+   set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Emission) $GDefs(Lang)]" False]
+   set Sim(TabframeEmission) $tabframe
+   set Sim(ScenarioTabNo) [TabFrame::Current $Tab]
+
+   #----- Scenario management
+   set Sim(ScenarioFrame) $tabframe.scenariomgnt
+   labelframe $tabframe.scenariomgnt -text "[lindex $Lbl(ScenarioMgnt) $GDefs(Lang)]"
+      #----- Release scenario name.
+      frame $tabframe.scenariomgnt.name
+         label $tabframe.scenariomgnt.name.lbl -relief flat -anchor w -text "[lindex $Lbl(ScenarioName) $GDefs(Lang)]"
+         ComboBox::Create $tabframe.scenariomgnt.name.ent MLDPn::Sim(EmScenario) noedit sorted nodouble -1 $MLDPn::Sim(EmList) 10 3 "MLDPn::ScenarioSelect"
+         pack $tabframe.scenariomgnt.name.lbl -side left -padx 2
+         pack $tabframe.scenariomgnt.name.ent -side left -padx 2 -fill x -expand true
+         Bubble::Create $tabframe.scenariomgnt.name.lbl $Bubble(ScenarioName)
+         Bubble::Create $tabframe.scenariomgnt.name.ent $Bubble(ScenarioSelect)
+      pack $tabframe.scenariomgnt.name -side top -anchor w -padx 2 -fill x
+
+      #----- Buttons.
+      frame $tabframe.scenariomgnt.button
+         button $tabframe.scenariomgnt.button.new -text "[lindex $Lbl(Clear) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioClear"
+         button $tabframe.scenariomgnt.button.save -text "[lindex $Lbl(Save) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioPromptSave True"
+         button $tabframe.scenariomgnt.button.delete -text "[lindex $Lbl(Suppress) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioDelete"
+         pack $tabframe.scenariomgnt.button.new $tabframe.scenariomgnt.button.save -side right
+         pack $tabframe.scenariomgnt.button.delete -side left
+         Bubble::Create $tabframe.scenariomgnt.button.new $Bubble(ScenarioClear)
+         Bubble::Create $tabframe.scenariomgnt.button.save $Bubble(ScenarioSave)
+         Bubble::Create $tabframe.scenariomgnt.button.delete $Bubble(ScenarioDelete)
+      pack $tabframe.scenariomgnt.button -side top -anchor w -padx 5 -pady 10 -fill x -expand true
+   pack $tabframe.scenariomgnt -side top -padx 5 -fill x -pady 5
+   Bubble::Create $tabframe.scenariomgnt $Bubble(Scenario)
+
+   #----- Emission Scenario
+   labelframe $tabframe.scenario -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
+      #----- Button + Slider
+      frame $tabframe.scenario.ctrl
+         #----- Add button
+         button $tabframe.scenario.ctrl.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -bd 1 -command "MLDPn::EmissionIntervalAdd"
+         pack $tabframe.scenario.ctrl.add -side right -anchor e
+         Bubble::Create $tabframe.scenario.ctrl.add $Bubble(EmissionIntervalAdd)
+         Bubble::Create $tabframe.scenario.ctrl.zoom $Bubble(GraphZoom)
+         #----- Interval picker
+         set Sim(PickInterval) [lindex $Lbl(EditInter) $GDefs(Lang)]
+         ComboBox::Create $tabframe.scenario.ctrl.pick MLDPn::Sim(PickInterval) noedit unsorted nodouble -1 [MLDPn::GetEmissionIntervalNumberList] \
+            20 5 "MLDPn::EmissionIntervalEdit \[expr \$MLDPn::Sim(PickInterval)-1\]; set MLDPn::Sim(PickInterval) \"[lindex $Lbl(EditInter) $GDefs(Lang)]\""
+         pack $tabframe.scenario.ctrl.pick -side right -anchor e -padx 2
+         Bubble::Create $tabframe.scenario.ctrl.pick $Bubble(PickInterval)
+         trace add variable MLDPn::Sim(EmNbIntervals) write MLDPn::UpdateIntervalPickerList
+         #----- Slider
+         scale $tabframe.scenario.ctrl.zoom -orient horizontal -showvalue False -length 45 -sliderlength 10 -variable MLDPn::Sim(Zoom) -resolution 0.1 -from 1 -to 10 -command "MLDPn::GraphZoom"
+         pack $tabframe.scenario.ctrl.zoom -side left -anchor w -fill x -expand 1
+      pack $tabframe.scenario.ctrl -side bottom -padx 5 -fill x -pady 5
+      #---- Canvas (graph)
+      frame $tabframe.scenario.graph
+         #----- Graph
+         glcanvas $tabframe.scenario.graph.graph -xscrollcommand "$tabframe.scenario.graph.scrollx set"
+         pack $tabframe.scenario.graph.graph -side top -fill both -expand True
+         set Sim(ESCanvas) $tabframe.scenario.graph.graph
+         #----- Scrollbar
+         scrollbar $tabframe.scenario.graph.scrollx -orient horizontal -bd 1 -width 10 -command "$tabframe.scenario.graph.graph xview"
+         pack $tabframe.scenario.graph.scrollx -side bottom -fill x
+      pack $tabframe.scenario.graph -side top -padx 2 -pady 2 -fill both -expand True
+   pack $tabframe.scenario -side top -padx 5 -fill both -expand True
+   #Bubble::Create $tabframe.scenario $Bubble(EmissionScenario)
+
+   if { $Mode=="CONT" } {
+      #----- Disable scenario management buttons
+
+      $Sim(ScenarioFrame).button.new configure -state disabled
+      $Sim(ScenarioFrame).button.delete configure -state disabled
+      ComboBox::Disable $Sim(ScenarioFrame).name.ent
+   }
+
+   #----- Create histogram
+
+   if { ![graphitem is ES_SIMDUR] } {
+      graphaxis create ES_AXISX
+      graphaxis create ES_AXISY
+
+      vector    create ES_INTERX
+      vector    create ES_INTERY
+      graphitem create ES_INTER
+
+      vector    create ES_SIMDURX
+      vector    create ES_SIMDURY
+      graphitem create ES_SIMDUR
+   }
+
+   graphitem configure ES_INTER -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_INTERX -ydata ES_INTERY
+   graphitem configure ES_SIMDUR -type HISTOGRAM -outline #BAECFF -width 1 -font XFONT12 -fill #E6F8FF -stipple @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm \
+      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_SIMDURX -ydata ES_SIMDURY
+
+   graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash . -format T+HHMM -spacing 20
+   graphaxis configure ES_AXISY -format INTEGER -width 1 -unit "[lindex $Lbl(AxisY) $GDefs(Lang)]" -highoffset 2
+
+   $Sim(ESCanvas) create graph -x 0 -y 0 -anchor nw -legend False -item { ES_INTER ES_SIMDUR } -tags ES_GRAPH -command GRAPH_CMD
+
+   set Sim(BubbleId) [OneTimeBubble::Create]
+
+   bind $Sim(ESCanvas) <Double-Button-1> "MLDPn::GraphAction dblclk %x %y %X %Y"
+   bind $Sim(ESCanvas) <Motion> "MLDPn::GraphAction motion %x %y %X %Y"
+   bind $Sim(ESCanvas) <Leave> "OneTimeBubble::Hide $MLDPn::Sim(BubbleId); set MLDPn::Sim(BubbleShowingId) -1"
+   bind $Sim(ESCanvas) <Configure> "$Sim(ESCanvas) configure -width %w -height %h; $Sim(ESCanvas) itemconfigure ES_GRAPH -width %w -height %h"
+   bind $Sim(ESCanvas) <ButtonPress-4>   { set MLDPn::Sim(Zoom) [expr $MLDPn::Sim(Zoom)+0.1]; MLDPn::GraphZoom $MLDPn::Sim(Zoom) }
+   bind $Sim(ESCanvas) <ButtonPress-5>   { set MLDPn::Sim(Zoom) [expr $MLDPn::Sim(Zoom)-0.1]; MLDPn::GraphZoom $MLDPn::Sim(Zoom) }
+
+   graphaxis configure ES_AXISX -highlight $Sim(RestartDeltas) -highlightcolor #FF0000 -highlightwidth 2
+
+   MLDPn::GraphUpdate
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::ParamsCont>
+# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
+#
+# But        : Interface pour la continuation d'une simulation (restart).
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDPn::ParamsCont { Parent } {
+   variable Sim
+
+   #----- Model tab
+
+   MLDPn::ParamsNew $Parent
+
+   #----- Disable params that shouldn't be modified
+
+   set base $Sim(TabframeModel)
+
+   #----- Start time
+   Calendar::Disable $base.time.date
+   Clock::Disable $base.time.date.hour
+
+   Option::Create  $base.time.restart "Restart" MLDPn::Sim(Restart) 0 -1 $Sim(Restarts) \
+      { set MLDPn::Sim(RestartDelta) [lindex $MLDPn::Sim(RestartDeltas) [lsearch -exact $MLDPn::Sim(Restarts) $MLDPn::Sim(Restart)]]; MLDPn::GraphUpdate }
+   pack  $base.time.restart -side bottom -fill x -padx 2
+
+   #----- Integration
+   Option::Disable $base.integ.opt.ots
+   Option::Disable $base.integ.opt.mts
+
+   #----- Other
+   Option::Disable $base.others.opt.event
+   if { $Sim(SrcType) == "VIRUS" } {
+      Option::Disable $base.others.opt.virus
+   }
+
+   Option::Disable $base.others.opt.grid.res
+   Option::Disable $base.others.opt.grid.src
+   $base.others.opt.grid.sel configure -state disabled
+#   Option::Disable $base.others.opt.met.model
+#   Option::Disable $base.others.opt.met.delta
+#   $base.others.opt.met.path configure -state disabled
+   Option::Disable $base.others.opt.cvlevels
+   Option::Disable $base.others.opt.varmesoscale
+   Option::Disable $base.others.opt.timescale
+   Option::Disable $base.others.opt.reflect
+
+   if { $Sim(SrcType) == "VOLCANO" } {
+      Option::Disable $base.others.opt.avlevels
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -195,6 +403,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::IsEmissionToggle { Id Base } {
    variable Tmp
    variable Sim
@@ -235,6 +444,7 @@ proc MLDPn::IsEmissionToggle { Id Base } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::EmInterModeToggle { Base Id } {
    global GDefs
    variable Tmp
@@ -270,6 +480,7 @@ proc MLDPn::EmInterModeToggle { Base Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::EmRateModeToggle { Base Id {Idx ""} } {
    global GDefs
    variable Tmp
@@ -314,6 +525,7 @@ proc MLDPn::EmRateModeToggle { Base Id {Idx ""} } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::IsoDetailsUpdate { Id } {
    global GDefs
    variable Bubble
@@ -372,7 +584,8 @@ proc MLDPn::IsoDetailsUpdate { Id } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
-proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
+
+proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
    global GDefs
    variable Sim
    variable Tmp
@@ -421,7 +634,7 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
       checkbutton $base.isautonp -anchor w -text "[lindex $Lbl(EmIsAutoNP) $GDefs(Lang)]" -variable MLDPn::Tmp(EmIsAutoNP) -indicatoron True \
          -command "if { \$MLDPn::Tmp(EmIsAutoNP) } {
                       pack $base.nbpart -after $base.isautonp -side top -anchor w -padx 2 -fill x
-                      Bubble::Create $base.nbpart \{ $MLDPn::Bubble(EmGlobalNP)] \}
+                      Bubble::Create $base.nbpart \{ $MLDPn::Bubble(EmNumberParticles)] \}
                       .emintdetails.frm.emint.emdetails.nbpart.ent configure -state disabled
                    } else {
                       pack forget $base.nbpart
@@ -433,12 +646,12 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
       #----- Global number of particles to be distributed amongst emission intervals
       frame $base.nbpart
          label $base.nbpart.lbl -relief flat -anchor w -text "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)]"
-         entry $base.nbpart.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmGlobalNP) -width 60
+         entry $base.nbpart.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmNumberParticles) -width 60
          pack $base.nbpart.lbl $base.nbpart.ent -side left
       Bubble::Create $base.nbpart $Bubble(EmNumberParticles)
       if { $Sim(EmIsAutoNP) } {
          pack $base.nbpart -side top -anchor w -padx 2 -fill x
-         Bubble::Create $base.nbpart $Bubble(EmGlobalNP)
+         Bubble::Create $base.nbpart $Bubble(EmNumberParticles)
       }
 
    pack $base -side top -padx 5 -pady 5 -fill x
@@ -571,7 +784,7 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
    pack .emintdetails.buttons -side bottom -anchor w -padx 5 -fill x -pady 5
 
    #----- Disable some options if it is a restart
-   if { $Sim(IsRestart) } {
+   if { $Sim(Restart)!="" } {
       MLDPn::EmissionDetailsRestart
    }
 
@@ -579,147 +792,6 @@ proc MLDPn::EmissionDetails { Parent Id {Type ""} } {
    grab .emintdetails
 
    MLDPn::ComputeMass $Id
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::ParamsEmission>
-# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
-#
-# But        : Cree l'onglet concernant le scenario d'emission.
-#
-# Parametres :
-#   <Tab>    : Boite d'onglet dans laquelle ajouter les onglets
-#   <Auto>   : Mode Auto
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
-   global GDefs
-   variable Sim
-   variable Msg
-   variable Lbl
-   variable Bubble
-
-   wm geom [winfo toplevel $Tab] =320x415
-   wm resizable .modelnew 1 1
-
-   #----- Get the list of available scenarios.
-   if { [MLDPn::ScenarioList] } {
-      MLDPn::ScenarioSelect
-   }
-
-   set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Emission) $GDefs(Lang)]" False]
-   set Sim(TabframeEmission) $tabframe
-   set Sim(ScenarioTabNo) [TabFrame::Current $Tab]
-
-   #----- Scenario management
-   set Sim(ScenarioFrame) $tabframe.scenariomgnt
-   labelframe $tabframe.scenariomgnt -text "[lindex $Lbl(ScenarioMgnt) $GDefs(Lang)]"
-      #----- Release scenario name.
-      frame $tabframe.scenariomgnt.name
-         label $tabframe.scenariomgnt.name.lbl -relief flat -anchor w -text "[lindex $Lbl(ScenarioName) $GDefs(Lang)]"
-         ComboBox::Create $tabframe.scenariomgnt.name.ent MLDPn::Sim(EmScenario) noedit sorted nodouble -1 $MLDPn::Sim(EmList) 10 3 "MLDPn::ScenarioSelect"
-         pack $tabframe.scenariomgnt.name.lbl -side left -padx 2
-         pack $tabframe.scenariomgnt.name.ent -side left -padx 2 -fill x -expand true
-         Bubble::Create $tabframe.scenariomgnt.name.lbl $Bubble(ScenarioName)
-         Bubble::Create $tabframe.scenariomgnt.name.ent $Bubble(ScenarioSelect)
-      pack $tabframe.scenariomgnt.name -side top -anchor w -padx 2 -fill x
-
-      #----- Buttons.
-      frame $tabframe.scenariomgnt.button
-         button $tabframe.scenariomgnt.button.new -text "[lindex $Lbl(Clear) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioClear"
-         button $tabframe.scenariomgnt.button.save -text "[lindex $Lbl(Save) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioPromptSave True"
-         button $tabframe.scenariomgnt.button.delete -text "[lindex $Lbl(Suppress) $GDefs(Lang)]" -bd 1 -command "MLDPn::ScenarioDelete"
-         pack $tabframe.scenariomgnt.button.new $tabframe.scenariomgnt.button.save -side right
-         pack $tabframe.scenariomgnt.button.delete -side left
-         Bubble::Create $tabframe.scenariomgnt.button.new $Bubble(ScenarioClear)
-         Bubble::Create $tabframe.scenariomgnt.button.save $Bubble(ScenarioSave)
-         Bubble::Create $tabframe.scenariomgnt.button.delete $Bubble(ScenarioDelete)
-      pack $tabframe.scenariomgnt.button -side top -anchor w -padx 5 -pady 10 -fill x -expand true
-   pack $tabframe.scenariomgnt -side top -padx 5 -fill x -pady 5
-   Bubble::Create $tabframe.scenariomgnt $Bubble(Scenario)
-
-   #----- Emission Scenario
-   labelframe $tabframe.scenario -text "[lindex $Lbl(Scenario) $GDefs(Lang)]"
-      #----- Button + Slider
-      frame $tabframe.scenario.ctrl
-         #----- Add button
-         button $tabframe.scenario.ctrl.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -bd 1 -command "MLDPn::EmissionIntervalAdd"
-         pack $tabframe.scenario.ctrl.add -side right -anchor e
-         Bubble::Create $tabframe.scenario.ctrl.add $Bubble(EmissionIntervalAdd)
-         Bubble::Create $tabframe.scenario.ctrl.zoom $Bubble(GraphZoom)
-         #----- Interval picker
-         set Sim(PickInterval) [lindex $Lbl(EditInter) $GDefs(Lang)]
-         ComboBox::Create $tabframe.scenario.ctrl.pick MLDPn::Sim(PickInterval) noedit unsorted nodouble -1 [MLDPn::GetEmissionIntervalNumberList] \
-            20 5 "MLDPn::EmissionIntervalEdit \[expr \$MLDPn::Sim(PickInterval)-1\]; set MLDPn::Sim(PickInterval) \"[lindex $Lbl(EditInter) $GDefs(Lang)]\""
-         pack $tabframe.scenario.ctrl.pick -side right -anchor e -padx 2
-         Bubble::Create $tabframe.scenario.ctrl.pick $Bubble(PickInterval)
-         trace add variable MLDPn::Sim(EmNbIntervals) write MLDPn::UpdateIntervalPickerList
-         #----- Slider
-         scale $tabframe.scenario.ctrl.zoom -orient horizontal -showvalue False -length 45 -sliderlength 10  -from 1 -to 10 -command "MLDPn::GraphZoom"
-         pack $tabframe.scenario.ctrl.zoom -side left -anchor w -fill x -expand 1
-      pack $tabframe.scenario.ctrl -side bottom -padx 5 -fill x -pady 5
-      #---- Canvas (graph)
-      frame $tabframe.scenario.graph
-         #----- Graph
-         glcanvas $tabframe.scenario.graph.graph -xscrollcommand "$tabframe.scenario.graph.scrollx set"
-         pack $tabframe.scenario.graph.graph -side top -fill both -expand True
-         set Sim(ESCanvas) $tabframe.scenario.graph.graph
-         #----- Scrollbar
-         scrollbar $tabframe.scenario.graph.scrollx -orient horizontal -bd 1 -width 10 -command "$tabframe.scenario.graph.graph xview"
-         pack $tabframe.scenario.graph.scrollx -side bottom -fill x
-      pack $tabframe.scenario.graph -side top -padx 2 -pady 2 -fill both -expand True
-   pack $tabframe.scenario -side top -padx 5 -fill both -expand True
-   #Bubble::Create $tabframe.scenario $Bubble(EmissionScenario)
-
-   if { $Mode=="CONT" } {
-      #----- Disable scenario management buttons
-
-      $Sim(ScenarioFrame).button.new configure -state disabled
-      $Sim(ScenarioFrame).button.save configure -state disabled
-      $Sim(ScenarioFrame).button.delete configure -state disabled
-      ComboBox::Disable $Sim(ScenarioFrame).name.ent
-   }
-
-   #----- Create histogram
-
-   if { ![graphitem is ES_SIMDUR] } {
-      graphaxis create ES_AXISX
-      graphaxis create ES_AXISY
-
-      vector    create ES_INTERX
-      vector    create ES_INTERY
-      graphitem create ES_INTER
-
-      vector    create ES_SIMDURX
-      vector    create ES_SIMDURY
-      graphitem create ES_SIMDUR
-   }
-
-   graphitem configure ES_INTER -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
-      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_INTERX -ydata ES_INTERY
-   graphitem configure ES_SIMDUR -type HISTOGRAM -outline #BAECFF -width 1 -font XFONT12 -fill #E6F8FF -stipple @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm \
-      -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_SIMDURX -ydata ES_SIMDURY
-
-   graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash . -format T+HHMM -spacing 20
-   graphaxis configure ES_AXISY -format INTEGER -width 1 -unit "[lindex $Lbl(AxisY) $GDefs(Lang)]" -highoffset 2
-
-   $Sim(ESCanvas) create graph -x 0 -y 0 -anchor nw -legend False -item { ES_INTER ES_SIMDUR } -tags ES_GRAPH -command GRAPH_CMD
-
-   set Sim(BubbleId) [OneTimeBubble::Create]
-
-   bind $Sim(ESCanvas) <Double-Button-1> "MLDPn::GraphAction dblclk %x %y %X %Y"
-   bind $Sim(ESCanvas) <Motion> "MLDPn::GraphAction motion %x %y %X %Y"
-   bind $Sim(ESCanvas) <Leave> "OneTimeBubble::Hide $MLDPn::Sim(BubbleId); set MLDPn::Sim(BubbleShowingId) -1"
-   bind $Sim(ESCanvas) <Configure> "$Sim(ESCanvas) configure -width %w -height %h; $Sim(ESCanvas) itemconfigure ES_GRAPH -width %w -height %h"
-
-   graphaxis configure ES_AXISX -highlight $Sim(RestartDates) -highlightcolor #FF0000 -highlightwidth 2
-
-   MLDPn::GraphUpdate
 }
 
 #----------------------------------------------------------------------------
@@ -798,7 +870,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
          }
          append bubtxt "[lindex $Lbl(EmVerticalDist) $GDefs(Lang)] : $Sim(EmVerticalDist)\n"
          if { $Sim(EmIsAutoNP) && $id>=$Sim(EmInterStart) } {
-            append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmGlobalNP)\n"
+            append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmNumberParticles)\n"
          }
 
          append bubtxt "\n*** [lindex $Lbl(IntervalParameters) $GDefs(Lang)] #[expr $id+1] ***\n"
@@ -904,7 +976,7 @@ proc MLDPn::GraphUpdate { } {
    set colors     {}
    set heights    {}
    set nplst      {}
-   set curnplst   [MLDPn::GetDistributionNP]
+   set curnplst   [MLDPn::DistributeParcels]
    set simsecs    [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
 
    #----- Make the lists of data points
@@ -962,9 +1034,9 @@ proc MLDPn::GraphUpdate { } {
    vector append ES_INTERY $heights
 
    #----- Set simulation length indicator
-   if { $Sim(IsRestart) } {
-      lappend times [set time [expr $Sim(RestartDate) + $Sim(Duration)*3600]]
-      vector append ES_SIMDURX [list 0.0 $Sim(RestartDate) $time]
+   if { $Sim(Restart)!="" } {
+      lappend times [set time [expr $Sim(RestartDelta) + $Sim(Duration)*3600]]
+      vector append ES_SIMDURX [list 0.0 $Sim(RestartDelta) $time]
       vector append ES_SIMDURY [list [vector stats ES_INTERY -max] [vector stats ES_INTERY -max]]
       set durcolors { #00B7FF #E6F8FF }
    } else {
@@ -977,7 +1049,7 @@ proc MLDPn::GraphUpdate { } {
 
    #----- Keep only unique values and get maximum values for both axis
 
-   set times   [concat $times $Sim(RestartDates)]
+   set times   [concat $times $Sim(RestartDeltas)]
    set times   [lsort -real -unique $times]
    set heights [lsort -real -unique $heights]
 
@@ -1036,14 +1108,15 @@ proc MLDPn::EnableDisableMass { Widget Id } {
    global GDefs
    variable Tmp
 
-   if { $Tmp(EmMassMode.$Id) == 0 || $Tmp(EmMassMode.$Id) == 1 } {
+   if { $Tmp(EmMassMode.$Id) == 0 ||  $Tmp(EmMassMode.$Id) == 1 } {
       #----- Total released mass is calculated according to empirical
       #----- formula of Sparks et al. (1997), so disable entry widget.
       $Widget.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
       #----- Compute total mass according to empirical formula of Sparks et al. (1997).
       MLDPn::ComputeMass $Id
 
-   } elseif {
+   } else {
+
       #----- Because we wouldn't want 'Edit' or 'Edition' as the starting mass.
       set Tmp(EmMass.$Id) $Tmp(EmMassOld)
       #----- Total released mass can be edited so enable entry widget.
@@ -1068,6 +1141,7 @@ proc MLDPn::EnableDisableMass { Widget Id } {
 #       "jump to/edit interval emission" combobox on the scenario tab.
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::GetEmissionIntervalNumberList { } {
    variable Sim
 
@@ -1271,54 +1345,6 @@ proc MLDPn::UpdateEmissionStartingTime { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <MLDPn::ParamsCont>
-# Creation   : Juillet 2010 - E. Legault-Ouellet - CMC/CMOE
-#
-# But        : Interface pour la continuation d'une simulation (restart).
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-proc MLDPn::ParamsCont { Parent } {
-   variable Sim
-
-   #----- Model tab
-
-   MLDPn::ParamsNew $Parent
-
-   #----- Disable params that shouldn't be modified
-
-   set base $Sim(TabframeModel)
-
-   #----- Start time
-   Calendar::Disable $base.time.date
-   Clock::Disable $base.time.hour
-
-   #----- Integration
-   Option::Disable $base.integ.opt.ots
-   Option::Disable $base.integ.opt.mts
-   #----- Other
-   Option::Disable $base.others.opt.event
-   if { $Sim(SrcType) == "VIRUS" } {
-      Option::Disable $base.others.opt.virus
-   }
-   Option::Disable $base.others.opt.grid.res
-   Option::Disable $base.others.opt.grid.src
-   $base.others.opt.grid.sel configure -state disabled
-   Option::Disable $base.others.opt.met.model
-   Option::Disable $base.others.opt.met.delta
-   $base.others.opt.met.path configure -state disabled
-   Option::Disable $base.others.opt.levels
-   Option::Disable $base.others.opt.varmesoscale
-   Option::Disable $base.others.opt.timescale
-   Option::Disable $base.others.opt.reflect
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDPn::EmissionDetailsRestart>
 # Creation   : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
 #
@@ -1332,6 +1358,7 @@ proc MLDPn::ParamsCont { Parent } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::EmissionDetailsRestart { } {
    variable Sim
    set base .emintdetails.frm

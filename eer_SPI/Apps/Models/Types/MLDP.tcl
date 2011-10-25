@@ -89,7 +89,7 @@ proc MLDP::Launch { } {
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
+      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
    if { $Model::Param(IsUsingSoumet) } {
@@ -626,7 +626,13 @@ proc MLDP::GetMetData { } {
    Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
-   return [Model::ParamsMetData MLDP]
+   if { [set ok [Model::ParamsMetData MLDP]] } {
+      set Sim(SimYear)   $Sim(MetYear)
+      set Sim(SimMonth)  $Sim(MetMonth)
+      set Sim(SimDay)    $Sim(MetDay)
+      set Sim(SimHour)   $Sim(MetHour)
+   }
+   return $ok
 }
 
 #----------------------------------------------------------------------------

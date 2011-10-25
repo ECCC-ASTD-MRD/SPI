@@ -361,11 +361,10 @@ proc Exp::CreateBranch { Canvas Model Prev No Name Deep Branch List { Open True 
          #----- Code de couleur
          switch -- $Data(State) {
             -1 { set fg #B6B6B6 ; set Data(StateExp) [expr $Data(StateExp)==2?$Data(StateExp):-1]} ;# Problems
-            0  { set fg black }                          ;# New
+            0  { set fg black }                          ;# Restartable
             1  { set fg black }                          ;# Done
             2  { set fg red; set Data(StateExp) 2 }      ;# Running
             3  { set fg darkgray }                       ;# Suspended
-            4  { set fg blue  }                          ;# Continuation
          }
 
          if { $Open } {
