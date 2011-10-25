@@ -1242,73 +1242,73 @@ proc MLDPn::PopUp { X Y } {
 
    set MLDPn::Sim(Model) MLDPn
 
-   if { ![winfo exists .mldppopup] } {
-      menu .mldppopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .mldppopup add command -label MLDPn -background $GDefs(ColorHighLight) \
+   if { ![winfo exists .mldpnpopup] } {
+      menu .mldpnpopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .mldpnpopup add command -label MLDPn -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
-         .mldppopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .mldppopup.product
-         .mldppopup add cascade -label [lindex $Lbl(Result) $GDefs(Lang)] -menu .mldppopup.res
-         .mldppopup add separator
-         .mldppopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
+         .mldpnpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .mldpnpopup.product
+         .mldpnpopup add cascade -label [lindex $Lbl(Result) $GDefs(Lang)] -menu .mldpnpopup.res
+         .mldpnpopup add separator
+         .mldpnpopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
             -command { Model::ParamsWindow $MLDPn::Sim(Model) CONT } -state disabled
-         .mldppopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
+         .mldpnpopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
             -command { Model::ParamsWindow $MLDPn::Sim(Model) RENEW } -state disabled
-         .mldppopup add separator
-         .mldppopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
+         .mldpnpopup add separator
+         .mldpnpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }
 
-      menu .mldppopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-          .mldppopup.product add command -label "VAAC" -command { MLDPn::CallProduct $Page::Data(Frame) result VAAC }
-          .mldppopup.product add command -label "RSMC" -command { MLDPn::CallProduct $Page::Data(Frame) result RSMC }
-          .mldppopup.product add command -label "CHEM" -command { MLDPn::CallProduct $Page::Data(Frame) result CHEM }
-          .mldppopup.product add command -label "INFO" -command { MLDPn::CallProduct $Page::Data(Frame) result INFO }
-          .mldppopup.product add command -label "METF" -command { MLDPn::CallProduct $Page::Data(Frame) metf   METF }
-          .mldppopup.product add separator
-          .mldppopup.product add command -label "SPI" -command { MLDPn::CallProduct $Page::Data(Frame) "" SPI }
+      menu .mldpnpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+          .mldpnpopup.product add command -label "VAAC" -command { MLDPn::CallProduct $Page::Data(Frame) result VAAC }
+          .mldpnpopup.product add command -label "RSMC" -command { MLDPn::CallProduct $Page::Data(Frame) result RSMC }
+          .mldpnpopup.product add command -label "CHEM" -command { MLDPn::CallProduct $Page::Data(Frame) result CHEM }
+          .mldpnpopup.product add command -label "INFO" -command { MLDPn::CallProduct $Page::Data(Frame) result INFO }
+          .mldpnpopup.product add command -label "METF" -command { MLDPn::CallProduct $Page::Data(Frame) metf   METF }
+          .mldpnpopup.product add separator
+          .mldpnpopup.product add command -label "SPI" -command { MLDPn::CallProduct $Page::Data(Frame) "" SPI }
 
-      menu .mldppopup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .mldppopup.res add command -label "All" -command "MLDPn::Result all"
-         .mldppopup.res add separator
-         .mldppopup.res add command -label "Dispersion" -command "MLDPn::Result result"
-         .mldppopup.res add command -label "MetFields" -command "MLDPn::Result metf"
-         .mldppopup.res add separator
-         .mldppopup.res add command -label "Meteo" -command "MLDPn::Result meteo"
+      menu .mldpnpopup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+         .mldpnpopup.res add command -label "All" -command "MLDPn::Result all"
+         .mldpnpopup.res add separator
+         .mldpnpopup.res add command -label "Dispersion" -command "MLDPn::Result result"
+         .mldpnpopup.res add command -label "MetFields" -command "MLDPn::Result metf"
+         .mldpnpopup.res add separator
+         .mldpnpopup.res add command -label "Meteo" -command "MLDPn::Result meteo"
    }
 
    #----- Verifier l'etat de la simulation et configurer le menu en consequence
    switch --  [Info::Strip $Exp::Data(SelectSim) State] {
 
       -1 {                                            #----- Error
-         .mldppopup entryconfigure 1 -state disabled   ;#Product
-         .mldppopup entryconfigure 2 -state disabled   ;#Data
-         .mldppopup entryconfigure 4 -state disabled   ;#Continue
-         .mldppopup entryconfigure 5 -state disabled   ;#Relaunch
-         .mldppopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 1 -state disabled   ;#Product
+         .mldpnpopup entryconfigure 2 -state disabled   ;#Data
+         .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
+         .mldpnpopup entryconfigure 5 -state disabled   ;#Relaunch
+         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
       }
       0 {                                             #----- Continuable
-         .mldppopup entryconfigure 1 -state normal     ;#Product
-         .mldppopup entryconfigure 2 -state normal     ;#Data
-         .mldppopup entryconfigure 4 -state normal     ;#Continue
-         .mldppopup entryconfigure 5 -state normal     ;#Relaunch
-         .mldppopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 1 -state normal     ;#Product
+         .mldpnpopup entryconfigure 2 -state normal     ;#Data
+         .mldpnpopup entryconfigure 4 -state normal     ;#Continue
+         .mldpnpopup entryconfigure 5 -state normal     ;#Relaunch
+         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
       }
       1 {                                             #----- Etat Termine
-         .mldppopup entryconfigure 1 -state normal     ;#Product
-         .mldppopup entryconfigure 2 -state normal     ;#Data
-         .mldppopup entryconfigure 4 -state disabled   ;#Continue
-         .mldppopup entryconfigure 5 -state normal     ;#Relaunch
-         .mldppopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 1 -state normal     ;#Product
+         .mldpnpopup entryconfigure 2 -state normal     ;#Data
+         .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
+         .mldpnpopup entryconfigure 5 -state normal     ;#Relaunch
+         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
       }
       2 {                                              #----- Etat d'execution
-         .mldppopup entryconfigure 1 -state disabled   ;#Product
-         .mldppopup entryconfigure 2 -state disabled   ;#Data
-         .mldppopup entryconfigure 4 -state disabled   ;#Continue
-         .mldppopup entryconfigure 5 -state disabled   ;#Relaunch
-         .mldppopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 1 -state disabled   ;#Product
+         .mldpnpopup entryconfigure 2 -state disabled   ;#Data
+         .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
+         .mldpnpopup entryconfigure 5 -state disabled   ;#Relaunch
+         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
       }
    }
 
-   tk_popup .mldppopup $X $Y 0
+   tk_popup .mldpnpopup $X $Y 0
 }
 
 #----------------------------------------------------------------------------

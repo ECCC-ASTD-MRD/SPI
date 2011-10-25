@@ -391,7 +391,7 @@ proc MLDPn::CreateModelInput { } {
    puts $file "\n#----- Parcel parameters\n"
    #----- Particle size distribution (gravitational settling velocities).
    if { [set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
-     set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
+      set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
    }
    set sizeLast [expr [llength [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
    set IsComputeSV "FALSE"
