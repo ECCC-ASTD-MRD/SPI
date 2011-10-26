@@ -1,7 +1,9 @@
 #----- Definitions
-export ARCH=`uname -s`
+export ARCH=`uname -s`_`uname -m`
+echo "(INFO) Architecture detected: $ARCH"
+
 export TCL_VERSION=8.5
-export SPI_VERSION=7.4.1
+export SPI_VERSION=7.5.0
 export SPI_SHARED=${SPI_PATH}/Lib/${ARCH}
 
 #----- Library locations
@@ -9,6 +11,11 @@ export SPI_PATH
 export LD_LIBRARY_PATH=${SPI_SHARED}:${SPI_SHARED}/TclTk/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SPI_SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/Apps/Lib"
 export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
+
+#----- GDB data
+if [ ${GDB_PATH} = "" ] ; then
+   export GDB_PATH=/data/cmds/afsm/gis_le
+fi
 
 #----- GDAL data
 export GDAL_DATA=${SPI_PATH}/Data/epsg_csv/
@@ -21,6 +28,6 @@ export GRIB_TEMPLATE_PATH=${SPI_PATH}/Data/templates
 export GRIB_DEFINITION_PATH=${SPI_PATH}/Data/definitions
 
 #----- EER Modeling variables
-export EER_ARCH=`uname -s`
+export EER_ARCH=`uname -s`_`uname -m`
 export EER_DIRBIN=${SPI_PATH}/Bin/${EER_ARCH}
 export EER_DIRSCRIPT=${SPI_PATH}/Script

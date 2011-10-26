@@ -210,7 +210,7 @@ proc Info::Code { Var { Separator : } } {
    set model [string trimright $var(Model) 01]
 
    foreach item $Token($model) {
-      lappend info "[lindex $Lbl($item) $GDefs(Lang)]=$var($item)"
+      lappend info "$item=$var($item)"
    }
 
    if { $Separator!="" } {
@@ -266,6 +266,10 @@ proc Info::Decode { Var Info } {
          if { $found } {
             break
          }
+      }
+
+      if { !$found } {
+         set var($token) $value
       }
    }
 }
@@ -357,19 +361,27 @@ proc Info::Find { Path Set args } {
 #----------------------------------------------------------------------------
 
 proc Info::Format { Info } {
+   global GDefs
+   variable Lbl
 
    set list [split $Info ":"]
 
    set l 0
    foreach item $list {
       set ltx [split $item "="]
-      set len [string length [lindex $ltx 0]]
+      set tok [lindex $ltx 0]
+      catch { set tok [lindex $Lbl($tok) $GDefs(Lang)] }
+
+      set len [string length $tok]
       set l   [expr $l<$len?$len:$l]
    }
    set text ""
    foreach item $list {
       set ltx [split $item "="]
-      set text "$text[format "%-${l}s" [lindex $ltx 0]] = [lindex $ltx 1]\n"
+      set tok [lindex $ltx 0]
+      catch { set tok [lindex $Lbl($tok) $GDefs(Lang)] }
+
+      set text "$text[format "%-${l}s" $tok] = [lindex $ltx 1]\n"
    }
    return $text
 }
@@ -550,7 +562,7 @@ proc Info::Set { Path Info { State "" } } {
    }
 
    if { $State!="" } {
-      set Info "[lindex $list 0]:[lindex $Lbl(State) $GDefs(Lang)]=${State}:[join [lrange $list 2 end] :]"
+      set Info "[lindex $list 0]:State=${State}:[join [lrange $list 2 end] :]"
    }
    exec echo $Info >> $Path
 }
@@ -583,6 +595,10 @@ proc Info::Strip { Info Token } {
       if { [set idx [lsearch -glob $list "${token}=*"]]!=-1 } {
          return [lindex [split [lindex $list $idx] =] end]
       }
+   }
+
+   if { [set idx [lsearch -glob $list "${Token}=*"]]!=-1 } {
+      return [lindex [split [lindex $list $idx] =] end]
    }
    return ""
 }

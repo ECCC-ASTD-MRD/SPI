@@ -108,6 +108,7 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
       http::cleanup $req
    } else {
       set def [Mapper::DepotWare::WCS::BuildXMLDef $Path]
+
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
          set band [Mapper::ReadBand $def "" 1]
 
@@ -289,6 +290,7 @@ puts stderr .$file.
    append xml "   <Timeout>60</Timeout>\n"
    append xml "   <CoverageName>$layer</CoverageName>\n"
    append xml "</WCS_GDAL>"
+   puts $xml
 
    set f [open $file w]
    puts $f $xml

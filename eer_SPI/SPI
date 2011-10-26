@@ -49,13 +49,16 @@ do
          SERVER=$RANDOM
          echo "(INFO) Trying initializing Xvfb with :$SERVER"
 
-         ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} >/dev/null 2>&1 &
-         PID_XVFB=$!
+         if [[ ! -f /tmp/.X${SERVER}-lock ]]
+         then
+            ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} >/dev/null 2>&1 &
+            PID_XVFB=$!
 
-         LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
+            LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
+         fi
       done
 
-      echo "(INFO) Done initializing Xvfb"
+      echo "(INFO) Done initializing Xvfb (${SERVER})"
 
       #----- In case of problem with the whole script, kill Xvfb stuff
       trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) >/dev/null 2>&1" 0 1 2 3 13 15
@@ -100,7 +103,9 @@ fi
 if [[ $SOFT -eq 1 ]]
 then
    export LD_LIBRARY_PATH=${SPI_SHARED}/GL:${LD_LIBRARY_PATH}
-   export LD_PRELOAD=${SPI_SHARED}/GL/libGL.so
+
+   #----- this had to be forced on early Fedoras
+#   export LD_PRELOAD=${SPI_SHARED}/GL/libGL.so
 fi
 
 #----- Load up the fonts

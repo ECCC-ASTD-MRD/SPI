@@ -459,7 +459,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
 
    Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
-  Viewport::UpdateData $Data(Frame)
+   Viewport::UpdateData $Data(Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -1309,6 +1309,7 @@ proc Model::ParamsPath { Model { ReqNo True } } {
 
    #----- Save simulation pool information.
    exec echo "[Info::Code ${Model}::Sim]" > $sim(Path)/tmp/sim.pool
+
    return $sim(Path)
 }
 

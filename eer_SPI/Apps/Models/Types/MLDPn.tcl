@@ -106,7 +106,7 @@ proc MLDPn::Launch { } {
       }
 
       #----- Copy needed file to run host:directory.
-      Model::ParamsCopy MLDP
+      Model::ParamsCopy MLDPn
 
       set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi"
       set mem 20G
@@ -440,7 +440,10 @@ proc MLDPn::CreateModelInput { } {
 
    close $file
 
-   exec ln -s $Sim(PathRun)/meteo/[file tail [lindex $Sim(MeteoDataFiles) 0]].std $Sim(PathRun)/tmp/grid.in
+
+   fstdfile open GRIDFILE write $Sim(Path)/tmp/grid.in
+   fstdfield write MODELGRID GRIDFILE -16 True
+   fstdfile close GRIDFILE
 }
 
 #----------------------------------------------------------------------------
