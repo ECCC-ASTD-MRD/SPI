@@ -455,7 +455,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    }
    set sim(NK) 25 ;#----- Number of vertical levels in the model (MLDP).
 
-   fstdfield define MODELGRID -NOMVAR GRID
+   fstdfield define MODELGRID -NOMVAR GRID -DATEO [fstdstamp fromseconds [clock seconds]]
    fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
 
    Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
