@@ -314,7 +314,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          labelframe $Data(Frame).def.l.pal -text [lindex $Lbl(Map) $GDefs(Lang)]
             button $Data(Frame).def.l.pal.cmap -bd 1 -relief flat -image FLDMAPImg \
                -command { MapBox::Create $FSTD::Data(Frame).def.l.pal.cmap \
-                   "colormap image \"$FSTD::Param(Map)\" FLDMAPImg; Page::Update $Page::Data(Frame)" $FSTD::Param(Map) }
+                   "colormap image \"\$FSTD::Param(Map)\" FLDMAPImg; Page::Update $Page::Data(Frame)" $FSTD::Param(Map) }
             pack $Data(Frame).def.l.pal.cmap -side top -fill x -padx 2 -pady 2
 
          pack $Data(Frame).def.l.val $Data(Frame).def.l.pal -side top -fill x
@@ -876,6 +876,8 @@ proc FSTD::ParamPut { } {
       }
    }
    set Param(Intervals) $inters
+
+   MapBox::Select "" $Param(Map)
 }
 
 #-------------------------------------------------------------------------------

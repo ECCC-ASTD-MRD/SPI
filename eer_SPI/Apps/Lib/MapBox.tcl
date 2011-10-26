@@ -47,7 +47,7 @@ namespace eval MapBox {
    set Data(Curves)   { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC }
    set Data(CurveIdx) 3
    set Data(Name)     ""
-   set Data(Init)     False  ;#Flag d'initialisation de l'interface
+   set Data(Init)     False    ;#Flag d'initialisation de l'interface
 
    set Data(Red)      100      ;#Pourcentage de rouge dans la palette
    set Data(Green)    100      ;#Pourcentage de vert dans la palette
@@ -861,34 +861,43 @@ proc MapBox::Save { Widget } {
 #
 #-------------------------------------------------------------------------------
 
-proc MapBox::Select { Map } {
+proc MapBox::Select { Name { Map "" } } {
    global GDefs
    variable Data
    variable Control
 
-   if { $Map!="" } {
-      set Data(Name) $Map
-      colormap read $Data(Map) $Data(Dir)/$Data(Name).rgba
-      MapBox::ControlInit .mapbox.fr.edit.map
-   } else {
-      set Data(Name) ""
+   if { [winfo exists .mapbox] } {
+
+      if { $Name!="" } {
+         set Data(Name) $Name
+         if { [file exists $Data(Dir)/$Data(Name).rgba] } {
+            colormap read $Data(Map) $Data(Dir)/$Data(Name).rgba
+         }
+         MapBox::ControlInit .mapbox.fr.edit.map
+      } else {
+         set Data(Name) ""
+      }
+
+      if { $Map!= "" } {
+         set Data(Map) $Map
+      }
+
+      set list [colormap configure $Data(Map) -RGBAratio]
+      set Data(Red)    [lindex $list 0]
+      set Data(Green)  [lindex $list 1]
+      set Data(Blue)   [lindex $list 2]
+      set Data(Alpha)  [lindex $list 3]
+
+      set list [colormap configure $Data(Map) -MMratio]
+      set Data(Min)      [lindex $list 0]
+      set Data(Max)      [lindex $list 1]
+      set Data(Curve)    [colormap configure $Data(Map) -curve red]
+      set Data(CurveIdx) [lsearch -exact $Data(Curves) $Data(Curve)]
+      set Data(Interp)   [colormap configure $Data(Map) -interp]
+      set Data(Invert)   [lindex [colormap configure $Data(Map) -invertx] 0]
+
+      MapBox::Update
    }
-
-   set list [colormap configure $Data(Map) -RGBAratio]
-   set Data(Red)    [lindex $list 0]
-   set Data(Green)  [lindex $list 1]
-   set Data(Blue)   [lindex $list 2]
-   set Data(Alpha)  [lindex $list 3]
-
-   set list [colormap configure $Data(Map) -MMratio]
-   set Data(Min)      [lindex $list 0]
-   set Data(Max)      [lindex $list 1]
-   set Data(Curve)    [colormap configure $Data(Map) -curve red]
-   set Data(CurveIdx) [lsearch -exact $Data(Curves) $Data(Curve)]
-   set Data(Interp)   [colormap configure $Data(Map) -interp]
-   set Data(Invert)   [lindex [colormap configure $Data(Map) -invertx] 0]
-
-   MapBox::Update
 }
 
 #-------------------------------------------------------------------------------
