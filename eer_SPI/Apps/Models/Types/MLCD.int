@@ -146,7 +146,7 @@ proc MLCD::ParamsNew { Tab { Auto False } } {
    Bubble::Create $frame.divers.opt $Bubble(Sigma)
 }
 
-proc MLCD::ParamsEmission { Tab { Auto False } } {
+proc MLCD::ParamsEmission { Tab { Mode NEW } } {
    global GDefs
    variable Data
    variable Lbl
@@ -285,7 +285,7 @@ proc MLCD::ParamsEmission { Tab { Auto False } } {
    pack $frame.auto.data -side left
    pack $frame.auto -side top -padx 5 -pady 5 -fill x
 
-   if { $Auto } {
+   if { $Sim(Auto) } {
       return
    }
 
