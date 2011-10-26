@@ -31,6 +31,7 @@ puts "  os       : [system info -os]"
 puts "  release  : [system info -osrelease]"
 puts "  version  : [system info -osversion]"
 
+puts "  nbcpu    : [system info -nbcpu]"
 puts "  uptime   : [system info -uptime]"
 puts "  loads    : [system info -loads]"
 puts "  totalmem : [system info -totalmem]"

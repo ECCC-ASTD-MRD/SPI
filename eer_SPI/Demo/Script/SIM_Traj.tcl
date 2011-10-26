@@ -54,7 +54,7 @@ simulation param TRAJ1 -title Popocatepetl -mode BACKWARD -unit PRESSURE -timest
    -date $date -particles $parth -data $files -output DataOut/SIM_Traj.points -split True
 
 #simulation define TRAJ1 -loglevel 2 -logfile DataOut/TCL_Model.log
-simulation define TRAJ1 -loglevel 3
+simulation define TRAJ1 -loglevel DEBUG
 
 #----- Run simulation
 simulation run TRAJ1
