@@ -14,11 +14,7 @@
 #                - {Model}_Run     : Run the model
 #                - {Model}_Post    : Do the post-processing stuff
 # Variable:
-#    TRAJECT_METEO           List of meteo data files
-#    TRAJECT_INC             Increment between simulations
-#    TRAJECT_LEN             Lenght of the simulations
 #    TRAJECT_INPUT           Input file for model
-#    TRAJECT_SPLIT           Split result file by source location
 #    TRAJECT_RESULT          Result file name
 #
 # Remarques  :
@@ -35,15 +31,12 @@ function TRAJECT_Post {
 
 function TRAJECT_Run {
 
-   ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE} \
+#   ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}
+   ${MODEL_TIMER} ${EER_DIRBIN}/Traj-1.5 \
       -i ${TRAJECT_INPUT} \
-      -fich10 ${TRAJECT_METEO} \
-      -tinc ${TRAJECT_INC} \
-      -tlen ${TRAJECT_LEN} \
-      -split ${TRAJECT_SPLIT} \
       -o ${TRAJECT_RESULT} \
       -v ${LOG_LEVEL} \
-      >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
+      >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
 
    taskstatus=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
@@ -51,11 +44,11 @@ function TRAJECT_Run {
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}$.out
       fi
    else
-      Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Print ERROR "${MODEL_NAME} has encountered an error."
+      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

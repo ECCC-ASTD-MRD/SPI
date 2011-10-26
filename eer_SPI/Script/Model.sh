@@ -29,6 +29,11 @@
 . ~/.profile >/dev/null 2>&1
 . ~/.profile_eer >/dev/null 2>&1
 
+#----- have to overload some variables for now
+export EER_DIRSCRIPT=${HOME}/eer_SPI-7.5.0/Script
+export EER_DIRDATA=${HOME}/eer_SPI-7.5.0/Data
+export SPI_PATH=${HOME}/eer_SPI-7.5.0
+
 function Model_PoolEncode {
 
    Log_Print INFO "Encoding pool information within model results standard files."
@@ -57,7 +62,7 @@ function Model_PoolSet {
    if [[ ${MODEL_POOL} -gt 0 ]] ; then
 
       POOL_ERROR=-1;
-      POOL_NEW=0;
+      POOL_RESTART=0;
       POOL_DONE=1;
       POOL_RUN=2;
       POOL_SUSPEND=3;
@@ -157,7 +162,7 @@ function Model_Init {
    fi
    cd ${MODEL_TMPDIR}
 
-   if [[ ${EER_ARCH} = AIX ]] ; then
+   if [[ ${ARCH} = AIX ]] ; then
       MODEL_TIMER=hpmcount
    fi
 
@@ -203,13 +208,13 @@ function Model_CopyTrace {
    cat  ${MODEL_TMPDIR}/data_std_eta.in >> ${trace}
 
    echo "\n##### Parametres du script lancement (.in)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.in >> ${trace}
+   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
 
    echo "\n##### Output du script lancement (.out)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.out >> ${trace}
+   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
 
    echo "\n##### Erreur du script lancement (.err)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}.err >> ${trace}
+   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
 
    echo "\n##### Parametres du modele (.in)\n" >> ${trace}
    cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
@@ -321,6 +326,8 @@ function Model_CopyLog {
    fi
 }
 
+ARCH=`uname -s`
+
 #----- Initialize default values.
 MODEL_SOFTWARE=""
 MODEL_NAME=""
@@ -336,12 +343,9 @@ MODEL_RUN=1
 MODEL_POST=1
 MODEL_POOL=1
 MODEL_CLEAN=1
-
 MODEL_NBMPITASKS=0
 MODEL_NBOMPTHREADS=0
-MODEL_OMPTHREADFACT=0
-
-MODEL_ISRESTARTABLE=0
+MODEL_RESTARTABLE=0
 
 #----- Initialize internal variables.
 MODEL_RUNTYPE="local"
@@ -367,14 +371,14 @@ Log_Start Model.sh 1.0 ${1}
 Model_Init
 
 if [[ ${MODEL_PRE} -gt 0 ]] ; then
-   Log_Print INFO "Launching preprocessing for ${MODEL_NAME}${MODEL_TYPE} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
+   Log_Print INFO "Launching preprocessing for ${MODEL_NAME} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
    ${MODEL_NAME}_Pre
    status=$?
 fi
 
 if [[ ${status} -eq 0 ]] ; then
    if [[ ${MODEL_RUN} -gt 0 ]] ; then
-      Log_Print INFO "Launching model ${MODEL_NAME}${MODEL_TYPE} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
+      Log_Print INFO "Launching model ${MODEL_NAME} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
       ${MODEL_NAME}_Run
       status=$?
    fi
@@ -382,7 +386,7 @@ fi
 
 if [[ ${status} -eq 0 ]] ; then
    if [[ ${MODEL_POST} -gt 0 ]] ; then
-      Log_Print INFO "Launching postprocessing for ${MODEL_NAME}${MODEL_TYPE} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
+      Log_Print INFO "Launching postprocessing for ${MODEL_NAME} on ${MODEL_RUNTYPE} host (${MODEL_RUNHOST})."
       ${MODEL_NAME}_Post
    fi
 fi
@@ -390,8 +394,9 @@ fi
 #----- Job finished
 Model_CopyResult
 Model_CopyMeteo
-if [[ ${MODEL_ISRESTARTABLE} -eq 1 ]] ; then
-   Model_PoolSet NEW ${MODEL_EXITSTATUS}
+
+if [[ ${MODEL_RESTARTABLE} -eq 1 ]] ; then
+   Model_PoolSet RESTART ${MODEL_EXITSTATUS}
 else
    Model_PoolSet DONE ${MODEL_EXITSTATUS}
 fi

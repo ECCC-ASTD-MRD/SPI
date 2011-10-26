@@ -6,7 +6,7 @@
 # H9P 1J3
 #
 # Projet     : MLDP0 and MLDP1 model processing interfaces.
-# Nom        : <Model_MLDP.sh>
+# Nom        : <Model_MLDPn.sh>
 # Creation   : Juin 2009 - J.P. Gauthier - CMC/CMOE
 #
 # Description: Support file for MLDP0 and MLDP1 models, it defines the following functions:
@@ -17,22 +17,16 @@
 #    MLDP_METEO              Meteo type or path to meteo files if already interpolated
 #    MLDP_GRIDDEF            Grid dimension
 #    MLDP_INPUT              Model input file
-#    MLDP_LOGLEVEL           Model log level
+#    MLDP_RESULT             Result dir name
 #    MLDP_SEED               Random number seed mode
-#    MLDP_SOURCE             Soure type
-#    MLDP_OUTMODE            Output mode
 #
 # Remarques  :
 #   Aucune.
 #===============================================================================
 
 #----- Patch to use old model until RPB upgrades ARGOS
-ARGOS=""
-if [[ ${MLDP_OUTMODE} = "argos" ]] ;then
-   ARGOS="-ARGOS"
-fi
 
-function MLDP_Pre {
+function MLDPn_Pre {
 
    taskstatus=0
 
@@ -48,73 +42,65 @@ function MLDP_Pre {
          fi
       fi
    else
-      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} ${ARGOS}\
-         >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} ${ARGOS}\
+         >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
       taskstatus=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
 
       if [[ ${taskstatus} -eq 0 ]] ; then
          if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-            Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.out
+            Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out
          fi
       else
          Log_Print ERROR "Problems in metfield calculations, Meteorological data might be being written, if this is the case, wait 10 minutes before trying again."
-         Log_Mail "Meteorological preprocessing done (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}${MODEL_TYPE}.err
+         Log_Mail "Meteorological preprocessing done (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
       fi
    fi
 
    return ${taskstatus}
 }
 
-function MLDP_Post {
+function MLDPn_Post {
 
-   if [[ ! ${MODEL_SOFTWARE} = ARGOS ]] ; then
-      Model_PoolEncode
-   fi
+   Model_PoolEncode
 
    return 0
 }
 
-function MLDP_Run {
+function MLDPn_Run {
 
-   export MLDP0_PARAMS=""
-   export MLDP1_MPI_OMP_PARAMS=""
+   unset MODEL_PARAMS
 
    #----- Check for MPI params.
-   if [[ ${ARCH} = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
+   if [[ ${ARCH} = "Linux" && ${MODEL_NBMPITASKS} -gt 1 && ${MODEL_ISREMOTE} -eq 0 ]] ;then
       export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:${PATH}
-      export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
       Log_Print DEBUG "Version of r.mpiexec: `which r.mpiexec`"
       ${MODEL_TIMER} r.mpiexec \
          -npex ${MODEL_NBMPITASKS} \
-         -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
-         -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
-         >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
+         -args \-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MLDP_SEED} \-t ${MODEL_NBOMPTHREADS} \
+         -pgm ${EER_DIRBIN}/${MODEL_NAME} \
+         >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
    else
-      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
-         -input ${MLDP_INPUT} \
-         -print ${MLDP_LOGLEVEL} \
-         -seed ${MLDP_SEED} \
-         -source ${MLDP_SOURCE} \
-         -outmode ${MLDP_OUTMODE} \
-         >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
+      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME} \
+         -i ${MLDP_INPUT} \
+         -o ${MLDP_RESULT} \
+         -v ${LOG_LEVEL} \
+         -s ${MODEL_SEED} \
+         -t ${MODEL_NBOMPTHREADS} \
+         >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
+
    taskstatus=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
-
-   #----- Create small model output file for email.
-   res=`awk -F"," '{print $5}' ${MODEL_TMPDIR}/griddef.in | cut -d"." -f1`
-   res=`expr ${res} / 100`
-   egrep -v "Read\([0-9]*\) |Write\([0-9]*\) | X | N | S | 0 | ${res} " ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out > ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_email.out
 
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_email.out
+         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}$.out
       fi
    else
-      Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Print ERROR "${MODEL_NAME} has encountered an error."
+      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}
