@@ -1271,6 +1271,7 @@ proc MLDPn::PopUp { X Y } {
          .mldpnpopup.res add separator
          .mldpnpopup.res add command -label "Dispersion" -command "MLDPn::Result result"
          .mldpnpopup.res add command -label "MetFields" -command "MLDPn::Result metf"
+         .mldpnpopup.res add command -label "Restart" -command "MLDPn::Result restart"
          .mldpnpopup.res add separator
          .mldpnpopup.res add command -label "Meteo" -command "MLDPn::Result meteo"
    }

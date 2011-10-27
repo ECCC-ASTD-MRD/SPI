@@ -290,7 +290,7 @@ proc DataBar::IdField { Field } {
    if { [info exists MetStat::Rec(Desc$lbl)] } {
       append lbl " $MetStat::Rec(Desc$lbl)"
    }
-   append lbl " ([lindex [fstdfield stats $Field -levels] [fstdfield stats $Field -level]] [fstdfield stats $Field -leveltype])"
+   append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
 
    if { [set unit [fstdfield configure $Field -unit]]!="" } {
       append lbl " ($unit)"

@@ -981,18 +981,18 @@ proc MLDP::File { Info Path Type Back } {
 
    set simpath $Path/[Info::Path $Info]
    set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
-   set std  ""
+   set std  {}
 
-   set pos       "$simpath/results/${file}.pos"      ; #----- Particle positions result output file.
-   set con       "$simpath/results/${file}.con"      ; #----- Concentrations/Depositions result output file.
-   set metfields "$simpath/results/${file}m"         ; #----- Meteorological fields for RSMC response.
-   set metfiles  [glob -nocomplain $simpath/meteo/*] ; #----- Meteorological files required for launching model.
+   set pos       "$simpath/results/${file}.pos"               ; #----- Particle positions result output file.
+   set con       "$simpath/results/${file}.con"               ; #----- Concentrations/Depositions result output file.
+   set metfields [glob -nocomplain $simpath/results/${file}m] ; #----- Meteorological fields for RSMC response.
+   set metfiles  [glob -nocomplain $simpath/meteo/*]          ; #----- Meteorological files required for launching model.
 
    switch $Type {
-      "all"     { set std "$pos $con $metfields $metfiles" }
-      "result"  { set std "$pos $con" }
-      "meteo"   { set std "$metfiles" }
-      "metf"    { set std "$metfields" }
+      "all"     { eval set std \"$pos $con $metfields $metfiles\" }
+      "result"  { eval set std \"$pos $con\" }
+      "meteo"   { eval set std \"$metfiles\" }
+      "metf"    { eval set std \"$metfields\" }
    }
 
    return $std
@@ -1049,12 +1049,15 @@ proc MLDP::DrawInit { Canvas VP } { }
 proc MLDP::Result { Type } {
    variable Sim
    variable Tmp
+   variable Error
 
    #----- Recuperer les noms de fichiers resultats avec retour sur les precedentes
-   set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]
-
-   Info::Decode ::MLDP::Tmp $Exp::Data(SelectSim)
-   SPI::FileOpen NEW FieldBox "(MLDP) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
+   if { [llength [set files [File $Exp::Data(SelectSim) [Exp::Path] $Type True]]] } {
+      Info::Decode ::MLDP::Tmp $Exp::Data(SelectSim)
+      SPI::FileOpen NEW FieldBox "(MLDP) $Tmp(NoExp) $Tmp(Name) ($Type)" "" $files
+   } else {
+      Dialog::Error . $Error(NoResuts)
+   }
 }
 
 #----------------------------------------------------------------------------

@@ -339,6 +339,7 @@ namespace eval MLDP {
    set Error(DateTimeEmission)                  { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
    set Error(FirstMetDateTime)                  { "\tPremier temps disponible :" "\tFirst available date-time :" }
    set Error(LastMetDateTime)                   { "\tDernier temps disponible :" "\tLast available date-time  :" }
+   set Error(NoResuts)                          { "Auncun fichier résultats trouvé" "Could not find result files." }
 
    set Warning(MetLocal)          { "La météo n'est pas disponible sur l'hôte d'exécution alors elle sera interpolée localement, ceci peut prendre quelques minutes. Voulez-vous continuer ?" \
                                     "Meteorological data is not available on the running host, it will be interpolated locally, this can take a few minutes, do you want to continue ?" }
