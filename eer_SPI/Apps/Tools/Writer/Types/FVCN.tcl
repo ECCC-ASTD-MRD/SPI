@@ -1934,15 +1934,18 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
 
          set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
 
-         set tmp $Data($Data(Level$p)$h$p)
-         lappend tmp $X $Y 0
-
          set Writer::Data(Canvas) $Page::Data(Canvas)
          set Writer::Data(Frame)  $Frame
          set Writer::Data(VP)     $VP
 
-         Viewport::DrawArea $Frame $VP $tmp "$Page::Data(Tag)$VP FVCN VERTEXFOLLOW" VERTEXFOLLOW red red\
-            @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+         set tmp $Data($Data(Level$p)$h$p)
+
+         if { [llength $tmp] } {
+            lappend tmp $X $Y 0 [lindex $tmp 0] [lindex $tmp 1] 0
+
+            Viewport::DrawArea $Frame $VP $tmp "$Page::Data(Tag)$VP FVCN VERTEXFOLLOW" VERTEXFOLLOW red red\
+               @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+         }
       }
    }
 }
@@ -2050,8 +2053,13 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
       }
 
       if { $Pad!="" && $Writer::Data(VP)!="" } {
-         Viewport::DrawArea $Writer::Data(Frame) $Writer::Data(VP) $Data($Data(Level$Pad)$Data(Hour$Pad)$Pad) "$Page::Data(Tag)$VP FVCN" FVCN red red\
-            @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+         set tmp $Data($Data(Level$Pad)$Data(Hour$Pad)$Pad)
+         if { [llength $tmp] } {
+            lappend tmp [lindex $tmp 0] [lindex $tmp 1] 0
+
+            Viewport::DrawArea $Writer::Data(Frame) $Writer::Data(VP) $tmp "$Page::Data(Tag)$VP FVCN" FVCN red red\
+               @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+         }
       }
    }
 
@@ -2109,6 +2117,8 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
 
             #----- If the area is valid, draw it
             if  { [llength $coords)]>=4 } {
+               lappend coords [lindex $coords 0] [lindex $coords 1] 0
+
                Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $coords "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN$h FVCN" FVCN$no$h \
                   $Data(Color$lvl) $Data(Color$lvl) $Data(Stipple$lvl) False 2
                incr va
