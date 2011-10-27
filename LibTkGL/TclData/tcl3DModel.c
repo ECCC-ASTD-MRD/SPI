@@ -685,6 +685,7 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
    Vect_Init(mdl->Extent[0],0.0,0.0,0.0);
    Vect_Init(mdl->Extent[1],0.0,0.0,0.0);
 
+   mdl->Name=NULL;
    mdl->Path=NULL;
    mdl->Ref=NULL;
    mdl->Co.Lat=mdl->Co.Lon=-999.0;
@@ -1192,6 +1193,7 @@ void Model_Free(T3DModel *M) {
    for(i=0;i<M->NMt;i++) {
       if (M->Mt[i].Tex) glDeleteTextures(1,&M->Mt[i].Tex);
    }
+
    if (M->Mt) free(M->Mt);
 
    /*Object list*/
