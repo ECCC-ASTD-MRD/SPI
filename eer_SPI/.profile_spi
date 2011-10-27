@@ -13,7 +13,7 @@ export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib
 export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
 
 #----- GDB data
-if [ ${GDB_PATH} = "" ] ; then
+if [[ ${GDB_PATH} = "" ]] ; then
    export GDB_PATH=/data/cmds/afsm/gis_le
 fi
 
