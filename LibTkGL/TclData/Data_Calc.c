@@ -71,7 +71,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
    GDAL_Band *band;
    TObs      *obs;
    double     val;
-   int        n;
+   int        n,d,needcopy=1;
 
    if (!Data) {
       Tcl_AppendResult(Interp,"Calc_Update: Invalid field",(char*)NULL);
@@ -95,6 +95,10 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
       fprintf(stderr,"(DEBUG) Calc_Update: Result is float\n");
 #endif
    } else {
+      /* See if we need to copy the Data (when it's not resulted from computation)*/
+      for(d=0;d<=GDataN;d++)
+         if (GData[d]==Data) needcopy=0;
+
       switch(GMode) {
          case T_FLD:
            if (!(field=Data_Get(Name)) || field->Def!=Data) {
@@ -104,7 +108,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                   free(GField->Stat);
                   GField->Stat=NULL;
                }
-               GField->Def=Data;
+               GField->Def= needcopy ? DataDef_Copy(Data) : Data;
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is field\n");
@@ -118,7 +122,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                   free(GBand->Stat);
                   GBand->Stat=NULL;
                }
-               GBand->Def=Data;
+               GBand->Def= needcopy ? DataDef_Copy(Data) : Data;
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is band\n");
@@ -139,7 +143,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          case T_OBS:
             if (!(obs=Obs_Get(Name)) || obs->Def!=Data) {
                GObs=Obs_Copy(Interp,GObs,Name,0);
-               GObs->Def=Data;
+               GObs->Def= needcopy ? DataDef_Copy(Data) : Data;
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is observation\n");
