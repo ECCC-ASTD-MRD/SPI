@@ -63,9 +63,9 @@ The ECMWF GRIB API
 The ECMWF GRIB API is licensed under the GNU Lesser General Public License which incorporates the terms and conditions of version 3 of the GNU General Public License.
 
 
-MESA OpenGL implementation
+Environment Canada BUFR Library
 --------------------------
-The MESA OpenGL implementation is copyrighted under the GNU LGPL
+The Environment Canada BUFR Library is licensed under the GNU LGPL v3
 
 
 PROJ 4
