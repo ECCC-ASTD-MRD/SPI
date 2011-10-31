@@ -27,8 +27,8 @@ puts \n[file tail [info script]]
 set ops $env(CMCGRIDF)/prog
 set par $env(CMCGRIDF)/../par/dbase/prog
 
-set names  { "Regional" "Lam Arctic" "Lam Est" "Lam Maritimes" "Lam Ouest" }
-set models [list $par/reghyb $ops/lam/arctic.eta $ops/lam/east.eta $ops/lam/maritimes.eta $ops/lam/west.eta]
+set names  { "Regional" "LAM Arctic" "LAM Lancaster" "LAM Est" "LAM Maritimes" "LAM Ouest" }
+set models [list $par/reghyb $ops/lam/arctic.model $ops/lam/lancaster.model $ops/lam/east.model $ops/lam/maritimes.model $ops/lam/west.model]
 
 #----- Open GEM index file
 eval file delete [glob DataOut/GEM.*]
@@ -49,7 +49,7 @@ foreach model $models name $names {
    puts "Processing $model"
 
    #----- Pick the last file
-   set file [lindex [lsort -dictionary -increasing [glob $model/??????????_???]] end]
+   set file [lindex [lsort -dictionary -increasing [glob $model/??????????_???*]] end]
 
    if { ![llength $file] } {
       puts "No data is available of model $model"
