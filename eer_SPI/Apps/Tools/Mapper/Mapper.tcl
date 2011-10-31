@@ -738,7 +738,7 @@ proc Mapper::ParamsGDALSet { Object { CheckData True } } {
       -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12
    gdalband stats $Object -nodata $Data(NoData)
 
-   if { [ogrgeometry is MASK$Object] } {
+   if { $Mapper::Data(Cut) && [ogrgeometry is MASK$Object] } {
       gdalband configure $Object -mask MASK$Object
    } else {
       gdalband configure $Object -mask ""
@@ -1111,6 +1111,7 @@ proc Mapper::PickOGR { VP X Y } {
                         ogrgeometry copy MASK$band [ogrlayer define $object -geometry $Data(Index)]
                         ogrgeometry stats MASK$band -transform [gdalband define $band -georef]
                         gdalband configure $band -mask MASK$band
+                        set Mapper::Data(Cut) True
 
                         set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
                         set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]

@@ -105,7 +105,7 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2010/02/02)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2011/10/31)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"

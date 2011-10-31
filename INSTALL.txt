@@ -6,9 +6,10 @@ Documentation:
 - Example scripts and macro are available in the Demo directory of your SPI installation path
 
 Compatibility:
-- This package has been compiled with gcc 4.1.2 (32bit) and tested on the following system:
+- This package has been compiled on two platform:
 
-   - Debian (Sarge) 2.6.18
+   - gcc 4.1.2 (32bit) and tested on Debian (Sarge) 2.6.18
+   - gcc 4.4.3 (64bit) and tested on Ubuntu 4.4.3-4
 
 Assumptions:
 - Installation and execution of the SPI software will be performed as a specific user and installed in the SPI directory of this user.
@@ -39,16 +40,9 @@ Installation:
    A) Packages description
 
       - Geographical database (GDB)
-         (on 2 CDs)
-            DBGEO_R.zip (Raster data)
-            DBGeo_T.zip (Texture data)
-            DBGeo_V.zip (Vectorial data)
+        YOU WILL HAVE TO REINSTALL THE DBGEO FROM THE LATEST VERSION FOR THIS VERSION OF SPI
 
-         (or a single global file)
             DBGeo.tgz
-
-         (or a single north american file)
-            northamericaDBGeo.tgz
 
       - The SPI application (Application CD)
          SPI-x.x.x.tgz
@@ -59,12 +53,6 @@ Installation:
       into it's final installation directory if it has'nt been installed before.
 
       This will take up to 2.3 Gig for the global coverage
-
-         unzip DBGeo_R.zip -d [your geo_path]
-         unzip DBGeo_T.zip -d [your geo_path]
-         unzip DBGeo_V.zip -d [your geo_path]
-
-         or
 
          tar -zxvf DBGeo.tgz -C [your geo_path]
 
@@ -129,7 +117,8 @@ Developers:
 - The package comes with two distinct parts, the Tcl code (eer_SPI directory) and the Tcl extensions (LibTkGL directory)
 - To build the Tcl extensions, go in the LibTkGL directory and use the "makeit" script. The built libraries will be copied to the eer_SPI/Lib/$ARCH directory
 - SPI needs a lot of support libraries which have already been precompiled for you convenience in the eer_SPI/Lib/$ARCH directory
-- Should you want to try new versions of theses support librairies, you should place them in this  eer_SPI/Lib/$ARCH directory and the include files in eer_SPI/Lib/Include
+- Should you want to try new versions of theses support librairies, you should place them in this eer_SPI/Lib/$ARCH directory and the include files in eer_SPI/Lib/Include
+- A script called make_dependencies.sh contains the build parameters for the various packages
 
      Tcl/Tk 8.5.7
      thread2.6.5
@@ -137,16 +126,19 @@ Developers:
      tls1.5
 
      DOM-0.8.2
-     gdal-1.7.1
-        geos-3.2.1
-        expat-2.0.1
-        curl-7.20.0
-        sqlite-3.6.23
-        mysql-5.1
-        jasper-1.900.1
-        hdf-4.2.5
-        hdf5-1.6.10
-        postgresql-8.4.1
-
+     gdal-1.8.0
+         libxml2-2.7.2
+         tDOM-0.8.2
+         expat-2.0.1
+         curl-7.21.3
+         sqlite-3.6.23
+         geos-3.2.2
+         mysql-5.1
+         jasper-1.900.1
+         hdf-4.2.5
+         hdf5-1.6.10
+         postgresql-8.4.1
+         unixODBC-2.3.0
+         grib_api-1.9.9
 
 

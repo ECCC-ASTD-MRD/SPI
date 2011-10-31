@@ -1056,7 +1056,7 @@ proc MLDPn::Move { Frame VP } {
    set Sim(GridLat) $Viewport::Map(LatCursor)
    set Sim(GridLon) $Viewport::Map(LonCursor)
 
-   Model::ParamsGridDefine MLDP
+   Model::ParamsGridDefine MLDPn
 }
 
 proc MLDPn::MoveDone { Canvas VP } { }
