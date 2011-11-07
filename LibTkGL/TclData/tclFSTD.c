@@ -327,11 +327,12 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
 static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int    id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,i,k,compress=0;
-   int    i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
-   long   time;
-   double tmpd,*table;
-   double c0,c1,a,x;
+   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,i,compress=0;
+   unsigned long dk;
+   int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
+   long          time;
+   double        tmpd,*table;
+   double        c0,c1,a,x;
 
    TObs        *obs;
    TMetObs     *metobs;
@@ -822,9 +823,13 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
                         }
                         table[k]=field0->Def->NoData;
                         if (nk!=field0->Def->NK) {
-                           field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
-                           for(k=0;k<FSIZE3D(field0->Def);k++) {
-                              Def_Set(field0->Def,0,k,0);
+                           if (!(field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk))) {
+                              Tcl_AppendResult(Interp,"Unable to rellocate buffer",(char*)NULL);
+                              return (TCL_ERROR);
+                           }
+
+                           for(dk=0;dk<FSIZE3D(field0->Def);dk++) {
+                              Def_Set(field0->Def,0,dk,0);
                            }
                            GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
                         }

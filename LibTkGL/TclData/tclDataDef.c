@@ -201,7 +201,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          if (def->Container) {
             def->Data[i]=Def->Data[i];
          } else {
-            if (Def->Data[i] && (def->Data[i]=(char*)malloc(Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]))) {
+            if (Def->Data[i] && (def->Data[i]=(char*)malloc((unsigned long)Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]))) {
 //               def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,Def->Type>=6?TData_Size[Def->Type]:TData_Size[6]);
 //            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,sizeof(float));
                memcpy(def->Data[i],Def->Data[i],Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
@@ -420,7 +420,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
-            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],NI*NJ*NK*TData_Size[Def->Type]))) {
+            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],(unsigned long)NI*NJ*NK*TData_Size[Def->Type]))) {
                DataDef_Free(Def);
                return(NULL);
             }

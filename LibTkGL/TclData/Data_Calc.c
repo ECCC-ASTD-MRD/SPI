@@ -96,8 +96,12 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
 #endif
    } else {
       /* See if we need to copy the Data (when it's not resulted from computation)*/
-      for(d=0;d<=GDataN;d++)
-         if (GData[d]==Data) needcopy=0;
+      for(d=0;d<=GDataN;d++) {
+         if (GData[d]==Data) {
+             needcopy=0;
+             break;
+         }
+      }
 
       switch(GMode) {
          case T_FLD:
