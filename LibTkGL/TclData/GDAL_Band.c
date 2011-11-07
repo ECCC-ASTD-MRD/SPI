@@ -920,9 +920,12 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    long     f,n=0,nt=0;
    double   value,area,t,x0,y0,x1,y1;
    int      fld=-1,pr=1;
+   Coord    ll;
 
-   OGRGeometryH geom;
-   OGREnvelope  env;
+   OGRSpatialReferenceH          srs=NULL;
+   OGRCoordinateTransformationH  tr=NULL;
+   OGRGeometryH                  geom,utmgeom=NULL;
+   OGREnvelope                   env;
 
    if (!Layer->NFeature) {
       return(TCL_OK);
@@ -932,16 +935,20 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    if (Field) {
       if (strcmp(Field,"FEATURE_AREA")==0) {
          fld=-2;
-      } else if (strcmp(Field,"FEATURE_LENGTH")==0) {
+      } else if (strcmp(Field,"FEATURE_AREA_METER")==0) {
          fld=-3;
-      } else if (strcmp(Field,"FEATURE_ID")==0) {
+      } else if (strcmp(Field,"FEATURE_LENGTH")==0) {
          fld=-4;
-      } else if (strcmp(Field,"ZCOORD_MIN")==0) {
+      } else if (strcmp(Field,"FEATURE_LENGTH_METER")==0) {
          fld=-5;
-      } else if (strcmp(Field,"ZCOORD_MAX")==0) {
+      } else if (strcmp(Field,"FEATURE_ID")==0) {
          fld=-6;
-      } else if (strcmp(Field,"ZCOORD_AVG")==0) {
+      } else if (strcmp(Field,"ZCOORD_MIN")==0) {
          fld=-7;
+      } else if (strcmp(Field,"ZCOORD_MAX")==0) {
+         fld=-8;
+      } else if (strcmp(Field,"ZCOORD_AVG")==0) {
+         fld=-9;
       } else {
          fld=OGR_FD_GetFieldIndex(Layer->Def,Field);
          if (fld==-1) {
@@ -965,7 +972,32 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
          /*Copie de la geometrie pour transformation*/
          if (!(geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f])))) {
-             break;
+            Tcl_AppendResult(Interp,"\n   Data_GridOGR: Could not clone the geomtry",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         /*If the request is in meters*/
+         if (fld==-3 || fld==-5) {
+            if (!(utmgeom=OGR_G_Clone(geom))) {
+               Tcl_AppendResult(Interp,"\n   Data_GridOGR: Could not clone the UTM geomtry",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (!srs) {
+               /*Create an UTM referential and transform to convert to meters*/
+               Layer->Ref->Project(Layer->Ref,Layer->Ref->X0,Layer->Ref->Y0,&ll.Lat,&ll.Lon,1,1);
+               srs=OSRNewSpatialReference(NULL);
+               OSRSetUTM(srs,(int)ceil((180+ll.Lon)/6),(int)ll.Lat);
+               tr=OCTNewCoordinateTransformation(Layer->Ref->Spatial,srs);
+
+               if (!srs || !tr) {
+                  Tcl_AppendResult(Interp,"\n   Data_GridOGR: Could not initiate UTM transormation",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+
+            /*Transform the geom to utm*/
+            OGR_G_Transform(utmgeom,tr);
          }
 
          /*Get value to distribute*/
@@ -974,14 +1006,18 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          } else if (fld==-2) {
             value=OGR_G_GetArea(geom);
          } else if (fld==-3) {
-            value=GPC_Length(geom);
+            value=OGR_G_GetArea(utmgeom);
          } else if (fld==-4) {
-            value=f;
+            value=GPC_Length(geom);
          } else if (fld==-5) {
-            value=GPC_CoordLimit(geom,2,0);
+            value=GPC_Length(utmgeom);
          } else if (fld==-6) {
-            value=GPC_CoordLimit(geom,2,1);
+            value=f;
          } else if (fld==-7) {
+            value=GPC_CoordLimit(geom,2,0);
+         } else if (fld==-8) {
+            value=GPC_CoordLimit(geom,2,1);
+         } else if (fld==-9) {
             value=GPC_CoordLimit(geom,2,2);
          } else {
             value=Value;
@@ -1024,11 +1060,20 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
             }
          }
          OGR_G_DestroyGeometry(geom);
+         if (utmgeom)
+            OGR_G_DestroyGeometry(utmgeom);
       }
    }
 #ifdef DEBUG
    fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
 #endif
+
+   if (tr)
+      OCTDestroyCoordinateTransformation(tr);
+
+   if (srs)
+      OSRDestroySpatialReference(srs);
+
 
    return(TCL_OK);
 }
