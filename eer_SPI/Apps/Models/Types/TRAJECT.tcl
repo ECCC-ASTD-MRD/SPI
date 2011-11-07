@@ -41,7 +41,6 @@ proc TRAJECT::InitNew { Type } {
    set Sim(Backward)   False
    set Sim(Mode)       "prog"
    set Sim(TimeStep)   "3600.0"
-   set Sim(AccMin)     00
    set Sim(BatchStart) 0
    set Sim(Duration)   72
    set Sim(MultiLevel) False
@@ -111,7 +110,7 @@ proc TRAJECT::GetMetData { } {
 
    Dialog::Wait . $Msg(MetGet)
 
-   set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)000000]
+   set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSecs)]
    if { $Sim(Backward) } {
       set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B 1 $Sim(Delta)]
    } else {
@@ -121,12 +120,8 @@ proc TRAJECT::GetMetData { } {
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    if { [set ok [Model::ParamsMetData TRAJECT]] } {
-      set Sim(SimYear)   $Sim(MetYear)
-      set Sim(SimMonth)  $Sim(MetMonth)
-      set Sim(SimDay)    $Sim(MetDay)
-      set Sim(SimHour)   $Sim(MetHour)
+      set Sim(SimSecs) $Sim(MetSecs)
    }
-   return $ok
 }
 
 #-------------------------------------------------------------------------------
@@ -158,10 +153,8 @@ proc TRAJECT::ParamsCheck { Tab No } {
       return True
    }
 
-   set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true]
-   set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true]
-   set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true]
-   set Sim(AccSeconds)   [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt True]
+   scan $Sim(Hour) "%02d" hour
+   set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600]
 
    #----- Get the levels
    set Sim(Level) ""
@@ -214,7 +207,7 @@ proc TRAJECT::CreateModelInput { } {
    puts $f [format "%-20s= %-12.1f # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
    puts $f [format "%-20s= %-12s # Backward simulation" MDL_RETRO $Sim(Backward)]
    puts $f [format "%-20s= %-12s # Type of vertical coordinates (PRESSURE or MAGL)" MDL_ZTYPE $unit]
-   puts $f [format "%-20s= %-12s # Emission date-time \[UTC\]: YearMonthDayHourMinutes" MDL_TIME $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay)$Sim(AccHour)00]
+   puts $f [format "%-20s= %-12s # Emission date-time \[UTC\]: YearMonthDayHourMinutes" MDL_TIME [clock format $Sim(AccSecs) -format "%Y%m%d%H%M" -gmt True]]
    puts $f [format "%-20s= %-12.1f # Batch mode sart time increment \[hours\]" MDL_BATCH_INC $Sim(BatchStart)]
    puts $f [format "%-20s= %-12.1f # Batch mode trajectory duration \[hours\]" MDL_BATCH_LEN $Sim(Duration)]
 
@@ -328,14 +321,15 @@ proc TRAJECT::Launch { } {
       set unit PRESSURE
    }
 
+   exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
+      -t 3600 -cm 1G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+   exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
+
    if { $Model::Param(IsUsingSoumet) } {
 
       #----- Copy needed file to run host:directory.
       Model::ParamsCopy TRAJECT
 
-      exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
-      exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
       eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
          -t 3600 -cm 1G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
@@ -350,7 +344,7 @@ proc TRAJECT::Launch { } {
       set id [Exp::Id $info]
       simulation create $id -type Trajectory
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) \
-         -mode $mode -unit $unit -date $Sim(AccSeconds) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
+         -mode $mode -unit $unit -date $Sim(AccSecs) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1
       simulation define $id -tag $info -loglevel $Model::Param(LogLevel) -logfile $Sim(Path)/tmp/traject.log
 
@@ -359,6 +353,7 @@ proc TRAJECT::Launch { } {
 
       Exp::ThreadUpdate $id $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
    }
+
    return True
 }
 

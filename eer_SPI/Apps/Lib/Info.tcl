@@ -29,42 +29,46 @@
 #
 #===============================================================================
 
-package provide Info 2.0
+package provide Info 2.1
 
-catch { SPI::Splash "Loading Package Info 2.0" }
+catch { SPI::Splash "Loading Package Info 2.1" }
 
 namespace eval Info {
    variable Lbl
    variable Msg
    variable Token
 
-   set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon }
-
    set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
                         SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
                         DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
 
-   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
+   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration \
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
-   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin
-                        SimYear SimMonth SimDay SimHour Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
-                        Event SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
+   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration
+                        Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
+                        SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin
-                        SimYear SimMonth SimDay SimHour Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
-                        Event SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel EmNumberParticles \
-                        EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
-                        EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration
+                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
+                        SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Scenario }
 
-   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon DurMin AccYear AccMonth AccDay AccHour AccMin \
+   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                         EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
+   set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon }
+   set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD) $Token(CANERM)]]
+
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
+
+   set Lbl(AccSecs)              { "Date de l'accident" "Accident date" }
+   set Lbl(SimSecs)              { "Date de simulation" "Simulation date" }
+   set Lbl(Click)                { "Date de lancement" "Launch date" }
+   set Lbl(Blame)                { "Lancé par" "Launch by" }
 
    set Lbl(Method)               { "Méthode" "Method" }
    set Lbl(Backward)             { "Mode arrière" "Backward mode" }
@@ -79,6 +83,7 @@ namespace eval Info {
    set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
+   set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }
@@ -124,6 +129,7 @@ namespace eval Info {
    set Lbl(SrcType)              { "Type de source" "Type of source" }
    set Lbl(VirusName)            { "Nom du virus" "Virus name" }
    set Lbl(Event)                { "Type d'événement" "Type of event" }
+   set Lbl(By)                   { "Requête par" "Request by" }
    set Lbl(Scenario)             { "Scénario" "Scenario" }
    set Lbl(NbPer)                { "Nombre de période" "Number of period" }
    set Lbl(Dt)                   { "Délai entre les périodes" "Delay between periods" }
@@ -170,6 +176,7 @@ namespace eval Info {
    set Lbl(EmSizeDist)           { "Distribution de la taille des particules" "Size distribution of the particles" }
    set Lbl(EmVerticalDist)       { "Distribution verticale du panache" "Vertical plume distribution" }
 
+   set Lbl(Scenario)             { "Scénario d'émission" "Release scenario" }
    set Lbl(EmScenario)           { "Nom du scénario d'émission" "Name of the release scenario" }
    set Lbl(EmNbIntervals)        { "Nombre d'intervalles" "Number of intervals" }
    set Lbl(EmNbIso)              { "Nombre d'isotopes" "Number of isotopes" }
@@ -253,7 +260,7 @@ proc Info::Decode { Var Info } {
       set value [lindex $list 1]
       set found 0
 
-      foreach item $Token($model) {
+      foreach item $Token(ALL) {
          foreach description $Lbl($item) {
 
             if { "$token"=="$description" } {
@@ -375,13 +382,21 @@ proc Info::Format { Info } {
       set len [string length $tok]
       set l   [expr $l<$len?$len:$l]
    }
+
    set text ""
    foreach item $list {
       set ltx [split $item "="]
       set tok [lindex $ltx 0]
-      catch { set tok [lindex $Lbl($tok) $GDefs(Lang)] }
+      set val [lindex $ltx 1]
 
-      set text "$text[format "%-${l}s" $tok] = [lindex $ltx 1]\n"
+      set lbl $tok
+      catch { set lbl [lindex $Lbl($tok) $GDefs(Lang)] }
+
+      if { $tok=="Click" || $tok=="SimSecs" ||  $tok=="AccSecs" } {
+         set val [clock format $val]
+      }
+
+      set text "$text[format "%-${l}s" $lbl] = $val\n"
    }
    return $text
 }
@@ -444,7 +459,12 @@ proc Info::Path { Info } {
    variable Tmp
 
    Info::Decode ::Info::Tmp $Info
-   return "$Tmp(Model).$Tmp(NoSim).$Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay).$Tmp(AccHour)$Tmp(AccMin)"
+
+   if { [info exists ::Info::Tmp(AccSecs)] } {
+      return "$Tmp(Model).$Tmp(NoSim).[clock format $Tmp(AccSecs) -format %Y%m%d.%H%M]"
+   } else {
+      return "$Tmp(Model).$Tmp(NoSim).$Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay).$Tmp(AccHour)$Tmp(AccMin)"
+   }
 }
 
 #----------------------------------------------------------------------------

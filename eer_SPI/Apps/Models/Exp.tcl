@@ -129,7 +129,6 @@ namespace eval Exp {
                             "Suppressing done !" }
    set Msg(SuppressError) { "Impossible de supprimer les répertoires de l'expérience suivante:" \
                             "Unable to suppress the following experiment directory" }
-   set Msg(Correct)       { "Voulez-vous lancer le modèle à partir des paramètres d'entrée ci-haut?" "Do you wish to launch the model with the above input parameters?" }
    set Msg(Kill)          { "Arrêt de la simulation" "Terminating simulation" }
 
    set Error(SendJoint)   { "Il y a eu un problème pendant le transfert des message commun:" "There were problems while transferring joint statement:" }
@@ -561,10 +560,14 @@ proc Exp::PoolFormat { Model Info } {
          set dur [Info::Strip $Info DurMin]
          set unit Min
       }
-      set date  "[Info::Strip $Info AccYear]-[Info::Strip $Info AccMonth]-[Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin]"
+      set no    "[Info::Strip $Info NoSim]"
       set model "[Info::Strip $Info Meteo][Info::Strip $Info Delta][Info::Strip $Info Mode]"
+      set date  "[Info::Strip $Info AccYear]-[Info::Strip $Info AccMonth]-[Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin]"
 
-      return "$dur $unit $date $model ($Exp::Data(NoSim))"
+      #----- Use click date if available
+      catch { set date  [clock format [Info::Strip $Info Click] -format "%Y-%m-%d %H:%M" -gmt True] }
+
+      return "$dur $unit $model $date ($no)"
    }
 }
 
@@ -806,66 +809,6 @@ proc Exp::New { } {
    Model::Check 0
    Model::TypeSelect none 1
    return 1
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Exp::Params>
-# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Permet de confirmer les parametres de la simulation.
-#
-# Parametres :
-#   <Parent> : Identificateur de la fenetre parent
-#
-# Retour     :
-#   <Valid>  : True ou False.
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Exp::Params { Parent Model } {
-   global   GDefs correct
-   variable Lbl
-   variable Msg
-   variable Sim
-
-   toplevel .simparams -bg $GDefs(ColorLight)
-
-   wm title     .simparams [lindex $Lbl(Params) $GDefs(Lang)]
-   wm resizable .simparams 1 1
-   wm transient .simparams $Parent
-   wm geom      .simparams 700x500+[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
-   wm protocol  .simparams WM_DELETE_WINDOW { }
-
-   #----- Afficher la liste des parametres de l'experience.
-   set correct False
-
-   frame .simparams.desc
-      scrollbar .simparams.desc.scroll -command ".simparams.desc.list yview" -bd 1 -width 10
-      listbox .simparams.desc.list -relief sunken -yscrollcommand ".simparams.desc.scroll set" \
-         -selectmode extended -exportselection 0 -background $GDefs(ColorLight) -bd 1
-      pack .simparams.desc.list -side left -fill both -expand True
-      pack .simparams.desc.scroll -side left -fill y
-   pack  .simparams.desc -side top -fill both -expand True
-
-   #----- Demander de confirmer la selection faite par l'usager.
-   label .simparams.que -relief raised -bd 1 -text "[lindex $Msg(Correct) $GDefs(Lang)]"
-   pack .simparams.que -anchor w -ipadx 5  -ipady 5 -fill x
-
-   frame .simparams.confirm
-      button .simparams.confirm.yes -text [lindex $Lbl(Yes) $GDefs(Lang)] -command "set correct True" -relief raised -bd 1
-      button .simparams.confirm.no -text [lindex $Lbl(No) $GDefs(Lang)] -command "set correct False" -relief raised -bd 1
-      pack .simparams.confirm.yes .simparams.confirm.no -side left -fill x -expand true
-   pack .simparams.confirm -side top  -fill x
-
-   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim]] \n]
-
-   grab .simparams
-   tkwait variable correct
-
-   destroy .simparams
-   return $correct
 }
 
 #-------------------------------------------------------------------------------
@@ -1579,8 +1522,8 @@ proc Exp::Store { Id } {
 
       set arch $Id.tgz
       file delete -force /tmp/$arch
-   #   set err [catch { exec cmcarc -a [file tail $path] -f /tmp/$arch --md5 --dereference } msg]
-      set err [catch { exec tar -zcvf /tmp/$arch [file tail $path] 2>@1 } msg]
+      set err [catch { exec cmcarc -a [file tail $path] -f /tmp/$arch --md5 --dereference >$Param(StoreLog) } msg]
+#      set err [catch { exec tar -zcvf /tmp/$arch [file tail $path] 2>@1 } msg]
       if { $err } {
          Dialog::Error .model [list $msg $msg]
          set code False

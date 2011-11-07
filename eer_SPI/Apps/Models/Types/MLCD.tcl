@@ -42,16 +42,11 @@ proc MLCD::ParamsCheck { Tab No } {
    variable Sim
    variable Data
 
-   scan $Sim(AccHour) "%02d" hour
-   scan $Sim(AccMin)  "%02d" min
-   set Sim(AccSeconds) [expr $Sim(AccDate)+$hour*3600+$min*60]
+   scan $Sim(Hour) "%02d" hour
+   scan $Sim(Min)  "%02d" min
 
-   set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt True]
-   set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt True]
-   set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt True]
-   set Sim(AccHour)  [clock format $Sim(AccSeconds) -format "%H" -gmt True]
-   set Sim(AccMin)   [clock format $Sim(AccSeconds) -format "%M" -gmt True]
-   set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSeconds)]
+   set Sim(AccSecs)  [expr $Sim(Secs)+$hour*3600+$min*60]
+   set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSecs)]
 
    set Sim(Name)         [lindex $Sim(GridSrc) 0]
    set Sim(Lat)          [lindex $Sim(GridSrc) 1]
@@ -109,10 +104,10 @@ proc MLCD::AskIfInitMeteoData { } {
    variable Error
    variable Lbl
 
-   if { $Sim(AccSeconds)!=$Sim(OldSeconds) && $Sim(DurMin)!=$Sim(OldDurMin) } {
+   if { $Sim(AccSecs)!=$Sim(OldSecs) && $Sim(DurMin)!=$Sim(OldDurMin) } {
       #----- Both release date-time and simulation duration have changed.
-      set newdate [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
-      set olddate [clock format $Sim(OldSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
+      set newdate [clock format $Sim(AccSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]
+      set olddate [clock format $Sim(OldSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]
       set newdur "$Sim(DurMin) $Error(UnitMinutes)"
       set olddur "$Sim(OldDurMin) $Error(UnitMinutes)"
       set answer [Dialog::Default .modelnew 500 WARNING $Warning(ChangeReleaseDateTimeSimDur) "\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur3) $GDefs(Lang)] $olddate\n\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur4) $GDefs(Lang)] $newdur\n\t[lindex $Warning(ChangeReleaseDateTimeSimDur5) $GDefs(Lang)] $olddur[lindex $Warning(ChangeReleaseDateTimeSimDur6) $GDefs(Lang)]" 0 $Lbl(Yes) $Lbl(No)]
@@ -120,7 +115,7 @@ proc MLCD::AskIfInitMeteoData { } {
       if { $answer == 1 } {
          #---- Answer is "No" : Do not re-initialize release date-time, simulation duration and meteo data.
          #----- Keep old release date-time as current date-time.
-         set Sim(AccSeconds) $Sim(OldSeconds)
+         set Sim(AccSecs) $Sim(OldSecs)
 
          #----- Keep old simulation duration as current simulation duration.
          set Sim(DurMin)   $Sim(OldDurMin)
@@ -132,16 +127,16 @@ proc MLCD::AskIfInitMeteoData { } {
    } else {
 
      #----- Release date-time has changed
-     if { $Sim(AccSeconds)!=$Sim(OldSeconds) } {
+     if { $Sim(AccSecs)!=$Sim(OldSecs) } {
 
-         set newdate [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
-         set olddate [clock format $Sim(OldSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
+         set newdate [clock format $Sim(AccSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]
+         set olddate [clock format $Sim(OldSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]
          set answer [Dialog::Default .modelnew 500 WARNING $Warning(ChangeReleaseDateTime) "\n\n\t[lindex $Warning(ChangeReleaseDateTime2) $GDefs(Lang)] $newdate\n\t[lindex $Warning(ChangeReleaseDateTime3) $GDefs(Lang)] $olddate[lindex $Warning(ChangeReleaseDateTime4) $GDefs(Lang)]" 0 $Lbl(Yes) $Lbl(No)]
 
          if { $answer == 1 } {
             #----- Answer is "No" : Do not re-initialize release date-time and meteo data.
             #----- Re-initialize old release date-time.
-            set Sim(OldSeconds)  $Sim(AccSeconds)
+            set Sim(OldSecs)  $Sim(AccSecs)
         } else {
             #---- Answer is "Yes" : Re-initialize release date-time and meteo data.
             MLCD::InitMeteoData
@@ -374,7 +369,7 @@ proc MLCD::FindMetData { } {
 
    #----- Verify that number of meteo data files is greater than 1.
    if { [llength $Sim(Data)] <= 1 } {
-      set start [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]
+      set start [clock format $Sim(AccSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]
       set text "\n\n\t[lindex $Error(MetData2) $GDefs(Lang)] $start\n\t[lindex $Error(MetData3) $GDefs(Lang)] [clock format $MetData::Data(T0) -gmt True] - [clock format $MetData::Data(T1) -gmt True]"
       Dialog::Error .modelnew $Error(MetData) $text
 
@@ -422,7 +417,7 @@ proc MLCD::FindMetData { } {
 
       #----- Compute new ending simulation date-time [s] according to release date-time and simulation duration.
       #----- Ending simulation date-time [s] := starting release date-time [s] + simulation duration [s].
-      set stamp [fstdstamp fromseconds [expr $Sim(AccSeconds) + $Sim(Duration)]]
+      set stamp [fstdstamp fromseconds [expr $Sim(AccSecs) + $Sim(Duration)]]
 
       #----- Search list of met stamps for which ending simulation date-time
       #----- falls between two following met stamps.
@@ -561,8 +556,8 @@ proc MLCD::InitLocalParameters { } {
 proc MLCD::InitMeteoData { { Flag 1 } } {
    variable Sim
 
-   set Sim(OldSeconds) $Sim(AccSeconds)
-   set Sim(OldDurMin)  $Sim(DurMin)
+   set Sim(OldSecs)   $Sim(AccSecs)
+   set Sim(OldDurMin) $Sim(DurMin)
 
    #----- Initialize meteo data.
    MLCD::InitAutomationParams
@@ -657,7 +652,7 @@ proc MLCD::InitObservationTimes { } {
    set Sim(ObsTime) {}
 
    #----- Initialize observation times according to 1-hour time interval between following observations.
-   set secs [clock scan [clock format $Sim(AccSeconds) -format "%Y%m%d %H:00" -gmt True]]
+   set secs [clock scan [clock format $Sim(AccSecs) -format "%Y%m%d %H:00" -gmt True]]
    for { set i 0 } { $i < $Sim(ObsMaxNb) } { incr i } {
       lappend Sim(ObsTime) [expr $secs+$i*3600]
    }
@@ -1108,7 +1103,7 @@ proc MLCD::CreateModelInput { } {
    puts $file "$Sim(EmNumberParticles) $Sim(EmMass) $Sim(EmDepVel) $halflifedays $Sim(EmWetScav)"
    puts $file "$Sim(Lon) $Sim(Lat)"
    puts $file "$Sim(EmBottom) $Sim(EmTop) $Sim(EmRadius)"
-   puts $file "$Sim(AccYear) $Sim(AccMonth) $Sim(AccDay) $Sim(AccHour) $Sim(AccMin)"
+   puts $file [clock format $Sim(AccSecs) -format "%Y %m %d %H %M" -gmt True]
 
    puts $file "[llength $Sim(VerticalLevels)]"
    foreach level $Sim(VerticalLevels) {
@@ -1693,7 +1688,7 @@ proc MLCD::ValidateModelTab { } {
 
    #----- Verify if emission starting time or simulation duration have been modified.
    if { !$Sim(Auto) } {
-      if { $Sim(AccSeconds)!=$Sim(OldSeconds) || $Sim(DurMin)!=$Sim(OldDurMin) } {
+      if { $Sim(AccSecs)!=$Sim(OldSecs) || $Sim(DurMin)!=$Sim(OldDurMin) } {
 
          #----- Verify if meteorological parameters have been modified or not.
          if { [MLCD::MeteoParametersModified] } {
@@ -1928,8 +1923,8 @@ proc MLCD::ValidateObsDateTime { } {
 
    if { [llength $Sim(ObsValidIdx)]>1 } { #----- Multiple valid observations.
 
-      if { $Sim(AccSeconds) < $FirstObsTime || $Sim(AccSeconds) >= $LastObsTime } {
-         set acc   "Accident        : [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]"
+      if { $Sim(AccSecs) < $FirstObsTime || $Sim(AccSecs) >= $LastObsTime } {
+         set acc   "Accident        : [clock format $Sim(AccSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set obs0  "Observation \# [expr $FirstIdx + 1] : [clock format $FirstObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set obs1  "Observation \# [expr $LastIdx + 1] : [clock format $LastObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
 
@@ -1941,8 +1936,8 @@ proc MLCD::ValidateObsDateTime { } {
       }
    } elseif { [llength $Sim(ObsValidIdx)]==1 } { #----- One single valid observation.
 
-      if { $Sim(AccSeconds) < $FirstObsTime } {
-         set acc   "Accident        : [clock format $Sim(AccSeconds) -format "%Y-%m-%d %H:%M UTC" -gmt True]"
+      if { $Sim(AccSecs) < $FirstObsTime } {
+         set acc   "Accident        : [clock format $Sim(AccSecs) -format "%Y-%m-%d %H:%M UTC" -gmt True]"
          set obs0  "Observation \# [expr $FirstIdx + 1] : [clock format $FirstObsTime -format "%Y-%m-%d %H:%M UTC" -gmt True]"
 
          Dialog::Error .modelnew $Error(ObsTimes2) "\t$acc\n\t$obs0"

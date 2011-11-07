@@ -49,7 +49,6 @@ namespace eval MLDPn {
    set Lbl(OutputTimeStepMin)   { "Pas de temps de sortie (min)" "Output time step    (min)" }
    set Lbl(ModelTimeStepMin)    { "Pas de temps du modèle (min)" "Model time step     (min)" }
    set Lbl(OtherParameters)     { "Autres paramètres" "Other Parameters" }
-   set Lbl(Event)               { "Événement   "     "Event type " }
    set Lbl(Virus)               { "Virus       "     "Virus type " }
    set Lbl(Scale)               { "Grille      "     "Grid       " }
    set Lbl(Meteo)               { "Météorologie"     "Meteorology" }
@@ -129,7 +128,6 @@ namespace eval MLDPn {
    set Bubble(ModelTimeStepMin)       { "Pas de temps interne du modèle (min)." "Internal model time step (min)." }
 
    set Bubble(OtherParameters)        { "Autres paramètres." "Other parameters." }
-   set Bubble(Event)                  { "Sélection du type d'événement (À titre informatif)." "Select the event type (As information label)." }
    set Bubble(Virus)                  { "Sélection du type de virus." "Select the virus type." }
    set Bubble(Scale)                  { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
    set Bubble(Meteo)                  { "Type de modèle météorologique." "Type of meteorological model." }

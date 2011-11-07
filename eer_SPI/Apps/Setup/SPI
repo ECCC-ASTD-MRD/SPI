@@ -216,6 +216,8 @@ namespace eval Exp {
    set Param(Path)      { }
    set Param(StoreHost) { }
    set Param(StorePath) { }
+   set Param(StoreLog)  { }
+   set Param(Users)     { }
 }
 
 namespace eval Model {

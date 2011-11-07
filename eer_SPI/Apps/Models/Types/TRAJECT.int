@@ -46,9 +46,8 @@ proc TRAJECT::ParamsNew { Tab { Auto False } } {
       labelframe $frame.d -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.
-         set TRAJECT::Sim(AccSeconds) [clock seconds]
-         Calendar::Create $frame.d.date "" TRAJECT::Sim(AccSeconds) -1
-         Clock::Create $frame.d.time [lindex $Lbl(At) $GDefs(Lang)] TRAJECT::Sim(AccHour)
+         Calendar::Create $frame.d.date "" TRAJECT::Sim(Secs) -1
+         Clock::Create $frame.d.time [lindex $Lbl(At) $GDefs(Lang)] TRAJECT::Sim(Hour)
          pack $frame.d.date -side left -fill x -expand true -padx 2
          pack $frame.d.time -side left -padx 2
       pack $frame.d -side top -padx 5 -pady 5 -ipady 2 -fill x

@@ -867,7 +867,7 @@ proc MLDPn::ValidateTimeSteps { } {
    }
 
    #----- Update emission starting time.
-   MLDPn::UpdateEmissionStartingTime
+   Model::FitAccTime MLDPn
 
    return 1
 }
@@ -973,8 +973,7 @@ proc MLDPn::ValidateEmissionDuration { Id } {
    variable Error
 
    #----- Calculate real emission duration
-   set simdur [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
-   set simdur [expr ($simdur-$Sim(AccSeconds))/3600.0 + $Sim(Duration)]
+   set simdur [expr ($Sim(SimSecs)-$Sim(AccSecs))/3600.0 + $Sim(Duration)]
 
    #----- Calculate total and effective emission duration of previous intervals
    set totdur 0
@@ -1019,8 +1018,7 @@ proc MLDPn::ValidateScenarioDuration { } {
    variable Sim
 
    #----- Calculate real emission duration
-   set simdur [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
-   set simdur [expr ($simdur-$Sim(AccSeconds))/3600.0 + $Sim(Duration)]
+   set simdur [expr ($Sim(SimSecs)-$Sim(AccSecs))/3600.0 + $Sim(Duration)]
 
    set totdur 0
    set effdur 0

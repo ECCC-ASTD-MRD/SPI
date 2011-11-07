@@ -52,8 +52,8 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
       labelframe $tabframe.time -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.
-         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDPn::Sim(AccSeconds) -1 "MLDPn::SetAccidentDate"
-         Clock::Create $tabframe.time.date.hour "" MLDPn::Sim(AccHour) MLDPn::Sim(AccMin)
+         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDPn::Sim(Secs) -1 ""
+         Clock::Create $tabframe.time.date.hour "" MLDPn::Sim(Hour) MLDPn::Sim(Min)
          pack $tabframe.time.date -side top -anchor w -padx 2 -fill x -expand True
          pack $tabframe.time.date.hour -side right
 
@@ -99,10 +99,6 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    labelframe $tabframe.others -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
       frame $tabframe.others.opt
 
-         #----- Event Type.
-         Option::Create $tabframe.others.opt.event [lindex $Lbl(Event) $GDefs(Lang)] MLDPn::Sim(Event) 1 -1 $MLDPn::Sim(ListEvent) ""
-         pack $tabframe.others.opt.event -side top -ipady 1 -fill x
-
          #----- Virus Source Type.
          if { $Sim(SrcType) == "VIRUS" } {
             Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(EmIsoSymbol) MLDPn::Sim(VirusID) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "set MLDPn::Sim(VirusType) \[lindex \$MLDPn::Sim(ListVirusType) \$MLDPn::Sim(VirusID)\]"
@@ -113,7 +109,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          #----- Grid Resolution.
          frame $tabframe.others.opt.grid
          Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(ListScale) "Model::ParamsGridDefine MLDPn"
-         Option::Create $tabframe.others.opt.grid.src "" MLDPn::Sim(GridSrc) 0 14 $Sim(Pos) \
+         Option::Create $tabframe.others.opt.grid.src "" MLDPn::Sim(GridSrc) 0 -1 $Sim(Pos) \
             "set MLDPn::Sim(GridLat) \[lindex \$MLDPn::Sim(GridSrc) 1\];
              set MLDPn::Sim(GridLon) \[lindex \$MLDPn::Sim(GridSrc) 2\];
              Model::ParamsGridDefine MLDPn"
@@ -122,7 +118,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor $GDefs(ColorFrame)
          pack $tabframe.others.opt.grid.res -side left -ipady 1
-         pack $tabframe.others.opt.grid.src -side left -ipady 1
+         pack $tabframe.others.opt.grid.src -side left -ipady 1 -fill x -expand True
          pack $tabframe.others.opt.grid.sel -side left
          pack $tabframe.others.opt.grid     -side top -fill x
 
@@ -172,7 +168,6 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $tabframe.others                   $Bubble(OtherParameters)
-   Bubble::Create $tabframe.others.opt.event         $Bubble(Event)
    Bubble::Create $tabframe.others.opt.grid.res      $Bubble(Scale)
    Bubble::Create $tabframe.others.opt.grid.src      $Bubble(MoveGrid1)
    Bubble::Create $tabframe.others.opt.grid.sel      $Bubble(MoveGrid2)
@@ -977,7 +972,6 @@ proc MLDPn::GraphUpdate { } {
    set heights    {}
    set nplst      {}
    set curnplst   [MLDPn::DistributeParcels]
-   set simsecs    [clock scan "$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)" -format "%Y%m%d%H" -timezone :UTC]
 
    #----- Make the lists of data points
    for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
@@ -1040,7 +1034,7 @@ proc MLDPn::GraphUpdate { } {
       vector append ES_SIMDURY [list [vector stats ES_INTERY -max] [vector stats ES_INTERY -max]]
       set durcolors { #00B7FF #E6F8FF }
    } else {
-      lappend times [set time [expr $simsecs + $Sim(Duration)*3600 - $Sim(AccSeconds)]]
+      lappend times [set time [expr $Sim(SimSecs) + $Sim(Duration)*3600 - $Sim(AccSecs)]]
       vector append ES_SIMDURX [list 0.0 $time]
       vector append ES_SIMDURY [vector stats ES_INTERY -max]
       set durcolors {}
@@ -1055,7 +1049,7 @@ proc MLDPn::GraphUpdate { } {
 
    #----- Update axis intervals and histogram bar's color
    graphaxis configure ES_AXISX -intervals $times -grid [lrange $times 0 end-1] -min 0.0 -max [lindex $times end] \
-      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n$Sim(AccYear)-$Sim(AccMonth)-$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)"
+      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n[clock format $Sim(AccSecs) -format "%Y-%m-%d $%H:%M" -gmt True]"
    graphaxis configure ES_AXISY -intervals $heights -min 0.0 -max [lindex $heights end]
    graphitem configure ES_INTER  -colors $colors
    graphitem configure ES_SIMDUR -colors $durcolors
@@ -1310,39 +1304,6 @@ proc MLDPn::PopUp { X Y } {
    }
 
    tk_popup .mldpnpopup $X $Y 0
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::UpdateEmissionStartingTime>
-# Creation   : 22 March 2004 - A. Malo - CMC/CMOE
-#
-# But        : Update emission starting time.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::UpdateEmissionStartingTime { } {
-   variable Sim
-
-   set sec [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):00" -gmt true]
-
-   set min [string trimleft $Sim(AccMin) 0]
-   if { $min == "" } {
-      set min 0
-   }
-   set min [expr int(double($min)/double($Sim(ModelTimeStepMin))+0.5) * $Sim(ModelTimeStepMin)]
-
-   set Sim(AccSeconds) [expr $sec + $min*60]
-   set Sim(AccMin)     [clock format $Sim(AccSeconds) -format "%M" -gmt true]
-   set Sim(AccHour)    [clock format $Sim(AccSeconds) -format "%H" -gmt true]
-   set Sim(AccDay)     [clock format $Sim(AccSeconds) -format "%d" -gmt true]
-   set Sim(AccMonth)   [clock format $Sim(AccSeconds) -format "%m" -gmt true]
-   set Sim(AccYear)    [clock format $Sim(AccSeconds) -format "%Y" -gmt true]
 }
 
 #----------------------------------------------------------------------------

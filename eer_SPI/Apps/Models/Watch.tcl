@@ -1314,19 +1314,17 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    switch $Mode {
       "NEW" {
          $Data(Modelbase)::ParamsNew .modelnew.params True
-         if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params
-         }
          set $Data(Modelbase)::Sim(NoSim) $Data(No)
       }
       default {
          set Data(OldInfo) "$Data(Info)"
          Info::Decode $Data(Modelbase)::Sim "$Data(Info)"
          $Data(Modelbase)::ParamsNew .modelnew.params True
-         if { [info procs ::$Data(Modelbase)::ParamsEmission] != "" } {
-            $Data(Modelbase)::ParamsEmission .modelnew.params
-         }
       }
+   }
+
+   if { [info proc ::${Data(Modelbase)}::ParamsEmission]!="" } {
+      ${Data(Modelbase)}::ParamsEmission .modelnew.params $Mode
    }
    Model::ParamsGridDefine $Data(Modelbase) $Mode
 
@@ -1357,7 +1355,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::ParamsAutoWatch { Modelbase Frame Mode } {
+proc Watch::ParamsAutoWatch { Model Frame Mode } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -1366,15 +1364,28 @@ proc Watch::ParamsAutoWatch { Modelbase Frame Mode } {
    #----- Automatisation tab
    set tabframe [TabFrame::Add $Frame 1 "[lindex $Lbl(Auto) $GDefs(Lang)]" False]
 
+   #----- Identification params
+   labelframe $tabframe.request -text [lindex $Model::Lbl(Request) $GDefs(Lang)]
+   Option::Create $tabframe.request.by    [lindex $Model::Lbl(By) $GDefs(Lang)]    ${Model}::Sim(By)    1 -1 $Model::Param(Bys) ""
+   Option::Create $tabframe.request.event [lindex $Model::Lbl(Event) $GDefs(Lang)] ${Model}::Sim(Event) 1 -1 $Model::Param(Events) ""
+   pack $tabframe.request.by $tabframe.request.event -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.request.by    $Model::Bubble(By)
+   Bubble::Create $tabframe.request.event $Model::Bubble(Event)
+
+   labelframe $tabframe.user -text [lindex $Model::Lbl(Id) $GDefs(Lang)]
+   Option::Create $tabframe.user.id [lindex $Model::Lbl(User) $GDefs(Lang)] ${Model}::Sim(Blame) 1 -1 $Model::Param(Users) ""
+   Bubble::Create $tabframe.user.id $Model::Bubble(User)
+   pack $tabframe.user.id -side top -anchor w -padx 2 -fill x
+
    #----- Parametres
    labelframe $tabframe.params -text "[lindex $Lbl(Params) $GDefs(Lang)]"
-   pack $tabframe.params -side top -padx 5 -pady 5 -fill x
+   pack $tabframe.request $tabframe.user $tabframe.params -side top -padx 5 -pady 5 -fill x
 
    #----- Si c'est une edition de simulation (Il faut enlever l'ancienne ligne de pool avant d'ajouter la nouvelle)
    if { $Mode!="NEW" } {
-      button $tabframe.add -text "[lindex $Lbl(EditSim) $GDefs(Lang)]" -bd 1 -command "Watch::SimEdit; Model::ParamsClose $Modelbase"
+      button $tabframe.add -text "[lindex $Lbl(EditSim) $GDefs(Lang)]" -bd 1 -command "Watch::SimEdit; Model::ParamsClose $Model"
    } else {
-      button $tabframe.add -text "[lindex $Lbl(AddSim) $GDefs(Lang)]" -bd 1 -command "Watch::Write $Modelbase; Model::ParamsClose $Modelbase"
+      button $tabframe.add -text "[lindex $Lbl(AddSim) $GDefs(Lang)]" -bd 1 -command "Watch::Write $Model; Model::ParamsClose $Model"
    }
    pack $tabframe.add -side bottom -anchor e -padx 5 -pady 5
 }

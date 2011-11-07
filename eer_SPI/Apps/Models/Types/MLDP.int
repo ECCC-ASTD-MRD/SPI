@@ -49,8 +49,8 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
       labelframe $tabframe.time -text "[lindex $Lbl(Start) $GDefs(Lang)]"
 
          #----- Simulation Date Hour and minutes.
-         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDP::Sim(AccSeconds) 24 "MLDP::SetAccidentDate"
-         Clock::Create $tabframe.time.hour "" MLDP::Sim(AccHour) MLDP::Sim(AccMin)
+         Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDP::Sim(Secs) 24 ""
+         Clock::Create $tabframe.time.hour "" MLDP::Sim(Hour) MLDP::Sim(Min)
          pack $tabframe.time.date -side left -anchor w -padx 2 -fill x
          pack $tabframe.time.hour -side left -padx 2
 
@@ -90,12 +90,6 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
    #----- Other parameters.
    labelframe $tabframe.others -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
       frame $tabframe.others.opt
-
-         #----- Event Type.
-         Option::Create $tabframe.others.opt.event [lindex $Lbl(Event) $GDefs(Lang)] MLDP::Sim(Event) 1 -1 $MLDP::Sim(ListEvent) "MLDP::UpdateListVerticalLevels"
-         pack $tabframe.others.opt.event -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.event.e <Key-Tab>  "MLDP::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.event.e <Button-1> "MLDP::UpdateListVerticalLevels"
 
          #----- Virus Source Type.
          if { $Sim(SrcType) == "virus" } {
@@ -164,7 +158,6 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $tabframe.others                   $Bubble(OtherParameters)
-   Bubble::Create $tabframe.others.opt.event         $Bubble(Event)
    Bubble::Create $tabframe.others.opt.grid.res      $Bubble(Scale)
    Bubble::Create $tabframe.others.opt.grid.src      $Bubble(MoveGrid1)
    Bubble::Create $tabframe.others.opt.grid.sel      $Bubble(MoveGrid2)

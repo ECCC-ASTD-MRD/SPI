@@ -28,11 +28,6 @@ namespace eval MLCD {
    set Sim(OutputTimeStepMin) 5                           ; #----- Output time step [min].
    set Sim(ModelTimeStepMin)  5                           ; #----- Model time step [min].
 
-   set Sim(Second)     [clock seconds]
-   set Sim(Date)       [clock format $Sim(Second) -format "%a %b %d %Y" -gmt true]
-   set Sim(Hour)       [clock format $Sim(Second) -format "%H" -gmt true]
-   set Sim(Min)        [clock format $Sim(Second) -format "%M" -gmt true]
-
    set Sim(Mode)       0    ; #----- Forward mode: 0; Backward mode: 1.
    set Sim(IsSigma)    1    ; #----- Mesoscale velocity fluctuations is on.
    set Sim(IsRanVar)   1    ; #----- Variable generator of gaussian numbers is on.

@@ -89,7 +89,8 @@ proc MLDP::Launch { } {
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "accident" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(MetYear)$Sim(MetMonth)$Sim(MetDay)$Sim(MetHour) $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
+      set metdate [clock format $sim(MetSecs) -format "%Y%m%d%H" -gmt True]
+      set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $metdate $metdate $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
    if { $Model::Param(IsUsingSoumet) } {
@@ -248,6 +249,10 @@ proc MLDP::ParamsCheck { Tab No } {
       return True
    }
 
+   scan $Sim(Min)  "%02d" min
+   scan $Sim(Hour) "%02d" hour
+   set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
+
    #----- Validate output and model time steps but not if we are relaunching.
    if { $Sim(ReNewMeteo)=="" } {
       if { ![MLDP::ValidateNbSrc] || ![MLDP::ValidateTimeSteps] || ![MLDP::ValidateSimulationDuration] || ![MLDP::ValidateOtherParams] } {
@@ -309,11 +314,12 @@ proc MLDP::CreateModelInput { } {
    set file [open $Sim(Path)/tmp/$Sim(Model).in w]
 
    #----- Output files.
-   set len [expr [string length "$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.pos"] + 10]
+   set name [clock format $Sim(SimSecs) -format "%Y%m%d%H_000" -gmt True]
+   set len  [expr [string length "$Sim(PathRun)/results/$name.pos"] + 10]
    puts $file "Output files:"
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.pos']     outfile_pos      Positions output standard file (256 characters)."
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.con']     outfile_conc     Concentrations output standard file (256 characters)."
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$Sim(SimYear)$Sim(SimMonth)$Sim(SimDay)$Sim(SimHour)_000.sv' ]     outfile_sv       Settling velocities output file (256 characters)."
+   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.pos']     outfile_pos      Positions output standard file (256 characters)."
+   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.con']     outfile_conc     Concentrations output standard file (256 characters)."
+   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.sv' ]     outfile_sv       Settling velocities output file (256 characters)."
 
    #----- Input files.
    set len [expr [string length $Sim(PathRun)/meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
@@ -359,7 +365,7 @@ proc MLDP::CreateModelInput { } {
 
    puts $file "\nSource parameters:"
    puts $file "[format "%-25s" '[string range $Sim(NameExp) 0 11]'] [format "%-25s" src_name] Source name (12 characters)."
-   puts $file "[format "%-25s" "$Sim(AccYear), $Sim(AccMonth), $Sim(AccDay), $Sim(AccHour), $Sim(AccMin)"] [format "%-25s" etime(i)] Emission date-time \[UTC\]: Year, Month, Day, Hour, Minutes."
+   puts $file "[format "%-25s" [clock format $Sim(AccSecs) -format "%Y, %m, %d, %H, %M"]] [format "%-25s" etime(i)] Emission date-time \[UTC\]: Year, Month, Day, Hour, Minutes."
    puts $file "[format "%-25s" $nbsrc] [format "%-25s" nbsrc] Number of sources."
    puts $file "[format "%-25s" $Sim(EmHeight)] [format "%-25s" z_src] Maximum plume height \[m\]."
    puts $file "[format "%-25s" $Sim(EmRadius)] [format "%-25s" rad_src] Horizontal dispersion source radius \[m\]."
@@ -620,17 +626,14 @@ proc MLDP::GetMetData { } {
    }
 
    #----- Get available meteorological files.
-   set Sim(RunStamp) [fstdstamp fromdate $Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour)$Sim(AccMin)0000]
+   set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSecs)]
    set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
 
    Dialog::WaitDestroy
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
    if { [set ok [Model::ParamsMetData MLDP]] } {
-      set Sim(SimYear)   $Sim(MetYear)
-      set Sim(SimMonth)  $Sim(MetMonth)
-      set Sim(SimDay)    $Sim(MetDay)
-      set Sim(SimHour)   $Sim(MetHour)
+      set Sim(SimSecs)   $Sim(MetSecs)
    }
    return $ok
 }
@@ -980,7 +983,11 @@ proc MLDP::File { Info Path Type Back } {
    Info::Decode ::MLDP::Tmp $Info
 
    set simpath $Path/[Info::Path $Info]
-   set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
+   if { [info exists ::MLDP::Tmp(SimSecs)] } {
+      set file [clock format $Tmp(SimSecs) -format "%Y%m%d%H_000" -gmt True]
+   } else {
+      set file "$Tmp(SimYear)$Tmp(SimMonth)$Tmp(SimDay)$Tmp(SimHour)_000"
+   }
    set std  {}
 
    set pos       "$simpath/results/${file}.pos"               ; #----- Particle positions result output file.
@@ -1058,28 +1065,6 @@ proc MLDP::Result { Type } {
    } else {
       Dialog::Error . $Error(NoResuts)
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDP::SetAccidentDate>
-# Creation   : 27 August 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But        : Set accident release date (year, month and day).
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::SetAccidentDate { } {
-   variable Sim
-
-   set Sim(AccYear)  [clock format $Sim(AccSeconds) -format "%Y" -gmt true] ; #----- Year of accident date.
-   set Sim(AccMonth) [clock format $Sim(AccSeconds) -format "%m" -gmt true] ; #----- Month of accident date.
-   set Sim(AccDay)   [clock format $Sim(AccSeconds) -format "%d" -gmt true] ; #----- Day of accident date.
 }
 
 #----------------------------------------------------------------------------
@@ -1268,7 +1253,6 @@ proc MLDP::InitNew { Type } {
 
    set Sim(IsResFileSizeChecked) 0                                   ; #----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ; #----- Flag indicating if met data file size has been checked (1) or not (0).
-   set Sim(Event)                [lindex $Sim(ListEvent) 0]          ; #----- Type of event.
    set Sim(VerticalLevels)       [lindex $Sim(ListVerticalLevels) 0] ; #----- Vertical levels [m].
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 

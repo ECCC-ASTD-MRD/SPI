@@ -61,8 +61,7 @@ namespace eval Model {
    set Param(Host)      ""                             ;#Host
    set Param(Queue)     ""                             ;#Queue
    set Param(EMail)     ""                             ;#Username email address.
-   set Param(EMailSet)  "$env(USER)@ec.gc.ca"          ;#Username email address.
-   set Param(ListEMail) $Param(EMailSet)               ;#List of email addresses.
+   set Param(EMailSet)  "$env(LOGNAME)@ec.gc.ca"       ;#Username email address.
    set Param(IsEMail)   0                              ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
    set Param(Listings) $env(HOME)/listings/eer_Experiment
    set Param(DBaseType) "eta"                          ;#Type od metdata
@@ -78,6 +77,8 @@ namespace eval Model {
    set Param(OMPthreadFact)     1                     ;#Integer multiplicative factor to apply to number of OpenMP threads [1|2].
    set Param(ListOMPthreadFact) { 1 }
    set Param(Submit)            ord_soumet            ;#Queue launcher
+   set Param(Events)            { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ;#----- List of type of events.
+   set Param(Bys)               { "Internal" "IAEA" "Health Canada" "REEC" }                       ;#----- List of requesters.
 
    set Data(Job)    ""                    ;#Texte de processus
    set Data(Active) 0                     ;#Flag d'activation de l'outils
@@ -88,37 +89,42 @@ namespace eval Model {
    #----- Labels
    set Title           { "Modélisation" "Modeling" }
 
-   set Lbl(Launch)              { "Lancement" "Launch" }
-   set Lbl(LaunchModel)         { "Lancer" "Launch" }
-   set Lbl(Params)              { "Paramètres" "Parameters" }
-   set Lbl(Host)                { "Nom de l'hôte  " "Host name      " }
-   set Lbl(Queue)               { "Type de queue  " "Queue type     " }
-   set Lbl(MetCPU)              { "Nb CPUs météo  " "Nb CPUs meteo  " }
-   set Lbl(NbMPItasks)          { "Nb tâches MPI  " "Nb MPI tasks   " }
-   set Lbl(NbOMPthreads)        { "Nb threads OMP " "Nb OMP threads " }
-   set Lbl(OMPthreadFact)       { "Facteur OMP    " "OMP Factor     " }
-   set Lbl(IsEMail)             { "Surveillance par courriel" "E-mail monitoring" }
-   set Lbl(EMail)               { "   Adresse     " "   Address     " }
-   set Lbl(Close)               { "Fermer" "Close" }
-   set Lbl(Yes)                 { "Oui" "Yes" }
-   set Lbl(No)                  { "Non" "No " }
-
-   set Lbl(Name)       { "Nom" "Name" }
-   set Lbl(Diag)       { "Diagnostiques" "Diagnostics" }
-   set Lbl(Prog)       { "Prognostiques" "Prognostics" }
-   set Lbl(Emerg)      { "Urgences" "Emergencies" }
-   set Lbl(Source)     { "Sélecteur de source" "Source selector" }
-   set Lbl(Lat)        { "Latitude  (Nord+ Sud-) :" "Latitude  (North+ South-):" }
-   set Lbl(Lon)        { "Longitude (Est+ Ouest-):" "Longitude (East+ West-)  :" }
-   set Lbl(Type)       { "Type d'expérience      :" "Experiment type          :" }
-   set Lbl(Create)     { "Créer" "Create" }
-   set Lbl(Cancel)     { "Annuler" "Cancel" }
-   set Lbl(Checked)    { "Rafraîchissement effectué à" "Refresh done at" }
-   set Lbl(Checking)   { "Rafraîchissement en cours..." "Refreshing simulations..." }
-   set Lbl(Select)     { "Sélectionner" "Select" }
-   set Lbl(Watch)      { "Veilles" "Watch" }
-   set Lbl(MetPath)    { "Répertoire des données météorologiques" "Meteorological data path" }
-   set Lbl(EmHeight)   { "Hauteur explosive maximale" "Maximum explosive height" }
+   set Lbl(Launch)        { "Lancement" "Launch" }
+   set Lbl(LaunchModel)   { "Lancer" "Launch" }
+   set Lbl(Params)        { "Paramètres" "Parameters" }
+   set Lbl(Host)          { "Nom de l'hôte  " "Host name      " }
+   set Lbl(Queue)         { "Type de queue  " "Queue type     " }
+   set Lbl(MetCPU)        { "Nb CPUs météo  " "Nb CPUs meteo  " }
+   set Lbl(NbMPItasks)    { "Nb tâches MPI  " "Nb MPI tasks   " }
+   set Lbl(NbOMPthreads)  { "Nb threads OMP " "Nb OMP threads " }
+   set Lbl(OMPthreadFact) { "Facteur OMP    " "OMP Factor     " }
+   set Lbl(IsEMail)       { "Surveillance par courriel" "E-mail monitoring" }
+   set Lbl(EMail)         { "Courriel" "EMail" }
+   set Lbl(Id)            { "Identification" "Identification" }
+   set Lbl(User)          { "Usager  " "User " }
+   set Lbl(Close)         { "Fermer" "Close" }
+   set Lbl(Yes)           { "Oui" "Yes" }
+   set Lbl(No)            { "Non" "No " }
+   set Lbl(Request)       { "Requête"    "Request" }
+   set Lbl(By)            { "Provenance" "From      " }
+   set Lbl(Event)         { "Événement " "Event type" }
+   set Lbl(Name)          { "Nom" "Name" }
+   set Lbl(Diag)          { "Diagnostiques" "Diagnostics" }
+   set Lbl(Prog)          { "Prognostiques" "Prognostics" }
+   set Lbl(Emerg)         { "Urgences" "Emergencies" }
+   set Lbl(Source)        { "Sélecteur de source" "Source selector" }
+   set Lbl(Lat)           { "Latitude  (Nord+ Sud-) :" "Latitude  (North+ South-):" }
+   set Lbl(Lon)           { "Longitude (Est+ Ouest-):" "Longitude (East+ West-)  :" }
+   set Lbl(Type)          { "Type d'expérience      :" "Experiment type          :" }
+   set Lbl(Create)        { "Créer" "Create" }
+   set Lbl(Cancel)        { "Annuler" "Cancel" }
+   set Lbl(Checked)       { "Rafraîchissement effectué à" "Refresh done at" }
+   set Lbl(Checking)      { "Rafraîchissement en cours..." "Refreshing simulations..." }
+   set Lbl(Select)        { "Sélectionner" "Select" }
+   set Lbl(Watch)         { "Veilles" "Watch" }
+   set Lbl(MetPath)       { "Répertoire des données météorologiques" "Meteorological data path" }
+   set Lbl(EmHeight)      { "Hauteur explosive maximale" "Maximum explosive height" }
+   set Lbl(Submit)        { "Soumission" "submit" }
 
    #----- Bulles d'aide
 
@@ -134,6 +140,9 @@ namespace eval Model {
    set Bubble(IsEMail)       { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
    set Bubble(EMail)         { "Adresse de courrier électronique." "E-mail address." }
    set Bubble(LaunchModel)   { "Lancer le modèle." "Launch model." }
+   set Bubble(Event)         { "Sélection du type d'événement (À titre informatif)." "Select the event type (As information label)." }
+   set Bubble(By)            { "Sélection de la provenance de la requête (À titre informatif)." "Select the request provenance (As information label)." }
+   set Bubble(User)          { "Identification de l'usager ayant lancé la simulation." "Identification of the user who launched the simulation." }
 
    set Bubble(PathSel) { "Liste des dépôts d'expériences disponibles" "List of experiments available" }
    set Bubble(PathAdd) { "Ajouter un répertoire à la liste\ndes dépots d'expériences disponibles" "Add a path to the list of experiments available" }
@@ -194,6 +203,7 @@ namespace eval Model {
    set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilograms." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
    set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
+   set Msg(Correct)      { "Voulez-vous lancer le modèle à partir des paramètres d'entrée ci-haut?" "Do you wish to launch the model with the above input parameters?" }
 
    catch {
       set Resources(Icos)  "ICO_VOLC ICO_NUCL ICO_CTBT ICO_FIRE ICO_BIO ICO_SPILL ICO_OTHE"
@@ -677,14 +687,10 @@ proc Model::ParamsMetData { Model } {
 
    #----- Set simulation date-time.
    if { $sim(Backward) } {
-      set simdate   $lastdate
+      set sim(MetSecs) $lastdate
    } else {
-      set simdate   $firstdate
+      set sim(MetSecs) $firstdate
    }
-   set sim(MetYear)     [clock format $simdate -format "%Y" -gmt True]
-   set sim(MetMonth)    [clock format $simdate -format "%m" -gmt True]
-   set sim(MetDay)      [clock format $simdate -format "%d" -gmt True]
-   set sim(MetHour)     [clock format $simdate -format "%H" -gmt True]
 
    #----- Validate emission time according to available meteorological data files.
    set first [lindex [lindex $sim(Data) 0] 0]
@@ -900,19 +906,18 @@ proc Model::ParamsClose { Model } {
 #----------------------------------------------------------------------------
 
 proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
+   global env
    variable Data
 
    set modelbase [string trimright [string trimright $Model 0] 1]
    upvar ${modelbase}::Sim sim
 
    #----- Initialize release date-time.
-   set sim(AccSeconds) [clock scan [clock format [clock seconds] -format "%Y%m%d %H:%M" -gmt True]]
-   set sim(AccDate)    [clock scan [clock format $sim(AccSeconds) -format "%Y%m%d" -gmt True]]
-   set sim(AccYear)    [set sim(SimYear)  [clock format $sim(AccSeconds) -format "%Y" -gmt True]]
-   set sim(AccMonth)   [set sim(SimMonth) [clock format $sim(AccSeconds) -format "%m" -gmt True]]
-   set sim(AccDay)     [set sim(SimDay)   [clock format $sim(AccSeconds) -format "%d" -gmt True]]
-   set sim(AccHour)    [set sim(SimHour)  [clock format $sim(AccSeconds) -format "%H" -gmt True]]
-   set sim(AccMin)     [set sim(SimMin)   [clock format $sim(AccSeconds) -format "%M" -gmt True]]
+   set sim(AccSecs) [clock scan [clock format [clock seconds] -format "%Y%m%d %H:%M" -gmt True]]
+   set sim(SimSecs) $sim(AccSecs)
+   set sim(Secs)    [clock scan [clock format $sim(AccSecs) -format "%Y%m%d 00:00" -gmt True]]
+   set sim(Hour)    [clock format $sim(AccSecs) -format "%H" -gmt True]
+   set sim(Min)     [clock format $sim(AccSecs) -format "%M" -gmt True]
 
    set sim(Model)     $Model
    set sim(State)     1
@@ -925,7 +930,8 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Backward)  False
    set sim(Mode)      prog
    set sim(Scale)     ""
-   set sim(Event)     ""
+   set sim(Event)     [lindex $Model::Param(Events) 0]
+   set sim(By)        [lindex $Model::Param(Bys) 0]
 
    set sim(ReNewMeteo) ""
    set sim(GridChanged) 0
@@ -942,6 +948,9 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(GridSrc)      [lindex $sim(Pos) 0]
    set sim(GridLat)      [lindex $sim(GridSrc) 1]
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
+
+   set sim(Blame)        [string trim [lindex [split [lindex [split [exec finger $env(LOGNAME)] \n] 0] :] end]]
+   set sim(Click)        [clock seconds]
 
    #----- Initialize grid related stuff
    catch {
@@ -973,20 +982,14 @@ proc Model::FitAccTime { Model } {
    set modelbase [string trimright [string trimright $Model 0] 1]
    upvar ${modelbase}::Sim sim
 
-   set sec [clock scan "$sim(AccYear)$sim(AccMonth)$sim(AccDay) $sim(AccHour):00" -gmt true]
+   set sec [expr int($sim(AccSecs)/3600)*3600]
 
-   set min [string trimleft $sim(AccMin) 0]
-   if { $min=="" } {
+   set min [string trimleft [clock format $sim(AccSecs) -format "%M"] 0]
+   if { $min == "" } {
       set min 0
    }
-   set min [expr int(double($min)/double($sim(ModelTimeStepMin))+0.5) * $sim(ModelTimeStepMin)]
 
-   set sim(AccSeconds) [expr $sec + $min*60]
-   set sim(AccMin)     [clock format $sim(AccSeconds) -format "%M" -gmt true]
-   set sim(AccHour)    [clock format $sim(AccSeconds) -format "%H" -gmt true]
-   set sim(AccDay)     [clock format $sim(AccSeconds) -format "%d" -gmt true]
-   set sim(AccMonth)   [clock format $sim(AccSeconds) -format "%m" -gmt true]
-   set sim(AccYear)    [clock format $sim(AccSeconds) -format "%Y" -gmt true]
+   set sim(AccSecs) [expr $sec+int(double($min)/double($sim(ModelTimeStepMin))+0.5) * $sim(ModelTimeStepMin) * 60]
 }
 
 #----------------------------------------------------------------------------
@@ -1072,6 +1075,22 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    TabFrame::Select .modelnew.params 0
 }
 
+#----------------------------------------------------------------------------
+# Nom        : <Model::ParamsWindow>
+# Creation   : 2 October 2007 - A. Malo - CMC/CMOE
+#
+# But        : Onglet de lancement des modeles.
+#
+# Parametres :
+#  <Model>   : Model
+#  <Frame>   : Fenetre parent
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
 proc Model::ParamsLaunch { Model Frame } {
    global GDefs
    variable Lbl
@@ -1082,9 +1101,9 @@ proc Model::ParamsLaunch { Model Frame } {
    Model::ParamsCheck $Model False
 
    #----- Launching Tab.
-   set Model::Param(Frame) [set tabframe [TabFrame::Add $Frame 1 "[lindex $Lbl(Launch) $GDefs(Lang)]" False]]
+   set Model::Param(Frame) [set tabframe [TabFrame::Add $Frame 1 [lindex $Lbl(Launch) $GDefs(Lang)] False]]
 
-   labelframe $tabframe.params -text "[lindex $Lbl(Params) $GDefs(Lang)]"
+   labelframe $tabframe.params -text [lindex $Lbl(Submit) $GDefs(Lang)]
 
    #----- Host.
    Option::Create $tabframe.params.host [lindex $Lbl(Host) $GDefs(Lang)] Model::Param(Host) 0 -1 $sim(Hosts) "Model::ParamsCheck $Model"
@@ -1123,30 +1142,44 @@ proc Model::ParamsLaunch { Model Frame } {
       Bubble::Create $tabframe.params.smt $Bubble(OMPthreadFact)
    }
 
+   #----- Identification params
+   labelframe $tabframe.request -text [lindex $Lbl(Request) $GDefs(Lang)]
+   Option::Create $tabframe.request.by    [lindex $Lbl(By) $GDefs(Lang)]    ${Model}::Sim(By)    1 -1 $Model::Param(Bys) ""
+   Option::Create $tabframe.request.event [lindex $Lbl(Event) $GDefs(Lang)] ${Model}::Sim(Event) 1 -1 $Model::Param(Events) ""
+   pack $tabframe.request.by $tabframe.request.event -side top -anchor w -padx 2 -fill x
+   Bubble::Create $tabframe.request.by    $Bubble(By)
+   Bubble::Create $tabframe.request.event $Bubble(Event)
+
+   labelframe $tabframe.user -text "[lindex $Lbl(Id) $GDefs(Lang)]"
+   Option::Create $tabframe.user.id [lindex $Lbl(User) $GDefs(Lang)] ${Model}::Sim(Blame) 1 -1 $Model::Param(Users) ""
+   Bubble::Create $tabframe.user.id $Bubble(User)
+   pack $tabframe.user.id -side top -anchor w -padx 2 -fill x
+
    #----- Enabling/Disabling email monitoring option.
-   checkbutton $tabframe.params.emonitor -anchor w -text "[lindex $Lbl(IsEMail) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
-       -variable Model::Param(IsEMail) -indicatoron true \
+   checkbutton $tabframe.user.emonitor -anchor w -text "[lindex $Lbl(EMail) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
+       -variable Model::Param(IsEMail) -indicatoron False \
       -command "if { \$Model::Param(IsEMail) } {
-                   pack $tabframe.params.email -after $tabframe.params.emonitor -side top -anchor w -padx 2 -fill x
+                   pack $tabframe.user.mail -after $tabframe.user.emonitor -side right -anchor w -padx 2 -fill x -expand True
                 } else {
-                   pack forget $tabframe.params.email
+                   pack forget $tabframe.user.mail
                 }"
-   pack $tabframe.params.emonitor -side top -anchor w
-   Bubble::Create $tabframe.params.emonitor $Bubble(IsEMail)
+   pack $tabframe.user.emonitor -side left -anchor w
+   Bubble::Create $tabframe.user.emonitor $Bubble(IsEMail)
 
    #----- Email address.
-   Option::Create $tabframe.params.email [lindex $Lbl(EMail) $GDefs(Lang)] Model::Param(EMailSet) 1 -1 $Model::Param(ListEMail) ""
+   Option::Create $tabframe.user.mail "" Model::Param(EMailSet) 1 -1 $Model::Param(EMailSet) ""
    if { $Model::Param(IsEMail) } {
-      pack $tabframe.params.email -side top -anchor w -padx 2 -fill x
+      pack $tabframe.user.mail -after $tabframe.user.emonitor -side right -anchor w -padx 2 -fill x -expand True
    }
-   Bubble::Create $tabframe.params.email $Bubble(EMail)
+   Bubble::Create $tabframe.user.mail $Bubble(EMail)
+
+   pack $tabframe.request $tabframe.user $tabframe.params -side top -padx 5 -pady 5 -fill x
 
    #----- Button.
-   button $tabframe.params.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::Launch ${Model}"
-   pack $tabframe.params.launch -side top -anchor w -padx 2 -pady 2 -anchor e
-   Bubble::Create $tabframe.params.launch $Bubble(LaunchModel)
+   button $tabframe.launch -text "[lindex $Lbl(LaunchModel) $GDefs(Lang)]" -bd 1 -command "Model::Launch ${Model}"
+   pack $tabframe.launch -side top -anchor w -fill x -padx 5 -pady 2 -anchor e
+   Bubble::Create $tabframe.launch $Bubble(LaunchModel)
 
-   pack $tabframe.params -side top -padx 5 -pady 5 -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1177,7 +1210,7 @@ proc Model::Launch { Model } {
    }
 
    #----- Check user params
-   if { ![Exp::Params . ${Model}] } {
+   if { ![Model::ParamsOk . ${Model}] } {
       return False
    }
 
@@ -1193,19 +1226,80 @@ proc Model::Launch { Model } {
 
    . config -cursor watch
    update idletasks
+
    set sim(State) 2
 
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
       destroy [winfo toplevel $Param(Frame)]
       Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model}::Sim]
-      Model::Check 0
 
+      Model::Check 0
       Model::ParamsClose ${Model}
    }
 
    . config -cursor left_ptr
    return True
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Model::ParamsOk>
+# Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Permet de confirmer les parametres de la simulation.
+#
+# Parametres :
+#   <Parent> : Identificateur de la fenetre parent
+#
+# Retour     :
+#   <Valid>  : True ou False.
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsOk { Parent Model } {
+   global   GDefs correct
+   variable Lbl
+   variable Msg
+   variable Sim
+
+   toplevel .simparams -bg $GDefs(ColorLight)
+
+   wm title     .simparams [lindex $Lbl(Params) $GDefs(Lang)]
+   wm resizable .simparams 1 1
+   wm transient .simparams $Parent
+   wm geom      .simparams 700x500+[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
+   wm protocol  .simparams WM_DELETE_WINDOW { }
+
+   #----- Afficher la liste des parametres de l'experience.
+   set correct False
+
+   frame .simparams.desc
+      scrollbar .simparams.desc.scroll -command ".simparams.desc.list yview" -bd 1 -width 10
+      listbox .simparams.desc.list -relief sunken -yscrollcommand ".simparams.desc.scroll set" \
+         -selectmode extended -exportselection 0 -background $GDefs(ColorLight) -bd 1
+      pack .simparams.desc.list -side left -fill both -expand True
+      pack .simparams.desc.scroll -side left -fill y
+   pack  .simparams.desc -side top -fill both -expand True
+
+   #----- Demander de confirmer la selection faite par l'usager.
+   label .simparams.que -relief raised -bd 1 -text "[lindex $Msg(Correct) $GDefs(Lang)]"
+   pack .simparams.que -anchor w -ipadx 5  -ipady 5 -fill x
+
+   frame .simparams.confirm
+      button .simparams.confirm.yes -text [lindex $Lbl(Yes) $GDefs(Lang)] -command "set correct True" -relief raised -bd 1
+      button .simparams.confirm.no -text [lindex $Lbl(No) $GDefs(Lang)] -command "set correct False" -relief raised -bd 1
+      pack .simparams.confirm.yes .simparams.confirm.no -side left -fill x -expand true
+   pack .simparams.confirm -side top  -fill x
+
+   eval .simparams.desc.list insert end [split [Info::Format [Info::Code ::${Model}::Sim]] \n]
+
+   grab .simparams
+   tkwait variable correct
+
+   destroy .simparams
+   return $correct
 }
 
 #----------------------------------------------------------------------------
@@ -1274,9 +1368,10 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    if { $ReqNo } {
       set sim(NoSim) [Info::Request $Exp::Param(Path)/$sim(NoExp)_$sim(NameExp)/$sim(Model).pool]
    }
-   set expp       "$sim(NoExp)_$sim(NameExp)"
-   set simp       "$sim(Model).$sim(NoSim).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
-   set prevp      "$sim(Model).$sim(NoPrev).$sim(AccYear)$sim(AccMonth)$sim(AccDay).$sim(AccHour)$sim(AccMin)"
+   set dacc  [clock format $sim(AccSecs) -format %Y%m%d.%H%M -gmt True]
+   set expp  "$sim(NoExp)_$sim(NameExp)"
+   set simp  "$sim(Model).$sim(NoSim).$dacc"
+   set prevp "$sim(Model).$sim(NoPrev).$dacc"
 
    set sim(Path)     "$Exp::Param(Path)/${expp}/${simp}"
    set sim(PathPrev) "$Exp::Param(Path)/${expp}/${prevp}"
@@ -1306,6 +1401,8 @@ proc Model::ParamsPath { Model { ReqNo True } } {
    } else {
       set sim(PathRun) $sim(Path)
    }
+
+   set sim(Click) [clock seconds]
 
    #----- Save simulation pool information.
    exec echo "[Info::Code ${Model}::Sim]" > $sim(Path)/tmp/sim.pool
@@ -1434,7 +1531,7 @@ proc Model::ParamValidateEmail { } {
       }
 
       #----- Display warning if email is different than default one.
-      if { $Param(EMailSet)!="$env(USER)@ec.gc.ca" } {
+      if { $Param(EMailSet)!="$env(LOGNAME)@ec.gc.ca" } {
          set answer [Dialog::Default $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMailSet)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
          if { $answer } {
             focus $Param(Frame).params.email.e
