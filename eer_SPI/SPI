@@ -109,7 +109,8 @@ then
 fi
 
 #----- Load up the fonts
-xset -display $DISPLAY +fp ${SPI_PATH}/Resources/Font
+xset fp default
+xset fp+ ${SPI_PATH}/Resources/Font
 
 #----- Let's start up the software
 ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
