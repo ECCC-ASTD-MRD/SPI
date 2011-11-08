@@ -71,7 +71,7 @@ namespace eval MLDPn {
    set Lbl(EmInter)             { "Durée de l'intervalle    " "Interval duration        " }
    set Lbl(NbIsotopes)          { "Nombre d'isotopes        " "Number of isotopes       " }
 
-   set Lbl(EmInterUnit0)        { "(h)" "(h)" }
+   set Lbl(EmInterUnit3600)     { "(h)" "(h)" }
    set Lbl(EmInterUnit1)        { "(s)" "(s)" }
 
    set Lbl(EmIsAutoNP)          { "Distribution automatique des particules" "Automatic particles distribution" }

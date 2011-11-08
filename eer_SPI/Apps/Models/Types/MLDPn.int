@@ -361,7 +361,6 @@ proc MLDPn::ParamsCont { Parent } {
    Option::Disable $base.integ.opt.mts
 
    #----- Other
-   Option::Disable $base.others.opt.event
    if { $Sim(SrcType) == "VIRUS" } {
       Option::Disable $base.others.opt.virus
    }
@@ -442,19 +441,21 @@ proc MLDPn::IsEmissionToggle { Id Base } {
 
 proc MLDPn::EmInterModeToggle { Base Id } {
    global GDefs
+   variable Sim
    variable Tmp
    variable Lbl
 
-   set Tmp(EmInterMode.$Id) [expr ($Tmp(EmInterMode.$Id) + 1) % 2]
-   if { $Tmp(EmInterMode.$Id) } {
+   if { $Sim(EmInterMode)==3600 } {
       #----- (h) to (s)
+      set Sim(EmInterMode) 1
       set Tmp(EmInter.$Id) [expr int($Tmp(EmInter.$Id)*3600)]
    } else {
       #----- (s) to (h)
-      set Tmp(EmInter.$Id) [expr $Tmp(EmInter.$Id) / 3600.0]
+      set Sim(EmInterMode) 3600
+      set Tmp(EmInter.$Id) [expr $Tmp(EmInter.$Id)/3600.0]
    }
 
-   $Base.unt configure -text [lindex $Lbl(EmInterUnit$Tmp(EmInterMode.$Id)) $GDefs(Lang)]
+   $Base.unt configure -text [lindex $Lbl(EmInterUnit$Sim(EmInterMode)) $GDefs(Lang)]
    update idletasks
 }
 
@@ -661,7 +662,7 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
       frame $base.duration
          label $base.duration.lbl -relief flat -anchor w -text "[lindex $Lbl(EmInter) $GDefs(Lang)]"
          entry $base.duration.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmInter.$Id) -width 60
-         button $base.duration.unt -relief flat -width 3 -text "[lindex $Lbl(EmInterUnit$Tmp(EmInterMode.$Id)) $GDefs(Lang)]" -command "MLDPn::EmInterModeToggle $base.duration $Id"
+         button $base.duration.unt -relief flat -width 3 -text "[lindex $Lbl(EmInterUnit$Sim(EmInterMode)) $GDefs(Lang)]" -command "MLDPn::EmInterModeToggle $base.duration $Id"
          pack $base.duration.lbl -side left
          pack $base.duration.unt -side right
          pack $base.duration.ent -side left -fill x -expand 1
@@ -826,7 +827,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
    set time 0
    set id 0
    while { $id < $Sim(EmNbIntervals) } {
-      set time [expr $time + $Sim(EmInter.$id)*3600.0]
+      set time [expr $time + $Sim(EmInter.$id)]
       if { $x <= $time } {
          break
       }
@@ -869,7 +870,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
          }
 
          append bubtxt "\n*** [lindex $Lbl(IntervalParameters) $GDefs(Lang)] #[expr $id+1] ***\n"
-         append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](h) : $Sim(EmInter.$id)\n"
+         append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](s) : $Sim(EmInter.$id)\n"
          if { $Sim(EmIsEm.$id) } {
             if { !$Sim(EmIsAutoNP) || $id<$Sim(EmInterStart) } {
                append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmNumberParticles.$id)\n"
@@ -917,6 +918,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
 # Remarques  :
 #
 #----------------------------------------------------------------------------
+
 proc MLDPn::GraphZoom { Factor } {
    variable Sim
 
@@ -964,8 +966,8 @@ proc MLDPn::GraphUpdate { } {
       return
    }
 
-   set times      { 0.0 }
-   set totTime    0.0
+   set totTime    [expr $Sim(AccSecs)-$Sim(SimSecs)]
+   set times      $totTime
    set totNP      0
    set totMass    0
    set colors     {}
@@ -984,26 +986,13 @@ proc MLDPn::GraphUpdate { } {
       }
 
       #----- Time (X axis)
-      set totTime [expr $totTime + $Sim(EmInter.$i)*3600]
-      lappend times $totTime
+      set totTime [expr $totTime + $Sim(EmInter.$i)]
+      set totNP   [expr $totNP + $Sim(EmNumberParticles.$i)]
 
-      #----- Calculate total number of particles
-      if { $i < $Sim(EmInterStart) } {
-         if { $Sim(EmIsEm.$i) } {
-            lappend nplst $Sim(EmNumberParticles.$i)
-            set totNP [expr $totNP + $Sim(EmNumberParticles.$i)]
-         } else {
-            lappend nplst 0
-         }
-      } else {
-         if { $Sim(EmIsEm.$i) } {
-            lappend nplst [lindex $curnplst [expr $i-$Sim(EmInterStart)]]
-            set totNP [expr $totNP + [lindex $nplst end]]
-         } else {
-            lappend nplst 0
-         }
-      }
+      lappend times $totTime
+      lappend nplst $Sim(EmNumberParticles.$i)
    }
+puts stderr $nplst
 
    #----- Set grey intensity depending on particles repartition (more particules = closer to black)
    set idx 0
@@ -1032,7 +1021,7 @@ proc MLDPn::GraphUpdate { } {
       lappend times [set time [expr $Sim(RestartDelta) + $Sim(Duration)*3600]]
       vector append ES_SIMDURX [list 0.0 $Sim(RestartDelta) $time]
       vector append ES_SIMDURY [list [vector stats ES_INTERY -max] [vector stats ES_INTERY -max]]
-      set durcolors { #00B7FF #E6F8FF }
+      set durcolors { #00B7FF #D9F5FF }
    } else {
       lappend times [set time [expr $Sim(SimSecs) + $Sim(Duration)*3600 - $Sim(AccSecs)]]
       vector append ES_SIMDURX [list 0.0 $time]
@@ -1049,7 +1038,7 @@ proc MLDPn::GraphUpdate { } {
 
    #----- Update axis intervals and histogram bar's color
    graphaxis configure ES_AXISX -intervals $times -grid [lrange $times 0 end-1] -min 0.0 -max [lindex $times end] \
-      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n[clock format $Sim(AccSecs) -format "%Y-%m-%d $%H:%M" -gmt True]"
+      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n[clock format $Sim(SimSecs) -format "%Y-%m-%d %H:%M" -gmt True]"
    graphaxis configure ES_AXISY -intervals $heights -min 0.0 -max [lindex $heights end]
    graphitem configure ES_INTER  -colors $colors
    graphitem configure ES_SIMDUR -colors $durcolors
@@ -1140,7 +1129,7 @@ proc MLDPn::GetEmissionIntervalNumberList { } {
    variable Sim
 
    set lst {}
-   for {set i [expr $Sim(EmInterStart)+1]} {$i <= $Sim(EmNbIntervals)} {incr i} {
+   for { set i [expr $Sim(EmInterStart)+1] } { $i <= $Sim(EmNbIntervals) } { incr i } {
       lappend lst $i
    }
 

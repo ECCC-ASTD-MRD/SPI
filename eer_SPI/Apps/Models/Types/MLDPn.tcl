@@ -352,7 +352,7 @@ proc MLDPn::CreateModelInput { } {
       puts $file [format "%-21s= %s # Cumulative fraction \[0,1\] of number of particles within vertical emission plume column" SRC_COLUMN $distr]
 
       for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
-         set emti [expr $Sim(EmInter.$i)*3600]
+         set emti $Sim(EmInter.$i)
 
          if { $Sim(EmIsEm.$i) } {
             set height  $Sim(EmHeight.$i)
@@ -869,7 +869,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
                } else {
                   #----- Compute mass using Sparks et al. formula
                   set Tmp(EmDensity)      $Sim(EmDensity)
-                  set Tmp(EmInter.$i)     $Sim(EmInter.$i)
+                  set Tmp(EmInter.$i)     [expr $Sim(EmInter.$i)/$Sim(EmInterMode)]
                   set Tmp(EmIsEm.$i)      $Sim(EmIsEm.$i)
                   set Tmp(EmHeight.$i)    $Sim(EmHeight.$i)
                   set Tmp(EmMassMode.$i)  $Sim(EmMassMode.$i)
@@ -888,9 +888,9 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
             }
          }
       } else {
-         set Sim(EmNumberParticles.$i) $Sim(EmDefaultNumberParticles)
-         set Sim(EmHeight.$i)          $Sim(EmHeight)
-         set Sim(EmRadius.$i)          $Sim(EmRadius)
+         set Sim(EmNumberParticles.$i) 0
+         set Sim(EmHeight.$i)          0.0
+         set Sim(EmRadius.$i)          0.0
          switch $Type {
             "VOLCANO" {
                set Sim(EmMassMode.$i)  0
@@ -926,7 +926,7 @@ proc MLDPn::ScenarioEncode { Type { Separator "\n" } } {
    append scenario [join $Sim(EmIsoInfo) $Separator]$Separator
 
    #----- Write intervals' params
-   append scenario $Sim(EmNbIntervals)
+   append scenario $Sim(EmNbIntervals)$Separator
 
    for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
       append scenario $Sim(EmInter.$i)$Separator
@@ -981,16 +981,18 @@ proc MLDPn::ScenarioPad { } {
    #----- Caclulate length of emission scenario
    set dtemi 0
    for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
-      incr dtemi [expr $Sim(EmInter.$i)*3600]
+      incr dtemi $Sim(EmInter.$i)
    }
 
    #----- Pad remaining time with a lull interval
-   if { $Sim(RestartDelta)>$dtemi } {
-      set Sim(EmInter.$i)           [expr ($Sim(RestartDelta)-$dtemi)/3600]
+   set dt [expr $Sim(AccSecs)-$Sim(SimSecs)]
+
+   if { $Sim(RestartDelta)>[expr $dtemi+$dt] } {
+      set Sim(EmInter.$i)           [expr ($Sim(RestartDelta)-($dtemi+$dt))]
       set Sim(EmIsEm.$i)            0
-      set Sim(EmNumberParticles.$i) $Sim(EmDefaultNumberParticles)
-      set Sim(EmHeight.$i)          $Sim(EmHeight)
-      set Sim(EmRadius.$i)          $Sim(EmRadius)
+      set Sim(EmNumberParticles.$i) 0
+      set Sim(EmHeight.$i)          0.0
+      set Sim(EmRadius.$i)          0.0
 
       switch $Sim(SrcType) {
          "VOLCANO" {
@@ -1009,6 +1011,8 @@ proc MLDPn::ScenarioPad { } {
 
       incr Sim(EmNbIntervals)
    }
+
+   set Sim(ScenarioHasChanged) 0
 }
 
 #----------------------------------------------------------------------------
@@ -1224,15 +1228,16 @@ proc MLDPn::DistributeParcels { } {
          set Sim(EmNumberParticles.$i) [expr int($mass/$massp)]
          lappend nplst $Sim(EmNumberParticles.$i)
          set totnp [expr $totnp + [lindex $nplst end]]
-         set idx [expr $i - $Sim(EmInterStart)]
+         incr idx
       } else {
+         lappend nplst 0
          set Sim(EmNumberParticles.$i) 0
       }
       incr i
    }
 
    #----- Since values are rounded, this make sure we don't "forget" particles
-   if { $idx != -1 } {
+   if { $idx!=-1 } {
       incr i -1
       while { !$Sim(EmIsEm.$i) } {
          incr i -1
@@ -1240,7 +1245,6 @@ proc MLDPn::DistributeParcels { } {
       set Sim(EmNumberParticles.$i) [expr $Sim(EmNumberParticles.$i) + $Sim(EmNumberParticles) - $totnp]
       lset nplst $idx $Sim(EmNumberParticles.$i)
    }
-
    return $nplst
 }
 
@@ -1415,7 +1419,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(EmIsoSymbol)          ""                                  ; #----- List of isotopes.
    set Sim(EmIsoQuantity)        ""                                  ; #----- Total release quantity for each isotope.
    set Sim(EmRateMode)           0                                   ; #----- Mode of the release rate. 0 is "unit/h", 1 is "unit"
-   set Sim(EmInterMode)          0                                   ; #----- Mode of the interval duration. 0 is "(h)", 1 is "(s)"
+   set Sim(EmInterMode)          3600                                ; #----- Mode of the interval duration. (H or S)
    set Sim(RestartTrialDate)     0
    set Sim(BubbleId)             -1
    set Sim(BubbleShowingId)      -1
@@ -1527,10 +1531,9 @@ proc MLDPn::InitCont { Type } {
    set Sim(RestartNos)    [fstdfile info RSTFILE TYPVAR]
 
    for { set i 0 } { $i < [llength $Sim(RestartDeltas)] } { incr i } {
-      set t [expr [lindex $Sim(RestartDeltas) $i]-$Sim(AccSecs)]
+      set t [expr [lindex $Sim(RestartDeltas) $i]-$Sim(SimSecs)]
       lset Sim(RestartDeltas) $i $t
-
-      lappend Sim(Restarts) [set Sim(Restart) "Restart [lindex $Sim(RestartNos) $i] T+[expr $t/3600]"]
+      lappend Sim(Restarts) [set Sim(Restart) [format "Restart %s T+%02i:%02i" [lindex $Sim(RestartNos) $i] [expr $t/3600] [expr $t%60]]]
    }
    set Sim(RestartDelta)  [lindex $Sim(RestartDeltas) end]
 
@@ -1540,13 +1543,15 @@ proc MLDPn::InitCont { Type } {
       return
    }
 
-   MLDPn::ScenarioSelect
+
 
    #----- We can't distribute parcels automatically if user adds an interval
    set Sim(EmIsAutoNP) 0
 
    #----- Reconstruct from restart date to end date.
+   MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
    MLDPn::ScenarioPad
+   MLDPn::GraphUpdate
 }
 
 #----------------------------------------------------------------------------
@@ -1785,12 +1790,14 @@ proc MLDPn::ComputeMass { Id } {
    #----- Calculate the total released mass calculation
    #----- according to empirical formula of Sparks et al. (1997).
    if { [MLDPn::ValidateMassInputParams $Id] } {
+      set em [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)]
+
       if { $Tmp(EmMassMode.$Id) == 0 } {
          #----- Compute mass according to empirical formula of Sparks et al. (1997).
-         set Tmp(EmMass.$Id) [format "%.6e" [expr 0.1 * $Tmp(EmDensity) * $Tmp(EmInter.$Id) * 3600 * pow(double($Tmp(EmHeight.$Id)/1.670e+03),double(1.0/0.259))]]
+         set Tmp(EmMass.$Id) [format "%.6e" [expr 0.1 * $Tmp(EmDensity) * $em * pow(double($Tmp(EmHeight.$Id)/1.670e+03),double(1.0/0.259))]]
       } elseif { $Tmp(EmMassMode.$Id) == 1 } {
          #----- Compute mass according to empirical formula of Mastin et al. (2009).
-         set Tmp(EmMass.$Id) [format "%.6e" [expr 0.1 * $Tmp(EmDensity) * $Tmp(EmInter.$Id) * 3600 * pow(double($Tmp(EmHeight.$Id)/2.000e+03),double(1.0/0.241))]]
+         set Tmp(EmMass.$Id) [format "%.6e" [expr 0.1 * $Tmp(EmDensity) * $em * pow(double($Tmp(EmHeight.$Id)/2.000e+03),double(1.0/0.241))]]
       }
       set Tmp(EmMassOld) $Tmp(EmMass.$Id);
       return 1
@@ -1839,7 +1846,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
 
    #----- Save emission interval details
 
-   set Sim(EmInter.$Id)             $Tmp(EmInter.$Id)
+   set Sim(EmInter.$Id)             [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)]
    set Sim(EmIsEm.$Id)              $Tmp(EmIsEm.$Id)
    set Sim(EmNumberParticles.$Id)   $Tmp(EmNumberParticles.$Id)
    set Sim(EmHeight.$Id)            $Tmp(EmHeight.$Id)
@@ -1897,7 +1904,6 @@ proc MLDPn::EmissionIntervalEdit { Id } {
    set Tmp(EmNbIntervals)     $Sim(EmNbIntervals)
 
    #----- Save global parameters
-
    set Tmp(EmSizeDist)        $Sim(EmSizeDist)
    set Tmp(EmDensity)         $Sim(EmDensity)
    set Tmp(EmVerticalDist)    $Sim(EmVerticalDist)
@@ -1905,9 +1911,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
    set Tmp(EmNumberParticles) $Sim(EmNumberParticles)
 
    #----- Save emission interval details
-
-   set Tmp(EmInter.$Id)             $Sim(EmInter.$Id)
-   set Tmp(EmInterMode.$Id)         0
+   set Tmp(EmInter.$Id)             [expr $Sim(EmInter.$Id)/$Sim(EmInterMode)]
    set Tmp(EmIsEm.$Id)              $Sim(EmIsEm.$Id)
    set Tmp(EmNumberParticles.$Id)   $Sim(EmNumberParticles.$Id)
    set Tmp(EmHeight.$Id)            $Sim(EmHeight.$Id)
@@ -2018,24 +2022,28 @@ proc MLDPn::EmissionIntervalAdd { } {
    set Tmp(EmNbIntervals)  [expr $Sim(EmNbIntervals) + 1]
 
    #----- Init global parameters
-
    set Tmp(EmSizeDist)        $Sim(EmSizeDist)
    set Tmp(EmDensity)         $Sim(EmDensity)
    set Tmp(EmVerticalDist)    $Sim(EmVerticalDist)
    set Tmp(EmIsAutoNP)        $Sim(EmIsAutoNP)
    set Tmp(EmNumberParticles) $Sim(EmDefaultNumberParticles)
 
-   #----- Init emission interval details
+   #----- Find previous emission for default to new
+   for { set n [expr $id-1] } { $n >= 0 } { incr n -1 } {
+      if { $Sim(EmIsEm.$n) } {
+         break;
+      }
+   }
 
-   set Tmp(EmInterMode.$id) 0
-   if { $Sim(EmNbIntervals) > 0 } {
-      set Tmp(EmInter.$id)             $Sim(EmInter.0)
-      set Tmp(EmNumberParticles.$id)   $Sim(EmNumberParticles.0)
-      set Tmp(EmIsEm.$id)              1
-      set Tmp(EmHeight.$id)            $Sim(EmHeight.0)
-      set Tmp(EmRadius.$id)            $Sim(EmRadius.0)
+   #----- Init emission interval details
+   if { $n > 0 } {
+      set Tmp(EmInter.$id)             [expr $Sim(EmInter.$n)/$Sim(EmInterMode)]
+      set Tmp(EmNumberParticles.$id)   $Sim(EmNumberParticles.$n)
+      set Tmp(EmIsEm.$id)              $Sim(EmIsEm.$n)
+      set Tmp(EmHeight.$id)            $Sim(EmHeight.$n)
+      set Tmp(EmRadius.$id)            $Sim(EmRadius.$n)
    } else {
-      set Tmp(EmInter.$id)             1
+      set Tmp(EmInter.$id)             [expr 3600/$Sim(EmInterMode)]
       set Tmp(EmIsEm.$id)              1
       set Tmp(EmNumberParticles.$id)   $Sim(EmDefaultNumberParticles)
       set Tmp(EmHeight.$id)            $Sim(EmHeight)

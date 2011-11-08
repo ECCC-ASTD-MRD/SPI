@@ -36,7 +36,7 @@ proc MLDPn::ValidateMassInputParams { Id } {
    }
 
    #----- Validate emission duration
-   if { ![MLDPn::ValidateDuration $Tmp(EmInter.$Id) .emintdetails] } {
+   if { ![MLDPn::ValidateDuration [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)] .emintdetails] } {
       focus $Sim(EmissionIntervalFrame).duration.ent
       return 0
    }
@@ -84,11 +84,9 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
    #----- Validate emission interval parameters
 
    #----- Duration
-   if { ![MLDPn::ValidateDuration [expr $Tmp(EmInterMode.$Id)?$Tmp(EmInter.$Id)/60:$Tmp(EmInter.$Id)] .emintdetails] } {
+   if { ![MLDPn::ValidateDuration [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)] .emintdetails] } {
       focus $Sim(EmissionIntervalFrame).duration.ent
       return 0
-   } elseif { $Tmp(EmInterMode.$Id) } {
-      MLDPn::EmInterModeToggle $Sim(EmissionIntervalFrame).duration $Id
    }
    if { $Tmp(EmIsEm.$Id) } {
       #----- Number of particles
@@ -133,7 +131,6 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
                   set flag 1
                   #----- Convert from "unit" to "unit/h" if necessary
                   if { $Tmp(EmRateMode.$Id.$i) } {
-                     #set Tmp(EmRate.$Id.$i) [format "%.7g" [expr double($Tmp(EmRate.$Id.$i))/$Tmp(EmInter.$Id)]]
                      MLDPn::EmRateModeToggle $Sim(EmissionIsoFrame) $Id $i
                   }
                }
@@ -161,7 +158,6 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
             } else {
                #----- Convert from "unit" to "unit/h" if necessary
                if { $Tmp(EmRateMode.$Id) } {
-                  #set Tmp(EmRate.$Id) [format "%.7g" [expr double($Tmp(EmRate.$Id))/$Tmp(EmInter.$Id)]]
                   MLDPn::EmRateModeToggle $Sim(EmissionIntervalFrame).emdetails.rate $Id
                }
             }
@@ -566,27 +562,28 @@ proc MLDPn::ValidateDuration { Duration Parent } {
 
    #----- Verify if duration is positive.
    set number [string is double -strict -failindex idx $Duration]
+   set dur    [expr $Duration/3600.0]
 
    if { $number == 0 && $idx == -1 } {
-      Dialog::Error $Parent $Error(DurationOutRange) " $Duration [lindex $Error(UnitHours) $GDefs(Lang)]"
+      Dialog::Error $Parent $Error(DurationOutRange) " $dur [lindex $Error(UnitHours) $GDefs(Lang)]"
       return 0
-   } elseif { $number == 0 || ($number == 1 && $Duration <= 0 && $Duration != "") } {
-      Dialog::Error $Parent $Error(Duration) " $Duration $Error(UnitHours)"
+   } elseif { $number == 0 || ($number == 1 && $dur <= 0 && $dur != "") } {
+      Dialog::Error $Parent $Error(Duration) " $dur $Error(UnitHours)"
       return 0
    }
 
    #----- Compute  model time step [s].
-   set timestephour [expr $MLDPn::Sim(ModelTimeStepMin)/60.0]
+   set timestephour [expr $Sim(ModelTimeStepMin)/60.0]
 
    #----- Verify if duration is greater or equal to the model time step.
-   if { $Duration < $timestephour } {
-      Dialog::Error $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+   if { $dur < $timestephour } {
+      Dialog::Error $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
       return 0
    }
 
    #----- Verify if duration is an integer multiple of the model time step.
-   if { [expr fmod($Duration, $timestephour)] > $Sim(EmEpsilon) } {
-      Dialog::Error $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $Duration $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+   if { [expr fmod($dur, $timestephour)] > $Sim(EmEpsilon) } {
+      Dialog::Error $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
       return 0
    }
 
@@ -972,9 +969,6 @@ proc MLDPn::ValidateEmissionDuration { Id } {
    variable Warning
    variable Error
 
-   #----- Calculate real emission duration
-   set simdur [expr ($Sim(SimSecs)-$Sim(AccSecs))/3600.0 + $Sim(Duration)]
-
    #----- Calculate total and effective emission duration of previous intervals
    set totdur 0
    set effdur 0
@@ -985,17 +979,19 @@ proc MLDPn::ValidateEmissionDuration { Id } {
       }
    }
 
+   set em [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)]
+
    #----- Ajust with current modifications
    if { $Id < $Sim(EmNbIntervals) } { ;#----- Edition mode
-      set totdur [expr $totdur - $Sim(EmInter.$Id) + $Tmp(EmInter.$Id)]
-      set effdur [expr $effdur - ($Sim(EmIsEm.$Id)?$Sim(EmInter.$Id):0) + ($Tmp(EmIsEm.$Id)?$Tmp(EmInter.$Id):0)]
+      set totdur [expr $totdur - $Sim(EmInter.$Id) + $em]
+      set effdur [expr $effdur - ($Sim(EmIsEm.$Id)?$Sim(EmInter.$Id):0) + ($Tmp(EmIsEm.$Id)?$em:0)]
    } else { ;#----- Adding mode
-      set totdur [expr $totdur + $Tmp(EmInter.$Id)]
-      set effdur [expr $effdur + $Tmp(EmIsEm.$Id)?$Tmp(EmInter.$Id):0]
+      set totdur [expr $totdur + $em]
+      set effdur [expr $effdur + $Tmp(EmIsEm.$Id)?$em:0]
    }
 
-   set Tmp(EmEffectiveDuration)  [expr $effdur * 3600]
-   set Tmp(EmTotalDuration)      [expr $totdur * 3600]
+   set Tmp(EmEffectiveDuration) $effdur
+   set Tmp(EmTotalDuration)     $totdur
 }
 
 #----------------------------------------------------------------------------
@@ -1018,8 +1014,6 @@ proc MLDPn::ValidateScenarioDuration { } {
    variable Sim
 
    #----- Calculate real emission duration
-   set simdur [expr ($Sim(SimSecs)-$Sim(AccSecs))/3600.0 + $Sim(Duration)]
-
    set totdur 0
    set effdur 0
    for { set i 0 } { $i < $Sim(EmNbIntervals) } { incr i } {
@@ -1030,8 +1024,9 @@ proc MLDPn::ValidateScenarioDuration { } {
       }
    }
 
-   set Sim(EmEffectiveDuration)  [expr $effdur * 3600]
-   set Sim(EmTotalDuration)      [expr $totdur * 3600]
+   set Sim(EmEffectiveDuration)  $effdur
+   set Sim(EmTotalDuration)      $totdur
+
    return 1
 }
 
