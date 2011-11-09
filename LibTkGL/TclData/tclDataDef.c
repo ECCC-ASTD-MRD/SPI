@@ -201,10 +201,8 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          if (def->Container) {
             def->Data[i]=Def->Data[i];
          } else {
-            if (Def->Data[i] && (def->Data[i]=(char*)malloc((unsigned long)Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]))) {
-//               def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,Def->Type>=6?TData_Size[Def->Type]:TData_Size[6]);
-//            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,sizeof(float));
-               memcpy(def->Data[i],Def->Data[i],Def->NI*Def->NJ*Def->NK*TData_Size[Def->Type]);
+            if (Def->Data[i] && (def->Data[i]=(char*)malloc(FSIZE3D(Def)*TData_Size[Def->Type]))) {
+               memcpy(def->Data[i],Def->Data[i],FSIZE3D(Def)*TData_Size[Def->Type]);
             } else {
                def->Data[i]=NULL;
             }
@@ -245,7 +243,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
-            def->Data[i]=(char*)calloc(Def->NI*Def->NJ*Def->NK,TData_Size[def->Type]);
+            def->Data[i]=(char*)calloc(FSIZE3D(Def),TData_Size[def->Type]);
          } else {
             def->Data[i]=NULL;
          }
@@ -358,7 +356,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Pick=def->Poly=NULL;
 
    for(i=0;i<Dim;i++) {
-      if (!(def->Data[i]=(char*)calloc(NI*NJ*NK,TData_Size[Type]))) {
+      if (!(def->Data[i]=(char*)calloc(FSIZE3D(def),TData_Size[Type]))) {
          DataDef_Free(def);
          return(NULL);
       }
@@ -420,7 +418,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
 
       for(i=0;i<4;i++) {
          if (Def->Data[i]) {
-            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],(unsigned long)NI*NJ*NK*TData_Size[Def->Type]))) {
+            if (!(Def->Data[i]=(char*)realloc(Def->Data[i],FSIZE3D(Def)*TData_Size[Def->Type]))) {
                DataDef_Free(Def);
                return(NULL);
             }

@@ -1145,8 +1145,8 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 
    double        val,vx,di[4],dj[4],*fld,di0,di1,dj0,dj1;
    int          *acc=NULL;
-   unsigned long idxt,idxk,idxj;
-   unsigned int  n2,ndi,ndj,nij,nijk,k,t,s,n,x,x0,x1,y,y0,y1,dx,dy;
+   unsigned long idxt,idxk,idxj,n,nijk,nij;
+   unsigned int  n2,ndi,ndj,k,t,s,x,x0,x1,y,y0,y1,dx,dy;
    extern TGeoScan GScan;
 
    acc=ToDef->Accum;

@@ -300,10 +300,11 @@ int FSTD_FieldReadMesh(TData *Field) {
 Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
-   Coord      coord;
-   int        i,j,k,idx;
-   double     z;
-   float     *gz=NULL;
+   Coord         coord;
+   int           i,j,k;
+   unsigned long idx;
+   double        z;
+   float        *gz=NULL;
 
    if (!FSTD_FieldReadMesh(Field)) {
       fprintf(stderr,"(Warning) FSTD_FieldGetMesh: Could not find grid definition components");
@@ -796,7 +797,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    for(i=0;i<3;i++) {
       if (FieldFrom->Def->Data[i]) {
          if (!FieldTo->Def->Data[i]) {
-            FieldTo->Def->Data[i]=(char*)calloc(FieldTo->Def->NI*FieldTo->Def->NJ*FieldTo->Def->NK,TData_Size[FieldTo->Def->Type]);
+            FieldTo->Def->Data[i]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
             if (!FieldTo->Def->Data[i]) {
                Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Not enough memory to allocate field",(char*)NULL);
                Tcl_MutexUnlock(&MUTEX_FSTDVI);
@@ -2433,12 +2434,13 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 */
 int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress){
 
-   FSTD_File   *file;
-   FSTD_Head   *head=(FSTD_Head*)Field->Head;
-   TFSTDVector *uvw;
-   int          ok=-1,k,idx,ip1,datyp;
-   char         nv[5];
-   void        *p;
+   FSTD_File    *file;
+   FSTD_Head    *head=(FSTD_Head*)Field->Head;
+   TFSTDVector  *uvw;
+   int          ok=-1,ip1,datyp;
+   unsigned long k,idx;
+   char          nv[5];
+   void         *p;
 
 #ifdef LNK_FSTD
    /*Verifier l'existence du champs*/
