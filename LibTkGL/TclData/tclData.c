@@ -1195,12 +1195,13 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 */
 int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 
-   Tcl_Obj   *obj;
-   TDataDef **def;
-   TData     *fld;
-   TObs      *obs;
-   int        i=0,n,nobj;
-   double    *v;
+   Tcl_Obj      *obj;
+   TDataDef    **def;
+   TData        *fld;
+   TObs         *obs;
+   int           n,nobj;
+   unsigned long i=0;
+   double       *v;
 
    if (!List) {
       Tcl_AppendResult(Interp,"\n   DataDef_Sort: Empty list",(char*)NULL);
@@ -1901,7 +1902,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   } else {
                      for(n=0;n<Field->Def->NC;n++) {
                         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+                          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                         } else {
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
                         }
@@ -2574,7 +2575,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
 int Data_ValSet(TData *Field,float I,float J,float Val) {
 
    float dx0,dx1,dy0,dy1;
-   int x0,y0,idx;
+   unsigned long x0,y0,idx;
 
    if (I<0 || I>Field->Def->NI-1 || J<0 || J>Field->Def->NJ-1)
       return 0;

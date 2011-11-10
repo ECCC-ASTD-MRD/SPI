@@ -1672,7 +1672,7 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData
      return(NULL);
 
    FSTD_FieldSet(field);
-
+   field->Ref=GeoRef_RPNSetup(NI,NJ,NK,LVL_UNDEF,NULL,"X",0,0,0,0,-1);
    ((FSTD_Head*)field->Head)->DATYP=datyp;
    ((FSTD_Head*)field->Head)->NBITS=nbit;
 
