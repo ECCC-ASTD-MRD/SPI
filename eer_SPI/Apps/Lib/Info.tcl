@@ -51,7 +51,7 @@ namespace eval Info {
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
                         SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Scenario }
 
@@ -67,6 +67,7 @@ namespace eval Info {
 
    set Lbl(AccSecs)              { "Date de l'accident" "Accident date" }
    set Lbl(SimSecs)              { "Date de simulation" "Simulation date" }
+   set Lbl(Sim0Secs)             { "Date de simulation initiale" "Initial simulation date" }
    set Lbl(Click)                { "Date de lancement" "Launch date" }
    set Lbl(Blame)                { "Lancé par" "Launch by" }
 
@@ -392,11 +393,13 @@ proc Info::Format { Info } {
       set lbl $tok
       catch { set lbl [lindex $Lbl($tok) $GDefs(Lang)] }
 
-      if { $tok=="Click" || $tok=="SimSecs" ||  $tok=="AccSecs" } {
+      if { $tok=="Click"|| $tok=="Sim0Secs"  || $tok=="SimSecs" ||  $tok=="AccSecs" } {
          set val [clock format $val]
       }
 
-      set text "$text[format "%-${l}s" $lbl] = $val\n"
+      if { $tok!="Scenario" } {
+         set text "$text[format "%-${l}s" $lbl] = $val\n"
+      }
    }
    return $text
 }

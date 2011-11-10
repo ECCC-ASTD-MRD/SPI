@@ -820,7 +820,7 @@ proc MetData::GridDefinePS { Scale NI NJ Lat Lon { Field "" } } {
       fstdfield define $Field -GRTYP $grtyp $xg1 $xg2 $xg3 $xg4
    }
 
-   return "$grtyp $NI $NJ $xg1 $xg2 $xg3 $xg4"
+   return [format "grtyp $NI $NJ %.7f %.7f %.7f %.7f" $xg1 $xg2 $xg3 $xg4]
 }
 
 #-------------------------------------------------------------------------------
