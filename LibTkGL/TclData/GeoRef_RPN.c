@@ -34,7 +34,7 @@
 
 void     GeoRef_Expand(TGeoRef *Ref);
 double   GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
-int      GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
+int      GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 int      GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
@@ -93,7 +93,7 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
    j[1]=Y1+1.0;
 
    EZLock_RPNInt();
-   c_gdllfxy(Ref->Id,&lat,&lon,&i,&j,2);
+   c_gdllfxy(Ref->Id,lat,lon,i,j,2);
    EZUnLock_RPNInt();
 
    X0=DEG2RAD(lon[0]);
@@ -127,10 +127,10 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
+int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
    Vect3d   b,v;
-   float    x,y;
+   float    x,y,valf,valdf;
    void     *p0,*p1;
    int      valid=0,mem,ix,iy,n;
 
@@ -189,7 +189,9 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
             EZLock_RPNInt();
-            c_gdxywdval(Ref->Id,Length,ThetaXY,p0,p1,&x,&y,1);
+            c_gdxywdval(Ref->Id,&valf,&valdf,p0,p1,&x,&y,1);
+            *Length=valf;
+            *ThetaXY=valdf;
             EZUnLock_RPNInt();
          }
       } else {
@@ -210,7 +212,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             if (Ref && Ref->Id>-1) {
                Def_Pointer(Def,C,mem,p0);
                EZLock_RPNInt();
-               c_gdxysval(Ref->Id,Length,p0,&x,&y,1);
+               c_gdxysval(Ref->Id,&valf,p0,&x,&y,1);
+               *Length=valf;
                EZUnLock_RPNInt();
             } else {
                *Length=VertexVal(Ref,Def,C,X,Y,Z);

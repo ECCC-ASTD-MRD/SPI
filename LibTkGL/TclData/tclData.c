@@ -963,7 +963,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
 */
 int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
 
-   float    val,dir;
+   double   val,dir;
    int      x,y,x0,y0,x1,y1,idx,ex,dy;
    TGeoScan scan;
 
@@ -1441,8 +1441,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    int       n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int       nb,len,nobj;
    unsigned long npt;
-   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dval,dl,dv,tmpd,min,max;
-   float     val,val1,*levels;
+   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,val,val1,dl,dv,tmpd,min,max;
+   float     *levels;
    char      buf[32],mode='L';
 
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
@@ -1854,8 +1854,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
                            if (Field->Def->NC==1) {
-                              Def_GetMod(Field->Def,FIDX3D(Field->Def,ni,nj,Field->Def->Level),dval);
-                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                              Def_GetMod(Field->Def,FIDX3D(Field->Def,ni,nj,Field->Def->Level),val);
+                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                            } else if (Field->Def->NC==2) {
                               sub=Tcl_NewListObj(0,NULL);
                               Field->Ref->Value(Field->Ref,Field->Def,'N',0,ni,nj,Field->Def->Level,&val,&val1);
@@ -1872,7 +1872,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                            }
                          }
                      } else {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,dval)));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                      }
                      if (!(--npt)) break;
                   }
@@ -1885,8 +1885,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
 
                if (Objc==4) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
-                  Data_ValSet(Field,dx,dy,dval);
+                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+                  Data_ValSet(Field,dx,dy,val);
                } else {
 #ifdef LNK_FSTD
                   c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
@@ -1902,7 +1902,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   } else {
                      for(n=0;n<Field->Def->NC;n++) {
                         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
-                          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                         } else {
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
                         }
@@ -1924,8 +1924,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,1,1);
 
             if (Objc==4) {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
-               Data_ValSet(Field,dx,dy,dval);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+               Data_ValSet(Field,dx,dy,val);
             } else {
 #ifdef LNK_FSTD
                c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
@@ -1955,15 +1955,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
             Tcl_GetIntFromObj(Interp,Objv[++i],&len);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
                vbuf=GDB_VBufferAlloc(len*2+1);
 
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_GRID,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,dval,dv,dl,REF_GRID,0);
+               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
+               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
@@ -1996,15 +1996,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
             Tcl_GetIntFromObj(Interp,Objv[++i],&len);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
                vbuf=GDB_VBufferAlloc(len*2+1);
 
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-dval,dv,dl,REF_COOR,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,dval,dv,dl,REF_COOR,0);
+               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
+               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
@@ -2572,7 +2572,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
  *
  *----------------------------------------------------------------------------
 */
-int Data_ValSet(TData *Field,float I,float J,float Val) {
+int Data_ValSet(TData *Field,double I,double J,double Val) {
 
    float dx0,dx1,dy0,dy1;
    unsigned long x0,y0,idx;

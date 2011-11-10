@@ -122,7 +122,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
-   double       x0,y0,x1,y1;
+   double       x0,y0,x1,y1,v;
 
    if (!Scan || !ToRef || !FromRef) {
       return(0);
@@ -222,7 +222,8 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
 
             if (ToDef) {
-               ToRef->Value(ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&Scan->D[x],NULL);
+               ToRef->Value(ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+               Scan->D[x]=v;
             } else {
                /*If we're outside, set to nodata*/
                if (ToDef)

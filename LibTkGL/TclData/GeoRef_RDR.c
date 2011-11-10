@@ -34,7 +34,7 @@
 
 double   GeoRef_RDRHeight(TGeoRef *Ref,double Azimuth,double Bin,double Sweep);
 double   GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1);
-int      GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,float *Length,float *ThetaXY);
+int      GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY);
 int      GeoRef_RDRProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_RDRUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 
@@ -112,7 +112,7 @@ double GeoRef_RDRDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,float *Length,float *ThetaXY){
+int GeoRef_RDRValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double Azimuth,double Bin,double Sweep,double *Length,double *ThetaXY){
 
    int      valid=0,mem,ix,iy;
 

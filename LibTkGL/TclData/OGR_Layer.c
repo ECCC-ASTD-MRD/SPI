@@ -1756,8 +1756,7 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
    int      i,j,k,n,idx=0,df,f,nf;
-   double   lat,lon,x,y;
-   float    spd,dir;
+   double   lat,lon,x,y,spd,dir;
    char     buf[64],*mask=NULL;
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
    TList    *list;
@@ -1987,7 +1986,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    int           i,j,n=0,p=0,pt,len=-1,rw;
    unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
-   float         val0f,val1f;
    char          buf[64];
    OGRGeometryH  cell,ring,inter,geom;
    OGREnvelope   env0,*env1=NULL;
@@ -2154,8 +2152,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
                      Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
                      FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
-                     FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0f,&val1f);
-                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0f);
+                     FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
+                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                      r=0.0;
                      rw++;
                   } else {

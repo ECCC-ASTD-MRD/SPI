@@ -9,7 +9,7 @@ YACC = bison
 # Target architecture
 
 ARCH      = IRIX64
-LIB_VER   = 7.5.0
+LIB_VER   = 7.5.1
 TCLTK_VER = 8.5.7
 TCLTK_BASE= 8.5
 

@@ -694,8 +694,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
 int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
 
    int    i;
-   double x,y;
-   float  tmp,val;
+   double x,y,tmp,val;
 
    if (!Obs) {
       Tcl_AppendResult(Interp,"\n   Obs_Extract: Invalid observation",(char*)NULL);

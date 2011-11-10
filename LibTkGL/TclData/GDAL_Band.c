@@ -1365,7 +1365,8 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 
    double incri,incrj,posX,posY,dfy;
    int    i,j,x,y,nidx,cidx,idx,z,lvl=0;
-   float  dir,val,*levels=NULL;
+   float  *levels=NULL;
+   double dir,val;
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImportV: Invalid band",(char*)NULL);
@@ -1430,7 +1431,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
             val=Field->Def->NoData;
          }
 
-         if (val!=(float)Field->Def->NoData) {
+         if (val!=Field->Def->NoData) {
             VAL2COL(cidx,Field->Spec,val);
          } else {
             val=0.0;

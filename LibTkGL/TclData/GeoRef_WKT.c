@@ -33,7 +33,7 @@
 
 #include "tclData.h"
 
-int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY);
+int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 int      GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
 void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
@@ -109,7 +109,7 @@ double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,float *Length,float *ThetaXY){
+int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
    double  x,y;
    int     valid=0,mem,ix,iy;
