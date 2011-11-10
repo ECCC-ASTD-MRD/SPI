@@ -89,7 +89,7 @@ proc MLDPn::Launch { } {
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "ACCIDENT" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set metdate [clock format $sim(MetSecs) -format "%Y%m%d%H" -gmt True]
+      set metdate [clock format $Sim(MetSecs) -format "%Y%m%d%H" -gmt True]
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $metdate $metdate $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
@@ -488,12 +488,12 @@ proc MLDPn::GetMetData { } {
 
    #----- Get available meteorological files.
    if { $Sim(Restart)!="" } {
-      set Sim(RunStamp) [fstdstamp fromseconds [expr $Sim(RestartDelta)+$Sim(AccSecs)]]
+      set Sim(RunStamp) [fstdstamp fromseconds [expr $Sim(RestartDelta)+$Sim(Sim0Secs)]]
    } else {
       set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSecs)]
    }
-   set Sim(Data)     [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
-   set Sim(Mode)     [MetData::GetMode $Sim(Data)]
+   set Sim(Data)  [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
+   set Sim(Mode)  [MetData::GetMode $Sim(Data)]
 
    Dialog::WaitDestroy
 
@@ -510,8 +510,11 @@ proc MLDPn::GetMetData { } {
    }
 
    #----- Extract relevant met files according to available meteorological data files and simulation duration.
-   if { [set ok [Model::ParamsMetData MLDPn]] && $Sim(Restart)=="" } {
+   if { [set ok [Model::ParamsMetData MLDPn]] } {
       set Sim(SimSecs) $Sim(MetSecs)
+      if { $Sim(Restart)=="" } {
+         set Sim(Sim0Secs) $Sim(MetSecs)
+      }
    }
    return $ok
 }
@@ -883,7 +886,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
             }
             "ACCIDENT" {
                for { set j 0 } { $j<$Sim(EmNbIso) } { incr j } {
-                  set $f Sim(EmRate.$i.$j) [lindex $Scenario [incr ln]]
+                  set Sim(EmRate.$i.$j) [lindex $Scenario [incr ln]]
                }
             }
          }
@@ -985,7 +988,7 @@ proc MLDPn::ScenarioPad { } {
    }
 
    #----- Pad remaining time with a lull interval
-   set dt [expr $Sim(AccSecs)-$Sim(SimSecs)]
+   set dt [expr $Sim(AccSecs)-$Sim(Sim0Secs)]
 
    if { $Sim(RestartDelta)>[expr $dtemi+$dt] } {
       set Sim(EmInter.$i)           [expr ($Sim(RestartDelta)-($dtemi+$dt))]
@@ -1075,7 +1078,7 @@ proc MLDPn::File { Info Path Type Back } {
       Info::Decode ::MLDPn::Tmp $Info
 
       set simpath $Path/[Info::Path $Info]
-      set simdate [clock format $Tmp(SimSecs) -format "%Y%m%d%H" -gmt True]
+      set simdate [clock format $Tmp(Sim0Secs) -format "%Y%m%d%H" -gmt True]
 
       set results    [glob $simpath/results/${simdate}_???]                     ;#----- Particle positions result output file.
       set restart    [glob $simpath/results/${simdate}_???.rst]                     ;#----- Particle positions result output file.
@@ -1481,6 +1484,7 @@ proc MLDPn::InitCont { Type } {
 
    #----- Initialize variables needed to the graphical interface
 
+   set Sim(NoPrev)                  $Sim(NoSim)
    set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)
    set Sim(ListOutCV)               $Sim(OutCV)
@@ -1510,15 +1514,12 @@ proc MLDPn::InitCont { Type } {
          }
       }
    }
-   set Sim(ScenarioHasChanged) 0
-   set Sim(NoPrev)            $Sim(NoSim)
-   set Sim(EmInterStart)      $Sim(EmNbIntervals)
 
    #----- Restart stuff
    set pathbase $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)
    set pathprev $Sim(Model).$Sim(NoSim).[clock format $Sim(AccSecs) -format "%Y%m%d.%H%M" -gmt True]
 
-   set Sim(RestartFile)  $pathbase/$pathprev/results/[clock format $Sim(SimSecs) -format "%Y%m%d%H_000.rst" -gmt True]
+   set Sim(RestartFile)  $pathbase/$pathprev/results/[clock format $Sim(Sim0Secs) -format "%Y%m%d%H_000.rst" -gmt True]
 
    #----- Get restart valid date from restart file
    if { [catch { fstdfile open RSTFILE read $Sim(RestartFile) }] } {
@@ -1531,7 +1532,7 @@ proc MLDPn::InitCont { Type } {
    set Sim(RestartNos)    [fstdfile info RSTFILE TYPVAR]
 
    for { set i 0 } { $i < [llength $Sim(RestartDeltas)] } { incr i } {
-      set t [expr [lindex $Sim(RestartDeltas) $i]-$Sim(SimSecs)]
+      set t [expr [lindex $Sim(RestartDeltas) $i]-$Sim(Sim0Secs)]
       lset Sim(RestartDeltas) $i $t
       lappend Sim(Restarts) [set Sim(Restart) [format "Restart %s T+%02i:%02i" [lindex $Sim(RestartNos) $i] [expr $t/3600] [expr $t%60]]]
    }
@@ -1543,14 +1544,15 @@ proc MLDPn::InitCont { Type } {
       return
    }
 
-
-
-   #----- We can't distribute parcels automatically if user adds an interval
-   set Sim(EmIsAutoNP) 0
-
    #----- Reconstruct from restart date to end date.
    MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
    MLDPn::ScenarioPad
+
+   #----- We can't distribute parcels automatically if user adds an interval
+   set Sim(EmIsAutoNP)   0
+   set Sim(EmInterStart) $Sim(EmNbIntervals)
+   set Sim(ScenarioHasChanged) 0
+
    MLDPn::GraphUpdate
 }
 

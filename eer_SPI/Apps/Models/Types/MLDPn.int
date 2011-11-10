@@ -477,7 +477,7 @@ proc MLDPn::EmInterModeToggle { Base Id } {
 #
 #----------------------------------------------------------------------------
 
-proc MLDPn::EmRateModeToggle { Base Id {Idx ""} } {
+proc MLDPn::EmRateModeToggle { Base Id { Idx "" } } {
    global GDefs
    variable Tmp
    variable Lbl
@@ -626,18 +626,20 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
       pack $base.vertical -side top -anchor w -padx 2 -fill x
       Bubble::Create $base.vertical $Bubble(EmVerticalDist)
 
-      #----- Automatic distribution of particules
-      checkbutton $base.isautonp -anchor w -text "[lindex $Lbl(EmIsAutoNP) $GDefs(Lang)]" -variable MLDPn::Tmp(EmIsAutoNP) -indicatoron True \
-         -command "if { \$MLDPn::Tmp(EmIsAutoNP) } {
-                      pack $base.nbpart -after $base.isautonp -side top -anchor w -padx 2 -fill x
-                      Bubble::Create $base.nbpart \{ $MLDPn::Bubble(EmNumberParticles)] \}
-                      .emintdetails.frm.emint.emdetails.nbpart.ent configure -state disabled
-                   } else {
-                      pack forget $base.nbpart
-                      .emintdetails.frm.emint.emdetails.nbpart.ent configure -state normal
-                   }"
-      pack $base.isautonp -side top -anchor w -padx 2
-      Bubble::Create $base.isautonp $Bubble(EmIsAutoNP)
+      if { $Sim(Restart)=="" } {
+         #----- Automatic distribution of particules
+         checkbutton $base.isautonp -anchor w -text "[lindex $Lbl(EmIsAutoNP) $GDefs(Lang)]" -variable MLDPn::Tmp(EmIsAutoNP) -indicatoron True \
+            -command "if { \$MLDPn::Tmp(EmIsAutoNP) } {
+                        pack $base.nbpart -after $base.isautonp -side top -anchor w -padx 2 -fill x
+                        Bubble::Create $base.nbpart \{ $MLDPn::Bubble(EmNumberParticles)] \}
+                        .emintdetails.frm.emint.emdetails.nbpart.ent configure -state disabled
+                     } else {
+                        pack forget $base.nbpart
+                        .emintdetails.frm.emint.emdetails.nbpart.ent configure -state normal
+                     }"
+         pack $base.isautonp -side top -anchor w -padx 2
+         Bubble::Create $base.isautonp $Bubble(EmIsAutoNP)
+      }
 
       #----- Global number of particles to be distributed amongst emission intervals
       frame $base.nbpart
@@ -781,7 +783,13 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
 
    #----- Disable some options if it is a restart
    if { $Sim(Restart)!="" } {
-      MLDPn::EmissionDetailsRestart
+      if { $Sim(SrcType) == "ACCIDENT" } {
+         for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
+            $base.iso.$j.del configure -state disabled
+            $base.iso.$j.btn configure -state disabled
+         }
+         $base.iso.button.add configure -state disabled
+      }
    }
 
    update idletasks
@@ -824,11 +832,12 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
    }
 
    #----- Search id of the item under the cursor
-   set time 0
+   set dt   [expr $Sim(AccSecs)-$Sim(Sim0Secs)]
+   set time $dt
    set id 0
    while { $id < $Sim(EmNbIntervals) } {
       set time [expr $time + $Sim(EmInter.$id)]
-      if { $x <= $time } {
+      if { $x>$dt && $x <= $time } {
          break
       }
       incr id
@@ -870,7 +879,11 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
          }
 
          append bubtxt "\n*** [lindex $Lbl(IntervalParameters) $GDefs(Lang)] #[expr $id+1] ***\n"
-         append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](s) : $Sim(EmInter.$id)\n"
+         if { $Sim(EmInterMode)==3600 } {
+            append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](h) : [expr $Sim(EmInter.$id)/$Sim(EmInterMode)]\n"
+         } else {
+            append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](s) : $Sim(EmInter.$id)]\n"
+         }
          if { $Sim(EmIsEm.$id) } {
             if { !$Sim(EmIsAutoNP) || $id<$Sim(EmInterStart) } {
                append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmNumberParticles.$id)\n"
@@ -966,7 +979,7 @@ proc MLDPn::GraphUpdate { } {
       return
    }
 
-   set totTime    [expr $Sim(AccSecs)-$Sim(SimSecs)]
+   set totTime    [expr $Sim(AccSecs)-$Sim(Sim0Secs)]
    set times      $totTime
    set totNP      0
    set totMass    0
@@ -992,7 +1005,6 @@ proc MLDPn::GraphUpdate { } {
       lappend times $totTime
       lappend nplst $Sim(EmNumberParticles.$i)
    }
-puts stderr $nplst
 
    #----- Set grey intensity depending on particles repartition (more particules = closer to black)
    set idx 0
@@ -1023,7 +1035,7 @@ puts stderr $nplst
       vector append ES_SIMDURY [list [vector stats ES_INTERY -max] [vector stats ES_INTERY -max]]
       set durcolors { #00B7FF #D9F5FF }
    } else {
-      lappend times [set time [expr $Sim(SimSecs) + $Sim(Duration)*3600 - $Sim(AccSecs)]]
+      lappend times [set time [expr $Sim(Sim0Secs) + $Sim(Duration)*3600 - $Sim(AccSecs)]]
       vector append ES_SIMDURX [list 0.0 $time]
       vector append ES_SIMDURY [vector stats ES_INTERY -max]
       set durcolors {}
@@ -1038,7 +1050,7 @@ puts stderr $nplst
 
    #----- Update axis intervals and histogram bar's color
    graphaxis configure ES_AXISX -intervals $times -grid [lrange $times 0 end-1] -min 0.0 -max [lindex $times end] \
-      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n[clock format $Sim(SimSecs) -format "%Y-%m-%d %H:%M" -gmt True]"
+      -unit "[lindex $Lbl(AxisX) $GDefs(Lang)]\n[clock format $Sim(Sim0Secs) -format "%Y-%m-%d %H:%M" -gmt True]"
    graphaxis configure ES_AXISY -intervals $heights -min 0.0 -max [lindex $heights end]
    graphitem configure ES_INTER  -colors $colors
    graphitem configure ES_SIMDUR -colors $durcolors
@@ -1293,34 +1305,4 @@ proc MLDPn::PopUp { X Y } {
    }
 
    tk_popup .mldpnpopup $X $Y 0
-}
-
-#----------------------------------------------------------------------------
-# Nom        : <MLDPn::EmissionDetailsRestart>
-# Creation   : Aout 2010 - E. Legault-Ouellet - CMC/CMOE
-#
-# But        : Adapte l'interface graphique EmissionDetails aux besoins du
-#              restart.
-#
-# Parametres :
-#
-# Retour     :
-#
-# Remarques  :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::EmissionDetailsRestart { } {
-   variable Sim
-   set base .emintdetails.frm
-
-   #----- Disable isotopes modifications
-
-   if { $Sim(SrcType) == "ACCIDENT" } {
-      for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
-         $base.iso.$j.del configure -state disabled
-         $base.iso.$j.btn configure -state disabled
-      }
-      $base.iso.button.add configure -state disabled
-   }
 }

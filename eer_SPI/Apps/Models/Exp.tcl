@@ -560,6 +560,7 @@ proc Exp::PoolFormat { Model Info } {
          set dur [Info::Strip $Info DurMin]
          set unit Min
       }
+      set dt    ""
       set no    "[Info::Strip $Info NoSim]"
       set model "[Info::Strip $Info Meteo][Info::Strip $Info Delta][Info::Strip $Info Mode]"
       set date  "[Info::Strip $Info AccYear]-[Info::Strip $Info AccMonth]-[Info::Strip $Info AccDay] [Info::Strip $Info AccHour]:[Info::Strip $Info AccMin]"
@@ -567,7 +568,14 @@ proc Exp::PoolFormat { Model Info } {
       #----- Use click date if available
       catch { set date  [clock format [Info::Strip $Info Click] -format "%Y-%m-%d %H:%M" -gmt True] }
 
-      return "$dur $unit $model $date ($no)"
+      #----- Set from to hours if available
+      catch { set t0 [expr [Info::Strip $Info SimSecs]-[Info::Strip $Info Sim0Secs]]
+              set t1 [expr $t0+$dur*3600]
+              set dur [format "%02i-%02i" [expr $t0/3600] [expr $t1/3600]]
+       }
+
+
+      return "$dur $unit$dt $model $date ($no)"
    }
 }
 

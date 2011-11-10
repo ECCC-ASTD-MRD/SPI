@@ -913,11 +913,12 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    upvar ${modelbase}::Sim sim
 
    #----- Initialize release date-time.
-   set sim(AccSecs) [clock scan [clock format [clock seconds] -format "%Y%m%d %H:%M" -gmt True]]
-   set sim(SimSecs) $sim(AccSecs)
-   set sim(Secs)    [clock scan [clock format $sim(AccSecs) -format "%Y%m%d 00:00" -gmt True]]
-   set sim(Hour)    [clock format $sim(AccSecs) -format "%H" -gmt True]
-   set sim(Min)     [clock format $sim(AccSecs) -format "%M" -gmt True]
+   set sim(AccSecs)  [clock scan [clock format [clock seconds] -format "%Y%m%d %H:%M" -gmt True]]
+   set sim(SimSecs)  $sim(AccSecs)
+   set sim(Sim0Secs) $sim(AccSecs)
+   set sim(Secs)     [clock scan [clock format $sim(AccSecs) -format "%Y%m%d 00:00" -gmt True]]
+   set sim(Hour)     [clock format $sim(AccSecs) -format "%H" -gmt True]
+   set sim(Min)      [clock format $sim(AccSecs) -format "%M" -gmt True]
 
    set sim(Model)     $Model
    set sim(State)     1
@@ -1473,9 +1474,8 @@ proc Model::ParamsMeteoInput { Model } {
 
    #----- Create ASCII file containing grid parameters.
    if { [llength $sim(Grid)]>5 } {
-      exec echo [format "%.0f,%.0f,%.7f,%.7f,%.7f,%.7f,%s" \
-         [lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
-         [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]] > $sim(Path)/tmp/griddef.in
+      exec echo "[lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
+         [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]]" > $sim(Path)/tmp/griddef.in
    }
 }
 
