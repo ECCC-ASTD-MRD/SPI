@@ -127,7 +127,7 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
+int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
    Vect3d   b,v;
    float    x,y,valf,valdf;

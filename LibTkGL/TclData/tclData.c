@@ -745,7 +745,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1);
 
             /*Vectorial data needs to be referenced along the cut so calculate angle*/
-            if (cut->Def->Data[1]) {
+            if (cut->Def->Data[1] && NbC>1) {
                if (i0==-1.0) {
                   Field[f]->Ref->UnProject(Field[f]->Ref,&i0,&j0,Lat[n+1],Lon[n+1],0,1);
                   theta=atan2(j0-j,i0-i);
@@ -771,11 +771,14 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   cut->Ref->Hgt[idx]=ZRef_K2Pressure(&Field[f]->Ref->ZRef,p0,k);
                }
 
-               /*If it is vectors, reproject along xsection axis*/
-               if (cut->Def->Data[1]) {
+               /*If it is vectors, */
+               if (cut->Def->Data[1] && NbC>1) {
+
                   vi=VertexVal(Field[f]->Ref,Field[f]->Def,0,i,j,k);
                   vj=VertexVal(Field[f]->Ref,Field[f]->Def,1,i,j,k);
                   vij=hypot(vi,vj);
+
+                  /*If it is an xsection, reproject along xsection axis*/
                   zeta=atan2(vj,vi)-theta;
 
                   Def_Set(cut->Def,0,idx,vij*cos(zeta));
@@ -790,8 +793,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
 #endif
                } else {
-                  vij=VertexVal(Field[f]->Ref,Field[f]->Def,-1,i,j,k);
-                  Def_Set(cut->Def,0,idx,vij);
+                  Field[f]->Ref->Value(Field[f]->Ref,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
+                  Def_Set(cut->Def,0,idx,vi);
+                  if (cut->Def->Data[1])
+                     Def_Set(cut->Def,1,idx,vj);
                }
             }
             i0=i;

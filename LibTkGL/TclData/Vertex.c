@@ -322,9 +322,9 @@ void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int
 */
 int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
 
-   Vect3d v00,v01,v10,v11,v0,v1,**pos;
-   int    i,j,k,k1;
-   int    idx0,idx1,idx2,idx3;
+   Vect3d        v00,v01,v10,v11,v0,v1,**pos;
+   unsigned long i,j,k,k1;
+   unsigned long idx0,idx1,idx2,idx3;
 
    if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
       return(0);
@@ -399,9 +399,9 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
 */
 float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
-   Vect3d **pos;
-   double   cube[2][4];
-   int      i,j,k,idx[4],idxk;
+   Vect3d      **pos;
+   double        cube[2][4];
+   unsigned long i,j,k,idx[4],idxk;
 
    if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
       return(0);
