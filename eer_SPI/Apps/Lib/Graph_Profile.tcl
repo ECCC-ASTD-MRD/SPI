@@ -275,6 +275,7 @@ proc Graph::Profile::Graph { GR } {
       set max [vector stats $item.X -max]
       set data(XMin) [expr $min<$data(XMin)?$min:$data(XMin)]
       set data(XMax) [expr $max>$data(XMax)?$max:$data(XMax)]
+      set data(Levels) [concat $data(Levels) [vector get $item.Y]]
    }
 
    if { [vector length $item.Y] && [vector get $item.Y 0]<[vector get $item.Y end] } {
@@ -282,8 +283,6 @@ proc Graph::Profile::Graph { GR } {
    } else {
       set data(Order) -decreasing
    }
-
-   set data(Levels) [vector get $item.Y]
 
    if { [llength $data(Levels)] } {
       eval set data(Levels) \[lsort -unique -real $data(Order) \$data(Levels)\]
@@ -464,7 +463,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
 
       lappend data(Items) $Item
       Graph::Profile::ItemDefault $GR $Item
-       $data(Canvas) itemconfigure $GR -item $data(Items)
+      $data(Canvas) itemconfigure $GR -item $data(Items)
   }
 }
 
