@@ -25,34 +25,58 @@ source $GDefs(Dir)/Apps/SPI.txt
 source $GDefs(Dir)/Apps/SPI.ctes
 source $GDefs(Dir)/Apps/SPI.int
 
-#----- Do setup if not done
-if { ![file exists $env(HOME)/.spi] } {
+#---------------------------------------------------------------------------
+# Nom      : <SPI::Setup>
+# Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
+#
+# But      :Initialiser les repertoires de definitions de SPI (~/.spi)
+#
+# Parametres :
+#   <Force>  : Forcer l'execution du setup
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
-   SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
-   file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro
+proc SPI::Setup { { Force False } } {
+   global env GDefs
 
-   #----- Installer les fichiers de definitions
-   if { ![file exists $env(HOME)/.spi/SPI] } {
-      file copy -force $GDefs(Dir)/Apps/Setup/SPI $env(HOME)/.spi/SPI
-   }
+   if { $Force || ![file exists $env(HOME)/.spi] } {
 
-   #----- Copy standard stuff
-   foreach file { Colormap Scenario } {
-      exec cp -r $GDefs(Dir)/Apps/Setup/$file $env(HOME)/.spi
-   }
+      SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
+      Log::Print INFO "Setting up SPI $GDefs(Version) for the first time"
 
-   #----- Copy old users definitions
-   if { [file exists $env(HOME)/.eer_ToolDefs] } {
-      foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData } {
-         catch { file copy -force $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro
+
+      #----- Installer les fichiers de definitions
+      if { ![file exists $env(HOME)/.spi/SPI] } {
+         file copy -force $GDefs(Dir)/Apps/Setup/SPI $env(HOME)/.spi/SPI
       }
-      foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
-         catch { eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew} }
+
+      #----- Copy standard stuff
+      foreach file { Colormap Scenario } {
+         exec cp -r $GDefs(Dir)/Apps/Setup/$file $env(HOME)/.spi
       }
 
-      catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }
+      #----- Copy old users definitions
+      if { [file exists $env(HOME)/.eer_ToolDefs] } {
+         foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData } {
+            catch { file copy -force $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
+         }
+         foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
+            catch { eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew} }
+         }
+
+         catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }
+      }
    }
 }
+
+#----- Do setup if not done
+
+SPI::Setup
 
 #----- Lire la liste des definitions communes
 catch { source $env(HOME)/.spi/SPI }
@@ -137,6 +161,7 @@ proc SPI::CommandLine { { Args {} }} {
       \[-hard\]                         : Force hardware OpenGL mode
       \[-nothreads\]                    : Don't use multithreading
       \[-batch\]                        : Launch in batch mode (No screen rendering)
+      \[-setup\]                        : Force initial setup (~/.spi)
       \[-default ... ...\]              : Use the file specified as the default parameter definition
       \[-lang 0|1\]                     : Select language (0 Francais, 1 English)
       \[-model\]                        : Open the model tab upon startup
@@ -162,6 +187,7 @@ for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
       "soft"      { }
       "hard"      { }
+      "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
       "nothreads" { set SPI::Param(Threads) False }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
@@ -182,6 +208,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "layout"    { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
       "project"   { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
       "tool"      { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
+
       default     { SPI::CommandLine [lindex $argv $i]; exit 1 }
    }
 }
@@ -2322,6 +2349,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "soft"      { }
       "hard"      { }
       "nothreads" { }
+      "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
