@@ -1303,7 +1303,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             }
          } else {
             y=Y0-AXISVALUE(Axis,Axis->Inter[i]); x=X0;
-            if (y<Y1-1 || y>Y0+1)
+            if (y<Y1-1 || y>Y0+1 || (y-Y1<w && i!=Axis->InterNb-1))
                continue;
 
             if (Axis->Spacing && y<yp+w && y>yp-w)
@@ -1654,7 +1654,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          } else {
             y=Y0-AXISVALUE(Axis,Axis->Inter[i]); x=X0;
-            if (y<Y1-1 || y>Y0+1)
+            if (y<Y1-1 || y>Y0+1 || (y-Y1<w && i!=Axis->InterNb-1))
                continue;
 
             if (Axis->Spacing && y<yp+w && y>yp-w)
