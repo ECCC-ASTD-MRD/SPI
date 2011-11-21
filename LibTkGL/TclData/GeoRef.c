@@ -178,14 +178,18 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
    /*Y Grid type*/
    } else if (FromRef->Grid[0]=='Y') {
-      for(n=0;n<FromDef->NI;n++,idx++) {
-         Scan->V[n]=idx;
-         ((float*)Scan->X)[n]=FromRef->Lon[idx];
-         ((float*)Scan->Y)[n]=FromRef->Lat[idx];
+      for(y=Y0;y<=Y1;y++) {
+         idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
+         for(x=X0;x<=X1;x++,idx++,n++) {
+            if (x<=X1 && y<=Y1) {
+               Scan->V[Scan->N++]=idx;
+            }
+            ((float*)Scan->X)[n]=FromRef->Lon[idx];
+            ((float*)Scan->Y)[n]=FromRef->Lat[idx];
+         }
       }
       d=1;
       sz=4;
-      Scan->N=n;
 
    /*Other RPN grids*/
    } else {

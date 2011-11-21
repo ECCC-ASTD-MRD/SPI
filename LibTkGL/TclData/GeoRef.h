@@ -36,7 +36,6 @@
 
 #include <tcl.h>
 
-#include "projects.h"
 #include "gdal.h"
 #include "gdal_alg.h"
 #include "ogr_api.h"
