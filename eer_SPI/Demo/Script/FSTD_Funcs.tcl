@@ -39,6 +39,11 @@ puts "   0.9    ETA     : [fstdgrid convip 0.9 ETA]"
 puts "   2500   MASL    : [fstdgrid convip 2500.0 MASL]"
 puts "   2500   MAGL    : [fstdgrid convip 2500.0 MAGL]"
 
+puts "\nTesting integer data"
+fstdfield create FLDINT 10 10 1 UInt32
+fstdfield stats FLDINT -gridvalue 5 5 20061231
+puts "   20061231 = [fstdfield stats FLDINT -gridvalue 5 5]"
+
 
 set inter { -20 0 20 }
 puts "\nTesting contour extraction ($inter):"

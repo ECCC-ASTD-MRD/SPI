@@ -49,6 +49,7 @@ set tests {
    FSTD_TestTypes.tcl
    {FSTD_TIN2FSTD.tcl DataIn/hudson}
    FSTD_Sort.tcl
+   FSTD_Y2Z_SUM.tcl
    FSTD_ThreadDemo.tcl
    GDAL_Basic.tcl
    GDAL_Functions.tcl
