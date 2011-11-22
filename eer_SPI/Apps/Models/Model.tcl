@@ -430,12 +430,12 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    set Data(VP)    $Viewport::Data(VP)
 
    if { $Mode!="NEW" } {
-      set sim(NI)     [lindex $sim(Grid) 1]
-      set sim(NJ)     [lindex $sim(Grid) 2]
+      set sim(NI)     [lindex $sim(Grid) 0]
+      set sim(NJ)     [lindex $sim(Grid) 1]
 
       fstdfield free MODELGRID
       fstdfield create MODELGRID $sim(NI) $sim(NJ) 1
-      fstdfield define MODELGRID -GRTYP [lindex $sim(Grid) 0] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5] [lindex $sim(Grid) 6]
+      fstdfield define MODELGRID -GRTYP [lindex $sim(Grid) 6] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5]
 
       set grid [fstdfield stats MODELGRID -gridpoint [expr $sim(NI)/2+1] [expr $sim(NJ)/2+1]]
       set sim(GridLat) [lindex $grid 0]
@@ -604,7 +604,7 @@ proc Model::ParamsMetData { Model } {
       return False
    }
 
-   if { ![llength $sim(Data)] } {
+  if { ![llength $sim(Data)] } {
       Dialog::Error . $Error(MetFiles)
       return False
    }
@@ -1474,8 +1474,7 @@ proc Model::ParamsMeteoInput { Model } {
 
    #----- Create ASCII file containing grid parameters.
    if { [llength $sim(Grid)]>5 } {
-      exec echo "[lindex $sim(Grid) 1] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] \
-         [lindex $sim(Grid) 5] [lindex $sim(Grid) 6] [lindex $sim(Grid) 0]]" > $sim(Path)/tmp/griddef.in
+      exec echo [join $sim(Grid) ,] > $sim(Path)/tmp/griddef.in
    }
 }
 

@@ -89,7 +89,7 @@ proc MLDPn::Launch { } {
    #----- Launch meteorological fields script for RSMC response.
    if { $Sim(SrcType) == "ACCIDENT" && [file exists $Sim(Path)/tmp/data_std_pres.in] } {
       Log::Print INFO "Launching RSMC meteorological fields script on local host ($GDefs(Host))."
-      set metdate [clock format $Sim(MetSecs) -format "%Y%m%d%H" -gmt True]
+      set metdate [clock format $Sim(Sim0Secs) -format "%Y%m%d%H" -gmt True]
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $metdate $metdate $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
@@ -240,7 +240,7 @@ proc MLDPn::ParamsCheck { Tab No } {
    if { $Sim(Restart)=="" } {
       scan $Sim(Min)  "%02d" min
       scan $Sim(Hour) "%02d" hour
-      set Sim(AccSecs) [expr $Sim(Secs)+$hour*+$min*60]
+      set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
    }
 
    #----- Validate output and model time steps but not if we are relaunching.

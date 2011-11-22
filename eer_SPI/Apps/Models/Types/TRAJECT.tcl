@@ -122,6 +122,7 @@ proc TRAJECT::GetMetData { } {
    if { [set ok [Model::ParamsMetData TRAJECT]] } {
       set Sim(SimSecs) $Sim(MetSecs)
    }
+   return $ok
 }
 
 #-------------------------------------------------------------------------------
