@@ -174,10 +174,12 @@ proc Graph::Time::Coord { Frame GR X Y } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
       if { [llength $coords]==2 } {
-         set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
+         catch {
+            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
 
-         set sec [lindex $coords 0]
-         set Page::Data(Coord) [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
+            set sec [lindex $coords 0]
+            set Page::Data(Coord) [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
+         }
       }
    }
 }

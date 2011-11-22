@@ -420,6 +420,7 @@ proc PrintBox::Create { Frame Mode args } {
    TabFrame::Select .printbox.tab 0
 
    raise .printbox
+   grab .printbox
 }
 
 proc PrintBox::SetDevice { } {

@@ -176,17 +176,19 @@ proc Graph::TimeSection::Coord { Frame GR X Y } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
       if { [llength $data(Dates)] && [llength $coords]>=2 } {
-         set idx [lindex $coords 0]
-         set sec0 [lindex $data(Dates) [expr int($idx)]]
-         set sec1 [lindex $data(Dates) [expr int($idx)+1]]
-         set sec [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
-         set date [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
-         set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] $date"
+         catch {
+            set idx [lindex $coords 0]
+            set sec0 [lindex $data(Dates) [expr int($idx)]]
+            set sec1 [lindex $data(Dates) [expr int($idx)+1]]
+            set sec [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
+            set date [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
+            set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] $date"
 
-         foreach item $items {
-            set field [graphitem configure $item -data]
-            if { [fstdfield is $field] } {
-               append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+            foreach item $items {
+               set field [graphitem configure $item -data]
+               if { [fstdfield is $field] } {
+                  append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+               }
             }
          }
       }
@@ -303,7 +305,11 @@ proc Graph::TimeSection::Graph { GR } {
 
       if { [fstdfield is TIMESECTION$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats TIMESECTION$item -pressurelevels]]] } {
+         if { $graph(ZType)=="PRESSURE" } {
+            set levels [fstdfield stats TIMESECTION$item -pressurelevels]
+            if { ![llength $levels] } {
+               Dialog::Error . $Graph::Error(Pressure)
+            }
             set data(Levels) $levels
             fstdfield configure TIMESECTION$item -ztype PRESSURE
          } else {

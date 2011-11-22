@@ -171,9 +171,11 @@ proc Graph::Profile::Coord { Frame GR X Y } {
    if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
-      if { [llength $coords]==2 } {
-         set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
-         set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 0]]"
+      if { [llength $coords]==2  } {
+          catch {
+            set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
+            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 0]]"
+         }
       }
    }
 }
@@ -649,7 +651,11 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
          }
 
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats GRAPHPROFILE -pressurelevels]]] } {
+         if { $graph(ZType)=="PRESSURE" } {
+            set levels [fstdfield stats GRAPHPROFILE -pressurelevels]
+            if { ![llength $levels] } {
+               Dialog::Error . $Graph::Error(Pressure)
+            }
             vector set $Item.Y $levels
             set graph(UnitY) Pressure
          } else {

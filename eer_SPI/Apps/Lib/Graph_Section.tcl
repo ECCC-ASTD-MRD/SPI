@@ -179,12 +179,14 @@ proc Graph::Section::Coord { Frame GR X Y } {
       set coords [$GR -unproject $X $Y False [lindex $items 0]]
 
       if { [llength $coords]>=2 } {
-         set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] [lindex $Graph::Lbl(Pos) $GDefs(Lang)]:[format "%.3f" [lindex $coords 0]]"
+         catch {
+            set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] [lindex $Graph::Lbl(Pos) $GDefs(Lang)]:[format "%.3f" [lindex $coords 0]]"
 
-         foreach item $items {
-            set field [graphitem configure $item -data]
-            if { [fstdfield is $field] } {
-               append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+            foreach item $items {
+               set field [graphitem configure $item -data]
+               if { [fstdfield is $field] } {
+                  append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+               }
             }
          }
          if { $data(Proj) } {
@@ -256,7 +258,11 @@ proc Graph::Section::Graph { GR { Pos False } } {
    foreach item $data(Items) {
       if { [fstdfield is GRAPHSECTION$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" && [llength [set levels [fstdfield stats GRAPHSECTION$item -pressurelevels]]] } {
+         if { $graph(ZType)=="PRESSURE" } {
+            set levels [fstdfield stats GRAPHSECTION$item -pressurelevels]
+            if { ![llength $levels] } {
+               Dialog::Error . $Graph::Error(Pressure)
+            }
             set data(Levels) $levels
             fstdfield configure GRAPHSECTION$item -ztype PRESSURE
          } else {

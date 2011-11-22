@@ -68,6 +68,7 @@ namespace eval Graph {
    variable Data
    variable Graph
    variable Lbl
+   variable Error
    variable Item
    variable Bubble
    variable Param
@@ -262,6 +263,10 @@ namespace eval Graph {
    set Bubble(AxisDecimals)  { "Nombre de décimales des valeurs de l'axe" "Number of decimals for axis values" }
    set Bubble(AxisMark)      { "Paramêtres de marquage des axes" "Axis markers parameters" }
    set Bubble(AxisAngle)     { "Angle des libelles" "Labels angle" }
+
+   #----- Erreurs
+
+   set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. Vérifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
 }
 
 package require MetStat
