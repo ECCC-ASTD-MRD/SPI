@@ -3,7 +3,7 @@ export ARCH=`uname -s`_`uname -m`
 echo "(INFO) Architecture detected: $ARCH"
 
 export TCL_VERSION=8.5
-export SPI_VERSION=7.5.0
+export SPI_VERSION=7.5.1
 export SPI_SHARED=${SPI_PATH}/Lib/${ARCH}
 
 #----- Library locations

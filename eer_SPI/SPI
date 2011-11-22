@@ -93,7 +93,7 @@ done
 #----- Testing hardware capabilities
 if [ \( $SOFT -eq 0 \) -a \( $HARD -eq 0 \) ]
 then
-   if [[ `glxinfo | grep -c direct` -eq 0 ]]
+   if [[ `glxinfo | grep -c "direct rendering: Yes"` -eq 0 ]]
    then
       SOFT=1
    fi
