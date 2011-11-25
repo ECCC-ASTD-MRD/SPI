@@ -532,6 +532,8 @@ proc ProjCam::Reset { Cam { All True } } {
       set cam(Lens)   1.0
    }
 
+   Viewport::GoTo $Page::Data(Frame) [expr $Viewport::Map(Lat)+0.00001] [expr $Viewport::Map(Lon)+0.00001] $cam(Lens) { 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 }
+
    set cam(To)     { 0.0 0.0 1.0 }
    set cam(From)   { 0.0 0.0 2.0 }
    set cam(Up)     { 0.0 1.0 0.0 }
@@ -543,10 +545,6 @@ proc ProjCam::Reset { Cam { All True } } {
    set cam(CFZ)    1
 
    set Data(Name)   ""
-
-   projcam configure $Cam -lens $cam(Lens) -from $cam(From) -to $cam(To) -up $cam(Up)
-   projcam define $Cam -circlefrom $cam(CFX) $cam(CFY) $cam(CFZ)
-#   projcam define $Cam -circleto $cam(CTX) $cam(CTY) $cam(CFZ)
 }
 
 #----------------------------------------------------------------------------
