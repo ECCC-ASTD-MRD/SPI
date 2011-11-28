@@ -1127,8 +1127,8 @@ proc Page::ModeSelect { Mode { Frames {} } } {
          bind $c <ButtonPress-2>   ""
          bind $c <ButtonRelease-2> ""
 
-         bind $c <ButtonPress-4>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)+0.05\]; ProjCam::Zoom $frame $frame \[expr pow(2,\$Page::Data(L$frame))\]"
-         bind $c <ButtonPress-5>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)-0.05\]; ProjCam::Zoom $frame $frame \[expr pow(2,\$Page::Data(L$frame))\]"
+         bind $c <ButtonPress-4>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)+0.05\]; ProjCam::ZoomScroll $frame $frame \$Viewport::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] True"
+         bind $c <ButtonPress-5>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)-0.05\]; ProjCam::ZoomScroll $frame $frame \$Viewport::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] False"
 
          #----- Cas statique du mode Draw
 

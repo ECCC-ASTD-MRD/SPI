@@ -35,6 +35,7 @@
 #    ProjCam::ZoomInit       { Frame X Y VP }
 #    ProjCam::ZoomIn         { Cam Frame VP { Factor 0 } }
 #    ProjCam::ZoomOut        { Cam Frame VP Reset { Pos False } }
+#    ProjCam::ZoomScroll     { Cam Frame VP X Y Lens }
 #    ProjCam::Write          { Frame File }
 #
 # Remarques :
@@ -1115,6 +1116,60 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
    Viewport::GoTo $Frame $lat $lon $lens
 
    $Frame.page.canvas config -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <ProjCam::ZoomScroll>
+# Creation : Novembre 2011 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Zoom avec un fixe sur une localisation.
+#
+# Parametres :
+#  <Cam>     : Identificateur de Camera
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du viewport
+#  <X>       : Pixel en X du curseur
+#  <Y>       : Pixel en Y du curseur
+#  <Lens>    : Facteur de zoom
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
+
+   if { $Centered } {
+      set lens [projcam configure $Frame -lens]
+
+      set ll0 [$VP -unproject $X $Y]
+      projcam configure $Frame -lens $Lens
+      $Frame.page.canvas itemconf $VP -projection $Frame -frame 0
+      set ll1 [$VP -unproject $X $Y]
+
+      #----- Calculate displacement needed to focus on cursor (course-distance method)
+      set d  [projection function $Frame -dist    [list [lindex $ll0 0] [lindex $ll0 1]  [lindex $ll1 0] [lindex $ll1 1]]]
+      set c  [projection function $Frame -bearing [lindex $ll1 0] [lindex $ll1 1]  [lindex $ll0 0] [lindex $ll0 1]]
+      set ll [projection function $Frame -circle  $Viewport::Map(Lat) $Viewport::Map(Lon) $d [expr -$c]]
+
+      set lat [lindex $ll 0]
+      set lon [lindex $ll 1]
+
+      #-----  Calculate displacement needed to focus on cursor (delta coord method)
+   #   set da [expr [lindex $ll1 0]-[lindex $ll0 0]]
+   #   set do [expr [lindex $ll1 1]-[lindex $ll0 1]]
+
+   #   set lat [expr $Viewport::Map(Lat)-$da]
+   #   set lon [expr $Viewport::Map(Lon)-$do]
+
+   #   set lat [expr ($lat>90.0  || $lat<-90.0) ?$Viewport::Map(Lat):$lat]
+   #   set lon [expr $lon>180?$lon-360:$lon<-180?$lon+360:$lon]
+
+      Viewport::Rotate $Frame $lat $lon $Lens
+   } else {
+      ProjCam::Zoom $Cam $Frame $Lens
+   }
 }
 
 #------------------------------------------------------------------------------
