@@ -1316,7 +1316,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
             }
          }
          Geo=Geo->Next;
-      }
+     }
    } else {
       n=0;
       while (Geo) {
@@ -1776,7 +1776,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             }
 
             if (Mode & GDB_FILL) {
-                if (Proj->VP->ColorFCoast && tile->FCoast) {
+               if (Proj->VP->ColorFCoast && tile->FCoast) {
                   GDB_FillRender(Interp,Proj,tile->FCoast,Proj->VP->ColorFCoast,0xff);
                }
                if (Proj->VP->ColorFLake && tile->FLake) {

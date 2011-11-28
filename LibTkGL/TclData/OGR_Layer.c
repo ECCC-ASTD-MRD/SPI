@@ -305,6 +305,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_GetIntFromObj(Interp,Objv[++i],&f);
                if (f>layer->NFeature) {
                   layer->Feature=realloc(layer->Feature,f*sizeof(OGRFeatureH));
+                  layer->Select=realloc(layer->Select,f*sizeof(char));
+                  memset(layer->Select,0x1,layer->NFeature);
                   for(idx=layer->NFeature;idx<f;idx++) {
                      layer->Feature[idx]=OGR_F_Create(layer->Def);
                   }

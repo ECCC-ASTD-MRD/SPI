@@ -296,7 +296,6 @@ TkglCanvPostscriptCmd(
      * Initialize the data structure describing Postscript generation, then
      * process all the arguments to fill the data structure in.
      */
-
     result = Tcl_EvalEx(interp,psenccmd,-1,TCL_EVAL_GLOBAL);
     if (result != TCL_OK) {
         return result;
@@ -405,7 +404,7 @@ TkglCanvPostscriptCmd(
 	break;
     }
 
-    if (psInfo.colorMode == NULL) {
+if (psInfo.colorMode == NULL) {
 	psInfo.colorLevel = 2;
     } else {
 	length = strlen(psInfo.colorMode);
@@ -478,7 +477,7 @@ TkglCanvPostscriptCmd(
         }
     }
 
-    /*
+/*
      * Make a pre-pass over all of the items, generating Postscript and then
      * throwing it away. The purpose of this pass is just to collect
      * information about all the fonts in use, so that we can output font
@@ -514,7 +513,6 @@ TkglCanvPostscriptCmd(
     /*
      * Generate the header and prolog for the Postscript.
      */
-
     if (psInfo.prolog) {
 	Tcl_AppendResult(interp, "%!PS-Adobe-3.0 EPSF-3.0\n",
 		"%%Creator: Tk Canvas Widget\n", NULL);
@@ -566,7 +564,7 @@ TkglCanvPostscriptCmd(
 	 * Insert the prolog
 	 */
 
-	Tcl_AppendResult(interp, Tcl_GetVar(interp,"::tk::ps_preamable",
+   Tcl_AppendResult(interp, Tcl_GetVar(interp,"::tk::ps_preamable",
 		TCL_GLOBAL_ONLY), NULL);
     TkglCanvPostscriptExpandedCmd(interp);
 
@@ -594,7 +592,7 @@ TkglCanvPostscriptCmd(
 	 * region.
 	 */
 
-	Tcl_AppendResult(interp, "%%Page: 1 1\n", "save\n", NULL);
+   Tcl_AppendResult(interp, "%%Page: 1 1\n", "save\n", NULL);
 	sprintf(string, "%.1f %.1f translate\n", psInfo.pageX, psInfo.pageY);
 	Tcl_AppendResult(interp, string, NULL);
 	if (psInfo.rotate) {
@@ -622,7 +620,7 @@ TkglCanvPostscriptCmd(
 	Tcl_ResetResult(canvasPtr->interp);
     }
 
-     /*Initialize the glCanvas*/
+    /*Initialize the glCanvas*/
     if (!SetglCanvas(canvasPtr)) {
        result = TCL_ERROR;
 //       goto cleanup;

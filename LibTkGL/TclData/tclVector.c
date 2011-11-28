@@ -333,7 +333,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case SPEC:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return Vector_Spec(Interp,Tcl_GetString(Objv[2]),Objc-2,Objv+2);
          break;
@@ -341,7 +341,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case SORT:
          if(Objc!=3 && Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[-unique] vector [dim]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          c=NULL;

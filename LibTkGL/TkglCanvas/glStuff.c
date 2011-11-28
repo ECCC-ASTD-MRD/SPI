@@ -1301,7 +1301,7 @@ int glPickProcess(){
  *
  *----------------------------------------------------------------------------
 */
-GLfloat* glFeedbackInit(int Size,int GLMode) {
+GLfloat* glFeedbackInit(unsigned long Size,int GLMode) {
 
    if (GLRender->GLFeedSize<Size) {
       GLRender->GLFeed=(GLfloat*)realloc(GLRender->GLFeed,Size*sizeof(GLfloat));
@@ -1345,7 +1345,6 @@ int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
    float   px=0.0,py=0.0;
 
    nb=glRenderMode(GL_RENDER);
-
    switch(GLMode) {
       case GL_2D: d=0; break;
       case GL_3D: d=1; break;
@@ -1383,7 +1382,7 @@ int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
                if (px!=GLRender->GLFeed[no] || py!=GLRender->GLFeed[no+1]) {
                   sprintf(buf,"%1.3f %1.3f moveto %1.3f %1.3f lineto\n",
                      GLRender->GLFeed[no],GLRender->GLFeed[no+1],GLRender->GLFeed[no+2],GLRender->GLFeed[no+3]);
-            } else {
+               } else {
                   sprintf(buf,"%1.3f %1.3f lineto\n",GLRender->GLFeed[no+2],GLRender->GLFeed[no+3]);
                }
             }
@@ -1523,20 +1522,6 @@ void trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
 
    if (pix) {
 
-      /*Recuperer le buffer OpenGL selon le mode RGBA ou COLORINDEX*/
-      glReadBuffer(GL_BACK);
-      if (GLRender->XMode==GLX_RGBA) {
-         glReadPixels(X0+TR->TileBorder,Y0+TR->TileBorder,w,h,GL_RGB,GL_UNSIGNED_BYTE,pix);
-      } else {
-         glReadPixels(X0+TR->TileBorder,Y0+TR->TileBorder,w,h,GL_COLOR_INDEX,GL_UNSIGNED_BYTE,pix);
-
-         for(n=0;n<256;n++){
-            cells[n].pixel=n;
-            cells[n].flags=DoRed|DoGreen|DoBlue;
-    }
-         XQueryColors(GLRender->XDisplay,GLRender->XColormap,cells,256);
-      }
-
       /*Initialiser l'image dans le fichier postscript*/
       sprintf(buf,"\n%% Postscript d'un buffer OpenGL de dimension %ix%i\n/pix %i string def\n/curfile currentfile def\n",w,h,w);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
@@ -1546,21 +1531,31 @@ void trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
 
       /*Imprimer l'image end RGB*/
       if (GLRender->XMode==GLX_RGBA) {
+         glReadPixels(X0+TR->TileBorder,Y0+TR->TileBorder,w,h,GL_RGB,GL_UNSIGNED_BYTE,pix);
+
          for(n=0;n<h*w*3;n+=3){
             sprintf(buf,"%02x%02x%02x",pix[n],pix[n+1],pix[n+2]);
-            Tcl_AppendResult(Interp,buf,(char *)NULL);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
          }
        } else {
-         for(n=0;n<h*w;n++){
+          glReadPixels(X0+TR->TileBorder,Y0+TR->TileBorder,w,h,GL_COLOR_INDEX,GL_UNSIGNED_BYTE,pix);
+
+          for(n=0;n<256;n++){
+             cells[n].pixel=n;
+             cells[n].flags=DoRed|DoGreen|DoBlue;
+          }
+          XQueryColors(GLRender->XDisplay,GLRender->XColormap,cells,256);
+
+          for(n=0;n<h*w;n++){
             sprintf(buf,"%02x%02x%02x",cells[pix[n]].red>>8,cells[pix[n]].green>>8,cells[pix[n]].blue>>8);
-            Tcl_AppendResult(Interp,buf,(char *)NULL);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
          }
       }
 
       /*Pour un raison heteroclyte, quand les tuiles sont plus petite il manque 2 bytes*/
       if (w>TR->CurrentTileWidth || h>TR->CurrentTileHeight) {
          sprintf(buf,"aa");
-         Tcl_AppendResult(Interp,buf,(char *)NULL);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
       }
       Tcl_AppendResult(Interp,"\ngrestore\n",(char*)NULL);
       free(pix);

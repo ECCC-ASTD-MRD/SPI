@@ -597,8 +597,8 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
    if (field->Spec && Field->Spec) {
       field->Spec->Map=Field->Spec->Map;
-      CMap_Incr(field->Spec->Map);
 
+      if (field->Spec->Map)  CMap_Incr(field->Spec->Map);
       if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
       if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
    }
@@ -734,7 +734,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
                if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
                  if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
-                     Field[f]->Def->Pres=0x1;
+                     /*We won't be able to calculate pressure levels*/
+                     free(cut->Ref->Hgt);
+                     cut->Ref->Hgt=NULL;
                      p=0;
                   }
                   FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
@@ -766,7 +768,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
                /*Convert level to pressure*/
-               if (Field[f]->Def->Pres>0x1 && cut->Ref->Hgt) {
+               if (cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->Ref->Hgt[idx]=ZRef_K2Pressure(&Field[f]->Ref->ZRef,p0,k);
                }
@@ -837,6 +839,7 @@ void Data_PreInit(TData *Data) {
    if (Data->Spec->InterMode) {
       DataSpec_Intervals(Data->Spec,Data->Spec->Min,Data->Spec->Max);
    }
+
    DataSpec_Define(Data->Spec);
 }
 

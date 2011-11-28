@@ -906,7 +906,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
  *   <Mode>     : Mode de rasterization
  *   <Type>     : Type d'import
  *   <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
- *   <Field>    : Champs de la couvhe a utiliser
+ *   <Field>    : Champs de la couche a utiliser
  *   <Value>    : Valeur a assigner
  *
  * Retour       : Code d'erreur standard TCL

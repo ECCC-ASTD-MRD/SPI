@@ -1516,7 +1516,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
       /*Afficher les parties dependantes de la projection*/
       if (!Interp && Proj->Type->DrawGlobe)
-            Proj->Type->DrawGlobe(Interp,VP,Proj);
+         Proj->Type->DrawGlobe(Interp,VP,Proj);
 
       if (Proj->Geographic) {
 //      GDB_StarRender(Interp,Proj);
@@ -1531,13 +1531,12 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
                glEnable(GL_LIGHT0);
             }
          }
-
          if (Interp) {
             GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK^GDB_FILL);
          } else {
             GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK);
          }
-      }
+     }
       glStencilFunc(GL_EQUAL,0x00,0x0f);
       glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
@@ -1578,7 +1577,6 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
          Proj->Type->DrawLast(Interp,VP,Proj);
       }
    }
-
    return(ras);
 }
 

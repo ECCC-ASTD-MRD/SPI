@@ -106,7 +106,8 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    }
 
    glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-   glLineWidth(ABS(Proj->Geo->Params.Coast));
+// TODO: For unknown reasons, MESA makes memory faults on the longitudes when this is greater than 1
+//   glLineWidth(ABS(Proj->Geo->Params.Coast));
    glBegin(GL_LINE_STRIP);
       glVertex3d(-Proj->LI,-Proj->LJ,1.0);
       glVertex3d(-Proj->LI,Proj->LJ,1.0);
@@ -140,11 +141,16 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       loc.Elev=0.0;
 
+      // Get latlon bounding box
+      if (Proj->Ref->LLExtent.MinY==1e32) {
+         GeoRef_Limits(Proj->Ref,&Proj->Ref->LLExtent.MinY,&Proj->Ref->LLExtent.MinX,&Proj->Ref->LLExtent.MaxY,&Proj->Ref->LLExtent.MaxX);
+      }
+
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lon=-180;loc.Lon<=(180-Proj->Geo->Params.CoordDef);loc.Lon+=Proj->Geo->Params.CoordDef){
+      for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.Lat=-90;loc.Lat<=90;loc.Lat+=1.0){
+         for(loc.Lat=floor(Proj->Ref->LLExtent.MinY);loc.Lat<=ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {
@@ -154,12 +160,12 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          }
          glEnd();
       }
-      
+
       /*Latitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lat=(floor(-90.0/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef)+Proj->Geo->Params.CoordDef;loc.Lat<90;loc.Lat+=Proj->Geo->Params.CoordDef){
+      for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
-         for(loc.Lon=-180;loc.Lon<=180;loc.Lon+=1.0){
+         for(loc.Lon=floor(Proj->Ref->LLExtent.MinX);loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
             } else {

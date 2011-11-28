@@ -1712,6 +1712,9 @@ void DataSpec_Define(TDataSpec *Spec){
    int    i=0;
    double o1,o2;
 
+   if (!Spec) {
+      return;
+   }
    Spec->MapFactor=0.0;
 
    if (isnan(Spec->Min) || isnan(Spec->Max)) {
