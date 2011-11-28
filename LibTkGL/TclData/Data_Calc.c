@@ -199,11 +199,11 @@ int Calc_Validate(Tcl_Interp* Interp) {
 
 /**
  * @author Bison example
- * @brief Called by yyparse on error
+ * @brief Called by vexpr_parse on error
  * @param s (Sub-)String that caused the error
  * @return Ignored
  */
-int yyerror(char *Error){
+int vexpr_error(char *Error){
 
    GError=TCL_ERROR;
    Tcl_AppendResult(GInterp,"(Bison) Parser error: ",Error,(char*)NULL);
@@ -241,7 +241,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
    GExcept   = Except;
    GType     = Type;
 
-  /* Interpreter initialization */
+   /* Interpreter initialization */
    Tcl_ResetResult(Interp);
 
    /* Reset exception flags */
@@ -250,7 +250,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
    }
 
    /* Parse, return value in GResult */
-   yyparse();
+   vexpr_parse();
 
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) Calc_Parse(Data:%p %s,GResult:%p)\n",(void*)Data,Data,(void*)GResult);

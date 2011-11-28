@@ -50,6 +50,6 @@
 
 int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TData_Type Type,char* Expr);
 int  Calc_Validate(Tcl_Interp* Interp);
-int  yyparse(void);
+int  vexpr_parse(void);
 
 #endif

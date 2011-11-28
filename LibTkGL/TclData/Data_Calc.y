@@ -17,7 +17,7 @@ extern int         GDataN;
 extern int         GError;
 extern int         GMode;
 
-int yyerror(char* s);
+int vexpr_error(char* s);
 %}
 
 %union {
@@ -106,14 +106,14 @@ line:
 
 exp:
    T_ERROR {
-      yyerror("Invalid function or data id in expression");
+      vexpr_error("Invalid function or data id in expression");
       YYERROR;
    }
 
    | T_INT {
       $$=Calc_MatrixInt((long)$1);
       if (!$$) {
-         yyerror("Calc_Matrix failed (T_INT): Critical!");
+         vexpr_error("Calc_Matrix failed (T_INT): Critical!");
          YYERROR;
       }
    }
@@ -121,7 +121,7 @@ exp:
    | T_FLOAT {
       $$=Calc_MatrixFloat($1);
       if (!$$) {
-         yyerror("Calc_Matrix failed (T_FLOAT): Critical!");
+         vexpr_error("Calc_Matrix failed (T_FLOAT): Critical!");
          YYERROR;
       }
    }
@@ -131,13 +131,13 @@ exp:
       fprintf(stdout,"(DEBUG) Component Indexing\n");
 #endif
       if (!$1 || !$1->Data[(int)$3]) {
-         yyerror("Invalid component index");
+         vexpr_error("Invalid component index");
          YYERROR;
       } else {
          $$=Calc_Index($1,(int)$3);
 
          if (!$$) {
-            yyerror("Calc_Index failed: Critical!");
+            vexpr_error("Calc_Index failed: Critical!");
             YYERROR;
          }
       }
@@ -150,7 +150,7 @@ exp:
       $$=Calc_Length($2);
 
       if (!$$) {
-         yyerror("Calc_Length failed: Critical!");
+         vexpr_error("Calc_Length failed: Critical!");
          YYERROR;
       }
    }
@@ -162,7 +162,7 @@ exp:
       $$=Calc_Dir($2);
 
       if (!$$) {
-         yyerror("Calc_Length failed: Critical!");
+         vexpr_error("Calc_Length failed: Critical!");
          YYERROR;
       }
    }
@@ -172,13 +172,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slicing over I\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$3,0);
 
          if (!$$) {
-            yyerror("Calc_Slice failed: Critical!");
+            vexpr_error("Calc_Slice failed: Critical!");
             YYERROR;
          }
       }
@@ -189,13 +189,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slice setting over I\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,(int)$3,(int)$3,0,$1->NJ-1,0,$1->NK-1);
 
          if (!$$) {
-            yyerror("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Slice setting failed: Critical!");
             YYERROR;
          }
       }
@@ -206,13 +206,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slicing over J\n");
 #endif
       if (!$1 || (int)$5>$1->NJ-1 || (int)$5<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$5,1);
 
          if (!$$) {
-            yyerror("Calc_Slice failed: Critical!");
+            vexpr_error("Calc_Slice failed: Critical!");
             YYERROR;
          }
       }
@@ -223,13 +223,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slice setting over J\n");
 #endif
       if (!$1 || (int)$5>$1->NJ-1 || (int)$5<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,0,$1->NI-1,(int)$5,(int)$5,0,$1->NK-1);
 
          if (!$$) {
-            yyerror("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Slice setting failed: Critical!");
             YYERROR;
          }
       }
@@ -240,13 +240,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slicing over K\n");
 #endif
       if (!$1 || (int)$7>$1->NK-1 || (int)$7<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$7,2);
 
          if (!$$) {
-            yyerror("Calc_Slice failed: Critical!");
+            vexpr_error("Calc_Slice failed: Critical!");
             YYERROR;
          }
       }
@@ -257,13 +257,13 @@ exp:
       fprintf(stdout,"(DEBUG) Slice setting over K\n");
 #endif
       if (!$1 || (int)$7>$1->NK-1 || (int)$7<0) {
-         yyerror("Invalid index");
+         vexpr_error("Invalid index");
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,0,$1->NI-1,0,$1->NJ-1,(int)$7,(int)$7);
 
          if (!$$) {
-            yyerror("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Slice setting failed: Critical!");
             YYERROR;
          }
       }
@@ -274,13 +274,13 @@ exp:
       fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0) {
-         yyerror("Invalid grid index");
+         vexpr_error("Invalid grid index");
          YYERROR;
       } else {
          $$=Calc_IndexValue($1,(int)$3,(int)$5,0);
 
          if (!$$) {
-            yyerror("Calc_IndexValue failed: Critical!");
+            vexpr_error("Calc_IndexValue failed: Critical!");
             YYERROR;
          }
       }
@@ -291,13 +291,13 @@ exp:
       fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0) {
-         yyerror("Invalid grid index");
+         vexpr_error("Invalid grid index");
          YYERROR;
       } else {
          $$=Calc_Set($1,$8,(int)$3,(int)$3,(int)$5,(int)$5,0,0);
 
          if (!$$) {
-            yyerror("Calc_IndexSetting failed: Critical!");
+            vexpr_error("Calc_IndexSetting failed: Critical!");
             YYERROR;
          }
       }
@@ -308,13 +308,13 @@ exp:
       fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0 || (int)$7>$1->NK-1 || (int)$7<0) {
-         yyerror("Invalid grid-level index");
+         vexpr_error("Invalid grid-level index");
          YYERROR;
       } else {
          $$=Calc_IndexValue($1,(int)$3,(int)$5,(int)$7);
 
          if (!$$) {
-            yyerror("Calc_IndexValue failed: Critical!");
+            vexpr_error("Calc_IndexValue failed: Critical!");
             YYERROR;
          }
       }
@@ -325,13 +325,13 @@ exp:
       fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
       if (!$1 || (int)$3>$1->NI-1 || (int)$3<0 || (int)$5>$1->NJ-1 || (int)$5<0 || (int)$7>$1->NK-1 || (int)$7<0) {
-         yyerror("Invalid grid-level index");
+         vexpr_error("Invalid grid-level index");
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,(int)$3,(int)$3,(int)$5,(int)$5,(int)$7,(int)$7);
 
          if (!$$) {
-            yyerror("Calc_IndexSetting failed: Critical!");
+            vexpr_error("Calc_IndexSetting failed: Critical!");
             YYERROR;
          }
       }
@@ -342,13 +342,13 @@ exp:
       fprintf(stdout,"(DEBUG) Range Indexing\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
-         yyerror("Invalid grid range");
+         vexpr_error("Invalid grid range");
          YYERROR;
       } else {
          $$=Calc_RangeValue($1,(int)$4,(int)$6,(int)$10,(int)$12,0,0);
 
          if (!$$) {
-            yyerror("Calc_RangeValue failed: Critical!");
+            vexpr_error("Calc_RangeValue failed: Critical!");
             YYERROR;
          }
       }
@@ -359,13 +359,13 @@ exp:
       fprintf(stdout,"(DEBUG) Range Setting\n");
 #endif
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 || (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0) {
-         yyerror("Invalid grid range");
+         vexpr_error("Invalid grid range");
          YYERROR;
       } else {
          $$=Calc_Set($1,$16,(int)$4,(int)$6,(int)$10,(int)$12,0,0);
 
          if (!$$) {
-            yyerror("Calc_RangeSetting failed: Critical!");
+            vexpr_error("Calc_RangeSetting failed: Critical!");
             YYERROR;
          }
       }
@@ -378,13 +378,13 @@ exp:
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 ||
           (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NJ-1 || (int)$12<0 ||
           (int)$16>$1->NK-1 || (int)$16<0 || (int)$18>$1->NK-1 || (int)$18<0) {
-         yyerror("Invalid grid range");
+         vexpr_error("Invalid grid range");
          YYERROR;
       } else {
          $$=Calc_RangeValue($1,(int)$4,(int)$6,(int)$10,(int)$12,(int)$16,(int)$18);
 
          if (!$$) {
-            yyerror("Calc_RangeValue failed: Critical!");
+            vexpr_error("Calc_RangeValue failed: Critical!");
             YYERROR;
          }
       }
@@ -397,13 +397,13 @@ exp:
       if (!$1 || (int)$4>$1->NI-1 || (int)$4<0 || (int)$6>$1->NI-1 || (int)$6<0 ||
           (int)$10>$1->NJ-1 || (int)$10<0 || (int)$12>$1->NI-1 || (int)$12<0 ||
           (int)$16>$1->NK-1 || (int)$16<0 || (int)$18>$1->NI-1 || (int)$18<0) {
-         yyerror("Invalid grid range");
+         vexpr_error("Invalid grid range");
          YYERROR;
       } else {
          $$=Calc_Set($1,$22,(int)$4,(int)$6,(int)$10,(int)$12,(int)$16,(int)$18);
 
          if (!$$) {
-            yyerror("Calc_RangeSetting failed: Critical!");
+            vexpr_error("Calc_RangeSetting failed: Critical!");
             YYERROR;
          }
       }
@@ -416,7 +416,7 @@ exp:
       $$=Calc_Matrix1(NULL,(TFunc1*)$1->Func,0,0,$1->Type);
 
       if (!$$) {
-         yyerror("Calc_Matrix1 failed (T_FNCT_F): Critical!");
+         vexpr_error("Calc_Matrix1 failed (T_FNCT_F): Critical!");
          YYERROR;
       }
    }
@@ -426,13 +426,13 @@ exp:
       fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
-         yyerror("(T_FNCT_F): Invalid number of arguments");
+         vexpr_error("(T_FNCT_F): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix1($3,(TFunc1*)$1->Func,0,0,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix1 failed (T_FNCT_F): Critical!");
+            vexpr_error("Calc_Matrix1 failed (T_FNCT_F): Critical!");
             YYERROR;
          }
       }
@@ -443,13 +443,13 @@ exp:
       fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=2) {
-         yyerror("(T_FNCT_F): Invalid number of arguments");
+         vexpr_error("(T_FNCT_F): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,0,0,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix2 failed (T_FNCT_F): Critical!");
+            vexpr_error("Calc_Matrix2 failed (T_FNCT_F): Critical!");
             YYERROR;
          }
       }
@@ -460,13 +460,13 @@ exp:
       fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
-         yyerror("(T_FNCT_M): Invalid number of arguments");
+         vexpr_error("(T_FNCT_M): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix1($3,(TFunc1*)$1->Func,1,0,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix1 failed (T_FNCT_M): Critical!");
+            vexpr_error("Calc_Matrix1 failed (T_FNCT_M): Critical!");
             YYERROR;
          }
       }
@@ -477,13 +477,13 @@ exp:
       fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
 #endif
       if ($1->Args!=2) {
-         yyerror("(T_FNCT_M): Invalid number of arguments");
+         vexpr_error("(T_FNCT_M): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,1,0,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix2 failed (T_FNCT_M): Critical!");
+            vexpr_error("Calc_Matrix2 failed (T_FNCT_M): Critical!");
             YYERROR;
          }
       }
@@ -494,13 +494,13 @@ exp:
       fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
 #endif
       if ($1->Args!=3) {
-         yyerror("(T_FNCT_M): Invalid number of arguments");
+         vexpr_error("(T_FNCT_M): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix3($3,$5,$7,(TFunc3*)$1->Func,1,0,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix3 failed (T_FNCT_M): Critical!");
+            vexpr_error("Calc_Matrix3 failed (T_FNCT_M): Critical!");
             YYERROR;
          }
       }
@@ -511,13 +511,13 @@ exp:
       fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
 #endif
       if ($1->Args!=1) {
-         yyerror("(T_FNCT_D): Invalid number of arguments");
+         vexpr_error("(T_FNCT_D): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix1($3,(TFunc1*)$1->Func,0,1,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix1 failed (T_FNCT_D): Critical!");
+            vexpr_error("Calc_Matrix1 failed (T_FNCT_D): Critical!");
             YYERROR;
          }
       }
@@ -528,13 +528,13 @@ exp:
       fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
 #endif
       if ($1->Args!=2) {
-         yyerror("(T_FNCT_D): Invalid number of arguments");
+         vexpr_error("(T_FNCT_D): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,0,1,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix2 failed (T_FNCT_D): Critical!");
+            vexpr_error("Calc_Matrix2 failed (T_FNCT_D): Critical!");
             YYERROR;
          }
       }
@@ -545,13 +545,13 @@ exp:
       fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
 #endif
       if ($1->Args!=3) {
-         yyerror("(T_FNCT_D): Invalid number of arguments");
+         vexpr_error("(T_FNCT_D): Invalid number of arguments");
          YYERROR;
       } else {
          $$=Calc_Matrix3($3,$5,$7,(TFunc3*)$1->Func,0,1,$1->Type);
 
          if (!$$) {
-            yyerror("Calc_Matrix3 failed (T_FNCT_D): Critical!");
+            vexpr_error("Calc_Matrix3 failed (T_FNCT_D): Critical!");
             YYERROR;
          }
       }
@@ -574,7 +574,7 @@ exp:
       $$ = GData[++GDataN]=DataDef_Copy(GField->Def);
 
       if (!$$) {
-         yyerror("FSTD_Field failed (T_FIELD_FUNC): Critical!");
+         vexpr_error("FSTD_Field failed (T_FIELD_FUNC): Critical!");
          YYERROR;
       }
    }
@@ -584,7 +584,7 @@ exp:
       $$=$1;
 
       if (!$$) {
-         yyerror("...Get failed (T_DATA): Critical!");
+         vexpr_error("...Get failed (T_DATA): Critical!");
          YYERROR;
       }
 
@@ -597,7 +597,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,equ,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_EQU): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_EQU): Critical!");
          YYERROR;
       }
    }
@@ -606,7 +606,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,neq,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_NEQ): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_NEQ): Critical!");
          YYERROR;
       }
    }
@@ -615,7 +615,7 @@ exp:
       $$ =Calc_Matrix2($1, $3,grq,1,0,TD_UByte);
 
       if ($$ == 0) {
-         yyerror("Calc_Matrix2 failed (T_GRQ): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_GRQ): Critical!");
          YYERROR;
       }
    }
@@ -624,7 +624,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,gre,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_GRE): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_GRE): Critical!");
          YYERROR;
       }
    }
@@ -633,7 +633,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,smq,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_SMQ): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_SMQ): Critical!");
          YYERROR;
       }
    }
@@ -642,7 +642,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,sma,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_SMA): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_SMA): Critical!");
          YYERROR;
       }
    }
@@ -651,7 +651,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,add,1,0,TD_Unknown);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_ADD): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_ADD): Critical!");
          YYERROR;
       }
    }
@@ -660,7 +660,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,sub,1,0,TD_Unknown);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_SUB): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_SUB): Critical!");
          YYERROR;
       }
    }
@@ -669,7 +669,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,mul,1,0,TD_Unknown);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_MUL): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_MUL): Critical!");
          YYERROR;
       }
    }
@@ -678,7 +678,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,dvd,1,0,TD_Unknown);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_DIV): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_DIV): Critical!");
          YYERROR;
       }
    }
@@ -687,7 +687,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,fmod,1,0,TD_Unknown);
 
       if (!$$) {
-        yyerror("Calc_Matrix2 failed (T_DIV): Critical!");
+        vexpr_error("Calc_Matrix2 failed (T_DIV): Critical!");
         YYERROR;
       }
    }
@@ -696,7 +696,7 @@ exp:
       $$ = Calc_Matrix1($2,neg,1,0,TD_Unknown);
 
       if (!$$) {
-        yyerror("Calc_Matrix1 failed (T_SUB): Critical!");
+        vexpr_error("Calc_Matrix1 failed (T_SUB): Critical!");
         YYERROR;
       }
    }
@@ -705,7 +705,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,pow,1,0,TD_Unknown);
 
       if (!$$) {
-        yyerror("Calc_Matrix2 failed (T_EXP): Critical!");
+        vexpr_error("Calc_Matrix2 failed (T_EXP): Critical!");
         YYERROR;
       }
    }
@@ -714,7 +714,7 @@ exp:
       $$ = Calc_Matrix1($2,not,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix1 failed (T_NOT): Critical!");
+         vexpr_error("Calc_Matrix1 failed (T_NOT): Critical!");
          YYERROR;
       }
    }
@@ -723,7 +723,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,and,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_AND): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_AND): Critical!");
          YYERROR;
       }
    }
@@ -732,7 +732,7 @@ exp:
       $$ = Calc_Matrix2($1, $3,or,1,0,TD_UByte);
 
       if (!$$) {
-         yyerror("Calc_Matrix2 failed (T_OR): Critical!");
+         vexpr_error("Calc_Matrix2 failed (T_OR): Critical!");
          YYERROR;
       }
    }
@@ -741,7 +741,7 @@ exp:
       $$ = Calc_MatrixTo($1,$3,2);
 
       if (!$$) {
-         yyerror("Calc_MatrixTo failed (T_INTERP2): Critical!");
+         vexpr_error("Calc_MatrixTo failed (T_INTERP2): Critical!");
          YYERROR;
       }
    }
@@ -750,7 +750,7 @@ exp:
       $$ = Calc_MatrixTo($1,$3,3);
 
       if (!$$) {
-         yyerror("Calc_MatrixTo failed (T_INTERP3): Critical!");
+         vexpr_error("Calc_MatrixTo failed (T_INTERP3): Critical!");
          YYERROR;
       }
    }

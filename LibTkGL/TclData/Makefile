@@ -19,9 +19,9 @@ else
 endif
 
 LIBTCLTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
-LEXFLAGS   =
-YACCFLAGS  =
-OBJ = $(GRAMMAR).tab.o lex.yy.o $(GRAMMAR).o gpc.o \
+LEXFLAGS   = -P vexpr_
+YACCFLAGS  = -p vexpr_
+OBJ = $(GRAMMAR).tab.o lex.vexpr_.o $(GRAMMAR).o gpc.o \
 	Data_Funcs.o Data_Matrix.o Data_FF.o Data_Render.o Data_RenderShader.o Vertex.o \
 	GeoTex.o GeoRef.o GeoRef_RPN.o GeoRef_WKT.o GeoRef_RDR.o \
 	tclVector.o tclDataDef.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
