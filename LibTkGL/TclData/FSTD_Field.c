@@ -640,18 +640,20 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
    FSTD_File *fid;
    int        i=1;
 
-   if (Field->Ref->ZRef.PTop==0.0) {
-      if ((fid=((FSTD_Head*)Field->Head)->FID)) {
-         i=0;
+   if (Field->Ref->ZRef.Type!=LVL_PRES) {
+      if (Field->Ref->ZRef.PTop==0.0) {
+         if ((fid=((FSTD_Head*)Field->Head)->FID)) {
+            i=0;
 
-         if (FSTD_FileSet(NULL,fid)<0)
-            return(i);
+            if (FSTD_FileSet(NULL,fid)<0)
+               return(i);
 
-         EZLock_RPNField();
-         i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
-         EZUnLock_RPNField();
+            EZLock_RPNField();
+            i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
+            EZUnLock_RPNField();
 
-         FSTD_FileUnset(NULL,fid);
+            FSTD_FileUnset(NULL,fid);
+         }
       }
    }
 

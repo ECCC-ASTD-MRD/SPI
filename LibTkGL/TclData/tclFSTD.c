@@ -196,7 +196,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
          if (field->Ref->ZRef.PTop==0.0 && field->Ref->ZRef.PRef==0.0) {
             if (!FSTD_DecodeRPNLevelParams(field)) {
-               Tcl_AppendResult(Interp,"Could not find level paramaters from file",(char*)NULL);
+               Tcl_AppendResult(Interp,"Could not find level parameters from file",(char*)NULL);
                return(TCL_ERROR);
             }
          }
