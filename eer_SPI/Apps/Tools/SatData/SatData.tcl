@@ -16,10 +16,10 @@
 #
 #   - la localisation selon la longitude est :
 #
-#        GOES 8 / GOES 12 / GOES 13 :   75 W  +/- 83 degres
-#        GOES 9 / GOES 10 / GOES 11 :  135 W  +/- 83 degres
-#        METEOSAT                   :    0
-#        GMS                        :  140 E
+#        GOES 8 / GOES 12 / GOES 13           :   75 W  +/- 83 degres
+#        GOES 9 / GOES 10 / GOES 11 / GOES 15 :  135 W  +/- 83 degres
+#        METEOSAT                             :    0
+#        GMS                                  :  140 E
 #
 #===============================================================================
 
@@ -52,7 +52,7 @@ proc SatData::Close { } {
 
    #----- Reinitialiser les parametres
 
-   foreach sat { GOES11 GOES13 } no { 0 1 } {
+   foreach sat { GOES15 GOES13 } no { 0 1 } {
       set SatData::Data(View$sat) 0
    }
 
@@ -117,7 +117,8 @@ proc SatData::DataExtract { InFile } {
    #----- execute the converter program.
 
    #set err [catch { exec /usr/local/env/afsisio/scripts/sat/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } msg ]
-   set err [catch { exec /home/binops/afse/eer/bin/sat.hdfrawcnvrt.pl.debug -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } msg ]
+   #set err [catch { exec /home/binops/afse/eer/bin/sat.hdfrawcnvrt.pl.debug -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/SAT_hdf2fstd.out } msg ]
+   set err [catch { exec /home/binops/afse/eer/script/sat.hdfrawcnvrt.pl -d $InFileDate -v -o $outfile -s $IdSat -g $Data(Grille) > $env(HOME)/.spi/Tmp/PSAT_hdf2fstd.out } msg ]
 
    if { $err } {
       Log::Print ERROR "Can't process hdf rawdata :\n\n$msg"
@@ -150,7 +151,7 @@ proc SatData::DataGet { }  {
    #----- Calculer le traitement a effectuer
 
   set todo 0
-  foreach sat { GOES11 GOES13 } {
+  foreach sat { GOES15 GOES13 } {
       foreach c { nV } {
          incr todo [llength [.satdata.sel.s$sat.ch.c$c.list curselection]]
       }
@@ -188,46 +189,21 @@ proc SatData::DataGet { }  {
          Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
       }
 
-      set err [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
- SORTIE(STD,1000,A)
- LIREE('Z9','O',-1,0,0,4,'        ')
-C ---- canal 5 pour les cas d'archives.
- MOINSE('Z9','O',-1,0,0,5,'        ')
- ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" } msg ]
-      if { $err } {
-         Log::Print ERROR "Can't pgsm SAT_$file :\n\n$msg"
-      }
-
       InfoFrame::Incr .satdata.info.msg 1
    }
    .satdata.seluser.ch.list selection clear 0 end
 
-   #----- Recuperer les donnees selectionnees pour GOES11 et GOES13.
+   #----- Recuperer les donnees selectionnees pour GOES15 et GOES13.
 
-   foreach sat { GOES11 GOES13 } ch5ou6 { 5 6 } {
+   foreach sat { GOES15 GOES13 } {
       foreach c { nV } {
          foreach item [.satdata.sel.s$sat.ch.c$c.list curselection] {
             set file [.satdata.sel.s$sat.ch.c$c.list get $item]
             SatData::DataExtract $file
 
-            #----- Calcul du 4-5.
-
-            InfoFrame::Msg .satdata.info.msg "[lindex $Msg(45) $GDefs(Lang)] $item."
             set err [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
             if { $err } {
                Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
-            }
-
-            set err [catch { exec pgsm+ -iment $env(HOME)/.spi/Tmp/SAT_$file -ozsrt $Data(ResultFile) << "ENDPGSM
- SORTIE(STD,1000,A)
- LIREE('Z9','O',-1,0,0,4,'        ')
-C ---- canal 5 pour GOES 11 ou canal 6 pour GOES 13.
- MOINSE('Z9','O',-1,0,0,${ch5ou6},'        ')
- ECRITS('Z9',-16,-1,0,0,45,'O','',-1,IMPRIM)
-ENDPGSM" } msg ]
-            if { $err } {
-               Log::Print ERROR "Can't pgsm SAT_$file :\n\n$msg"
             }
 
             InfoFrame::Incr .satdata.info.msg 1
@@ -504,7 +480,7 @@ proc SatData::DrawCoords { Canvas } {
 proc SatData::GetFiles { } {
    variable Data
 
-   foreach sat { GOES11 GOES13 } {
+   foreach sat { GOES15 GOES13 } {
       foreach c { nV } {
 
         Log::Print DEBUG "$Data(CPath$sat) , $Data(C$c)"
@@ -898,8 +874,8 @@ proc SatData::UpdateItems { Frame } {
          SatData::DrawCoords $Data(Canvas)
       }
 
-      if { $Data(ViewGOES11) } {
-         Viewport::DrawArea $Data(Frame) $Data(VP) $Data(CoordGOES11) "$Page::Data(Tag)$Data(VP) SAT" SATGOES11 \
+      if { $Data(ViewGOES15) } {
+         Viewport::DrawArea $Data(Frame) $Data(VP) $Data(CoordGOES15) "$Page::Data(Tag)$Data(VP) SAT" SATGOES15 \
             blue blue @$GDefs(Dir)/Resources/Bitmap/raydiagright08.xbm False 1
       }
       if { $Data(ViewGOES13) } {

@@ -31,7 +31,7 @@ namespace eval SatData {
    set Lbl(Out)      { "Fichier" "File   " }
    set Lbl(User)     { "Autres fichiers" "Other files" }
    set Lbl(Path)     { "Répertoire" "Directory " }
-   set Lbl(GOES11)   { " GOES Ouest / GOES 11 " " GOES West / GOES 11 " }
+   set Lbl(GOES15)   { " GOES Ouest / GOES 15 " " GOES West / GOES 15 " }
    set Lbl(GOES13)   { " GOES Est / GOES 13 " " GOES East / GOES 13 " }
 
    set Msg(Del)        { "Voulez-vous vraiment supprimer le domaine" \
