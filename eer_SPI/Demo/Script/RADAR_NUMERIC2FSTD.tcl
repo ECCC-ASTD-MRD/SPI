@@ -81,6 +81,7 @@ while { ![eof $f] } {
 set Data(Table) [lrange [split $Data(Table) \;] 0 end-1]
 foreach val $Data(Table) {
    set i 0
+
    foreach idx $val {
       if { ![vector is VECT$i] } {
          vector create VECT$i
@@ -128,14 +129,16 @@ switch $Data(Projection) {
 binary scan $Data(Data) c* Data(Indexes)
 
 if { [llength $Data(Indexes)] != $Data(SizeInBytes) } {
-   puts stderr "(WARNING) Mismatch between Data length ([llength $Data(Indexes)]) and specifid size $Data(SizeInBytes)"
+   puts stderr "(WARNING) Mismatch between data length ([llength $Data(Indexes)]) and specifid size $Data(SizeInBytes)"
 }
 
 #----- Create index field
 set i 0
 set j 0
 foreach index $Data(Indexes) {
-   fstdfield stats GRID -gridvalue $i $j $index
+
+   #----- Integer are signed so we unsign them
+   fstdfield stats GRID -gridvalue $i $j [expr { $index & 0xff }]
 
    if { [incr i]==$Data(Width) } {
       incr j
