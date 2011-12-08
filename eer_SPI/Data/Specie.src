@@ -28,16 +28,16 @@ c
 c            Average Breathing Rates, from ICRP 66 (Table B.16)
 c             :3 months   1 Year  5 Years 10 Years 15 Years    Adult:
 c    (m3/day) :  2.86     5.16     8.72    15.30    20.10    22.20  :
-     (m3/s)   :3.31e-05 5.97e-05 1.01e-04 1.77e-04 2.33e-04 2.57e-04:
+c    (m3/s)   :3.31e-05 5.97e-05 1.01e-04 1.77e-04 2.33e-04 2.57e-04:
 c             :                                                     :
-c             :                                                     : 
+c             :                                                     :
 cIsotope      :                     Committed                       :  Effective
 c symbol      :                  Dose Conversion                    :Dose Conversion
 c  |          :                   Factors (DCF)                     :Factors (DCF)                : Scavenging :         Intensity
 c  |   Half Life                 for Inhalation                     :for External Rad.            :    Rate    :           Units
 c  |     (sec):                      (Sv/Bq)                        :(Cloud shine)                :   (s -1)   :             |
 c  |       |  :                                                     :(Sv m3/Bq s)                 :Dry      Wet:             |
-c  |       |  :3 months   1 Year  5 Years 10 Years 15 Years    Adult:    |              Intensity   |        |               | 
+c  |       |  :3 months   1 Year  5 Years 10 Years 15 Years    Adult:    |              Intensity   |        |               |
 c  |       |       |        |        |        |        |        |   :    |    Effective    |        |        |   Deposition  |
 c  |       |       |        |        |        |        |        |   :    |    Dose Conv.   |        |        |    Velocity   |
 c  |       |       |        |        |        |        |        |   :    |     Factors     |        |        |      (m/s)    |
@@ -691,7 +691,7 @@ Os-196  2.09e+03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 
  P-32   1.23e+06 2.20e-08 1.50e-08 8.00e-09 5.30e-09 4.00e-09 3.40e-09 5.36e-16 8.52e-17 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       15  32  17   Phosphore     Phosphorus
  P-33   2.19e+06 6.10e-09 4.60e-09 2.80e-09 2.10e-09 1.90e-09 1.50e-09 1.45e-17 3.64e-20 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       15  33  18   Phosphore     Phosphorus
 Pa-227  2.30e+03 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 7.38e-16 1.81e-17 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 227 136   Protactinium  Protactinium
-Pa-228  7.92e+04 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 5.16e-14 1.05e-15 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 228 137   Protactinium  Protactinium 
+Pa-228  7.92e+04 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 5.16e-14 1.05e-15 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 228 137   Protactinium  Protactinium
 Pa-229  1.30e+05 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 229 138   Protactinium  Protactinium
 Pa-230  1.50e+06 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 2.91e-14 6.07e-16 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 230 139   Protactinium  Protactinium
 Pa-231  1.03e+12 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 0.00e+00 1.57e-15 3.78e-17 1.00e+00 1.00e-06 3.00e-05 1.00e-03 BQ       91 231 140   Protactinium  Protactinium
