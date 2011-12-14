@@ -37,7 +37,7 @@
 #include "tclData.h"
 
 typedef struct TParticle {
-   unsigned long long Date;
+   time_t Date;
    Coord  Co;
    float  ZPres,ZModel,ZMSL,Dist,Speed;
 } TParticle;
