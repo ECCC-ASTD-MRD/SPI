@@ -157,11 +157,10 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
 
    GDB_ThreadData      *tdata=Tcl_GetThreadData(&dataKey,sizeof(GDB_ThreadData));
    GDB_ThreadQueueData *qdata;
-   ViewportItem        *vp=NULL;
-   Projection          *proj=NULL;
+   ViewportItem        *vp;
+   Projection          *proj;
    int                  r=0;
 
-   GDB_Data *data=(GDB_Data*)clientData;
    GDBTData=tdata;
 
    /*Loop ad vitam eternam*/
@@ -175,10 +174,7 @@ Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData) {
 
       /*Process queued items*/
       proj=NULL;vp=NULL;
-      while(tdata->QueueStart) {
-         if (!(qdata=tdata->QueueStart)) {
-            break;
-         }
+      while(qdata=tdata->QueueStart) {
 
          if (qdata->Proj && qdata->Proj->VP) {
             vp=qdata->Proj->VP;
@@ -286,15 +282,14 @@ int GDB_ThreadQueueAdd(Tcl_ThreadId Id,Projection *Proj,GDB_Tile *Tile,GDB_DataG
       return(0);
    }
 
+   Tcl_MutexLock(&MUTEX_GDBQUEUE);
+
    qdata->Tile=Tile;
    qdata->Proc=Proc;
    qdata->Proj=Proj;
    qdata->Param1=Param1;
    qdata->Param2=Param2;
    qdata->Next=NULL;
-
-   Tcl_MutexLock(&MUTEX_GDBQUEUE);
-
    qdata->Tile->Flag++;
    qdata->Proj->Loading++;
 
@@ -427,22 +422,24 @@ int GDB_Init(GDB_Data *GDB) {
 void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon1,float *LatLon) {
 
    GDB_Geo *geo;
+   int     n;
 
    geo=(GDB_Geo*)malloc(sizeof(GDB_Geo));
 
+   // Keep number negative until everything is reprojected and ready
+   geo->Box.Nb=-Nb;
    geo->Box.Co[0].Lat=Lat0; geo->Box.Co[0].Lon=Lon0; geo->Box.Co[0].Elev=0.0;
    geo->Box.Co[1].Lat=Lat1; geo->Box.Co[1].Lon=Lon0; geo->Box.Co[1].Elev=0.0;
    geo->Box.Co[2].Lat=Lat1; geo->Box.Co[2].Lon=Lon1; geo->Box.Co[2].Elev=0.0;
    geo->Box.Co[3].Lat=Lat0; geo->Box.Co[3].Lon=Lon1; geo->Box.Co[3].Elev=0.0;
-   geo->Box.Nb=Nb;
 
    geo->Loc=(Vect3d*)malloc(Nb*sizeof(Vect3d));
-   Nb=0;
-   while (Nb<geo->Box.Nb) {
-      geo->Loc[Nb][1]=*LatLon++;
-      geo->Loc[Nb][0]=*LatLon++;
-      geo->Loc[Nb][2]=0.0;
-      Nb++;
+   n=0;
+   while (n<Nb) {
+      geo->Loc[n][1]=*LatLon++;
+      geo->Loc[n][0]=*LatLon++;
+      geo->Loc[n][2]=0.0;
+      n++;
    }
 
    geo->List=0;
@@ -500,14 +497,17 @@ void GDB_GeoFree(GDB_Geo *Geo) {
 void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
 
    /*Pour toutes les boites de vecteurs*/
-   while(Geo) {
+   while (Geo) {
 
       /*Projeter tout les vecteurs*/
-      Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,Geo->Box.Nb);
+      Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,-Geo->Box.Nb);
 
       /*Calculer les limites de la boite*/
       if (!Proj->Type->Project(Proj,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {
          Geo->Box.Nb=-1;
+      } else {
+         // Everything is reprojected and ready, Set Nb positive
+         Geo->Box.Nb=-Geo->Box.Nb;
       }
 
       Geo=Geo->Next;
@@ -1050,8 +1050,8 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
 
-   /*Is it visible (in X,Y and Z) and when printing there's a fix for a problem with the Z coordinate???*/
-   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && (GLRender->TRCon || (min[2]<Proj->ZPos[2]))) {
+   /*Is it visible (in X,Y and Z)*/
+   if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2]) {
 
       /*Is the box too small*/
       if (Vect_Weight(min,max)<Proj->MinSize) {
@@ -1749,13 +1749,13 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
          if (tile->Box.Nb==0)
             GDB_TileInit(tile,lat,lon,GDB->DegT,Proj);
 
-         if (tile->Box.Nb==-1)
+         if (tile->Box.Nb<0)
             continue;
 
          /*Check for visibility when not doing outputs*/
          if (GDB_Loc(tile->Box,Proj,1,Proj->VP->Width,1,Proj->VP->Height)!=GDB_OUT) {
 
-            /*If resolution has changed en we're not doing outputs, reload data*/
+            /*If resolution has changed and we're not doing outputs, reload data*/
             tile->Res=res;
             if (!GLRender->TRCon && GLRender->Resolution<=2) {
                GDB_TileGetData(tile,GDB,Proj);

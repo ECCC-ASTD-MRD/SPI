@@ -1237,6 +1237,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
       /*Force update if rendering within PBuffer*/
       if (GLRender->TRCon) {
+
          /*Wait for everything to be loaded*/
          sec=clock();
          while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
@@ -1917,6 +1918,10 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    GDAL_Band *band;
    OGR_Layer *layer;
 
+   if (!(proj=Projection_Get(vp->Projection))) {
+      return(TCL_ERROR);
+   }
+
    /*Definir le font du viewport*/
    if (Tk_CanvasPsFont(Interp,Canvas,vp->tkfont) != TCL_OK) {
       return(TCL_ERROR);
@@ -1945,8 +1950,6 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
 
    sprintf(buf,"gsave\n%.1f %.1f translate\n",vp->x,Tk_CanvasPsY(Canvas,vp->Height+vp->y));
    Tcl_AppendResult(Interp,buf,(char*)NULL);
-
-   proj=Projection_Get(vp->Projection);
 
    w=vp->Width;
    h=vp->Height;

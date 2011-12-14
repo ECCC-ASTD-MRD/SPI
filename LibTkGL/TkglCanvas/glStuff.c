@@ -1425,10 +1425,9 @@ int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
        }
        no+=2+d;
    }
-   if (no>0) {
-      if (!poly) {
-         Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
-      }
+
+   if (no>0 && !poly) {
+      Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
    }
 
    return(no);
@@ -1589,7 +1588,7 @@ void trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
 */
 void glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int X2,int Y2,XColor *Color,int Fill){
 
-   char buf[128];
+   char buf[256];
 
    if (Color)
       Tk_CanvasPsColor(Interp,Canvas,Color);
@@ -1628,7 +1627,7 @@ void glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int
 */
 void glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify){
 
-   char txt[64];
+   char txt[256];
 
    if (Color)
       Tk_CanvasPsColor(Interp,Canvas,Color);

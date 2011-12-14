@@ -219,7 +219,6 @@ void Ortho_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          glPopMatrix();
       }
    }
-
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
 }
@@ -244,7 +243,7 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
       glRotated(10.0,0.0,1.0,0.0);
-      
+
       /*Trace des latitudes*/
       for(lon=0;lon<180;lon+=Proj->Geo->Params.CoordDef){
          if (Interp) glFeedbackInit(2000,GL_2D);
