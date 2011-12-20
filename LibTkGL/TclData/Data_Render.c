@@ -1158,7 +1158,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    int    depth;
    double v0,v1,v2,v3;
    Vect3d g0,g1,g2,g3,dim,*pos;
-   int    dx,dy;
+   unsigned int    dx,dy;
 
    if (GLRender->Resolution>2) {
       return(0);
