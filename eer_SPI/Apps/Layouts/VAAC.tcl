@@ -253,6 +253,7 @@ proc VAAC::DataInit { Frame } {
 
    set Data(Index)          ""
 
+   set Sim(Model)           ""
    set Sim(AccYear)         0
    set Sim(AccMonth)        01
    set Sim(AccDay)          01

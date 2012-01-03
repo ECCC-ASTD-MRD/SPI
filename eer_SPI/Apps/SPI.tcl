@@ -1269,6 +1269,12 @@ proc SPI::Execute { Script } {
             eval Macro::${script}::Args
          }
          eval Macro::${script}::Execute
+
+         #----- Check for macro cleanup function
+         eval set proc \[info procs ::Macro::${script}::Clean\]
+         if { $proc!="" } {
+            eval Macro::${script}::Clean
+         }
       }
    }
 }

@@ -20,8 +20,7 @@ set GDefs(FrontEndUser) afsr005
 set GDefs(TransmitUser) afsiops
 
 set GDefs(FrontEnds)    { alef dorval-ib }
-set GDefs(BackEnds)     { maia saiph }
-set GDefs(BackEndmaia)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+set GDefs(BackEnds)     { saiph zeta }
 set GDefs(BackEndsaiph) { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 set GDefs(BackEndzeta)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
 
