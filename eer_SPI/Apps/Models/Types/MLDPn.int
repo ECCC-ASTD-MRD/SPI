@@ -101,7 +101,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
 
          #----- Virus Source Type.
          if { $Sim(SrcType) == "VIRUS" } {
-            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(EmIsoSymbol) MLDPn::Sim(VirusID) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "set MLDPn::Sim(VirusType) \[lindex \$MLDPn::Sim(ListVirusType) \$MLDPn::Sim(VirusID)\]"
+            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(VirusName) MLDPn::Sim(VirusSymbol) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "" $Sim(ListVirusSymbol)
             pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
             Bubble::Create $tabframe.others.opt.virus $Bubble(Virus)
          }
@@ -164,6 +164,10 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          bind $tabframe.others.opt.reflect.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
          bind $tabframe.others.opt.reflect.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
+         #----- Seed.
+         Option::Create $tabframe.others.opt.seed [lindex $Lbl(Seed) $GDefs(Lang)] MLDPn::Sim(Seed) 1 -1 $MLDPn::Sim(ListSeed) ""
+         pack $tabframe.others.opt.seed -side top -ipady 1 -fill x
+
       pack $tabframe.others.opt -side top -fill x -padx 2
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
@@ -179,6 +183,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    Bubble::Create $tabframe.others.opt.varmesoscale  $Bubble(VarMesoscale)
    Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
    Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
+   Bubble::Create $tabframe.others.opt.seed          $Bubble(Seed)
 }
 
 #----------------------------------------------------------------------------
@@ -785,10 +790,10 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
    if { $Sim(Restart)!="" } {
       if { $Sim(SrcType) == "ACCIDENT" } {
          for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
-            $base.iso.$j.del configure -state disabled
-            $base.iso.$j.btn configure -state disabled
+            $base.$j.del configure -state disabled
+            $base.$j.btn configure -state disabled
          }
-         $base.iso.button.add configure -state disabled
+         $base.button.add configure -state disabled
       }
    }
 

@@ -195,10 +195,8 @@ proc MLDP::CreateScriptInput { } {
    puts $file ""
    puts $file "#----- Model specific parameters"
 
-   if { $Sim(ReNewMeteo)!="" } {
-      puts $file "MLDP_METEO=$Sim(ReNewMeteo)"
-   } elseif { $Model::Param(DBaseLocal) } {
-      puts $file "MLDP_METEO=$Sim(Path)/meteo"
+   if { $Sim(ReNewMeteo)!="" || $Model::Param(DBaseLocal) } {
+      puts $file "MLDP_METEO=$Sim(PathRun)/meteo"
    } else {
       puts $file "MLDP_METEO=$Sim(Meteo)"
    }

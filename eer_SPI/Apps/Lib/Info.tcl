@@ -53,7 +53,7 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
-                        SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Scenario }
+                        SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -85,6 +85,7 @@ namespace eval Info {
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
    set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
+   set Lbl(Seed)                 { "Graine aléatoire" "Random seed" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }

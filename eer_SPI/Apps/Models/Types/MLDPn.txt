@@ -58,6 +58,7 @@ namespace eval MLDPn {
    set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
+   set Lbl(Seed)                { "Graine aléatoire " "Random seed     " }
 
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
@@ -140,6 +141,7 @@ namespace eval MLDPn {
    set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modelling of mesoscale fluctuations." }
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
+   set Bubble(Seed)                   { "Valeur d'initialisation du générateur de nombre aléatoire." "Random number generator initialisation value." }
 
    set Bubble(EmissionGlobal)         { "Paramètres globaux d'émission." "Global emission parameters" }
    set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation et pour MLDP0, l'effet du dépôt gravitationnel selon la loi de Stokes et ." "Select the type of particle size distribution\nto model the effect of particle settling velocity and for MLDP0, the effect of gravitational settling according to Stokes' law." }

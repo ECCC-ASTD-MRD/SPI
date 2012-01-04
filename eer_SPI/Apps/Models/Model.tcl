@@ -495,22 +495,37 @@ proc Model::ParamsCopy { Model  } {
 
    upvar ${Model}::Sim sim
 
+   #----- Link restart
+   if { $sim(RestartFile)!="" } {
+      exec ln -s $sim(RestartFile) $sim(Path)/tmp/[file tail $sim(RestartFile)].in
+   }
+
    #----- Run will be remote, setup what's needed on remote host.
    if { $Param(Remote) } {
 
       #----- Create simulation directories .
-      set ErrorCode [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp 2>@1 } msg]
-      if { $ErrorCode != 0 } {
+      set err [catch { exec ssh -l $GDefs(FrontEndUser) -n -x $Param(Host) mkdir -p $sim(PathRun) $sim(PathRun)/meteo $sim(PathRun)/results $sim(PathRun)/tmp 2>@1 } msg]
+      if { $err } {
          Log::Print ERROR "Unable to create simulation directories on $Param(Host).\n\n$msg"
          return False
       }
 
       #----- Copy needed files.
-      set ErrorCode [catch { eval exec scp -p $sim(Path)/tmp/sim.pool [glob $sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun)/tmp } Message]
-      if { $ErrorCode != 0 } {
-         Log::Print ERROR "Copying meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$Message"
+      set err [catch { eval exec scp -p $sim(Path)/tmp/sim.pool [glob $sim(Path)/tmp/*.in] $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun)/tmp } msg]
+      if { $err } {
+         Log::Print ERROR "Copy of meteorological preprocessing input file and script on ($Param(Host)) has failed.\n\n$msg"
          return False
       }
+
+      #----- If this is a relaunch, copy previous meteo
+      if { $sim(ReNewMeteo)!="" || $Model::Param(DBaseLocal) } {
+         set err [catch { eval exec scp -rp $sim(Path)/meteo $GDefs(FrontEndUser)@$Param(Host):$sim(PathRun) } msg]
+         if { $err } {
+            Log::Print ERROR "Copy of meteorological input file(s) on ($Param(Host)) has failed.\n\n$msg"
+            return False
+         }
+      }
+
       Log::Print INFO "Meteorological preprocessing input files and script have been copied on ($Param(Host)) successfully."
    }
 }
@@ -781,37 +796,24 @@ proc Model::ParamsCPUModel { } {
    switch $Param(Arch) {
       "Linux"  {
          set Param(NbMPItasks)        1
-         set Param(ListNbMPItasks)    { 1 }
+         set Param(ListNbMPItasks)    { 1 2 4 8 }
          set Param(NbOMPthreads)      2
          set Param(ListNbOMPthreads)  { 1 2 4 8 }
-         set Param(OMPthreadFact)     1 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+         set Param(OMPthreadFact)     1
          set Param(ListOMPthreadFact) { 1 }
          set Param(NbCPUsMeteo)       1
          set Param(ListNbCPUsMeteo)   { 1 2 4 }
       }
       "AIX"    {
          set Param(NbMPItasks)        2
-         set Param(ListNbMPItasks)    { 1 2 3 4 5 8 10 16 }
-         set Param(NbOMPthreads)      16
-         set Param(ListNbOMPthreads)  { 16 }
-         set Param(OMPthreadFact)     2 ; #----- Integer multiplicative factor to apply to number of OpenMP threads [1|2].
+         set Param(ListNbMPItasks)    { 1 2 4 8 16 32 64 128 }
+         set Param(NbOMPthreads)      8
+         set Param(ListNbOMPthreads)  { 4 8 16 32 64 }
+         set Param(OMPthreadFact)     2
          set Param(ListOMPthreadFact) { 1 2 }
          set Param(NbCPUsMeteo)       16
          set Param(ListNbCPUsMeteo)   { 1 2 4 8 16 }
       }
-   }
-
-   if { $Param(IsUsingSoumet) } {
-
-      if { $Param(NbCPUsMeteo) > $Param(NbOMPthreads) } {
-
-         #----- Update number of OMP threads for model.
-         set Param(NbOMPthreads) $Param(NbCPUsMeteo)
-      }
-
-      #----- Update list of available number of OMP threads.
-      set idx [lsearch -exact $Param(ListNbCPUsMeteo) $Param(NbCPUsMeteo)]
-      set Param(ListNbOMPthreads) [lrange $Param(ListNbCPUsMeteo) $idx end]
    }
 
    #----- Update list of available MPI tasks, OMP threads and OMP factor for model.
@@ -934,7 +936,8 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Event)     [lindex $Model::Param(Events) 0]
    set sim(By)        [lindex $Model::Param(Bys) 0]
 
-   set sim(ReNewMeteo) ""
+   set sim(RestartFile) ""
+   set sim(ReNewMeteo)  ""
    set sim(GridChanged) 0
    set sim(Grid) 0
 
@@ -950,7 +953,8 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(GridLat)      [lindex $sim(GridSrc) 1]
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
 
-   set sim(Blame)        [string trim [lindex [split [lindex [split [exec finger $env(LOGNAME)] \n] 0] :] end]]
+   catch { set str [exec finger $env(LOGNAME) 2>/dev/null] }
+   set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
    set sim(Click)        [clock seconds]
 
    #----- Initialize grid related stuff
@@ -1159,7 +1163,7 @@ proc Model::ParamsLaunch { Model Frame } {
    #----- Enabling/Disabling email monitoring option.
    checkbutton $tabframe.user.emonitor -anchor w -text "[lindex $Lbl(EMail) $GDefs(Lang)]" -offvalue 0 -onvalue 1 \
        -variable Model::Param(IsEMail) -indicatoron False \
-      -command "if { \$Model::Param(IsEMail) } {
+       -command "if { \$Model::Param(IsEMail) } {
                    pack $tabframe.user.mail -after $tabframe.user.emonitor -side right -anchor w -padx 2 -fill x -expand True
                 } else {
                    pack forget $tabframe.user.mail
@@ -1437,9 +1441,14 @@ proc Model::ParamsMeteoInput { Model } {
    upvar ${Model}::Sim sim
 
    if { $sim(ReNewMeteo)!="" } {
+      #----- Copy needed info from previous sim
       file copy -force $sim(ReNewMeteo)/../tmp/data_std_eta.in $sim(Path)/tmp/data_std_eta.in
       set sim(MeteoDataFiles) [exec cat $sim(Path)/tmp/data_std_eta.in]
       set Param(DBaseProg) [set Param(DBaseDiag) [file dirname [lindex $sim(MeteoDataFiles) 0]]]
+
+      #----- Link to previous sim's meteo
+      file delete -force $sim(Path)/meteo
+      exec ln -s $sim(ReNewMeteo) $sim(Path)/meteo
    } else {
       set file [open $sim(Path)/tmp/data_std_eta.in w 0644]
       puts $file $sim(MeteoDataFiles)

@@ -1167,7 +1167,7 @@ proc MLDPn::ValidateEmissionQuantity { } {
             }
 
             if { $quantity($j)<0.0 || $quantity($j)==0.0 && $Sim(Restart)==""  } {
-               Dialog::Error .modelnew $Error(TotalQuantityAccident) "[lindex $Error(TotalQuantity2) $GDefs(Lang)] [lindex [lindex $Sim(EmIsoInfo) $j] 0]"
+               Dialog::Error .modelnew $Error(TotalQuantityAccident) "[lindex $Error(TotalQuantity2) $GDefs(Lang)] [lindex $Sim(EmIsoInfo) $j]"
                return 0
             }
          }
