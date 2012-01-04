@@ -34,7 +34,7 @@ set MetDataFile [lindex $argv 3]
 
 cd $DirTmp
 
-set stmp [exec r.date $Date0]
+set stmp [fstdstamp fromseconds [clock scan $Date1 -format "%Y%m%d%H" -gmt True]]
 set grid [split [exec cat griddef.in] ","]
 set file [open $MetDataFile r]
 gets $file files
@@ -63,12 +63,11 @@ foreach file $files {
                if { [expr $IP2%6]==0 && ($IP1==500 || $IP1==700 || $IP1==850 || $IP1==1000) } {
 
                   fstdfield read FLD 2 [lindex $field 1]
-
                   fstdfield gridinterp NEW FLD
 
                   #----- Determiner les nouveaux parametres temporels
 
-                  set ip2   [exec r.date [fstdfield define NEW -DATEV] $stmp]
+                  set ip2   [fstdstamp diff [fstdfield define NEW -DATEV] $stmp]
                   set npas  [expr int(double($ip2)/[fstdfield define NEW -DEET]*3600.0)]
 
                   #----- Definir le champs

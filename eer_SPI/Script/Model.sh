@@ -12,7 +12,7 @@
 #
 # Description: Take care of all the model run processes.
 #              For each supported model, a support file has to be created containing the following functions:
-#                - {Model}_Pre     : Do thr pre-processing stuff
+#                - {Model}_Pre     : Do the pre-processing stuff
 #                - {Model}_Run     : Runs the model
 #                - {Model}_Post    : Do the post-processing stuff
 #
@@ -30,9 +30,9 @@
 . ~/.profile_eer >/dev/null 2>&1
 
 #----- have to overload some variables for now
-export EER_DIRSCRIPT=${HOME}/eer_SPI-7.5.0/Script
-export EER_DIRDATA=${HOME}/eer_SPI-7.5.0/Data
-export SPI_PATH=${HOME}/eer_SPI-7.5.0
+export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
+export EER_DIRDATA=/home/binops/afse/eer/eer_SPI-7.5.1/Data
+export SPI_PATH=/home/binops/afse/eer/eer_SPI-7.5.1
 
 function Model_PoolEncode {
 
@@ -261,7 +261,7 @@ function Model_CleanUp {
 function Model_CopyMeteo {
 
    #----- Exit function if running locally or not doing meteo.
-   if [[ ${MODEL_PRE} -eq 0 || ${MODEL_NEEDCOPY} -eq 0 ]] ; then
+   if [[ ${MODEL_PRE} -eq 0 || ${MODEL_NEEDCOPY} -eq 0 || ${#MLDP_METEO} -gt 10 ]] ; then
       return 0
    fi
 
@@ -302,7 +302,7 @@ function Model_CopyResult {
          Log_Print ERROR "Problems while copying model results to local host (${MODEL_LOCALHOST})."
       fi
 
-      Log_Print INFO "Elapsed time copying reults:" `expr ${SECONDS}-${sec}`
+      Log_Print INFO "Elapsed time copying results:" `expr ${SECONDS}-${sec}`
    fi
 
    return ${status}
@@ -366,6 +366,9 @@ MODEL_DIRSCRIPT=${EER_DIRSCRIPT}
 . ${MODEL_DIRSCRIPT}/Model_${MODEL_NAME}.sh
 
 #----- Start the job
+LOG_TIME=1
+LOG_LEVEL=INFO
+
 Log_Start Model.sh 1.0 ${1}
 
 Model_Init
@@ -405,6 +408,6 @@ Log_End ${MODEL_EXITSTATUS} False
 
 Model_CopyLog
 #Model_CopyTrace
-Model_CleanUp
+#Model_CleanUp
 
 exit ${MODEL_EXITSTATUS}

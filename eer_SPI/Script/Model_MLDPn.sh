@@ -33,14 +33,6 @@ function MLDPn_Pre {
    #----- Check for pre-calculated meteo.
    if [[ ${#MLDP_METEO} -gt 10 ]] ; then
       Log_Print INFO "Metfields are pre-calculated."
-      if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-         scp -p ${MODEL_USER}@${MODEL_LOCALHOST}:${MLDP_METEO}/*  ${MODEL_RUNDIR}/meteo
-         taskstatus=$?
-         MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
-         if [[ ! ${taskstatus} -eq 0 ]] ; then
-            Log_Print ERROR "Could not copy pre-calculated metfields."
-         fi
-      fi
    else
       ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} ${ARGOS}\
          >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
