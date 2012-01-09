@@ -93,6 +93,9 @@ proc MLDPn::Launch { } {
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $metdate $metdate $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
+   #----- Copy needed file to run host:directory.
+   Model::ParamsCopy MLDPn
+
    if { $Model::Param(IsUsingSoumet) } {
 
       #----- Meteo is local, launch it's processing and wait for it.
@@ -106,14 +109,11 @@ proc MLDPn::Launch { } {
          Dialog::WaitDestroy
       }
 
-      #----- Copy needed file to run host:directory.
-      Model::ParamsCopy MLDPn
-
-      set cpus  "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi -smt $Model::Param(OMPthreadFact)"
-      set mem  20G
+      set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi -smt 2"
+      set mem  "20G"
 
       exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDPn.in -mach $Model::Param(Host) \
-         -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+         -t $Model::Param(WallClock) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
       eval set err \[catch \{ exec $Sim(Path)/tmp/Model_Launch.sh 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
@@ -174,7 +174,7 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
-   puts $file "MODEL_PRE=$Model::Param(NbCPUsMeteo)"
+   puts $file "MODEL_PRE=$Model::Param(NbMPItasks)"
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_POOL=$Model::Param(Pool)"
@@ -986,8 +986,9 @@ proc MLDPn::ScenarioPad { } {
       incr dtemi $Sim(EmInter.$i)
    }
 
-   #----- Pad remaining time with a lull interval
-   set dt [expr $Sim(AccSecs)-$Sim(Sim0Secs)]
+   #----- Pad remaining time with a lull interval (factor fo model time step)
+   set ms [expr $Sim(ModelTimeStepMin)*60]
+   set dt [expr (($Sim(AccSecs)-$Sim(Sim0Secs))/$ms)*$ms]
 
    if { $Sim(RestartDelta)>[expr $dtemi+$dt] } {
       set Sim(EmInter.$i)           [expr ($Sim(RestartDelta)-($dtemi+$dt))]

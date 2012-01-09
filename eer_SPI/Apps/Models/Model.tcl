@@ -68,14 +68,12 @@ namespace eval Model {
    set Param(DBaseLocal) False                         ;#Is the metdata local
    set Param(DBaseDiag) ""                             ;#Path for diag metdata
    set Param(DBaseProg) ""                             ;#Path for prog metdata
-   set Param(NbCPUsMeteo)       1
-   set Param(ListNbCPUsMeteo)   { 1 }
    set Param(NbMPItasks)        1
    set Param(ListNbMPItasks)    { 1 }
    set Param(NbOMPthreads)      1
    set Param(ListNbOMPthreads)  { 1 }
-   set Param(OMPthreadFact)     1                     ;#Integer multiplicative factor to apply to number of OpenMP threads [1|2].
-   set Param(ListOMPthreadFact) { 1 }
+   set Param(WallClock)         10800
+   set Param(ListWallClock)     { 600 1200 3600 10800 21600 28800 }
    set Param(Submit)            ord_soumet            ;#Queue launcher
    set Param(Events)            { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ;#----- List of type of events.
    set Param(Bys)               { "Internal" "IAEA" "Health Canada" "REEC" }                       ;#----- List of requesters.
@@ -94,10 +92,9 @@ namespace eval Model {
    set Lbl(Params)        { "Paramètres" "Parameters" }
    set Lbl(Host)          { "Nom de l'hôte  " "Host name      " }
    set Lbl(Queue)         { "Type de queue  " "Queue type     " }
-   set Lbl(MetCPU)        { "Nb CPUs météo  " "Nb CPUs meteo  " }
    set Lbl(NbMPItasks)    { "Nb tâches MPI  " "Nb MPI tasks   " }
    set Lbl(NbOMPthreads)  { "Nb threads OMP " "Nb OMP threads " }
-   set Lbl(OMPthreadFact) { "Facteur OMP    " "OMP Factor     " }
+   set Lbl(WallClock)     { "Temps CPU   (s)" "Wall Clock  (s)" }
    set Lbl(IsEMail)       { "Surveillance par courriel" "E-mail monitoring" }
    set Lbl(EMail)         { "Courriel" "EMail" }
    set Lbl(Id)            { "Identification" "Identification" }
@@ -131,12 +128,11 @@ namespace eval Model {
    set Bubble(Host)          { "Hôte où le prétraitement météorologique et le modèle seront exécutés." \
                                "Host where meteorological preprocessing and model will be executed." }
    set Bubble(Queue)         { "Type de queue de lancement." "Type of launching queue." }
-   set Bubble(MetCPU)        { "Nombre de processus servant à l'exécution du\nprétraitement météorologique sur l'hôte sélectionné." "Number of processes to use for running\nmeteorological preprocessing on selected host." }
    set Bubble(NbMPItasks)    { "Nombre de tâches MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
                               "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
    set Bubble(NbOMPthreads)  { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
                                "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
-   set Bubble(OMPthreadFact) { "Facteur multiplicatif entier à appliquer\nau nombre de threads sélectionnés." "Integer multiplicative factor to apply\nto number of selected OMP threads." }
+   set Bubble(WallClock)     { "Temps CPU réel maximal en secondes pour l'exécution du modèle.\nUne durée trop longue peut ajouter un délai dans le système de queue" "Maximum wall clock time for model execution.\nToo long a wallclock time can add delays in queue." }
    set Bubble(IsEMail)       { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
    set Bubble(EMail)         { "Adresse de courrier électronique." "E-mail address." }
    set Bubble(LaunchModel)   { "Lancer le modèle." "Launch model." }
@@ -799,20 +795,12 @@ proc Model::ParamsCPUModel { } {
          set Param(ListNbMPItasks)    { 1 2 4 8 }
          set Param(NbOMPthreads)      2
          set Param(ListNbOMPthreads)  { 1 2 4 8 }
-         set Param(OMPthreadFact)     1
-         set Param(ListOMPthreadFact) { 1 }
-         set Param(NbCPUsMeteo)       1
-         set Param(ListNbCPUsMeteo)   { 1 2 4 }
       }
       "AIX"    {
-         set Param(NbMPItasks)        2
+         set Param(NbMPItasks)        16
          set Param(ListNbMPItasks)    { 1 2 4 8 16 32 64 128 }
          set Param(NbOMPthreads)      8
          set Param(ListNbOMPthreads)  { 4 8 16 32 64 }
-         set Param(OMPthreadFact)     2
-         set Param(ListOMPthreadFact) { 1 2 }
-         set Param(NbCPUsMeteo)       16
-         set Param(ListNbCPUsMeteo)   { 1 2 4 8 16 }
       }
    }
 
@@ -820,8 +808,12 @@ proc Model::ParamsCPUModel { } {
    catch {
       Option::Set $Param(Frame).params.mpi    $Param(ListNbMPItasks)
       Option::Set $Param(Frame).params.omp    $Param(ListNbOMPthreads)
-      Option::Set $Param(Frame).params.smt    $Param(ListOMPthreadFact)
-      Option::Set $Param(Frame).params.metcpu $Param(ListNbCPUsMeteo)
+
+      if { $Param(IsUsingSoumet) } {
+         Option::Enable $Param(Frame).params.wall True
+      } else {
+         Option::Disable $Param(Frame).params.wall
+      }
    }
 }
 
@@ -954,6 +946,7 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
 
    catch { set str [exec finger $env(LOGNAME) 2>/dev/null] }
+
    set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
    set sim(Click)        [clock seconds]
 
@@ -1120,13 +1113,6 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.params.queue $Bubble(Queue)
 
-   if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDP0" || $sim(Model)=="MLDPn" } {
-      #----- Nb CPUs for meteorological preprocessing.
-      Option::Create $tabframe.params.metcpu [lindex $Lbl(MetCPU) $GDefs(Lang)] Model::Param(NbCPUsMeteo) 0 -1 $Model::Param(ListNbCPUsMeteo) ""
-      pack $tabframe.params.metcpu -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.metcpu $Bubble(MetCPU)
-   }
-
    if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
 
       #----- Nb MPI tasks for model.
@@ -1138,13 +1124,11 @@ proc Model::ParamsLaunch { Model Frame } {
       Option::Create $tabframe.params.omp [lindex $Lbl(NbOMPthreads) $GDefs(Lang)] Model::Param(NbOMPthreads) 0 -1 $Model::Param(ListNbOMPthreads) ""
       pack $tabframe.params.omp -side top -anchor w -padx 2 -fill x
       Bubble::Create $tabframe.params.omp $Bubble(NbOMPthreads)
-   }
 
-   if { $sim(Model)=="MLDP1" } {
-      #----- OMP thread factor.
-      Option::Create $tabframe.params.smt [lindex $Lbl(OMPthreadFact) $GDefs(Lang)] Model::Param(OMPthreadFact) 0 -1 $Model::Param(ListOMPthreadFact) ""
-      pack $tabframe.params.smt -side top -anchor w -padx 2 -fill x
-      Bubble::Create $tabframe.params.smt $Bubble(OMPthreadFact)
+      #----- WallClock time.
+      Option::Create $tabframe.params.wall [lindex $Lbl(WallClock) $GDefs(Lang)] Model::Param(WallClock) 1 -1 $Model::Param(ListWallClock) ""
+      pack $tabframe.params.wall -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.wall $Bubble(WallClock)
    }
 
    #----- Identification params
@@ -1185,6 +1169,8 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.launch -side top -anchor w -fill x -padx 5 -pady 2 -anchor e
    Bubble::Create $tabframe.launch $Bubble(LaunchModel)
 
+   Model::ParamsCPUModel
+   Model::ParamsQueues
 }
 
 #----------------------------------------------------------------------------

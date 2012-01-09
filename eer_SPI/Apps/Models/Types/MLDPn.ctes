@@ -58,7 +58,6 @@ namespace eval MLDPn {
    set Sim(DtMin)                1.0                           ;#----- Diffusion time step minimum value [s].
    set Sim(IsIncludeHorizDiff)   TRUE                          ;#----- Flag indicating if including horizontal diffusion in free atmosphere.
    set Sim(IsIncludeSUV)         FALSE                         ;#----- Flag indicating if including horizontal wind speed variances in diffusion calculations.
-   set Sim(RunningTimeCPU)       10800                         ;#----- CPU running time for the job to end [s].
 
    set Sim(EmMaxNumberParticles) 2000000                       ;#----- Maximum number of particles.
    set Sim(EmDefaultNumberParticles) 100000                    ;#----- Maximum number of particles.

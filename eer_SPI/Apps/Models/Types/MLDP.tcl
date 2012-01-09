@@ -112,15 +112,15 @@ proc MLDP::Launch { } {
       if { $Sim(Model)=="MLDP1" } {
          set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi"
       } else {
-         set cpus "-cpus $Model::Param(NbCPUsMeteo)"
+         set cpus "-cpus 16"
       }
       set mem 40G
 
       exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-         -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+         -t $Model::Param(WallClock) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
       exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
       eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
-         -t $Sim(RunningTimeCPU) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
+         -t $Model::Param(WallClock) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
 
       if { $err } {
@@ -180,7 +180,7 @@ proc MLDP::CreateScriptInput { } {
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
-   puts $file "MODEL_PRE=$Model::Param(NbCPUsMeteo)"
+   puts $file "MODEL_PRE=[expr $Model::Param(NbMPItasks)>16?16:$Model::Param(NbMPItasks)]"
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_POOL=$Model::Param(Pool)"
@@ -190,7 +190,6 @@ proc MLDP::CreateScriptInput { } {
    puts $file "MODEL_NBMPITASKS=$Model::Param(NbMPItasks)     #\[1, 2, ..., 16\]"
    if { $Sim(Model)=="MLDP1" } {
       puts $file "MODEL_NBOMPTHREADS=$Model::Param(NbOMPthreads)   #\[1, 2, ..., 16\]"
-      puts $file "MODEL_OMPTHREADFACT=$Model::Param(OMPthreadFact)  #\[1, 2\]"
    }
    puts $file ""
    puts $file "#----- Model specific parameters"
@@ -356,7 +355,7 @@ proc MLDP::CreateModelInput { } {
       puts $file "[format "%-20s" $Sim(IsIncludeHorizDiff)] [format "%-20s" isIncludeHorizDiff] Flag indicating if including horizontal diffusion in free atmosphere."
    }
    puts $file "[format "%-20s" $Sim(IsIncludeSUV)] [format "%-20s" isIncludeSUV] Flag indicating if including horizontal wind speed variances in diffusion calculations."
-   puts $file "[format "%-20s" $Model::Param(OMPthreadFact)] [format "%-20s" ompthreads_fact] Integer multiplicative factor to apply to number of OpenMP threads \[1|2\]."
+   puts $file "[format "%-20s" 1] [format "%-20s" ompthreads_fact] Integer multiplicative factor to apply to number of OpenMP threads \[1|2\]."
 
    #----- Source parameters.
    set nbsrc [expr [llength $Sim(Name)]>$Sim(MaxNbSrc)?$Sim(MaxNbSrc):[llength $Sim(Name)]]

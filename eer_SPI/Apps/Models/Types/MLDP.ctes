@@ -65,7 +65,6 @@ namespace eval MLDP {
    set Sim(DtMin)                1.0                           ; #----- Diffusion time step minimum value [s].
    set Sim(IsIncludeHorizDiff)   ".TRUE."                      ; #----- Flag indicating if including horizontal diffusion in free atmosphere.
    set Sim(IsIncludeSUV)         ".FALSE."                     ; #----- Flag indicating if including horizontal wind speed variances in diffusion calculations.
-   set Sim(RunningTimeCPU)       28800                         ; #----- CPU running time for the job to end [s].
 
    set Sim(MaxNbSrc)             20                            ; #----- Maximum number of sources.
    set Sim(EmMaxIso)             5                             ; #----- Maximum number of isotopes.
