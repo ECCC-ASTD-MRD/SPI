@@ -1659,10 +1659,10 @@ proc Model::Window { { Show "" } } {
       Model::Destroy
    }
 
-   #----- Preparer la liste.
-   Model::Check $Param(Delay)
-
    TabFrame::Select .model.tab 1
+
+   #----- Preparer la liste.
+   Model::Check $Param(Delay) True
 
    return .model
 }
@@ -1702,12 +1702,13 @@ proc Model::Dock { } {
 #
 # Parametres :
 #   <MS>     : Nombre de millisecondes d'interval.
+#   <Force>  : Force le refresh meme si inactif
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Model::Check { MS } {
+proc Model::Check { MS { Force False } } {
    global GDefs
    variable Param
    variable Lbl
@@ -1718,11 +1719,15 @@ proc Model::Check { MS } {
       .model config -cursor watch
       update idletask
 
-      Exp::Read
-      Exp::CreateTree
+      if { $Force || [TabFrame::CurrentFrame .model.tab]==$Exp::Data(Frame) } {
+         Exp::Read
+         Exp::CreateTree
+      }
 
-      Watch::Read
-      Watch::CreateTree
+      if {  $Force || [TabFrame::CurrentFrame .model.tab]==$Watch::Data(Frame) } {
+         Watch::Read
+         Watch::CreateTree
+      }
 
       set Param(Job) "[lindex $Lbl(Checked) $GDefs(Lang)] [clock format [clock seconds] -format %T -gmt true]"
 

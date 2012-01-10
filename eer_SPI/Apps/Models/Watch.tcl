@@ -33,6 +33,7 @@ namespace eval Watch {
    #----- Variables relatives aux Watchs
    set Data(Frame)         ""
    set Data(Select)        ""                                              ;#Experience selectionnee
+   set Data(Projects)      {}
 
    #----- Liste des branches ouvertes pour chacun des niveaux
    set Data(BranchWatch)   ""

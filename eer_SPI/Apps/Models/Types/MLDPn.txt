@@ -26,9 +26,6 @@ namespace eval MLDPn {
 
    set Lbl(Yes)        { "Oui" "Yes" }
    set Lbl(No)         { "Non" "No " }
-   set Lbl(DiskPath)   { "Répertoire              " "directory           " }
-   set Lbl(DiskNeed)   { "Espace disque critique  " "Critical disk space " }
-   set Lbl(DiskAvail)  { "Espace disque disponible" "Available disk space" }
 
    set Lbl(Product)             { "Produits"  "Products" }
    set Lbl(Result)              { "Résultats" "Results" }
@@ -58,7 +55,7 @@ namespace eval MLDPn {
    set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
-   set Lbl(Seed)                { "Graine aléatoire " "Random seed     " }
+   set Lbl(Seed)                { "Semence aléatoire" "Random seed     " }
 
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
