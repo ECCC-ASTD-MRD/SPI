@@ -45,7 +45,7 @@ install: all link
 
 clean:
 	rm -Rf \
-	lex.yy.c \
+	lex.vexpr_.c \
 	$(GRAMMAR).tab.c $(GRAMMAR).tab.h $(GRAMMAR).output \
 	*.o *.so $(ALL)
 
@@ -56,9 +56,9 @@ clean:
 %.c: %.l
 .l.c:
 
-lex.yy.o: lex.yy.c $(GRAMMAR).tab.h
+lex.vexpr_.o: lex.vexpr_.c $(GRAMMAR).tab.h
 
-lex.yy.c: $(GRAMMAR).l
+lex.vexpr_.c: $(GRAMMAR).l
 	$(LEX) $(LEXFLAGS) $(GRAMMAR).l
 
 # Parser parts
