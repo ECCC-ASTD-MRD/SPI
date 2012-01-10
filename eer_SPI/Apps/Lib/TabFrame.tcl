@@ -19,6 +19,7 @@
 #    TabFrame::Create         { Tab Level Command { Width -1 } { Height -1 } }
 #    TabFrame::Clear          { Tab }
 #    TabFrame::Current        { Tab }
+#    TabFrame::CurrentFrame   { Tab }
 #    TabFrame::Previous       { Tab }
 #    TabFrame::Delete         { Tab Level No }
 #    TabFrame::Destroy        { Tab }
@@ -253,6 +254,16 @@ proc TabFrame::Current { Tab } {
    variable Data
 
    return $Data(Current$Tab)
+}
+
+proc TabFrame::CurrentFrame { Tab } {
+   variable Data
+
+   if { $Data(Current$Tab)!=-1 } {
+      return $Tab.frame$Data(Current$Tab)
+   } else {
+      return ""
+   }
 }
 
 proc TabFrame::Previous { Tab } {
