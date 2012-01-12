@@ -101,7 +101,7 @@ TFuncDef FuncF[] = {
   { "srega" , stat_rega   , 2 , TD_Float64 },
   { "serra" , stat_erra   , 2 , TD_Float64 },
   { "serrb" , stat_errb   , 2 , TD_Float64 },
-  { "ssxy"  , stat_ssxy   , 2 , TD_Float64 },
+  { "sssxy" , stat_ssxy   , 2 , TD_Float64 },
   { "smb"   , stat_mb     , 2 , TD_Float64 },
   { "snmb"  , stat_nmb    , 2 , TD_Float64 },
   { "snme"  , stat_nme    , 2 , TD_Float64 },

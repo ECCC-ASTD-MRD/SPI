@@ -356,8 +356,15 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
    fprintf(stdout,"(DEBUG) Calc_RangeValue(A:%p,I0=%i,I1=%i,J0=%i,J1=%i,K0=%i,K1=%i)\n",(void*)A,I0,I1,J0,J1,K0,K1);
 #endif
 
+   if (I0>I1) { n=I0;I0=I1;I1=n; }
+   if (J0>J1) { n=J0;J0=J1;J1=n; }
+   if (K0>K1) { n=K0;K0=K1;K1=n; }
+
+   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1)
+      return(NULL);
+
    GDataN++;
-   GData[GDataN]=DataDef_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),(GType?GType:A->Type));
+   GData[GDataN]=DataDef_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),A->Type);
 
    for(k=K0,kn=0;k<=K1;k++,kn++) {
 //      GData[GDataN]->GridLevels[kn]=A->GridLevels[k];
@@ -438,6 +445,10 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Calc_Set(A:%p,B:%p %i %i %i %i %i %i)\n",(void*)A,(void*)B,I0,I1,J0,J1,K0,K1);
 #endif
+
+   if (I0>I1) { n=I0;I0=I1;I1=n; }
+   if (J0>J1) { n=J0;J0=J1;J1=n; }
+   if (K0>K1) { n=K0;K0=K1;K1=n; }
 
    if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1)
       return(NULL);

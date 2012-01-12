@@ -1153,12 +1153,12 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int    i,j,c0,c1,c2,c3,idxk,idx0,idx1,idx2,idx3;
-   int    ox=0,base=0,dp;
-   int    depth;
-   double v0,v1,v2,v3;
-   Vect3d g0,g1,g2,g3,dim,*pos;
-   unsigned int    dx,dy;
+   int          i,j,c0,c1,c2,c3,idxk,idx0,idx1,idx2,idx3;
+   int          ox=0,base=0,dp;
+   int          depth;
+   double       v0,v1,v2,v3;
+   Vect3d       g0,g1,g2,g3,dim,*pos;
+   unsigned int dx,dy;
 
    if (GLRender->Resolution>2) {
       return(0);

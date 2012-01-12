@@ -518,7 +518,6 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
    /*Definire les parametres du bock de donnees*/
 
    Tk_PhotoSetSize(Interp,handle,data.width,data.height);
-//TK84   Tk_PhotoSetSize(handle,data.width,data.height);
 
    data.pitch=data.width*4;
    data.pixelSize=4;
@@ -540,7 +539,7 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
 
    /*Envoyer le data dans l'image Tk*/
    Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-//TK84   Tk_PhotoPutBlock(handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+
    free(data.pixelPtr);
 
    return(TCL_OK);
