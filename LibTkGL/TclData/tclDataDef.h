@@ -48,8 +48,8 @@
 #define DEF2DIN(D,I,J)      ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1])
 #define DEF3DIN(D,I,J,K)    ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1] && (K)>=D->Limits[2][0] && (K)<=D->Limits[2][1])
 
-#define Def_Pointer(Def,Comp,Idx,Ptr) Ptr=Def->Data[Comp]+Idx*TData_Size[Def->Type];
-#define Def_PointerMode(Def,Idx,Ptr) Ptr=Def->Mode+Idx*TData_Size[Def->Type];
+#define Def_Pointer(Def,Comp,Idx,Ptr) Ptr=Def->Data[Comp]+(Idx)*TData_Size[Def->Type];
+#define Def_PointerMode(Def,Idx,Ptr) Ptr=Def->Mode+(Idx)*TData_Size[Def->Type];
 
 #define Def_Set(Def,Comp,Idx,Val) {\
 switch(Def->Type) {\

@@ -373,7 +373,7 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
          while(A->Data[n]) {
             Def_Pointer(GData[GDataN],n,FSIZE2D(GData[GDataN])*kn+jn*GData[GDataN]->NI,p0);
             Def_Pointer(A,n,FSIZE2D(A)*k+j*A->NI+I0,p1);
-            memcpy(p0,p1,(I1-I0+1)*TData_Size[A->Type]);
+            memcpy(p0,p1,GData[GDataN]->NI*TData_Size[A->Type]);
             n++;
          }
       }
