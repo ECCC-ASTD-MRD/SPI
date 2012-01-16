@@ -5,6 +5,7 @@ export SPI_PATH=${0%SPI}
 
 SOFT=0
 HARD=0
+CALL=""
 HOST=`hostname`
 SCREEN=0
 X_GEO='1024x768'
@@ -88,6 +89,10 @@ do
       exit $code
    fi
 
+   if [[ $flag = "-valgrind" ]]
+   then
+      CALL="valgrind --track-origins=yes --leak-check=full"
+   fi
 done
 
 #----- Testing hardware capabilities
@@ -113,7 +118,7 @@ xset fp default
 xset fp+ ${SPI_PATH}/Resources/Font
 
 #----- Let's start up the software
-${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
+${CALL} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
 code=$?
 
 if [[ ($PID_XVFB -ne 0) ]]
