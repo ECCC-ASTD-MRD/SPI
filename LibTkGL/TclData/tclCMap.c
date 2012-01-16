@@ -462,7 +462,7 @@ int CMap_Free(CMap_Rec *Map) {
       Tcl_MutexUnlock(&MUTEX_CMAP);
       return(0);
    } else {
-      free(Map->Name);
+      if (Map->Name) free(Map->Name);
       free(Map);
    }
    Tcl_MutexUnlock(&MUTEX_CMAP);
@@ -1384,6 +1384,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    int  idx;
 
    if (!CMap) {
+      Tcl_AppendResult(Interp,"CMap_Read: Invalid colormap",(char *)NULL);
       return(TCL_ERROR);
    }
 

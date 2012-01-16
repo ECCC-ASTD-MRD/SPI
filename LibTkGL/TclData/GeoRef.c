@@ -466,7 +466,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
          ref0=GeoRef_New();
          ref0->Id=-(++TGeoRef_TableNo);
-         GeoRef_Incr(ref0);
 
          if (Objc==4) {
             GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL);
@@ -491,7 +490,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          }
 
          ref0=GeoRef_HardCopy(ref0);
-         GeoRef_Incr(ref0);
 
          if (!GeoRef_Put(Interp,Tcl_GetString(Objv[2]),ref0)) {
             Tcl_AppendResult(Interp,"\n   GeoRef_Cmd: Unable to create georef",(char*)NULL);
@@ -914,7 +912,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
       }
    }
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1068,9 +1066,10 @@ int GeoRef_Free(TGeoRef *Ref) {
 
    if (Ref->RefFrom) {
       Tcl_MutexUnlock(&MUTEX_GEOREF);
-      GeoRef_Free(Ref->RefFrom);
+      --Ref->RefFrom->NRef;
       Tcl_MutexLock(&MUTEX_GEOREF);
    }
+
    GeoRef_Clear(Ref,1);
    free(Ref);
    Tcl_MutexUnlock(&MUTEX_GEOREF);
@@ -1098,7 +1097,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    int n;
 
    if (New) {
-      if (Ref->Name)         free(Ref->Name);         Ref->Name=NULL;
+      if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
       ZRef_Free(&Ref->ZRef);
    }
 
@@ -1115,6 +1114,7 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    Ref->IG1=Ref->IG2=Ref->IG3=Ref->IG4=0;
 
    if (Ref->Pos) {
+
       for(n=0;n<Ref->ZRef.LevelNb;n++) {
          if (Ref->Pos[n]) free(Ref->Pos[n]);
       }
@@ -1278,7 +1278,6 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref=GeoRef_New();
 
    GeoRef_Incr(Ref);
-   GeoRef_Incr(ref);
    ref->RefFrom=Ref;
    ref->Project=Ref->Project;
    ref->UnProject=Ref->UnProject;
@@ -1330,7 +1329,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
    ref=Ref;
    ref->Id=ref->Id==-1?-(++TGeoRef_TableNo):ref->Id;
 
-   GeoRef_Incr(ref);
    GeoRef_Put(NULL,NULL,ref);
 
    return(ref);
@@ -1435,7 +1433,7 @@ TGeoRef* GeoRef_New() {
    ref->Name=NULL;
    ref->Id=-1;
    ref->Type=GRID_NONE;
-   ref->NRef=0;
+   ref->NRef=1;
    ref->NIdx=0;
    ref->Pos=NULL;
    ref->Lat=NULL;
@@ -1480,6 +1478,7 @@ TGeoRef* GeoRef_New() {
    ref->UnProject=GeoRef_UnProject;
    ref->Value=NULL;
    ref->Distance=NULL;
+   ref->Height=NULL;
 
    /*Vertical reference*/
    ZRef_Init(&ref->ZRef);

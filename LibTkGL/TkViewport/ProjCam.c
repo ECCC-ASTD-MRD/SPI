@@ -476,11 +476,16 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
 
    /*Initialise les parametres de la camera*/
 
-   Vect_Init(cam->From,0.0,0.0,2.0);
-   Vect_Init(cam->To  ,0.0,0.0,1.0);
-   Vect_Init(cam->Up  ,0.0,1.0,0.0);
+   Vect_Init(cam->From ,0.0,0.0,2.0);
+   Vect_Init(cam->To   ,0.0,0.0,1.0);
+   Vect_Init(cam->Up   ,0.0,1.0,0.0);
+   Vect_Init(cam->Basis,0.0,0.0,0.0);
 
    cam->Lens         = 1.0;
+   cam->Dist         = 0.0;
+   cam->A            = 0.0;
+   cam->Aspect       = 0.0;
+   cam->Clip         = 0.0;
    cam->NbC          = 0;
    cam->Frame        = 0;
    cam->Show         = 0;

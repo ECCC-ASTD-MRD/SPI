@@ -196,6 +196,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    glStencilMask(0xff);
    glStencilFunc(GL_EQUAL,0x0,0xf);
    glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+
    return(nras);
 }
 

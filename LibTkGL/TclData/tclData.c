@@ -743,7 +743,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                }
             }
 
-            /*Get the grid cordinate*/
+            /*Get the grid coordinate*/
             Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1);
 
             /*Vectorial data needs to be referenced along the cut so calculate angle*/
@@ -913,8 +913,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
 
       /*Normally we would free the georef but if the field is being overwritten, chances are it's the same grid so we just keep
         the object alive to be reused if needed*/
-      GeoRef_Destroy(NULL,field->Ref->Name);
-      field->Ref=NULL;
+      if (field->Ref) GeoRef_Destroy(NULL,field->Ref->Name); field->Ref=NULL;
    }
 
    /*Allouer la memoire pour les structures*/

@@ -1920,6 +1920,7 @@ void glXShutDown() {
  *
  *----------------------------------------------------------------------------
 */
+
 int glDefineParams(){
 
    int n;
@@ -2068,6 +2069,8 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Soft            = 0;
    GLRender->UseThreads      = 1;
    GLRender->Delay           = 2000;
+
+   memset(GLRender->Ext,0x0,sizeof(GLboolean));
 
    /*Magnifying paameters*/
    GLRender->MagScale=1;

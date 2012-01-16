@@ -89,12 +89,16 @@ TData_Type FSTD_TypeCheck(int Type,int Size) {
 */
 void FSTD_FieldSet(TData *Data){
 
-   FSTD_Head *head;
+   FSTD_Head *head=NULL;
 
-   if (Data->Head && Data->Free)
+   if (Data->Head && Data->Free && Data->Set!=FSTD_FieldSet)
       Data->Free(Data);
 
-   head=(FSTD_Head*)malloc(sizeof(FSTD_Head));
+   if (!Data->Head) {
+      head=(FSTD_Head*)malloc(sizeof(FSTD_Head));
+   } else {
+      head=(FSTD_Head*)Data->Head;
+   }
 
    /*Initialiser les parametres de definition du champs*/
    head->IG1=0;
