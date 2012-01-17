@@ -17,7 +17,7 @@
 #    Convert::Decimal2Minute { Value { Prec 3 } { List False } }
 #    Convert::Meter2Millibar { Value }
 #    Convert::Millibar2Meter { Value }
-#    Convert::Minute2Decimal { Value }
+#    Convert::Minute2Decimal { Value { Prec 10 } }
 #    Convert::ModuloVal      { Val Mod Sens }
 #    Convert::Set2Digit      { Nb }
 #
@@ -326,6 +326,7 @@ proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
 #
 # Parametres :
 #   <Value>  : Valeur a convertir en decimal.
+#   <Prec>   : Precision
 #
 # Retour     :
 #   <val>    : Valeur convertie en decimal.
@@ -335,13 +336,13 @@ proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Convert::Minute2Decimal { Value } {
+proc Convert::Minute2Decimal { Value { Prec 10 } } {
 
    set i 0
 
    #----- Extraire les deux parties
 
-   set Value [split [string map { "°" " " \' " " \" " "} $Value]]
+   set Value [split [string map { "°" " " \' " " \" " " "," " " "d" " " "m" " " "s" " " } $Value]]
    set deg [string trimleft [lindex $Value 0] 0]
    set min [string trimleft [lindex $Value 1] 0]
    set sec [string trimleft [lindex $Value 2] 0]
@@ -360,7 +361,7 @@ proc Convert::Minute2Decimal { Value } {
 
    #----- Calculer la valeur convertie
 
-   return [expr $deg>=0?($deg+($min/60.0)+($sec/3600.0)):($deg-($min/60.0)-($sec/3600.0))]
+   return [format "%02.${Prec}f" [expr $deg>=0?($deg+($min/60.0)+($sec/3600.0)):($deg-($min/60.0)-($sec/3600.0))]]
 }
 
 #-------------------------------------------------------------------------------

@@ -51,7 +51,7 @@ namespace eval Info {
                         EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Sim0Secs Duration
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
                         SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario }
 
@@ -59,7 +59,7 @@ namespace eval Info {
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                         EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
-   set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon }
+   set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
    set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD) $Token(CANERM)]]
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
@@ -103,6 +103,7 @@ namespace eval Info {
    set Lbl(Name)                 { "Nom de l'emplacement" "Location name" }
    set Lbl(Lat)                  { "Latitude" "Latitude" }
    set Lbl(Lon)                  { "Longitude" "Longitude" }
+   set Lbl(Coords)               { "Coordonnées" "Coordinates" }
    set Lbl(Elev)                 { "Élévation" "Elevation" }
    set Lbl(AccYear)              { "Année de l'accident" "Accident year" }
    set Lbl(AccMonth)             { "Mois de l'accident" "Accident month" }
@@ -219,7 +220,11 @@ proc Info::Code { Var { Separator : } } {
    set model [string trimright $var(Model) 01]
 
    foreach item $Token($model) {
-      lappend info "$item=$var($item)"
+      if { [info exists var($item)] } {
+         lappend info "$item=$var($item)"
+      } else {
+         lappend info "$item="
+      }
    }
 
    if { $Separator!="" } {
