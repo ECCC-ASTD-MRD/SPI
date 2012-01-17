@@ -122,6 +122,9 @@ namespace eval Model {
    set Lbl(MetPath)       { "Répertoire des données météorologiques" "Meteorological data path" }
    set Lbl(EmHeight)      { "Hauteur explosive maximale" "Maximum explosive height" }
    set Lbl(Submit)        { "Soumission" "submit" }
+   set Lbl(Sources)       { "Sources" "Sources" }
+   set Lbl(Desc)          { "Description" "Description" }
+   set Lbl(Coords)        { "Coordonnees" "Coordinates" }
 
    #----- Bulles d'aide
 
@@ -139,6 +142,7 @@ namespace eval Model {
    set Bubble(Event)         { "Sélection du type d'événement (À titre informatif)." "Select the event type (As information label)." }
    set Bubble(By)            { "Sélection de la provenance de la requête (À titre informatif)." "Select the request provenance (As information label)." }
    set Bubble(User)          { "Identification de l'usager ayant lancé la simulation." "Identification of the user who launched the simulation." }
+   set Bubble(New)           { "Créer une nouvelle expérience" "Create a new experiment" }
 
    set Bubble(PathSel) { "Liste des dépôts d'expériences disponibles" "List of experiments available" }
    set Bubble(PathAdd) { "Ajouter un répertoire à la liste\ndes dépots d'expériences disponibles" "Add a path to the list of experiments available" }
@@ -147,12 +151,18 @@ namespace eval Model {
    set Bubble(Bubble)  { "Activer les bulles d'informations" "Activate information bubbles" }
    set Bubble(Plus)    { "Ouvrir toutes les branches" "Open up all branches" }
    set Bubble(Minus)   { "Fermer toutes les branches" "Close all branches" }
-   set Bubble(SRC)     { "Ouvrir le sélecteur de sources" "Open the source selector" }
+   set Bubble(Locator) { "Utiliser le sélecteur de sources" "Use the source selector" }
    set Bubble(Name)    { "Nom de l'expérience\nCe nom sera utilisé sur tous les produits"
                          "Experiment name\nThis name will be used on every product" }
-   set Bubble(Info)    { "Informations de positionnement (id,lat,lon)" "Position information (id,lat,lon)" }
-   set Bubble(Coord)   { "Permet de changer ou de convertir\nle type de coordonnées en degrées-minutes\nou degrées centième"
-                         "Use to change or convert the coordinate format in degree-minute or degree-hundreth" }
+
+   set Bubble(Add)     { "Ajouter une nouvelle source à l'expérience" "Add a new source to the experiment" }
+   set Bubble(Del)     { "Enlever la source sélectionnée de l'expérience" "Removed the selected source from the experiment" }
+   set Bubble(List)    { "Liste des sources incluse dans l'expérience" "List of sources included in the experiment" }
+   set Bubble(Src)     { "Nom de la source" "Source name" }
+   set Bubble(Coord)   { "Coordonnées de la source. Une seule paire pour un point ou multiples paires pour une région." "Source coordinates. One pair for a point or multiple for area." }
+   set Bubble(Mode)    { "Utiliser la souris pour sélectionner les coordonnées de la source dans la vue.\nBoutton gauche: ajout d'une coordonnée\nBoutton centre: enleve une coordonnée" "Use the mouse to select the coordinates in the viewport.\nLeft buttton  : add coordinates\nMiddle button: remove coordinates" }
+   set Bubble(Unit)    { "Permet de changer ou de convertir le type de coordonnées en degrées-minutes\nou degrées centième. Le format degrées-minutes en entrée est le suivant:\n\n XXdXXmXX.XX ou XX°XX'XX.XX"
+                         "Use to change or convert the coordinate format in degree-minute or degree-hundreth. Degree-minute input format is:\n\n XXdXXmXX.XX or XX°XX'XX.XX" }
    set Bubble(Create)  { "Créer l'expérience" "Create the experiment" }
    set Bubble(Cancel)  { "Annuler, retour à la liste des expériences" "Cancel, return to the experiment list" }
    set Bubble(Type0)   { "Type de source volcanique" "Volcanic source type" }
@@ -936,10 +946,12 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Name)   {}
    set sim(Lat)    {}
    set sim(Lon)    {}
+
    foreach src $sim(Pos) {
-      lappend sim(Name) [lindex $src 0]                 ;#----- List of source names.
-      lappend sim(Lat)  [format "%.6f" [lindex $src 1]] ;#----- Latitude.
-      lappend sim(Lon)  [format "%.6f" [lindex $src 2]] ;#----- Longitude.
+      lappend sim(Name)   [lindex $src 0]                 ;#----- List of source names.
+      lappend sim(Lat)    [format "%.6f" [lindex $src 1]] ;#----- Latitude.
+      lappend sim(Lon)    [format "%.6f" [lindex $src 2]] ;#----- Longitude.
+      lappend sim(Coords) [lrange $src 1 end-1]           ;#----- Coordinates.
    }
    set sim(GridSrc)      [lindex $sim(Pos) 0]
    set sim(GridLat)      [lindex $sim(GridSrc) 1]
@@ -1573,30 +1585,6 @@ proc Model::ParamValidateQueue { } {
    return 1
 }
 
-#-------------------------------------------------------------------------------
-# Nom      : <Model::DrawCurrent>
-# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Afficher l'icone de l'experience courante sur la projection.
-#
-# Parametres :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc Model::DrawCurrent { } {
-   variable Data
-   variable Resources
-
-   set oka [catch { set h [expr int($SPI::Src(Lat))] }]
-   set oko [catch { set h [expr int($SPI::Src(Lon))] }]
-
-   if { !$oka && !$oko } {
-      SPI::IcoAdd $Page::Data(Frame) SOURCE "" [list [list "$SPI::Src(Name)" $SPI::Src(Lat) $SPI::Src(Lon) 0 [lindex $Resources(Icos) $SPI::Src(Type)]]]
-   }
-}
-
 #----------------------------------------------------------------------------
 # Nom      : <Model::Window>
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
@@ -1801,94 +1789,76 @@ proc Model::New { Parent Command Label Single } {
    wm transient .expnew $Parent
    wm geom      .expnew +[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
    wm protocol  .expnew WM_DELETE_WINDOW { }
-   wm resizable .expnew 0 0
    wm title     .expnew "$Label"
 
    #----- Initialiser les variables de localisations
-   set Data(Type)  0
-   set Data(Name)  "New experiment"
-   set Data(Pos)   1
-   set Data(Id1)   "-"
-   set Data(Name1) "New location"
-   set Data(Lat1)  0.0
-   set Data(Lon1)  0.0
+   set Data(Set)    True
+   set Data(Type)   0
+   set Data(Name)   "New experiment"
+   set Data(Ids)    { }
+   set Data(Srcs)   { }
+   set Data(Coords) { }
 
-   for { set i 2 } { $i <=50 } { incr i } {
-      set Data(Id$i)   "-"
-      set Data(Name$i) ""
-      set Data(Lat$i)  ""
-      set Data(Lon$i)  ""
+   if { !$Single } {
+      wm geometry  .expnew =400x300
+
+      labelframe .expnew.gen -text [lindex $Lbl(Desc) $GDefs(Lang)]
+         frame .expnew.gen.name
+            label .expnew.gen.name.lbl  -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15 -anchor w
+            entry .expnew.gen.name.ent  -textvariable Model::Data(Name) -width 20 -bd 1 -bg $GDefs(ColorLight)
+            pack .expnew.gen.name.lbl -side left -anchor w
+            pack .expnew.gen.name.ent -side left -fill x -expand true
+         frame .expnew.gen.type
+            label .expnew.gen.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -width 15 -anchor w
+            pack .expnew.gen.type.lbl -side left
+            foreach type { 0 1 2 3 4 5 6 } ico { VAAC RSMC CTBT FIRE BIO SPILL SPCL } {
+               radiobutton .expnew.gen.type.t$ico -image [lindex $Resources(Icos) $type] -variable Model::Data(Type) \
+                  -value $type -indicatoron False -selectcolor $GDefs(ColorFrame) -command Model::SourceDraw -relief raised -bd 1
+               pack .expnew.gen.type.t$ico -side left -fill x -expand true
+
+               Bubble::Create .expnew.gen.type.t$ico $Bubble(Type$type)
+            }
+         pack .expnew.gen.name .expnew.gen.type -side top -fill x
+         pack .expnew.gen -side top -fill x -padx 5 -pady 5
    }
 
-   frame .expnew.hd
-      checkbutton .expnew.hd.mode -variable Page::Data(ToolMode) -onvalue Model -offvalue SPI -image ARROW -indicatoron 0 \
-         -bd 1 -selectcolor $GDefs(ColorFrame) -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-      button .expnew.hd.src -text "Identification      Lat          Lon" -anchor w -bd 1 -command "Locator::Window 0"
-      pack .expnew.hd.mode -side left -fill y
-      pack .expnew.hd.src -side left -fill both -expand true
-   pack .expnew.hd -side top -fill x -expand true
+   labelframe .expnew.src -text [lindex $Lbl(Sources) $GDefs(Lang)]
+      frame .expnew.src.name
+         label .expnew.src.name.lbl  -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15 -anchor w
+         entry .expnew.src.name.ent  -textvariable Model::Data(Src) -width 20 -bd 1 -bg $GDefs(ColorLight)
+         button .expnew.src.name.mode -image INFOLOG -bd 1 -command { Locator::Window [expr $Model::Data(Type)<3?$Model::Data(Type):4] }
+         pack .expnew.src.name.lbl -side left -anchor w
+         pack .expnew.src.name.ent -side left -fill both -expand true
+         pack .expnew.src.name.mode -side left
+      pack  .expnew.src.name -side top -fill x
+      frame .expnew.src.coord
+         label .expnew.src.coord.lbl  -text [lindex $Lbl(Coords) $GDefs(Lang)] -width 15 -anchor w
+         entry .expnew.src.coord.ent  -textvariable Model::Data(Coord) -width 20 -bd 1 -bg $GDefs(ColorLight)
+         button .expnew.src.coord.unit -textvariable Model::Param(Unit) -bd 1 -command { Model::SwitchCoord }
+         checkbutton .expnew.src.coord.mode -variable Page::Data(ToolMode) -onvalue Model -offvalue SPI -image ARROW -indicatoron 0 \
+            -bd 1 -selectcolor $GDefs(ColorFrame) -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
+         pack .expnew.src.coord.lbl -side left -anchor w
+         pack .expnew.src.coord.ent -side left -fill both -expand true
+         pack .expnew.src.coord.unit -side left -ipadx 1
+         pack .expnew.src.coord.mode -side left -ipadx 1 -fill y
+      pack  .expnew.src.coord -side top -fill x
 
-   frame .expnew.info -bd 1 -relief raised
-      button .expnew.info.coord -relief groove -bd 2 -textvariable Model::Param(Unit)\
-         -command "Model::SwitchCoord"
+      frame .expnew.src.opt -relief sunken -bd 1
+         button .expnew.src.opt.add -text " + " -relief raised -bd 1 -command Model::SourceAdd
+         button .expnew.src.opt.del -text " - " -relief raised -bd 1 -command Model::SourceDel
+         pack .expnew.src.opt.add .expnew.src.opt.del -side left
+      frame .expnew.src.list
+         scrollbar .expnew.src.list.scrolly -relief sunken -command ".expnew.src.list.table yview" -bd 1 -width 10
+         listbox .expnew.src.list.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -listvariable Model::Data(Srcs) \
+         -yscrollcommand ".expnew.src.list.scrolly set" -width 1 -height 1 -selectmode single -exportselection false
+         pack .expnew.src.list.scrolly -side left -fill y
+         pack .expnew.src.list.table -side left -fill both -expand true -before .expnew.src.list.scrolly
 
-      frame .expnew.info.l
-      if { $Single } {
-         frame .expnew.info.l.loc1
-            radiobutton .expnew.info.l.loc1.sel -text "  " -indicatoron false -bd 1 \
-               -variable Model::Data(Pos) -value 1 -selectcolor $GDefs(ColorHighLight)
-            EntryVar::Create .expnew.info.l.loc1.name Model::Data(Name) string 25 "Model::DrawCurrent" \
-               -bd 1 -bg $GDefs(ColorLight)
-            EntryVar::Create .expnew.info.l.loc1.lat Model::Data(Lat1) coordinate 0 "Model::DrawCurrent" \
-               -bd 1 -width 7 -bg $GDefs(ColorLight) -justify right
-            EntryVar::Create .expnew.info.l.loc1.lon Model::Data(Lon1) coordinate 0 "Model::DrawCurrent" \
-               -bd 1 -width 7 -bg $GDefs(ColorLight) -justify right
-            pack .expnew.info.l.loc1.sel -ipadx 2  -side left
-            pack .expnew.info.l.loc1.name .expnew.info.l.loc1.lat .expnew.info.l.loc1.lon -side left -fill y -expand true
-         pack .expnew.info.l.loc1 -side top -fill y -expand true
-
-         pack .expnew.info.l .expnew.info.coord -side left -fill y -expand true
-         pack .expnew.info -side top
-      } else {
-
-         foreach i "1 2 3" {
-            frame .expnew.info.l.loc$i
-               radiobutton .expnew.info.l.loc$i.sel -text "0$i" -indicatoron false -bd 0 \
-                  -variable Model::Data(Pos) -value $i -selectcolor $GDefs(ColorHighLight)
-               EntryVar::Create .expnew.info.l.loc$i.name Model::Data(Name$i) string 25 "Model::DrawCurrent" \
-                  -bd 1 -bg $GDefs(ColorLight)
-               EntryVar::Create .expnew.info.l.loc$i.lat Model::Data(Lat$i) coordinate 0 "Model::DrawCurrent" \
-                  -bd 1 -width 12 -bg $GDefs(ColorLight) -justify right
-               EntryVar::Create .expnew.info.l.loc$i.lon Model::Data(Lon$i) coordinate 0 "Model::DrawCurrent" \
-                  -bd 1 -width 12 -bg $GDefs(ColorLight) -justify right
-               pack .expnew.info.l.loc$i.sel -ipadx 2 -side left
-               pack .expnew.info.l.loc$i.name .expnew.info.l.loc$i.lat .expnew.info.l.loc$i.lon -side left
-            pack .expnew.info.l.loc$i -side top
-         }
-         scale .expnew.info.sc -orient vertical -command "Model::Scroll" -relief flat -sliderlength 10 -width 10 -bd 1\
-            -showvalue false -length 50 -from 1 -to 48 -resolution 1
-         pack .expnew.info.l .expnew.info.sc .expnew.info.coord -side left -fill y
-         pack .expnew.info -side top
-
-
-         frame .expnew.group -bd 1 -relief raised
-            label .expnew.group.lbl -text "Id"
-            entry .expnew.group.ent -textvariable Model::Data(Name) -width 20 -bd 1 -bg $GDefs(ColorLight)
-
-            frame .expnew.group.type -bd 1 -relief sunken
-               foreach type { 0 1 2 3 4 5 6 } ico { VAAC RSMC CTBT FIRE BIO SPILL SPCL } {
-                  radiobutton .expnew.group.type.t$ico -image [lindex $Resources(Icos) $type] -variable Model::Data(Type) \
-                     -value $type -indicatoron False -selectcolor $GDefs(ColorFrame) -command "Model::DrawCurrent" -bd 1
-                  pack .expnew.group.type.t$ico -side left -fill x -expand true
-
-                  Bubble::Create .expnew.group.type.t$ico $Bubble(Type$type)
-               }
-            pack .expnew.group.lbl -side left -anchor w
-            pack .expnew.group.ent -side left -fill y
-            pack .expnew.group.type -side left -fill both -expand true
-
-         pack .expnew.group -side top -fill x
+      if { !$Single } {
+         pack  .expnew.src.opt -side top -anchor w
+         pack .expnew.src.list -side top -fill both -expand true
       }
+   pack .expnew.src -side top -fill both -expand true -padx 5
 
    frame .expnew.commands
       button .expnew.commands.create -text [lindex $Lbl(Create) $GDefs(Lang)] \
@@ -1897,15 +1867,168 @@ proc Model::New { Parent Command Label Single } {
       button .expnew.commands.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] \
          -command "Model::NewClose" -relief raised -bd 1
       pack .expnew.commands.create .expnew.commands.cancel -side left -fill x -expand true
-   pack .expnew.commands -side top -fill x
+   pack .expnew.commands -side top -fill x -padx 5 -pady 5
 
-   Bubble::Create .expnew.group.ent       $Bubble(Name)
-   Bubble::Create .expnew.info.coord      $Bubble(Coord)
-   Bubble::Create .expnew.info            $Bubble(Info)
+   bind .expnew.src.list.table <B1-ButtonRelease> { Model::SourceSelect }
+
+   Bubble::Create .expnew.gen.name.ent    $Bubble(Name)
+   Bubble::Create .expnew.src.name.ent    $Bubble(Src)
+   Bubble::Create .expnew.src.name.mode   $Bubble(Locator)
+   Bubble::Create .expnew.src.coord.ent   $Bubble(Coord)
+   Bubble::Create .expnew.src.coord.mode  $Bubble(Mode)
+   Bubble::Create .expnew.src.coord.unit  $Bubble(Unit)
+   Bubble::Create .expnew.src.opt.add     $Bubble(Add)
+   Bubble::Create .expnew.src.opt.del     $Bubble(Del)
+   Bubble::Create .expnew.src.list.table  $Bubble(List)
+
    Bubble::Create .expnew.commands.create $Bubble(Create)
    Bubble::Create .expnew.commands.cancel $Bubble(Cancel)
 
-   trace variable SPI::Src(Info) w "Model::Source"
+   Model::SourceAdd
+
+   trace variable Model::Data(Src)   w { Model::SourceApply 0 }
+   trace variable Model::Data(Coord) w { Model::SourceApply 0 }
+   trace variable SPI::Src(Info)     w { Model::SourceApply 1 }
+}
+
+proc Model::SourceAdd {  } {
+   variable Data
+
+   .expnew.src.list.table selection clear 0 end
+
+   set Data(Id)     -
+   set Data(Src)    "New location"
+   set Data(Coord)  {}
+
+   lappend Data(Ids)    $Data(Id)
+   lappend Data(Srcs)   $Data(Src)
+   lappend Data(Coords) $Data(Coord)
+
+   .expnew.src.list.table selection set end
+   .expnew.src.name.ent   configure -state normal
+   .expnew.src.name.mode  configure -state normal
+   .expnew.src.coord.ent  configure -state normal
+   .expnew.src.coord.mode configure -state normal
+
+   Model::SourceDraw
+}
+
+proc Model::SourceDel {  } {
+   variable  Data
+
+   if { [llength [set idx [.expnew.src.list.table curselection]]] } {
+      set Data(Ids)    [lreplace $Data(Ids)    $idx $idx]
+      set Data(Srcs)   [lreplace $Data(Srcs)   $idx $idx]
+      set Data(Coords) [lreplace $Data(Coords) $idx $idx]
+
+      .expnew.src.list.table selection clear 0 end
+      .expnew.src.list.table selection set $idx
+   }
+
+   if { ![llength $Data(Srcs)] } {
+      .expnew.src.name.ent   configure -state disabled
+      .expnew.src.name.mode  configure -state disabled
+      .expnew.src.coord.ent  configure -state disabled
+      .expnew.src.coord.mode configure -state disabled
+   }
+
+   Model::SourceDraw
+}
+
+proc Model::SourceSelect {  } {
+   variable  Data
+
+   if { [llength [set idx [.expnew.src.list.table curselection]]] } {
+      set Data(Set)   False
+      set Data(Id)    [lindex $Data(Ids)    $idx]
+      set Data(Src)   [lindex $Data(Srcs)   $idx]
+      set Data(Coord) [lindex $Data(Coords) $idx]
+      set Data(Set)   True
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Model::SourceDraw>
+# Creation : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher l'icone de l'experience courante sur la projection.
+#
+# Parametres :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Model::SourceDraw { } {
+   variable Data
+   variable Param
+   variable Resources
+
+   set icos {}
+
+   foreach src $Data(Srcs) coord $Data(Coords) {
+      set coords {}
+      foreach { la lo }  $coord {
+         lappend coords [Convert::Minute2Decimal $la 5] [Convert::Minute2Decimal $lo 5] 0.0
+      }
+
+      if { [llength $coords] } {
+         eval lappend icos \[list \"$src\" $coords [lindex $Resources(Icos) $Data(Type)]\]
+      }
+   }
+
+   SPI::IcoAdd $Page::Data(Frame) SOURCE "" $icos
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Model::Source>
+# Creation : Mars 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer la selection des outils de localisations.
+#
+# Parametres :
+#    <>      : Parametres de renvoie des trace
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Model::SourceApply { Mode Array Index Op } {
+   variable Data
+
+   if { $Data(Set) && [llength [set idx [.expnew.src.list.table curselection]]] } {
+      if { $Mode } {
+         if { $SPI::Src(Info)!="" } {
+
+            set Data(Id)    "$SPI::Src(No)"
+            set Data(Src)   "$SPI::Src(Name)"
+            set Data(Coord) "$SPI::Src(Lat) $SPI::Src(Lon)"
+
+            #----- If experiment name has not been set, use source name
+            if { $Data(Name)=="New experiment" } {
+               set Data(Name) $Data(Src)
+            }
+
+            #----- Is source selection is VOLCAN,NUCLEAR or CTBT, set experiment type
+            if { $SPI::Src(Type)<3 } {
+               set Data(Type)  $SPI::Src(Type)
+            }
+         }
+      }
+
+      if { [llength $Data(Srcs)]<=1 } {
+         set Data(Ids)    [list "$Data(Id)"]
+         set Data(Srcs)   [list "$Data(Src)"]
+         set Data(Coords) [list "$Data(Coord)"]
+      } else {
+         lset Data(Ids)    $idx "$Data(Id)"
+         lset Data(Srcs)   $idx "$Data(Src)"
+         lset Data(Coords) $idx "$Data(Coord)"
+      }
+      Model::SourceDraw
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -1933,76 +2056,13 @@ proc Model::NewClose { } {
    }
    SPI::IcoDel SOURCE
 
-   trace vdelete SPI::Src(Info) w { Model::Source }
+   trace vdelete Model::Data(Coord) w { Model::SourceApply 0 }
+   trace vdelete Model::Data(Src)   w { Model::SourceApply 0 }
+   trace vdelete SPI::Src(Info)     w { Model::SourceApply 1 }
+
+   Locator::Close
+
    destroy .expnew
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Model::Source>
-# Creation : Mars 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Recuperer la selection des outils de localisations.
-#
-# Parametres :
-#    <>      : Parametres de renvoie des trace
-#
-# Retour :
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Model::Source { Array Index Op } {
-   variable Data
-
-   if { $SPI::Src(Info)!="" } {
-      set Data(Type)           $SPI::Src(Type)
-
-      set Data(Id$Data(Pos))   $SPI::Src(No)
-      set Data(Name$Data(Pos)) "$SPI::Src(Name)"
-      set Data(Lat$Data(Pos))  $SPI::Src(Lat)
-      set Data(Lon$Data(Pos))  $SPI::Src(Lon)
-
-      set Data(Name) $Data(Name1)
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Model::Scroll>
-# Creation : Mars 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer un "scroll" de la liste de localisations.
-#
-# Parametres    :
-#    <Frame>    : Identificateur du frame
-#    <Val>      : Position actuelle
-#
-# Retour :
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Model::Scroll { Val } {
-   global GDefs
-   variable Lbl
-
-   .expnew.info.l.loc1.sel  configure -text "[format "%02i" $Val]" -value $Val
-   .expnew.info.l.loc1.name configure -textvariable Model::Data(Name$Val)
-   .expnew.info.l.loc1.lat  configure -textvariable Model::Data(Lat$Val)
-   .expnew.info.l.loc1.lon  configure -textvariable Model::Data(Lon$Val)
-
-   incr Val
-   .expnew.info.l.loc2.sel  configure -text "[format "%02i" $Val]" -value $Val
-   .expnew.info.l.loc2.name configure -textvariable Model::Data(Name$Val)
-   .expnew.info.l.loc2.lat  configure -textvariable Model::Data(Lat$Val)
-   .expnew.info.l.loc2.lon  configure -textvariable Model::Data(Lon$Val)
-
-   incr Val
-   .expnew.info.l.loc3.sel  configure -text "[format "%02i" $Val]" -value $Val
-   .expnew.info.l.loc3.name configure -textvariable Model::Data(Name$Val)
-   .expnew.info.l.loc3.lat  configure -textvariable Model::Data(Lat$Val)
-   .expnew.info.l.loc3.lon  configure -textvariable Model::Data(Lon$Val)
 }
 
 #-------------------------------------------------------------------------------
@@ -2023,27 +2083,20 @@ proc Model::SwitchCoord { } {
    variable Data
    variable Param
 
+   set coords {}
+
    if { "$Param(Unit)" == "DDD MM" } {
       set Param(Unit) "DDD.CC"
-      for { set i 1 } { $i <= 50 } { incr i } {
-         if { $Data(Lat$i)!="" } {
-            set Data(Lat$i) [Convert::Minute2Decimal $Data(Lat$i)]
-         }
-         if { $Data(Lon$i)!="" } {
-            set Data(Lon$i) [Convert::Minute2Decimal $Data(Lon$i)]
-         }
+      foreach coord $Data(Coord) {
+         lappend coords [Convert::Minute2Decimal $coord 5]
       }
    } else {
       set Param(Unit) "DDD MM"
-      for { set i 1 } { $i <= 50 } { incr i } {
-      if { $Data(Lat$i)!="" } {
-            set Data(Lat$i) [Convert::Decimal2Minute $Data(Lat$i) 5]
-         }
-         if { $Data(Lon$i)!="" } {
-            set Data(Lon$i) [Convert::Decimal2Minute $Data(Lon$i) 5]
-         }
+      foreach coord $Data(Coord) {
+         lappend coords [Convert::Decimal2Minute $coord 2]
       }
    }
+   set Data(Coord) [join $coords " "]
 }
 
 #----------------------------------------------------------------------------
@@ -2078,8 +2131,12 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
          foreach exp $Exp::Data(List) {
             if { $Loc=="" || $Loc=="[lindex $exp 0]_[lindex $exp 1]" } {
                foreach loc [lindex $exp 3] {
-                  lappend icos "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\"\
-                     [lindex $loc 1] [lindex $loc 2] 0 [lindex $Resources(Icos) [lindex $exp 2]]"
+                  set ico "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\" "
+                  foreach { la lo } [lrange $loc 1 end-1] {
+                     append ico "$la $lo 0 "
+                  }
+                  append ico [lindex $Resources(Icos) [lindex $exp 2]]
+                  lappend icos $ico
                }
             }
          }
@@ -2103,14 +2160,16 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Model::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+# Nom      : <Model::Vertex...>
+# Creation : Janvier 2012 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Fonctions de manipulation sur la projection
+# But      : Fonctions de manipulation des coordonnes de sources
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
 #  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonnee X dans le viewport
+#  <Y>       : Coordonnee Y dans le viewport
 #
 # Retour:
 #
@@ -2118,25 +2177,37 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::DrawInit { Frame VP } {
-   variable Data
 
-   set Data(Id$Data(Pos))   "-"
-   set Data(Name$Data(Pos)) "MousePoint"
-   set Data(Lat$Data(Pos))   $Viewport::Map(LatCursor)
-   set Data(Lon$Data(Pos))   $Viewport::Map(LonCursor)
+proc Model::VertexAdd { Frame VP X Y } {
+   variable Data
+   variable Param
+
+   if { $VP==-1 } {
+      return
+   }
+
+   set loc [$VP -unproject $X $Y]
+   if { "$Param(Unit)" == "DDD MM" } {
+      set lat [Convert::Decimal2Minute [lindex $loc 0] 2]
+      set lon [Convert::Decimal2Minute [lindex $loc 1] 2]
+   } else {
+      set lat [format "%.5f" [lindex $loc 0]]
+      set lon [format "%.5f" [lindex $loc 1]]
+   }
+
+   set Data(Id)   "-"
+   lappend Data(Coord) $lat $lon
 }
 
-proc Model::Draw { Frame VP } {
+proc Model::VertexDelete { Frame VP } {
    variable Data
 
-   set Data(Id$Data(Pos))   "-"
-   set Data(Name$Data(Pos)) "MousePoint"
-   set Data(Lat$Data(Pos))   $Viewport::Map(LatCursor)
-   set Data(Lon$Data(Pos))   $Viewport::Map(LonCursor)
+   if { $VP!=-1 } {
+      set Data(Coord) [lreplace $Data(Coord) end-1 end]
+   }
 }
 
-proc Model::DrawDone { Frame VP } { }
-proc Model::MoveInit { Frame VP } { }
-proc Model::Move     { Frame VP } { }
-proc Model::MoveDone { Frame VP } { }
+proc Model::VertexFollow { Frame VP X Y Scan } {
+   variable Data
+
+}

@@ -325,10 +325,16 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-10s = FALSE          # Do we take the isotope decay chain into accounte" ISO_CHAIN]
 
    puts $file "\n#----- Source parameters\n"
-   foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) {
+   foreach name $Sim(Name) coords $Sim(Coords) {
       puts $file [format "%-21s= %-25s # Source name" SRC_NAME $name]
       puts $file [format "%-21s= %-25s # Source type" SRC_TYPE $Sim(SrcType)]
-      puts $file [format "%-21s= %-12.6f %-12.6f # Latitude and longitude coordinate of the sources \[degrees\]" SRC_COORD $lat $lon]
+
+      if { [llength $coords]>2 } {
+         puts $file [format "%-21s= %s" SRC_AREA $coords]
+      } else {
+         puts $file [format "%-21s= %-12.6f %-12.6f # Latitude and longitude coordinate of the sources \[degrees\]" SRC_COORD [lindex $coords 0] [lindex $coords 1]]
+      }
+
       puts $file [format "%-21s= %-25s # Emission date-time \[UTC\]: YearMonthDayHourMinute" SRC_TIME [clock format $Sim(AccSecs) -format "%Y%m%d%H%M" -gmt True]]
 
       if { $Sim(SrcType) == "VOLCANO" } {

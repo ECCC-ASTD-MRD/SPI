@@ -593,21 +593,17 @@ proc Watch::New { } {
    variable Sim
 
    #----- Verifier la validitee des parametres
-   if { $Model::Data(Name)=="" || $Model::Data(Lat1)=="" || $Model::Data(Lon1)=="" } {
+   if { $Model::Data(Src)=="" || [llength $Model::Data(Coord)]<2 } {
        Dialog::Error .expnew $Error(Info)
        return 0
    }
 
-   if { "$Model::Param(Unit)" == "DDD MM" } {
-      Model::SwitchCoord
-   }
-
    #----- Recuperer les parametres
-   set Data(Lat)  [format "%2.6f" $Model::Data(Lat1)]
-   set Data(Lon)  [format "%2.6f" $Model::Data(Lon1)]
-   set Data(Type) $Model::Data(Type)
-   set Data(Pos)  $Model::Data(Pos)
-   set Data(Name) $Model::Data(Name)
+   set Data(Lat)  [Convert::Minute2Decimal [lindex $Model::Data(Coord) 0] 5]
+   set Data(Lon)  [Convert::Minute2Decimal [lindex $Model::Data(Coord) 1] 5]
+#   set Data(Type) $Model::Data(Type)
+   set Data(Name) $Model::Data(Src)
+   set Data(Pos)  [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
 
    regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "_" Data(Name)
    regsub -all "\[-\]\[-\]*" $Data(Name) "_" Data(Name)
@@ -624,10 +620,11 @@ proc Watch::New { } {
    set Sim(NoExp)   0
    set Sim(NoSim)   0
    set Sim(NoPrev)  -1
-   set Sim(NameExp) $Data(Name)
+   set Sim(NameExp) $Data(Project)
    set Sim(Name)    $Data(Name)
    set Sim(Lat)     $Data(Lat)
    set Sim(Lon)     $Data(Lon)
+   set Sim(Coords)  $Data(Coord)
 
    exec echo "[Info::Code Watch::Sim]" >> $Param(Path)/$Data(Project)/sim.pool
 

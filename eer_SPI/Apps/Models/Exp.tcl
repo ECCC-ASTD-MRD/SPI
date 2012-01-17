@@ -284,7 +284,7 @@ proc Exp::Create { Frame } {
 
    Bubble::Create $Frame.opt.open     $Model::Bubble(Plus)
    Bubble::Create $Frame.opt.close    $Model::Bubble(Minus)
-   Bubble::Create $Frame.opt.new      $Model::Bubble(SRC)
+   Bubble::Create $Frame.opt.new      $Model::Bubble(New)
    Bubble::Create $Frame.opt.writer   $Writer::Param(Title)
    Bubble::Create $Frame.opt.bulletin $Bulletin::Param(Title)
    Bubble::Create $Frame.opt.bubble   $Model::Bubble(Bubble)
@@ -444,7 +444,7 @@ proc Exp::CreateTree { } {
 
       set str ""
       foreach loc [lindex $exp 3] {
-         set coo [format "(%.5f,%.5f)" [lindex $loc 1] [lindex $loc 2]]
+         set coo [lrange $loc 1 end-1]
          lappend str "[lindex $loc 0] $coo"
       }
       CanvasBubble::Create $canvas EXP$no [join $str \n]
@@ -509,7 +509,7 @@ proc Exp::CreateTree { } {
          set idx 0
          foreach def $SPI::Ico(DefEXPERIMENT) {
             if { [string match "* $no:$name" [lindex $def 0]] } {
-               lset SPI::Ico(DefEXPERIMENT) $idx 4 $ico
+               lset SPI::Ico(DefEXPERIMENT) $idx end $ico
             }
             incr idx
          }
@@ -702,38 +702,37 @@ proc Exp::New { } {
        return 0
    }
 
-   #----- Forcer le format degree centiemme
-   if { "$Model::Param(Unit)" == "DDD MM" } {
-      Model::SwitchCoord
-   }
-
    regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "_" Model::Data(Name)
 
    set Data(Name) $Model::Data(Name)
    set Data(Type) $Model::Data(Type)
    set info ""
 
-   for { set i 1 } { $i <=50 } { incr i } {
+   foreach src $Model::Data(Srcs) coords $Model::Data(Coords) id $Model::Data(Ids) {
 
-      if { $Model::Data(Lat$i)=="" || $Model::Data(Lon$i)=="" } {
-         break
+      if { ![llength $coords] } {
+         Dialog::Error .expnew $Msg(Coord) "\n\n\t$src\n"
+         return 0
       }
 
-      if { $Model::Data(Lat$i)<-90.0 || $Model::Data(Lat$i)>90.0 || $Model::Data(Lon$i)<-180 || $Model::Data(Lon$i)>360 } {
-          Dialog::Error .expnew $Msg(Coord) "\n\n\t$Model::Data(Name$i) $Model::Data(Lat$i) $Model::Data(Lon$i)\n"
-          return 0
+      foreach { lat lon } $coords {
+         #----- Forcer le format degree centiemme
+         set lat [Convert::Minute2Decimal $lat 5]
+         set lon [Convert::Minute2Decimal $lon 5]
+
+         if { $lat<-90.0 || $lat>90.0 || $lon<-180 || $lon>360 } {
+            Dialog::Error .expnew $Msg(Coord) "\n\n\t$src $lat $lon\n"
+            return 0
+         }
       }
-      if { $Model::Data(Name$i)=="" } {
+      if { $src=="" } {
           Dialog::Error .expnew $Msg(Name)
           return 0
       }
 
-      set Data(Lat)  [format "%.10f" $Model::Data(Lat$i)]
-      set Data(Lon)  [format "%.10f" $Model::Data(Lon$i)]
+      regsub -all "\[^a-zA-Z0-9\]" $src "_" src
 
-      regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name$i) "_" Model::Data(Name$i)
-
-      lappend info [list $Model::Data(Name$i) $Data(Lat) $Data(Lon) $Model::Data(Id$i)]
+      eval lappend info \[list $src $coords $id\]
    }
 
    if { [llength $info]==0 } {
@@ -1394,9 +1393,10 @@ proc Exp::Select { Pool } {
    set Data(No)   [lindex $Pool 0]
    set Data(Name) [lindex $Pool 1]
    set Data(Type) [lindex $Pool 2]
+
    set Data(Pos)  [lindex $Pool 3]
-   set Data(Lat)  [lindex [lindex [lindex $Pool 3] 0] 1]
-   set Data(Lon)  [lindex [lindex [lindex $Pool 3] 0] 2]
+   set Data(Lat)  [lindex [lindex $Data(Pos) 0] 1]
+   set Data(Lon)  [lindex [lindex $Data(Pos) 0] 2]
 
    #----- Selectionner la nouvelle experience
    set Data(Select) $Pool
