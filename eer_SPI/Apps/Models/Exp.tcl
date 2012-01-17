@@ -710,6 +710,13 @@ proc Exp::New { } {
 
    foreach src $Model::Data(Srcs) coords $Model::Data(Coords) id $Model::Data(Ids) {
 
+      regsub -all "\[^a-zA-Z0-9\]" $src "_" src
+
+      if { $src=="" } {
+         Dialog::Error .expnew $Msg(Name)
+         return 0
+      }
+
       if { ![llength $coords] } {
          Dialog::Error .expnew $Msg(Coord) "\n\n\t$src\n"
          return 0
@@ -725,12 +732,6 @@ proc Exp::New { } {
             return 0
          }
       }
-      if { $src=="" } {
-          Dialog::Error .expnew $Msg(Name)
-          return 0
-      }
-
-      regsub -all "\[^a-zA-Z0-9\]" $src "_" src
 
       eval lappend info \[list $src $coords $id\]
    }
