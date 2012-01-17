@@ -185,6 +185,7 @@ proc SPI::CommandLine { { Args {} }} {
 
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
+      "valgrind"  { }
       "soft"      { }
       "hard"      { }
       "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
@@ -1416,7 +1417,7 @@ proc SPI::IcoDraw { Frame args } {
 
    foreach group $Ico(Groups) {
 
-      if {$Ico(Frame$group)=="" } {
+      if { $Ico(Frame$group)=="" } {
          set Ico(Frame$group) $Frame
       }
 
@@ -1430,16 +1431,22 @@ proc SPI::IcoDraw { Frame args } {
 
          set i 0
 
-         foreach ico $Ico(Def$group) {
+         foreach def $Ico(Def$group) {
 
-            set id     [lindex $ico 0]
-            set lat    [lindex $ico 1]
-            set lon    [lindex $ico 2]
-            set elev   [lindex $ico 3]
-            set ico    [lindex $ico 4]
+            set id     [lindex $def 0]
+            set coords [lrange $def 1 end-1]
+            set ico    [lindex $def end]
             set tag    $group$i
 
+            set lat    [lindex $coords 0]
+            set lon    [lindex $coords 1]
+            set elev   [lindex $coords 2]
+
             foreach vp [Page::Registered $Frame Viewport] {
+
+              if { [llength $coords]>=4 } {
+                  Viewport::DrawArea $Frame $vp $coords "$Page::Data(Tag)$vp $group $tag" "" "" $col "" False 2
+               }
 
                #----- Projection des coordonnées
                if { [set xy [$vp -project $lat $lon $elev]]!="" && [lindex $xy 2]>=0 } {
@@ -1453,8 +1460,8 @@ proc SPI::IcoDraw { Frame args } {
                   }
 
                   if { $Param(IconCircle) } {
-                     if { [llength [set coords [$vp -projectcircle $lat $lon $Param(IconCircle)]]] } {
-                        eval $Frame.page.canvas create polygon $coords -fill \"\" -outline $col -width 2 -dash . -tags \"$group $tag\"
+                     if { [llength [set cs [$vp -projectcircle $lat $lon $Param(IconCircle)]]] } {
+                        eval $Frame.page.canvas create polygon $cs -fill \"\" -outline $col -width 2 -dash . -tags \"$group $tag\"
                      }
                   }
 
@@ -2174,8 +2181,7 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
                   -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
          }
 
-         puts $f "\ndataspec create \"$spec\""
-         puts $f "dataspec configure \"$spec\" -factor [dataspec configure $spec -factor] -value [dataspec configure $spec -value]\
+         puts $f "\ndataspec create \"$spec\" -factor [dataspec configure $spec -factor] -value [dataspec configure $spec -value]\
             -size [dataspec configure $spec -size] -width [dataspec configure $spec -width] -unit \"[dataspec configure $spec -unit]\"\
             -desc \"[dataspec configure $spec -desc]\" -icon \"[dataspec configure $spec -icon]\" -mark \"[dataspec configure $spec -mark]\"\
             -color \"[dataspec configure $spec -color]\" -fill \"[dataspec configure $spec -fill]\" -activefill \"[dataspec configure $spec -activefill]\"\
@@ -2352,6 +2358,7 @@ if { [file exists $SPI::Param(Default)] } {
 #----- Parcourir la liste des parametres post-launch
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
+      "valgrind"  { }
       "soft"      { }
       "hard"      { }
       "nothreads" { }
