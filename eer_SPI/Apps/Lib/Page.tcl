@@ -1654,15 +1654,12 @@ proc Page::Update { { Frame "" } { VP True } } {
    if { $Frame=="" } {
       set Frame $Page::Data(Frame)
    }
-   if { $Frame=="" } {
-      if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
-         return
-      }
-   }
 
    #----- Est-ce que la page existe encore
    if { ![winfo exists $Frame] } {
-      set Data(Frame) [lreplace $Data(Frames) $idx $idx]
+      if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
+         set Data(Frame) [lreplace $Data(Frames) $idx $idx]
+      }
       return
    }
 
