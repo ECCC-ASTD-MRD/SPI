@@ -1,6 +1,6 @@
 #----- Definitions
 export ARCH=`uname -s`_`uname -m`
-echo "(INFO) Architecture detected: $ARCH"
+#echo "(INFO) Architecture detected: $ARCH"
 
 export TCL_VERSION=8.5
 export SPI_VERSION=7.5.1
@@ -14,7 +14,8 @@ export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
 
 #----- GDB data
 if [[ ${GDB_PATH} = "" ]] ; then
-   export GDB_PATH=/data/cmds/afsm/gis_le
+   export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+#   export GDB_PATH=/data/cmds/afsm/gis_le
 fi
 
 #----- GDAL data

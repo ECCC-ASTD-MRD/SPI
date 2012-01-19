@@ -3,4 +3,7 @@
 export SPI_PATH=${0%wish}
 . ${SPI_PATH}/.profile_spi
 
+#----- Force  software GL, usefull for tclsh only script
+export LD_LIBRARY_PATH=${SPI_SHARED}/GL:$LD_LIBRARY_PATH
+
 ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "$@"
