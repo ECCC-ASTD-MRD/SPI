@@ -22,7 +22,6 @@ namespace eval Mapper::DepotWare::TMS {
       { OpenStreetMap TMS OpenStreetMap }
       { MapQuest TMS MapQuest}
       { BlueMarble TMS BlueMarble }
-      { MetaCarta TMS MetaCarta }
       { OneMoon TMS OneMoon }
       { OneEarth TMS OneEarth }
       { MSVirtualEarth TMS MSVirtualEarth }
@@ -31,7 +30,7 @@ namespace eval Mapper::DepotWare::TMS {
       { Google-SatelliteHybrid TMS Google-SatelliteHybrid }
       { Google-Terrain TMS Google-Terrain }
       { Google-TerrainHybrid TMS Google-TerrainHybrid }
-      { "ESRI Server" TMS "ESRIServer" }}
+      { "ESRI-Server" TMS "ESRI-Server" }}
 }
 
 #-------------------------------------------------------------------------------
@@ -373,7 +372,7 @@ set Param(Google-SatelliteHybrid) "<GDAL_WMS>
    </Cache>
 </GDAL_WMS>"
 
-set Param(ESRIServer) "<GDAL_WMS>
+set Param(ESRI-Server) "<GDAL_WMS>
    <Service name=\"TMS\">
    <ServerUrl>http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/\$\{z\}/\$\{y\}/\$\{x\}</ServerUrl>
    </Service>
