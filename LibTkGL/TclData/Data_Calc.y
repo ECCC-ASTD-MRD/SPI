@@ -561,14 +561,14 @@ exp:
       char buf[32];
       $$ = 0;
       sprintf(buf,"%i",(int)$3);
-      FSTD_FieldRead(GInterp,"TMPXXXXXX",buf,(int)$5,-1,0,-1,-1,-1,0,0);
+      FSTD_FieldRead(GInterp,"TMPCALCXXXXXX",buf,(int)$5,-1,0,-1,-1,-1,0,0);
       Tcl_ResetResult(GInterp);
 
 #ifdef DEBUG
       fprintf(stdout, "(DEBUG) FSTD_FieldRead finished\n");
 #endif
       GFieldP=GField;
-      GField=Data_Get("TMPXXXXXX");
+      GField=Data_Get("TMPCALCXXXXXX");
       GMode=GMode==T_VAL?T_FLD:GMode;
 
       $$ = GData[++GDataN]=DataDef_Copy(GField->Def);

@@ -1421,7 +1421,9 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
             /*Read sub dataset*/
             idx=index(sub[si],'=');
             if (*(idx-1)=='E') {
-               GDAL_FileOpen(Interp,subid,Mode,idx+1,NULL,desc);
+               if (GDAL_FileOpen(Interp,subid,Mode,idx+1,NULL,desc)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
             }
          }
          free(subid);

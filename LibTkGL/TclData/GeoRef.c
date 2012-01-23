@@ -57,9 +57,11 @@ int GeoRef_Init(Tcl_Interp *Interp) {
 }
 
 void GeoRef_Incr(TGeoRef *Ref) {
-   Tcl_MutexLock(&MUTEX_GEOREF);
-   if (Ref) Ref->NRef++;
-   Tcl_MutexUnlock(&MUTEX_GEOREF);
+   if (Ref) {
+      Tcl_MutexLock(&MUTEX_GEOREF);
+      Ref->NRef++;
+      Tcl_MutexUnlock(&MUTEX_GEOREF);
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -273,7 +275,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
       if (ToDef) {
          if (Degree)
             c_ezsetopt("INTERP_DEGREE",Degree);
-         c_gdxysval(ToRef->Id,Scan->D,ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
+         c_gdxysval(ToRef->Id,Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
       }
       EZUnLock_RPNInt();
 
@@ -1122,14 +1124,9 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       Ref->Pos=NULL;
    }
 
-// Due to ezscint bugs, I cannot release the grid (gdaxes)
-   if (Ref->Id>-1) {
-/*
-      EZLock_RPNInt();
-      c_gdrls(Ref->Id);
-      EZUnLock_RPNInt();
-*/
-   }
+   // Release ezscint grid if ok
+   if (Ref->Id>-1)
+      EZGrid_IdFree(Ref->Id);
 
    if (Ref->GCPTransform) {
       GDALDestroyGCPTransformer(Ref->GCPTransform);
@@ -1314,7 +1311,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
 
          if (GeoRef_Equal(ref,Ref,3)) {
-
             GeoRef_Free(Ref);
             GeoRef_Incr(ref);
             TclY_UnlockHash();
@@ -1369,6 +1365,8 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
       default  :
          ref->Id=Ref->Id;
   }
+  EZGrid_IdIncr(ref->Id);
+
   return(ref);
 }
 

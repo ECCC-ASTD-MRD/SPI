@@ -88,14 +88,14 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(val));
          }
-         /*Free the DataDef since it won't be passed to the script side*/
-         DataDef_Free(Data);
       }
+      /*Free the DataDef since it won't be passed to the script side*/
+      DataDef_Free(Data);
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) Calc_Update: Result is float\n");
 #endif
    } else {
-      /* See if we need to copy the Data (when it's not resulted from computation)*/
+      /*See if we need to copy the Data (when it's not resulted from computation)*/
       for(d=0;d<=GDataN;d++) {
          if (GData[d]==Data) {
              needcopy=0;
@@ -270,8 +270,8 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
       GData[i]=NULL;
    }
 
-   /* Free temporary field */
-   Data_FreeHash(Interp,"TMPFLDXXXXXX");
+   /* Free temporary field used in fld() func*/
+   Data_FreeHash(Interp,"TMPCALCXXXXXX");
 
    /* Error code */
    return(GError);

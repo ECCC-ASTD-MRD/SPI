@@ -420,11 +420,9 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
    if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
-      EZLock_RPNInt();
       grtyp[0]=GRTYP[0];
       grtyp[1]='\0';
-      ref->Id=c_ezqkdef(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
-      EZUnLock_RPNInt();
+      ref->Id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
    } else {
       ref->Id=-1;
    }

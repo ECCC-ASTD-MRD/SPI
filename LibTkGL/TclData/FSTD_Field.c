@@ -988,13 +988,13 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                ok=c_ezwdint(pt0,pt1,pf0,pf1);
             } else {
                ok=c_ezuvint(pt0,pt1,pf0,pf1);
-            }
+           }
         } else{
             /*Interpolation scalaire*/
             Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
             ok=c_ezsint(pt0,pf0);
-         }
+        }
          FieldTo->Ref->ZRef.Levels[k]=FieldFrom->Ref->ZRef.Levels[k];
       }
       if (ok<0) {
@@ -1068,21 +1068,21 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
 
    if (!Field0) {
       Tcl_AppendResult(Interp,"FSTD_FieldTimeInterpolate: Initial field not valid",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
    if (!Field1) {
       Tcl_AppendResult(Interp,"FSTD_FieldTimeInterpolate: Terminal field not valid",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
    if (Field0->Def->NI!=Field1->Def->NI || Field0->Def->NJ!=Field1->Def->NJ || Field0->Def->NK!=Field1->Def->NK) {
       Tcl_AppendResult(Interp,"FSTD_FieldTimeInterpolate: Incompatible size",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /* Est-ce que le champs existe et si oui, verifier les dimensions */
    field=Data_Valid(Interp,Name,Field0->Def->NI,Field0->Def->NJ,Field0->Def->NK,Field0->Def->Data[2]?3:Field0->Def->Data[1]?2:1,Field0->Def->Type);
    if (!field)
-      return TCL_ERROR;
+      return(TCL_ERROR);
 
    Field0->Set(field);
 
@@ -1126,7 +1126,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
       GeoRef_Destroy(Interp,field->Ref->Name);
    field->Ref=GeoRef_Copy(Field0->Ref);
 #endif
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1442,6 +1442,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   EZLock_RPNInt();
                   Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
                   EZUnLock_RPNInt();
+                  EZGrid_IdIncr(Field->Ref->Id);
                }
                if (Field->Stat) { free(Field->Stat); Field->Stat=NULL; }
 
@@ -1462,11 +1463,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                }
                Data_Clean(Field,1,1,1);
                ref=Field->Ref;
-               if (ref && ref->Id>-1 && grtyp[0]!='V') {
-                  EZLock_RPNInt();
-                  c_gdrls(ref->Id);
-                  EZUnLock_RPNInt();
-               }
+
                if (grtyp[0]=='W' || grtyp[1]=='W') {
                   if (ref) {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);

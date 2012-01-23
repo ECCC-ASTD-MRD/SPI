@@ -33,12 +33,12 @@
 
 #include "tclData.h"
 #include "Projection.h"
+#include "Data_Calc.h"
 
 TCL_DECLARE_MUTEX(MUTEX_DATACALC)
 
 static Tcl_HashTable TData_Table;
 static int           TDataInit=0;
-int                  TData_Size[]={ 0,0,1,1,2,2,4,4,8,8,4,8 };
 
 static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
@@ -1103,7 +1103,7 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
       strcat(expr,Tcl_GetStringFromObj(Objv[i],&len));
       if ((len+=tlen)>=PARSE_LEN) {
          Tcl_AppendResult(Interp,"Data_Cmd: expression string too long",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
    }
 

@@ -19,7 +19,7 @@ EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
 GEOS=geos-3.2.2
-GDAL=gdal-1.8.0
+GDAL=gdal-1.9.0
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
 HDF4=hdf-4.2.5
@@ -110,7 +110,7 @@ fi
 #----- expath
 cd ${ARCHPATH}/${EXPAT}
 make distclean
-./configure --prefix=${LIBPATH}/${EXPAT} --enable-shared=no
+./configure --prefix=${LIBPATH}/${EXPAT} --enable-shared=yes
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -247,6 +247,5 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
-#--with-netcdf=${LIBPATH}/${NETCDF}
 #--with-kakadu=${LIBPATH}/${KKDU}
 #--with-ecw=/cnfs/ops/cmoe/afsr005/Lib/Linux/libecwj2-3.3
