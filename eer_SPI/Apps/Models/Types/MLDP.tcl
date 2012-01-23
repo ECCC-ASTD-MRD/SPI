@@ -304,8 +304,8 @@ proc MLDP::CreateModelInput { } {
    variable Sim
    variable Tmp
 
-   set Sim(NI) [lindex $Sim(Grid) 1]
-   set Sim(NJ) [lindex $Sim(Grid) 2]
+   set Sim(NI) [lindex $Sim(Grid) 0]
+   set Sim(NJ) [lindex $Sim(Grid) 1]
    set Sim(NK) 25
 
    set file [open $Sim(Path)/tmp/$Sim(Model).in w]
