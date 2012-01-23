@@ -23,9 +23,9 @@
 #
 #===============================================================================
 
-package provide Miniport 2.2
+package provide Miniport 2.3
 
-catch { SPI::Splash "Loading Canvas Package Miniport 2.2" }
+catch { SPI::Splash "Loading Canvas Package Miniport 2.3" }
 
 namespace eval Miniport { } {
    variable Params

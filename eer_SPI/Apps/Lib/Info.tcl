@@ -29,9 +29,9 @@
 #
 #===============================================================================
 
-package provide Info 2.1
+package provide Info 2.2
 
-catch { SPI::Splash "Loading Package Info 2.1" }
+catch { SPI::Splash "Loading Package Info 2.2" }
 
 namespace eval Info {
    variable Lbl

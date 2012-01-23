@@ -26,9 +26,9 @@
 #
 #===============================================================================
 
-package provide Convert 1.0
+package provide Convert 1.1
 
-catch { SPI::Splash "Loading Package Convert 1.0" }
+catch { SPI::Splash "Loading Package Convert 1.1" }
 
 namespace eval Convert { } {
    variable Lbl

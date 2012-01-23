@@ -41,9 +41,9 @@
 #
 #===============================================================================
 
-package provide TabFrame 2.0
+package provide TabFrame 2.1
 
-catch { SPI::Splash "Loading Widget Package TabFrame 2.0" }
+catch { SPI::Splash "Loading Widget Package TabFrame 2.1" }
 
 namespace eval TabFrame {
 }

@@ -61,9 +61,9 @@
 #
 #===============================================================================
 
-package provide Viewport 5.0
+package provide Viewport 5.1
 
-catch { SPI::Splash "Loading Canvas Package Viewport 5.0" }
+catch { SPI::Splash "Loading Canvas Package Viewport 5.1" }
 
 namespace eval Viewport {
    variable Data

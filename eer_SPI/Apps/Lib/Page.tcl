@@ -119,9 +119,9 @@
 #       - .     <Key-Print>
 #===============================================================================
 
-package provide Page 5.0
+package provide Page 5.1
 
-catch { SPI::Splash "Loading Canvas Package Page 5.0" }
+catch { SPI::Splash "Loading Canvas Package Page 5.1" }
 
 package require OpenGL
 
