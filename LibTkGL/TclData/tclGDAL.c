@@ -929,12 +929,15 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
    if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
 
+      /*Wait for it's rendering thread to die*/
+      band->Tex.Res=0;
+      while(band->Tex.ThreadId) { sleep(1); };
+
       if (band->Spec) {
          DataSpec_FreeHash(Interp,band->Spec->Name);
       }
 
-      /* Liberation de la memoire allouee pour les textures*/
-      band->Tex.Res=0;
+      /*Liberation de la memoire allouee pour les textures*/
       GeoTex_Clear(&band->Tex,GEOTEX_CLRALL,0,0);
 
       if (band->Stat)      free(band->Stat);

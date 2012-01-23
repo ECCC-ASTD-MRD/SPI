@@ -75,14 +75,12 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
    Projection *proj=band->Tex.Proj;
 
    if (proj) {
-      band->Tex.ThreadId=Tcl_GetCurrentThread();
-
       proj->Loading+=5;
       GeoTex_Parse(band,&band->Tex.Tile,proj,band->Tex.Proj->VP,band->Tex.ResN,0,0);
       proj->Loading=0;
-
-      band->Tex.ThreadId=(Tcl_ThreadId)NULL;
    }
+
+   band->Tex.ThreadId=(Tcl_ThreadId)NULL;
 
    Tcl_ExitThread(0);
 }
