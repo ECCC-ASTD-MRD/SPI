@@ -36,7 +36,8 @@ namespace eval MLDPn {
    set Lbl(Model)               { "Modèle" "Model" }
    set Lbl(Source)              { "Source" "Source" }
    set Lbl(Start)               { "Temps de départ (UTC)" "Starting Time (UTC)" }
-   set Lbl(Date)                { "Date   " "Date   " }
+   set Lbl(Date)                { "Date " "Date " }
+   set Lbl(Mode)                { "Mode " "Mode " }
    set Lbl(Delta)               { "Delta (HR)" "Delta (HR)" }
    set Lbl(Hour)                { "Heure " "Hour " }
    set Lbl(At)                  { "A " "At " }
@@ -56,6 +57,9 @@ namespace eval MLDPn {
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
    set Lbl(Seed)                { "Semence aléatoire" "Random seed     " }
+   set Lbl(Forward)             { "Avant" "Forward" }
+   set Lbl(Backward)            { "Arrière" "Backward" }
+
 
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
@@ -177,6 +181,7 @@ namespace eval MLDPn {
    set Bubble(GraphZoom)              { "Augmenter ou réduire le facteur de zoom de l'axe des X." "Change X axis zoom factor." }
    set Bubble(PickInterval)           { "Sélectionne un interval d'émission à éditer." "Select an emission interval to edit." }
    set Bubble(DiffKernel)             { "Sélectionne un noyau de diffusion a utiliser." "Select a diffusion kernel to use." }
+   set Bubble(Mode)                   { "Mode de la simulation, avant ou arrière." "Simulation mode, forward or backward." }
 
    #----- Definitions des messages
 

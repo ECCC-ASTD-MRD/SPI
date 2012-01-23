@@ -399,8 +399,11 @@ proc Info::Format { Info } {
       set lbl $tok
       catch { set lbl [lindex $Lbl($tok) $GDefs(Lang)] }
 
-      if { $tok=="Click"|| $tok=="Sim0Secs"  || $tok=="SimSecs" ||  $tok=="AccSecs" } {
-         set val [clock format $val]
+      switch $tok {
+         "Click" -
+         "Sim0Secs" -
+         "SimSecs" -
+         "AccSecs" { set val [clock format $val] }
       }
 
       if { $tok!="Scenario" } {

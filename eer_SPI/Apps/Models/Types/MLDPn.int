@@ -41,7 +41,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =320x380
+   wm geom [winfo toplevel $Tab] =350x380
 
    #----- Model Tab.
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
@@ -55,10 +55,22 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          Calendar::Create $tabframe.time.date [lindex $Lbl(Date) $GDefs(Lang)] MLDPn::Sim(Secs) -1 ""
          Clock::Create $tabframe.time.date.hour "" MLDPn::Sim(Hour) MLDPn::Sim(Min)
          pack $tabframe.time.date -side top -anchor w -padx 2 -fill x -expand True
-         pack $tabframe.time.date.hour -side right
+         pack $tabframe.time.date.hour -side right -fill y
+
+         #----- Mode avant ou arriere.
+         frame  $tabframe.time.mode
+            label $tabframe.time.mode.lbl -text [lindex $Lbl(Mode) $GDefs(Lang)]
+            frame  $tabframe.time.mode.opt -relief sunken -bd 1
+               radiobutton $tabframe.time.mode.opt.forward  -text [lindex $Lbl(Forward) $GDefs(Lang)]  -bd 1 -indicatoron False -variable MLDPn::Sim(Backward) -value False -selectcolor $GDefs(ColorLight)
+               radiobutton $tabframe.time.mode.opt.backward -text [lindex $Lbl(Backward) $GDefs(Lang)] -bd 1 -indicatoron False -variable MLDPn::Sim(Backward) -value True -selectcolor $GDefs(ColorLight)
+               pack $tabframe.time.mode.opt.forward $tabframe.time.mode.opt.backward -side left -fill x -expand True
+            pack $tabframe.time.mode.lbl -side left
+            pack $tabframe.time.mode.opt -side left -fill x -expand True
+         pack $tabframe.time.mode -side top -fill x -padx 2
 
          Bubble::Create $tabframe.time.date $Bubble(StartDate)
          Bubble::Create $tabframe.time.date.hour $Bubble(StartHour)
+         Bubble::Create $tabframe.time.mode $Bubble(Mode)
 
       pack $tabframe.time -side top -padx 5 -pady 5 -fill x
       Bubble::Create $tabframe.time $Bubble(StartTime)
@@ -68,7 +80,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    labelframe $tabframe.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
       frame $tabframe.integ.opt
 
-      #----- Simulation duration [hr].
+      #----- Noyeau de diffusion.
       Option::Create $tabframe.integ.opt.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) ""
       pack $tabframe.integ.opt.kernel -side top -fill x
       Bubble::Create $tabframe.integ.opt.kernel $Bubble(DiffKernel)

@@ -394,9 +394,10 @@ proc MLDPn::CreateModelInput { } {
             puts $file [format "%-21s= %-7i %7i %8.1f %6.1f %s" SRC_EMI_INTERVAL $np $emti $height $radius $rates]
          }
       }
+      puts $file "\n"
    }
 
-   puts $file "\n#----- Parcel parameters\n"
+   puts $file "#----- Parcel parameters\n"
    #----- Particle size distribution (gravitational settling velocities).
    if { [set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
       set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]

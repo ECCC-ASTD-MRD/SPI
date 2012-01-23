@@ -946,6 +946,7 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Name)   {}
    set sim(Lat)    {}
    set sim(Lon)    {}
+   set sim(Coords) {}
 
    foreach src $sim(Pos) {
       lappend sim(Name)   [lindex $src 0]                 ;#----- List of source names.

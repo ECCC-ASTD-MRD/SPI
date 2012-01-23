@@ -444,8 +444,7 @@ proc Exp::CreateTree { } {
 
       set str ""
       foreach loc [lindex $exp 3] {
-         set coo [lrange $loc 1 end-1]
-         lappend str "[lindex $loc 0] $coo"
+         lappend str [lrange $loc 0 2]
       }
       CanvasBubble::Create $canvas EXP$no [join $str \n]
       $canvas bind EXP$no  <ButtonPress-3> "Exp::Select { $exp } ; Exp::PopUp %X %Y"
