@@ -79,8 +79,8 @@ typedef struct GDB_Params {
 
 typedef struct GDB_Box {
    int    Nb;
-   Coord  Co[4];
-   Vect3d Vr[4];
+   Coord  Co[8];
+   Vect3d Vr[8];
 } GDB_Box;
 
 typedef struct GDB_Geo {

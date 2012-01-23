@@ -503,7 +503,7 @@ void GDB_GeoProj(GDB_Geo *Geo,Projection *Proj) {
       Proj->Type->Project(Proj,(GeoVect*)Geo->Loc,NULL,-Geo->Box.Nb);
 
       /*Calculer les limites de la boite*/
-      if (!Proj->Type->Project(Proj,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,4)) {
+      if (!Proj->Type->Project(Proj,(GeoVect*)Geo->Box.Co,(GeoVect*)Geo->Box.Vr,8)) {
          Geo->Box.Nb=-1;
       } else {
          // Everything is reprojected and ready, Set Nb positive
@@ -974,12 +974,20 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 */
 void GDB_TileInit(GDB_Tile *Tile,float Lat0,float Lon0,float Delta,Projection *Proj) {
 
-   Tile->Box.Co[0].Lat=Lat0;Tile->Box.Co[0].Lon=Lon0;Tile->Box.Co[0].Elev=0.0;
-   Tile->Box.Co[1].Lat=Lat0;Tile->Box.Co[1].Lon=Lon0+Delta;Tile->Box.Co[1].Elev=0.0;
-   Tile->Box.Co[2].Lat=Lat0+Delta;Tile->Box.Co[2].Lon=Lon0+Delta;Tile->Box.Co[2].Elev=0.0;
-   Tile->Box.Co[3].Lat=Lat0+Delta;Tile->Box.Co[3].Lon=Lon0;Tile->Box.Co[3].Elev=0.0;
+   float d;
 
-   if (!(Proj->Type->Project(Proj,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,4))) {
+   d-Delta*0.5;
+
+   Tile->Box.Co[0].Lat=Lat0;       Tile->Box.Co[0].Lon=Lon0;       Tile->Box.Co[0].Elev=0.0;
+   Tile->Box.Co[1].Lat=Lat0;       Tile->Box.Co[1].Lon=Lon0+Delta; Tile->Box.Co[1].Elev=0.0;
+   Tile->Box.Co[2].Lat=Lat0+Delta; Tile->Box.Co[2].Lon=Lon0+Delta; Tile->Box.Co[2].Elev=0.0;
+   Tile->Box.Co[3].Lat=Lat0+Delta; Tile->Box.Co[3].Lon=Lon0;       Tile->Box.Co[3].Elev=0.0;
+   Tile->Box.Co[4].Lat=Lat0;       Tile->Box.Co[4].Lon=Lon0+d;     Tile->Box.Co[4].Elev=0.0;
+   Tile->Box.Co[5].Lat=Lat0+Delta; Tile->Box.Co[5].Lon=Lon0+d;     Tile->Box.Co[5].Elev=0.0;
+   Tile->Box.Co[6].Lat=Lat0+d;     Tile->Box.Co[6].Lon=Lon0;       Tile->Box.Co[6].Elev=0.0;
+   Tile->Box.Co[7].Lat=Lat0+d;     Tile->Box.Co[7].Lon=Lon0+Delta; Tile->Box.Co[7].Elev=0.0;
+
+   if (!(Proj->Type->Project(Proj,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,8))) {
       Tile->Box.Nb=-1;
    } else {
       Tile->Box.Nb=1;
@@ -1034,6 +1042,10 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
       CYLCHECK(d,Box.Vr[2][0]);
       d=Box.Vr[3][0]-Proj->L;
       CYLCHECK(d,Box.Vr[3][0]);
+      d=Box.Vr[4][0]-Proj->L;
+      CYLCHECK(d,Box.Vr[4][0]);
+      d=Box.Vr[5][0]-Proj->L;
+      CYLCHECK(d,Box.Vr[5][0]);
    }
 
    /*Project box coordinates*/
@@ -1047,6 +1059,18 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
    gluProject(Box.Vr[3][0],Box.Vr[3][1],Box.Vr[3][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   Vect_Min(min,min,dif);
+   Vect_Max(max,max,dif);
+   gluProject(Box.Vr[4][0],Box.Vr[4][1],Box.Vr[4][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   Vect_Min(min,min,dif);
+   Vect_Max(max,max,dif);
+   gluProject(Box.Vr[5][0],Box.Vr[5][1],Box.Vr[5][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   Vect_Min(min,min,dif);
+   Vect_Max(max,max,dif);
+   gluProject(Box.Vr[6][0],Box.Vr[6][1],Box.Vr[6][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
+   Vect_Min(min,min,dif);
+   Vect_Max(max,max,dif);
+   gluProject(Box.Vr[7][0],Box.Vr[7][1],Box.Vr[7][2],Proj->VP->GLModR,Proj->VP->GLProj,Proj->VP->GLView,&dif[0],&dif[1],&dif[2]);
    Vect_Min(min,min,dif);
    Vect_Max(max,max,dif);
 

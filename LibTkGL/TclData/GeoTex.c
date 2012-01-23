@@ -325,21 +325,33 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    Tile->Box.Co[1].Elev=0.0;
    Tile->Box.Co[2].Elev=0.0;
    Tile->Box.Co[3].Elev=0.0;
+   Tile->Box.Co[4].Elev=0.0;
+   Tile->Box.Co[5].Elev=0.0;
+   Tile->Box.Co[6].Elev=0.0;
+   Tile->Box.Co[7].Elev=0.0;
 
    if (!Proj->Geographic) {
       Tile->Box.Co[0].Lat=y0;Tile->Box.Co[0].Lon=x0;
       Tile->Box.Co[1].Lat=y1;Tile->Box.Co[1].Lon=x0;
       Tile->Box.Co[2].Lat=y1;Tile->Box.Co[2].Lon=x1;
       Tile->Box.Co[3].Lat=y0;Tile->Box.Co[3].Lon=x1;
+      Tile->Box.Co[4].Lat=y1;Tile->Box.Co[4].Lon=(x0+x1)*0.5;
+      Tile->Box.Co[5].Lat=y0;Tile->Box.Co[5].Lon=(x0+x1)*0.5;
+      Tile->Box.Co[6].Lat=(y0+y1)*0.5;Tile->Box.Co[4].Lon=x0;
+      Tile->Box.Co[7].Lat=(y0+y1)*0.5;Tile->Box.Co[5].Lon=x1;
    } else {
       Band->Ref->Project(Band->Ref,x0,y0,&Tile->Box.Co[0].Lat,&Tile->Box.Co[0].Lon,1,1);
       Band->Ref->Project(Band->Ref,x0,y1,&Tile->Box.Co[1].Lat,&Tile->Box.Co[1].Lon,1,1);
       Band->Ref->Project(Band->Ref,x1,y1,&Tile->Box.Co[2].Lat,&Tile->Box.Co[2].Lon,1,1);
       Band->Ref->Project(Band->Ref,x1,y0,&Tile->Box.Co[3].Lat,&Tile->Box.Co[3].Lon,1,1);
-  }
+      Band->Ref->Project(Band->Ref,(x0+x1)*0.5,y0,&Tile->Box.Co[4].Lat,&Tile->Box.Co[4].Lon,1,1);
+      Band->Ref->Project(Band->Ref,(x0+x1)*0.5,y1,&Tile->Box.Co[5].Lat,&Tile->Box.Co[5].Lon,1,1);
+      Band->Ref->Project(Band->Ref,x0,(y0+y1)*0.5,&Tile->Box.Co[6].Lat,&Tile->Box.Co[6].Lon,1,1);
+      Band->Ref->Project(Band->Ref,x1,(y0+y1)*0.5,&Tile->Box.Co[7].Lat,&Tile->Box.Co[7].Lon,1,1);
+   }
 
    /*Projection des coins de la texture*/
-   Proj->Type->Project(Proj,Tile->Box.Co,Tile->Box.Vr,-4);
+   Proj->Type->Project(Proj,Tile->Box.Co,Tile->Box.Vr,-8);
    Tile->Box.Nb=4;
 
    /*Test for overflow on raster limits*/
