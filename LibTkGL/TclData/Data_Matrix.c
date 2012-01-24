@@ -468,6 +468,7 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
          uni=1;
       }
 
+      n=0;
       while(A->Data[n]) {
          if (!B->Data[n] && FSIZE3D(B)!=1) {
             return(NULL);
