@@ -1385,7 +1385,7 @@ proc FieldBox::Select { } {
       return
    }
 
-   if { $Page::Data(Canvas)!="" } {
+   if { [winfo exists $Page::Data(Canvas)] } {
       $Page::Data(Canvas) config -cursor watch
    }
    . config -cursor watch
@@ -1477,7 +1477,7 @@ proc FieldBox::Select { } {
       fstdfield free $fld
    }
 
-   if { $Page::Data(Canvas)!="" } {
+   if { [winfo exists $Page::Data(Canvas)] } {
       $Page::Data(Canvas) config -cursor left_ptr
    }
    . config -cursor left_ptr
