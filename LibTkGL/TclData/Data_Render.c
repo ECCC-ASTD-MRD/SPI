@@ -775,8 +775,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
   }
 
    glEnable(GL_STENCIL_TEST);
-   glStencilMask(0x2);
-   glStencilFunc(GL_NOTEQUAL,0x2,0x2);
+   glStencilMask(0x20);
+   glStencilFunc(GL_NOTEQUAL,0x20,0x20);
    glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
    glReadBuffer(GL_STENCIL);

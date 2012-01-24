@@ -1027,7 +1027,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       }
 
       /*If in 2D mode*/
-      if (!ZDim) {
+      if (Mode==REF_PROJ && !ZDim) {
          /* Did we ever cross this pixel before ? */
          /* Stencil buffer reads are very slow so we only check after a few steps */
          if (c>MaxIter>>5) {
@@ -1035,7 +1035,8 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
                gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
 
             glReadPixels(pix[0],pix[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-           if (s&0x2) break;
+            if (s&0x20)
+               break;
             c=0;
          }
          c++;
