@@ -532,6 +532,11 @@ TDataDef* Calc_Dir(TDataDef* A) {
    fprintf(stdout,"(DEBUG) Calc_Dir(A:%p,Func:%p)\n",(void*)A);
 #endif
 
+   if (!GField || GField->Ref->Grid[0]=='V') {
+      fprintf(stderr,"(ERROR) Invalid grid while calculating direction\n");
+      return(NULL);
+   }
+
    GDataN++;
 
    if (!A->Data[1]) {
