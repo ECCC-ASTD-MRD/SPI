@@ -433,7 +433,7 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
          i1=i1<i0?i0:i1;
          j1=j1<j0?j0:j1;
 
-         /*If we this gridpoint has'nt yet been visited*/
+         /*If this gridpoint has'nt yet been visited*/
          if (!buf[Field->Def->NI*j+i]) {
            len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,3);
 

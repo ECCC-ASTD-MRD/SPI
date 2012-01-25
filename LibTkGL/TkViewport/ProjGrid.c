@@ -94,9 +94,9 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
          glVertex3d(-Proj->LI,-Proj->LJ,1.0);
-         glVertex3d(-Proj->LI,Proj->LJ,1.0);
-         glVertex3d(Proj->LI,Proj->LJ,1.0);
          glVertex3d(Proj->LI,-Proj->LJ,1.0);
+         glVertex3d(Proj->LI,Proj->LJ,1.0);
+         glVertex3d(-Proj->LI,Proj->LJ,1.0);
          glVertex3d(-Proj->LI,-Proj->LJ,1.0);
       glEnd();
       glEnable(GL_STENCIL_TEST);
