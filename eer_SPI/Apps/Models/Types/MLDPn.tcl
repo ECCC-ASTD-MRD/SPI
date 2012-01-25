@@ -195,6 +195,7 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
    puts $file "MLDP_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
    puts $file "MLDP_RESULT=$Sim(PathRun)/results"
+   puts $file "MLDP_KERNEL=$Sim(DiffKernel)"
 
    close $file
 }

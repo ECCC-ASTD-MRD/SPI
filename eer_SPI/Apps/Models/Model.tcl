@@ -760,7 +760,8 @@ proc Model::ParamsMetDataDir { Model } {
          set dbops $Param(Host):[lindex $GDefs(Host_$Param(Host)) 1]
          set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
       }
-      if { $sim(Model)=="MLDP1" && $sim(Meteo)=="reg"} {
+
+      if { ($sim(Model)=="MLDP1" || $sim(DiffKernel)=="ORDER1") && $sim(Meteo)=="reg"} {
          set MetData::Param(Path) $dbeer
       } else {
          set MetData::Param(Path) $dbops
@@ -770,7 +771,7 @@ proc Model::ParamsMetDataDir { Model } {
       MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
 
       #----- Set met database by default.
-      if { $sim(Model)=="MLDP1" } {
+      if { $sim(Model)=="MLDP1" || $sim(DiffKernel)=="ORDER1" } {
          set Param(DBaseDiag) $Param(DBaseProg)
       }
    }
@@ -942,6 +943,7 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(ReNewMeteo)  ""
    set sim(GridChanged) 0
    set sim(Grid) 0
+   set sim(DiffKernel)  ""
 
    set sim(Name)   {}
    set sim(Lat)    {}
