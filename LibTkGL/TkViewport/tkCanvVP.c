@@ -368,7 +368,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    Tcl_Obj      *obj;
 
    int           nco,idx,i,bool,n,np,pick,ix,iy;
-   Vect3d        pt0,pt1;
+   Vect3d        pt,pt0,pt1;
    Coord         loc,loc0,loc1,co[1000];
    double        x,y,h,d,lat[2],lon[2];
 
@@ -464,24 +464,44 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             break;
 
          case UNPROJECT:
-            if(Objc!=4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"x y");
+            if(Objc!=4 && Objc!=6 && Objc!=7) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"x0 y0 [x1 y1] [delta");
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[2],&pt0[0]);
             Tcl_GetDoubleFromObj(Interp,Objv[3],&pt0[1]);
-            pt0[0]-=vp->x;
-            pt0[1]-=vp->y;
-            proj->Type->UnProject(vp,proj,&loc0,pt0);
-            loc0.Elev=0.0;
-            if (proj->Geographic) {
-               CLAMPLON(loc0.Lon);
-               loc0.Elev=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
+            pt1[0]=pt0[0]-=vp->x;
+            pt1[1]=pt0[1]-=vp->y;
+
+            if (Objc==6) {
+               Tcl_GetDoubleFromObj(Interp,Objv[4],&pt1[0]);
+               Tcl_GetDoubleFromObj(Interp,Objv[5],&pt1[1]);
+               pt1[0]-=vp->x;
+               pt1[1]-=vp->y;
             }
+
+            if (pt0[0]>pt1[0]) { d=pt1[0]; pt1[0]=pt0[0]; pt0[0]=d; }
+            if (pt0[1]>pt1[1]) { d=pt1[1]; pt1[1]=pt0[1]; pt0[1]=d; }
+
+            d=1.0;
+            if (Objc==7) {
+               Tcl_GetDoubleFromObj(Interp,Objv[6],&d);
+            }
+
             obj=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lat));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lon));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Elev));
+            for(pt[1]=pt0[1];pt[1]<=pt1[1];pt[1]+=d) {
+               for(pt[0]=pt0[0];pt[0]<=pt1[0];pt[0]+=d) {
+                  proj->Type->UnProject(vp,proj,&loc0,pt);
+                  loc0.Elev=0.0;
+                  if (proj->Geographic) {
+                     CLAMPLON(loc0.Lon);
+                     loc0.Elev=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lat));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Lon));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc0.Elev));
+               }
+            }
             Tcl_SetObjResult(Interp,obj);
             break;
 
