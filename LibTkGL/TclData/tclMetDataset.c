@@ -990,7 +990,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
          case VALTYPE_INT64 :
             if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
                bufr_descriptor_set_ivalue(BCV,-1);
-            } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
+            } else if (TclY_Get0DoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                bufr_descriptor_set_ivalue(BCV,(int)dval);
             }
             break;
