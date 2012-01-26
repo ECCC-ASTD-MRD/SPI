@@ -135,6 +135,7 @@ TFuncDef FuncM[] = {
   { "asin"  , (TFunc*)asin  , 1 , TD_Float32 },
   { "acos"  , (TFunc*)acos  , 1 , TD_Float32 },
   { "atan"  , (TFunc*)atan  , 1 , TD_Float32 },
+  { "atan2" , (TFunc*)atan2 , 2 , TD_Float32 },
   { "sinh"  , (TFunc*)sinh  , 1 , TD_Float32 },   /* Hyperbolic functions */
   { "cosh"  , (TFunc*)cosh  , 1 , TD_Float32 },
   { "tanh"  , (TFunc*)tanh  , 1 , TD_Float32 },
