@@ -496,7 +496,11 @@ proc MLDPn::GetMetData { } {
    } else {
       set Sim(RunStamp) [fstdstamp fromseconds $Sim(AccSecs)]
    }
-   set Sim(Data)  [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
+   if { $Sim(Backward) } {
+      set Sim(Data)  [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) B $LatestRun $Sim(Delta)]
+   } else {
+      set Sim(Data)  [MetData::File $Sim(RunStamp) $Model::Param(DBaseDiag) $Model::Param(DBaseProg) F $LatestRun $Sim(Delta)]
+   }
    set Sim(Mode)  [MetData::GetMode $Sim(Data)]
 
    Dialog::WaitDestroy
