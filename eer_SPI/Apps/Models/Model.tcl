@@ -51,6 +51,7 @@ namespace eval Model {
    set Param(Unit)    "DDD.CC"                         ;#Unite des coordonnees de l'experience selectionnee
    set Param(Show)    False
    set Param(Job)     ""                               ;#Current processing
+   set Param(Users) {}
 
    set Param(Auto)      False                          ;#Running mode
    set Param(Pool)      1                              ;#Manage pool
@@ -914,6 +915,7 @@ proc Model::ParamsClose { Model } {
 proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    global env
    variable Data
+   variable Param
 
    set modelbase [string trimright [string trimright $Model 0] 1]
    upvar ${modelbase}::Sim sim
