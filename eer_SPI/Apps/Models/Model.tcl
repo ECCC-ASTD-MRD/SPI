@@ -186,6 +186,7 @@ namespace eval Model {
                                     "The release accident date-time is not consistent according to avaible meteorological data. Please modify the accident release date-time." }
    set Error(Path)                { "Le répertoire de simulation n'est pas accessible sur l'hôte d'exécution." "Simulation path is not accessible on remote host." }
    set Error(EmHeight)            { "La masse doit être positive." "Mass must be positive." }
+   set Error(Blame)               { "Vous devez spécifier le nom de l'usager qui lance la simulation" "You have to enter the name of the user doing the simulation" }
 
    set Warning(SimDuration1)      { "La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "The simulation duration will be re-initialized according to available meteorological data in database." }
@@ -960,9 +961,13 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(GridLat)      [lindex $sim(GridSrc) 1]
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
 
-   catch { set str [exec finger $env(LOGNAME) 2>/dev/null] }
+   if { $env(LOGNAME)=="afseeer" } {
+      set sim(Blame) ""
+   } else {
+      catch { set str [exec finger $env(LOGNAME) 2>/dev/null] }
+      set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
+   }
 
-   set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
    set sim(Click)        [clock seconds]
 
    #----- Initialize grid related stuff
@@ -1205,8 +1210,16 @@ proc Model::ParamsLaunch { Model Frame } {
 
 proc Model::Launch { Model } {
    variable Param
+   variable Error
 
    upvar ${Model}::Sim sim
+
+   #----- Validate username
+   if { $sim(Blame)=="" } {
+      Dialog::Error $Param(Frame) $Error(Blame)
+      focus $Param(Frame).user.id.e
+      return False
+   }
 
    if { ![Model::ParamValidateQueue] } {
       return False
