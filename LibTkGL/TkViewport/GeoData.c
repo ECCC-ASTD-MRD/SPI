@@ -428,10 +428,15 @@ void GDB_GeoGetVector(int Type,int Nb,float Lat0,float Lon0,float Lat1,float Lon
 
    // Keep number negative until everything is reprojected and ready
    geo->Box.Nb=-Nb;
-   geo->Box.Co[0].Lat=Lat0; geo->Box.Co[0].Lon=Lon0; geo->Box.Co[0].Elev=0.0;
-   geo->Box.Co[1].Lat=Lat1; geo->Box.Co[1].Lon=Lon0; geo->Box.Co[1].Elev=0.0;
-   geo->Box.Co[2].Lat=Lat1; geo->Box.Co[2].Lon=Lon1; geo->Box.Co[2].Elev=0.0;
-   geo->Box.Co[3].Lat=Lat0; geo->Box.Co[3].Lon=Lon1; geo->Box.Co[3].Elev=0.0;
+   geo->Box.Co[0].Lat=Lat0;       geo->Box.Co[0].Lon=Lon0;       geo->Box.Co[0].Elev=0.0;
+   geo->Box.Co[1].Lat=Lat1;       geo->Box.Co[1].Lon=Lon0;       geo->Box.Co[1].Elev=0.0;
+   geo->Box.Co[2].Lat=Lat1;       geo->Box.Co[2].Lon=Lon1;       geo->Box.Co[2].Elev=0.0;
+   geo->Box.Co[3].Lat=Lat0;       geo->Box.Co[3].Lon=Lon1;       geo->Box.Co[3].Elev=0.0;
+
+   geo->Box.Co[4].Lat=Lat0;                geo->Box.Co[4].Lon=(Lon0+Lon1)*0.5;    geo->Box.Co[4].Elev=0.0;
+   geo->Box.Co[5].Lat=Lat1;                geo->Box.Co[5].Lon=geo->Box.Co[4].Lon; geo->Box.Co[5].Elev=0.0;
+   geo->Box.Co[6].Lat=(Lat0+Lat1)*0.5;     geo->Box.Co[6].Lon=Lon0;               geo->Box.Co[6].Elev=0.0;
+   geo->Box.Co[7].Lat=geo->Box.Co[6].Lat;  geo->Box.Co[7].Lon=Lon1;               geo->Box.Co[7].Elev=0.0;
 
    geo->Loc=(Vect3d*)malloc(Nb*sizeof(Vect3d));
    n=0;
@@ -1076,7 +1081,6 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
 
    /*Is it visible (in X,Y and Z)*/
    if (!VOUT(min[0],max[0],X0,X1) && !VOUT(min[1],max[1],Y0,Y1) && min[2]<Proj->ZPos[2]) {
-
       /*Is the box too small*/
       if (Vect_Weight(min,max)<Proj->MinSize) {
          return(GDB_LOW);
@@ -1827,7 +1831,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                }
 
                if (GDB->Params.River && tile->River) {
-                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->VP->ColorRiver,0);
+                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->VP->ColorRiver,1);
                }
 
                if (GDB->Params.Polit && tile->Polit) {

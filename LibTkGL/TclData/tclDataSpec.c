@@ -517,7 +517,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   free(Spec->ExtrapDegree);
                   Spec->ExtrapDegree=(char*)strdup(Tcl_GetString(Objv[i]));
                } else {
-                  Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-extrapdegree) wrong value, must be \" NEUTRAL | MAXIMUM | MINIMUM | VALUE | ABORT \" ",(char*)NULL);
+                  Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-extrapdegree) wrong value, must be \" NEAREST | MAXIMUM | MINIMUM | LINEAR | CUBIC | VALUE \" ",(char*)NULL);
                   return(TCL_ERROR);
                }
             }
