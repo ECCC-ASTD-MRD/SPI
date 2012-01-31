@@ -1216,8 +1216,10 @@ proc Model::Launch { Model } {
 
    upvar ${Model}::Sim sim
 
+   set sim(Click) [clock seconds]
+
    #----- Validate username
-   if { $sim(Blame)=="" } {
+   if { ![string length [string trim $sim(Blame)]] } {
       Dialog::Error $Param(Frame) $Error(Blame)
       focus $Param(Frame).user.id.e
       return False
@@ -1665,10 +1667,10 @@ proc Model::Window { { Show "" } } {
       Model::Destroy
    }
 
-   TabFrame::Select .model.tab 1
-
    #----- Preparer la liste.
    Model::Check $Param(Delay) True
+
+   TabFrame::Select .model.tab 1
 
    return .model
 }
