@@ -2166,6 +2166,16 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
    upvar #0 ProjCam::Data${Frame}::Cam cam
 
+   #----- In the cae on miniport
+   if { [string range $VP 0 3]=="MINI" } {
+      #----- Move only if zoom is less
+      if { [projcam configure $VP -lens]>=[projcam configure $Frame -lens] } {
+         return
+      }
+      #----- Unlock view
+      set Viewport::Data(Cursor$VP) True
+   }
+
    if { $Map(Type$Frame)=="grid" } {
       set ij [$VP -ungrid $X $Y]
       set i [lindex $ij 0]
