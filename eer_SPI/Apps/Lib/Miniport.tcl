@@ -371,8 +371,7 @@ proc Miniport::Lens { Frame Mini } {
    if { $Viewport::Data(Cursor$Mini) } {
       if { $lens<[projcam configure $Frame -lens] } {
          eval projection configure $Mini -location [projection configure $Frame -location]
-      }
-      if { [projcam configure $Mini -lens]>[projcam configure $Frame -lens] } {
+      } else {
          projection configure $Mini -location $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
       }
    }

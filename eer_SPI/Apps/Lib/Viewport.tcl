@@ -49,7 +49,7 @@
 #    Viewport::Resolution     { Frame Res }
 #    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::RotateDo       { Frame VP X Y }
-#    Viewport::RotateDone     { Frame }
+#    Viewport::RotateDone     { Frame VP }
 #    Viewport::RotateInit     { Frame VP X Y }
 #    Viewport::Resize         { Frame VP X0 Y0 X1 Y1 Limit }
 #    Viewport::ResizeDepend   { Frame VP DX DY }
@@ -2166,16 +2166,6 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
    upvar #0 ProjCam::Data${Frame}::Cam cam
 
-   #----- In the case of miniport
-   if { [string range $VP 0 3]=="MINI" } {
-      #----- Move only if zoom is less
-      if { [projcam configure $VP -lens]>=[projcam configure $Frame -lens] } {
-         return
-      }
-      #----- Unlock view
-      set Viewport::Data(Cursor$VP) True
-   }
-
    #----- check for grid projection
    if { $Map(Type$Frame)=="grid" } {
       set ij [$VP -ungrid $X $Y]
@@ -2224,7 +2214,16 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
       #----- Calculer l'increment en longitude
       set Map(Lon) [CheckCoord [expr $Map(Lon) + ($Map(LonRot) - $lon)]]
-      projection configure $Frame -location $Map(Lat) $Map(Lon)
+      if { [string range $VP 0 3]=="MINI" } {
+         projection configure $VP -location $Map(Lat) $Map(Lon)
+
+         #----- If the miniport zoom is less, center master projection
+         if { [projcam configure $VP -lens]<[projcam configure $Frame -lens] } {
+            projection configure $Frame -location $Map(Lat) $Map(Lon)
+         }
+      } else {
+         projection configure $Frame -location $Map(Lat) $Map(Lon)
+      }
    }
 
    set Map(Grabbed) [clock click -milliseconds]
@@ -2241,6 +2240,7 @@ proc Viewport::RotateDo { Frame VP X Y } {
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
 #  <Sling>   : Effet slingshot
 #
 # Retour:
@@ -2249,16 +2249,17 @@ proc Viewport::RotateDo { Frame VP X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::RotateDone { Frame { Sling False } } {
+proc Viewport::RotateDone { Frame VP { Sling False } } {
    variable Map
 
    set res 1
 
-   if { $Sling && $Map(Type$Frame)!="grid" } {
+   if { $Sling && $Map(Type$Frame)!="grid" && [string range $VP 0 3]!="MINI" } {
+
       set dt [expr [clock click -milliseconds]-$Map(Grabbed)]
       set dx [projection function $Frame -dist [list $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)] 0.0]
 
-      if { $dx>[expr 2*[$Viewport::Data(VP) -distpix]] && $dt>0 && $dt<250 } {
+      if { $dx>[expr 2*[$VP -distpix]] && $dt>0 && $dt<250 } {
          set dir [expr -[projection function $Frame -bearing $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)]]
          set spd [expr int($dx/$dt)]
          set res [Viewport::GoAlong $Frame $spd $dir $Map(Lat) $Map(Lon)]
