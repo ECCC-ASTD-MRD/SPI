@@ -1053,6 +1053,9 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    TabFrame::Create .modelnew.params 1 ${Data(Modelbase)}::ParamsCheck
    pack .modelnew.params -side top -fill both -expand true -padx 5 -pady 5
 
+   button .modelnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "Model::ParamsClose $Data(Modelbase)"
+   pack .modelnew.close -side bottom -anchor e -padx 5 -pady 5
+
    #----- Define default host if not already done
    eval set hosts \${${Data(Modelbase)}::Sim(Hosts)}
    if { ![info exists ::Model::Param(Host$Data(Modelbase))] || [lsearch -exact $hosts $Param(Host$Data(Modelbase))]==-1 } {
@@ -1088,9 +1091,6 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 
    #----- Launching Tab.
    Model::ParamsLaunch $Data(Modelbase) .modelnew.params
-
-   button .modelnew.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "Model::ParamsClose $Data(Modelbase)"
-   pack .modelnew.close -side bottom -anchor e -padx 5 -pady 5
 
    TabFrame::Select .modelnew.params 0
 }

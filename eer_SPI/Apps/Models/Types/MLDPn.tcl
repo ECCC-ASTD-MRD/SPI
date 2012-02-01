@@ -1048,7 +1048,7 @@ proc MLDPn::ScenarioWrite { } {
    variable Sim
 
    set f [open $Sim(EmDir)/$Sim(SrcType)/$Sim(EmScenario).txt w]
-   pust $f [MLDPn::ScenarioEncode $Sim(SrcType)]
+   puts $f [MLDPn::ScenarioEncode $Sim(SrcType)]
    close $f
 
    MLDPn::ScenarioList

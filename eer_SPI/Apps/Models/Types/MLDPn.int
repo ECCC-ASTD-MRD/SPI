@@ -278,19 +278,17 @@ proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
          trace add variable MLDPn::Sim(EmNbIntervals) write MLDPn::UpdateIntervalPickerList
          #----- Slider
          scale $tabframe.scenario.ctrl.zoom -orient horizontal -showvalue False -length 45 -sliderlength 10 -variable MLDPn::Sim(Zoom) -resolution 0.1 -from 1 -to 10 -command "MLDPn::GraphZoom"
-         pack $tabframe.scenario.ctrl.zoom -side left -anchor w -fill x -expand 1
+         pack $tabframe.scenario.ctrl.zoom -side left -anchor w -fill x -expand True
       pack $tabframe.scenario.ctrl -side bottom -padx 5 -fill x -pady 5
+
       #---- Canvas (graph)
-      frame $tabframe.scenario.graph
-         #----- Graph
-         glcanvas $tabframe.scenario.graph.graph -xscrollcommand "$tabframe.scenario.graph.scrollx set"
-         pack $tabframe.scenario.graph.graph -side top -fill both -expand True
-         set Sim(ESCanvas) $tabframe.scenario.graph.graph
-         #----- Scrollbar
-         scrollbar $tabframe.scenario.graph.scrollx -orient horizontal -bd 1 -width 10 -command "$tabframe.scenario.graph.graph xview"
-         pack $tabframe.scenario.graph.scrollx -side bottom -fill x
-      pack $tabframe.scenario.graph -side top -padx 2 -pady 2 -fill both -expand True
-   pack $tabframe.scenario -side top -padx 5 -fill both -expand True
+      glcanvas $tabframe.scenario.graph -xscrollcommand "$tabframe.scenario.scrollx set"
+      pack $tabframe.scenario.graph -side top -fill both -expand True -padx 5 -pady 2
+      set Sim(ESCanvas) $tabframe.scenario.graph
+      #----- Scrollbar
+      scrollbar $tabframe.scenario.scrollx -orient horizontal -bd 1 -width 10 -command "$tabframe.scenario.graph xview"
+      pack $tabframe.scenario.scrollx -side top -fill x -padx 5
+   pack $tabframe.scenario -side top -padx 5 -pady 5 -fill both -expand True
    #Bubble::Create $tabframe.scenario $Bubble(EmissionScenario)
 
    if { $Mode=="CONT" } {
