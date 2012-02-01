@@ -2295,7 +2295,11 @@ proc Viewport::RotateInit { Frame VP X Y } {
 
    set Map(Grabbed) [clock click -milliseconds]
 
-   set ll [projection configure $Frame -location]
+   if { [string range $VP 0 3]=="MINI" } {
+      set ll [projection configure $VP -location]
+   } else {
+      set ll [projection configure $Frame -location]
+   }
    set Map(Lat0) [set Map(Lat) [lindex $ll 0]]
    set Map(Lon0) [set Map(Lon) [lindex $ll 1]]
 
