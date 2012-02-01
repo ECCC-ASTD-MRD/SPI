@@ -2166,7 +2166,7 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
    upvar #0 ProjCam::Data${Frame}::Cam cam
 
-   #----- In the cae on miniport
+   #----- In the case of miniport
    if { [string range $VP 0 3]=="MINI" } {
       #----- Move only if zoom is less
       if { [projcam configure $VP -lens]>=[projcam configure $Frame -lens] } {
@@ -2176,11 +2176,13 @@ proc Viewport::RotateDo { Frame VP X Y } {
       set Viewport::Data(Cursor$VP) True
    }
 
+   #----- check for grid projection
    if { $Map(Type$Frame)=="grid" } {
       set ij [$VP -ungrid $X $Y]
       set i [lindex $ij 0]
       set j [lindex $ij 1]
 
+      #----- if we're off grid
       if { $i==-1 || $j==-1 } {
          return
       }
@@ -2198,7 +2200,7 @@ proc Viewport::RotateDo { Frame VP X Y } {
       set lat [lindex $latlon 0]
       set lon [lindex $latlon 1]
 
-      #----- Si le pointeur est sur le globe
+      #----- Si le pointeur n'est pas sur le globe
       if { $lat==-999.00 || $lon==-999.00 || $Map(LonRot)==-999.0 || $Map(LatRot)==-999.0 } {
          return
       }
@@ -2207,14 +2209,10 @@ proc Viewport::RotateDo { Frame VP X Y } {
 
       if { $Map(Type$Frame)=="orthographic" } {
 
-         #----- Verifier le cote en longitude du curseur pour calculer le sens de
-         #      l'increment en latitude
-
+         #----- Verifier le cote en longitude du curseur pour calculer le sens de l'increment en latitude
          set lonside [expr abs([CheckCoord [expr $Map(Lon) - $Map(LonRot)]])]
 
-         #----- Si on est dans le deadzone ( 70 a 100 par rapport a la longitude
-         #      courante) on fait rien
-
+         #----- Si on est dans le deadzone ( 70 a 100 par rapport a la longitude courante) on fait rien
          if { $lonside > 110.0 } {
             set Map(Lat) [expr $Map(Lat) - ($Map(LatRot) - $lat)]
          } elseif { $lonside < 70.0 } {
@@ -2232,7 +2230,6 @@ proc Viewport::RotateDo { Frame VP X Y } {
    set Map(Grabbed) [clock click -milliseconds]
    set ProjCam::Data(Name)  ""
 
-   #----- On update le tout
    Page::Update $Frame
 }
 

@@ -1140,6 +1140,8 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
 
 proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
 
+   set Viewport::Map(Grabbed) [clock click -milliseconds]
+
    if { $Centered } {
       set lens [projcam configure $Frame -lens]
 
