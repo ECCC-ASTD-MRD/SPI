@@ -124,9 +124,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
 
       #----- Parse the availabel layers
       set layer [lindex [$root getElementsByTagName Layer] 0]
-      foreach layer [Mapper::DepotWare::WMS::ParseLayer $Path $layer] {
-         Mapper::DepotWare::WMS::Add $Tree $Branch $layer
-      }
+      Mapper::DepotWare::WMS::ParseLayer $Path $layer $Tree $Branch
       $doc delete
       http::cleanup $req
    } else {
@@ -198,6 +196,8 @@ proc Mapper::DepotWare::WMS::Add { Tree Branch Layer } {
    $Tree set $branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
    $Tree set $branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
    $Tree set $branch 11 [list [lindex $bbox 3] [lindex $bbox 2]]
+
+   return $branch
 }
 
 #-------------------------------------------------------------------------------
@@ -209,6 +209,8 @@ proc Mapper::DepotWare::WMS::Add { Tree Branch Layer } {
 # Parametres :
 #  <URL>     : URL du depot
 #  <Node>    : Node XML
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
 #  <First>   : Premiere couche ?
 #
 # Retour    :
@@ -218,26 +220,27 @@ proc Mapper::DepotWare::WMS::Add { Tree Branch Layer } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::WMS::ParseLayer { URL Node { First True } } {
+proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } {
    variable Data
 
    if { $First } {
       set Data(Layers) {}
-      set Data(SizeX) 864000
-      set Data(SizeY) 432000
-      set Data(Width) 512
+      set Data(SizeX)  864000
+      set Data(SizeY)  432000
+      set Data(Width)  512
       set Data(Height) 512
       set Data(Cache)  1
+      set Data(Opaque) {}
    }
    set Data(Style)  {}
-   set Data(Opaque)  {}
+   set childs       {}
 
    foreach node [$Node childNodes] {
       switch [$node nodeName] {
          Layer                    { if { [$Node hasAttribute opaque] } {
                                        set Data(Opaque) [$node getAttribute opaque]
                                     }
-                                    Mapper::DepotWare::WMS::ParseLayer $URL $node False }
+                                    lappend childs $node }
          EX_GeographicBoundingBox { Mapper::DepotWare::WMS::ParseGeographic $node }
          LatLonBoundingBox        { Mapper::DepotWare::WMS::ParseLatLonBoundingBox $node }
          BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
@@ -249,10 +252,20 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node { First True } } {
       }
    }
 
+
    if { $Data(Identifier)!="" } {
-      set Data($Data(Title)) [list $URL $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Style) $Data(Opaque) $Data(Cache)]
+      set Data($Data(Title)) [list $URL $Data(Title) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Style) $Data(Opaque) $Data(Cache)]
       lappend Data(Layers) $Data(Title)
+   } else {
+      set Data($Data(Title)) [list $URL $Data(Title)]
    }
+
+   set branch [Mapper::DepotWare::WMS::Add $Tree $Branch $Data(Title)]
+
+   foreach node $childs {
+      Mapper::DepotWare::WMS::ParseLayer $URL $node $Tree $branch False
+   }
+
    set Data(Identifier) ""
    return $Data(Layers)
 }
@@ -397,14 +410,14 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer } {
    variable Data
 
    set url    [lindex $Data($Layer) 0]
-   set layer  [lindex $Data($Layer) 1]
-   set geog   [lindex $Data($Layer) 3]
-   set sizex  [lindex $Data($Layer) 4]
-   set sizey  [lindex $Data($Layer) 5]
-   set format [lindex $Data($Layer) 6]
-   set style  [lindex $Data($Layer) 7]
-   set opaque [lindex $Data($Layer) 8]
-   set cache  [lindex $Data($Layer) 9]
+   set layer  [lindex $Data($Layer) 2]
+   set geog   [lindex $Data($Layer) 4]
+   set sizex  [lindex $Data($Layer) 5]
+   set sizey  [lindex $Data($Layer) 6]
+   set format [lindex $Data($Layer) 7]
+   set style  [lindex $Data($Layer) 8]
+   set opaque [lindex $Data($Layer) 9]
+   set cache  [lindex $Data($Layer) 10]
 
    if { $opaque==0 } {
       set bands 4

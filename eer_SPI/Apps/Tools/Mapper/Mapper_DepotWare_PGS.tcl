@@ -188,6 +188,8 @@ proc Mapper::DepotWare::PGS::Add { Tree Branch Layer } {
    $Tree set $branch 01 [list 90 -180.0]
    $Tree set $branch 10 [list 90 180.0]
    $Tree set $branch 11 [list -90 180.0]
+
+   return $branch
 }
 
 #-------------------------------------------------------------------------------

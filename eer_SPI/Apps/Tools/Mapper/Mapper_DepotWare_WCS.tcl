@@ -176,6 +176,8 @@ proc Mapper::DepotWare::WCS::Add { Tree Branch Layer } {
    $Tree set $branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
    $Tree set $branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
    $Tree set $branch 11 [list [lindex $bbox 3] [lindex $bbox 2]]
+
+   return $branch
 }
 
 #-------------------------------------------------------------------------------
