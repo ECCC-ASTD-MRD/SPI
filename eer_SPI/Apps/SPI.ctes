@@ -17,7 +17,7 @@
 
 #----- Definition des constantes generale aux experiences
 
-set GDefs(StateSPI) ""
+set GDefs(StateSPI) Omega
 
 namespace eval SPI {
    global   env

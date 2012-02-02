@@ -105,7 +105,7 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2011/10/31)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) $GDefs(StateSPI) (2012/02/15)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"
@@ -906,6 +906,8 @@ proc SPI::ContextMenuProj { } {
       -value Cam -command  { SPI::ToolMode SPI Cam } -accelerator "F2"
    .mapmenu add radiobutton -label [lindex $Lbl(ModeTool) $GDefs(Lang)] -variable Page::Data(Mode) -image TOOL -compound left \
       -command  { SPI::ToolMode $SPI::Param(Tool) $SPI::Param(ToolMode) } -accelerator "F3"
+   .mapmenu add radiobutton -label [lindex $Lbl(ModeMag) $GDefs(Lang)] -variable Page::Data(Mode) -image MODEMAG -compound left \
+      -command  { SPI::ToolMode SPI Mag } -accelerator "F4"
    .mapmenu add separator
    .mapmenu add cascade -label [lindex $Lbl(LinkView) $GDefs(Lang)] -menu .mapmenu.link  -image LINK -compound left
    .mapmenu add command -label [lindex $Lbl(Lock) $GDefs(Lang)]  -image MAGLOCK -compound left \
@@ -929,11 +931,12 @@ proc SPI::ContextMenuProj { } {
    ProjCam::Read
 
    #----- Creation des evenements de touches rapide
-   bind . <Key-Print>       ".mapmenu invoke 10"
-   bind . <Key-F9>          ".mapmenu invoke 12"
    bind . <Key-F1>          ".mapmenu invoke 3"
    bind . <Key-F2>          ".mapmenu invoke 4"
    bind . <Key-F3>          ".mapmenu invoke 5"
+   bind . <Key-F4>          ".mapmenu invoke 6"
+   bind . <Key-Print>       ".mapmenu invoke 11"
+   bind . <Key-F9>          ".mapmenu invoke 13"
 }
 
 #-------------------------------------------------------------------------------
