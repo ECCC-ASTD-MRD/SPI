@@ -111,6 +111,7 @@ image create photo TARGET      -file $GDefs(Dir)/Resources/Image/Icon/Target.gif
 image create photo OPEN        -file $GDefs(Dir)/Resources/Image/Icon/Open.gif
 image create photo OPENDIR     -file $GDefs(Dir)/Resources/Image/Icon/OpenDir.gif
 image create photo OPENDOC     -file $GDefs(Dir)/Resources/Image/Icon/OpenDoc.gif
+image create photo PAGE        -file $GDefs(Dir)/Resources/Image/Icon/DocumentSetup.gif
 image create photo PAGESAVE    -file $GDefs(Dir)/Resources/Image/Icon/PageSave.gif
 image create photo PAGEDEL     -file $GDefs(Dir)/Resources/Image/Icon/PageDelete.gif
 image create photo PAGERUN     -file $GDefs(Dir)/Resources/Image/Icon/PageRun.gif

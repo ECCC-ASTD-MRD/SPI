@@ -576,6 +576,7 @@ proc SPI::WindowMenu { } {
       .menu.file.menu add command -label [lindex $Lbl(ProjectLoad) $GDefs(Lang)] -image BOOK -compound left -command { SPI::ProjectRead [FileBox::Create . "" Load [list $FileBox::Type(SPI)]]}
       .menu.file.menu add command -label [lindex $Lbl(ProjectSave) $GDefs(Lang)] -image BOOKSAVE -compound left -command { SPI::ProjectWindow }
       .menu.file.menu add separator
+      .menu.file.menu add command -label [lindex $Lbl(LayoutLoad) $GDefs(Lang)] -image PAGE -compound left -command { SPI::LayoutLoad [lindex $Page::Data(Frames) 0] [FileBox::Create . "" Load [list $FileBox::Type(TCL)]] }
       .menu.file.menu add command -label [lindex $Lbl(LayoutSave) $GDefs(Lang)] -image PAGESAVE -compound left -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::Get . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }
       .menu.file.menu add separator
       .menu.file.menu add command -label [lindex $Lbl(Execute) $GDefs(Lang)] -command { SPI::Execute [FileBox::Create . "" Load [list $FileBox::Type(TCL)]] } -image DOCRUN -compound left

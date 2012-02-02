@@ -77,9 +77,10 @@ namespace eval SPI {
    set Lbl(Print)          { "Impression ..." "Print ..." }
    set Lbl(Image)          { "Sauvegarde image ..." "Save image ..." }
    set Lbl(ProjectLoad)    { "Ouvrir un projet ..." "Open project ..." }
-   set Lbl(ProjectSave)    { "Sauvegarder un projet ..." "Save project ..." }
+   set Lbl(ProjectSave)    { "Sauvegarder le projet ..." "Save project ..." }
    set Lbl(ProjectItems)   { "Items a sauvegarder" "Items to save" }
-   set Lbl(LayoutSave)     { "Sauvegarder une mise-en-page ..." "Save layout ..." }
+   set Lbl(LayoutLoad)     { "Ouvrir une mise-en-page ..." "Open a layout ..." }
+   set Lbl(LayoutSave)     { "Sauvegarder la mise-en-page ..." "Save layout ..." }
    set Lbl(Quit)           { "Quitter" "Quit" }
    set Lbl(Save)           { "Sauvegarder" "Save" }
    set Lbl(Scale)          { "Échelle" "Scale" }
