@@ -105,8 +105,8 @@ namespace eval Viewport {
    set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
    set Map(Perspective) False        ;#Affichage en perspective
-   set Map(Type)        orthographic;#Type de projection
-
+   set Map(Type)        orthographic ;#Type de projection
+   set Map(ClickFactor) -4           ;#Double click zoom factor
    set Map(ZAxis)       0
    set Map(ZAxisZ)      0
    set Map(ZAxisCoord)  { 0.0 0.0 }

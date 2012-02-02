@@ -1248,7 +1248,7 @@ proc Page::ModeZoom { Frame VP } {
    $c bind $Data(Tag)$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind $Data(Tag)$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
 
-   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
+   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) $Viewport::Map(ClickFactor)"
 
    $c config -cursor left_ptr
 }
