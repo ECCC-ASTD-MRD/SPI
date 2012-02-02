@@ -59,7 +59,7 @@ namespace eval SPI {
    set Lbl(DataBar)        { "Légende des données" "Data legend" }
    set Lbl(Logo)           { "Logo" "Logo" }
    set Lbl(Link)           { "Pointeur commun" "Cursor link" }
-   set Lbl(Miniport)       { "Ajouter un Encart" " Add Inset" }
+   set Lbl(Miniport)       { "Ajouter un Encart" "Add Inset" }
    set Lbl(Name)           { "Nom" "Name" }
    set Lbl(New)            { "Nouveau" "New" }
    set Lbl(No)             { "Non" "No" }
@@ -79,6 +79,7 @@ namespace eval SPI {
    set Lbl(ProjectLoad)    { "Ouvrir un projet ..." "Open project ..." }
    set Lbl(ProjectSave)    { "Sauvegarder un projet ..." "Save project ..." }
    set Lbl(ProjectItems)   { "Items a sauvegarder" "Items to save" }
+   set Lbl(LayoutSave)     { "Sauvegarder une mise-en-page ..." "Save layout ..." }
    set Lbl(Quit)           { "Quitter" "Quit" }
    set Lbl(Save)           { "Sauvegarder" "Save" }
    set Lbl(Scale)          { "Échelle" "Scale" }

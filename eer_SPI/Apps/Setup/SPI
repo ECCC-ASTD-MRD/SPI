@@ -83,6 +83,7 @@ namespace eval Viewport {
    set Map(CoordNum)    2             ;#Numerotation des latlon
    set Map(Elev)        1.0           ;#Facteur d'expansion des elevations
    set Map(TPolit)      1             ;#Identifications provinces
+   set Map(ClickFactor) -4            ;#Double click zoom factor
 
    set Resources(Font)      [font create -family Helvetica -weight bold -size -10]   ;#Police de caractere de la vue
    set Resources(Bkg)       white     ;#Couleur du font (background)
