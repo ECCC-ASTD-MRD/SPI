@@ -1321,6 +1321,10 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
       /*Clear before mask*/
       glStencilFunc(GL_EQUAL,0x2,0xf);
       glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
+   } else if (MaskIn==0x1) {
+      /*Clear before mask*/
+      glStencilFunc(GL_ALWAYS,0x1,0xf);
+      glStencilOp(GL_ZERO,GL_ZERO,GL_ZERO);
    } else if (MaskIn==0x2) {
       /*Mask */
       glStencilFunc(GL_ALWAYS,0x2,0xf);
@@ -1368,7 +1372,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
       }
    }
 
-   if (MaskIn==0xff) {
+   if (MaskIn==0xff || MaskIn==0x1) {
       glStencilFunc(GL_ALWAYS,0x1,0x1);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
    } else {
@@ -1682,7 +1686,7 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
       return(0);
    }
 
-   if (GDB->Params.Mask || Proj->VP->ColorFCoast || Proj->VP->ColorFLake) {
+   if (GDB->Params.Mask || Proj->VP->ColorFCoast || Proj->VP->ColorFLake || GDB->Params.CoordLoc<0) {
       if (!Tile->FCoast)
          GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_FIL,GDB_FIL_LAND);
       if (!Tile->FCoastIn)
@@ -1822,6 +1826,11 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             glDisable(GL_LIGHT0);
 
             if (Mode & GDB_VECTOR) {
+               if (GDB->Params.CoordLoc<0) {
+                  GDB_FillRender(Interp,Proj,tile->FCoast,(Proj->VP->ColorFCoast && tile->FCoast)?Proj->VP->ColorFCoast:Proj->VP->BGColor,0x1);
+                  GDB_FillRender(Interp,Proj,tile->FCoastIn,(Proj->VP->ColorFCoast && tile->FCoast)?Proj->VP->ColorFCoast:Proj->VP->BGColor,0x1);
+               }
+
                if (GDB->Params.Coast && tile->Coast) {
                   GDB_GeoRender(Interp,Proj,tile->Coast,ABS(GDB->Params.Coast),Proj->VP->ColorCoast,1);
                }
@@ -1831,7 +1840,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                }
 
                if (GDB->Params.River && tile->River) {
-                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->VP->ColorRiver,1);
+                  GDB_GeoRender(Interp,Proj,tile->River,ABS(GDB->Params.River),Proj->VP->ColorRiver,0);
                }
 
                if (GDB->Params.Polit && tile->Polit) {

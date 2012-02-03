@@ -1497,10 +1497,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   if (!hd && (i+1)==vn) {
                      glVertex2f(X1,v[i][1]);
                      glVertex2f(X1,y0);
-                   } else {
+                  } else {
                      glVertex2f(v[i+1][0],v[i][1]);
                      glVertex2f(v[i+1][0],y0);
-                   }
+                  }
                glEnd();
                glPopName();
            }
@@ -1520,7 +1520,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   }
                glEnd();
                glPopName();
-           }
+            }
          }
       } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
@@ -1534,7 +1534,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   glVertex2f(v[i][0]+db-dh,y0);
                glEnd();
                glPopName();
-           }
+            }
          } else {
             for(i=0;i<vn;i++) {
                glPushName(i);
@@ -1546,7 +1546,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                   glVertex2f(x0,v[i][1]+db-dh);
                glEnd();
                glPopName();
-           }
+            }
          }
       } else if (Item->Type!=NONE && GLMode==GL_RENDER) {
 

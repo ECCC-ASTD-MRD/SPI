@@ -465,7 +465,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 
          case UNPROJECT:
             if(Objc!=4 && Objc!=6 && Objc!=7) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"x0 y0 [x1 y1] [delta");
+               Tcl_WrongNumArgs(Interp,2,Objv,"x0 y0 [x1 y1] [delta]");
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[2],&pt0[0]);

@@ -1536,7 +1536,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
          } else {
             GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK);
          }
-     }
+      }
       glStencilFunc(GL_EQUAL,0x00,0x0f);
       glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
