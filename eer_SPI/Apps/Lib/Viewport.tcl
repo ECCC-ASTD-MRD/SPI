@@ -95,7 +95,8 @@ namespace eval Viewport {
    set Map(Topo)        0            ;#Topographie
    set Map(Bath)        0            ;#Bathymetrie
    set Map(Text)        0            ;#Texture
-   set Map(Coord)       1            ;#Positionnement des latlon (<0=Ocean,>0=Partout)
+   set Map(Coord)       1            ;#Largeur des segments latlons
+   set Map(CoordLoc)    1            ;#Positionnement des latlon (-1=Ocean,1=Partout)
    set Map(CoordDef)    10.0         ;#Intervale entre les latlon en degres
    set Map(CoordNum)    2            ;#Numerotation des latlon
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
@@ -522,7 +523,8 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(Lon)         [lindex $loc 1]
 
    set coo              [projection configure $Frame -mapcoord]
-   set Map(Coord)       [lindex $coo 0]
+   set Map(Coord)       [expr abs([lindex $coo 0])]
+   set Map(CoordLoc)    [expr [lindex $coo 0]<0?-1:1]
    set Map(CoordDef)    [lindex $coo 1]
    set Map(CoordNum)    [lindex $coo 2]
 
@@ -639,7 +641,7 @@ proc Viewport::ConfigSet { Frame } {
    projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
-      -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+      -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
 
@@ -659,7 +661,7 @@ proc Viewport::ConfigSet { Frame } {
 
       projection configure $mini -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
-         -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) \
+         -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
 
      $Frame.page.canvas itemconfigure $mini -font $Resources(Font) -bg $Resources(Bkg) \
@@ -1308,7 +1310,7 @@ proc Viewport::Do { Frame } {
    projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
       -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
-      -mapplace $Map(Place) -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
+      -mapplace $Map(Place) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
       -data $Data(Data$Frame) -minsize $Map(MinSize) -perspective $Map(Perspective)
 
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
@@ -1905,8 +1907,8 @@ proc Viewport::ParamFrame { Frame Apply } {
    #----- LatLon
 
    menu $Data(Frame).layer.ll.opt.menu -title [lindex $Lbl(Coord) $GDefs(Lang)]
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Sea) $GDefs(Lang)] -variable Viewport::Map(Coord) -value 0 -underline 0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Land) $GDefs(Lang)] -variable Viewport::Map(Coord) -value 1 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Sea) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value -1 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Land) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value 1 -underline 0 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add separator
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "  20 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 20.0 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "  10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 10.0 -command "$Apply configure -state normal"
@@ -2823,7 +2825,7 @@ proc Viewport::Setup { Frame } {
       -mapres $Map(Res) -mask $Map(Mask) -scale $Map(Elev) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) -perspective $Map(Perspective) \
-      -maptext $Map(Text) -mapcoord $Map(Coord) $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
+      -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -3043,7 +3045,8 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Map(Damping)     $Viewport::Map(Damping)"
 
       set coo [projection configure $Frame -mapcoord]
-      puts $File "   set Viewport::Map(Coord)       [lindex $coo 0]"
+      puts $File "   set Viewport::Map(Coord)       [expr abs([lindex $coo 0])]"
+      puts $File "   set Viewport::Map(CoordLoc)    [expr [lindex $coo 0]<0?-1:1]"
       puts $File "   set Viewport::Map(CoordDef)    [lindex $coo 1]"
       puts $File "   set Viewport::Map(CoordNum)    [lindex $coo 2]"
       puts $File "   set Viewport::Map(Res)         [projection configure $Frame -mapres]"
