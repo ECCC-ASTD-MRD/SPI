@@ -679,6 +679,7 @@ proc Mapper::ParamsGDALGet { Object } {
    set Data(TopoFactor) [gdalband configure $Object -topographyfactor]
    set Data(Mask)       [gdalband configure $Object -mask]
    set Data(ColorMap)   [gdalband configure $Object -colormap]
+   set Data(Style)      [gdalband configure $Object -sizevar]
    set Data(Proj)       [gdalband define $Object -projection]
    set Data(Trans)      [gdalband define $Object -transform]
    set Data(InvTrans)   [gdalband define $Object -invtransform]
@@ -735,7 +736,7 @@ proc Mapper::ParamsGDALSet { Object { CheckData True } } {
    }
 
    gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
-      -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12
+      -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12 -sizevar $Data(Style)
    gdalband stats $Object -nodata $Data(NoData)
 
    if { $Mapper::Data(Cut) && [ogrgeometry is MASK$Object] } {

@@ -271,7 +271,7 @@ proc Mapper::ParamsClose { } {
       SPI::ToolMode SPI Zoom
     }
 
-    [Page::Canvas $Data(Frame)] delete MAPPERGEOLOCATOR
+    catch { [Page::Canvas $Data(Frame)] delete MAPPERGEOLOCATOR }
     Viewport::FollowerRemove Mapper::GeoLocator
     Page::Destroy $Data(Frame4).georef.hfrm.map
     Page::Update  $Data(Frame)
@@ -459,6 +459,11 @@ proc Mapper::ParamsGDAL { Object Tab } {
                   entry $Data(Frame2).col.def.nodata.sel -textvariable Mapper::Data(NoData) -bd 1 -bg $GDefs(ColorLight)
                   pack $Data(Frame2).col.def.nodata.lbl -side left
                   pack $Data(Frame2).col.def.nodata.sel -side left -fill x -expand True
+               frame $Data(Frame2).col.def.style
+                  label $Data(Frame2).col.def.style.lbl -text [lindex $Lbl(Style) $GDefs(Lang)] -width 14 -anchor w
+                  ComboBox::Create $Data(Frame2).col.def.style.sel Mapper::Data(Style) noedit unsorted nodouble -1 $Data(Styles) 1 8 { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] }
+                  pack $Data(Frame2).col.def.style.lbl -side left
+                  pack $Data(Frame2).col.def.style.sel -side left -fill x -expand True
                pack $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
                    $Data(Frame2).col.def.interp $Data(Frame2).col.def.nodata -side top -fill x
             frame $Data(Frame2).col.curve
@@ -704,6 +709,18 @@ proc Mapper::ParamsGDAL { Object Tab } {
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
       TabFrame::Select .mapperparams.tab $Tab
+   }
+
+   #----- WMS specifics
+   set wms $Mapper::Data(Object)
+   set Data(Styles) {}
+   if { [info exists ::Mapper::DepotWare::WMS::Data($wms)] } {
+      set Data(Styles) [lindex $Mapper::DepotWare::WMS::Data($wms) 8]
+      ComboBox::DelAll  $Data(Frame2).col.def.style.sel False
+      ComboBox::AddList $Data(Frame2).col.def.style.sel $Data(Styles)
+      pack $Data(Frame2).col.def.style -after $Data(Frame2).col.def.nodata -side top -fill x
+   } else {
+      pack forget $Data(Frame2).col.def.style
    }
 
    $Data(Frame1).proj.val delete 0.0 end

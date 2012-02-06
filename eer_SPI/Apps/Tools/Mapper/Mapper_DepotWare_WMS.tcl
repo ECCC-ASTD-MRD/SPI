@@ -288,7 +288,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
 proc Mapper::DepotWare::WMS::ParseStyle { Node } {
    variable Data
 
-   lappend Data(Style) [[$Node firstChild] nodeValue]
+   lappend Data(Style) [list [[[$Node getElementsByTagName Name] firstChild] nodeValue] [[[$Node getElementsByTagName Title] firstChild] nodeValue]]
 }
 
 #-------------------------------------------------------------------------------
@@ -390,6 +390,22 @@ proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
       [$Node getAttribute maxx] [$Node getAttribute miny]]
 }
 
+proc Mapper::DepotWare::WMS::ReLoad { Layer Style } {
+
+   set def  [Mapper::DepotWare::WMS::BuildXMLDef $Layer $Style]
+
+   gdalband free $Layer
+   gdalfile close $Mapper::Data(Id$Layer)
+   unset Mapper::Data(Id$Layer)
+
+   set band [Mapper::ReadBand $def "" 3]
+
+   #----- Decrease effective resolution (WMS-TMS)
+   gdalband configure $band -texres 3 -sizevar $Style
+
+   Page::Update $Page::Data(Frame)
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::WMS::BuildXMLDef>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
@@ -399,6 +415,8 @@ proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
 #
 # Parametres :
 #  <Layer>   : Couche
+#  <Style>   : Style
+#  <Time>    : Time in seconds
 #
 # Retour    :
 #
@@ -406,7 +424,7 @@ proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::WMS::BuildXMLDef { Layer } {
+proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    variable Data
 
    set url    [lindex $Data($Layer) 0]
@@ -415,17 +433,21 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer } {
    set sizex  [lindex $Data($Layer) 5]
    set sizey  [lindex $Data($Layer) 6]
    set format [lindex $Data($Layer) 7]
-   set style  [lindex $Data($Layer) 8]
+   set styles [lindex $Data($Layer) 8]
    set opaque [lindex $Data($Layer) 9]
    set cache  [lindex $Data($Layer) 10]
 
    if { $opaque==0 } {
       set bands 4
-      set ttag TRANSPARENT=TRUE
+      set ttag TRANSPARENT=TRUE&
       set format "image/png"
     } else {
       set bands 3
-      set ttag TRANSPARENT=FALSE
+      set ttag TRANSPARENT=FALSE&
+   }
+
+   if { $Time!="" } {
+      set Time "TIME=[clock format $Sec -format "%Y-%m-%dT%H:%M:%SZ" -timezone :UTC]&"
    }
 
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
@@ -433,24 +455,34 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer } {
    }
 
    set layer [string map { " " "%20" } $layer]
-   set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $url$layer].xml
+
+   if { [gdalband is $Layer] } {
+      set id $Layer
+   } else {
+      set id [string map { / "" ? "" : "" } "$Layer - $url"]
+   }
+   set file $Mapper::DepotWare::Data(CachePath)/$id.xml
+
+   set Data($id) $Data($Layer)
+
    if { [string first "?" ${url}]==-1 } {
       set url ${url}?
    } else {
       set url $url
    }
 
+
    set xml "<GDAL_WMS>\n   <Service name=\"WMS\">\n      <Version>$Data(Version)</Version>\n"
-   append xml "      <ServerUrl>${url}${ttag}&</ServerUrl>\n      <SRS>EPSG:4326</SRS>\n      <ImageFormat>$format</ImageFormat>\n"
-   append xml "      <Layers>$layer</Layers>\n      <Styles></Styles>\n   </Service>\n"
+   append xml "      <ServerUrl>${url}${ttag}${Time}</ServerUrl>\n      <SRS>EPSG:4326</SRS>\n      <ImageFormat>$format</ImageFormat>\n"
+   append xml "      <Layers>$layer</Layers>\n      <Styles>${Style}</Styles>\n   </Service>\n"
 
    append xml "   <DataWindow>\n      <UpperLeftX>[lindex $geog 0]</UpperLeftX>\n      <UpperLeftY>[lindex $geog 1]</UpperLeftY>\n      <LowerRightX>[lindex $geog 2]</LowerRightX>\n      <LowerRightY>[lindex $geog 3]</LowerRightY>\n      <SizeX>$sizex</SizeX>\n      <SizeY>$sizey</SizeY>\n   </DataWindow>\n"
    append xml "   <Projection>EPSG:4326</Projection>\n   <BandsCount>$bands</BandsCount>\n   <BlockSizeX>$Data(BlockSize)</BlockSizeX>\n   <BlockSizeY>$Data(BlockSize)</BlockSizeY>\n"
 
    if { $cache && $Mapper::DepotWare::Data(CachePath)!="" } {
-      append xml "<Cache>\n   <Path> [file rootname $file]</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
+      append xml "   <Cache>\n   <Path> [file rootname $file]</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
    }
-   append xml "</GDAL_WMS>"
+   append xml "   <OfflineMode>false</OfflineMode>\n   <ZeroBlockHttpCodes>204,404</ZeroBlockHttpCodes>\n   <ZeroBlockOnServerException>true</ZeroBlockOnServerException>\n</GDAL_WMS>"
 
    set f [open $file w]
    puts $f $xml

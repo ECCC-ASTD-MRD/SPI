@@ -69,7 +69,9 @@ namespace eval Mapper { } {
    set Data(RefVP)  ""
 
    set Data(Icons)        { NONE TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
-   set Data(Intervals)     ""                                     ;#Liste de niveaux
+   set Data(Intervals)     ""
+   set Data(Styles)       {}
+   set Data(Style)        ""
    set Data(Colors)       { RED GREEN BLUE ALPHA }
    set Data(Topos)        { NONE INTERNAL }
    set Data(Curves)       { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
