@@ -448,7 +448,7 @@ proc Exp::CreateTree { } {
       }
       CanvasBubble::Create $canvas EXP$no [join $str \n]
       $canvas bind EXP$no  <ButtonPress-3> "Exp::Select { $exp } ; Exp::PopUp %X %Y"
-      $canvas bind EXP$no  <ButtonPress-1> "Exp::SelectBranch $no ; Exp::Select { $exp } "
+      $canvas bind EXP$no  <ButtonPress-1> "Exp::SelectBranch $no ; Exp::Select { $exp }"
       $canvas bind PEXP$no <ButtonPress-1> "Exp::SelectBranch $no"
 
       set y0 [set y1 [expr $y+10]]

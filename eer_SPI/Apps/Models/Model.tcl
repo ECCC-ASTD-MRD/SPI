@@ -2148,7 +2148,7 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
 
    switch $No {
       1 {
-         foreach exp $Exp::Data(List) {
+        foreach exp $Exp::Data(List) {
             if { $Loc=="" || $Loc=="[lindex $exp 0]_[lindex $exp 1]" } {
                foreach loc [lindex $exp 3] {
                   set ico "\"[lindex $loc 0] [lindex $exp 0]:[lindex $exp 1]\" "
@@ -2157,6 +2157,10 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
                   }
                   append ico [lindex $Resources(Icos) [lindex $exp 2]]
                   lappend icos $ico
+               }
+               if { $Loc!="" } {
+                  set Exp::Data(Lat) [lindex $ico 1]
+                  set Exp::Data(Lon) [lindex $ico 2]
                }
             }
          }

@@ -182,7 +182,7 @@ proc TRAJECT::CallProduct { Frame Type Layout } {
    SPI::IcoClear
    SPI::LayoutLoad $Frame $Layout
 
-   Model::TypeSelect none 1 $Exp::Data(Name)
+   Model::TypeSelect none 1 $Exp::Data(No)_$Exp::Data(Name)
    SPI::Locate $Exp::Data(Lat) $Exp::Data(Lon)
 }
 
