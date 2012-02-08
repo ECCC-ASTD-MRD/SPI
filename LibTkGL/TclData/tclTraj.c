@@ -695,7 +695,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    Tcl_Obj   *obj,*sub;
    TTraj     *traj=NULL,head;
    TDataSpec *spec;
-   char       buf[512];
+   char       buf[512],date[16];
    int        i,j,year,month,day,hour,nb,ap,ntr=0;
 
    obj=Tcl_NewListObj(0,NULL);
@@ -789,7 +789,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             fgets(buf,512,Stream);
             memset(&traj->Pr[j],0x0,sizeof(TParticle));
 
-            sscanf(buf,"%Li %lf %lf %f %f %lf %f %f %f",&traj->Pr[j].Date,
+            sscanf(buf,"%s %lf %lf %f %f %lf %f %f %f",date,
                &traj->Pr[j].Co.Lat,&traj->Pr[j].Co.Lon,&traj->Pr[j].ZModel,&traj->Pr[j].ZPres,
                &traj->Pr[j].Co.Elev,&traj->Pr[j].ZMSL,&traj->Pr[j].Dist,&traj->Pr[j].Speed);
 
@@ -798,15 +798,18 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
             traj->Pr[j].Co.Lon=traj->Pr[j].Co.Lon>180.0?traj->Pr[j].Co.Lon-360.0:traj->Pr[j].Co.Lon;
             traj->Pr[j].Co.Lon=traj->Pr[j].Co.Lon<-180.0?traj->Pr[j].Co.Lon+360.0:traj->Pr[j].Co.Lon;
 
-            if (System_IsStamp(traj->Pr[j].Date)) {
-               traj->Pr[j].Date=System_Stamp2Seconds(traj->Pr[j].Date);
+            // check for RPN datestamp
+            if (strlen(date)<10) {
+               traj->Pr[j].Date=System_Stamp2Seconds(atoi(date));
             } else {
-               if (traj->Pr[j].Date<3000000000L) {
+               if (strlen(date)<12) {
                   /*Format YYYYMMDDHH*/
-                  traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/100,fmod(traj->Pr[j].Date,100)*10000,1);
+                  sscanf(date,"%8d%02d",&year,&hour);
+                  traj->Pr[j].Date=System_DateTime2Seconds(year,hour*10000,1);
                } else {
                   /*Format YYYYMMDDHHMM*/
-                  traj->Pr[j].Date=System_DateTime2Seconds(traj->Pr[j].Date/10000,fmod(traj->Pr[j].Date,10000)*100,1);
+                  sscanf(date,"%8d%04d",&year,&hour);
+                  traj->Pr[j].Date=System_DateTime2Seconds(year,hour*100,1);
                }
             }
          }
