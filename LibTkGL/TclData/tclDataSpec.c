@@ -1763,16 +1763,21 @@ void DataSpec_IntervalsMod(TDataSpec *Spec,double Min,double Max) {
    double v,d;
 
    Spec->InterNb=0;
-   d=SPEC2VAL(Spec,Spec->InterModeParam);
-   if (Spec->InterModeParam>0.0) {
-      Min-=fmod(Min,d);
 
-      for(v=Min+(Min<0?0:d);v<Max;v+=d) {
-         Spec->Inter[Spec->InterNb++]=v;
-         if (Spec->InterNb>=256) {
-            break;
+   if (Min<Max) {
+      d=SPEC2VAL(Spec,Spec->InterModeParam);
+      if (Spec->InterModeParam>0.0) {
+         Min=ceil(Min/d)*d;
+
+         for(v=Min;v<Max;v+=d) {
+            Spec->Inter[Spec->InterNb++]=v;
+            if (Spec->InterNb>=256) {
+               break;
+            }
          }
       }
+   } else {
+      Spec->Inter[Spec->InterNb++]=Min;
    }
 }
 
