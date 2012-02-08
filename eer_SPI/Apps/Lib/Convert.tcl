@@ -18,6 +18,8 @@
 #    Convert::Meter2Millibar { Value }
 #    Convert::Millibar2Meter { Value }
 #    Convert::Minute2Decimal { Value { Prec 10 } }
+#    Convert::Sec2ISO8601    { Sec { T T } }
+#    Convert::ISO86012Sec    { ISO }
 #    Convert::ModuloVal      { Val Mod Sens }
 #    Convert::Set2Digit      { Nb }
 #
@@ -426,6 +428,80 @@ proc Convert::Millibar2Meter { Value } {
       set res 0
    }
    return $res
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Convert::Sec2ISO8601>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Conversion de secondes a la norme ISO 8601.
+#
+# Parametres :
+#   <Sec>    : Secondes
+#   <T>      : Date time separator (default: T)
+#
+# Retour     :
+#   <Iso>    : Formatted date string
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc Convert::Sec2ISO8601 { Sec { T T } } {
+    return [clock format $Sec -format "%Y-%m-%d${T}%H:%M:%SZ" -timezone :UTC]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Convert::ISO86012Sec>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Conversion de temp a la norme ISO 8601 en seconds
+#
+# Parametres :
+#   <iso>    : Formatted date string
+#
+# Retour     :
+#   <Sec>    : Secondes
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc Convert::ISO86012Sec { ISO } {
+    return [clock scan [string map { T " " } $ISO] -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Convert::PT2Sec>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Convert a period of time from ISO8601 to seconds
+#
+# Parametres :
+#   <PT>     : Period of time
+#
+# Retour     :
+#   <Secs>   : Seconds
+#
+# Remarque :
+#-------------------------------------------------------------------------------
+
+proc Convert::PT2Sec { PT } {
+
+   set unit [string index $PT end]
+   set delt [string range $PT 2 end-1]
+
+   switch "$unit" {
+      "W" { set delts 604800 }
+      "D" { set delts 86400 }
+      "H" { set delts 3600 }
+      "M" { set delts 60 }
+      "S" { set delts 1 }
+   }
+
+   return [expr ($delt*$delts)]
 }
 
 #-------------------------------------------------------------------------------

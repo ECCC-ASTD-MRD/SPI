@@ -1558,7 +1558,7 @@ proc Viewport::ParamProjGet { Ref } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Viewport::ParamProj>
+# Nom      : <Viewport::ParamProjSet>
 # Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Definir les parametres de projection.
@@ -1575,14 +1575,22 @@ proc Viewport::ParamProjGet { Ref } {
 proc Viewport::ParamProjSet { { Ref "" } } {
    variable Map
 
-   if { [georef is $Ref] } {
-      eval set transform \[list $Map(GridTrX) $Map(GridScX) $Map(GridRtX) $Map(GridTrY) $Map(GridRtY) $Map(GridScY)\]
-      georef define $Ref -projection $Map(GridProj)
-      georef define $Ref -transform $transform
-      georef define $Ref -extent [list $Map(GridMinX) $Map(GridMinY) $Map(GridMaxX) $Map(GridMaxY)]
+   if { ![georef is $Ref] } {
+      set Ref $Page::Data(Frame)
+      catch { georef create $Ref }
    }
+   set Map(GeoRef) $Ref
+
+   eval set tr \[list $Map(GridTrX) $Map(GridScX) $Map(GridRtX) $Map(GridTrY) $Map(GridRtY) $Map(GridScY)\]
+   georef define $Ref -projection $Map(GridProj)
+   georef define $Ref -transform $tr
+   georef define $Ref -extent [list $Map(GridMinX) $Map(GridMinY) $Map(GridMaxX) $Map(GridMaxY)]
+
    projection clean $Page::Data(Frame)
-   Page::Update $Page::Data(Frame)
+   projection configure $Page::Data(Frame) -type grid -georef $Map(GeoRef)
+
+   Viewport::ConfigGet $Page::Data(Frame) $Viewport::Data(VP)
+   Viewport::Reset $Page::Data(Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -1679,7 +1687,7 @@ proc Viewport::ParamProj { Ref } {
 
    frame .viewportproj.cmd
       button .viewportproj.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "destroy .viewportproj"
-      button .viewportproj.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "Viewport::ParamProjSet $Ref"
+      button .viewportproj.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "set Viewport::Map(GridProj) \[$text get 0.0 end\]; Viewport::ParamProjSet $Ref"
       pack .viewportproj.cmd.apply .viewportproj.cmd.close -side left -fill x -expand true
    pack .viewportproj.cmd -side bottom -fill x  -padx 2 -pady 2
 }

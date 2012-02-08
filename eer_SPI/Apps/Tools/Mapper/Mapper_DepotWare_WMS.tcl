@@ -99,6 +99,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
       } else {
          set req [http::geturl "${Path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
       }
+
       if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
          Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
          return
@@ -447,7 +448,7 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    }
 
    if { $Time!="" } {
-      set Time "TIME=[clock format $Sec -format "%Y-%m-%dT%H:%M:%SZ" -timezone :UTC]&"
+      set Time "TIME=[Convert::Sec2ISO8601 $Sec]&"
    }
 
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
