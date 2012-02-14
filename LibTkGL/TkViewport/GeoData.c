@@ -1141,14 +1141,14 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    }
 
    Tk_GetFontMetrics(VP->tkfont,&tkm);
-   tolerance=500.0/(VP->Height/VP->Cam->Aspect);
+   tolerance=Proj->PixDist/16200.0;
 
    pix[0]=2;
    for(i=0;i<=VP->Height;i++) {
 
       pix[1]=i;
       if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
-        cmod=fmod(coord.Lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
+         cmod=fmod(coord.Lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
          if (ABS(cmod)<tolerance) {
 
             coord.Lat-=cmod;
@@ -1177,7 +1177,6 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
       }
    }
 
-   tolerance=500.0/(VP->Width/VP->Cam->Aspect);
    pix[1]=VP->Height-2;
    for(i=0;i<=VP->Width;i++) {
 

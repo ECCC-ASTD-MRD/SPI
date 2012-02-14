@@ -232,7 +232,7 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
       } else if (Ref->TPSTransform) {
          GDALGCPTransform(Ref->TPSTransform,FALSE,1,&x,&y,&z,&ok);
       } else if (Ref->RPCTransform) {
-        GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
+         GDALGCPTransform(Ref->RPCTransform,FALSE,1,&x,&y,&z,&ok);
       }
    }
 
@@ -452,6 +452,9 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       Ref->Spatial=OSRNewSpatialReference(string);
       fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to find spatial reference, assuming default (latlon)\n");
    }
+
+   if (Ref->String)
+      free(Ref->String);
    Ref->String=string;
 
    if (Ref->Spatial) {
