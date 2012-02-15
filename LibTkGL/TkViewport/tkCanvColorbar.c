@@ -805,7 +805,7 @@ void Colorbar_RenderText(ColorbarItem *CB,int X,int Y,Tk_Justify Side,char *Text
 void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1,int Y2){
 
    int      idx,i,py0,py1,x0,x1,xt,n=0;
-   double   y=0,incr,txt=0,value,height;
+   double   y=0,incr,txt=0,value,height,inter;
    float    jps,jan;
    char     buf[128],*lbl;
    Tcl_Obj *obj;
@@ -836,13 +836,13 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
    if (Spec->InterNb>0) {
 
       y=Y2-5;
-      incr=height/(double)Spec->InterNb;
+      incr=height/(double)(Spec->InterNb-!Spec->MapAbove+Spec->MapBellow);
 
       /*Rendu de l'echelle*/
+      for (i=0-Spec->MapBellow;i<Spec->InterNb-!Spec->MapAbove;i++) {
 
-      for (i=0;i<Spec->InterNb;i++) {
-
-         VAL2COL(idx,Spec,Spec->Inter[i]);
+         inter=i<0?Spec->Inter[0]-1:Spec->Inter[i];
+         VAL2COL(idx,Spec,inter);
 
          /*Afficher la couleur*/
          if (Interp) {
@@ -895,7 +895,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
       }
 
       /*Rendu des valeurs l'echelle*/
-      for (i=0,y=Y2-5;i<Spec->InterNb;i++,y-=incr) {
+      for (i=0,y=Y2-5-(Spec->MapBellow*incr);i<Spec->InterNb;i++,y-=incr) {
          if (i<n) {
             Tcl_ListObjIndex(Interp,Spec->InterLabels,i,&obj);
             lbl=Tcl_GetString(obj);
@@ -904,6 +904,10 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
             lbl=buf;
          }
 
+         /*Check last label if no mapabove color*/
+         if (!Spec->MapAbove && i==Spec->InterNb-1) {
+            y+=CB->tkm.linespace;
+         }
          if (Interp) {
             glPostscriptText(Interp,CB->canvas,lbl,xt,Tk_CanvasPsY(CB->canvas,y),0,CB->UColor,jan,1.0,jps);
          } else {
@@ -1035,7 +1039,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
 void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X1,int X2){
 
    int      idx,i,py0,py1,px0,px1,y0,y1,xt,n=0;
-   double   x=0,incr,txt,txtr,value,height;
+   double   x=0,incr,txt,txtr,value,height,inter;
    float    jps,jan;
    char     buf[128],*lbl;
    Tcl_Obj *obj;
@@ -1064,12 +1068,13 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
    if (Spec->InterNb>0) {
 
       x=X1+5;
-      incr=(height+CB->BarSplit)/(double)Spec->InterNb;
+      incr=(height+CB->BarSplit)/(double)(Spec->InterNb-!Spec->MapAbove+Spec->MapBellow);
 
       /*Rendu de l'echelle*/
-      for (i=0;i<Spec->InterNb;i++) {
+      for (i=0-Spec->MapBellow;i<Spec->InterNb-!Spec->MapAbove;i++) {
 
-         VAL2COL(idx,Spec,Spec->Inter[i]);
+         inter=i<0?Spec->Inter[0]-1:Spec->Inter[i];
+         VAL2COL(idx,Spec,inter);
 
          /*Afficher la couleur*/
          if (Interp) {
@@ -1123,13 +1128,18 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
       }
 
       /*Rendu des valeurs l'echelle*/
-      for (i=0,x=X1+5;i<Spec->InterNb;i++,x+=incr) {
+      for (i=0,x=X1+5+(Spec->MapBellow*incr);i<Spec->InterNb;i++,x+=incr) {
          if (i<n) {
             Tcl_ListObjIndex(Interp,Spec->InterLabels,i,&obj);
             lbl=Tcl_GetString(obj);
          } else {
             DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Inter[i]),buf);
             lbl=buf;
+         }
+
+         /*Check last label if no mapabove color*/
+         if (!Spec->MapAbove && i==Spec->InterNb-1) {
+            x-=Tk_TextWidth(CB->UFont,lbl,strlen(lbl));
          }
 
          if (Interp) {
