@@ -5,6 +5,8 @@ uniform   float     Range;
 uniform   float     Cylindric;
 uniform   int       Nb;
 uniform   int       Bi;
+uniform   int       Bellow;
+uniform   int       Above;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;

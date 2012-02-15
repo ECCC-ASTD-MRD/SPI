@@ -60,11 +60,10 @@
       VAL=IDX/SPEC->MapFactor+SPEC->Min;\
    }\
 }
-//         IDX=(VAL>=SPEC->Inter[l])?((l+1)*SPEC->MapFactor):IDX;
 
 #define VAL2COL(IDX,SPEC,VAL) {\
    int l;\
-   IDX=-2;\
+   IDX=SPEC->MapBellow?0:-2;\
    if (SPEC->InterNb>0) {\
       for(l=0;l<SPEC->InterNb;l++) { \
          if (VAL>=SPEC->Inter[l]) { \
@@ -73,7 +72,8 @@
             break; \
          } \
       } \
-   } else if ((VAL<=SPEC->Max || SPEC->MapAbove) && (VAL>=SPEC->Min || SPEC->MapBellow)) {\
+      if (VAL>SPEC->Inter[SPEC->InterNb-1] && !SPEC->MapAbove) IDX=-2;\
+   } else if ((VAL<=SPEC->Max) && (VAL>=SPEC->Min || SPEC->MapBellow)) {\
       IDX=(VAL-SPEC->Min)*SPEC->MapFactor;\
       IDX=IDX<0?0:IDX;\
       IDX=IDX>SPEC->Map->NbPixels-1?SPEC->Map->NbPixels-1:IDX;\

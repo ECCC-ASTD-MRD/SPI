@@ -1567,7 +1567,7 @@ TDataSpec *DataSpec_New(){
    spec->Name=NULL;
    spec->Map=NULL;
    spec->MapAll=0;
-   spec->MapAbove=0;
+   spec->MapAbove=1;
    spec->MapBellow=0;
    spec->Outline=NULL;
    spec->Fill=NULL;

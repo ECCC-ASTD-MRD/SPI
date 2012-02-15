@@ -5,6 +5,8 @@ uniform   float     Range;
 uniform   float     Cylindric;
 uniform   int       Nb;
 uniform   int       Bi;
+uniform   int       Bellow;
+uniform   int       Above;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
@@ -50,10 +52,10 @@ void main() {
    }
 
    dd=inter.r;
+   idx=Bellow!=0?0.0:-1.0;
 
    // If we have intervals, figure out which we fit in
    if (Nb>0) {
-      idx=-1.0;
 
       for(n=0;n<Nb;n++) {
          inter=texture2DRect(Interval,vec2(n,0.0));
@@ -63,10 +65,18 @@ void main() {
             idx=(256.0/float(Nb+1)*float(n+1))/255.0;
          }
       }
-   } else {
-      if (dd<Min)
+      if (dd>inter.r && Above==0)
          discard;
-      idx=(dd-Min)/Range;
+   } else {
+      if (dd<Min) {
+        if (Bellow==0) {
+           discard;
+        } else {
+           idx=0.0;
+        }
+      } else {
+         idx=(dd-Min)/Range;
+      }
    }
 
    // Check for colormap limits
