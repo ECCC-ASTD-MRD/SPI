@@ -301,7 +301,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             break;
 
          case DIRECT:
-            if (glXIsDirect(GLRender->XDisplay,GLRender->GLCon)) {
+            if (GLRender->GLDirect) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
@@ -2194,6 +2194,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
       }
       if (GLRender->Soft) {
          GLRender->ShaderAvailable=0;
+         GLRender->GLDirect=False;
       }
 
       fprintf(stdout,"(INFO) glXCanvasInit: Creating TrueColor colormap\n");
