@@ -1205,9 +1205,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    dp=1;
    if (Field->Ref->Grid[0]!='V') {
       idx0=Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2;
-      dp=2.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
-      if (Field->Spec->InterNb)
-         dp>>=2;
+      dp=1.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
       dp=dp<1?1:dp;
    }
 
@@ -1277,10 +1275,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   dx=ABS(dim[0]);
                   dy=ABS(dim[1]);
                   dx=MIN(dx,dy);
-                  depth=0;
+                  depth=1;
                   while (dx>>=1) depth++;
-                  if (Field->Spec->InterNb)
-                     depth++;
 
                   /* Is the cell resolution enough ??? */
                   if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
