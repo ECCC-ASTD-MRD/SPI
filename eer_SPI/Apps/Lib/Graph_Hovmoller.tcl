@@ -296,7 +296,10 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    set graph(XInter) $data(DCoords)
    set graph(XLabel) [lrange $Graph::Graph(Identitys) 0 [expr [llength $data(DCoords)]-1]]
 
-   if { $graph(XFormat)=="NONE" } {
+   set yinter $dates
+   set ydates {}
+
+   if { $graph(YFormat)=="NONE" } {
      set diff [expr $data(YMax)-$data(YMin)]
 
       if { $diff <= 120 } {
@@ -313,20 +316,17 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
          set data(Time)  D
       }
 
+      set yinter {}
+      set i -1
+      foreach date $dates {
+         lappend ydates [Graph::TimeFormat $date $data(Time) $data(YMin)]
+         lappend yinter [incr i]
+      }
    } else {
       set data(Time)    DATE
       set graph(UnitY)  [lindex $Graph::Lbl(Date) $GDefs(Lang)]
-      set graph(YAngle) 45
    }
 
-   set yinter {}
-   set ydates {}
-   set i -1
-
-   foreach date $dates {
-      lappend ydates [Graph::TimeFormat $date $data(Time) $data(YMin)]
-      lappend yinter [incr i]
-   }
    set data(YMin)  0
    set data(YMax)  [expr [fstdfield define GRAPHHOVMOLLER$item -NJ]-1]
 
@@ -357,7 +357,7 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -labels $ydates \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) -angle $graph(YAngle) \
-      -format $graph(YFormat) -decimal $graph(YDecimals)
+      -format $graph(YFormat) -decimal $graph(YDecimals) -relative True
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)

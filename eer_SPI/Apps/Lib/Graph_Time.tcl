@@ -360,7 +360,6 @@ proc Graph::Time::Graph { GR } {
    } else {
       set data(Time)    DATE
       set graph(UnitX)  [lindex $Graph::Lbl(Date) $GDefs(Lang)]
-      set grap(XAngle) 45
    }
 
    if { [llength $graph(ZXInter)] } {
@@ -432,7 +431,6 @@ proc Graph::Time::Init { Frame } {
       set Data(ObsIds)          {}        ;#Liste des observations selectionnee
       set Data(ObsToken)        ""        ;#Token de recherche
       set Data(Time)            ""
-      set Data(DateF)           True
       set Data(Date0)           ""
       set Data(Date1)           ""
 

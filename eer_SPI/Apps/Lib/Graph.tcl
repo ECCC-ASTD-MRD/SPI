@@ -821,6 +821,15 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
                pack  $Parent.scale${Axis}.t1.lbl -side left
                pack  $Parent.scale${Axis}.t1.val  -side left -fill x -expand true
 
+            frame $Parent.scale${Axis}.format
+               label $Parent.scale${Axis}.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 12 -anchor w
+               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormatsTime) 10 5 \
+                  Graph::${Type}::Graph $GR
+               pack $Parent.scale${Axis}.format.lbl -side left
+               pack $Parent.scale${Axis}.format.val -side left -fill x -expand True -padx 2
+               Bubble::Create $Parent.scale${Axis}.format.val $Graph::Bubble(AxisFormat)
+            pack $Parent.scale${Axis}.format -side top -fill x
+
             pack $Parent.scale${Axis}.t0 $Parent.scale${Axis}.t1 -side top -fill x
 #            Bubble::Create $Parent.scale${Axis}.t0.val  $Graph::Bubble(Date0)
             Bubble::Create $Parent.scale${Axis}.t1.val  $Graph::Bubble(Date1)
@@ -850,13 +859,8 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
             frame $Parent.scale${Axis}.format
                label $Parent.scale${Axis}.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 12 -anchor w
-               if { $Mode=="TIME" } {
-                  ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormatsTime) 10 5 \
-                     Graph::${Type}::Graph $GR
-               } else {
-                  ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormats) 10 5 \
-                     Graph::${Type}::Graph $GR
-               }
+               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormats) 10 5 \
+                  Graph::${Type}::Graph $GR
                pack $Parent.scale${Axis}.format.lbl -side left
                pack $Parent.scale${Axis}.format.val -side left -fill x -expand True -padx 2
                Bubble::Create $Parent.scale${Axis}.format.val $Graph::Bubble(AxisFormat)

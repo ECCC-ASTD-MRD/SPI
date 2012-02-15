@@ -357,13 +357,18 @@ proc Graph::TimeSection::Graph { GR } {
       }
    }
 
-   if { [llength $graph(XInter)] } {
+   if { ![llength $graph(XInter)] } {
+      set dates $data(Dates)
+   } else {
       set data(Dates) $graph(XInter)
       set data(XMin) [lindex $graph(XInter) 0]
       set data(XMax) [lindex $graph(XInter) end]
    }
 
-   if { $data(DateF) } {
+   set xinter $dates
+   set xdates {}
+
+   if { $graph(XFormat)=="NONE" } {
       set diff [expr $data(XMax)-$data(XMin)]
 
       if { $diff <= 120 } {
@@ -380,19 +385,16 @@ proc Graph::TimeSection::Graph { GR } {
          set data(Time)  D
       }
 
+      set xinter {}
+      set i -1
+      foreach date $dates {
+         lappend xdates [Graph::TimeFormat $date $data(Time) $data(XMin)]
+         lappend xinter [incr i]
+      }
+
    } else {
       set data(Time)   DATE
       set graph(UnitX) [lindex $Graph::Lbl(Date) $GDefs(Lang)]
-      set grap(XAngle) 45
-   }
-
-   set xinter {}
-   set xdates {}
-   set i -1
-
-   foreach date $data(Dates) {
-      lappend xdates [Graph::TimeFormat $date $data(Time) $data(XMin)]
-      lappend xinter [incr i]
    }
 
    set data(XMin)  0
@@ -416,7 +418,7 @@ proc Graph::TimeSection::Graph { GR } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -labels $xdates -angle $graph(XAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
-      -format $graph(XFormat) -decimal $graph(XDecimals)
+      -format $graph(XFormat) -decimal $graph(XDecimals) -relative True
 
    set id [graphaxis configure axisy$GR -unit]
    if { $Graph::Data(Update) } {
@@ -469,8 +471,6 @@ proc Graph::TimeSection::Init { Frame } {
       set Data(Levels) {}
       set Data(Date0)           ""
       set Data(Date1)           ""
-
-      set Data(DateF)           True
       set Data(Vertical)        {}
 
       #----- Constantes relatives au Graph

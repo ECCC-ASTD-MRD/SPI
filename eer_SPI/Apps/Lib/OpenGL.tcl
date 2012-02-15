@@ -56,7 +56,7 @@ namespace eval OpenGL {
    set Lbl(Params)      { "Paramètres" "Parameters" }
    set Lbl(Alias)       { "Anti-aliasing" "Anti-aliasing" }
    set Lbl(ZBuf)        { "Cohérence de profondeur (ZBuffer)" "Depth coherence (ZBuffer)" }
-   set Lbl(Low)         { "Interactivité basse résolution" "Low resolution interactivity" }
+   set Lbl(Low)         { "Interactivité dynamique" "Dynamic interactivity" }
    set Lbl(Time)        { "Temps du rendue" "Render time" }
    set Lbl(Frame)       { "Images par secondes" "Frame per second" }
    set Lbl(Memory)      { "Mémoire utilisée" "Memory usage" }
@@ -131,7 +131,7 @@ proc OpenGL::ParamFrame { Frame Apply } {
          checkbutton $frame.params.def.zbuf  -text [lindex $Lbl(ZBuf) $GDefs(Lang)] -variable OpenGL::Param(ZBuf) \
             -indicatoron false -command "glrender -zbuffer \$OpenGL::Param(ZBuf); $Apply configure -state normal" -onvalue 1 -offvalue 0 -bd 1
          checkbutton $frame.params.def.res -text [lindex $Lbl(Low) $GDefs(Lang)] -variable OpenGL::Param(Res) \
-            -indicatoron false -onvalue 10 -offvalue 1 -bd 1
+            -indicatoron false -onvalue 1 -offvalue 10 -bd 1
          pack $frame.params.def.debug $frame.params.def.alias $frame.params.def.zbuf $frame.params.def.res -side top -fill x
       pack $frame.params.def -side top -fill x
    pack  $frame.params -padx 5 -pady 2 -side top -fill x
@@ -185,7 +185,7 @@ proc OpenGL::Update { } {
    variable Param
 
    if { !$Param(Res) } {
-      set OpenGL::Param(Res)  [expr [glrender -direct]?1:10]
+      set Param(Res)  [expr [glrender -direct]?1:10]
    }
 
    set sec [glrender -time]
