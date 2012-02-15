@@ -178,8 +178,8 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    char        buf[256];
    int         i,j,idx;
 
-   static CONST char *sopt[] = { "-color","-width","-grid","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-decimal","-spacing",NULL };
-   enum                opt { COLOR,WIDTH,GRID,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,DECIMAL,SPACING };
+   static CONST char *sopt[] = { "-color","-width","-grid","-gridcolor","-gridwidth","-highlight","-highlightcolor","-highlightwidth","-dash","-font","-min","-max","-increment","-modulo","-intervals","-labels","-relative","-lowoffset","-highoffset","-type","-mark","-unit","-justify","-anchor","-position","-angle","-numbered","-format","-decimal","-spacing",NULL };
+   enum                opt { COLOR,WIDTH,GRID,GRIDCOLOR,GRIDWIDTH,HIGHLIGHT,HIGHLIGHTCOLOR,HIGHLIGHTWIDTH,GRIDDASH,FONT,MIN,MAX,INCREMENT,MODULO,INTERVALS,LABELS,RELATIVE,LOWOFFSET,HIGHOFFSET,TYPE,MARK,UNIT,JUSTIFY,ANCHOR,POSITION,ANGLE,NUMBERED,FORMAT,DECIMAL,SPACING };
 
    axis=GraphAxis_Get(Name);
    if (!axis) {
@@ -404,6 +404,14 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case RELATIVE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(axis->Relative));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&axis->Relative);
+            }
+            break;
+
          case TYPE:
             if (Objc==1) {
                switch(axis->Type) {
@@ -577,6 +585,7 @@ static int GraphAxis_Create(Tcl_Interp *Interp,char *Name) {
    axis->Label=NULL;
    axis->InterNb=0;
    axis->InterInt=0;
+   axis->Relative=0;
    axis->Angle=0.0;
    axis->Min=0.0;
    axis->Max=0.0;
@@ -1061,9 +1070,9 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
                             break;
          case GRAXHHDDMM: sprintf(String,"%02i\n%02i/%02i",tsec->tm_hour,tsec->tm_mday,(tsec->tm_mon+1)); break;
          case GRAXHH:   sprintf(String,"%02i",tsec->tm_hour); break;
-         case GRAXTMINUSHH: sprintf(String,"T-%.0fH",(Axis->Max-Value)/3600.0); break;
-         case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-Axis->Min)/3600.0); break;
-         case GRAXTPLUSHHMM: sprintf(String,"T+%.0f:%02.0f",(Value-Axis->Min)/3600.0,fmod((Value-Axis->Min),60.0)); break;
+         case GRAXTMINUSHH: sprintf(String,"T-%.0fH",((Axis->InterNb?Axis->Inter[Axis->InterNb-1]:Axis->Max)-Value)/3600.0); break;
+         case GRAXTPLUSHH: sprintf(String,"T+%.0fH",(Value-(Axis->InterNb?Axis->Inter[0]:Axis->Min))/3600.0); break;
+         case GRAXTPLUSHHMM: sprintf(String,"T+%.0f:%02.0f",(Value-(Axis->InterNb?Axis->Inter[0]:Axis->Min))/3600.0,fmod(Value-(Axis->InterNb?Axis->Inter[0]:Axis->Min),60.0)); break;
          case GRAXHHMM: sprintf(String,"%02i:%02i",tsec->tm_hour,tsec->tm_min); break;
          case GRAXDDMM: sprintf(String,"%02i/%02i",tsec->tm_mday,(tsec->tm_mon+1)); break;
          case GRAXMMDD: sprintf(String,"%02i/%02i",(tsec->tm_mon+1),tsec->tm_mday); break;
@@ -1276,9 +1285,9 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             GraphAxis_Print(Axis,buf,Axis->Inter[i],0);
             text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
          }
-
+         inter=Axis->Relative?(Axis->Inter[i]-Axis->Inter[0])/(Axis->Inter[Axis->InterNb-1]-Axis->Inter[0])*(Axis->InterNb-1):Axis->Inter[i];
          if (Side&HORIZONTAL) {
-            x=X0+AXISVALUE(Axis,Axis->Inter[i]); y=Y0;
+            x=X0+AXISVALUE(Axis,inter); y=Y0;
             if (x<X0-1 || x>X1+1 || (Axis->Spacing && x<xp+w))
                continue;
 
@@ -1302,7 +1311,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
                glDisable(GL_LINE_STIPPLE);
             }
          } else {
-            y=Y0-AXISVALUE(Axis,Axis->Inter[i]); x=X0;
+            y=Y0-AXISVALUE(Axis,inter); x=X0;
             if (y<Y1-1 || y>Y0+1 || (y-Y1<w && i!=Axis->InterNb-1))
                continue;
 

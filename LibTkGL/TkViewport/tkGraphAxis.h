@@ -85,7 +85,8 @@ typedef struct TGraphAxis {
    char         **Label;         /*Liste des labels corespondant aux intervals*/
    double        *Inter;         /*Liste des intervals*/
    int            InterNb;       /*Nombre d'interval*/
-   int            InterInt;      /*Intervals are inetgers*/
+   int            InterInt;      /*Intervals are integers*/
+   int            Relative;      /*Intervals are relatives to numbre of intervals*/
    int            Offset[2];     /*Decallage superieur en %*/
    double         Min,Max;       /*Minimum et maximum de l'axe*/
    double         T0,T1;         /*Minimum et maximum de l'axe*/
