@@ -591,9 +591,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case MARK:
             if (Objc==1) {
-               if (Spec->Mark) {
-                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Mark));
-               }
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Mark));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Mark);
             }
@@ -601,7 +599,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case STYLE:
             if (Objc==1) {
-               if (Spec->Mark) {
+               if (Spec->Style) {
                   Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Style));
                }
             } else {

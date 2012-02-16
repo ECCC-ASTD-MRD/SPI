@@ -193,12 +193,11 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    VAL2COL(c2,Field->Spec,v2);
    VAL2COL(c3,Field->Spec,v3);
 
-//   Depth>>=1;
    Depth--;
 
    /*Draw if visible*/
    if (C0>-1 || c0>-1 || c>-1 || c3>-1) {
-      if (Depth && (ABS(C0-c0)>1 || ABS(c0-c)>1 || ABS(c-c3)>1 || ABS(c3-C0)>1)) {
+      if (Depth && (ABS(C0-c0) || ABS(c0-c) || ABS(c-c3) || ABS(c3-C0))) {
          VertexQuad_Linear(Field,P0,p0,p,p3,C0,c0,c,c3,V0,v0,v,v3,Depth,Base);
       } else {
          VR(P0,C0,Base);
@@ -209,7 +208,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c0>-1 || C1>-1 || c1>-1 || c>-1) {
-      if (Depth && (ABS(c0-C1)>1 || ABS(C1-c1)>1 || ABS(C1-c)>1 || ABS(c-c0)>1)) {
+      if (Depth && (ABS(c0-C1) || ABS(C1-c1) || ABS(C1-c) || ABS(c-c0))) {
          VertexQuad_Linear(Field,p0,P1,p1,p,c0,C1,c1,c,v0,V1,v1,v,Depth,Base);
       } else {
          VR(p0,c0,Base);
@@ -220,7 +219,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c>-1 || c1>-1 || C2>-1 || c2>-1) {
-      if (Depth && (ABS(c-c1)>1 || ABS(c1-C2)>1 || ABS(C2-c2)>1 || ABS(c2-c)>1)) {
+      if (Depth && (ABS(c-c1) || ABS(c1-C2) || ABS(C2-c2) || ABS(c2-c))) {
          VertexQuad_Linear(Field,p,p1,P2,p2,c,c1,C2,c2,v,v1,V2,v2,Depth,Base);
       } else {
          VR(p,c,Base);
@@ -231,7 +230,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c3>-1 || c>-1 || c2>-1 || C3>-1) {
-      if (Depth && (ABS(c3-c)>1 || ABS(c-c2)>1 || ABS(c2-C3)>1 || ABS(C3-c3)>1)) {
+      if (Depth && (ABS(c3-c) || ABS(c-c2) || ABS(c2-C3) || ABS(C3-c3))) {
          VertexQuad_Linear(Field,p3,p,p2,P3,c3,c,c2,C3,v3,v,v2,V3,Depth,Base);
       } else {
          VR(p3,c3,Base);

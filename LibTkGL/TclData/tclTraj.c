@@ -694,7 +694,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 
    Tcl_Obj   *obj,*sub;
    TTraj     *traj=NULL,head;
-   TDataSpec *spec;
+   TDataSpec *spec=NULL;
    char       buf[512],date[16];
    int        i,j,year,month,day,hour,nb,ap,ntr=0;
 
@@ -766,6 +766,13 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          if (Interp) {
             if ((sub=Traj_Put(Interp,NULL,traj))) {
                spec=traj->Spec;
+               spec->Size=3;
+               spec->Mark=24*3600;
+               spec->InterNb=1;
+               spec->Inter[0]=3*3600;
+               spec->InterVals=Tcl_NewListObj(0,NULL);
+               Tcl_IncrRefCount(spec->InterVals);
+               Tcl_ListObjAppendElement(Interp,spec->InterVals,Tcl_NewIntObj(3*3600));
                Tcl_ListObjAppendElement(Interp,obj,sub);
             } else {
                Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Could not create trajectory object link",(char*)NULL);
@@ -774,6 +781,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          }
 
          memcpy(traj,&head,sizeof(head));
+
          traj->Spec=spec;
          traj->Pr=(TParticle*)malloc(traj->NPr*sizeof(TParticle));
 

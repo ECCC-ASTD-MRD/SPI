@@ -1267,7 +1267,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
             /* Is the cell visible ??? */
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
-
                if (Field->Spec->InterpDegree[0]=='N') {
                   VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
                } else {
@@ -1279,7 +1278,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   while (dx>>=1) depth++;
 
                   /* Is the cell resolution enough ??? */
-                  if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
+                  if (depth>=2 && (ABS(c0-c1) || ABS(c1-c2) || ABS(c2-c3) || ABS(c3-c0))) {
                      VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
                      VR(g0,c0,base);
