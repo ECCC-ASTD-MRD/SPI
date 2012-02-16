@@ -38,10 +38,6 @@ namespace eval Info {
    variable Msg
    variable Token
 
-   set Token(CANERM)  { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Duration AccYear AccMonth AccDay AccHour AccMin \
-                        SimYear SimMonth SimDay SimHour Mode Meteo Delta Scale Grid FreqOut EmHeight Event NbPer Dt ISauve \
-                        DTIN DTIS FnVert FnTime EmDuration Delai IType1 IType2 IsoName IsoRelease IsoUnit IsoHalf IsoDry IsoWet }
-
    set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration \
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
@@ -60,7 +56,7 @@ namespace eval Info {
                         EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
-   set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD) $Token(CANERM)]]
+   set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD)]]
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
@@ -147,7 +143,6 @@ namespace eval Info {
 
    set Lbl(IsoNb)                { "Nombre d'isotopes" "Number of isotopes" }
    set Lbl(IsoName)              { "Isotope" "Isotope" }
-   set Lbl(IsoUnit)              { "Unité" "Unit" }
    set Lbl(IsoHalf)              { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
    set Lbl(IsoDry)               { "Taux de lessivage sec (s -1)" "Dry scavenging rate (s -1)" }
    set Lbl(IsoWet)               { "Taux de lessivage humide (s -1)" "Wet scavenging rate (s -1)" }
