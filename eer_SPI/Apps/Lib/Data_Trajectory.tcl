@@ -413,9 +413,8 @@ proc Trajectory::ParamGet { { Spec "" } } {
    if { [llength [dataspec configure $Spec -intervals]] } {
       set Param(Interval)  [expr int([dataspec configure $Spec -intervals]/3600)]
    }
-   if { [dataspec configure $Spec -mark]!="" } {
-      set Param(Mark)      [expr int([dataspec configure $Spec -mark]/3600)]
-   }
+   set Param(Mark)      [expr int([dataspec configure $Spec -mark]/3600)]
+
    set Param(Style)     [dataspec configure $Spec -style]
    set Param(Width)     [dataspec configure $Spec -width]
 }
