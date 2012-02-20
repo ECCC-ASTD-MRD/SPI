@@ -62,7 +62,7 @@ namespace eval Model {
    set Param(Host)      ""                             ;#Host
    set Param(Queue)     ""                             ;#Queue
    set Param(EMail)     ""                             ;#Username email address.
-   set Param(EMailSet)  "$env(LOGNAME)@ec.gc.ca"       ;#Username email address.
+   set Param(EMailSet)  "$env(USER)@ec.gc.ca"       ;#Username email address.
    set Param(IsEMail)   0                              ;#Flag indicating if sending email to user for monitoring entire job (1) or not (0).
    set Param(Listings) $env(HOME)/listings/eer_Experiment
    set Param(DBaseType) "eta"                          ;#Type od metdata
@@ -963,10 +963,10 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(GridLat)      [lindex $sim(GridSrc) 1]
    set sim(GridLon)      [lindex $sim(GridSrc) 2]
 
-   if { $env(LOGNAME)=="afseeer" } {
+   if { $env(USER)=="afseeer" || $env(USER)=="afsepar" } {
       set sim(Blame) ""
    } else {
-      catch { set str [exec finger $env(LOGNAME) 2>/dev/null] }
+      catch { set str [exec finger $env(USER) 2>/dev/null] }
       set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
    }
 
@@ -1557,7 +1557,7 @@ proc Model::ParamValidateEmail { } {
       }
 
       #----- Display warning if email is different than default one.
-      if { $Param(EMailSet)!="$env(LOGNAME)@ec.gc.ca" } {
+      if { $Param(EMailSet)!="$env(USER)@ec.gc.ca" } {
          set answer [Dialog::Default $Param(Frame) 400 WARNING $Warning(EMail) "\n\n[lindex $Warning(EMail2) $GDefs(Lang)] $Param(EMailSet)\n[lindex $Warning(EMail3) $GDefs(Lang)] $env(USER)@ec.gc.ca" 1 $Lbl(Yes) $Lbl(No)]
          if { $answer } {
             focus $Param(Frame).params.email.e
