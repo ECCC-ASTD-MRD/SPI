@@ -241,7 +241,7 @@ function Model_CopyTrace {
 function Model_CleanUp {
 
    #----- Exit function if not remote or erasing.
-   if [[ ${MODEL_ISREMOTE} -eq 0 || ${MODEL_NEEDCOPY} -eq 0 || ${MODEL_CLEAN} -eq 0 ]] ; then
+   if [[ ${MODEL_ISREMOTE} -eq 0 || ${MODEL_NEEDCOPY} -eq 0 || ${MODEL_CLEAN} -eq 0  || ${MODEL_EXITSTATUS} -gt 0 ]] ; then
       return 0
    fi
 
@@ -355,15 +355,12 @@ MODEL_ISREMOTE=0
 MODEL_NEEDCOPY=0
 MODEL_EXITSTATUS=0
 
-#----- Set script dir. to be overriden if needed.
-MODEL_DIRSCRIPT=${EER_DIRSCRIPT}
-
 #----- Read parameters within directives input file.
 . ${1}
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
-. ${MODEL_DIRSCRIPT}/Model_${MODEL_NAME}.sh
+. ${EER_DIRSCRIPT}/Model_${MODEL_NAME}.sh
 
 #----- Start the job
 LOG_TIME=1
@@ -408,6 +405,6 @@ Log_End ${MODEL_EXITSTATUS} False
 
 Model_CopyLog
 #Model_CopyTrace
-#Model_CleanUp
+Model_CleanUp
 
 exit ${MODEL_EXITSTATUS}
