@@ -466,7 +466,6 @@ proc Info::Path { Info } {
    variable Tmp
 
    Info::Decode ::Info::Tmp $Info
-parray Tmp
 
    if { [info exists ::Info::Tmp(AccSecs)] } {
       return "$Tmp(Model).$Tmp(NoSim).[clock format $Tmp(AccSecs) -format %Y%m%d.%H%M]"
