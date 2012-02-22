@@ -262,10 +262,10 @@ proc Info::Decode { Var Info } {
       set value [lindex $list 1]
       set found 0
 
-      foreach item $Token(ALL) {
-         foreach description $Lbl($item) {
+      foreach { item descs } [array get Lbl] {
+         foreach desc $descs {
 
-            if { "$token"=="$description" } {
+            if { "$token"=="$desc" } {
                set var($item) $value
                set found 1
                break
@@ -466,6 +466,7 @@ proc Info::Path { Info } {
    variable Tmp
 
    Info::Decode ::Info::Tmp $Info
+parray Tmp
 
    if { [info exists ::Info::Tmp(AccSecs)] } {
       return "$Tmp(Model).$Tmp(NoSim).[clock format $Tmp(AccSecs) -format %Y%m%d.%H%M]"
