@@ -180,7 +180,7 @@ proc MLDP::CreateScriptInput { } {
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
-   puts $file "MODEL_PRE=[expr $Model::Param(NbMPItasks)>16?16:$Model::Param(NbMPItasks)]"
+   puts $file "MODEL_PRE=$Model::Param(NbCPUMeteo)"
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_POOL=$Model::Param(Pool)"

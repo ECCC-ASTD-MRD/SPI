@@ -69,6 +69,8 @@ namespace eval Model {
    set Param(DBaseLocal) False                         ;#Is the metdata local
    set Param(DBaseDiag) ""                             ;#Path for diag metdata
    set Param(DBaseProg) ""                             ;#Path for prog metdata
+   set Param(NbCPUMeteo)        1
+   set Param(ListNbCPUMeteo)    { 1 }
    set Param(NbMPItasks)        1
    set Param(ListNbMPItasks)    { 1 }
    set Param(NbOMPthreads)      1
@@ -95,6 +97,7 @@ namespace eval Model {
    set Lbl(Queue)         { "Type de queue  " "Queue type     " }
    set Lbl(NbMPItasks)    { "Nb tâches MPI  " "Nb MPI tasks   " }
    set Lbl(NbOMPthreads)  { "Nb threads OMP " "Nb OMP threads " }
+   set Lbl(NbCPUMeteo)    { "Nb CPU meteo   " "Nb CPU meteo   " }
    set Lbl(WallClock)     { "Temps CPU   (s)" "Wall Clock  (s)" }
    set Lbl(IsEMail)       { "Surveillance par courriel" "E-mail monitoring" }
    set Lbl(EMail)         { "Courriel" "EMail" }
@@ -136,6 +139,8 @@ namespace eval Model {
                               "Number of MPI tasks which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
    set Bubble(NbOMPthreads)  { "Nombre de threads OMP par tâche MPI définissant la configuration du nombre de\nCPUs (MPIxOMP) pour l'exécution du modèle sur l'hôte sélectionné." \
                                "Number of OMP threads per MPI task which defines the CPU configuration (MPIxOMP)\nfor running the model on selected host." }
+   set Bubble(NbCPUMeteo)    { "Nombre de CPU pour le pré-traitement des données météorologiques." \
+                               "Number of CPU for the metorological preprocessing." }
    set Bubble(WallClock)     { "Temps CPU réel maximal en secondes pour l'exécution du modèle.\nUne durée trop longue peut ajouter un délai dans le système de queue" "Maximum wall clock time for model execution.\nToo long a wallclock time can add delays in queue." }
    set Bubble(IsEMail)       { "Option permettant d'activer ou de désactiver la surveillance (le monitoring)\nde la simulation par courrier électronique." "Option to enable or disable the e-mail monitoring of simulation." }
    set Bubble(EMail)         { "Adresse de courrier électronique." "E-mail address." }
@@ -804,15 +809,19 @@ proc Model::ParamsCPUModel { } {
    #----- Set CPU configuration for model according to architecture.
    switch $Param(Arch) {
       "Linux"  {
+         set Param(NbCPUMeteo)        2
+         set Param(ListbCPUMeteo)     { 1 2 4 8 }
          set Param(NbMPItasks)        1
          set Param(ListNbMPItasks)    { 1 2 4 8 }
          set Param(NbOMPthreads)      2
          set Param(ListNbOMPthreads)  { 1 2 4 8 }
       }
       "AIX"    {
-         set Param(NbMPItasks)        16
+         set Param(NbCPUMeteo)        16
+         set Param(ListbCPUMeteo)     { 1 2 4 8 16 }
+         set Param(NbMPItasks)        8
          set Param(ListNbMPItasks)    { 1 2 4 8 16 32 64 128 }
-         set Param(NbOMPthreads)      8
+         set Param(NbOMPthreads)      16
          set Param(ListNbOMPthreads)  { 4 8 16 32 64 }
       }
    }
@@ -821,6 +830,7 @@ proc Model::ParamsCPUModel { } {
    catch {
       Option::Set $Param(Frame).params.mpi    $Param(ListNbMPItasks)
       Option::Set $Param(Frame).params.omp    $Param(ListNbOMPthreads)
+      Option::Set $Param(Frame).params.cpu    $Param(ListbCPUMeteo)
 
       if { $Param(IsUsingSoumet) } {
          Option::Enable $Param(Frame).params.wall True
@@ -1134,6 +1144,14 @@ proc Model::ParamsLaunch { Model Frame } {
    Option::Create $tabframe.params.queue [lindex $Lbl(Queue) $GDefs(Lang)] Model::Param(Queue) 0 -1 $Model::Param(Queues) ""
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.params.queue $Bubble(Queue)
+
+   if { $sim(Model)=="MLDP0" || $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
+
+      #----- Nb CPU meteo preprocessor.
+      Option::Create $tabframe.params.cpu [lindex $Lbl(NbCPUMeteo) $GDefs(Lang)] Model::Param(NbCPUMeteo) 0 -1 $Model::Param(ListNbCPUMeteo) ""
+      pack $tabframe.params.cpu -side top -anchor w -padx 2 -fill x
+      Bubble::Create $tabframe.params.cpu $Bubble(NbCPUMeteo)
+   }
 
    if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
 
