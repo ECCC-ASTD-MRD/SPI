@@ -810,7 +810,7 @@ proc Model::ParamsCPUModel { } {
    switch $Param(Arch) {
       "Linux"  {
          set Param(NbCPUMeteo)        2
-         set Param(ListbCPUMeteo)     { 1 2 4 8 }
+         set Param(ListNbCPUMeteo)    { 1 2 4 8 }
          set Param(NbMPItasks)        1
          set Param(ListNbMPItasks)    { 1 2 4 8 }
          set Param(NbOMPthreads)      2
@@ -818,7 +818,7 @@ proc Model::ParamsCPUModel { } {
       }
       "AIX"    {
          set Param(NbCPUMeteo)        16
-         set Param(ListbCPUMeteo)     { 1 2 4 8 16 }
+         set Param(ListNbCPUMeteo)    { 1 2 4 8 16 }
          set Param(NbMPItasks)        8
          set Param(ListNbMPItasks)    { 1 2 4 8 16 32 64 128 }
          set Param(NbOMPthreads)      16
@@ -828,9 +828,9 @@ proc Model::ParamsCPUModel { } {
 
    #----- Update list of available MPI tasks, OMP threads and OMP factor for model.
    catch {
-      Option::Set $Param(Frame).params.mpi    $Param(ListNbMPItasks)
-      Option::Set $Param(Frame).params.omp    $Param(ListNbOMPthreads)
-      Option::Set $Param(Frame).params.cpu    $Param(ListbCPUMeteo)
+      Option::Set $Param(Frame).params.mpi $Param(ListNbMPItasks)
+      Option::Set $Param(Frame).params.omp $Param(ListNbOMPthreads)
+      Option::Set $Param(Frame).params.cpu $Param(ListNbCPUMeteo)
 
       if { $Param(IsUsingSoumet) } {
          Option::Enable $Param(Frame).params.wall True
