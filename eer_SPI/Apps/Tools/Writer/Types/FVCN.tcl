@@ -75,15 +75,15 @@ namespace eval Writer::FVCN {
    set Data(Rem22) "THE NEXT STATEMENT WILL BE ISSUED BY THE"
    set Data(Rem23) "BY __/__ UTC UNDER THE HEADER"
 
-   set Data(Ids)    "PANC EGRR KNES TOUL"
-   set Data(IdPANC) "ANCHORAGE VAAC"
+   set Data(Ids)    "PAWU EGRR KNES LFPW"
+   set Data(IdPAWU) "ANCHORAGE VAAC"
    set Data(IdEGRR) "LONDON VAAC"
    set Data(IdKNES) "WASHINGTON VAAC"
-   set Data(IdTOUL) "TOULOUSE VAAC"
-   set Data(NoPANC) "FVAK"
+   set Data(IdLFPW) "TOULOUSE VAAC"
+   set Data(NoPAWU) "FVAK"
    set Data(NoEGRR) "FVXX"
    set Data(NoKNES) "FVXX"
-   set Data(NoTOUL) "FVXX"
+   set Data(NoLFPW) "FVXX"
    set Data(NoNONE) "FV__"
    set Data(IdNONE) "_____"
    set Data(VAAC)   "MONTREAL"
@@ -1395,7 +1395,7 @@ proc Writer::FVCN::SetRem { Pad Text No FV } {
       3 { $Text insert 0.0 "$Data(Rem3)" }
       4 { $Text insert 0.0 "$Data(Rem4)" }
       5 { $Text insert 0.0 "$Data(Rem5)" }
-      6 { $Text insert 0.0 "$Data(Rem6) $Data(No$FV)__ $Data(Rem61) $Data(Id$FV) $Data(Rem62)" }
+      6 { $Text insert 0.0 "$Data(Rem6) $Data(No$FV)__ $FV $Data(Rem61) $Data(Id$FV) $Data(Rem62)" }
       default { $Text insert 0.0 "NIL" }
    }
 
