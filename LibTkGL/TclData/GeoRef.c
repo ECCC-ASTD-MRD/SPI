@@ -1348,7 +1348,7 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->IG3==Ref->IG3;
    ref->IG4==Ref->IG4;
 
-   ZRef_Copy(&ref->ZRef,&Ref->ZRef);
+   ZRef_Copy(&ref->ZRef,&Ref->ZRef,-1);
 
    switch(ref->Grid[0]) {
       case 'R' :

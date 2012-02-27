@@ -2487,26 +2487,39 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  *  <Interp>   : Interpreteur TCL
  *  <Field>    : Pointeur sur le champs
  *  <Type>     : Type des donnees
+ *  <Flip>     : Flip x/y axis
+ *
  * Retour:
  *
  * Remarques :
  *
  *----------------------------------------------------------------------------
 */
-void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type){
+void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip){
 
    int      i,j;
    double   val;
    Tcl_Obj *objj,*obji;
 
    objj=Tcl_NewListObj(0,NULL);
-   for(j=0;j<Field->Def->NJ;j++){
-      obji=Tcl_NewListObj(0,NULL);
+   if (Flip) {
       for(i=0;i<Field->Def->NI;i++){
-         Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
-         Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
+         obji=Tcl_NewListObj(0,NULL);
+         for(j=0;j<Field->Def->NJ;j++){
+            Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
+            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
+         }
+         Tcl_ListObjAppendElement(Interp,objj,obji);
       }
-      Tcl_ListObjAppendElement(Interp,objj,obji);
+   } else {
+      for(j=0;j<Field->Def->NJ;j++){
+         obji=Tcl_NewListObj(0,NULL);
+         for(i=0;i<Field->Def->NI;i++){
+            Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
+            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
+         }
+         Tcl_ListObjAppendElement(Interp,objj,obji);
+      }
    }
 
    Tcl_SetObjResult(Interp,objj);
