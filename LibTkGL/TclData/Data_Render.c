@@ -139,7 +139,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       /*Verifier la presence d'une palette de couleur si elle est necessaire*/
       if (Field->Spec->Map) {
 
-         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V') && (!Field->Spec->RenderContour || Field->Spec->InterNb)) {
+         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
             if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
                if (GLRender->ShaderAvailable) {
                   nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
