@@ -885,12 +885,7 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
          set data(Data$item) [MetData::FindAll TIME$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
             -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
 
-         #----- Set the interpolation degree to the same
-
-         set interp [fstdfield configure $item -interpdegree]
-         foreach field $data(Data$item) {
-            fstdfield configure $field -interpdegree $interp
-         }
+        FSTD::ParamUpdate $data(Data$item)
 
          #---- Trier temporellement les champs
 

@@ -638,6 +638,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
 
       if { [fstdfield is $Data] } {
          fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
+         FSTD::ParamUpdate GRAPHPROFILE
 
          #----- Configure info label if allowed
          if { $Graph::Data(Update) } {
