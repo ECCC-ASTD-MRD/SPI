@@ -134,7 +134,7 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
 TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TData_Type Type);
 Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y);
 int      Data_ValSet(TData *Field,double I,double J,double Val);
-void     Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip);
+void     Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip);
 int      Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List);
 int      Data_Within(TData *Field,float Val);
 int      Data_WithinNb(TData *Field);

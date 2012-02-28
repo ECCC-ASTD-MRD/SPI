@@ -2477,7 +2477,7 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Data_ValGet>
+ * Nom      : <Data_ValGetMatrix>
  * Creation : Juillet 1999 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Extrait les donnees du champs et les retourne a Tcl en liste
@@ -2486,7 +2486,6 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
  *  <Field>    : Pointeur sur le champs
- *  <Type>     : Type des donnees
  *  <Flip>     : Flip x/y axis
  *
  * Retour:
@@ -2495,7 +2494,7 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  *
  *----------------------------------------------------------------------------
 */
-void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip){
+void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
 
    int      i,j;
    double   val;
@@ -2507,7 +2506,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip){
          obji=Tcl_NewListObj(0,NULL);
          for(j=0;j<Field->Def->NJ;j++){
             Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
-            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
+            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
          }
          Tcl_ListObjAppendElement(Interp,objj,obji);
       }
@@ -2516,7 +2515,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip){
          obji=Tcl_NewListObj(0,NULL);
          for(i=0;i<Field->Def->NI;i++){
             Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
-            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(val));
+            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
          }
          Tcl_ListObjAppendElement(Interp,objj,obji);
       }
@@ -2526,7 +2525,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Type,int Flip){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Data_ValPut>
+ * Nom      : <Data_ValPutMatrix>
  * Creation : Septembre 1998 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Inserer une liste de valeur dans un champs.
@@ -2564,6 +2563,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
       for (i=0;i<nobji;i++){
          Tcl_ListObjIndex(Interp,objj,i,&obji);
          Tcl_GetDoubleFromObj(Interp,obji,&value);
+         value=SPEC2VAL(Field->Spec,value);
          Def_Set(Field->Def,0,j*nobji+i,value);
       }
    }

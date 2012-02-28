@@ -356,7 +356,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case DATA:
             if (Objc==1) {
-               Data_ValGetMatrix(Interp,Field,((FSTD_Head*)Field->Head)->DATYP,0);
+               Data_ValGetMatrix(Interp,Field,0);
             } else {
                return Data_ValPutMatrix(Interp,Field,Objv[++i]);
             }

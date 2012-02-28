@@ -325,6 +325,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&item->IconXShowValue);
             }
             break;
+
          case FONT:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Tk_NameOfFont(item->Font),-1));
