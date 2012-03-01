@@ -84,7 +84,7 @@ proc TabFrame::Add { Tab Level Title Edit { ColorFrame "" } { ColorTab "" } } {
    $Tab.tab$no insert end "$Title"
    $Tab.tab$no configure -state disabled
 
-   frame $Tab.frame$no -relief raised -bd 1
+   frame $Tab.frame$no -relief raised -bd 1 -padx $Data(Pad$Tab) -pady $Data(Pad$Tab)
 
    if { $ColorFrame!="" } {
       $Tab.tab$no configure    -bg $ColorFrame -disabledbackground $ColorFrame
@@ -185,6 +185,7 @@ proc TabFrame::Clear { Tab } {
 #   <Command>   : "Callback" a appeler lors de la selection d'un onglet
 #   <Width>     : Largeur (default -1)
 #   <Height>    : Hauteur (default -1)
+#   <Pad>       : Padding (default 0)
 #
 # Remarques :
 #   La commande "callback" doit prendre en arguments le path et le numero
@@ -194,7 +195,7 @@ proc TabFrame::Clear { Tab } {
 #
 #-------------------------------------------------------------------------------
 
-proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } } {
+proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } { Pad 0 } } {
    variable Data
 
    set Data(Nb$Tab)       0        ;# Nombre de tab
@@ -203,6 +204,7 @@ proc TabFrame::Create { Tab Level Command { Top 1 } { Width -1 } { Height -1 } }
    set Data(Current$Tab)  -1       ;# Onglet courant
    set Data(Previous$Tab) -1       ;#Onglet Precedent
    set Data(Top$Tab)      $Top     ;# Position des onglets
+   set Data(Pad$Tab)      $Pad     ;# Position des onglets
 
    for { set i 1 } { $i <= $Level } { incr i } {
       set Data(W$i$Tab)     "" ;# Liste des tab pour un niveau

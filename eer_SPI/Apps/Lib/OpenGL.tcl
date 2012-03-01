@@ -99,7 +99,7 @@ proc OpenGL::ParamFrame { Frame Apply } {
           "$frame.info.txt delete 0 end ;$frame.info.txt insert end \[glrender -info \$OpenGL::Param(Info)\]"
       entry $frame.info.txt -width 20 -relief sunken -bd 1 -bg $GDefs(ColorLight)
       pack $frame.info.sel $frame.info.txt -side left -pady 2 -padx 2 -fill x -expand true
-   pack $frame.info -side top -padx 5 -pady 2 -fill x
+   pack $frame.info -side top -padx 5 -pady 5 -fill x
 
    labelframe $frame.res -text [lindex $Lbl(Resources) $GDefs(Lang)]
       frame $frame.res.lbl
@@ -118,8 +118,8 @@ proc OpenGL::ParamFrame { Frame Apply } {
          label $frame.res.info.mem  -textvariable OpenGL::Stat(MemUsage) \
              -bg $GDefs(ColorLight) -relief sunken -bd 1  -width 14 -anchor w
          pack  $frame.res.info.time $frame.res.info.fps \
-               $frame.res.info.mem -side top -anchor w
-      pack $frame.res.info -side top -padx 2 -pady 2
+               $frame.res.info.mem -side top -anchor w -fill x -expand True
+      pack $frame.res.info -side top -fill x -padx 2 -pady 2
    pack  $frame.res -padx 5 -pady 2 -side top -fill x
 
    labelframe $frame.params -text [lindex $Lbl(Params) $GDefs(Lang)]
