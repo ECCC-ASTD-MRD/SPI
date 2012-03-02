@@ -1264,18 +1264,7 @@ proc SPI::Execute { Script } {
 
       if { [namespace exists ::Macro::$script] } {
 
-         #----- If Macro has an Args function, call it to get the args
-         eval set proc \[info procs ::Macro::${script}::Args\]
-         if { $proc!="" } {
-            eval Macro::${script}::Args
-         }
-         eval Macro::${script}::Execute
-
-         #----- Check for macro cleanup function
-         eval set proc \[info procs ::Macro::${script}::Clean\]
-         if { $proc!="" } {
-            eval Macro::${script}::Clean
-         }
+         Macro::Run $script
       }
    }
 }

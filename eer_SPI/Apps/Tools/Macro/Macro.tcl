@@ -371,8 +371,35 @@ proc Macro::Execute { Macro } {
       namespace delete ::Macro::$Macro
    }
 
-   set Data(Code$Macro) [$Data(Tab).desc.text.list get 0.0 end]
-   uplevel #0 $Data(Code$Macro)
+   if { [winfo exists $Data(Tab).desc.text.list] } {
+      set Data(Code$Macro) [$Data(Tab).desc.text.list get 0.0 end]
+      uplevel #0 $Data(Code$Macro)
+   }
+
+   Macro::Run $Macro
+   Macro::Cursor left_ptr
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Macro::Run>
+# Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lancer une macro.
+#
+# Parametres :
+#   <Macro>  : Macro a lancer
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Macro::Run { Macro } {
+   global GDefs
+   variable Lbl
+   variable Msg
+   variable Data
 
    #----- If macro is valid
    set go 1
@@ -413,8 +440,6 @@ proc Macro::Execute { Macro } {
    } else {
       set Data(Current) ""
    }
-
-   Macro::Cursor left_ptr
 }
 
 #-------------------------------------------------------------------------------
