@@ -42,15 +42,10 @@ namespace eval Macro::JetMapper { } {
    set Param(Path)  $env(CMCCONST)/img.SPI/jetmap
 
    set Param(Radius)       20       ;#Radius of the Highs and Lows
-   set Param(StreamStop)   50       ;#Minimal windspeed to which stop the streamline
-   set Param(StreamStart)  75       ;#Minimal windspeed to start a streamline
-   set Param(StreamMask)   50       ;#Grid point width of mask aroound stream
+   set Param(StreamStop)   70       ;#Minimal windspeed to which stop the streamline
+   set Param(StreamStart)  130      ;#Minimal windspeed to start a streamline
    set Param(StreamLen)    29       ;#Length of arrow sections
    set Param(StreamCut)    4        ;#Length of arrow spacings
-   set Param(I0)           150      ;#Gridpoint range into which to look for jetstream
-   set Param(J0)           50
-   set Param(I1)           450
-   set Param(J1)           600
    set Param(Intervals)    { -100 -40 -30 -20 -10 0 10 20 30 40 }
    set Param(IntervalsPYR) { -100 -30 -20 -10 0 10 20 30 40 }
 
@@ -77,11 +72,6 @@ namespace eval Macro::JetMapper { } {
 
 proc Macro::JetMapper::PrecipGet { X Y Step } {
 
-   set x0 [expr $X-$Step]
-   set x1 [expr $X+$Step]
-   set y0 [expr $Y-$Step]
-   set y1 [expr $Y+$Step]
-
    set t(1) 0
    set t(2) 0
    set t(3) 0
@@ -90,20 +80,17 @@ proc Macro::JetMapper::PrecipGet { X Y Step } {
    set t(6) 0
    set t(7) 0
 
-   for { set x $x0 } { $x < $x1 } { incr x 2 } {
-      for { set y $y0 } { $y < $y1 } { incr y 2 } {
-         set ll [$Viewport::Data(VP) -unproject $x $y]
-         set lat [lindex $ll 0]
-         set lon [lindex $ll 1]
+   #----- Loop on pixel block of Step size
+   foreach { lat lon elev } [$Viewport::Data(VP) -unproject [expr $X-$Step] [expr $Y-$Step] [expr $X+$Step-1] [expr $Y+$Step-1] 2] {
 
-         set lift [fstdfield stats IL -coordvalue $lat $lon]
-         set prec [expr int([fstdfield stats NW -coordvalue $lat $lon])]
+      set lift [fstdfield stats IL -coordvalue $lat $lon]
+      set prec [fstdfield stats NW -coordvalue $lat $lon]
 
-	      if { $lift!="-" && $lift<0 && $prec!=6} {
-            incr t(7)
-         } else {
-            incr t($prec)
-         }
+      if { $lift!="-" && $lift<=-4 && $prec!=6 } {
+         incr t(7)
+         break
+      } elseif { $prec!="-" } {
+         incr t([expr int($prec)])
       }
    }
 
@@ -111,8 +98,9 @@ proc Macro::JetMapper::PrecipGet { X Y Step } {
       return 7
    }
 
-   set max 1
-   for { set i 1 } { $i <=6 } { incr i } {
+   set t(6) 0
+   set max 6
+   for { set i 5 } { $i > 0 } { incr i -1 } {
       if { $t($max) < $t($i) } {
          set max $i
       }
@@ -124,7 +112,7 @@ proc Macro::JetMapper::PrecipPlot { Step } {
    variable Icon
    variable Data
 
-   set half  [ expr $Step/2]
+   set half   [expr $Step/2]
    set width  [expr [Page::CanvasWidth $Page::Data(Frame)]-$Step]
    set height [expr [Page::CanvasHeight $Page::Data(Frame)]-$Step]
 
@@ -158,28 +146,35 @@ proc Macro::JetMapper::StreamGet { } {
    }
 
    #----- Save the computed wind for later inspection
-#   fstdfile open OUT write ./winds.fstd
-#   fstdfield write UU OUT -32 True
-#   fstdfield read TIC 2 -1 "" -1  -1 -1 "" ">>"
-#   fstdfield write TIC OUT -32 True
-#   fstdfield read TIC 2 -1 "" -1  -1 -1 "" "^^"
-#   fstdfield write TIC OUT -32 True
-#   fstdfile close OUT
-
-   vexpr BUF UU\[0\]<<0
+   fstdfile open OUT write ./winds.fstd
+   fstdfield write UU OUT -32 True
+   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" ">>"
+   fstdfield write TIC OUT -32 True
+   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" "^^"
+   fstdfield write TIC OUT -32 True
+   fstdfile close OUT
 
    set streams {}
 
-   foreach high [lsort -real -decreasing -index 0 [fstdfield stats UU -high 8]] {
+   #----- Loop on the windspeed highs
+   foreach high [lsort -real -decreasing -index 0 [fstdfield stats UU -high 20]] {
       set h [lindex $high 0]
       set i [lindex $high 1]
       set j [lindex $high 2]
 
-      if { $h>=$Param(StreamStart) && $i>=$Param(I0) && $i<=$Param(I1) && $j>=$Param(J0) && $j<=$Param(J1) } {
-         set coords [fstdfield stats UU -coordstream $i $j 1024 0.25 $Param(StreamStop) 8.0]
-         lappend streams [list [llength $coords] $i $j $coords]
+      #----- If it's fast enough
+      if { $h>=$Param(StreamStart) } {
+
+         #----- If it's within the viewport
+         set ll [fstdfield stats UU -gridpoint $i $j]
+         set xy [$Viewport::Data(VP) -project [lindex $ll 0] [lindex $ll 1] 0.0 False]
+
+         if { [llength $xy] } {
+            lappend streams  [fstdfield stats UU -coordstream $i $j 1024 0.25 $Param(StreamStop) 8.0]
+         }
       }
    }
+
    return $streams
 }
 
@@ -189,51 +184,43 @@ proc Macro::JetMapper::StreamPlot { } {
 
    foreach stream [Macro::JetMapper::StreamGet] {
 
-      set coords [lindex $stream 3]
-      set i      [lindex $stream 1]
-      set j      [lindex $stream 2]
+      #----- If the stream is long enough
+      if { [llength $stream]>$Param(StreamLen) } {
 
-      if { [llength $coords]>$Param(StreamLen) } {
-         if { [fstdfield stats BUF -gridvalue $i $j]==1.0 } {
-            continue
-         }
-
-         for { set n 0 } { $n<[llength $coords] } { incr n $Param(StreamLen) } {
-
-            set ij  [fstdfield stats BUF -coordpoint [lindex $coords $n] [lindex $coords [expr $n+1]]]
-            if { [fstdfield stats BUF -gridvalue [expr int([lindex $ij 0])] [expr int([lindex $ij 1])]]!=0 } {
-               continue
-            }
+         #----- Split into arrow segments
+         for { set n 0 } { $n<[llength $stream] } { incr n $Param(StreamLen) } {
 
             set n1 [expr $n+$Param(StreamLen)]
-            if { $n1>=[llength $coords] } {
+            if { $n1>=[llength $stream] } {
                set n1 end
             }
-            set co [lrange $coords $n $n1]
+
             catch {
-               set cc [lindex [$Viewport::Data(VP) -projectline NONE $co] 0]
-               $Page::Data(Canvas) create line $cc -fill red -arrow last -arrowshape { 20 20 10 } -smooth True -width 12 -transparency 100 -tags STREAM
+               #----- Project the segment
+               set cc [lindex [$Viewport::Data(VP) -projectline NONE [lrange $stream $n $n1]] 0]
+               set x0 [expr int([lindex $cc 0])]
+               set y0 [expr int([lindex $cc 1])]
+               set x1 [expr int([lindex $cc end-1])]
+               set y1 [expr int([lindex $cc end])]
+
+               #----- If it's long enough and does not overlap
+               if { [expr hypot($x1-$x0,$y1-$y0)]>20 } {
+                  $Page::Data(Canvas) create line $cc -fill red -arrow last -arrowshape { 20 20 10 } -smooth True -width 12 -transparency 100 -tags STREAM
+
+                  #----- Flip limits if needed
+                  if { $x0>$x1 } {
+                     set x $x0
+                     set x0 $x1
+                     set x1 $x
+                  }
+
+                  #----- Update flagged buffer
+                  for { set x [expr $x0-5] } { $x<=[expr $x1+5] } { incr x } {
+                     set Data($x) 1
+                  }
+                  incr n $Param(StreamCut)
+               }
             }
-            incr n $Param(StreamCut)
-
-         }
-
-         foreach { lat lon v } $coords {
-            set ij [fstdfield stats UU -coordpoint $lat $lon]
-            set x [lindex $ij 0]
-            set y [lindex $ij 1]
-
-            set x0 [expr int($x)-$Param(StreamMask)]
-            set x1 [expr int($x)+$Param(StreamMask)]
-            set y0 [expr int($y)-$Param(StreamMask)]
-            set y1 [expr int($y)+$Param(StreamMask)]
-
-            set x0 [expr $x0<0?0:$x0]
-            set x1 [expr $x1>$Param(I1)?$Param(I1):$x1]
-            set y0 [expr $y0<0?0:$y0]
-            set y1 [expr $y1>$Param(J1)?$Param(J1):$y1]
-
-            vexpr BUF BUF(($x0,$x1),($y0,$y1))=1
          }
       }
    }
@@ -352,7 +339,7 @@ proc Macro::JetMapper::HighLowPlot { Field } {
 proc Macro::JetMapper::Print { } {
    variable Param
 
-   set file [clock format [clock seconds] -format "%Y%m%d" -gmt true]$Param(Run)_054_R1_north@america_I_SPI@JETSTREAM
+   set file R1_north@america_I_SPI@JETSTREAM
 
    if { [lsearch -exact $Param(Map) WXO]!=-1 } {
 
@@ -428,12 +415,16 @@ proc Macro::JetMapper::Execute { } {
    fstdfile close 2
    fstdfile close 3
    fstdfile close 4
+
+   if { $SPI::Param(Batch) } {
+      SPI::Quit
+   }
 }
 
 proc Macro::JetMapper::Clean { } {
 
-   fstdfield free  IL NW TT PN TTI UU UUT BUF
-   colormap free CMAPWXO CMAPPYR
+   fstdfield free IL NW TT PN TTI UU UUT BUF
+   colormap  free CMAPWXO CMAPPYR
 }
 
 proc Macro::JetMapper::Args { } {
@@ -447,6 +438,3 @@ proc Macro::JetMapper::Args { } {
       set Param(Map)   [split [lindex $argv 3] +]
    }
 }
-
-
-

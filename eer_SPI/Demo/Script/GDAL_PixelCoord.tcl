@@ -42,6 +42,6 @@ for { set x $x0 } { $x<$x1 } { incr x } {
       set coords [gdalband stats BAND -gridpoint $x $y]
       set val    [gdalband stats BAND -gridvalue $x $y]
 
-      puts "$x $y $coords $val"
+      puts "   $x $y $coords $val"
    }
 }

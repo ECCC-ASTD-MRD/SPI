@@ -56,7 +56,7 @@ proc Macro::SimpleDiff::Execute { } {
    font create DIFF_FONT -family courier -size -12 -weight bold
 
    fstdfield configure DIFF -desc "Diff" -factor 1 -color black -colormap DIFF_MAP -font DIFF_FONT \
-       -rendertexture 1 -rendercontour 2 -value FLOAT 2
+       -rendertexture 1  -value FLOAT 2
 
    Macro::Doing "Creating product"
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)

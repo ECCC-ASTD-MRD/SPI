@@ -46,12 +46,10 @@ fstdfield create GRID 229 229 1
 fstdfield define GRID -GRTYP N 115.0 300.0 25000.0 350.0
 
 #----- Lire le cube de GZ (On a besoin des GZ pour passer de pression/sigma/eta a galchen/meter)
-
 fstdfield read GZFROM 1 -1 "" -1 -1 -1  "" GZ
 fstdfield readcube GZFROM
 
 #----- Interpoler horizontalement les GZ
-
 fstdfield gridinterp GRID GZFROM
 fstdfield copy GZFROM GRID
 fstdfield write GZFROM 2 -32 True

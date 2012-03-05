@@ -33,11 +33,15 @@ puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 #----- Ouverture d'un fichier GTIF
 
 set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
+#set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
+#set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]
+
 puts "   found: $bands"
 
 #----- Affichage des mete-donnees
 
 puts "   Metadata: [gdalfile metadata GDAL]"
+
 #----- Lecture des bandes
 
 gdalband read RASTER $bands

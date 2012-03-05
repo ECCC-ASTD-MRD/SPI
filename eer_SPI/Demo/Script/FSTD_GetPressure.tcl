@@ -79,4 +79,5 @@ fstdfield write TAC FILEOUT 0 True
 fstdfield define TTHYB -NOMVAR PRES
 fstdfield write TTHYB FILEOUT 0 True
 
+fstdfield free TTHYB P0 TIC TAC
 fstdfile close FILEIN FILEOUT

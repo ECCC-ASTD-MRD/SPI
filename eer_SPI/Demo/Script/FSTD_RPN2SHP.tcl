@@ -83,7 +83,7 @@ proc RPN2FSTD::Run { } {
 
             if { [file exists $Param(ProjFile)] } {
    #               georef create REF { PROJCS["WGS 84 / UPS North",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",90],PARAMETER["central_meridian",0],PARAMETER["scale_factor",0.994],PARAMETER["false_easting",2000000],PARAMETER["false_northing",2000000],UNIT["metre",1]] }
-               georef create REF [exec cat $Param(ProjFile]
+               georef create REF [exec cat $Param(ProjFile)]
                ogrlayer create FILE LAYER ${time} REF
             } else {
                ogrlayer create FILE LAYER ${time}

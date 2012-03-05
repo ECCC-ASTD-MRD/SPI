@@ -29,12 +29,12 @@ set Data(Levels)    { 0.9950 0.9850 0.9733 0.9467 0.8780 0.8104 0.7272 0.6646 0.
 set Data(Stations)  { { CYUL 1 45.47 -73.75 36 32 } { CYTZ 2 43.62 -79.38 77 32 } { CYVR 3 49.18 -123.17 5 32 } }
 
 set Data(Path)   $env(CMCGRIDF)/prog/glbeta          ;#Model path
-set Data(Length) 144                                 ;#Forecast period
+set Data(Length) 12                                 ;#Forecast period
 set Data(Incr)   -3                                  ;#Time increment
 set Data(Gen)    46                                  ;#Generating application
 set Data(Year)   2011                                ;#Initial model run year
-set Data(Month)  09                                  ;#Initial model run month
-set Data(Day)    06                                  ;#Initial model run day
+set Data(Month)  12                                  ;#Initial model run month
+set Data(Day)    12                                  ;#Initial model run day
 set Data(Hour)   00                                  ;#Initial model run hour
 set Data(Minute) 00                                  ;#Initial model run minute
 

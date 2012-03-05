@@ -64,13 +64,13 @@ proc Macro::XSection::Execute { } {
    set path [projection function $Page::Data(Frame) -path $Data(Coords) $Data(Resolution)]
    set dist [projection function $Page::Data(Frame) -dist $path 0]
 
+   fstdfield readcube $field
    fstdfield vertical Macro::XSECTION $field $path
 
 #   FSTD::Register Macro::XSECTION
 
    fstdfield configure Macro::XSECTION -ztype PRESSURE -rendertexture 1 -colormap XSECTION_MAP -font XFont12 -color black \
        -intervalmode INTERVAL 5
-   set lvls [fstdfield stats Macro::XSECTION -pressurelevels]
 
    graphaxis create Macro::AXISX
    graphaxis create Macro::AXISY

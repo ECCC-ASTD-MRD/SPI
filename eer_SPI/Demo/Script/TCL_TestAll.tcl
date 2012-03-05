@@ -84,6 +84,7 @@ set tests {
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
    { TCL_System.tcl /tmp }
+   { BUL_FXCN3X_to_SHP.tcl DataIn/FXCN3X/20111003175406.Ophelia.technical.txt.en }
    SIM_Traj.tcl
 }
 
@@ -97,7 +98,7 @@ set nb  [llength $tests]
 foreach test $tests {
 
    incr n
-   puts -nonewline [format "%-30s %02i/%02i " [lindex $test 0] $n $nb]
+   puts -nonewline [format "%-35s %02i/%02i " [lindex $test 0] $n $nb]
    set s [clock seconds]
 
    if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll.log }] } {
