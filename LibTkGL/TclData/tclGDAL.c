@@ -1562,16 +1562,25 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          projdef=GDALGetGCPProjection(Set);
          ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
 
-         /*
-         if (!GDALGCPsToGeoTransform(bGCPs,GCPs,tran,TRUE)) {
-            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points\n");
-         }
-         */
 #ifdef DEBUG
          fprintf(stdout,"(DEBUG) GGDAL_GeoRef: Using GCPs to get transform\n");
 #endif
+
+         /*Try to create GPC trasnform*/
          if (!(ref->GCPTransform=(void*)GDALCreateGCPTransformer(NbGCPs,GCPs,3,FALSE))) {
-            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points\n");
+            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points with GDALCreateGCPTransformer\n");
+
+            /*If does not work, try to get a simple transform*/
+            if (GDALGCPsToGeoTransform(NbGCPs,GCPs,tran,TRUE)) {
+               ref->Transform=(double*)calloc(6,sizeof(double));
+               ref->InvTransform=(double*)calloc(6,sizeof(double));
+               memcpy(ref->Transform,tran,6*sizeof(double));
+               if (!GDALInvGeoTransform(ref->Transform,ref->InvTransform)) {
+                  fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+               }
+            } else {
+               fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points with GDALGCPsToGeoTransform\n");
+            }
          }
       } else if (meta && 0) {
 //GDALExtractRPCInfo(meta,&rpcinfo)
