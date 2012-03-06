@@ -354,7 +354,7 @@ proc Macro::Execute { Macro } {
    #----- Check for previous macro cleanup function
    eval set proc \[info procs ::Macro::${Data(Current)}::Clean\]
    if { $proc!="" } {
-      Macro::${Data(Current)}::Clean
+      catch { Macro::${Data(Current)}::Clean }
    }
 
    #----- Check that it is still valid
@@ -387,7 +387,8 @@ proc Macro::Execute { Macro } {
 # But      : Lancer une macro.
 #
 # Parametres :
-#   <Macro>  : Macro a lancer
+#   <Macro>       : Macro a lancer
+#   <Interactive> : Mode interactif
 #
 # Retour    :
 #
@@ -395,14 +396,15 @@ proc Macro::Execute { Macro } {
 #
 #-------------------------------------------------------------------------------
 
-proc Macro::Run { Macro } {
+proc Macro::Run { Macro { Interactive True } } {
    global GDefs
    variable Lbl
    variable Msg
    variable Data
 
-   #----- If macro is valid
    set go 1
+
+   #----- If macro is valid
    if { [Macro::Check $Macro] } {
 
       #----- Launch the current macro
@@ -413,18 +415,23 @@ proc Macro::Run { Macro } {
       #----- If Macro has an Args function, call it to get the args
       eval set proc \[info procs ::Macro::${Macro}::Args\]
       if { $proc!="" } {
-         set msg $Msg(Args)
 
-         if { [info exists Macro:::${Macro}::Param(InfoArgs)] } {
-            eval set args \$Macro:::${Macro}::Param(InfoArgs)
-            if { [llength [lindex $args 0]] } {
-               set msg [list "[lindex $Msg(Args) 0]\n\n\t[join [lindex $args 0] \n\t]" "[lindex $Msg(Args) 1]\n\n[join [lindex $args 1] \n\t]"]
+         if { $Interactive } {
+            set msg $Msg(Args)
+
+            if { [info exists Macro:::${Macro}::Param(InfoArgs)] } {
+               eval set args \$Macro:::${Macro}::Param(InfoArgs)
+               if { [llength [lindex $args 0]] } {
+                  set msg [list "[lindex $Msg(Args) 0]\n\n\t[join [lindex $args 0] \n\t]" "[lindex $Msg(Args) 1]\n\n[join [lindex $args 1] \n\t]"]
+               }
             }
-         }
 
-         #----- If needed args are entered, proceed
-         if { [set go [llength [Dialog::Get .macro $Lbl(Args) $msg ::argv]]] } {
-            set ::argc [llength $::argv]
+            #----- If needed args are entered, proceed
+            if { [set go [llength [Dialog::Get .macro $Lbl(Args) $msg ::argv]]] } {
+               set ::argc [llength $::argv]
+               eval Macro::${Macro}::Args
+            }
+         } else {
             eval Macro::${Macro}::Args
          }
       }

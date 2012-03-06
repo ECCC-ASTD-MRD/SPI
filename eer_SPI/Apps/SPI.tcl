@@ -1264,7 +1264,7 @@ proc SPI::Execute { Script } {
 
       if { [namespace exists ::Macro::$script] } {
 
-         Macro::Run $script
+         Macro::Run $script False
       }
    }
 }
@@ -1533,7 +1533,7 @@ proc SPI::IcoOpen { Files } {
       }
       close $f
 
-      SPI::IcoAdd $Page::Data(Frame) $group $color $ico
+      SPI::IcoAdd $Page::Data(Frame) $group [string trim $color] $ico
    }
 }
 
