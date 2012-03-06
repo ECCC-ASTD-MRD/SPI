@@ -1456,8 +1456,8 @@ proc SPI::IcoDraw { Frame args } {
 
                   #----- Affchage du texte
                   if { $Param(IconId) && $id!=""  } {
-                     $Frame.page.canvas create text [expr $x+10] [expr $y-10] -text "$id" -fill $col \
-                        -tags "$group TEXT$group" -anchor sw -font XFontIcon
+                     $Frame.page.canvas create text [expr $x+$Param(IconDX)] [expr $y+$Param(IconDY)] -text "$id" -fill $col \
+                        -tags "$group TEXT$group" -anchor $Param(IconAnchor) -font XFontIcon
                      $Frame.page.canvas bind $tag <Enter> ""
                      $Frame.page.canvas bind $tag <Leave> ""
                   } else {
