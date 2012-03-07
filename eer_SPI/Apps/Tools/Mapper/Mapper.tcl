@@ -55,9 +55,15 @@ proc Mapper::Close { } {
    #----- Cleanup des donnees actives
 
    foreach frame $Page::Data(Frames) {
-      set lst {}
       if { [info exist Viewport::Data(Data$frame)] && [llength $Viewport::Data(Data$frame)] } {
-         foreach object $Viewport::Data(Data$frame) {
+
+         #----- Unassign from projection
+         set objects $Viewport::Data(Data$frame)
+         set Viewport::Data(Data$frame) {}
+         Mapper::UpdateData $frame
+
+         #----- Free data objects
+         foreach object $objects {
             if { [gdalband is $object] && [info exists Mapper::Data(Id$object)] } {
                gdalband free $object
                gdalfile close $Data(Id$object)
@@ -67,18 +73,11 @@ proc Mapper::Close { } {
                ogrfile close $Data(Id$object)
             } elseif { [model is $object] } {
                model free $object
-            } else {
-               lappend lst $object
             }
             if { [colormap is $object] } {
                colormap free $object
             }
          }
-
-         #----- Update de la projection
-
-         set Viewport::Data(Data$frame) {}
-         Mapper::UpdateData $frame
       }
    }
 
