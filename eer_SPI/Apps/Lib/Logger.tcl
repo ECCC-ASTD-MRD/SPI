@@ -60,7 +60,7 @@ namespace eval Log { } {
    set Param(JobId)       "JOB"                 ;#Job unique identifier
    set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%MZ" -gmt True] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
-   set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE)
+   set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
 
    array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 };
 }
@@ -168,7 +168,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    }
 
    if { $Status==0 } {
-      if { $Param(JobClass)=="INTERACTIVE" } {
+      if { $Param(JobClass)=="INTERACTIVE" ||  $Param(JobClass)=="REPORT" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       }
    } else {
@@ -208,6 +208,8 @@ proc Log::Print { Type Message { Var "" } } {
 
       #----- Use temp path of specified path
       if { $Param(Out)=="" } {
+
+         file mkdir -force $Param(Path)
 
          #----- Keep only last 3
          if { [llength [set logs [lrange [lsort -decreasing [glob -nocomplain $Param(Path)/*.log]] 3 end]]] } {
