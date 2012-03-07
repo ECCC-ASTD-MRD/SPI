@@ -161,7 +161,7 @@ TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb) {
          }
 
          /*If everything is cleared, get rid of the tile*/
-         if (Flags&GEOTEX_CLRALL) {
+         if (Flags==GEOTEX_CLRALL) {
             free(Tile); Tile=NULL;
 
             /*Decrement global number of tiles*/
@@ -746,7 +746,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
             r=1;
             if (GLRender->GLDebug)
                fprintf(stdout,"(DEBUG) GeoTex_Parse: Reading tile (%i) %i - %i\n",Resolution,X0,Y0);
-            GeoTex_Get(Band,(*Tile));
+            GeoTex_Get(Band,*Tile);
          }
 
          /*Calculate coordinate sample mapping*/
