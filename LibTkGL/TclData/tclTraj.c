@@ -505,6 +505,7 @@ TTraj *Traj_New() {
    /*Initialisation de la structure traj*/
    traj->Tag=NULL;
    traj->Spec=NULL;
+   traj->Id=NULL;
 
    return(traj);
 }
@@ -598,6 +599,7 @@ static int Traj_FreeHash(Tcl_Interp *Interp,char *Name) {
 void Traj_Free(TTraj *Traj) {
 
    if (Traj->Tag) Tcl_DecrRefCount(Traj->Tag);
+   if (Traj->Id) free(Traj->Id);
 
    free(Traj->Pr);
    free(Traj);
@@ -708,7 +710,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       /*Read header*/
       fgets(buf,512,Stream);
       if (buf[0]!='\'' && buf[1]!='\'') break;
-      fgets(buf,512,Stream);strncpy(head.Id,buf,32);head.Id[31]='\0';
+      fgets(buf,512,Stream);buf[511]='\0';head.Id=strdup(buf);
       i=strlen(head.Id);
       if (head.Id[i-1]=='\n') { head.Id[i-1]='\0'; }
       strtrim(head.Id,' ');
@@ -898,7 +900,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       /*Non Y2K format*/
       year=year>50?year+1900:year+2000;
       strcpy(traj[i]->Path,File);
-      strcpy(traj[i]->Id,"ARL");
+      traj[i]->Id=strdup("ARL");
       strcpy(traj[i]->Model,"HYSPLIT");
 
       traj[i]->Back=mdl;

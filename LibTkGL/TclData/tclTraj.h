@@ -54,7 +54,7 @@ typedef struct TTraj {
    int      Back;
    int      NPr;
    char     Path[1024];
-   char     Id[32];
+   char    *Id;
    char     Model[16];
    int      Mode;
    char     Type;
