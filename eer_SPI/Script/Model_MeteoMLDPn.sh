@@ -9,7 +9,7 @@
 # Creation   : Avril 2000 - S. Trudel - CMC/CMOE
 #
 # Description: Generate one standard file for trials and prognostics
-#              meteorological data required for driving MLDP0 model.
+#              meteorological data required for driving MLDPn model.
 #
 # Parametres :
 #   ${1}     : Temporary working directory.
@@ -42,16 +42,15 @@
 #----- Load standard functions
 . ${EER_DIRSCRIPT}/Logger.sh
 
-Log_Start Model_MeteoMLDP0.sh 2.0
+Log_Start Model_MeteoMLDPn.sh 2.0
 
 #----- Get arguments.
 DirTmp="${1}"
 Model="${2}"
 NbProc="${3}"
 GridSize="${4}"
-Debug="${5}"
-Ext="${6}"
-Debug="high"
+Kernel="${5}"
+Debug="${6}"
 
 Log_Print INFO "Temporary directory  : ${DirTmp}"
 Log_Print INFO "Meteorological model : ${Model}"
@@ -77,6 +76,7 @@ read < griddef.in grid
 #----- Set lower boundary value to 100 m for 'H' (boundary layer height).
 #----- Set lower boundary value to 0.0 m/s for 'RT' (precipitation rate).
 #----- Set lower boundary value to 0.01 m for 'Z0' (roughness length).
+#----- Set lower boundary value to 0.0001 m for 'EN' (turbulent kinetic energy).
 #----- Clamp 'HR' (relative humidity) in the range [0,1].
 #----- Clamp 'FN' (cloud fraction) in the range [0,1].
 
@@ -92,14 +92,20 @@ C
  CONV(FN,0.0,1.0,0.0,1.0)
  CONV(RT,0.0,1.0,0.0)
  CONV(Z0,0.0,1.0,0.01)
+ CONV(EN,0.0,1.0,0.0001)
  CHAMP(H ,TOUT)
  CHAMP(P0,TOUT)
+ CHAMP(TG,TOUT)
  CHAMP(PT,TOUT)
  CHAMP(PR,TOUT)
  CHAMP(OL,TOUT)
  CHAMP(RT,TOUT)
  CHAMP(UE,TOUT)
+ CHAMP(IO,1195)
+ CHAMP(J9,1195)
  CHAMP(Z0,1195)
+ CHAMP(RT,TOUT)
+ CHAMP(EN,TOUT)
 EOF_PGSM_METEO
 
 if [ "${Model}" = "glb" ] ; then #----- Meteorological fields from GEM Meso-Global 33 km.
@@ -314,7 +320,7 @@ NI=`echo ${GridSize} | cut -d"x" -f1`
 NJ=`echo ${GridSize} | cut -d"x" -f2`
 NK=`echo ${GridSize} | cut -d"x" -f3`
 
-Log_Print INFO "Executing MLDP0 pre-processor: Computing other meteorological fields required by the model ..."
+Log_Print INFO "Executing MLDPn pre-processor for kernel $KERNEL: Computing other meteorological fields required by the model ..."
 
 while [ ${idx} -lt ${nbfiles} ] ; do
 
@@ -322,27 +328,63 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    filename=`basename ${ArrayStdFiles[${idx}]}`
    idx=`expr ${idx} + 1` #----- Increment index of current standard file.
 
-   #----- Launch MLDP0 pre-processor to compute other meteorological fields required by the model:
-   #-----   - 'H'  : [2D] Boundary layer height [m] (if missing field),
-   #-----   - 'RA' : [2D] Atmospheric resistance for the momentum [s/m],
-   #-----   - 'RP' : [2D] Precipitation rate [mm/h],
-   #-----   - 'Z0' : [2D] Roughness length [m],
-   #-----   - 'FN' : [3D] Cloud fraction [dimensionless],
-   #-----   - 'HR' : [3D] Relative humidity [dimensionless],
-   #-----   - 'KT' : [3D] Vertical diffusion coefficient [m2/s],
-   #-----   - 'RI' : [3D] Richardson number [dimensionless],
-   #-----   - 'SU' : [3D] Wind speed X-component ('UU') variance [kt2],
-   #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
-   #-----   - 'TH' : [3D] Virtual potential temperature [K].
-   Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
-   ${EER_DIRBIN}/metfields_MLDP0${Ext} \
-      -iment ../meteo/${filename}.std \
-      -ozsrt ../meteo/${filename}.met.std \
-      -print ${Debug} \
-      -ni ${NI} \
-      -nj ${NJ} \
-      -nk ${NK} \
-      >metfields.${filename}.out 2>metfields.${filename}.err &
+   if [ "${Kernel}" = "ORDER0" ] ; then
+      token="METFLD0"
+
+      #----- Launch MLDP0 pre-processor to compute other meteorological fields required by the model:
+      #-----   - 'H'  : [2D] Boundary layer height [m] (if missing field),
+      #-----   - 'RA' : [2D] Atmospheric resistance for the momentum [s/m],
+      #-----   - 'RP' : [2D] Precipitation rate [mm/h],
+      #-----   - 'Z0' : [2D] Roughness length [m],
+      #-----   - 'FN' : [3D] Cloud fraction [dimensionless],
+      #-----   - 'HR' : [3D] Relative humidity [dimensionless],
+      #-----   - 'KT' : [3D] Vertical diffusion coefficient [m2/s],
+      #-----   - 'RI' : [3D] Richardson number [dimensionless],
+      #-----   - 'SU' : [3D] Wind speed X-component ('UU') variance [kt2],
+      #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
+      #-----   - 'TH' : [3D] Virtual potential temperature [K].
+      Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
+      ${EER_DIRBIN}/metfields_MLDP0 \
+         -iment ../meteo/${filename}.std \
+         -ozsrt ../meteo/${filename}.met.std \
+         -print ${Debug} \
+         -ni ${NI} \
+         -nj ${NJ} \
+         -nk ${NK} \
+         >metfields.${filename}.out 2>metfields.${filename}.err &
+   else
+      token="METFLD1"
+
+      #----- Launch MLDP1 pre-processor to compute other meteorological fields required by the model:
+      #-----   - 'H'  : [2D] Boundary layer height [m],
+      #-----   - 'IO' : [2D] Inverse of Monin-Obukhov length [m -1],
+      #-----   - 'P0' : [2D] Surface pressure [mb],
+      #-----   - 'PT' : [2D] Pressure at top of atmosphere [mb],
+      #-----   - 'RA' : [2D] Atmospheric resistance for the momentum [s/m],
+      #-----   - 'RP' : [2D] Precipitation rate [mm/h],
+      #-----   - 'UE' : [2D] Friction velocity at the surface [m/s],
+      #-----   - 'Z0' : [2D] Roughness length [m],
+      #-----   - 'ZS' : [2D] Geopotential height at surface [dam],
+      #-----   - 'FN' : [3D] Cloud fraction [dimensionless],
+      #-----   - 'GZ' : [3D] Geopotential height [dam],
+      #-----   - 'HR' : [3D] Relative humidity [dimensionless],
+      #-----   - 'HU' : [3D] Specific humidity [kg/kg],
+      #-----   - 'RI' : [3D] Richardson number [dimensionless],
+      #-----   - 'SU' : [3D] Wind speed X-component ('UU') variance [kt2],
+      #-----   - 'SV' : [3D] Wind speed Y-component ('VV') variance [kt2],
+      #-----   - 'TH' : [3D] Virtual potential temperature [K],
+      #-----   - 'TK' : [3D] Turbulent kinetic energy [m2/s2],
+      #-----   - 'TT' : [3D] Temperature [C],
+      #-----   - 'UU' : [3D] Wind speed X-component [kt],
+      #-----   - 'VV' : [3D] Wind speed Y-component [kt],
+      #-----   - 'WE' : [3D] Vertical Motion [s -1].
+      Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
+      ${EER_DIRBIN}/metfields_MLDP1 \
+         -iment ../meteo/${filename}.std \
+         -ozsrt ../meteo/${filename}.met.std \
+         -print ${Debug} \
+         >metfields.${filename}.out 2>metfields.${filename}.err &
+   fi
 
    nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
@@ -353,9 +395,10 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if Metfields has terminated successfully.
-      nbline=`grep "METFLD0.*FIN" metfields.*.out | wc -l`
+      nbline=`grep "${token}.*FIN" metfields.*.out | wc -l`
+
       if [[ ${nbline} -lt ${idx} ]] ; then
-         Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldp0 has encountered an errors."
+         Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldpn has encountered an errors."
          Log_End 1
       fi
     fi
@@ -379,7 +422,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    editfst+ \
       -s ../meteo/${filename}.met.std \
       -d ../meteo/${filename}.std \
-      -i 0 \
+      -i 0 -e \
       >editfst.${filename}.out 2>editfst.${filename}.err
 
    rm -f ../meteo/${filename}.met.std

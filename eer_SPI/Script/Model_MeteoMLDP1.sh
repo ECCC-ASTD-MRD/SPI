@@ -273,7 +273,6 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       -ozsrt ../meteo/${filename}.met.std \
       -print ${Debug} \
       >metfields.${filename}.out 2>metfields.${filename}.err &
-      > ${OutFile} 2>&1 &
 
     nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 

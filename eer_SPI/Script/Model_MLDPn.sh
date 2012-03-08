@@ -34,7 +34,7 @@ function MLDPn_Pre {
    if [[ ${#MLDP_METEO} -gt 10 ]] ; then
       Log_Print INFO "Metfields are pre-calculated."
    else
-      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_LOGLEVEL} ${ARGOS}\
+      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_KERNEL} ${MLDP_LOGLEVEL} \
          >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
       taskstatus=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
@@ -69,7 +69,7 @@ function MLDPn_Run {
       Log_Print DEBUG "Version of r.mpiexec: `which r.mpiexec`"
       ${MODEL_TIMER} r.mpiexec \
          -npex ${MODEL_NBMPITASKS} \
-         -args \-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MLDP_SEED} \-t ${MODEL_NBOMPTHREADS} \
+         -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
          -pgm ${EER_DIRBIN}/${MODEL_NAME} \
          >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
    else
