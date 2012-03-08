@@ -283,7 +283,8 @@ static int Traj_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case ID:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(traj->Id,-1));
+               if (traj->Id)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(traj->Id,-1));
             } else {
             }
             break;
@@ -599,7 +600,7 @@ static int Traj_FreeHash(Tcl_Interp *Interp,char *Name) {
 void Traj_Free(TTraj *Traj) {
 
    if (Traj->Tag) Tcl_DecrRefCount(Traj->Tag);
-   if (Traj->Id) free(Traj->Id);
+   if (Traj->Id)  free(Traj->Id);
 
    free(Traj->Pr);
    free(Traj);
@@ -783,7 +784,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          }
 
          memcpy(traj,&head,sizeof(head));
-
+         traj->Id=strdup(head.Id);
          traj->Spec=spec;
          traj->Pr=(TParticle*)malloc(traj->NPr*sizeof(TParticle));
 

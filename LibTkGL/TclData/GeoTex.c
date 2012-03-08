@@ -741,7 +741,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
 
       /*Get tile's data */
       r=0;
-      if ((*Tile)->Res>=Band->Tex.Res || (*Tile)->Res==Band->Tex.ResN) {
+      if ((*Tile)->Res>=Band->Tex.Res) {
          if (!(*Tile)->Data) {
             r=1;
             if (GLRender->GLDebug)
