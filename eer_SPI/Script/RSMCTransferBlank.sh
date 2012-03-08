@@ -63,7 +63,7 @@ else
    echo "Probleme : le backup sur le serveur accessdepot n'a pu se faire !"
 fi
 
-scp -p eer@accessdepot:backup/rsmc-${datec}-${1}.tar $env(HOME)/backup/accessdepot/rsmc-${datec}-${1}.tar
+scp -p eer@accessdepot:backup/rsmc-${datec}-${1}.tar $HOME/backup/accessdepot/rsmc-${datec}-${1}.tar
 
 if [ $? -eq 0 ]
 then
