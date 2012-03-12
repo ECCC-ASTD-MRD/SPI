@@ -58,7 +58,7 @@ namespace eval Exp {
    set Lbl(Send)        { "Transmettre" "Transmit" }
    set Lbl(Transmit)    { "Transmission" "Transmission" }
 
-   set Lbl(RSMCweb)     { "Page web commune RSMC" "RSMC common web page" }
+   set Lbl(RSMCweb)     { "Produits web commune RSMC" "RSMC common web products" }
 
    #----- Definitions des constantes relatives aux RSMC.
 
@@ -1080,7 +1080,7 @@ proc Exp::ProductRSMCBlank { } {
          checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          checkbutton .blank.c.l.uk -variable Exp::Data(RSMC_UK) -text "Exeter"     -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          checkbutton .blank.c.l.au -variable Exp::Data(RSMC_AU) -text "Melbourne"  -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
-         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background  #FF0000
+         checkbutton .blank.c.l.ca -variable Exp::Data(RSMC_CA) -text "Montreal"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background  #FF0000 -activebackground #FF0000
          checkbutton .blank.c.l.ru -variable Exp::Data(RSMC_RU) -text "Obninsk"    -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          checkbutton .blank.c.l.jp -variable Exp::Data(RSMC_JP) -text "Tokyo"      -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          checkbutton .blank.c.l.fr -variable Exp::Data(RSMC_FR) -text "Toulouse"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
@@ -1096,7 +1096,7 @@ proc Exp::ProductRSMCBlank { } {
       frame .blank.p.l -relief sunken -bd 1
          checkbutton .blank.p.l.pjnt16 -variable Exp::Data(JntStat16) -text "Region I/VI"   -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          checkbutton .blank.p.l.pjnt2  -variable Exp::Data(JntStat2)  -text "Region II"     -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
-         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background #FF0000
+         checkbutton .blank.p.l.pjnt34 -variable Exp::Data(JntStat34) -text "Region III/IV" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove -background #FF0000 -activebackground #FF0000
          checkbutton .blank.p.l.pjnt5  -variable Exp::Data(JntStat5)  -text "Region V"      -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          pack .blank.p.l.pjnt34 .blank.p.l.pjnt5 .blank.p.l.pjnt16 .blank.p.l.pjnt2 -side top -fill x -ipady 2
 
@@ -1107,12 +1107,12 @@ proc Exp::ProductRSMCBlank { } {
 
    labelframe .blank.l -text "Lead RSMC"
       frame .blank.l.r -relief sunken -bd 1
-         radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead34 -variable Exp::Data(RSMCLead) -text "III/IV" -value 34 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
-         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000
+         radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead34 -variable Exp::Data(RSMCLead) -text "III/IV" -value 34 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          .blank.l.r.lead99 select
 
          pack .blank.l.r.lead99 .blank.l.r.lead16 .blank.l.r.lead2 .blank.l.r.lead34 .blank.l.r.lead5 .blank.l.r.lead0 -side left -ipady 2
