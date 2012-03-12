@@ -246,12 +246,12 @@ proc MLDP::ParamsCheck { Tab No } {
       return True
    }
 
-   scan $Sim(Min)  "%02d" min
-   scan $Sim(Hour) "%02d" hour
-   set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
-
    #----- Validate output and model time steps but not if we are relaunching.
    if { $Sim(ReNewMeteo)=="" } {
+      scan $Sim(Min)  "%02d" min
+      scan $Sim(Hour) "%02d" hour
+      set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
+
       if { ![MLDP::ValidateNbSrc] || ![MLDP::ValidateTimeSteps] || ![MLDP::ValidateSimulationDuration] || ![MLDP::ValidateOtherParams] } {
          TabFrame::Select $Tab 0
          return False

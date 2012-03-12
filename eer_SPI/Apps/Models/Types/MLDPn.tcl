@@ -235,7 +235,7 @@ proc MLDPn::ParamsCheck { Tab No } {
       return True
    }
 
-   if { $Sim(Restart)=="" } {
+   if { $Sim(Restart)=="" && $Sim(ReNewMeteo)=="" } {
       scan $Sim(Min)  "%02d" min
       scan $Sim(Hour) "%02d" hour
       set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
