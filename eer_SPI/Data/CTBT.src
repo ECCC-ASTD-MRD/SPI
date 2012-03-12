@@ -5,7 +5,7 @@ ARP03   :San Carlos de Bariloche       :Argentina           :41.150000:S: 71.160
 AUP04   :Melbourne                     :Australia           :37.730000:S:145.100000:E:    31
 RN005   :Mawson                        :Australia           :67.600000:S: 62.500000:E:     0
 AUP06   :Townsville                    :Australia           :19.250000:S:146.770000:E:     7
-RN007   :MacQuarie Island              :Australia           :54.500000:S:158.940000:E:     0
+AUP07   :MacQuarie Island              :Australia           :54.499790:S:158.935890:E:    12
 AUP08   :Cocos Islands                 :Australia           :12.190000:S: 96.830000:E:     5
 AUP09   :Darwin                        :Australia           :12.420000:S:130.890000:E:    32
 AUP10   :Perth                         :Australia           :31.930000:S:115.980000:E:    31
