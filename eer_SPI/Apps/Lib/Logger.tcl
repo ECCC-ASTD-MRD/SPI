@@ -37,12 +37,13 @@ namespace eval Log { } {
 
    set Param(Out)         stdout                ;#Output file/channel
    set Param(OutFile)     ""                    ;#Output filename
-   set Param(Level)       DEBUG                 ;#Log level
+   set Param(Level)       INFO                  ;#Log level
    set Param(Time)        False                 ;#Print the time
    set Param(Proc)        True                  ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
    set Param(Warning)     0                     ;#Number of warning
+   set Param(Process)     ""                    ;#Process number
 
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
@@ -62,7 +63,144 @@ namespace eval Log { } {
    set Param(JobPath)     ""                    ;#Job temp dir
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
 
-   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 };
+   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
+}
+
+#---------------------------------------------------------------------------
+# Nom      : <Args::Parse>
+# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Parcourir les listes d'arguments et lancer les commandes associees
+#            aux type de ces arguments
+#
+# Parametres :
+#   <Argv>   : Liste des arguments
+#   <Argc>   : Nombre d'arguments
+#   <No>     : Index dans la liste complete des arguments
+#   <Multi>  : Est-ce que ce type d'argument peut etre gerer de facon multiple par Cmd
+#   <Must>   : Est-ce que ce type d'argument doit absolument avoir des valeurs
+#   <Cmd>    : Commande a effectuer sur le ou les arguments
+#
+# Retour:
+#   <Idx>    : Index apres les arguments traites.
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+namespace eval Args { }
+
+proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
+
+   #----- Garder l'index de depart
+   set idx [incr No]
+   set files ""
+
+   #----- Parcourir les arguments du token specifie
+   while { ([llength [lindex $Argv $No]]>1 || [string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-")  && $No < $Argc } {
+
+   if { $Cmd!="" } {
+         if { $Multi } {
+            lappend files [lindex $Argv $No]
+         } else {
+            eval $Cmd [lindex $Argv $No]
+         }
+      }
+      incr No
+   }
+
+   if { $No==$idx && $Must } {
+      Log::Print ERROR "No arguments value were specified for argument [lindex $Argv [incr idx -1]]"
+      exit 1
+   }
+
+   if { $Cmd!="" && $Multi } {
+      eval $Cmd \$files
+   }
+
+   if { $No != $idx } {
+      incr No -1
+   }
+   return $No
+}
+
+#----------------------------------------------------------------------------
+# Name     : <Args::Parse>
+# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Parcourir les listes d'arguments et lancer les commandes associees
+#            aux type de ces arguments.
+#
+# Parameters :
+#   <Argv>   : Liste des arguments
+#   <Argc>   : Nombre d'arguments
+#   <No>     : Index dans la liste complete des arguments
+#   <Multi>  : Multiplicite des valeurs (0=True,1=1 valeur,2=Multiples valeurs, 3=True ou 1 valeur)
+#   <Var>    : Variable a a assigner les arguments
+#   <Values> : Valid values accepted
+#
+# Return:
+#   <Idx>    : Index apres les arguments traites.
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
+
+proc Args::Parse { Argv Argc No Multi Var { Values {} } } {
+
+   upvar #0 $Var var
+
+   if { !$Multi } {
+      set var True
+   } else {
+
+      #----- Garder l'index de depart
+      set idx [incr No]
+      set var {}
+
+      if { $Multi==3 } {
+         set var True
+      } else {
+         set var {}
+      }
+
+      #----- Parcourir les arguments du token specifie
+      while { ([string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-") && $No<$Argc } {
+
+         #----- Check for argument validity
+         set vs [lindex $Argv $No]
+         if { $Multi==2 } {
+            set vs [split $vs +]
+         }
+
+         if { [llength $Values] } {
+            foreach v $vs {
+               if { [lsearch -exact $Values $v]==-1 } {
+                  Log::Print ERROR "Invalid value ($v) for parameter [lindex $Argv [expr $No-1]], must be one of { $Values }"
+                  exit 1;
+               }
+            }
+         }
+         if { $Multi==1 || $Multi==3 } {
+            set var $vs
+         } else {
+            eval lappend var $vs
+         }
+         incr No
+      }
+
+      #----- Verifier le nombre de valeur
+      if { $Multi && ![llength $var] }  {
+         Log::Print ERROR "No value specified for parameter [lindex $Argv [expr $No-1]]"
+         exit 1;
+      }
+
+      if { [string index [lindex $Argv $No] 0]=="-" } {
+         incr No -1
+      }
+   }
+
+   return $No
 }
 
 #----------------------------------------------------------------------------
@@ -241,6 +379,11 @@ proc Log::Print { Type Message { Var "" } } {
       Log::CyclopeProcInfo
    }
 
+   if { $Param($Type)=="-" } {
+      puts $Param(Out) "----------------------------------------------------------------------------------------------------"
+      return
+   }
+
    #----- Print the variable if given
    set vars  ""
    if { $Var!="" } {
@@ -268,6 +411,13 @@ proc Log::Print { Type Message { Var "" } } {
    #----- If the message is within the specified log level
    if { $Param($Type)<=$Param($Param(Level)) } {
 
+      #----- Check for process id
+      if { $Param(Process)!="" } {
+         set id "($Param(Process)) "
+      } else {
+         set id ""
+      }
+
       #----- Do we print the time
       if { $Param(Time) } {
          set time "([clock format [clock seconds]]) "
@@ -276,7 +426,7 @@ proc Log::Print { Type Message { Var "" } } {
       }
 
       #----- Do we print the calling proc
-      if { $Param(Proc) && [set lvl [expr [info level]-1]]>0 } {
+      if { $Param(Proc) && $Param($Type)<3 && [set lvl [expr [info level]-1]]>0 } {
          set proc "[lindex [info level $lvl] 0]: "
       } else {
          set proc ""
@@ -302,7 +452,7 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="MUST" } {
          puts $Param(Out) "${Message}"
       } else {
-         puts $Param(Out) "${time}(${Type}) ${proc}${Message}${vars}"
+         puts $Param(Out) "${time}${id}(${Type}) ${proc}${Message}${vars}"
       }
    }
 }
