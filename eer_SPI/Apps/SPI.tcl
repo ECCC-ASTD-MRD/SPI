@@ -82,62 +82,6 @@ SPI::Setup
 catch { source $env(HOME)/.spi/SPI }
 
 #---------------------------------------------------------------------------
-# Nom      : <SPI::ArgsParse>
-# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Parcourir les listes d'arguments et lancer les commandes associees
-#            aux type de ces arguments
-#
-# Parametres :
-#   <Argv>   : Liste des arguments
-#   <Argc>   : Nombre d'arguments
-#   <No>     : Index dans la liste complete des arguments
-#   <Multi>  : Est-ce que ce type d'argument peut etre gerer de facon multiple par Cmd
-#   <Must>   : Est-ce que ce type d'argument doit absolument avoir des valeurs
-#   <Cmd>    : Commande a effectuer sur le ou les arguments
-#
-# Retour:
-#   <Idx>    : Index apres les arguments traites.
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc SPI::ArgsParse { Argv Argc No Multi Must Cmd } {
-
-   #----- Garder l'index de depart
-   set idx [incr No]
-   set files ""
-
-   #----- Parcourir les arguments du token specifie
-   while { ([llength [lindex $Argv $No]]>1 || [string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-")  && $No < $Argc } {
-
-   if { $Cmd!="" } {
-         if { $Multi } {
-            lappend files [lindex $Argv $No]
-         } else {
-            eval $Cmd [lindex $Argv $No]
-         }
-      }
-      incr No
-   }
-
-   if { $No==$idx && $Must } {
-      Log::Print ERROR "No arguments value were specified for argument [lindex $Argv [incr idx -1]]"
-      exit 1
-   }
-
-   if { $Cmd!="" && $Multi } {
-      eval $Cmd \$files
-   }
-
-   if { $No != $idx } {
-      incr No -1
-   }
-   return $No
-}
-
-#---------------------------------------------------------------------------
 # Nom      : <SPI::CommandLine>
 # Creation : Decembre 2004 - J.P. Gauthier - CMC/CMOE
 #
@@ -193,22 +137,22 @@ for { set i 0 } { $i < $argc } { incr i } {
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
-      "geom"      { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
+      "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
-      "default"   { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Default)"] }
-      "field"     { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "traj"      { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "obs"       { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "metobs"    { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "icon"      { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "args"      { set i [SPI::ArgsParse $argv $argc $i 1 0 ""] }
-      "script"    { set i [SPI::ArgsParse $argv $argc $i 1 1 ""] }
-      "macro"     { set i [SPI::ArgsParse $argv $argc $i 1 1 ""] }
-      "pane"      { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
-      "side"      { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
-      "layout"    { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
-      "project"   { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
-      "tool"      { set i [SPI::ArgsParse $argv $argc $i 0 1 ""] }
+      "default"   { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Default)"] }
+      "field"     { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "args"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
+      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
+      "pane"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
+      "side"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
+      "layout"    { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
+      "project"   { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
+      "tool"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
 
       default     { SPI::CommandLine [lindex $argv $i]; exit 1 }
    }
@@ -2355,23 +2299,23 @@ for { set i 0 } { $i < $argc } { incr i } {
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
-      "geom"      { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
+      "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
-      "geom"      { set i [SPI::ArgsParse $argv $argc $i 1 1 ""]  }
-      "default"   { set i [SPI::ArgsParse $argv $argc $i 1 1 ""] }
-      "field"     { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
-      "traj"      { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
-      "obs"       { set i [SPI::ArgsParse $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
-      "metobs"    { set i [SPI::ArgsParse $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
-      "icon"      { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
-      "args"      { set i [SPI::ArgsParse $argv $argc $i 1 0 "set SPI::Param(Args)"] }
-      "script"    { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
-      "macro"     { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Script)"] }
-      "pane"      { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Panes)"] }
-      "side"      { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(PaneSide)"] }
-      "layout"    { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Layout)"] }
-      "project"   { set i [SPI::ArgsParse $argv $argc $i 0 1 "set SPI::Param(Project)"] }
-      "tool"      { set i [SPI::ArgsParse $argv $argc $i 1 1 "set SPI::Param(Tool)"] }
+      "geom"      { set i [Args::ParseDo $argv $argc $i 1 1 ""]  }
+      "default"   { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
+      "field"     { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
+      "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
+      "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
+      "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
+      "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
+      "args"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Args)"] }
+      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "pane"      { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Panes)"] }
+      "side"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(PaneSide)"] }
+      "layout"    { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Layout)"] }
+      "project"   { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Project)"] }
+      "tool"      { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Tool)"] }
    }
 }
 

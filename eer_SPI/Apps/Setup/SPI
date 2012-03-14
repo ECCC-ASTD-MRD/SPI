@@ -46,6 +46,7 @@ namespace eval Log {
 
 #----- Parametres de SPI
 namespace eval SPI {
+   set Param(Threads)        True         ;#Use threads
    set Param(Geom)           1024x768     ;#Geometrie de ;'interface
    set Param(Pages)          { "Page 1" } ;#Liste des pages
    set Param(Panes)          {}           ;#Liste des dimensions de sidepane (ex:200x200)
@@ -54,6 +55,12 @@ namespace eval SPI {
    set Param(Layout)         SPI          ;#Layout courant
    set Param(Bubble)         True         ;#Bulles d'aides
    set Param(IconCircle)     0            ;#Cercle autour des icones
+   set Param(IconId)         False        ;#Affichage des descriptifs des icones
+   set Param(IconImage)      True         ;#Affichage des icones des icones
+   set Param(IconCircle)     0            ;#Affichage d'un rayou autour d'une icone
+   set Param(IconDX)         10           ;#Delta en X pour l'id de l'icone
+   set Param(IconDY)        -10           ;#Delta en Y pour l'id de l'icone
+   set Param(IconAnchor)     sw           ;#Point d'ancrage de l'id de l'icone
 }
 
 #----- Parametres de la projection
