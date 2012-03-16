@@ -28,8 +28,8 @@
 #     est toujours la meme CVRCA.gif.
 #===============================================================================
 
-. /usr/local/env/profile_ksh_usr
-. $HOME/.spi/.password
+#ST . /usr/local/env/profile_ksh_usr
+PasswordFile="$HOME/.spi/.password"
 
 #----- recupere les parametres.
 
@@ -109,12 +109,22 @@ done
 #----- creer le repertoire externe pour les archives RSMC et en fait une copie.
 
 ssh eer@accessdepot mkdir www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/arc/${TokenArchiveRSMC}/
-scp -p eer@accessdepot:www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/* eer@accessdepot:www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/arc/${TokenArchiveRSMC}/
+if [ $? == 0 ]
+then
+   ssh eer@accessdepot "cp -p www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/* www/mandats/rsmc/usagers/jnt_rsmc/restrict/CA/arc/${TokenArchiveRSMC}/"
+else
+   echo "Ne peut creer le repertoire d'archive ( $TokenArchiveRSMC ) sur le site externe."
+fi
 
 #----- creer le repertoire interne pour les archives RSMC et en fait une copie.
 
 mkdir -p ${DirData}/../RSMCJoin.${TokenArchiveRSMC}/
-cp -p * ${DirData}/../RSMCJoin.${TokenArchiveRSMC}/
+if [ $? == 0 ]
+then
+   cp -p * ${DirData}/../RSMCJoin.${TokenArchiveRSMC}/
+else
+   echo "Ne peut creer le repertoire d'archive ( RSMCJoin.$TokenArchiveRSMC ) a l'interne."
+fi
 
 #----- creation des directives communes pour les serveurs ftp.
 
@@ -151,7 +161,7 @@ done
 #----- copie les produits sur le serveur de Washington.
 
 cat <<EndFTP > wash.ftp_dir
-user rsmc02 ${arlftp}
+user `egrep rsmc02 ${PasswordFile}`
 bin
 EndFTP
 
@@ -159,12 +169,14 @@ cat ftp_dir >> wash.ftp_dir
 
 echo "put rsmc.ps rsmc.ps" >> wash.ftp_dir
 
+chmod 600 wash.ftp_dir
+
 ftp -ni arlftp.arlhq.noaa.gov < wash.ftp_dir
 
 #----- copie les produits sur le serveur de Melbourne.
 
 cat <<EndFTP > melb.ftp_dir
-user bom050 ${bom050}
+user `egrep bom050 ${PasswordFile}`
 bin
 cd CA
 EndFTP
@@ -173,12 +185,14 @@ cat ftp_dir >> melb.ftp_dir
 
 echo "put rsmc.ps rsmc.ps" >> melb.ftp_dir
 
+chmod 600 melb.ftp_dir
+
 ftp -ni ftp.bom.gov.au < melb.ftp_dir
 
 #----- copie les produits sur le serveur d'Obninsk.
 
 cat <<EndFTP > obninsk.ftp_dir
-user eer-ftp ${eer-ftp}
+user `egrep eer-ftp ${PasswordFile}`
 bin
 cd restrict/CA
 EndFTP
@@ -187,4 +201,53 @@ cat ftp_dir >> obninsk.ftp_dir
 
 echo "put rsmc.ps rsmc.ps" >> obninsk.ftp_dir
 
+chmod 600 obninsk.ftp_dir
+
 ftp -ni www.feerc.obninsk.org < obninsk.ftp_dir
+
+#----- copie les produits sur le serveur de Toulouse.
+
+cat <<EndFTP > toulouse.ftp_dir
+user `egrep "rsmc " ${PasswordFile}`
+bin
+cd CA
+EndFTP
+
+cat ftp_dir >> toulouse.ftp_dir
+
+echo "put rsmc.ps rsmc.ps" >> toulouse.ftp_dir
+
+chmod 600 toulouse.ftp_dir
+
+ftp -ni www.meteo.fr < toulouse.ftp_dir
+
+#----- copie les produits sur le serveur de Beijing.
+
+cat <<EndFTP > beijing.ftp_dir
+user `egrep rsmc_cn ${PasswordFile}`
+bin
+cd restrict/CA
+EndFTP
+
+cat ftp_dir >> beijing.ftp_dir
+
+echo "put rsmc.ps rsmc.ps" >> beijing.ftp_dir
+
+chmod 600 beijing.ftp_dir
+
+ftp -ni rsmc.cma.gov.cn < beijing.ftp_dir
+
+#----- copie les produits sur le serveur de Tokyo.
+
+cat <<EndFTP > tokyo.ftp_dir
+user `egrep ca01eer ${PasswordFile}`
+bin
+EndFTP
+
+cat ftp_dir >> tokyo.ftp_dir
+
+echo "put rsmc.ps rsmc.ps" >> tokyo.ftp_dir
+
+chmod 600 tokyo.ftp_dir
+
+ftp -npi eer.kishou.go.jp < tokyo.ftp_dir
