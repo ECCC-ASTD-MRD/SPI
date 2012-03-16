@@ -23,6 +23,7 @@
 #   - Aucune.
 #===============================================================================
 
+set -x
 #------ repertoire pour les fichiers <Unavailable>.
 #       $SPI_PATH/Resources/Image/System
 
@@ -34,20 +35,22 @@ cd ${DirData}
 shift
 shift
 
+#----- valide le premier parametre qui suit...
+
 if [ $1 == "CA" -o $1 == "US" -o $1 == "CN" -o $1 == "JP" -o $1 == "RU" -o $1 == "FR" -o $1 == "UK" -o $1 == "AU" ]
 then
    echo "On efface les produits relatif au RSMC ( $1 ).\n"
 elif [ $1 == "jntreg34.html" -o $1 == "jntreg5.html" -o $1 == "jntreg16.html" -o $1 == "jntreg2.html" ]
 then
    echo "On remplace le "joint statement" par <Unavailable>.\n"
-elif [ $1 == "leadrsmc.txt" ]
+elif [ $1 == "leadrsmc0.txt" -o $1 == "leadrsmc16.txt" -o $1 == "leadrsmc2.txt" -o $1 == "leadrsmc34.txt" -o $1 == "leadrsmc5.txt" ]
 then
-   echo "On remplace l'indicateur "leadrsmc.txt" par 0.\n"
+   echo "On remplace l'indicateur "leadrsmc.txt" par celle de la region $1.\n"
 elif [ $1 == "meteo" ]
 then
    echo "On efface les produits meteo relatif au RSMC Montreal.\n"
 else
-   echo "Ce RSMC n'existe pas ( $1 )."
+   echo "Parametre non valide ( $1 )."
    exit
 fi
 
@@ -90,19 +93,23 @@ do
 
       cp -p na_DATE.TXT        ${PathRSMC}/${1}_DATE.TXT
       cp -p na_RSMCProduct.gif ${PathRSMC}/CVR${1}.gif
+      cp -p na_rsmc.ps         ${PathRSMC}/CVR${1}.ps
       cp -p na_rsmc.ps         ${PathRSMC}/rsmc.ps
 
       for n in 01 02 03
       do
          cp -p na_RSMCProduct.gif ${PathRSMC}/LIC${1}_${n}.gif
+         cp -p na_rsmc.ps         ${PathRSMC}/LIC${1}_${n}.ps
          cp -p na_RSMCProduct.gif ${PathRSMC}/SIC${1}_${n}.gif
          cp -p na_RSMCProduct.gif ${PathRSMC}/LTD${1}_${n}.gif
+         cp -p na_rsmc.ps         ${PathRSMC}/LTD${1}_${n}.ps
          cp -p na_RSMCProduct.gif ${PathRSMC}/STD${1}_${n}.gif
       done
 
       cp -p na_RSMCProduct.gif ${PathRSMC}/LTJ${1}.gif
+      cp -p na_rsmc.ps         ${PathRSMC}/LTJ${1}.ps
       cp -p na_RSMCProduct.gif ${PathRSMC}/STJ${1}.gif
-      cp -p na_traj.txt        ${PathRSMC}/traj.txt
+      cp -p na_traj.txt        ${PathRSMC}/traject.points
    fi
 
    #------ on efface les cartes du RSMC specifie.
@@ -168,7 +175,7 @@ do
       cp -p na_${1} ${PathRSMC}/${1}
    fi
 
-   #----- on remplace le "joint statement" par <Unavailable> sur les sites RSMC.
+   #----- on remplace le "joint statement" par <Unavailable> sur le site RSMC Montreal uniquement.
 
    if [ $1 == "jntreg5.html" -o $1 == "jntreg16.html" -o $1 == "jntreg2.html" ]
    then
@@ -177,13 +184,13 @@ do
       scp -p na_${1} rsmc_jnt@depot.cmc.ec.gc.ca:incoming/${1}
    fi
 
-   #----- on remplace l'indicateur "leadrsmc.txt" par 0.
+   #----- on remplace l'indicateur "leadrsmc.txt" par 0 ou pour une region specifique.
 
-   if [ $1 == "leadrsmc.txt" ]
+   if [ $1 == "leadrsmc0.txt" -o $1 == "leadrsmc16.txt" -o $1 == "leadrsmc2.txt" -o $1 == "leadrsmc34.txt" -o $1 == "leadrsmc5.txt" ]
    then
-      echo "- remplace l'indicateur leadrsmc.txt par 0 ( www/mandats/rsmc/usagers/jnt_rsmc/restrict/JNT_STMT/${1} )"
+      echo "- remplace l'indicateur leadrsmc.txt par celle de la region $1 ( www/mandats/rsmc/usagers/jnt_rsmc/restrict/JNT_STMT/leadrsmc.txt )"
 
-      scp -p na_${1} rsmc_jnt@depot.cmc.ec.gc.ca:incoming/${1}
+      scp -p ${1} rsmc_jnt@depot.cmc.ec.gc.ca:incoming/leadrsmc.txt
    fi
 
    #------ on efface les cartes meteo du RSMC Montreal seulement.
