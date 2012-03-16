@@ -44,7 +44,7 @@
 #                       ce fichier, soit 644.
 #===============================================================================
 
-. $HOME/.spi/.password
+PasswordFile="$HOME/.spi/.password"
 
 #----- recupere les parametres.
 
@@ -67,9 +67,9 @@ then
 
    #----- copie les produits sur le serveur de Washington.
 
-   ftp -n arlftp.arlhq.noaa.gov <<EndFTP
+   ftp -ni arlftp.arlhq.noaa.gov <<EndFTP
 bin
-user rsmc02 ${arlftp}
+user `egrep rsmc02 ${PasswordFile}`
 put ${LocalFile} ${RemoteName}
 chmod 644 ${RemoteName}
 EndFTP
@@ -79,7 +79,7 @@ EndFTP
 
    ftp -n ftp.bom.gov.au <<EndFTP
 bin
-user bom050 ${bom050}
+user `egrep bom050 ${PasswordFile}`
 put ${LocalFile} JNT_STMT/${RemoteName}
 chmod 644 JNT_STMT/${RemoteName}
 EndFTP
@@ -89,8 +89,35 @@ EndFTP
 
    ftp -n www.feerc.obninsk.org <<EndFTP
 bin
-user eer-ftp ${eer-ftp}
+user `egrep eer-ftp ${PasswordFile}`
 put ${LocalFile} restrict/JNT_STMT/${RemoteName}
+EndFTP
+
+   #----- copie les produits sur le serveur de Toulouse.
+   #      ( a voir )
+
+   ftp -n www.meteo.fr <<EndFTP
+bin
+user `egrep "rsmc " ${PasswordFile}`
+put ${LocalFile} JNT_STMT/${RemoteName}
+EndFTP
+
+   #----- copie les produits sur le serveur de Beijing.
+   #      ( a voir )
+
+   ftp -n rsmc.cma.gov.cn <<EndFTP
+bin
+user `egrep rsmc_cn ${PasswordFile}`
+put ${LocalFile} restrict/JNT_STMT/${RemoteName}
+EndFTP
+
+   #----- copie les produits sur le serveur de Tokyo.
+   #      ( a voir )
+
+   ftp -np eer.kishou.go.jp <<EndFTP
+bin
+user `egrep ca01eer ${PasswordFile}`
+put ${LocalFile} ${RemoteName}
 EndFTP
 
 fi
