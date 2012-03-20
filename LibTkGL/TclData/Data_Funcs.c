@@ -844,11 +844,11 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       Vnme=0.0f;
    }
 
+   Vssx  -= (Vavgx*Vavgx)/Vnb;
+   Vssy  -= (Vavgy*Vavgy)/Vnb;
+   Vssxy -= (Vavgx*Vavgy)/Vnb;
    Vavgx /= Vnb;
    Vavgy /= Vnb;
-   Vssx  -= Vnb*Vavgx*Vavgx;
-   Vssy  -= Vnb*Vavgy*Vavgy;
-   Vssxy -= Vnb*Vavgx*Vavgy;
    Vs     = sqrt((Vssy-(Vssxy*Vssxy)/Vssx)/(Vnb-2.0));
 
    for(i=0;i<n;i++) {
@@ -866,7 +866,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vvarx/=Vnb;
    Vvary/=Vnb;
    Vcovar/=Vnb;
-   Vcorr=Vssy==0?0:(Vssxy*Vssxy)/(Vssx*Vssy);
+   Vcorr=(Vssy==0 ||Vssx==0)?0:Vssxy/sqrt(Vssx*Vssy);
    Vrmse=sqrt(Vrmse/Vnb);
    Vnrmse=Vrmse/Vavgx;
    Vregb=Vssxy/Vssx;
