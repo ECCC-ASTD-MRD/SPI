@@ -118,6 +118,10 @@ double stat_erra(TDataDef *MA,TDataDef *MB);  /* Standard Error for a */
 double stat_errb(TDataDef *MA,TDataDef *MB);  /* Standard Error for b */
 double stat_ssx(TDataDef *MA,TDataDef *MB);   /* Sum of squared values */
 double stat_ssxy(TDataDef *MA,TDataDef *MB);  /* Sum of squared values X-Y */
+double stat_maxb(TDataDef *M,TDataDef *MB);   /* Maximum bias*/
+double stat_maxe(TDataDef *M,TDataDef *MB);   /* Maximum error*/
+double stat_maxre(TDataDef *MA,TDataDef *MB); /* Maximum relative error*/
+double stat_mre(TDataDef *MA,TDataDef *MB);   /* Mean Relative error*/
 double stat_nb(TDataDef *M);                  /* Number of sample */
 double stat_sum(TDataDef *M);                 /* Sum */
 double stat_min(TDataDef *M);                 /* Minimum */

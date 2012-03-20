@@ -46,7 +46,7 @@
  */
 
 double Vnb,Vminx,Vmaxx,Vavgx,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
-       Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,
+       Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna;
 
 /*Matrix Derivative Functions*/
@@ -112,6 +112,10 @@ TFuncDef FuncF[] = {
   { "smfe"  , stat_mfe    , 2 , TD_Float64 },
   { "slmnb" , stat_lmnb   , 2 , TD_Float64 },
   { "slmne" , stat_lmne   , 2 , TD_Float64 },
+  { "smre"  , stat_mre    , 2 , TD_Float64 },
+  { "smaxb" , stat_maxb   , 2 , TD_Float64 },
+  { "smaxe" , stat_maxe   , 2 , TD_Float64 },
+  { "smaxre", stat_maxre  , 2 , TD_Float64 },
   { "snrmse", stat_nrmse  , 2 , TD_Float64 },
   { "sna"   , stat_na     , 2 , TD_Float64 },
   { "srna"  , stat_rna    , 2 , TD_Float64 },
@@ -762,13 +766,14 @@ double dcore(TDataDef *Res,TDataDef *Def,int Mode) {
 
 void stat_core(TDataDef *MA,TDataDef *MB) {
 
-   double va,vb;
-   double ratio,sum,dif;
+   double va,vb,t;
+   double ratio,sum,dif,adif;
    unsigned long i,n;
 
-   Vcorr=Vnb=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=0.0;
+   Vcorr=Vnb=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
+   Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
 
    if ((n=FSIZE3D(MA))==0) {
       return;
@@ -802,25 +807,33 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       if (MB) {
          sum=vb+va;
          dif=vb-va;
+         adif=fabs(dif);
 
          Vavgy+=vb;
          Vssy+=vb*vb;
          Vssxy+=va*vb;
          Vrmse+=dif*dif;
          Vmb+=dif;
-         Vme+=fabs(dif);
+         Vme+=adif;
+         Vmaxb=dif>Vmaxb?dif:Vmaxb;
+         Vmaxe=adif>Vmaxe?adif:Vmaxe;
 
          if (va!=0.0f) {
-            va=1.0/va;
-            Vmnb+=dif*va;
-            Vmne+=fabs(dif*va);
+            t=1.0/va;
+            Vmnb+=dif*t;
+            Vmne+=fabs(dif*t);
 
-            ratio=vb*va;
+            ratio=vb*t;
             if (ratio>0.0f) {
                Vlmnb+=log(ratio);
                Vlmne+=fabs(log(ratio));
             }
+
+            t=fabs(1.0-vb/va);
+            Vmre+=t;
+            Vmaxre=t>Vmaxre?t:Vmaxre;
          }
+
          if (sum!=0.0f) {
             Vmfb+=dif/sum;
             Vmfe+=fabs(dif/sum);
@@ -873,12 +886,13 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vrega=Vavgy-(Vssxy/Vssx)*Vavgx;
    Verra=Vs*sqrt(1.0/Vnb+(Vavgx*Vavgx)/Vssx);
    Verrb=Vs/sqrt(Vssx);
+   Vmre/=Vnb;
    Vmb/=Vnb;
    Vme/=Vnb;
    Vmne/=Vnb;
    Vmnb/=Vnb;
-   Vmfb=2.0*Vmfb/Vnb;
-   Vmfe=2.0*Vmfe/Vnb;
+   Vmfb=2.0*Vmfb/Vnb*100;
+   Vmfe=2.0*Vmfe/Vnb*100;
    Vlmnb=Vlmnb/Vnb-1;
    Vlmne=Vlmne/Vnb-1;
 }
@@ -959,6 +973,30 @@ double stat_mfe(TDataDef *MA,TDataDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vmfe);
+}
+
+double stat_mre(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vmre);
+}
+
+double stat_maxb(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vmaxb);
+}
+
+double stat_maxe(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vmaxe);
+}
+
+double stat_maxre(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vmaxre);
 }
 
 double stat_rmse(TDataDef *MA,TDataDef *MB) {
