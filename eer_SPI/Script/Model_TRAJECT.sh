@@ -36,7 +36,7 @@ function TRAJECT_Run {
       -i ${TRAJECT_INPUT} \
       -o ${TRAJECT_RESULT} \
       -v ${LOG_LEVEL} \
-      >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
+      >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
 
    taskstatus=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
@@ -44,11 +44,11 @@ function TRAJECT_Run {
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}$.out
+         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" tmp/${MODEL_NAME}$.out
       fi
    else
       Log_Print ERROR "${MODEL_NAME} has encountered an error."
-      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" tmp/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

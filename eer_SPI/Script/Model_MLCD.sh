@@ -58,7 +58,7 @@ function MLCD_Run {
       -seed ${MLCD_SEED} \
       -error /dev/null \
       -diag /dev/null \
-      >${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err
+      >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
 
    taskstatus=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
@@ -66,11 +66,11 @@ function MLCD_Run {
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out
+         Log_Mail "Atmospheric dispersion model done (NORMAL)" tmp/${MODEL_NAME}${MODEL_TYPE}.out
       fi
    else
       Log_Print ERROR "${MODEL_NAME}${MODEL_TYPE} has encountered an error."
-      Log_Mail "Atmospheric dispersion model done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model done (ERROR)" tmp/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

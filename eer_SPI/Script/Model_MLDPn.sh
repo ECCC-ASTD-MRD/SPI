@@ -34,18 +34,18 @@ function MLDPn_Pre {
    if [[ ${#MLDP_METEO} -gt 10 ]] ; then
       Log_Print INFO "Metfields are pre-calculated."
    else
-      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_TMPDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_KERNEL} ${MLDP_LOGLEVEL} \
-         >${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out 2>${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
+      ${EER_DIRSCRIPT}/Model_Meteo${MODEL_NAME}.sh ${MODEL_RUNDIR} ${MLDP_METEO} ${MODEL_PRE} ${MLDP_GRIDDEF} ${MLDP_KERNEL} ${MLDP_LOGLEVEL} \
+         >tmp/Model_Meteo${MODEL_NAME}.out 2>tmp/Model_Meteo${MODEL_NAME}.err
       taskstatus=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
 
       if [[ ${taskstatus} -eq 0 ]] ; then
          if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-            Log_Mail "Meteorological preprocessing done (NORMAL)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.out
+            Log_Mail "Meteorological preprocessing done (NORMAL)" tmp/Model_Meteo${MODEL_NAME}.out
          fi
       else
          Log_Print ERROR "Problems in metfield calculations, Meteorological data might be being written, if this is the case, wait 10 minutes before trying again."
-         Log_Mail "Meteorological preprocessing done (ERROR)" ${MODEL_TMPDIR}/Model_Meteo${MODEL_NAME}.err
+         Log_Mail "Meteorological preprocessing done (ERROR)" tmp/Model_Meteo${MODEL_NAME}.err
       fi
    fi
 
@@ -71,7 +71,7 @@ function MLDPn_Run {
          -npex ${MODEL_NBMPITASKS} \
          -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
          -pgm ${EER_DIRBIN}/${MODEL_NAME} \
-         >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
+         >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    else
       ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME} \
          -i ${MLDP_INPUT} \
@@ -79,7 +79,7 @@ function MLDPn_Run {
          -v ${LOG_LEVEL} \
          -s ${MODEL_SEED} \
          -t ${MODEL_NBOMPTHREADS} \
-         >${MODEL_TMPDIR}/${MODEL_NAME}.out 2>${MODEL_TMPDIR}/${MODEL_NAME}.err
+         >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    fi
 
    taskstatus=$?
@@ -88,11 +88,11 @@ function MLDPn_Run {
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" ${MODEL_TMPDIR}/${MODEL_NAME}$.out
+         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" tmp/${MODEL_NAME}$.out
       fi
    else
       Log_Print ERROR "${MODEL_NAME} has encountered an error."
-      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" ${MODEL_TMPDIR}/${MODEL_NAME}.err
+      Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (ERROR)" tmp/${MODEL_NAME}.err
    fi
 
    return ${taskstatus}

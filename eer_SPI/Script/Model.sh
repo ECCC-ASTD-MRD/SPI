@@ -18,9 +18,10 @@
 #
 # Parametres :
 #   ${1}     : Parameters input file.
+#   ${2}     : Launching host (Optional)
 #
 # Retour     :
-#   Success code (0=ok, otherwaise error).
+#   Success code (0=ok, otherwise error).
 #
 # Remarques  :
 #   Aucune.
@@ -31,6 +32,7 @@
 
 #----- have to overload some variables for now
 export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
+export EER_DIRSCRIPT=/users/dor/afsr/005/eer_SPI-7.5.1/Script
 export EER_DIRDATA=/home/binops/afse/eer/eer_SPI-7.5.1/Data
 export SPI_PATH=/home/binops/afse/eer/eer_SPI-7.5.1
 
@@ -40,11 +42,11 @@ function Model_PoolEncode {
 
    for file in `ls -1 ${MODEL_RUNDIR}/results`; do
       ${EER_DIRBIN}/CodeInfo \
-         -INFO sim.pool \
-         -FSTD ${MODEL_RUNDIR}/results/$file \
+         -INFO tmp/sim.pool \
+         -FSTD results/$file \
          -CKEY codef \
          -NOMVAR INFO \
-         >${MODEL_TMPDIR}/CodeInfo.out 2>${MODEL_TMPDIR}/CodeInfo.err
+         >tmp/CodeInfo.out 2>tmp/CodeInfo.err
 
       status=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
@@ -67,13 +69,13 @@ function Model_PoolSet {
       POOL_RUN=2;
       POOL_SUSPEND=3;
 
-      if [[ -f ${MODEL_TMPDIR}/sim.pool ]]; then
+      if [[ -f tmp/sim.pool ]]; then
 
          master=${MODEL_LOCALDIR}/../${MODEL_NAME}${MODEL_TYPE}.pool
          mode=${1}
          status=${2}
 
-         line=`cat ${MODEL_TMPDIR}/sim.pool`
+         line=`cat tmp/sim.pool`
 
          #----- Get pool parts
          start=`echo ${line} | cut -d: -f1`
@@ -156,11 +158,16 @@ function Model_Init {
    #----- Define host type.
    if [[ ${MODEL_ISREMOTE} -eq 1 ]] ; then
       MODEL_RUNTYPE="remote"
-      MODEL_TMPDIR=${MODEL_RUNDIR}/tmp
-   else
-      MODEL_TMPDIR=${MODEL_LOCALDIR}/tmp
+
+      #----- If data is not already there, pull it form local hist
+      if [[ ! -d ${MODEL_RUNDIR} ]]; then
+         Log_Print WARNING "Missing remote run directory (MODEL_RUNDIR), pulling it from local host (MODEL_LOCALDIR)"
+         mkdir -p ${MODEL_RUNDIR}/tmp ${MODEL_RUNDIR}/results
+         srcp -r ${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo ${MODEL_RUNHOST}:${MODEL_RUNDIR}
+         srcp ${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp/*.{in,pool} ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp
+      fi
    fi
-   cd ${MODEL_TMPDIR}
+   cd ${MODEL_RUNDIR}
 
    if [[ ${ARCH} = AIX ]] ; then
       MODEL_TIMER=hpmcount
@@ -181,7 +188,7 @@ function Model_Init {
    if [[ ${MODEL_PRE} -ge 1 ]] ; then
       Log_Print INFO "Meteorological preprocessing parameters"
       Log_Print INFO "   Number of processes for meteorological preprocessing : ${MODEL_PRE}"
-      Log_Print INFO "   Number of meteorological files                       : `wc -w ${MODEL_TMPDIR}/data_std_eta.in | awk '{print $1}'`"
+      Log_Print INFO "   Number of meteorological files                       : `wc -w tmp/data_std_eta.in | awk '{print $1}'`"
    else
       Log_Print INFO "Meteorological preprocessing not requested"
    fi
@@ -202,28 +209,28 @@ function Model_CopyTrace {
    fi
 
    path=`echo ${MODEL_RUNDIR} | tr "/" "\n" | tail -2 | tr "\n" "."`
-   trace="${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}_${path}"
+   trace="tmp/${MODEL_NAME}${MODEL_TYPE}_${path}"
 
    echo "\n##### Fichier meteo (data_std_eta.in)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/data_std_eta.in >> ${trace}
+   cat  tmp/data_std_eta.in >> ${trace}
 
    echo "\n##### Parametres du script lancement (.in)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
+   cat  tmp/Model_${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
 
    echo "\n##### Output du script lancement (.out)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
+   cat  tmp/Model_${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
 
    echo "\n##### Erreur du script lancement (.err)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/Model_${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
+   cat  tmp/Model_${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
 
    echo "\n##### Parametres du modele (.in)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
+   cat  tmp/${MODEL_NAME}${MODEL_TYPE}.in >> ${trace}
 
    echo "\n##### Sortie du modele (.out)\n" >> ${trace}
-   head -3000 ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
+   head -3000 tmp/${MODEL_NAME}${MODEL_TYPE}.out >> ${trace}
 
    echo "\n#####  Erreur du modele (.err)\n" >> ${trace}
-   cat  ${MODEL_TMPDIR}/${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
+   cat  tmp/${MODEL_NAME}${MODEL_TYPE}.err >> ${trace}
 
    #----- Exit function if running locally or not doing meteo.
    if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
@@ -269,7 +276,7 @@ function Model_CopyMeteo {
 
    sec=${SECONDS}
 
-   scp -p ${MODEL_RUNDIR}/meteo/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo
+   srcp -p ${MODEL_RUNHOST}:${MODEL_RUNDIR}/meteo/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo
    status=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -292,7 +299,7 @@ function Model_CopyResult {
       sec=${SECONDS}
 
       #----- Copy model results to local directory.
-      scp -p ${MODEL_RUNDIR}/results/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/results
+      srcp -p ${MODEL_RUNHOST}:${MODEL_RUNDIR}/results/* ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/results
       status=${?}
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -314,7 +321,7 @@ function Model_CopyLog {
       Log_Print INFO "Copying log files (output and error) to temporary directory on local host (${MODEL_LOCALHOST})"
 
       #----- Copy relevant log files to local results directory.
-      scp -p ${MODEL_TMPDIR}/*.err ${MODEL_TMPDIR}/*.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
+      srcp -p ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp/*.err ${MODEL_RUNDIR}/tmp/*.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
       status=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -336,7 +343,7 @@ MODEL_USER=""
 MODEL_TRACE=""
 MODEL_LOCALHOST=""
 MODEL_LOCALDIR=""
-MODEL_RUNHOST=`hostname`
+MODEL_RUNHOST=${TRUE_HOST}
 MODEL_RUNDIR=""
 MODEL_PRE=1
 MODEL_RUN=1
@@ -349,14 +356,21 @@ MODEL_RESTARTABLE=0
 
 #----- Initialize internal variables.
 MODEL_RUNTYPE="local"
-MODEL_TMPDIR=""
 MODEL_TIMER=time
 MODEL_ISREMOTE=0
 MODEL_NEEDCOPY=0
 MODEL_EXITSTATUS=0
 
 #----- Read parameters within directives input file.
-. ${1}
+if [[ -f ${1} ]]
+then
+   . ${1}
+elif [[ -n ${2} ]]
+then
+   scp ${2}:${1} /tmp/$$.in
+   . /tmp/$$.in
+   rm /tmp/$$.in
+fi
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh

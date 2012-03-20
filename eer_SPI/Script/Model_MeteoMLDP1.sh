@@ -12,7 +12,7 @@
 #              meteorological data required for driving MLDP1 model.
 #
 # Parametres :
-#   ${1}     : Temporary working directory.
+#   ${1}     : Simulation trunk directory.
 #   ${2}     : Type of meteorological model (reg).
 #   ${3}     : Number of processes.
 #   ${4}     : Grid size (NIxNJxNK).
@@ -45,7 +45,7 @@
 Log_Start Model_MeteoMLDP1.sh 2.0
 
 #----- Get arguments.
-DirTmp="${1}"
+Dir="${1}"
 Model="${2}"
 NbProc="${3}"
 GridSize="${4}"
@@ -57,10 +57,10 @@ Log_Print INFO "Meteorological model : ${Model}"
 Log_Print INFO "Number of processes  : ${NbProc}"
 Log_Print INFO "Printing debug level : ${Debug}"
 
-cd ${DirTmp}
+cd ${Dir}
 
 #----- Read the grid parameters from grid file and redirect into "grid" variable.
-read < griddef.in grid
+read < tmp/griddef.in grid
 
 #----- Create configuration input file for PGSM according to type of meteorological model.
 
@@ -72,7 +72,7 @@ read < griddef.in grid
 #----- Clamp 'HR' (relative humidity) in the range [0,1].
 #----- Clamp 'FN' (cloud fraction) in the range [0,1].
 
-cat <<EOF_PGSM_METEO > pgsm.dir
+cat <<EOF_PGSM_METEO > tmp/pgsm.dir
  SORTIE(STD,2000,A)
  GRILLE(PS,${grid})
  IP3ENT=0
@@ -99,7 +99,7 @@ EOF_PGSM_METEO
 
 if [ "${Model}" = "reg" ] ; then #----- Meteorological fields from GEM Regional 15 km.
 
-   cat <<EOF_PGSM_METEOr15 >> pgsm.dir
+   cat <<EOF_PGSM_METEOr15 >> tmp/pgsm.dir
 C
 C Meteorological fields from GEM Regional 15 km.
 C
@@ -134,7 +134,7 @@ EOF_PGSM_METEOr15
 
 elif [ "${Model}" = "glb" ] ; then #----- Meteorological fields from GEM Meso-Global 33 km.
 
-   cat <<EOF_PGSM_METEOg33 >> pgsm.dir
+   cat <<EOF_PGSM_METEOg33 >> tmp/pgsm.dir
 C
 C Meteorological fields from GEM Meso-Global 33 km.
 C
@@ -173,7 +173,7 @@ else
 fi
 
 #----- Read the list of all standard meteorological files.
-read < data_std_eta.in stdfiles
+read < tmp/data_std_eta.in stdfiles
 
 set -A ArrayStdFiles ${stdfiles}
 nbfiles=${#ArrayStdFiles[@]}
@@ -190,7 +190,7 @@ nbproc=0
 Log_Print INFO "Executing PGSM: Interpolating met fields on the specified grid for standard files ..."
 
 #----- Erase old file.
-rm -f ../meteo/*.std
+rm -f meteo/*.std
 
 while [ ${idx} -lt ${nbfiles} ] ; do
 
@@ -208,9 +208,9 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    #----- Interpolate meteorological fields for the specified grid and standard file using PGSM.
    Log_Print INFO "   Processing standard file ${file} (${idx}/${nbfiles}) ..."
    pgsm+ -iment ${file} \
-      -ozsrt ../meteo/${filename}.std \
-      -i pgsm.dir \
-      >pgsm.${filename}.out 2>pgsm.${filename}.err &
+      -ozsrt meteo/${filename}.std \
+      -i tmp/pgsm.dir \
+      >tmp/pgsm.${filename}.out 2>tmp/pgsm.${filename}.err &
 
     nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
@@ -221,7 +221,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if PGSM has terminated successfully.
-      nbline=`grep "PGSM.*OK" pgsm.*.out | wc -l`
+      nbline=`grep "PGSM.*OK" tmp/pgsm.*.out | wc -l`
       if [[ ${nbline} -lt ${idx} ]] ; then
          Log_Print ERROR "   PGSM has encountered an errors."
          Log_End 1
@@ -267,12 +267,12 @@ while [ ${idx} -lt ${nbfiles} ] ; do
    #-----   - 'UU' : [3D] Wind speed X-component [kt],
    #-----   - 'VV' : [3D] Wind speed Y-component [kt],
    #-----   - 'WE' : [3D] Vertical Motion [s -1].
-   Log_Print INFO "   Processing standard file ./meteo/${filename}.std (${idx}/${nbfiles}) ..."
+   Log_Print INFO "   Processing standard file meteo/${filename}.std (${idx}/${nbfiles}) ..."
    ${EER_DIRBIN}/metfields_MLDP1${Ext} \
-      -iment ../meteo/${filename}.std \
-      -ozsrt ../meteo/${filename}.met.std \
+      -iment meteo/${filename}.std \
+      -ozsrt meteo/${filename}.met.std \
       -print ${Debug} \
-      >metfields.${filename}.out 2>metfields.${filename}.err &
+      >tmp/metfields.${filename}.out 2>tmp/metfields.${filename}.err &
 
     nbproc=`expr ${nbproc} + 1` #----- Increment number of processes.
 
@@ -283,7 +283,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       nbproc=0 #----- Reset number of processes.
 
       #----- Verify if Metfields has terminated successfully.
-      nbline=`grep "METFLD1.*FIN" metfields.*.out | wc -l`
+      nbline=`grep "METFLD1.*FIN" tmp/metfields.*.out | wc -l`
       if [[ ${nbline} -lt ${idx} ]] ; then
          Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldp0 has encountered an errors."
          Log_End 1
@@ -300,7 +300,7 @@ nbproc=0
 Log_Print INFO "Executing EDITFST: Merging the two meteorological files (PGSM + metfields) into one standard file for MLDP1 ..."
 
 #----- Create editfst directives file.
-cat <<EOF_EDITFST > editfst.dir
+cat <<EOF_EDITFST > tmp/editfst.dir
  DESIRE(-1,['HY'],-1,-1,-1,-1,-1)
 EOF_EDITFST
 
@@ -312,11 +312,11 @@ for file in ${ArrayStdFiles[@]} ; do
     #----- Merge the 'HY' record with meteorological file (metfields) into one standard file for MLDP1.
     Log_Print INFO "Processing standard file ${filename}.std ..."
     editfst+ \
-       -s ../meteo/${filename}.std \
-       -d ../meteo/${filename}.met.std \
-       -i editfst.dir \
-       >editfst.${filename}.out 2>editfst.${filename}.err
-    mv ../meteo/${filename}.met.std ../meteo/${filename}.std
+       -s meteo/${filename}.std \
+       -d meteo/${filename}.met.std \
+       -i tmp/editfst.dir \
+       >tmp/editfst.${filename}.out 2>tmp/editfst.${filename}.err
+    mv meteo/${filename}.met.std meteo/${filename}.std
 done
 
 Log_End 0
