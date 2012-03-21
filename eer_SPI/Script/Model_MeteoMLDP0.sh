@@ -355,7 +355,7 @@ while [ ${idx} -lt ${nbfiles} ] ; do
       #----- Verify if Metfields has terminated successfully.
       nbline=`grep "METFLD0.*FIN" tmp/metfields.*.out | wc -l`
       if [[ ${nbline} -lt ${idx} ]] ; then
-         Log_Print ERROR "   ${EER_DIRBIN}/metfields_mldp0 has encountered an errors."
+         Log_Print ERROR "   ${EER_DIRBIN}/metfields_MLDP0 has encountered an errors."
          Log_End 1
       fi
     fi
