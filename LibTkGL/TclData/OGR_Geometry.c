@@ -1106,14 +1106,14 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          z=0;
          for(n=1;n<nv;n++) {
             cvr=!z?&pvr[n-1]:cvr;
-            
+
             if (fabs(pvr[n][0]-*cvr[0])>1.0) {
-               z=!z?(pvr[n][0]>0.0?-4:4):z;               
-               pvr[n][0]+=z;                              
-            }           
+               z=!z?(pvr[n][0]>0.0?-4:4):z;
+               pvr[n][0]+=z;
+            }
          }
       }
-      
+
       if (handle)
          gdb_mapclose(handle);
    }

@@ -59,7 +59,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 static int  glInfo(Tcl_Interp *Interp,char *Argv);
 
 /* Tesselator functions*/
-#define GLMAXTESS 1024
+#define GLMAXTESS 8192
 
 static GLdouble glTessTmp[GLMAXTESS][3];
 static GLuint   glTessNo=0;

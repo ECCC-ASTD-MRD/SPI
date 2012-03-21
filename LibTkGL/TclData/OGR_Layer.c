@@ -2316,7 +2316,6 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    for(f=Layer->GFeature;f<Layer->NFeature;f++) {
 
       glNewList(Layer->LFeature+f,GL_COMPILE);
-
       if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
          if (Layer->Topo>0)
             elev=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Topo-1);
