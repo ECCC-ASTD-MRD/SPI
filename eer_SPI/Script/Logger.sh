@@ -54,7 +54,7 @@ LOG_JOBARGS=$*
 
 LOG_OC=""
 LOG_CYCLOPE=FALSE
-LOG_CYCLOPEPATH=/home/binops/afse/eer/projets/Cyclope/jobs
+LOG_CYCLOPEPATH=${HOME}/projets/Cyclope/jobs
 
 #----- Logger internal variables
 LOG_SECTIME=`date +%s`
