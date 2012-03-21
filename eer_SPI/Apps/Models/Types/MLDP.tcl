@@ -161,7 +161,7 @@ proc MLDP::CreateScriptInput { } {
    puts $file "#----- Logger specific parameters"
    puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
    puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
-   puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDP.out"
+   puts $file "LOG_FILE=tmp/Model_MLDP.out"
    puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
    puts $file "LOG_TIME=$Model::Param(LogTime)"
    puts $file "LOG_JOBID=$Sim(Model)"
@@ -195,12 +195,12 @@ proc MLDP::CreateScriptInput { } {
    puts $file "#----- Model specific parameters"
 
    if { $Sim(ReNewMeteo)!="" || $Model::Param(DBaseLocal) } {
-      puts $file "MLDP_METEO=$Sim(PathRun)/meteo"
+      puts $file "MLDP_METEO=meteo"
    } else {
       puts $file "MLDP_METEO=$Sim(Meteo)"
    }
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
-   puts $file "MLDP_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
+   puts $file "MLDP_INPUT=tmp/$Sim(Model).in"
    puts $file "MLDP_LOGLEVEL=$Sim(LogLevel)"
    puts $file "MLDP_SEED=$Sim(Seed)"
 
@@ -312,19 +312,19 @@ proc MLDP::CreateModelInput { } {
 
    #----- Output files.
    set name [clock format $Sim(SimSecs) -format "%Y%m%d%H_000" -gmt True]
-   set len  [expr [string length "$Sim(PathRun)/results/$name.pos"] + 10]
+   set len  [expr [string length "results/$name.pos"] + 10]
    puts $file "Output files:"
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.pos']     outfile_pos      Positions output standard file (256 characters)."
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.con']     outfile_conc     Concentrations output standard file (256 characters)."
-   puts $file "[format "%-${len}s" '$Sim(PathRun)/results/$name.sv' ]     outfile_sv       Settling velocities output file (256 characters)."
+   puts $file "[format "%-${len}s" 'results/$name.pos']     outfile_pos      Positions output standard file (256 characters)."
+   puts $file "[format "%-${len}s" 'results/$name.con']     outfile_conc     Concentrations output standard file (256 characters)."
+   puts $file "[format "%-${len}s" 'results/$name.sv' ]     outfile_sv       Settling velocities output file (256 characters)."
 
    #----- Input files.
-   set len [expr [string length $Sim(PathRun)/meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
+   set len [expr [string length meteo] + [string length [file tail [lindex $Sim(MeteoDataFiles) 0]]] + 10]
    puts $file "\nInput files:"
    puts $file "[format "%-${len}s" [llength $Sim(MeteoDataFiles)]]     nb_metfiles       Number of meteorological input standard files."
    for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
       set filename [lindex $Sim(MeteoDataFiles) $i]
-      set metfile  "$Sim(PathRun)/meteo/[file tail $filename].std"
+      set metfile  "meteo/[file tail $filename].std"
       if { $i > 0 } {
          set string ""
       } else {

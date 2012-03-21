@@ -158,7 +158,7 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "\n#----- Logger specific parameters\n"
    puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
    puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
-   puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_MLDPn.out"
+   puts $file "LOG_FILE=tmp/Model_MLDPn.out"
    puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
    puts $file "LOG_TIME=$Model::Param(LogTime)"
    puts $file "LOG_JOBID=$Sim(Model)"
@@ -188,13 +188,13 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "\n#----- Model specific parameters\n"
 
    if { $Sim(ReNewMeteo)!="" || $Model::Param(DBaseLocal) } {
-      puts $file "MLDP_METEO=$Sim(PathRun)/meteo"
+      puts $file "MLDP_METEO=meteo"
    } else {
       puts $file "MLDP_METEO=$Sim(Meteo)"
    }
    puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
-   puts $file "MLDP_INPUT=$Sim(PathRun)/tmp/$Sim(Model).in"
-   puts $file "MLDP_RESULT=$Sim(PathRun)/results"
+   puts $file "MLDP_INPUT=tmp/$Sim(Model).in"
+   puts $file "MLDP_RESULT=results"
    puts $file "MLDP_KERNEL=$Sim(DiffKernel)"
 
    close $file
@@ -317,7 +317,7 @@ proc MLDPn::CreateModelInput { } {
    }
 
    if { $Sim(RestartFile)!="" } {
-      puts $file [format "%-21s= %-25s # Restart file" MDL_RESTART_FILE $Sim(PathRun)/tmp/[file tail $Sim(RestartFile)].in]
+      puts $file [format "%-21s= %-25s # Restart file" MDL_RESTART_FILE tmp/[file tail $Sim(RestartFile)].in]
       puts $file [format "%-21s= %-25s # Restart number" MDL_RESTART_NO [lindex $Sim(Restart) 1]]
    }
 
@@ -434,7 +434,7 @@ proc MLDPn::CreateModelInput { } {
 
    puts $file "\n#----- Output parameters\n"
    puts $file [format "%-15s= %-10.1f # Output time step \[s\]" OUT_DT [expr $Sim(OutputTimeStepMin)*60]]
-   puts $file [format "%-15s= %s # Output grid definition" OUT_GRID $Sim(PathRun)/tmp/grid.in]
+   puts $file [format "%-15s= %s # Output grid definition" OUT_GRID tmp/grid.in]
    puts $file [format "%-15s= %s # Concentration vertical levels \[m\]" OUT_CVLEVELS $Sim(OutCV)]
    if { $Sim(SrcType) == "VOLCANO" } {
       puts $file [format "%-15s= %s # Aviation vertical levels \[feet\]" OUT_AVLEVELS $Sim(OutAV)]
@@ -445,7 +445,7 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-11s= %-10.4f # Bottom reflection level of particles in the atmosphere \[hybrid|eta|sigma\]" MET_BOTTOM $Sim(ReflectionLevel)]
    puts $file "MET_FILES  =            # Meteorological input files"
    for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
-      puts $file "$Sim(PathRun)/meteo/[file tail [lindex $Sim(MeteoDataFiles) $i]].std"
+      puts $file "meteo/[file tail [lindex $Sim(MeteoDataFiles) $i]].std"
    }
 
    close $file
