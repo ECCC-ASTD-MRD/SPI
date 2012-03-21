@@ -138,6 +138,7 @@ proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
 #   <Multi>  : Multiplicite des valeurs (0=True,1=1 valeur,2=Multiples valeurs, 3=True ou 1 valeur)
 #   <Var>    : Variable a a assigner les arguments
 #   <Values> : Valid values accepted
+#   <Glob>   : Glob pattern to validate values accepted
 #
 # Return:
 #   <Idx>    : Index apres les arguments traites.
@@ -146,7 +147,7 @@ proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
 #
 #----------------------------------------------------------------------------
 
-proc Args::Parse { Argv Argc No Multi Var { Values {} } } {
+proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
 
    upvar #0 $Var var
 
@@ -175,9 +176,11 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } } {
 
          if { [llength $Values] } {
             foreach v $vs {
-               if { [lsearch -exact $Values $v]==-1 } {
-                  Log::Print ERROR "Invalid value ($v) for parameter [lindex $Argv [expr $No-1]], must be one of { $Values }"
-                  Log::End 1
+               if { $Glob=="" || ![string match $Glob $v] } {
+                  if { [lsearch -exact $Values $v]==-1 } {
+                     Log::Print ERROR "Invalid value ($v) for parameter [lindex $Argv [expr $No-1]], must be one of { $Values }"
+                     Log::End 1
+                  }
                }
             }
          }
