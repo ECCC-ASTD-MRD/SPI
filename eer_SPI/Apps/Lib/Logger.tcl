@@ -177,10 +177,11 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } } {
             foreach v $vs {
                if { [lsearch -exact $Values $v]==-1 } {
                   Log::Print ERROR "Invalid value ($v) for parameter [lindex $Argv [expr $No-1]], must be one of { $Values }"
-                  exit 1;
+                  Log::End 1
                }
             }
          }
+
          if { $Multi==1 || $Multi==3 } {
             set var $vs
          } else {
@@ -192,7 +193,7 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } } {
       #----- Verifier le nombre de valeur
       if { $Multi && ![llength $var] }  {
          Log::Print ERROR "No value specified for parameter [lindex $Argv [expr $No-1]]"
-         exit 1;
+         Log::End 1
       }
 
       if { [string index [lindex $Argv $No] 0]=="-" } {
