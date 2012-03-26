@@ -5,13 +5,9 @@ export SPI_PATH=${0%SPI}
 
 SOFT=0
 HARD=0
+XVFB=0
 SPI_DEBUG=""
 HOST=`hostname`
-SCREEN=0
-X_GEO='1024x768'
-X_DEPTH='x24'
-PID_XVFB=0
-LIVE="";
 
 #----- Force unlimited limits
 ulimit -c 0 2>/dev/null
@@ -25,49 +21,7 @@ for flag in $@
 do
    if [[ $flag = "-batch" ]]
    then
-
-      #----- Starts xvfb, best to use an absolute path
-      if [[ -f /usr/bin/X11/Xvfb ]]
-      then
-         XVFB="/usr/bin/X11/Xvfb"
-      elif [[ -f /usr/bin/Xvfb ]]
-      then
-         XVFB="/usr/bin/Xvfb"
-      else
-         XVFB=`which Xvfb`
-      fi
-
-      #----- Check if Xvbf exists
-      if [[ ! (-n $XVFB) ]]
-      then
-         echo "(ERROR) Could not find Xvfb"
-         exit 1
-      fi
-
-      #----- Start Xvfb
-      while [[ (-z $LIVE) ]]
-      do
-         SERVER=$RANDOM
-         echo "(INFO) Trying initializing Xvfb with :$SERVER"
-
-         if [[ ! -f /tmp/.X${SERVER}-lock ]]
-         then
-            ${XVFB} :${SERVER} -ac -screen ${SCREEN} ${X_GEO}${X_DEPTH} >/dev/null 2>&1 &
-            PID_XVFB=$!
-
-            LIVE=`ps -p $PID_XVFB | grep $PID_XVFB`
-         fi
-      done
-
-      echo "(INFO) Done initializing Xvfb (${SERVER})"
-
-      #----- In case of problem with the whole script, kill Xvfb stuff
-      trap "(kill $PID_XVFB; rm -f /tmp/.X11-unix/X${SERVER}) >/dev/null 2>&1" 0 1 2 3 13 15
-
-      #----- Export virtual display
-      export DISPLAY=:${SERVER}.${SCREEN}
-
-      #----- Force software mode in batch mode
+      XVFB=1
       SOFT=1
    fi
 
@@ -93,7 +47,6 @@ do
       code=$?
       exit $code
    fi
-
 done
 
 #----- Testing hardware capabilities
@@ -115,16 +68,17 @@ then
 fi
 
 #----- Load up the fonts
-xset fp default
-xset fp+ ${SPI_PATH}/Resources/Font
+#xset fp default
+#xset fp+ ${SPI_PATH}/Resources/Font
 
 #----- Let's start up the software
-${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
-code=$?
-
-if [[ ($PID_XVFB -ne 0) ]]
+if [[ $XVFB -eq 1 ]]
 then
-   kill $PID_XVFB 1> /dev/null 2>&1
+   xvfb-run -w 1 -a -s '-ac -screen 0 1024x768x24' ${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
+   code=$?
+else
+   ${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/Apps/SPI.tcl" -- "$@"
+   code=$?
 fi
 
 #----- Exit with SPI error code
