@@ -19,14 +19,14 @@ if [[ ${GDB_PATH} = "" ]] ; then
 fi
 
 #----- GDAL data
-export GDAL_DATA=${SPI_PATH}/Data/epsg_csv/
+export GDAL_DATA=${SPI_PATH}/Lib/Data/epsg_csv/
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
-export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Data/table_b_bufr
+export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Lib/Data/table_b_bufr
 
 #----- Force GRIB Tables
-export GRIB_TEMPLATE_PATH=${SPI_PATH}/Data/templates
-export GRIB_DEFINITION_PATH=${SPI_PATH}/Data/definitions
+export GRIB_TEMPLATE_PATH=${SPI_PATH}/Lib/Data/templates
+export GRIB_DEFINITION_PATH=${SPI_PATH}/Lib/Data/definitions
 
 #----- EER Modeling variables
 export EER_ARCH=`uname -s`_`uname -m`

@@ -174,7 +174,6 @@ proc Macro::JetMapper::StreamGet { } {
          }
       }
    }
-
    return $streams
 }
 
@@ -203,28 +202,18 @@ proc Macro::JetMapper::StreamPlot { } {
                set x1 [expr int([lindex $cc end-1])]
                set y1 [expr int([lindex $cc end])]
 
-               #----- If it's long enough and does not overlap
-               if { [expr hypot($x1-$x0,$y1-$y0)]>20 } {
-                  $Page::Data(Canvas) create line $cc -fill red -arrow last -arrowshape { 20 20 10 } -smooth True -width 12 -transparency 100 -tags STREAM
+               #----- If it's long enough and does not overlap other streams
+               set items [$Page::Data(Canvas) find overlapping $x0 $y0 $x1 $y1]
 
-                  #----- Flip limits if needed
-                  if { $x0>$x1 } {
-                     set x $x0
-                     set x0 $x1
-                     set x1 $x
-                  }
+               if { [expr hypot($x1-$x0,$y1-$y0)]>20 && [llength $items]<2 } {
+                  $Page::Data(Canvas) create line $cc -fill red -arrow last -arrowshape { 20 20 10 } -smooth True -width 10 -transparency 100 -tags STREAM
 
-                  #----- Update flagged buffer
-                  for { set x [expr $x0-5] } { $x<=[expr $x1+5] } { incr x } {
-                     set Data($x) 1
-                  }
                   incr n $Param(StreamCut)
                }
             }
          }
       }
    }
-   $Page::Data(Canvas) lower STREAM HL
 }
 
 proc Macro::JetMapper::Legend { Field Colormap Intervals Lang Do } {
@@ -400,9 +389,9 @@ proc Macro::JetMapper::Execute { } {
    fstdfield configure PN -color black -font FONT12 -rendertexture 0 -colormap CMAPWXO -rendercontour 3
    fstdfield configure NW -color black -font FONT12 -rendertexture 1 -colormap CMAPWXO -intervals "1 2 3 4 5 6" -interpdegree NEAREST -factor 0.001
 
+   Macro::JetMapper::StreamPlot
    Macro::JetMapper::PrecipPlot 32
    Macro::JetMapper::HighLowPlot PN
-   Macro::JetMapper::StreamPlot
 
    #----- Interpoler TT sur une grille a moindre resolution pour "smoohter" le champs
    fstdfield gridinterp TTI TT

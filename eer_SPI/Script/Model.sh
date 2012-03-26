@@ -32,7 +32,6 @@
 
 #----- have to overload some variables for now
 export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
-export EER_DIRSCRIPT=/users/dor/afsr/005/eer_SPI-7.5.1/Script
 export EER_DIRDATA=/home/binops/afse/eer/eer_SPI-7.5.1/Data
 export SPI_PATH=/home/binops/afse/eer/eer_SPI-7.5.1
 
