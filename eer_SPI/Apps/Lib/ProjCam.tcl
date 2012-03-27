@@ -952,7 +952,6 @@ proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
    set t0 [set Viewport::Map(Grabbed) [clock click -milliseconds]]
-   Viewport::Resolution $Frame 2
 
    if { $Store } {
       lappend cam(LLens) [list $cam(Lens) $Viewport::Map(Lat) $Viewport::Map(Lon)]
@@ -965,11 +964,6 @@ proc ProjCam::Zoom { Cam Frame Lens { Store False } } {
    update
    if { $Viewport::Map(Grabbed)<=$t0 } {
       Page::Update $Frame
-   }
-
-   update
-   if { $Viewport::Map(Grabbed)<=$t0 } {
-      Viewport::Resolution $Frame 1
    }
 }
 
@@ -1140,7 +1134,7 @@ proc ProjCam::ZoomOut { Cam Frame VP Reset { Pos False } } {
 
 proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
 
-   set Viewport::Map(Grabbed) [clock click -milliseconds]
+   set t0 [set Viewport::Map(Grabbed) [clock click -milliseconds]]
 
    if { $Centered } {
       set lens [projcam configure $Frame -lens]

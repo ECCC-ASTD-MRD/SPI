@@ -2111,7 +2111,7 @@ proc Viewport::Resolution { Frame Res } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } { To {} } { Up {} } } {
+proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } { To {} } { Up {} } { Update True } } {
    variable Map
    variable Data
 
@@ -2148,7 +2148,9 @@ proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } {
       if { [llength $Up] } {
          projcam configure $Frame -up [set cam(up) $Up]
       }
-      Page::Update $Frame
+      if { $Update } {
+         Page::Update $Frame
+      }
    }
 }
 
@@ -2266,9 +2268,12 @@ proc Viewport::RotateDone { Frame VP { Sling False } } {
 
    if { $Sling && $Map(Type$Frame)!="grid" && [string range $VP 0 3]!="MINI" } {
 
+      #----- Force an update to get the right distance
+      update idletasks
       set dt [expr [clock click -milliseconds]-$Map(Grabbed)]
       set dx [projection function $Frame -dist [list $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)] 0.0]
 
+      #----- If the distance is long enought, slingshot
       if { $dx>[expr 2*[$VP -distpix]] && $dt>0 && $dt<250 } {
          set dir [expr -[projection function $Frame -bearing $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)]]
          set spd [expr int($dx/$dt)]
@@ -2395,7 +2400,7 @@ proc Viewport::GoAlong { Frame Speed Bearing Lat Lon { Damping True } } {
 # Nom      : <Viewport::GoAround>
 # Creation : Juillet 2007 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Anime le deplacement autoir d'un point.
+# But      : Anime le deplacement autour d'un point.
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page

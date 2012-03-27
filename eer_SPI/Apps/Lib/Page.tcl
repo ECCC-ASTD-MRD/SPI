@@ -1650,7 +1650,6 @@ proc Page::Update { { Frame "" } { VP True } } {
    variable Data
 
    #----- Est-ce que la page est valide
-
    if { $Frame=="" } {
       set Frame $Page::Data(Frame)
    }
@@ -1690,8 +1689,6 @@ proc Page::Update { { Frame "" } { VP True } } {
 
    Page::UpdateItems $Frame
    OpenGL::Update
-
-   update idletask
 }
 
 #----------------------------------------------------------------------------
