@@ -102,11 +102,12 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case WKB:
             if (Objc==1) {
-               n=OGR_G_WkbSize(geom);
-               bytes=(char*)malloc(n);
-               OGR_G_ExportToWkb(geom,wkbNDR,bytes);
-               Tcl_SetObjResult(Interp,Tcl_NewByteArrayObj(bytes,n));
-               CPLFree(bytes);
+               if (n=OGR_G_WkbSize(geom)) {
+                  bytes=(char*)malloc(n);
+                  OGR_G_ExportToWkb(geom,wkbNDR,bytes);
+                  Tcl_SetObjResult(Interp,Tcl_NewByteArrayObj(bytes,n));
+                  CPLFree(bytes);
+               }
             } else {
                OGR_G_Empty(geom);
 
@@ -121,9 +122,10 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case GML:
             if (Objc==1) {
-               buf=OGR_G_ExportToGML(geom);
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-               CPLFree(buf);
+               if (buf=OGR_G_ExportToGML(geom)) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+                  CPLFree(buf);
+               }
             } else {
                OGR_G_Empty(geom);
 
@@ -138,9 +140,10 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case KML:
             if (Objc==1) {
-               buf=OGR_G_ExportToKML(geom,NULL);
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-               CPLFree(buf);
+               if (buf=OGR_G_ExportToKML(geom,NULL)) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+                  CPLFree(buf);
+               }
             } else {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Operation not supported\"",(char*)NULL);
                return(TCL_ERROR);
@@ -150,9 +153,10 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case JSON:
             if (Objc==1) {
-               buf=OGR_G_ExportToJson(geom);
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-               CPLFree(buf);
+               if (buf=OGR_G_ExportToJson(geom)) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+                  CPLFree(buf);
+               }
             } else {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Operation not supported\"",(char*)NULL);
                return(TCL_ERROR);
