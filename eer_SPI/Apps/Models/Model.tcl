@@ -1498,13 +1498,17 @@ proc Model::ParamsMeteoInput { Model } {
       set files {}
 
       if { $sim(Meteo)=="reg" } { #----- Regional NWP met model.
-         regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
+         if { [info exists GDefs(Host_$Param(Host))] } {
+            regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
+         }
          regsub -all "/regeta/"    $files               "/regpres/"  files
          regsub -all "/reghyb/"    $files               "/regpres/"  files
          regsub -all "/regeta2/"   $files               "/regpres2/" files
          regsub -all "/reghyb2/"   $files               "/regpres2/" files
       } elseif { $sim(Meteo) == "glb" } { #----- Global NWP met model.
-         regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
+         if { [info exists GDefs(Host_$Param(Host))] } {
+            regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
+         }
          regsub -all "/glbeta/"    $files               "/glbpres/"  files
          regsub -all "/glbhyb/"    $files               "/glbpres/"  files
          regsub -all "/glbeta2/"   $files               "/glbpres2/" files
