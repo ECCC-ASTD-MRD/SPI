@@ -150,7 +150,6 @@ proc TOA::Layout { Frame } {
 
    #----- Afficher l'identification de la source
 
-   $canvas create bitmap -100 -100 -bitmap @$GDefs(Dir)/Resources/Bitmap/nucleaire.ico -foreground black -tags TOAFIX
    $canvas create text 10 555 -font XFont12 -anchor w -text "" -tags TOASOURCE
    $canvas create text 10 570 -font XFont12 -anchor w -text "" -tags TOALOC
    $canvas create text 10 585 -font XFont12 -anchor w -text "" -tags TOARELEASEISO
@@ -386,9 +385,11 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
    set Sim(Path) [Info::Path $info]
 
    #----- Position de recentrage
+   set lat [lindex $Sim(Lat) 0]
+   set lon [lindex $Sim(Lon) 0]
 
-   set Viewport::Map(LatReset) $Sim(Lat)
-   set Viewport::Map(LonReset) $Sim(Lon)
+   set Viewport::Map(LatReset) $lat
+   set Viewport::Map(LonReset) $lon
 
    #----- Calculer la date d'accident(release)
 
@@ -403,7 +404,7 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
 
    #----- Updater les informations
 
-   set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
+   set coord [Convert::FormatCoord $lat $lon DEG]
    $canvas itemconf TOASOURCE      -text "Source           : $Sim(Name)"
    $canvas itemconf TOALOC         -text "Location         : $coord"
    $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(EmIsoSymbol)"
@@ -498,13 +499,16 @@ proc TOA::JoinTransfert { Frame } {
 #----------------------------------------------------------------------------
 
 proc TOA::UpdateItems { Frame } {
+   global GDefs
    variable Ico
    variable Sim
    variable Param
 
-   if { [set xy [$Param(VP) -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
-      $Frame.page.canvas coords TOAFIX [lindex $xy 0] [lindex $xy 1]
-   } else {
-      $Frame.page.canvas coords TOAFIX -100 -100
+   $Frame.page.canvas delete TOAFIX
+
+   foreach lat $Sim(Lat) lon $Sim(Lon) {
+      if { [set xy [$Param(VP) -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+         $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap @$GDefs(Dir)/Resources/Bitmap/nucleaire.ico -foreground black -tags TOAFIX
+      }
    }
 }

@@ -193,7 +193,9 @@ proc METF::DataInit { Frame } {
 
    #----- Updater les informations sur la source
 
-   set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
+   set lat [lindex $Sim(Lat) 0]
+   set lon [lindex $Sim(Lon) 0]
+   set coord [Convert::FormatCoord $lat $lon DEG]
    $Frame.page.canvas itemconf LAYOUTMETFSOURCE   -text "Source name     : $Sim(Name)"
    $Frame.page.canvas itemconf LAYOUTMETFCOORD    -text "Source location : $coord"
 
@@ -225,10 +227,8 @@ proc METF::DataInit { Frame } {
 
    #----- Initialiser la localisation par defaut
 
-   set Viewport::Map(Lat) $Sim(Lat)
-   set Viewport::Map(Lon) $Sim(Lon)
-   set Viewport::Map(LatReset) $Sim(Lat)
-   set Viewport::Map(LonReset) $Sim(Lon)
+   set Viewport::Map(LatReset) [set Viewport::Map(Lat) $lat]
+   set Viewport::Map(LonReset) [set Viewport::Map(Lon) $lon]
 
    Viewport::Rotate $Frame
 
@@ -632,8 +632,10 @@ proc METF::UpdateItems { Frame } {
    $Frame.page.canvas delete LAYOUTMETFLOC
 
    foreach vp "$Page(VP1) $Page(VP2) $Page(VP3) $Page(VP4)" {
-      if { [set xy [$vp -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
-         Shape::DrawIcoMETF $Frame.page.canvas $xy "LAYOUTMETFLOC" black 5 False
+      foreach lat $Sim(Lat) lon $Sim(Lon) {
+         if { [set xy [$vp -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+            Shape::DrawIcoMETF $Frame.page.canvas $xy "LAYOUTMETFLOC" black 5 False
+         }
       }
    }
 }

@@ -373,6 +373,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    switch $Sim(Model) {
       "MLDP0" { set DispModel MLDP }
       "MLDP1" { set DispModel MLDP }
+      "MLDPn" { set DispModel MLDP }
    }
 
    #---- Definitions des entetes et textes de la carte
@@ -406,8 +407,8 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
 
    #----- Position de recentrage
 
-   set Viewport::Map(LatReset) $Sim(Lat)
-   set Viewport::Map(LonReset) $Sim(Lon)
+   set Viewport::Map(LatReset) [lindex $Sim(Lat) 0]
+   set Viewport::Map(LonReset) [lindex $Sim(Lon) 0]
 
    #----- Update de la page
 
@@ -453,7 +454,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    set daterelease [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
 
    #----- Convert source coordinates.
-   set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) DEG]
+   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] DEG]
 
    #----- Search index in list of isotopes for selected current isotope.
    set indx     [lsearch -exact $Sim(ListIsoSymbol) $Data(ETICKET)]
@@ -911,8 +912,10 @@ proc RSMC::UpdateItems { Frame } {
 
    $Frame.page.canvas delete LAYOUTRSMC
 
-   if { [set xy [$Page(VP) -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
-      $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $Ico(Nuclear) -foreground black -tags LAYOUTRSMC
+   foreach lat $Sim(Lat) lon $Sim(Lon) {
+      if { [set xy [$Page(VP) -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+         $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $Ico(Nuclear) -foreground black -tags LAYOUTRSMC
+      }
    }
 
    if { [set xy [$Page(VP) -project [lindex $Data(Max) 1] [lindex $Data(Max) 2] 0]]!="" && [lindex $xy 2]>0 } {

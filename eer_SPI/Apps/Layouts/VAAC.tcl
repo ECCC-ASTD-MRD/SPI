@@ -345,10 +345,8 @@ proc VAAC::DataInit { Frame } {
 
    #----- Initialiser la localisation par defaut
 
-   set Viewport::Map(Lat) $Sim(Lat)
-   set Viewport::Map(Lon) $Sim(Lon)
-   set Viewport::Map(LatReset) $Sim(Lat)
-   set Viewport::Map(LonReset) $Sim(Lon)
+   set Viewport::Map(LatReset) [set Viewport::Map(Lat) [lindex $Sim(Lat) 0]]
+   set Viewport::Map(LonReset) [set Viewport::Map(Lon) [lindex $Sim(Lon) 0]]
 
    Viewport::Rotate $Frame
 
@@ -665,7 +663,7 @@ proc VAAC::LayoutUpdate { Frame } {
 
    #----- Creation du pied de page
 
-   set coord [Convert::FormatCoord $Sim(Lat) $Sim(Lon) MIN]
+   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] MIN]
 
    $canvas itemconf FT1 -text ""
    $canvas itemconf FT2 -text ""
@@ -1173,8 +1171,10 @@ proc VAAC::UpdateItems { Frame } {
    $Frame.page.canvas delete LAYOUTVAACLOC
 
    foreach vp "$Page(VP1) $Page(VP2) $Page(VP3) $Page(VP4) $Page(VP5) $Page(VP6)" {
-      if { [set xy [$vp -project $Sim(Lat) $Sim(Lon) 0]]!="" && [lindex $xy 2]>0 } {
-         Shape::DrawIcoVAAC $Frame.page.canvas $xy "LAYOUTVAACLOC" black 5 False
+      foreach lat $Sim(Lat) lon $Sim(Lon) {
+         if { [set xy [$vp -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+            Shape::DrawIcoVAAC $Frame.page.canvas $xy "LAYOUTVAACLOC" black 5 False
+         }
       }
    }
 }

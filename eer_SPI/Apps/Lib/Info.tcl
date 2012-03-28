@@ -281,6 +281,21 @@ proc Info::Decode { Var Info } {
          set var($token) $value
       }
    }
+
+   if { [info exists var(AccSecs)] } {
+      set var(AccYear)  [clock format $var(AccSecs) -format "%Y" -timezone :UTC]
+      set var(AccMonth) [clock format $var(AccSecs) -format "%m" -timezone :UTC]
+      set var(AccDay)   [clock format $var(AccSecs) -format "%d" -timezone :UTC]
+      set var(AccHour)  [clock format $var(AccSecs) -format "%H" -timezone :UTC]
+      set var(AccMin)   [clock format $var(AccSecs) -format "%M" -timezone :UTC]
+   }
+   if { [info exists var(SimSecs)] } {
+      set var(SimYear)  [clock format $var(SimSecs) -format "%Y" -timezone :UTC]
+      set var(SimMonth) [clock format $var(SimSecs) -format "%m" -timezone :UTC]
+      set var(SimDay)   [clock format $var(SimSecs) -format "%d" -timezone :UTC]
+      set var(SimHour)  [clock format $var(SimSecs) -format "%H" -timezone :UTC]
+      set var(SimMin)   [clock format $var(SimSecs) -format "%M" -timezone :UTC]
+   }
 }
 
 #----------------------------------------------------------------------------
