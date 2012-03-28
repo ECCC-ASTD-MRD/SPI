@@ -431,7 +431,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
          }
 
          #----- Get the grid resolution ( km ) for RSMC mapping.
-         set Sim(GridResolution) [expr int([lindex $Sim(Grid) 5]/1000.0)]
+         set Sim(GridResolution) [expr int([lindex $Sim(Grid) 4]/1000.0)]
 
          #----- Vertical Distribution.
          set VertDist $Sim(EmVerticalDist)
