@@ -55,7 +55,7 @@ proc TRAJECT::InitNew { Type } {
    } else {
 
       #----- Ajuster les fonctions de niveau selon tout autre type.
-      set Sim(LevelUnit)   "METRES"
+      set Sim(LevelUnit)   "METERS"
       set Sim(Level1)       500.0
       set Sim(Level2)       1500.0
       set Sim(Level3)       3000.0
@@ -195,7 +195,7 @@ proc TRAJECT::CreateModelInput { } {
    variable Sim
    variable Tmp
 
-   if { $Sim(LevelUnit)=="METRES" } {
+   if { $Sim(LevelUnit)=="METERS" } {
       set unit MAGL
    } else {
       set unit PRESSURE
@@ -322,7 +322,7 @@ proc TRAJECT::Launch { } {
       set mode FORWARD
    }
 
-   if { $Sim(LevelUnit)=="METRES" } {
+   if { $Sim(LevelUnit)=="METERS" } {
       set unit MAGL
    } else {
       set unit PRESSURE
@@ -383,7 +383,7 @@ proc TRAJECT::SwitchElev { } {
 
    if { [string compare $Sim(LevelUnit) "MILLIBARS"] == 0 } {
 
-      set Sim(LevelUnit) "METRES"
+      set Sim(LevelUnit) "METERS"
 
       for { set i 1 } { $i <= 25 } { incr i } {
          if { $Sim(Level$i)!="" } {
