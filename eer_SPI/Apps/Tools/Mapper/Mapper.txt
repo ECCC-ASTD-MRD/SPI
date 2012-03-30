@@ -111,6 +111,7 @@ namespace eval Mapper { } {
    set Lbl(Histo)        { "Histogramme" "Histogram" }
    set Lbl(Burn)         { "Persistance" "Persistance" }
    set Lbl(Process)      { "Reprojection" "Reprojecting" }
+   set Lbl(Time)         { "Temps" "Time" }
 
    set Lbl(Icon)         { "Icône" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }

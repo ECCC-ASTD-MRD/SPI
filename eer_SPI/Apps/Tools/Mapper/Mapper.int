@@ -591,6 +591,13 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame1).proj.val -side right -fill both -expand true -padx 5 -pady 5
          pack  $Data(Frame1).proj -side top -fill both -expand true -padx 5 -pady 5
 
+         labelframe $Data(Frame1).time -text [lindex $Lbl(Time) $GDefs(Lang)]
+            scale $Data(Frame1).time.scale -from 0 -to 0 -resolution 1 -variable Mapper::Data(Secs) -relief raised -bd 1 \
+               -relief flat -orient horizontal -width 15 -sliderlength 10 -command { set Mapper::Data(Time) [clock format $Mapper::Data(Secs) -gmt True]; catch } -showvalue False
+            label $Data(Frame1).time.lbl -textvariable Mapper::Data(Time)
+            pack  $Data(Frame1).time.scale $Data(Frame1).time.lbl -side top -fill x -expand True
+         pack $Data(Frame1).time -side top -fill x -padx 5 -pady 5 -ipady 2
+
          labelframe $Data(Frame1).pos -text [lindex $Lbl(Position) $GDefs(Lang)]
             frame $Data(Frame1).pos.x
                label $Data(Frame1).pos.x.lbl -text X -width 6 -anchor w
@@ -715,12 +722,32 @@ proc Mapper::ParamsGDAL { Object Tab } {
    set wms $Mapper::Data(Object)
    set Data(Styles) {}
    if { [info exists ::Mapper::DepotWare::WMS::Data($wms)] } {
+
+      #----- Styles management
       set Data(Styles) [lindex $Mapper::DepotWare::WMS::Data($wms) 8]
       ComboBox::DelAll  $Data(Frame2).col.def.style.sel False
       ComboBox::AddList $Data(Frame2).col.def.style.sel $Data(Styles)
       pack $Data(Frame2).col.def.style -after $Data(Frame2).col.def.nodata -side top -fill x
-   } else {
+
+      set time [lindex $Mapper::DepotWare::WMS::Data($wms) 9]
+      set Data(T0)    [lindex $time 0]
+      set Data(T1)    [lindex $time 1]
+
+      #----- Time management
+      if { $Data(T0)=="" } {
+         pack forget $Data(Frame1).time
+      } else {
+         eval set Data(TIncr) \[clock add 0 [lindex $time 2]\]
+         $Data(Frame1).time.scale configure -from $Data(T0) -to $Data(T1) -resolution $Data(TIncr)
+
+         #----- Use bind instead of -command to activate only on button release
+         bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] $Mapper::Data(Secs); update idletasks }
+         bind $Data(Frame1).time.scale <ButtonRelease-2>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] $Mapper::Data(Secs); update idletasks }
+         pack $Data(Frame1).time -after $Data(Frame1).proj -side top -fill x -padx 5 -pady 5 -ipady 2
+      }
+    } else {
       pack forget $Data(Frame2).col.def.style
+      pack forget $Data(Frame1).time
    }
 
    $Data(Frame1).proj.val delete 0.0 end

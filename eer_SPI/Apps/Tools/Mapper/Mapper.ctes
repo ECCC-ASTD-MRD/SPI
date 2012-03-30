@@ -87,6 +87,7 @@ namespace eval Mapper { } {
    set Data(Lon0)        -180.0
    set Data(Lon1)        -180.0
    set Data(Coo)         ""
+   set Data(Time)        0
    set Data(Object)      ""
    set Data(TableObject) ""
    set Data(TableSel)    ""

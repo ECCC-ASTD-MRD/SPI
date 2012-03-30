@@ -23,6 +23,11 @@
 #    Convert::ModuloVal      { Val Mod Sens }
 #    Convert::Set2Digit      { Nb }
 #
+#    ISO8601::Decode         { ISO T0 T1 P }
+#    ISO8601::Period         { ISO }
+#    ISO8601::FromSeconds    { Sec { T T } }
+#    ISO8601::ToSeconds      { ISO }
+#
 # Remarques :
 #   Aucune
 #
@@ -431,80 +436,6 @@ proc Convert::Millibar2Meter { Value } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Convert::Sec2ISO8601>
-# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
-#
-# But      : Conversion de secondes a la norme ISO 8601.
-#
-# Parametres :
-#   <Sec>    : Secondes
-#   <T>      : Date time separator (default: T)
-#
-# Retour     :
-#   <Iso>    : Formatted date string
-#
-# Remarques :
-#    Aucune.
-#
-#-------------------------------------------------------------------------------
-
-proc Convert::Sec2ISO8601 { Sec { T T } } {
-    return [clock format $Sec -format "%Y-%m-%d${T}%H:%M:%SZ" -timezone :UTC]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Convert::ISO86012Sec>
-# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
-#
-# But      : Conversion de temp a la norme ISO 8601 en seconds
-#
-# Parametres :
-#   <iso>    : Formatted date string
-#
-# Retour     :
-#   <Sec>    : Secondes
-#
-# Remarques :
-#    Aucune.
-#
-#-------------------------------------------------------------------------------
-
-proc Convert::ISO86012Sec { ISO } {
-    return [clock scan [string map { T " " } $ISO] -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <Convert::PT2Sec>
-# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Convert a period of time from ISO8601 to seconds
-#
-# Parametres :
-#   <PT>     : Period of time
-#
-# Retour     :
-#   <Secs>   : Seconds
-#
-# Remarque :
-#-------------------------------------------------------------------------------
-
-proc Convert::PT2Sec { PT } {
-
-   set unit [string index $PT end]
-   set delt [string range $PT 2 end-1]
-
-   switch "$unit" {
-      "W" { set delts 604800 }
-      "D" { set delts 86400 }
-      "H" { set delts 3600 }
-      "M" { set delts 60 }
-      "S" { set delts 1 }
-   }
-
-   return [expr ($delt*$delts)]
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <Convert::ModuloVal>
 # Creation : Janvier 1998 - J.P. Gauthier - CMC/CMOE - 421 4642
 #
@@ -566,4 +497,175 @@ proc Convert::Set2Digit { Nb } {
    }
 
    return [format "%02d" ${Nb}]
+}
+
+namespace eval ISO8601 { }
+
+#-------------------------------------------------------------------------------
+# Nom      : <ISO8601::FromSeconds>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Conversion de secondes a la norme ISO 8601.
+#
+# Parametres :
+#   <Sec>    : Secondes
+#   <T>      : Date time separator (default: T)
+#
+# Retour     :
+#   <Iso>    : Formatted date string
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc ISO8601::FromSeconds { Sec { T T } } {
+    return [clock format $Sec -format "%Y-%m-%d${T}%H:%M:%SZ" -timezone :UTC]
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <ISO8601::ToSeconds>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Conversion de temp a la norme ISO 8601 en seconds
+#
+# Parametres :
+#   <ISO>    : Formatted date string
+#
+# Retour     :
+#   <Sec>    : Secondes
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc ISO8601::ToSeconds { ISO } {
+
+   set iso [string map { T " " } $ISO]
+
+   if { [llength $iso]==2 } {
+      return [clock scan $iso -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
+   } else {
+      if { [string first : $iso]!=-1 } {
+         return [clock scan $iso -format "%H:%M:%S%Z" -timezone :UTC]
+      } else {
+         return [clock scan $iso -format "%Y-%m-%d" -timezone :UTC]
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <ISO8601::Period>
+# Creation : Mars 2012 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Conversion de periode de temp a la norme ISO 8601 en periode tcl
+#
+# Parametres :
+#   <ISO>    : Formatted date string
+#
+# Retour     :
+#   <Period> : Periode TCL
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc ISO8601::Period { ISO } {
+
+   set p [split $ISO T]
+
+   if { [llength $p]==1 } {
+      set period [string map { P "" Y " years " M " month " D " days " W " weeks " } [lindex $p 0]]
+   }
+   if { [llength $p]==2 } {
+      set period    [string map { P "" Y " years " M " months " D " days " W " weeks " } [lindex $p 0]]
+      append period [string map { P "" H " hours " M " minutes " S " seconds" } [lindex $p end]]
+   }
+   return $period
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Convert::ISO8601Decode>
+# Creation : Mars 2012 - J.P. Gauthier - CMC/CMOE - 421 4642
+#
+# But      : Decoded un champ de temp a la norme ISO 8601
+#
+# Parametres :
+#   <ISO>    : Formatted date string
+#   <T0>     : Variable de retour pour le temps de debut en secondes
+#   <T1>     : Variable de retour pour le temps de fin en secondes
+#   <P>      : Variable de retour pour la periodicite en periode TCL
+#   <L>      : Variable de retour pour la liste de temps en secondes
+#
+# Retour     :
+#
+# Remarques :
+#    Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc ISO8601::Decode { ISO T0 T1 P L } {
+
+   upvar $T0 t0
+   upvar $T1 t1
+   upvar $P  p
+   upvar $L  l
+
+   #----- Check for type of date range
+   if { [string first , $ISO]!=-1 } {
+      #----- This is a list type
+      foreach iso [split $ISO ,] {
+         lappend l [ISO8601::ToSeconds $iso]
+      }
+      set t0 [lindex $p 0]
+      set t1 [lindex $p end]
+      set p {}
+   } else {
+      #----- This is a range type
+      set i 0
+      set l {}
+      foreach iso [split $ISO /] {
+
+         #----- Decode period
+         if { [string index $iso 0]=="P" } {
+            set p [ISO8601::Period $iso]
+         } else {
+            set t$i [ISO8601::ToSeconds $iso]
+            incr i
+         }
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Convert::PT2Sec>
+# Creation : Mars 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Convert a period of time from ISO8601 to seconds
+#
+# Parametres :
+#   <PT>     : Period of time
+#
+# Retour     :
+#   <Secs>   : Seconds
+#
+# Remarque :
+#-------------------------------------------------------------------------------
+
+proc Convert::PT2Sec { PT } {
+
+   set unit [string index $PT end]
+   set delt [string range $PT 2 end-1]
+
+   switch "$unit" {
+      "W" { set delts 604800 }
+      "D" { set delts 86400 }
+      "H" { set delts 3600 }
+      "M" { set delts 60 }
+      "S" { set delts 1 }
+   }
+
+   return [expr ($delt*$delts)]
 }

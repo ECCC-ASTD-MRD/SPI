@@ -36,6 +36,7 @@ namespace eval Mapper::DepotWare::WMS {
    set Data(Title)        ""
    set Data(BBox)         ""
    set Data(Styles)       ""
+   set Data(Times)        ""
    set Data(Geographic)   ""
    set Data(Opaque)       1
 }
@@ -88,6 +89,7 @@ proc Mapper::DepotWare::WMS::Params { Frame } {
 
 proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
    global GDefs
+   variable Data
    variable Msg
 
    set str [http::config -useragent]
@@ -123,7 +125,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
          }
       }
 
-      #----- Parse the availabel layers
+      #----- Parse the available layers
       set layer [lindex [$root getElementsByTagName Layer] 0]
       Mapper::DepotWare::WMS::ParseLayer $Path $layer $Tree $Branch
       $doc delete
@@ -233,7 +235,8 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
       set Data(Cache)  1
       set Data(Opaque) {}
    }
-   set Data(Style)  {}
+   set Data(Styles) {}
+   set Data(Times)  {}
    set childs       {}
 
    foreach node [$Node childNodes] {
@@ -250,12 +253,13 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          Dimension                { set Data(Cache) 0 }
          DataURL                  { }
          Style                    { Mapper::DepotWare::WMS::ParseStyle $node }
+         Extent                   { Mapper::DepotWare::WMS::ParseExtent $node }
       }
    }
 
 
    if { $Data(Identifier)!="" } {
-      set Data($Data(Title)) [list $URL $Data(Title) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Style) $Data(Opaque) $Data(Cache)]
+      set Data($Data(Title)) [list $URL $Data(Title) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Styles) $Data(Times) $Data(Opaque) $Data(Cache)]
       lappend Data(Layers) $Data(Title)
    } else {
       set Data($Data(Title)) [list $URL $Data(Title)]
@@ -289,11 +293,11 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
 proc Mapper::DepotWare::WMS::ParseStyle { Node } {
    variable Data
 
-   lappend Data(Style) [list [[[$Node getElementsByTagName Name] firstChild] nodeValue] [[[$Node getElementsByTagName Title] firstChild] nodeValue]]
+   lappend Data(Styles) [list [[[$Node getElementsByTagName Name] firstChild] nodeValue] [[[$Node getElementsByTagName Title] firstChild] nodeValue]]
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::DepotWare::WMS::ParseDimension>
+# Nom      : <Mapper::DepotWare::WMS::ParseExtent>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Decoder du XML pour en extraire l'information des dimensions.
@@ -307,9 +311,22 @@ proc Mapper::DepotWare::WMS::ParseStyle { Node } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::DepotWare::WMS::ParseDimension { Node } {
+proc Mapper::DepotWare::WMS::ParseExtent { Node } {
    variable Data
 
+   set type [$Node getAttribute name]
+   set t0 0
+   set t1 0
+   set p  ""
+   set l  ""
+
+   switch $type {
+      "time" { set iso [[$Node firstChild] nodeValue]
+               ISO8601::Decode $iso t0 t1 p l
+               set Data(Times) [list $t0 $t1 $p $l]
+             }
+      "elevation" { }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -391,9 +408,9 @@ proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
       [$Node getAttribute maxx] [$Node getAttribute miny]]
 }
 
-proc Mapper::DepotWare::WMS::ReLoad { Layer Style } {
+proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
 
-   set def  [Mapper::DepotWare::WMS::BuildXMLDef $Layer $Style]
+   set def  [Mapper::DepotWare::WMS::BuildXMLDef $Layer $Style $Time]
 
    gdalband free $Layer
    gdalfile close $Mapper::Data(Id$Layer)
@@ -435,20 +452,20 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    set sizey  [lindex $Data($Layer) 6]
    set format [lindex $Data($Layer) 7]
    set styles [lindex $Data($Layer) 8]
-   set opaque [lindex $Data($Layer) 9]
-   set cache  [lindex $Data($Layer) 10]
+   set opaque [lindex $Data($Layer) 10]
+   set cache  [lindex $Data($Layer) 11]
 
    if { $opaque==0 } {
       set bands 4
-      set ttag TRANSPARENT=TRUE&
+      set ttag TRUE
       set format "image/png"
     } else {
       set bands 3
-      set ttag TRANSPARENT=FALSE&
+      set ttag FALSE
    }
 
    if { $Time!="" } {
-      set Time "TIME=[Convert::Sec2ISO8601 $Sec]&"
+      set Time "TIME=[ISO8601::FromSeconds $Time]&"
    }
 
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
@@ -472,10 +489,9 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
       set url $url
    }
 
-
    set xml "<GDAL_WMS>\n   <Service name=\"WMS\">\n      <Version>$Data(Version)</Version>\n"
-   append xml "      <ServerUrl>${url}${ttag}${Time}</ServerUrl>\n      <SRS>EPSG:4326</SRS>\n      <ImageFormat>$format</ImageFormat>\n"
-   append xml "      <Layers>$layer</Layers>\n      <Styles>${Style}</Styles>\n   </Service>\n"
+   append xml "      <ServerUrl>${url}${Time}</ServerUrl>\n      <SRS>EPSG:4326</SRS>\n      <ImageFormat>$format</ImageFormat>\n"
+   append xml "      <Layers>$layer</Layers>\n      <Transparent>$ttag</Transparent>\n      <Styles>${Style}</Styles>\n   </Service>\n"
 
    append xml "   <DataWindow>\n      <UpperLeftX>[lindex $geog 0]</UpperLeftX>\n      <UpperLeftY>[lindex $geog 1]</UpperLeftY>\n      <LowerRightX>[lindex $geog 2]</LowerRightX>\n      <LowerRightY>[lindex $geog 3]</LowerRightY>\n      <SizeX>$sizex</SizeX>\n      <SizeY>$sizey</SizeY>\n   </DataWindow>\n"
    append xml "   <Projection>EPSG:4326</Projection>\n   <BandsCount>$bands</BandsCount>\n   <BlockSizeX>$Data(BlockSize)</BlockSizeX>\n   <BlockSizeY>$Data(BlockSize)</BlockSizeY>\n"
