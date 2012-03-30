@@ -412,14 +412,27 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
 
    set def  [Mapper::DepotWare::WMS::BuildXMLDef $Layer $Style $Time]
 
+   Mapper::ParamsGDALGet $Layer
+
    gdalband free $Layer
    gdalfile close $Mapper::Data(Id$Layer)
    unset Mapper::Data(Id$Layer)
 
    set band [Mapper::ReadBand $def "" 3]
 
+   #----- Force configuration parameters
+   set Mapper::Data(Red)   $Mapper::Data(Band0$band)
+   set Mapper::Data(Green) $Mapper::Data(Band1$band)
+   set Mapper::Data(Blue)  $Mapper::Data(Band2$band)
+   set Mapper::Data(Alpha) $Mapper::Data(Band3$band)
+   set Mapper::Data(BandX) $Mapper::Data(BandX$band)
+   set Mapper::Data(BandY) $Mapper::Data(BandY$band)
+
+   Mapper::ParamsGDALSet $band False
+   Mapper::ParamsGDAL $band 0
+
    #----- Decrease effective resolution (WMS-TMS)
-   gdalband configure $band -texres 3 -sizevar $Style
+   gdalband configure $band -sizevar $Style
 
    Page::Update $Page::Data(Frame)
 }
