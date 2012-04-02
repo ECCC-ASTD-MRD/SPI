@@ -2069,9 +2069,9 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    TGeoRef    *ref;
    Tcl_Obj    *obj,*lst;
 
-   static CONST char *sopt[] = { "-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
+   static CONST char *sopt[] = { "-date","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
                                  "-height","-nb","-type","-positional","-fid",NULL };
-   enum        opt {  GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
+   enum        opt {  DATE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2086,6 +2086,14 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
 
       switch ((enum opt)idx) {
+
+         case DATE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(band->Date));
+            } else {
+               Tcl_GetLongFromObj(Interp,Objv[++i],&band->Date);
+            }
+            break;
 
          case FID:
             if (Objc==1) {

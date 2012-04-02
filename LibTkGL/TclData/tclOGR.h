@@ -73,12 +73,12 @@ typedef struct OGR_Layer {
    OGR_Sort         Sort;
    char            *Select;
 
-   TGeoRef       *Ref;          /*GeoReference*/
-   TDataSpec     *Spec;         /*Specification des donnees*/
+   TGeoRef       *Ref;          /* GeoReference */
+   TDataSpec     *Spec;         /* Specification des donnees */
 
    Vect3d         Vr[2];
    int            Update;
-   int            Mask,FMask;   /*Masque*/
+   int            Mask,FMask;   /* Masque */
    GLuint         LFeature;
    unsigned int   NFeature;
    unsigned int   GFeature;

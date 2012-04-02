@@ -68,9 +68,10 @@ typedef struct GDAL_Band {
 
    TGeoTex      Tex;                  /* Tiled texture info */
 
+   time_t        Date;                /* Valid time */
    TGeoRef      *Ref;                 /* GeoReference */
    TDataDef     *Def;                 /* Data definition */
-   TDataSpec    *Spec;                /*Specification des donnees*/
+   TDataSpec    *Spec;                /* Specification des donnees*/
    TDataStat    *Stat;                /* Data stats */
 } GDAL_Band;
 

@@ -762,6 +762,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
    band->Def        =NULL;
    band->Stat       =NULL;
    band->Tag        =NULL;
+   band->Date       =0;
 
    memset(band->Band,0x0,256*sizeof(GDALRasterBandH));
 
