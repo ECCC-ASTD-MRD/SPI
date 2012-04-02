@@ -739,6 +739,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
       } else {
          eval set Data(TIncr) \[clock add 0 [lindex $time 2]\]
          $Data(Frame1).time.scale configure -from $Data(T0) -to $Data(T1) -resolution $Data(TIncr)
+         set Data(Secs)  [gdalband define $Object -date]
 
          #----- Use bind instead of -command to activate only on button release
          bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] $Mapper::Data(Secs); update idletasks }
