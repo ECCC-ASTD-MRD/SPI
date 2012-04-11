@@ -154,6 +154,7 @@ namespace eval Animator {
    #----- Messages d'erreur
 
    set Error(WebAnimMake)  { "Une erreur est survenue lors de la génération de l'animation web." "An error occured while generating web animation." }
+   set Error(WebAnimZip)   { "Une erreur est survenue lors de la création du fichier zip, le zip ne sera pas transféré." "An error occured while generating the zipped animation. The zipped animation will not be transfered." }
    set Error(WebAnimXfer)  { "Une erreur est survenue lors du transfert de l'animation web." "An error occured during web animation transmission." }
 }
 
@@ -1073,6 +1074,15 @@ proc Animator::PlayWeb { } {
       catch { file delete -force $base }
       catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
       return
+   }
+
+   #----- Generate animation zipfile
+   set p [pwd]
+   cd  $base
+   set err [catch { exec zip -r ${filename}/Animation.zip ${filename} 2>@1 } msg]
+   cd $p
+   if { $err } {
+      Dialog::Error .anim $Error(WebAnimZip) "\n$msg"
    }
 
    #----- Set permissions
