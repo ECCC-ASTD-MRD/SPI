@@ -261,7 +261,7 @@ proc TRAJECT::CreateScriptInput { } {
    puts $file "\n#----- Logger specific parameters\n"
    puts $file "LOG_MAILTO=\"$Model::Param(EMail)\""
    puts $file "LOG_MAILTITLE=\"$Sim(Model) ($Model::Param(App))\""
-   puts $file "LOG_FILE=tmp/Model_TRAJECT.out"
+   puts $file "LOG_FILE=$Sim(PathRun)/tmp/Model_TRAJECT.out"
    puts $file "LOG_LEVEL=$Model::Param(LogLevel)"
    puts $file "LOG_TIME=$Model::Param(LogTime)"
    puts $file "LOG_JOBID=$Sim(Model)"
