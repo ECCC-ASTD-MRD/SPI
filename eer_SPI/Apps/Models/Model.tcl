@@ -759,9 +759,9 @@ proc Model::ParamsMetDataDir { Model } {
 
    if { $Param(DBaseType)!="user" } {
 
-      #----- Define meto path
+      #----- Define meteo path
       set dbops $env(CMCGRIDF)
-      set dbeer $env(CMCGRIDF)
+      set dbeer /cnfs/ops/production/cmoe/dbase
 
       if { [info exists GDefs(Host_$Param(Host))] } {
          set dbops $Param(Host):[lindex $GDefs(Host_$Param(Host)) 1]
