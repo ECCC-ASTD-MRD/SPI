@@ -73,11 +73,10 @@ function MLDP_Run {
    export MLDP1_MPI_OMP_PARAMS=""
 
    #----- Check for MPI params.
-   if [[ ${ARCH} = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
-      export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:${PATH}
+   if [[ `uname` = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
       export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
-      Log_Print DEBUG "Version of r.mpiexec: `which r.mpiexec`"
-      ${MODEL_TIMER} r.mpiexec \
+
+      ${MODEL_TIMER} r.mpirun2 \
          -npex ${MODEL_NBMPITASKS} \
          -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
          -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \

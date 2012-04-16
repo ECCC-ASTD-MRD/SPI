@@ -32,6 +32,7 @@
 
 #----- have to overload some variables for now
 export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
+export EER_DIRSCRIPT=/home/afsr/005/eer_SPI-7.5.1/Script
 export EER_DIRDATA=/home/binops/afse/eer/eer_SPI-7.5.1/Data
 export SPI_PATH=/home/binops/afse/eer/eer_SPI-7.5.1
 
@@ -360,6 +361,11 @@ MODEL_ISREMOTE=0
 MODEL_NEEDCOPY=0
 MODEL_EXITSTATUS=0
 
+#----- Logger parameters
+
+LOG_TIME=1
+LOG_LEVEL=INFO
+
 #----- Read parameters within directives input file.
 if [[ -f ${1} ]]
 then
@@ -374,10 +380,6 @@ fi
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
 . ${EER_DIRSCRIPT}/Model_${MODEL_NAME}.sh
-
-#----- Start the job
-LOG_TIME=1
-LOG_LEVEL=INFO
 
 Log_Start Model.sh 1.0 ${1}
 
