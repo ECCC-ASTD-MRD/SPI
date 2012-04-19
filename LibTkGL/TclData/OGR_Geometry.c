@@ -1075,6 +1075,8 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
 
          Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+         co.Lat=CLAMP(co.Lat,-90.0,90.0);
+         co.Lon=CLAMP(co.Lon,-180.0,180.0);
 
          /*Keep latlon extent since it's not the same than the original extent reprojected to latlon*/
          Ref->LLExtent.MinX=Ref->LLExtent.MinX>co.Lon?co.Lon:Ref->LLExtent.MinX;

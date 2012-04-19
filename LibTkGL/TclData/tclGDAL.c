@@ -1083,16 +1083,24 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            meta=GDALGetMetadata(file->Set,NULL);
-            if (CSLCount(meta)) {
-               obj=Tcl_NewListObj(0,NULL);
-               for (i=0;meta[i];i++) {
-                  strtrim(meta[i],' ');
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(meta[i],-1));
+            obj=Tcl_NewListObj(0,NULL);
+            if (file->Meta) {
+               i=0;
+               while(file->Meta[i]) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(file->Meta[i],-1));
+                  i++;
                }
-               Tcl_SetObjResult(Interp,obj);
-   //            CSLDestroy(meta);
+            } else {
+               meta=GDALGetMetadata(file->Set,NULL);
+               if (CSLCount(meta)) {
+                  for (i=0;meta[i];i++) {
+                     strtrim(meta[i],' ');
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(meta[i],-1));
+                  }
+      //            CSLDestroy(meta);
+               }
             }
+            Tcl_SetObjResult(Interp,obj);
          }
          break;
 
