@@ -213,12 +213,16 @@ proc TRAJECT::CreateModelInput { } {
    puts $f [format "%-20s= %-12.1f # Batch mode trajectory duration \[hours\]" MDL_BATCH_LEN $Sim(Duration)]
 
    puts $f "\n#----- Source parameters\n"
-   if { [llength [lindex $Sim(Level) 0]]==1 } {
-      set levelslist [list $Sim(Level)]
-   } else {
+#    if { [llength [lindex $Sim(Level) 0]]==1 } {
+#       set levelslist [list $Sim(Level)]
+#    } else {
+#       set levelslist $Sim(Level)
+#    }
+   if { $Sim(MultiLevel) } {
       set levelslist $Sim(Level)
+   } else {
+      set levelslist [list $Sim(Level)]
    }
-
    foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $levelslist {
       foreach level $levels {
          lappend Sim(Particles) [list $lon $lat $level $name]
