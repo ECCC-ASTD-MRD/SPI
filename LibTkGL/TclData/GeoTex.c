@@ -768,8 +768,8 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          /*Process subtile*/
          if ((res=Resolution>>1)) {
             d=res*Band->Spec->TexSize;
-            x1=X0+d>=Band->Ref->X1?X0:X0+d;
-            y1=Y0+d>=Band->Ref->Y1?Y0:Y0+d;
+            x1=(X0+d)>=Band->Ref->X1?X0:X0+d;
+            y1=(Y0+d)>=Band->Ref->Y1?Y0:Y0+d;
 
             if (!GeoTex_Parse(Band,&(*Tile)->Sub[0],Proj,VP,res,X0,Y0)) return(0);
             if (x1==X0) {
@@ -782,7 +782,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
             } else {
                if (!GeoTex_Parse(Band,&(*Tile)->Sub[3],Proj,VP,res,X0,y1)) return(0);
             }
-            if (x1==X0 && y1==Y0) {
+            if (x1==X0 || y1==Y0) {
                (*Tile)->Sub[2]=(TGeoTexTile*)0x1;
             } else {
                if (!GeoTex_Parse(Band,&(*Tile)->Sub[2],Proj,VP,res,x1,y1)) return(0);
@@ -938,6 +938,7 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
          dy=1.0/(Tile->Tly-1);
          nx=(Tile->Tlx+1)>>1;
          ny=(Tile->Tly+1)>>1;
+
          if (!tl[0]) {
             for(x=0;x<nx-1;x++) {
                glBegin(GL_QUAD_STRIP);
