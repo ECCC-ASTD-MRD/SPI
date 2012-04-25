@@ -746,10 +746,13 @@ proc ProjCam::XYDone { Cam Frame  { Sling False } } {
    if { $Sling } {
       set dt [expr [clock click -milliseconds]-$Viewport::Map(Grabbed)]
       set dg [expr $cam(CFX)-$Data(CFX0)]
+
+      #----- Calculate displacement in meters
       set dx [expr (3.141592653589793115997963468544*$cam(CFZ)*6378140/180.0)*$dg*0.017453292519943295474371680598]
 
       if { [expr abs($dg)]>1 && $dt>0  && $dt<250 } {
-         set spd [expr int($dx/$dt)]
+         #----- speed = distance / temps
+         set spd [expr int($dx/$dt)*0.1]
          set res [Viewport::GoAround $Frame $spd $Viewport::Map(Lat) $Viewport::Map(Lon)]
       }
    }

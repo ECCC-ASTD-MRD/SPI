@@ -2438,7 +2438,6 @@ proc Viewport::GoAround { Frame Speed Lat Lon { Damping True } } {
       projection configure $Frame -location $Map(Lat) $Map(Lon)
 
       #----- While the speed is fast enough
-
       while { [expr abs($Map(Speed))]>$min } {
 
          #----- Damp the speed and calculate the displacement along the bearing
@@ -2448,7 +2447,11 @@ proc Viewport::GoAround { Frame Speed Lat Lon { Damping True } } {
          }
          set t1 $t2
          set t2 [clock click -milliseconds]
+
+         #----- Get distance increment over time
          set dx [expr $dx+$Map(Speed)*($t2-$t1)]
+
+         #----- Calculate angle of dispolacement
          set dg [expr ($dx/0.017453292519943295474371680598)/(3.141592653589793115997963468544*$cam(CFZ)*6378140/180.0)]
 
          set cam(CFX) [Viewport::CheckCoord [expr $fg+($dg)]]
