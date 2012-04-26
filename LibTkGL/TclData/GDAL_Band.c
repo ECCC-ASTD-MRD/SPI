@@ -2626,7 +2626,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    if ((prog=GLRender->Prog[PROG_DATATEX])) {
       glUseProgramObjectARB(prog);
 
-   if (Band->Spec->Map) {
+      if (Band->Spec->Map) {
          glGenTextures(1,&tx);
          glActiveTexture(GL_TEXTURE1);
          glBindTexture(GL_TEXTURE_1D,tx);

@@ -689,7 +689,7 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
 int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom) {
 
    float *from,*to;
-   int    gridfrom,gridto,i,id;
+   int    gridfrom,gridto,i,id,ip1;
 
    FSTD_Head *headto=(FSTD_Head*)FieldTo->Head;
    FSTD_Head *headfrom=(FSTD_Head*)FieldFrom->Head;
@@ -837,7 +837,10 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FieldTo->Ref->Type=FieldFrom->Ref->Type;
       FieldTo->Ref->Id=FieldFrom->Ref->Id;
    }
+
+   ip1=((FSTD_Head*)FieldTo->Head)->IP1;
    memcpy(headto,headfrom,sizeof(FSTD_Head));
+   ((FSTD_Head*)FieldTo->Head)->IP1=ip1;
 
    if (FieldTo->Stat) {
       free(FieldTo->Stat);

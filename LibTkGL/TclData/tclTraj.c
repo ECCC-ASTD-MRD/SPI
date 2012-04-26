@@ -775,7 +775,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
                spec->Inter[0]=3*3600;
                spec->InterVals=Tcl_NewListObj(0,NULL);
                Tcl_IncrRefCount(spec->InterVals);
-               Tcl_ListObjAppendElement(Interp,spec->InterVals,Tcl_NewIntObj(3*3600));
+               Tcl_ListObjAppendElement(Interp,spec->InterVals,Tcl_NewIntObj(spec->Inter[0]));
                Tcl_ListObjAppendElement(Interp,obj,sub);
             } else {
                Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Could not create trajectory object link",(char*)NULL);
@@ -795,7 +795,6 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          sscanf(buf,"%Li %lf %lf %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
 
          /*Loop on parcel positions*/
-         traj->Spec=spec;
          for(j=0;j<traj->NPr;j++) {
             fgets(buf,512,Stream);
             memset(&traj->Pr[j],0x0,sizeof(TParticle));
