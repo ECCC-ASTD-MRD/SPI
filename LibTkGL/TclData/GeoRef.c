@@ -1222,10 +1222,10 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
      return(0);
 
    /*Pacth temporaire du au lagrangien qui doivent avoir des GeoRef differents*/
-   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#')
+   if (Ref0->Grid[0]=='M' || Ref0->Grid[0]=='X' || Ref0->Grid[0]=='Y' || Ref0->Grid[1]=='Y' || Ref0->Grid[0]=='#')
       return(0);
 
-   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#')
+   if (Ref1->Grid[0]=='M' || Ref1->Grid[0]=='X' || Ref1->Grid[0]=='Y' || Ref1->Grid[1]=='Y' || Ref1->Grid[0]=='#')
       return(0);
 
    /*Test for limits but only for ther refs with transforms (bands)*/
