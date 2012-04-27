@@ -782,7 +782,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"DataSpec_Config: wrong value, must be [ AUTO | INTEGER | FLOAT | EXPONENTIAL ]",(char*) NULL);
                   return(TCL_ERROR);
                }
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->InterM);
+
+               // Check for number of decimals
+               ii=i;
+               if (++ii<Objc && Tcl_GetString(Objv[ii])[0]!='-') {
+                  Tcl_GetIntFromObj(Interp,Objv[ii],&Spec->InterM);
+                  i=ii;
+               }
+
                if (Spec->InterM>0)
                   Spec->InterM+=100;
             }
