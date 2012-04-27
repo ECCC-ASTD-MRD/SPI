@@ -2318,7 +2318,8 @@ int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,int Y,
       trTileSize(GLRender->TRCon,wt-2,ht-2,1);
    }
    trImageSize(GLRender->TRCon,w,h);
-   trOrtho(GLRender->TRCon,0,w-1,h-1,0,-1,1);
+//   trOrtho(GLRender->TRCon,0,w-1,h-1,0,-1,1);
+   trOrtho(GLRender->TRCon,0,w,h,-1,-1,1);
 
    x=canvasPtr->xOrigin;
    y=canvasPtr->yOrigin;
