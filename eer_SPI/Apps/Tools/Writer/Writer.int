@@ -117,6 +117,9 @@ proc Writer::Menu { } {
       .writer.menu.win.menu.new add separator
       .writer.menu.win.menu.new add command -label "AACN" \
          -command { Writer::PadNew AACN New NEW "" }
+      .writer.menu.win.menu.new add separator
+      .writer.menu.win.menu.new add command -label "VASIGMET" \
+         -command { Writer::PadNew VASIGMET New NEW "" }
 
    menu .writer.menu.msg.menu
       .writer.menu.msg.menu add command -label [lindex $Lbl(Update) $GDefs(Lang)] \

@@ -263,6 +263,9 @@ proc Writer::PadSwitch { Tab No } {
    if { [winfo exists $Data(Pad).aacn] } {
       set Data(Type) AACN
    }
+   if { [winfo exists $Data(Pad).vasigmet] } {
+      set Data(Type) VASIGMET
+   }
 }
 
 
@@ -465,7 +468,7 @@ proc Writer::TextExpandNew { Text Len { Max 0 } } {
    $Text configure -height $he
    $Text delete 0.0 end
    $Text insert 0.0 [join $txt \n]
-         $Text mark set insert $insert
+   $Text mark set insert $insert
   return $he
 }
 
