@@ -1475,7 +1475,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   }
                } else {
                   if (grtyp[0]=='L' || grtyp[0]=='N' || grtyp[0]=='S') {
-                     if (Objc>3 && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
+                     if (i+4<Objc && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg1);
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg2);
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg3);
@@ -1483,13 +1483,19 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                         xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
                         f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4);
+                     } else {
+                        Tcl_AppendResult(Interp,"Invalid number of arguments, must be -GRTYP type xg1 xg2 xg3 xg4",(char*)NULL);
+                        return(TCL_ERROR);
                      }
                   } else if (grtyp[0]=='A' || grtyp[0]=='B' || grtyp[0]=='G') {
-                     if (Objc>3 && (Tcl_GetIntFromObj(Interp,Objv[i+1],&j)!=TCL_ERROR)) {
+                     if (i+4<Objc && (Tcl_GetIntFromObj(Interp,Objv[i+1],&j)!=TCL_ERROR)) {
                         Tcl_GetIntFromObj(Interp,Objv[++i],&head->IG1);
                         Tcl_GetIntFromObj(Interp,Objv[++i],&head->IG2);
                         Tcl_GetIntFromObj(Interp,Objv[++i],&head->IG3);
                         Tcl_GetIntFromObj(Interp,Objv[++i],&head->IG4);
+                     } else {
+                        Tcl_AppendResult(Interp,"Invalid number of arguments, must be -GRTYP type ig1 ig2 ig3 ig4",(char*)NULL);
+                        return(TCL_ERROR);
                      }
                   } else if (grtyp[0]=='V') {
                      if (!Field->Ref) {
