@@ -17,8 +17,8 @@ namespace eval Writer::VASIGMET {
    variable Data
 
    set Data(Seconds) [clock seconds]
-   set Data(Mail)    { Jean-Philippe.Gauthier@ec.gc.ca }
-   set Data(CCMail)  { Jean-Philippe.Gauthier@ec.gc.ca }
+   set Data(Mail)    { }
+   set Data(CCMail)  { }
 }
 
 #----------------------------------------------------------------------------
