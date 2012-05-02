@@ -271,7 +271,11 @@ namespace eval Watch {
 }
 
 namespace eval Writer {
-   set Param(Path)      { }
+   set Param(Path)             { }
+
+   set VASIGMET::Param(Mail)   { }
+   set VASIGMET::Param(CCMail) { }
+
 }
 
 namespace eval NowCaster {

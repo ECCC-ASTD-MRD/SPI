@@ -14,11 +14,13 @@
 #===============================================================================
 
 namespace eval Writer::VASIGMET {
+   variable Param
    variable Data
 
    set Data(Seconds) [clock seconds]
-   set Data(Mail)    { }
-   set Data(CCMail)  { }
+
+   set Param(Mail)    { }
+   set Param(CCMail)  { }
 }
 
 #----------------------------------------------------------------------------
@@ -333,8 +335,7 @@ proc Writer::VASIGMET::Read { Pad File} {
 #-------------------------------------------------------------------------------
 
 proc Writer::VASIGMET::Send { Pad { Backup 0 } } {
-   global   GDefs
-   variable Data
+   variable Param
 
    #----- Sauvegarder le message
 
@@ -345,7 +346,7 @@ proc Writer::VASIGMET::Send { Pad { Backup 0 } } {
 
    exec chmod 644 $file
 
-   set err [catch { exec cat ${file} | mail -s "VA SIGMET List of coordinates" -c $Data(CCMail) $Data(Mail) } msg]
+   set err [catch { exec cat ${file} | mail -s "VA SIGMET List of coordinates" -c $Param(CCMail) $Param(Mail) } msg]
    if { $err } {
       Log::Print ERROR "Unable to send $file via mail.\n\n$msg"
    }
