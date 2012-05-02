@@ -864,11 +864,10 @@ proc SatData::UpdateItems { Frame } {
 
       $Data(Canvas) delete SAT RANGESATDATA
 
-      if { ![llength [info commands $Data(VP)]] } {
+      if { $Data(VP)=="" || ![llength [info commands $Data(VP)]] } {
          set Data(VP) ""
          return
       }
-
       if { $Data(Coo)!="" } {
          Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) RANGESATDATA darkgreen
          SatData::DrawCoords $Data(Canvas)
