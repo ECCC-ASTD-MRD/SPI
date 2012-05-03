@@ -40,6 +40,7 @@
 . ~/.profile_eer >/dev/null 2>&1
 
 #----- Load standard functions
+export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
 . ${EER_DIRSCRIPT}/Logger.sh
 
 Log_Start Model_MeteoMLDPn.sh 2.0
@@ -94,6 +95,7 @@ C
  CONV(Z0,0.0,1.0,0.01)
  CONV(EN,0.0,1.0,0.0001)
  CHAMP(H ,TOUT)
+ CHAMP(PT,TOUT)
  CHAMP(P0,TOUT)
  CHAMP(TG,TOUT)
  CHAMP(PT,TOUT)
@@ -109,10 +111,10 @@ C
 EOF_PGSM_METEO
 
 #----- Meteorological fields
-if [ -f ${Model} ]
+if [ -r ${Model} ]
 then
    cat ${Model} >> tmp/pgsm.dir
-elif [ -f ${EER_DIRSCRIPT}/Model_MeteoConfig/${Model}.dir ]
+elif [ -r ${EER_DIRSCRIPT}/Model_MeteoConfig/${Model}.dir ]
 then
    cat ${EER_DIRSCRIPT}/Model_MeteoConfig/${Model}.dir >> tmp/pgsm.dir
 else

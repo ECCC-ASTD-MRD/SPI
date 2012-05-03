@@ -75,7 +75,6 @@ function MLDP_Run {
    #----- Check for MPI params.
    if [[ `uname` = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
       export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
-
       ${MODEL_TIMER} r.mpirun2 \
          -npex ${MODEL_NBMPITASKS} \
          -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
