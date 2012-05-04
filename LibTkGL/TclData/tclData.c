@@ -168,7 +168,6 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    double     nd,val;
 
    static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","NORMALIZED_COUNT","COUNT","NOP",NULL };
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "copy","free","configure","stats","sort","clear","clean","wipe","is",NULL };
    enum                opt { COPY,FREE,CONFIGURE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
@@ -1454,7 +1453,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN","ANGLE" };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
@@ -2315,9 +2313,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case LEVELTYPE:
             if (Objc==1) {
                if (Field->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(type[Field->Ref->ZRef.Type],-1));
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(LVL_NAMES[Field->Ref->ZRef.Type],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],type,"type",0,&index)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],LVL_NAMES,"type",0,&index)!=TCL_OK) {
                   return(TCL_ERROR);
                }
                Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,index,(Field->Ref?Field->Ref->ZRef.Levels:NULL));
