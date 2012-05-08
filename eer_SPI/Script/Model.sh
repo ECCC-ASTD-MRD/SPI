@@ -27,14 +27,6 @@
 #   Aucune.
 #===============================================================================
 
-. ~/.profile >/dev/null 2>&1
-. ~/.profile_eer >/dev/null 2>&1
-
-#----- have to overload some variables for now
-export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
-export EER_DIRDATA=/home/binops/afse/eer/eer_SPI-7.5.1/Data
-export SPI_PATH=/home/binops/afse/eer/eer_SPI-7.5.1
-
 function Model_PoolEncode {
 
    Log_Print INFO "Encoding pool information within model results standard files."
@@ -320,7 +312,7 @@ function Model_CopyLog {
       Log_Print INFO "Copying log files (output and error) to temporary directory on local host (${MODEL_LOCALHOST})"
 
       #----- Copy relevant log files to local results directory.
-      srcp -p ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp/*.err ${MODEL_RUNDIR}/tmp/*.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
+      srcp -p ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp/*.err ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp/*.out ${MODEL_USER}@${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp
       status=$?
       MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
 
@@ -361,7 +353,6 @@ MODEL_NEEDCOPY=0
 MODEL_EXITSTATUS=0
 
 #----- Logger parameters
-
 LOG_TIME=1
 LOG_LEVEL=INFO
 
@@ -375,6 +366,9 @@ then
    . /tmp/$$.in
    rm /tmp/$$.in
 fi
+
+. ~/.profile >/dev/null 2>&1
+. ~/.profile.d/.batch_profile >/dev/null 2>&1
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
