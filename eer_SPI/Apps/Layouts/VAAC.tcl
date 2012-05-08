@@ -777,14 +777,19 @@ proc VAAC::Transmit { Frame } {
 
          set run [lindex [fstdstamp todate [fstdfield define FLD1 -DATEO]] 3]
 
-         #----- Generer le fichier image
+         #----- Generer le fichier image pour IM
 
          SPI::Progress +$n  "Generating postscript for VAAC Map $Data(Hours_)"
          $Frame.page.canvas postscript -x 0 -y 0 -width [Page::CanvasWidth $Frame] -height [Page::CanvasHeight $Frame] \
             -rotate false -colormode color -pageheight 2157p -file $file.ps
          SPI::Progress +$n "Converting to portable bitmap format (1728x2157)"
-         exec grep -v showpage $file.ps | convert -density 72 -geometry 1728x2157! - $file.pbm
+         exec grep -v showpage $file.ps | convert -density 72 -geometry 1728x2157! -flatten -ordered-dither 2x2  - $file.pbm
          catch { exec chmod 644 ${file}.pbm }
+
+         #----- Generer le fichier image pour WXO
+
+         exec grep -v showpage $file.ps  | convert -density 72 -resize 680x880 -flatten - ${file}.png
+         catch { exec chmod 644 ${file}.png }
 
          #----- Obtenir le bon numero de transmission
 
@@ -807,15 +812,11 @@ proc VAAC::Transmit { Frame } {
                SPI::Progress +0 "Sending over WAFS"
 
                set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm 0$Data(SendWAS)$Data(SendBRA) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
-
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to send the $file.pbm over WAFS via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
                }
 
                #----- envoyer sur les sites web.
-
-               exec convert ${file}.pbm -resize 680x880 ${file}.png
-               catch { exec chmod 644 ${file}.png }
                set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
                if { $ErrCatch != 0 } {
@@ -827,15 +828,11 @@ proc VAAC::Transmit { Frame } {
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
             set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm $Data(SendSAT)00 $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
-
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to send the $file.pbm over SATNET via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
             }
 
             #----- envoyer sur les sites web.
-
-            exec convert ${file}.pbm -resize 680x880 ${file}.png
-            catch { exec chmod 644 ${file}.png }
             set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
