@@ -560,7 +560,6 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    }
 
    #----- Definir le scenario
-puts stderr "$ReleaseDuration==$DefaultDuration && $Sim(EmHeight)==$DefaultHeight && $Isotope==$DefaultIsotope && $Quantity==$DefaultQuantity"
    if { $ReleaseDuration==$DefaultDuration && $Sim(EmHeight)==$DefaultHeight && $Isotope==$DefaultIsotope && $Quantity==$DefaultQuantity } {
       $canvas itemconf FT14 -text "RESULTS BASED ON DEFAULT INITIAL VALUES"
    } else {
