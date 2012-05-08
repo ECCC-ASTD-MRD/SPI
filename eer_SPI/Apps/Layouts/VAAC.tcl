@@ -290,6 +290,20 @@ proc VAAC::DataInit { Frame } {
    }
    eval Info::Decode ::VAAC::Sim \$info
 
+   switch $Sim(Model) {
+      "MLDP0" { }
+      "MLDPn" {
+         MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
+         set Sim(EmTotalDuration) $MLDPn::Sim(EmTotalDuration)
+         set Sim(EmMass)          $MLDPn::Sim(EmMass.0)
+         set Sim(EmVerticalDist)  $MLDPn::Sim(EmVerticalDist)
+         set Sim(EmHeight)        $MLDPn::Sim(EmHeight.0)
+         set Sim(EmRadius)        $MLDPn::Sim(EmRadius.0)
+         set Sim(Lat) [lindex $Sim(Coords) 0 0]
+         set Sim(Lon) [lindex $Sim(Coords) 0 1]
+      }
+   }
+
    set Sim(model) [string tolower $Sim(Model)] ; #----- Dispersion model name in lower case.
 
    #----- Initialiser la liste des heures disponibles (On arrondit a l'heure la plus proche)
@@ -663,39 +677,21 @@ proc VAAC::LayoutUpdate { Frame } {
 
    #----- Creation du pied de page
 
-   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] MIN]
+   set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ;#----- Convert total release duration from [s] to [h].
+   set mg   [expr $Sim(EmMass)==0?0:int(log10($Sim(EmMass)))]      ;#----- Total release mass [micrograms/m3].
+   set time "C"                                                    ;#----- Release time function. C: Constant.
 
-   $canvas itemconf FT1 -text ""
-   $canvas itemconf FT2 -text ""
-   $canvas itemconf FT3 -text ""
-   $canvas itemconf FT4 -text ""
-   $canvas itemconf FT5 -text ""
-
-   #----- Definir la date de l'eruption
-   set erupt [clock format [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true] -format "%a %b %d %Y, %H:%M UTC" -gmt true]
-
-   $canvas itemconf FT1 -text "$Lbl(FT1) $Sim(Name) $coord"
-   $canvas itemconf FT2 -text "$Lbl(FT2) $erupt"
-   $canvas itemconf FT4 -text "$Lbl(FT4) FL[expr round($Sim(EmHeight)*0.032808398950131)]"
-   $canvas itemconf MDL -text "$Sim(Model)"
-
-   if { $Sim(Model)=="MLDP0" } {
-      set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ;#----- Convert total release duration from [s] to [h].
-      set mg   [expr $Sim(EmMass)==0?0:int(log10($Sim(EmMass)))]      ;#----- Total release mass [micrograms/m3].
-      set time "C"                                                    ;#----- Release time function. C: Constant.
-
-      #----- Initial vertical distribution.
-      if { [regexp Uniform $Sim(EmVerticalDist)] } {
-         set vert "Un"
-      } elseif { [regexp Exponenti $Sim(EmVerticalDist)] } {
-         set vert "Ex"
-      } elseif { $Sim(EmVerticalDist) == "Poisson" } {
-         set vert "Po"
-      } elseif { [regexp Coni $Sim(EmVerticalDist)] } {
-         set vert "Co"
-      } elseif { $Sim(EmVerticalDist) == "Champignon" || $Sim(EmVerticalDist) == "Umbrella" } {
-         set vert "Um"
-      }
+   #----- Initial vertical distribution.
+   if { [regexp Uniform $Sim(EmVerticalDist)] } {
+      set vert "Un"
+   } elseif { [regexp Exponenti $Sim(EmVerticalDist)] } {
+      set vert "Ex"
+   } elseif { $Sim(EmVerticalDist) == "Poisson" } {
+      set vert "Po"
+   } elseif { [regexp Coni $Sim(EmVerticalDist)] } {
+      set vert "Co"
+   } elseif { $Sim(EmVerticalDist) == "Champignon" || $Sim(EmVerticalDist) == "Umbrella" } {
+      set vert "Um"
    }
 
    #----- Format release duration.
@@ -707,9 +703,17 @@ proc VAAC::LayoutUpdate { Frame } {
    }
 
    set elev [format "%2.1f" [expr $Sim(EmHeight)/1000.0]] ; #----- Convert maximum initial plume height from [m] to [km].
+   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] MIN 0]
 
+   #----- Definir la date de l'eruption
+   set erupt [clock format [clock scan "$Sim(AccMonth)/$Sim(AccDay)/$Sim(AccYear) $Sim(AccHour)$Sim(AccMin)" -gmt true] -format "%a %b %d %Y, %H:%M UTC" -gmt true]
+
+   $canvas itemconf FT1 -text "$Lbl(FT1) $Sim(Name) $coord"
+   $canvas itemconf FT2 -text "$Lbl(FT2) $erupt"
+   $canvas itemconf FT4 -text "$Lbl(FT4) FL[expr round($Sim(EmHeight)*0.032808398950131)]"
    $canvas itemconf FT3 -text "$Lbl(FT3) $ReleaseDuration h"
    $canvas itemconf FT5 -text "$Lbl(FT5) ($elev,$mg,T$time,V$vert)"
+   $canvas itemconf MDL -text "$Sim(Model)"
 
    VAAC::DrawScale $Frame
 }

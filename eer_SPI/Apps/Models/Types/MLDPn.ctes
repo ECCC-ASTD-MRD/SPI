@@ -64,6 +64,7 @@ namespace eval MLDPn {
    set Sim(EmMaxIso)             20                            ;#----- Maximum number of isotopes.
    set Sim(EmDir)                "$env(HOME)/.spi/Scenario"    ;#----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ;#----- Small value.
+   set Sim(EmInterMode)          3600                          ;#----- Mode of the interval duration. (H or S)
 
    set Sim(EmIsAutoNPDefault)    1                             ;#----- Flag indicating if particles are to be automatically distributed
 

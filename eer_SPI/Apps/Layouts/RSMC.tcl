@@ -373,7 +373,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    switch $Sim(Model) {
       "MLDP0" { set DispModel MLDP  }
       "MLDP1" { set DispModel MLDP  }
-      "MLDPn" { set DispModel MLDP ;
+      "MLDPn" { set DispModel MLDP
                 MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
                 set Sim(EmTotalDuration)   $MLDPn::Sim(EmTotalDuration)
                 set Sim(EmNumberParticles) $MLDPn::Sim(EmNumberParticles)

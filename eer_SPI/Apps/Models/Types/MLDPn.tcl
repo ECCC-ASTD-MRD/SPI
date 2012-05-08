@@ -844,6 +844,8 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
    set ln -1
    set Scenario [split $Scenario $Separator]
 
+   set Sim(SrcType) $Type
+
    if { $Type == "VOLCANO" } {
       set Sim(EmSizeDist) [lindex $Scenario [incr ln]]
       set Sim(EmDensity)  [lindex $Scenario [incr ln]]
@@ -1315,7 +1317,6 @@ proc MLDPn::InitNew { Type } {
    set Sim(EmIsos)               ""                                  ;#----- List of isotopes.
    set Sim(EmIsoQuantity)        ""                                  ;#----- Total release quantity for each isotope.
    set Sim(EmRateMode)           0                                   ;#----- Mode of the release rate. 0 is "unit/h", 1 is "unit"
-   set Sim(EmInterMode)          3600                                ;#----- Mode of the interval duration. (H or S)
    set Sim(RestartTrialDate)     0                                   ;#----- Date of the switch between trial and prog to create a restart
    set Sim(RestartDeltas)        {}
 
@@ -1749,7 +1750,7 @@ proc MLDPn::ComputeMass { Id } {
 
    #----- Calculate the total released mass calculation
    #----- according to empirical formula of Sparks et al. (1997).
-   if { [MLDPn::ValidateMassInputParams $Id] } {
+   if { ![winfo exists .modelnew] || [MLDPn::ValidateMassInputParams $Id] } {
       set em [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)]
 
       if { $Tmp(EmMassMode.$Id) == 0 } {
