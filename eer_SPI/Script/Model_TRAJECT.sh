@@ -31,8 +31,7 @@ function TRAJECT_Post {
 
 function TRAJECT_Run {
 
-#   ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}
-   ${MODEL_TIMER} ${EER_DIRBIN}/Traj-1.5 \
+   ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE} \
       -i ${TRAJECT_INPUT} \
       -o ${TRAJECT_RESULT} \
       -v ${LOG_LEVEL} \
