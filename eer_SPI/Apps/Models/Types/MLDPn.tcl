@@ -853,8 +853,9 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
    set Sim(EmNumberParticles) [lindex $Scenario [incr ln]]
 
    #----- Read Isotopes
-   set Sim(EmIsos)  [lindex $Scenario [incr ln]]
-   set Sim(EmNbIso) [llength $Sim(EmIsos)]
+   set Sim(EmIsos)     [lindex $Scenario [incr ln]]
+   set Sim(EmNbIso)    [llength $Sim(EmIsos)]
+   set Sim(EmMassIsos) [lrepeat $Sim(EmNbIso) 0]
 
    for { set i 0 } { $i<$Sim(EmNbIso) } { incr i } {
       set Sim(EmIso$i)  [lindex $Sim(EmIsos) $i]
@@ -862,16 +863,21 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
 
    #----- Read intervals' params
    set Sim(EmNbIntervals) [lindex $Scenario [incr ln]]
+   set Sim(EmTotalDuration)   0
+   set Sim(EmNumberParticles) 0
 
    for { set i 0 } { $i<$Sim(EmNbIntervals) } { incr i } {
       set Sim(EmInter.$i) [lindex $Scenario [incr ln]]
       set Sim(EmIsEm.$i)  [lindex $Scenario [incr ln]]
+
+      incr Sim(EmTotalDuration) $Sim(EmInter.$i)
 
       if { $Sim(EmIsEm.$i) } {
          set Sim(EmNumberParticles.$i) [lindex $Scenario [incr ln]]
          set Sim(EmHeight.$i)          [lindex $Scenario [incr ln]]
          set Sim(EmRadius.$i)          [lindex $Scenario [incr ln]]
 
+         incr Sim(EmNumberParticles) $Sim(EmNumberParticles.$i)
          switch $Type {
             "VOLCANO" {
                set Sim(EmMassMode.$i) [lindex $Scenario [incr ln]]
@@ -899,6 +905,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
             "ACCIDENT" {
                for { set j 0 } { $j<$Sim(EmNbIso) } { incr j } {
                   set Sim(EmRate.$i.$j) [lindex $Scenario [incr ln]]
+                  lset Sim(EmMassIsos) $j [expr [lindex $Sim(EmMassIsos) $j]+$Sim(EmRate.$i.$j)*($Sim(EmInter.$i)/3600.0)]
                }
             }
          }

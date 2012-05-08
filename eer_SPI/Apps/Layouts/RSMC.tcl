@@ -371,33 +371,35 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
 
    set DispModel $Sim(Model)
    switch $Sim(Model) {
-      "MLDP0" { set DispModel MLDP }
-      "MLDP1" { set DispModel MLDP }
-      "MLDPn" { set DispModel MLDP }
+      "MLDP0" { set DispModel MLDP  }
+      "MLDP1" { set DispModel MLDP  }
+      "MLDPn" { set DispModel MLDP ;
+                MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
+                set Sim(EmTotalDuration)   $MLDPn::Sim(EmTotalDuration)
+                set Sim(EmNumberParticles) $MLDPn::Sim(EmNumberParticles)
+                set Sim(EmIsoSymbol)       $MLDPn::Sim(EmIsos)
+                set Sim(EmIsoQuantity)     $MLDPn::Sim(EmMassIsos)
+                set Sim(EmVerticalDist)    $MLDPn::Sim(EmVerticalDist)
+                set Sim(EmHeight)          $MLDPn::Sim(EmHeight.0)
+                set Sim(EmRadius)          $MLDPn::Sim(EmRadius.0)
+              }
    }
 
-   #---- Definitions des entetes et textes de la carte
-   switch $DispModel {
+   set Data(FT1)  "Isotope                       :"
+   set Data(FT2)  "Total release duration        :"
+   set Data(FT3)  "Horiz. wind velocity variance :"
+   set Data(FT4)  "NWP meteorological input model:"
+   set Data(FT5)  "Output grid resolution        :"
+   set Data(FT6)  "Atmospheric dispersion model  :"
+   set Data(FT8)  "Total release quantity      :"
+   set Data(FT9)  "Initial maximum plume height:"
+   set Data(FT10) "Initial column radius       :"
+   set Data(FT11) "Vertical distribution       :"
+   set Data(FT12) "Number of particles         :"
+   set Data(FT13) "Maximum value at o          :"
 
-      "MLDP" {
-         set Data(FT1)  "Isotope                       :"
-         set Data(FT2)  "Total release duration        :"
-         set Data(FT3)  "Horiz. wind velocity variance :"
-         set Data(FT4)  "NWP meteorological input model:"
-         set Data(FT5)  "Output grid resolution        :"
-         set Data(FT6)  "Atmospheric dispersion model  :"
-         set Data(FT8)  "Total release quantity      :"
-         set Data(FT9)  "Initial maximum plume height:"
-         set Data(FT10) "Initial column radius       :"
-         set Data(FT11) "Vertical distribution       :"
-         set Data(FT12) "Number of particles         :"
-         set Data(FT13) "Maximum value at o          :"
-         set ListIsoSymbol $Sim(EmIsoSymbol)
-         set ListIsoQuant  $Sim(EmIsoQuantity)
-      }
-
-   }
-
+   set ListIsoSymbol   $Sim(EmIsoSymbol)
+   set ListIsoQuant    $Sim(EmIsoQuantity)
    set DefaultDuration 6.0      ; #----- Default release duration [h].
    set DefaultQuantity 1.0      ; #----- Default release quantity [Bq].
    set DefaultHeight   500.0    ; #----- Default initial maximum release plume height [m].
@@ -414,7 +416,8 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
 
    switch $DispModel {
 
-      "MLDP" {
+
+     "MLDP" {
          #----- Convert total release duration from [s] to [h].
          set ReleaseDuration [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]]
          set TmpRelDur [string trimright $ReleaseDuration "0"]
@@ -446,7 +449,6 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
          #----- Number of particles.
          set NbParticles "[expr int(double($Sim(EmNumberParticles))/1000.0)]K"
       }
-
    }
 
    #----- Calculer la date d'accident(release)
@@ -460,7 +462,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    set indx     [lsearch -exact $Sim(ListIsoSymbol) $Data(ETICKET)]
    if { $indx != -1 } {
       set Isotope  [lindex $ListIsoSymbol $indx]
-      set Quantity [lindex $ListIsoQuant $indx]
+      set Quantity [format "%.2f" [lindex $ListIsoQuant $indx]]
    } else {
       set Isotope $Data(ETICKET)
       set Quantity 0.0
@@ -558,6 +560,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    }
 
    #----- Definir le scenario
+puts stderr "$ReleaseDuration==$DefaultDuration && $Sim(EmHeight)==$DefaultHeight && $Isotope==$DefaultIsotope && $Quantity==$DefaultQuantity"
    if { $ReleaseDuration==$DefaultDuration && $Sim(EmHeight)==$DefaultHeight && $Isotope==$DefaultIsotope && $Quantity==$DefaultQuantity } {
       $canvas itemconf FT14 -text "RESULTS BASED ON DEFAULT INITIAL VALUES"
    } else {
