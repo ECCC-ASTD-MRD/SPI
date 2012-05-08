@@ -1106,7 +1106,7 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom        : <Model::ParamsWindow>
+# Nom        : <Model::ParamsLaunch>
 # Creation   : 2 October 2007 - A. Malo - CMC/CMOE
 #
 # But        : Onglet de lancement des modeles.

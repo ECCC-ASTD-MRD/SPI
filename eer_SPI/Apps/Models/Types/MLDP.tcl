@@ -110,7 +110,7 @@ proc MLDP::Launch { } {
       Model::ParamsCopy MLDP
 
       if { $Sim(Model)=="MLDP1" } {
-         set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi"
+         set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi -smt 2"
       } else {
          set cpus "-cpus 16"
       }

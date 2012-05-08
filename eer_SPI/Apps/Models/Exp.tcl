@@ -721,6 +721,7 @@ proc Exp::New { } {
          return 0
       }
 
+      set dmcoords {}
       foreach { lat lon } $coords {
 
          #----- Forcer le format degree centiemme
@@ -731,9 +732,10 @@ proc Exp::New { } {
             Dialog::Error .expnew $Msg(Coord) "\n\n\t$src $lat $lon\n"
             return 0
          }
+         lappend dmcoords $lat $lon
       }
 
-      eval lappend info \[list $src $coords $id\]
+      eval lappend info \[list $src $dmcoords $id\]
    }
 
    if { [llength $info]==0 } {
