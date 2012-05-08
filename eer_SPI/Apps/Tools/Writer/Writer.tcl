@@ -462,14 +462,14 @@ proc Writer::TextExpandNew { Text Len { Max 0 } } {
          $Text mark set insert $insert
       }
    }
-         set insert [$Text index insert]
+   set insert [$Text index insert]
 
    set he [llength [set txt [Writer::TextExtract word $Len "" $Text]]]
    $Text configure -height $he
    $Text delete 0.0 end
    $Text insert 0.0 [join $txt \n]
    $Text mark set insert $insert
-  return $he
+   return $he
 }
 
 #-------------------------------------------------------------------------------
