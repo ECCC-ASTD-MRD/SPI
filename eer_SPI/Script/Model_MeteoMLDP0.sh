@@ -35,16 +35,6 @@
 #   Aucune.
 #===============================================================================
 
-#----- Source user's profile.
-. ~/.profile >/dev/null 2>&1
-. ~/.profile_eer >/dev/null 2>&1
-
-#----- Load standard functions
-export EER_DIRSCRIPT=/home/binops/afse/eer/eer_SPI-7.5.1/Script
-. ${EER_DIRSCRIPT}/Logger.sh
-
-Log_Start Model_MeteoMLDP0.sh 2.0
-
 #----- Get arguments.
 Dir="${1}"
 Model="${2}"
@@ -53,6 +43,15 @@ GridSize="${4}"
 Debug="${5}"
 Ext="${6}"
 Debug="high"
+
+#----- Source user's profile.
+. ~/.profile >/dev/null 2>&1
+. ~/.profile.d/.batch_profile >/dev/null 2>&1
+
+#----- Load standard functions
+. ${EER_DIRSCRIPT}/Logger.sh
+
+Log_Start Model_MeteoMLDP0.sh 2.0
 
 Log_Print INFO "Temporary directory  : ${DirTmp}"
 Log_Print INFO "Meteorological config: ${Model}"
