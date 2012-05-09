@@ -19,7 +19,6 @@ namespace eval Mapper::DepotWare::TMS {
    variable Param
 
    set Param(Depots) {
-      { OpenStreetMap-CMC TMS OpenStreetMap-CMC }
       { OpenStreetMap TMS OpenStreetMap }
       { MapQuest TMS MapQuest}
       { BlueMarble TMS BlueMarble }
