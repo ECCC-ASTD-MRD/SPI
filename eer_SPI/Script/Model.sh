@@ -82,7 +82,7 @@ function Model_PoolSet {
 
          #----- Replace pool info.
          if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
-            ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
+            ssh ${MODEL_USER}@${MODEL_RUNHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
             status=$?
             MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
          else
