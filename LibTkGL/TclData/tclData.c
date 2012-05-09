@@ -2044,7 +2044,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                /*Loop on all contours*/
                while(list) {
                   array=(T3DArray*)list->Data;
-                  array->Value;
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;
 
@@ -2088,7 +2087,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                while(list) {
                   array=(T3DArray*)list->Data;
-                  array->Value;
                   sub=Tcl_NewListObj(0,NULL);
                   ex=tr=0;
 

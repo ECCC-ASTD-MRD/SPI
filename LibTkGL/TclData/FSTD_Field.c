@@ -644,7 +644,7 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
    FSTD_File *fid;
    int        i=1;
 
-   if (Field->Ref->ZRef.Type!=LVL_PRES) {
+   if (Field->Ref->ZRef.Type==LVL_UNDEF || Field->Ref->ZRef.Type==LVL_SIGMA || Field->Ref->ZRef.Type==LVL_HYBRID || Field->Ref->ZRef.Type==LVL_ETA) {
       if (Field->Ref->ZRef.PTop==0.0) {
          if ((fid=((FSTD_Head*)Field->Head)->FID)) {
             i=0;
