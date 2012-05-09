@@ -83,6 +83,8 @@ function Model_PoolSet {
          #----- Replace pool info.
          if [[ ${MODEL_NEEDCOPY} -eq 1 ]] ; then
             ssh ${MODEL_USER}@${MODEL_LOCALHOST} "cp ${master} ${master}.exec; grep -v \"${start}:.*:${end}\" ${master}.exec > ${master}; echo \"${start}:${state}:${end}\" >> ${master}"
+            status=$?
+            MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$status))
          else
             cp ${master} ${master}.exec
             grep -v "${start}:.*:${end}" ${master}.exec > ${master}
@@ -160,7 +162,7 @@ function Model_Init {
    fi
    cd ${MODEL_RUNDIR}
 
-   if [[ ${ARCH} = AIX ]] ; then
+   if [[ ${BASE_ARCH} = AIX ]] ; then
       MODEL_TIMER=hpmcount
    fi
 
@@ -323,8 +325,6 @@ function Model_CopyLog {
       fi
    fi
 }
-
-ARCH=`uname -s`
 
 #----- Initialize default values.
 MODEL_SOFTWARE=""

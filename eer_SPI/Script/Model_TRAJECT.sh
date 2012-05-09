@@ -43,7 +43,7 @@ function TRAJECT_Run {
    #----- Verify if model has terminated successfully.
    if [[ ${taskstatus} -eq 0 ]] ; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
-         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" tmp/${MODEL_NAME}$.out
+         Log_Mail "Atmospheric dispersion model ${MODEL_NAME} done (NORMAL)" tmp/${MODEL_NAME}.out
       fi
    else
       Log_Print ERROR "${MODEL_NAME} has encountered an error."

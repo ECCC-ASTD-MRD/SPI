@@ -116,4 +116,4 @@ foreach idx [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
 
 fstdfile close 1
 
-catch { exec $env(SPI_PATH)/Bin/$env(ARCH)/CodeInfo -info sim.pool -fstd ../results/${Date1}_000m -ckey codef -nomvar INFO }
+catch { exec $env(SPI_PATH)/Bin/$env(BASE_ARCH)/CodeInfo -info sim.pool -fstd ../results/${Date1}_000m -ckey codef -nomvar INFO }
