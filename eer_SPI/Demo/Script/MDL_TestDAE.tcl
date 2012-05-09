@@ -32,7 +32,9 @@ set models [glob -tails -directory /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collad
 foreach model $models {
    puts "   Reading $model"
    model read $model /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/$model/doc.kml
-   model configure $model -outline blue -width 1
+puts stderr aaaa
+#   model configure $model -outline blue -width 1
+puts stderr aaaa333
 }
 
 #model read DAE /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/olympic/models/model.dae
@@ -40,7 +42,7 @@ foreach model $models {
 #model matrix DAE -locate 46.8086773762 -71.2179046536 125
 #model matrix DAE -scale 1000 1000 1000
 
-eval Mapper::UpdateData $Page::Data(Frame) $models
+#eval Mapper::UpdateData $Page::Data(Frame) $models
 
 if { 1 } {
    file copy -force DataIn/Montreal.fstd DataOut/Montreal.fstd

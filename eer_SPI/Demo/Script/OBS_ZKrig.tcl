@@ -65,9 +65,9 @@ fstdfield stats SECTION -leveltype MASL -levels $elevs -grid $coords
 #----- Creer les descripteurs de grille
 
 fstdfield create TIC $ni 1 1 Float32
-fstdfield define TIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
+fstdfield define TIC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
 fstdfield create TAC 1 $ni 1 Float32
-fstdfield define TAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
+fstdfield define TAC -NOMVAR >> -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
 fstdfield create TZH $nj 1 1 Float32
 fstdfield define TZH -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
 fstdfield define TZH -DATA [list $elevs]

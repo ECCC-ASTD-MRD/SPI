@@ -51,10 +51,11 @@ set tests {
    FSTD_Sort.tcl
    FSTD_Y2Z_SUM.tcl
    FSTD_ThreadDemo.tcl
+   FSTD_Profiler.tcl
    GDAL_Basic.tcl
    GDAL_Functions.tcl
    GDAL_Slope.tcl
-   { GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 0 0 100 100 }
+   {GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 0 0 100 100}
    OBS_BUFR.tcl
    OBS_BURP.tcl
    OBS_CSV2OBS.tcl
@@ -78,13 +79,13 @@ set tests {
    OGR_Simplify.tcl
    OGR_TZCheck.tcl
    OGR_PoesFrequency2FSTD.tcl
-   { OGR_Export2txt.tcl DataIn/land_bg_p.shp }
+   {OGR_Export2txt.tcl DataIn/land_bg_p.shp}
    RADAR_Functions.tcl
    RADAR_EchoTop.tcl
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
-   { TCL_System.tcl /tmp }
-   { BUL_FXCN3X_to_SHP.tcl DataIn/FXCN3X/20111003175406.Ophelia.technical.txt.en }
+   {TCL_System.tcl /tmp}
+   {BUL_FXCN3X_to_SHP.tcl DataIn/FXCN3X/20111003175406.Ophelia.technical.txt.en}
    SIM_Traj.tcl
 }
 
@@ -101,7 +102,7 @@ foreach test $tests {
    puts -nonewline [format "%-35s %02i/%02i " [lindex $test 0] $n $nb]
    set s [clock seconds]
 
-   if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll.log }] } {
+   if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll.log }]  } {
       puts -nonewline "Failed"
       incr nok
    } else {
