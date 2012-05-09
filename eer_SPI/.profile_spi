@@ -29,6 +29,5 @@ export GRIB_TEMPLATE_PATH=${SPI_PATH}/Lib/Data/templates
 export GRIB_DEFINITION_PATH=${SPI_PATH}/Lib/Data/definitions
 
 #----- EER Modeling variables
-export EER_ARCH=`uname -s`_`uname -m`
-export EER_DIRBIN=${SPI_PATH}/Bin/${EER_ARCH}
+export EER_DIRBIN=${SPI_PATH}/Bin/${ARCH}
 export EER_DIRSCRIPT=${SPI_PATH}/Script
