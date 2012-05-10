@@ -104,12 +104,11 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData) {
 void GeoTex_Clear(TGeoTex *Tex,char Flags,int Res,int Nb) {
 
    if (Tex && Tex->Tile>(TGeoTexTile*)0x1) {
-      Tex->Tile=GeoTex_ClearTile(Tex->Tile,Flags,Res,Nb);
-
       /*Reset clear flags*/
       if (Tex->Tile) {
          Tex->Tile->Flag&=~Flags;
       }
+      Tex->Tile=GeoTex_ClearTile(Tex->Tile,Flags,Res,Nb);
    }
 }
 
@@ -461,7 +460,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                            GeoTex_Val(tband->Tex.Dim,ttile->Data,0,t,tl[j][2]);
                         }
                      }
-
                   }
                } else {
                   if (Band->Spec->Topo[0]=='I' && handle) {
@@ -484,6 +482,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                   }
                }
                tl[j][2]=((isnan(tl[j][2]) || tl[j][2]==Band->Def->NoData)?0.0:tl[j][2]*Band->Spec->TopoFactor);
+
             }
             if (Tile->Nr)
                Vect_Assign(Tile->Nr[j],GDB_NMap[(int)tl[j][1]+90][(int)tl[j][0]+180]);
@@ -915,85 +914,89 @@ int GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportIte
       /*Check for sub tile info availability*/
       if (!tl[0] || !tl[1] || !tl[2] || !tl[3]) {
 
-         /*Setup 2D Data Texture*/
-         if (GLRender->Resolution<=2) {
-            if (Tile->Flag&GEOTEX_DATA && Tile->Flag&GEOTEX_COOR) {
-               if (!Tile->Tx)
+         if (Tile->Flag&GEOTEX_COOR && Tile->Flag&GEOTEX_DATA) {
+
+            /*Setup 2D Data Texture*/
+            if (GLRender->Resolution<=2) {
+               if (Tile->Flag&GEOTEX_DATA && !Tile->Tx)
                   GeoTex_Texture(Band,Tile);
             }
-         }
-         if (!Tile->Tx) {
+            if (!Tile->Tx) {
+               if (Lock) Tcl_MutexUnlock(&MUTEX_GEOTEX);
+               return(0);
+            }
+
+            glBindTexture(GL_TEXTURE_2D,Tile->Tx);
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,Band->Spec->Interp);
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,Band->Spec->Interp);
+            glNormal3d(0.0,0.0,0.0);
+
+            /*Light only if topography enabled or Sun is active*/
+            lt=(Tile->Nr && (Band->Spec->Topo || Proj->Sun));
+            dx=1.0/(Tile->Tlx-1);
+            dy=1.0/(Tile->Tly-1);
+            nx=(Tile->Tlx+1)>>1;
+            ny=(Tile->Tly+1)>>1;
+
+            if (!tl[0]) {
+               for(x=0;x<nx-1;x++) {
+                  glBegin(GL_QUAD_STRIP);
+                  for(y=0;y<ny;y++) {
+                     glTexCoord2f((x+1)*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
+                     glTexCoord2f(x*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
+                  }
+                  glEnd();
+               }
+            }
+            if (!tl[1]) {
+               for(x=nx-1;x<Tile->Tlx-1;x++) {
+                  glBegin(GL_QUAD_STRIP);
+                  for(y=0;y<ny;y++) {
+                     glTexCoord2f((x+1)*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
+                     glTexCoord2f(x*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
+                  }
+                  glEnd();
+               }
+            }
+            if (!tl[2]) {
+               for(x=nx-1;x<Tile->Tlx-1;x++) {
+                  glBegin(GL_QUAD_STRIP);
+                  for(y=ny-1;y<Tile->Tly;y++) {
+                     glTexCoord2f((x+1)*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
+                     glTexCoord2f(x*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
+                  }
+                  glEnd();
+               }
+            }
+            if (!tl[3]) {
+               for(x=0;x<nx-1;x++) {
+                  glBegin(GL_QUAD_STRIP);
+                  for(y=ny-1;y<Tile->Tly;y++) {
+                     glTexCoord2f((x+1)*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
+                     glTexCoord2f(x*dx,y*dy);
+                     if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
+                     glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
+                  }
+                  glEnd();
+               }
+            }
+         } else {
             if (Lock) Tcl_MutexUnlock(&MUTEX_GEOTEX);
             return(0);
-         }
-
-         glBindTexture(GL_TEXTURE_2D,Tile->Tx);
-         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,Band->Spec->Interp);
-         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,Band->Spec->Interp);
-         glNormal3d(0.0,0.0,0.0);
-
-         /*Light only if topography enabled or Sun is active*/
-         lt=(Tile->Nr && (Band->Spec->Topo || Proj->Sun));
-         dx=1.0/(Tile->Tlx-1);
-         dy=1.0/(Tile->Tly-1);
-         nx=(Tile->Tlx+1)>>1;
-         ny=(Tile->Tly+1)>>1;
-
-         if (!tl[0]) {
-            for(x=0;x<nx-1;x++) {
-               glBegin(GL_QUAD_STRIP);
-               for(y=0;y<ny;y++) {
-                  glTexCoord2f((x+1)*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
-                  glTexCoord2f(x*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
-               }
-               glEnd();
-            }
-         }
-         if (!tl[1]) {
-            for(x=nx-1;x<Tile->Tlx-1;x++) {
-               glBegin(GL_QUAD_STRIP);
-               for(y=0;y<ny;y++) {
-                  glTexCoord2f((x+1)*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
-                  glTexCoord2f(x*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
-               }
-               glEnd();
-            }
-         }
-         if (!tl[2]) {
-            for(x=nx-1;x<Tile->Tlx-1;x++) {
-               glBegin(GL_QUAD_STRIP);
-               for(y=ny-1;y<Tile->Tly;y++) {
-                  glTexCoord2f((x+1)*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
-                  glTexCoord2f(x*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
-               }
-               glEnd();
-            }
-         }
-         if (!tl[3]) {
-            for(x=0;x<nx-1;x++) {
-               glBegin(GL_QUAD_STRIP);
-               for(y=ny-1;y<Tile->Tly;y++) {
-                  glTexCoord2f((x+1)*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[(x+1)*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[(x+1)*Tile->Tly+y]);
-                  glTexCoord2f(x*dx,y*dy);
-                  if (lt) glNormal3dv(Tile->Nr[x*Tile->Tly+y]);
-                  glVertex3dv(Tile->Tl[x*Tile->Tly+y]);
-               }
-               glEnd();
-            }
          }
       }
    }

@@ -1467,6 +1467,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 
    return(TCL_OK);
 }
+
 /*----------------------------------------------------------------------------
  * Nom      : <GDAL_BandFSTDImport>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
@@ -1487,10 +1488,13 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 */
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
-   double   lat,lon,i,j;
-   float    val,dir;
-   int      n,x,y,z=0,idx,dy;
-   TGeoScan scan;
+   double    lat,lon,i,j;
+   float     val,dir;
+   int       n,x,y,z=0,idx,dy;
+   TGeoScan  scan;
+   TList    *list;
+   T3DArray *array;
+   Vect3d    p0,p1;
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Invalid band",(char*)NULL);
@@ -1552,7 +1556,34 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          }
       }
    }
+
    GeoScan_Clear(&scan);
+
+//    /* Check for contouring */
+//    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
+//       Data_Clean(Field,0,0,1);
+//       FFContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+//
+//       list=Field->Segments;
+//
+//       /*Loop on all contours*/
+//       while(list) {
+//          array=(T3DArray*)list->Data;
+//
+//          if (array->Size) {
+//             ok=Band->Ref->UnProject(Band->Ref,&p0[0],&p0[1],array->Data[0],array->Data[1],0,1);
+//
+//             /*Loop on the contour points*/
+//             for (n=2;n<array->Size-1;n++) {
+//                ok=Band->Ref->UnProject(Band->Ref,&p1[0],&p1[1],array->Data[n],array->Data[n+1],0,1);
+//                Murphy_WideLine(p0,p1,Field->Spec->Width);
+//                p0[0]=p1[0];
+//                p0[1]=p1[1];
+//             }
+//          }
+//          list=list->Next;
+//       }
+//    }
 
    return(TCL_OK);
 }
