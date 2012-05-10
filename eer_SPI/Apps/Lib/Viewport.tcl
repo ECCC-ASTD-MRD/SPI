@@ -3006,7 +3006,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
 
    #----- Faire un update de tous les viewports
    foreach vp $VP {
-      if { [llength $Data(Link$vp)] } {
+      if { [info exists ::Viewport::Data(Link$vp)] && [llength $Data(Link$vp)] } {
          set frame [lindex $Data(Link$vp) 0]
          set vpsrc [lindex $Data(Link$vp) 1]
          if { [winfo exists $frame] && [llength [$frame.page.canvas find withtag $vpsrc]] } {

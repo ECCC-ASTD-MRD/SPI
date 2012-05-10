@@ -936,7 +936,7 @@ proc FieldCalc::Operand { VP Fields } {
    catch { .fieldcalc.expr.save configure -state disabled; .fieldcalc.expr.param configure -state disabled }
 
    #----- If no operand vailable, do nothing
-   if { [string trim $Viewport::Data(Operand$VP)]=="" } {
+   if { ![info exists ::FieldCalc::Data(Operand$VP)] || [string trim $Viewport::Data(Operand$VP)]=="" } {
       return $Fields
    }
 

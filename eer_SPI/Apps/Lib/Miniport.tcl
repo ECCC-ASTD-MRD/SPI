@@ -430,6 +430,7 @@ proc Miniport::UpdateData { Frame Mini { VP "" } } {
          $Frame.page.canvas itemconf $Mini -data [lindex [$Frame.page.canvas itemconf $VP -data] end]
       }
    } else {
+      projection configure $Mini -data {}
       $Frame.page.canvas itemconf $Mini -data {}
    }
    Miniport::Projection $Frame $Mini
