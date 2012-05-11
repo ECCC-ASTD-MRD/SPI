@@ -727,11 +727,11 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          return(TCL_ERROR);
       }
    } else {
-      if (!ZFieldFrom) {
+      if (!ZFieldFrom && FieldFrom->Ref->ZRef.Type!=LVL_PRES) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 source field data",(char*)NULL);
          return(TCL_ERROR);
       }
-      if (!ZFieldTo) {
+      if (!ZFieldTo && FieldTo->Ref->ZRef.Type!=LVL_PRES) {
          Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 destination field data",(char*)NULL);
          return(TCL_ERROR);
       }

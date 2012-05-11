@@ -181,7 +181,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       case PRESSURE:
 
          if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"field p0(pa)");
+            Tcl_WrongNumArgs(Interp,2,Objv,"field p0(mb)");
             return(TCL_ERROR);
          }
 
@@ -205,10 +205,10 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             idx=0;
             for(j=0;j<field->Def->NJ;j++) {
                for(i=0;i<field->Def->NI;i++) {
-                  idx++;
                   Def_Get(p0->Def,0,idx,tmp);
                   tmp=ZRef_K2Pressure(&field->Ref->ZRef,tmp,k);
                   Def_Set(field->Def,0,idxk+idx,tmp);
+                  idx++;
                }
             }
          }
