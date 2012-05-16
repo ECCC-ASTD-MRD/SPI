@@ -129,8 +129,8 @@ function Model_Init {
    #----- Remote host main directory.
    if [[ ${MODEL_ISREMOTE} -eq 1 && ${MODEL_RUNDIR} = "" ]] ; then
       if [[ -d ${MODEL_LOCALDIR} ]]; then
-         ${MODEL_RUNDIR}=${MODEL_LOCALDIR}
-         Log_Print WARNING "Missing remote run directory (MODEL_RUNDIR), will use local one (MODEL_LOCALDIR)"
+         MODEL_RUNDIR=${MODEL_LOCALDIR}
+         Log_Print WARNING "Missing remote run directory (MODEL_RUNDIR), will use local one (MODEL_LOCALDIR=${MODEL_LOCALDIR})"
       else
          Log_Print ERROR "Missing remote run directory (MODEL_RUNDIR)."
          exit 1
@@ -144,7 +144,7 @@ function Model_Init {
 
    #----- Number of processes for meteorological preprocessing.
    if [[ ${MODEL_PRE} -gt 64 ]] ; then
-      Log_Print ERROR "Wrong number of processes for running meteorological preprocessing (MODEL_PRE) [0, 64]."
+      Log_Print ERROR "Wrong number of processes for running meteorological preprocessing (MODEL_PRE=${MODEL_PRE}) [0, 64]."
       exit 1
    fi
 
@@ -154,7 +154,7 @@ function Model_Init {
 
       #----- If data is not already there, pull it form local hist
       if [[ ! -d ${MODEL_RUNDIR} ]]; then
-         Log_Print WARNING "Missing remote run directory (MODEL_RUNDIR), pulling it from local host (MODEL_LOCALDIR)"
+         Log_Print WARNING "Missing remote run directory (MODEL_RUNDIR=${MODEL_RUNDIR}), pulling it from local host (MODEL_LOCALDIR=${MODEL_LOCALDIR})"
          mkdir -p ${MODEL_RUNDIR}/tmp ${MODEL_RUNDIR}/results
          srcp -r ${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/meteo ${MODEL_RUNHOST}:${MODEL_RUNDIR}
          srcp ${MODEL_LOCALHOST}:${MODEL_LOCALDIR}/tmp/*.{in,pool} ${MODEL_RUNHOST}:${MODEL_RUNDIR}/tmp
