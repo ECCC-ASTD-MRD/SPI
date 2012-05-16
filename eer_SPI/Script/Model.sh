@@ -344,6 +344,7 @@ MODEL_CLEAN=1
 MODEL_NBMPITASKS=0
 MODEL_NBOMPTHREADS=0
 MODEL_RESTARTABLE=0
+MODEL_DIRSCRIPT=${EER_DIRSCRIPT}
 
 #----- Initialize internal variables.
 MODEL_RUNTYPE="local"
@@ -372,7 +373,7 @@ fi
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
-. ${EER_DIRSCRIPT}/Model_${MODEL_NAME}.sh
+. ${MODEL_DIRSCRIPT}/Model_${MODEL_NAME}.sh
 
 Log_Start Model.sh 1.0 ${1}
 
