@@ -520,8 +520,9 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
          err=grib_get_long(head.Handle,"iScansNegatively",&inci);
          err=grib_get_long(head.Handle,"jScansPositively",&incj);
 
+         mtx[0]=CLAMPLON(mtx[0]);
          mtx[1]=inci?-mtx[1]:mtx[1];
-         mtx[5]=incj?mtx[1]:-mtx[1];
+         mtx[5]=incj?mtx[5]:-mtx[5];
          /*Patch for a GRIB1 inversion*/
 //         if (mtx[3]==90.0) mtx[5]=-mtx[5];
      }
@@ -780,7 +781,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
    int    err,opt=0;
    size_t len=64;
    char   gridType[64],buf[32];
-   double lat,lon,scale,scale2;
+   double lat,lon,lat1,lon1,scale,scale2;
    long   gribVer,lval;
 
    enum gridOpt { REGULAR_LL,REDUCED_LL,ROTATED_LL,STRETCHED_LL,STRETCHED_ROTATED_LL,MERCATOR,POLAR_STEREOGRAPHIC,LAMBERT,ALBERS,REGULAR_GG,REDUCED_GG,ROTATED_GG,STRETCHED_GG,STRETCHED_ROTATED_GG,SH,ROTATED_SH,STRETCHED_SH,STRETCHED_ROTATED_SH,SPACE_VIEW,TRIANGULAR_GRID,EQUATORIAL_AZIMUTHAL_EQUIDISTANT,AZIMUTH_RANGE,IRREGULAR_LATLON,LAMBERT_AZIMUTHAL_EQUAL_AREA,CROSS_SECTION,HOVMOLLER,TIME_SECTION,UNKNOWN,UNKNOWN_PLPRESENT };
@@ -825,6 +826,14 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          }
          if (grib_get_double(Handle,"longitudeOfFirstGridPointInDegrees",&lon)!=GRIB_SUCCESS) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfFirstGridPointInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"latitudeOfLastGridPointInDegrees",&lat1)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get latitudeOfLastGridPointInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"longitudeOfLastGridPointInDegrees",&lon1)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfLastGridPointInDegrees",(char*)NULL);
             return(NULL);
          }
          //OSRSetEquirectangular2(ref,lat,lon,0.0,0.0,0.0);
