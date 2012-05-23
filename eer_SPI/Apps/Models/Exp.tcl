@@ -51,14 +51,19 @@ namespace eval Exp {
 
    #----- RSMC stuff.
 
-   set Bubble(Color)    { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal" "Red  : impacts all RSMC web sites\nGray : impacts only RSMC Montreal web site" }
-   set Bubble(ColorE)   { "Rouge : affecte tout les sites RSMC\nGris  : affecte que le site RSMC Montreal\n\nn.a.  : n'affecte pas le status lead\nnull  : elimine completement le lead\nautre : affecte le lead selon la region" "Red  : impacts all RSMC web sites\nGray : impacts only RSMC Montreal web site\n\nn.a.  : no impact on the lead\nnull  : gets rid of lead\nother : impacts lead by region" }
+   set Bubble(RSMCHelp1)    { "Ces boutons permettent de remplacer les produits existants des RSMCs\nsélectionnés par des produits vides sur la page web du RSMC Montréal (gris)\net/ou sur toutes les pages web miroirs des RSMCs (rouge)." "These buttons allow replacing the existing products from the selected RSMCs by\nblank products on RSMC Montreal's web page (gray) and/or on all RSMC's mirror\nweb pages (red)." }
+   set Bubble(RSMCHelp2)    { "Ces boutons permmettent de remplacer les 'joint statements' existants des\nassociations régionales des RSMCs sélectionnées par des 'joint statements'\nvides sur la page web du RSMC Montréal (gris) et/ou toutes les pages web\nmiroirs des RSMCs (rouge)" "These buttons allow replacing the existing joint statements from the selected\nRSMCs regional associations by blank joint statements on RSMC Montreal's web\npage (gray) and/or on all RSMCs' mirror web pages (red)." }
+   set Bubble(RSMCHelp3)    { "Ces boutons permettent de modifier la désignation du RSMC lead qui sera\nvisible sur toutes les pages web miroirs des RSMCs (rouge).  Le RSMC lead est\ndésigné/défini selon l'association régionale sélectionnée des RSMCs.  Le bouton\n'aucun' permet de ne pas désigner de RSMC lead.  Le bouton 'n.a.' permet de ne\npas faire de changement à la désignation du RSMC lead." "These buttons allow modifying the designation of the lead RSMC that will be\nvisible on all RSMCs' mirror web pages (red).  The lead RSMC is\ndesignated/defined according to the selected RSMCs regional association.\nThe button 'none' allows to not designate a lead RSMC.  The button 'n.a.'\nallows to not make any changes to the lead RSMC designation." }
+   set Bubble(RSMCHelp4)    { "Ce bouton permet de supprimer toutes les cartes météorologiques du RSMC\nMontréal sur sa page web." "This button allows deleting the all meteorological charts from RSMC Montreal\non its web page." }
 
-   set Lbl(Cancel)      { "Annuler" "Cancel" }
-   set Lbl(Send)        { "Transmettre" "Transmit" }
-   set Lbl(Transmit)    { "Transmission" "Transmission" }
+   set Lbl(Cancel)        { "Annuler" "Cancel" }
+   set Lbl(Send)          { "Transmettre" "Transmit" }
+   set Lbl(TransmitBlank) { "Transmission de produits vides" "Transmission of blank products" }
 
-   set Lbl(RSMCweb)     { "Produits web commune RSMC" "RSMC common web products" }
+   set Lbl(RSMCLead)      { "Désignation du RSMC lead" "Designation of lead RSMC" }
+   set Lbl(RSMCLeadNull)  { "aucun" "none" }
+   set Lbl(RSMCMeteo)     { "Cartes météorologiques" "Meteorological charts" }
+   set Lbl(RSMCWeb)       { "Produits des RSMCs" "RSMC products" }
 
    #----- Definitions des constantes relatives aux RSMC.
 
@@ -114,8 +119,6 @@ namespace eval Exp {
                             "Generating fax to the following file:" }
    set Msg(JointData)     { "Êtes-vous certain de vouloir transférer les cartes RSMC commune ?" \
                             "Do you really want to send the RSMC joint format maps ?" }
-   set Msg(JointClear)    { "Voulez-vous supprimer le joint statement ?" \
-                            "Do you want to delete the joint statement ?" }
    set Msg(JointStatement) { "Êtes-vous certain de vouloir transférer le joint statement ?" \
                             "Do you really want to send the joint statement ?" }
    set Msg(SendProducts)  { "Transfert des produits RSMC en cours" "Transferring RSMC products" }
@@ -1068,7 +1071,7 @@ proc Exp::ProductRSMCBlank { } {
 
    toplevel     .blank
 
-   wm title     .blank [lindex $Lbl(Transmit) $GDefs(Lang)]
+   wm title     .blank [lindex $Lbl(TransmitBlank) $GDefs(Lang)]
    wm transient .blank .
    wm resizable .blank 0 0
    wm geometry  .blank =320x460+[expr [winfo rootx .]+10]+[expr [winfo rooty .]+10]
@@ -1076,7 +1079,7 @@ proc Exp::ProductRSMCBlank { } {
 
    #----- on selectionne les centres RSMC.
 
-   labelframe .blank.c -text [lindex $Lbl(RSMCweb) $GDefs(Lang)]
+   labelframe .blank.c -text [lindex $Lbl(RSMCWeb) $GDefs(Lang)]
 
       frame .blank.c.l -relief sunken -bd 1
          checkbutton .blank.c.l.cn -variable Exp::Data(RSMC_CN) -text "Beijing"    -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
@@ -1107,14 +1110,14 @@ proc Exp::ProductRSMCBlank { } {
 
    #----- on selectionne le lead.
 
-   labelframe .blank.l -text "Lead RSMC"
+   labelframe .blank.l -text [lindex $Lbl(RSMCLead) $GDefs(Lang)]
       frame .blank.l.r -relief sunken -bd 1
          radiobutton .blank.l.r.lead99 -variable Exp::Data(RSMCLead) -text "n.a."   -value 99 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          radiobutton .blank.l.r.lead16 -variable Exp::Data(RSMCLead) -text "I/VI"   -value 16 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          radiobutton .blank.l.r.lead2  -variable Exp::Data(RSMCLead) -text "II"     -value 2  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          radiobutton .blank.l.r.lead34 -variable Exp::Data(RSMCLead) -text "III/IV" -value 34 -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          radiobutton .blank.l.r.lead5  -variable Exp::Data(RSMCLead) -text "V "     -value 5  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
-         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text "null"   -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
+         radiobutton .blank.l.r.lead0  -variable Exp::Data(RSMCLead) -text [lindex $Lbl(RSMCLeadNull) $GDefs(Lang)] -value 0  -indicatoron true -bd 1 -relief raised -overrelief raised -background #FF0000 -activebackground #FF0000
          .blank.l.r.lead99 select
 
          pack .blank.l.r.lead99 .blank.l.r.lead16 .blank.l.r.lead2 .blank.l.r.lead34 .blank.l.r.lead5 .blank.l.r.lead0 -side left -ipady 2
@@ -1124,7 +1127,7 @@ proc Exp::ProductRSMCBlank { } {
 
    #----- on selectionne la meteo du CMC.
 
-   labelframe .blank.m -text "Meteo"
+   labelframe .blank.m -text [lindex $Lbl(RSMCMeteo) $GDefs(Lang)]
       frame .blank.m.l -relief sunken -bd 1
          checkbutton .blank.m.l.lead -variable Exp::Data(RSMCMeteo) -text "Montreal" -onvalue 1 -offvalue 0 -indicatoron true -bd 1 -relief raised -overrelief groove
          pack .blank.m.l.lead -side top -fill x -ipady 2
@@ -1138,10 +1141,10 @@ proc Exp::ProductRSMCBlank { } {
       pack .blank.command.cancel .blank.command.send -side left -fill x -expand true
    pack .blank.command -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create .blank.c.l $Exp::Bubble(Color)
-   Bubble::Create .blank.p.l $Exp::Bubble(Color)
-   Bubble::Create .blank.l.r $Exp::Bubble(ColorE)
-   Bubble::Create .blank.m.l $Exp::Bubble(Color)
+   Bubble::Create .blank.c.l $Exp::Bubble(RSMCHelp1)
+   Bubble::Create .blank.p.l $Exp::Bubble(RSMCHelp2)
+   Bubble::Create .blank.l.r $Exp::Bubble(RSMCHelp3)
+   Bubble::Create .blank.m.l $Exp::Bubble(RSMCHelp4)
 }
 
 #----------------------------------------------------------------------------
@@ -1216,7 +1219,6 @@ proc Exp::ProductRSMCJointData { } {
    if { [Dialog::Default . 400 WARNING $Msg(JointData) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
-   set join [Dialog::Default . 400 WARNING $Msg(JointClear) "" 0 $Lbl(Yes) $Lbl(No)]
 
    #----- setup le repertoire et le fichier concernant la run du modele meteo utilise.
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
@@ -1247,10 +1249,6 @@ proc Exp::ProductRSMCJointData { } {
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
    set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path $nbip2 $tokenarchiversmc 2>@1 } msg]
-   if { !$join } {
-      Dialog::Wait . $Msg(SendJoint)
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
-   }
 
    Dialog::WaitDestroy
    . config -cursor left_ptr
