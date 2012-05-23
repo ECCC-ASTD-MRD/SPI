@@ -45,11 +45,12 @@ static int           TDataSpecInit=0;
 static long          TDataSpecNo=0;
 static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
-CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*" };
+CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*","ARROW" };
 CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
 CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
 CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
+// If you add icons here, look in GDAL_Band.c for references to this array
 TIcon IconList[]={
  { GL_POINT,     1, { 0.0,0.0 } },
  { GL_POLYGON,   3, { -1.0,-1.0, 0.0,1.0, 1.0,-1.0 } },
@@ -63,7 +64,8 @@ TIcon IconList[]={
  { GL_TRIANGLES, 12, { 1.0,1.0, -0.6,0.4, -0.2,0.0, 0.0,0.2, -0.2,0.0, 0.2,0.0, 0.2,0.0, 0.0,-0.2, -0.2,0.0,  0.6,-0.4, -1.0,-1.0, 0.2,0.0 } },
  { GL_LINES,     4, { -1.0,-1.0, 1.0,1.0, -1.0,1.0, 1.0,-1.0 } },
  { GL_LINES,     4, { -1.0,0.0, 1.0,0.0, 0.0,-1.0, 0.0,1.0 } },
- { GL_LINES,     8, { -1.0,0.0, 1.0,0.0, 0.0,-1.0, 0.0,1.0, -1.0,-1.0, 1.0,1.0, -1.0,1.0, 1.0,-1.0  } } };
+ { GL_LINES,     8, { -1.0,0.0, 1.0,0.0, 0.0,-1.0, 0.0,1.0, -1.0,-1.0, 1.0,1.0, -1.0,1.0, 1.0,-1.0 } },
+ { GL_POLYGON,   7, { 0.0,0.0, 0.25,-0.5, 0.1,-0.5, 0.1,-1.0, -0.1,-1.0, -0.1,-0.5, -0.25,-0.5 } } };
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclDataSpec_Init>

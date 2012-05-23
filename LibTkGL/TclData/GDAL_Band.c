@@ -1495,6 +1495,23 @@ typedef struct TMurphy {
    int    quad4;
 } TMurphy;
 
+static void inline Murphy_Plot(TMurphy *M,int X, int Y) {
+
+   unsigned long n;
+
+   if (FIN2D(M->Def,X,Y)) {
+      n=FIDX2D(M->Def,X,Y);
+      if (M->Def->NC==1) {
+         Def_Set(M->Def,0,n,M->Idx);
+      } else {
+         Def_Set(M->Def,0,n,M->Color[0]);
+         if (M->Def->NC>1) Def_Set(M->Def,1,n,M->Color[1]);
+         if (M->Def->NC>2) Def_Set(M->Def,2,n,M->Color[2]);
+         if (M->Def->NC>3) Def_Set(M->Def,3,n,M->Color[3]);
+      }
+   }
+}
+
 void Murphy_ParaLine(TMurphy *M,int X,int Y,int D1) {
 
    int           p;              /* pel counter, p=along line */
@@ -1502,17 +1519,7 @@ void Murphy_ParaLine(TMurphy *M,int X,int Y,int D1) {
    D1 = -D1;
 
    for (p=0;p<=M->u;p++) {       /* test for end of parallel line */
-      if (FIN2D(M->Def,X,Y)) {
-         n=FIDX2D(M->Def,X,Y);
-         if (M->Def->NC==1) {
-            Def_Set(M->Def,0,n,M->Idx);
-         } else {
-            Def_Set(M->Def,0,n,M->Color[0]);
-            if (M->Def->NC>1) Def_Set(M->Def,1,n,M->Color[1]);
-            if (M->Def->NC>2) Def_Set(M->Def,2,n,M->Color[2]);
-            if (M->Def->NC>3) Def_Set(M->Def,3,n,M->Color[3]);
-         }
-      }
+      Murphy_Plot(M,X,Y);
 
       if (D1<=M->kt) {  /* square move */
          if (M->oct2 == 0) {
@@ -1673,6 +1680,76 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
    return(1);
 }
 
+int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double Angle) {
+
+   int      n,i,j;
+   double   sina,cosa;
+   double   x,y,px,py,pxi,pyi,pxj,pyj,minx,miny,maxx,maxy;
+   double   node[256],poly[256],swap;
+
+   // Get grid coordinates of polygon
+   minx=miny=1e32;
+   maxx=maxy=-1e32;
+   Angle=DEG2RAD(Angle);
+   sina=sin(Angle);
+   cosa=cos(Angle);
+   Nb<<=1;
+
+   for(n=0;n<Nb;n+=2) {
+      px=Poly[n]*Scale;
+      py=Poly[n+1]*Scale;
+      poly[n]=X+(px*cosa-py*sina);
+      poly[n+1]=Y+(px*sina+py*cosa);
+      minx=FMIN(minx,poly[n]);
+      miny=FMIN(miny,poly[n+1]);
+      maxx=FMAX(maxx,poly[n]);
+      maxy=FMAX(maxy,poly[n+1]);
+   }
+
+   // Loop through the rows of the raster grid.
+   for (y=miny;y<maxy;y++) {
+
+      //  Build a list of nodes.
+      n=0; j=Nb-2;
+      for (i=0; i<Nb; i+=2) {
+         pyi=poly[i+1];
+         pyj=poly[j+1];
+         pxi=poly[i];
+         pxj=poly[j];
+
+         if (pyi<y && pyj>=y || pyj<y && pyi>=y) {
+            node[n++]=(pxi+(y-pyi)/(pyj-pyi)*(pxj-pxi));
+         }
+         j=i;
+      }
+
+      // Sort the nodes, via a simple Bubble sort.
+      i=0;
+      while (i<n-1) {
+         if (node[i]>node[i+1]) {
+            swap=node[i]; node[i]=node[i+1]; node[i+1]=swap;
+            if (i) i--;
+         } else {
+            i++;
+         }
+      }
+
+      // Rasterize between node pairs.
+      for (i=0; i<n; i+=2) {
+         if (node[i]>M->Def->NI) break;
+         if (node[i+1]>0 ) {
+            if (node[i]  <0 ) node[i]=0 ;
+            if (node[i+1]>M->Def->NI) node[i+1]=M->Def->NI-1;
+
+            for (x=node[i]; x<node[i+1]; x++) {
+               Murphy_Plot(M,x,y);
+            }
+         }
+      }
+   }
+   return(i);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <GDAL_BandFSTDImport>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
@@ -1694,7 +1771,7 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    double    lat,lon,i,j;
-   float     val,dir;
+   double    val,dir;
    int       n,x,y,z=0,idx,dy;
    TGeoScan  scan;
    TList    *list;
@@ -1702,6 +1779,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    TMurphy   m;
    TDataDef *def=NULL;
    Vect3d    p0,p1;
+
+   extern TIcon IconList[14];
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Invalid band",(char*)NULL);
@@ -1782,16 +1861,20 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    GeoScan_Clear(&scan);
 
    /* Check for contouring */
-   if (def) {
+   if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
       FFContour(REF_GRID,Band->Ref,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1);
 
       /*Initialize murphy line object*/
       m.Def=Band->Def;
       m.Idx=-1;
       m.Width=Field->Spec->Width;
-      m.Color[0]=Field->Spec->Outline->red;
-      m.Color[1]=Field->Spec->Outline->green;
-      m.Color[2]=Field->Spec->Outline->blue;
+      if (Field->Spec->Outline) {
+         m.Color[0]=Field->Spec->Outline->red;
+         m.Color[1]=Field->Spec->Outline->green;
+         m.Color[2]=Field->Spec->Outline->blue;
+      } else {
+         m.Color[0]=m.Color[1]=m.Color[2]=0;
+      }
       m.Color[3]=255;
 
       /*Loop on all contours*/
@@ -1821,7 +1904,47 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          list=list->Next;
       }
    }
+
    if (def) DataDef_Free(def);
+
+   /* Check for vectorial */
+   if (Field->Spec->RenderVector && Field->Def->NC>=2) {
+
+      m.Def=Band->Def;
+      m.Idx=-1;
+      m.Width=Field->Spec->Width;
+      if (Field->Spec->Fill) {
+         m.Color[0]=Field->Spec->Fill->red;
+         m.Color[1]=Field->Spec->Fill->green;
+         m.Color[2]=Field->Spec->Fill->blue;
+      } else {
+         m.Color[0]=m.Color[1]=m.Color[2]=0;
+      }
+      m.Color[3]=255;
+
+      /*Loop on raster and place arrows at specified interval*/
+      for(x=Field->Spec->Sample;x<Band->Def->NI-Field->Spec->Sample;x+=Field->Spec->Sample) {
+         for(y=Field->Spec->Sample;y<Band->Def->NJ-Field->Spec->Sample;y+=Field->Spec->Sample) {
+            Band->Ref->Project(Band->Ref,x,y,&lat,&lon,0,1);
+
+            if (Field->Ref->UnProject(Field->Ref,&i,&j,lat,lon,0,1)) {
+               idx=FIDX2D(Field->Def,(int)i,(int)j);
+               Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,i,j,0,&val,&dir);
+               if (val<=Field->Spec->Max && val>=Field->Spec->Min) {
+                  if (Field->Spec->MapAll && Field->Spec->Map) {
+                     VAL2COL(m.Idx,Field->Spec,val);
+                     m.Color[0]=Field->Spec->Map->Color[m.Idx][0];
+                     m.Color[1]=Field->Spec->Map->Color[m.Idx][1];
+                     m.Color[2]=Field->Spec->Map->Color[m.Idx][2];
+                     m.Color[3]=Field->Spec->Map->Color[m.Idx][3];
+                  }
+
+                  Murphy_Polygon(&m,IconList[13].Co,IconList[13].Nb,x,y,VECTORSIZE(Field->Spec,val),dir);
+               }
+            }
+         }
+      }
+   }
 
    return(TCL_OK);
 }
