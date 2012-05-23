@@ -1489,7 +1489,6 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->InterO=from->InterO;
    to->InterM=from->InterM;
    to->Axis=from->Axis;
-
    to->TexRes=from->TexRes;
    to->TexSize=from->TexSize;
    to->TexSample=from->TexSample;
@@ -1552,19 +1551,19 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    }
    to->Fill=NULL;
    if (from->Fill)
-      to->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfColor(from->Fill),-1));
+      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->Fill),-1),&to->Fill);
 
    to->HighFill=NULL;
    if (from->HighFill)
-      to->HighFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfColor(from->HighFill),-1));
+      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->HighFill),-1),&to->HighFill);
 
    to->HighLine=NULL;
    if (from->HighLine)
-      to->HighLine=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfColor(from->HighLine),-1));
+      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->HighLine),-1),&to->HighLine);
 
    to->Outline=NULL;
    if (from->Outline)
-      to->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfColor(from->Outline),-1));
+      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->Outline),-1),&to->Outline);
 
    to->Desc=NULL;
    if (from->Desc)

@@ -207,7 +207,7 @@ int CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map) {
  *
  *----------------------------------------------------------------------------
 */
-int CMap_Create(Tcl_Interp *Interp,char *Name){
+CMap_Rec* CMap_Create(Tcl_Interp *Interp,char *Name){
 
    Tcl_HashEntry *entry;
    CMap_Rec      *cmap;
@@ -215,22 +215,23 @@ int CMap_Create(Tcl_Interp *Interp,char *Name){
 
    /*Allouer l'espace pour la structure*/
    entry=TclY_CreateHashEntry(&CMapTable,Name,&new);
+
    if (!new) {
       Tcl_AppendResult(Interp,"\n   CMap_Create: Colormap name already used: \"",Name, "\"",(char *)NULL);
-      return(TCL_ERROR);
+      return((CMap_Rec*)Tcl_GetHashValue(entry));
    }
 
    cmap=CMap_New(Name,0);
 
    if (!cmap) {
       Tcl_AppendResult(Interp,"\n  CMap_Create: Could not allocate colormap structure",(char *)NULL);
-      return(TCL_ERROR);
+      return(NULL);
    }
 
    Tcl_SetHashValue(entry,cmap);
    Tcl_SetObjResult(Interp,Tcl_NewStringObj(Name,-1));
 
-   return(TCL_OK);
+   return(cmap);
 }
 
 /*----------------------------------------------------------------------------
@@ -299,6 +300,7 @@ int CMap_Copy(Tcl_Interp *Interp,char *To,char *From) {
 static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int         idx,c,n;
+   CMap_Rec   *cmap;
    static CONST char *sopt[] = { "read","write","colorlist","image","create","copy","configure","control","free","is",NULL };
    enum                opt { READ,WRITE,COLORLIST,IMAGE,CREATE,COPY,CONFIGURE,CONTROL,FREE,IS };
 
@@ -365,7 +367,16 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             Tcl_WrongNumArgs(Interp,2,Objv,"cmap");
             return(TCL_ERROR);
          }
-         return(CMap_Create(Interp,Tcl_GetString(Objv[2])));
+         if (!(cmap=CMap_Create(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         if (Objc>3) {
+            if (CMapc_Config(Interp,cmap,Objc-3,Objv+3)==TCL_OK) {
+               return(TCL_OK);
+            } else {
+               return(TCL_ERROR);
+            }
+         }
          break;
 
       case COPY:
