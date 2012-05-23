@@ -44,7 +44,7 @@
 
 static TList *GLCrowdList;
 
-GLParams *GLRender;  /* Structure globale des parametres OpenGL */
+GLParams *GLRender=NULL;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
 static float glArrayArrow[14] = { 0.0f,0.0f, 0.25f,-0.5f, 0.1f,-0.5f, 0.1f,-1.0f, -0.1f,-1.0f, -0.1f,-0.5f, -0.25f,-0.5f };

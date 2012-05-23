@@ -40,6 +40,7 @@
 #include <stdlib.h>
 
 #include "eerUtils.h"
+#include "eerStruct.h"
 #include "tclUtils.h"
 #include "ogr_api.h"
 
@@ -269,6 +270,7 @@ typedef struct TDataDef {
    int     Limits[3][2];      /*Limits of processing in grid points*/
    double  CoordLimits[2][2]; /*Limits of processing in latlon*/
    int     Sample;            /*Sample interval in grid points*/
+   TList  *Segments;          /*Liste d'objets de rendue*/
 } TDataDef;
 
 void      DataDef_Clear(TDataDef *Def);

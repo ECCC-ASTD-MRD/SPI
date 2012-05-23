@@ -110,7 +110,6 @@ typedef struct TData {
    TData_ReadCube *ReadCube;/*Fonction de lecture du cube de donnees (niveaux verticaux)*/
    TData_Grid     *Grid;    /*Fonction de recuperation de la grille (geo-localisation)*/
 
-   TList  *Segments;        /*Liste d'objets de rendue*/
    float  *Map;             /*Texture du champs*/
 } TData;
 

@@ -341,12 +341,12 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       return;
 
    /*Les contours sont-ils definit*/
-   if (Field->Spec->InterNb && !Field->Segments) {
-      FFContour(REF_PROJ,Field,Proj,Field->Spec->InterNb,Field->Spec->Inter);
+   if (Field->Spec->InterNb && !Field->Def->Segments) {
+      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,3);
    }
 
    /* Render the contours */
-   if (Field->Segments && Field->Spec->Width && Field->Spec->Outline) {
+   if (Field->Def->Segments && Field->Spec->Width && Field->Spec->Outline) {
 
       if (Field->Spec->RenderLabel && Interp)
          Tcl_AppendResult(Interp,"gsave\n",(char*)NULL);
@@ -380,7 +380,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
       glLineWidth(w);
 
-      list=Field->Segments;
+      list=Field->Def->Segments;
 
       while(list) {
          array=(T3DArray*)list->Data;
@@ -483,7 +483,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
    glDepthMask(GL_FALSE);
 
-   if (Field->Segments) {
+   if (Field->Def->Segments) {
 
       if (Interp) {
          if (Field->Spec->Outline)
@@ -497,7 +497,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
          glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
       }
 
-      list=Field->Segments;
+      list=Field->Def->Segments;
       delta=Field->Spec->RenderLabel*100;
 
       while(list) {
@@ -1720,13 +1720,13 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
   /*Creer la liste de vertex par niveaux*/
-   if (!Field->Segments) {
+   if (!Field->Def->Segments) {
       for (i=0;i<Field->Spec->InterNb;i++) {
          len=FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i]);
          if (len>6) {
             array=T3DArray_Alloc(Field->Spec->Inter[i],len);
             if (array) {
-               Field->Segments=TList_Add(Field->Segments,array);
+               Field->Def->Segments=TList_Add(Field->Def->Segments,array);
                GDB_VBufferCopy(array->Data,len);
             } else {
                fprintf(stderr,"(ERROR) Data_RenderVolume: Unable to alloc memory for volume data %f",Field->Spec->Inter[i]);
@@ -1735,7 +1735,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       }
    }
 
-   if (Field->Segments) {
+   if (Field->Def->Segments) {
 
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
@@ -1758,7 +1758,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          glEnable(GL_CULL_FACE);
          glCullFace(GL_FRONT);
 
-         list=Field->Segments;
+         list=Field->Def->Segments;
          while(list) {
             end=list;
             list=list->Next;
@@ -1778,7 +1778,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          glCullFace(GL_BACK);
-         list=Field->Segments;
+         list=Field->Def->Segments;
          while(list) {
 
             array=(T3DArray*)list->Data;
@@ -1795,7 +1795,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       } else {
          glDisable(GL_CULL_FACE);
 
-         list=Field->Segments;
+         list=Field->Def->Segments;
          while(list) {
             array=(T3DArray*)list->Data;
 

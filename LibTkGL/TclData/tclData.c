@@ -933,7 +933,6 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       field->Free=NULL;
       field->ReadCube=NULL;
       field->Tag=NULL;
-      field->Segments=NULL;
       field->Map=NULL;
 
       if (NI*NJ*NK) {
@@ -1156,9 +1155,9 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          Data->Map=NULL;
       }
 
-      if (Seg && Data->Segments) {
-         TList_Clear(Data->Segments,T3DArray_Free);
-         Data->Segments=NULL;
+      if (Seg && Data->Def->Segments) {
+         TList_Clear(Data->Def->Segments,T3DArray_Free);
+         Data->Def->Segments=NULL;
       }
    }
 }
@@ -2036,9 +2035,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case GRIDCONTOUR:
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_GRID,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+               FFContour(REF_GRID,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,3);
 
-               list=Field->Segments;
+               list=Field->Def->Segments;
                obj=Tcl_NewListObj(0,NULL);
 
                /*Loop on all contours*/
@@ -2079,9 +2078,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
+               FFContour(REF_COOR,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,3);
 
-               list=Field->Segments;
+               list=Field->Def->Segments;
 
                obj=Tcl_NewListObj(0,NULL);
 

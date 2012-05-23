@@ -2277,7 +2277,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       return;
 
    /*Les contours sont-ils definit*/
-   if (Data->Spec->InterNb && (!Data->Segments || Data->Def->NK==1)) {
+   if (Data->Spec->InterNb && (!Data->Def->Segments || Data->Def->NK==1)) {
       FFContour(REF_GRID,Data,NULL,Data->Spec->InterNb,Data->Spec->Inter);
    }
 
@@ -2287,7 +2287,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
    if (Data->Spec->RenderLabel)
       GraphItem_Display2DLabel(Interp,Graph,AxisX,AxisY,AxisZ,Data,X0,Y0,X1,Y1);
 
-   if (Data->Segments) {
+   if (Data->Def->Segments) {
 
       if (Interp) {
          sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Data->Spec->Width-1);
@@ -2306,7 +2306,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 
       /*Afficher les segments*/
 
-      list=Data->Segments;
+      list=Data->Def->Segments;
 
       while(list) {
          array=(T3DArray*)list->Data;
@@ -2488,7 +2488,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
    glPolygonMode(GL_FRONT,GL_FILL);
 
    /* Render the contours */
-   if (Data->Segments) {
+   if (Data->Def->Segments) {
 
       if (Interp) {
          Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
@@ -2499,7 +2499,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
          glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Data->Spec->Font);
       }
 
-      list=Data->Segments;
+      list=Data->Def->Segments;
       delta=Data->Spec->RenderLabel*100;
 
       while(list) {

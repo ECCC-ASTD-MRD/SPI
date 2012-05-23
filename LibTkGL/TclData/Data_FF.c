@@ -380,10 +380,14 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *
  * Parametres :
  *  <Mode>    : Type de referenciel (REF_COOR,REF_GRID,REF_PROJ)
+ *  <Ref>     : Reference geographique horizontale
+ *  <Def>     : Definition des donnees
+ *  <Stat>    : Statistiques de l'enregistrement
  *  <Field>   : Champs
  *  <Proj>    : Parametres de la projection
  *  <NbInter> : Nombre d'intervalle
  *  <Inter>   : Liste des intervals
+ *  <Depth>   : Profondeur de subdivision
  *
  * Retour:
  *
@@ -391,33 +395,33 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
+int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth){
 
    int            n,i,j,ci,cj,i0,i1,j0,j1,len,side;
    unsigned char *buf=NULL;
    T3DArray      *array;
 
    /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
-   if (Mode==REF_COOR && !Field->Ref)
+   if (Mode==REF_COOR && !Ref)
       return(0);
 
    for (n=0;n<NbInter;n++) {
       /*If the interval is not within the value limits, skip*/
-      if (Inter[n]>=Field->Stat->Max)
+      if (Stat && Inter[n]>=Stat->Max)
          continue;
 
       /*Create/Reset gridcell parsing flags*/
       if (!buf) {
-         buf=(unsigned char*)calloc(FSIZE2D(Field->Def),sizeof(char));
+         buf=(unsigned char*)calloc(FSIZE2D(Def),sizeof(char));
       } else {
-         memset(buf,0x0,FSIZE2D(Field->Def));
+         memset(buf,0x0,FSIZE2D(Def));
       }
 
       /*Calculate contours within the specified coverage limits*/
-      i0=Field->Def->Limits[0][0];
-      j0=Field->Def->Limits[1][0];
-      i1=Field->Def->Limits[0][1];
-      j1=Field->Def->Limits[1][1];
+      i0=Def->Limits[0][0];
+      j0=Def->Limits[1][0];
+      i1=Def->Limits[0][1];
+      j1=Def->Limits[1][1];
 
       i=i0;j=j0;
       ci=1;cj=0;
@@ -434,13 +438,13 @@ int FFContour(int Mode,TData *Field,Projection *Proj,int NbInter,float *Inter){
          j1=j1<j0?j0:j1;
 
          /*If this gridpoint has'nt yet been visited*/
-         if (!buf[Field->Def->NI*j+i]) {
-           len=FFContour_Quad(Field->Ref,Field->Def,buf,i,j,Field->Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,3);
+         if (!buf[Def->NI*j+i]) {
+           len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth);
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
                if ((array=T3DArray_Alloc(Inter[n],len))) {
-                  Field->Segments=TList_Add(Field->Segments,array);
+                  Def->Segments=TList_Add(Def->Segments,array);
                   GDB_VBufferCopy(array->Data,len);
                } else {
                  fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);

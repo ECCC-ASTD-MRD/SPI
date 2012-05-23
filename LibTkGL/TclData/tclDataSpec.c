@@ -609,70 +609,38 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case FILL:
             if (Objc==1) {
-               if (Spec->Fill) {
-                  Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->Fill),(char*)NULL);
-               } else {
-                  Tcl_AppendResult(Interp,"",(char*)NULL);
-               }
+               DataSpec_PutColor(Interp,Spec->Fill);
             } else {
-               if (Spec->Fill) {
-                  Tk_FreeColor(Spec->Fill);
-                  Spec->Fill=NULL;
-               }
-               if (strlen(Tcl_GetString(Objv[++i])))
-                  Spec->Fill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
+               if (DataSpec_GetColor(Interp,Objv[++i],&Spec->Fill)==TCL_ERROR)
+                  return(TCL_ERROR);
             }
             break;
 
          case COLOR:
          case OUTLINE:
-           if (Objc==1) {
-               if (Spec->Outline) {
-                  Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->Outline),(char*)NULL);
-               } else {
-                  Tcl_AppendResult(Interp,"",(char*)NULL);
-               }
+            if (Objc==1) {
+               DataSpec_PutColor(Interp,Spec->Outline);
             } else {
-              if (Spec->Outline) {
-                  Tk_FreeColor(Spec->Outline);
-                  Spec->Outline=NULL;
-               }
-              if (strlen(Tcl_GetString(Objv[++i])))
-                 Spec->Outline=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
-           }
+               if (DataSpec_GetColor(Interp,Objv[++i],&Spec->Outline)==TCL_ERROR)
+                  return(TCL_ERROR);
+            }
            break;
 
          case ACTOUTLINE:
             if (Objc==1) {
-               if (Spec->HighLine) {
-                  Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->HighLine),(char*)NULL);
-               } else {
-                  Tcl_AppendResult(Interp,"",(char*)NULL);
-               }
+               DataSpec_PutColor(Interp,Spec->HighLine);
             } else {
-               if (Spec->HighLine) {
-                  Tk_FreeColor(Spec->HighLine);
-                  Spec->HighLine=NULL;
-               }
-               if (strlen(Tcl_GetString(Objv[++i])))
-                  Spec->HighLine=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
+               if (DataSpec_GetColor(Interp,Objv[++i],&Spec->HighLine)==TCL_ERROR)
+                  return(TCL_ERROR);
             }
             break;
 
          case ACTFILL:
             if (Objc==1) {
-               if (Spec->HighFill) {
-                  Tcl_AppendResult(Interp,Tk_NameOfColor(Spec->HighFill),(char*)NULL);
-               } else {
-                  Tcl_AppendResult(Interp,"",(char*)NULL);
-               }
+               DataSpec_PutColor(Interp,Spec->HighFill);
             } else {
-               if (Spec->HighFill) {
-                  Tk_FreeColor(Spec->HighFill);
-                  Spec->HighFill=NULL;
-               }
-               if (strlen(Tcl_GetString(Objv[++i])))
-                  Spec->HighFill=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[i]);
+               if (DataSpec_GetColor(Interp,Objv[++i],&Spec->HighFill)==TCL_ERROR)
+                  return(TCL_ERROR);
             }
             break;
 
@@ -1218,6 +1186,86 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_PutColor>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Extraire la couleur de la configuration selon que Tk est actif ou non
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <Color>       : Definition de la couleur
+ *
+ * Retour:
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void DataSpec_PutColor(Tcl_Interp *Interp,XColor *Color) {
+
+   char buf[16];
+
+   if (Color) {
+      if (GLRender) {
+         Tcl_AppendResult(Interp,Tk_NameOfColor(Color),(char*)NULL);
+      } else {
+         sprintf(buf,"#%02x%02x%02x",Color->red,Color->green,Color->blue);
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+      }
+   } else {
+      Tcl_AppendResult(Interp,"",(char*)NULL);
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_PutColor>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Recupere la couleur pour la configuration selon que Tk est actif ou non
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <Obj>         : Objet Tcl contenant la couleur
+ *  <Color>       : Definition de la couleur
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
+
+   int r,g,b,t;
+
+   if (*Color) GLRender?Tk_FreeColor(*Color):free(*Color);
+   *Color=NULL;
+
+   if (strlen(Tcl_GetString(Obj))) {
+      if (GLRender) {
+         if (!(*Color=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Obj))) {
+            return(TCL_ERROR);
+         }
+      } else {
+         *Color=(XColor*)malloc(sizeof(XColor));
+         if ((t=sscanf(Tcl_GetString(Obj),"#%02x%02x%02x",&r,&g,&b))!=3) {
+            Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         (*Color)->red=r;
+         (*Color)->green=g;
+         (*Color)->blue=b;
+      }
+   }
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_SpecClean>
  * Creation : Mars 2007 - J.P. Gauthier - CMC/CMOE
  *
@@ -1394,11 +1442,11 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->LabelVar)  free(to->LabelVar);
    if (to->SizeVar)   free(to->SizeVar);
    if (to->MapVar)    free(to->SizeVar);
-   if (to->Outline)   Tk_FreeColor(to->Outline);
-   if (to->Fill)      Tk_FreeColor(to->Fill);
-   if (to->HighLine)  Tk_FreeColor(to->HighLine);
-   if (to->HighFill)  Tk_FreeColor(to->HighFill);
-   if (to->Font)      Tk_FreeFont(to->Font);
+   if (to->Outline)   GLRender?Tk_FreeColor(to->Outline):free(to->Outline);
+   if (to->Fill)      GLRender?Tk_FreeColor(to->Fill):free(to->Fill);
+   if (to->HighLine)  GLRender?Tk_FreeColor(to->HighLine):free(to->HighLine);
+   if (to->HighFill)  GLRender?Tk_FreeColor(to->HighFill):free(to->HighFill);
+   if (to->Font)      GLRender?Tk_FreeFont(to->Font):free(to->Font);
 
    if (to->InterpDegree) free(to->InterpDegree);
    if (to->ExtrapDegree) free(to->ExtrapDegree);
@@ -1678,11 +1726,11 @@ int DataSpec_Free(TDataSpec *Spec){
    if (Spec->Desc)        free(Spec->Desc);
    if (Spec->Unit)        free(Spec->Unit);
    if (Spec->Sprite)      free(Spec->Sprite);
-   if (Spec->Outline)     Tk_FreeColor(Spec->Outline);
-   if (Spec->Fill)        Tk_FreeColor(Spec->Fill);
-   if (Spec->HighLine)    Tk_FreeColor(Spec->HighLine);
-   if (Spec->HighFill)    Tk_FreeColor(Spec->HighFill);
-   if (Spec->Font)        Tk_FreeFont(Spec->Font);
+   if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);
+   if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);
+   if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine);
+   if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill);
+   if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);
 
    if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
    if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);

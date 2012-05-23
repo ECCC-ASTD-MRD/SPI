@@ -1469,6 +1469,211 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Murphy_WideLine>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Algorithme de Murpy pour des lignes epaisse.
+ *
+ * Parametres :
+ *  <P0>      : Point de depart.
+ *  <P1>      : Point de fin.
+ *  <Nb>      : Largeur.
+*
+ * Retour:
+ *
+ * Remarques :
+ *   - Base sur le code GNU de hp2xx
+ *----------------------------------------------------------------------------
+*/
+typedef struct TMurphy {
+   TDataDef     *Def;                 /* Data definition */
+   unsigned char Color[4];            /* Specification des donnees*/
+   int           Width,Idx;                 /* Value index */
+   int    u,v;               /* delta x , delta y */
+   int    ku,kt,kv,kd;     /* loop constants */
+   int    oct2;
+   int    quad4;
+} TMurphy;
+
+void Murphy_ParaLine(TMurphy *M,int X,int Y,int D1) {
+
+   int           p;              /* pel counter, p=along line */
+   unsigned long n;
+   D1 = -D1;
+
+   for (p=0;p<=M->u;p++) {       /* test for end of parallel line */
+      if (FIN2D(M->Def,X,Y)) {
+         n=FIDX2D(M->Def,X,Y);
+         if (M->Def->NC==1) {
+            Def_Set(M->Def,0,n,M->Idx);
+         } else {
+            Def_Set(M->Def,0,n,M->Color[0]);
+            if (M->Def->NC>1) Def_Set(M->Def,1,n,M->Color[1]);
+            if (M->Def->NC>2) Def_Set(M->Def,2,n,M->Color[2]);
+            if (M->Def->NC>3) Def_Set(M->Def,3,n,M->Color[3]);
+         }
+      }
+
+      if (D1<=M->kt) {  /* square move */
+         if (M->oct2 == 0) {
+            X++;
+         } else {
+            if (M->quad4 == 0) {
+               Y++;
+            } else {
+               Y--;
+            }
+         }
+         D1 += M->kv;
+      } else {        /* diagonal move */
+         X++;
+         if (M->quad4 == 0) {
+            Y++;
+         } else {
+            Y--;
+         }
+         D1+=M->kd;
+      }
+   }
+}
+
+int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
+
+   float   offset = M->Width/2.0;
+   Vect2i  pt,p0,p1;
+
+   int    tmp;
+   int    d0,d1;              /* difference terms d0=perpendicular to line, d1=along line */
+   int    q;                  /* pel counter,q=perpendicular to line */
+   int    dd;                 /* distance along line */
+   int    tk;                 /* thickness threshold */
+   double ang;                /* angle for initial point calculation */
+
+   p0[0]=ROUND(P0[0]); p0[1]=ROUND(P0[1]);
+   p1[0]=ROUND(P1[0]); p1[1]=ROUND(P1[1]);
+
+   /* Initialisation */
+   M->u = p1[0] - p0[0]; /* delta x */
+   M->v = p1[1] - p0[1]; /* delta y */
+
+   if (M->u<0) {     /* swap to make sure we are in quadrants 1 or 4 */
+      pt[0] = p0[0]; p0[0] = p1[0]; p1[0] = pt[0];
+      pt[1] = p0[1]; p0[1] = p1[1]; p1[1] = pt[1];
+      M->u *= -1;
+      M->v *= -1;
+   }
+
+   if (M->v<0) {     /* swap to 1st quadrant and flag */
+      M->v *= -1;
+      M->quad4 = 1;
+   } else {
+      M->quad4 = 0;
+   }
+
+   if (M->v > M->u) {      /* swap things if in 2 octant */
+      tmp = M->u; M->u = M->v; M->v = tmp;
+      M->oct2 = 1;
+   } else {
+      M->oct2 = 0;
+   }
+
+   M->ku = M->u  + M->u;     /* change in l for square shift */
+   M->kv = M->v  + M->v;     /* change in d for square shift */
+   M->kd = M->kv - M->ku;    /* change in d for diagonal shift */
+   M->kt = M->u  - M->kv;    /* diag/square decision threshold */
+
+   if (!M->u && !M->v)       /* Nothing to do */
+      return(0);
+
+   d0 = d1 = dd = 0;
+   ang = atan((double)M->v/(double)M->u);      /* calc new initial point - offset both sides of ideal */
+
+   if (M->oct2 == 0) {
+      pt[0] = p0[0] + ROUND(offset * sin(ang));
+      if (M->quad4 == 0) {
+         pt[1] = p0[1] - ROUND(offset * cos(ang));
+      } else {
+         pt[1] = p0[1] + ROUND(offset * cos(ang));
+      }
+   } else {
+      pt[0] = p0[0] - ROUND(offset * cos(ang));
+      if (M->quad4 == 0) {
+         pt[1] = p0[1] + ROUND(offset * sin(ang));
+      } else {
+         pt[1] = p0[1] - ROUND(offset * sin(ang));
+      }
+   }
+
+   tk = M->Width<=1?2:(int)(4.0 * hypot(pt[0]-p0[0], pt[1]-p0[1]) * hypot(M->u,M->v));  /* used here for constant thickness line */
+
+   for (q=0;dd<=tk;q++) {    /* outer loop, stepping perpendicular to line */
+
+    Murphy_ParaLine(M,pt[0],pt[1],d1);        /* call to inner loop - right edge */
+
+      if (d0 < M->kt) {   /* square move  - M2 */
+         if (M->oct2 == 0) {
+            if (M->quad4 == 0) {
+               pt[1]++;
+            } else {
+               pt[1]--;
+            }
+         } else {
+            pt[0]++;
+         }
+      } else {        /* diagonal move */
+         dd += M->kv;
+         d0 -= M->ku;
+         if (d1 < M->kt) {   /* normal diagonal - M3 */
+            if (M->oct2 == 0) {
+               pt[0]--;
+               if (M->quad4 == 0) {
+                  pt[1]++;
+               } else {
+                  pt[1]--;
+               }
+            } else {
+               pt[0]++;
+               if (M->quad4 == 0) {
+                  pt[1]--;
+               } else {
+                  pt[1]++;
+               }
+            }
+            d1 += M->kv;
+         } else {        /* double square move, extra parallel line */
+            if (M->oct2 == 0) {
+               pt[0]--;
+            } else {
+               if (M->quad4 == 0) {
+                  pt[1]--;
+               } else {
+                  pt[1]++;
+               }
+            }
+            d1 += M->kd;
+            if (dd > tk) {
+               return(1); /* breakout on the extra line */
+            }
+            Murphy_ParaLine(M,pt[0],pt[1],d1);
+
+            if (M->oct2 == 0) {
+               if (M->quad4 == 0) {
+                  pt[1]++;
+               } else {
+                  pt[1]--;
+               }
+            } else {
+               pt[0]++;
+            }
+         }
+      }
+      dd+=M->ku;
+      d0+=M->kv;
+   }
+   return(1);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <GDAL_BandFSTDImport>
  * Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
  *
@@ -1494,6 +1699,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    TGeoScan  scan;
    TList    *list;
    T3DArray *array;
+   TMurphy   m;
+   TDataDef *def=NULL;
    Vect3d    p0,p1;
 
    if (!Band) {
@@ -1517,7 +1724,13 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
    }
 
+   /*Initialize linescan object*/
    memset(&scan,0x0,sizeof(TGeoScan));
+
+   /*Check if we need contouring*/
+   if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
+      def=DataDef_New(Band->Def->NI,Band->Def->NJ,1,1,TD_Float32);
+   }
 
    /*Check if we can reproject all in one shot, otherwise, do by scanline*/
    dy=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NJ;
@@ -1533,24 +1746,33 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          /*Get the value of the data field at this latlon coordinate*/
          val=scan.D[n];
          if (!isnan(val) && val!=(float)Field->Def->NoData) {
-            if (Field->Spec->Map) {
-               VAL2COL(idx,Field->Spec,val);
 
-               if (idx>-1) {
-                  if (Band->Def->NC==1) {
-                     Def_Set(Band->Def,0,scan.V[n],idx);
-                  } else {
-                     for (z=0;z<Band->Def->NC;z++) {
-                        Def_Set(Band->Def,z,scan.V[n],Field->Spec->Map->Color[idx][z]);
+            if (def)
+               Def_Set(def,0,scan.V[n],val);
+
+            if (Field->Spec->RenderTexture) {
+               if (Field->Spec->Map) {
+                  VAL2COL(idx,Field->Spec,val);
+
+                  if (idx>-1) {
+                     if (Band->Def->NC==1) {
+                        Def_Set(Band->Def,0,scan.V[n],idx);
+                     } else {
+                        Def_Set(Band->Def,0,scan.V[n],Field->Spec->Map->Color[idx][0]);
+                        if (Band->Def->NC>1) Def_Set(Band->Def,1,scan.V[n],Field->Spec->Map->Color[idx][1]);
+                        if (Band->Def->NC>2) Def_Set(Band->Def,2,scan.V[n],Field->Spec->Map->Color[idx][2]);
+                        if (Band->Def->NC>3) Def_Set(Band->Def,3,scan.V[n],Field->Spec->Map->Color[idx][3]);
                      }
                   }
-               }
-            } else {
-               if (Band->Def->NC>=1) {
-                  Def_Set(Band->Def,0,scan.V[n],val);
-               }
-               if (Band->Def->NC>=2) {
-                  Def_Set(Band->Def,1,scan.V[n],dir);
+               } else {
+                  if (Band->Def->NC<3) {
+                     if (Band->Def->NC>=1) {
+                        Def_Set(Band->Def,0,scan.V[n],val);
+                     }
+                     if (Band->Def->NC>=2) {
+                        Def_Set(Band->Def,1,scan.V[n],dir);
+                     }
+                  }
                }
             }
          }
@@ -1559,31 +1781,47 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    GeoScan_Clear(&scan);
 
-//    /* Check for contouring */
-//    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
-//       Data_Clean(Field,0,0,1);
-//       FFContour(REF_COOR,Field,NULL,Field->Spec->InterNb,Field->Spec->Inter);
-//
-//       list=Field->Segments;
-//
-//       /*Loop on all contours*/
-//       while(list) {
-//          array=(T3DArray*)list->Data;
-//
-//          if (array->Size) {
-//             ok=Band->Ref->UnProject(Band->Ref,&p0[0],&p0[1],array->Data[0],array->Data[1],0,1);
-//
-//             /*Loop on the contour points*/
-//             for (n=2;n<array->Size-1;n++) {
-//                ok=Band->Ref->UnProject(Band->Ref,&p1[0],&p1[1],array->Data[n],array->Data[n+1],0,1);
-//                Murphy_WideLine(p0,p1,Field->Spec->Width);
-//                p0[0]=p1[0];
-//                p0[1]=p1[1];
-//             }
-//          }
-//          list=list->Next;
-//       }
-//    }
+   /* Check for contouring */
+   if (def) {
+      FFContour(REF_GRID,Band->Ref,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1);
+
+      /*Initialize murphy line object*/
+      m.Def=Band->Def;
+      m.Idx=-1;
+      m.Width=Field->Spec->Width;
+      m.Color[0]=Field->Spec->Outline->red;
+      m.Color[1]=Field->Spec->Outline->green;
+      m.Color[2]=Field->Spec->Outline->blue;
+      m.Color[3]=255;
+
+      /*Loop on all contours*/
+      list=def->Segments;
+      while(list) {
+         array=(T3DArray*)list->Data;
+
+         if (array->Size) {
+            if (Field->Spec->MapAll && Field->Spec->Map) {
+               VAL2COL(m.Idx,Field->Spec,array->Value);
+               m.Color[0]=Field->Spec->Map->Color[m.Idx][0];
+               m.Color[1]=Field->Spec->Map->Color[m.Idx][1];
+               m.Color[2]=Field->Spec->Map->Color[m.Idx][2];
+               m.Color[3]=Field->Spec->Map->Color[m.Idx][3];
+            }
+
+            /*Loop on the contour points*/
+            z=1;
+            for (n=0;n<array->Size-1;n++) {
+               /*If length was not enough, keep fire segement point from previous*/
+               if (z) p0[0]=array->Data[n][0];p0[1]=array->Data[n][1];
+               p1[0]=array->Data[n+1][0];p1[1]=array->Data[n+1][1];
+
+               z=Murphy_WideLine(&m,p0,p1);
+           }
+         }
+         list=list->Next;
+      }
+   }
+   if (def) DataDef_Free(def);
 
    return(TCL_OK);
 }

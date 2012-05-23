@@ -69,6 +69,11 @@ void DataDef_Clear(TDataDef *Def){
       free(Def->Mask);
       Def->Mask=NULL;
    }
+
+   if (Def->Segments) {
+      TList_Clear(Def->Segments,T3DArray_Free);
+      Def->Segments=NULL;
+   }
 }
 
 /*----------------------------------------------------------------------------
@@ -185,6 +190,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->Type=Def->Type;
       def->Level=Def->Level;
       def->Buffer=NULL;
+      def->Segments=NULL;
       def->Accum=NULL;
       def->Mask=NULL;
       def->Pres=NULL;
@@ -229,6 +235,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->Type=Type;
       def->Level=Def->Level;
       def->Buffer=NULL;
+      def->Segments=NULL;
       def->Accum=NULL;
       def->Mask=NULL;
       def->Pres=NULL;
@@ -286,6 +293,7 @@ void DataDef_Free(TDataDef *Def){
       if (Def->Pres>(float*)0x1) free(Def->Pres);
       if (Def->Poly)             OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
+      if (Def->Segments)         TList_Clear(Def->Segments,T3DArray_Free);
 
       free(Def);
    }
@@ -350,6 +358,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Data[3]=NULL;
    def->Type=Type;
    def->Buffer=NULL;
+   def->Segments=NULL;
    def->Accum=NULL;
    def->Mask=NULL;
    def->Pres=NULL;
