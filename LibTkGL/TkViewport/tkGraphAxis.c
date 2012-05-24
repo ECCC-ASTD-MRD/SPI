@@ -1165,8 +1165,8 @@ void GraphAxis_Print(TGraphAxis *Axis,char *String,double Value,int DOrder) {
 */
 void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side) {
 
-   int    i,o,dx,dy,th,w=0,width,height;
-   double inter,incr,i0,i1,it,mk,x,y,yp,xp=0;
+   int    i,o,dx,dy,th,w=0,width,height,l;
+   double inter,incr,i0,i1,it,mk,x,y,yp=0,xp=0;
    char   buf[32];
    XColor *color;
    Tk_Font font;
@@ -1355,8 +1355,9 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
       Axis->Incr=Axis->Incr!=0.0?Axis->Incr:RANGE_INCR(Axis->Order);
       inter=i0-fmod(i0,Axis->Incr);
       if (inter<i0) inter+=Axis->Incr;
+      l=0;
 
-      while(Axis->T0!=Axis->T1 && inter<=i1) {
+      while(Axis->T0!=Axis->T1 && inter<=(i1+Axis->Incr*0.1)) {
          it=Axis->Type=='O'?pow(10,inter):inter;
          GraphAxis_Print(Axis,buf,it,0);
          text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
@@ -1364,7 +1365,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          if (Side&HORIZONTAL) {
             x=X0+AXISVALUE(Axis,it); y=Y0;
 
-            if (Axis->Spacing && x<xp+w) {
+            if (l && Axis->Spacing && x<xp+w) {
                inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
             }
@@ -1390,7 +1391,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          } else {
             y=Y0-AXISVALUE(Axis,it); x=X0;
 
-            if (Axis->Spacing && y<yp+w && y>yp-w) {
+            if (l && Axis->Spacing && y<yp+w && y>yp-w) {
                inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
                continue;
             }
@@ -1419,6 +1420,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          glDisplayTextLayout(text,(int)-Axis->Angle,(int)(x+dx),(int)(y-dy),0,-1);
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
+         l++;
       }
       Axis->Incr=incr;
    }
