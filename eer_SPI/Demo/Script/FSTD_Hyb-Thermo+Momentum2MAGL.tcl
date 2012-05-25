@@ -26,7 +26,7 @@ puts \n[file tail [info script]]
 
 catch { file delete DataOut/FSTD_Hyb-Thermo+Momentum2MAGL.fstd }
 
-set ttlevels { 2.0  80.0 }
+set ttlevels { 2.0  80.0 500.0 1000.0 5000.0 10000.0 }
 set uvlevels { 10.0 80.0 }
 
 fstdfield ip1mode NEW

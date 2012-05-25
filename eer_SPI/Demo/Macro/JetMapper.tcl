@@ -393,7 +393,7 @@ proc Macro::JetMapper::Execute { } {
    Macro::JetMapper::PrecipPlot 32
    Macro::JetMapper::HighLowPlot PN
 
-   #----- Interpoler TT sur une grille a moindre resolution pour "smoohter" le champs
+   #----- Interpoler TT sur une grille a moindre resolution pour "smoother" le champs
    fstdfield gridinterp TTI TT
    fstdfield stats TTI -leveltype MASL -levels 0
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) { TTI }

@@ -76,7 +76,8 @@ proc Macro::XSection::Execute { } {
    graphaxis create Macro::AXISY
 
    graphaxis configure Macro::AXISX -type LINEAR -intervals [list 0 [expr [llength $path]/2.0-1]] -labels {Vancouver Montreal} -unit Distance -font XFont12 -gridcolor #010101 -gridwidth 1 -color #000000 -position LL -width 1
-   graphaxis configure Macro::AXISY -type LINEAR  -min 1000.0 -max 0.0 -unit "Level (Mb)" -font XFont12 -color #000000 -position LL -width 1
+#   graphaxis configure Macro::AXISY -type LINEAR -min 1000.0 -max 232.0 -modulo False -unit "Level (Mb)" -font XFont12 -color #000000 -position LL -width 1
+   graphaxis configure Macro::AXISY -type LINEAR -min 1.0 -max 0.7 -unit "Level (Mb)" -font XFont12 -color #000000 -position LL -width 1
 
    graphitem create Macro::ITEM
    graphitem configure Macro::ITEM -xaxis Macro::AXISX -yaxis Macro::AXISY -data Macro::XSECTION

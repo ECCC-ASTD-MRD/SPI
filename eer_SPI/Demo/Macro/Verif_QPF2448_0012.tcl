@@ -40,9 +40,9 @@ proc Macro::Verif_QPF2448_0012::Execute { } {
    variable Error
    variable Param
 
-   set stamp   [exec ~afsfops/S/r.fnom]
-   set stamp24 [exec ~afsfops/S/r.fnom 1]
-   set stamp48 [exec ~afsfops/S/r.fnom 2]
+   catch { set stamp   [exec ~afsfops/S/r.fnom] }
+   catch { set stamp24 [exec ~afsfops/S/r.fnom 1] }
+   catch { set stamp48 [exec ~afsfops/S/r.fnom 2] }
 
    SPI::LayoutLoad $Page::Data(Frame) VerifQPF24
    Macro::Cursor watch

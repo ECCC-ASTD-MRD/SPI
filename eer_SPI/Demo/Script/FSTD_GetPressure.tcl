@@ -26,6 +26,8 @@ puts \n[file tail [info script]]
 
 puts "   Processing pressure for hybrid levels"
 
+file delete DataOut/2006122900_000.hyb.pres DataOut/2006122900_000.eta.pres
+
 #----- Open in and out files
 fstdfile open FILEIN read DataIn/2006122900_000.hyb
 fstdfile open FILEOUT write DataOut/2006122900_000.hyb.pres

@@ -56,14 +56,14 @@ proc Macro::SimpleDiff::Execute { } {
    font create DIFF_FONT -family courier -size -12 -weight bold
 
    fstdfield configure DIFF -desc "Diff" -factor 1 -color black -colormap DIFF_MAP -font DIFF_FONT \
-       -rendertexture 1  -value FLOAT 2
+      -rendertexture 1 -value FLOAT 2
 
    Macro::Doing "Creating product"
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
    Viewport::Assign   $Page::Data(Frame) $Viewport::Data(VP) DIFF
 
 #   DataBar::Create $Page::Data(Frame) $Viewport::Data(VP) 5 5 750 60 "Diff between field1 and field2"
-#   ColorBar::Create $Page::Data(Frame) $Viewport::Data(VP) 5 150 100 250
+   ColorBar::Create $Page::Data(Frame) $Viewport::Data(VP) 5 150 100 250
 
    Page::UpdateCommand $Page::Data(Frame)
 
@@ -73,7 +73,7 @@ proc Macro::SimpleDiff::Execute { } {
    #----- If in batch mode, print the map and exit
 
    if { $SPI::Param(Batch) } {
-      PrintBox::Image $Page::Data(Frame) png SimpleDiff
+      PrintBox::Image $Page::Data(Frame) ppm SimpleDiff
       SPI::Quit
    }
 
