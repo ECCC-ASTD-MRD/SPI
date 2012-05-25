@@ -1923,8 +1923,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       m.Color[3]=255;
 
       /*Loop on raster and place arrows at specified interval*/
-      for(x=Field->Spec->Sample;x<Band->Def->NI-Field->Spec->Sample;x+=Field->Spec->Sample) {
-         for(y=Field->Spec->Sample;y<Band->Def->NJ-Field->Spec->Sample;y+=Field->Spec->Sample) {
+      for(x=0;x<Band->Def->NI;x+=Field->Spec->Sample) {
+         for(y=0;y<Band->Def->NJ;y+=Field->Spec->Sample) {
             Band->Ref->Project(Band->Ref,x,y,&lat,&lon,0,1);
 
             if (Field->Ref->UnProject(Field->Ref,&i,&j,lat,lon,0,1)) {

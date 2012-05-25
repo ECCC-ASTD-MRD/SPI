@@ -363,7 +363,7 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          break;
 
       case CREATE:
-         if(Objc!=3) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"cmap");
             return(TCL_ERROR);
          }
@@ -371,7 +371,7 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             return(TCL_ERROR);
          }
          if (Objc>3) {
-            if (CMapc_Config(Interp,cmap,Objc-3,Objv+3)==TCL_OK) {
+            if (CMap_Config(Interp,cmap,Objc-3,Objv+3)==TCL_OK) {
                return(TCL_OK);
             } else {
                return(TCL_ERROR);
@@ -518,8 +518,8 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
    int      i,ii,idx,index;
    double   val;
 
-   static CONST char *sopt[] = { "-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-invertx","-inverty","-interp",NULL };
-   enum                opt { RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY,INTERP };
+   static CONST char *sopt[] = { "-file","-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-invertx","-inverty","-interp",NULL };
+   enum                opt { FILE,RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY,INTERP };
 
    if (!CMap) {
       return(TCL_ERROR);
@@ -532,6 +532,14 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
       }
 
       switch ((enum opt)idx) {
+         case FILE:
+            if(Objc!=1) {
+               if (CMap_Read(Interp,CMap,Tcl_GetString(Objv[++i]))==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+            }
+            break;
+
          case RGBARATIO:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
