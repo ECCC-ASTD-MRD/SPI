@@ -1435,10 +1435,6 @@ proc MLDPn::InitNew { Type } {
    set Tmp(OutputTimeStepMin) $Sim(OutputTimeStepMin) ; #----- Temporary variable for output time step.
    set Tmp(Delta)             $Sim(Delta)             ; #----- Temporary variable for time interval between met data files.
 
-   #----- Restart stuff
-   set Sim(Restarts)    {}
-   set Sim(Restart)     ""
-
    MLDPn::ScenarioSelect
 
    Model::FitAccTime MLDPn
