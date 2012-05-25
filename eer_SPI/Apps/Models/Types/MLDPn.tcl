@@ -835,6 +835,12 @@ proc MLDPn::ScenarioSelect { } {
    MLDPn::GraphUpdate
 }
 
+proc MLDPn::EmissionRead { } {
+   variable Sim
+
+   MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
+}
+
 proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
    global GDefs
    variable Sim

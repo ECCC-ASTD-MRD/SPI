@@ -693,6 +693,7 @@ proc Model::ParamsMetData { Model } {
             }
             incr idx
          }
+
          if { $sim(Backward) } {
             set sim(Data) [lrange $sim(Data) $idx end]
          } else {
