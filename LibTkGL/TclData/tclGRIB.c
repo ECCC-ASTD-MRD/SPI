@@ -219,6 +219,7 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
       free(file->Path);
       free(file->Id);
       free(file);
+      if (file->Table) free(file->Table);
    }
    return(TCL_OK);
 }
@@ -310,6 +311,7 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
    file->Id=(char*)strdup(Id);
    file->Mode=Mode;
    file->Handle=fi;
+   file->Table=NULL;
 
    GRIB_FilePut(Interp,file);
 

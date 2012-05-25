@@ -87,6 +87,11 @@ typedef struct TDataStat {
    Coord  MinLoc,MaxLoc;    /*Coordonnees des minimums et maximums*/
 } TDataStat;
 
+typedef struct TDataVector {
+   char  *UU,*VV,*WW;       /*Vector component names*/
+   double WWFactor;         /*Factor to apply to third component*/
+} TDataVector;
+
 struct TData;
 
 typedef Vect3d* (TData_Grid)     (struct TData *Field,void *Proj,int Level);
@@ -141,6 +146,9 @@ void     Data_Wipe();
 void     Data_PreInit(TData *Data);
 int      Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
 int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+
+TDataVector *Data_VectorTableCheck(char *Var,int *Idx);
+TDataVector *Data_VectorTableAdd(void);
 
 int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
 

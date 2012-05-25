@@ -24,27 +24,33 @@
 #include "tclFSTD.h"
 
 #define GRIB_STRLEN 512
+#define GRIB_TABLESIZE 4096
 
-typedef struct GRIB_File {
-   char  *Id;
-   char  *Path;
-   char   Mode;
-   FILE  *Handle;
-   long   Size;
-} GRIB_File;
+struct GRIB_File;
 
 typedef struct GRIB_Head {
-   GRIB_File   *FID;
+   struct GRIB_File *FID;
    grib_handle *Handle;
 
    int  Version;
    char NOMVAR[GRIB_STRLEN];
    char CENTER[GRIB_STRLEN];
-   int  KEY;
+   long KEY;
    int  IP1;
    long DATEV;
    long DATEO;
 } GRIB_Head;
+
+typedef struct GRIB_File {
+   char       *Id;
+   char       *Path;
+   char        Mode;
+   FILE       *Handle;
+   long        Size;
+   GRIB_Head  *Table;
+   int         TableNb;
+} GRIB_File;
+
 
 int TclGRIB_Init(Tcl_Interp *Interp);
 
@@ -53,12 +59,16 @@ int        GRIB_FileClose(Tcl_Interp *Interp,char *Id);
 GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id);
 int        GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File);
 
-int     GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key);
-void    GRIB_FieldFree(TData *Data);
-void    GRIB_FieldSet(TData *Data);
-int     GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var);
-void    GRIB_HeadCopy(void *To,void *From);
-Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level);
+int        GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key);
+void       GRIB_FieldFree(TData *Data);
+void       GRIB_FieldSet(TData *Data);
+int        GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var);
+GRIB_Head *GRIB_FieldFind(GRIB_File *File,int DATEV,int IP1,char* NOMVAR);
+void       GRIB_HeadCopy(void *To,void *From);
+Vect3d*    GRIB_Grid(TData *Field,void *Proj,int Level);
+
+int     GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType);
+int     GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor);
 
 int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 

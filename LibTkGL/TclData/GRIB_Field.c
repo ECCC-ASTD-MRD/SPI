@@ -373,7 +373,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
  * But      : Libere l'espace memoire associee a un champ.
  *
  * Parametres :
- *  <Field>   : Pointeur sur une structure de champ.
+ *  <Datad>   : Pointeur sur une structure de champ.
  *
  * Retour     :
  *  <TCL_...> : Code d'erreur de TCL.
@@ -393,6 +393,149 @@ void GRIB_FieldFree(TData *Data){
       }
    }
  }
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_GetLevel>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Libere l'espace memoire associee a un champ.
+ *
+ * Parametres :
+ *  <Head>      : GRIB field header object
+ *  <Level>     : Returned level
+ *  <LevelType> : Return type of level
+ *
+ * Retour     :
+ *  <Ok>      : Code d'erreur
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType){
+
+   long   lval,lval2,type;
+   int    err=0;
+   float  lvl;
+
+   if (err=grib_get_long(Head->Handle,"vertical.level",&lval)) {
+      return(0);
+   }
+   lvl=lval;
+
+   if (Head->Version==1) {
+      err=grib_get_long(Head->Handle,"indicatorOfTypeOfLevel",&lval2);
+      switch(lval2) {
+         case   1: lval2=LVL_MAGL; break;
+         case 125: lval2=LVL_MAGL; lvl/=100; break;
+         case 111:
+         case 112: lval2=LVL_MAGL; lvl=-lvl/100; break;
+         case 100:
+         case 101:
+         case 115:
+         case 116: lval2=LVL_PRES; break;
+         case 121: lval2=LVL_PRES; lvl=lvl+1100;break;
+         case 210: lval2=LVL_PRES; lvl*=100;break;
+         case 102:
+         case 103:
+         case 104: lval2=LVL_MASL; break;
+         case 160: lval2=LVL_MASL; lvl=-lvl; break;
+         case 107: lval2=LVL_SIGMA; lvl/=10000.0; break;
+         case 108: lval2=LVL_SIGMA; lvl/=100.0;   break;
+         case 128: lval2=LVL_SIGMA; lvl=1.1-lvl/1000.0;   break;
+         case 109:
+         case 110: lval2=LVL_HYBRID; break;
+         case 113:
+         case 114: lval2=LVL_THETA;  break;
+         case 119: lval2=LVL_ETA;  lvl/=10000.0; break;
+         case 120: lval2=LVL_ETA;  lvl/=100.0; break;
+         default: lval2=LVL_UNDEF;
+      }
+   } else {
+      err=grib_get_long(Head->Handle,"vertical.typeOfLevel",&lval2);
+
+      switch(lval2) {
+         case   1:
+         case 103:
+         case 106: lval2=LVL_MAGL; break;
+         case 100:
+         case 108: lval2=LVL_PRES; break;
+         case 101:
+         case 102:
+         case 160: lval2=LVL_MASL; break;
+         case 104: lval2=LVL_SIGMA; break;
+         case 105: lval2=LVL_HYBRID; break;
+         case 107: lval2=LVL_THETA; break;
+         case 111: lval2=LVL_ETA; break;
+         default: lval2=LVL_UNDEF;
+      }
+   }
+   *Level=lvl;
+   *LevelType=lval2;
+
+#ifdef DEBUG
+   fprintf(stderr,"(DEBUG) GRIB_GetLevel :%f %li\n",lvl,lval2);
+#endif
+   return(err==0);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_GetData>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Read the data matrix
+ *
+ * Parametres :
+ *  <Head>      : GRIB field header object
+ *  <Def>       : Data definition object
+ *  <Idx>       : Vectorial data index
+ *  <Factor>    : Factor to be aplied to data
+ *
+ * Retour     :
+ *  <Ok>      : Code d'erreur
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor){
+
+   int     err=0;
+   size_t  i,len;
+   double *data;
+
+   len=FSIZE3D(Def);
+   data=malloc(len*sizeof(double));
+   if ((grib_get_double_array(Head->Handle,"values",data,&len))!=GRIB_SUCCESS) {
+      return(0);
+   }
+   err=grib_get_double(Head->Handle,"missingValue",&Def->NoData);
+
+   for(i=0;i<FSIZE3D(Def);i++) {
+      if (Factor!=0.0)
+         data[i]*=Factor;
+      Def_Set(Def,Idx,i,data[i]);
+   }
+   free(data);
+
+   return(1);
+}
+
+GRIB_Head *GRIB_FieldFind(GRIB_File *File,int DATEV,int IP1,char* NOMVAR) {
+
+   GRIB_Head *head=NULL;
+   int  h=0;
+
+   while(File->Table[h].KEY!=-1) {
+      if (File->Table[h].DATEV==DATEV && File->Table[h].IP1==IP1 && strcmp(File->Table[h].NOMVAR,NOMVAR)==0) {
+         head=&File->Table[h];
+         break;
+      }
+      h++;
+   }
+
+   return(head);
+}
 
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldRead>
@@ -416,163 +559,170 @@ void GRIB_FieldFree(TData *Data){
 int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 
    TData         *field=NULL;
+   TDataVector   *uvw=NULL;;
    GRIB_File     *file=NULL;
-   GRIB_Head      head;
+   GRIB_Head     *head,*h;
    grib_keys_iterator *iter;
 
    OGRSpatialReferenceH         ref,llref=NULL;;
    OGRCoordinateTransformationH func;
 
-   int         err=0;
-   long        lval,i,ni=-1,nj=-1,nk=1,date,time,inci,incj;
+   int         err=0,idx;
+   long        lval,i,ni=-1,nj=-1,nk=1,inci,incj;
    size_t      len;
    double      dval;
    char        sval[GRIB_STRLEN];
-   double      mtx[6],inv[6],*data;
+   double      mtx[6],inv[6];
 
-   /*Get the file*/
+  /*Get the file*/
    file=GRIB_FileGet(Interp,File);
    if (!file) {
       Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Invalid file \"",File,"\"",(char*)NULL);
       return(TCL_ERROR);
    }
 
-  /*Move to right offset within the file*/
-   if (Key>file->Size) {
+   /*Get GRIB handle to message*/
+   head=&file->Table[Key];
+
+   /*Move to right offset within the file*/
+   if (head->KEY>file->Size) {
       Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Invalid field index",(char*)NULL);
       return(TCL_ERROR);
    }
-   fseek(file->Handle,Key,SEEK_SET);
 
-   /*Get GRIB handle to message*/
-   head.Handle=grib_handle_new_from_file(0,file->Handle,&err);
-   if (err!=GRIB_SUCCESS) {
-      Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not get field handle",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
-   /*Figure out valid time*/
-   grib_get_long(head.Handle,"date",&date);
-   grib_get_long(head.Handle,"time",&time);
-   head.DATEV=System_DateTime2Seconds(date,time*100,1);
-
-//         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
-//         head.IP1=ZRef_Level2IP(lval,lval2);
-         head.IP1=lval;
-
-   /*Get message info*/
-   err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
-   err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
+   /*Get dimensions*/
+   err=grib_get_long(head->Handle,"numberOfPointsAlongAParallel",&ni);
+   err=grib_get_long(head->Handle,"numberOfPointsAlongAMeridian",&nj);
    if (ni==-1) {
-      err=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
-      err=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
+      err=grib_get_long(head->Handle,"numberOfPointsAlongXAxis",&ni);
+      err=grib_get_long(head->Handle,"numberOfPointsAlongYAxis",&nj);
    }
-   err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+   err=grib_get_long(head->Handle,"numberOfVerticalCoordinateValues",&nk);
    nk=nk==0?1:nk;
 
-   /*Verifier si le champs existe et est valide*/
-   field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
-   if (!field) {
-      return(TCL_ERROR);
+   /*Champs vectoriel ???*/
+   if ((uvw=Data_VectorTableCheck(head->NOMVAR,&idx)) && uvw->VV) {
+      field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),TD_Float32);
+      if (!field) {
+         return(TCL_ERROR);
+      }
+
+      /*Recuperer les donnees du champs*/
+      if (!GRIB_GetData(head,field->Def,idx,0.0)) {
+         Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      strcpy(head->NOMVAR,uvw->UU);
+
+      if (uvw->UU && idx!=0) {
+         if (h=GRIB_FieldFind(file,head->DATEV,head->IP1,uvw->UU)) {
+            if (!GRIB_GetData(h,field->Def,0,0.0)) {
+               Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data: ",uvw->UU,(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            Tcl_AppendResult(Interp,"GRIB_FieldRead: Could not find first component field: ",uvw->UU,(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+      if (uvw->VV && idx!=1) {
+         if (h=GRIB_FieldFind(file,head->DATEV,head->IP1,uvw->VV)) {
+            if (!GRIB_GetData(h,field->Def,1,0.0)) {
+               Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data: ",uvw->VV,(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            Tcl_AppendResult(Interp,"GRIB_FieldRead: Could not find second component field: ",uvw->VV,(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+      if (uvw->WW && idx!=2) {
+         if (h=GRIB_FieldFind(file,head->DATEV,head->IP1,uvw->WW)) {
+            if (!GRIB_GetData(h,field->Def,2,uvw->WWFactor)) {
+               Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data: ",uvw->WW,(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            Tcl_AppendResult(Interp,"GRIB_FieldRead: Could not find third component field: ",uvw->WW,(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+   } else {
+      /*Verifier si le champs existe et est valide*/
+      field=Data_Valid(Interp,Name,ni,nj,nk,1,TD_Float32);
+      if (!field) {
+         return(TCL_ERROR);
+      }
+      if (!GRIB_GetData(head,field->Def,0,0.0)) {
+         Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
-   len=FSIZE3D(field->Def);
-   data=malloc(len*sizeof(double));
-   if ((grib_get_double_array(head.Handle,"values",data,&len))!=GRIB_SUCCESS) {
-      Tcl_AppendResult(Interp,"\n   GRIB_FieldRead: Could not load data",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   err=grib_get_double(head.Handle,"missingValue",&field->Def->NoData);
-
-   for(i=0;i<FSIZE3D(field->Def);i++) {
-      Def_Set(field->Def,0,i,data[i]);
-   }
-   free(data);
+//   len=GRIB_STRLEN;
+//   grib_get_string(head->Handle,"parameterName",sval,&len);
+//   field->Spec->Desc=strdup(sval);
+   field->Spec->Desc=strdup(head->NOMVAR);
 
    /*Create grid definition*/
-   err=grib_get_long(head.Handle,"gridDefinition",&i);
+   err=grib_get_long(head->Handle,"gridDefinition",&i);
    memset(mtx,0,6*sizeof(double));
-   err=grib_get_double(head.Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
-   err=grib_get_double(head.Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
+   err=grib_get_double(head->Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
+   err=grib_get_double(head->Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
 
-   if (ref=GRIB_WKTProjCS(Interp,head.Handle)) {
+   if (ref=GRIB_WKTProjCS(Interp,head->Handle)) {
       if (OSRIsProjected(ref)) {
          if ((llref=OSRCloneGeogCS(ref))) {
             if ((func=OCTNewCoordinateTransformation(llref,ref))) {
                if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
-                  fprintf(stderr,"(ERROR) GRIB_FieldRead: unable to project transform origin\n");
+                  fprintf(stderr,"(WARNING) GRIB_FieldRead: unable to project transform origin\n");
                }
             } else {
-               fprintf(stderr,"(ERROR) GRIB_FieldRead: Unable to create transform function\n");
+               fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create transform function\n");
             }
             OSRDestroySpatialReference(llref);
          } else {
-            fprintf(stderr,"(ERROR) GRIB_FieldRead: Unable to create latlon transform\n");
+            fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create latlon transform\n");
          }
-         err=grib_get_double(head.Handle,"DxInMetres",&mtx[1]);
-         err=grib_get_double(head.Handle,"DyInMetres",&mtx[5]);
-     } else {
-         err=grib_get_double(head.Handle,"iDirectionIncrementInDegrees",&mtx[1]);
-         err=grib_get_double(head.Handle,"jDirectionIncrementInDegrees",&mtx[5]);
+         err=grib_get_double(head->Handle,"DxInMetres",&mtx[1]);
+         err=grib_get_double(head->Handle,"DyInMetres",&mtx[5]);
+      } else {
+         err=grib_get_double(head->Handle,"iDirectionIncrementInDegrees",&mtx[1]);
+         err=grib_get_double(head->Handle,"jDirectionIncrementInDegrees",&mtx[5]);
 
          /*GRIB1 stored the direction of increment in other parameters and the i-j test are inversed ... so brainless*/
          inci=incj=0;
-         err=grib_get_long(head.Handle,"iScansNegatively",&inci);
-         err=grib_get_long(head.Handle,"jScansPositively",&incj);
+         err=grib_get_long(head->Handle,"iScansNegatively",&inci);
+         err=grib_get_long(head->Handle,"jScansPositively",&incj);
 
          mtx[0]=CLAMPLON(mtx[0]);
          mtx[1]=inci?-mtx[1]:mtx[1];
          mtx[5]=incj?mtx[5]:-mtx[5];
          /*Patch for a GRIB1 inversion*/
 //         if (mtx[3]==90.0) mtx[5]=-mtx[5];
-     }
+      }
 
       GDALInvGeoTransform(mtx,inv);
       field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref);
       GeoRef_Qualify(field->Ref);
+      field->Ref->ZRef.Levels[0]=ZRef_IP2Level(head->IP1,&field->Ref->ZRef.Type);
 
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: Dim      : %i %i %i\n",ni,nj,nk);
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",field->Ref->String);
       fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
+   } else {
+      return(TCL_ERROR);
    }
-
-   err=grib_get_long(head.Handle,"level",&lval);
-   field->Ref->ZRef.Levels[0]=lval;
-   err=grib_get_long(head.Handle,"typeOfLevel",&lval);
-   switch(lval) {
-      case   1:
-      case 103:
-      case 106: field->Ref->ZRef.Type=LVL_MAGL; break;
-      case 100:
-      case 108: field->Ref->ZRef.Type=LVL_PRES; break;
-      case 101:
-      case 102:
-      case 160: field->Ref->ZRef.Type=LVL_MASL; break;
-      case 104: field->Ref->ZRef.Type=LVL_SIGMA; break;
-      case 105: field->Ref->ZRef.Type=LVL_HYBRID; break;
-      case 107: field->Ref->ZRef.Type=LVL_THETA; break;
-      case 111: field->Ref->ZRef.Type=LVL_ETA; break;
-      default: field->Ref->ZRef.Type=LVL_UNDEF;
-   }
-
-   len=GRIB_STRLEN;
-   grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
-
-   len=GRIB_STRLEN;
-   grib_get_string(head.Handle,"parameterName",sval,&len);
-   field->Spec->Desc=strdup(sval);
-
-   len=GRIB_STRLEN;
-   grib_get_string(head.Handle,"centre",head.CENTER,&len);
 
    GRIB_FieldSet(field);
-   memcpy(field->Head,&head,sizeof(GRIB_Head));
+   memcpy(field->Head,head,sizeof(GRIB_Head));
 
+#ifdef DEBUG
 /*
    fprintf(stderr,"\n\n\n-------------------\n");
-   iter=grib_keys_iterator_new(head.Handle,0,NULL);
+   iter=grib_keys_iterator_new(head->Handle,0,NULL);
    while(grib_keys_iterator_next(iter)){
       switch(grib_keys_iterator_get_native_type(iter)) {
          case GRIB_TYPE_LONG:
@@ -584,23 +734,23 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
             fprintf(stderr,"%s=%e\n",grib_keys_iterator_get_name(iter),dval);
             break;
          case GRIB_TYPE_STRING:
-            grib_get_string(head.Handle,grib_keys_iterator_get_name(iter),sval,&len);
+            grib_get_string(head->Handle,grib_keys_iterator_get_name(iter),sval,&len);
             sval[len]='\0';
             fprintf(stderr,"string ----------- <<<<<<<<< %s=%s %i\n",grib_keys_iterator_get_name(iter),sval,len);
             break;
          case GRIB_TYPE_BYTES:
-            grib_get_string(head.Handle,grib_keys_iterator_get_name(iter),sval,&len);
+            grib_get_string(head->Handle,grib_keys_iterator_get_name(iter),sval,&len);
             sval[len]='\0';
             fprintf(stderr,"bytes ----------- >>>>>>>> %s=%s %i\n",grib_keys_iterator_get_name(iter),sval,len);
             break;
          case GRIB_TYPE_SECTION:
-            grib_get_string(head.Handle,grib_keys_iterator_get_name(iter),sval,&len);
+            grib_get_string(head->Handle,grib_keys_iterator_get_name(iter),sval,&len);
             sval[len]='\0';
             fprintf(stderr,"%s=%s %i\n",grib_keys_iterator_get_name(iter),sval,len);
             break;
          case GRIB_TYPE_LABEL:
             grib_keys_iterator_get_string(iter,sval,&len);
-            grib_get_string(head.Handle,grib_keys_iterator_get_name(iter),sval,&len);
+            grib_get_string(head->Handle,grib_keys_iterator_get_name(iter),sval,&len);
             sval[len]='\0';
             fprintf(stderr,"label ---------- %s=%s %i\n",grib_keys_iterator_get_name(iter),sval,len);
             break;
@@ -608,6 +758,8 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    }
    grib_keys_iterator_delete(iter);
 */
+#endif
+
    return(TCL_OK);
 }
 
@@ -632,75 +784,71 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 */
 int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
-   GRIB_Head      head;
-   grib_handle   *handle;
+   GRIB_Head      head,*table;
    Tcl_Obj       *list,*obj;
-   int            err=0;
+   int            err=0,lvtyp,nb;
    size_t         len;
-   long           offset=0,size=0,date,time,lval,lval2,ni=-1,nj=-1,nk=1,type;
+   long           date,time,lval,lval2,ni=-1,nj=-1,nk=1,type;
    char           buf[1024];
+   float          lvl;
 
    list=Tcl_NewListObj(0,NULL);
    obj=Tcl_NewObj();
 
    /*Loop on the messages*/
-   while(handle=grib_handle_new_from_file(0,File->Handle,&err)) {
+   nb=0;
+   head.KEY=0;
+   head.FID=File;
+
+   table=File->Table;
+   if (!File->Table) {
+      File->Table=(GRIB_Head*)calloc(GRIB_TABLESIZE,sizeof(GRIB_Head));
+   }
+
+   while(head.Handle=grib_handle_new_from_file(0,File->Handle,&err)) {
 
       len=GRIB_STRLEN;
-      grib_get_string(handle,"shortName",head.NOMVAR,&len);
+      grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
+
+      len=GRIB_STRLEN;
+      grib_get_string(head.Handle,"centre",head.CENTER,&len);
 
       /*Check for var if provided*/
       if (!Var || strcmp(Var,head.NOMVAR)==0) {
 
-         err=grib_get_long(handle,"GRIBEditionNumber",&lval);
+         err=grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
          head.Version=lval;
 
-         err=grib_get_long(handle,"date",&date);
-         err=grib_get_long(handle,"time",&time);
-         err=grib_get_long(handle,"numberOfPointsAlongAParallel",&ni);
-         err=grib_get_long(handle,"numberOfPointsAlongAMeridian",&nj);
+         err=grib_get_long(head.Handle,"date",&date);
+         err=grib_get_long(head.Handle,"time",&time);
+         err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
+         err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
          if (ni==-1) {
-            err=grib_get_long(handle,"numberOfPointsAlongXAxis",&ni);
-            err=grib_get_long(handle,"numberOfPointsAlongYAxis",&nj);
+            err=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
+            err=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
          }
-         err=grib_get_long(handle,"numberOfVerticalCoordinateValues",&nk);
+         err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
          nk=nk==0?1:nk;
 
-         err=grib_get_long(handle,"typeOfGeneratingProcess",&type);
+         err=grib_get_long(head.Handle,"typeOfGeneratingProcess",&type);
          switch(type) {
-            case 0: type='A';
-            case 1: type='I';
-            case 2: type='P';
-            case 3: type='P';
-            case 4: type='P';
-            case 5: type='P';
-            case 6: type='P';
-            case 7: type='E';
-            case 8: type='O';
+            case 0: type='A';break;
+            case 1: type='I';break;
+            case 2: type='P';break;
+            case 3: type='P';break;
+            case 4: type='P';break;
+            case 5: type='P';break;
+            case 6: type='P';break;
+            case 7: type='E';break;
+            case 8: type='O';break;
+            case 9: type='C';break;
+            case 10: type='P';break;
+            case 11: type='P';break;
             default: type='X';
          }
 
-         err=grib_get_long(handle,"level",&lval);
-         err=grib_get_long(handle,"typeOfLevel",&lval2);
-         switch(lval2) {
-            case   1:
-            case 103:
-            case 106: lval2=LVL_MAGL; break;
-            case 100:
-            case 108: lval2=LVL_PRES; break;
-            case 101:
-            case 102:
-            case 160: lval2=LVL_MASL; break;
-            case 104: lval2=LVL_SIGMA; break;
-            case 105: lval2=LVL_HYBRID; break;
-            case 107: lval2=LVL_THETA; break;
-            case 111: lval2=LVL_ETA; break;
-            default: lval2=LVL_UNDEF;
-         }
-
-//         fprintf(stderr,"(DEBUG) level :%i %i\n",lval,lval2);
-//         head.IP1=ZRef_Level2IP(lval,lval2);
-         head.IP1=lval;
+         GRIB_GetLevel(&head,&lvl,&lvtyp);
+         head.IP1=ZRef_Level2IP(lvl,lvtyp);
 
          /*Calculer la date de validitee du champs*/
          date=date<=1231?date+19800000:date;
@@ -708,8 +856,8 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
          switch(Mode) {
             case FSTD_LISTALL:
-               snprintf(buf,1024,"%s %li {%s} {%li} %i %i %i GRIB%i %09li %09li %li %li %li",
-                  File->Id,offset,head.NOMVAR,type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
+               snprintf(buf,1024,"%s %i {%s} {%c} %i %i %i GRIB%i %09li %09li %li %li %li",
+                  File->Id,nb,head.NOMVAR,(char)type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;
@@ -736,13 +884,22 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
                break;
          }
       }
-      size=offset=ftell(File->Handle);
+      head.KEY=ftell(File->Handle);
+
+      if (!table) {
+         if (nb>=GRIB_TABLESIZE-1) {
+            fprintf(stderr,"(WARNING) Number of records higher than table size\n");
+         }
+         memcpy(&File->Table[nb],&head,sizeof(GRIB_Head));
+         File->Table[nb+1].KEY=-1;
+      }
+      nb++;
    }
-   File->Size=size;
+   File->Size=head.KEY;
 
    /*Error on handle access*/
-   if (handle) {
-      err=grib_handle_delete(handle);
+   if (!table && head.Handle) {
+      err=grib_handle_delete(head.Handle);
 
       if (err!=GRIB_SUCCESS) {
          Tcl_AppendResult(Interp,"GRIB_FileOpen: Unable to free grib handle ",File->Id,(char*)NULL);
@@ -752,6 +909,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
    Tcl_DecrRefCount(obj);
    Tcl_SetObjResult(Interp,list);
+
    return(TCL_OK);
 }
 

@@ -43,36 +43,12 @@
 static Tcl_HashTable FSTD_FileTable;
 static int           FSTDInit=0;
 
-static TFSTDVector FSTDVectorTable[256];
-static int         FSTDVectorTableSize=0;
-
 extern int ZREF_IP1MODE;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_GridCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_StampCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-
-TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx) {
-
-   register int i;
-
-   for(i=0;i<FSTDVectorTableSize;i++) {
-      if (FSTDVectorTable[i].UU && strcmp(Var,FSTDVectorTable[i].UU)==0) {
-         if (Idx) *Idx=0;
-         return(&FSTDVectorTable[i]);
-      }
-      if (FSTDVectorTable[i].VV && strcmp(Var,FSTDVectorTable[i].VV)==0) {
-         if (Idx) *Idx=1;
-         return(&FSTDVectorTable[i]);
-      }
-      if (FSTDVectorTable[i].WW && strcmp(Var,FSTDVectorTable[i].WW)==0) {
-         if (Idx) *Idx=2;
-         return(&FSTDVectorTable[i]);
-      }
-   }
-   return(NULL);
-}
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_GridCmd>
@@ -342,7 +318,7 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    Tcl_Obj     *obj;
    TData       *field0,*field1,*fieldt;
    TDataSpec   *spec;
-   TFSTDVector *uvw;
+   TDataVector *uvw;
    Vect3d      *pos;
    char        *field,imode,itype;
 
@@ -374,8 +350,8 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_ListObjLength(Interp,Objv[2],&n);
             if (n) {
                Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
-               if (!(uvw=FSTD_VectorTableCheck(Tcl_GetString(obj),NULL))) {
-                  uvw=&FSTDVectorTable[FSTDVectorTableSize++];
+               if (!(uvw=Data_VectorTableCheck(Tcl_GetString(obj),NULL))) {
+                  uvw=Data_VectorTableAdd();
                }
                if (uvw->UU) free(uvw->UU);
                if (uvw->VV) free(uvw->VV);
@@ -1558,12 +1534,6 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
 
    if (!FSTDInit++) {
       Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
-
-      /*Force UU-VV relashionship*/
-      FSTDVectorTable[0].UU=strdup("UU");
-      FSTDVectorTable[0].VV=strdup("VV");
-      FSTDVectorTable[0].WW=NULL;
-      FSTDVectorTableSize++;
 
       c_fstopc("MSGLVL","WARNIN",0);
       c_fstopc("TOLRNC","SYSTEM",0);

@@ -40,7 +40,35 @@ TCL_DECLARE_MUTEX(MUTEX_DATACALC)
 static Tcl_HashTable TData_Table;
 static int           TDataInit=0;
 
+static TDataVector DataVectorTable[256];
+static int         DataVectorTableSize=0;
+
 static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+
+TDataVector *Data_VectorTableCheck(char *Var,int *Idx) {
+
+   register int i;
+
+   for(i=0;i<DataVectorTableSize;i++) {
+      if (DataVectorTable[i].UU && strcmp(Var,DataVectorTable[i].UU)==0) {
+         if (Idx) *Idx=0;
+         return(&DataVectorTable[i]);
+      }
+      if (DataVectorTable[i].VV && strcmp(Var,DataVectorTable[i].VV)==0) {
+         if (Idx) *Idx=1;
+         return(&DataVectorTable[i]);
+      }
+      if (DataVectorTable[i].WW && strcmp(Var,DataVectorTable[i].WW)==0) {
+         if (Idx) *Idx=2;
+         return(&DataVectorTable[i]);
+      }
+   }
+   return(NULL);
+}
+
+TDataVector *Data_VectorTableAdd(void) {
+   return(&DataVectorTable[++DataVectorTableSize]);
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Tcldata_Init>
@@ -136,6 +164,12 @@ int Tcldata_Init(Tcl_Interp *Interp) {
 
    if (!TDataInit++) {
       Tcl_InitHashTable(&TData_Table,TCL_STRING_KEYS);
+
+      /*Force UU-VV relashionship*/
+      DataVectorTable[0].UU=strdup("UU");
+      DataVectorTable[0].VV=strdup("VV");
+      DataVectorTable[0].WW=NULL;
+      DataVectorTableSize++;
    }
 
    return(TCL_OK);

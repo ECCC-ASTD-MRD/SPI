@@ -1956,15 +1956,15 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 */
 int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
 
-   FSTD_File  *file;
-   TData      *field=NULL;
-   TData_Type  dtype;
-   FSTD_Head   h;
-   TFSTDVector *uvw;
-   int         ok,ni,nj,nk,i,type,idx,datyp;
-   float       lvl,*tmp;
-   char        nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
-   double      nhour;
+   FSTD_File   *file;
+   TData       *field=NULL;
+   TDataVector *uvw=NULL;
+   TData_Type   dtype;
+   FSTD_Head    h;
+   int          ok,ni,nj,nk,i,type,idx,datyp;
+   float        lvl,*tmp;
+   char         nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
+   double       nhour;
 
 #ifdef LNK_FSTD
    file=FSTD_FileGet(Interp,Id);
@@ -2020,7 +2020,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strtrim(h.ETIKET,' ');
 
    /*Champs vectoriel ???*/
-   if ((uvw=FSTD_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
+   if ((uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),dtype);
       if (!field) {
          EZUnLock_RPNField();
@@ -2239,7 +2239,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List){
 
    FSTD_Head   *head=(FSTD_Head*)Field->Head;
-   TFSTDVector *uvw;
+   TDataVector *uvw;
    TGeoRef     *ref;
    Tcl_Obj     *obj;
    int          idxs[FSTD_NKMAX],tmp[FSTD_NKMAX],i,k,k2,idx,ok,idump,ni,nj,nk,type,ip1;
@@ -2353,7 +2353,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
 #endif
 
-   uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL);
+   uvw=Data_VectorTableCheck(head->NOMVAR,NULL);
 
    /*Recuperer le data*/
    for(k=0;k<Field->Def->NK;k++) {
@@ -2448,7 +2448,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 
    FSTD_File    *file;
    FSTD_Head    *head=(FSTD_Head*)Field->Head;
-   TFSTDVector  *uvw;
+   TDataVector  *uvw;
    int          ok=-1,ip1,datyp;
    unsigned long k,idx;
    char          nv[5];
@@ -2499,7 +2499,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 
       /*Inscription des champs complementaires*/
       if (Field->Def->Data[1]) {
-         if ((uvw=FSTD_VectorTableCheck(head->NOMVAR,NULL))) {
+         if ((uvw=Data_VectorTableCheck(head->NOMVAR,NULL))) {
             /*Inscription du champs complementaire 2D*/
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);

@@ -46,11 +46,6 @@
 #define FSTD_LISTDATEV  3
 #define FSTD_LISTIP1    4
 
-typedef struct TFSTDVector {
-   char  *UU,*VV,*WW;
-   double WWFactor;
-} TFSTDVector;
-
 typedef struct FSTD_File {
    char *CId;              /*Identificateur du fichier*/
    char *Name;             /*Path complet du fichier*/
@@ -83,7 +78,6 @@ typedef struct FSTD_Head {
 }  FSTD_Head;
 
 int  TclFSTD_Init(Tcl_Interp *Interp);
-TFSTDVector *FSTD_VectorTableCheck(char *Var,int *Idx);
 
 TData* FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData_Type Type);
 void   FSTD_FieldDataGet(Tcl_Interp *Interp,TData *Field);
