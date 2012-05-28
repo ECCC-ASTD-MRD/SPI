@@ -175,9 +175,8 @@ proc Writer::VASIGMET::FormatCoord { Lat Lon } {
       set dir "N"
    }
 
-   set latm "[Convert::Decimal2Minute $Lat 0 True] $dir"
+   set latm "[Convert::Decimal2Minute $Lat -0.5 True] $dir"
    set latm "[format "%02i" [lindex $latm 0]][lindex $latm 1]$dir"
-   set latd "[format "%6.2f" $Lat]$dir"
 
    if { $Lon < 0 } {
       set Lon [expr -$Lon]
@@ -185,11 +184,10 @@ proc Writer::VASIGMET::FormatCoord { Lat Lon } {
    } else {
       set dir "E"
    }
-   set lonm "[Convert::Decimal2Minute $Lon 0 True] $dir"
+   set lonm "[Convert::Decimal2Minute $Lon -0.5 True] $dir"
    set lonm "[format "%03i" [lindex $lonm 0]][lindex $lonm 1]$dir"
-   set lond "[format "%7.2f" $Lon]$dir"
 
-   return "$latm $lonm"
+   return "$latm$lonm"
 }
 
 #----------------------------------------------------------------------------
@@ -515,7 +513,7 @@ proc Writer::VASIGMET::AshUpdate { Pad } {
       if { [llength  $Data(Area$Pad$sec)] } {
          append text "\nValid date-time: [clock format $sec -format "%d %b %Y, %H%M UTC" -timezone :UTC]\n\n"
          foreach { lat lon elev } $Data(Area$Pad$sec) {
-            append text [Convert::FormatCoord $lat $lon MIN 2]\n
+            append text [Writer::VASIGMET::FormatCoord $lat $lon]\n
          }
       }
    }

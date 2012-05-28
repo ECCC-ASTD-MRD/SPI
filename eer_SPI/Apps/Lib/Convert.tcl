@@ -288,7 +288,7 @@ proc Convert::KBytes2Human { Size } {
 #
 # Parametres :
 #   <Value>  : Valeur a convertir en minute
-#   <Prec>   : Precision des secondes
+#   <Prec>   : Precision des secondes (si <0 precision des minutes facteur de degrees)
 #   <List>   : Format liste
 #
 # Retour     :
@@ -311,8 +311,17 @@ proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
    }
    #----- Conversion des deux chiffres apres le point.
 
-   set min [expr $dec*60.0]
-   set sec [format "%02.${Prec}f" [expr 0[file extension $min]*60.0]]
+   if { $Prec<0 } {
+      set min [expr round($dec*60.0/($Prec*60.0))*int($Prec*60)]
+      if { $min==60 } {
+         incr deg 1
+         set min 0
+      }
+      set sec 00
+   } else {
+      set min [expr $dec*60.0]
+      set sec [format "%02.${Prec}f" [expr 0[file extension $min]*60.0]]
+   }
    set min [format "%02i" [file rootname $min]]
 
    #----- Reconstruire la valeur de la latitude a afficher.

@@ -348,7 +348,6 @@ proc ProjCam::Do { Cam Frame VP args } {
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
    projcam define $Cam -circlefrom $cam(CFX) $cam(CFY) $cam(CFZ)
-
    set cam(From) [projcam configure $Cam -from]
    set cam(Up)   [projcam configure $Cam -up]
 
