@@ -1874,12 +1874,12 @@ void DataSpec_IntervalsLog(TDataSpec *Spec,double Min,double Max) {
    Spec->InterNb=0;
 
    if (Max<=0) {                    /*Si les valeurs sont negatives*/
-      DataSpec_IntervalsLogList(Spec,fabs(Min),fabs(Max),-1);
+      DataSpec_IntervalsLogList(Spec,fabs(Min),fabs(Max),-Spec->InterModeParam);
    } else if (Min<0) {              /*Si les valeurs vont du negatif au positifs*/
-      DataSpec_IntervalsLogList(Spec,fabs(Min),0,-1);
-      DataSpec_IntervalsLogList(Spec,0,Max,1);
+      DataSpec_IntervalsLogList(Spec,fabs(Min),0,-Spec->InterModeParam);
+      DataSpec_IntervalsLogList(Spec,0,Max,Spec->InterModeParam);
    } else {                         /*Si les valeurs sont positives*/
-      DataSpec_IntervalsLogList(Spec,Min,Max,1);
+      DataSpec_IntervalsLogList(Spec,Min,Max,Spec->InterModeParam);
    }
 }
 
