@@ -165,7 +165,7 @@ namespace eval Model {
    set Bubble(Del)     { "Enlever la source sélectionnée de l'expérience" "Removed the selected source from the experiment" }
    set Bubble(List)    { "Liste des sources incluse dans l'expérience" "List of sources included in the experiment" }
    set Bubble(Src)     { "Nom de la source" "Source name" }
-   set Bubble(Coord)   { "Coordonnées de la source. Une seule paire pour un point ou multiples paires pour une région." "Source coordinates. One pair for a point or multiple for area." }
+   set Bubble(Coord)   { "Coordonnées lat,lon de la source.\nUne seule paire pour un point ou multiples paires pour une région." "Source lat,lon coordinates.\nOne pair for a point or multiple for area." }
    set Bubble(Mode)    { "Utiliser la souris pour sélectionner les coordonnées de la source dans la vue.\nBoutton gauche: ajout d'une coordonnée\nBoutton centre: enleve une coordonnée" "Use the mouse to select the coordinates in the viewport.\nLeft buttton  : add coordinates\nMiddle button: remove coordinates" }
    set Bubble(Unit)    { "Permet de changer ou de convertir le type de coordonnées en degrées-minutes\nou degrées centième. Le format degrées-minutes en entrée est le suivant:\n\n XXdXXmXX.XX ou XX°XX'XX.XX"
                          "Use to change or convert the coordinate format in degree-minute or degree-hundreth. Degree-minute input format is:\n\n XXdXXmXX.XX or XX°XX'XX.XX" }
@@ -1918,9 +1918,9 @@ proc Model::New { Parent Command Label Single } {
    bind .expnew.src.list.table <B1-ButtonRelease> { Model::SourceSelect }
 
    Bubble::Create .expnew.gen.name.ent    $Bubble(Name)
-   Bubble::Create .expnew.src.name.ent    $Bubble(Src)
+   Bubble::Create .expnew.src.name        $Bubble(Src)
    Bubble::Create .expnew.src.name.mode   $Bubble(Locator)
-   Bubble::Create .expnew.src.coord.ent   $Bubble(Coord)
+   Bubble::Create .expnew.src.coord       $Bubble(Coord)
    Bubble::Create .expnew.src.coord.mode  $Bubble(Mode)
    Bubble::Create .expnew.src.coord.unit  $Bubble(Unit)
    Bubble::Create .expnew.src.opt.add     $Bubble(Add)

@@ -136,7 +136,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
 
          #----- Meteorological Model.
          frame $tabframe.others.opt.met
-         Option::Create $tabframe.others.opt.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDPn::Sim(Meteo) 0 7 $MLDPn::Sim(ListMeteoModel) "Model::ParamsCheck MLDPn"
+         Option::Create $tabframe.others.opt.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDPn::Sim(Meteo) 0 7 $MLDPn::Sim(ListMeteoModel) ""
          Option::Create $tabframe.others.opt.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDPn::Sim(Delta) 0 6 $MLDPn::Sim(ListMeteoDelta) "MLDPn::CheckFileSize"
          button $tabframe.others.opt.met.path -image OPEN -relief flat -bd 0 -overrelief raised \
                 -command "Model::ParamsMetPath"
