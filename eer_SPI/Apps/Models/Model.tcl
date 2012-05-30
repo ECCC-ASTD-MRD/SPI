@@ -953,8 +953,8 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Event)     [lindex $Model::Param(Events) 0]
    set sim(By)        [lindex $Model::Param(Bys) 0]
 
-   set Sim(Restart)     ""
-   set Sim(Restarts)    {}
+   set sim(Restart)     ""
+   set sim(Restarts)    {}
    set sim(RestartFile) ""
    set sim(ReNewMeteo)  ""
    set sim(GridChanged) 0

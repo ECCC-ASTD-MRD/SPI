@@ -311,6 +311,7 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-21s= %-10s # Flag indicating if including horizontal wind speed variances in diffusion calculations" MDL_INCLUDESUV $Sim(IsIncludeSUV)]]
    puts $file [format "%-21s= %-10s # Diffusion kernel selection method (VARIABLE or kernel name)" MDL_KERNEL $Sim(DiffKernel)]
    puts $file [format "%-21s= %-10s # Backward simulation" MDL_RETRO $Sim(Backward)]
+   puts $file [format "%-21s= %-10s # Aerosol type for Jian's 4mode scheme" MDL_AEROSOL $Sim(Aerosol)]
 
    if { $Sim(RestartTrialDate) } {
       puts $file [format "%-21s= %-25s # Time(s) at which to produce a restart \[UTC\]: YearMonthDayHourMinute" MDL_RESTART_TIME [clock format $Sim(RestartTrialDate) -format "%Y%m%d%H%M" -timezone :UTC]]
@@ -434,6 +435,7 @@ proc MLDPn::CreateModelInput { } {
 
    puts $file "\n#----- Output parameters\n"
    puts $file [format "%-15s= %-10.1f # Output time step \[s\]" OUT_DT [expr $Sim(OutputTimeStepMin)*60]]
+   puts $file [format "%-15s= %-4i # Output file interval \[h\]" OUT_DELTA [expr $Sim(OutputDelta)]]
    puts $file [format "%-15s= %s # Output grid definition" OUT_GRID tmp/grid.in]
    puts $file [format "%-15s= %s # Concentration vertical levels \[m\]" OUT_CVLEVELS $Sim(OutCV)]
    if { $Sim(SrcType) == "VOLCANO" } {
@@ -449,7 +451,6 @@ proc MLDPn::CreateModelInput { } {
    }
 
    close $file
-
 
    fstdfile open GRIDFILE write $Sim(Path)/tmp/grid.in
    fstdfield write MODELGRID GRIDFILE -16 True
@@ -1303,15 +1304,11 @@ proc MLDPn::InitNew { Type } {
    set Sim(Mode)                 prog                                ;#----- Type of meteorological data.
    set Sim(Backward)             False                               ;#----- Inverse mode.
    set Sim(DiffKernel)           ORDER0                              ;#----- Diffusion kernel.
-   set Sim(Duration)             72                                  ;#----- Simulation duration [hr].
-   set Sim(OutputTimeStepMin)    60                                  ;#----- Output time step [min].
-   set Sim(ModelTimeStepMin)     10                                  ;#----- Internal model time step [min].
-   set Sim(Scale)                MESO                                ;#----- Grid resolution string.
-   set Sim(Meteo)                glb                                 ;#----- Meteorological model.
+   set Sim(OutputDelta)          24                                  ;#----- Output file delta in hours
    set Sim(Delta)                1                                   ;#----- Time interval for meteorological data files [hr].
    set Sim(IsResFileSizeChecked) 0                                   ;#----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ;#----- Flag indicating if met data file size has been checked (1) or not (0).
-   set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+   set Sim(Aerosol)              DEFAULT                             ;#----- Aerosol type to activat Jian's 4mode scheme.
    set Sim(EmScenario)           "default"                           ;#----- Scenario name.
    set Sim(EmMass)               0.0                                 ;#----- Total mass released.
    set Sim(EmList)               {}                                  ;#----- List of emission scenarios.
@@ -1326,60 +1323,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(RestartTrialDate)     0                                   ;#----- Date of the switch between trial and prog to create a restart
    set Sim(RestartDeltas)        {}
 
-   switch $Sim(DiffKernel) {
-      ORDER0 {
-         set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-         set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
-         set Sim(ReflectionLevel)      0.9999                              ;#----- Reflection level [hyb|eta|sig].
-         set Sim(DtOverTl)             1.0
-         set Sim(DtMin)                1.0
-         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
-         set Sim(ListOutCV)           { { 1 200 400 600 2000 4000 }  \
-                                        { 1 500 1000 1500 2000 3000 4000 5000 } \
-                                        { 1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
-                                        { 1 500 1000 } \
-                                        { 1 1000 } \
-                                        { 1 1000 2000 5000 10000 } \
-                                        { 1 1000 2000 5000 10000 15000 } \
-                                        { 1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
-                                        { 1 2000 4000 6000 8000 10000 } \
-                                        { 1 100 200 300 400 500 600 700 800 900 1000 } \
-                                        { 1 100 1000 } \
-                                        { 1 100 500 1000 } \
-                                        { 1 50 100 } \
-                                        { 1 50 100 500 1000 } \
-                                        { 1 50 100 1000 } \
-                                        { 1 10 50 100 } \
-                                        { 1 10 50 100 1000 } \
-                                        { 1 10 100 1000 } }
-      }
-      ORDER1 -
-      VARIABLE {
-         set Sim(VarMesoscale)        0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-         set Sim(Timescale)           2700                                ; #----- Lagrangian time scale [s].
-         set Sim(ReflectionLevel)     0.9990                              ; #----- Reflection level [hyb|eta|sig].
-         set Sim(DtOverTl)            0.1
-         set Sim(DtMin)               0.1
-         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
-         set Sim(ListOutCV)           { { 0 200 400 600 800 1000 } \
-                                        { 0 500 1000 1500 2000 3000 4000 5000 } \
-                                        { 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
-                                        { 0 500 1000 } \
-                                        { 0 1000 } \
-                                        { 0 1000 2000 5000 10000 } \
-                                        { 0 1000 2000 5000 10000 15000 } \
-                                        { 0 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
-                                        { 0 100 200 300 400 500 600 700 800 900 1000 } \
-                                        { 0 100 1000 } \
-                                        { 0 100 500 1000 } \
-                                        { 0 50 100 } \
-                                        { 0 50 100 500 1000 } \
-                                        { 0 50 100 1000 } \
-                                        { 0 10 50 100 } \
-                                        { 0 10 50 100 1000 } \
-                                        { 0 10 100 1000 } }
-      }
-   }
+   MLDPn::InitKernel
 
    set Sim(OutCV)                [lindex $Sim(ListOutCV) 0]          ; #----- CV Vertical levels [m].
    set Sim(OutAV)                { }                                 ; #----- AVVertical levels [m].
@@ -1438,6 +1382,82 @@ proc MLDPn::InitNew { Type } {
    MLDPn::ScenarioSelect
 
    Model::FitAccTime MLDPn
+}
+
+proc MLDPn::InitKernel { } {
+   global   GDefs
+   variable Sim
+
+   switch $Sim(DiffKernel) {
+      VARIABLE -
+      ORDER0 {
+         set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
+         set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
+         set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
+         set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
+         set Sim(Meteo)                glb                                 ; #----- Meteorological model.
+         set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+         set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
+         set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+         set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
+         set Sim(ReflectionLevel)      0.9999                              ;#----- Reflection level [hyb|eta|sig].
+         set Sim(DtOverTl)             1.0
+         set Sim(DtMin)                1.0
+         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
+         set Sim(ListOutCV)           { { 1 200 400 600 2000 4000 }  \
+                                        { 1 500 1000 1500 2000 3000 4000 5000 } \
+                                        { 1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
+                                        { 1 500 1000 } \
+                                        { 1 1000 } \
+                                        { 1 1000 2000 5000 10000 } \
+                                        { 1 1000 2000 5000 10000 15000 } \
+                                        { 1 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
+                                        { 1 2000 4000 6000 8000 10000 } \
+                                        { 1 100 200 300 400 500 600 700 800 900 1000 } \
+                                        { 1 100 1000 } \
+                                        { 1 100 500 1000 } \
+                                        { 1 50 100 } \
+                                        { 1 50 100 500 1000 } \
+                                        { 1 50 100 1000 } \
+                                        { 1 10 50 100 } \
+                                        { 1 10 50 100 1000 } \
+                                        { 1 10 100 1000 } }
+      }
+
+
+      ORDER1 {
+         set Sim(Duration)             12                                  ; #----- Simulation duration [hr].
+         set Sim(OutputTimeStepMin)    30                                  ; #----- Output time step [min].
+         set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
+         set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
+         set Sim(Meteo)                reg                                 ; #----- Meteorological model.
+         set Sim(ListScale)             { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
+         set Sim(ListMeteoModel)        { glb reg }
+         set Sim(VarMesoscale)        0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+         set Sim(Timescale)           2700                                ; #----- Lagrangian time scale [s].
+         set Sim(ReflectionLevel)     0.9990                              ; #----- Reflection level [hyb|eta|sig].
+         set Sim(DtOverTl)            0.1
+         set Sim(DtMin)               0.1
+         set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
+         set Sim(ListOutCV)           { { 0 200 400 600 800 1000 } \
+                                        { 0 500 1000 1500 2000 3000 4000 5000 } \
+                                        { 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
+                                        { 0 500 1000 } \
+                                        { 0 1000 } \
+                                        { 0 1000 2000 5000 10000 } \
+                                        { 0 1000 2000 5000 10000 15000 } \
+                                        { 0 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 } \
+                                        { 0 100 200 300 400 500 600 700 800 900 1000 } \
+                                        { 0 100 1000 } \
+                                        { 0 100 500 1000 } \
+                                        { 0 50 100 } \
+                                        { 0 50 100 500 1000 } \
+                                        { 0 50 100 1000 } \
+                                        { 0 10 50 100 } \
+                                        { 0 10 50 100 1000 } \
+                                        { 0 10 100 1000 } }
+      }
+   }
 }
 
 #----------------------------------------------------------------------------

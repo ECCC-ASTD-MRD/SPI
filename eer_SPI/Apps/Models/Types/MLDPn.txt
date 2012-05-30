@@ -57,9 +57,9 @@ namespace eval MLDPn {
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
    set Lbl(Seed)                { "Semence aléatoire" "Random seed     " }
+   set Lbl(Aerosol)             { "Aérosol          " "Aerosol         " }
    set Lbl(Forward)             { "Avant" "Forward" }
    set Lbl(Backward)            { "Arrière" "Backward" }
-
 
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
@@ -143,6 +143,7 @@ namespace eval MLDPn {
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
    set Bubble(Seed)                   { "Valeur d'initialisation du générateur de nombre aléatoire." "Random number generator initialisation value." }
+   set Bubble(Aerosol)                { "Type d'aerosol, permet d'activer le shéma de lessivage et dépot a 4 mode." "Aerosol type, allows the activation of the 4 mode scavenging and deposition scheme." }
 
    set Bubble(EmissionGlobal)         { "Paramètres globaux d'émission." "Global emission parameters" }
    set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation et pour MLDP0, l'effet du dépôt gravitationnel selon la loi de Stokes et ." "Select the type of particle size distribution\nto model the effect of particle settling velocity and for MLDP0, the effect of gravitational settling according to Stokes' law." }

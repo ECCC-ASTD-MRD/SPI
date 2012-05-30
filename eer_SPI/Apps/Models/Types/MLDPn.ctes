@@ -33,6 +33,7 @@ namespace eval MLDPn {
    set Sim(ListSimDuration)     { 6 12 18 24 48 72 96 120 144 168 }          ;#----- List of simulation durations [hr].
    set Sim(ListOutputTimeStep)  { 5 10 15 20 30 60 120 180 360 }             ;#----- List of output time step [min].
    set Sim(ListModelTimeStep)   { 1 2 5 10 15 20 30 60 }                     ;#----- List of internal model time step [min].
+   set Sim(ListAerosol)         { DEFAULT URBAN CONTINENTAL DESERT POLAR MARINE RURAL FREE }    ;#----- List of aerosol types.
    set Sim(ListEmHeightMode)    { { "Calcul selon une masse d'explosif" } \
                                   { "Calculation based on explosive mass" } } ;#----- List of mode for plume height calculation.
    set Sim(ListEmMassMode)      { { "Formule empirique de Sparks et al. (1997)" "Formule empirique de Mastin et al. (2009)" "Édition" } \

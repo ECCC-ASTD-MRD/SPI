@@ -41,7 +41,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =350x380
+   wm geom [winfo toplevel $Tab] =350x385
 
    #----- Model Tab.
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
@@ -81,7 +81,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
       frame $tabframe.integ.opt
 
       #----- Noyeau de diffusion.
-      Option::Create $tabframe.integ.opt.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) ""
+      Option::Create $tabframe.integ.opt.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) "MLDPn::InitKernel"
       pack $tabframe.integ.opt.kernel -side top -fill x
       Bubble::Create $tabframe.integ.opt.kernel $Bubble(DiffKernel)
 
@@ -180,6 +180,10 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          Option::Create $tabframe.others.opt.seed [lindex $Lbl(Seed) $GDefs(Lang)] MLDPn::Sim(Seed) 1 -1 $MLDPn::Sim(ListSeed) ""
          pack $tabframe.others.opt.seed -side top -ipady 1 -fill x
 
+         #----- Aerosol.
+         Option::Create $tabframe.others.opt.aero [lindex $Lbl(Aerosol) $GDefs(Lang)] MLDPn::Sim(Aerosol) 1 -1 $MLDPn::Sim(ListAerosol) ""
+         pack $tabframe.others.opt.aero -side top -ipady 1 -fill x
+
       pack $tabframe.others.opt -side top -fill x -padx 2
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
@@ -196,6 +200,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
    Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
    Bubble::Create $tabframe.others.opt.seed          $Bubble(Seed)
+   Bubble::Create $tabframe.others.opt.aero          $Bubble(Aerosol)
 }
 
 #----------------------------------------------------------------------------
