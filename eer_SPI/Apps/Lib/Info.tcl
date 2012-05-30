@@ -44,7 +44,7 @@ namespace eval Info {
    set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration
                         Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
                         SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
-                        EmDensity EmHeight EmMass EmRadius EmSizeDist EmVerticalDist \
+                        EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
