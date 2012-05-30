@@ -658,10 +658,6 @@ proc MLDP::EmissionRead { } {
    variable Error
 
    set Sim(IsScenarioValid)  0 ; #----- Flag indicating if emission scenario has been validated successfully (1) or not (0).
-   set Sim(EmMassMode) 0 ;#----- Total released mass mode
-                          #----- 0: Empirical formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
-                          #----- 1: Empirical formula of Mastin et al. (2009). For this mode, mass cannot be modified manually.
-                          #----  2: Edition. For this mode, mass can be modified manually for specific purposes.
 
    #----- Initialize list of emission scenario.
    set Sim(EmList) {}
@@ -1255,6 +1251,10 @@ proc MLDP::InitNew { Type } {
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    set Sim(EmScenario)           "default"                           ; #----- Scenario name.
+   set Sim(EmMassMode)            0                                  ; #----- Total released mass mode
+                                                                       #----- 0: Empirical formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
+                                                                       #----- 1: Empirical formula of Mastin et al. (2009). For this mode, mass cannot be modified manually.
+                                                                       #----  2: Edition. For this mode, mass can be modified manually for specific purposes.
    set Sim(EmMass)               0.0                                 ; #----- Total mass released.
    set Sim(EmList)               {}                                  ; #----- List of emission scenarios.
    set Sim(EmNbIntervals)        0                                   ; #----- Number of emission intervals.
