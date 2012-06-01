@@ -1953,6 +1953,7 @@ proc Model::New { Parent Command { Type True } { New True } } {
    if { $New } {
       Model::SourceAdd
    }
+   .expnew.src.list.table selection set 0
 
    trace variable Model::Data(Src)   w { Model::SourceApply 0 }
    trace variable Model::Data(Coord) w { Model::SourceApply 0 }
