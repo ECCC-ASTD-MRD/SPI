@@ -109,12 +109,8 @@ namespace eval Exp {
                             "An archive by this name already exist, do you want to overwrit it ?" }
    set Msg(Path)          { "Répertoire d'expériences invalides.\nImpossible de trouver le fichier eer_ExpList"
                             "Invalid experiment path.\n Unable to find the eer_ExpList file" }
-   set Msg(Coord)         { "Les coordonnées de la source sont invalides"
-                            "The specified source coordinates are invalid" }
    set Msg(Pos)           { "Auncune localisation n'à été spécifiée"
                             "No localisation have been specified" }
-   set Msg(Name)          { "Le nom de l'expérience ou de l'une des localisations n'à pas été spécifié"
-                            "The experiment name or the name of one the localisation has not been specified" }
    set Msg(Fax)           { "Génération du fax dans le fichier suivant:"
                             "Generating fax to the following file:" }
    set Msg(JointData)     { "Êtes-vous certain de vouloir transférer les cartes RSMC commune ?" \
@@ -263,7 +259,7 @@ proc Exp::Create { Frame } {
       button $Frame.opt.writer -image DOCWRITE -relief flat -bd 0 -overrelief raised -command "Writer::Window"
       button $Frame.opt.bulletin -image CAUTION -relief flat -bd 0 -overrelief raised -command "Bulletin::Window"
       button $Frame.opt.new -compound left -image BOMB -text [lindex $Lbl(New) $GDefs(Lang)] -relief flat -bd 0 -overrelief raised \
-         -command "Model::New $Frame Exp::New \"[lindex $Lbl(New) $GDefs(Lang)]\" 0"
+         -command "Model::New $Frame Exp::New"
       pack $Frame.opt.open $Frame.opt.close $Frame.opt.bubble $Frame.opt.new  -side left -padx 2
       pack $Frame.opt.writer $Frame.opt.bulletin -side right -padx 2
 
@@ -692,15 +688,14 @@ proc Exp::ThreadKill { Id } {
 #
 #-------------------------------------------------------------------------------
 
-proc Exp::New { } {
+proc Exp::New { { Edit False } } {
    global GDefs
    variable Data
    variable Param
-   variable Msg
 
    #----- Verifier la validitee des parametres
    if { $Model::Data(Name)=="" } {
-       Dialog::Error .expnew $Msg(Name)
+       Dialog::Error .expnew $Model::Error(Name)
        return 0
    }
 
@@ -715,12 +710,12 @@ proc Exp::New { } {
       regsub -all "\[^a-zA-Z0-9\]" $src "_" src
 
       if { $src=="" } {
-         Dialog::Error .expnew $Msg(Name)
+         Dialog::Error .expnew $Model::Error(Name)
          return 0
       }
 
       if { ![llength $coords] } {
-         Dialog::Error .expnew $Msg(Coord) "\n\n\t$src\n"
+         Dialog::Error .expnew $Model::Error(Coord) "\n\n\t$src\n"
          return 0
       }
 
@@ -732,7 +727,7 @@ proc Exp::New { } {
          set lon [Convert::Minute2Decimal $lon 5]
 
          if { $lat<-90.0 || $lat>90.0 || $lon<-180 || $lon>360 } {
-            Dialog::Error .expnew $Msg(Coord) "\n\n\t$src $lat $lon\n"
+            Dialog::Error .expnew $Model::Error(Coord) "\n\n\t$src $lat $lon\n"
             return 0
          }
          lappend dmcoords $lat $lon

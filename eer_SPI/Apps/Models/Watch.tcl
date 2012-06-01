@@ -58,15 +58,6 @@ namespace eval Watch {
    #--- Definitions des messages
    set Msg(Suppress)    { "Voulez-vous reellement desactiver cette veille ?"
                          "Do you really want to desactivate this watch ?" }
-   set Msg(SimSuppress) { "Voulez-vous vraiment supprimer cette simulation ?"
-                         "De you really want to suppress this simulation ?" }
-   set Msg(Exist)       { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
-
-   #----- Definitions des messages d'erreurs
-   set Error(Exist)     { "Une source portant ce nom est deja activee."
-                          "There is already an automated source by that name." }
-   set Error(Info)      { "Certaine informations son manquantes."
-                          "Missing information." }
 }
 
 #-------------------------------------------------------------------------------
@@ -338,12 +329,12 @@ proc Watch::CreateBranchWatch { Canvas Project Exp X Y } {
    global GDefs
    variable Data
 
+   set tag $Project$Exp
    set coords {}
-   foreach src [lindex $Data(Sources$Project) [lsearch -exact $Data(Exps$Project) $Exp]] {
+
+   foreach src $Data(Sources$tag) {
       lappend coords "[lindex $src 0] ([lindex $src 1],[lindex $src 2])"
    }
-
-   set tag $Project$Exp
 
    set y1 [set y0 [expr $Y+10]]
 
@@ -482,7 +473,6 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
    #----- On cree les branches des resultats seulement s'il faut les afficher
    if { [lsearch -exact $Watch::Data(BranchSim) $tag] != -1 } {
       $Canvas itemconfigure PSIM$tag -bitmap $Model::Resources(Minus)
-
       foreach result [lsort $Data(Results$tag)] {
          set y1 [incr Y 21]
          set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $Model "$Sim" $result $X $Y]
@@ -585,54 +575,151 @@ proc Watch::GetIcon { Project } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::New { } {
+proc Watch::New { { Edit False } } {
    global GDefs
    variable Data
    variable Param
-   variable Error
    variable Sim
-
-   set Data(Name)   [lindex $Model::Data(Srcs) 0]
-   set Data(Coords) [lindex $Model::Data(Coords) 0]
+   variable Tmp
 
    #----- Verifier la validitee des parametres
-   if { $Model::Data(Name)=="" || [llength $Data(Coords)]<2 } {
-       Dialog::Error .expnew $Error(Info)
+   if { $Model::Data(Name)=="" } {
+       Dialog::Error .expnew $Model::Error(Name)
        return 0
    }
 
-   #----- Recuperer les parametres
-   set Data(Lat)  [Convert::Minute2Decimal [lindex $Data(Coords) 0] 5]
-   set Data(Lon)  [Convert::Minute2Decimal [lindex $Data(Coords) 1] 5]
-#   set Data(Type) $Model::Data(Type)
-   set Data(Pos)  [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
-
-   regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "_" Data(Name)
-   regsub -all "\[-\]\[-\]*" $Data(Name) "_" Data(Name)
+   regsub -all "\[^a-zA-Z0-9\]" $Model::Data(Name) "_" Data(Exp)
+   regsub -all "\[-\]\[-\]*" $Data(Exp) "_" Data(Exp)
 
    #----- On verifie que le nom n'existe pas deja
-   if { [lsearch -exact $Data(Exps$Data(Project)) $Data(Name)]!=-1 } {
-      Dialog::Error . $Error(Exist)
+   if { !$Edit && [lsearch -exact $Data(Exps$Data(Project)) $Data(Exp)]!=-1 } {
+      Dialog::Error . $Model::Error(Exist)
       return 0
    }
+   set srcs {}
+   set lats {}
+   set lons {}
+   set coss {}
 
-   #----- On ajoute la source
+   foreach src $Model::Data(Srcs) coords $Model::Data(Coords) id $Model::Data(Ids) {
+
+      regsub -all "\[^a-zA-Z0-9\]" $src "_" src
+
+      if { $src=="" || [lsearch -exact $srcs $src]!=-1 } {
+         Dialog::Error .expnew $Model::Error(Name)
+         return 0
+      }
+
+      if { ![llength $coords] } {
+         Dialog::Error .expnew $Model::Error(Coord) "\n\n\t$src\n"
+         return 0
+      }
+
+      set cos {}
+      foreach { lat lon } $coords {
+
+         #----- Forcer le format degree centiemme
+         set lat [Convert::Minute2Decimal $lat 6]
+         set lon [Convert::Minute2Decimal $lon 6]
+
+         if { $lat<-90.0 || $lat>90.0 || $lon<-180 || $lon>360 } {
+            Dialog::Error .expnew $Model::Error(Coord) "\n\n\t$src $lat $lon\n"
+            return 0
+         }
+         lappend cos $lat $lon
+      }
+      lappend srcs $src
+      lappend lats [lindex $cos 0]
+      lappend lons [lindex $cos 1]
+      lappend coss $cos
+   }
+
+   #----- Parametres d'experience
    set Sim(Model)   NONE
    set Sim(State)   0
    set Sim(NoExp)   0
    set Sim(NoSim)   0
    set Sim(NoPrev)  -1
-   set Sim(NameExp) $Data(Name)
-   set Sim(Name)    $Data(Name)
-   set Sim(Lat)     $Data(Lat)
-   set Sim(Lon)     $Data(Lon)
-   set Sim(Coords)  $Data(Coords)
+   set Sim(NameExp) $Data(Exp)
+
+   #----- Supprime la precendente si elle existe
+   set Sim(Name)   .*
+   set Sim(Lat)    .*
+   set Sim(Lon)    .*
+   set Sim(Coords) .*
+
+   Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim]
+
+   #----- On ajoute l'exxperience
+   set Sim(Name)   $srcs
+   set Sim(Lat)    $lats
+   set Sim(Lon)    $lons
+   set Sim(Coords) $coss
 
    exec echo "[Info::Code Watch::Sim]" >> $Param(Path)/$Data(Project)/sim.pool
 
+   set Data(Lat)  [lindex $Sim(Lat) 0]
+   set Data(Lon)  [lindex $Sim(Lon) 0]
+
+   if { $Edit } {
+
+      #----- Rebuild simulation pools with new source list
+      foreach info [Info::List $Param(Path)/$Data(Project)/sim.pool] {
+
+         Info::Decode ::Watch::Tmp $info
+
+         #----- If this pool depends on the edited experiment, change its locations
+         if { "$Tmp(NameExp)"=="$Sim(NameExp)" } {
+            set Tmp(Name)   $Sim(Name)
+            set Tmp(Lat)    $Sim(Lat)
+            set Tmp(Lon)    $Sim(Lon)
+            set Tmp(Coords) $Sim(Coords)
+         }
+         exec echo "[Info::Code ::Watch::Tmp]" >> $Param(Path)/$Data(Project)/sim.pool.edit
+      }
+      file rename -force $Param(Path)/$Data(Project)/sim.pool.edit  $Param(Path)/$Data(Project)/sim.pool
+   }
    Model::Check 0
    Model::TypeSelect none 2
    return 1
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Watch::Edit>
+# Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Modifier une Watch de la liste existante.
+#
+# Parametres:
+#
+# Retour :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Watch::Edit { } {
+   variable Data
+
+   #----- Extract current experiment info for Model::New interface
+   set Model::Data(Ids)    { }
+   set Model::Data(Srcs)   { }
+   set Model::Data(Coords) { }
+
+   foreach src $Data(Sources$Data(Project)$Data(Exp)) {
+      lappend Model::Data(Ids)    -
+      lappend Model::Data(Srcs)   [lindex $src 0]
+      lappend Model::Data(Coords) [lindex $src 3]
+   }
+
+   set Model::Data(Id)    [lindex $Model::Data(Ids) 0]
+   set Model::Data(Src)   [lindex $Model::Data(Srcs) 0]
+   set Model::Data(Coord) [lindex $Model::Data(Coords) 0]
+   set Model::Data(Type)  $Data(Type)
+   set Model::Data(Name)  $Data(Exp)
+   set Model::Param(Unit) "DDD.CC"
+
+   Model::New $Watch::Data(Frame) Watch::New False False
 }
 
 #----------------------------------------------------------------------------
@@ -663,7 +750,7 @@ proc Watch::PopUpProject { X Y } {
          .watchpopproj add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::ReadProject \$Watch::Data(Project); Watch::AllOpenItem \$Watch::Data(Project) 0"
          .watchpopproj add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project) 0"
          .watchpopproj add separator
-         .watchpopproj add command -label [lindex $Lbl(New) $GDefs(Lang)] -command "Model::New \$Watch::Data(Frame) Watch::New \"[lindex $Lbl(New) $GDefs(Lang)]\" 1"
+         .watchpopproj add command -label [lindex $Lbl(New) $GDefs(Lang)] -command "Model::New \$Watch::Data(Frame) Watch::New False"
    }
 
    .watchpopproj entryconfigure 0 -label "$Data(Project)"
@@ -695,12 +782,13 @@ proc Watch::PopUpWatch { X Y } {
    if { ![winfo exists .watchpopwatch] } {
 
       menu .watchpopwatch -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Name); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
+         .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
-         .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Name) 1"
-         .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Name) 1"
+         .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Exp) 1"
+         .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Exp) 1"
          .watchpopwatch add separator
          .watchpopwatch add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu .watchpopwatch.new
+         .watchpopwatch add command -label [lindex $Lbl(Edit) $GDefs(Lang)] -command "Watch::Edit"
          .watchpopwatch add separator
          .watchpopwatch add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::Suppress"
 
@@ -712,7 +800,7 @@ proc Watch::PopUpWatch { X Y } {
       }
    }
 
-   .watchpopwatch entryconfigure 0 -label "$Data(Name)"
+   .watchpopwatch entryconfigure 0 -label "$Data(Exp)"
    tk_popup .watchpopwatch $X $Y 0
 }
 
@@ -740,7 +828,7 @@ proc Watch::PopUpModel { X Y Model } {
 
    if { ![winfo exists .watchpopmodel] } {
       menu .watchpopmodel -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-            .watchpopmodel add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Name); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
+            .watchpopmodel add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
                 -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
             .watchpopmodel add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command ""
             .watchpopmodel add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command ""
@@ -749,8 +837,8 @@ proc Watch::PopUpModel { X Y Model } {
    }
 
    .watchpopmodel entryconfigure 0 -label $Model
-   .watchpopmodel entryconfigure 1 -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Name)$Model 2"
-   .watchpopmodel entryconfigure 2 -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Name)$Model 2"
+   .watchpopmodel entryconfigure 1 -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Exp)$Model 2"
+   .watchpopmodel entryconfigure 2 -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Exp)$Model 2"
    .watchpopmodel entryconfigure 4 -command "Watch::ParamsWindow $Model"
    tk_popup .watchpopmodel $X $Y 0
 }
@@ -786,7 +874,7 @@ proc Watch::PopUpSim { X Y } {
          .watchpopsim add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] -command "Watch::SimSuppress"
    }
 
-   .watchpopsim entryconfigure 0 -label $Data(Name)
+   .watchpopsim entryconfigure 0 -label $Data(Exp)
    tk_popup .watchpopsim $X $Y 0
 }
 
@@ -863,14 +951,11 @@ proc Watch::Select { Exp Project } {
    variable Data
 
    set Data(Project) $Project
-   set Data(Name)    $Exp
+   set Data(Exp)     $Exp
 
-   set src [lindex $Data(Sources$Project) [lsearch -exact $Data(Exps$Project) $Exp]]
-
-   set Data(Lat)     [lindex $src 0 1]
-   set Data(Lon)     [lindex $src 0 2]
+   set Data(Lat)     [lindex $Data(Sources$Project$Exp) 0 1]
+   set Data(Lon)     [lindex $Data(Sources$Project$Exp) 0 2]
    set Data(Type)    [Watch::GetType $Project]
-   set Data(Pos)     [list [list $Data(Name) $Data(Lat) $Data(Lon) 0]]
 }
 
 #-------------------------------------------------------------------------------
@@ -1023,7 +1108,7 @@ proc Watch::SimSuppress { } {
    variable Msg
 
    #----- Demande de confirmation
-   if { [Dialog::Default . 400 WARNING $Msg(SimSuppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Model::Msg(SimSuppress) "\n\n$Data(Exp)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1067,7 +1152,7 @@ proc Watch::Suppress { } {
    variable Msg
    variable Lbl
 
-   if { [Dialog::Default . 400 WARNING $Msg(Suppress) "\n\n$Data(Name)" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(Suppress) "\n\n$Data(Exp)" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1075,11 +1160,11 @@ proc Watch::Suppress { } {
    set path $Param(Path)/$Data(Project)/sim.pool
    if { [file exists $path] } {
       file rename -force $path "$path.old"
-      catch { exec egrep -i -v ".*$Data(Name).*" "$path.old" > $path }
+      catch { exec egrep -i -v ".*:NameExp=$Data(Exp):.*" "$path.old" > $path }
    }
 
    #----- Supprimer tous les resultats pour la source
-   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Name)]]] } {
+   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Exp)]]] } {
       eval file delete -force $files
    }
 
@@ -1099,7 +1184,7 @@ proc Watch::Suppress { } {
 # Retour:
 #
 # Remarques :
-#    - Chaque projet a sa liste de noms de watch sous Data(Sources$Projet)
+#    - Chaque projet a sa liste de noms de watch sous Data(Sources$Projet$Exp)
 #    - Chaque watch a sa liste de modeles sous Data(Models$Project$Watch)
 #    - Chaque modele de chaque watch a sa liste de simulation sous Data(Sims$Project$Watch$Model)
 #----------------------------------------------------------------------------
@@ -1108,10 +1193,7 @@ proc Watch::Read { } {
    variable Data
    variable Param
 
-   #----- Trouve la liste des noms de tous les projets (un projet = un dossier (directory))
-   foreach proj [set Data(Projects) [glob -nocomplain -types d -directory $Param(Path) -tails *]] {
-      set Data(Sources$proj) {}
-   }
+   set Data(Projects) [glob -nocomplain -types d -directory $Param(Path) -tails *]
 
    if { $Data(BranchProject)!="" } {
       Watch::ReadProject $Data(BranchProject)
@@ -1136,6 +1218,7 @@ proc Watch::ReadProject { Project } {
    global GDefs
    variable Data
    variable Param
+   variable Sim
 
    array unset Data Models*
    array unset Data Sims*
@@ -1144,39 +1227,46 @@ proc Watch::ReadProject { Project } {
    .model config -cursor watch
    update idletask
 
-   set Data(Sources$Project) {}
-   set Data(Exps$Project)   {}
+   #----- Re-initialize arrays
+   set Data(Exps$Project) {}
+
+   foreach name [array names Data -glob Sources$Project*] {
+      unset Data($name)
+   }
 
    #----- Verifie que les fichiers necessaires sont presents
    if { [file exists $Param(Path)/$Project/sim.pool] } {
 
       #----- Trouve les lignes de pool
       foreach info [Info::List $Param(Path)/$Project/sim.pool] {
-         set model [Info::Strip $info Model]
-         set exp   [Info::Strip $info NameExp]
-         set nosim [Info::Strip $info NoSim]
+         Info::Decode ::Watch::Sim $info
 
-         set srcs    {}
-         foreach src [Info::Strip $info Name] lat [Info::Strip $info Lat] lon [Info::Strip $info Lon] {
-            lappend srcs [list $src $lat $lon]
+         if { ![info exists Data(Sources$Project$Sim(NameExp))] } {
+            set Data(Sources$Project$Sim(NameExp)) {}
          }
-         lappend Data(Sources$Project) $srcs
-         lappend Data(Exps$Project)    $exp
 
-         if { ![info exists Data(Models$Project$exp)] } {
-            set Data(Models$Project$exp) ""
+         foreach src $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) coords $Sim(Coords) {
+           lappend Data(Sources$Project$Sim(NameExp)) [list $src [format "%.6f" $lat] [format "%.6f" $lon] $coords]
          }
-         if { [lsearch $Data(Models$Project$exp) $model]==-1 } {
-            lappend Data(Models$Project$exp) $model
-            set Data(Sims$Project$exp$model) ""
+         lappend Data(Exps$Project) $Sim(NameExp)
+
+         if { ![info exists Data(Models$Project$Sim(NameExp))] } {
+            set Data(Models$Project$Sim(NameExp)) ""
          }
-         lappend Data(Sims$Project$exp$model) "$nosim \"$info\""
+         if { [lsearch $Data(Models$Project$Sim(NameExp)) $Sim(Model)]==-1 } {
+            lappend Data(Models$Project$Sim(NameExp)) $Sim(Model)
+            set Data(Sims$Project$Sim(NameExp)$Sim(Model)) ""
+         }
+         lappend Data(Sims$Project$Sim(NameExp)$Sim(Model)) "$Sim(NoSim) \"$info\""
 
          #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$Project$exp$model$nosim) [glob -nocomplain $Param(Path)/$Project/data/*_$exp/${model}.${nosim}.*]
+         set Data(Results$Project$Sim(NameExp)$Sim(Model)$Sim(NoSim)) [glob -nocomplain $Param(Path)/$Project/data/*_$Sim(NameExp)/$Sim(Model).$Sim(NoSim).*]
+
+         #----- Remove double of sources since multiple pools have same sources
+         set Data(Sources$Project$Sim(NameExp)) [lsort -unique -index 0 $Data(Sources$Project$Sim(NameExp))]
       }
-      set Data(Sources$Project) [lsort -unique $Data(Sources$Project)]
-      set Data(Exps$Project)    [lsort -unique $Data(Exps$Project)]
+      #----- Remove double of experiments since multiple pools have same experiment name
+      set Data(Exps$Project) [lsort -unique $Data(Exps$Project)]
    }
    set Data(Type) [Watch::GetType $Project]
 
@@ -1243,8 +1333,8 @@ proc Watch::GetNo { Model } {
    variable Data
 
    #----- Trouve un numero de simulation unique pour ce model
-   set model $Data(Project)$Data(Name)
-   set sim   $Data(Project)$Data(Name)$Model
+   set model $Data(Project)$Data(Exp)
+   set sim   $Data(Project)$Data(Exp)$Model
 
    if { [info exists Data(Models$model)] && [info exists Data(Sims$sim)] } {
       set nos ""
@@ -1285,11 +1375,11 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    variable Data
 
    if { [winfo exists .modelnew] } {
-      Dialog::Info .modelnew $Msg(Exist)
+      Dialog::Info .modelnew $Model::Msg(Exist)
       return
    }
 
-   set Data(Modelbase) [Model::InitNew $Model 0 $Data(Name) $Data(Pos)]
+   set Data(Modelbase) [Model::InitNew $Model 0 $Data(Exp) $Data(Sources$Data(Project)$Data(Exp))]
    set Data(Model)     $Model
 
    if { $Mode=="NEW" } {
@@ -1297,7 +1387,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    }
 
    toplevel     .modelnew
-   wm title     .modelnew "Model $Model: $Watch::Data(Name)"
+   wm title     .modelnew "Model $Model: $Watch::Data(Exp)"
    wm transient .modelnew .
    wm resizable .modelnew 0 0
    wm geom      .modelnew =300x350+[winfo rootx .]+[expr [winfo rooty .]+30]

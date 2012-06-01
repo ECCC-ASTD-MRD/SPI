@@ -129,6 +129,9 @@ namespace eval Model {
    set Lbl(Sources)       { "Sources" "Sources" }
    set Lbl(Desc)          { "Description" "Description" }
    set Lbl(Coords)        { "Coordonnees" "Coordinates" }
+   set Lbl(ExpNew)        { "Nouvelle Expérience" "New experiment" }
+   set Lbl(ExpEdit)       { "Modifier l'expérience" "Edit experiment" }
+   set Lbl(Apply)          { "Appliquer" "Apply" }
 
    #----- Bulles d'aide
 
@@ -194,6 +197,13 @@ namespace eval Model {
    set Error(EmHeight)            { "La masse doit être positive." "Mass must be positive." }
    set Error(Blame)               { "Vous devez spécifier le nom de l'usager qui lance la simulation" "You have to enter the name of the user doing the simulation" }
 
+   set Error(Name)          { "Le nom de l'expérience ou de l'une des localisations n'à pas été spécifié"
+                              "The experiment name or the name of one the localisation has not been specified" }
+   set Error(Exist)         { "Une source portant ce nom est deja activee."
+                              "There is already an automated source by that name." }
+   set Error(Coord)         { "Les coordonnées de la source sont invalides"
+                              "The specified source coordinates are invalid" }
+
    set Warning(SimDuration1)      { "La durée de simulation sera réinitialisée en fonction des données météorologiques disponibles dans la base de données." \
                                     "The simulation duration will be re-initialized according to available meteorological data in database." }
    set Warning(SimDuration2)      { "\tAncienne durée de simulation :" "\tOld simulation duration :" }
@@ -215,7 +225,7 @@ namespace eval Model {
 
    set Msg(EmHeight)     { "Veuillez spécifier la masse d'explosif en kilogrammes." "Please enter explosive mass in kilograms." }
    set Msg(Exist)        { "Veuillez compléter le lancement de modèle en cours avant de procéder à un autre." "Please complete the current model launch before proceeding with another one." }
-   set Msg(Delete)       { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
+   set Msg(SimSuppress)  { "Voulez-vous vraiment supprimer cette simulation ?" "Do you really want to delete this simulation ?" }
    set Msg(Correct)      { "Voulez-vous lancer le modèle à partir des paramètres d'entrée ci-haut?" "Do you wish to launch the model with the above input parameters?" }
 
    catch {
@@ -322,7 +332,7 @@ proc Model::Delete { Info } {
    update idletasks
 
    #----- Verifier la validitee des parametres
-   if { [Dialog::Default . 400 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
+   if { [Dialog::Default . 400 WARNING $Msg(SimSuppress) "" 0 $Lbl(Yes) $Lbl(No)] } {
       return
    }
 
@@ -1811,6 +1821,9 @@ proc Model::Destroy { } {
 #
 # Parametres :
 #   <Parent> : Identificateur de la fenetre parent.
+#   <Command>: Command a exectuter en completion.
+#   <Type>   : Activer la selection du type de source.
+#   <New>    : Selection du mode
 #
 # Retour :
 #
@@ -1820,7 +1833,7 @@ proc Model::Destroy { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Model::New { Parent Command Label Single } {
+proc Model::New { Parent Command { Type True } { New True } } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -1833,20 +1846,25 @@ proc Model::New { Parent Command Label Single } {
 
    toplevel     .expnew
    wm transient .expnew $Parent
-   wm geom      .expnew +[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
+   wm geom      .expnew =400x300+[expr [winfo rootx $Parent]+50]+[expr [winfo rooty $Parent]+50]
    wm protocol  .expnew WM_DELETE_WINDOW { }
-   wm title     .expnew "$Label"
 
-   #----- Initialiser les variables de localisations
+   if { $New } {
+      wm title     .expnew [lindex $Lbl(ExpNew) $GDefs(Lang)]
+   } else {
+      wm title     .expnew [lindex $Lbl(ExpEdit) $GDefs(Lang)]
+   }
+
    set Data(Set)    True
-   set Data(Type)   0
-   set Data(Name)   "New experiment"
-   set Data(Ids)    { }
-   set Data(Srcs)   { }
-   set Data(Coords) { }
 
-   if { !$Single } {
-      wm geometry  .expnew =400x300
+   if { $New } {
+
+      #----- Initialiser les variables de localisations
+      set Data(Type)   0
+      set Data(Name)   "New experiment"
+      set Data(Ids)    { }
+      set Data(Srcs)   { }
+      set Data(Coords) { }
 
       labelframe .expnew.gen -text [lindex $Lbl(Desc) $GDefs(Lang)]
          frame .expnew.gen.name
@@ -1854,6 +1872,9 @@ proc Model::New { Parent Command Label Single } {
             entry .expnew.gen.name.ent  -textvariable Model::Data(Name) -width 20 -bd 1 -bg $GDefs(ColorLight)
             pack .expnew.gen.name.lbl -side left -anchor w
             pack .expnew.gen.name.ent -side left -fill x -expand true
+         pack .expnew.gen.name -side top -fill x
+
+      if { $Type } {
          frame .expnew.gen.type
             label .expnew.gen.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -width 15 -anchor w
             pack .expnew.gen.type.lbl -side left
@@ -1864,8 +1885,9 @@ proc Model::New { Parent Command Label Single } {
 
                Bubble::Create .expnew.gen.type.t$ico $Bubble(Type$type)
             }
-         pack .expnew.gen.name .expnew.gen.type -side top -fill x
-         pack .expnew.gen -side top -fill x -padx 5 -pady 5
+         pack .expnew.gen.type -side top -fill x
+      }
+      pack .expnew.gen -side top -fill x -padx 5 -pady 5
    }
 
    labelframe .expnew.src -text [lindex $Lbl(Sources) $GDefs(Lang)]
@@ -1893,25 +1915,23 @@ proc Model::New { Parent Command Label Single } {
          button .expnew.src.opt.add -text " + " -relief raised -bd 1 -command Model::SourceAdd
          button .expnew.src.opt.del -text " - " -relief raised -bd 1 -command Model::SourceDel
          pack .expnew.src.opt.add .expnew.src.opt.del -side left
+      pack  .expnew.src.opt -side top -anchor w
       frame .expnew.src.list
          scrollbar .expnew.src.list.scrolly -relief sunken -command ".expnew.src.list.table yview" -bd 1 -width 10
          listbox .expnew.src.list.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -listvariable Model::Data(Srcs) \
          -yscrollcommand ".expnew.src.list.scrolly set" -width 1 -height 1 -selectmode single -exportselection false
          pack .expnew.src.list.scrolly -side left -fill y
          pack .expnew.src.list.table -side left -fill both -expand true -before .expnew.src.list.scrolly
-
-      if { !$Single } {
-         pack  .expnew.src.opt -side top -anchor w
-         pack .expnew.src.list -side top -fill both -expand true
-      }
+      pack .expnew.src.list -side top -fill both -expand true
    pack .expnew.src -side top -fill both -expand true -padx 5
 
    frame .expnew.commands
-      button .expnew.commands.create -text [lindex $Lbl(Create) $GDefs(Lang)] \
-         -command "if { \[$Command\] } { Model::NewClose }" \
-         -relief raised -bd 1
-      button .expnew.commands.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] \
-         -command "Model::NewClose" -relief raised -bd 1
+      if { $New } {
+         button .expnew.commands.create -text [lindex $Lbl(Create) $GDefs(Lang)] -command "if { \[$Command False\] } { Model::NewClose }" -relief raised -bd 1
+      } else {
+         button .expnew.commands.create -text [lindex $Lbl(Apply) $GDefs(Lang)] -command "if { \[$Command True\] } { Model::NewClose }" -relief raised -bd 1
+      }
+      button .expnew.commands.cancel -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command "Model::NewClose" -relief raised -bd 1
       pack .expnew.commands.create .expnew.commands.cancel -side left -fill x -expand true
    pack .expnew.commands -side top -fill x -padx 5 -pady 5
 
@@ -1930,7 +1950,9 @@ proc Model::New { Parent Command Label Single } {
    Bubble::Create .expnew.commands.create $Bubble(Create)
    Bubble::Create .expnew.commands.cancel $Bubble(Cancel)
 
-   Model::SourceAdd
+   if { $New } {
+      Model::SourceAdd
+   }
 
    trace variable Model::Data(Src)   w { Model::SourceApply 0 }
    trace variable Model::Data(Coord) w { Model::SourceApply 0 }
@@ -2195,11 +2217,13 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
       }
       2 {
          foreach proj $Watch::Data(Projects) {
-            if { $Group=="" || $proj==$Group } {
+            if { [info exists Watch::Data(Exps$proj)] && ($Group=="" || $proj==$Group) } {
                set ico [Watch::GetIcon $proj]
-               foreach watch [join $Watch::Data(Sources$proj)] {
-                  if { $Loc=="" || [lindex $watch 0]==$Loc } {
-                     lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
+               foreach exp [join $Watch::Data(Exps$proj)] {
+                  foreach watch $Watch::Data(Sources$proj$exp) {
+                     if { $Loc=="" || [lindex $watch 0]==$Loc } {
+                        lappend icos "[lindex $watch 0] [lindex $watch 1] [lindex $watch 2] 0 $ico"
+                     }
                   }
                }
             }

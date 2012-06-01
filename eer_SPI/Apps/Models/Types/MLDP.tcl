@@ -552,7 +552,7 @@ proc MLDP::CreateModelInput { } {
    }
    if { $Sim(SrcType) == "volcano" } {
       puts $file "[format "%-25s" $Sim(EmMass)] [format "%-20s" mass_volcano] Total released mass for volcanic eruption \[micrograms\]."
-      if { $Sim(EmMassMode) == 0 } {
+      if { ![info exists Sim(EmMassMode)] || $Sim(EmMassMode) == 0 } {
          set IsComputeMass ".TRUE."
       } else {
          set IsComputeMass ".FALSE."

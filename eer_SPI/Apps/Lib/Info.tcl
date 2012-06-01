@@ -49,7 +49,7 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
-                        SrcType OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario }
+                        SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -256,6 +256,11 @@ proc Info::Decode { Var Info } {
    set infos [split $Info :]
    set model [string trimright [lindex [split [lindex $infos 0] =] 1] 01]
 
+   #----- Force unset on coords for aftercheck (not all modesl have Coords array)
+   unset -nocomplain var(Coords)
+   unset -nocomplain var(Lat)
+   unset -nocomplain var(Lon)
+
    foreach info $infos {
       set list  [split $info =]
       set token [lindex $list 0]
@@ -279,6 +284,19 @@ proc Info::Decode { Var Info } {
 
       if { !$found } {
          set var($token) $value
+      }
+   }
+
+   #----- Fill up missing variables
+   if { ![info exists var(Coords)] } {
+      foreach lat $var(Lat) lon $var(Lon) {
+         lappend var(Coords) [list $lat $lon]
+      }
+   }
+   if { ![info exists var(Lat)] } {
+      foreach coord $var(Coords) {
+         lappend var(Lat) [lindex $coord 0]
+         lappend var(Lon) [lindex $coord 1]
       }
    }
 

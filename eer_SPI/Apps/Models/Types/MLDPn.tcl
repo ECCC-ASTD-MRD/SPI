@@ -1283,7 +1283,7 @@ proc MLDPn::DistributeParcels { } {
 # Nom        : <MLDPn::InitNew>
 # Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
 #
-# But        : Initialise un tableau de defintions de simulation pour une$Sim(ESCanvas)
+# But        : Initialise un tableau de defintions de simulation pour une
 #              nouvelle simulation.
 #
 # Parametres :
@@ -1383,6 +1383,20 @@ proc MLDPn::InitNew { Type } {
 
    Model::FitAccTime MLDPn
 }
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::InitKernel>
+# Creation   : Octobre 1999 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Initialise les parametres selon le noyau de diffusion
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
 
 proc MLDPn::InitKernel { } {
    global   GDefs
