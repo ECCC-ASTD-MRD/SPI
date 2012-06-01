@@ -50,7 +50,7 @@ namespace eval Export {
    set Lbl(What)     { "Quoi" "What" }
    set Lbl(How)      { "Comment" "How" }
    set Lbl(Where)    { "Où" "Where" }
-
+   set Lbl(Info)     { "Information" "Information" }
 
    set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
    set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
@@ -68,12 +68,14 @@ namespace eval Export::Raster {
    variable Lbl
    variable Bubble
    variable Error
+   variable Msg
 
    set Data(Image)   0
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
                        {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
+                       {ADRG/ARC Digitilized Raster Graphics "ADRG" {*.gen *.thf}}
                        {Military Elevation Data "DTED" {*.dt0 *.dt1}}
-                       {ERMapper Compressed Wavelets "ECW" { *.ers}}
+                       {Magellan BLX Topo "BLX" {*.blx *.xlb}}
                        {ERMapper ERS "ERS" { *.ers}}
                        {GMT Compatible NetCDF "GMT" {*.cdf}}
                        {Virtual Raster "VRT" {*.vrt}}
@@ -88,8 +90,28 @@ namespace eval Export::Raster {
                        {SRTM HGT Format "SRTMHGT" {*.hgt}}
                        {Raster Matrix Format "RMF" {*.rsw *.mtw}}
                        {ENVI .hdr Labelled "ENVI" {*.envi}}
+                       {ESRI .hdr Labelled "EHdr"{*.hdr}}
                        {Atlantis MFF Raster "MFF" {*.mff}}
                        {Atlantis MFF2 (HKV) Raster "MFF2" {*.mff}}
+                       {NASA ELAS "ELAS" {*}}
+                       {NOAA .gtx vertical datum shift "GTX" {*.gtx}}
+                       {HF2/HFZ heightfield raster "HF2" {*.hf2 *.hfz}}
+                       {Image Display and Analysis (WinDisp) "IDA" {*.ida}}
+                       {ILWIS Raster Map "ILWIS" {*.mpr *.mpl}}
+                       {Intergraph Raster "INGR" {*.ingr}}
+                       {USGS Astrogeology ISIS cube (Version 2) "ISIS2" {*.isis}}
+                       {JPEG JFIF "JPEG" {*,jpg}}
+                       {KMZ "KMZ" {*.kmz}}
+                       {Vexcel MFF "MFF" {*.mff}}
+                       {Vexcel MFF2 "MFF2" {*.HKV}}
+                       {NTv2 Datum Grid Shift "NTv2" {*.nt}}
+                       {PCRaster "PCRaster" {*}}
+                       {Raster Matrix Format RMF {*.rsw *.mtw}}
+                       {SAGA GIS Binary format "SAGA" {*.sag}}
+                       {SGI Image Format "SGI" {*.sgi}}
+                       {USGS ASCII DEM / CDED "USGSDEM" {*.dem}}
+                       {ASCII Gridded XYZ "XYZ" {*.xyz}}
+                       {ZMap Plus Grid"ZMap" {*.zmap}}
                        {VTP .bt (Binary Terrain) 1.3 Format "BT" {*.bt}}}
 
    set Lbl(Area)     { "Région" "Area" }
@@ -99,6 +121,8 @@ namespace eval Export::Raster {
    set Lbl(Data)     { "Données" "Data" }
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
+
+   set Msg(Export)    { "Exportation de " "Exporting data " }
 
    set Error(Size)    { "Les dimensions sont invaldes, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
 
@@ -116,11 +140,15 @@ namespace eval Export::Vector {
    variable Bubble
 
    set Data(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+                       {GeoJSON  "GeoJSON" {*.json}}
+                       {KML "KML" {*.kml}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
                        {Geography Markup Language "GML" {*.gml}}
                        {GMT ASCII Vectors "GMT" {*.gmt}}
                        {GPS Exchange Format "GPX" {*.gpx}}
+                       {GPSTrackMaker "GPSTrackMaker" {*.gtm *.gtz}}
                        {MapInfo Binary "MapInfo File" {*.mif *.mid}}
+                       {SQLite/SpatiaLite "SQLite" {}}
                        {PostgreSQL "PostgreSQL" {}} }
 
 }
@@ -145,6 +173,7 @@ namespace eval Export::Vector {
 proc Export::Raster::Export { Path Format } {
    variable Data
    variable Error
+   variable Msg
 
    set no   0
    set file [file rootname $Path]
@@ -155,11 +184,23 @@ proc Export::Raster::Export { Path Format } {
      return False
    }
 
+   if { $Format=="KMZ" } {
+      set f [open ${file}.kml w]
+      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n<Document>\n"
+   }
+
    foreach field $FSTD::Data(List) {
 
       if { $Export::Data($field) } {
-         set desc ""
-         set nv [fstdfield define $field -NOMVAR]
+
+         set nv      [fstdfield define $field -NOMVAR]
+         set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+         set lvltype [fstdfield stats $field -leveltype]
+         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+         set sec1    [expr $sec0+[fstdfield define $field -DEET]*[fstdfield define $field -NPAS]]
+
+         set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+         Dialog::Wait .export $Msg(Export) $desc
 
          switch $Data(Image) {
             0 {  set map [fstdfield configure $field -colormap]
@@ -172,10 +213,37 @@ proc Export::Raster::Export { Path Format } {
 
          gdalband define BAND -transform [list $Export::Data(Lon0) $Export::Data(DLon) 0.0 $Export::Data(Lat1) 0.0 -$Export::Data(DLat)]
          gdalband import BAND $field
-         gdalfile open FILE write ${file}_${no}_${nv}${ext} $Format
+
+         if { $Format=="KMZ" } {
+
+            puts $f "   <GroundOverlay>
+      <TimeSpan>
+         <begin>[ISO8601::FromSeconds $sec0]</begin>
+         <end>[ISO8601::FromSeconds $sec1]</end>
+      </TimeSpan>
+      <name>[fstdfield configure $field -desc] at $lvl $lvltype</name>
+      <description>Valid [clock format $sec0]</description>
+      <LatLonBox>
+         <north>$Export::Data(Lat1)</north>
+         <south>$Export::Data(Lat0)</south>
+         <east>$Export::Data(Lon0)</east>
+         <west>$Export::Data(Lon1)</west>
+      </LatLonBox>
+      <Icon>
+         <href>[file tail ${file}_${no}_${nv}.tif]</href>
+      </Icon>
+  </GroundOverlay>\n"
+
+            gdalfile open FILE write ${file}_${no}_${nv}.tif GTiff
+
+            lappend kmz ${file}_${no}_${nv}.tif
+         } else {
+            gdalfile open FILE write ${file}_${no}_${nv}${ext} $Format
+         }
          gdalband write BAND FILE
          gdalfile close FILE
          gdalband free BAND
+
 
          if { $Data(Image)==0 } {
             fstdfield configure $field -colormap $map
@@ -184,6 +252,15 @@ proc Export::Raster::Export { Path Format } {
          incr no
       }
    }
+
+   if { $Format=="KMZ" } {
+      puts $f "</Document>\n</kml>"
+      close $f
+      eval exec zip -j ${file}.kmz ${file}.kml $kmz
+      eval file delete  ${file}.kml $kmz
+   }
+
+   Dialog::WaitDestroy
    return True
 }
 
@@ -206,6 +283,7 @@ proc Export::Raster::Export { Path Format } {
 
 proc Export::Vector::Export { Path Format } {
    variable Data
+   variable Msg
 
    set no 0
 
@@ -216,6 +294,9 @@ proc Export::Vector::Export { Path Format } {
          set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
          set lvltype [fstdfield stats $field -leveltype]
          set date    [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true]
+
+         set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+         Dialog::Wait .export $Msg(Export) $desc
 
          set layer ${nv}_${date}_${lvl}_${lvltype}
 
@@ -251,6 +332,8 @@ proc Export::Vector::Export { Path Format } {
          incr no
       }
    }
+   Dialog::WaitDestroy
+
    return True
 }
 
@@ -423,6 +506,7 @@ proc Export::Window { } {
          ComboBox::Create .export.how.sel.sel Export::Data(Format) edit sorted nodouble -1 {} 15 6 {Export::SetFormat $Export::Data(Format)}
          pack .export.how.sel.lbl -side left
          pack .export.how.sel.sel -side left -fill x -expand True
+      pack .export.how.type .export.how.sel -side top -fill x -expand True
 
    labelframe .export.where -text [lindex $Lbl(Where) $GDefs(Lang)]
        frame .export.where.file
@@ -463,7 +547,10 @@ proc Export::Window { } {
          pack .export.where.db.host .export.where.db.port .export.where.db.name .export.where.db.user .export.where.db.pswd \
             -side top -fill x -expand True
 
-      pack .export.how.type .export.how.sel -side top -fill x -expand True
+   labelframe .export.info -text [lindex $Lbl(Info) $GDefs(Lang)]
+      text .export.info.desc -bd 1 -bg $GDefs(ColorLight) -height 5 -width 30
+      pack .export.info.desc -side top -fill both -expand True
+
    pack .export.what .export.how .export.where -side top -fill x -expand True -padx 5
 
    frame .export.cmd -relief sunken -bd 1
