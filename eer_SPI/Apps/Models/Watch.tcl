@@ -437,6 +437,7 @@ proc Watch::CreateBranchModel { Canvas Project Exp Model X Y } {
 proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
    global GDefs
    variable Data
+   variable Param
 
    set info  [lindex $Sim 1]
    set mode  [Info::Strip $info Mode]
@@ -473,7 +474,9 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
    #----- On cree les branches des resultats seulement s'il faut les afficher
    if { [lsearch -exact $Watch::Data(BranchSim) $tag] != -1 } {
       $Canvas itemconfigure PSIM$tag -bitmap $Model::Resources(Minus)
-      foreach result [lsort $Data(Results$tag)] {
+
+      #----- Trouve tous les dossiers des resultats des simulations
+      foreach result [lsort [glob -nocomplain $Param(Path)/$Project/data/*_$Exp/$Model.$no.*]] {
          set y1 [incr Y 21]
          set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $Model "$Sim" $result $X $Y]
       }
@@ -1258,9 +1261,6 @@ proc Watch::ReadProject { Project } {
             set Data(Sims$Project$Sim(NameExp)$Sim(Model)) ""
          }
          lappend Data(Sims$Project$Sim(NameExp)$Sim(Model)) "$Sim(NoSim) \"$info\""
-
-         #----- Trouve tous les dossiers des resultats des simulations
-         set Data(Results$Project$Sim(NameExp)$Sim(Model)$Sim(NoSim)) [glob -nocomplain $Param(Path)/$Project/data/*_$Sim(NameExp)/$Sim(Model).$Sim(NoSim).*]
 
          #----- Remove double of sources since multiple pools have same sources
          set Data(Sources$Project$Sim(NameExp)) [lsort -unique -index 0 $Data(Sources$Project$Sim(NameExp))]
