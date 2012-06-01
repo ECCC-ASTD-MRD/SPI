@@ -58,6 +58,7 @@ namespace eval Export {
    set Bubble(File)   { "Nom du fichier d'exportation" "Export filename" }
    set Bubble(DBase)  { "Paramêtres de connection a la base de donnée" "Database connexion parameters" }
 
+   set Error(Legend)  { "Problème lors de la création de la légende (convert)" "Problem creating legend (convert)" }
    set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
    set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
                         "No RPN data to export. You have to display the fields on the active viewport to be able to export them." }
@@ -72,6 +73,7 @@ namespace eval Export::Raster {
 
    set Data(Image)   0
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
+                       {KMZ "KMZ" {*.kmz}}
                        {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
                        {ADRG/ARC Digitilized Raster Graphics "ADRG" {*.gen *.thf}}
                        {Military Elevation Data "DTED" {*.dt0 *.dt1}}
@@ -101,7 +103,6 @@ namespace eval Export::Raster {
                        {Intergraph Raster "INGR" {*.ingr}}
                        {USGS Astrogeology ISIS cube (Version 2) "ISIS2" {*.isis}}
                        {JPEG JFIF "JPEG" {*,jpg}}
-                       {KMZ "KMZ" {*.kmz}}
                        {Vexcel MFF "MFF" {*.mff}}
                        {Vexcel MFF2 "MFF2" {*.HKV}}
                        {NTv2 Datum Grid Shift "NTv2" {*.nt}}
@@ -150,7 +151,105 @@ namespace eval Export::Vector {
                        {MapInfo Binary "MapInfo File" {*.mif *.mid}}
                        {SQLite/SpatiaLite "SQLite" {}}
                        {PostgreSQL "PostgreSQL" {}} }
+}
 
+#----------------------------------------------------------------------------
+# Nom      : <Export::Raster::Legend>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer une image legende echelle de couleur
+#
+# Parametres :
+#  <Path>         : Repertoire de sauvegarde du fichier
+#  <Field>        : Champs RPN
+#  <Height>       : Hauteur de la legende
+#  <Width>        : Largeur de la legende
+#  <FontColor>    : Couleur des polices (hexa: #ffffff)
+#  <BGColor>      : Couleur de l'arrierre plan (hexa: #ffffff)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
+   variable Error
+
+   set map    [fstdfield configure $Field -colormap]
+   set inter  [fstdfield configure $Field -intervals]
+   set min    [fstdfield configure $Field -min]
+   set max    [fstdfield configure $Field -max]
+   set factor [fstdfield configure $Field -factor]
+   set unit   [fstdfield configure $Field -unit]
+
+   if { $min=="" } {
+      set min [lindex [fstdfield stats $Field -min] 0]
+   }
+   if { $max=="" } {
+      set max [lindex [fstdfield stats $Field -max] 0]
+   }
+
+   set cwidth  24
+   set cheight [expr $Height-10]
+   set txtpos  [expr $Width-20-24]
+
+   #----- Create the colormap image map
+   gdalband create EXPORTLEGEND $cwidth $cheight 4 Byte
+   gdalband configure EXPORTLEGEND -colormap $map -factor $factor -intervals $inter -min $min -max $max
+
+   set vals [gdalband mapimage EXPORTLEGEND]
+   gdalfile createcopy $Path.tmp EXPORTLEGEND png
+   gdalband free EXPORTLEGEND
+
+   if { [llength $inter] } {
+      #----- Use intervals if there were any
+      set vals $inter
+   } elseif { $min==0.0 && $max==1.0 } {
+      #----- Use Min-Max if no limits defined
+      set vals { Min Max }
+   }
+
+   #----- Make sure we have the maximum number of values without overlap
+   set maxvals [expr ($Height-10)/15]
+   if { [llength $vals]>$maxvals } {
+      set news {}
+      set dy   [expr double([llength $vals]/$maxvals)]
+      for { set i 0 } { $i < [llength $vals] } { set i [expr $i+$dy] } {
+         lappend news [lindex $vals [expr round($i)]]
+      }
+      set vals $news
+   }
+
+   #----- Paste the colorbar into the legend
+   if { $BGColor=="" } {
+      set bg "transparent"
+   } else {
+      set bg $BGColor
+   }
+
+   set params [concat -size ${Width}x${Height} xc:$bg -weight bold -pointsize 13 -fill $FontColor \
+      -draw \"image SrcOver $txtpos,5 $cwidth,$cheight '$Path.tmp'\"]
+
+   #----- Place the numbers beside the colorbar.
+   set lv [llength $vals]
+   set offsetText [expr double($cheight-5)/($lv==2?1:$lv)]
+   set offset [expr $Height-5]
+   foreach val $vals {
+      set xOffset [expr $txtpos-3 - ([string length $val] * 7)]
+      set params  [concat $params -draw \"text $xOffset,$offset '$val'\"]
+      set offset  [expr $offset-$offsetText]
+   }
+
+   #----- If a layer was passed, add info from the layer definition, otherwise use style
+   set desc "[fstdfield configure $Field -desc] ([fstdfield configure $Field -unit])"
+   set params [concat $params -rotate \"90\" -gravity \"South\" -draw \"text 0,0 '$desc'\" -rotate \"-90\" ]
+
+   #----- Use ImageMagick to add the labels
+   if { [catch { eval exec convert -depth 8 $params $Path } msg] } {
+      Dialog::Error .export $Error(Legend)
+   }
+   file delete $Path.tmp
 }
 
 #----------------------------------------------------------------------------
@@ -171,6 +270,7 @@ namespace eval Export::Vector {
 #----------------------------------------------------------------------------
 
 proc Export::Raster::Export { Path Format } {
+   global GDefs
    variable Data
    variable Error
    variable Msg
@@ -186,7 +286,16 @@ proc Export::Raster::Export { Path Format } {
 
    if { $Format=="KMZ" } {
       set f [open ${file}.kml w]
-      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">\n<Document>\n"
+      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+<Document>
+   <ScreenOverlay>
+      <name>Logo</name>
+      <Icon>
+         <href>Logo_SMC.png</href>
+      </Icon>
+      <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
+      <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
+   </ScreenOverlay>"
    }
 
    foreach field $FSTD::Data(List) {
@@ -215,8 +324,24 @@ proc Export::Raster::Export { Path Format } {
          gdalband import BAND $field
 
          if { $Format=="KMZ" } {
+            Export::Legend ${file}_${no}_${nv}_legend.png $field 270 96 #FFFFFF
 
-            puts $f "   <GroundOverlay>
+            puts $f "
+   <ScreenOverlay>
+      <TimeSpan>
+         <begin>[ISO8601::FromSeconds $sec0]</begin>
+         <end>[ISO8601::FromSeconds $sec1]</end>
+      </TimeSpan>
+      <name>Legend</name>
+         <Icon>
+            <href>[file tail ${file}_${no}_${nv}_legend.png]</href>
+         </Icon>
+      <overlayXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
+      <screenXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
+      <rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>
+      <size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>
+   </ScreenOverlay>
+   <GroundOverlay>
       <TimeSpan>
          <begin>[ISO8601::FromSeconds $sec0]</begin>
          <end>[ISO8601::FromSeconds $sec1]</end>
@@ -233,10 +358,9 @@ proc Export::Raster::Export { Path Format } {
          <href>[file tail ${file}_${no}_${nv}.tif]</href>
       </Icon>
   </GroundOverlay>\n"
-
             gdalfile open FILE write ${file}_${no}_${nv}.tif GTiff
 
-            lappend kmz ${file}_${no}_${nv}.tif
+            lappend kmz ${file}_${no}_${nv}.tif ${file}_${no}_${nv}_legend.png
          } else {
             gdalfile open FILE write ${file}_${no}_${nv}${ext} $Format
          }
@@ -256,8 +380,9 @@ proc Export::Raster::Export { Path Format } {
    if { $Format=="KMZ" } {
       puts $f "</Document>\n</kml>"
       close $f
-      eval exec zip -j ${file}.kmz ${file}.kml $kmz
-      eval file delete  ${file}.kml $kmz
+      file delete -force ${file}.kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/LOGO_SMC.png l/Logo/Logo_SMC.png $kmz
+      eval file delete ${file}.kml $kmz
    }
 
    Dialog::WaitDestroy
