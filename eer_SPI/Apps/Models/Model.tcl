@@ -1990,7 +1990,13 @@ proc Model::SourceDel {  } {
       set Data(Coords) [lreplace $Data(Coords) $idx $idx]
 
       .expnew.src.list.table selection clear 0 end
+
+      if { $idx>=[llength $Data(Srcs)] } {
+         incr idx -1
+      }
       .expnew.src.list.table selection set $idx
+
+      Model::SourceSelect
    }
 
    if { ![llength $Data(Srcs)] } {
