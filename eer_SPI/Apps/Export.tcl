@@ -73,7 +73,7 @@ namespace eval Export::Raster {
 
    set Data(Image)   0
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
-                       {KMZ "KMZ" {*.kmz}}
+                       {KML "KMZ" {*.kmz}}
                        {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
                        {ADRG/ARC Digitilized Raster Graphics "ADRG" {*.gen *.thf}}
                        {Military Elevation Data "DTED" {*.dt0 *.dt1}}

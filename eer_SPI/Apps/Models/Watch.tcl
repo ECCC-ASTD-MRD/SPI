@@ -651,7 +651,11 @@ proc Watch::New { { Edit False } } {
    set Sim(Lon)    .*
    set Sim(Coords) .*
 
-   Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim]
+   #----- Backup pool
+   file stat $Param(Path)/$Data(Project)/sim.pool attr
+   file copy $Param(Path)/$Data(Project)/sim.pool $Param(Path)/$Data(Project)/sim.pool.[clock format $attr(ctime) -format "%Y%m%d" -timezone :UTC]
+
+   Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim] False
 
    #----- On ajoute l'exxperience
    set Sim(Name)   $srcs
@@ -680,7 +684,7 @@ proc Watch::New { { Edit False } } {
          }
          exec echo "[Info::Code ::Watch::Tmp]" >> $Param(Path)/$Data(Project)/sim.pool.edit
       }
-      file rename -force $Param(Path)/$Data(Project)/sim.pool.edit  $Param(Path)/$Data(Project)/sim.pool
+      file rename -force $Param(Path)/$Data(Project)/sim.pool.edit $Param(Path)/$Data(Project)/sim.pool
    }
    Model::Check 0
    Model::TypeSelect none 2

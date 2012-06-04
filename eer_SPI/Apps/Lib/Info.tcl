@@ -15,7 +15,7 @@
 #
 #   Info::Code    { Var { Separator : } }
 #   Info::Decode  { Var Info }
-#   Info::Delete  { Path Info }
+#   Info::Delete  { Path Info { Safe True } }
 #   Info::Find    { Path Set args }
 #   Info::Format  { Info }
 #   Info::List    { Path }
@@ -325,6 +325,7 @@ proc Info::Decode { Var Info } {
 # Parametres :
 #    <Path>  : Path complet du fichier info
 #    <Info>  : Ligne a supprimer
+#    <Safe>  : Keep backup
 #
 # Retour:
 #
@@ -333,11 +334,14 @@ proc Info::Decode { Var Info } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Delete { Path Info } {
+proc Info::Delete { Path Info { Safe True } } {
 
    if { [file exists $Path] } {
-      file rename -force $Path "$Path.old"
-      catch { exec grep -v "$Info" "$Path.old" > $Path }
+      file rename -force $Path $Path.del
+      catch { exec grep -v "$Info" "$Path.del" > $Path }
+      if { !$Safe } {
+         file delete -force $Path.del
+      }
    }
 }
 
