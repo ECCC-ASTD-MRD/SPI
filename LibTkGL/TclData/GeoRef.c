@@ -442,11 +442,12 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    double      x,y,lat0,lon0,lat1,lon1;
    int         idx,in=0,x0,y0,x1,y1,n;
+   char       *proj=NULL;
    TGeoRef    *ref0,*ref1;
    Tcl_Obj    *lst;
 
-   static CONST char *sopt[] = { "create","copy","free","define","project","unproject","limit","within","intersect","is","isequal","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,DEFINE,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ISEQUAL,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","define","export","project","unproject","limit","within","intersect","is","isequal","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,DEFINE,EXPORT,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ISEQUAL,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -470,7 +471,10 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          ref0->Id=-(++TGeoRef_TableNo);
 
          if (Objc==4) {
-            GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL);
+            if (!GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL)) {
+               Tcl_AppendResult(Interp,"\n   GeoRef_Cmd: Unable to create georef",(char*)NULL);
+               return(TCL_ERROR);
+            }
             ref0->Grid[0]='W';
             ref0->Grid[1]=ref0->Grid[2]='\0';
          }
@@ -518,7 +522,28 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          return(GeoRef_Define(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
 
-      case PROJECT:
+      case EXPORT:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"georef [WKT,PROJ4,MAPINFO,XML]");
+            return(TCL_ERROR);
+         }
+         ref0=GeoRef_Get(Tcl_GetString(Objv[2]));
+         if (strcmp(Tcl_GetString(Objv[3]),"WKT")==0) {
+            OSRExportToWkt(ref0->Spatial,&proj);
+         } else if (strcmp(Tcl_GetString(Objv[3]),"PROJ4")==0) {
+            OSRExportToProj4(ref0->Spatial,&proj);
+         } else if (strcmp(Tcl_GetString(Objv[3]),"MAPINFO")==0) {
+//            OSRExportToMICopordSys(ref0->Spatial,&proj);
+         } else if (strcmp(Tcl_GetString(Objv[3]),"XML")==0) {
+            OSRExportToXML(ref0->Spatial,&proj,NULL);
+         }
+         if (proj) {
+            Tcl_SetObjResult(Interp,Tcl_NewStringObj(proj,-1));
+            OGRFree(proj);
+         }
+         break;
+
+         case PROJECT:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"georef X Y");
             return(TCL_ERROR);

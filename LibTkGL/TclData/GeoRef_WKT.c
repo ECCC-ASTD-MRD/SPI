@@ -36,7 +36,6 @@
 int      GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY);
 int      GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform);
 int      GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform);
-void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_WKTDistance>
@@ -405,7 +404,7 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
+int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {
 
    OGRSpatialReferenceH llref=NULL;
    char                *string=NULL;
@@ -441,11 +440,10 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       Ref->Spatial=OSRClone(Spatial);
       OSRExportToWkt(Ref->Spatial,&string);
    } else if (string) {
-      if (strlen(string)<20) {
-         Ref->Spatial=OSRNewSpatialReference(NULL);
-         OSRSetWellKnownGeogCS(Ref->Spatial,string);
-      } else {
-         Ref->Spatial=OSRNewSpatialReference(string);
+      Ref->Spatial=OSRNewSpatialReference(NULL);
+      if (OSRSetFromUserInput(Ref->Spatial,string)==OGRERR_FAILURE) {
+        fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to create spatial reference.\n");
+        return(0);
       }
    } else {
       string=strdup(REFDEFAULT);
@@ -467,6 +465,7 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
       }
    } else {
       fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to get spatial reference\n");
+      return(0);
    }
 
    Ref->Project=GeoRef_WKTProject;
@@ -474,6 +473,8 @@ void GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransf
    Ref->Value=GeoRef_WKTValue;
    Ref->Distance=GeoRef_WKTDistance;
    Ref->Height=NULL;
+
+   return(1);
 }
 
 TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial) {

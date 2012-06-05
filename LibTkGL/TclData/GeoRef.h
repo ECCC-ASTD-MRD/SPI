@@ -184,7 +184,7 @@ int      GeoRef_Valid(TGeoRef *Ref);
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta);
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID);
 TGeoRef* GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,char *String,double *Transform,double *InvTransform,OGRSpatialReferenceH Spatial);
-void     GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);
+int      GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransform,OGRGeometryH Geometry);
 TGeoRef* GeoRef_RDRCheck(double Lat,double Lon,double Height,double Radius,double ResR,double ResA);
 void     GeoRef_Expand(TGeoRef *Ref);
 int      GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef);
