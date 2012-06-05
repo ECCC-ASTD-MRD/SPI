@@ -12,7 +12,7 @@
 # Description: Functions to generalize the loggin mechanism amongs various jobs:
 #
 # Global Settings
-#   LOG_LEVEL      Logging level (MUST,ERROR,WARNING,INFO,DEBUG)
+#   LOG_LEVEL      Logging level (MUST,ERROR,WARNING,INFO,DEBUG,EXTRA)
 #   LOG_MAILTO     EMail address for mail reports
 #   LOG_MAILTITLE  Title to include in mail reports
 #   LOG_FILE       File to use for log (stdout if undefined)
@@ -67,6 +67,7 @@ LOG_LEVELERROR=0
 LOG_LEVELWARNING=1
 LOG_LEVELINFO=2
 LOG_LEVELDEBUG=3
+LOG_LEVELEXTRA=4
 LOG_LEVELNO=${LOG_LEVELINFO}
 
 #----------------------------------------------------------------------------
@@ -201,7 +202,7 @@ function Log_End {
 # But      : Afficher une message standard.
 #
 # Parametres  :
-#    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG)
+#    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG,EXTRA)
 #    <Message>: Message a afficher
 #    <Time>   : Temps specifique
 #
@@ -216,7 +217,7 @@ function Log_Print {
    msg=${2}
    time=${3}
 
-   #----- Levels are MUST,ERROR,WARNING,INFO,DEBUG
+   #----- Levels are MUST,ERROR,WARNING,INFO,DEBUG,EXTRA
    eval lvl=\$\{LOG_LEVEL$level\}
    eval LOG_LEVELNO=\$\{LOG_LEVEL${LOG_LEVEL}\}
 
