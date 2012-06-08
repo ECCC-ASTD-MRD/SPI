@@ -388,6 +388,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *  <NbInter> : Nombre d'intervalle
  *  <Inter>   : Liste des intervals
  *  <Depth>   : Profondeur de subdivision
+ *  <Limit>   : Fermer aux limites de la grille
  *
  * Retour:
  *
@@ -395,7 +396,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth){
+int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
 
    int            n,i,j,ci,cj,i0,i1,j0,j1,len,side;
    unsigned char *buf=NULL;
@@ -439,7 +440,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
 
          /*If this gridpoint has'nt yet been visited*/
          if (!buf[Def->NI*j+i]) {
-           len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth);
+           len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth,Limit);
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
@@ -657,6 +658,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *  <Mode>    : Type de referenciel (REF_COO,REF_GRID,REF_PROJ)
  *  <Side>    : Cote a ne pas verifier pour le depart
  *  <Depth>   : Profondeur de subdivision
+ *  <Limit>   : Fermer aux limites de la grille
  *
  * Retour:
  *   <Nb>     : Nombre de points de segments
@@ -679,7 +681,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *----------------------------------------------------------------------------
  */
-int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth) {
+int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth,int Limit) {
 
    double        vox[4],pvox[4],mid,x,y,dx,dy,d;
    double        lat=0.0,lon=0.0;
@@ -795,8 +797,8 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
       /*If we're out of grid, contour around the grid limits*/
       if (pidx[0] || pidx[1] || pidx[2] || pidx[3]) {
 
-         // If its a local grid, check for grid limits to close polygon
-         if (!(Ref->Type&GRID_WRAP) && n>2) {
+         // If we have to close with the grid limits, check for grid limits to close polygon
+         if (Limit && n>2) {
 
             x0=X+pidx[0];
             y0=Y+pidx[1];

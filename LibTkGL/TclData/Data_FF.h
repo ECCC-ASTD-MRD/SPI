@@ -75,8 +75,8 @@ float         FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3
 int           FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
 float        *FFStreamMapSetup1D(double Delta);
 
-int           FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth);
-int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth);
+int           FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit);
+int           FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth,int Limit);
 
 int           FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Level);
 float        *FFStreamMapSetup1D(double Delta);

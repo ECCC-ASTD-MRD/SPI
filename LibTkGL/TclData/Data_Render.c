@@ -342,7 +342,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 
    /*Les contours sont-ils definit*/
    if (Field->Spec->InterNb && !Field->Def->Segments) {
-      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,3);
+      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,3,0);
    }
 
    /* Render the contours */

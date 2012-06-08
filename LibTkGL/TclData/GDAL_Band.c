@@ -1862,7 +1862,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    /* Check for contouring */
    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
-      FFContour(REF_GRID,Band->Ref,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1);
+      FFContour(REF_GRID,Band->Ref,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1,0);
 
       /*Initialize murphy line object*/
       m.Def=Band->Def;
