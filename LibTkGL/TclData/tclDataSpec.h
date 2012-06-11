@@ -73,7 +73,7 @@
          } \
       } \
       if (VAL>SPEC->Inter[SPEC->InterNb-1] && !SPEC->MapAbove) IDX=-2;\
-   } else if ((VAL<=SPEC->Max) && (VAL>=SPEC->Min || SPEC->MapBellow)) {\
+   } else if ((VAL<=SPEC->Max || SPEC->MapAbove) && (VAL>=SPEC->Min || SPEC->MapBellow)) {\
       IDX=(VAL-SPEC->Min)*SPEC->MapFactor;\
       IDX=IDX<0?0:IDX;\
       IDX=IDX>SPEC->Map->NbPixels-1?SPEC->Map->NbPixels-1:IDX;\
