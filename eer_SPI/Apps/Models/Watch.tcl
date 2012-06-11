@@ -653,7 +653,7 @@ proc Watch::New { { Edit False } } {
 
    #----- Backup pool
    file stat $Param(Path)/$Data(Project)/sim.pool attr
-   file copy $Param(Path)/$Data(Project)/sim.pool $Param(Path)/$Data(Project)/sim.pool.[clock format $attr(ctime) -format "%Y%m%d" -timezone :UTC]
+   file copy -force $Param(Path)/$Data(Project)/sim.pool $Param(Path)/$Data(Project)/sim.pool.[clock format $attr(ctime) -format "%Y%m%d" -timezone :UTC]
 
    Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim] False
 
