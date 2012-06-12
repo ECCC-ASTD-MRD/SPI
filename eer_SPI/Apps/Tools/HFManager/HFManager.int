@@ -180,7 +180,7 @@ proc HFManager::CreateHost { Id } {
    Bubble::Create .hfman.host.$Id.path.del      $Bubble(Del)
    Bubble::Create .hfman.host.$Id.file.sel.list $Bubble(File)
 
-   bind .hfman.host.$Id.file.sel.list <ButtonPress-3>        "HFManager::FilePopup $Id %X %Y"
+   bind .hfman.host.$Id.file.sel.list <ButtonPress-3>        "HFManager::FilePopup $Id %X %Y %y"
    bind .hfman.host.$Id.file.sel.list <Double-ButtonPress-1> "HFManager::HostPath $Id %y"
    bind .hfman.host.$Id.path.wild <Key-Return>               "HFManager::HostFiles $Id"
 }

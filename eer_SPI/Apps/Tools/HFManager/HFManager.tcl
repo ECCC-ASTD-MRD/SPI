@@ -68,8 +68,9 @@ proc HFManager::FileGet { Id } {
    if { [lindex $params 1]=="wget" } {
       set fileindex 3
    } else {
-      set fileindex 8
+      set fileindex end
    }
+puts stderr "$idxs $fileindex"
 
    foreach idx $idxs {
       set file [file tail [lindex [.hfman.host.$Id.file.sel.list get $idx] $fileindex]]
@@ -77,7 +78,7 @@ proc HFManager::FileGet { Id } {
          lappend files $HFManager::Host(Path$Id)/$file
       }
    }
-
+puts stderr "$idxs $files"
    return $files
 }
 
@@ -298,8 +299,13 @@ proc HFManager::FileCommand { Id Command } {
 #
 #-------------------------------------------------------------------------------
 
-proc HFManager::FilePopup { Id X Y } {
+proc HFManager::FilePopup { Id X Y LY } {
    variable Host
+
+   #----- If no selection is made, select the one under the mouse
+   if { ![llength [.hfman.host.$Id.file.sel.list curselection]] } {
+      .hfman.host.$Id.file.sel.list selection set [.hfman.host.$Id.file.sel.list nearest $LY] [.hfman.host.$Id.file.sel.list nearest $LY]
+   }
 
    if { "$Host(Name$Id)"=="" || "$Host(Path$Id)"=="" } {
       .hfmanpopup$Id entryconfigure 0 -state disabled
@@ -496,7 +502,6 @@ proc HFManager::HostPath { Id Y } {
    variable Error
 
    if { $Host(Name$Id)!="" } {
-
       .hfman config -cursor watch
       .hfman.host.$Id.file.sel.list config -cursor watch
       update idletasks
@@ -506,7 +511,7 @@ proc HFManager::HostPath { Id Y } {
 
       set sel [.hfman.host.$Id.file.sel.list get [.hfman.host.$Id.file.sel.list nearest $Y]]
 
-      if { [llength $sel] >= 9 } {
+      if { [llength $sel] >= 8 } {
          set file [lindex $sel 8]
          set link [lindex $sel end]
 
