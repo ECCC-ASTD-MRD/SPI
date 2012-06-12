@@ -23,6 +23,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 set tests {
    {FSTD_Head.tcl DataIn/2005102612_012c}
    {FSTD_Voir.tcl DataIn/2005102612_012c}
+   {FSTD_Voir.tcl goodenough:/home/afsr/005/public_html/SPI/Script/DataIn/2005102612_012c}
    {FSTD_CheckInsideness.tcl DataIn/2005102612_012c DataIn/latlon.txt}
    FSTD_Funcs.tcl
    FSTD_GridFunc.tcl
