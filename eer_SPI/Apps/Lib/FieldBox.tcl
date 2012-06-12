@@ -483,7 +483,8 @@ proc FieldBox::FileOpen { No File } {
    foreach file $File {
 
       #----- Le fichier existe il ???
-      if { ![file exists $file] && [string first : $file]==-1 } {
+      set rem 0
+      if { ![file exists $file] && [set rem [string first : $file]]==-1 } {
          Dialog::Error .fieldbox$No $Error(Exist) "\n\n$file"
          continue
       }
@@ -502,7 +503,7 @@ proc FieldBox::FileOpen { No File } {
 
       #----- Ouvrir le fichier
       set index ""
-      if { [fstdfile is $file] } {
+      if { [fstdfile is $file] || $rem } {
          set bad [catch { set index [fstdfile open $fid read $file] }]
          if { $bad } {
             fstdfile close $fid
