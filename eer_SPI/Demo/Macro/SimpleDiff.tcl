@@ -39,6 +39,10 @@ proc Macro::SimpleDiff::Execute { } {
 #   ProjCam::Set SimpleDiff { 0.0 0.0 1.0 } { 0.0 0.0 2.0 } { 0.0 1.0 0.0 } 2.42073170732 0 0 1 0 0 0 51.8451999041 -101.92600494
 #   ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) SimpleDiff
 
+   #----- Test grid projection
+#   set Viewport::Map(Type) grid
+#   Viewport::Do $Page::Data(Frame)
+
    Macro::Doing "Reading fields"
    fstdfile open DIFF_FILE1 read ../Script/DataIn/2005102612_012
    fstdfield read DIFF_FIELD1 DIFF_FILE1 -1 "" 12000 24 -1 "" ES
@@ -61,6 +65,9 @@ proc Macro::SimpleDiff::Execute { } {
    Macro::Doing "Creating product"
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
    Viewport::Assign   $Page::Data(Frame) $Viewport::Data(VP) DIFF
+
+   #----- Test projection rotation
+#   projcam define $Page::Data(Frame) -circlefrom 90.0 0.0 1.0
 
 #   DataBar::Create $Page::Data(Frame) $Viewport::Data(VP) 5 5 750 60 "Diff between field1 and field2"
    ColorBar::Create $Page::Data(Frame) $Viewport::Data(VP) 5 150 100 250

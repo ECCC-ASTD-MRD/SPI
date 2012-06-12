@@ -43,7 +43,7 @@ namespace eval Macro::JetMapper { } {
 
    set Param(Radius)       20       ;#Radius of the Highs and Lows
    set Param(StreamStop)   70       ;#Minimal windspeed to which stop the streamline
-   set Param(StreamStart)  130      ;#Minimal windspeed to start a streamline
+   set Param(StreamStart)  110      ;#Minimal windspeed to start a streamline
    set Param(StreamLen)    29       ;#Length of arrow sections
    set Param(StreamCut)    4        ;#Length of arrow spacings
    set Param(Intervals)    { -100 -40 -30 -20 -10 0 10 20 30 40 }
@@ -164,7 +164,6 @@ proc Macro::JetMapper::StreamGet { } {
 
       #----- If it's fast enough
       if { $h>=$Param(StreamStart) } {
-
          #----- If it's within the viewport
          set ll [fstdfield stats UU -gridpoint $i $j]
          set xy [$Viewport::Data(VP) -project [lindex $ll 0] [lindex $ll 1] 0.0 False]
