@@ -52,7 +52,7 @@ void main() {
    }
 
    dd=inter.r;
-   idx=Bellow!=0?0.0:-1.0;
+   idx=-1.0;
 
    // If we have intervals, figure out which we fit in
    if (Nb>0) {
@@ -68,19 +68,11 @@ void main() {
       if (dd>inter.r && Above==0)
          discard;
    } else {
-      if (dd<Min) {
-        if (Bellow==0) {
-           discard;
-        } else {
-           idx=0.0;
-        }
-      } else {
-         idx=(dd-Min)/Range;
-      }
+      idx=(dd-Min)/Range;
    }
 
    // Check for colormap limits
-   if (idx<0.0 || idx>1.0) {
+   if ((idx<0.0 && Bellow==0) || (idx>1.0 && Above==0)) {
       discard;
    } else {
       frg=vec4(texture1D(Colormap,idx));

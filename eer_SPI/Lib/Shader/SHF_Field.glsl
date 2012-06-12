@@ -21,7 +21,7 @@ void main() {
    float dd;
 
    dd=Fd;
-   idx=Bellow!=0?0.0:-1.0;
+   idx=-1.0;
 
    if (Nb>0) {
       for(n=0;n<Nb;n++) {
@@ -35,19 +35,11 @@ void main() {
       if (dd>inter.r && Above==0)
          discard;
    } else {
-      if (dd<Min) {
-        if (Bellow==0) {
-           discard;
-        } else {
-           idx=0.0;
-        }
-      } else {
-         idx=(dd-Min)/Range;
-      }
+      idx=(dd-Min)/Range;
    }
 
    // Check for colormap limits
-   if (idx<0.0 || idx>1.0) {
+   if ((idx<0.0 && Bellow==0) || (idx>1.0 && Above==0)) {
       discard;
    } else {
       frg=vec4(texture1D(Colormap,idx));

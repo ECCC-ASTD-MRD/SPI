@@ -27,7 +27,9 @@ catch { SPI::Splash "Loading Widget Package IsoBox 1.0" }
 namespace eval IsoBox {
    global GDefs
    variable Lbl
-   variable Data
+   variable Param
+
+   set Param(File) $GDefs(Dir)/Data/Nuclide.txt
 
    set Lbl(Title)        { "Sélecteur d'isotopes"              "Isotope selector" }
    set Lbl(Symbol)       { "Symbole"                           "Symbol" }
@@ -152,11 +154,11 @@ proc IsoBox::Create { Parent { Command "" } } {
 #-------------------------------------------------------------------------------
 
 proc IsoBox::Get { Iso }  {
-   global GDefs
+   variable Param
 
    set ligne {}
 
-   set ligne [exec egrep -i $Iso $GDefs(Dir)/Data/Specie.src]
+   set ligne [exec egrep -i $Iso $Param(File)]
 
    if { [llength $ligne] } {
       return [list [lindex $ligne 0] [lindex $ligne 10] [lindex $ligne 1] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 14]]
@@ -181,9 +183,10 @@ proc IsoBox::Get { Iso }  {
 
 proc IsoBox::Insert { } {
    global GDefs
+   variable Param
 
-   set f [open $GDefs(Dir)/Data/Specie.src]
-
+   set f [open $Param(File)]
+puts stderr $Param(File)
    set idxname [expr 18 + $GDefs(Lang)]
 
    while { [gets $f ligne]>=0 } {

@@ -19,7 +19,7 @@ if [[ ${GDB_PATH} = "" ]] ; then
 fi
 
 #----- GDAL data
-export GDAL_DATA=${SPI_PATH}/Lib/Data/epsg_csv/
+export GDAL_DATA=${SPI_PATH}/Lib/Data/epsg_csv
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
 export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Lib/Data/table_b_bufr

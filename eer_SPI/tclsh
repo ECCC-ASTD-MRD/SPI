@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-export SPI_PATH=${0%tclsh}
+export SPI_PATH=${0%/tclsh}
 . ${SPI_PATH}/.profile_spi
 
 #----- Force  software GL, usefull for tclsh only script
