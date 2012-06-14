@@ -39,11 +39,8 @@
 
 namespace eval Graph::Time { } {
    variable Lbl
-   variable Msg
 
    set Lbl(Title)     { "Série temporelle" "Time serie" }
-
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
@@ -203,6 +200,9 @@ proc Graph::Time::Clean { GR } {
       foreach field $data(Data$item) {
          fstdfield free [lindex $field 1]
       }
+   }
+   foreach field $data(Tmp) {
+      fstdfield free $field
    }
 }
 
@@ -428,6 +428,7 @@ proc Graph::Time::Init { Frame } {
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
       set Data(Data)            {}        ;#Liste des champs selectionnees
+      set Data(Tmp)             {}        ;#Liste des champs temporaire
       set Data(ObsIds)          {}        ;#Liste des observations selectionnee
       set Data(ObsToken)        ""        ;#Token de recherche
       set Data(Time)            ""
@@ -765,7 +766,7 @@ proc Graph::Time::Update { Frame { GR {} } } {
          #----- Recuperer les donnees
 
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
-            Graph::Time::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) {fstdfield observation}]
+            Graph::Time::Data $gr $Viewport::Data(Data$data(VP))
          }
 
          #----- Update des items
@@ -845,7 +846,6 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
 
 proc Graph::Time::Data { GR { Data { } } { Files { } } } {
    global   GDefs
-   variable Msg
 
    upvar #0 Graph::Time::Time${GR}::Data  data
    upvar #0 Graph::Time::Time${GR}::Graph graph
@@ -854,15 +854,18 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
 
    Graph::Time::Clean $GR
 
-   SPI::Progress 5 [lindex $Msg(Reading) $GDefs(Lang)]
+   SPI::Progress 5 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    #----- Recuperer la suite temporelle pour chaque champs
 
-   set data(Data)   {}
-   set data(ObsIds) {}
-   set nb [expr 95.0/([llength $Data]+1)]
-   set sec ""
-   SPI::Progress +$nb [lindex $Msg(Reading) $GDefs(Lang)]
+   set data(Data)    {}
+   set data(Tmp)     {}
+   set data(ObsIds)  {}
+
+   set nb     [expr 95.0/([llength $Data]+1)]
+   set sec    ""
+   set nbdata 0
+   SPI::Progress +$nb [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    foreach item $Data {
 
@@ -884,11 +887,18 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
 
          set data(Data$item) [MetData::FindAll TIME$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
             -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
+         eval lappend data(Tmp) $data(Data$item)
 
-        FSTD::ParamUpdate $data(Data$item)
+         #----- Check if number of time setp correspond when the calculatro is used
+         if { $nbdata && [llength $data(Data$item)]!=$nbdata && [FieldCalc::IsOperand $data(VP)] } {
+            Dialog::Error $data(Frame) $Graph::Error(NbData)
+            break;
+         }
+         set nbdata [llength $data(Data$item)]
+
+         FSTD::ParamUpdate $data(Data$item)
 
          #---- Trier temporellement les champs
-
          set i 0
          foreach id $data(Data$item) {
             set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
@@ -919,7 +929,40 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
          lappend data(Data)  $item
       }
-      SPI::Progress +$nb "[lindex $Msg(Reading) $GDefs(Lang)] $sec"
+      SPI::Progress +$nb "[lindex $Graph::Msg(Reading) $GDefs(Lang)] $sec"
+   }
+
+   #----- Applique le calcul MACRO au donnees
+   if { [FieldCalc::IsOperand $data(VP)] } {
+
+      #----- Loop on timesteps
+      for { set n 0 } { $n < $nbdata } { incr n } {
+         set lst {}
+
+         foreach item $data(Data) {
+            lappend lst [lindex $data(Data$item) $n 1]
+         }
+         #----- Apply expression to timestep
+         set flds [FieldCalc::Operand $data(VP) $lst GRAPHTIME$n$data(VP)]
+
+         #----- If first loop step, set data list
+         if { $n==0 } {
+            set datas $flds
+            foreach f $datas {
+               set data(Data$f) {}
+            }
+         }
+
+         #----- Create per data time lists
+         set i 0
+         foreach f $datas {
+            set id [lindex $flds $i]
+            set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
+            lappend data(Data$f) [list $sec $id]
+            incr i
+         }
+      }
+      set data(Data) $datas
    }
 
    Graph::ParamsObsSearch Time $GR

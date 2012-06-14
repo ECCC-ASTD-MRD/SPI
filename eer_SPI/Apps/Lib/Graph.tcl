@@ -68,6 +68,7 @@ namespace eval Graph {
    variable Data
    variable Graph
    variable Lbl
+   variable Msg
    variable Error
    variable Item
    variable Bubble
@@ -224,6 +225,10 @@ namespace eval Graph {
    set Lbl(ZType)      { "Elévation" "Height" }
    set Lbl(Angle)      { "Angle" "Angle" }
 
+   #----- Messages
+
+   set Msg(Reading)   { "Lecture des données" "Reading data" }
+
    #----- Bulles d'aides
 
    set Bubble(Back)      { "Paramêtres de l'arrière plan du graph" "Graph background parameters" }
@@ -267,6 +272,7 @@ namespace eval Graph {
    #----- Erreurs
 
    set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. Vérifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
+   set Error(NbData)    { "Les pas de temps entre les items pour le calcul ne correspondent pas" "Time step don't correspond for calculus" }
 }
 
 package require MetStat

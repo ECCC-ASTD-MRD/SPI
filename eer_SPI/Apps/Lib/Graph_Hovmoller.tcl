@@ -39,11 +39,8 @@
 
 namespace eval Graph::Hovmoller { } {
    variable Lbl
-   variable Msg
 
    set Lbl(Title)     { "Hovmoller" "Hovmoller" }
-
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
@@ -213,6 +210,9 @@ proc Graph::Hovmoller::Clean { GR } {
       foreach field $data(Data$item) {
          fstdfield free [lindex $field 1]
       }
+   }
+   foreach field $data(Tmp) {
+      fstdfield free $field
    }
 }
 
@@ -396,8 +396,9 @@ proc Graph::Hovmoller::Init { Frame } {
       set Data(Items)    {}           ;#Liste des items
       set Data(Pos)      {}           ;#Liste des positions
       set Data(Data)     {}           ;#Liste des champs selectionnees
+      set Data(Tmp)      {}           ;#Liste des champs temporaire
       set Data(Proj)     0            ;#Mode projection
-      set Data(ResBest)  True        ;#Selection de la resolution
+      set Data(ResBest)  True         ;#Selection de la resolution
       set Data(Res)      100000       ;#Resolution en metres
       set Data(DCoords)  {}           ;#Liste des longueur des segment
       set Data(Levels)   {}           ;#Liste des niveaux
@@ -722,7 +723,8 @@ proc Graph::Hovmoller::Update { Frame { GR {} } } {
          #----- Recuperer les donnees
 
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
-            Graph::Hovmoller::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) fstdfield]
+            Graph::Hovmoller::Data $gr $Viewport::Data(Data$data(VP))
+#            Graph::Hovmoller::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) fstdfield]
          }
 
          #----- Update des items
@@ -802,7 +804,6 @@ proc Graph::Hovmoller::UpdateItems { Frame { GR { } } } {
 
 proc Graph::Hovmoller::Data { GR { Data { } } { Files { } } } {
    global   GDefs
-   variable Msg
 
    upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
    upvar #0 Graph::Hovmoller::Hovmoller${GR}::Graph graph
@@ -811,55 +812,100 @@ proc Graph::Hovmoller::Data { GR { Data { } } { Files { } } } {
 
    Graph::Hovmoller::Clean $GR
 
-   SPI::Progress 5 [lindex $Msg(Reading) $GDefs(Lang)]
+   SPI::Progress 5 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    #----- Recuperer la suite temporelle pour chaque champs
 
    set data(Data)   {}
    set data(ObsIds) {}
-   set nb [expr 95.0/([llength $Data]+1)]
-   set sec ""
-   SPI::Progress +$nb [lindex $Msg(Reading) $GDefs(Lang)]
+   set nb     [expr 95.0/([llength $Data]+1)]
+   set nbdata 0
+   set sec    ""
+   SPI::Progress +$nb [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    foreach item $Data {
 
-      if { ![llength $Files] } {
-         if { [set box [lindex [fstdfield stats $item -tag] 2]]=="" } {
-               continue
+      if { [fstdfield is $item] } {
+
+         if { ![llength $Files] } {
+            if { [set box [lindex [fstdfield stats $item -tag] 2]]=="" } {
+                  continue
+            }
+            set fids [FieldBox::GetFID $box]
+         } else {
+            set fids $Files
          }
-         set fids [FieldBox::GetFID $box]
-      } else {
-         set fids $Files
+
+         if { $Graph::Data(IP3) } {
+            set ip3 [fstdfield define $item -IP3]
+         } else {
+            set ip3 -1
+         }
+
+         set data(Data$item) [MetData::FindAll HOVMOLLER$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
+            -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
+         eval lappend data(Tmp) $data(Data$item)
+
+         #----- Check if number of time setp correspond when the calculatro is used
+         if { $nbdata && [llength $data(Data$item)]!=$nbdata && [FieldCalc::IsOperand $data(VP)] } {
+            Dialog::Error $data(Frame) $Graph::Error(NbData)
+            break;
+         }
+         set nbdata [llength $data(Data$item)]
+
+         #----- Set the interpolation degree to the same
+
+         set interp [fstdfield configure $item -interpdegree]
+         foreach field $data(Data$item) {
+            fstdfield configure $field -interpdegree $interp
+         }
+
+         #---- Trier temporellement les champs
+
+         set i 0
+         foreach id $data(Data$item) {
+            set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
+            lset data(Data$item) $i "$sec $id"
+            incr i
+         }
+         set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
+         lappend data(Data) $item
       }
 
-      if { $Graph::Data(IP3) } {
-         set ip3 [fstdfield define $item -IP3]
-      } else {
-         set ip3 -1
+      SPI::Progress +$nb "[lindex $Graph::Msg(Reading) $GDefs(Lang)] $sec"
+   }
+
+   #----- Applique le calcul MACRO au donnees
+   if { [FieldCalc::IsOperand $data(VP)] } {
+
+      #----- Loop on timesteps
+      for { set n 0 } { $n < $nbdata } { incr n } {
+         set lst {}
+
+         foreach item $data(Data) {
+            lappend lst [lindex $data(Data$item) $n 1]
+         }
+         #----- Apply expression to timestep
+         set flds [FieldCalc::Operand $data(VP) $lst GRAPHTIME$n$data(VP)]
+
+         #----- If first loop step, set data list
+         if { $n==0 } {
+            set datas $flds
+            foreach f $datas {
+               set data(Data$f) {}
+            }
+         }
+
+         #----- Create per data time lists
+         set i 0
+         foreach f $datas {
+            set id [lindex $flds $i]
+            set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
+            lappend data(Data$f) [list $sec $id]
+            incr i
+         }
       }
-
-      set data(Data$item) [MetData::FindAll HOVMOLLER$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
-         -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
-
-      #----- Set the interpolation degree to the same
-
-      set interp [fstdfield configure $item -interpdegree]
-      foreach field $data(Data$item) {
-         fstdfield configure $field -interpdegree $interp
-      }
-
-      #---- Trier temporellement les champs
-
-      set i 0
-      foreach id $data(Data$item) {
-         set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
-         lset data(Data$item) $i "$sec $id"
-         incr i
-      }
-      set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
-      lappend data(Data) $item
-
-      SPI::Progress +$nb "[lindex $Msg(Reading) $GDefs(Lang)] $sec"
+      set data(Data) $datas
    }
 
    SPI::Progress 0

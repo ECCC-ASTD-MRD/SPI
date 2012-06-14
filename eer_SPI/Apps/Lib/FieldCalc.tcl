@@ -910,6 +910,7 @@ proc FieldCalc::InsertOperator { Op } {
 # Parametres :
 #   <VP>     : Identificateur du viewport
 #   <Fields> : Liste des champs disponibles
+#   <Result> : Nom du champ resultant
 #
 # Retour:
 #   <List>   : Liste des donnees
@@ -922,21 +923,33 @@ proc FieldCalc::InsertOperator { Op } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::Operand { VP Fields } {
+proc FieldCalc::IsOperand { VP } {
+
+   if { [info exists ::Viewport::Data(Operand$VP)] && [string trim $Viewport::Data(Operand$VP)]!="" } {
+      return True
+   }
+   return False
+}
+
+proc FieldCalc::Operand { VP Fields { Result "" }} {
    global   GDefs
    variable Error
    variable Data
 
+   if { $Result=="" } {
+      set Result CALC$VP
+   }
+
    #----- Cleanup existing operand result
-   if { [fstdfield is CALC$VP] } {
-      fstdfield free CALC$VP
-      FSTD::UnRegister CALC$VP False
+   if { [fstdfield is $Result] } {
+      fstdfield free $Result
+      FSTD::UnRegister $Result False
    }
 
    catch { .fieldcalc.expr.save configure -state disabled; .fieldcalc.expr.param configure -state disabled }
 
    #----- If no operand vailable, do nothing
-   if { ![info exists ::Viewport::Data(Operand$VP)] || [string trim $Viewport::Data(Operand$VP)]=="" } {
+   if { ![FieldCalc::IsOperand $VP] } {
       return $Fields
    }
 
@@ -996,7 +1009,7 @@ proc FieldCalc::Operand { VP Fields } {
    #----- Check that we have enough fields
 
    if { !$nout && $expr!="" } {
-      set res [vexpr CALC$VP $expr]
+      set res [vexpr $Result $expr]
       if { ![fstdfield is $res] } {
          Dialog::Info . $Error(Operand) $res
          set data $Fields

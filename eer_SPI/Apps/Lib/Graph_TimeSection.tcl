@@ -39,11 +39,8 @@
 
 namespace eval Graph::TimeSection { } {
    variable Lbl
-   variable Msg
 
    set Lbl(Title)     { "Profil temporel" "Time profile" }
-
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
@@ -466,6 +463,7 @@ proc Graph::TimeSection::Init { Frame } {
       set Data(Items)  {}        ;#Liste des items
       set Data(Pos)    {}        ;#Liste des positions
       set Data(Data)   {}        ;#Liste des champs selectionnees
+      set Data(Tmp)    {}        ;#Liste des champs temporaire
 
       set Data(Dates)  {}
       set Data(Levels) {}
@@ -854,7 +852,6 @@ proc Graph::TimeSection::UpdateItems { Frame { GR { } } } {
 
 proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
    global   GDefs
-   variable Msg
 
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
    upvar #0 Graph::TimeSection::TimeSection${GR}::Graph graph
@@ -889,10 +886,10 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
             set ip3 -1
          }
 
-         SPI::Progress 0 [lindex $Msg(Reading) $GDefs(Lang)]
+         SPI::Progress 0 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
          set lst [MetData::FindAll TIMESECTION$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
             -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
-         SPI::Progress 5 [lindex $Msg(Reading) $GDefs(Lang)]
+         SPI::Progress 5 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
          set nb [expr 95.0/[llength $lst]]
 
          #----- Set the interpolation degree to the same
@@ -922,7 +919,7 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
             } else {
                fstdfield free $id
             }
-            SPI::Progress +$nb "[lindex $Msg(Reading) $GDefs(Lang)] $sec"
+            SPI::Progress +$nb "[lindex $Graph::Msg(Reading) $GDefs(Lang)] $sec"
          }
          set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
          lappend data(Data) $item

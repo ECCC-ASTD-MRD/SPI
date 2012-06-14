@@ -39,10 +39,8 @@
 
 namespace eval Graph::Profile { } {
    variable Lbl
-   variable Msg
 
    set Lbl(Title)     { "Profil vertical" "Vertical profile" }
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
@@ -388,6 +386,7 @@ proc Graph::Profile::Init { Frame } {
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
       set Data(Data)            {}        ;#Liste des champs selectionnees
+      set Data(Tmp)             {}        ;#Liste des champs temporaire
       set Data(ObsIds)          {}        ;#Liste des positions observations
       set Data(ObsToken)        ""        ;#Token de recherche
 
@@ -729,7 +728,6 @@ proc Graph::Profile::Update { Frame { GR {} } } {
                Graph::Profile::Data $gr $Animator::Play(Data$data(VP))
             } else {
                Graph::Profile::Data $gr $Viewport::Data(Data$data(VP))
-               set list $Viewport::Data(Data$data(VP))
             }
          }
          #----- Update des items
@@ -807,11 +805,10 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
 
 proc Graph::Profile::Data { GR Data } {
    global   GDefs
-   variable Msg
 
    upvar #0 Graph::Profile::Profile${GR}::Data  data
 
-   SPI::Progress 0 [lindex $Msg(Reading) $GDefs(Lang)]
+   SPI::Progress 0 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    #----- Recuperer les champs correspondants du viewport actif
 
@@ -852,7 +849,7 @@ proc Graph::Profile::Data { GR Data } {
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
          lappend data(Data) $item
       }
-      SPI::Progress +$nb  [lindex $Msg(Reading) $GDefs(Lang)]
+      SPI::Progress +$nb  [lindex $Graph::Msg(Reading) $GDefs(Lang)]
    }
    Graph::ParamsObsSearch Profile $GR
 

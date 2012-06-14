@@ -39,11 +39,8 @@
 
 namespace eval Graph::Section { } {
    variable Lbl
-   variable Msg
 
    set Lbl(Title)     { "Coupe verticale" "Vertical cross-section" }
-
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
 }
 
 #----------------------------------------------------------------------------
@@ -368,8 +365,9 @@ proc Graph::Section::Init { Frame } {
       set Data(Items)    {}           ;#Liste des items
       set Data(Pos)      {}           ;#Liste des positions
       set Data(Data)     {}           ;#Liste des champs selectionnees
+      set Data(Tmp)      {}           ;#Liste des champs temporaire
       set Data(Proj)     0            ;#Mode projection
-      set Data(ResBest)  True        ;#Selection de la resolution
+      set Data(ResBest)  True         ;#Selection de la resolution
       set Data(Res)      100000       ;#Resolution en metres
       set Data(DCoords)  {}           ;#Liste des longueur des segment
       set Data(Levels)   {}           ;#Liste des niveaux
@@ -775,12 +773,11 @@ proc Graph::Section::UpdateItems { Frame { GR { } } } {
 
 proc Graph::Section::Data { GR Data } {
    global GDefs
-   variable Msg
 
    upvar #0 Graph::Section::Section${GR}::Data  data
    upvar #0 Graph::Section::Section${GR}::Graph graph
 
-   SPI::Progress 0 [lindex $Msg(Reading) $GDefs(Lang)]
+   SPI::Progress 0 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    #----- Recuperer les champs correspondants du viewport actif
 
