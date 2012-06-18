@@ -1167,7 +1167,7 @@ proc Exp::ProductRSMCFax { } {
 
    set path $Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin
 
-   Dialog::Wait . $Msg(Fax) "\n\n\t$path/rsmc_fax.ps"
+   Dialog::Wait . $Msg(Fax) "\n\n\t$path/rsmc.ps"
 
    set nbre [lindex [exec wc -w $path/IP2List.txt] 0]
 
@@ -1179,9 +1179,9 @@ proc Exp::ProductRSMCFax { } {
       set LTD "$LTD $path/LTDCA_0${no}.ps"
    }
 
-   eval exec cat $path/CVRCA.ps $path/LTJCA.ps $LIC $LTD > $path/rsmc_fax.ps
+   eval exec cat $path/CVRCA.ps $path/LTJCA.ps $LIC $LTD > $path/rsmc.ps
 
-   exec chmod 644 $path/rsmc_fax.ps
+   exec chmod 644 $path/rsmc.ps
 
    Dialog::WaitDestroy
    . config -cursor left_ptr

@@ -96,9 +96,9 @@
 #
 #===============================================================================
 
-package provide CanvasShape 1.3
+package provide CanvasShape 1.4
 
-catch { SPI::Splash "Loading Canvas Package CanvasShape 1.3" }
+catch { SPI::Splash "Loading Canvas Package CanvasShape 1.4" }
 
 image create photo COMPASSFRAME   -file $GDefs(Dir)/Resources/Image/System/CompassFrame.gif
 image create photo COMPASSDIR     -file $GDefs(Dir)/Resources/Image/System/CompassDir.gif

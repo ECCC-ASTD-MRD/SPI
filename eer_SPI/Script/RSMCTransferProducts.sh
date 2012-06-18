@@ -45,8 +45,7 @@ cd ${DirData}
 
 chmod 644 CA_DATE.TXT CVRCA* LTJCA* S*.gif L*.gif traject.points
 
-#----- concatene nos fichiers postscripts en un seul fichier 'rsmc.ps'
-#      pour les besoins de ARL et un fichier 'rsmc_fax.ps' pour
+#----- concatene nos fichiers postscripts en un seul fichier 'rsmc.ps' pour
 #      le faxage automatique.
 
 i=1
@@ -62,11 +61,8 @@ do
    i=`expr $i + 1`
 done
 
-cat LTJCA.ps CVRCA.ps $listeic $listetd > rsmc.ps
+cat CVRCA.ps LTJCA.ps $listeic $listetd > rsmc.ps
 chmod 644 rsmc.ps
-
-cat CVRCA.ps LTJCA.ps $listeic $listetd > rsmc_fax.ps
-chmod 644 rsmc_fax.ps
 
 #----- copie les produits sur notre serveur au CMC.
 

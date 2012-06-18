@@ -254,7 +254,7 @@ proc RSMC::LayoutInit { Frame } {
       $Page(Border) $Page(Border) -fill black -tags defs
 
    #----- Afficher l'identification de la source
-   $canvas create bitmap [expr $Page(Border)+220] [expr $Page(Border)+22] -bitmap $Ico(Nuclear) -foreground black -tags FIX
+   $canvas create image [expr $Page(Border)+220] [expr $Page(Border)+22] -image ICO_NUCL -tags FIX
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+10] -font XFont12 -anchor w -text "" -tags RSMCSOURCE
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+22] -font XFont12 -anchor w -text "" -tags RSMCLOC
    $canvas create text [expr $Page(Border)+240] [expr $Page(Border)+34] -font XFont12 -anchor w -text "" -tags RSMCRELEASE
@@ -916,7 +916,7 @@ proc RSMC::UpdateItems { Frame } {
 
    foreach lat $Sim(Lat) lon $Sim(Lon) {
       if { [set xy [$Page(VP) -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
-         $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap $Ico(Nuclear) -foreground black -tags LAYOUTRSMC
+         $Frame.page.canvas create image [lindex $xy 0] [lindex $xy 1] -image ICO_NUCL -tags LAYOUTRSMC
       }
    }
 
