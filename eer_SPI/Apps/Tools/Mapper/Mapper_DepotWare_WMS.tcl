@@ -141,6 +141,9 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
          gdalband configure $band -texres 3
          gdalband define $band -date $Data(Time)
 
+         #----- Get legend
+         Mapper::DepotWare::WMS::GetLegend $band [lindex [lindex $Data(Styles) 0] end]
+
          #----- Get associated metadata if any
          if { [llength $Data(Meta)] } {
             if { ![catch { set req [http::geturl $Data(Meta) -blocksize 1048580] }] } {
@@ -327,7 +330,21 @@ proc Mapper::DepotWare::WMS::ParseMeta { Node } {
 proc Mapper::DepotWare::WMS::ParseStyle { Node } {
    variable Data
 
-   lappend Data(Styles) [list [[[$Node getElementsByTagName Name] firstChild] nodeValue] [[[$Node getElementsByTagName Title] firstChild] nodeValue]]
+   set name ""
+   set title ""
+   set abstract ""
+   set legend ""
+
+   foreach node [$Node childNodes] {
+      switch [$node nodeName] {
+         Name      { set name [[$node firstChild] nodeValue] }
+         Title     { set title [[$node firstChild] nodeValue] }
+         Abstract  { set abstract [[$node firstChild] nodeValue] }
+         LegendURL { set legend [[$node getElementsByTagName OnlineResource] getAttribute xlink:href] }
+
+      }
+   }
+   lappend Data(Styles)  [list $name $title $abstract $legend]
 }
 
 #-------------------------------------------------------------------------------
@@ -442,6 +459,23 @@ proc Mapper::DepotWare::WMS::ParseLatLonBoundingBox { Node } {
       [$Node getAttribute maxx] [$Node getAttribute miny]]
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::WMS::ReLoad>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Relire une bande avec un nouveau style ou nouvelle dimension.
+#
+# Parametres :
+#  <Layer>   : Couche
+#  <Style>   : Style
+#  <Time>    : Time in seconds
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
 proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
    variable Data
 
@@ -462,16 +496,66 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
    set Mapper::Data(Alpha) $Mapper::Data(Band3$band)
    set Mapper::Data(BandX) $Mapper::Data(BandX$band)
    set Mapper::Data(BandY) $Mapper::Data(BandY$band)
+   set Mapper::Data(Style) $Style
 
    Mapper::ParamsGDALSet $band False
 
    #----- Decrease effective resolution (WMS-TMS)
-   gdalband configure $band -sizevar $Style
    gdalband define $band -date $Data(Time)
 
    Mapper::ParamsGDAL $band 0
 
+   #----- Get legend
+   if { [set idx [lsearch -index 0 $Data(Styles) $Style]]!=-1 } {
+      Mapper::DepotWare::WMS::GetLegend $band [lindex [lindex $Data(Styles) $idx] end]
+   }
+
    Page::Update $Page::Data(Frame)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::GetLegend>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer l'image de la legend et l'afficher.
+#
+# Parametres :
+#  <Band>    : Bande
+#  <URL>     : URL de la legende
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
+
+   if { $URL!="" } {
+      #----- get the data from the url and save to tempdir
+      set req [http::geturl $URL -blocksize 1048580]
+      set f [open /tmp/lg[pid] w]
+      puts $f [http::data $req]
+      close $f
+
+      #----- Read the legend with gdal
+      set bands [gdalfile open LGFILE read /tmp/lg[pid]]
+      gdalband read LG $bands
+
+      #----- Extract tk image from gdal image
+      set tag WMSLEGEND[string map { % "" . "" " " "" \' " " \" " " } $Band]
+      catch { $Page::Data(Canvas) itemconfigure $tag -image "" }
+      image create photo $tag
+
+      gdalband stat LG -image $tag
+      gdalband free LG
+      gdalfile close LGFILE
+
+      #----- Display legend with bindings
+      $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
+      Shape::BindDestroy $Page::Data(Canvas) $tag
+      Shape::BindMove $Page::Data(Canvas) $tag
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -495,17 +579,17 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
 proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    variable Data
 
-   set url        [lindex $Data($Layer) 0]
-   set layer      [lindex $Data($Layer) 2]
-   set geog       [lindex $Data($Layer) 4]
-   set sizex      [lindex $Data($Layer) 5]
-   set sizey      [lindex $Data($Layer) 6]
-   set format     [lindex $Data($Layer) 7]
-   set styles     [lindex $Data($Layer) 8]
-   set times      [lindex $Data($Layer) 9]
-   set opaque     [lindex $Data($Layer) 10]
-   set cache      [lindex $Data($Layer) 11]
-   set Data(Meta) [lindex $Data($Layer) 12]
+   set url          [lindex $Data($Layer) 0]
+   set layer        [lindex $Data($Layer) 2]
+   set geog         [lindex $Data($Layer) 4]
+   set sizex        [lindex $Data($Layer) 5]
+   set sizey        [lindex $Data($Layer) 6]
+   set format       [lindex $Data($Layer) 7]
+   set Data(Styles) [lindex $Data($Layer) 8]
+   set times        [lindex $Data($Layer) 9]
+   set opaque       [lindex $Data($Layer) 10]
+   set cache        [lindex $Data($Layer) 11]
+   set Data(Meta)   [lindex $Data($Layer) 12]
 
    #----- Check for transparency
    if { $opaque==0 } {
@@ -566,4 +650,10 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    close $f
 
    return $file
+}
+
+proc Mapper::DepotWare::WMS::GetFeatureInfo { Layer X Y } {
+   variable Data
+
+#   puts stderr [gdalband stats $Layer GetMetadataItem("Pixel_iCol_iLine", "LocationInfo")]
 }

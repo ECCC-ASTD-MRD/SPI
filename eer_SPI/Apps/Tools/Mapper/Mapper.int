@@ -461,7 +461,7 @@ proc Mapper::ParamsGDAL { Object Tab } {
                   pack $Data(Frame2).col.def.nodata.sel -side left -fill x -expand True
                frame $Data(Frame2).col.def.style
                   label $Data(Frame2).col.def.style.lbl -text [lindex $Lbl(Style) $GDefs(Lang)] -width 14 -anchor w
-                  ComboBox::Create $Data(Frame2).col.def.style.sel Mapper::Data(Style) noedit unsorted nodouble -1 $Data(Styles) 1 8 { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] }
+                  ComboBox::Create $Data(Frame2).col.def.style.sel Mapper::Data(Style) noedit unsorted nodouble -1 $Data(Styles) 1 8 { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::Data(Style) }
                   pack $Data(Frame2).col.def.style.lbl -side left
                   pack $Data(Frame2).col.def.style.sel -side left -fill x -expand True
                pack $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
@@ -724,7 +724,9 @@ proc Mapper::ParamsGDAL { Object Tab } {
    if { [info exists ::Mapper::DepotWare::WMS::Data($wms)] } {
 
       #----- Styles management
-      set Data(Styles) [lindex $Mapper::DepotWare::WMS::Data($wms) 8]
+      foreach style [lindex $Mapper::DepotWare::WMS::Data($wms) 8] {
+         lappend Data(Styles) [lindex $style 0]
+      }
       ComboBox::DelAll  $Data(Frame2).col.def.style.sel False
       ComboBox::AddList $Data(Frame2).col.def.style.sel $Data(Styles)
       pack $Data(Frame2).col.def.style -after $Data(Frame2).col.def.nodata -side top -fill x
@@ -742,8 +744,8 @@ proc Mapper::ParamsGDAL { Object Tab } {
          set Data(Secs)  [gdalband define $Object -date]
 
          #----- Use bind instead of -command to activate only on button release
-         bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] $Mapper::Data(Secs); update idletasks }
-         bind $Data(Frame1).time.scale <ButtonRelease-2>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) [lindex $Mapper::Data(Style) 0] $Mapper::Data(Secs); update idletasks }
+         bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::Data(Style) $Mapper::Data(Secs); update idletasks }
+         bind $Data(Frame1).time.scale <ButtonRelease-2>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::Data(Style) $Mapper::Data(Secs); update idletasks }
          pack $Data(Frame1).time -after $Data(Frame1).proj -side top -fill x -padx 5 -pady 5 -ipady 2
       }
     } else {

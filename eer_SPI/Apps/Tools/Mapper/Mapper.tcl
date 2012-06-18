@@ -59,24 +59,10 @@ proc Mapper::Close { } {
 
          #----- Unassign from projection
          set objects $Viewport::Data(Data$frame)
-         set Viewport::Data(Data$frame) {}
-         Mapper::UpdateData $frame
 
          #----- Free data objects
          foreach object $objects {
-            if { [gdalband is $object] && [info exists Mapper::Data(Id$object)] } {
-               gdalband free $object
-               gdalfile close $Data(Id$object)
-               ogrgeometry free MASK$object  MASKRING$object
-            } elseif { [ogrlayer is $object] && [info exists Mapper::Data(Id$object)] } {
-               ogrlayer free $object
-               ogrfile close $Data(Id$object)
-            } elseif { [model is $object] } {
-               model free $object
-            }
-            if { [colormap is $object] } {
-               colormap free $object
-            }
+            Mapper::Del $object $frame
          }
       }
    }
@@ -189,6 +175,8 @@ proc Mapper::Scroll { Side } {
 # But      : Supprimer un objet geographique de la liste d'affichage.
 #
 # Parametres :
+#   <Object> : Object to delete
+#   <Frame>  : Page contenant l'objet
 #
 # Retour    :
 #
@@ -196,30 +184,45 @@ proc Mapper::Scroll { Side } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Del { } {
+proc Mapper::Del { { Object "" } { Frame "" } } {
    variable Data
 
-   if { [set idx [$Data(Tab1).select.list curselection]]!="" } {
-      set object [$Data(Tab1).select.list get $idx]
-
-      set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
-      Mapper::UpdateData $Page::Data(Frame)
-
-      if { [gdalband is $object] } {
-         gdalband free $object
-         gdalfile close $Data(Id$object)
-         ogrgeometry free MASK$object  MASKRING$object
-      } elseif { [ogrlayer is $object] } {
-         ogrlayer free $object
-         ogrfile close $Data(Id$object)
-      } elseif { [model is $object] } {
-         model free $object
+   set idx 0
+   if { $Object=="" } {
+      if { [set idx [$Data(Tab1).select.list curselection]]!="" } {
+         set Object [$Data(Tab1).select.list get $idx]
       }
-      if { [colormap is $object] } {
-         colormap free $object
+   }
+
+   if { $Frame=="" } {
+      set Frame $Page::Data(Frame)
+   }
+
+   if { $Object!="" } {
+      set Viewport::Data(Data$Frame) [lreplace $Viewport::Data(Data$Frame) $idx $idx]
+      Mapper::UpdateData $Frame
+
+      if { [gdalband is $Object] && [info exists Mapper::Data(Id$Object)]} {
+         gdalband free $Object
+         gdalfile close $Data(Id$Object)
+         ogrgeometry free MASK$Object  MASKRING$Object
+
+         set tag WMSLEGEND[string map { % "" . "" " " "" \' " " \" " " } $Object]
+         Shape::UnBind $Frame.page.canvas $tag
+         $Frame.page.canvas delete $tag
+         catch { image delete $tag }
+
+      } elseif { [ogrlayer is $Object] } {
+         ogrlayer free $Object
+         ogrfile close $Data(Id$Object)
+      } elseif { [model is $Object] } {
+         model free $Object
+      }
+      if { [colormap is $Object] } {
+         colormap free $Object
       }
 
-      if { $object==$Data(Object) } {
+      if { $Object==$Data(Object) } {
          destroy .mapperparams
       }
    }
@@ -1136,6 +1139,12 @@ proc Mapper::DrawInit  { Frame VP } {
 
    set Data(InfoId)  ""
    set Data(InfoObs) ""
+
+#----- WMS getFeatureInfo For GDAL2.0
+#   set object [lindex $Viewport::Data(Data) 0]
+#   if { [info exists ::Mapper::DepotWare::WMS::Data($object)] } {
+#      puts stderr $object
+#   }
 
    Mapper::PickOGR $VP $Viewport::Map(X) $Viewport::Map(Y)
 }
