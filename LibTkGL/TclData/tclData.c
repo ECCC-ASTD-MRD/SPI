@@ -1287,7 +1287,7 @@ int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
  * Nom      : <Data_GetImage>
  * Creation : Janvier 2005 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Recuperer une image d'un champs (snapshot).
+ * But      : Recuperer une image Tk d'un champs (snapshot).
  *
  * Parametres     :
  *  <Interp>      : Interpreteur TCL
@@ -1353,7 +1353,9 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
       }
 
       /*Envoyer le data dans l'image Tk*/
-      Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+      if (Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET)==TCL_ERROR) {
+         return(TCL_ERROR);
+      }
 
       free(data.pixelPtr);
    }

@@ -2029,7 +2029,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
-      c_fstluk(field->Def->Data[idx],h.KEY,&ni,&nj,&nk);
+      if (c_fstluk(field->Def->Data[idx],h.KEY,&ni,&nj,&nk)<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
+         EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,file);
+         return(TCL_ERROR);
+      }
       strcpy(h.NOMVAR,uvw->UU);
 
       if (uvw->UU && idx!=0) {
@@ -2045,7 +2050,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fstluk(field->Def->Data[0],ok,&ni,&nj,&nk);
+            if (c_fstluk(field->Def->Data[0],ok,&ni,&nj,&nk)<0) {
+               Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
+               EZUnLock_RPNField();
+               FSTD_FileUnset(Interp,file);
+               return(TCL_ERROR);
+            }
          }
       }
       if (uvw->VV && idx!=1) {
@@ -2061,7 +2071,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fstluk(field->Def->Data[1],ok,&ni,&nj,&nk);
+            if (c_fstluk(field->Def->Data[1],ok,&ni,&nj,&nk)<0) {
+               Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
+               EZUnLock_RPNField();
+               FSTD_FileUnset(Interp,file);
+               return(TCL_ERROR);
+            }
          }
       }
       if (uvw->WW && idx!=2) {
@@ -2077,7 +2092,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fstluk(field->Def->Data[2],ok,&ni,&nj,&nk);
+            if (c_fstluk(field->Def->Data[2],ok,&ni,&nj,&nk)<0) {
+               Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
+               EZUnLock_RPNField();
+               FSTD_FileUnset(Interp,file);
+               return(TCL_ERROR);
+            }
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(field->Def);i++) {
                   field->Def->Data[2][i]*=uvw->WWFactor;
@@ -2090,11 +2110,17 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       field=Data_Valid(Interp,Name,ni,nj,nk,1,dtype);
       if (!field) {
          EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
       }
 
       /*Recuperer les donnees du champs*/
-      c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk);
+      if (c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk)<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
+         EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,file);
+         return(TCL_ERROR);
+      }
    }
 
    /*Check for mask*/
@@ -2359,7 +2385,14 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    for(k=0;k<Field->Def->NK;k++) {
       idx=FSIZE2D(Field->Def)*tmp[k];
       Def_Pointer(Field->Def,0,idx,p);
-      c_fstluk(p,idxs[k],&ni,&nj,&idump);
+
+      /*Recuperer les donnees du champs*/
+      if (c_fstluk(p,idxs[k],&ni,&nj,&idump)<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find read field data (c_fstluk failed)",(char*)NULL);
+         EZUnLock_RPNField();
+         FSTD_FileUnset(Interp,head->FID);
+         return(0);
+      }
 
       /*Recuperer le data seulement*/
       ok=c_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
@@ -2421,7 +2454,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 
    Data_GetStat(Field);
 #endif
-   return 1;
+   return(1);
 }
 
 /*----------------------------------------------------------------------------

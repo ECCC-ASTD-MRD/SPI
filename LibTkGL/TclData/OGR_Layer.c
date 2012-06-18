@@ -367,7 +367,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             if (Objc>1) {
                t=OGR_LayerSelect(Interp,layer,Objv[++i]);
 
-               /*If ther is a sort applied, refresh it*/
+               /*If there is a sort applied, refresh it*/
                if (layer->Sort.Field>-1) {
                   QSort_Layer=layer;
                   qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);

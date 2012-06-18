@@ -1469,6 +1469,97 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <GDALBand_GetImage>
+ * Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Recuperer une image Tk d'une bande.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Band>        : Bande
+ *  <Img>         : Image
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
+
+   unsigned int x,y,idx,nidx,val;
+
+   Tk_PhotoImageBlock data;
+   Tk_PhotoHandle     handle;
+
+   if (!Band) {
+      Tcl_AppendResult(Interp,"GDALBand_GetImage: Invalid band",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   /*Recuperer le handle de l'image specifie*/
+   handle=Tk_FindPhoto(Interp,Img);
+
+   /*Definir les parametres du bock de donnees*/
+   if (Tk_PhotoSetSize(Interp,handle,Band->Def->NI,Band->Def->NJ)==TCL_ERROR) {
+      return(TCL_ERROR);
+   }
+   Tk_PhotoGetImage(handle,&data);
+
+   data.pitch=Band->Def->NI*4;
+   data.pixelSize=4;
+   data.offset[0]=0;
+   data.offset[1]=1;
+   data.offset[2]=2;
+   data.offset[3]=3;
+
+   idx=nidx=0;
+   for(y=0;y<Band->Def->NJ;y++) {
+      for(x=0;x<Band->Def->NI;x++) {
+         Def_Get(Band->Def,0,nidx,val);
+
+         if (Band->Def->NC==1) {
+            if (Band->Spec->Map) {
+               data.pixelPtr[idx++]=Band->Spec->Map->Color[val][0];
+               data.pixelPtr[idx++]=Band->Spec->Map->Color[val][1];
+               data.pixelPtr[idx++]=Band->Spec->Map->Color[val][2];
+               data.pixelPtr[idx++]=Band->Spec->Map->Color[val][3];
+            } else {
+               data.pixelPtr[idx++]=val;
+               data.pixelPtr[idx++]=val;
+               data.pixelPtr[idx++]=val;
+               data.pixelPtr[idx++]=255;
+            }
+         } else if (Band->Def->NC==2) {
+            data.pixelPtr[idx++]=val;
+            data.pixelPtr[idx++]=val;
+            data.pixelPtr[idx++]=val;
+            Def_Get(Band->Def,1,nidx,data.pixelPtr[idx++]);
+         } else if (Band->Def->NC==3) {
+            data.pixelPtr[idx++]=val;
+            Def_Get(Band->Def,1,nidx,data.pixelPtr[idx++]);
+            Def_Get(Band->Def,2,nidx,data.pixelPtr[idx++]);
+            data.pixelPtr[idx++]=255;
+         } else {
+            data.pixelPtr[idx++]=val;
+            Def_Get(Band->Def,1,nidx,data.pixelPtr[idx++]);
+            Def_Get(Band->Def,2,nidx,data.pixelPtr[idx++]);
+            Def_Get(Band->Def,3,nidx,data.pixelPtr[idx++]);
+         }
+         nidx++;
+      }
+   }
+
+   /*Envoyer le data dans l'image Tk*/
+   if (Tk_PhotoPutBlock(Interp,handle,&data,0,0,Band->Def->NI,Band->Def->NJ,TK_PHOTO_COMPOSITE_SET)==TCL_ERROR) {
+      return(TCL_ERROR);
+   }
+
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Murphy_WideLine>
  * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
  *
@@ -2092,9 +2183,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
-   static CONST char *sopt[] = { "-tag","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
+   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
       "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim",NULL };
-   enum        opt {  TAG,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM };
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2142,6 +2233,20 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      GDALSetRasterNoDataValue(band->Band[c],band->Def->NoData);
                }
             }
+            break;
+
+         case COMPONENT:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(DSIZE(band->Def->Data)));
+            }
+            break;
+
+         case IMAGE:
+            if(Objc!=2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"image");
+               return(TCL_ERROR);
+            }
+            return GDALBand_GetImage(Interp,band,Tcl_GetString(Objv[++i]));
             break;
 
          case HISTOGRAM:
