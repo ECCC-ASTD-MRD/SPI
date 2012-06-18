@@ -863,8 +863,9 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
    set data(ObsIds)  {}
 
    set nb     [expr 95.0/([llength $Data]+1)]
-   set sec    ""
    set nbdata 0
+   set sec    -1
+
    SPI::Progress +$nb [lindex $Graph::Msg(Reading) $GDefs(Lang)]
 
    foreach item $Data {

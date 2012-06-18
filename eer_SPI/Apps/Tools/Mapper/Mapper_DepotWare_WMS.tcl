@@ -551,6 +551,9 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
       gdalband free LG
       gdalfile close LGFILE
 
+      #----- Get rid of temporary file
+      file delete -force /tmp/lg[pid]
+
       #----- Display legend with bindings
       $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
       Shape::BindDestroy $Page::Data(Canvas) $tag

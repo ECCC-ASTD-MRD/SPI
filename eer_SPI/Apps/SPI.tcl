@@ -786,7 +786,7 @@ proc SPI::LayoutSaveItems { Frame File } {
       set y1 [expr $y0+[lindex [$Frame.page.canvas itemconfigure TRAJGRAPH -height] end]]
       puts $File "   Trajectory::Graph \$Frame $x0 $y0 $x1 $y1 \$Trajectory::Data(List)"
       puts $File "   Shape::BindMove  \$Frame.page.canvas TRAJGRAPH"
-      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJGRAPH $x1 $y1 \"Trajectory::GraphScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
+      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJGRAPH \"Trajectory::GraphScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
    }
 
    if { $SPI::Data(ShowTrajHeight$Frame) } {
@@ -795,7 +795,7 @@ proc SPI::LayoutSaveItems { Frame File } {
       set c [$Frame.page.canvas coords TRAJHEIGHTFRAME]
       puts $File "   Trajectory::Height \$Frame [lindex $c 0] [lindex $c 1] [lindex $c 2] [lindex $c 3] \$Trajectory::Data(List)"
       puts $File "   Shape::BindMove  \$Frame.page.canvas TRAJHEIGHT"
-      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJHEIGHT [lindex $c 2]  [lindex $c 3] \"Trajectory::HeightScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
+      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJHEIGHT \"Trajectory::HeightScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
    }
 
    if { $SPI::Data(ShowTrajLegend$Frame) } {
@@ -804,7 +804,7 @@ proc SPI::LayoutSaveItems { Frame File } {
       set c [$Frame.page.canvas coords TRAJLEGENDFRAME]
       puts $File "   Trajectory::Legend \$Frame [lindex $c 0] [lindex $c 1] [lindex $c 2] [lindex $c 3] \$Trajectory::Data(List)"
       puts $File "   Shape::BindMove  \$Frame.page.canvas TRAJLEGEND"
-      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJLEGEND [lindex $c 2]  [lindex $c 3] \"Trajectory::LegendScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
+      puts $File "   Shape::BindScale \$Frame.page.canvas TRAJLEGEND \"Trajectory::LegendScale \$Frame white black \\\"\$Trajectory::Data(List)\\\"\""
    }
 
    #----- Primitives de dessin
@@ -1096,9 +1096,9 @@ proc SPI::DrawTrajGraph { Frame } {
    if { $Data(ShowTrajGraph) } {
       Trajectory::Graph $Frame 0 0 300 200 $Trajectory::Data(List)
       Shape::BindMove  $Frame.page.canvas TRAJGRAPH
-      Shape::BindScale $Frame.page.canvas TRAJGRAPH 300 200 "Trajectory::GraphScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale $Frame.page.canvas TRAJGRAPH "Trajectory::GraphScale $Frame \"\$Trajectory::Data(List)\""
    } else {
-      Shape::UnBindScale $Frame.page.canvas TRAJGRAPH
+      Shape::UnBind $Frame.page.canvas TRAJGRAPH
       $Frame.page.canvas delete TRAJGRAPH
    }
 }
@@ -1127,9 +1127,9 @@ proc SPI::DrawTrajHeight { Frame } {
    if { $Data(ShowTrajHeight) } {
       Trajectory::Height $Frame 0 0 70 350 $Trajectory::Data(List)
       Shape::BindMove  $Frame.page.canvas TRAJHEIGHT
-      Shape::BindScale $Frame.page.canvas TRAJHEIGHT 70 350 "Trajectory::HeightScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale $Frame.page.canvas TRAJHEIGHT "Trajectory::HeightScale $Frame \"\$Trajectory::Data(List)\""
    } else {
-      Shape::UnBindScale $Frame.page.canvas TRAJHEIGHT
+      Shape::UnBind $Frame.page.canvas TRAJHEIGHT
       $Frame.page.canvas delete TRAJHEIGHT
    }
 }
@@ -1158,9 +1158,9 @@ proc SPI::DrawTrajLegend { Frame } {
    if { $Data(ShowTrajLegend) } {
       Trajectory::Legend $Frame 0 0 555 80 $Trajectory::Data(List)
       Shape::BindMove  $Frame.page.canvas TRAJLEGEND
-      Shape::BindScale $Frame.page.canvas TRAJLEGEND 555 80 "Trajectory::LegendScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale $Frame.page.canvas TRAJLEGEND "Trajectory::LegendScale $Frame \"\$Trajectory::Data(List)\""
    } else {
-      Shape::UnBindScale $Frame.page.canvas TRAJLEGEND
+      Shape::UnBind $Frame.page.canvas TRAJLEGEND
       $Frame.page.canvas delete TRAJLEGEND
    }
 }

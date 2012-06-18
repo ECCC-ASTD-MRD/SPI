@@ -63,11 +63,11 @@
 #    CVTree::Select        { Canvas Tree Branch { Open False } }
 #    CVTree::SelectClear   { Canvas Tree }
 #
-#    Shape::BindFull       { Canvas Tag X1 Y1 Var Command }
-#    Shape::BindMove       { Canvas Tags args }
-#    Shape::BindScale      { Canvas Tag X1 Y1 Command }
-#    Shape::UnBindScale    { Canvas Tag }
-#    Shape::UnBindFull     { Canvas Tag }
+#    Shape::BindDestroy    { Canvas Tag { Command "" } } {
+#    Shape::BindFull       { Canvas Tag Var { Command "" } }
+#    Shape::BindMove       { Canvas Tags { Command "" } }
+#    Shape::BindScale      { Canvas Tag { Command "" } }
+#    Shape::UnBind         { Canvas Tag }
 #    Shape::Full           { Canvas Tag args }
 #    Shape::Move           { Canvas Tags X Y { Direct False } }
 #    Shape::Scale          { Canvas Tag X Y args }
@@ -1765,8 +1765,6 @@ namespace eval Shape {
 # Parametres :
 #  <Canvas>  : Identificateur du canvas
 #  <Tags>    : Tags des objets
-#  <X1>      : Coorconnee X du coin inferieur droit
-#  <Y1>      : Coorconnee Y du coin inferieur droit
 #  <Var>     : Variable de redimentionnement
 #  <Command> : Commande de redimentionnement
 #
@@ -1776,13 +1774,47 @@ namespace eval Shape {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::BindFull { Canvas Tag X1 Y1 Var Command } {
+proc Shape::BindFull { Canvas Tag Var { Command "" } } {
    global GDefs
 
    if { ![winfo exists $Canvas.bf$Tag] } {
+      set box [$Canvas bbox $Tag]
       checkbutton $Canvas.bf$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvfull.xbm -cursor hand1 -bd 1 \
          -indicatoron false -variable $Var -onvalue 1 -offvalue 0 -command "if { \$$Var } { Shape::Full $Canvas $Tag $Command }"
-       $Canvas create window $X1 $Y1 -window $Canvas.bf$Tag -anchor se -tags "BF$Tag NOPRINT"
+      $Canvas create window [expr [lindex $box 2]-11] [lindex $box 3] -window $Canvas.bf$Tag -anchor se -tags "BF$Tag NOPRINT"
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::BindDestroy>
+# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les "bindings" de destruction de widget
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Tags>    : Tags des objets
+#  <Command> : Commande de redimentionnement
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::BindDestroy { Canvas Tag { Command "" } } {
+   global GDefs
+
+   if { ![winfo exists $Canvas.bd$Tag] } {
+     set box [$Canvas bbox $Tag]
+
+     button $Canvas.bd$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "$Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
+
+     if { $Command!="" } {
+        $Canvas.bd$Tag configure -command "$args $Frame $Tag; $Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
+     }
+
+     $Canvas create window [lindex $box 2] [lindex $box 1] -window $Canvas.bd$Tag -anchor ne -tags "BD$Tag NOPRINT"
    }
 }
 
@@ -1795,7 +1827,7 @@ proc Shape::BindFull { Canvas Tag X1 Y1 Var Command } {
 # Parametres :
 #  <Canvas>  : Identificateur du canvas
 #  <Tags>    : Tag des objets
-#  <args>    : Commande a executer
+#  <Command> : Commande a executer
 #
 # Retour:
 #
@@ -1803,7 +1835,7 @@ proc Shape::BindFull { Canvas Tag X1 Y1 Var Command } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::BindMove { Canvas Tags args } {
+proc Shape::BindMove { Canvas Tags { Command "" } } {
 
    set tag [lindex $Tags 0]
 
@@ -1812,8 +1844,8 @@ proc Shape::BindMove { Canvas Tags args } {
    $Canvas bind $tag <ButtonPress-1>   "Shape::Set $Canvas $tag %X %Y"
    $Canvas bind $tag <ButtonRelease-1> "Shape::UnSet $Canvas $tag"
 
-   if { [llength $args] } {
-      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y ; $args"
+   if { $Command!="" } {
+      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y ; $Command"
    } else {
       $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y"
    }
@@ -1828,8 +1860,6 @@ proc Shape::BindMove { Canvas Tags args } {
 # Parametres :
 #  <Canvas>  : Identificateur du canvas
 #  <Tags>    : Tags des objets
-#  <X1>      : Coorconnee X du coin inferieur droit
-#  <Y1>      : Coorconnee Y du coin inferieur droit
 #  <Command> : Commande de redimentionnement
 #
 # Retour:
@@ -1838,13 +1868,14 @@ proc Shape::BindMove { Canvas Tags args } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::BindScale { Canvas Tag X1 Y1 Command } {
+proc Shape::BindScale { Canvas Tag { Command "" } } {
    global GDefs
 
    if { ![winfo exists $Canvas.bs$Tag] } {
+      set box [$Canvas bbox $Tag]
       label $Canvas.bs$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -bd 0 -cursor sizing -bd 1 -relief raised
 
-      $Canvas create window $X1 $Y1 -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
+      $Canvas create window [lindex $box 2] [lindex $box 3] -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
    }
 
    bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
@@ -1922,6 +1953,7 @@ proc Shape::Move { Canvas Tags X Y { Direct False } } {
       $Canvas move BS$tag $dx $dy
       $Canvas move BF$tag $dx $dy
       $Canvas move BO$tag $dx $dy
+      $Canvas move BD$tag $dx $dy
    }
 
 }
@@ -2029,7 +2061,7 @@ proc Shape::UnSet { Canvas Tag } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Shape::UnBindScale>
+# Nom      : <Shape::UnBind>
 # Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Supprimer les bindings de redimentionnement d'items
@@ -2045,33 +2077,12 @@ proc Shape::UnSet { Canvas Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::UnBindScale { Canvas Tag } {
+proc Shape::UnBind { Canvas Tag } {
 
-   $Canvas delete BS$Tag
-   destroy $Canvas.bs$Tag
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Shape::UnBindFull>
-# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Supprimer les bindings de redimentionnement d'items
-#
-# Parametres :
-#  <Canvas>  : Identificateur du canvas
-#  <Tags>    : Tags des objets
-#
-# Retour:
-#
-# Remarques :
-#    - On detruit les "bindings", l'item de canvas et le widget
-#
-#----------------------------------------------------------------------------
-
-proc Shape::UnBindFull { Canvas Tag } {
-
-   $Canvas delete BF$Tag
-   destroy $Canvas.bf$Tag
+   $Canvas delete BS$Tag BF$Tag BD$Tag
+   catch { destroy $Canvas.bs$Tag }
+   catch { destroy $Canvas.bf$Tag }
+   catch { destroy $Canvas.bd$Tag }
 }
 
 #----------------------------------------------------------------------------

@@ -248,9 +248,9 @@ proc ColorBar::Set { Frame VP No Id Field } {
             -command "$Frame.page.canvas itemconfigure $tag -showfactor \$ColorBar::Data(Factor$tag); Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
-      Shape::BindMove  $Frame.page.canvas $tag ColorBar::Move $Frame.page.canvas $tag
-      Shape::BindScale $Frame.page.canvas $tag [expr $x+$w] [expr $y+$h] "ColorBar::Scale $Frame.page.canvas $tag"
-      Shape::BindFull  $Frame.page.canvas $tag [expr $x+$w-11] [expr $y+$h] ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindMove  $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
+      Shape::BindScale $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"
+      Shape::BindFull  $Frame.page.canvas $tag ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
 
       Page::MaskItem $Frame
       Page::WidgetBind $Frame $tag
@@ -286,8 +286,7 @@ proc ColorBar::Destroy { Frame VP No } {
       set idx [lsearch -exact $Data(List$Frame) $id]
 
       if { $idx!=-1 } {
-         Shape::UnBindScale $Frame.page.canvas $id
-         Shape::UnBindFull  $Frame.page.canvas $id
+         Shape::UnBind $Frame.page.canvas $id
          $Frame.page.canvas delete $id BF$id BO$id
          destroy $Frame.bo$id $Frame.bo$id.menu
          unset Data(Active$Frame)
@@ -319,8 +318,7 @@ proc ColorBar::DestroyAll { Frame { VP "" } } {
    if { [info exist Data(List$Frame)] } {
       foreach idx [lsort -decreasing -integer [lsearch -all $Data(List$Frame) CB$VP*]] {
          set cb [lindex $Data(List$Frame) $idx]
-         Shape::UnBindScale $Frame.page.canvas $cb
-         Shape::UnBindFull  $Frame.page.canvas $cb
+         Shape::UnBind $Frame.page.canvas $cb
          $Frame.page.canvas delete $cb
          destroy $Frame.bo$cb $Frame.bo$cb.menu
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
@@ -511,8 +509,7 @@ proc ColorBar::Update { Frame { State -1 } } {
    if { [info exist Data(List$Frame)] } {
       foreach id $Data(List$Frame) {
          if { [lsearch -exact $lst $id]==-1 } {
-            Shape::UnBindScale $Frame.page.canvas $id
-            Shape::UnBindFull  $Frame.page.canvas $id
+            Shape::UnBind $Frame.page.canvas $id
             $Frame.page.canvas delete $id
             destroy $Frame.bo$id $Frame.bo$id.menu
          }

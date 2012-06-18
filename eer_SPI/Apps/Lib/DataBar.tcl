@@ -125,9 +125,9 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
-   Shape::BindMove  $Frame.page.canvas DB$VP DataBar::Move $Frame $VP DB$VP
-   Shape::BindScale $Frame.page.canvas DB$VP $x1 $y1 "DataBar::Scale $Frame $VP DB$VP"
-   Shape::BindFull  $Frame.page.canvas DB$VP [expr $x1-11] $y1 DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindMove  $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
+   Shape::BindScale $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
+   Shape::BindFull  $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
 
    Page::MaskItem $Frame
    Page::WidgetBind $Frame DB$VP
@@ -428,8 +428,7 @@ proc DataBar::Destroy { Frame VP } {
       set idx [lsearch -exact $Data(List$Frame) DB$VP]
 
       if { $idx!=-1 } {
-         Shape::UnBindScale $Frame.page.canvas DB$VP
-         Shape::UnBindFull  $Frame.page.canvas DB$VP
+         Shape::UnBind $Frame.page.canvas DB$VP
          $Frame.page.canvas delete DB$VP
          unset Data(Active$Frame)
 
@@ -460,8 +459,7 @@ proc DataBar::DestroyAll { Frame { VP "" } } {
    if { [info exist Data(List$Frame)] } {
       foreach idx [lsort -decreasing -integer [lsearch -all $Data(List$Frame) DB$VP*]] {
          set db [lindex $Data(List$Frame) $idx]
-         Shape::UnBindScale $Frame.page.canvas $db
-         Shape::UnBindFull  $Frame.page.canvas $db
+         Shape::UnBind $Frame.page.canvas $db
          $Frame.page.canvas delete $db
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
       }
@@ -623,8 +621,7 @@ proc DataBar::Update { Frame { State -1 } } {
    if { [info exist Data(List$Frame)] } {
       foreach id $Data(List$Frame) {
          if { [lsearch -exact $lst $id]==-1 } {
-            Shape::UnBindScale $Frame.page.canvas $id
-            Shape::UnBindFull  $Frame.page.canvas $id
+            Shape::UnBind $Frame.page.canvas $id
             $Frame.page.canvas delete $id
          }
       }
