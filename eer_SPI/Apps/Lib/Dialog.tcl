@@ -318,7 +318,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
    if { [winfo exists .dlginfo] == 1} {
 
       set oldtext [lindex [.dlginfo.haut.txt configure -text] 4]
-      .dlginfo.haut.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
+      .dlginfo.haut.txt configure -text "$oldtext\n[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 

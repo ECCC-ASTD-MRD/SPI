@@ -18,6 +18,7 @@ namespace eval Export {
    variable Lbl
    variable Bubble
    variable Data
+   variable Msg
    variable Error
 
    set Data(Canvas) ""                    ;#Canvas Actif
@@ -34,11 +35,12 @@ namespace eval Export {
    set Data(Type)   Vector
    set Data(Types)  { Vector Raster }
    set Data(Format) {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+   set Data(RPN)     1
 
    set Lbl(Export)   { "Exporter" "Export" }
    set Lbl(File)     { "Fichier" "File" }
    set Lbl(Cancel)   { "Annuler" "Cancel" }
-   set Lbl(Vector)   { "Vertoriel" "Vectorial" }
+   set Lbl(Vector)   { "Vectoriel" "Vectorial" }
    set Lbl(Raster)   { "Matriciel" "Raster" }
    set Lbl(Host)     { "Hôte" "Hostname" }
    set Lbl(Port)     { "Port" "Port" }
@@ -51,12 +53,15 @@ namespace eval Export {
    set Lbl(How)      { "Comment" "How" }
    set Lbl(Where)    { "Où" "Where" }
    set Lbl(Info)     { "Information" "Information" }
+   set Lbl(RPN)      { "Champs FSTD RPN" "RPN FSTD fields" }
 
    set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
    set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
    set Bubble(Data)   { "Sélection des données a exporter" "Select data to export" }
    set Bubble(File)   { "Nom du fichier d'exportation" "Export filename" }
    set Bubble(DBase)  { "Paramêtres de connection a la base de donnée" "Database connexion parameters" }
+
+   set Msg(Export)    { "Exportation de " "Exporting data " }
 
    set Error(Legend)  { "Problème lors de la création de la légende (convert)" "Problem creating legend (convert)" }
    set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
@@ -69,9 +74,8 @@ namespace eval Export::Raster {
    variable Lbl
    variable Bubble
    variable Error
-   variable Msg
 
-   set Data(Image)   0
+   set Data(Image)   1
    set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
                        {KML "KMZ" {*.kmz}}
                        {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
@@ -122,8 +126,6 @@ namespace eval Export::Raster {
    set Lbl(Data)     { "Données" "Data" }
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
-
-   set Msg(Export)    { "Exportation de " "Exporting data " }
 
    set Error(Size)    { "Les dimensions sont invaldes, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
 
@@ -273,20 +275,22 @@ proc Export::Raster::Export { Path Format } {
    global GDefs
    variable Data
    variable Error
-   variable Msg
 
    set no   0
-   set file [file rootname $Path]
-   set ext  [file extension $Path]
 
-   if { $Export::Data(DX)==0 || $Export::Data(DY)==0 } {
-     Dialog::Error .export $Error(Size)
-     return False
-   }
+   if { $Export::Data(RPN) } {
 
-   if { $Format=="KMZ" } {
-      set f [open ${file}.kml w]
-      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+      set file [file rootname $Path]
+      set ext  [file extension $Path]
+
+      if { $Export::Data(DX)==0 || $Export::Data(DY)==0 } {
+      Dialog::Error .export $Error(Size)
+      return False
+      }
+
+      if { $Format=="KMZ" } {
+         set f [open ${file}.kml w]
+         puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
 <Document>
    <ScreenOverlay>
       <name>Logo</name>
@@ -296,11 +300,9 @@ proc Export::Raster::Export { Path Format } {
       <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
       <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
    </ScreenOverlay>"
-   }
+      }
 
-   foreach field $FSTD::Data(List) {
-
-      if { $Export::Data($field) } {
+      foreach field $FSTD::Data(List) {
 
          set nv      [fstdfield define $field -NOMVAR]
          set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
@@ -309,7 +311,7 @@ proc Export::Raster::Export { Path Format } {
          set sec1    [expr $sec0+[fstdfield define $field -DEET]*[fstdfield define $field -NPAS]]
 
          set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
-         Dialog::Wait .export $Msg(Export) $desc
+         Dialog::Wait .export $Export::Msg(Export) $desc
 
          switch $Data(Image) {
             0 {  set map [fstdfield configure $field -colormap]
@@ -351,13 +353,13 @@ proc Export::Raster::Export { Path Format } {
       <LatLonBox>
          <north>$Export::Data(Lat1)</north>
          <south>$Export::Data(Lat0)</south>
-         <east>$Export::Data(Lon0)</east>
-         <west>$Export::Data(Lon1)</west>
+         <east>$Export::Data(Lon1)</east>
+         <west>$Export::Data(Lon0)</west>
       </LatLonBox>
       <Icon>
          <href>[file tail ${file}_${no}_${nv}.tif]</href>
       </Icon>
-  </GroundOverlay>\n"
+   </GroundOverlay>\n"
             gdalfile open FILE write ${file}_${no}_${nv}.tif GTiff
 
             lappend kmz ${file}_${no}_${nv}.tif ${file}_${no}_${nv}_legend.png
@@ -375,17 +377,17 @@ proc Export::Raster::Export { Path Format } {
 
          incr no
       }
-   }
 
-   if { $Format=="KMZ" } {
-      puts $f "</Document>\n</kml>"
-      close $f
-      file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/LOGO_SMC.png l/Logo/Logo_SMC.png $kmz
-      eval file delete ${file}.kml $kmz
-   }
+      if { $Format=="KMZ" } {
+         puts $f "</Document>\n</kml>"
+         close $f
+         file delete -force ${file}.kmz
+         eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+         eval file delete ${file}.kml $kmz
+      }
 
-   Dialog::WaitDestroy
+      Dialog::WaitDestroy
+   }
    return True
 }
 
@@ -408,20 +410,21 @@ proc Export::Raster::Export { Path Format } {
 
 proc Export::Vector::Export { Path Format } {
    variable Data
-   variable Msg
 
    set no 0
 
-   foreach field $FSTD::Data(List) {
+   if { $Export::Data(RPN) } {
+      foreach field $FSTD::Data(List) {
 
-      if { $Export::Data($field) } {
          set nv      [fstdfield define $field -NOMVAR]
          set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
          set lvltype [fstdfield stats $field -leveltype]
-         set date    [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true]
+         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+         set sec1    [expr $sec0+[fstdfield define $field -DEET]*[fstdfield define $field -NPAS]]
+         set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
 
          set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
-         Dialog::Wait .export $Msg(Export) $desc
+         Dialog::Wait .export $Export::Msg(Export) $desc
 
          set layer ${nv}_${date}_${lvl}_${lvltype}
 
@@ -456,8 +459,8 @@ proc Export::Vector::Export { Path Format } {
          ogrlayer free LAYER
          incr no
       }
+      Dialog::WaitDestroy
    }
-   Dialog::WaitDestroy
 
    return True
 }
@@ -606,13 +609,8 @@ proc Export::Window { } {
    wm transient .export .
 
    labelframe .export.what -text [lindex $Lbl(What) $GDefs(Lang)]
-      foreach field $FSTD::Data(List) {
-         set Export::Data($field) 1
-         set desc "[fstdfield define $field -NOMVAR] [clock format [fstdstamp toseconds [fstdfield define $field -DATEV]] -format "%Y%m%d_%H:%M" -gmt true] \
-             [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]] [fstdfield stats $field -leveltype]"
-         checkbutton .export.what.f$field -text $desc -variable Export::Data($field) -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
-         pack .export.what.f$field -side top -fill x -expand True
-      }
+      checkbutton .export.what.rpn -text [lindex $Export::Lbl(RPN) $GDefs(Lang)] -variable Export::Data(RPN) -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
+      pack .export.what.rpn -side top -fill x -expand True
 
    labelframe .export.how -text [lindex $Lbl(How) $GDefs(Lang)]
       frame .export.how.type
@@ -771,6 +769,13 @@ proc Export::SetFormat { Format } {
    } else {
       pack forget .export.where.db
       pack .export.where.file -side top -fill x -expand True
+   }
+
+   if { [lindex $Format 0]=="KML" } {
+      set Export::Raster::Data(Image) 1
+      catch { .export.option.type.data configure -state disabled }
+   } else {
+      catch { .export.option.type.data configure -state normal }
    }
 }
 
