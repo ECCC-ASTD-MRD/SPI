@@ -146,13 +146,13 @@ proc Macro::JetMapper::StreamGet { } {
    }
 
    #----- Save the computed wind for later inspection
-   fstdfile open OUT write ./winds.fstd
-   fstdfield write UU OUT -32 True
-   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" ">>"
-   fstdfield write TIC OUT -32 True
-   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" "^^"
-   fstdfield write TIC OUT -32 True
-   fstdfile close OUT
+#   fstdfile open OUT write ./winds.fstd
+#   fstdfield write UU OUT -32 True
+#   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" ">>"
+#   fstdfield write TIC OUT -32 True
+#   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" "^^"
+#   fstdfield write TIC OUT -32 True
+#   fstdfile close OUT
 
    set streams {}
 

@@ -91,6 +91,14 @@ fstdfield write TIC 3 -32 True
 fstdfield write TAC 3 -32 True
 fstdfile close 1 2 3
 
+#----- Test un fichier trunque
+puts "\nTesting truncated file:"
+fstdfile open TRUNC read DataIn/truncated
+if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
+   puts "\n   File is truncated: $msg"
+}
+fstdfile close TRUNC
+
 #----- Test l'ouverture de plus de 1000 fichiers
 puts "\nTesting multiple file open:"
 for { set i 0 } { $i<=1001 } { incr i } {

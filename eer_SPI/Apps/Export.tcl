@@ -180,6 +180,7 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
 
    set map    [fstdfield configure $Field -colormap]
    set inter  [fstdfield configure $Field -intervals]
+   set labels [fstdfield configure $Field -interlabels]
    set min    [fstdfield configure $Field -min]
    set max    [fstdfield configure $Field -max]
    set factor [fstdfield configure $Field -factor]
@@ -204,7 +205,9 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
    gdalfile createcopy $Path.tmp EXPORTLEGEND png
    gdalband free EXPORTLEGEND
 
-   if { [llength $inter] } {
+   if { [llength $labels] } {
+      set vals $labels
+   } elseif { [llength $inter] } {
       #----- Use intervals if there were any
       set vals $inter
    } elseif { $min==0.0 && $max==1.0 } {
@@ -326,7 +329,7 @@ proc Export::Raster::Export { Path Format } {
          gdalband import BAND $field
 
          if { $Format=="KMZ" } {
-            Export::Legend ${file}_${no}_${nv}_legend.png $field 270 96 #FFFFFF
+            Export::Legend ${file}_${no}_${nv}_legend.png $field 270 120 #FFFFFF
 
             puts $f "
    <ScreenOverlay>
