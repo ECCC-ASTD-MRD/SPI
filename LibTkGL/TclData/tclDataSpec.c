@@ -787,10 +787,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->InterMode=new;
                   Spec->InterModeParam=tmp;
                   cmap=cseg=1;
-               }
-               if (Spec->InterVals) {
-                  Tcl_DecrRefCount(Spec->InterVals);
-                  Spec->InterVals=NULL;
+
+                  if (Spec->InterVals && new==0) {
+                     Tcl_DecrRefCount(Spec->InterVals);
+                     Spec->InterVals=NULL;
+                  }
                }
             }
             break;
