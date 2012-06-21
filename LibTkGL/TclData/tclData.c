@@ -2069,9 +2069,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDCONTOUR:
+            if (Objc>2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution]");
+               return(TCL_ERROR);
+            }
+            len=3;
+            if (Objc>1) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&len);
+            }
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_GRID,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,3,0);
+               FFContour(REF_GRID,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
 
                list=Field->Def->Segments;
                obj=Tcl_NewListObj(0,NULL);
@@ -2108,13 +2116,22 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDCONTOUR:
-            if (Objc==2) {
-               mode=Tcl_GetString(Objv[1])[0];
+            if (Objc>3) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [GML|KML]");
+               return(TCL_ERROR);
+            }
+            len=3;
+            if (Objc>1) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&len);
+            }
+            mode='T';
+            if (Objc>2) {
+               mode=Tcl_GetString(Objv[++i])[0];
                i++;
             }
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_COOR,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,3,0);
+               FFContour(REF_COOR,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
 
                list=Field->Def->Segments;
 
