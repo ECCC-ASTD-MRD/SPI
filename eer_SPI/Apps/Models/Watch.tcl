@@ -686,8 +686,9 @@ proc Watch::New { { Edit False } } {
       }
       file rename -force $Param(Path)/$Data(Project)/sim.pool.edit $Param(Path)/$Data(Project)/sim.pool
    }
+
    Model::Check 0
-   Model::TypeSelect none 2
+   Model::TypeSelect none 2 "" $Data(Project)
    return 1
 }
 
@@ -789,7 +790,7 @@ proc Watch::PopUpWatch { X Y } {
    if { ![winfo exists .watchpopwatch] } {
 
       menu .watchpopwatch -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-         .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
+         .watchpopwatch add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp) \$Watch::Data(Project); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
              -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
          .watchpopwatch add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command "Watch::AllOpenItem \$Watch::Data(Project)\$Watch::Data(Exp) 1"
          .watchpopwatch add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command "Watch::AllCloseItem \$Watch::Data(Project)\$Watch::Data(Exp) 1"
@@ -835,7 +836,7 @@ proc Watch::PopUpModel { X Y Model } {
 
    if { ![winfo exists .watchpopmodel] } {
       menu .watchpopmodel -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-            .watchpopmodel add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
+            .watchpopmodel add command -label ""  -command "Model::TypeSelect none 2 \$Watch::Data(Exp) \$Watch::Data(Project); SPI::Locate \$Watch::Data(Lat) \$Watch::Data(Lon)" \
                 -background $GDefs(ColorHighLight) -activebackground $GDefs(ColorHighLight)
             .watchpopmodel add command -label [lindex $Lbl(OpenBranch) $GDefs(Lang)] -command ""
             .watchpopmodel add command -label [lindex $Lbl(CloseBranch) $GDefs(Lang)] -command ""
@@ -1134,7 +1135,7 @@ proc Watch::SimSuppress { } {
 
    #----- Mise a jour de la liste des experiences
    Model::Check 0
-   Model::TypeSelect none 2
+   Model::TypeSelect none 2 $Data(Exp) $Data(Project)
 }
 
 #-------------------------------------------------------------------------------
@@ -1177,7 +1178,7 @@ proc Watch::Suppress { } {
 
    #----- Relire les experiences
    Model::Check 0
-   Model::TypeSelect none 2
+   Model::TypeSelect none 2 "" $Data(Project)
 }
 
 #---------------------------------------------------------------------------

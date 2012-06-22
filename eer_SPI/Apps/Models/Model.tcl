@@ -2233,6 +2233,10 @@ proc Model::TypeSelect { Frame No { Loc "" } { Group "" } } {
                      }
                   }
                }
+               #----- If a group was specified and we did it, break
+               if { $proj==$Group } {
+                  break
+               }
             }
          }
          SPI::IcoAdd $Page::Data(Frame) WATCH "" $icos
