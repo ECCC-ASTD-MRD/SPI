@@ -217,111 +217,27 @@ proc Graph::Scatter::Clean { GR } {
 #----------------------------------------------------------------------------
 
 proc Graph::Scatter::DrawInit { Frame VP } {
-
-   upvar #0 Graph::Scatter::Scatter${Graph::Data(Graph)}::Data  data
-
-   set data(Lat0) $Viewport::Map(LatCursor)
-   set data(Lon0) $Viewport::Map(LonCursor)
-   set data(Lat1) $Viewport::Map(LatCursor)
-   set data(Lon1) $Viewport::Map(LonCursor)
-
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHSCATTER$Graph::Data(Graph)
-   }
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Contingency::Update $Frame $Graph::Data(Graph)
-   }
+   Graph::DrawInit $Frame $VP Scatter
 }
 
 proc Graph::Scatter::Draw { Frame VP } {
-   global   GDefs
-   variable Lbl
-
-   upvar #0 Graph::Scatter::Scatter${Graph::Data(Graph)}::Data  data
-
-   set data(Lat1)   $Viewport::Map(LatCursor)
-   set data(Lon1)   $Viewport::Map(LonCursor)
-
-   Graph::Scatter::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   Graph::Draw $Frame $VP Scatter
 }
 
 proc Graph::Scatter::DrawDone { Frame VP } {
-
-   upvar #0 Graph::Scatter::Scatter${Graph::Data(Graph)}::Data  data
-
-   if { $data(Lat0)>$data(Lat1) } {
-      set tmp $data(Lat1)
-      set data(Lat1) $data(Lat0)
-      set data(Lat0) $tmp
-   }
-
-   if { $data(Lon0)>$data(Lon1) } {
-      set tmp $data(Lon1)
-      set data(Lon1) $data(Lon0)
-      set data(Lon0) $tmp
-   }
-
-   if { $data(Lat0)==$data(Lat1) || $data(Lon0)==$data(Lon1) } {
-      set data(Lat0) 0
-      set data(Lat1) 0
-      set data(Lon0) 0
-      set data(Lon1) 0
-      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) {}
-   } else {
-      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
-   }
-
-   Graph::Scatter::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
+   Graph::DrawDone $Frame $VP Scatter
 }
 
 proc Graph::Scatter::MoveInit { Frame VP } {
-
-   upvar #0 Graph::Scatter::Scatter${Graph::Data(Graph)}::Data  data
-
-   set data(LonD) $Viewport::Map(LonCursor)
-   set data(LatD) $Viewport::Map(LatCursor)
-
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHSCATTER$Graph::Data(Graph)
-   }
-
-   set data(VP)        $VP
-   set data(FrameData) $Frame
+   Graph::MoveInit $Frame $VP Scatter
 }
 
 proc Graph::Scatter::Move { Frame VP } {
-   global   GDefs
-   variable Lbl
-
-   upvar #0 Graph::Scatter::Scatter${Graph::Data(Graph)}::Data  data
-
-   #----- Effectuer la translation
-
-   set lat0 [expr $data(Lat0) + $Viewport::Map(LatCursor) - $data(LatD)]
-   set lat1 [expr $data(Lat1) + $Viewport::Map(LatCursor) - $data(LatD)]
-
-   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
-
-      set data(Lat0) $lat0
-      set data(Lat1) $lat1
-      eval set data(Lon0) [Viewport::CheckCoord [expr $data(Lon0) + $Viewport::Map(LonCursor) - $data(LonD)]]
-      eval set data(Lon1) [Viewport::CheckCoord [expr $data(Lon1) + $Viewport::Map(LonCursor) - $data(LonD)]]
-   }
-
-   #----- Reaffecter le point de reference de translation
-
-   set data(LonD) $Viewport::Map(LonCursor)
-   set data(LatD) $Viewport::Map(LatCursor)
-
-   Graph::Scatter::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   Graph::Move $Frame $VP Scatter
 }
 
 proc Graph::Scatter::MoveDone { Frame VP } {
-
-   Graph::Scatter::DrawDone $Frame $VP
+   Graph::MoveDone $Frame $VP Scatter
 }
 
 #-------------------------------------------------------------------------------
@@ -564,6 +480,7 @@ proc Graph::Scatter::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Scatter Y
 
    Graph::ParamsAxisUniform Scatter $GR
+   Graph::ModeSelect LATLONBOX LATLONBOX
 
    Bubble::Create $Parent.par.sel.stat       $Graph::Bubble(Stat)
    Bubble::Create $Parent.par.sel.sel        $Graph::Bubble(Select)

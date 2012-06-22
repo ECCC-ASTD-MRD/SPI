@@ -211,28 +211,28 @@ proc Graph::Profile::Clean { GR } {
 #----------------------------------------------------------------------------
 
 proc Graph::Profile::DrawInit { Frame VP } {
-   variable Data
-   variable Lbl
-
-   upvar #0 Graph::Profile::Profile${Graph::Data(Graph)}::Data  data
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Profile::Update $Frame $Graph::Data(Graph)
-   } else {
-      Graph::Profile::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
-   }
+   Graph::DrawInit $Frame $VP Profile
 }
 
 proc Graph::Profile::Draw { Frame VP } {
-   Graph::Profile::DrawInit $Frame $VP
+   Graph::Draw $Frame $VP Profile
 }
 
-proc Graph::Profile::DrawDone { Frame VP } { }
-proc Graph::Profile::MoveInit { Frame VP } { }
-proc Graph::Profile::Move     { Frame VP } { }
-proc Graph::Profile::MoveDone { Frame VP } { }
+proc Graph::Profile::DrawDone { Frame VP } {
+   Graph::DrawDone $Frame $VP Profile
+}
+
+proc Graph::Profile::MoveInit { Frame VP } {
+   Graph::MoveInit $Frame $VP Profile
+}
+
+proc Graph::Profile::Move { Frame VP } {
+   Graph::Move $Frame $VP Profile
+}
+
+proc Graph::Profile::MoveDone { Frame VP } {
+   Graph::MoveDone $Frame $VP Profile
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::Profile::Graph>
@@ -432,6 +432,7 @@ proc Graph::Profile::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Profile X
    Graph::ParamsAxis $Parent $GR Profile Y VERTICAL
    Graph::ParamsObs  $Parent $GR Profile
+   Graph::ModeSelect POINT { POINT LATLONBOX }
 }
 
 #-------------------------------------------------------------------------------
@@ -636,7 +637,37 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
    if { [graphitem is $Item]  && [llength $data(Pos$Pos)]} {
 
       if { [fstdfield is $Data] } {
-         fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
+         if { [llength $data(Pos$Pos)]==4 } {
+            set xy0 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1]]
+            set xy1 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+            set x0  [expr int([lindex $xy0 0])]
+            set y0  [expr int([lindex $xy0 1])]
+            set x1  [expr int([lindex $xy1 0])]
+            set y1  [expr int([lindex $xy1 1])]
+            if { $x0==-1 || $y0==-1 || $x1==-1 || $y1==-1 } {
+               continue
+            }
+            set n 0
+            fstdfield free GRAPHPROFILE
+            for { set x $x0 } { $x<=$x1 } { incr x } {
+               for { set y $y0 } { $y<=$y1 } { incr y } {
+                  fstdfield vertical GRAPHPROFILEAVG $Data [fstdfield stats $Data -gridpoint $x $y]
+                  if { [fstdfield is GRAPHPROFILE] } {
+                     vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILEAVG
+                  } else {
+                     fstdfield copy GRAPHPROFILE GRAPHPROFILEAVG
+                  }
+                  incr n
+                }
+            }
+            if { !$n } {
+               return
+            }
+            fstdfield free GRAPHPROFILEAVG
+            vexpr GRAPHPROFILE GRAPHPROFILE/$n
+         } else {
+            fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
+         }
          FSTD::ParamUpdate GRAPHPROFILE
 
          #----- Configure info label if allowed
@@ -780,7 +811,12 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHPROFILE$gr
+               if { [llength $data(Pos$pos)]==2 } {
+                  set type POINT
+               } else {
+                  set type RECTANGLE
+               }
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHPROFILE$gr $type
             }
         }
       }

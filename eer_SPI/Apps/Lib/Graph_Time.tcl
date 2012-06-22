@@ -223,30 +223,28 @@ proc Graph::Time::Clean { GR } {
 #----------------------------------------------------------------------------
 
 proc Graph::Time::DrawInit { Frame VP } {
-   variable Data
-
-   upvar #0 Graph::Time::Time${Graph::Data(Graph)}::Data  data
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Time::Update $Frame $Graph::Data(Graph)
-   } else {
-      Graph::Time::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
-   }
+   Graph::DrawInit $Frame $VP Time
 }
 
 proc Graph::Time::Draw { Frame VP } {
-   Graph::Time::DrawInit $Frame $VP
+   Graph::Draw $Frame $VP Time
 }
 
-proc Graph::Time::DrawDone { Frame VP } { }
+proc Graph::Time::DrawDone { Frame VP } {
+   Graph::DrawDone $Frame $VP Time
+}
 
-proc Graph::Time::MoveInit { Frame VP } { }
+proc Graph::Time::MoveInit { Frame VP } {
+   Graph::MoveInit $Frame $VP Time
+}
 
-proc Graph::Time::Move { Frame VP } { }
+proc Graph::Time::Move { Frame VP } {
+   Graph::Move $Frame $VP Time
+}
 
-proc Graph::Time::MoveDone { Frame VP } { }
+proc Graph::Time::MoveDone { Frame VP } {
+   Graph::MoveDone $Frame $VP Time
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::Time::Graph>
@@ -481,7 +479,7 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Time X TIME
    Graph::ParamsAxis $Parent $GR Time Y
    Graph::ParamsObs  $Parent $GR Time
-
+   Graph::ModeSelect POINT { POINT LATLONBOX }
 }
 
 #-------------------------------------------------------------------------------
@@ -658,7 +656,7 @@ proc Graph::Time::ItemUnDefine { GR Pos } {
          Graph::Time::ItemDel $GR $item
       }
 
-      set data(Pos) [lreplace $data(Pos)  $idx $idx]
+      set data(Pos) [lreplace $data(Pos) $idx $idx]
       set Graph::Data(Pos) [lindex $data(Pos) end]
    }
 }
@@ -696,7 +694,20 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 
          foreach field $data(Data$Data) {
 
-            set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]
+            if { [llength $data(Pos$Pos)]==4 } {
+               set xy0 [fstdfield stats [lindex $field 1] -coordpoint [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1]]
+               set xy1 [fstdfield stats [lindex $field 1] -coordpoint [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+               set x0  [expr int([lindex $xy0 0])]
+               set y0  [expr int([lindex $xy0 1])]
+               set x1  [expr int([lindex $xy1 0])]
+               set y1  [expr int([lindex $xy1 1])]
+               if { $x0==-1 || $y0==-1 || $x1==-1 || $y1==-1 } {
+                  continue
+               }
+               set val [vexpr NIL savg([lindex $field 1](($x0,$x1),($y0,$y1)))]
+            } else {
+               set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]
+            }
             set spd  [lindex $val 0]
             set dir  [lindex $val 1]
 
@@ -820,7 +831,12 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIME$gr
+               if { [llength $data(Pos$pos)]==2 } {
+                  set type POINT
+               } else {
+                  set type RECTANGLE
+               }
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIME$gr $type
             }
          }
       }

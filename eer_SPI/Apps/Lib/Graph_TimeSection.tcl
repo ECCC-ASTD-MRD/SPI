@@ -231,30 +231,28 @@ proc Graph::TimeSection::Clean { GR } {
 #----------------------------------------------------------------------------
 
 proc Graph::TimeSection::DrawInit { Frame VP } {
-   variable Data
-
-   upvar #0 Graph::TimeSection::TimeSection${Graph::Data(Graph)}::Data  data
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::TimeSection::Update $Frame $Graph::Data(Graph)
-   } else {
-      Graph::TimeSection::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
-   }
+   Graph::DrawInit $Frame $VP TimeSection
 }
 
 proc Graph::TimeSection::Draw { Frame VP } {
-   Graph::TimeSection::DrawInit $Frame $VP
+   Graph::Draw $Frame $VP TimeSection
 }
 
-proc Graph::TimeSection::DrawDone { Frame VP } { }
+proc Graph::TimeSection::DrawDone { Frame VP } {
+   Graph::DrawDone $Frame $VP TimeSection
+}
 
-proc Graph::TimeSection::MoveInit { Frame VP } { }
+proc Graph::TimeSection::MoveInit { Frame VP } {
+   Graph::MoveInit $Frame $VP TimeSection
+}
 
-proc Graph::TimeSection::Move { Frame VP } { }
+proc Graph::TimeSection::Move { Frame VP } {
+   Graph::Move $Frame $VP TimeSection
+}
 
-proc Graph::TimeSection::MoveDone { Frame VP } { }
+proc Graph::TimeSection::MoveDone { Frame VP } {
+   Graph::MoveDone $Frame $VP TimeSection
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::TimeSection::Graph>
@@ -517,6 +515,7 @@ proc Graph::TimeSection::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsAxis $Parent $GR TimeSection X TIME
    Graph::ParamsAxis $Parent $GR TimeSection Y VERTICAL
+   Graph::ModeSelect POINT { POINT LATLONBOX }
 }
 
 #-------------------------------------------------------------------------------
@@ -727,7 +726,38 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          lappend fields [lindex $field 1]
          vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
       }
-      fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
+
+      if { [llength $data(Pos$Pos)]==4 } {
+         set xy0 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1]]
+         set xy1 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+         set x0  [expr int([lindex $xy0 0])]
+         set y0  [expr int([lindex $xy0 1])]
+         set x1  [expr int([lindex $xy1 0])]
+         set y1  [expr int([lindex $xy1 1])]
+         if { $x0==-1 || $y0==-1 || $x1==-1 || $y1==-1 } {
+            continue
+         }
+         set n 0
+         fstdfield free TIMESECTION$Item
+         for { set x $x0 } { $x<=$x1 } { incr x } {
+            for { set y $y0 } { $y<=$y1 } { incr y } {
+               fstdfield vertical TIMESECTION $fields [fstdfield stats $Data -gridpoint $x $y]
+               if { [fstdfield is TIMESECTION$Item] } {
+                  vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION
+               } else {
+                  fstdfield copy TIMESECTION$Item TIMESECTION
+               }
+               incr n
+            }
+         }
+         if { !$n } {
+            return
+         }
+         fstdfield free GTIMESECTION
+          vexpr TIMESECTION$Item TIMESECTION$Item/$n
+      } else {
+         fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
+      }
       FSTD::Register TIMESECTION$Item
 
       set graph(UnitY)  [fstdfield stats TIMESECTION$Item -leveltype]
@@ -826,7 +856,12 @@ proc Graph::TimeSection::UpdateItems { Frame { GR { } } } {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMESECTION$gr
+               if { [llength $data(Pos$pos)]==2 } {
+                  set type POINT
+               } else {
+                  set type RECTANGLE
+               }
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMESECTION$gr $type
             }
          }
       }

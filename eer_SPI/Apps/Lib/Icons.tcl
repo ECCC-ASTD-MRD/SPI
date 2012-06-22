@@ -75,6 +75,8 @@ image create photo WORLD       -file $GDefs(Dir)/Resources/Image/Icon/World.gif
 image create photo WORLDRESET  -file $GDefs(Dir)/Resources/Image/Icon/WorldReset.gif
 image create photo NOWORLD     -file $GDefs(Dir)/Resources/Image/Icon/NoWorld.gif
 image create photo ARROW       -file $GDefs(Dir)/Resources/Image/Icon/Select.gif
+image create photo ARROWLINE   -file $GDefs(Dir)/Resources/Image/Icon/SelectLine.gif
+image create photo ARROWSQUARE -file $GDefs(Dir)/Resources/Image/Icon/SelectSquare.gif
 image create photo ARROWDEL    -file $GDefs(Dir)/Resources/Image/Icon/SelectDel.gif
 image create photo ARROWADD    -file $GDefs(Dir)/Resources/Image/Icon/SelectAdd.gif
 image create photo DELETE      -file $GDefs(Dir)/Resources/Image/Icon/Delete.gif

@@ -198,109 +198,27 @@ proc Graph::Frequence::Coord { Frame GR X Y } {
 #----------------------------------------------------------------------------
 
 proc Graph::Frequence::DrawInit { Frame VP } {
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   set data(Lat0) $Viewport::Map(LatCursor)
-   set data(Lon0) $Viewport::Map(LonCursor)
-   set data(Lat1) $Viewport::Map(LatCursor)
-   set data(Lon1) $Viewport::Map(LonCursor)
-
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHFREQUENCE$Graph::Data(Graph)
-   }
-
-   set data(VP)        $VP
-   set data(FrameData) $Frame
+   Graph::DrawInit $Frame $VP Frequence
 }
 
 proc Graph::Frequence::Draw { Frame VP } {
-   global   GDefs
-   variable Lbl
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   set data(Lat1)   $Viewport::Map(LatCursor)
-   set data(Lon1)   $Viewport::Map(LonCursor)
-
-   Graph::Frequence::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   Graph::Draw $Frame $VP Frequence
 }
 
 proc Graph::Frequence::DrawDone { Frame VP } {
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   if { $data(Lat0)>$data(Lat1) } {
-      set tmp $data(Lat1)
-      set data(Lat1) $data(Lat0)
-      set data(Lat0) $tmp
-   }
-
-   if { $data(Lon0)>$data(Lon1) } {
-      set tmp $data(Lon1)
-      set data(Lon1) $data(Lon0)
-      set data(Lon0) $tmp
-   }
-
-   if { $data(Lat0)==$data(Lat1) || $data(Lon0)==$data(Lon1) } {
-      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) {}
-   } else {
-      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
-   }
-
-   Graph::Frequence::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
-
-   update idletasks
-   $data(Canvas) configure -cursor left_ptr
+   Graph::DrawDone $Frame $VP Frequence
 }
 
 proc Graph::Frequence::MoveInit { Frame VP } {
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   set data(LonD) $Viewport::Map(LonCursor)
-   set data(LatD) $Viewport::Map(LatCursor)
-
-   if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete GRAPHFREQUENCE$Graph::Data(Graph)
-   }
-
-   set data(VP)        $VP
-   set data(FrameData) $Frame
+   Graph::MoveInit $Frame $VP Frequence
 }
 
 proc Graph::Frequence::Move { Frame VP } {
-   global   GDefs
-   variable Lbl
-
-   upvar #0 Graph::Frequence::Frequence${Graph::Data(Graph)}::Data  data
-
-   #----- Effectuer la translation
-
-   set lat0 [expr $data(Lat0) + $Viewport::Map(LatCursor) - $data(LatD)]
-   set lat1 [expr $data(Lat1) + $Viewport::Map(LatCursor) - $data(LatD)]
-
-   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
-
-      set data(Lat0) $lat0
-      set data(Lat1) $lat1
-      eval set data(Lon0) [Viewport::CheckCoord [expr $data(Lon0) + $Viewport::Map(LonCursor) - $data(LonD)]]
-      eval set data(Lon1) [Viewport::CheckCoord [expr $data(Lon1) + $Viewport::Map(LonCursor) - $data(LonD)]]
-   }
-
-   #----- Reaffecter le point de reference de translation
-
-   set data(LonD) $Viewport::Map(LonCursor)
-   set data(LatD) $Viewport::Map(LatCursor)
-
-   Graph::Frequence::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   Graph::Move $Frame $VP Frequence
 }
 
 proc Graph::Frequence::MoveDone { Frame VP } {
-
-   Graph::Frequence::DrawDone $Frame $VP
+   Graph::MoveDone $Frame $VP Frequence
 }
 
 #-------------------------------------------------------------------------------
@@ -468,6 +386,7 @@ proc Graph::Frequence::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
    Graph::ParamsAxis $Parent $GR Frequence X
+   Graph::ModeSelect LATLONBOX LATLONBOX
 }
 
 #-------------------------------------------------------------------------------

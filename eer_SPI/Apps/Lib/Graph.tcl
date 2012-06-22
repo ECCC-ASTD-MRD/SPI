@@ -106,7 +106,7 @@ namespace eval Graph {
    set Param(AxisFormatsTime) { NONE DATE TIME DATETIME TIME/DATE 00HH/DDMM 00HH/MMDD HH/DDMM HH HHMM DDMM MMDD T-HH T+HH T+HHMM }
    set Param(AxisTypes)       { LINEAR LOG LN }
    set Param(AxisZs)          { GRID PRESSURE }
-
+   set Param(SelectMode)      POINT
 
    set Data(Nb)           0                      ;#Nombre de graph
    set Data(Type)         ""                     ;#Type du graph courant
@@ -679,6 +679,46 @@ proc Graph::Mode { Type GR { Zoom False } } {
    }
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <Graph::ModeSelect>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Selectionner le mode de selection par curseur
+#
+# Parametres :
+#  <Mode>    : mode de selection (1=point, 2=carre)
+#  <Valid>   : List des modes valides
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::ModeSelect { Mode { Valid {} } } {
+   variable Data
+   variable Param
+
+   set Param(SelectMode) $Mode
+
+   if { [llength $Valid] } {
+      $Data(Tab).head.sel.down.menu entryconfigure 0 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 1 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 2 -state disabled
+      foreach mode $Valid {
+         switch $mode {
+           "POINT"     { $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
+           "LINE"      { $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
+           "LATLONBOX" {  $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+         }
+      }
+   }
+   switch $Param(SelectMode) {
+
+      "POINT"     { $Data(Tab).head.sel configure -image ARROW;       $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
+      "LINE"      { $Data(Tab).head.sel configure -image ARROWLINE;   $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
+      "LATLONBOX" { $Data(Tab).head.sel configure -image ARROWSQUARE; $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+   }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::Params>
 # Creation : Avril 2003 - J.P. Gauthier - CMC/CMOE -
@@ -726,8 +766,15 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
       pack .graphparams.tab -side top -fill both -expand true
 
       frame $Data(Tab).head
-         checkbutton $Data(Tab).head.sel -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
+         checkbutton $Data(Tab).head.sel -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -anchor w -width 28 \
             -variable Page::Data(ToolMode) -offvalue SPI -command { SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True }
+         menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu
+         place $Data(Tab).head.sel.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
+         menu $Data(Tab).head.sel.down.menu
+         $Data(Tab).head.sel.down.menu add command -image ARROW -command { Graph::ModeSelect POINT }
+         $Data(Tab).head.sel.down.menu add command -image ARROWLINE -command { Graph::ModeSelect LINE }
+         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect LATLONBOX }
+
          button $Data(Tab).head.reset -image GRAPHRESET -relief flat -bd 0 -overrelief raised -command ""
          button $Data(Tab).head.data -image GRAPHDATA -relief flat -bd 0 -overrelief raised -command ""
          pack $Data(Tab).head.sel $Data(Tab).head.reset $Data(Tab).head.data -side left -fill y -padx 2
@@ -2140,3 +2187,149 @@ proc Graph::ZoomInit { Canvas X0 Y0 } {
 
    $Canvas create rectangle $X0 $Y0 $X0 $Y0 -fill "" -outline red -width 2 -tags GRAPHZOOM
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::Time::Draw...>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonctions de manipulation sur la projection
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Type>    : Type de graph
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::DrawInit { Frame VP Type } {
+   variable Param
+
+   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+
+   set data(Lat0) $Viewport::Map(LatCursor)
+   set data(Lon0) $Viewport::Map(LonCursor)
+   set data(Lat1) $Viewport::Map(LatCursor)
+   set data(Lon1) $Viewport::Map(LonCursor)
+
+   if { $data(FrameData)!="" } {
+      $data(FrameData).page.canvas delete [string toupper GRAPH${Type}$Graph::Data(Graph)]
+   }
+
+   if { $VP!=$data(VP) } {
+      set data(VP)        $VP
+      set data(FrameData) $Frame
+      Graph::${Type}::Update $Frame $Graph::Data(Graph)
+   } else {
+      if { $Param(SelectMode)=="POINT" } {
+         Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)]
+      }
+   }
+}
+
+proc Graph::Draw { Frame VP Type } {
+   variable Param
+
+   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+
+   set data(Lat1) $Viewport::Map(LatCursor)
+   set data(Lon1) $Viewport::Map(LonCursor)
+
+   if { $Param(SelectMode)=="POINT" } {
+      Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat1) $data(Lon1)]
+   } else {
+      Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   }
+}
+
+proc Graph::DrawDone { Frame VP Type } {
+   variable Param
+
+   if { $Param(SelectMode)=="POINT" } {
+      return
+   }
+
+   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+
+   if { $data(Lat0)>$data(Lat1) } {
+      set tmp $data(Lat1)
+      set data(Lat1) $data(Lat0)
+      set data(Lat0) $tmp
+   }
+
+   if { $data(Lon0)>$data(Lon1) } {
+      set tmp $data(Lon1)
+      set data(Lon1) $data(Lon0)
+      set data(Lon0) $tmp
+   }
+
+   if { $data(Lat0)==$data(Lat1) || $data(Lon0)==$data(Lon1) } {
+      set data(Lat0) 0
+      set data(Lat1) 0
+      set data(Lon0) 0
+      set data(Lon1) 0
+      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) {}
+   } else {
+      set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
+   }
+
+   Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
+}
+
+proc Graph::MoveInit { Frame VP Type } {
+   variable Param
+
+   if { $Param(SelectMode)=="POINT" } {
+      return
+   }
+
+   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data  data
+
+   set data(LonD) $Viewport::Map(LonCursor)
+   set data(LatD) $Viewport::Map(LatCursor)
+
+   if { $data(FrameData)!="" } {
+      $data(FrameData).page.canvas delete [string toupper GRAPH${Type}$Graph::Data(Graph)]
+   }
+
+   set data(VP)        $VP
+   set data(FrameData) $Frame
+}
+
+proc Graph::Move { Frame VP Type } {
+   variable Param
+
+   if { $Param(SelectMode)=="POINT" } {
+      return
+   }
+
+   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data  data
+
+   #----- Effectuer la translation
+
+   set lat0 [expr $data(Lat0) + $Viewport::Map(LatCursor) - $data(LatD)]
+   set lat1 [expr $data(Lat1) + $Viewport::Map(LatCursor) - $data(LatD)]
+
+   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
+
+      set data(Lat0) $lat0
+      set data(Lat1) $lat1
+      eval set data(Lon0) [Viewport::CheckCoord [expr $data(Lon0) + $Viewport::Map(LonCursor) - $data(LonD)]]
+      eval set data(Lon1) [Viewport::CheckCoord [expr $data(Lon1) + $Viewport::Map(LonCursor) - $data(LonD)]]
+   }
+
+   #----- Reaffecter le point de reference de translation
+
+   set data(LonD) $Viewport::Map(LonCursor)
+   set data(LatD) $Viewport::Map(LatCursor)
+
+   Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+}
+
+proc Graph::MoveDone { Frame VP Type } {
+   Graph::DrawDone $Frame $VP $Type
+}
+
