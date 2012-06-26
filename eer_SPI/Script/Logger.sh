@@ -324,7 +324,7 @@ function Log_Time {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Log::CyclopePing>
+# Nom      : <Log_CyclopePing>
 # Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Touch du fichier ping de la job pour cyclope.
