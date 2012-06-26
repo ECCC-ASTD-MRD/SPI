@@ -54,7 +54,7 @@ LOG_JOBARGS=$*
 
 LOG_OC=""
 LOG_CYCLOPE=FALSE
-LOG_CYCLOPEPATH=${HOME}/projets/Cyclope/jobs
+LOG_CYCLOPEPATH=${HOME}/projets/Cyclope
 
 #----- Logger internal variables
 LOG_SECTIME=`date +%s`
@@ -324,6 +324,32 @@ function Log_Time {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Log::CyclopePing>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Touch du fichier ping de la job pour cyclope.
+#
+# Parametres  :
+#   <Delay>   : Delai de ping normal (Pour cyclope)
+#   <Job>     : Job to ping
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+function Log_CyclopePing {
+
+   delay=$1
+   job=$2
+
+   if [[ ${job} = "" ]]; then
+      job=${LOG_JOB}
+   fi
+   echo $delay > ${LOG_CYCLOPEPATH}/ping/$job
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Log_CyclopeStart>
 # Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
 #
@@ -339,7 +365,7 @@ function Log_Time {
 function Log_CyclopeStart {
 
    if [[ ${LOG_CYCLOPE} = "TRUE" ]]; then
-      path=${LOG_CYCLOPEPATH}/${LOG_JOBID}
+      path=${LOG_CYCLOPEPATH}/jobs/${LOG_JOBID}
 
       #----- Setup process info
       mkdir $path
@@ -377,7 +403,7 @@ function Log_CyclopeEnd {
    status=$1
 
    if [[ ${LOG_CYCLOPE} = "TRUE" ]]; then
-      path=${LOG_CYCLOPEPATH}/${LOG_JOBID}
+      path=${LOG_CYCLOPEPATH}/jobs/${LOG_JOBID}
 
       #----- Close process info
       printf "End time  : ${LOG_SECEND}\nRun time  : $((LOG_SECEND-LOG_SECSTART))\n" >> $path/info.txt
@@ -397,7 +423,7 @@ function Log_CyclopeEnd {
 function Log_CyclopeSysInfo {
 
    if [[ ${LOG_CYCLOPE} = "TRUE" ]]; then
-      path=${LOG_CYCLOPEPATH}/${LOG_JOBID}
+      path=${LOG_CYCLOPEPATH}/jobs/${LOG_JOBID}
 
       printf "None\n" >> $path/sysinfo.txt
    fi
@@ -406,7 +432,7 @@ function Log_CyclopeSysInfo {
 function Log_CyclopeProcInfo {
 
    if [[ ${LOG_CYCLOPE} = "TRUE" ]]; then
-      path=${LOG_CYCLOPEPATH}/${LOG_JOBID}
+      path=${LOG_CYCLOPEPATH}/jobs/${LOG_JOBID}
 
       printf "None\n" >> $path/procinfo.txt
    fi
