@@ -248,7 +248,7 @@ proc VectorBox::DrawInit { Frame VP } {
 
    #----- Find the first vectorial field
    set Data(Field) ""
-   foreach fld [Viewport::Assigned $Page::Data(Frame) $Viewport::Data(VP) fstdfield] {
+   foreach fld [Viewport::Assigned $Page::Data(Frame) $Page::Data(VP) fstdfield] {
       if { [fstdfield stats $fld -component]>1 } {
          set Data(Field) $fld
          break
@@ -298,7 +298,7 @@ proc VectorBox::MoveInit { Frame VP } {
 
    #----- Find the first vectorial field
    set Data(Field) ""
-   foreach fld [Viewport::Assigned $Page::Data(Frame) $Viewport::Data(VP) fstdfield] {
+   foreach fld [Viewport::Assigned $Page::Data(Frame) $Page::Data(VP) fstdfield] {
       if { [fstdfield stats $fld -component]>1 } {
          set Data(Field) $fld
          break

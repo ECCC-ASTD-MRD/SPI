@@ -1072,8 +1072,8 @@ proc ObsBox::Select { } {
          if { $lidx==-1 } {
             #----- Si l'observation n'etait pas deja selectionnee
 
-            observation stats $id -tag "$Page::Data(Frame) $Viewport::Data(VP) $box"
-            lappend Viewport::Data(Data$Viewport::Data(VP)) $id
+            observation stats $id -tag "$Page::Data(Frame) $Page::Data(VP) $box"
+            lappend Viewport::Data(Data$Page::Data(VP)) $id
             lappend lobs $id
          } else {
             set vp [lindex [observation stats $id -tag] 1]

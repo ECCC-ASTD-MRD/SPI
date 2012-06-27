@@ -155,6 +155,7 @@ namespace eval Page {
    set Data(Frames)     {}          ;#Liste des Pages
    set Data(Frame)      ""          ;#Frame courant
    set Data(Canvas)     ""          ;#Canvas courant
+   set Data(VP)         ""          ;#Viewport courant
    set Data(Scale)      100         ;#Scaling du frame courant
    set Data(Full)       1           ;#Scaling continue du frame courant
 
@@ -173,7 +174,7 @@ namespace eval Page {
    set Data(Value)      ""          ;#Valeur a l'interieur de la page
    set Data(Altitude)   ""          ;#Altitude a l'interieur de la page
    set Data(Mode)       Zoom        ;#Mode de manipulation
-   set Data(ToolMode)   ""          ;#Outils de selection courant
+   set Data(ToolMode)   SPI         ;#Outils de selection courant
    set Data(DrawMode)   ""          ;#Outils de dessin courant
 
    #----- Definitions des labels
@@ -1130,8 +1131,8 @@ proc Page::ModeSelect { Mode { Frames {} } } {
          bind $c <ButtonPress-2>   ""
          bind $c <ButtonRelease-2> ""
 
-         bind $c <ButtonPress-4>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)+0.05\]; ProjCam::ZoomScroll $frame $frame \$Viewport::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] True"
-         bind $c <ButtonPress-5>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)-0.05\]; ProjCam::ZoomScroll $frame $frame \$Viewport::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] False"
+         bind $c <ButtonPress-4>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)+0.05\]; ProjCam::ZoomScroll $frame $frame \$Page::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] True"
+         bind $c <ButtonPress-5>   "set Page::Data(L$frame) \[expr \$Page::Data(L$frame)-0.05\]; ProjCam::ZoomScroll $frame $frame \$Page::Data(VP) %x %y \[expr pow(2,\$Page::Data(L$frame))\] False"
 
          #----- Cas statique du mode Draw
 

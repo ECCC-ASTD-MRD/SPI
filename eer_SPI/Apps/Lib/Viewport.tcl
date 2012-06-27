@@ -256,6 +256,7 @@ proc Viewport::Activate { Frame { VP "" } } {
    #----- Definir les objects courants
 
    set Data(VP)                 $Data(VP$Frame)
+   set Page::Data(VP)           $Data(VP$Frame)
    set Data(Data)               $Data(Data$Frame)
 
    #----- Activer le viewport courant

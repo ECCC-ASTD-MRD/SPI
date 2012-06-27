@@ -1032,8 +1032,8 @@ proc TrajBox::Select { } {
 
             #----- Si la trajectoire n'etait pas deja selectionnee
 
-            trajectory stats $id -tag "$Page::Data(Frame) $Viewport::Data(VP) $box"
-            lappend Viewport::Data(Data$Viewport::Data(VP)) $id
+            trajectory stats $id -tag "$Page::Data(Frame) $Page::Data(VP) $box"
+            lappend Viewport::Data(Data$Page::Data(VP)) $id
             lappend trajs $id
          } else {
             set vp [lindex [trajectory stats $id -tag] 1]

@@ -235,7 +235,7 @@ proc Animator::Window { { Parent .} } {
          button $Data(Tab2).head.del  -image MINUS -bd 0 -relief flat -overrelief raised -command "Animator::FlyPointDel $Data(Tab2).way.list.box"
          button $Data(Tab2).head.rep  -image FINGER -bd 0 -relief flat -overrelief raised -command "Animator::FlyPointSet $Data(Tab2).way.list.box"
          checkbutton $Data(Tab2).head.show -image CAMPATH -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Animator::Fly(Show) -onvalue 1 -offvalue 0 \
-            -command { projcam configure $Page::Data(Frame) -show $Animator::Fly(Show) ; $Page::Data(Canvas) itemconf $Viewport::Data(VP) -camera $Page::Data(Frame) }
+            -command { projcam configure $Page::Data(Frame) -show $Animator::Fly(Show) ; $Page::Data(Canvas) itemconf $Page::Data(VP) -camera $Page::Data(Frame) }
          radiobutton $Data(Tab2).head.fly  -image MODEFLY -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Page::Data(Mode) -value Fly\
             -command { Page::ModeSelect Fly ; set Page::Data(ToolMode) SPI ; set Animator::Fly(Dir) 1; ProjCam::Fly2 $Page::Data(Frame) $Page::Data(Frame) }
          pack $Data(Tab2).head.del $Data(Tab2).head.add $Data(Tab2).head.show -side right -padx 2 -pady 2
@@ -1247,7 +1247,7 @@ proc Animator::FlyPath { Cam Type } {
 
    if { $Fly(Controls)!="" } {
       projcam define $Cam -path $Fly(Controls)
-      $Page::Data(Canvas) itemconf $Viewport::Data(VP) -camera $Page::Data(Frame)
+      $Page::Data(Canvas) itemconf $Page::Data(VP) -camera $Page::Data(Frame)
 
       set Fly(Length) [expr [llength $Fly(Controls)]-1]
    }

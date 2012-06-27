@@ -910,7 +910,7 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
          $Frame.page.canvas delete GRAPHCONTINGENCY$gr
          foreach pos $data(Pos) {
-            Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]" GRAPHCONTINGENCY$gr RECTANGLE
+            Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]" GRAPHCONTINGENCY$gr LATLONBOX
          }
 
          if { $data(Select)!="" && $data(Obs)!="" } {

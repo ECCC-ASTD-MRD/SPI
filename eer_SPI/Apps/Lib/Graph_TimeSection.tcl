@@ -728,27 +728,16 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
       }
 
       if { [llength $data(Pos$Pos)]==4 } {
-         set xy0 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1]]
-         set xy1 [fstdfield stats $Data -coordpoint [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
-         set x0  [expr int([lindex $xy0 0])]
-         set y0  [expr int([lindex $xy0 1])]
-         set x1  [expr int([lindex $xy1 0])]
-         set y1  [expr int([lindex $xy1 1])]
-         if { $x0==-1 || $y0==-1 || $x1==-1 || $y1==-1 } {
-            continue
-         }
          set n 0
          fstdfield free TIMESECTION$Item
-         for { set x $x0 } { $x<=$x1 } { incr x } {
-            for { set y $y0 } { $y<=$y1 } { incr y } {
-               fstdfield vertical TIMESECTION $fields [fstdfield stats $Data -gridpoint $x $y]
-               if { [fstdfield is TIMESECTION$Item] } {
-                  vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION
-               } else {
-                  fstdfield copy TIMESECTION$Item TIMESECTION
-               }
-               incr n
+         foreach ij [fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]] {
+            fstdfield vertical TIMESECTION $fields [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
+            if { [fstdfield is TIMESECTION$Item] } {
+               vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION
+            } else {
+               fstdfield copy TIMESECTION$Item TIMESECTION
             }
+            incr n
          }
          if { !$n } {
             return
@@ -859,7 +848,7 @@ proc Graph::TimeSection::UpdateItems { Frame { GR { } } } {
                if { [llength $data(Pos$pos)]==2 } {
                   set type POINT
                } else {
-                  set type RECTANGLE
+                  set type LATLONBOX
                }
                Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMESECTION$gr $type
             }

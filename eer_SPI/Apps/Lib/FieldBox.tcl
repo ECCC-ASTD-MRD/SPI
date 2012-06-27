@@ -1428,8 +1428,8 @@ proc FieldBox::Select { } {
             }
             #----- Si le champs n'etait pas deja selectionnee
 
-            eval $type stats $fld -tag \"$Page::Data(Frame) $Viewport::Data(VP) $box\"
-            lappend Viewport::Data(Data$Viewport::Data(VP)) $fld
+            eval $type stats $fld -tag \"$Page::Data(Frame) $Page::Data(VP) $box\"
+            lappend Viewport::Data(Data$Page::Data(VP)) $fld
             lappend flds $fld
          } else {
             set vp [lindex [fstdfield stats $fld -tag] 1]

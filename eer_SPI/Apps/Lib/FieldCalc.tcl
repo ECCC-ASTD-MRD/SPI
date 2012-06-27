@@ -575,9 +575,9 @@ proc FieldCalc::Window { { Parent .} } {
    frame .fieldcalc.expr -relief raised -bd 1
       entry .fieldcalc.expr.op -textvariable FieldCalc::Data(Operand) -bd 1 -bg $GDefs(ColorLight)
       button .fieldcalc.expr.save -image FOLDIN -relief flat -state disabled -overrelief raised -bd 1 \
-         -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
+         -command { if { [fstdfield is CALC$Page::Data(VP)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
-         -command { if { [fstdfield is CALC$Viewport::Data(VP)] } { FieldParams::Window CALC$Viewport::Data(VP) } }
+         -command { if { [fstdfield is CALC$Page::Data(VP)] } { FieldParams::Window CALC$Page::Data(VP) } }
       ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
       button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::Get . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
@@ -788,8 +788,8 @@ proc FieldCalc::FormulaSet { { Formula False } } {
          set Data(Operand) $Data(Formula$Data(Formula))
       }
 
-      set Viewport::Data(Operand$Viewport::Data(VP)) $Data(Operand)
-      set Viewport::Data(Formula$Viewport::Data(VP)) $Data(Formula)
+      set Viewport::Data(Operand$Page::Data(VP)) $Data(Operand)
+      set Viewport::Data(Formula$Page::Data(VP)) $Data(Formula)
    }
 }
 #----------------------------------------------------------------------------
@@ -1081,10 +1081,10 @@ proc FieldCalc::Save { File } {
       return
    }
 
-   FieldParams::Window CALC$Viewport::Data(VP)
+   FieldParams::Window CALC$Page::Data(VP)
 
    fstdfile open CALCFILE write $File
-   fstdfield write CALC$Viewport::Data(VP) CALCFILE 0 True
+   fstdfield write CALC$Page::Data(VP) CALCFILE 0 True
    fstdfile close CALCFILE
 }
 

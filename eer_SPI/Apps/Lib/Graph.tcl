@@ -703,11 +703,13 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
       $Data(Tab).head.sel.down.menu entryconfigure 0 -state disabled
       $Data(Tab).head.sel.down.menu entryconfigure 1 -state disabled
       $Data(Tab).head.sel.down.menu entryconfigure 2 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 3 -state disabled
       foreach mode $Valid {
          switch $mode {
            "POINT"     { $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
            "LINE"      { $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
            "LATLONBOX" {  $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+           "GRIDBOX"   {  $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
          }
       }
    }
@@ -716,6 +718,7 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
       "POINT"     { $Data(Tab).head.sel configure -image ARROW;       $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
       "LINE"      { $Data(Tab).head.sel configure -image ARROWLINE;   $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
       "LATLONBOX" { $Data(Tab).head.sel configure -image ARROWSQUARE; $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+      "GRIDBOX"   { $Data(Tab).head.sel configure -image ARROWGRID;   $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
    }
 }
 
@@ -771,9 +774,10 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
          menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu
          place $Data(Tab).head.sel.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.sel.down.menu
-         $Data(Tab).head.sel.down.menu add command -image ARROW -command { Graph::ModeSelect POINT }
-         $Data(Tab).head.sel.down.menu add command -image ARROWLINE -command { Graph::ModeSelect LINE }
-         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect LATLONBOX }
+         $Data(Tab).head.sel.down.menu add command -image ARROW       -command { Graph::ModeSelect POINT ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWLINE   -command { Graph::ModeSelect LINE ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect LATLONBOX ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWGRID   -command { Graph::ModeSelect GRIDBOX ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
 
          button $Data(Tab).head.reset -image GRAPHRESET -relief flat -bd 0 -overrelief raised -command ""
          button $Data(Tab).head.data -image GRAPHDATA -relief flat -bd 0 -overrelief raised -command ""
@@ -1240,7 +1244,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
          $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Graph::Color(Select) \
             -tags "$Page::Data(Tag)$VP $Tag" -outline $Graph::Color(Select)
       }
-   } elseif { $Type=="RECTANGLE" } {
+   } elseif { $Type=="LATLONBOX" } {
       if { [llength $Coords]==4 } {
          set la0 [lindex $Coords 0]
          set lo0 [lindex $Coords 1]
@@ -1257,6 +1261,33 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
             }
             $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
                -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
+         }
+      }
+   } elseif { $Type=="GRIDBOX" } {
+      if { [llength $Coords]==4 } {
+         set la0 [lindex $Coords 0]
+         set lo0 [lindex $Coords 1]
+         set la1 [lindex $Coords 2]
+         set lo1 [lindex $Coords 3]
+
+         if { [fstdfield is [set fld [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]]] } {
+            set coords [fstdfield stats $fld -gridbox 10 $la0 $lo0 $la1 $lo1]
+            set cos {}
+            foreach { lat lon } $coords {
+               lappend cos $lat $lon 0.0
+            }
+            Viewport::DrawLine $Frame $VP $cos $Tag $Graph::Color(Select) 2
+
+            if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
+               set x [lindex $xy 0]
+               set y [lindex $xy 1]
+
+               if { $Data(ShowCoord) } {
+                  set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
+               }
+               $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
+                  -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
+            }
          }
       }
    } else {
@@ -2207,6 +2238,7 @@ proc Graph::ZoomInit { Canvas X0 Y0 } {
 
 proc Graph::DrawInit { Frame VP Type } {
    variable Param
+   variable Data
 
    upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
 
@@ -2224,8 +2256,9 @@ proc Graph::DrawInit { Frame VP Type } {
       set data(FrameData) $Frame
       Graph::${Type}::Update $Frame $Graph::Data(Graph)
    } else {
-      if { $Param(SelectMode)=="POINT" } {
-         Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)]
+      switch $Param(SelectMode) {
+         "POINT" { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)] }
+         "GRIDBOX" { }
       }
    }
 }
@@ -2238,10 +2271,10 @@ proc Graph::Draw { Frame VP Type } {
    set data(Lat1) $Viewport::Map(LatCursor)
    set data(Lon1) $Viewport::Map(LonCursor)
 
-   if { $Param(SelectMode)=="POINT" } {
-      Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat1) $data(Lon1)]
-   } else {
-      Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   switch $Param(SelectMode) {
+      "POINT"     { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat1) $data(Lon1)] }
+      "LATLONBOX" { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False }
+      "GRIDBOX"   { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False }
    }
 }
 

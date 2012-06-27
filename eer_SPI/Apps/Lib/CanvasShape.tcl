@@ -823,14 +823,14 @@ proc CVScale::Create { Frame X Y Size } {
       }
       $canvas.cvscale.menu add separator
       $canvas.cvscale.menu add checkbutton -label [lindex $Lbl(BG) $GDefs(Lang)] -variable CVScale::Data(BG) -onvalue True -offvalue False \
-            -command { CVScale::Update $Page::Data(Frame) $Viewport::Data(VP) }
+            -command { CVScale::Update $Page::Data(Frame) $Page::Data(VP) }
     }
 
    $canvas create window [expr $x0-3] [expr $y0-1] -window $canvas.cvscale -anchor se -tags "CVSCALE NOPRINT"
 
    Shape::BindMove $canvas CVSCALE
 
-   CVScale::Update $Frame $Viewport::Data(VP)
+   CVScale::Update $Frame $Page::Data(VP)
 }
 
 #----------------------------------------------------------------------------
@@ -873,9 +873,9 @@ proc CVScale::Set { Frame } {
    variable Data
 
    set dxy    [expr 2.8e-4*double($Data(Scale))]
-   set factor [$Viewport::Data(VP) -distpix $dxy]
+   set factor [$Page::Data(VP) -distpix $dxy]
 
-   ProjCam::ZoomIn $Frame $Frame $Viewport::Data(VP) $factor
+   ProjCam::ZoomIn $Frame $Frame $Page::Data(VP) $factor
 }
 
 #------------------------------------------------------------------------------

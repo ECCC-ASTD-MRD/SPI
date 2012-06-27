@@ -479,7 +479,7 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Time X TIME
    Graph::ParamsAxis $Parent $GR Time Y
    Graph::ParamsObs  $Parent $GR Time
-   Graph::ModeSelect POINT { POINT LATLONBOX }
+   Graph::ModeSelect POINT { POINT LATLONBOX GRIDBOX }
 }
 
 #-------------------------------------------------------------------------------
@@ -695,16 +695,15 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
          foreach field $data(Data$Data) {
 
             if { [llength $data(Pos$Pos)]==4 } {
-               set xy0 [fstdfield stats [lindex $field 1] -coordpoint [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1]]
-               set xy1 [fstdfield stats [lindex $field 1] -coordpoint [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
-               set x0  [expr int([lindex $xy0 0])]
-               set y0  [expr int([lindex $xy0 1])]
-               set x1  [expr int([lindex $xy1 0])]
-               set y1  [expr int([lindex $xy1 1])]
-               if { $x0==-1 || $y0==-1 || $x1==-1 || $y1==-1 } {
-                  continue
+               set n 0
+               set val 0
+               foreach ij [fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]] {
+                  set val [expr $val+[fstdfield stats [lindex $field 1] -gridvalue [lindex $ij 0] [lindex $ij 1]]]
+                  incr n
                }
-               set val [vexpr NIL savg([lindex $field 1](($x0,$x1),($y0,$y1)))]
+               if { $n } {
+                  set val [expr $val/$n]
+               }
             } else {
                set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]
             }
@@ -834,7 +833,7 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
                if { [llength $data(Pos$pos)]==2 } {
                   set type POINT
                } else {
-                  set type RECTANGLE
+                  set type LATLONBOX
                }
                Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIME$gr $type
             }

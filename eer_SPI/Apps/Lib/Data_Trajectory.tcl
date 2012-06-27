@@ -277,7 +277,7 @@ proc Trajectory::Locate { Id Offset } {
       set lon1 $blon0
    }
 
-   ProjCam::CloseUp $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) $lat0 $lon0 $lat1 $lon1 $Offset
+   ProjCam::CloseUp $Page::Data(Frame) $Page::Data(Frame) $Page::Data(VP) $lat0 $lon0 $lat1 $lon1 $Offset
 }
 
 #----------------------------------------------------------------------------

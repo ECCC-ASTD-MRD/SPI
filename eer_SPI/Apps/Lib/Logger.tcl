@@ -54,7 +54,7 @@ namespace eval Log { } {
    set Param(MailTitle)   "Job Info"            ;#Mail title
 
    set Param(Cyclope)     False                                      ;#Use Cyclope
-   set Param(CyclopePath) $env(HOME)/projets/Cyclope/jobs ;#Path to Cyclope
+   set Param(CyclopePath) $env(HOME)/projets/Cyclope ;#Path to Cyclope
 
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
@@ -501,6 +501,30 @@ proc Log::Mail { Subject File { Address { } } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Log::CyclopePing>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Touch du fichier ping de la job pour cyclope.
+#
+# Parametres  :
+#   <Delay>   : Delai de ping normal (Pour cyclope)
+#   <Job>     : Job to ping
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::CyclopePing { Delay { Job "" } } {
+   variable Param
+
+   if { $Job=="" } {
+      set Job $Param(JobId)
+   }
+   exec echo $Delay > $Param(CyclopePath)/ping/$Job
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Log::CyclopeStart>
 # Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
 #
@@ -518,7 +542,7 @@ proc Log::CyclopeStart { } {
    variable Param
 
    if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/$Param(JobId)
+      set path $Param(CyclopePath)/jobs/$Param(JobId)
 
       #----- Setup process info
       file mkdir $path
@@ -557,7 +581,7 @@ proc Log::CyclopeEnd { Status } {
    variable Param
 
    if { $Param(Cyclope) } {
-      set f [open $Param(CyclopePath)/$Param(JobId)/info.txt a]
+      set f [open $Param(CyclopePath)/jobs/$Param(JobId)/info.txt a]
 
       #----- Close process info
       puts $f "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]"
@@ -592,7 +616,7 @@ proc Log::CyclopeSysInfo { } {
 
    #----- Activate Cylope links
    if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/$Param(JobId)
+      set path $Param(CyclopePath)/jobs/$Param(JobId)
 
       set calls "-uptime -loads -totalmem -freemem -sharedmem -buffermem -totalswap -freeswap -process -totalhigh -freehigh -memunit"
       eval set stats \[system info $calls\]
@@ -674,7 +698,7 @@ proc Log::CyclopeProcInfo { { PID "" } } {
       "Unknown" }
 
    if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/$Param(JobId)
+      set path $Param(CyclopePath)/jobs/$Param(JobId)
 
       set calls "-utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch"
       eval set stats \[system usage $calls\]
