@@ -373,7 +373,7 @@ fi
 
 #----- Load logging and specific model related functions
 . ${EER_DIRSCRIPT}/Logger.sh
-. ${MODEL_DIRSCRIPT}/Model_${MODEL_NAME}.sh
+. ${MODEL_DIRSCRIPT:=${EER_DIRSCRIPT}}/Model_${MODEL_NAME}.sh
 
 Log_Start Model.sh 1.0 ${1}
 
