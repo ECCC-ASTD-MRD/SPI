@@ -2309,7 +2309,18 @@ proc Graph::DrawDone { Frame VP Type } {
       set data(Pos$Graph::Data(Graph)$Graph::Data(Item)) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
    }
 
+   .                  config -cursor watch
+   $Frame.page.canvas config -cursor watch
+   $data(Canvas)      config -cursor watch
+   $data(Frame)       config -cursor watch
+   update idletasks
+
    Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
+
+   .                  config -cursor left_ptr
+   $Frame.page.canvas config -cursor left_ptr
+   $data(Canvas)      config -cursor left_ptr
+   $data(Frame)       config -cursor left_ptr
 }
 
 proc Graph::MoveInit { Frame VP Type } {

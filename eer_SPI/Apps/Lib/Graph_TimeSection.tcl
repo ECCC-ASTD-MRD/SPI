@@ -662,7 +662,9 @@ proc Graph::TimeSection::ItemDefine { GR Pos Coords { Update True } } {
       lappend data(Items$Pos) $item
 
       Graph::TimeSection::ItemAdd $GR $item
-      Graph::TimeSection::ItemData $GR $Pos $item $field
+      if { $Update } {
+         Graph::TimeSection::ItemData $GR $Pos $item $field
+      }
    }
 
    Graph::TimeSection::UpdateItems $data(FrameData) $GR

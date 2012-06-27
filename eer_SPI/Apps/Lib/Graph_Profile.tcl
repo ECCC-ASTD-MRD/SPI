@@ -577,7 +577,9 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
       lappend data(Items$Pos) $item
 
       Graph::Profile::ItemAdd $GR $item
-      Graph::Profile::ItemData $GR $Pos $item $field
+      if { $Update } {
+         Graph::Profile::ItemData $GR $Pos $item $field
+      }
    }
 
    Graph::Profile::UpdateItems $data(FrameData) $GR
