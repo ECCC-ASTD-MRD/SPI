@@ -18,7 +18,8 @@
 #   LOG_FILE       File to use for log (stdout if undefined)
 #   LOG_TIME       Include dates in log
 #   LOG_JOBID      Job Identificator
-#   LOG_JOBCLASS   Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE)
+#   LOG_JOBCLASS   Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
+#   LOG_JOBREPORT  Job class (ALL,WARNING,ERROR)
 #   LOG_CYCLOPE    Use cyclope (TRUE,FALSE)
 #
 # Functions:
@@ -49,6 +50,7 @@ LOG_JOBID=${LOG_JOBID:=""}
 LOG_JOBDATE=""
 LOG_JOBPATH=${LOG_JOBPATH:=""}
 LOG_JOBCLASS=${LOG_JOBCLASS:=SCRIPT}
+LOG_JOBREPORT=${LOG_JOBREPORT:=ALL}
 LOG_JOBCOMMAND=$0
 LOG_JOBARGS=$*
 
@@ -180,6 +182,17 @@ function Log_End {
    if [[ ${status} -eq 0 ]]; then
       if [[ ${LOG_JOBCLASS} = "INTERACTIVE" ]]; then
          Log_Mail "Job finished (NORMAL)" ${LOG_FILE}
+      fi
+      if [[ ${LOG_JOBCLASS} = "REPORT" ]]; then
+         if [[ ${LOG_JOBREPORT} = "WARNING" ]]; then
+            if [[ ${LOG_WARNINGS} -gt 0 ]]; then
+               Log_Mail "Job finished (WARNING)" ${LOG_FILE}
+            fi
+         else
+            if [[ ${LOG_JOBREPORT} != "ERROR" ]]; then
+               Log_Mail "Job finished (NORMAL)" ${LOG_FILE}
+            fi
+         fi
       fi
    else
       Log_Mail "Job finished (ERROR)" ${LOG_FILE}
