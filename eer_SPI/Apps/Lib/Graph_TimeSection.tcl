@@ -717,6 +717,7 @@ proc Graph::TimeSection::ItemUnDefine { GR Pos } {
 #-------------------------------------------------------------------------------
 
 proc Graph::TimeSection::ItemData { GR Pos Item Data } {
+   global GDefs
 
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
    upvar #0 Graph::TimeSection::TimeSection${GR}::Graph graph
@@ -730,9 +731,12 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
       }
 
       if { [llength $data(Pos$Pos)]==4 } {
-         set n 0
+         set n   0
+         set ijs [ fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+         set df  [expr 100.0/([llength $ijs]-1)]
+
          fstdfield free TIMESECTION$Item
-         foreach ij [fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]] {
+         foreach ij $ijs {
             fstdfield vertical TIMESECTION $fields [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
             if { [fstdfield is TIMESECTION$Item] } {
                vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION
@@ -740,12 +744,14 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
                fstdfield copy TIMESECTION$Item TIMESECTION
             }
             incr n
+            SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
          }
          if { !$n } {
             return
          }
          fstdfield free GTIMESECTION
-          vexpr TIMESECTION$Item TIMESECTION$Item/$n
+         vexpr TIMESECTION$Item TIMESECTION$Item/$n
+         SPI::Progress 0
       } else {
          fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
       }

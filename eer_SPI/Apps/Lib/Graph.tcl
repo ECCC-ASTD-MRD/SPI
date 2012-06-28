@@ -227,7 +227,8 @@ namespace eval Graph {
 
    #----- Messages
 
-   set Msg(Reading)   { "Lecture des données" "Reading data" }
+   set Msg(Reading)    { "Lecture des données" "Reading data" }
+   set Msg(Extracting) { "Extraction des données" "Extracting data" }
 
    #----- Bulles d'aides
 

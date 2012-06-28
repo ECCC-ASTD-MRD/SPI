@@ -479,7 +479,7 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Time X TIME
    Graph::ParamsAxis $Parent $GR Time Y
    Graph::ParamsObs  $Parent $GR Time
-   Graph::ModeSelect POINT { POINT LATLONBOX GRIDBOX }
+   Graph::ModeSelect POINT { POINT LATLONBOX }
 }
 
 #-------------------------------------------------------------------------------
@@ -680,6 +680,7 @@ proc Graph::Time::ItemUnDefine { GR Pos } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Time::ItemData { GR Pos Item Data } {
+   global GDefs
 
    upvar #0 Graph::Time::Time${GR}::Data  data
    upvar #0 Graph::Time::Time${GR}::Graph graph
@@ -688,6 +689,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 
       set lat [lindex $data(Pos$Pos) 0]
       set lon [lindex $data(Pos$Pos) 1]
+      set df  [expr 100.0/([llength $data(Data$Data)]-1)]
 
       if { [fstdfield is $Data] } {
 
@@ -695,17 +697,10 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
          vector set $Item.Y {}
 
          foreach field $data(Data$Data) {
-
             if { [llength $data(Pos$Pos)]==4 } {
                set n 0
-               set val 0
-               foreach ij [fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]] {
-                  set val [expr $val+[fstdfield stats [lindex $field 1] -gridvalue [lindex $ij 0] [lindex $ij 1]]]
-                  incr n
-               }
-               if { $n } {
-                  set val [expr $val/$n]
-               }
+               set val [fstdfield stats [lindex $field 1] -avg [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+               SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
             } else {
                set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]
             }
@@ -717,6 +712,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
                vector append $Item.Y $spd
             }
          }
+         SPI::Progress 0
          set graph(UnitY) [fstdfield configure $Data -unit]
       } elseif { [observation is $Data] } {
 
@@ -736,7 +732,8 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
                   vector append $Item.Y $spd
                }
             }
-         }
+            SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
+        }
          set graph(UnitY) [observation configure $Data -unit]
       }
    }

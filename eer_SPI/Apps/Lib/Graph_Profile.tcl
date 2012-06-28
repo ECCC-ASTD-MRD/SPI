@@ -632,6 +632,7 @@ proc Graph::Profile::ItemUnDefine { GR Pos } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Profile::ItemData { GR Pos Item Data  } {
+   global GDefs
 
    upvar #0 Graph::Profile::Profile${GR}::Data  data
    upvar #0 Graph::Profile::Profile${GR}::Graph graph
@@ -640,9 +641,13 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
 
       if { [fstdfield is $Data] } {
          if { [llength $data(Pos$Pos)]==4 } {
-            set n 0
+            set n   0
+            set ijs [ fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+            set df  [expr 100.0/([llength $ijs]-1)]
+
             fstdfield free GRAPHPROFILE
-            foreach ij [fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]] {
+
+            foreach ij $ijs {
                fstdfield vertical GRAPHPROFILEAVG $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
                if { [fstdfield is GRAPHPROFILE] } {
                   vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILEAVG
@@ -650,12 +655,14 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                   fstdfield copy GRAPHPROFILE GRAPHPROFILEAVG
                }
                incr n
+               SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
             }
             if { !$n } {
                return
             }
             fstdfield free GRAPHPROFILEAVG
             vexpr GRAPHPROFILE GRAPHPROFILE/$n
+            SPI::Progress 0
          } else {
             fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
          }

@@ -865,11 +865,14 @@ proc Graph::Scatter::UpdateItems { Frame { GR { } } } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
+   global GDefs
 
-   eval set grids \[fstdfield stats $Data0 -within $Coords\]
-   foreach grid $grids {
-      set i [lindex $grid 0]
-      set j [lindex $grid 1]
+   eval set ijs \[fstdfield stats $Data0 -within $Coords\]
+   set df  [expr 100.0/([llength $ijs]-1)]
+
+   foreach ij $ijs {
+      set i [lindex $ij 0]
+      set j [lindex $ij 1]
       set coo [fstdfield stats $Data0 -gridpoint $i $j]
       set lat [lindex $coo 0]
       set lon [lindex $coo 1]
@@ -885,7 +888,9 @@ proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
          vector append $Item.X $val0
          vector append $Item.Y $val1
       }
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
    }
+   SPI::Progress 0
 }
 
 #-------------------------------------------------------------------------------
@@ -907,6 +912,7 @@ proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
+   global GDefs
 
    #----- Dans le cas d'un champs, on en extrait les valeurs aux position de l'observation
 
@@ -927,6 +933,8 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
    set in   1
 
    eval set idxs \[observation stats $Data0 -within $Coords\]
+   set df  [expr 100.0/([llength $idxs]-1)]
+
    foreach idx $idxs {
       set val0 [observation define $Data0 -DATA $idx]
       set val1 [observation define $Data1 -DATA $idx]
@@ -935,6 +943,7 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
          vector append $Item.X $val0
          vector append $Item.Y $val1
       }
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
    }
 
    #----- Dans le cas d'un champs, suprimer l'observation temporaire
@@ -945,4 +954,5 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
    if { [fstdfield is $Data0] } {
       observation free $Data0
    }
+   SPI::Progress 0
 }
