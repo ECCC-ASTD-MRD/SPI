@@ -1757,14 +1757,15 @@ int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,i
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
-   int      i,j,k,n,idx=0,df,f,nf;
-   double   lat,lon,x,y,spd,dir;
-   char     buf[64],*mask=NULL;
+   int       i,j,k,n,idx=0,cidx=-1,df,f,nf;
+   double    lat,lon,x,y,spd,dir;
+   char      buf[64],*mask=NULL,style[256];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
-   TList    *list;
-   T3DArray *array;
-   TData   **field;
-   Tcl_Obj  *obj;
+   TList     *list;
+   T3DArray  *array;
+   TData    **field;
+   TDataSpec *spec;
+   Tcl_Obj   *obj;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Invalid layer",(char*)NULL);
@@ -1793,32 +1794,42 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       Data_PreInit(field[f]);
    }
 
-   if (field[0]->Spec->RenderContour && nf>1) {
+   spec=field[0]->Spec;
+
+   if (spec->RenderContour && nf>1) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import multiple field contours",(char*)NULL);
       free(field);
       return(TCL_ERROR);
    }
 
-   if (field[0]->Spec->RenderParticle && !FSTD_FieldReadMesh(field[0])) {
+   if (spec->RenderParticle && !FSTD_FieldReadMesh(field[0])) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import field particles",(char*)NULL);
       free(field);
       return(TCL_ERROR);
    }
 
-   if (field[0]->Spec->RenderContour) {
+   if (spec->RenderContour) {
 
       OGR_FieldCreate(Layer,"Interval","Real",32);
 
-      Layer->NFeature=field[0]->Spec->InterNb;
+      Layer->NFeature=spec->InterNb;
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
 
-      for(n=0;n<field[0]->Spec->InterNb;n++) {
+      for(n=0;n<spec->InterNb;n++) {
          Layer->Feature[n]=OGR_F_Create(Layer->Def);
 
-         OGR_F_SetFieldDouble(Layer->Feature[n],0,field[0]->Spec->Inter[n]);
+         OGR_F_SetFieldDouble(Layer->Feature[n],0,spec->Inter[n]);
+
+         if (spec->MapAll && spec->Map) {
+            VAL2COL(cidx,spec,spec->Inter[n]);
+            sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
+         } else {
+            sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
+         }
+         OGR_F_SetStyleString(Layer->Feature[n],style);
 
          Data_Clean(field[0],0,0,1);
-         FFContour(REF_COOR,field[0]->Ref,field[0]->Def,field[0]->Stat,NULL,1,&field[0]->Spec->Inter[n],3,1);
+         FFContour(REF_COOR,field[0]->Ref,field[0]->Def,field[0]->Stat,NULL,1,&spec->Inter[n],3,1);
          cont=OGR_G_CreateGeometry(wkbMultiLineString);
 
          list=field[0]->Def->Segments;
@@ -1884,11 +1895,27 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                   }
                }
 
-               if (field[0]->Spec->RenderParticle) {
+               if (spec->Map) {
+                  VAL2COL(cidx,spec,spd);
+               }
+
+               if (spec->RenderParticle) {
+                  if (cidx>-1) {
+                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderParticle);
+                  } else {
+                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderParticle);
+                  }
+                  OGR_F_SetStyleString(Layer->Feature[n],style);
+
                   geom=OGR_G_CreateGeometry(wkbPoint25D);
                   Layer->Ref->UnProject(Layer->Ref,&x,&y,field[0]->Ref->Lat[idx],field[0]->Ref->Lon[idx],1,1);
                   OGR_G_AddPoint(geom,x,y,(field[0]->Ref->Hgt?field[0]->Ref->Hgt[idx]:0.0));
-               } else if (field[0]->Spec->RenderTexture) {
+               } else if (spec->RenderTexture) {
+                  if (cidx>-1) {
+                     sprintf(style,"BRUSH(fc:#%02x%02x%02x%02x);PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],1);
+                     OGR_F_SetStyleString(Layer->Feature[n],style);
+                  }
+
                   geom=OGR_G_CreateGeometry(wkbPolygon);
                   poly=OGR_G_CreateGeometry(wkbLinearRing);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
@@ -1908,6 +1935,13 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                   OGR_G_AddPoint_2D(poly,x,y);
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
+                  if (spec->MapAll && cidx>-1) {
+                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderGrid);
+                  } else {
+                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderGrid);
+                  }
+                  OGR_F_SetStyleString(Layer->Feature[n],style);
+
                   field[0]->Ref->Project(field[0]->Ref,i,j,&lat,&lon,1,1);
                   Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
                   geom=OGR_G_CreateGeometry(wkbPoint);

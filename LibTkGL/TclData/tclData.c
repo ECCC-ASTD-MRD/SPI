@@ -1479,18 +1479,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TList    *list;
    T3DArray *array;
    Vect3d   *vbuf;
-   int       n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
+   int       x,n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int       nb,len,nobj;
    unsigned long npt;
-   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,val,val1,dl,dv,tmpd,min,max;
+   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
    float     *levels;
    char      buf[32],mode='L';
 
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
-   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
+   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
       GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
@@ -1549,9 +1549,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case MAX:
-            if (!Field->Stat)
-               Data_GetStat(Field);
             if (Objc==1) {
+               if (!Field->Stat)
+               Data_GetStat(Field);
+
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Max)));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Lat));
@@ -1559,15 +1560,20 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Stat->Max);
-               Field->Stat->Max=SPEC2VAL(Field->Spec,Field->Stat->Max);
+               if(Objc!=5) {
+                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+                  return(TCL_ERROR);
+               }
+               Data_GetAreaValue(Interp,3,Field,Objc-1,Objv+1);
+               i+=4;
             }
             break;
 
          case MIN:
-            if (!Field->Stat)
-               Data_GetStat(Field);
             if (Objc==1) {
+               if (!Field->Stat)
+                  Data_GetStat(Field);
+
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Min)));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Lat));
@@ -1575,15 +1581,29 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Stat->Min);
-               Field->Stat->Min=SPEC2VAL(Field->Spec,Field->Stat->Min);
+               if(Objc!=5) {
+                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+                  return(TCL_ERROR);
+               }
+               Data_GetAreaValue(Interp,2,Field,Objc-1,Objv+1);
+               i+=4;
             }
             break;
 
          case AVG:
-            if (!Field->Stat)
-               Data_GetStat(Field);
-            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Avg)));
+            if (Objc==1) {
+               if (!Field->Stat)
+                  Data_GetStat(Field);
+
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Avg)));
+            } else {
+               if(Objc!=5) {
+                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+                  return(TCL_ERROR);
+               }
+               Data_GetAreaValue(Interp,0,Field,Objc-1,Objv+1);
+               i+=4;
+            }
             break;
 
          case HIGH:
@@ -1786,79 +1806,73 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_SetObjResult(Interp,obj);
             break;
 
+         case GRIDBOX:
+            if (!Field->Ref) {
+               Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat0);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon0);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat1);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon1);
+
+            if (!Field->Ref->UnProject(Field->Ref,&dx0,&dy0,dlat0,dlon0,0,1)) {
+               break;
+            }
+            if (!Field->Ref->UnProject(Field->Ref,&dx1,&dy1,dlat1,dlon1,0,1)) {
+               break;
+            }
+
+            obj=Tcl_NewListObj(0,NULL);
+
+            for(dx=dx0;dx<dx1-dl;dx+=dl) {
+               Field->Ref->Project(Field->Ref,dx,dy0,&dlat,&dlon,0,1);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+            }
+            Field->Ref->Project(Field->Ref,dx1,dy0,&dlat,&dlon,0,1);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+
+            for(dy=dy0;dy<dy1-dl;dy+=dl) {
+               Field->Ref->Project(Field->Ref,dx1,dy,&dlat,&dlon,0,1);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+            }
+            Field->Ref->Project(Field->Ref,dx1,dy1,&dlat,&dlon,0,1);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+
+            for(dx=dx1;dx>dx0+dl;dx-=dl) {
+               Field->Ref->Project(Field->Ref,dx,dy1,&dlat,&dlon,0,1);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+            }
+            Field->Ref->Project(Field->Ref,dx0,dy1,&dlat,&dlon,0,1);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+
+            for(dy=dy1;dy>dy0+dl;dy-=dl) {
+               Field->Ref->Project(Field->Ref,dx0,dy,&dlat,&dlon,0,1);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+            }
+            Field->Ref->Project(Field->Ref,dx0,dy0,&dlat,&dlon,0,1);
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
+
+            Tcl_SetObjResult(Interp,obj);
+            break;
+
          case WITHIN:
             if (!Field->Ref) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
 
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat0);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon0);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat1);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon1);
-
-            if (dlon0*dlon1<0) {
-               dl=dlon1-dlon0;
-            } else {
-               dl=0;
-            }
-
-            obj=Tcl_NewListObj(0,NULL);
-            if (Field->Ref->Grid[0]!='V') {
-               for (ni=0;ni<Field->Def->NI;ni++) {
-                  for (nj=0;nj<Field->Def->NJ;nj++) {
-                     if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
-                        f=1;
-                     } else {
-                        Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
-                        f=0;
-                        if (dlat>=dlat0 && dlat<=dlat1) {
-                           if (dl<=180) {
-                              if (dlon>=dlon0 && dlon<=dlon1) {
-                                 f=1;
-                              }
-                           } else {
-                              if ((dlon<=dlon0 && dlon>-180) || (dlon>=dlon1 && dlon<180)) {
-                                 f=1;
-                              }
-                           }
-                        }
-                     }
-                     if (f) {
-                        sub=Tcl_NewListObj(0,NULL);
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(nj));
-                        Tcl_ListObjAppendElement(Interp,obj,sub);
-                     }
-                  }
-               }
-            } else {
-               for (index=0;index<Field->Def->NI;index++) {
-                  if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
-                     f=1;
-                  } else {
-                     f=0;
-                     if (Field->Ref->Lat[index]>=dlat0 && Field->Ref->Lat[index]<=dlat1) {
-                        if (dl<=180) {
-                           if (Field->Ref->Lon[index]>=dlon0 && Field->Ref->Lon[index]<=dlon1) {
-                              f=1;
-                           }
-                        } else {
-                           if ((Field->Ref->Lon[index]<=dlon0 && dlon>-180) || (Field->Ref->Lon[index]>=dlon1 && dlon<180)) {
-                              f=1;
-                           }
-                        }
-                     }
-                  }
-                  if (f) {
-                     sub=Tcl_NewListObj(0,NULL);
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(index));
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
-                     Tcl_ListObjAppendElement(Interp,obj,sub);
-                  }
-               }
-            }
-            Tcl_SetObjResult(Interp,obj);
+            Data_GetAreaValue(Interp,4,Field,Objc-1,Objv+1);
+            i+=4;
             break;
 
          case UNPROJECT:
@@ -2506,6 +2520,140 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
       }
    }
    return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Data_GetAreaValue>
+ * Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Extrait des valeurs pour une region latlon
+ *
+ * Parametres  :
+ *  <Interp>   : Interpreteur TCL
+ *  <Field>    : Pointeur sur le champs
+ *  <Mode>     : Type d'extraction (0:Average,1:Somme,1:Minimum,2:Maximum,4:Points de grilles)
+ *  <Objc>     : Nombre d'arguments
+ *  <Objv>     : Liste des arguments
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
+
+   Tcl_Obj *obj,*sub;
+   int      f,n=0,index,ni,nj,i0,j0,i1,j1;
+   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
+
+   Tcl_GetDoubleFromObj(Interp,Objv[0],&dlat0);
+   Tcl_GetDoubleFromObj(Interp,Objv[1],&dlon0);
+   Tcl_GetDoubleFromObj(Interp,Objv[2],&dlat1);
+   Tcl_GetDoubleFromObj(Interp,Objv[3],&dlon1);
+
+   if (dlon0*dlon1<0) {
+      dl=dlon1-dlon0;
+   } else {
+      dl=0;
+   }
+
+   switch(Mode) {
+      case 0:
+      case 1: tot=0; break;
+      case 2: tot=1e38; break;
+      case 3: tot=-1e38; break;
+      case 4: obj=Tcl_NewListObj(0,NULL); break;
+   }
+
+   if (Field->Ref->Grid[0]!='V') {
+
+      GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
+
+      for (ni=i0;ni<i1;ni++) {
+         for (nj=j0;nj<j1;nj++) {
+            if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
+               f=1;
+            } else {
+               Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+               f=0;
+               if (dlat>=dlat0 && dlat<=dlat1) {
+                  if (dl<=180) {
+                     if (dlon>=dlon0 && dlon<=dlon1) {
+                        f=1;
+                     }
+                  } else {
+                     if ((dlon<=dlon0 && dlon>-180) || (dlon>=dlon1 && dlon<180)) {
+                        f=1;
+                     }
+                  }
+               }
+            }
+            if (f) {
+               index=FIDX2D(Field->Def,ni,nj);
+               Def_GetMod(Field->Def,index,v);
+               n++;
+               switch(Mode) {
+                  case 0:
+                  case 1: tot+=v; break;
+                  case 2: tot=tot>v?v:tot; break;
+                  case 3: tot=tot<v?v:tot; break;
+                  case 4:
+                     sub=Tcl_NewListObj(0,NULL);
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(nj));
+                     Tcl_ListObjAppendElement(Interp,obj,sub);
+                     break;
+               }
+            }
+         }
+      }
+   } else {
+      for (index=0;index<Field->Def->NI;index++) {
+         if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
+            f=1;
+         } else {
+            f=0;
+            if (Field->Ref->Lat[index]>=dlat0 && Field->Ref->Lat[index]<=dlat1) {
+               if (dl<=180) {
+                  if (Field->Ref->Lon[index]>=dlon0 && Field->Ref->Lon[index]<=dlon1) {
+                     f=1;
+                  }
+               } else {
+                  if ((Field->Ref->Lon[index]<=dlon0 && dlon>-180) || (Field->Ref->Lon[index]>=dlon1 && dlon<180)) {
+                     f=1;
+                  }
+               }
+            }
+         }
+         if (f) {
+            Def_GetMod(Field->Def,index,v);
+            n++;
+            switch(Mode) {
+               case 0:
+               case 1: tot+=v; break;
+               case 2: tot=tot>v?v:tot; break;
+               case 3: tot=tot<v?v:tot; break;
+               case 4:
+                  sub=Tcl_NewListObj(0,NULL);
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(index));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
+                  Tcl_ListObjAppendElement(Interp,obj,sub);
+                  break;
+            }
+         }
+      }
+   }
+
+   switch(Mode) {
+      case 0: tot/=n;
+      case 1:
+      case 2:
+      case 3: obj=Tcl_NewDoubleObj(tot);
+   }
+   Tcl_SetObjResult(Interp,obj);
+
+   return(n);
 }
 
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {

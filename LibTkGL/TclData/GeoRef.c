@@ -1819,6 +1819,46 @@ int GeoRef_WithinRange(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double L
    return(0);
 }
 
+int GeoRef_BoundingBox(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1,int *I0,int *J0,int *I1,int *J1) {
+
+   double di,dj;
+   int    i0,j0,i1,j1;
+
+   *I0=*J0=1000000;
+   *I1=*J1=-1000000;
+
+   Ref->UnProject(Ref,&di,&dj,Lat0,Lon0,1,1);
+   *I0=*I0<di?*I0:di;
+   *J0=*J0<dj?*J0:dj;
+   *I1=*I1>di?*I1:di;
+   *J1=*J1>dj?*J1:dj;
+
+   Ref->UnProject(Ref,&di,&dj,Lat0,Lon1,1,1);
+   *I0=*I0<di?*I0:di;
+   *J0=*J0<dj?*J0:dj;
+   *I1=*I1>di?*I1:di;
+   *J1=*J1>dj?*J1:dj;
+
+   Ref->UnProject(Ref,&di,&dj,Lat1,Lon1,1,1);
+   *I0=*I0<di?*I0:di;
+   *J0=*J0<dj?*J0:dj;
+   *I1=*I1>di?*I1:di;
+   *J1=*J1>dj?*J1:dj;
+
+   Ref->UnProject(Ref,&di,&dj,Lat1,Lon0,1,1);
+   *I0=*I0<di?*I0:di;
+   *J0=*J0<dj?*J0:dj;
+   *I1=*I1>di?*I1:di;
+   *J1=*J1>dj?*J1:dj;
+
+   *I0=*I0<Ref->X0?Ref->X0:*I0;
+   *J0=*J0<Ref->Y0?Ref->Y0:*J0;
+   *I1=*I1>Ref->X1?Ref->X1:*I1;
+   *J1=*J1>Ref->Y1?Ref->Y1:*J1;
+
+    return(1);
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoRef_Valid>
  * Creation     : Fevrier 2009. Gauthier - CMC/CMOE

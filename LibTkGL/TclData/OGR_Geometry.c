@@ -276,17 +276,17 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   }
                   pt[2]=0.0;
                   for(j=0;j<n;) {
-                  Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                  Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
-                  Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                  Tcl_GetDoubleFromObj(Interp,obj,&pt[1]);
-                  if (OGR_G_GetCoordinateDimension(geom)==3) {
                      Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
                      Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
-                     OGR_G_AddPoint(geom,pt[0],pt[1],pt[2]);
-                  } else {
-                     OGR_G_AddPoint_2D(geom,pt[0],pt[1]);
-                  }
+                     Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
+                     Tcl_GetDoubleFromObj(Interp,obj,&pt[1]);
+                     if (OGR_G_GetCoordinateDimension(geom)==3) {
+                        Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
+                        Tcl_GetDoubleFromObj(Interp,obj,&pt[0]);
+                        OGR_G_AddPoint(geom,pt[0],pt[1],pt[2]);
+                     } else {
+                        OGR_G_AddPoint_2D(geom,pt[0],pt[1]);
+                     }
                   }
                }
             }

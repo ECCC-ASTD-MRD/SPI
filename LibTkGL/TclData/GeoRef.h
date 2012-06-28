@@ -179,6 +179,7 @@ void     GeoRef_Clear(TGeoRef *Ref,int New);
 TGeoRef* GeoRef_Find(TGeoRef *Ref);
 void     GeoRef_Qualify(TGeoRef *Ref);
 int      GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lon1);
+int      GeoRef_BoundingBox(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1,int *I0,int *J0,int *I1,int *J1);
 int      GeoRef_Valid(TGeoRef *Ref);
 
 TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,double ResA,int NTheta,float *Theta);
