@@ -1282,6 +1282,8 @@ int Projection_Init(Tcl_Interp *Interp){
          return(TCL_ERROR);
    }
 
+   VBuffer_Init();
+
    Tcl_CreateObjCommand(Interp,"projection",Projection_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    return(TCL_OK);

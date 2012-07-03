@@ -2014,7 +2014,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
-               vbuf=GDB_VBufferAlloc(len*2+1);
+               vbuf=VBuffer_Alloc(len*2+1);
 
                b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
                f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
@@ -2055,7 +2055,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
             if (Field->Def->Data[1]) {
-               vbuf=GDB_VBufferAlloc(len*2+1);
+               vbuf=VBuffer_Alloc(len*2+1);
 
                b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
                f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);

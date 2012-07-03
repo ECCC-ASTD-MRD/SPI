@@ -1701,7 +1701,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
             continue;
 
          /*Project face in data space*/
-         v=GDB_VBufferAlloc(Obj->Fc[f].NIdx);
+         v=VBuffer_Alloc(Obj->Fc[f].NIdx);
          Vect_Init(extent[0],1e32,1e32,1e32);
          Vect_Init(extent[1],-1e32,-1e32,-1e32);
          n=0;

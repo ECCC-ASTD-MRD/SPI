@@ -446,7 +446,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
             if (len>1) {
                if ((array=T3DArray_Alloc(Inter[n],len))) {
                   Def->Segments=TList_Add(Def->Segments,array);
-                  GDB_VBufferCopy(array->Data,len);
+                  VBuffer_Copy(array->Data,len);
                } else {
                  fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);
                }
@@ -465,7 +465,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
    if (buf)
       free(buf);
 
-   GDB_VBufferCheck();
+   VBuffer_Check();
    return(1);
 }
 
@@ -724,7 +724,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
             }
             index=FFContour_BuildIndex(Depth,&side,X,Y,x,y);
 
-            if ((vbuf=GDB_VBufferAlloc(n+1))) {
+            if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
                   case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
                   case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
@@ -774,7 +774,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
 
       /*Get the segment intersection coordinate within the voxel*/
       if (side=FFContour_QuadCross(d,side,vox,Inter,&x,&y)) {
-         if ((vbuf=GDB_VBufferAlloc(n+1))) {
+         if ((vbuf=VBuffer_Alloc(n+1))) {
             switch(Mode) {
                case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
                case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
@@ -830,7 +830,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
             X=x0;Y=y0;
 
             while (px || py) {
-               if ((X!=x0 || Y!=y0) && (vbuf=GDB_VBufferAlloc(n+1))) {
+               if ((X!=x0 || Y!=y0) && (vbuf=VBuffer_Alloc(n+1))) {
                   switch(Mode) {
                      case REF_COOR : Ref->Project(Ref,X,Y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
                      case REF_PROJ : Vect_Assign(vbuf[n],Ref->Pos[dz][idx]);break;
@@ -1017,7 +1017,7 @@ int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
 
             /* Create the triangle */
             for (n=0;TriTable[cubeidx][n]!=-1;n+=3) {
-               if ((vbuf=GDB_VBufferAlloc(vridx+6))) {
+               if ((vbuf=VBuffer_Alloc(vridx+6))) {
                   VertexLoc(Ref,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
                   VertexLoc(Ref,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
                   VertexLoc(Ref,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);

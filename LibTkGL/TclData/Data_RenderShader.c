@@ -312,8 +312,6 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    Vect3d pix,*vbuf;
    Coord  coo;
 
-   extern Vect3d GDB_VBuf[];
-
    if (GLRender->Resolution>2) {
       return(0);
    }
@@ -359,7 +357,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    dt=0.0;
    len=512;
 
-   vbuf=GDB_VBufferAlloc(len*2+1);
+   vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {

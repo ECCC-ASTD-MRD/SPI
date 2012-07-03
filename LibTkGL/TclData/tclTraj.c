@@ -992,7 +992,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    if (!(spec=Traj->Spec))
       return(TCL_OK);
 
-   vbuf=GDB_VBufferAlloc(Traj->NPr*2+1);
+   vbuf=VBuffer_Alloc(Traj->NPr*2+1);
    sz=VP->Ratio*(spec->Size+spec->Width);
 
    glLineWidth(spec->Width);

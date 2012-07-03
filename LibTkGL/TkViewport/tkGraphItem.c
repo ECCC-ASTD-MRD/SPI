@@ -2390,7 +2390,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    dt=0.0;
    len=512;
 
-   vbuf=GDB_VBufferAlloc(len*2+1);
+   vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=X0;pix[0]<X1;pix[0]+=dz) {

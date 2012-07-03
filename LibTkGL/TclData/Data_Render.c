@@ -789,7 +789,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    dt=0.0;
    len=512;
 
-   vbuf=GDB_VBufferAlloc(len*2+1);
+   vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
@@ -886,7 +886,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    glLineWidth((float)Field->Spec->Width);
    glMatrixMode(GL_TEXTURE);
 
-   vbuf=GDB_VBufferAlloc(len*2+1);
+   vbuf=VBuffer_Alloc(len*2+1);
 
 
    /*Recuperer les latlon des pixels sujets*/
@@ -1727,7 +1727,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
             array=T3DArray_Alloc(Field->Spec->Inter[i],len);
             if (array) {
                Field->Def->Segments=TList_Add(Field->Def->Segments,array);
-               GDB_VBufferCopy(array->Data,len);
+               VBuffer_Copy(array->Data,len);
             } else {
                fprintf(stderr,"(ERROR) Data_RenderVolume: Unable to alloc memory for volume data %f",Field->Spec->Inter[i]);
             }
@@ -1821,7 +1821,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnable(GL_STENCIL_TEST);
    }
 
-   GDB_VBufferCheck();
+   VBuffer_Check();
    return(1);
 }
 

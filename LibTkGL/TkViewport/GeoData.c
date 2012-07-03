@@ -65,47 +65,69 @@ void  GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float D
 
 GLuint Texture_Read(char *File);
 
-static Vect3d      *GDB_VBuffer=NULL;
-static unsigned int GDB_VBufferSize=0;
-static unsigned int GDB_VBufferIncr=512;
-static unsigned int GDB_VBufferMax=524288;
+typedef struct TVBuffer {
+   Vect3d      *Buffer;
+   unsigned int Size;
+   unsigned int Incr;
+   unsigned int Max;
+} TVBuffer;
 
-Vect3d* GDB_VBufferCopy(Vect3d *To,unsigned int Size) {
+static Tcl_ThreadDataKey VBufferKey;
 
-   if (GDB_VBuffer && Size<=GDB_VBufferSize) {
-      return((Vect3d*)memcpy(To,GDB_VBuffer,Size*sizeof(Vect3d)));
+Vect3d* VBuffer_Copy(Vect3d *To,unsigned int Size) {
+
+   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
+
+   if (vbuf->Buffer && Size<=vbuf->Size) {
+      return((Vect3d*)memcpy(To,vbuf->Buffer,Size*sizeof(Vect3d)));
    } else {
-      fprintf(stderr,"(ERROR) GDB_VBufferCopy: Invalid size (%i>%i)\n",Size,GDB_VBufferSize);
+      fprintf(stderr,"(ERROR) VBuffer_Copy: Invalid size (%i>%i)\n",Size,vbuf->Size);
       return(NULL);
    }
 }
 
-unsigned int GDB_VBufferCheck() {
+unsigned int VBuffer_Check() {
 
-   if (GDB_VBufferSize>GDB_VBufferMax) {
-      GDB_VBuffer=(Vect3d*)realloc(GDB_VBuffer,GDB_VBufferMax*sizeof(Vect3d));
-      GDB_VBufferSize=GDB_VBufferMax;
+   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
+
+   if (vbuf->Size>vbuf->Max) {
+      vbuf->Buffer=(Vect3d*)realloc(vbuf->Buffer,vbuf->Max*sizeof(Vect3d));
+      vbuf->Size=vbuf->Max;
    }
-   return(GDB_VBufferSize);
+   return(vbuf->Size);
 }
 
-Vect3d* GDB_VBufferAlloc(unsigned int Size) {
+Vect3d* VBuffer_Alloc(unsigned int Size) {
 
-   Vect3d *buf=GDB_VBuffer;
+   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
 
-   if (GDB_VBufferSize<Size) {
-      Size=(Size/GDB_VBufferIncr+1)*GDB_VBufferIncr;
+   Vect3d *buf=vbuf->Buffer;
+
+   if (vbuf->Size<Size) {
+      Size=(Size/vbuf->Incr+1)*vbuf->Incr;
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GDB_VBufferAlloc: Reallocating GDB_VBuffer to %i\n",Size);
+      fprintf(stderr,"(DEBUG) VBuffer_Alloc: Reallocating VBuffer to %i\n",Size);
 #endif
-      if ((buf=(Vect3d*)realloc(GDB_VBuffer,Size*sizeof(Vect3d)))) {
-         GDB_VBuffer=buf;
-         GDB_VBufferSize=Size;
+      if ((buf=(Vect3d*)realloc(vbuf->Buffer,Size*sizeof(Vect3d)))) {
+         vbuf->Buffer=buf;
+         vbuf->Size=Size;
       } else {
-         fprintf(stderr,"(ERROR) GDB_VBufferAlloc: Could not allocate coordinate buffer GDB_VBuffer (%i)\n",Size);
+         fprintf(stderr,"(ERROR) VBuffer_Alloc: Could not allocate coordinate buffer VBuffer (%i)\n",Size);
       }
    }
    return(buf);
+}
+
+unsigned int VBuffer_Init() {
+
+   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
+
+   vbuf->Buffer=NULL;
+   vbuf->Size=0;
+   vbuf->Incr=512;
+   vbuf->Max=524288;
+
+   return(1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1452,7 +1474,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       loc.Elev=0.0;
       loc.Lon=Lon0;
 
-      vbuf=GDB_VBufferAlloc(Delta*dc);
+      vbuf=VBuffer_Alloc(Delta*dc);
 
       /*Construction de la surface en serie de quad dans la verticale*/
       for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
@@ -1493,7 +1515,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       }
    } else {
 
-      vbuf=GDB_VBufferAlloc(height);
+      vbuf=VBuffer_Alloc(height);
 
       /* Calculer la position de la tuile*/
       if (!Topo->Vr) {

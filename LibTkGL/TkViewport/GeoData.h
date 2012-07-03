@@ -134,9 +134,10 @@ void GDB_TileFree(GDB_Tile *Tile,int Force);
 void GDB_TileFreeAll(GDB_Data *Geo,int Type);
 void GDB_TileFreeType(GDB_Data *Geo,GDB_Type Type);
 
-Vect3d*      GDB_VBufferAlloc(unsigned int Size);
-Vect3d*      GDB_VBufferCopy(Vect3d *To,unsigned int Size);
-unsigned int GDB_VBufferCheck();
+Vect3d*      VBuffer_Alloc(unsigned int Size);
+Vect3d*      VBuffer_Copy(Vect3d *To,unsigned int Size);
+unsigned int VBuffer_Check();
+unsigned int VBuffer_Init();
 
 Tcl_ThreadCreateType GDB_ThreadProc(ClientData clientData);
 int                  GDB_ThreadQueueIsEmpty(Tcl_ThreadId Id);
