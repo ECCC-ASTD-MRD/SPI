@@ -690,17 +690,17 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
          err=grib_get_double(head->Handle,"iDirectionIncrementInDegrees",&mtx[1]);
          err=grib_get_double(head->Handle,"jDirectionIncrementInDegrees",&mtx[5]);
 
-         /*GRIB1 stored the direction of increment in other parameters and the i-j test are inversed ... so brainless*/
-         inci=incj=0;
-         err=grib_get_long(head->Handle,"iScansNegatively",&inci);
-         err=grib_get_long(head->Handle,"jScansPositively",&incj);
-
-         mtx[0]=CLAMPLON(mtx[0]);
-         mtx[1]=inci?-mtx[1]:mtx[1];
-         mtx[5]=incj?mtx[5]:-mtx[5];
          /*Patch for a GRIB1 inversion*/
 //         if (mtx[3]==90.0) mtx[5]=-mtx[5];
       }
+
+      /*Stored the direction of increment in other parameters and the i-j test are inversed ... so brainless*/
+      inci=incj=0;
+      err=grib_get_long(head->Handle,"iScansNegatively",&inci);
+      err=grib_get_long(head->Handle,"jScansPositively",&incj);
+      mtx[0]=CLAMPLON(mtx[0]);
+      mtx[1]=inci?-mtx[1]:mtx[1];
+      mtx[5]=incj?mtx[5]:-mtx[5];
 
       GDALInvGeoTransform(mtx,inv);
       field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref);
@@ -786,7 +786,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
    GRIB_Head      head,*table;
    Tcl_Obj       *list,*obj;
-   int            err=0,lvtyp,nb;
+   int            er,err=0,lvtyp,nb;
    size_t         len;
    long           date,time,lval,lval2,ni=-1,nj=-1,nk=1,type;
    char           buf[1024];
@@ -805,7 +805,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
       File->Table=(GRIB_Head*)calloc(GRIB_TABLESIZE,sizeof(GRIB_Head));
    }
 
-   while(head.Handle=grib_handle_new_from_file(0,File->Handle,&err)) {
+   while((head.Handle=grib_handle_new_from_file(0,File->Handle,&err))) {
 
       len=GRIB_STRLEN;
       grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
@@ -816,18 +816,18 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
       /*Check for var if provided*/
       if (!Var || strcmp(Var,head.NOMVAR)==0) {
 
-         err=grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
+         er=grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
          head.Version=lval;
 
-         err=grib_get_long(head.Handle,"date",&date);
-         err=grib_get_long(head.Handle,"time",&time);
-         err=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
-         err=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
+         er=grib_get_long(head.Handle,"date",&date);
+         er=grib_get_long(head.Handle,"time",&time);
+         er=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
+         er=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
          if (ni==-1) {
-            err=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
-            err=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
+            er=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
+            er=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
          }
-         err=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+         er=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
          nk=nk==0?1:nk;
 
          err=grib_get_long(head.Handle,"typeOfGeneratingProcess",&type);
@@ -895,6 +895,10 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
       }
       nb++;
    }
+   if (err) {
+      fprintf(stderr,"--- %s\n",grib_get_error_message(err));
+   }
+
    File->Size=head.KEY;
 
    /*Error on handle access*/
@@ -1015,15 +1019,23 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get Latin1InDegrees",(char*)NULL);
             return(NULL);
          }
-        if (grib_get_double(Handle,"LaDtin2InDegrees",&scale2)!=GRIB_SUCCESS) {
-            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDtin2InDegreess",(char*)NULL);
+        if (grib_get_double(Handle,"Latin2InDegrees",&scale2)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get Latin2InDegrees",(char*)NULL);
             return(NULL);
          }
-         if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
-            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
+         if (grib_get_double(Handle,"LoVInDegrees",&lon)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LoVInDegrees",(char*)NULL);
             return(NULL);
          }
-         OSRSetLCC(ref,scale,scale2,0.0,lon,0.0,0.0);
+         if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
+            return(NULL);
+         }
+//         if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
+//            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
+//            return(NULL);
+//         }
+         OSRSetLCC(ref,scale,scale2,lat,lon,0.0,0.0);
          break;
 
       case POLAR_STEREOGRAPHIC :
@@ -1083,9 +1095,14 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
       }
 
       switch(lval) {
+         case 1 :  /* User defined (w/ scale factor); earth is spherical (1/f=1.0) */
          case 0 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6367470.0,0.0,NULL,0.0,NULL,0.0);
             break;
+         case 3 :
+            /* User defined major+minor axis IN KM (1/f = 1/((major-minor)/major) */
+         case 7 :
+            /* User defined major+minor axis IN M (1/f = 1/((major-minor)/major) */
          case 2 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","IAU 1965",6378160.0,297.0,NULL,0.0,NULL,0.0);
             break;
@@ -1098,12 +1115,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          case 6 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6371229.0,0.0,NULL,0.0,NULL,0.0);
             break;
-         case 1 :
-            /* User defined (w/ scale factor); earth is spherical (1/f=1.0) */
-         case 3 :
-            /* User defined major+minor axis IN KM (1/f = 1/((major-minor)/major) */
-         case 7 :
-            /* User defined major+minor axis IN M (1/f = 1/((major-minor)/major) */
          case 8 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6371200.0,0.0,NULL,0.0,NULL,0.0);
          default :
