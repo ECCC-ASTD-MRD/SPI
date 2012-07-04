@@ -16,13 +16,15 @@
 #    Toutes les fonctions decrites sont le minimum necessaire au fonctionnement d'un
 #    outils a travers l'interface SPI
 #
-#    Pour creer un nouvel outils, il suffit de renomer ces fichier (tcl,int,txt,ctes) au nom
-#    de l'outils que vous desirer et de remplacer "YourToolHere" et "yourtoolhere" par le
+#    Pour creer un nouvel outil, il suffit de renommer ces fichiers (tcl,int,txt,ctes) au nom
+#    de l'outils que vous desirez et de remplacer "YourToolHere" et "yourtoolhere" par le
 #    meme nom.
 #
-#    Par la suite il suffit d'inserer la ligne suivante dans le fichier $HOME/.eer_ToolDefs-6.3/eer_Default
+#    Par la suite il suffit d'inserer la ligne suivante dans le fichier $HOME/.spi/SPI
 #
-#       SPI::ToolDef ../YourToolHere.tcl
+#       SPI::ToolDef <path>/YourToolHere.tcl
+#
+#    et de modifier les references au <path> dans les 3 lignes ci-bas pour sourcer le tout.
 #
 #===============================================================================
 
