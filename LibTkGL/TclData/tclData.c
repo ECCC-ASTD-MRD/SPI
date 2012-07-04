@@ -1560,12 +1560,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MaxLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               if(Objc!=5) {
-                  Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
+               if (Data_GetAreaValue(Interp,3,Field,Objc-1,Objv+1)==TCL_ERROR) {
                   return(TCL_ERROR);
                }
-               Data_GetAreaValue(Interp,3,Field,Objc-1,Objv+1);
-               i+=4;
+               i++;
             }
             break;
 
@@ -1581,12 +1579,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Stat->MinLoc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               if(Objc!=5) {
-                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+               if (Data_GetAreaValue(Interp,2,Field,Objc-1,Objv+1)==TCL_ERROR) {
                   return(TCL_ERROR);
                }
-               Data_GetAreaValue(Interp,2,Field,Objc-1,Objv+1);
-               i+=4;
+               i++;
             }
             break;
 
@@ -1597,12 +1593,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Avg)));
             } else {
-               if(Objc!=5) {
-                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+               if (Data_GetAreaValue(Interp,0,Field,Objc-1,Objv+1)==TCL_ERROR) {
                   return(TCL_ERROR);
                }
-               Data_GetAreaValue(Interp,0,Field,Objc-1,Objv+1);
-               i+=4;
+               i++;
             }
             break;
 
@@ -1871,8 +1865,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
 
-            Data_GetAreaValue(Interp,4,Field,Objc-1,Objv+1);
-            i+=4;
+            if (Data_GetAreaValue(Interp,4,Field,Objc-1,Objv+1)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
+            i++;
             break;
 
          case UNPROJECT:
@@ -2536,6 +2532,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
  *  <Objv>     : Liste des arguments
  *
  * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
  *
  * Remarques :
  *
@@ -2544,19 +2541,52 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj,*sub;
-   int      f,n=0,index,ni,nj,i0,j0,i1,j1;
+   int      f,n=0,ni,nj,i0,j0,i1,j1,nc,vnb,vn0,vn1;
    double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
+   Vect3d   vp,*vn=NULL;
 
-   Tcl_ListObjLength(Interp,Objv[0],&n);
-   if (n==4) {
+   if (Objc!=1) {
+      Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
+      return(TCL_ERROR);
+   }
+
+   Tcl_ListObjLength(Interp,Objv[0],&nc);
+   if (nc==4) {
+      // This is a latlon bounding box defined by 2 corners
       Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
-      Tcl_ListObjIndex(Interp,Objv[1],0,&obj);
+      Tcl_ListObjIndex(Interp,Objv[0],1,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
-      Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
+      Tcl_ListObjIndex(Interp,Objv[0],2,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
-      Tcl_ListObjIndex(Interp,Objv[3],0,&obj);
+      Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+
+      // Get ij bounding box
+      GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
+   } else {
+      vnb=nc>>1;
+      if (!vnb || vnb%2) {
+         Tcl_AppendResult(Interp,"Data_GetAreaValue: Invalid number of coordinates",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      i0=j0=1000000;
+      i1=j1=-1000000;
+
+      vn=(Vect3d*)malloc(vnb*sizeof(Vect3d));
+      for(n=0,ni=0;n<vnb;n++) {
+         Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlat);
+         Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlon);
+
+         Field->Ref->UnProject(Field->Ref,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
+         vn[n][2]=0.0;
+         i0=i0<vn[n][0]?i0:vn[n][0];
+         j0=j0<vn[n][1]?j0:vn[n][1];
+         i1=i1>vn[n][0]?i1:vn[n][0];
+         j1=j1>vn[n][1]?j1:vn[n][1];
+      }
    }
 
    if (dlon0*dlon1<0) {
@@ -2573,15 +2603,14 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 4: obj=Tcl_NewListObj(0,NULL); break;
    }
 
+   n=0;
+
    if (Field->Ref->Grid[0]!='V') {
 
-      GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
-
+      // Loop on ij bounding box
       for (ni=i0;ni<i1;ni++) {
          for (nj=j0;nj<j1;nj++) {
-            if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
-               f=1;
-            } else {
+            if (nc==4) {
                Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                f=0;
                if (dlat>=dlat0 && dlat<=dlat1) {
@@ -2595,10 +2624,22 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                      }
                   }
                }
+            } else {
+               Vect_Init(vp,ni,nj,0.0);
+
+               f=0;
+               for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
+                  /*Check for point insidness*/
+                  if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
+                     f=!f;
+                  }
+               }
             }
+
+            // Point is inside
             if (f) {
-               index=FIDX2D(Field->Def,ni,nj);
-               Def_GetMod(Field->Def,index,v);
+               f=FIDX2D(Field->Def,ni,nj);
+               Def_GetMod(Field->Def,f,v);
                n++;
                switch(Mode) {
                   case 0:
@@ -2616,25 +2657,26 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          }
       }
    } else {
-      for (index=0;index<Field->Def->NI;index++) {
-         if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
-            f=1;
-         } else {
-            f=0;
-            if (Field->Ref->Lat[index]>=dlat0 && Field->Ref->Lat[index]<=dlat1) {
+      for (ni=0;ni<Field->Def->NI;ni++) {
+         f=0;
+         if (nc==4) {
+            if (Field->Ref->Lat[ni]>=dlat0 && Field->Ref->Lat[ni]<=dlat1) {
                if (dl<=180) {
-                  if (Field->Ref->Lon[index]>=dlon0 && Field->Ref->Lon[index]<=dlon1) {
+                  if (Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=dlon1) {
                      f=1;
                   }
                } else {
-                  if ((Field->Ref->Lon[index]<=dlon0 && dlon>-180) || (Field->Ref->Lon[index]>=dlon1 && dlon<180)) {
+                  if ((Field->Ref->Lon[ni]<=dlon0 && dlon>-180) || (Field->Ref->Lon[ni]>=dlon1 && dlon<180)) {
                      f=1;
                   }
                }
             }
+         } else {
          }
+
+         // Point is inside
          if (f) {
-            Def_GetMod(Field->Def,index,v);
+            Def_GetMod(Field->Def,ni,v);
             n++;
             switch(Mode) {
                case 0:
@@ -2660,7 +2702,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    }
    Tcl_SetObjResult(Interp,obj);
 
-   return(n);
+   if (vn) free(vn);
+
+   return(TCL_OK);
 }
 
 void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
