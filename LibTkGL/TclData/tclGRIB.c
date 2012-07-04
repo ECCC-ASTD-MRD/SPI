@@ -213,13 +213,24 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
 
    GRIB_File *file=NULL;
+   int        t;
 
    if ((file=(GRIB_File*)TclY_HashDel(&GRIB_FileTable,Id))) {
       fclose(file->Handle);
       free(file->Path);
       free(file->Id);
       free(file);
-      if (file->Table) free(file->Table);
+
+      if (file->Table) {
+         for(t=0;t<GRIB_TABLESIZE;t++) {
+            if (file->Table[t].Handle) {
+               grib_handle_delete(file->Table[t].Handle);
+            } else {
+               break;
+            }
+         }
+         free(file->Table);
+      }
    }
    return(TCL_OK);
 }
@@ -312,6 +323,9 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
    file->Mode=Mode;
    file->Handle=fi;
    file->Table=NULL;
+
+   // Force multi field support
+   grib_multi_support_on(grib_context_get_default());
 
    GRIB_FilePut(Interp,file);
 

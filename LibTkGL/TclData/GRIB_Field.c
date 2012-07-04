@@ -804,8 +804,10 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    if (!File->Table) {
       File->Table=(GRIB_Head*)calloc(GRIB_TABLESIZE,sizeof(GRIB_Head));
    }
+//   grib_count_in_file(NULL,File->Handle,&err);
+//   fprintf(stderr,"----- %i messages\n",err);
 
-   while((head.Handle=grib_handle_new_from_file(0,File->Handle,&err))) {
+   while((head.Handle=grib_handle_new_from_file(NULL,File->Handle,&err))) {
 
       len=GRIB_STRLEN;
       grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);

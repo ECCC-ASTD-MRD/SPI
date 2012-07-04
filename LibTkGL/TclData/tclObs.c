@@ -2270,10 +2270,17 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
 
          case WITHIN:
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat0);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon0);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat1);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon1);
+            Tcl_ListObjLength(Interp,Objv[++i],&n);
+            if (n==4) {
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
+               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
+               Tcl_ListObjIndex(Interp,Objv[i],2,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
+               Tcl_ListObjIndex(Interp,Objv[i],3,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+            }
 
             if (dlon0*dlon1<0) {
                dl=dlon1-dlon0;

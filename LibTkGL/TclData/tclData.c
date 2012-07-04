@@ -1561,7 +1561,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,obj);
             } else {
                if(Objc!=5) {
-                  Tcl_WrongNumArgs(Interp,1,Objv,"lat0 lon0 lat1 lon1");
+                  Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
                   return(TCL_ERROR);
                }
                Data_GetAreaValue(Interp,3,Field,Objc-1,Objv+1);
@@ -2547,10 +2547,17 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    int      f,n=0,index,ni,nj,i0,j0,i1,j1;
    double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
 
-   Tcl_GetDoubleFromObj(Interp,Objv[0],&dlat0);
-   Tcl_GetDoubleFromObj(Interp,Objv[1],&dlon0);
-   Tcl_GetDoubleFromObj(Interp,Objv[2],&dlat1);
-   Tcl_GetDoubleFromObj(Interp,Objv[3],&dlon1);
+   Tcl_ListObjLength(Interp,Objv[0],&n);
+   if (n==4) {
+      Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
+      Tcl_ListObjIndex(Interp,Objv[1],0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
+      Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
+      Tcl_ListObjIndex(Interp,Objv[3],0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+   }
 
    if (dlon0*dlon1<0) {
       dl=dlon1-dlon0;
