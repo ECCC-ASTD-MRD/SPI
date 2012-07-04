@@ -48,8 +48,19 @@ set inter { -20 0 20 }
 puts "\nTesting contour extraction ($inter):"
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read TT 1 -1 "" 12000 -1 -1 "" "TT"
-fstdfield configure TT -intervals $inter
 
+puts "\nTesting insideness functions"
+puts "   Range : 50 -150 60 -140"
+puts "      Gridpoints within range : [fstdfield stats TT -within [list 50 -150 60 -140]]"
+puts "      Minimum within range    : [fstdfield stats TT -min [list 50 -150 60 -140]]"
+puts "      Avegage within range    : [fstdfield stats TT -avg [list 50 -150 60 -140]]"
+
+puts "   Polygon : 50 -150 50 -140 60 -140 60 -150"
+puts "      Gridpoints within polygon : [fstdfield stats TT -within [list 50 -150 50 -140 60 -140 60 -150]]"
+puts "      Minimum within polygon    : [fstdfield stats TT -min [list 50 -150 50 -140 60 -140 60 -150]]"
+puts "      Avegage within polygon    : [fstdfield stats TT -avg [list 50 -150 50 -140 60 -140 60 -150]]"
+
+fstdfield configure TT -intervals $inter
 fstdfield stats TT -limits { 10 10 0 100 100 0 }
 
 set n 0
@@ -58,7 +69,7 @@ foreach contour [fstdfield stats TT -coordcontour] {
 }
 
 puts "\nTesting parser's slicers"
-puts "   min=[vexpr NIL smin(TT)]"
+puts "   min=[vexpr NIL smin(TT)] [fstdfield stats TT -min]"
 puts "   min((10,20),(10,20))=[vexpr NIL smin(TT((10,20),(10,20)))]"
 
 vexpr NIL TT((10,20),(10,20))
