@@ -938,6 +938,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
          }
          field->Def->Type=Type;
       }
+
       /*Liberer les donnees secondaires*/
       Data_Clean(field,1,1,1);
       field->Free(field);                                   field->Head=NULL;
@@ -1189,7 +1190,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          Data->Map=NULL;
       }
 
-      if (Seg && Data->Def->Segments) {
+      if (Seg && Data->Def && Data->Def->Segments) {
          TList_Clear(Data->Def->Segments,T3DArray_Free);
          Data->Def->Segments=NULL;
       }
@@ -2522,7 +2523,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
  * Nom      : <Data_GetAreaValue>
  * Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Extrait des valeurs pour une region latlon
+ * But      : Extrait des valeurs pour une region latlon ou un polygone latlon
  *
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
