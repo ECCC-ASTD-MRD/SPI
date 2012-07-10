@@ -55,12 +55,10 @@ namespace eval FSTD {
    font create FLDFONTDEFAULT -family courier -size -12 -weight bold
 
    image create photo FLDMAPImg -width 185 -height 15
-   colormap create FLDMAPDEFAULT
-   colormap read FLDMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
+   colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
-   dataspec create FLDDEFAULT
-   dataspec configure FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+   dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbellow False -mapabove True

@@ -639,6 +639,14 @@ proc Animator::GetPlayListObs { } {
                observation stats $o -tag $tags
                lappend Play($vp$sec) $o
                lappend Obs::Data(ListTool) $o
+
+               #----- Process per location dates
+               foreach sec [lsort -unique [observation define $obs -DATES]] {
+                  if { ![info exists Play($vp$sec)] } {
+                     lappend Play(Frames) $sec
+                  }
+                  lappend Play($vp$sec) $o
+               }
             }
             #----- On verifie les demandes d'arret
 

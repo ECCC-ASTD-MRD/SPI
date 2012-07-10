@@ -44,12 +44,10 @@ namespace eval Obs {
    font create OBSFONTDEFAULT -family courier -weight bold -size -10
 
    image create photo OBSMAPImg -width 170 -height 15
-   colormap create OBSMAPDEFAULT
-   colormap read OBSMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
+   colormap create OBSMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
-   dataspec create OBSDEFAULT
-   dataspec configure OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
+   dataspec create OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT -colormap OBSDMAPEFAULT \
       -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
