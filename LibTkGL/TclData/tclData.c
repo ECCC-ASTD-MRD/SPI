@@ -2567,7 +2567,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
    } else {
       vnb=nc>>1;
-      if (!vnb || vnb%2) {
+      if (!vnb || nc%2) {
          Tcl_AppendResult(Interp,"Data_GetAreaValue: Invalid number of coordinates",(char*)NULL);
          return(TCL_ERROR);
       }

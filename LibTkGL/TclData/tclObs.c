@@ -301,8 +301,8 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
    double   val;
    time_t   sec;
 
-   static CONST char *sopt[] = { "-INFO","-COORD","-ID","-NO","-IDX","-DATA","-NB","-DATE","-DATES",NULL };
-   enum                opt { INFO,COORD,ID,NO,IDX,DATA,NB,DATE,DATES };
+   static CONST char *sopt[] = { "-INFO","-COORD","-ID","-NO","-IDX","-DATA","-NB","-DATE",NULL };
+   enum                opt { INFO,COORD,ID,NO,IDX,DATA,NB,DATE };
 
    obs=Obs_Get(Name);
    if (!obs) {
@@ -596,22 +596,18 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
 
          case DATE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time,1)));
-            } else {
-               Tcl_GetLongFromObj(Interp,Objv[++i],&sec);
-               System_Seconds2DateTime(sec,&obs->Date,&obs->Time,1);
-            }
-            break;
-
-         case DATES:
-            if (Objc==1) {
-               obj=Tcl_NewListObj(0,NULL);
                if (obs->Loc->Date) {
+                  obj=Tcl_NewListObj(0,NULL);
                   for(k=0;k<obs->Loc->Nb;k++) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(obs->Loc->Date[k]));
                   }
+                  Tcl_SetObjResult(Interp,obj);
+               } else {
+                  Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time,1)));
                }
-               Tcl_SetObjResult(Interp,obj);
+            } else {
+               Tcl_GetLongFromObj(Interp,Objv[++i],&sec);
+               System_Seconds2DateTime(sec,&obs->Date,&obs->Time,1);
             }
             break;
       }
