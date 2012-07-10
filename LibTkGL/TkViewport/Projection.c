@@ -604,9 +604,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    double      lat,lon,ni,nj,tmp;
 
    static CONST char *sopt[] = { "-perspective","-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
-                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-license","-type","-georef","-geographic","-mask","-date","-sun","-axiscoord","-axis","-minsize",NULL };
+                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-license","-type","-georef","-geographic","-mask","-date","-late","-sun","-axiscoord","-axis","-minsize",NULL };
    enum                opt { PERSPECTIVE,LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
-                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,LICENSE,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,SUN,AXISCOORD,AXIS,MINSIZE };
+                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,LICENSE,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,LATE,SUN,AXISCOORD,AXIS,MINSIZE };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -742,6 +742,14 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_SetObjResult(Interp,Tcl_NewLongObj(proj->Date));
             } else {
                Tcl_GetLongFromObj(Interp,Objv[++i],&proj->Date);
+            }
+            break;
+
+        case LATE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(proj->Late));
+            } else {
+               Tcl_GetLongFromObj(Interp,Objv[++i],&proj->Late);
             }
             break;
 
@@ -1082,6 +1090,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->License     = NULL;
    proj->NbData      = 0;
    proj->Date        = 0;
+   proj->Late        = 60;
    proj->Sun         = 0;
    proj->Loading     = 0;
    proj->MinSize     = 5;

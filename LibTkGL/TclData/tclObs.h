@@ -47,6 +47,7 @@ typedef struct TLoc {
    char   **Head;     /*Token d'entete non temporel (x NbInfo) */
    char   ***Info;    /*Information descriptive (x NbInfo) */
    Coord  *Coord;     /*Position (lat,lon,elevation)*/
+   time_t *Date;
 } TLoc;
 
 typedef struct TObs {

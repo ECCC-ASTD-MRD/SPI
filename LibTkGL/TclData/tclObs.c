@@ -301,8 +301,8 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
    double   val;
    time_t   sec;
 
-   static CONST char *sopt[] = { "-INFO","-COORD","-ID","-NO","-IDX","-DATA","-NB","-DATE",NULL };
-   enum                opt { INFO,COORD,ID,NO,IDX,DATA,NB,DATE };
+   static CONST char *sopt[] = { "-INFO","-COORD","-ID","-NO","-IDX","-DATA","-NB","-DATE","-DATES",NULL };
+   enum                opt { INFO,COORD,ID,NO,IDX,DATA,NB,DATE,DATES };
 
    obs=Obs_Get(Name);
    if (!obs) {
@@ -564,6 +564,7 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                   obs->Loc->NbInfo=0;
                   obs->Loc->No=NULL;
                   obs->Loc->Id=NULL;
+                  obs->Loc->Date=NULL;
                   obs->Loc->Head=NULL;
                   obs->Loc->Info=NULL;
                   obs->Loc->Coord=NULL;
@@ -599,6 +600,18 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
             } else {
                Tcl_GetLongFromObj(Interp,Objv[++i],&sec);
                System_Seconds2DateTime(sec,&obs->Date,&obs->Time,1);
+            }
+            break;
+
+         case DATES:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               if (obs->Loc->Date) {
+                  for(k=0;k<obs->Loc->Nb;k++) {
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(obs->Loc->Date[k]));
+                  }
+               }
+               Tcl_SetObjResult(Interp,obj);
             }
             break;
       }
@@ -1366,7 +1379,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    FILE    *stream;
    char    title[256],name[256];
    char    *bytes=NULL,*head=NULL;
-   int     sz,sk,nb,n,hd,k,sec;
+   int     sz,sk,nb,n,hd,k,sec,dt,hh,ms;
    int     ntok,gntok,nltok;
    char    **tok,**gtok,**ltok;
    int     err=TCL_OK;
@@ -1429,6 +1442,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    loc->Info=(char***)malloc(nb*sizeof(char**));
    loc->Nb=nb;
    loc->No=NULL;
+   loc->Date=NULL;
    loc->Ref=0;
    loc->NbInfo=0;
 
@@ -1459,6 +1473,8 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          }
       } else if (strcmp(gtok[n],"NO")==0) {
          loc->No=(char**)malloc(nb*sizeof(char*));
+      } else if (strcmp(gtok[n],"DATETIME")==0) {
+         loc->Date=(time_t*)malloc(nb*sizeof(time_t));
       } else if (strcmp(gtok[n],"LAT")!=0 && strcmp(gtok[n],"LON")!=0 && strcmp(gtok[n],"ELEV")!=0 && strcmp(gtok[n],"ELEVTYPE")!=0 && strcmp(gtok[n],"ID")!=0) {
          loc->NbInfo++;
       }
@@ -1531,6 +1547,11 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                /*Patch temporaire car le postscript niaise avec les paranthese non uniforme*/
                strrep(loc->Id[nb],'(',' ');
                strrep(loc->Id[nb],')',' ');
+            } else if (strcmp(gtok[n],"DATETIME")==0) {            /*Identificateur*/
+               hd=0;sec=0;dt=0;hh=0;
+               sscanf(tok[n],"%8d%02d%02d%02d%d",&dt,&hh,&hd,&sec,&ms);
+               hh=hh*10000+hd*100+sec;
+               loc->Date[nb]=System_DateTime2Seconds(dt,hh,1);
             } else if (strncmp(gtok[n],"DATA",4)==0) {       /*Values*/
                sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
                obs=Obs_Get(name);
@@ -1668,6 +1689,7 @@ int Obs_LocFree(TLoc *Loc){
       if (Loc->Coord) free(Loc->Coord);
       if (Loc->Id)    free(Loc->Id);
       if (Loc->No)    free(Loc->No);
+      if (Loc->Date)  free(Loc->Date);
    }
 
    return(Loc->Ref);
@@ -1819,6 +1841,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    if (Obs->Spec->Style==3 || Obs->Spec->Style==4) {
       glBegin(GL_LINE_STRIP);
       for (i=0;i<Obs->Loc->Nb;i++) {
+         if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+            continue;
+         }
          co.Lat=Obs->Loc->Coord[i].Lat;
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
@@ -1836,6 +1861,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
       glBegin(GL_QUAD_STRIP);
       for (i=0;i<Obs->Loc->Nb;i++) {
+         if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+            continue;
+         }
          val=((float*)Obs->Def->Data[0])[i];
          VAL2COL(idx,Obs->Spec,val);
          co.Lat=Obs->Loc->Coord[i].Lat;
@@ -1854,6 +1882,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    /*3D Line*/
    glBegin(GL_LINE_STRIP);
    for (i=0;i<Obs->Loc->Nb;i++) {
+      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+         continue;
+      }
       val=((float*)Obs->Def->Data[0])[i];
       VAL2COL(idx,Obs->Spec,val);
 
@@ -1902,6 +1933,9 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    /*Outline mode*/
    if (Obs->Spec->Width && Obs->Spec->Icon && Obs->Spec->RenderTexture) {
       for (i=0;i<Obs->Loc->Nb;i++) {
+         if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+            continue;
+         }
          val=((float*)Obs->Def->Data[0])[i];
          VAL2COL(idx,Obs->Spec,val);
 
@@ -1936,6 +1970,10 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
    /*Display icons*/
    for (i=0;i<Obs->Loc->Nb;i++) {
+      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+         continue;
+      }
+
       idx=-1;
       val=((float*)Obs->Def->Data[0])[i];
       if (Obs->Spec->RenderTexture && Obs->Spec->Map) {
@@ -2074,6 +2112,10 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
    /*Display icons*/
    for (i=0;i<Obs->Loc->Nb;i++) {
+      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+         continue;
+      }
+
       idx=-1;
       val=((float*)Obs->Def->Data[0])[i];
       if (Obs->Spec->InterNb) {
@@ -2200,6 +2242,9 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    }
 
    for(i=0;i<Obs->Loc->Nb;i++) {
+      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+         continue;
+      }
       glPushName(i);
       Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
       glPopName();
