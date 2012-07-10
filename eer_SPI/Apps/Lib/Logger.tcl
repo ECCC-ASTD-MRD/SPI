@@ -41,6 +41,7 @@ namespace eval Log { } {
    set Param(Time)        False                 ;#Print the time
    set Param(Proc)        True                  ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
+   set Param(Keep)        24                    ;#Number of back log to keep
    set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
    set Param(Warning)     0                     ;#Number of warning
    set Param(Process)     ""                    ;#Process number
@@ -136,7 +137,7 @@ proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
 #   <Argv>   : Liste des arguments
 #   <Argc>   : Nombre d'arguments
 #   <No>     : Index dans la liste complete des arguments
-#   <Multi>  : Multiplicite des valeurs (0=True,1=1 valeur,2=Multiples valeurs, 3=True ou 1 valeur)
+#   <Multi>  : Multiplicite des valeurs (0,FLAG=True,1,VALUE=1 valeur,2,LIST=Multiples valeurs, 3,FLAG_OR_VALUE=True ou 1 valeur)
 #   <Var>    : Variable a a assigner les arguments
 #   <Values> : Valid values accepted
 #   <Glob>   : Glob pattern to validate values accepted
@@ -151,6 +152,11 @@ proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
 proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
 
    upvar #0 $Var var
+
+   #----- If a token is used, get it's correspondance number
+   if { ![string is integer $Multi] } {
+      set Multi [lsearch -exact [list FLAG VALUE LIST FLAG_OR_VALUE] $Multi]
+   }
 
    if { !$Multi } {
       set var True
@@ -368,10 +374,9 @@ proc Log::Print { Type Message { Var "" } } {
 
          file mkdir -force $Param(Path)
 
-         #----- Keep only last 3
-         if { [llength [set logs [lrange [lsort -decreasing [glob -nocomplain $Param(Path)/*.log]] 3 end]]] } {
-            eval file delete $logs
-         }
+         #----- Keep only last $Param(Keep) hour logs
+         set err [catch { exec find $Param(Path) -name *.log -ctime +$Param(Keep) -exec rm \{\} \; } msg]
+
          set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log
       } else {
          if { [file exists $Param(Out)] } {
