@@ -1394,7 +1394,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
    Tk_FontMetrics tkm;
    TVector       *vecx,*vecy,*vecs,*vecd,*val;
-   Vect3d        *v,v0,v1,vt;
+   Vect3d        *v=NULL,v0,v1,vt;
    char           buf[32];
    double        *vm,x,y,db,dh,x0,y0;
    int            i,j,n,vn,sz,px,py,pw,hd;
@@ -1797,7 +1797,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    /* Display Fit curve */
-   if (Item->Fit && GLMode==GL_RENDER) {
+   if (Item->Fit && vn>1 && GLMode==GL_RENDER) {
       switch(Item->Fit[0]) {
          case 'L' : vn=GraphItem_FitLinear(v,vecx,vecy,AxisX,AxisY,AxisZ,X0,Y0,X1,Y1); break;
 //         case 'G' : vn=GraphItem_FitGauss(v,vecx,vecy,AxisX,AxisY,AxisZ,X0,Y0,X1,Y1); break;
@@ -1823,7 +1823,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
    glDisable(GL_BLEND);
 
-   free(v);
+   if (v) free(v);
 }
 
 int GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
