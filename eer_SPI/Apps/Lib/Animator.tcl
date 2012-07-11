@@ -630,23 +630,16 @@ proc Animator::GetPlayListObs { } {
          foreach o [ObsBox::GetContent $box] {
 
             if { [observation configure $obs -desc]==[observation configure $o -desc] } {
-               set sec [observation define $o -DATE]
-               set sec [expr $sec<=0?0:$sec]
+               foreach sec [lsort -unique [observation define $o -DATE]] {
+                  set sec [expr $sec<=0?0:$sec]
 
-               if { ![info exists Play($vp$sec)] } {
-                  lappend Play(Frames) $sec
-               }
-               observation stats $o -tag $tags
-               lappend Play($vp$sec) $o
-               lappend Obs::Data(ListTool) $o
-
-               #----- Process per location dates
-               foreach sec [lsort -unique [observation define $obs -DATES]] {
                   if { ![info exists Play($vp$sec)] } {
                      lappend Play(Frames) $sec
                   }
                   lappend Play($vp$sec) $o
                }
+               observation stats $o -tag $tags
+               lappend Obs::Data(ListTool) $o
             }
             #----- On verifie les demandes d'arret
 

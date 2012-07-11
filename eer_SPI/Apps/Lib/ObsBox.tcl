@@ -731,7 +731,7 @@ proc ObsBox::Insert { No } {
             set id "[string range $id 0 16]..."
          }
 
-         set sec  [observation define $obs -DATE]
+         set sec  [lindex [observation define $obs -DATE] 0]
          set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
          set nb   [observation define $obs -NB]
 
@@ -955,9 +955,9 @@ proc ObsBox::Restrict { No args } {
             set id "[string range $id 0 16]..."
          }
 
-         set sec  [observation define $obs -DATE]
+         set sec  [lindex [observation define $obs -DATE] 0]
          set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
-         set nb    [observation define $obs -NB]
+         set nb   [observation define $obs -NB]
 
          if { ($data(Id)   == "" || [lsearch -exact $data(Id) $id]     != -1) &&
               ($data(Nb)   == "" || [lsearch -exact $data(Nb) $nb]     != -1) &&
