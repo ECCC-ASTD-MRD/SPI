@@ -16,12 +16,6 @@
 #    Graph::Scatter::Create        { Frame X0 Y0 Width Height Active Full }
 #    Graph::Scatter::Coord         { Frame GR X Y }
 #    Graph::Scatter::Clean         { GR }
-#    Graph::Scatter::DrawInit      { Frame VP }
-#    Graph::Scatter::Draw          { Frame VP }
-#    Graph::Scatter::DrawDone      { Frame VP }
-#    Graph::Scatter::MoveInit      { Frame VP }
-#    Graph::Scatter::Move          { Frame VP }
-#    Graph::Scatter::MoveDone      { Frame VP }
 #    Graph::Scatter::Graph         { GR }
 #    Graph::Scatter::Init          { Frame }
 #    Graph::Scatter::Params        { Parent GR }
@@ -88,7 +82,6 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data       ;#Mode de selection
    set Graph::Data(Type$gr)     Scatter    ;#Type de graph
 
    upvar #0 Graph::Scatter::Scatter${gr}::Data  data
@@ -129,7 +122,7 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Scatter
-   Graph::Mode Scatter $gr True
+   Graph::Mode $gr Scatter True
    Graph::PosAdd $gr Scatter
 
    #----- Creer les fonction du mode actif
@@ -198,46 +191,6 @@ proc Graph::Scatter::Clean { GR } {
    if { $data(Stat)!="" && [llength [$Frame.page.canvas find withtag GRAPHSTAT$data(Stat)]] } {
       Graph::Destroy $data(Frame) $data(Stat) Stat
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Scatter::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Scatter::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP Scatter
-}
-
-proc Graph::Scatter::Draw { Frame VP } {
-   Graph::Draw $Frame $VP Scatter
-}
-
-proc Graph::Scatter::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP Scatter
-}
-
-proc Graph::Scatter::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP Scatter
-}
-
-proc Graph::Scatter::Move { Frame VP } {
-   Graph::Move $Frame $VP Scatter
-}
-
-proc Graph::Scatter::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP Scatter
 }
 
 #-------------------------------------------------------------------------------
@@ -316,22 +269,28 @@ proc Graph::Scatter::Graph { GR } {
    }
 
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    if { $l } {
-      set data(Min) $data(XMin)
-      set data(Max) $data(XMax)
+      set min $xmin
+      set max $xmax
    } else {
-      set data(Min) [expr $data(XMin)<$data(YMin)?$data(XMin):$data(YMin)]
-      set data(Max) [expr $data(XMax)>$data(YMax)?$data(XMax):$data(YMax)]
+      set min [expr $xmin<$ymin?$xmin:$ymin]
+      set max [expr $xmax>$ymax?$xmax:$ymax]
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -346,17 +305,17 @@ proc Graph::Scatter::Graph { GR } {
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
    if { $graph(Uniform) } {
-      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $min -max $max -intervals $xinter -increment $xincr -angle $graph(XAngle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
-      graphaxis configure axisy$GR -type $graph(XScale) -modulo $mod -min $data(Min) -max $data(Max) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+      graphaxis configure axisy$GR -type $graph(XScale) -modulo $mod -min $min -max $max -intervals $xinter -increment $xincr -angle $graph(XAngle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
    } else {
-      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -increment $xincr -angle $graph(XAngle) \
+      graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter -increment $xincr -angle $graph(XAngle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
-      graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+      graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
          -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
    }
@@ -405,6 +364,7 @@ proc Graph::Scatter::Init { Frame } {
 
       set Data(Items)   {}         ;#Liste des items
       set Data(Pos)     {}         ;#Liste des positions
+      set Data(Coords)  {}         ;#Liste des coordonnees de coupe
       set Data(Data)    {}         ;#Donnees du graph
       set Data(Lat0)     0         ;#Rectangle de selection
       set Data(Lat1)     0         ;#Rectangle de selection
@@ -435,7 +395,7 @@ proc Graph::Scatter::Init { Frame } {
 
       set Graph(Percent)  50        ;#Pourcentage de selection
       set Graph(Stat)     False     ;#Statistiques
-      set Graph(Uniform)  1         ;#Echelle equivalente
+      set Graph(Uniform)  True         ;#Echelle equivalente
    }
    return $gr
 }
@@ -480,7 +440,7 @@ proc Graph::Scatter::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Scatter Y
 
    Graph::ParamsAxisUniform Scatter $GR
-   Graph::ModeSelect LATLONBOX LATLONBOX
+   Graph::ModeSelect BOX BOX
 
    Bubble::Create $Parent.par.sel.stat       $Graph::Bubble(Stat)
    Bubble::Create $Parent.par.sel.sel        $Graph::Bubble(Select)
@@ -834,12 +794,12 @@ proc Graph::Scatter::UpdateItems { Frame { GR { } } } {
       upvar #0 Graph::Scatter::Scatter${gr}::Data data
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
-         $Frame.page.canvas delete GRAPHSCATTER$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSCATTER$gr LATLONBOX
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr BOX
             }
          }
       }
@@ -867,8 +827,10 @@ proc Graph::Scatter::UpdateItems { Frame { GR { } } } {
 proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
    global GDefs
 
-   eval set ijs \[fstdfield stats $Data0 -within $Coords\]
-   set df  [expr 100.0/([llength $ijs]-1)]
+   set ijs [fstdfield stats $Data0 -within $Coords]
+   set nij [llength $ijs]
+   set n 0
+   set df  [expr 100.0/($nij-1)]
 
    foreach ij $ijs {
       set i [lindex $ij 0]
@@ -883,12 +845,11 @@ proc Graph::Scatter::ItemDataField { Item Coords Data0 Data1 } {
       } else {
          set val1 [lindex [fstdfield stats $Data1 -coordvalue $lat $lon] 0]
       }
-
       if { $val1!="-" } {
-         vector append $Item.X $val0
-         vector append $Item.Y $val1
+         vector append $Item "$val0 $val1"
       }
-      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
+      incr n
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)] ($n/$nij)"
    }
    SPI::Progress 0
 }
@@ -932,7 +893,9 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
 
    set in   1
 
-   eval set idxs \[observation stats $Data0 -within $Coords\]
+   set idxs [observation stats $Data0 -within $Coords]
+   set nidx [llength $idxs]
+   set n 0
    set df  [expr 100.0/([llength $idxs]-1)]
 
    foreach idx $idxs {
@@ -943,7 +906,8 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
          vector append $Item.X $val0
          vector append $Item.Y $val1
       }
-      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
+      incr n
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)] ($n/$nidx)"
    }
 
    #----- Dans le cas d'un champs, suprimer l'observation temporaire

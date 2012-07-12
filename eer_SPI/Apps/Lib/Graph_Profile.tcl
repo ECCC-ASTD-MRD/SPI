@@ -16,12 +16,6 @@
 #    Graph::Profile::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Profile::Coord        { Frame GR X Y }
 #    Graph::Profile::Clean        { GR }
-#    Graph::Profile::DrawInit     { Frame VP }
-#    Graph::Profile::Draw         { Frame VP }
-#    Graph::Profile::DrawDone     { Frame VP }
-#    Graph::Profile::MoveInit     { Frame VP }
-#    Graph::Profile::Move         { Frame VP }
-#    Graph::Profile::MoveDone     { Frame VP }
 #    Graph::Profile::Graph        { GR }
 #    Graph::Profile::Init         { Frame }
 #    Graph::Profile::Params       { Parent GR }
@@ -85,7 +79,6 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data       ;#Mode de selection
    set Graph::Data(Type$gr)     Profile    ;#Type de graph
 
    upvar #0 Graph::Profile::Profile${gr}::Data  data
@@ -126,7 +119,7 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Profile
-   Graph::Mode Profile $gr True
+   Graph::Mode $gr Profile True
    Graph::PosAdd $gr Profile
 
    #----- Creer les fonction du mode actif
@@ -192,46 +185,6 @@ proc Graph::Profile::Coord { Frame GR X Y } {
 proc Graph::Profile::Clean { GR } {
 
    fstdfield free GRAPHPROFILE
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Profile::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Profile::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP Profile
-}
-
-proc Graph::Profile::Draw { Frame VP } {
-   Graph::Draw $Frame $VP Profile
-}
-
-proc Graph::Profile::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP Profile
-}
-
-proc Graph::Profile::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP Profile
-}
-
-proc Graph::Profile::Move { Frame VP } {
-   Graph::Move $Frame $VP Profile
-}
-
-proc Graph::Profile::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP Profile
 }
 
 #-------------------------------------------------------------------------------
@@ -321,16 +274,21 @@ proc Graph::Profile::Graph { GR } {
       }
   }
 
-   #----- Verifier le zoom
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -338,7 +296,7 @@ proc Graph::Profile::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter  -increment $xincr -angle $graph(XAngle) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter  -increment $xincr -angle $graph(XAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
@@ -348,7 +306,7 @@ proc Graph::Profile::Graph { GR } {
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
 
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
@@ -385,6 +343,7 @@ proc Graph::Profile::Init { Frame } {
 
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
+      set Data(Coords)          {}        ;#Liste des coordonnees de coupe
       set Data(Data)            {}        ;#Liste des champs selectionnees
       set Data(Tmp)             {}        ;#Liste des champs temporaire
       set Data(ObsIds)          {}        ;#Liste des positions observations
@@ -432,7 +391,7 @@ proc Graph::Profile::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Profile X
    Graph::ParamsAxis $Parent $GR Profile Y VERTICAL
    Graph::ParamsObs  $Parent $GR Profile
-   Graph::ModeSelect POINT { POINT LATLONBOX }
+   Graph::ModeSelect POINT { POINT BOX POLYGON }
 }
 
 #-------------------------------------------------------------------------------
@@ -640,9 +599,9 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
    if { [graphitem is $Item]  && [llength $data(Pos$Pos)] } {
 
       if { [fstdfield is $Data] } {
-         if { [llength $data(Pos$Pos)]==4 } {
+        if { [llength $data(Pos$Pos)]>2 } {
             set n   0
-            set ijs [ fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+            set ijs [fstdfield stats $Data -within $data(Pos$Pos)]
             set df  [expr 100.0/([llength $ijs]-1)]
 
             fstdfield free GRAPHPROFILE
@@ -804,17 +763,17 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHPROFILE$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               if { [llength $data(Pos$pos)]==2 } {
-                  set type POINT
-               } else {
-                  set type LATLONBOX
+               switch [llength $data(Pos$pos)] {
+                  2 { set type POINT }
+                  4 { set type BOX }
+                  default { set type POLYGON }
                }
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHPROFILE$gr $type
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr $type
             }
         }
       }

@@ -78,6 +78,7 @@ image create photo ARROW       -file $GDefs(Dir)/Resources/Image/Icon/Select.gif
 image create photo ARROWLINE   -file $GDefs(Dir)/Resources/Image/Icon/SelectLine.gif
 image create photo ARROWSQUARE -file $GDefs(Dir)/Resources/Image/Icon/SelectSquare.gif
 image create photo ARROWGRID   -file $GDefs(Dir)/Resources/Image/Icon/SelectGrid.gif
+image create photo ARROWPOLY   -file $GDefs(Dir)/Resources/Image/Icon/SelectPolygon.gif
 image create photo ARROWDEL    -file $GDefs(Dir)/Resources/Image/Icon/SelectDel.gif
 image create photo ARROWADD    -file $GDefs(Dir)/Resources/Image/Icon/SelectAdd.gif
 image create photo DELETE      -file $GDefs(Dir)/Resources/Image/Icon/Delete.gif

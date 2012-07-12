@@ -16,12 +16,6 @@
 #    Graph::Time::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Time::Coord        { Frame GR X Y }
 #    Graph::Time::Clean        { GR }
-#    Graph::Time::DrawInit     { Frame VP }
-#    Graph::Time::Draw         { Frame VP }
-#    Graph::Time::DrawDone     { Frame VP }
-#    Graph::Time::MoveInit     { Frame VP }
-#    Graph::Time::Move         { Frame VP }
-#    Graph::Time::MoveDone     { Frame VP }
 #    Graph::Time::Graph        { GR }
 #    Graph::Time::Init         { Frame }
 #    Graph::Time::Params       { Parent GR }
@@ -85,7 +79,6 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data       ;#Mode de selection
    set Graph::Data(Type$gr)     Time       ;#Type de graph
 
    upvar #0 Graph::Time::Time${gr}::Data  data
@@ -127,7 +120,7 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Time
-   Graph::Mode Time $gr True
+   Graph::Mode $gr Time True
    Graph::PosAdd $gr Time
 
    #----- Creer les fonction du mode actif
@@ -204,46 +197,6 @@ proc Graph::Time::Clean { GR } {
    foreach field $data(Tmp) {
       fstdfield free $field
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Time::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Time::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP Time
-}
-
-proc Graph::Time::Draw { Frame VP } {
-   Graph::Draw $Frame $VP Time
-}
-
-proc Graph::Time::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP Time
-}
-
-proc Graph::Time::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP Time
-}
-
-proc Graph::Time::Move { Frame VP } {
-   Graph::Move $Frame $VP Time
-}
-
-proc Graph::Time::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP Time
 }
 
 #-------------------------------------------------------------------------------
@@ -361,14 +314,20 @@ proc Graph::Time::Graph { GR } {
    }
 
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -376,7 +335,7 @@ proc Graph::Time::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -labels $xdates -angle $graph(XAngle)\
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter -labels $xdates -angle $graph(XAngle)\
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
@@ -385,7 +344,7 @@ proc Graph::Time::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
@@ -425,6 +384,7 @@ proc Graph::Time::Init { Frame } {
 
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
+      set Data(Coords)          {}        ;#Liste des coordonnees de coupe
       set Data(Data)            {}        ;#Liste des champs selectionnees
       set Data(Tmp)             {}        ;#Liste des champs temporaire
       set Data(ObsIds)          {}        ;#Liste des observations selectionnee
@@ -479,7 +439,7 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Time X TIME
    Graph::ParamsAxis $Parent $GR Time Y
    Graph::ParamsObs  $Parent $GR Time
-   Graph::ModeSelect POINT { POINT LATLONBOX }
+   Graph::ModeSelect POINT { POINT BOX POLYGON }
 }
 
 #-------------------------------------------------------------------------------
@@ -697,9 +657,9 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
          vector set $Item.Y {}
 
          foreach field $data(Data$Data) {
-            if { [llength $data(Pos$Pos)]==4 } {
+            if { [llength $data(Pos$Pos)]>2 } {
                set n 0
-               set val [fstdfield stats [lindex $field 1] -avg [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+               set val [fstdfield stats [lindex $field 1] -avg $data(Pos$Pos)]
                SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
             } else {
                set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]
@@ -823,18 +783,18 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHTIME$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
 
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               if { [llength $data(Pos$pos)]==2 } {
-                  set type POINT
-               } else {
-                  set type LATLONBOX
+               switch [llength $data(Pos$pos)] {
+                  2 { set type POINT }
+                  4 { set type BOX }
+                  default { set type POLYGON }
                }
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIME$gr $type
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr $type
             }
          }
       }

@@ -12,47 +12,61 @@
 #
 # Fonctions:
 #
-#    Graph::Activate           { Frame GR Type }
-#    Graph::DeActivate         { GR Type }
-#    Graph::Resize             { Frame GR X0 Y0 X1 Y1 Limit }
-#    Graph::Resolution         { Frame Type Full }
+#    Graph::Activate           { Frame Graph Type }
+#    Graph::DeActivate         { Graph Type }
+#    Graph::Resize             { Frame Graph X0 Y0 X1 Y1 Limit }
+#    Graph::Resolution         { Frame Type Res }
 #    Graph::Configure          { }
-#    Graph::Idle               { GR Type }
-#    Graph::UnIdle             { GR Type }
-#    Graph::Destroy            { Frame { GR "" } { Type "" } }
-#    Graph::LocTool            { GR Type Array Index Op }
-#    Graph::Mode               { Type GR { Zoom False } }
-#    Graph::Params             { { GR "" } { Type "" } { Force False } }
-#    Graph::ParamsOff          { Frame Type GR }
+#    Graph::Idle               { Graph Type }
+#    Graph::UnIdle             { Graph Type }
+#    Graph::Destroy            { Frame { Graph "" } { Type "" } }
+#    Graph::LocTool            { Graph Type Array Index Op }
+#    Graph::Mode               { Graph Type { Zoom False } }
+#    Graph::Params             { { Graph "" } { Type "" } { Force False } }
+#    Graph::ParamsOff          { Frame Type Graph }
 #    Graph::ItemPos            { Frame VP Coords Desc Tag { Type POINT } { Marks {} } }
-#    Graph::ItemConfigure      { GR Type Item }
+#    Graph::ItemConfigure      { Graph Type Item }
 #    Graph::ItemSelect         { Item }
-#    Graph::Labels             { Type GR Title UnitX UnitY }
+#    Graph::Labels             { Graph Type Title UnitX UnitY }
 #    Graph::ParamsItem         { Parent }
 #    Graph::ParamsPos          { Parent }
-#    Graph::ParamsScaleUniform { GR Type { Update True } }
-#    Graph::PosAdd             { GR Type }
-#    Graph::PosSet             { GR Type }
-#    Graph::PosDel             { GR Type }
-#    Graph::PosDelAll          { GR Type }
-#    Graph::PosSelect          { GR Type }
+#    Graph::ParamsScaleUniform { Graph Type { Update True } }
+#    Graph::PosAdd             { Graph Type }
+#    Graph::PosSet             { Graph Type }
+#    Graph::PosDel             { Graph Type }
+#    Graph::PosDelAll          { Graph Type }
+#    Graph::PosSelect          { Graph Type }
+#    Graph::PosSave            { Type Graph Pos }
+#    Graph::PosDelete          { Type Graph Pos }
 #    Graph::ParamsGraph        { Parent }
-#    Graph::ParamsObs          { Parent Type GR }
-#    Graph::ParamsObsSelect    { Type GR Desc }
-#    Graph::ParamsObsSearch    { Type GR }
-#    Graph::RangeDraw          { Type GR Place Id Y }
-#    Graph::Translate          { Frame Type GR X Y }
-#    Graph::TranslateDone      { Frame Type GR }
-#    Graph::TranslateInit      { Frame Type GR X Y }
+#    Graph::ParamsObs          { Parent Type Graph }
+#    Graph::ParamsObsSelect    { Type Graph Desc }
+#    Graph::ParamsObsSearch    { Type Graph }
+#    Graph::RangeDraw          { Type Graph Place Id Y }
+#    Graph::Translate          { Frame Type Graph X Y }
+#    Graph::TranslateDone      { Frame Type Graph }
+#    Graph::TranslateInit      { Frame Type Graph X Y }
 #    Graph::Update             { Frame }
 #    Graph::UpdateItems        { Frame }
 #    Graph::TimeFormat         { Sec Mode { From 0 } }
 #    Graph::ValFormat          { Order Val }
 #    Graph::Write              { Frame File }
-#    Graph::Zoom               { Type GR }
-#    Graph::ZoomReset          { Type GR }
+#    Graph::ZoomScroll         { Type Graph X Y Incr { Centered True } }
+#    Graph::Zoom               { Type Graph { Incr 0 } }
+#    Graph::ZoomReset          { Type Graph }
 #    Graph::ZoomBox            { Canvas X1 Y1 }
 #    Graph::ZoomInit           { Canvas X0 Y0 }
+#    Graph::DrawInit           { Frame VP }
+#    Graph::Draw               { Frame VP }
+#    Graph::DrawDone           { Frame VP }
+#    Graph::MoveInit           { Frame VP }
+#    Graph::Move               { Frame VP }
+#    Graph::MoveDone           { Frame VP }
+#    Graph::VertexAdd          { Frame VP X Y }
+#    Graph::VertexDelete       { Frame VP }
+#    Graph::VertexFollow       { Frame VP X Y Scan }
+#    Graph::VertexSample       { Frame VP Type Graph Coord { Res 0 } }
+#    Graph::VertexResolution   { Type Graph  }
 #
 #===============================================================================
 
@@ -108,11 +122,20 @@ namespace eval Graph {
    set Param(AxisZs)          { GRID PRESSURE }
    set Param(SelectMode)      POINT
 
+   set Param(NONE)            ""
+   set Param(LOCATION)        ""
+   set Param(POINT)           { }
+   set Param(LINE)            { }
+   set Param(BOX)             { }
+   set Param(POLYGON)         { }
+
    set Data(Nb)           0                      ;#Nombre de graph
    set Data(Type)         ""                     ;#Type du graph courant
    set Data(Types)        "Contingency Scatter Profile Time Section TimeSection Hovmoller" ;#Liste des types de graph
    set Data(Graph)        ""                     ;#Id du graph courant
    set Data(GraphParams)  ""                     ;#Id du graph courant
+   set Data(ResBest)      True                   ;#Selection de la resolution
+   set Data(Res)          100000                 ;#Resolution en metres
    set Data(Show)         False
    set Data(ShowCoord)    True
    set Data(ShowGrid)     False
@@ -177,6 +200,10 @@ namespace eval Graph {
    set Lbl(Title)      { "Titre" "Title" }
    set Lbl(Value)      { "Valeurs" "Values" }
    set Lbl(Update)     { "Info auto" "Info update" }
+   set Lbl(Save)       { "Sauvegarder ..." "Save ..." }
+   set Lbl(Del)        { "Supprimer ..." "Delete ..." }
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No" }
 
    set Lbl(Font)       { "Police" "Font" }
    set Lbl(Info)       { "Info" "Info" }
@@ -229,6 +256,9 @@ namespace eval Graph {
 
    set Msg(Reading)    { "Lecture des données" "Reading data" }
    set Msg(Extracting) { "Extraction des données" "Extracting data" }
+   set Msg(PosSave)    { "Veuillez spécifier le nom de la position" "Please enter the position name" }
+   set Msg(PosExist)   { "Cette position existe déja, voulez-vous la remplacer ?" "This position already exist, do you want to replace it" }
+   set Msg(PosDel)     { "Voulez-vous vraiment supprimer la position ?" "Do you really want to delete this position ?" }
 
    #----- Bulles d'aides
 
@@ -289,6 +319,10 @@ source $GDefs(Dir)/Apps/Lib/Graph_TimeSection.tcl
 source $GDefs(Dir)/Apps/Lib/Graph_Stat.tcl
 source $GDefs(Dir)/Apps/Lib/Graph_Hovmoller.tcl
 
+if { [file exists $env(HOME)/.spi/Graph] } {
+   source $env(HOME)/.spi/Graph
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Graph::Activate>
 # Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
@@ -297,7 +331,7 @@ source $GDefs(Dir)/Apps/Lib/Graph_Hovmoller.tcl
 #
 # Parametres :
 #   <Frame>  : Indentificateur de Page
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #   <Type>   : Type du Graph
 #
 # Retour:
@@ -306,7 +340,7 @@ source $GDefs(Dir)/Apps/Lib/Graph_Hovmoller.tcl
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Activate { Frame GR Type } {
+proc Graph::Activate { Frame Graph Type } {
    variable Data
 
    #----- Si le viewport actif est le courant, out
@@ -317,15 +351,15 @@ proc Graph::Activate { Frame GR Type } {
 
    #----- Desactiver le graph precedent
 
-   if { $Data(Type)!=""  && $Data(Graph)!="" && $Data(Graph)!=$GR } {
+   if { $Data(Type)!=""  && $Data(Graph)!="" && $Data(Graph)!=$Graph } {
       eval Graph::DeActivate $Data(Graph) $Graph::Data(Type)
    }
    set Data(Type) $Type
 
    #----- Si pas de graph, selectionner celui defaut du frame
 
-   if { $GR!="" } {
-      set Data(Graph) $GR
+   if { $Graph!="" } {
+      set Data(Graph) $Graph
     }
 
    #----- Activer le viewport courant
@@ -334,7 +368,7 @@ proc Graph::Activate { Frame GR Type } {
 
    #----- Recuperer et instaurer ses parametres
 
-   if { $Data(Graph)!="" && $Data(Active$GR) } {
+   if { $Data(Graph)!="" && $Data(Active$Graph) } {
       set Data(Show) True
       Graph::Params $Data(Graph) $Data(Type)
 
@@ -352,7 +386,7 @@ proc Graph::Activate { Frame GR Type } {
 # But      : Mettre un graph actif et desactiver le precedent
 #
 # Parametres :
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #   <Type>   : Type du Graph
 #
 # Retour:
@@ -361,13 +395,13 @@ proc Graph::Activate { Frame GR Type } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::DeActivate { GR Type } {
+proc Graph::DeActivate { Graph Type } {
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    #----- Desactiver le viewport precedent
 
-   Page::ActiveUnWrap $data(Frame) $GR
+   Page::ActiveUnWrap $data(Frame) $Graph
    eval trace vdelete SPI::Src(Info) w \{ Graph::LocTool \$Graph::Data(Graph) $Type \}
 }
 
@@ -378,7 +412,8 @@ proc Graph::DeActivate { GR Type } {
 # But      : Changer les titres et unites d'un graph intercatif
 #
 # Parametres :
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
+#   <Type>   : Type du Graph
 #   <Title>  : Titre du Graph
 #   <UnitX>  : Unite en X
 #   <UnitY>  : Unite en Y
@@ -389,13 +424,13 @@ proc Graph::DeActivate { GR Type } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Labels { Type GR Title UnitX UnitY } {
+proc Graph::Labels { Graph Type Title UnitX UnitY } {
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
-   $data(Canvas) itemconfigure [lindex [$data(Canvas) itemconfigure $GR -title] end] -text $Title
-   $data(Canvas) itemconfigure [graphaxis configure axisx$GR -unit] -text $UnitX
-   $data(Canvas) itemconfigure [graphaxis configure axisy$GR -unit] -text $UnitY
+   $data(Canvas) itemconfigure [lindex [$data(Canvas) itemconfigure $Graph -title] end] -text $Title
+   $data(Canvas) itemconfigure [graphaxis configure axisx$Graph -unit] -text $UnitX
+   $data(Canvas) itemconfigure [graphaxis configure axisy$Graph -unit] -text $UnitY
 }
 
 #----------------------------------------------------------------------------
@@ -407,7 +442,7 @@ proc Graph::Labels { Type GR Title UnitX UnitY } {
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
-#  <GR>      : Identificateur du Graph
+#  <Graph>   : Identificateur du Graph
 #  <Width>   : Nouvelle largeur
 #  <Height>  : Nouvelle hauteur
 #  <Limit>   : Seulement le frame
@@ -418,55 +453,55 @@ proc Graph::Labels { Type GR Title UnitX UnitY } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Resize { Frame GR X0 Y0 X1 Y1 Limit } {
+proc Graph::Resize { Frame Graph X0 Y0 X1 Y1 Limit } {
    variable Data
 
    set cv $Frame.page.canvas
 
    if { $X0==-999 } {
-      set coo [$cv coords $GR]
+      set coo [$cv coords $Graph]
       set X0 [lindex $coo 0]
       set Y0 [lindex $coo 1]
    }
 
    if { [set dx [expr $X1-$X0]]>80 } {
-      set px [expr $Data(Width$GR)-$dx]
-      set Data(Width$GR) $dx
+      set px [expr $Data(Width$Graph)-$dx]
+      set Data(Width$Graph) $dx
    }  else {
-      set px $Data(Width$GR)
-      set X1 [expr $X0+$Data(Width$GR)]
+      set px $Data(Width$Graph)
+      set X1 [expr $X0+$Data(Width$Graph)]
    }
 
    if { [set dy [expr $Y1-$Y0]]>80 } {
-      set py [expr $Data(Height$GR)-$dy]
-      set Data(Height$GR) $dy
+      set py [expr $Data(Height$Graph)-$dy]
+      set Data(Height$Graph) $dy
    }  else {
-      set py $Data(Height$GR)
-      set Y1 [expr $Y0+$Data(Height$GR)]
+      set py $Data(Height$Graph)
+      set Y1 [expr $Y0+$Data(Height$Graph)]
    }
 
-   set Data(X$GR)      $X0
-   set Data(Y$GR)      $Y0
+   set Data(X$Graph)      $X0
+   set Data(Y$Graph)      $Y0
 
-   catch { $cv coords $GR $X0 $Y0 $X1 $Y1 }
-   catch { $cv itemconfigure $GR -x $X0 -y $Y0 -width $Data(Width$GR) -height $Data(Height$GR) }
+   catch { $cv coords $Graph $X0 $Y0 $X1 $Y1 }
+   catch { $cv itemconfigure $Graph -x $X0 -y $Y0 -width $Data(Width$Graph) -height $Data(Height$Graph) }
 
-   if { $Data(Active$GR) } {
-      $Frame.page.canvas coords BS$Page::Data(Tag)$GR $X1 $Y1
-      $Frame.page.canvas coords BM$Page::Data(Tag)$GR [expr $X1-11] $Y1
-      $Frame.page.canvas coords BF$Page::Data(Tag)$GR [expr $X1-22] $Y1
-      $Frame.page.canvas coords BD$Page::Data(Tag)$GR $X1 $Y0
+   if { $Data(Active$Graph) } {
+      $Frame.page.canvas coords BS$Page::Data(Tag)$Graph $X1 $Y1
+      $Frame.page.canvas coords BM$Page::Data(Tag)$Graph [expr $X1-11] $Y1
+      $Frame.page.canvas coords BF$Page::Data(Tag)$Graph [expr $X1-22] $Y1
+      $Frame.page.canvas coords BD$Page::Data(Tag)$Graph $X1 $Y0
    }
 
    if { !$Limit } {
       $cv config -cursor watch
       update idletasks
 
-      set type $Data(Type$GR)
+      set type $Data(Type$Graph)
       if { [info procs ::Graph::${type}::Page]!="" } {
-         Graph::${type}::Page $GR
+         Graph::${type}::Page $Graph
       }
-      Graph::${type}::Graph $GR
+      Graph::${type}::Graph $Graph
 
       update idletasks
       $cv config -cursor left_ptr
@@ -519,9 +554,25 @@ proc Graph::Configure { } {
    }
 }
 
-proc Graph::Idle { GR Type } {
+#----------------------------------------------------------------------------
+# Nom      : <Graph::Idle>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Configurer le curseur pour inqiquer un travail en cours
+#
+# Parametres :
+#   <Graph>  : Indentificateur du Graph
+#   <Type>   : Type du Graph
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+proc Graph::Idle { Graph Type } {
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    if { $data(FrameData)!="" } {
       . config -cursor watch
@@ -530,9 +581,25 @@ proc Graph::Idle { GR Type } {
    }
 }
 
-proc Graph::UnIdle { GR Type } {
+#----------------------------------------------------------------------------
+# Nom      : <Graph::UnIdle>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Configurer le curseur pour inqiquer un travail termine
+#
+# Parametres :
+#   <Graph>  : Indentificateur du Graph
+#   <Type>   : Type du Graph
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+proc Graph::UnIdle { Graph Type } {
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    if { $data(FrameData)!="" } {
       . config -cursor left_ptr
@@ -552,10 +619,10 @@ proc Graph::UnIdle { GR Type } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Destroy { Frame { GR "" } { Type "" } } {
+proc Graph::Destroy { Frame { Graph "" } { Type "" } } {
    variable Data
 
-   if { $GR=="" && $Type=="" } {
+   if { $Graph=="" && $Type=="" } {
       foreach type $Data(Types) {
          foreach graph [Page::Registered $Frame Graph::${type}] {
             Graph::Destroy $Frame $graph $type
@@ -563,44 +630,44 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
       }
    } else {
 
-      if { [Page::Registered $Frame Graph::${Type} $GR]==-1 } {
+      if { [Page::Registered $Frame Graph::${Type} $Graph]==-1 } {
          return
       }
 
       $Frame.page.canvas configure -cursor watch
       update idletasks
 
-      Page::ActiveUnWrapper Graph $Frame $GR
+      Page::ActiveUnWrapper Graph $Frame $Graph
 
-      Graph::DeActivate $GR $Type
-      Graph::ParamsOff $Frame $Type $GR
+      Graph::DeActivate $Graph $Type
+      Graph::ParamsOff $Frame $Graph $Type
 
       #----- Cleanup graphs specifics
       if { [info procs ::Graph::${Type}::Clean]!="" } {
-         Graph::${Type}::Clean $GR
+         Graph::${Type}::Clean $Graph
       }
 
-      upvar #0 Graph::${Type}::${Type}${GR}::Data data
+      upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
       #----- Supprimer les pointeurs
-      $Frame.page.canvas delete $Page::Data(Tag)$GR
-      catch { $data(FrameData).page.canvas delete GRAPH[string toupper $Type]$GR }
+      $Frame.page.canvas delete $Page::Data(Tag)$Graph
+      catch { $data(FrameData).page.canvas delete GRAPHSELECT$Graph }
 
       #----- Supprimer les items
       foreach pos $data(Pos) {
-         Graph::${Type}::ItemUnDefine $GR $pos
+         Graph::${Type}::ItemUnDefine $Graph $pos
       }
       #----- Supprimer le namespace du graph
-      namespace delete ::Graph::${Type}::${Type}$GR
+      namespace delete ::Graph::${Type}::${Type}$Graph
 
       #----- Supprimer les variables du viewport
-      unset Data(Full$GR)
-      unset Data(Active$GR)
-      unset Data(X$GR)
-      unset Data(Y$GR)
-      unset Data(Width$GR)
-      unset Data(Height$GR)
-      unset Data(Type$GR)
+      unset Data(Full$Graph)
+      unset Data(Active$Graph)
+      unset Data(X$Graph)
+      unset Data(Y$Graph)
+      unset Data(Width$Graph)
+      unset Data(Height$Graph)
+      unset Data(Type$Graph)
 
       update idletasks
       $Frame.page.canvas configure -cursor left_ptr
@@ -614,7 +681,7 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
 # But      : Recupere la selection d'une source.
 #
 # Parametres :
-#  <GR>      : Indentificateur du Graph
+#  <Graph>   : Indentificateur du Graph
 #  <Type>    : Type du Graph
 #  <Array>   : Variable array
 #  <Index>   : Index dans la variable Array
@@ -626,10 +693,10 @@ proc Graph::Destroy { Frame { GR "" } { Type "" } } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::LocTool { GR Type Array Index Op } {
+proc Graph::LocTool { Graph Type Array Index Op } {
 
-   if { $GR!="" } {
-      Graph::${Type}::ItemDefine $GR $Graph::Data(Pos) [list $SPI::Src(Lat) $SPI::Src(Lon)]
+   if { $Graph!="" } {
+      Graph::${Type}::ItemDefine $Graph $Graph::Data(Pos) [list $SPI::Src(Lat) $SPI::Src(Lon)]
    }
 }
 
@@ -640,43 +707,43 @@ proc Graph::LocTool { GR Type Array Index Op } {
 # But     : Activer les bindings relatifs aux graphs
 #
 # Parametres :
+#   <Graph>  : Identificateur du graph
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du graph
 #   <Zoom>   : Activation du mode Zoom
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Mode { Type GR { Zoom False } } {
+proc Graph::Mode { Graph Type { Zoom False } } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
-   $data(Canvas) bind $Page::Data(Tag)$GR    <ButtonPress-1> "Graph::Activate $data(Frame) $GR $Type"
+   $data(Canvas) bind $Page::Data(Tag)$Graph    <ButtonPress-1> "Graph::Activate $data(Frame) $Graph $Type"
 
    if { $Zoom } {
 
-      $data(Canvas) bind $GR                <Motion>        "if { \[$GR -header %x %y\] } { $data(Canvas) configure -cursor hand1 } else { $data(Canvas) configure -cursor left_ptr }
-                                                                  Graph::${Type}::Coord $Page::Data(Frame) $GR \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind $GR                <Leave>         "set Page::Data(Coord) \"\";set Page::Data(Value) \"\""
+      $data(Canvas) bind $Graph                <Motion>        "if { \[$Graph -header %x %y\] } { $data(Canvas) configure -cursor hand1 } else { $data(Canvas) configure -cursor left_ptr }
+                                                                  Graph::${Type}::Coord $Page::Data(Frame) $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
+      $data(Canvas) bind $Graph                <Leave>         "set Page::Data(Coord) \"\";set Page::Data(Value) \"\""
 
       #----- Evenements de zoom
 
-      $data(Canvas) bind $Page::Data(Tag)$GR <ButtonPress-2>   "Graph::Activate $data(Frame) $GR $Type;\
+      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-2>   "Graph::Activate $data(Frame) $Graph $Type;\
                                                                 Graph::ZoomInit $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind $Page::Data(Tag)$GR <B2-Motion>       "Graph::ZoomBox  $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind $Page::Data(Tag)$GR <ButtonRelease-2> "Graph::Zoom $Type $GR"
-      $data(Canvas) bind $Page::Data(Tag)$GR <ButtonRelease-3> "Graph::ZoomReset $Type $GR"
+      $data(Canvas) bind $Page::Data(Tag)$Graph <B2-Motion>       "Graph::ZoomBox  $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
+      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonRelease-2> "Graph::Zoom $Type $Graph"
+      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonRelease-3> "Graph::ZoomReset $Type $Graph"
 
-#      $data(Canvas) bind $Page::Data(Tag)$GR <ButtonPress-4>   "Graph::Zoom $Type $GR"
-#      $data(Canvas) bind $Page::Data(Tag)$GR <ButtonPress-5>   "Graph::Zoom $Type $GR"
+      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-4>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] +0.1 True"
+      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-5>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] -0.1"
 
       #----- Evenements de rotation
 
-      $data(Canvas) bind $GR <ButtonPress-1>   "Graph:LegendMoveInit $data(Frame) $data(Canvas) $GR $Type %x %y"
-      $data(Canvas) bind $GR <B1-Motion>       "Graph:LegendMove $data(Frame) $data(Canvas) $GR $Type %x %y"
-      $data(Canvas) bind $GR <ButtonRelease-1> "Graph:LegendMoveDone $data(Frame) $data(Canvas) $GR $Type"
+      $data(Canvas) bind $Graph <ButtonPress-1>   "Graph:LegendMoveInit $data(Frame) $data(Canvas) $Graph $Type %x %y"
+      $data(Canvas) bind $Graph <B1-Motion>       "Graph:LegendMove $data(Frame) $data(Canvas) $Graph $Type %x %y"
+      $data(Canvas) bind $Graph <ButtonRelease-1> "Graph:LegendMoveDone $data(Frame) $data(Canvas) $Graph $Type"
    }
 }
 
@@ -695,10 +762,18 @@ proc Graph::Mode { Type GR { Zoom False } } {
 #-------------------------------------------------------------------------------
 
 proc Graph::ModeSelect { Mode { Valid {} } } {
+   global GDefs
    variable Data
    variable Param
 
    set Param(SelectMode) $Mode
+   set Data(ToolMode)    None
+
+   if { $Mode=="NONE" } {
+      $Data(Tab).head.sel configure -state disabled
+   } else {
+      $Data(Tab).head.sel configure -state normal
+   }
 
    if { [llength $Valid] } {
       $Data(Tab).head.sel.down.menu entryconfigure 0 -state disabled
@@ -707,19 +782,29 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
       $Data(Tab).head.sel.down.menu entryconfigure 3 -state disabled
       foreach mode $Valid {
          switch $mode {
-           "POINT"     { $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
-           "LINE"      { $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
-           "LATLONBOX" {  $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
-           "GRIDBOX"   {  $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
+           "POINT"   { $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
+           "LINE"    { $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
+           "BOX"     { $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+           "POLYGON" { $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
          }
       }
    }
    switch $Param(SelectMode) {
+      "POINT"   { $Data(Tab).head.sel configure -image ARROW;       set Data(ToolMode) Data; $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
+      "LINE"    { $Data(Tab).head.sel configure -image ARROWLINE;   set Data(ToolMode) Draw; $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
+      "BOX"     { $Data(Tab).head.sel configure -image ARROWSQUARE; set Data(ToolMode) Data; $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
+      "POLYGON" { $Data(Tab).head.sel configure -image ARROWPOLY;   set Data(ToolMode) Draw; $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
+   }
 
-      "POINT"     { $Data(Tab).head.sel configure -image ARROW;       $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
-      "LINE"      { $Data(Tab).head.sel configure -image ARROWLINE;   $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
-      "LATLONBOX" { $Data(Tab).head.sel configure -image ARROWSQUARE; $Data(Tab).head.sel.down.menu entryconfigure 2 -state normal }
-      "GRIDBOX"   { $Data(Tab).head.sel configure -image ARROWGRID;   $Data(Tab).head.sel.down.menu entryconfigure 3 -state normal }
+   SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True
+
+   #----- Insert saved locations
+   if { [set idx [$Data(Tab).head.sel.down.menu index end]]>7 } {
+      $Data(Tab).head.sel.down.menu delete 8 $idx
+   }
+   foreach item $Param($Param(SelectMode)) {
+      $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $item 0] -variable Graph::Param(LOCATION) \
+         -command "Graph::\${Graph::Data(Type)}::ItemDefine \$Graph::Data(Graph) \$Graph::Data(Pos) \[list [lindex $item 1]\]"
    }
 }
 
@@ -731,11 +816,11 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Params { { GR "" } { Type "" } { Force False } } {
+proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -762,7 +847,7 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
          wm title         .graphparams [lindex $Lbl(Graph) $GDefs(Lang)]
          wm transient     .graphparams .
          eval wm geometry .graphparams $Param(Geom)
-         wm protocol      .graphparams WM_DELETE_WINDOW { set Graph::Data(Show) False ; Page::ModeSelect Zoom ;destroy .graphparams }
+         wm protocol      .graphparams WM_DELETE_WINDOW { set Graph::Data(Show) False; Page::ModeSelect Zoom ;destroy .graphparams }
       }
 
       TabFrame::Create .graphparams.tab 1 ""
@@ -770,18 +855,22 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
       pack .graphparams.tab -side top -fill both -expand true
 
       frame $Data(Tab).head
-         checkbutton $Data(Tab).head.sel -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -anchor w -width 28 \
-            -variable Page::Data(ToolMode) -offvalue SPI -command { SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True }
-         menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu
+         checkbutton $Data(Tab).head.sel -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -anchor w -width 30 -state disabled \
+            -variable Page::Data(ToolMode) -offvalue SPI -onvalue Graph -command { SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True; catch { Graph::${Graph::Data(Type)}::UpdateItems $Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }}
+         menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu -state disabled
          place $Data(Tab).head.sel.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.sel.down.menu
-         $Data(Tab).head.sel.down.menu add command -image ARROW       -command { Graph::ModeSelect POINT ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWLINE   -command { Graph::ModeSelect LINE ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect LATLONBOX ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWGRID   -command { Graph::ModeSelect GRIDBOX ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROW       -command { Graph::ModeSelect POINT ;   if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWLINE   -command { Graph::ModeSelect LINE ;    if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect BOX ;     if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add command -image ARROWPOLY   -command { Graph::ModeSelect POLYGON ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add separator
+         $Data(Tab).head.sel.down.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] -command { Graph::PosSave $Graph::Data(Type) $Graph::Data(Graph) $Graph::Data(Pos) }
+         $Data(Tab).head.sel.down.menu add command -label [lindex $Lbl(Del) $GDefs(Lang)] -command { Graph::PosDelete $Graph::Data(Type) $Graph::Data(Graph) $Graph::Data(Pos) }
+         $Data(Tab).head.sel.down.menu add separator
 
-         button $Data(Tab).head.reset -image GRAPHRESET -relief flat -bd 0 -overrelief raised -command ""
-         button $Data(Tab).head.data -image GRAPHDATA -relief flat -bd 0 -overrelief raised -command ""
+         button $Data(Tab).head.reset -image GRAPHRESET -relief flat -bd 0 -overrelief raised -state disabled -command { Graph::ZoomReset $Graph::Data(Type) $Graph::Data(Graph) }
+         button $Data(Tab).head.data -image GRAPHDATA -relief flat -bd 0 -overrelief raised -state disabled -command {  Graph::DataSheet $Graph::Data(Type) $Graph::Data(Graph) }
          pack $Data(Tab).head.sel $Data(Tab).head.reset $Data(Tab).head.data -side left -fill y -padx 2
       pack $Data(Tab).head -side top -fill x
 
@@ -800,34 +889,24 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
 
    #----- Inserer les parametres du graph
 
-   if { $Type!="" && ($Data(GraphParams)!=$GR || $Force) } {
-       eval .graphparams.dock.info configure -text \[lindex \$Graph::${Type}::Lbl(Title) $GDefs(Lang)\]
+   if { $Type!="" && ($Data(GraphParams)!=$Graph || $Force) } {
+      eval .graphparams.dock.info configure -text \[lindex \$Graph::${Type}::Lbl(Title) $GDefs(Lang)\]
 
-      $Data(Tab).head.sel configure -onvalue Graph::${Type} -command "SPI::ToolMode \$Page::Data(ToolMode) \$Graph::Data(ToolMode) True; catch { Graph::Section::UpdateItems \$Graph::Section::Section${GR}::Data(FrameData) $GR }"
-      $Data(Tab).head.reset configure -command "Graph::ZoomReset $Type $GR"
-      $Data(Tab).head.data  configure -command "Graph::DataSheet $Type $GR"
+      $Data(Tab).head.sel      configure -state normal
+      $Data(Tab).head.reset    configure -state normal
+      $Data(Tab).head.data     configure -state normal
+      $Data(Tab).head.sel.down configure -state normal
 
       destroy $Data(Tab).graph
       frame $Data(Tab).graph
       pack $Data(Tab).graph -after $Data(Tab).head -side top -fill both -expand true
 
       #----- Force le mode selection du graph actif si besoin est
+      set Data(GraphParams) $Graph
 
-      set Data(ToolMode)    $Graph::Data(ToolMode$GR)
-      set Data(GraphParams) $GR
-
-      if { [info exists Graph::Data(Full$GR)] } {
-         Graph::${Type}::Params $Data(Tab).graph $GR
-         if { $Graph::Data(ToolMode$GR)!="None" } {
-            $Data(Tab).head.sel configure -state normal
-            if { [lindex [split $Page::Data(ToolMode) ":"] 0]=="Graph" } {
-               set Page::Data(ToolMode) Graph::${Type}
-               SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True
-            }
-         } else {
-            $Data(Tab).head.sel configure -state disabled
-            SPI::ToolMode SPI Zoom
-         }
+      if { [info exists Graph::Data(Full$Graph)] } {
+         Graph::${Type}::Params $Data(Tab).graph $Graph
+         SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True
       }
       Graph::ParamsGraph $Data(Tab).graph
    }
@@ -840,12 +919,15 @@ proc Graph::Params { { GR "" } { Type "" } { Force False } } {
 # But      : Fenetre de parametrage des axes
 #
 # Parametres :
+#   <Parent> : Fenetre parent
+#   <Graph>  : Identificateur du Graph
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Axis>   : Axe X ou Y
+#   <Mode>   : Type d'axe (MARK,TIME,INTERVAL,VERTICAL)
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
+proc Graph::ParamsAxis { Parent Graph Type Axis { Mode "" } } {
    global GDefs
    variable Lbl
    variable Bubble
@@ -854,7 +936,7 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
    if  { ![winfo exists  $Parent.scale${Axis}] } {
       checkbutton $Parent.scale${Axis}toggle -text "[lindex $Lbl(Scale) $GDefs(Lang)] $Axis" -compound right -variable Graph::Graph(ParamsAxis$Axis) -onvalue True -offvalue False \
-         -command "Graph::ParamsAxis $Parent $GR $Type $Axis $Mode" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+         -command "Graph::ParamsAxis $Parent $Graph $Type $Axis $Mode" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
       labelframe $Parent.scale${Axis} -labelwidget $Parent.scale${Axis}toggle
    }
 
@@ -868,21 +950,21 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
             frame $Parent.scale${Axis}.t0
                label $Parent.scale${Axis}.t0.lbl -text [lindex $Graph::Lbl(From) $GDefs(Lang)] -width 12 -anchor w
-#               Calendar::Create $Parent.scale${Axis}.t0.val [lindex $Graph::Lbl(From) $GDefs(Lang)] Graph::${Type}::${Type}${GR}::Data(Date0) -1 "Graph::${Type}::Graph $GR"
-               entry $Parent.scale${Axis}.t0.val -textvariable Graph::${Type}::${Type}${GR}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1
+#               Calendar::Create $Parent.scale${Axis}.t0.val [lindex $Graph::Lbl(From) $GDefs(Lang)] Graph::${Type}::${Type}${Graph}::Data(Date0) -1 "Graph::${Type}::Graph $Graph"
+               entry $Parent.scale${Axis}.t0.val -textvariable Graph::${Type}::${Type}${Graph}::Data(Date0) -bg $GDefs(ColorLight) -relief sunken -bd 1
                pack  $Parent.scale${Axis}.t0.lbl -side left
                pack  $Parent.scale${Axis}.t0.val  -side left -fill x -expand true
 
             frame $Parent.scale${Axis}.t1
                label $Parent.scale${Axis}.t1.lbl -text [lindex $Graph::Lbl(To) $GDefs(Lang)] -width 12 -anchor w
-               entry $Parent.scale${Axis}.t1.val -textvariable Graph::${Type}::${Type}${GR}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1
+               entry $Parent.scale${Axis}.t1.val -textvariable Graph::${Type}::${Type}${Graph}::Data(Date1) -bg $GDefs(ColorLight) -relief sunken -bd 1
                pack  $Parent.scale${Axis}.t1.lbl -side left
                pack  $Parent.scale${Axis}.t1.val  -side left -fill x -expand true
 
             frame $Parent.scale${Axis}.format
                label $Parent.scale${Axis}.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 12 -anchor w
-               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormatsTime) 10 5 \
-                  Graph::${Type}::Graph $GR
+               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${Graph}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormatsTime) 10 5 \
+                  Graph::${Type}::Graph $Graph
                pack $Parent.scale${Axis}.format.lbl -side left
                pack $Parent.scale${Axis}.format.val -side left -fill x -expand True -padx 2
                Bubble::Create $Parent.scale${Axis}.format.val $Graph::Bubble(AxisFormat)
@@ -892,24 +974,24 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 #            Bubble::Create $Parent.scale${Axis}.t0.val  $Graph::Bubble(Date0)
             Bubble::Create $Parent.scale${Axis}.t1.val  $Graph::Bubble(Date1)
 
-            bind $Parent.scale${Axis}.t0.val <Return>    "Graph::${Type}::Graph $GR"
-            bind $Parent.scale${Axis}.t1.val <Return>    "Graph::${Type}::Graph $GR"
+            bind $Parent.scale${Axis}.t0.val <Return>    "Graph::${Type}::Graph $Graph"
+            bind $Parent.scale${Axis}.t1.val <Return>    "Graph::${Type}::Graph $Graph"
          } else {
             frame $Parent.scale${Axis}.inter
                label $Parent.scale${Axis}.inter.lbl -text "[lindex $Lbl(Inter) $GDefs(Lang)]" -width 12 -anchor w
-               entry $Parent.scale${Axis}.inter.val -textvariable Graph::${Type}::${Type}${GR}::Graph(${Axis}Inter) -bg $GDefs(ColorLight) -relief sunken -width 1
+               entry $Parent.scale${Axis}.inter.val -textvariable Graph::${Type}::${Type}${Graph}::Graph(${Axis}Inter) -bg $GDefs(ColorLight) -relief sunken -width 1
                pack $Parent.scale${Axis}.inter.lbl -side left
                pack $Parent.scale${Axis}.inter.val -side left -fill x -expand True -padx 2
             Bubble::Create $Parent.scale${Axis}.inter.val $Graph::Bubble(AxisInter)
-            bind $Parent.scale${Axis}.inter.val <Return> "Graph::${Type}::Graph $GR"
+            bind $Parent.scale${Axis}.inter.val <Return> "Graph::${Type}::Graph $Graph"
             pack $Parent.scale${Axis}.inter -side top -fill x
          }
 
          if { $Mode!="INTERVAL" && $Mode!="TIME" } {
             frame $Parent.scale${Axis}.type
                label $Parent.scale${Axis}.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -width 12 -anchor w
-               ComboBox::Create $Parent.scale${Axis}.type.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Scale) noedit unsorted nodouble -1 $Graph::Param(AxisTypes) 10 5 \
-                  Graph::${Type}::Graph $GR
+               ComboBox::Create $Parent.scale${Axis}.type.val Graph::${Type}::${Type}${Graph}::Graph(${Axis}Scale) noedit unsorted nodouble -1 $Graph::Param(AxisTypes) 10 5 \
+                  Graph::${Type}::Graph $Graph
                pack $Parent.scale${Axis}.type.lbl -side left
                pack $Parent.scale${Axis}.type.val -side left -fill x -expand True -padx 2
                Bubble::Create $Parent.scale${Axis}.type.val $Graph::Bubble(AxisType)
@@ -917,8 +999,8 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
             frame $Parent.scale${Axis}.format
                label $Parent.scale${Axis}.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 12 -anchor w
-               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${GR}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormats) 10 5 \
-                  Graph::${Type}::Graph $GR
+               ComboBox::Create $Parent.scale${Axis}.format.val Graph::${Type}::${Type}${Graph}::Graph(${Axis}Format) noedit unsorted nodouble -1 $Graph::Param(AxisFormats) 10 5 \
+                  Graph::${Type}::Graph $Graph
                pack $Parent.scale${Axis}.format.lbl -side left
                pack $Parent.scale${Axis}.format.val -side left -fill x -expand True -padx 2
                Bubble::Create $Parent.scale${Axis}.format.val $Graph::Bubble(AxisFormat)
@@ -926,8 +1008,8 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
             frame $Parent.scale${Axis}.dec
                label $Parent.scale${Axis}.dec.lbl -text [lindex $Lbl(Decimals) $GDefs(Lang)] -width 12 -anchor w
-               spinbox $Parent.scale${Axis}.dec.val -textvariable Graph::${Type}::${Type}${GR}::Graph(${Axis}Decimals) -from 0 -to 10 -increment 1 -wrap True -width 5 \
-                  -bg $GDefs(ColorLight) -command "Graph::${Type}::Graph $GR"
+               spinbox $Parent.scale${Axis}.dec.val -textvariable Graph::${Type}::${Type}${Graph}::Graph(${Axis}Decimals) -from 0 -to 10 -increment 1 -wrap True -width 5 \
+                  -bg $GDefs(ColorLight) -command "Graph::${Type}::Graph $Graph"
                pack $Parent.scale${Axis}.dec.lbl -side left
                pack $Parent.scale${Axis}.dec.val -side left -fill x -expand True -padx 2
                Bubble::Create $Parent.scale${Axis}.dec.val $Graph::Bubble(AxisDecimals)
@@ -937,8 +1019,8 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
          if { $Mode!="INTERVAL" && $Mode=="VERTICAL" } {
             frame $Parent.scale${Axis}.z
                label $Parent.scale${Axis}.z.lbl -text [lindex $Lbl(ZType) $GDefs(Lang)] -width 12 -anchor w
-               ComboBox::Create $Parent.scale${Axis}.z.val Graph::${Type}::${Type}${GR}::Graph(ZType) noedit unsorted nodouble -1 $Graph::Param(AxisZs) 10 5 \
-                  Graph::${Type}::Update \$Graph::${Type}::${Type}${GR}::Data(FrameData)
+               ComboBox::Create $Parent.scale${Axis}.z.val Graph::${Type}::${Type}${Graph}::Graph(ZType) noedit unsorted nodouble -1 $Graph::Param(AxisZs) 10 5 \
+                  Graph::${Type}::Update \$Graph::${Type}::${Type}${Graph}::Data(FrameData)
                pack $Parent.scale${Axis}.z.lbl -side left
                pack $Parent.scale${Axis}.z.val -side left -fill x -expand True -padx 2
             pack $Parent.scale${Axis}.z -side top -fill x
@@ -949,7 +1031,7 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
       if { $Mode!="INTERVAL" } {
          frame $Parent.scale${Axis}.grid
             label $Parent.scale${Axis}.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 12 -anchor w
-            ColorBox::CreateSel $Parent.scale${Axis}.grid.col Graph::Grid(${Axis}Color) "Graph::${Type}::Graph $GR"
+            ColorBox::CreateSel $Parent.scale${Axis}.grid.col Graph::Grid(${Axis}Color) "Graph::${Type}::Graph $Graph"
             IcoMenu::Create $Parent.scale${Axis}.grid.sz $GDefs(Dir)/Resources/Bitmap \
                "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                Graph::Grid(${Axis}Width) { Graph::Configure } $Graph::Grid(${Axis}Width) -relief groove -bd 2
@@ -963,8 +1045,8 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 
          frame $Parent.scale${Axis}.angle
             label $Parent.scale${Axis}.angle.lbl -text [lindex $Lbl(Angle) $GDefs(Lang)] -width 12 -anchor w
-            scale $Parent.scale${Axis}.angle.val -from -90 -to 90 -resolution 10 -variable Graph::${Type}::${Type}${GR}::Graph(${Axis}Angle) -showvalue false \
-               -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command "Graph::${Type}::Graph $GR; catch "
+            scale $Parent.scale${Axis}.angle.val -from -90 -to 90 -resolution 10 -variable Graph::${Type}::${Type}${Graph}::Graph(${Axis}Angle) -showvalue false \
+               -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command "Graph::${Type}::Graph $Graph; catch "
             pack $Parent.scale${Axis}.angle.lbl -side left
             pack $Parent.scale${Axis}.angle.val -side left -fill x -expand True
          pack $Parent.scale${Axis}.angle -side top -fill x
@@ -989,18 +1071,18 @@ proc Graph::ParamsAxis { Parent GR Type Axis { Mode "" } } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #   <Update> : Mettre a jour le graph
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::ParamsAxisUniform { Type GR { Update True }  } {
+proc Graph::ParamsAxisUniform { Type Graph { Update True }  } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    if { $graph(Uniform) } {
       pack forget $Data(Tab).graph.scaleY
@@ -1009,10 +1091,25 @@ proc Graph::ParamsAxisUniform { Type GR { Update True }  } {
    }
 
    if { $Update } {
-      Graph::${Type}::Update $data(FrameData) $GR
+      Graph::${Type}::Update $data(FrameData) $Graph
    }
-   Graph::${Type}::Graph $GR
+   Graph::${Type}::Graph $Graph
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::ParamsItem>
+# Creation : Janvier 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher les options de parametres des items
+#
+# Parametres :
+#   <Parent> : Fenetre parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Graph::ParamsItem { Parent } {
    global GDefs
@@ -1104,16 +1201,16 @@ proc Graph::ParamsItem { Parent } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::DataSheet { Type GR } {
+proc Graph::DataSheet { Type Graph } {
    global GDefs
    variable Lbl
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    eval set title \[lindex \$Graph::${Type}::Lbl(Title) $GDefs(Lang)\]
    set text [Dialog::Text .graphdata "[lindex $Lbl(Data) $GDefs(Lang)]: $title" "" 60 20]
@@ -1132,7 +1229,7 @@ proc Graph::DataSheet { Type GR } {
          #----- Graph Raster
          set ditem [graphitem configure $item -data]
          if { $ditem!="" } {
-            if { [fstdfield define $ditem -GRTYP]=="V" } {
+            if { [fstdfield define $ditem -GraphTYP]=="V" } {
                $text insert end "Levels     :[fstdfield stats $ditem -levels]\n"
             }
             for { set j 0 } { $j < [fstdfield define $ditem -NJ] } { incr j } {
@@ -1170,27 +1267,29 @@ proc Graph::DataSheet { Type GR } {
 #
 # Parametres :
 #   <Frame>  : Page courante
+#   <Graph>  : Identificateur du Graph
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::ParamsOff { Frame Type GR } {
+proc Graph::ParamsOff { Frame Graph Type } {
    variable Data
 
-   if { $Data(GraphParams)==$GR } {
+   if { $Data(GraphParams)==$Graph } {
       destroy $Data(Tab).graph
 
       if { [winfo exist .graphparams] } {
-        $Data(Tab).head.sel configure -command ""
-        $Data(Tab).head.reset configure -command ""
+        $Data(Tab).head.sel      configure -state disabled
+        $Data(Tab).head.reset    configure -state disabled
+        $Data(Tab).head.data     configure -state disabled
+        $Data(Tab).head.sel.down configure -state disabled
       }
 
-      if { [lindex [split $Page::Data(ToolMode) ":"] 0]=="Graph" } {
+      if { $Page::Data(ToolMode)=="Graph" } {
          SPI::ToolMode SPI Zoom
       }
    }
-   set Data(Graph) [Page::UnRegister $Frame Graph::$Type $GR]
+   set Data(Graph) [Page::UnRegister $Frame Graph::$Type $Graph]
 }
 
 #-------------------------------------------------------------------------------
@@ -1200,8 +1299,6 @@ proc Graph::ParamsOff { Frame Type GR } {
 # But      : Inserer la fenetre dans l'interface
 #
 # Parametres :
-#   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
 #
 #-------------------------------------------------------------------------------
 
@@ -1219,6 +1316,46 @@ proc Graph::Dock { } {
    catch { Graph::Params $Data(Graph) $Data(Type) True }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::SaveParams>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Sauvegarder les parametres des graphs
+#
+# Parametres :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::SaveParams { } {
+   global env
+   variable Param
+
+   catch { file copy -force $env(HOME)/.spi/Graph $env(HOME)/.spi/Graph.old }
+
+   set f [open $env(HOME)/.spi/Graph w]
+   foreach mode { POINT LINE BOX POLYGON } {
+      puts $f "set Graph::Param($mode) { $Param($mode) }"
+   }
+   close $f
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ItemPos>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Afficher la position dans la vue
+#
+# Parametres :
+#   <Frame>  : Identificateur de page
+#   <VP>     : Identificateur de la vue
+#   <Coords> : Coordonnes
+#   <Desc>   : Descripteur
+#   <Tag>    : Tag a apposer pour le canvas
+#   <Type>   : Type de position (POINT,BOX,LINE,POLYGON)
+#   <Marks>  : Marqueurs
+#
+#-------------------------------------------------------------------------------
+
 proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
    variable Graph
    variable Data
@@ -1231,101 +1368,101 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
       return
    }
 
-   if { $Type=="POINT" } {
-      if { [set xy [$VP -project [lindex $Coords 0] [lindex $Coords 1] 0]]!="" && [lindex $xy 2]>0 } {
-         set x [lindex $xy 0]
-         set y [lindex $xy 1]
-
-         if { $Data(ShowCoord) } {
-            set Desc "$Desc\n[format "(%.3f,%.3f)" [lindex $Coords 0] [lindex $Coords 1]]"
-         }
-
-         $Frame.page.canvas create text [expr $x+6] $y -text $Desc \
-            -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor w
-         $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Graph::Color(Select) \
-            -tags "$Page::Data(Tag)$VP $Tag" -outline $Graph::Color(Select)
-      }
-   } elseif { $Type=="LATLONBOX" } {
-      if { [llength $Coords]==4 } {
-         set la0 [lindex $Coords 0]
-         set lo0 [lindex $Coords 1]
-         set la1 [lindex $Coords 2]
-         set lo1 [lindex $Coords 3]
-         Viewport::DrawLine $Frame $VP "$la0 $lo0 0 $la1 $lo0 0 $la1 $lo1 0 $la0 $lo1 0 $la0 $lo0 0" $Tag  $Graph::Color(Select) 2
-
-         if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
-            set x [lindex $xy 0]
-            set y [lindex $xy 1]
-
-            if { $Data(ShowCoord) } {
-               set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
-            }
-            $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
-               -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
-         }
-      }
-   } elseif { $Type=="GRIDBOX" } {
-      if { [llength $Coords]==4 } {
-         set la0 [lindex $Coords 0]
-         set lo0 [lindex $Coords 1]
-         set la1 [lindex $Coords 2]
-         set lo1 [lindex $Coords 3]
-
-         if { [fstdfield is [set fld [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]]] } {
-            set coords [fstdfield stats $fld -gridbox 10 $la0 $lo0 $la1 $lo1]
-            set cos {}
-            foreach { lat lon } $coords {
-               lappend cos $lat $lon 0.0
-            }
-            Viewport::DrawLine $Frame $VP $cos $Tag $Graph::Color(Select) 2
-
-            if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
+   switch $Type {
+      "POINT" {
+            if { [set xy [$VP -project [lindex $Coords 0] [lindex $Coords 1] 0]]!="" && [lindex $xy 2]>0 } {
                set x [lindex $xy 0]
                set y [lindex $xy 1]
 
                if { $Data(ShowCoord) } {
-                  set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
+                  set Desc "$Desc\n[format "(%.3f,%.3f)" [lindex $Coords 0] [lindex $Coords 1]]"
                }
-               $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
-                  -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
-            }
-         }
-      }
-   } else {
-      set coords { }
-      set i -1
 
-      foreach { lat lon } $Marks  {
-         if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
-            lappend coords [lindex $xy 0] [lindex $xy 1]
-            set id [lindex $Graph(Identitys) [incr i]]
-            if { $Data(ShowCoord) } {
-               set id "$id\n[format "(%.3f,%.3f)" $lat $lon]"
+               $Frame.page.canvas create text [expr $x+6] $y -text $Desc \
+                  -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor w
+               $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Graph::Color(Select) \
+                  -tags "$Page::Data(Tag)$VP $Tag" -outline $Graph::Color(Select)
             }
-            $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -anchor se -text $id -font $Graph::Font(Select) \
-               -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
-         }
       }
+      "BOX" {
+            if { [llength $Coords]==4 } {
+               set la0 [lindex $Coords 0]
+               set lo0 [lindex $Coords 1]
+               set la1 [lindex $Coords 2]
+               set lo1 [lindex $Coords 3]
+               Viewport::DrawLine $Frame $VP "$la0 $lo0 0 $la1 $lo0 0 $la1 $lo1 0 $la0 $lo1 0 $la0 $lo0 0" $Tag  $Graph::Color(Select) 2
 
-      foreach { lat lon } $Coords {
-         if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
-            set x [lindex $xy 0]
-            set y [lindex $xy 1]
-            #----- Check close to cursor position cause it breaks in follow mode
-            if { [expr hypot($x-$Viewport::Map(X),$y-$Viewport::Map(Y))]>2 } {
-               $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" \
-                  -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+               if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
+                  set x [lindex $xy 0]
+                  set y [lindex $xy 1]
+
+                  if { $Data(ShowCoord) } {
+                     set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
+                  }
+                  $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
+                     -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
+               }
             }
-         }
+      }
+      "POLYGON" {
+            set coords {}
+            foreach { lat lon } $Coords {
+               lappend coords $lat $lon 0.0
+            }
+            lappend coords [lindex $Coords 0] [lindex $Coords 1] 0.0
+            lappend Tags $Page::Data(Tag)$VP
+
+            Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
+      }
+      "LINE" {
+            set coords { }
+            set i -1
+
+            foreach { lat lon } $Marks  {
+               if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+                  lappend coords [lindex $xy 0] [lindex $xy 1]
+                  set id [lindex $Graph(Identitys) [incr i]]
+                  if { $Data(ShowCoord) } {
+                     set id "$id\n[format "(%.3f,%.3f)" $lat $lon]"
+                  }
+                  $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -anchor se -text $id -font $Graph::Font(Select) \
+                     -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+               }
+            }
+
+            foreach { lat lon } $Coords {
+               if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
+                  set x [lindex $xy 0]
+                  set y [lindex $xy 1]
+                  #----- Check close to cursor position cause it breaks in follow mode
+                  if { [expr hypot($x-$Viewport::Map(X),$y-$Viewport::Map(Y))]>2 } {
+                     $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" \
+                        -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+                  }
+               }
+            }
       }
    }
 }
 
-proc Graph::ItemConfigure { GR Type Item } {
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ItemConfigure>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Appliquer les parametres aux item du graph
+#
+# Parametres :
+#   <Graph>  : Identificateur du Graph
+#   <Type>   : Type de graph
+#   <Item>   : Item de graph
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::ItemConfigure { Graph Type Item } {
    variable Data
    global  GDefs
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
    if { ![graphitem is $Item] } {
       return
@@ -1351,8 +1488,19 @@ proc Graph::ItemConfigure { GR Type Item } {
    if { $item!="" } {
       $data(Canvas) itemconfigure [graphitem configure $Item -desc] -font $Graph::Item(Font) -fill $Graph::Color(FG)
    }
-   $data(Canvas) itemconfigure $GR -bg $Graph::Color(BG)
+   $data(Canvas) itemconfigure $Graph -bg $Graph::Color(BG)
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ItemSelect>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Recuperer les parametres d'un item du graph pour l'interface
+#
+# Parametres :
+#   <Item>   : Item de graph
+#
+#-------------------------------------------------------------------------------
 
 proc Graph::ItemSelect { Item } {
    global GDefs
@@ -1397,6 +1545,16 @@ proc Graph::ItemSelect { Item } {
 #   $Data(Frame).item.line.width configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $Graph(WidthBitmap) $Graph::Item(Width)]
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::ParamsPos>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Interface des parametres de positions
+#
+# Parametres :
+#   <Parent> : Fenetre parent
+#
+#-------------------------------------------------------------------------------
 
 proc Graph::ParamsPos { Parent } {
    global GDefs
@@ -1420,10 +1578,85 @@ proc Graph::ParamsPos { Parent } {
    Bubble::Create $Parent.pos.del $Bubble(PosDel)
 }
 
-proc Graph::PosAdd { GR Type } {
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::PosSave>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Sauvegarder la position courante (nom et coordonnees)
+#
+# Parametres :
+#   <Type>   : Type de graph
+#   <Graph>  : Identificateur du Graph
+#   <Pos>    : Position courante
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::PosSave { Type Graph Pos } {
+   variable Param
+   variable Msg
+   variable Lbl
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
+
+   if { [llength $data(Pos$Pos)] && [set name [Dialog::Get . $Lbl(Save) $Msg(PosSave)]]!="" } {
+      if { [set idx [lsearch -exact -index 0 $Param($Param(SelectMode)) $name]]!=-1 } {
+         if { ![Dialog::Default . 300 WARNING $Msg(PosExist) "\n\n\t$name\n" 1 $Lbl(Yes) $Lbl(No)] } {
+            lset Param($Param(SelectMode)) $idx [list $name $data(Pos$Pos)]
+         } else {
+            return
+         }
+      } else {
+         lappend Param($Param(SelectMode)) [list $name $data(Pos$Pos)]
+      }
+      Graph::SaveParams
+      Graph::ModeSelect $Param(SelectMode)
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::PosDelete>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Supprimer la position courante
+#
+# Parametres :
+#   <Type>   : Type de graph
+#   <Graph>  : Identificateur du Graph
+#   <Pos>    : Position courante
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::PosDelete { Type Graph Pos } {
+   variable Param
+   variable Msg
+   variable Lbl
+
+   if { $Param(LOCATION)!="" && [set idx [lsearch -exact -index 0 $Param($Param(SelectMode)) $Param(LOCATION)]]!=-1 } {
+      if { ![Dialog::Default . 300 WARNING $Msg(PosDel) "\n\n\t$Param(LOCATION)\n" 1 $Lbl(Yes) $Lbl(No)] } {
+         set Param($Param(SelectMode)) [lreplace $Param($Param(SelectMode)) $idx $idx]
+         Graph::SaveParams
+         Graph::ModeSelect $Param(SelectMode)
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Graph::PosAdd>
+# Creation : Juillet 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Appliquer les parametres aux item du graph
+#
+# Parametres :
+#   <Graph>  : Identificateur du Graph
+#   <Type>   : Type de graph
+#   <Item>   : Item de graph
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::PosAdd { Graph Type } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
    if { [winfo exist $Data(Frame).pos.sel] } {
       ComboBox::DelAll $Data(Frame).pos.sel
@@ -1431,7 +1664,7 @@ proc Graph::PosAdd { GR Type } {
 
    set Data(Pos)  Position[incr Data(PosNo)]
 
-   Graph::${Type}::ItemDefine $GR $Data(Pos) { }
+   Graph::${Type}::ItemDefine $Graph $Data(Pos) { }
 
    if { [winfo exist $Data(Frame).pos.sel] } {
       ComboBox::AddList $Data(Frame).pos.sel $data(Pos)
@@ -1445,10 +1678,10 @@ proc Graph::PosAdd { GR Type } {
    Graph::ItemSelect $Graph::Data(Item)
 }
 
-proc Graph::PosSet { GR Type } {
+proc Graph::PosSet { Graph Type } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
 
    if { [winfo exist $Data(Frame).pos.sel] } {
@@ -1465,12 +1698,12 @@ proc Graph::PosSet { GR Type } {
    }
 }
 
-proc Graph::PosDel { GR Type } {
+proc Graph::PosDel { Graph Type } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
-   Graph::${Type}::ItemUnDefine $GR $Data(Pos)
+   Graph::${Type}::ItemUnDefine $Graph $Data(Pos)
    set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
    if { [winfo exist $Data(Frame).item.sel.list] } {
       $Data(Frame).item.sel.list selection set 0
@@ -1484,13 +1717,13 @@ proc Graph::PosDel { GR Type } {
    set Data(Pos) [lindex $data(Pos) end]
 }
 
-proc Graph::PosDelAll { GR Type } {
+proc Graph::PosDelAll { Graph Type } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    foreach pos $data(Pos) {
-      Graph::${Type}::ItemUnDefine $GR $pos
+      Graph::${Type}::ItemUnDefine $Graph $pos
    }
    set Data(Item) ""
    if { [winfo exist $Data(Frame).item.sel.list] } {
@@ -1504,10 +1737,10 @@ proc Graph::PosDelAll { GR Type } {
    set Data(Pos) ""
 }
 
-proc Graph::PosSelect { GR Type } {
+proc Graph::PosSelect { Graph Type } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
    if { [winfo exist $Data(Frame).item.sel.list] } {
@@ -1516,6 +1749,21 @@ proc Graph::PosSelect { GR Type } {
    }
    Graph::ItemSelect $Graph::Data(Item)
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::ParamsGraph>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer le frame des options generales
+#
+# Parametres :
+#   <Parent> : Frame Parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc Graph::ParamsGraph { Parent } {
    global GDefs
@@ -1600,7 +1848,7 @@ proc Graph::ParamsGraph { Parent } {
 # Parametres :
 #   <Parent> : Frame Parent
 #   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #
 # Retour:
 #
@@ -1608,14 +1856,14 @@ proc Graph::ParamsGraph { Parent } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::ParamsObs { Parent GR Type } {
+proc Graph::ParamsObs { Parent Graph Type } {
    global GDefs
    variable Lbl
    variable Bubble
 
    if  { ![winfo exists  $Parent.obs] } {
       checkbutton $Parent.obstoggle -text [lindex $Lbl(Obs) $GDefs(Lang)] -compound right -variable Graph::Graph(ParamsObs) -onvalue True -offvalue False \
-         -command "Graph::ParamsObs $Parent $GR $Type" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
+         -command "Graph::ParamsObs $Parent $Graph $Type" -indicatoron False  -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame)
       labelframe $Parent.obs -labelwidget $Parent.obstoggle
    }
 
@@ -1624,7 +1872,7 @@ proc Graph::ParamsObs { Parent GR Type } {
       $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
       destroy $Parent.obs.lbl
 
-         entry $Parent.obs.sel  -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Graph::${Type}::${Type}${GR}::Data(ObsToken)
+         entry $Parent.obs.sel  -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Graph::${Type}::${Type}${Graph}::Data(ObsToken)
          frame $Parent.obs.list
             listbox $Parent.obs.list.box -relief sunken -bd 1 -bg $GDefs(ColorLight) -height 4 \
                -yscrollcommand [list $Parent.obs.list.scroll set] -width 20
@@ -1637,10 +1885,10 @@ proc Graph::ParamsObs { Parent GR Type } {
       Bubble::Create $Parent.obs.sel  $Bubble(ObsSearch)
       Bubble::Create $Parent.obs.list $Bubble(ObsList)
 
-      Graph::ParamsObsSearch $Type $GR
+      Graph::ParamsObsSearch $Type $Graph
 
-      bind $Parent.obs.list.box <B1-ButtonRelease> "Graph::ParamsObsSelect $Type $GR \[%W get \[%W nearest %y\]\]"
-      bind $Parent.obs.sel <Any-KeyRelease> "Graph::ParamsObsSearch $Type $GR"
+      bind $Parent.obs.list.box <B1-ButtonRelease> "Graph::ParamsObsSelect $Type $Graph \[%W get \[%W nearest %y\]\]"
+      bind $Parent.obs.sel <Any-KeyRelease> "Graph::ParamsObsSearch $Type $Graph"
       pack $Parent.obs -side top -fill both -expand true -pady 5 -padx 5 -anchor n
    } else {
       $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
@@ -1659,7 +1907,7 @@ proc Graph::ParamsObs { Parent GR Type } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #   <Desc>   : Identification de l'obs
 #
 # Retour:
@@ -1668,9 +1916,9 @@ proc Graph::ParamsObs { Parent GR Type } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::ParamsObsSelect { Type GR Desc } {
+proc Graph::ParamsObsSelect { Type Graph Desc } {
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    foreach item $data(Data) {
       if { [observation is $item] } {
@@ -1679,7 +1927,7 @@ proc Graph::ParamsObsSelect { Type GR Desc } {
          set data(Obs$Graph::Data(Pos)) $Desc
       }
    }
-   Graph::${Type}::ItemDefine $GR $Graph::Data(Pos) $coords
+   Graph::${Type}::ItemDefine $Graph $Graph::Data(Pos) $coords
 }
 
 #----------------------------------------------------------------------------
@@ -1690,7 +1938,7 @@ proc Graph::ParamsObsSelect { Type GR Desc } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #
 # Retour:
 #
@@ -1698,10 +1946,10 @@ proc Graph::ParamsObsSelect { Type GR Desc } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::ParamsObsSearch { Type GR } {
+proc Graph::ParamsObsSearch { Type Graph } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
    if { [winfo exists .graphparams] && [winfo exists $Data(Tab).graph.obs.list.box] } {
 
@@ -1722,7 +1970,7 @@ proc Graph::ParamsObsSearch { Type GR } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Indentificateur du Graph
+#   <Graph>  : Indentificateur du Graph
 #   <Place>  : Positionnement par coordonnee
 #   <Id>     : Id du delimitateur (0,1,...)
 #   <Y>      : Coordonnee du positionnement
@@ -1733,10 +1981,10 @@ proc Graph::ParamsObsSearch { Type GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::RangeDraw { Type GR Place Id Y } {
+proc Graph::RangeDraw { Type Graph Place Id Y } {
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    if { $graph(Range) } {
       if { $Place && $data(YIncr)!=0 } {
@@ -1749,20 +1997,20 @@ proc Graph::RangeDraw { Type GR Place Id Y } {
          }
       }
 
-      set y [${Type}::DrawY $GR $data(Range$Id)]
+      set y [${Type}::DrawY $Graph $data(Range$Id)]
 
       if { $y<$graph(Y0) && $y>$graph(Y1) } {
-         if { [$data(Canvas) find withtag RANGE$Id$GR]=="" } {
-            $data(Canvas) create line $graph(X0) $y $graph(X1) $y -fill #FF0000 -tags "$Page::Data(Tag)$GR RANGE$GR RANGE$Id$GR"
-            $data(Canvas) bind RANGE$Id$GR <Enter> "$data(Canvas) configure -cursor hand1"
-            $data(Canvas) bind RANGE$Id$GR <B1-Motion> "Graph::RangeDraw $Type $GR 1 $Id %y"
-            $data(Canvas) bind RANGE$Id$GR <Leave> "$data(Canvas) configure -cursor left_ptr"
+         if { [$data(Canvas) find withtag RANGE$Id$Graph]=="" } {
+            $data(Canvas) create line $graph(X0) $y $graph(X1) $y -fill #FF0000 -tags "$Page::Data(Tag)$Graph RANGE$Graph RANGE$Id$Graph"
+            $data(Canvas) bind RANGE$Id$Graph <Enter> "$data(Canvas) configure -cursor hand1"
+            $data(Canvas) bind RANGE$Id$Graph <B1-Motion> "Graph::RangeDraw $Type $Graph 1 $Id %y"
+            $data(Canvas) bind RANGE$Id$Graph <Leave> "$data(Canvas) configure -cursor left_ptr"
          } else {
-            $data(Canvas) coords RANGE$Id$GR $graph(X0) $y $graph(X1) $y
+            $data(Canvas) coords RANGE$Id$Graph $graph(X0) $y $graph(X1) $y
          }
       }
    } else {
-      $data(Canvas) delete RANGE$Id$GR
+      $data(Canvas) delete RANGE$Id$Graph
    }
 }
 
@@ -1775,21 +2023,21 @@ proc Graph::RangeDraw { Type GR Place Id Y } {
 # Parametres :
 #   <Frame>  : Page
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Translate { Frame Type GR X Y } {
+proc Graph::Translate { Frame Type Graph X Y } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    #----- Process the coords
 
-   set coords [lrange [$GR -unproject $X $Y False $Graph::Data(Item)] 0 1]
+   set coords [lrange [$Graph -unproject $X $Y False $Graph::Data(Item)] 0 1]
 
    if { [llength $coords] } {
 
@@ -1805,7 +2053,7 @@ proc Graph::Translate { Frame Type GR X Y } {
 
       #----- Refresh the graph
 
-      Graph::${Type}::Graph $GR
+      Graph::${Type}::Graph $Graph
    }
 }
 
@@ -1818,13 +2066,13 @@ proc Graph::Translate { Frame Type GR X Y } {
 # Parametres :
 #   <Frame>  : Page
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::TranslateDone { Frame Type GR } {
+proc Graph::TranslateDone { Frame Type Graph } {
    Graph::Resolution $Frame $Type 1
 }
 
@@ -1837,7 +2085,7 @@ proc Graph::TranslateDone { Frame Type GR } {
 # Parametres :
 #   <Frame>  : Page
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #   <X>      : Coordonnee X initiale
 #   <Y>      : Coordonnee Y initiale
 #
@@ -1845,10 +2093,10 @@ proc Graph::TranslateDone { Frame Type GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::TranslateInit { Frame Type GR X Y } {
+proc Graph::TranslateInit { Frame Type Graph X Y } {
    variable Data
 
-   set coords [lrange [$GR -unproject $X $Y False $Graph::Data(Item)] 0 1]
+   set coords [lrange [$Graph -unproject $X $Y False $Graph::Data(Item)] 0 1]
    set Data(X0) [lindex $coords 0]
    set Data(Y0) [lindex $coords 1]
 
@@ -1864,7 +2112,7 @@ proc Graph::TranslateInit { Frame Type GR X Y } {
 # Parametres :
 #   <Frame>  : Identificateur de page
 #   <Canvas> : Identificateur de canvas
-#   <GR>     : Identificateur du graph
+#   <Graph>  : Identificateur du graph
 #   <Type>   : Type de graph
 #   <X>      : Coordonne X du pointeur
 #   <Y>      : Coordonne Y du pointeur
@@ -1873,19 +2121,19 @@ proc Graph::TranslateInit { Frame Type GR X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph:LegendMoveInit { Frame Canvas GR Type X Y } {
+proc Graph:LegendMoveInit { Frame Canvas Graph Type X Y } {
    variable Data
 
-   if { [set Data(Legend) [$GR -header $X $Y]] } {
+   if { [set Data(Legend) [$Graph -header $X $Y]] } {
 
-      set Data(XLegend) [lindex [$Canvas itemconfigure $GR -xlegend] end]
-      set Data(YLegend) [lindex [$Canvas itemconfigure $GR -ylegend] end]
+      set Data(XLegend) [lindex [$Canvas itemconfigure $Graph -xlegend] end]
+      set Data(YLegend) [lindex [$Canvas itemconfigure $Graph -ylegend] end]
 
       set Data(X) $X
       set Data(Y) $Y
    } else {
-      Graph::Activate $Frame $GR $Type;
-      Graph::TranslateInit $Frame $Type $GR [$Canvas canvasx $X] [$Canvas canvasy $Y]
+      Graph::Activate $Frame $Graph $Type;
+      Graph::TranslateInit $Frame $Type $Graph [$Canvas canvasx $X] [$Canvas canvasy $Y]
    }
    $Canvas config -cursor hand1
 }
@@ -1899,7 +2147,7 @@ proc Graph:LegendMoveInit { Frame Canvas GR Type X Y } {
 # Parametres :
 #   <Frame>  : Identificateur de page
 #   <Canvas> : Identificateur de canvas
-#   <GR>     : Identificateur du graph
+#   <Graph>  : Identificateur du graph
 #   <Type>   : Type de graph
 #   <X>      : Coordonne X du pointeur
 #   <Y>      : Coordonne Y du pointeur
@@ -1908,13 +2156,13 @@ proc Graph:LegendMoveInit { Frame Canvas GR Type X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph:LegendMove { Frame Canvas GR Type X Y } {
+proc Graph:LegendMove { Frame Canvas Graph Type X Y } {
    variable Data
 
    if { $Data(Legend) } {
-      $Canvas itemconfigure $GR -xlegend [expr $Data(XLegend)+($X-$Data(X))] -ylegend [expr $Data(YLegend)+($Y-$Data(Y))]
+      $Canvas itemconfigure $Graph -xlegend [expr $Data(XLegend)+($X-$Data(X))] -ylegend [expr $Data(YLegend)+($Y-$Data(Y))]
    } else {
-      Graph::Translate $Frame $Type $GR [$Canvas canvasx $X] [$Canvas canvasy $Y]
+      Graph::Translate $Frame $Type $Graph [$Canvas canvasx $X] [$Canvas canvasy $Y]
    }
 }
 
@@ -1927,20 +2175,20 @@ proc Graph:LegendMove { Frame Canvas GR Type X Y } {
 # Parametres :
 #   <Frame>  : Identificateur de page
 #   <Canvas> : Identificateur de canvas
-#   <GR>     : Identificateur du graph
+#   <Graph>  : Identificateur du graph
 #   <Type>   : Type de graph
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph:LegendMoveDone { Frame Canvas GR Type } {
+proc Graph:LegendMoveDone { Frame Canvas Graph Type } {
    variable Data
 
    if { $Data(Legend) } {
       set Data(Legend) False
    } else {
-      Graph::TranslateDone $Frame $Type $GR;
+      Graph::TranslateDone $Frame $Type $Graph;
    }
    $Canvas config -cursor left_ptr
 }
@@ -2087,6 +2335,81 @@ proc Graph::Write { Frame File } {
 }
 
 #------------------------------------------------------------------------------
+# Nom      : <Graph::ZoomScroll>
+# Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Effectuer le zoom dans le graph avec la roulette
+#
+# Parametres   :
+#   <Type>     : Type de graph
+#   <Graph>    : Identificateur du Graph
+#   <X>        : Coordonnee X du curseur
+#   <Y>        : Coordonnee Y du curseur
+#   <Incr>     : Increment
+#   <Centered> : Centrer sur le curseur
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::ZoomScroll { Type Graph X Y Incr { Centered True } } {
+   variable Data
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
+
+   #----- Get current limits
+   set xmin [graphaxis configure axisx$Graph -min]
+   set xmax [graphaxis configure axisx$Graph -max]
+   set ymin [graphaxis configure axisy$Graph -min]
+   set ymax [graphaxis configure axisy$Graph -max]
+
+   #----- Define scaling
+   set nan [catch {
+      set sx [expr ($xmax-$xmin)*$Incr]
+      set sy [expr ($ymax-$ymin)*$Incr] } ]
+
+   if { $nan } {
+      return
+   }
+
+   if { $Centered } {
+
+      #----- Get value under cursor
+      if { ![llength [set coords [lrange [$Graph -unproject $X $Y False $Graph::Data(Item)] 0 1]]] } {
+         return
+      }
+      set x [lindex $coords 0]
+      set y [lindex $coords 1]
+
+      #----- Define translation
+      set dx [expr ($x-($xmax+$xmin)*0.5)*$Incr*2]
+      set dy [expr ($y-($ymax+$ymin)*0.5)*$Incr*2]
+   } else {
+      set dx 0
+      set dy 0
+   }
+
+   #----- Apply transform
+   set xmin [expr $xmin+$sx+$dx]
+   set xmax [expr $xmax-$sx+$dx]
+   set ymin [expr $ymin+$sy+$dy]
+   set ymax [expr $ymax-$sy+$dy]
+
+   #----- Don't overshoot on zoom out
+   if { $Incr<0 && ([expr abs($xmax-$xmin)] > [expr abs($data(XMax)-$data(XMin))] || [expr abs($ymax-$ymin)] > [expr abs($data(YMax)-$data(YMin))]) } {
+      set graph(ZXInter) {}
+      set graph(ZYInter) {}
+   } else {
+      set graph(ZXInter) [list $xmin $xmax]
+      set graph(ZYInter) [list $ymin $ymax]
+   }
+
+   #----- Refresh the graph
+   Graph::${Type}::Graph $Graph
+}
+
+#------------------------------------------------------------------------------
 # Nom      : <Graph::Zoom>
 # Creation : Mars 2004 - J.P. Gauthier - CMC/CMOE -
 #
@@ -2094,17 +2417,17 @@ proc Graph::Write { Frame File } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Zoom { Type GR } {
+proc Graph::Zoom { Type Graph } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Data  data
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    $data(Canvas) delete GRAPHZOOM
 
@@ -2133,15 +2456,15 @@ proc Graph::Zoom { Type GR } {
 
    #----- Process the coords
 
-   set coords0 [lindex [$GR -unproject $Data(X0) $Data(Y1) Limit] 0]
-   set coords1 [lindex [$GR -unproject $Data(X1) $Data(Y0) Limit] 0]
+   set coords0 [lindex [$Graph -unproject $Data(X0) $Data(Y1) True] 0]
+   set coords1 [lindex [$Graph -unproject $Data(X1) $Data(Y0) True] 0]
 
    set graph(ZXInter) [list [lindex $coords0 0] [lindex $coords1 0]]
    set graph(ZYInter) [list [lindex $coords0 1] [lindex $coords1 1]]
 
    #----- Refresh the graph
 
-   Graph::${Type}::Graph $GR
+   Graph::${Type}::Graph $Graph
 }
 
 #------------------------------------------------------------------------------
@@ -2152,22 +2475,22 @@ proc Graph::Zoom { Type GR } {
 #
 # Parametres :
 #   <Type>   : Type de graph
-#   <GR>     : Identificateur du Graph
+#   <Graph>  : Identificateur du Graph
 
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::ZoomReset { Type GR } {
+proc Graph::ZoomReset { Type Graph } {
 
-   upvar #0 Graph::${Type}::${Type}${GR}::Graph graph
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    set graph(ZXInter) {}
    set graph(ZYInter) {}
 
    #----- Refresh the graph
 
-   Graph::${Type}::Graph $GR
+   Graph::${Type}::Graph $Graph
 }
 
 #------------------------------------------------------------------------------
@@ -2237,11 +2560,13 @@ proc Graph::ZoomInit { Canvas X0 Y0 } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::DrawInit { Frame VP Type } {
+proc Graph::DrawInit { Frame VP } {
    variable Param
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+   set Param(LOCATION) ""
+
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data data
 
    set data(Lat0) $Viewport::Map(LatCursor)
    set data(Lon0) $Viewport::Map(LonCursor)
@@ -2249,7 +2574,7 @@ proc Graph::DrawInit { Frame VP Type } {
    set data(Lon1) $Viewport::Map(LonCursor)
 
    if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete [string toupper GRAPH${Type}$Graph::Data(Graph)]
+      $data(FrameData).page.canvas delete GRAPHSELECT$Graph::Data(Graph)
    }
 
    if { $VP!=$data(VP) } {
@@ -2258,35 +2583,33 @@ proc Graph::DrawInit { Frame VP Type } {
       Graph::${Type}::Update $Frame $Graph::Data(Graph)
    } else {
       switch $Param(SelectMode) {
-         "POINT" { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)] }
-         "GRIDBOX" { }
+         "POINT" { Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)] }
       }
    }
 }
 
-proc Graph::Draw { Frame VP Type } {
+proc Graph::Draw { Frame VP } {
    variable Param
 
-   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data data
 
    set data(Lat1) $Viewport::Map(LatCursor)
    set data(Lon1) $Viewport::Map(LonCursor)
 
    switch $Param(SelectMode) {
-      "POINT"     { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat1) $data(Lon1)] }
-      "LATLONBOX" { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False }
-      "GRIDBOX"   { Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False }
+      "POINT"     { Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat1) $data(Lon1)] }
+      "BOX"       { Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False }
    }
 }
 
-proc Graph::DrawDone { Frame VP Type } {
+proc Graph::DrawDone { Frame VP } {
    variable Param
 
    if { $Param(SelectMode)=="POINT" } {
       return
    }
 
-   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data data
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data data
 
    if { $data(Lat0)>$data(Lat1) } {
       set tmp $data(Lat1)
@@ -2316,7 +2639,7 @@ proc Graph::DrawDone { Frame VP Type } {
    $data(Frame)       config -cursor watch
    update idletasks
 
-   Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
+   Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]
 
    .                  config -cursor left_ptr
    $Frame.page.canvas config -cursor left_ptr
@@ -2324,34 +2647,36 @@ proc Graph::DrawDone { Frame VP Type } {
    $data(Frame)       config -cursor left_ptr
 }
 
-proc Graph::MoveInit { Frame VP Type } {
+proc Graph::MoveInit { Frame VP } {
    variable Param
+
+   set Param(LOCATION) ""
 
    if { $Param(SelectMode)=="POINT" } {
       return
    }
 
-   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data  data
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
 
    set data(LonD) $Viewport::Map(LonCursor)
    set data(LatD) $Viewport::Map(LatCursor)
 
    if { $data(FrameData)!="" } {
-      $data(FrameData).page.canvas delete [string toupper GRAPH${Type}$Graph::Data(Graph)]
+      $data(FrameData).page.canvas delete GRAPHSELECT$Graph::Data(Graph)
    }
 
    set data(VP)        $VP
    set data(FrameData) $Frame
 }
 
-proc Graph::Move { Frame VP Type } {
+proc Graph::Move { Frame VP } {
    variable Param
 
    if { $Param(SelectMode)=="POINT" } {
       return
    }
 
-   upvar #0 Graph::${Type}::${Type}${Graph::Data(Graph)}::Data  data
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
 
    #----- Effectuer la translation
 
@@ -2371,10 +2696,250 @@ proc Graph::Move { Frame VP Type } {
    set data(LonD) $Viewport::Map(LonCursor)
    set data(LatD) $Viewport::Map(LatCursor)
 
-   Graph::${Type}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
+   Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)] False
 }
 
-proc Graph::MoveDone { Frame VP Type } {
-   Graph::DrawDone $Frame $VP $Type
+proc Graph::MoveDone { Frame VP } {
+   Graph::DrawDone $Frame $VP
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Graph::VertexAdd>
+# Creation : Ocotbre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajout d'un point a la coupe.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonnee X de la souris
+#  <Y>       : Coordonnee Y de la souris
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::VertexAdd { Frame VP X Y } {
+   variable Param
+
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
+
+   if { $VP==-1 } {
+      return
+   }
+
+   if { $VP!=$data(VP) } {
+      set data(VP)        $VP
+      set data(FrameData) $Frame
+      Graph::${Graph::Data(Type)}::Update $Frame $Graph::Data(Graph)
+   }
+   set data(Field) [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]
+
+   if { $VP==-1 || $data(Field)=="" } {
+      return
+   }
+
+   #----- Si la grille et le vertex est valide on l'ajoute a la liste
+   set grtyp [fstdfield define $data(Field) -GRTYP]
+   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
+
+      Graph::VertexResolution $Graph::Data(Type) $Graph::Data(Graph) False
+      lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
+      set coords $data(Coords)
+
+      #----- Fermer le polygone
+      if { $Param(SelectMode)=="POLYGON" } {
+         lappend coords [lindex $coords 0] [lindex $coords 1]
+      }
+
+      #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
+      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::VertexDelete>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      :Suppression d'un point a la coupe.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::VertexDelete { Frame VP } {
+
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
+
+   if { $VP!=-1 } {
+      set data(Coords) [lreplace $data(Coords) end-1 end]
+
+      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $data(Coords)]
+   }
+   $data(Canvas) delete VERTEXFOLLOW
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::VertexFollow>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche une ligne entre le dernier vertex creer et la position du
+#            curseur de la souris.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <X>       : Coordonnee X de la souris
+#  <Y>       : Coordonnee Y de la souris
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::VertexFollow { Frame VP X Y Scan } {
+   global GDefs
+   variable Param
+   variable Lbl
+
+   upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
+
+   if { $VP==-1 } {
+      if { $data(VP)=="" } {
+         return
+      } else {
+         set VP $data(VP)
+      }
+   }
+
+   if { $data(FrameData)!="" && [llength $data(Items$Graph::Data(Pos))] } {
+      set coords $data(Coords)
+
+      if { $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
+         lappend coords $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
+      }
+
+      if { $Param(SelectMode)=="POLYGON" } {
+         lappend coords [lindex $coords 0] [lindex $coords 1]
+      }
+
+      $Frame.page.canvas delete GRAPHSELECT$Graph::Data(Graph)
+      set smpl [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
+      set id   [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
+      set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
+      Graph::ItemPos $Frame $VP $smpl "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$Graph::Data(Graph) $Param(SelectMode) $coords
+
+      if { $Scan && [llength $coords]>2 } {
+         Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $smpl
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::VertexSample>
+# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calculer le path de coupe et points intermediaire selon la resolution.
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#  <Type>    : Type de graph
+#  <Graph>   : Identificateur du graph
+#  <Coord>   : Liste des coordonnee
+#  <Res>     : Resolution des points intermediaire (Defaut 0 = aucun)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::VertexSample  { Frame VP Type Graph Coord { Res 0 } } {
+   variable Data
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+
+   if { [llength $Coord]==2 } {
+      return $Coord
+   }
+
+   set res  [expr $Res==0?$Data(Res):$Res]
+   set plat [lindex $Coord 0]
+   set plon [lindex $Coord 1]
+
+   set coords {}
+   set data(DCoords) { 0 }
+
+   foreach { lat lon } $Coord {
+
+      if { $plat!=$lat || $plon!=$lon } {
+         set coords [concat $coords [projection function $data(FrameData) -path [list $plat $plon $lat $lon] $res]]
+         lappend data(DCoords) [expr [llength $coords]/2-1]
+      }
+      set plat $lat
+      set plon $lon
+   }
+
+   return $coords
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Graph::VertexResolution>
+# Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Determiner la resolution optimale du sampling des points de coupes.
+#
+# Parametres :
+#  <Type>    : Type de graph
+#  <Graph>   : Identificateur du graph
+#  <Update>  : Update graph
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Graph::VertexResolution { Type Graph { Update True } } {
+   variable Data
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+
+   if { $data(VP)=="" || $data(Field)=="" } {
+      return
+   }
+
+   if { $Data(ResBest) } {
+      set i [expr int([fstdfield define $data(Field) -NI]/2)]
+      set j [expr int([fstdfield define $data(Field) -NJ]/2)]
+
+      if { [fstdfield define $data(Field) -GRTYP]=="R" } {
+         set data(Res) 1000
+      } else {
+         #----- Calculate distances in gridpoint for grid projection otherwise, use meters
+         if { [projection configure $data(FrameData) -type]=="grid" } {
+            set data(Res) 1
+         } else {
+            set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
+            set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
+            eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
+         }
+      }
+      set Data(Res) [format "%0.0f" $Data(Res)]
+   }
+
+   if { $Update } {
+      Graph::${Type}::ItemDefine $Graph $Graph::Data(Pos) [Graph::VertexSample $data(FrameData) $data(VP) $Type $Graph $data(Coords)]
+      Graph::${Type}::Graph $Graph
+   }
+}

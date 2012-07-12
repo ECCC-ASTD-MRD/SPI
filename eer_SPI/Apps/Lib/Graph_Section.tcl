@@ -28,11 +28,6 @@
 #    Graph::Section::Update       { Frame { GR {} } }
 #    Graph::Section::UpdateItems  { Frame { GR { } } }
 #    Graph::Section::Data         { GR Data }
-#    Graph::Section::Resolution   { VP Field }
-#    Graph::Section::VertexAdd    { Frame VP X Y }
-#    Graph::Section::VertexDelete { Frame VP }
-#    Graph::Section::VertexFollow { Frame VP X Y Scan }
-#    Graph::Section::Sample       { GR VP Coord { Res 0 } }
 #    Graph::Section::FieldShow    { GR }
 #
 #===============================================================================
@@ -86,7 +81,6 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
    set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
-   set Graph::Data(ToolMode$gr) Draw       ;#Mode de selection
    set Graph::Data(Type$gr)     Section    ;#Type de graph
 
    upvar #0 Graph::Section::Section${gr}::Data  data
@@ -131,7 +125,7 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
    Graph::Activate $Frame $gr Section
 
    if { $Graph::Data(Link$gr) } {
-      Graph::Mode Section $gr True
+      Graph::Mode $gr Section True
       Graph::PosAdd $gr Section
    }
 
@@ -217,7 +211,6 @@ proc Graph::Section::Clean { GR } {
 #
 # Parametres :
 #   <GR>     : Indentificateur du Graph
-#   <Pos>    : Recalculer les positions
 #
 # Retour    :
 #
@@ -225,7 +218,7 @@ proc Graph::Section::Clean { GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Section::Graph { GR { Pos False } } {
+proc Graph::Section::Graph { GR } {
    variable Data
 
    upvar #0 Graph::Section::Section${GR}::Data  data
@@ -235,9 +228,6 @@ proc Graph::Section::Graph { GR { Pos False } } {
       return
    }
 
-   if { $Pos } {
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
    $data(Canvas) config -cursor watch
    update idletasks
 
@@ -253,21 +243,21 @@ proc Graph::Section::Graph { GR { Pos False } } {
 
    #----- Extraire les limites des valeurs
    foreach item $data(Items) {
-      if { [fstdfield is GRAPHSECTION$item] } {
+      if { [fstdfield is GRAPHSELECT$item] } {
          #----- Check for vertical coordinate selection
          if { $graph(ZType)=="PRESSURE" } {
-            set levels [fstdfield stats GRAPHSECTION$item -pressurelevels]
+            set levels [fstdfield stats GRAPHSELECT$item -pressurelevels]
             if { ![llength $levels] } {
                Dialog::Error . $Graph::Error(Pressure)
             }
             set data(Levels) $levels
-            fstdfield configure GRAPHSECTION$item -ztype PRESSURE
+            fstdfield configure GRAPHSELECT$item -ztype PRESSURE
          } else {
-            set data(Levels) [fstdfield stats GRAPHSECTION$item -levels]
-            fstdfield configure GRAPHSECTION$item -ztype NONE
+            set data(Levels) [fstdfield stats GRAPHSELECT$item -levels]
+            fstdfield configure GRAPHSELECT$item -ztype NONE
          }
          set data(XMin)   0
-         set data(XMax)   [expr [fstdfield define GRAPHSECTION$item -NI]-1]
+         set data(XMax)   [expr [fstdfield define GRAPHSELECT$item -NI]-1]
       }
    }
 
@@ -296,14 +286,20 @@ proc Graph::Section::Graph { GR { Pos False } } {
    set graph(XLabel) [lrange $Graph::Graph(Identitys) 0 [expr [llength $data(DCoords)]-1]]
 
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -311,7 +307,7 @@ proc Graph::Section::Graph { GR { Pos False } } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $graph(XLabel) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -labels $graph(XLabel) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) -angle $graph(XAngle) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
@@ -320,7 +316,7 @@ proc Graph::Section::Graph { GR { Pos False } } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
@@ -367,11 +363,8 @@ proc Graph::Section::Init { Frame } {
       set Data(Data)     {}           ;#Liste des champs selectionnees
       set Data(Tmp)      {}           ;#Liste des champs temporaire
       set Data(Proj)     0            ;#Mode projection
-      set Data(ResBest)  True         ;#Selection de la resolution
-      set Data(Res)      100000       ;#Resolution en metres
       set Data(DCoords)  {}           ;#Liste des longueur des segment
       set Data(Levels)   {}           ;#Liste des niveaux
-      set Data(FCoords)  {}           ;#Liste des coordonnees de coupe (Follow mode)
       set Data(Coords)   {}           ;#Liste des coordonnees de coupe
       set Data(Field)    ""           ;#Champs de coupe
 
@@ -416,9 +409,9 @@ proc Graph::Section::Params { Parent GR } {
    labelframe $Parent.params -text [lindex $Graph::Lbl(Section) $GDefs(Lang)]
       frame $Parent.params.res
          label $Parent.params.res.lbl -text [lindex $Graph::Lbl(Res) $GDefs(Lang)] -width 14 -anchor w
-         entry $Parent.params.res.val -textvariable Graph::Section::Section${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
-         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Section::Section${GR}::Data(ResBest) \
-            -onvalue True -offvalue False -command "Graph::Section::Resolution; Graph::Section::Graph $GR True"
+         entry $Parent.params.res.val -textvariable Graph::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
+         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Data(ResBest) \
+            -onvalue True -offvalue False -command "Graph::VertexResolution Section $GR"
          pack $Parent.params.res.lbl -side left
          pack $Parent.params.res.val -side left -fill x -expand True
          pack $Parent.params.res.auto -side left
@@ -437,7 +430,7 @@ proc Graph::Section::Params { Parent GR } {
    Bubble::Create $Parent.params.disp.proj $Graph::Bubble(Viewport)
    Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)
 
-   bind $Parent.params.res.val <Return> "Graph::Section::Graph $GR True"
+   bind $Parent.params.res.val <Return> "Graph::VertexResolution Section $GR"
 }
 
 #-------------------------------------------------------------------------------
@@ -530,12 +523,12 @@ proc Graph::Section::ItemDel { GR Item } {
       $data(Canvas) delete [graphitem configure $Item -desc]
 
       graphitem free $Item
-      fstdfield free GRAPHSECTION$Item
+      fstdfield free GRAPHSELECT$Item
 
-      FSTD::UnRegister GRAPHSECTION$Item
+      FSTD::UnRegister GRAPHSELECT$Item
 
       set list [lindex [$data(FrameData).page.canvas itemconfigure $data(VP) -data] 4]
-      if { [set idx [lsearch -exact $list GRAPHSECTION$Item]]!=-1 } {
+      if { [set idx [lsearch -exact $list GRAPHSELECT$Item]]!=-1 } {
          set list [lreplace $list $idx $idx]
          $data(FrameData).page.canvas itemconfigure $data(VP) -data $list
       }
@@ -617,7 +610,7 @@ proc Graph::Section::ItemUnDefine { GR Pos } {
          Graph::Section::ItemDel $GR $item
       }
 
-      set data(Pos) [lreplace $data(Pos)  $idx $idx]
+      set data(Pos) [lreplace $data(Pos) $idx $idx]
       set Graph::Data(Pos) [lindex $data(Pos) end]
    }
 }
@@ -646,11 +639,12 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
   if { [graphitem is $Item] } {
       if { [fstdfield is $Data] && [llength $data(Pos$Pos)] } {
 
-         fstdfield vertical GRAPHSECTION$Item $Data $data(Pos$Pos)
-         set graph(UnitY) [fstdfield stats GRAPHSECTION$Item -leveltype]
+         fstdfield free GRAPHSELECT$Item
+         fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos)
+         set graph(UnitY) [fstdfield stats GRAPHSELECT$Item -leveltype]
 
-         FSTD::Register GRAPHSECTION$Item
-         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSECTION$Item
+         FSTD::Register GRAPHSELECT$Item
+         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item
       } else {
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data ""
       }
@@ -748,12 +742,12 @@ proc Graph::Section::UpdateItems { Frame { GR { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHSECTION$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSECTION$gr SAMPLE $data(Coords)
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr LINE $data(Coords)
             }
          }
       }
@@ -809,229 +803,6 @@ proc Graph::Section::Data { GR Data } {
 
    set data(Data) [FieldCalc::Operand $data(VP) $fields]
    SPI::Progress 0
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Resolution>
-# Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determiner la resolution optimale du sampling des pointts de coupes.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Section::Resolution { } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { $data(VP)=="" || $data(Field)=="" } {
-      return
-   }
-
-   if { $data(ResBest) } {
-      set i [expr int([fstdfield define $data(Field) -NI]/2)]
-      set j [expr int([fstdfield define $data(Field) -NJ]/2)]
-
-      if { [fstdfield define $data(Field) -GRTYP]=="R" } {
-         set data(Res) 1000
-      } else {
-         #----- Calculate distances in gridpoint for grid projection otherwise, use meters
-         if { [projection configure $data(FrameData) -type]=="grid" } {
-            set data(Res) 1
-         } else {
-            set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
-            set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
-            eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
-         }
-      }
-      set data(Res) [format "%0.0f" $data(Res)]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexAdd>
-# Creation : Ocotbre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajout d'un point a la coupe.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#  <X>       : Coordonnee X de la souris
-#  <Y>       : Coordonnee Y de la souris
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Section::VertexAdd { Frame VP X Y } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { $VP==-1 } {
-      return
-   }
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Section::Update $Frame $Graph::Data(Graph)
-   }
-   set data(Field) [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]
-
-   if { $VP==-1 || $data(Field)=="" } {
-      return
-   }
-
-   #----- Si la grille et le vertex est valide on l'ajoute a la liste
-
-   set grtyp [fstdfield define $data(Field) -GRTYP]
-   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
-
-      Graph::Section::Resolution
-      lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
-
-      #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
-
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexDelete>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      :Suppression d'un point a la coupe.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Section::VertexDelete { Frame VP } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { $VP!=-1 } {
-      set data(Coords) [lreplace $data(Coords) end-1 end]
-
-      Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Section::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
-   $data(Canvas) delete VERTEXFOLLOW
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::VertexFollow>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Affiche une ligne entre le dernier vertex creer et la position du
-#            curseur de la souris.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#  <X>       : Coordonnee X de la souris
-#  <Y>       : Coordonnee Y de la souris
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Section::VertexFollow { Frame VP X Y Scan } {
-   global GDefs
-   variable Lbl
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { $VP==-1 } {
-      if { $data(VP)=="" } {
-         return
-      } else {
-         set VP $data(VP)
-      }
-   }
-
-   if { $data(FrameData)!="" && [llength $data(Items$Graph::Data(Pos))] } {
-      set data(FCoords) $data(Coords)
-
-      if { $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
-         lappend data(FCoords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
-      }
-
-      $Frame.page.canvas delete GRAPHSECTION$Graph::Data(Graph)
-      set coords [lrange [Graph::Section::Sample $Graph::Data(Graph) $VP $data(FCoords)] 0 end-4]
-      set id [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
-      set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-      Graph::ItemPos $Frame $VP $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSECTION$GR SAMPLE $data(FCoords)
-
-      if { $Scan && [llength $data(FCoords)]>2 } {
-         Graph::Section::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Section::Sample>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Calculer le path de coupe et points intermediaire selon la resolution.
-#
-# Parametres :
-#  <GR>      : Identificateur du graph
-#  <VP>      : Identificateur du Viewport
-#  <Coord>   : Liste des coordonnee
-#  <Res>     : Resolution des points intermediaire (Defaut 0 = aucun)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Section::Sample  { GR VP Coord { Res 0 } } {
-
-   upvar #0 Graph::Section::Section${GR}::Data  data
-
-   if { [llength $Coord]==2 } {
-      return $Coord
-   }
-
-   set res  [expr $Res==0?$data(Res):$Res]
-   set plat [lindex $Coord 0]
-   set plon [lindex $Coord 1]
-
-   set coords {}
-   set data(DCoords) { 0 }
-
-   foreach { lat lon } $Coord {
-
-      if { $plat!=$lat || $plon!=$lon } {
-         set coords [concat $coords [projection function $data(FrameData) -path [list $plat $plon $lat $lon] $res]]
-         lappend data(DCoords) [expr [llength $coords]/2-1]
-      }
-      set plat $lat
-      set plon $lon
-   }
-
-   return $coords
 }
 
 #-------------------------------------------------------------------------------

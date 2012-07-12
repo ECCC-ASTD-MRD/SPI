@@ -15,12 +15,6 @@
 #
 #    Graph::Contingency::Create         { Frame X0 Y0 Width Height Active Full }
 #    Graph::Contingency::Coord          { Frame GR X Y }
-#    Graph::Contingency::DrawInit       { Frame VP }
-#    Graph::Contingency::Draw           { Frame VP }
-#    Graph::Contingency::DrawDone       { Frame VP }
-#    Graph::Contingency::MoveInit       { Frame VP }
-#    Graph::Contingency::Move           { Frame VP }
-#    Graph::Contingency::MoveDone       { Frame VP }
 #    Graph::Contingency::Graph          { GR { Update True } }
 #    Graph::Contingency::Init           { Frame }
 #    Graph::Contingency::Page           { GR }
@@ -102,7 +96,6 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0         ;#Offset en y
    set Graph::Data(Width$gr)    $Width      ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height     ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data        ;#Mode de selection
    set Graph::Data(Type$gr)     Contingency ;#Type de graph
 
    upvar #0 Graph::Contingency::Contingency${gr}::Data  data
@@ -127,7 +120,7 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
    Graph::Contingency::Page $gr
 
    Graph::Activate $Frame $gr Contingency
-   Graph::Mode Contingency $gr False
+   Graph::Mode $gr Contingency False
    Graph::PosAdd $gr Contingency
 
    #----- Creer les fonction du mode actif
@@ -160,46 +153,6 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::Coord { Frame GR X Y } {
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Contingency::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Contingency::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP Contingency
-}
-
-proc Graph::Contingency::Draw { Frame VP } {
-   Graph::Draw $Frame $VP Contingency
-}
-
-proc Graph::Contingency::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP Contingency
-}
-
-proc Graph::Contingency::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP Contingency
-}
-
-proc Graph::Contingency::Move { Frame VP } {
-   Graph::Move $Frame $VP Contingency
-}
-
-proc Graph::Contingency::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP Contingency
 }
 
 #-------------------------------------------------------------------------------
@@ -285,6 +238,7 @@ proc Graph::Contingency::Init { Frame } {
 
       set Data(Items)   {}         ;#Liste des items
       set Data(Pos)     {}         ;#Liste des positions
+      set Data(Coords)  {}         ;#Liste des coordonnees de coupe
       set Data(Data)    {}        ;#Liste des donnees du graph
       set Data(Select)  ""        ;#Case selectionnee
       set Data(Lat0)    0         ;#Rectangle de selection
@@ -416,7 +370,7 @@ proc Graph::Contingency::Params { Parent GR } {
    Bubble::Create $Parent.par.sel.same       $Graph::Bubble(Uniform)
    Bubble::Create $Parent.par.sel.fitlinear  $Graph::Bubble(TimeMatch)
 
-   Graph::ModeSelect LATLONBOX True
+   Graph::ModeSelect BOX BOX
 }
 
 #-------------------------------------------------------------------------------
@@ -618,7 +572,7 @@ proc Graph::Contingency::ItemData { GR Pos Item Data } {
        }
    }
 
-   SPI::Progress 80
+   SPI::Progress 90
    Graph::Contingency::Stat $GR
    SPI::Progress 0
 }
@@ -641,6 +595,7 @@ proc Graph::Contingency::ItemData { GR Pos Item Data } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
+   global GDefs
 
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
@@ -666,8 +621,12 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
    }
 
    SPI::Progress 5
+   set obs [observation stats $Data0 -within [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]]
+   set nob [llength $obs]
+   set n 0
+   set df  [expr 80.0/($nob-1)]
 
-   foreach idx [observation stats $Data0 -within [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]] {
+   foreach idx $obs {
 
       set coo [observation define $Data0 -COORD $idx]
       set val0 [observation define $Data0 -DATA $idx]
@@ -698,9 +657,11 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
             incr data(TIJ)
          }
       }
+      incr n
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)] ($n/$nob)"
    }
 
-   SPI::Progress 60
+   SPI::Progress 85
 
    #----- Dans le cas d'un champs, suprimer l'observation temporaire
 
@@ -730,6 +691,7 @@ proc Graph::Contingency::ItemDataObs { GR Data0 Data1 } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
+   global GDefs
 
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
@@ -742,45 +704,51 @@ proc Graph::Contingency::ItemDataField { GR Data0 Data1 } {
 
    SPI::Progress 5
 
-   set grids [fstdfield stats $Data0 -within [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]]
-   foreach grid $grids {
+   set ijs [fstdfield stats $Data0 -within [list $data(Lat0) $data(Lon0) $data(Lat1) $data(Lon1)]]
+   set nij [llength $ijs]
+   set n 0
+   set df  [expr 80.0/($nij-1)]
 
-      set ni [lindex $grid 0]
-      set nj [lindex $grid 1]
-      set coo [fstdfield stats $Data0 -gridpoint $ni $nj]
+   foreach ij $ijs {
+
+      set i [lindex $ij 0]
+      set j [lindex $ij 1]
+      set coo [fstdfield stats $Data0 -gridpoint $i $j]
       set lat [lindex $coo 0]
       set lon [lindex $coo 1]
 
-      set val0 [lindex [fstdfield stats $Data0 -gridvalue $ni $nj] 0]
+      set val0 [lindex [fstdfield stats $Data0 -gridvalue $i $j] 0]
       set val1 [lindex [fstdfield stats $Data1 -coordvalue $lat $lon] 0]
 
       if { $val0!="-" && $val1!="-" } {
 
-         set ik 0
-         for { set i 0 } { $i < $rx } { incr i } {
-            if { $val0>=[lindex $graph(XInter) $i] && $val0<[lindex $graph(XInter) [expr $i+1]] } {
-               set ik 1
+         set xk 0
+         for { set x 0 } { $x < $rx } { incr x } {
+            if { $val0>=[lindex $graph(XInter) $x] && $val0<[lindex $graph(XInter) [expr $x+1]] } {
+               set xk 1
                break
             }
          }
 
-         set jk 0
-         for { set j 0 } { $j < $ry } { incr j } {
-            if { $val1>=[lindex $graph(YInter) $j] && $val1<[lindex $graph(YInter) [expr $j+1]] } {
-               set jk 1
+         set yk 0
+         for { set y 0 } { $y < $ry } { incr y } {
+            if { $val1>=[lindex $graph(YInter) $y] && $val1<[lindex $graph(YInter) [expr $y+1]] } {
+               set yk 1
                break
             }
          }
 
-         if { $ik && $jk } {
-            lappend data(R$i,$j) $ni.$nj
-            incr data(TJ$i)
-            incr data(TI$j)
+         if { $xk && $yk } {
+            lappend data(R$x,$y) $i.$j
+            incr data(TJ$x)
+            incr data(TI$y)
             incr data(TIJ)
          }
       }
+      incr n
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)] ($n/$nij)"
    }
-   SPI::Progress 65
+   SPI::Progress 85
 }
 
 proc Graph::Contingency::ItemDataVector { GR Data0 Data1 } {
@@ -908,9 +876,9 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
       upvar #0 Graph::Contingency::Contingency${gr}::Data  data
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
-         $Frame.page.canvas delete GRAPHCONTINGENCY$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) {
-            Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]" GRAPHCONTINGENCY$gr LATLONBOX
+            Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]" GRAPHSELECT$gr BOX
          }
 
          if { $data(Select)!="" && $data(Obs)!="" } {
@@ -919,7 +887,7 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
                set coo [observation define $data(Obs) -COORD $idx]
                if { [set pix [$data(VP) -project [lindex $coo 0] [lindex $coo 1] 0]]!="" && [lindex $pix 2]>0 } {
                   $data(FrameData).page.canvas create bitmap [expr [lindex $pix 0]-$Obs::Param(Size)] [lindex $pix 1] \
-                     -bitmap @$GDefs(Dir)/Resources/Bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHCONTINGENCY$gr" \
+                     -bitmap @$GDefs(Dir)/Resources/Bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
                      -anchor e -foreground $Graph::Color(Select)
                }
             }

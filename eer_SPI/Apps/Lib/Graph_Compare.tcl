@@ -15,12 +15,6 @@
 #
 #    Graph::Compare::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Compare::Coord        { Frame GR X Y }
-#    Graph::Compare::DrawInit     { Frame VP }
-#    Graph::Compare::Draw         { Frame VP }
-#    Graph::Compare::DrawDone     { Frame VP }
-#    Graph::Compare::MoveInit     { Frame VP }
-#    Graph::Compare::Move         { Frame VP }
-#    Graph::Compare::MoveDone     { Frame VP }
 #    Graph::Compare::Graph        { GR }
 #    Graph::Compare::Init         { Frame }
 #    Graph::Compare::Params       { Parent GR }
@@ -84,7 +78,6 @@ proc Graph::Compare::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data       ;#Mode de selection
    set Graph::Data(Type$gr)     Compare    ;#Type de graph
 
    upvar #0 Graph::Compare::Compare${gr}::Data  data
@@ -125,7 +118,7 @@ proc Graph::Compare::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Compare
-   Graph::Mode Compare $gr True
+   Graph::Mode $gr Compare True
    Graph::PosAdd $gr Compare
 
    #----- Creer les fonction du mode actif
@@ -173,48 +166,6 @@ proc Graph::Compare::Coord { Frame GR X Y } {
       }
    }
 }
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Compare::Draw...>
-# Creation : Novembre 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Compare::DrawInit { Frame VP } {
-   variable Data
-
-   upvar #0 Graph::Compare::Compare${Graph::Data(Graph)}::Data  data
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Compare::Update $Frame $Graph::Data(Graph)
-   } else {
-      Graph::Compare::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
-   }
-}
-
-proc Graph::Compare::Draw { Frame VP } {
-   Graph::Compare::DrawInit $Frame $VP
-}
-
-proc Graph::Compare::DrawDone { Frame VP } { }
-
-proc Graph::Compare::MoveInit { Frame VP } { }
-
-proc Graph::Compare::Move { Frame VP } { }
-
-proc Graph::Compare::MoveDone { Frame VP } { }
 
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::Compare::Graph>
@@ -283,21 +234,32 @@ proc Graph::Compare::Graph { GR } {
       }
    }
 
-   if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+   if { [llength $graph(ZXInter)] } {
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
+   }
+   if { [llength $graph(ZYInter)] } {
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
+      set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $data(DescPos) -angle $graph(XAngle)  \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -labels $data(DescPos) -angle $graph(XAngle)  \
       -lowoffset 0.1 -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale)-modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $$graph(YAngle) \
+   graphaxis configure axisy$GR -type $graph(YScale)-modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
       -highoffset 0.1 -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
@@ -337,6 +299,7 @@ proc Graph::Compare::Init { Frame } {
 
       set Data(Items)           {}        ;#Liste des items
       set Data(Pos)             {}        ;#Liste des positions
+      set Data(Coords)          {}        ;#Liste des coordonnees de coupe
       set Data(PosPos)          {}
       set Data(DescPos)         {}
       set Data(Data)            {}        ;#Liste des champs selectionnees
@@ -722,9 +685,9 @@ proc Graph::Compare::UpdateItems { Frame { GR  { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHCOMPARE$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) desc $data(DescPos) coords $data(PosPos) {
-            Graph::ItemPos $Frame $data(VP) $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHCOMPARE$gr
+            Graph::ItemPos $Frame $data(VP) $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr
          }
       }
    }

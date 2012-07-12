@@ -16,12 +16,6 @@
 #    Graph::TimeSection::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::TimeSection::Coord        { Frame GR X Y }
 #    Graph::TimeSection::Clean        { GR }
-#    Graph::TimeSection::DrawInit     { Frame VP }
-#    Graph::TimeSection::Draw         { Frame VP }
-#    Graph::TimeSection::DrawDone     { Frame VP }
-#    Graph::TimeSection::MoveInit     { Frame VP }
-#    Graph::TimeSection::Move         { Frame VP }
-#    Graph::TimeSection::MoveDone     { Frame VP }
 #    Graph::TimeSection::Graph        { GR }
 #    Graph::TimeSection::Init         { Frame }
 #    Graph::TimeSection::Params       { Parent GR }
@@ -85,7 +79,6 @@ proc Graph::TimeSection::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0         ;#Offset en y
    set Graph::Data(Width$gr)    $Width      ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height     ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data        ;#Mode de selection
    set Graph::Data(Type$gr)     TimeSection ;#Type de graph
 
    upvar #0 Graph::TimeSection::TimeSection${gr}::Data  data
@@ -127,7 +120,7 @@ proc Graph::TimeSection::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr TimeSection
-   Graph::Mode TimeSection $gr True
+   Graph::Mode $gr TimeSection True
    Graph::PosAdd $gr TimeSection
 
    #----- Creer les fonction du mode actif
@@ -212,46 +205,6 @@ proc Graph::TimeSection::Clean { GR } {
          fstdfield free [lindex $field 1]
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::TimeSection::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::TimeSection::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP TimeSection
-}
-
-proc Graph::TimeSection::Draw { Frame VP } {
-   Graph::Draw $Frame $VP TimeSection
-}
-
-proc Graph::TimeSection::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP TimeSection
-}
-
-proc Graph::TimeSection::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP TimeSection
-}
-
-proc Graph::TimeSection::Move { Frame VP } {
-   Graph::Move $Frame $VP TimeSection
-}
-
-proc Graph::TimeSection::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP TimeSection
 }
 
 #-------------------------------------------------------------------------------
@@ -396,14 +349,20 @@ proc Graph::TimeSection::Graph { GR } {
    set data(XMax)  [expr [fstdfield define TIMESECTION$item -NI]-1]
 
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -411,7 +370,7 @@ proc Graph::TimeSection::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $xinter -labels $xdates -angle $graph(XAngle) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter -labels $xdates -angle $graph(XAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals) -relative True
 
@@ -420,12 +379,12 @@ proc Graph::TimeSection::Graph { GR } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -increment $yincr -angle $graph(YAngle) \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -increment $yincr -angle $graph(YAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
    set id [lindex [$data(Canvas) itemconfigure $GR -title] end]
-  $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
+   $data(Canvas) itemconfigure $id -font $Graph::Font(Graph) -fill $Graph::Color(FG)
    $data(Canvas) itemconfigure $GR -item $data(Items) -bd $Graph::Width(Frame) \
       -fg $Graph::Color(FG) -bg $Graph::Color(BG) -fill $Graph::Color(Fill) -font $Graph::Font(Graph)
 
@@ -460,6 +419,7 @@ proc Graph::TimeSection::Init { Frame } {
 
       set Data(Items)  {}        ;#Liste des items
       set Data(Pos)    {}        ;#Liste des positions
+      set Data(Coords) {}        ;#Liste des coordonnees de coupe
       set Data(Data)   {}        ;#Liste des champs selectionnees
       set Data(Tmp)    {}        ;#Liste des champs temporaire
 
@@ -515,7 +475,7 @@ proc Graph::TimeSection::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsAxis $Parent $GR TimeSection X TIME
    Graph::ParamsAxis $Parent $GR TimeSection Y VERTICAL
-   Graph::ModeSelect POINT { POINT LATLONBOX }
+   Graph::ModeSelect POINT { POINT BOX POLYGON }
 }
 
 #-------------------------------------------------------------------------------
@@ -730,9 +690,9 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
       }
 
-      if { [llength $data(Pos$Pos)]==4 } {
+      if { [llength $data(Pos$Pos)]>2 } {
          set n   0
-         set ijs [ fstdfield stats $Data -within [lindex $data(Pos$Pos) 0] [lindex $data(Pos$Pos) 1] [lindex $data(Pos$Pos) 2] [lindex $data(Pos$Pos) 3]]
+         set ijs [fstdfield stats $Data -within $data(Pos$Pos)]
          set df  [expr 100.0/([llength $ijs]-1)]
 
          fstdfield free TIMESECTION$Item
@@ -848,17 +808,17 @@ proc Graph::TimeSection::UpdateItems { Frame { GR { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHTIMESECTION$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               if { [llength $data(Pos$pos)]==2 } {
-                  set type POINT
-               } else {
-                  set type LATLONBOX
+               switch [llength $data(Pos$pos)] {
+                  2 { set type POINT }
+                  4 { set type BOX }
+                  default { set type POLYGON }
                }
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHTIMESECTION$gr $type
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr $type
             }
          }
       }

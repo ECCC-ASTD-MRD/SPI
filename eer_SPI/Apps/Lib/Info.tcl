@@ -49,7 +49,7 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
-                        SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario }
+                        SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -82,6 +82,9 @@ namespace eval Info {
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
    set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
    set Lbl(Seed)                 { "Graine aléatoire" "Random seed" }
+   set Lbl(Aerosol)              { "Type d'aérosol" "Aerosol type" }
+   set Lbl(WetScaMode)           { "Mode de lessivage humide" "Wet scavenging mode" }
+   set Lbl(DryDepMode)           { "Mode de dépot sec" "Dry deposition mode" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }

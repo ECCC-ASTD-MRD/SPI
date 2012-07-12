@@ -15,12 +15,6 @@
 #
 #    Graph::Frequence::Create        { Frame X0 Y0 Width Height Active Full }
 #    Graph::Frequence::Coord         { Frame GR X Y }
-#    Graph::Frequence::DrawInit      { Frame VP }
-#    Graph::Frequence::Draw          { Frame VP }
-#    Graph::Frequence::DrawDone      { Frame VP }
-#    Graph::Frequence::MoveInit      { Frame VP }
-#    Graph::Frequence::Move          { Frame VP }
-#    Graph::Frequence::MoveDone      { Frame VP }
 #    Graph::Frequence::Graph         { GR }
 #    Graph::Frequence::Init          { Frame }
 #    Graph::Frequence::Params        { Parent GR }
@@ -89,7 +83,6 @@ proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Data       ;#Mode de selection
    set Graph::Data(Type$gr)     Frequence  ;#Type de graph
 
    upvar #0 Graph::Frequence::Frequence${gr}::Data  data
@@ -130,7 +123,7 @@ proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Frequence
-   Graph::Mode Frequence $gr True
+   Graph::Mode $gr Frequence True
    Graph::PosAdd $gr Frequence
 
    #----- Creer les fonction du mode actif
@@ -179,46 +172,6 @@ proc Graph::Frequence::Coord { Frame GR X Y } {
          set Page::Data(Value) "$Page::Data(Value) $graph(UnitY): [lindex $coords 1]"
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Frequence::Draw...>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Frequence::DrawInit { Frame VP } {
-   Graph::DrawInit $Frame $VP Frequence
-}
-
-proc Graph::Frequence::Draw { Frame VP } {
-   Graph::Draw $Frame $VP Frequence
-}
-
-proc Graph::Frequence::DrawDone { Frame VP } {
-   Graph::DrawDone $Frame $VP Frequence
-}
-
-proc Graph::Frequence::MoveInit { Frame VP } {
-   Graph::MoveInit $Frame $VP Frequence
-}
-
-proc Graph::Frequence::Move { Frame VP } {
-   Graph::Move $Frame $VP Frequence
-}
-
-proc Graph::Frequence::MoveDone { Frame VP } {
-   Graph::MoveDone $Frame $VP Frequence
 }
 
 #-------------------------------------------------------------------------------
@@ -278,26 +231,32 @@ proc Graph::Frequence::Graph { GR } {
    set yincr [Graph::ValIncr $data(YMin) $data(YMax) 10 $graph(YScale)]
 
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
    }
    if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
       set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -angle $graph(XAngle) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -angle $graph(XAngle) \
       -lowoffset 0.05 -highoffset 0.05 -font $Graph::Font(Axis) \
       -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
    set id [graphaxis configure axisy$GR -unit]
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -increment $yincr -angle $graph(YAngle) -highoffset 0.05 \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -increment $yincr -angle $graph(YAngle) -highoffset 0.05 \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor) -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) \
       -format $graph(YFormat) -decimal $graph(YDecimals)
 
@@ -337,6 +296,7 @@ proc Graph::Frequence::Init { Frame } {
 
       set Data(Items)   {}         ;#Liste des items
       set Data(Pos)     {}         ;#Liste des positions
+      set Data(Coords)  {}         ;#Liste des coordonnees de coupe
       set Data(Data)    {}         ;#Donnees du graph
       set Data(Lat0)     0         ;#Rectangle de selection
       set Data(Lat1)     0         ;#Rectangle de selection
@@ -386,7 +346,7 @@ proc Graph::Frequence::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
    Graph::ParamsAxis $Parent $GR Frequence X
-   Graph::ModeSelect LATLONBOX LATLONBOX
+   Graph::ModeSelect BOX BOX
 }
 
 #-------------------------------------------------------------------------------
@@ -786,13 +746,13 @@ proc Graph::Frequence::UpdateItems { Frame { GR { } } } {
       upvar #0 Graph::Frequence::Frequence${gr}::Data  data
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
-         $Frame.page.canvas delete GRAPHFREQUENCE$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
 
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHFREQUENCE$gr LATLONBOX
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr BOX
             }
          }
 
@@ -801,7 +761,7 @@ proc Graph::Frequence::UpdateItems { Frame { GR { } } } {
                set coo [observation define $data(Obs) -COORD $idx]
                if { [set pix [$data(VP) -project [lindex $coo 0] [lindex $coo 1] 0]]!="" && [lindex $pix 2]>0 } {
                   $data(FrameData).page.canvas create bitmap [expr [lindex $pix 0]-$Obs::Param(Size)] [lindex $pix 1] \
-                     -bitmap @$GDefs(Dir)/Resources/Bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHFREQUENCE$gr" \
+                     -bitmap @$GDefs(Dir)/Resources/Bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
                      -anchor e -foreground $Graph::Color(Select)
                }
             }

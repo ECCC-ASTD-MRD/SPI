@@ -69,7 +69,6 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) None       ;#Mode de selection
    set Graph::Data(Type$gr)     Stat       ;#Type de graph
 
    upvar #0 Graph::Stat::Stat${gr}::Data  data
@@ -91,7 +90,7 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Stat
-   Graph::Mode Stat $gr False
+   Graph::Mode $gr Stat False
 
    #----- Creer les fonction du mode actif
 
@@ -240,6 +239,8 @@ proc Graph::Stat::Params { Parent GR } {
          -onvalue 1 -offvalue 0 -indicatoron false -command "Graph::Stat::Graph $GR"
       pack $Parent.stat.list.s$stat -side top -fill x
    }
+
+   Graph::ModeSelect NONE
 }
 
 #-------------------------------------------------------------------------------

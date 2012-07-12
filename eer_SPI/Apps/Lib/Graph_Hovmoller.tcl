@@ -16,12 +16,6 @@
 #    Graph::Hovmoller::Create       { Frame X0 Y0 Width Height Active Full }
 #    Graph::Hovmoller::Coord        { Frame GR X Y }
 #    Graph::Hovmoller::Clean        { GR }
-#    Graph::Hovmoller::DrawInit     { Frame VP }
-#    Graph::Hovmoller::Draw         { Frame VP }
-#    Graph::Hovmoller::DrawDone     { Frame VP }
-#    Graph::Hovmoller::MoveInit     { Frame VP }
-#    Graph::Hovmoller::Move         { Frame VP }
-#    Graph::Hovmoller::MoveDone     { Frame VP }
 #    Graph::Hovmoller::Graph        { GR }
 #    Graph::Hovmoller::Init         { Frame }
 #    Graph::Hovmoller::Params       { Parent GR }
@@ -85,7 +79,6 @@ proc Graph::Hovmoller::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
-   set Graph::Data(ToolMode$gr) Draw       ;#Mode de selection
    set Graph::Data(Type$gr)     Hovmoller  ;#Type de graph
 
    upvar #0 Graph::Hovmoller::Hovmoller${gr}::Data  data
@@ -128,7 +121,7 @@ proc Graph::Hovmoller::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Hovmoller
-   Graph::Mode Hovmoller $gr True
+   Graph::Mode $gr Hovmoller True
    Graph::PosAdd $gr Hovmoller
 
    #----- Creer les fonction du mode actif
@@ -224,7 +217,6 @@ proc Graph::Hovmoller::Clean { GR } {
 #
 # Parametres :
 #   <GR>     : Indentificateur du Graph
-#   <Pos>    : Recalculer les positions
 #
 # Retour    :
 #
@@ -232,7 +224,7 @@ proc Graph::Hovmoller::Clean { GR } {
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::Hovmoller::Graph { GR { Pos False } } {
+proc Graph::Hovmoller::Graph { GR } {
    global GDefs
    variable Data
 
@@ -243,9 +235,6 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
       return
    }
 
-   if { $Pos } {
-      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
    $data(Canvas) config -cursor watch
    update idletasks
 
@@ -264,8 +253,8 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    foreach item $data(Items) {
       set data(Dates) [concat $data(Dates) [vector get $item.Y]]
       set data(XMin)   0
-      if { [fstdfield is GRAPHHOVMOLLER$item] } {
-         set data(XMax)  [expr [fstdfield define GRAPHHOVMOLLER$item -NI]-1]
+      if { [fstdfield is GRAPHSELECT$item] } {
+         set data(XMax)  [expr [fstdfield define GRAPHSELECT$item -NI]-1]
       }
    }
 
@@ -328,17 +317,23 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
    }
 
    set data(YMin)  0
-   set data(YMax)  [expr [fstdfield define GRAPHHOVMOLLER$item -NJ]-1]
+   set data(YMax)  [expr [fstdfield define GRAPHSELECT$item -NJ]-1]
 
-   if { [llength $graph(ZYInter)] } {
-      set data(YMin) [lindex $graph(ZYInter) 0]
-      set data(YMax) [lindex $graph(ZYInter) 1]
-      set mod False
-   }
    if { [llength $graph(ZXInter)] } {
-      set data(XMin) [lindex $graph(ZXInter) 0]
-      set data(XMax) [lindex $graph(ZXInter) 1]
+      set xmin [lindex $graph(ZXInter) 0]
+      set xmax [lindex $graph(ZXInter) 1]
       set mod False
+   } else {
+      set xmin $data(XMin)
+      set xmax $data(XMax)
+   }
+   if { [llength $graph(ZYInter)] } {
+      set ymin [lindex $graph(ZYInter) 0]
+      set ymax [lindex $graph(ZYInter) 1]
+      set mod False
+   } else {
+      set ymin $data(YMin)
+      set ymax $data(YMax)
    }
 
    set id [graphaxis configure axisx$GR -unit]
@@ -346,7 +341,7 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $data(XMin) -max $data(XMax) -intervals $graph(XInter) -labels $graph(XLabel) \
+   graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -labels $graph(XLabel) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor)  -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) -angle $graph(XAngle) \
       -format $graph(XFormat) -decimal $graph(XDecimals)
 
@@ -355,7 +350,7 @@ proc Graph::Hovmoller::Graph { GR { Pos False } } {
       $data(Canvas) itemconfigure $id -text $graph(UnitY)
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
-   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $data(YMin) -max $data(YMax) -intervals $yinter -labels $ydates \
+   graphaxis configure axisy$GR -type $graph(YScale) -modulo $mod -min $ymin -max $ymax -intervals $yinter -labels $ydates \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(YColor)  -dash $Graph::Grid(YDash) -gridwidth $Graph::Grid(YWidth) -color $Graph::Color(Axis) -angle $graph(YAngle) \
       -format $graph(YFormat) -decimal $graph(YDecimals) -relative True
 
@@ -398,11 +393,8 @@ proc Graph::Hovmoller::Init { Frame } {
       set Data(Data)     {}           ;#Liste des champs selectionnees
       set Data(Tmp)      {}           ;#Liste des champs temporaire
       set Data(Proj)     0            ;#Mode projection
-      set Data(ResBest)  True         ;#Selection de la resolution
-      set Data(Res)      100000       ;#Resolution en metres
       set Data(DCoords)  {}           ;#Liste des longueur des segment
       set Data(Levels)   {}           ;#Liste des niveaux
-      set Data(FCoords)  {}           ;#Liste des coordonnees de coupe (Follow mode)
       set Data(Coords)   {}           ;#Liste des coordonnees de coupe
       set Data(Field)    ""           ;#Champs de coupe
       set Data(Date0)           ""
@@ -452,9 +444,9 @@ proc Graph::Hovmoller::Params { Parent GR } {
    labelframe $Parent.params -text [lindex $Graph::Lbl(Section) $GDefs(Lang)]
       frame $Parent.params.res
          label $Parent.params.res.lbl -text [lindex $Graph::Lbl(Res) $GDefs(Lang)] -width 14 -anchor w
-         entry $Parent.params.res.val -textvariable Graph::Hovmoller::Hovmoller${GR}::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
-         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Hovmoller::Hovmoller${GR}::Data(ResBest) \
-            -onvalue True -offvalue False -command "Graph::Hovmoller::Resolution; Graph::Hovmoller::Graph $GR True"
+         entry $Parent.params.res.val -textvariable Graph::Data(Res) -width 8 -bd 1 -bg $GDefs(ColorLight)
+         checkbutton $Parent.params.res.auto -text * -indicatoron false -bd 1 -variable Graph::Data(ResBest) \
+            -onvalue True -offvalue False -command "Graph::VertexResolution Hovmoller $GR"
          pack $Parent.params.res.lbl -side left
          pack $Parent.params.res.val -side left -fill x -expand True
          pack $Parent.params.res.auto -side left
@@ -467,7 +459,7 @@ proc Graph::Hovmoller::Params { Parent GR } {
 
    Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)
 
-   bind $Parent.params.res.val <Return> "Graph::Hovmoller::Graph $GR True"
+   bind $Parent.params.res.val <Return> "Graph::VertexResolution Hovmoller $GR"
 }
 
 #-------------------------------------------------------------------------------
@@ -565,9 +557,9 @@ proc Graph::Hovmoller::ItemDel { GR Item } {
 
       vector    free $Item
       graphitem free $Item
-      fstdfield free GRAPHHOVMOLLER$Item
+      fstdfield free GRAPHSELECT$Item
 
-      FSTD::UnRegister GRAPHHOVMOLLER$Item
+      FSTD::UnRegister GRAPHSELECT$Item
    }
 }
 
@@ -679,9 +671,9 @@ proc Graph::Hovmoller::ItemData { GR Pos Item Data } {
             lappend fields [lindex $field 1]
             vector append $Item.Y [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
          }
-         fstdfield vertical GRAPHHOVMOLLER$Item $fields $data(Pos$Pos)
-         FSTD::Register GRAPHHOVMOLLER$Item
-         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHHOVMOLLER$Item
+         fstdfield vertical GRAPHSELECT$Item $fields $data(Pos$Pos)
+         FSTD::Register GRAPHSELECT$Item
+         graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item
       } else {
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data ""
       }
@@ -773,13 +765,13 @@ proc Graph::Hovmoller::UpdateItems { Frame { GR { } } } {
 
       if { $data(VP)!="" && $data(FrameData)==$Frame } {
 
-         $Frame.page.canvas delete GRAPHHOVMOLLER$gr
+         $Frame.page.canvas delete GRAPHSELECT$gr
 
          foreach pos $data(Pos) {
             if { [llength $data(Items$pos)] } {
                set id [graphitem configure [lindex $data(Items$pos) 0] -desc]
                set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHHOVMOLLER$gr SAMPLE $data(Coords)
+               Graph::ItemPos $Frame $data(VP) $data(Pos$pos) "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$gr LINE $data(Coords)
             }
          }
       }
@@ -910,227 +902,4 @@ proc Graph::Hovmoller::Data { GR { Data { } } { Files { } } } {
    }
 
    SPI::Progress 0
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::Resolution>
-# Creation : Janvier 2007 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determiner la resolution optimale du sampling des pointts de coupes.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::Resolution { } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   if { $data(VP)=="" || $data(Field)=="" } {
-      return
-   }
-
-   if { $data(ResBest) } {
-      set i [expr int([fstdfield define $data(Field) -NI]/2)]
-      set j [expr int([fstdfield define $data(Field) -NJ]/2)]
-
-      if { [fstdfield define $data(Field) -GRTYP]=="R" } {
-         set data(Res) 1000
-      } else {
-         #----- Calculate distances in gridpoint for grid projection otherwise, use meters
-         if { [projection configure $data(FrameData) -type]=="grid" } {
-            set data(Res) 1
-         } else {
-            set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
-            set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
-            eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
-         }
-      }
-      set data(Res) [format "%0.0f" $data(Res)]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::VertexAdd>
-# Creation : Ocotbre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajout d'un point a la coupe.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#  <X>       : Coordonnee X de la souris
-#  <Y>       : Coordonnee Y de la souris
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::VertexAdd { Frame VP X Y } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   if { $VP==-1 } {
-      return
-   }
-
-   if { $VP!=$data(VP) } {
-      set data(VP)        $VP
-      set data(FrameData) $Frame
-      Graph::Hovmoller::Update $Frame $Graph::Data(Graph)
-   }
-   set data(Field) [lindex [Viewport::Assigned $Frame $VP fstdfield] 0]
-
-   if { $VP==-1 || $data(Field)=="" } {
-      return
-   }
-
-   #----- Si la grille et le vertex est valide on l'ajoute a la liste
-
-   set grtyp [fstdfield define $data(Field) -GRTYP]
-   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
-
-      Graph::Hovmoller::Resolution
-      lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
-
-      #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
-
-      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::VertexDelete>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      :Suppression d'un point a la coupe.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::VertexDelete { Frame VP } {
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   if { $VP!=-1 } {
-      set data(Coords) [lreplace $data(Coords) end-1 end]
-
-      Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::Hovmoller::Sample $Graph::Data(Graph) $data(VP) $data(Coords)]
-   }
-   $data(Canvas) delete VERTEXFOLLOW
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::VertexFollow>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Affiche une ligne entre le dernier vertex creer et la position du
-#            curseur de la souris.
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#  <X>       : Coordonnee X de la souris
-#  <Y>       : Coordonnee Y de la souris
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::VertexFollow { Frame VP X Y Scan } {
-   global GDefs
-   variable Lbl
-
-   set GR $Graph::Data(Graph)
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   if { $VP==-1 } {
-      if { $data(VP)=="" } {
-         return
-      } else {
-         set VP $data(VP)
-      }
-   }
-
-   if { $data(FrameData)!="" && [llength $data(Items$Graph::Data(Pos))] } {
-      set data(FCoords) $data(Coords)
-
-      if { $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
-         lappend data(FCoords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
-      }
-
-      $Frame.page.canvas delete GRAPHHOVMOLLER$Graph::Data(Graph)
-      set coords [lrange [Graph::Hovmoller::Sample $Graph::Data(Graph) $VP $data(FCoords)] 0 end-4]
-      set id [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
-      set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
-      Graph::ItemPos $Frame $VP $coords "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHHOVMOLLER$GR SAMPLE $data(FCoords)
-
-      if { $Scan && [llength $data(FCoords)]>2 } {
-         Graph::Hovmoller::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Graph::Hovmoller::Sample>
-# Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Calculer le path de coupe et points intermediaire selon la resolution.
-#
-# Parametres :
-#  <GR>      : Identificateur du graph
-#  <VP>      : Identificateur du Viewport
-#  <Coord>   : Liste des coordonnee
-#  <Res>     : Resolution des points intermediaire (Defaut 0 = aucun)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Graph::Hovmoller::Sample  { GR VP Coord { Res 0 } } {
-
-   upvar #0 Graph::Hovmoller::Hovmoller${GR}::Data  data
-
-   if { [llength $Coord]==2 } {
-      return $Coord
-   }
-
-   set res  [expr $Res==0?$data(Res):$Res]
-   set plat [lindex $Coord 0]
-   set plon [lindex $Coord 1]
-
-   set coords {}
-   set data(DCoords) { 0 }
-
-   foreach { lat lon } $Coord {
-
-      if { $plat!=$lat || $plon!=$lon } {
-         set coords [concat $coords [projection function $data(FrameData) -path [list $plat $plon $lat $lon] $res]]
-         lappend data(DCoords) [expr [llength $coords]/2-1]
-      }
-      set plat $lat
-      set plon $lon
-   }
-
-   return $coords
 }
