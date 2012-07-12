@@ -804,8 +804,40 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
    }
    foreach item $Param($Param(SelectMode)) {
       $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $item 0] -variable Graph::Param(LOCATION) \
-         -command "Graph::\${Graph::Data(Type)}::ItemDefine \$Graph::Data(Graph) \$Graph::Data(Pos) \[list [lindex $item 1]\]"
+         -command "Graph::PosSelectSaved \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Pos) \[list $item\]"
    }
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <Graph::PosSelectSaved>
+# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Selectionner le mode de selection par curseur
+#
+# Parametres :
+#   <Graph>  : Identificateur du Graph
+#   <Type>   : Type de graph
+#   <Pos>    : Position
+#   <Def>    : Saved position definition
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Graph::PosSelectSaved { Graph Type Pos Def } {
+   variable Param
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+
+   set coords [lindex $Def 1]
+
+   switch $Param(SelectMode) {
+      "POINT"   { set data(Lat0) [lindex $coords 0]; set data(Lon0) [lindex $coords 1] }
+      "LINE"    { set data(Coords) $coords }
+      "BOX"     { set data(Lat0) [lindex $coords 0]; set data(Lon0) [lindex $coords 1]; set data(Lat1) [lindex $coords 2]; set data(Lon1) [lindex $coords 3] }
+      "POLYGON" { set data(Coords) $coords }
+   }
+   Graph::${Type}::ItemDefine $Graph $Pos $coords
 }
 
 #-------------------------------------------------------------------------------
@@ -815,8 +847,8 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
 # But      : Fenetre de parametrage des graphs
 #
 # Parametres :
-#   <Type>   : Type de graph
 #   <Graph>  : Identificateur du Graph
+#   <Type>   : Type de graph
 #
 #-------------------------------------------------------------------------------
 
@@ -1410,7 +1442,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                lappend coords $lat $lon 0.0
             }
             lappend coords [lindex $Coords 0] [lindex $Coords 1] 0.0
-            lappend Tags $Page::Data(Tag)$VP
+            lappend Tag $Page::Data(Tag)$VP
 
             Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
       }
