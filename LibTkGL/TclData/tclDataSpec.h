@@ -49,7 +49,7 @@
 #define DATASPEC_MAXSET 0x02
 #define DATASPEC_ALLSET 0x03
 
-#define VECTORSIZE(SPEC,VAL) ((SPEC->RenderVector==ARROW?SPEC->Size+SPEC->Size*(SPEC->InterNb?((VAL-SPEC->Inter[0])/(SPEC->Inter[SPEC->InterNb-1]-SPEC->Inter[0])):((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min))):SPEC->Size+2*SPEC->Width))
+#define VECTORSIZE(SPEC,VAL) ((SPEC->RenderVector==ARROW?SPEC->Size+SPEC->Size*SPEC->SizeRange*(SPEC->InterNb?((VAL-SPEC->Inter[0])/(SPEC->Inter[SPEC->InterNb-1]-SPEC->Inter[0])):((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min))):SPEC->Size+2*SPEC->Width))
 #define SPEC2VAL(SPEC,VAL)    (SPEC?VAL/SPEC->ValFactor-SPEC->ValDelta:VAL)
 #define VAL2SPEC(SPEC,VAL)    (SPEC?(VAL+SPEC->ValDelta)*SPEC->ValFactor:VAL)
 
@@ -133,7 +133,7 @@ typedef struct TDataSpec {
    int             Style;               /*Style*/
    char           *LabelVar;            /*Variable pour les libelles*/
    char           *SizeVar;             /*Variable pour les dimensions*/
-   double          Size,SizeMin,SizeMax;/*Dimension*/
+   double          Size,SizeRange,SizeMin,SizeMax;/*Dimension*/
    char           *MapVar;              /*Variable pour appliquer la palette*/
    double          Min,Max;             /*Minimum et Maximum des valeurs*/
    int             MinMax;              /*Indicateur de selection des min max*/
