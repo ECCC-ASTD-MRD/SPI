@@ -43,19 +43,21 @@ namespace eval VectorBox {
    set Data(LockY)    False
    set Data(LockZ)    False
 
-   set Lbl(GridVec) { "Orienté grille" "Grid oriented" }
-   set Lbl(Params)  { "Parametres" "Parameters" }
-   set Lbl(Size)    { "Dimension" "Dimension" }
-   set Lbl(Sample)  { "Echantillonage" "Sampling" }
-   set Lbl(Step)    { "Pas" "Step" }
-   set Lbl(Start)   { "Départ" "Start" }
-   set Lbl(Close)   { "Fermer" "Close" }
-   set Lbl(Apply)   { "Appliquer" "Apply" }
-   set Lbl(Stream)  { "Ligne de courant" "Streamline" }
-   set Lbl(Grid)    { "Grille" "Grid" }
-   set Lbl(Pixel)   { "Pixel" "Pixel" }
+   set Lbl(GridVec)   { "Orienté grille" "Grid oriented" }
+   set Lbl(Params)    { "Parametres" "Parameters" }
+   set Lbl(Size)      { "Dimension" "Dimension" }
+   set Lbl(SizeRange) { "Dimension écart" "Dimension range" }
+   set Lbl(Sample)    { "Echantillonage" "Sampling" }
+   set Lbl(Step)      { "Pas" "Step" }
+   set Lbl(Start)     { "Départ" "Start" }
+   set Lbl(Close)     { "Fermer" "Close" }
+   set Lbl(Apply)     { "Appliquer" "Apply" }
+   set Lbl(Stream)    { "Ligne de courant" "Streamline" }
+   set Lbl(Grid)      { "Grille" "Grid" }
+   set Lbl(Pixel)     { "Pixel" "Pixel" }
 
-   set Bubble(Size)       { "Largeur des lignes de courants" "Streamline width" }
+   set Bubble(Size)       { "Dimension des barbules ou largeur des lignes de courants" "Wind barbs size or streamline width" }
+   set Bubble(SizeRange)  { "Facteur d'écart de dimension des barbules entre les mimimum et maximum" "Dimension range factor between of wind barbs between minimum and maximum values" }
    set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
    set Bubble(Sample)     { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
    set Bubble(GridVec)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
@@ -94,7 +96,7 @@ proc VectorBox::Create { Parent Apply } {
    }
 
    toplevel     .vecbox
-   wm geom      .vecbox =235x235+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .vecbox =235x250+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .vecbox .
    wm resizable .vecbox 0 0
    wm title     .vecbox "VectorBox 1.0"
@@ -149,6 +151,10 @@ proc VectorBox::Create { Parent Apply } {
          scale $fr.size.sc -from 1 -to 30 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Size) -length 150 -relief flat -bd 1 -orient horizontal \
             -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
          pack $fr.size.sc -fill x -padx 2 -expand true
+      labelframe $fr.range -text [lindex $Lbl(SizeRange) $GDefs(Lang)]
+         scale $fr.range.sc -from 1.0 -to 10.0 -resolution 0.1 -width 14 -sliderlength 8 -variable FSTD::Param(SizeRange) -length 150 -relief flat -bd 1 -orient horizontal \
+            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
+         pack $fr.range.sc -fill x -padx 2 -expand true
       labelframe $fr.sample -text [lindex $Lbl(Sample) $GDefs(Lang)]
          scale $fr.sample.sc -from 1 -to 25 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
             -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
@@ -159,9 +165,10 @@ proc VectorBox::Create { Parent Apply } {
          pack $fr.sample.type.pixel $fr.sample.type.grid -fill x -side left -expand true
 
          checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
-      pack $fr.size $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
+      pack $fr.size $fr.range $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $fr.size.sc   $Bubble(Size)
+   Bubble::Create $fr.range.sc  $Bubble(SizeRange)
    Bubble::Create $fr.sample.sc $Bubble(Sample)
    Bubble::Create $fr.geo       $Bubble(GridVec)
 
