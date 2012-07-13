@@ -32,6 +32,7 @@
  */
 
 #include "tclData.h"
+#include "tclOGR.h"
 #include "Projection.h"
 #include "Data_Calc.h"
 

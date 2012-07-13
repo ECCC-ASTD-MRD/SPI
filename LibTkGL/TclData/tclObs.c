@@ -31,6 +31,7 @@
  */
 
 #include "tclObs.h"
+#include "tclOGR.h"
 #include "Projection.h"
 
 #define fgetskip(BYTES,LEN,STREAM)   BYTES[0]='\0';while (fgets(BYTES,LEN,STREAM) && BYTES[0]=='#')
@@ -2311,46 +2312,10 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
 
          case WITHIN:
-            Tcl_ListObjLength(Interp,Objv[++i],&n);
-            if (n==4) {
-               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
-               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
-               Tcl_ListObjIndex(Interp,Objv[i],2,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
-               Tcl_ListObjIndex(Interp,Objv[i],3,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+            if (Obs_GetAreaValue(Interp,4,obs,Objc-1,Objv+1)==TCL_ERROR) {
+               return(TCL_ERROR);
             }
-
-            if (dlon0*dlon1<0) {
-               dl=dlon1-dlon0;
-            } else {
-               dl=0;
-            }
-            obj=Tcl_NewListObj(0,NULL);
-            for(n=0;n<obs->Loc->Nb;n++) {
-               if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
-                  f=1;
-               } else {
-                  f=0;
-                  if (obs->Loc->Coord[n].Lat>=dlat0 && obs->Loc->Coord[n].Lat<=dlat1) {
-                     if (dl<=180) {
-                        if (obs->Loc->Coord[n].Lon>=dlon0 && obs->Loc->Coord[n].Lon<=dlon1) {
-                           f=1;
-                        }
-                     } else {
-                        if ((obs->Loc->Coord[n].Lon<=dlon0 && obs->Loc->Coord[n].Lon>-180) || (obs->Loc->Coord[n].Lon>=dlon1 && obs->Loc->Coord[n].Lon<180)) {
-                           f=1;
-                        }
-                     }
-                  }
-               }
-               if (f) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(n));
-               }
-            }
-            Tcl_SetObjResult(Interp,obj);
+            i++;
             break;
 
          case MAX:
@@ -2362,6 +2327,11 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].Lon));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Max].Elev));
                Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (Obs_GetAreaValue(Interp,3,obs,Objc-1,Objv+1)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               i++;
             }
             break;
 
@@ -2374,6 +2344,11 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].Lon));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(obs->Loc->Coord[obs->Min].Elev));
                Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (Obs_GetAreaValue(Interp,2,obs,Objc-1,Objv+1)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               i++;
             }
             break;
 
@@ -2418,5 +2393,123 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
    }
 
-   return TCL_OK;
+   return(TCL_OK);
+}
+
+int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]) {
+
+   Tcl_Obj *obj;
+   int      f,n=0,nc,vnb,vn0,vn1;
+   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
+   Vect3d   vp,*vn=NULL;
+
+   if (Objc!=1) {
+      Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
+      return(TCL_ERROR);
+   }
+
+   Tcl_ListObjLength(Interp,Objv[0],&nc);
+   if (nc==4) {
+      // This is a latlon bounding box defined by 2 corners
+      Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
+      Tcl_ListObjIndex(Interp,Objv[0],1,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
+      Tcl_ListObjIndex(Interp,Objv[0],2,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
+      Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+   } else {
+      vnb=nc>>1;
+      if (!vnb || nc%2) {
+         Tcl_AppendResult(Interp,"Obs_GetAreaValue: Invalid number of coordinates",(char*)NULL);
+         return(TCL_ERROR);
+      }
+
+      vn=(Vect3d*)malloc(vnb*sizeof(Vect3d));
+      for(n=0,f=0;n<vnb;n++) {
+         Tcl_ListObjIndex(Interp,Objv[0],f++,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlat);
+         Tcl_ListObjIndex(Interp,Objv[0],f++,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlon);
+
+         vn[n][0]=dlat;
+         vn[n][1]=dlon;
+      }
+   }
+
+   if (dlon0*dlon1<0) {
+      dl=dlon1-dlon0;
+   } else {
+      dl=0;
+   }
+
+   switch(Mode) {
+      case 0:
+      case 1: tot=0; break;
+      case 2: tot=1e38; break;
+      case 3: tot=-1e38; break;
+      case 4: obj=Tcl_NewListObj(0,NULL); break;
+   }
+
+   n=0;
+
+   obj=Tcl_NewListObj(0,NULL);
+   for(n=0;n<Obs->Loc->Nb;n++) {
+      if (nc==4) {
+         if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
+            f=1;
+         } else {
+            f=0;
+            if (Obs->Loc->Coord[n].Lat>=dlat0 && Obs->Loc->Coord[n].Lat<=dlat1) {
+               if (dl<=180) {
+                  if (Obs->Loc->Coord[n].Lon>=dlon0 && Obs->Loc->Coord[n].Lon<=dlon1) {
+                     f=1;
+                  }
+               } else {
+                  if ((Obs->Loc->Coord[n].Lon<=dlon0 && Obs->Loc->Coord[n].Lon>-180) || (Obs->Loc->Coord[n].Lon>=dlon1 && Obs->Loc->Coord[n].Lon<180)) {
+                     f=1;
+                  }
+               }
+            }
+         }
+      } else {
+         Vect_Init(vp,Obs->Loc->Coord[n].Lat,Obs->Loc->Coord[n].Lon,0.0);
+
+         f=0;
+         for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
+            /*Check for point insidness*/
+            if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
+               f=!f;
+            }
+         }
+      }
+
+      // Point is inside
+      if (f) {
+         v=((float*)Obs->Def->Data)[0];
+         n++;
+         switch(Mode) {
+            case 0:
+            case 1: tot+=v; break;
+            case 2: tot=tot>v?v:tot; break;
+            case 3: tot=tot<v?v:tot; break;
+            case 4:
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(n));
+               break;
+         }
+      }
+   }
+
+   switch(Mode) {
+      case 0: tot/=n;
+      case 1:
+      case 2:
+      case 3: obj=Tcl_NewDoubleObj(tot);
+   }
+   Tcl_SetObjResult(Interp,obj);
+
+   if (vn) free(vn);
+
+   return(TCL_OK);
 }

@@ -553,7 +553,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                x=DEG2RAD(n);
 
                loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
-               loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+               loc1.Lon=fmod(loc0.Lon-(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
                loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
 
                proj->Type->Project(proj,(GeoVect*)&loc1,(GeoVect*)&pt0,1);
@@ -658,7 +658,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             d=M2RAD(d);
 
             loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
-            loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
+            loc1.Lon=fmod(loc0.Lon-(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
             loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
 
             obj=Tcl_NewListObj(0,NULL);

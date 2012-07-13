@@ -219,10 +219,10 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 */
 static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj    *obj;
+   Tcl_Obj    *obj,*tmp;
    Projection *proj;
    int         idx,n,nobj;
-   Coord       loc0,loc1,loct;
+   Coord       loc0,loc1,loct,locp;
    double      x,y,d;
 
    static CONST char *sopt[] = { "-path","-dist","-bearing","-circle","-coordgrid","-gridcoord",NULL };
@@ -300,8 +300,8 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          break;
 
       case CIRCLE:
-         if (Objc!=5){
-            Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist angle");
+         if (Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist angle [coords]");
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
@@ -309,18 +309,42 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          Tcl_GetDoubleFromObj(Interp,Objv[3],&d);
          Tcl_GetDoubleFromObj(Interp,Objv[4],&x);
 
-         loc0.Lat=DEG2RAD(loc0.Lat);
-         loc0.Lon=DEG2RAD(loc0.Lon);
+         loc0.Lat=DEG2RAD(loc0.Lat);loc0.Lon=DEG2RAD(loc0.Lon);
          x=DEG2RAD(x);
          d=M2RAD(d);
 
          loc1.Lat=asin(sin(loc0.Lat)*cos(d)+cos(loc0.Lat)*sin(d)*cos(x));
-         loc1.Lon=fmod(loc0.Lon+(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
-         loc1.Lat=RAD2DEG(loc1.Lat);loc1.Lon=RAD2DEG(loc1.Lon);
+         loc1.Lon=fmod(loc0.Lon-(atan2(sin(x)*sin(d)*cos(loc0.Lat),cos(d)-sin(loc0.Lat)*sin(loc1.Lat)))+M_PI,M_2PI)-M_PI;
 
          obj=Tcl_NewListObj(0,NULL);
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lat));
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(loc1.Lon));
+
+         if (Objc==6) {
+            // There is a list of coordinates to translate
+            Tcl_ListObjLength(Interp,Objv[5],&nobj);
+            for(n=0;n<nobj;n+=2) {
+               // Get the point coordinate
+               Tcl_ListObjIndex(Interp,Objv[5],n,&tmp);
+               Tcl_GetDoubleFromObj(Interp,tmp,&loct.Lat);
+               Tcl_ListObjIndex(Interp,Objv[5],n+1,&tmp);
+               Tcl_GetDoubleFromObj(Interp,tmp,&loct.Lon);
+               loct.Lat=DEG2RAD(loct.Lat);loct.Lon=DEG2RAD(loct.Lon);
+
+               // Get its distance and angle from original location
+               d=M2RAD(DIST(0.0,loct.Lat,loct.Lon,loc0.Lat,loc0.Lon));
+               x=COURSE(loc0.Lat,loc0.Lon,loct.Lat,loct.Lon);
+
+               // Figure out new location
+               loct.Lat=asin(sin(loc1.Lat)*cos(d)+cos(loc1.Lat)*sin(d)*cos(x));
+               loct.Lon=fmod(loc1.Lon-(atan2(sin(x)*sin(d)*cos(loc1.Lat),cos(d)-sin(loc1.Lat)*sin(loct.Lat)))+M_PI,M_2PI)-M_PI;
+
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(RAD2DEG(loct.Lat)));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(RAD2DEG(loct.Lon)));
+            }
+         } else {
+            // Translate only the specified location
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(RAD2DEG(loc1.Lat)));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(RAD2DEG(loc1.Lon)));
+         }
          Tcl_SetObjResult(Interp,obj);
          break;
 
