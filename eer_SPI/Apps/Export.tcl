@@ -144,7 +144,7 @@ namespace eval Export::Vector {
 
    set Data(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
                        {GeoJSON  "GeoJSON" {*.json}}
-                       {KML "KML" {*.kml}}
+                       {KML "KMZ" {*.kml}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
                        {Geography Markup Language "GML" {*.gml}}
                        {GMT ASCII Vectors "GMT" {*.gmt}}
@@ -287,8 +287,8 @@ proc Export::Raster::Export { Path Format } {
       set ext  [file extension $Path]
 
       if { $Export::Data(DX)==0 || $Export::Data(DY)==0 } {
-      Dialog::Error .export $Error(Size)
-      return False
+         Dialog::Error .export $Error(Size)
+         return False
       }
 
       if { $Format=="KMZ" } {
@@ -311,7 +311,7 @@ proc Export::Raster::Export { Path Format } {
          set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
          set lvltype [fstdfield stats $field -leveltype]
          set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-         set sec1    [expr $sec0+[fstdfield define $field -DEET]*[fstdfield define $field -NPAS]]
+         set sec1    [expr $sec0+[fstdfield define $field -DEET]]
 
          set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
          Dialog::Wait .export $Export::Msg(Export) $desc
@@ -324,7 +324,6 @@ proc Export::Raster::Export { Path Format } {
             1 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 4 Byte }
             2 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 1 Byte }
          }
-
          gdalband define BAND -transform [list $Export::Data(Lon0) $Export::Data(DLon) 0.0 $Export::Data(Lat1) 0.0 -$Export::Data(DLat)]
          gdalband import BAND $field
 
@@ -412,18 +411,36 @@ proc Export::Raster::Export { Path Format } {
 #----------------------------------------------------------------------------
 
 proc Export::Vector::Export { Path Format } {
+   global GDefs
    variable Data
 
    set no 0
 
    if { $Export::Data(RPN) } {
+      set file [file rootname $Path]
+      set ext  [file extension $Path]
+
+      if { $Format=="KMZ" } {
+         set f [open ${file}.kml w]
+         puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+<Document>
+   <ScreenOverlay>
+      <name>Logo</name>
+      <Icon>
+         <href>Logo_SMC.png</href>
+      </Icon>
+      <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
+      <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
+   </ScreenOverlay>"
+      }
+
       foreach field $FSTD::Data(List) {
 
          set nv      [fstdfield define $field -NOMVAR]
          set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
          set lvltype [fstdfield stats $field -leveltype]
          set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-         set sec1    [expr $sec0+[fstdfield define $field -DEET]*[fstdfield define $field -NPAS]]
+         set sec1    [expr $sec0+[fstdfield define $field -DEET]]
          set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
 
          set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
@@ -431,27 +448,57 @@ proc Export::Vector::Export { Path Format } {
 
          set layer ${nv}_${date}_${lvl}_${lvltype}
 
-         if { $Format=="PostgreSQL" } {
-            set req "PG:"
-            if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
-            if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
-            if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
-            if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
-            if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
+         set file [file rootname $Path]
+         set ext  [file extension $Path]
+         set name ${file}_${no}_${nv}${ext}
 
-            ogrfile open FILE write $req $Format
-         } else {
-            set file [file rootname $Path]
-            set ext  [file extension $Path]
-            set name ${file}_${no}_${nv}${ext}
+         if { [file exists $name] } {
+            file delete -force $name
+         }
+         switch $Format {
+            "PostgreSQL" {
+               set req "PG:"
+               if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
+               if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
+               if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
+               if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
+               if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
 
-            if { [file exists $name] } {
-               file delete -force $name
+               ogrfile open FILE write $req $Format
             }
-
-            if { $Format=="MapInfo File" } {
+            "MapInfo File" {
                ogrfile open FILE write $name $Format { FORMAT=MIF }
-            } else {
+            }
+            "KMZ" {
+               Export::Legend ${file}_${no}_${nv}_legend.png $field 270 120 #FFFFFF
+               puts $f "
+   <Folder>
+      <name>[fstdfield configure $field -desc] at $lvl $lvltype</name>
+      <description>Valid [clock format $sec0]</description>
+      <TimeSpan>
+         <begin>[ISO8601::FromSeconds $sec0]</begin>
+         <end>[ISO8601::FromSeconds $sec1]</end>
+      </TimeSpan>
+      <ScreenOverlay>
+         <name>Legend</name>
+            <Icon>
+               <href>[file tail ${file}_${no}_${nv}_legend.png]</href>
+            </Icon>
+         <overlayXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
+         <screenXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
+         <rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>
+         <size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/>
+      </ScreenOverlay>
+      <NetworkLink>
+         <Link>
+            <href>[file tail ${file}_${no}_${nv}${ext}]</href>
+         </Link>
+      </NetworkLink>
+   </Folder>\n"
+               lappend kmz ${file}_${no}_${nv}${ext} ${file}_${no}_${nv}_legend.png
+               ogrfile open FILE write $name KML
+            }
+            default {
                ogrfile open FILE write $name $Format
             }
          }
@@ -461,6 +508,14 @@ proc Export::Vector::Export { Path Format } {
          ogrfile close FILE
          ogrlayer free LAYER
          incr no
+      }
+
+      if { $Format=="KMZ" } {
+         puts $f "</Document>\n</kml>"
+         close $f
+         file delete -force ${file}.kmz
+         eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+         eval file delete ${file}.kml $kmz
       }
       Dialog::WaitDestroy
    }
@@ -930,7 +985,7 @@ proc Export::DrawDone { Frame VP } {
       set Data(Lat0) $tmp
    }
 
-   if { $Data(Lon0)>$Data(Lon1) } {
+   if { $Data(Lon0)>$Data(Lon1) && ([expr $Data(Lon0)*$Data(Lon1)]>0 || [expr 360-($Data(Lon0)-$Data(Lon1))]>180) } {
       set tmp $Data(Lon1)
       set Data(Lon1) $Data(Lon0)
       set Data(Lon0) $tmp

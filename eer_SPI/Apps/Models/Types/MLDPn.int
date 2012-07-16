@@ -41,7 +41,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =350x385
+   wm geom [winfo toplevel $Tab] =350x395
 
    #----- Model Tab.
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
@@ -184,6 +184,14 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
          Option::Create $tabframe.others.opt.aero [lindex $Lbl(Aerosol) $GDefs(Lang)] MLDPn::Sim(Aerosol) 1 -1 $MLDPn::Sim(ListAerosol) ""
          pack $tabframe.others.opt.aero -side top -ipady 1 -fill x
 
+         #----- Wet scavenging.
+         Option::Create $tabframe.others.opt.sca [lindex $Lbl(WetSca) $GDefs(Lang)] MLDPn::Sim(WetScaMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
+         pack $tabframe.others.opt.sca -side top -ipady 1 -fill x
+
+         #----- Dry deposition.
+         Option::Create $tabframe.others.opt.dep [lindex $Lbl(DryDep) $GDefs(Lang)] MLDPn::Sim(DryDepMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
+         pack $tabframe.others.opt.dep -side top -ipady 1 -fill x
+
       pack $tabframe.others.opt -side top -fill x -padx 2
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
@@ -226,7 +234,7 @@ proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =320x415
+   wm geom [winfo toplevel $Tab] =320x435
    wm resizable .modelnew 1 1
 
    #----- Get the list of available scenarios.

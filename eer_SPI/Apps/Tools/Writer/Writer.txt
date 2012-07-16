@@ -46,8 +46,8 @@ namespace eval Writer {
 
    #----- Definitions des messages
 
-   set Msg(Send)       { "Ce message va être transmis sur les circuits" "This message will be transmitted over the circuits" }
-   set Msg(Sent)       { "Le message à été transmis" "The message has been transmitted" }
+   set Msg(Send)       { "Voulez-vous vraiment transmettre ce message ?" "Do you really want to send this message ?" }
+   set Msg(Sent)       { "Le message à été transmis" "The message has been sent" }
    set Msg(Save)       { "Voulez-vous sauvegarder ce message ?" "Do you want to save this message ?" }
    set Msg(Exist)      { "Ce fichier existe déja, voulez vous le réecrire ?" "This file exists, do you want to overwrite it ?" }
    set Msg(Handle)     { "Ce message ne peut être sauvegader" "This message cannot be saved" }

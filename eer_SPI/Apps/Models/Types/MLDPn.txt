@@ -58,6 +58,8 @@ namespace eval MLDPn {
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
    set Lbl(Seed)                { "Semence aléatoire" "Random seed     " }
    set Lbl(Aerosol)             { "Aérosol          " "Aerosol         " }
+   set Lbl(WetSca)              { "Lessivage humide " "Wet scavenging  " }
+   set Lbl(DryDep)              { "Dépot sec        " "Dry deposition  " }
    set Lbl(Forward)             { "Avant" "Forward" }
    set Lbl(Backward)            { "Arrière" "Backward" }
 

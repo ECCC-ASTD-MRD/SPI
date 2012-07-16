@@ -312,6 +312,8 @@ proc MLDPn::CreateModelInput { } {
    puts $file [format "%-21s= %-10s # Diffusion kernel selection method (VARIABLE or kernel name)" MDL_KERNEL $Sim(DiffKernel)]
    puts $file [format "%-21s= %-10s # Backward simulation" MDL_RETRO $Sim(Backward)]
    puts $file [format "%-21s= %-10s # Aerosol type for Jian's 4mode scheme" MDL_AEROSOL $Sim(Aerosol)]
+   puts $file [format "%-21s= %-10s # Jian's 4mode scheme wet scavenging" MDL_WETSCA $Sim(WetScaMode)]
+   puts $file [format "%-21s= %-10s # Jian's 4mode scheme dry deposition" MDL_DRYDEP $Sim(DryDepMode)]
 
    if { $Sim(RestartTrialDate) } {
       puts $file [format "%-21s= %-25s # Time(s) at which to produce a restart \[UTC\]: YearMonthDayHourMinute" MDL_RESTART_TIME [clock format $Sim(RestartTrialDate) -format "%Y%m%d%H%M" -timezone :UTC]]
@@ -1309,6 +1311,8 @@ proc MLDPn::InitNew { Type } {
    set Sim(IsResFileSizeChecked) 0                                   ;#----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ;#----- Flag indicating if met data file size has been checked (1) or not (0).
    set Sim(Aerosol)              DEFAULT                             ;#----- Aerosol type to activat Jian's 4mode scheme.
+   set Sim(WetScaMode)           DEFAULT                             ;#----- Jian's 4mode scheme wet scavenging.
+   set Sim(DryDepMode)           DEFAULT                             ;#----- Jian's 4mode scheme dry deposition.
    set Sim(EmScenario)           "default"                           ;#----- Scenario name.
    set Sim(EmMass)               0.0                                 ;#----- Total mass released.
    set Sim(EmList)               {}                                  ;#----- List of emission scenarios.

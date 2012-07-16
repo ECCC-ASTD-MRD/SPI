@@ -52,6 +52,7 @@ namespace eval MLDPn {
    set Sim(ListTimescale)       { 1800 2700 3600 10800 21600 }                       ;#----- List of Lagrangian timescale for mesoscale fluctuations [s].
    set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 } ;#----- List of reflection levels [hyb|eta|sig].
    set Sim(ListSeed)            { FIXED VARIABLE }   ;#----- List of reflection levels [hyb|eta|sig].
+   set Sim(ListJianMode)        { DEFAULT 4MODE }    ;#----- List of drye dep and wet sca mode
 
    set Sim(DiffKernel)           ORDER0                        ;#----- Diffusion kernel
    set Sim(Seed)                 VARIABLE                      ;#----- Initial seed for random number generator [fixed | variable].

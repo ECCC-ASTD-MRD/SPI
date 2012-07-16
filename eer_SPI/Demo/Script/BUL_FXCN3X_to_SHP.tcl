@@ -312,8 +312,8 @@ proc Bulletin::FXCN3X::Process { } {
       if { $errct>0.0 } {
          set bearing [projection function PROJ -bearing $plat $plon $lat $lon]
          set dist    [expr $errct*1852.0]
-         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing+90.0,360)]]
-         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing-90.0,360)]]
+         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
+         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
          set cone0  "$cone0 [lindex $ll0 1] [lindex $ll0 0]"
          set cone1  "[lindex $ll1 1] [lindex $ll1 0] $cone1"
       } else {
