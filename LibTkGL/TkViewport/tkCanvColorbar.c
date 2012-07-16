@@ -1333,7 +1333,6 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
    }
 
    glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
    glPolygonMode(GL_FRONT,GL_FILL);
    glLineWidth(Spec->Width);
 
@@ -1367,8 +1366,6 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
-
-   glPopMatrix();
 
    for(i=0;i<5;i++) {
       if (Interp) {

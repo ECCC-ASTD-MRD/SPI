@@ -194,6 +194,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->Accum=NULL;
       def->Mask=NULL;
       def->Pres=NULL;
+      def->Height=NULL;
       def->Pick=def->Poly=NULL;
       def->Sample=Def->Sample;
 
@@ -239,6 +240,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->Accum=NULL;
       def->Mask=NULL;
       def->Pres=NULL;
+      def->Height=NULL;
       def->Pick=def->Poly=NULL;
       def->Sample=def->Sample;
 
@@ -287,13 +289,14 @@ void DataDef_Free(TDataDef *Def){
          if (Def->Data[3])            free(Def->Data[3]);
       }
 
-      if (Def->Buffer)           free(Def->Buffer);
-      if (Def->Accum)            free(Def->Accum);
-      if (Def->Mask)             free(Def->Mask);
-      if (Def->Pres>(float*)0x1) free(Def->Pres);
-      if (Def->Poly)             OGR_G_DestroyGeometry(Def->Poly);
+      if (Def->Buffer)             free(Def->Buffer);
+      if (Def->Accum)              free(Def->Accum);
+      if (Def->Mask)               free(Def->Mask);
+      if (Def->Pres>(float*)0x1)   free(Def->Pres);
+      if (Def->Height>(float*)0x1) free(Def->Height);
+      if (Def->Poly)               OGR_G_DestroyGeometry(Def->Poly);
 //      if (Def->Pick)       OGR_G_DestroyGeometry(Def->Pick);
-      if (Def->Segments)         TList_Clear(Def->Segments,T3DArray_Free);
+      if (Def->Segments)           TList_Clear(Def->Segments,T3DArray_Free);
 
       free(Def);
    }
@@ -362,6 +365,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Accum=NULL;
    def->Mask=NULL;
    def->Pres=NULL;
+   def->Height=NULL;
    def->Pick=def->Poly=NULL;
 
    for(i=0;i<Dim;i++) {
@@ -435,10 +439,11 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       }
       Def->Mode=Def->Data[0];
 
-      if (Def->Buffer)           free(Def->Buffer); Def->Buffer=NULL;
-      if (Def->Accum)            free(Def->Accum);  Def->Accum=NULL;
-      if (Def->Mask)             free(Def->Mask);   Def->Mask=NULL;
-      if (Def->Pres>(float*)0x1) free(Def->Pres);   Def->Pres=NULL;
+      if (Def->Buffer)             free(Def->Buffer); Def->Buffer=NULL;
+      if (Def->Accum)              free(Def->Accum);  Def->Accum=NULL;
+      if (Def->Mask)               free(Def->Mask);   Def->Mask=NULL;
+      if (Def->Pres>(float*)0x1)   free(Def->Pres);   Def->Pres=NULL;
+      if (Def->Height>(float*)0x1) free(Def->Pres);   Def->Height=NULL;
    }
    return(Def);
 }

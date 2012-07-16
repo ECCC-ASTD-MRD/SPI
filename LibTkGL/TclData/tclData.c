@@ -670,12 +670,13 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
 
    TData *cut;
-   unsigned int  n,k,f,p;
-   unsigned long idx;
+   unsigned int  n,k,f,p,g,ip1;
+   unsigned long idx,idxp;
    double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
+   float   *fp;
 
    /*Recuperer la grille dans l'espace des champs de base*/
-   p=1;
+   p=1;g=0;
    for(f=0;f<NbF;f++) {
       if (!Field[f] || Field[f]->Ref->Grid[0]=='V') {
          Tcl_AppendResult(Interp,"Data_Cut:  Invalid Field or Grid",(char*)NULL);
@@ -695,6 +696,11 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
       } else {
          p=0;
+      }
+
+      if (Field[0]->Spec && Field[0]->Spec->ZType==LVL_MAGL) {
+         p=0;
+         g=1;
       }
    }
 
@@ -742,8 +748,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       return(TCL_ERROR);
    }
 
-   /*If we are in pressure coordinates, allocate pressure array*/
-   if (p) {
+   /*If we are in pressure or magl coordinates, allocate height array*/
+   if (p || g) {
       cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Ref->ZRef.LevelNb*sizeof(float));
       if (!cut->Ref->Hgt) {
          Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for pressure correspondance",(char*)NULL);
@@ -767,7 +773,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
             if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
                if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
-                 if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1))) {
+                 if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1,0))) {
                      /*We won't be able to calculate pressure levels*/
                      free(cut->Ref->Hgt);
                      cut->Ref->Hgt=NULL;
@@ -802,9 +808,38 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
                /*Convert level to pressure*/
-               if (cut->Ref->Hgt) {
+               if (p && cut->Ref->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->Ref->Hgt[idx]=ZRef_K2Pressure(&Field[f]->Ref->ZRef,p0,k);
+               }
+
+               /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
+               if (g && cut->Ref->Hgt) {
+                  if (!Field[f]->Def->Height) {
+                     Field[f]->Def->Height=(float*)malloc(FSIZE3D(Field[f]->Def)*sizeof(float));
+                     for(idxp=0;idxp<Field[f]->Def->NK;idxp++) {
+                         Field[f]->Def->Height[FSIZE2D(Field[f]->Def)*idxp]=-999;
+                     }
+                  }
+                  idxp=FSIZE2D(Field[f]->Def)*k;
+                  if (Field[f]->Def->Height[idxp]==-999) {
+                     if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
+                        ip1=((FSTD_Head*)Field[f]->Head)->IP1;
+                        fp=&Field[f]->Def->Height[idxp];
+                        ((FSTD_Head*)Field[f]->Head)->IP1=ZRef_Level2IP(Field[f]->Ref->ZRef.Levels[k],Field[f]->Ref->ZRef.Type);
+                        if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&fp,"GZ",0,1))) {
+                           /*We won't be able to calculate pressure levels*/
+                           free(cut->Ref->Hgt);
+                           cut->Ref->Hgt=NULL;
+                           p=0;
+                        }
+                        ((FSTD_Head*)Field[f]->Head)->IP1=ip1;
+                        FSTD_FileUnset(NULL,((FSTD_Head*)Field[f]->Head)->FID);
+                     }
+                  }
+                  if (cut->Ref->Hgt) {
+                     cut->Ref->Hgt[idx]=Field[f]->Def->Height[idxp+ROUND(j)*Field[f]->Def->NI+ROUND(i)]*10.0;
+                  }
                }
 
                /*If it is vectors, */
@@ -1184,6 +1219,15 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          }
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
+
+         if (Data->Def->Pres)  {
+            free(Data->Def->Pres);
+            Data->Def->Pres=NULL;
+         }
+         if (Data->Def->Height) {
+            free(Data->Def->Height);
+            Data->Def->Height=NULL;
+         }
       }
 
       if (Map && Data->Map) {
@@ -1491,9 +1535,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2410,6 +2454,31 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+         case METERLEVELS:
+            if (Objc==1) {
+               if (Field->Ref && Field->Ref->Hgt) {
+                  obj=Tcl_NewListObj(0,NULL);
+                  if (Field->Ref->Grid[0]=='V') {
+                     min=1e32;
+                     max=-1e32;
+                     for (index=0;index<Field->Def->NI*Field->Def->NJ;index++) {
+                        min=min<Field->Ref->Hgt[index]?min:Field->Ref->Hgt[index];
+                        max=max>Field->Ref->Hgt[index]?max:Field->Ref->Hgt[index];
+                     }
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
+                     for (index=Field->Def->NI;index<Field->Def->NI*(Field->Def->NJ-1);index+=Field->Def->NI) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                     }
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
+                  } else {
+                     for (index=0;index<Field->Def->NK;index++) {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                     }
+                  }
+                  Tcl_SetObjResult(Interp,obj);
+               }
+            }
+            break;
          case MATRIX:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"matrix var");

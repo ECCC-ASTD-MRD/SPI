@@ -2030,11 +2030,11 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
          VAL2COL(c0,Data->Spec,v0);
          VAL2COL(c3,Data->Spec,v3);
 
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx0]:Data->Ref->ZRef.Levels[j]):j;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[idx0]:Data->Ref->ZRef.Levels[j]):j;
          g0[0]=X0+AXISVALUE(AxisX,(i));
          g0[1]=Y0+AXISVALUE(AxisY,vf);
          g0[2]=0.0;
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[idx3]:Data->Ref->ZRef.Levels[j+1]):j+1;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[idx3]:Data->Ref->ZRef.Levels[j+1]):j+1;
          g3[0]=X0+AXISVALUE(AxisX,(i));
          g3[1]=Y0+AXISVALUE(AxisY,vf);
          g3[2]=0.0;
@@ -2182,12 +2182,12 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    for(j=0;j<Data->Def->NJ-1;j++) {
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<Data->Def->NI;i++) {
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j]):j;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j]):j;
          g0[0]=X0+AXISVALUE(AxisX,(i));
          g0[1]=Y0+AXISVALUE(AxisY,vf);
          g0[2]=0.0;
 
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j+1]):j+1;
+         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j+1]):j+1;
          g1[0]=X0+AXISVALUE(AxisX,(i));
          g1[1]=Y0+AXISVALUE(AxisY,vf);
          g1[2]=0.0;
@@ -2241,7 +2241,7 @@ void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGrap
    d[1]=floor(VIn[1]);
 
    if (Data->Ref->Grid[0]=='V') {
-      if (Data->Spec->ZType && Data->Ref->Hgt) {
+      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
          h[0]=Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]];
          h[1]=Data->Ref->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
          v[0]=ILIN(h[0],h[1],VIn[0]-d[0]);
@@ -2404,7 +2404,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
          v1=fabs(pix[1]-AXISVALUE(AxisY,j+1));
          dt=FMAX(v0,v1);
          step=1.0/FMAX(v0,v1);
-
+step=0.01;
          /*Get the streamline */
          j=Graph_Expand(Data,j);
          b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);

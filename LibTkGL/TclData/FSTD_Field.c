@@ -170,11 +170,11 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
+int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force) {
 
    int key,ni=0,nj=0,nk=0;
 
-   if (!*Ptr) {
+   if (!*Ptr || Force) {
       if (Grid==1) {
          key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
       } else if (Grid==0) {
@@ -188,9 +188,11 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid) {
          // fprintf(stdout,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
          return(0);
       } else {
-         if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
-            fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
-            return(0);
+         if (!*Ptr) {
+            if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
+               fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
+               return(0);
+            }
          }
          cs_fstluk(*Ptr,key,&ni,&nj,&nk);
       }
@@ -229,8 +231,8 @@ int FSTD_FieldReadMesh(TData *Field) {
 
       switch(Field->Ref->Grid[0]) {
          case 'M':
-            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
+            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
+            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
 
             /* Lire le champs d'indexes*/
             if (!Field->Ref->Idx) {
@@ -251,32 +253,32 @@ int FSTD_FieldReadMesh(TData *Field) {
 
          case 'W':
             if (Field->Ref->Grid[1]=='X' || Field->Ref->Grid[1]=='Y' || Field->Ref->Grid[1]=='Z') {
-               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
-               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
+               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
+               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
             }
 
             if (Field->Ref->Grid[1]=='Y') {
-               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
-               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
-               if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
+               if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0,0);
+               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
+               if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0,0);
             }
             break;
 
          case 'Y':
-            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0);
-            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
-            if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0);
+            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0,0);
+            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
+            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
+            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
+            if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0,0);
             break;
 
          case 'V':
-            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1);
+            if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
+            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
             if (Field->Ref->ZRef.Levels)
                free(Field->Ref->ZRef.Levels);
             Field->Ref->ZRef.Levels=NULL;
-            Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(head,&Field->Ref->ZRef.Levels,"^>",1);
+            Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(head,&Field->Ref->ZRef.Levels,"^>",1,0);
             break;
       }
       FSTD_FileUnset(NULL,head->FID);

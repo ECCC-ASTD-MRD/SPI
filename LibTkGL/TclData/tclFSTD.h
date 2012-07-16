@@ -91,7 +91,7 @@ int    FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *
 int    FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var);
 int    FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char *Eticket,int DIP1,int IP2,int IP3,char *TypVar,char *NomVar);
 int    FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key);
-int    FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid);
+int    FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force);
 int    FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List);
 int    FSTD_FieldReadMesh(TData *Field);
 int    FSTD_FieldStat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);

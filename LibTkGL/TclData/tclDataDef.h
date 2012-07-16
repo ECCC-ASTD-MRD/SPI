@@ -258,7 +258,7 @@ typedef struct TDataDef {
    char   *Mask;              /*Masque a appliquer au traitement sur le champs*/
    char   *Data[4];           /*Composantes du champs (Pointeurs sur les donnees)*/
    char   *Mode;              /*Module des champs Data is vectoriel*/
-   float  *Pres;              /*Pression au sol*/
+   float  *Pres,*Height;      /*Pression au sol*/
    OGRGeometryH *Pick,*Poly;  /*Geometry used in various interpolation method*/
 
    TData_Type Type;           /*Type de donnees du champs*/

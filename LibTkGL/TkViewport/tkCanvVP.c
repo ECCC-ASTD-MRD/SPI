@@ -523,7 +523,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 
          case PROJECTLINE:
             if (Objc!=4){
-               Tcl_WrongNumArgs(Interp,2,Objv,"NONE|COORD|TRUE coords }");
+               Tcl_WrongNumArgs(Interp,2,Objv,"NONE|COORD|TRUE coords");
                return(TCL_ERROR);
             }
             nco=Projection_Map(Interp,co,Tcl_GetString(Objv[2])[0],Objv[3]);
