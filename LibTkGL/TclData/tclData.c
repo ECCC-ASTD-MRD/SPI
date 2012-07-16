@@ -784,7 +784,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             }
 
             /*Get the grid coordinate*/
-            Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1);
+            if (!Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1)) {
+               continue;
+            }
 
             /*Vectorial data needs to be referenced along the cut so calculate angle*/
             if (cut->Def->Data[1] && NbC>1) {
