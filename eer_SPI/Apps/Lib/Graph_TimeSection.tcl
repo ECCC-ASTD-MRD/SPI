@@ -253,16 +253,30 @@ proc Graph::TimeSection::Graph { GR } {
 
       if { [fstdfield is TIMESECTION$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            set levels [fstdfield stats TIMESECTION$item -pressurelevels]
-            if { ![llength $levels] } {
-               Dialog::Error . $Graph::Error(Pressure)
+         switch $graph(ZType) {
+            "PRESSURE" {
+               set levels [fstdfield stats TIMESECTION$item -pressurelevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Pressure)
+               }
+               fstdfield configure TIMESECTION$item -ztype PRESSURE
+               set data(Levels) $levels
+               set graph(UnitY) Pressure
             }
-            set data(Levels) $levels
-            fstdfield configure TIMESECTION$item -ztype PRESSURE
-         } else {
-            set data(Levels) [fstdfield stats TIMESECTION$item -levels]
-            fstdfield configure TIMESECTION$item -ztype NONE
+            "MAGL" {
+               set levels [fstdfield stats TIMESECTION$item -meterlevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Meter)
+               }
+               fstdfield configure TIMESECTION$item -ztype MAGL
+               set data(Levels) $levels
+               set graph(UnitY) "Meters above ground level"
+            }
+            "GRID" {
+                fstdfield configure TIMESECTION$item -ztype UNDEFINED
+                set data(Levels) [fstdfield stats TIMESECTION$item -levels]
+                set graph(UnitY) [fstdfield stats TIMESECTION$item -leveltype]
+             }
          }
       } else {
          return
@@ -686,6 +700,12 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
 
       set fields {}
       foreach field $data(Data$Data) {
+         if { $graph(ZType)=="GRID" } {
+            fstdfield configure [lindex $field 1] -ztype UNDEFINED
+         } else {
+            fstdfield configure [lindex $field 1] -ztype $graph(ZType)
+         }
+
          lappend fields [lindex $field 1]
          vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
       }
@@ -716,8 +736,6 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
       }
       FSTD::Register TIMESECTION$Item
-
-      set graph(UnitY)  [fstdfield stats TIMESECTION$Item -leveltype]
 
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data TIMESECTION$Item
    }

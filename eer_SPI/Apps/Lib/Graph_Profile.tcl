@@ -599,7 +599,13 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
    if { [graphitem is $Item]  && [llength $data(Pos$Pos)] } {
 
       if { [fstdfield is $Data] } {
-        if { [llength $data(Pos$Pos)]>2 } {
+         if { $graph(ZType)=="GRID" } {
+            fstdfield configure $Data -ztype UNDEFINED
+         } else {
+            fstdfield configure $Data -ztype $graph(ZType)
+         }
+
+         if { [llength $data(Pos$Pos)]>2 } {
             set n   0
             set ijs [fstdfield stats $Data -within $data(Pos$Pos)]
             set df  [expr 100.0/([llength $ijs]-1)]
@@ -639,16 +645,27 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
          }
 
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            set levels [fstdfield stats GRAPHPROFILE -pressurelevels]
-            if { ![llength $levels] } {
-               Dialog::Error . $Graph::Error(Pressure)
+         switch $graph(ZType) {
+            "PRESSURE" {
+               set levels [fstdfield stats GRAPHPROFILE -pressurelevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Pressure)
+               }
+               vector set $Item.Y $levels
+               set graph(UnitY) Pressure
             }
-            vector set $Item.Y $levels
-            set graph(UnitY) Pressure
-         } else {
-            vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
-            set graph(UnitY) [fstdfield stats $Data -leveltype]
+            "MAGL" {
+               set levels [fstdfield stats GRAPHPROFILE -meterlevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Pressure)
+               }
+               vector set $Item.Y $levels
+               set graph(UnitY) "Meters above ground level"
+            }
+            "GRID" {
+               vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
+               set graph(UnitY) [fstdfield stats $Data -leveltype]
+             }
          }
 
          vector set $Item.X [fstdfield define GRAPHPROFILE -DATA]

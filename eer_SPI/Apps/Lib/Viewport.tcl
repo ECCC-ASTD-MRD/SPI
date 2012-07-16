@@ -2276,7 +2276,7 @@ proc Viewport::RotateDone { Frame VP { Sling False } } {
 
       #----- If the distance is long enought, slingshot
       if { $dx>[expr 2*[$VP -distpix]] && $dt>0 && $dt<250 } {
-         set dir [expr -[projection function $Frame -bearing $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)]]
+         set dir [expr [projection function $Frame -bearing $Map(Lat0) $Map(Lon0) $Map(Lat) $Map(Lon)]]
          set spd [expr int($dx/$dt)]
          set res [Viewport::GoAlong $Frame $spd $dir $Map(Lat) $Map(Lon)]
       }
@@ -2548,7 +2548,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
          set dt    0.0
          set dprr  1e32
          set pdt   [set t0 [set Map(Grabbed) [clock click -milliseconds]]]
-         set dir   [expr -[projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
+         set dir   [expr [projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
          set lat   $Map(Lat)
          set lon   $Map(Lon)
          set zoom  $cam(Lens)

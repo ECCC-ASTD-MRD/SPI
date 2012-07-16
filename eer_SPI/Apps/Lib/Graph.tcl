@@ -119,7 +119,7 @@ namespace eval Graph {
    set Param(AxisFormats)     { NONE FIT INTEGER FLOAT EXPONENT }
    set Param(AxisFormatsTime) { NONE DATE TIME DATETIME TIME/DATE 00HH/DDMM 00HH/MMDD HH/DDMM HH HHMM DDMM MMDD T-HH T+HH T+HHMM }
    set Param(AxisTypes)       { LINEAR LOG LN }
-   set Param(AxisZs)          { GRID PRESSURE }
+   set Param(AxisZs)          { GRID PRESSURE MAGL }
    set Param(SelectMode)      POINT
 
    set Param(NONE)            ""
@@ -303,6 +303,7 @@ namespace eval Graph {
    #----- Erreurs
 
    set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. Vérifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
+   set Error(Meter)     { "Impossible de calculer les niveaux MAGL. Vérifiez que les champs GZ sont bien dans le fichier." "Impossible to calculate MAGL levels. Make sure GZ fields are in the file." }
    set Error(NbData)    { "Les pas de temps entre les items pour le calcul ne correspondent pas" "Time step don't correspond for calculus" }
 }
 
@@ -1444,7 +1445,8 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
             lappend coords [lindex $Coords 0] [lindex $Coords 1] 0.0
             lappend Tag $Page::Data(Tag)$VP
 
-            Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
+            Viewport::DrawArea $Frame $VP $coords $Tag $Tag $Graph::Color(Select) $Graph::Color(Select) "" False 2
+#            Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
       }
       "LINE" {
             set coords { }
@@ -2690,8 +2692,9 @@ proc Graph::MoveInit { Frame VP } {
 
    upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
 
-   set data(LonD) $Viewport::Map(LonCursor)
-   set data(LatD) $Viewport::Map(LatCursor)
+   set data(LonD)   $Viewport::Map(LonCursor)
+   set data(LatD)   $Viewport::Map(LatCursor)
+   set data(Coords) $data(Pos$Graph::Data(Pos))
 
    if { $data(FrameData)!="" } {
       $data(FrameData).page.canvas delete GRAPHSELECT$Graph::Data(Graph)
@@ -2733,6 +2736,50 @@ proc Graph::Move { Frame VP } {
 
 proc Graph::MoveDone { Frame VP } {
    Graph::DrawDone $Frame $VP
+}
+
+namespace eval Shape {}
+
+proc Shape::BindMoveGeo { Canvas Tags Var { Command "" } } {
+
+   set tag [lindex $Tags 0]
+
+   $Canvas bind $tag <Enter>           "$Canvas configure -cursor fleur"
+   $Canvas bind $tag <Leave>           "$Canvas configure -cursor left_ptr"
+   $Canvas bind $tag <ButtonPress-1>   { set Shape::Data(LonD) $Viewport::Map(LonCursor);  set Shape::Data(LatD)  $Viewport::Map(LatCursor) }
+   $Canvas bind $tag <ButtonRelease-1> "set $Var \$Shape::Data(Coords)"
+
+   if { $Command!="" } {
+#      $Canvas bind $tag <B1-Motion>    "Shape::MoveGeo $Canvas \"$Tags\" $Var; $Command"
+      $Canvas bind $tag <B1-Motion>    "if { \[Viewport::Follow $Page::Data(Frame) $Page::Data(VP) \[$Canvas canvasx %x\] \[$Canvas canvasy %y\]\] } { Shape::MoveGeo $Canvas \"$Tags\" $Var; break }"
+   } else {
+      $Canvas bind $tag <B1-Motion>    "if { \[Viewport::Follow $Page::Data(Frame) $Page::Data(VP) \[$Canvas canvasx %x\] \[$Canvas canvasy %y\]\] } { Shape::MoveGeo $Canvas \"$Tags\" $Var; break }"
+   }
+}
+
+proc Shape::MoveGeo { Canvas Tags Var } {
+   variable Data
+
+   upvar #0 $Var coords
+
+   set lat $Viewport::Map(LatCursor)
+   set lon $Viewport::Map(LonCursor)
+
+   set dist [projection function $Page::Data(Frame) -dist [list $Data(LatD) $Data(LonD) $lat $lon]]
+   set bear [projection function $Page::Data(Frame) -bearing $Data(LatD) $Data(LonD) $lat $lon]
+
+catch {
+   $Canvas delete TOTO
+   eval $Canvas create line [lindex [$Page::Data(VP) -projectline TRUE [list $Data(LatD) $Data(LonD) 0.0 $lat $lon 0.0]] 0] -tag TOTO -width 2 -fill black
+}
+
+   if { $dist>10 } {
+      set Data(Coords) [projection function $Page::Data(Frame) -circle $lat $lon $dist $bear $coords]
+      foreach { lat lon } $Data(Coords) {
+         lappend coos $lat $lon 0.0
+       }
+      $Canvas coords $Tags [lindex [$Page::Data(VP) -projectline NONE $coos] 0]
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2789,6 +2836,8 @@ proc Graph::VertexAdd { Frame VP X Y } {
       #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
       Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
    }
+
+   Shape::BindMoveGeo $Frame.page.canvas GRAPHSELECT$Graph::Data(Graph) Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(Pos$Graph::Data(Pos)) "Graph::Time::UpdateItems $data(FrameData) $Graph::Data(Graph)"
 }
 
 #----------------------------------------------------------------------------
@@ -2945,7 +2994,7 @@ proc Graph::VertexSample  { Frame VP Type Graph Coord { Res 0 } } {
 proc Graph::VertexResolution { Type Graph { Update True } } {
    variable Data
 
-   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
    if { $data(VP)=="" || $data(Field)=="" } {
       return
@@ -2956,15 +3005,15 @@ proc Graph::VertexResolution { Type Graph { Update True } } {
       set j [expr int([fstdfield define $data(Field) -NJ]/2)]
 
       if { [fstdfield define $data(Field) -GRTYP]=="R" } {
-         set data(Res) 1000
+         set Data(Res) 1000
       } else {
          #----- Calculate distances in gridpoint for grid projection otherwise, use meters
          if { [projection configure $data(FrameData) -type]=="grid" } {
-            set data(Res) 1
+            set Data(Res) 1
          } else {
             set c0 [fstdfield stats $data(Field) -gridpoint $i $j]
             set c1 [fstdfield stats $data(Field) -gridpoint [incr i] $j]
-            eval set data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
+            eval set Data(Res) \[$data(VP) -distll $c0 $c1 0.0\]
          }
       }
       set Data(Res) [format "%0.0f" $Data(Res)]

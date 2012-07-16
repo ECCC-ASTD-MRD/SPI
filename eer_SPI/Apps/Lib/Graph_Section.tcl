@@ -245,16 +245,30 @@ proc Graph::Section::Graph { GR } {
    foreach item $data(Items) {
       if { [fstdfield is GRAPHSELECT$item] } {
          #----- Check for vertical coordinate selection
-         if { $graph(ZType)=="PRESSURE" } {
-            set levels [fstdfield stats GRAPHSELECT$item -pressurelevels]
-            if { ![llength $levels] } {
-               Dialog::Error . $Graph::Error(Pressure)
+         switch $graph(ZType) {
+            "PRESSURE" {
+               set levels [fstdfield stats GRAPHSELECT$item -pressurelevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Pressure)
+               }
+               fstdfield configure GRAPHSELECT$item -ztype PRESSURE
+               set data(Levels) $levels
+               set graph(UnitY) Pressure
             }
-            set data(Levels) $levels
-            fstdfield configure GRAPHSELECT$item -ztype PRESSURE
-         } else {
-            set data(Levels) [fstdfield stats GRAPHSELECT$item -levels]
-            fstdfield configure GRAPHSELECT$item -ztype NONE
+            "MAGL" {
+               set levels [fstdfield stats GRAPHSELECT$item -meterlevels]
+               if { ![llength $levels] } {
+                  Dialog::Error . $Graph::Error(Meter)
+               }
+               fstdfield configure GRAPHSELECT$item -ztype MAGL
+               set data(Levels) $levels
+               set graph(UnitY) "Meters above ground level"
+            }
+            "GRID" {
+                fstdfield configure GRAPHSELECT$item -ztype UNDEFINED
+                set data(Levels) [fstdfield stats GRAPHSELECT$item -levels]
+                set graph(UnitY) [fstdfield stats GRAPHSELECT$item -leveltype]
+             }
          }
          set data(XMin)   0
          set data(XMax)   [expr [fstdfield define GRAPHSELECT$item -NI]-1]
@@ -638,10 +652,15 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 
   if { [graphitem is $Item] } {
       if { [fstdfield is $Data] && [llength $data(Pos$Pos)] } {
-
          fstdfield free GRAPHSELECT$Item
+
+         if { $graph(ZType)=="GRID" } {
+            fstdfield configure $Data -ztype UNDEFINED
+         } else {
+            fstdfield configure $Data -ztype $graph(ZType)
+         }
+
          fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos)
-         set graph(UnitY) [fstdfield stats GRAPHSELECT$Item -leveltype]
 
          FSTD::Register GRAPHSELECT$Item
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item

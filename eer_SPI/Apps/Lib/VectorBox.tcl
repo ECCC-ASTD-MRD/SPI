@@ -96,7 +96,7 @@ proc VectorBox::Create { Parent Apply } {
    }
 
    toplevel     .vecbox
-   wm geom      .vecbox =235x250+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .vecbox =235x270+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .vecbox .
    wm resizable .vecbox 0 0
    wm title     .vecbox "VectorBox 1.0"
