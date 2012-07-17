@@ -119,7 +119,7 @@ namespace eval Graph {
    set Param(AxisFormats)     { NONE FIT INTEGER FLOAT EXPONENT }
    set Param(AxisFormatsTime) { NONE DATE TIME DATETIME TIME/DATE 00HH/DDMM 00HH/MMDD HH/DDMM HH HHMM DDMM MMDD T-HH T+HH T+HHMM }
    set Param(AxisTypes)       { LINEAR LOG LN }
-   set Param(AxisZs)          { GRID PRESSURE MAGL }
+   set Param(AxisZs)          { GRID PRESSURE MASL }
    set Param(SelectMode)      POINT
 
    set Param(NONE)            ""
@@ -251,6 +251,8 @@ namespace eval Graph {
    set Lbl(Decimals)   { "Décimales" "Decimals" }
    set Lbl(ZType)      { "Elévation" "Height" }
    set Lbl(Angle)      { "Angle" "Angle" }
+   set Lbl(PRESSURE)   { "Pression" "Pressure" }
+   set Lbl(MASL)       { "Metres au dessus du niveaux de la mer" "Meters above sea level" }
 
    #----- Messages
 
@@ -303,7 +305,7 @@ namespace eval Graph {
    #----- Erreurs
 
    set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. Vérifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
-   set Error(Meter)     { "Impossible de calculer les niveaux MAGL. Vérifiez que les champs GZ sont bien dans le fichier." "Impossible to calculate MAGL levels. Make sure GZ fields are in the file." }
+   set Error(Meter)     { "Impossible de calculer les niveaux MASL. Vérifiez que les champs GZ sont bien dans le fichier." "Impossible to calculate MASL levels. Make sure GZ fields are in the file." }
    set Error(NbData)    { "Les pas de temps entre les items pour le calcul ne correspondent pas" "Time step don't correspond for calculus" }
 }
 
@@ -2837,7 +2839,7 @@ proc Graph::VertexAdd { Frame VP X Y } {
       Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
    }
 
-   Shape::BindMoveGeo $Frame.page.canvas GRAPHSELECT$Graph::Data(Graph) Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(Pos$Graph::Data(Pos)) "Graph::Time::UpdateItems $data(FrameData) $Graph::Data(Graph)"
+#   Shape::BindMoveGeo $Frame.page.canvas GRAPHSELECT$Graph::Data(Graph) Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(Pos$Graph::Data(Pos)) "Graph::Time::UpdateItems $data(FrameData) $Graph::Data(Graph)"
 }
 
 #----------------------------------------------------------------------------

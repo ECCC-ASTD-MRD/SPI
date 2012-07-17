@@ -261,16 +261,16 @@ proc Graph::TimeSection::Graph { GR } {
                }
                fstdfield configure TIMESECTION$item -ztype PRESSURE
                set data(Levels) $levels
-               set graph(UnitY) Pressure
+               set graph(UnitY) [lindex $Graph::Lbl(PRESSURE) $GDefs(Lang)]
             }
-            "MAGL" {
+            "MASL" {
                set levels [fstdfield stats TIMESECTION$item -meterlevels]
                if { ![llength $levels] } {
                   Dialog::Error . $Graph::Error(Meter)
                }
-               fstdfield configure TIMESECTION$item -ztype MAGL
+               fstdfield configure TIMESECTION$item -ztype MASL
                set data(Levels) $levels
-               set graph(UnitY) "Meters above ground level"
+               set graph(UnitY) [lindex $Graph::Lbl(MASL) $GDefs(Lang)]
             }
             "GRID" {
                 fstdfield configure TIMESECTION$item -ztype UNDEFINED

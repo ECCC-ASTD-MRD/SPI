@@ -219,6 +219,7 @@ proc Graph::Section::Clean { GR } {
 #-------------------------------------------------------------------------------
 
 proc Graph::Section::Graph { GR } {
+   global GDefs
    variable Data
 
    upvar #0 Graph::Section::Section${GR}::Data  data
@@ -253,16 +254,16 @@ proc Graph::Section::Graph { GR } {
                }
                fstdfield configure GRAPHSELECT$item -ztype PRESSURE
                set data(Levels) $levels
-               set graph(UnitY) Pressure
+               set graph(UnitY) [lindex $Graph::Lbl(PRESSURE) $GDefs(Lang)]
             }
-            "MAGL" {
+            "MASL" {
                set levels [fstdfield stats GRAPHSELECT$item -meterlevels]
                if { ![llength $levels] } {
                   Dialog::Error . $Graph::Error(Meter)
                }
                fstdfield configure GRAPHSELECT$item -ztype MAGL
                set data(Levels) $levels
-               set graph(UnitY) "Meters above ground level"
+               set graph(UnitY) [lindex $Graph::Lbl(MASL) $GDefs(Lang)]
             }
             "GRID" {
                 fstdfield configure GRAPHSELECT$item -ztype UNDEFINED

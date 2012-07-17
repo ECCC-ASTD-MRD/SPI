@@ -652,15 +652,15 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                   Dialog::Error . $Graph::Error(Pressure)
                }
                vector set $Item.Y $levels
-               set graph(UnitY) Pressure
+               set graph(UnitY)  [lindex $Graph::Lbl(PRESSURE) $GDefs(Lang)]
             }
-            "MAGL" {
+            "MASL" {
                set levels [fstdfield stats GRAPHPROFILE -meterlevels]
                if { ![llength $levels] } {
                   Dialog::Error . $Graph::Error(Pressure)
                }
                vector set $Item.Y $levels
-               set graph(UnitY) "Meters above ground level"
+               set graph(UnitY) [lindex $Graph::Lbl(MASL) $GDefs(Lang)]
             }
             "GRID" {
                vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
