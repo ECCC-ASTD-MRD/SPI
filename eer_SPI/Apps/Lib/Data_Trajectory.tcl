@@ -702,7 +702,7 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
          graphaxis create TRAJGRAPHAXISY
 
          graphaxis configure TRAJGRAPHAXISX -font XFont10 -color black -position LL -width 1 -highoffset 0.01 -format 00HH/MMDD \
-            -highlightcolor black -highlightwidth 1 -highoffset 10
+            -gridcolor black -gridwidth 1 -highlightcolor gray75 -highlightwidth 2 -highoffset 10
          graphaxis configure TRAJGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -gridwidth 1 -dash . -position LL -width 1 -highoffset 10
       }
       Trajectory::GraphPlot $Frame $TrajId
@@ -848,7 +848,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       }
 
       set secs [lsort -unique $secs]
-      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -highlight $datea -spacing 1
+      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -grid $datea -spacing 1
       graphaxis configure TRAJGRAPHAXISY -incr $incr -min $h0 -max $h1
 
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \

@@ -43,7 +43,8 @@ namespace eval Log { } {
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Keep)        24                    ;#Number of back log to keep
    set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
-   set Param(Warning)     0                     ;#Number of warning
+   set Param(Warning)     0                     ;#Number of warnings
+   set Param(Error)       0                     ;#Number of errors
    set Param(Process)     ""                    ;#Process number
 
    set Param(SecTime)     [clock seconds]       ;#Current time
@@ -62,7 +63,7 @@ namespace eval Log { } {
    set Param(JobId)       "JOB"                 ;#Job unique identifier
    set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%MZ" -gmt True] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
-   set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT.REPORTERROR,REPORTWARNING)
+   set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
 
    array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
@@ -311,7 +312,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    if { ${Status}==0 } {
       Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
    } else {
-      Log::Print MUST "Status              : Job has encountered some errors."
+      Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
    Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
    Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -gmt True]"
@@ -461,6 +462,11 @@ proc Log::Print { Type Message { Var "" } } {
          incr Param(Warning)
       }
 
+      #----- If it is a  warning, add to count for end result
+      if { $Type=="ERROR" } {
+         incr Param(Error)
+      }
+
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
@@ -607,7 +613,7 @@ proc Log::CyclopeEnd { Status } {
       puts $f "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]"
 
       if { $Status } {
-         puts $f "Status    : Error ($Status)"
+         puts $f "Status    : Error ($Status) ($Param(Error))"
       } elseif { $Param(Warning) } {
          puts $f "Status    : Warning ($Param(Warning))"
       } else {

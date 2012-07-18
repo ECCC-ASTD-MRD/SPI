@@ -813,6 +813,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
    set info  ""
    set graph ""
    set list  ""
+   set sec   ""
 
    if { $Map(Speed)==0.0 } {
       set data [$VP -pick $X $Y { trajectory observation metobs } False]
@@ -824,6 +825,7 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set parcel [trajectory define $obj -PARCEL $tag]
                             set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
                             set id     [trajectory define $obj -ID]
+                            set sec    [lindex $parcel 0]
                             set vals   [DateStuff::StringDateFromSeconds [lindex $parcel 0] $GDefs(Lang)]
                             if { [llength $vals] } {
                                append Page::Data(Value) "$id:$vals "
@@ -858,6 +860,8 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
          }
       }
    }
+   catch { graphaxis configure TRAJGRAPHAXISX -highlight $sec }
+
    Page::CursorInfo $Page $X $Y $info $graph
    return $list
 }
