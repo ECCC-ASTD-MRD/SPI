@@ -2276,7 +2276,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    char         cdump[16];
    char        *p;
    float        levels[FSTD_NKMAX];
-   double       level;
+   double       level,val;
 
    if (Field->Def->NK>1 || Field->Ref->Grid[0]=='V')
       return(1);
@@ -2416,7 +2416,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
             c_fstluk(p,ok,&ni,&nj,&idump);
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(Field->Def);i++) {
-                  Field->Def->Data[2][idx+i]*=uvw->WWFactor;
+                  Def_Get(Field->Def,2,i,val);
+                  val*=uvw->WWFactor;
+                  Def_Set(Field->Def,2,i,val);
                }
             }
          }
