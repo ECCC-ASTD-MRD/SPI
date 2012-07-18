@@ -891,7 +891,7 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
 
       frame $Data(Tab).head
          checkbutton $Data(Tab).head.sel -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -anchor w -width 30 -state disabled \
-            -variable Page::Data(ToolMode) -offvalue SPI -onvalue Graph -command { SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True; catch { Graph::${Graph::Data(Type)}::UpdateItems $Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }}
+            -variable Page::Data(ToolMode) -offvalue SPI -onvalue Graph -command { SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True; Graph::UpdateItems $Page::Data(Frame) }
          menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu -state disabled
          place $Data(Tab).head.sel.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.sel.down.menu
