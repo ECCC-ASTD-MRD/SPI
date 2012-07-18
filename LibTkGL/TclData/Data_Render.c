@@ -1646,6 +1646,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          } else {
             c_gdllvval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          }
+         // We have to get the speed from the modulus in case of 3 component vector
+         c_gdllsval(Field->Ref->Id,x,&Field->Def->Mode[mem],lat,lon,n);
          EZUnLock_RPNInt();
 
          while (n--) {

@@ -413,9 +413,9 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
          case SIZE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(item->Size));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(item->Size));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&item->Size);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&item->Size);
             }
             break;
 
@@ -740,7 +740,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->Width=0;
    item->DescWidth=0;
    item->DescHeight=0;
-   item->Size=1;
+   item->Size=1.0;
    item->Value=0;
    item->Orient=strdup("X");
    item->Fit=NULL;
@@ -1292,7 +1292,7 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    vec0=Vector_Get(Item->ErrorData);
 
    if (vec0 && vec0->N<=vec->N) {
-      if (Item->Icon && Item->Size) {
+      if (Item->Icon && Item->Size>0.0) {
          glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
          glEnableClientState(GL_VERTEX_ARRAY);
          glMatrixMode(GL_MODELVIEW);
@@ -1396,8 +1396,8 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    TVector       *vecx,*vecy,*vecs,*vecd,*val;
    Vect3d        *v=NULL,v0,v1,vt;
    char           buf[32];
-   double        *vm,x,y,db,dh,x0,y0;
-   int            i,j,n,vn,sz,px,py,pw,hd;
+   double        *vm,x,y,db,dh,x0,y0,sz;
+   int            i,j,n,vn,px,py,pw,hd;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -1672,7 +1672,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    /* Display Icons */
-   if (Item->Icon && Item->Size) {
+   if (Item->Icon && Item->Size>0.0) {
       sz=Item->Size+Item->Width;
       glLineWidth(Item->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -2712,7 +2712,8 @@ void GraphItem_Dim(Tk_Canvas Canvas,TGraphItem *Item,GraphItem *Graph,int *Width
 */
 int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1) {
 
-   int y,sz;
+   int    y;
+   double sz;
 
    y=Y0+Item->DescHeight*0.5;
 
@@ -2769,7 +2770,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
    }
 
-   if (Item->Icon && Item->Size) {
+   if (Item->Icon && Item->Size>0.0) {
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
       glPushMatrix();
@@ -3199,7 +3200,7 @@ void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    vec0=Vector_Get(Item->ErrorData);
 
    if (vec0 && vec0->N<=vec->N) {
-      if (Item->Icon && Item->Size) {
+      if (Item->Icon && Item->Size>0.0) {
          for (n=0;n<vec->N;n++) {
             if (vec->V[n]!=vec->NoData && vec0->V[n]!=vec0->NoData) {
                if (Item->Orient[0]=='X') {
@@ -3209,7 +3210,7 @@ void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                   x[0]=X0+AXISVALUE(AxisX,vec0->V[n]);
                   y[0]=Y0+AXISVALUE(AxisY,vec->V[n]);
                }
-               sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",x[0],y[0],Item->Size,Item->Size);
+               sprintf(buf,"gsave\n%.15g %.15g translate %f %f scale\n",x[0],y[0],Item->Size,Item->Size);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
 
                if (Item->IconFill) {
@@ -3263,9 +3264,8 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    Vect3d    *v,v0,v1,vt;
    char       buf[256];
    double     x,y,db,dh,x0,y0;
-   int        i,j,n,vn,sz,hd;
-
-   double       rect[8];
+   int        i,j,n,vn,hd;
+   double     rect[8],sz;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -3515,15 +3515,15 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    }
 
    /* Display Icons */
-   if (Item->Icon && Item->Size) {
+   if (Item->Icon && Item->Size>0.0) {
       for(i=0;i<vn-hd;i++) {
          if (i==0 || i==(vn-hd-1) ||Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
             sz=Item->Size+Item->Width;
 
             if (Item->Orient[0]=='X') {
-               sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0]-dh,v[i][1],sz,sz);
+               sprintf(buf,"gsave\n%.15g %.15g translate %f %f scale\n",v[i][0]-dh,v[i][1],sz,sz);
             } else {
-               sprintf(buf,"gsave\n%.15g %.15g translate %i %i scale\n",v[i][0],v[i][1]-dh,sz,sz);
+               sprintf(buf,"gsave\n%.15g %.15g translate %f %f scale\n",v[i][0],v[i][1]-dh,sz,sz);
             }
             Tcl_AppendResult(Interp,buf,(char*)NULL);
 
@@ -3714,8 +3714,8 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
       }
    }
 
-   if (Item->Icon && Item->Size) {
-      sprintf(buf,"gsave\n%i %i translate %i %i scale\n",X1+10,(int)Tk_CanvasPsY(Graph->canvas,y),Item->Size,Item->Size);
+   if (Item->Icon && Item->Size>0.0) {
+      sprintf(buf,"gsave\n%i %i translate %f %f scale\n",X1+10,(int)Tk_CanvasPsY(Graph->canvas,y),Item->Size,Item->Size);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
 
       if (Item->IconFill) {

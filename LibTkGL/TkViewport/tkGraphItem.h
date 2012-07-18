@@ -60,7 +60,7 @@ typedef struct TGraphItem {
 
    double         Origin;                     /*Origine du graph selon l'axe et l'orientation*/
    int            Width;                      /*line width*/
-   int            Size;                       /*Icon Size*/
+   double         Size;                       /*Icon Size*/
    char          *Orient;                     /*Orientation (X,Y,Z,XY,YZ,XZ)*/
    char          *Fit;                        /*Fitting type*/
    int            Icon;                       /*Icone*/

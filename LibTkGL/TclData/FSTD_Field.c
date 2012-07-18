@@ -1966,7 +1966,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    int          ok,ni,nj,nk,i,type,idx,datyp;
    float        lvl,*tmp;
    char         nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
-   double       nhour;
+   double       nhour,val;
 
 #ifdef LNK_FSTD
    file=FSTD_FileGet(Interp,Id);
@@ -2100,12 +2100,14 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
                FSTD_FileUnset(Interp,file);
                return(TCL_ERROR);
             }
-            if (uvw->WWFactor!=0.0) {
-               for(i=0;i<FSIZE2D(field->Def);i++) {
-                  field->Def->Data[2][i]*=uvw->WWFactor;
-               }
-            }
          }
+      }
+      if (uvw->WW && uvw->WWFactor!=0.0) {
+         for(i=0;i<FSIZE2D(field->Def);i++) {
+             Def_Get(field->Def,2,i,val);
+             val*=uvw->WWFactor;
+             Def_Set(field->Def,2,i,val);
+          }
       }
    } else {
       /*Verifier si le champs existe et est valide*/

@@ -68,7 +68,7 @@ TDataVector *Data_VectorTableCheck(char *Var,int *Idx) {
 }
 
 TDataVector *Data_VectorTableAdd(void) {
-   return(&DataVectorTable[++DataVectorTableSize]);
+   return(&DataVectorTable[DataVectorTableSize++]);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -698,7 +698,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          p=0;
       }
 
-      if (Field[0]->Spec && Field[0]->Spec->ZType==LVL_MAGL) {
+      if (Field[0]->Spec && Field[0]->Spec->ZType==LVL_MASL || Field[0]->Spec->ZType==LVL_MAGL) {
          p=0;
          g=1;
       }
