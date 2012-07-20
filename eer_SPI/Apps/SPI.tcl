@@ -2301,7 +2301,6 @@ for { set i 0 } { $i < $argc } { incr i } {
       "nowindow"  { set SPI::Param(Window) False }
       "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
-      "geom"      { set i [Args::ParseDo $argv $argc $i 1 1 ""]  }
       "default"   { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
       "field"     { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
       "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }

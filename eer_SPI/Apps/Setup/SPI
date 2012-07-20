@@ -72,6 +72,7 @@ namespace eval Viewport {
    set Map(Delay)       1000.0        ;#Temps de deplacement en millisecondes
    set Map(Damping)     1.07          ;#Facteur de l'effet de ralentissement
    set Map(Mask)        NONE          ;#Masque (NONE,SEA,LAND,DATA)
+   set Map(Res)         0             ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
    set Map(Coast)       1             ;#Cotes
    set Map(Lake)        1             ;#Lacs
    set Map(River)       0             ;#Rivieres
@@ -91,6 +92,9 @@ namespace eval Viewport {
    set Map(Elev)        1.0           ;#Facteur d'expansion des elevations
    set Map(TPolit)      1             ;#Identifications provinces
    set Map(ClickFactor) -4            ;#Double click zoom factor
+   set Map(Delay)       800.0         ;#Temps de deplacement en millisecondes
+   set Map(Speed)       0.0           ;#Vitesse de deplacement en metres/millisecondes
+   set Map(Damping)     1.07          ;#Facteur de l'effet de ralentissement
 
    set Resources(Font)      [font create -family Helvetica -weight bold -size -10]   ;#Police de caractere de la vue
    set Resources(Bkg)       white     ;#Couleur du font (background)
@@ -134,6 +138,31 @@ namespace eval CVMagnifier {
 
    set Param(Zoom)   2                ;#Facteur de Zoom initial de la loupe
    set Param(Size)   256              ;#Dimension de la loupe en pixels
+}
+
+#----- Parametres de l'horloge
+namespace eval CVClock {
+
+   set Param(Zone)   UTC              ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
+   set Param(Zones) {
+      { UTC  "Coordinated Universal Time" 0 }
+      { HADT "Hawaii-Aleutian Daylight Time" -9 }
+      { HAST "Hawaii-Aleutian Standard Time" -10 }
+      { AKDT "Alaska Daylight Time" -8 }
+      { AKST "Alaska Standard Time" -9 }
+      { PDT  "Pacific Daylight Time" -7 }
+      { PST  "Pacific Standard Time" -8 }
+      { MDT  "Mountain Daylight Time" -6 }
+      { MST  "Mountain Standard Time" -7 }
+      { CDT  "Central Daylight Time" -5 }
+      { CST  "Central Standard Time" -6 }
+      { EDT  "Eastern Daylight Time" -4 }
+      { EST  "Eastern Standard Time" -5 }
+      { ADT  "Atlantic Daylight Time" -3 }
+      { AST  "Atlantic Standard Time" -4 }
+      { NDT  "Newfoundland Daylight Time" -2.5 }
+      { NST  "Newfoundland Standard Time" -3.5 }
+   }
 }
 
 #----- Parametres des champs

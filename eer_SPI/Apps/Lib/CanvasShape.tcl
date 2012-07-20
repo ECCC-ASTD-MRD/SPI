@@ -372,41 +372,36 @@ proc CVCompass::Write { Frame File } {
 #
 #----------------------------------------------------------------------------
 namespace eval CVClock {
-   variable Data
+   variable Param
 
-   set Data(Size) 23
-   set Data(TimeWidth) 30
-   set Data(DateWidth) 120
-   set Data(TZ) 0
+   set Param(Size) 23
+   set Param(Zone) UTC           ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
 
-   set Data(Time) True
-   set Data(Date) True
-   set Data(Zone) 0
-
-   set Data(Zones) {
-      { "UTC  Coordinated Universal Time" 0 }
-      { "HADT Hawaii-Aleutian Daylight Time" -9 }
-      { "HAST Hawaii-Aleutian Standard Time" -10 }
-      { "AKDT Alaska Daylight Time" -8 }
-      { "AKST Alaska Standard Time" -9 }
-      { "PDT  Pacific Daylight Time" -7 }
-      { "PST  Pacific Standard Time" -8 }
-      { "MDT  Mountain Daylight Time" -6 }
-      { "MST  Mountain Standard Time" -7 }
-      { "CDT  Central Daylight Time" -5 }
-      { "CST  Central Standard Time" -6 }
-      { "EDT  Eastern Daylight Time" -4 }
-      { "EST  Eastern Standard Time" -5 }
-      { "ADT  Atlantic Daylight Time" -3 }
-      { "AST  Atlantic Standard Time" -4 }
-      { "NDT  Newfoundland Daylight Time" -2.5 }
-      { "NST  Newfoundland Standard Time" -3.5 }
+   set Param(Zones) {
+      { UTC  "Coordinated Universal Time" 0 }
+      { HADT "Hawaii-Aleutian Daylight Time" -9 }
+      { HAST "Hawaii-Aleutian Standard Time" -10 }
+      { AKDT "Alaska Daylight Time" -8 }
+      { AKST "Alaska Standard Time" -9 }
+      { PDT  "Pacific Daylight Time" -7 }
+      { PST  "Pacific Standard Time" -8 }
+      { MDT  "Mountain Daylight Time" -6 }
+      { MST  "Mountain Standard Time" -7 }
+      { CDT  "Central Daylight Time" -5 }
+      { CST  "Central Standard Time" -6 }
+      { EDT  "Eastern Daylight Time" -4 }
+      { EST  "Eastern Standard Time" -5 }
+      { ADT  "Atlantic Daylight Time" -3 }
+      { AST  "Atlantic Standard Time" -4 }
+      { NDT  "Newfoundland Daylight Time" -2.5 }
+      { NST  "Newfoundland Standard Time" -3.5 }
    }
 }
 
 proc CVClock::Create { Frame X Y } {
    global GDefs
    variable Data
+   variable Param
 
    set x0 [expr $X-27]
    set y0 [expr $Y-27]
@@ -434,16 +429,21 @@ proc CVClock::Create { Frame X Y } {
    set Data(Sec$Frame)  0
    set Data(Zone$Frame) 0
 
+   #----- Set zone to default
+   if { [set zone [lsearch -exact -index 0 $Param(Zones) $Param(Zone)]]!=-1 } {
+       set Data(Zone$Frame) $zone
+   }
+
    if { ![winfo exists $canvas.cvclock] } {
       menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
          -relief raised -menu $canvas.cvclock.menu
       menu $canvas.cvclock.menu -tearoff 0 -bg $GDefs(ColorFrame)
       set z -1
-      foreach zone $Data(Zones) {
+      foreach zone $Param(Zones) {
          if { $z==0 } {
             $canvas.cvclock.menu add separator
          }
-         $canvas.cvclock.menu add radiobutton -label [lindex $zone 0] -variable CVClock::Data(Zone$Frame) -value [incr z] \
+         $canvas.cvclock.menu add radiobutton -label "[lindex $zone 1] ([lindex $zone 0])" -variable CVClock::Data(Zone$Frame) -value [incr z] \
             -command "CVClock::Time $Frame \$CVClock::Data(Sec$Frame) -1"
       }
    }
@@ -544,6 +544,7 @@ proc CVClock::Exist { Frame } {
 
 proc CVClock::Time { Frame Sec Total } {
    global GDefs
+   variable Param
    variable Data
 
    set canvas $Frame.page.canvas
@@ -568,7 +569,7 @@ proc CVClock::Time { Frame Sec Total } {
       #----- Ajustement pour le timezone
 
       set Data(Sec$Frame) $Sec
-      set Sec [expr int($Sec+[lindex [lindex $Data(Zones) $Data(Zone$Frame)] 1]*3600)]
+      set Sec [expr int($Sec+[lindex [lindex $Param(Zones) $Data(Zone$Frame)] 2]*3600)]
 
       set hour [clock format $Sec -format "%k" -gmt true]
       set min  [clock format $Sec -format "%M" -gmt true]
@@ -582,8 +583,8 @@ proc CVClock::Time { Frame Sec Total } {
       set x0 [lindex $co 0]
       set y0 [lindex $co 1]
 
-      set x [expr $x0+($Data(Size)-6)*cos($theta)]
-      set y [expr $y0+($Data(Size)-6)*sin($theta)]
+      set x [expr $x0+($Param(Size)-6)*cos($theta)]
+      set y [expr $y0+($Param(Size)-6)*sin($theta)]
 
       $canvas coords CVCLOCKHOUR $x0 $y0 $x $y
 
@@ -599,13 +600,13 @@ proc CVClock::Time { Frame Sec Total } {
       set x0 [lindex $co 0]
       set y0 [lindex $co 1]
 
-      set x [expr $x0+$Data(Size)*cos($theta)]
-      set y [expr $y0+$Data(Size)*sin($theta)]
+      set x [expr $x0+$Param(Size)*cos($theta)]
+      set y [expr $y0+$Param(Size)*sin($theta)]
 
       $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
 
       $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -gmt true]
-      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Data(Zones) $Data(Zone$Frame)] 0] 0]"
+      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0]"
    }
 
    $canvas raise CVCLOCK
