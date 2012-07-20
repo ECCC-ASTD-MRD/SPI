@@ -677,16 +677,18 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
          vector set $Item.X {}
          vector set $Item.Y {}
 
-         foreach obs $data(Data$Data) {
-            foreach idx [observation define $obs -IDX $data(Obs$Pos)] {
-                if { [set val [lindex [observation define $obs -DATA $idx] 0]]!="-" } {
-                  lappend lst [list $val [lindex [observation define $obs -COORD $idx] 2]]
+         if { [info exists data(Obs$Pos)] } {
+            foreach obs $data(Data$Data) {
+               foreach idx [observation define $obs -IDX $data(Obs$Pos)] {
+                  if { [set val [lindex [observation define $obs -DATA $idx] 0]]!="-" } {
+                     lappend lst [list $val [lindex [observation define $obs -COORD $idx] 2]]
+                  }
                }
             }
-         }
-         set lst [lsort -index 0 -real -increasing $lst]
-         foreach l $lst {
-            vector append $Item $l
+            set lst [lsort -index 0 -real -increasing $lst]
+            foreach l $lst {
+               vector append $Item $l
+            }
          }
       }
    }
@@ -846,7 +848,7 @@ proc Graph::Profile::Data { GR Data } {
 
          set i 0
          set data(Data$item) {}
-         foreach id  [ObsBox::GetContent $box] {
+         foreach id [ObsBox::GetContent $box] {
             if { [observation configure $item -desc]==[observation configure $id -desc] &&
                  [observation define $item -DATE]==[observation define $id -DATE] } {
 
@@ -855,7 +857,7 @@ proc Graph::Profile::Data { GR Data } {
             }
          }
 
-         set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
+         set data(Data$item) [lsort -dictionary -increasing -index 0 $data(Data$item)]
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
          lappend data(Data) $item
       }

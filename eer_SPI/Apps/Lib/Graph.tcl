@@ -1447,8 +1447,8 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
             lappend coords [lindex $Coords 0] [lindex $Coords 1] 0.0
             lappend Tag $Page::Data(Tag)$VP
 
-            Viewport::DrawArea $Frame $VP $coords $Tag $Tag $Graph::Color(Select) $Graph::Color(Select) "" False 2
-#            Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
+#            Viewport::DrawArea $Frame $VP $coords $Tag $Tag $Graph::Color(Select) $Graph::Color(Select) "" False 2
+            Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
       }
       "LINE" {
             set coords { }
@@ -1551,7 +1551,7 @@ proc Graph::ItemSelect { Item } {
    set Graph::Item(FillColor)   [graphitem configure $Item -fill]
    set Graph::Item(Tranparency) [graphitem configure $Item -transparency]
    set Graph::Item(Width)       [graphitem configure $Item -width]
-   set Graph::Item(Size)        [graphitem configure $Item -size]
+   set Graph::Item(Size)        [expr int([graphitem configure $Item -size])]
    set Graph::Item(Value)       [graphitem configure $Item -value]
    set Graph::Item(Type)        [graphitem configure $Item -type]
    set Graph::Item(Dash)        [graphitem configure $Item -dash]

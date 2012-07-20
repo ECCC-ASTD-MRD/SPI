@@ -681,7 +681,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 
          foreach obs $data(Data$Data) {
 
-            if { [set idx [lindex [observation define [lindex $obs 1] -IDX $data(Obs$Pos)] 0]]!="" } {
+            if { [info exists data(Obs$Pos)] && [set idx [lindex [observation define [lindex $obs 1] -IDX $data(Obs$Pos)] 0]]!="" } {
 
                set val  [observation define [lindex $obs 1] -DATA $idx]
                set spd  [lindex $val 0]
