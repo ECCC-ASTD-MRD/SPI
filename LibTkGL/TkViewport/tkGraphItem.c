@@ -2403,8 +2403,8 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
          v0=fabs(pix[0]-AXISVALUE(AxisX,i+1));
          v1=fabs(pix[1]-AXISVALUE(AxisY,j+1));
          dt=FMAX(v0,v1);
-         step=1.0/FMAX(v0,v1);
-step=0.01;
+         step=10.0/FMAX(v0,v1);
+
          /*Get the streamline */
          j=Graph_Expand(Data,j);
          b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);

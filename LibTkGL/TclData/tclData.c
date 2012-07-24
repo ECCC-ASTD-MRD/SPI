@@ -844,7 +844,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   }
                }
 
-               /*If it is vectors, */
+               /*If it is vectors*/
                if (cut->Def->Data[1] && NbC>1) {
 
                   vi=VertexVal(Field[f]->Ref,Field[f]->Def,0,i,j,k);
@@ -2182,7 +2182,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
-            mode='T';
+            mode='L';
             if (Objc>2) {
                mode=Tcl_GetString(Objv[++i])[0];
                i++;
@@ -2222,9 +2222,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         tr=1;
                      }
                   }
-                 /*If last segment was visible, add its end point*/
+                  /*If last segment was visible, add its end point*/
                   if (ex){
-                     if (mode=='G') {
+                     if (mode=='G' || mode=='K') {
                         snprintf(buf,32,"%.5f,%.5f ",array->Data[n][1],array->Data[n][0]);
                         Tcl_AppendResult(Interp,buf,(char*)NULL);
                      } else {

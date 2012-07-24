@@ -2562,6 +2562,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    }
 
    if (Obs->Model->Flat) {
+      Projection_UnClip(Proj);
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       if (GLMode==GL_SELECT) {
@@ -3020,6 +3021,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       glPopMatrix();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
+      Projection_Clip(Proj);
    }
    glPopName();
    glEnable(GL_CULL_FACE);

@@ -2416,9 +2416,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
             c_fstluk(p,ok,&ni,&nj,&idump);
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(Field->Def);i++) {
-                  Def_Get(Field->Def,2,i,val);
+                  Def_Get(Field->Def,2,idx+i,val);
                   val*=uvw->WWFactor;
-                  Def_Set(Field->Def,2,i,val);
+                  Def_Set(Field->Def,2,idx+i,val);
                }
             }
          }
