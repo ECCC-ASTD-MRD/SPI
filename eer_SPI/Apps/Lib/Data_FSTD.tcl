@@ -1075,8 +1075,9 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { [set var [string trim $var]]=="" } {
             set var "<>"
          }
+         set set [fstdfield configure $fld -set]
 
-         if { ![dataspec is $var] || [fstdfield configure $fld -set] } {
+         if { ![dataspec is $var] || $set } {
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {
                dataspec copy $var $spec
@@ -1085,12 +1086,15 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 
             FSTD::ParamInit $fld $var
          }
+
          if { "$var"=="$current" } {
              set Param(Spec) $current
              set exist 1
          }
 
-         fstdfield configure $fld -dataspec $var
+         if { !$set } {
+            fstdfield configure $fld -dataspec $var
+         }
          ComboBox::Add $Data(Frame).var.sel $var
       }
    }
