@@ -1289,9 +1289,9 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                                                          t++;
                                                       }
                                                    } else {
-                                                      if (Mode!=TD_COUNT) acc[idxt]++;
                                                       if (vx!=FromDef->NoData) {
                                                          fld[idxt]+=vx;
+                                                         if (Mode!=TD_COUNT) acc[idxt]++;
                                                       }
                                                    }
                                                    break;

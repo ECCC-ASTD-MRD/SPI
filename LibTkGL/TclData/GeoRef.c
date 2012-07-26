@@ -528,14 +528,14 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             return(TCL_ERROR);
          }
          ref0=GeoRef_Get(Tcl_GetString(Objv[2]));
-         if (strcmp(Tcl_GetString(Objv[3]),"WKT")==0) {
-            OSRExportToWkt(ref0->Spatial,&proj);
-         } else if (strcmp(Tcl_GetString(Objv[3]),"PROJ4")==0) {
+         if (strcmp(Tcl_GetString(Objv[3]),"PROJ4")==0) {
             OSRExportToProj4(ref0->Spatial,&proj);
          } else if (strcmp(Tcl_GetString(Objv[3]),"MAPINFO")==0) {
 //            OSRExportToMICopordSys(ref0->Spatial,&proj);
          } else if (strcmp(Tcl_GetString(Objv[3]),"XML")==0) {
             OSRExportToXML(ref0->Spatial,&proj,NULL);
+         } else {
+            OSRExportToWkt(ref0->Spatial,&proj);
          }
          if (proj) {
             Tcl_SetObjResult(Interp,Tcl_NewStringObj(proj,-1));
