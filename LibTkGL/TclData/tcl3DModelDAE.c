@@ -113,14 +113,14 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
    int       i,o,nfc;
 
    if (Elem) {
+#ifdef DEBUG
+         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Token %s\n",Elem);
+#endif
       strncpy(data->Tag,Elem,255);
 
       /*Unit tag*/
       /*Get the unit reference more "meter", Collada uses meter as reference*/
       if (strcmp(Elem,"unit")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found unit\n");
-#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"name")==0) {
             }
@@ -133,9 +133,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Source tag*/
       /*Create a new source with name "id" and add to sources list*/
       if (strcmp(Elem,"source")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
-#endif
          if (!(data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource))))) {
             fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not allocate memory for node\n");
          }
@@ -156,9 +153,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Array tag*/
       /*Initialise current source with "count" nb elements*/
       if (strcmp(Elem,"float_array")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found source\n");
-#endif
          src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
@@ -171,9 +165,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Accessor tag*/
       /*Initialise current source with "stride" dimension*/
       if (strcmp(Elem,"accessor")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found accessor\n");
-#endif
          src=(DAESource*)data->Sources->Data;
 
          for (i=0;Attr[i];i+=2) {
@@ -186,9 +177,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Vertices tag*/
       /*Create new source which is alias to source "Id" defining positions*/
       if (strcmp(Elem,"vertices")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found vertices\n");
-#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=1;
@@ -208,9 +196,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Node library tag*/
       /*Initialize scene node tree and set current scene to this node*/
       if (strcmp(Elem,"library_nodes")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Found node library\n");
-#endif
          data->Nodes=Model_SceneAdd(NULL,NULL,1);
          data->Scene=data->Nodes;
       } else
@@ -218,18 +203,12 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Visual scene library tag*/
       /*Move the current scene to the model scenes*/
       if (strcmp(Elem,"library_visual_scenes")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Found visual scene library\n");
-#endif
          data->Scene=Model_SceneAdd(data->Model,NULL,1);
       } else
 
       /*Node tag*/
       /*Add new node with name "id" to current node and set current to new*/
       if (strcmp(Elem,"node")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding node\n");
-#endif
          data->Scene=Model_SceneAdd(data->Model,data->Scene,1);
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
@@ -241,9 +220,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Geometry instanciation tag*/
       /*Add geometry with name "url" to current scene*/
       if (strcmp(Elem,"instance_geometry")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Instanciating geometry in node\n");
-#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
                if (obj=Model_ObjectFind(data->Model,(char*)(Attr[i+1]+1))) {
@@ -260,17 +236,11 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Node instanciation tag*/
       /*Add node with name "url" to current scene*/
       if (strcmp(Elem,"instance_node")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Instanciating node in node\n");
-#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
                if (child=Model_SceneFind(data->Nodes,(char*)(Attr[i+1]+1))) {
                   scn=Model_SceneAdd(data->Model,data->Scene,1);
                   memcpy(scn,child,sizeof(T3DScene));
-#ifdef DEBUG
-                  fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding node %s to node\n",Attr[i+1]);
-#endif
                } else {
                   fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not find node \"%s\" in node library\n",Attr[i+1]);
                }
@@ -281,9 +251,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Geometry tag*/
       /*Create new geometry object with name "id"*/
       if (strcmp(Elem,"geometry")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding geometry\n");
-#endif
          data->Object=Model_ObjectAdd(data->Model,1);
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"id")==0) {
@@ -307,9 +274,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
 
          if (data->NFc) {
-#ifdef DEBUG
-            fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i faces\n",data->NFc);
-#endif
             data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
@@ -329,9 +293,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
 
          if (data->NFc) {
-#ifdef DEBUG
-            fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Adding %i segments\n",data->NFc);
-#endif
             data->Fc=Model_ObjectFaceAdd(data->Object,data->NFc);
          }
       }  else
@@ -339,9 +300,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*p array tag*/
       /*Create source name p which contains current geometry data to be processed*/
       if (strcmp(Elem,"p")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found p\n");
-#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=0;
@@ -357,9 +315,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Matrix array tag*/
       /*Create source name matrix which contains current transformation matrix to be processed*/
       if (strcmp(Elem,"matrix")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: found matrix\n");
-#endif
          data->Sources=TList_Add(data->Sources,(DAESource*)malloc(sizeof(DAESource)));
          src=(DAESource*)data->Sources->Data;
          src->Alias=0;
@@ -373,9 +328,6 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Input definition tag*/
       /*Set current object "semantic" input for "source" to be processed with "offset"*/
       if (strcmp(Elem,"input")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Input tag\n");
-#endif
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"semantic")==0) {
                if (strcmp(Attr[i+1],"POSITION")==0) {
@@ -440,6 +392,9 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
    int        i,v,f,n;
 
    if (Elem) {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) ModelDAE_EndHandlerr: Token %s\n",Elem);
+#endif
       data->Tag[0]='\0';
 
       /*p array tag*/
@@ -514,9 +469,6 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
       /*Node tag*/
       if (strcmp(Elem,"node")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: End node\n");
-#endif
          if (data->Scene->Parent) {
             data->Scene=data->Scene->Parent;
          }
@@ -524,9 +476,6 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
 
       /*Geometry tag*/
       if (strcmp(Elem,"geometry")==0) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: End geometry\n");
-#endif
          data->Object=NULL;
       }
    }

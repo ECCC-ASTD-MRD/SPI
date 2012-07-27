@@ -27,7 +27,7 @@ OBJ = $(GRAMMAR).tab.o lex.vexpr_.o $(GRAMMAR).o gpc.o \
 	tclVector.o tclDataDef.o tclDataSpec.o tclData.o tclCMap.o tclTraj.o tclObs.o \
 	tclFSTD.o FSTD_Field.o FSTD_Export.o \
 	tclGDAL.o GDAL_Band.o tclOGR.o OGR_Layer.o OGR_Geometry.o OGR_Math.o \
-        tcl3DModel.o tcl3DModelMDL.o tcl3DModel3DS.o tcl3DModelFLT.o tcl3DModelDAE.o tcl3DModelKML.o \
+        tcl3DModel.o tcl3DModelMDL.o tcl3DModel3DS.o tcl3DModelFLT.o tcl3DModelDAE.o tcl3DModelKML.o tcl3DModelCityGML.o \
 	tclRADAR.o Radar_Scan.o tclMetObs.o tclMetModel.o tclMetDataset.o \
 	tclGRIB.o GRIB_Field.o
 

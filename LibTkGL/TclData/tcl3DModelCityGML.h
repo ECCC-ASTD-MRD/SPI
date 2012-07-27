@@ -5,10 +5,10 @@
  * Dorval, Quebec
  *
  * Projet       : Affichage de modele 3D
- * Fichier      : tcl3DModelDAE.h
- * Creation     : Janvier 2011 - J.P. Gauthier
+ * Fichier      : tcl3DModelCityGML.c
+ * Creation     : Juillet 2012 - J.P. Gauthier
  *
- * Description  : Module de lecture de modele 3D en format Collada DAE
+ * Description  : Module de lecture de modele 3D en format CityGML
  *
  * Remarques    :
  *
@@ -30,34 +30,23 @@
  *
  *=========================================================
  */
+#ifndef _tcl3DModelCityGML_h
+#define _tcl3DModelCityGML_h
 
-#ifndef _tcl3DModelDAE_h
-#define _tcl3DModelDAE_h
-
-typedef struct DAESource {
-   char         Alias;
-   char        *Id;
-   char        *Text;
-   unsigned int TextLen;
-   unsigned int Nb;
-   unsigned int Dim;
-   float       *Array;
-} DAESource;
-
-typedef struct DAEData {
+typedef struct CityGMLData {
    char      Tag[256];
    T3DModel  *Model;
    T3DScene  *Scene,*Nodes;
    T3DObject *Object;
+   TMaterial *Mt;
    TFace     *Fc;
-   TList     *Sources;
-   int        NFc,NVr,VrDim,VrType;
-   int        VrOffset,NrOffset,TxOffset;
-   DAESource *VrSource,*NrSource,*TxSource;
-} DAEData;
+   int        NFc,NVr,VrDim;
 
-int        ModelDAE_SourceExpand(DAESource *Source);
-void       ModelDAE_SourceFree(DAESource *Source);
-DAESource *ModelDAE_SourceFind(DAEData *Data,char* Id);
+   int        Env,Pass;
+
+   char        *Buf;
+   unsigned int BufLen,BufRLen;
+
+} CityGMLData;
 
 #endif

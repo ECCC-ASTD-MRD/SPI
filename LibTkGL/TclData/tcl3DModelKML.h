@@ -35,8 +35,6 @@
 #ifndef _tcl3DModelKML_h
 #define _tcl3DModelKML_h
 
-#define XMLBUFSIZE 8192
-
 typedef struct KMLData {
    char        Tag[256];
    char        *Path;

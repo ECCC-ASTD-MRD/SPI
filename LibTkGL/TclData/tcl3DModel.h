@@ -42,6 +42,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 
+#define XMLBUFSIZE 8192
+
 #define F3V     3
 #define F3VN    6
 #define F3VNT   9
@@ -52,12 +54,14 @@ typedef struct TMaterial {
    float  Spe[4];
    float  Emi[4];
    float  Shi;
+   float  Alpha;
    char   Path[256];
    char   Name[256];
    GLuint Tex;
 } TMaterial;
 
 typedef struct TFace {
+   char         *Name;
    unsigned int NIdx;
    unsigned int *Idx;
    TMaterial    *Mt;                  /*Material*/
@@ -146,6 +150,8 @@ T3DObject* Model_ObjectAdd(T3DModel *Model,int Nb);
 void       Model_ObjectFree(T3DObject *Obj);
 T3DObject *Model_ObjectFind(T3DModel *Model,char *Name);
 TFace*     Model_ObjectFaceAdd(T3DObject *Obj,int Nb);
+TFace*     Model_FaceFind(T3DModel *Model,char *Name,T3DObject **Obj);
+TMaterial *Model_MaterialAdd(T3DModel *Model,int Nb);
 
 void Model_Extent(T3DModel *Model);
 void Model_ExtentObj(T3DModel *Model);

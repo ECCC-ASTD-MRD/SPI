@@ -438,16 +438,12 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             // This chunk is the header for the material info chunks
 
             // Increase the number of materials
-            Model->NMt++;
+            Model_MaterialAdd(Model,1);
 
             // Add a empty texture structure to our texture list.
             // If you are unfamiliar with STL's "vector" class, all push_back()
             // does is add a new node onto the list.  I used the vector class
             // so I didn't need to write my own link list functions.
-            Model->Mt=(TMaterial*)realloc(Model->Mt,Model->NMt*sizeof(TMaterial));
-            Model->Mt[Model->NMt-1].Tex=0;
-            Model->Mt[Model->NMt-1].Name[0]='\0';
-            Model->Mt[Model->NMt-1].Path[0]='\0';
 
             // Proceed to the material loading function
             Model3DS_ChunkProcessNextMaterial(File,Model,&currentChunk);

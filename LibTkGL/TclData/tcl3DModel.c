@@ -903,8 +903,10 @@ void Model_ObjectFree(T3DObject *Obj) {
       if (Obj->Cl)   free(Obj->Cl);
 
       /*Face list*/
-      for (f=0;f<Obj->NFc;f++)
+      for (f=0;f<Obj->NFc;f++) {
          free(Obj->Fc[f].Idx);
+         if (Obj->Fc[f].Name) free(Obj->Fc[f].Name);
+      }
 
       if (Obj->Fc) free(Obj->Fc);
    }
@@ -969,11 +971,89 @@ TFace *Model_ObjectFaceAdd(T3DObject *Obj,int Nb) {
       fc->NIdx=0;
       fc->Idx=NULL;
       fc->Mt=NULL;
+      fc->Name=NULL;
    }
    return(&Obj->Fc[Obj->NFc-Nb]);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_FaceFind>
+ * Creation     : Juillet 2012 J.P. Gauthier
+ *
+ * But          : Rechercher un objet.
+ *
+ * Parametres   :
+ *   <Model>    : Model dans lequel rechercher
+ *   <Name>     : Nom de l'objet a rechercher
+ *   <Object>   : Retour objet conetnant la face
+ *
+ * Retour       : Pointeur sur la face (ou NULL si non-existant)
+ *
+ * Remarques    :
+ *---------------------------------------------------------------------------------------------------------------
+*/
+TFace *Model_FaceFind(T3DModel *Model,char *Name,T3DObject **Obj) {
+
+   TFace *fc=NULL;
+   int    o,f;
+
+   for(o=0;o<Model->NObj;o++) {
+      for(f=0;f<Model->Obj[o].NFc;f++) {
+         if (Model->Obj[o].Fc[f].Name && strcmp(Model->Obj[o].Fc[f].Name,Name)==0) {
+            fc=&Model->Obj[o].Fc[f];
+            break;
+         }
+      }
+      if (fc) break;
+   }
+   if (Obj) {
+      *Obj=fc?&Model->Obj[o]:NULL;
+   }
+   return(fc);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Model_MaterialAdd>
+ * Creation     : Juillet 2012 J.P. Gauthier
+ *
+ * But          : Ajout de materiel a un modele.
+ *
+ * Parametres   :
+ *   <Model>    : Model
+ *   <Nb>       : Nombre de meteriel a ajouter
+ *
+ * Retour       : Pointeur sur le nouveau (premiere) materiel(s)
+ *
+ * Remarques    :
+ *---------------------------------------------------------------------------------------------------------------
+*/
+TMaterial *Model_MaterialAdd(T3DModel *Model,int Nb) {
+
+   TMaterial   *mt;
+   unsigned int m;
+
+   Model->NMt+=Nb;
+   if (!(Model->Mt=(TMaterial*)realloc(Model->Mt,Model->NMt*sizeof(TMaterial)))) {
+      return(NULL);
+   }
+
+   for(m=Model->NMt-Nb;m<Model->NMt;m++) {
+      mt=&Model->Mt[m];
+
+      mt->Amb[0]=mt->Amb[1]=mt->Amb[2]=mt->Amb[3]=1.0;
+      mt->Dif[0]=mt->Dif[1]=mt->Dif[2]=mt->Dif[3]=1.0;
+      mt->Spe[0]=mt->Spe[1]=mt->Spe[2]=mt->Spe[3]=1.0;
+      mt->Emi[0]=mt->Emi[1]=mt->Emi[2]=mt->Emi[3]=1.0;
+      mt->Shi=255.0;
+      mt->Alpha=1.0;
+      mt->Tex=0;
+      mt->Name[0]='\0';
+      mt->Path[0]='\0';
+   }
+   return(&Model->Mt[Model->NMt-Nb]);
+}
+
+ /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_Load>
  * Creation     : Mai 2002 J.P. Gauthier
  *
@@ -1005,10 +1085,12 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
    mdl->Path=strdup(Path);
 
    if (!(c=Model_LoadMDL(mdl,Path))) {
-      if (!(c=Model_LoadKML(mdl,Path))) {
-         if (!(c=Model_LoadDAE(mdl,Path))) {
-            if (!(c=Model_Load3DS(mdl,Path))) {
-               c=Model_LoadFLT(mdl,Path);
+      if (!(c=Model_LoadCityGML(mdl,Path))) {
+         if (!(c=Model_LoadKML(mdl,Path))) {
+            if (!(c=Model_LoadDAE(mdl,Path))) {
+               if (!(c=Model_Load3DS(mdl,Path))) {
+                  c=Model_LoadFLT(mdl,Path);
+               }
             }
          }
       }
@@ -1412,6 +1494,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    Vect3d       vr;
    Vect3f       vrf;
    T3DObject   *obj;
+   TMaterial   *mt;
    char        *path=NULL;
 
    extern GLint Texture_Read(char *File);
@@ -1455,14 +1538,15 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
             glNewList(obj->GLId,GL_COMPILE);
 
             for (i=0;i<obj->NFc;i++) {
-               if (obj->Fc[i].Mt) {
-                  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,obj->Fc[i].Mt->Shi);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,obj->Fc[i].Mt->Amb);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,obj->Fc[i].Mt->Dif);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,obj->Fc[i].Mt->Spe);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,obj->Fc[i].Mt->Emi);
-                  if (obj->Fc[i].Mt->Tex>0) {
-                     glBindTexture(GL_TEXTURE_2D,obj->Fc[i].Mt->Tex);
+
+               if ((mt=obj->Fc[i].Mt)) {
+                  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,mt->Shi);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mt->Amb);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mt->Dif);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mt->Spe);
+                  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,mt->Emi);
+                  if (mt->Tex>0) {
+                     glBindTexture(GL_TEXTURE_2D,mt->Tex);
                      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
                      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
                   }
@@ -1483,15 +1567,14 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   if (idx>obj->NVr) {
                      break;
                   }
-                  if (obj->Tx) glTexCoord3fv(obj->Tx[idx]);
-                  if (obj->Nr) glNormal3fv(obj->Nr[idx]);
-                  if (obj->Cl) glColor4fv(obj->Cl[idx]);
+                  if (obj->Tx && mt && mt->Tex>0) glTexCoord2fv(obj->Tx[idx]);
+                  if (obj->Nr)                    glNormal3fv(obj->Nr[idx]);
+                  if (obj->Cl)                    glColor4fv(obj->Cl[idx]);
 
                   /*Projection to georef*/
                   if (M->Ref) {
                      M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
                      M->Co.Elev=obj->Vr[idx][2];
-
                      Proj->Type->Project(Proj,&M->Co,&vr,1);
                      Vect_Assign(vrf,vr);
                      glVertex3fv(vrf);
