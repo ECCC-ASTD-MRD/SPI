@@ -246,7 +246,7 @@ proc Writer::VASIGMET::LayoutInit { Pad } {
 #            de la PrintBox.
 #
 # Parametres :
-#   <Canvas> : Identificateur du canvas
+#  <Pad>     : Identificateur du Pad
 #
 # Retour:
 #
@@ -257,10 +257,10 @@ proc Writer::VASIGMET::LayoutInit { Pad } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::VASIGMET::PrintCommand { Canvas } {
+proc Writer::VASIGMET::PrintCommand { Pad } {
    variable Data
 
-   set file [Writer::VASIGMET::Format $Writer::Data(Pad)]
+   set file [Writer::VASIGMET::Format $Pad]
    set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
    PrintBox::PrintTXT $file
@@ -413,7 +413,7 @@ proc Writer::VASIGMET::ToolBar { Pad } {
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
       -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) }
+      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send }
    button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
@@ -432,10 +432,10 @@ proc Writer::VASIGMET::ToolBar { Pad } {
 # Nom      : <Writer::VASIGMET::Write>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Ecrire le messgae dans un fichier selon un format specifique.
+# But      : Ecrire le message dans un fichier selon un format specifique.
 #
 # Parametres :
-#  <Pad>     : Identificateur du PAd
+#  <Pad>     : Identificateur du Pad
 #  <Sent>    : Message envoye (-1 = autosave mode).
 #
 # Retour    :
@@ -511,10 +511,16 @@ proc Writer::VASIGMET::AshUpdate { Pad } {
 
    foreach sec $Data(Secs$Pad) {
       if { [llength  $Data(Area$Pad$sec)] } {
+         #----- Insert date
          append text "\nValid date-time: [clock format $sec -format "%d %b %Y, %H%M UTC" -timezone :UTC]\n\n"
+
+         #----- Insert coordinates
          foreach { lat lon elev } $Data(Area$Pad$sec) {
             append text [Writer::VASIGMET::FormatCoord $lat $lon]\n
          }
+
+         #----- Repeat first point
+         append text [Writer::VASIGMET::FormatCoord [lindex $Data(Area$Pad$sec) 0] [lindex $Data(Area$Pad$sec) 1]]\n
       }
    }
 

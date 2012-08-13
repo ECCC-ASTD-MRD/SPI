@@ -1278,7 +1278,7 @@ proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
 #            de la PrintBox.
 #
 # Parametres :
-#   <Canvas> : Identificateur du canvas
+#  <Pad>     : Identificateur du Pad
 #
 # Retour:
 #
@@ -1289,18 +1289,18 @@ proc Writer::FVCN::AshUpdate { Pad Hour { Text "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::FVCN::PrintCommand { Canvas } {
+proc Writer::FVCN::PrintCommand { Pad } {
    variable Data
 
-   set file [Writer::FVCN::Format $Writer::Data(Pad) $Data(Mode$Writer::Data(Pad))]
+   set file [Writer::FVCN::Format $Pad $Data(Mode$Pad)]
    set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
    PrintBox::PrintTXT $file
 
    #----- Graphical product
-   if { [winfo exists $Data(Page$Writer::Data(Pad))] } {
+   if { [winfo exists $Data(Page$Pad)] } {
       set PrintBox::Print(Angle) landscape
-      PrintBox::PrintCommand $Data(Page$Writer::Data(Pad))
+      PrintBox::PrintCommand $Data(Page$Pad)
    }
 
    PrintBox::Destroy
@@ -1750,7 +1750,7 @@ proc Writer::FVCN::ToolBar { Pad } {
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
       -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) }
+      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send }
    button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \

@@ -328,7 +328,7 @@ proc Writer::AACN::LayoutInit { Pad } {
 #            de la PrintBox.
 #
 # Parametres :
-#   <Canvas> : Identificateur du canvas
+#  <Pad>     : Identificateur du Pad
 #
 # Retour:
 #
@@ -339,10 +339,10 @@ proc Writer::AACN::LayoutInit { Pad } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::AACN::PrintCommand { Canvas } {
+proc Writer::AACN::PrintCommand { Pad } {
    variable Data
 
-   set file [Writer::AACN::Format $Writer::Data(Pad)]
+   set file [Writer::AACN::Format $Pad]
    set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
    PrintBox::PrintTXT $file
@@ -563,7 +563,7 @@ proc Writer::AACN::ToolBar { Pad } {
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
       -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) }
+      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
       -command { Writer::Send }
    button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \

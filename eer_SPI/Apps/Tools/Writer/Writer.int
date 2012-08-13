@@ -102,7 +102,7 @@ proc Writer::Menu { } {
          -command { Writer::Send 1 }
       .writer.menu.win.menu add separator
       .writer.menu.win.menu add command -label [lindex $Lbl(Print) $GDefs(Lang)] -underline 0 \
-         -command { PrintBox::Create $Writer::Data(Pad).canvas PRINT Writer::$Writer::Data(Type) } -state normal
+         -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) } -state normal
       .writer.menu.win.menu add separator
       .writer.menu.win.menu add command -label [lindex $Lbl(Quit) $GDefs(Lang)] -underline 0 \
          -command { Writer::Close }
