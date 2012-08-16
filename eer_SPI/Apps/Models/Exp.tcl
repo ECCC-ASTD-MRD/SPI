@@ -1005,39 +1005,35 @@ proc Exp::BlankTransmit { } {
 
       #----- effacer les produits du RSMC Montreal sur notre site web.
 
-      set ErrCatch [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } MsgCatch ]
-
-      if { $ErrCatch != 0 } {
-         Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$MsgCatch"
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } msg]
+      if { $err } {
+         Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$msg"
       }
 
       #----- effacer les produits du RSMC Montreal sur les sites mirroirs.
 
       if { $Exp::Data(RSMC_CA)==1 } {
-         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path 3 $tokenarchiversmc 2>@1 } MsgCatch ]
-
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Problem to delete RSMC Montreal products on the mirror RSMC web pages.\n\n$MsgCatch"
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path 3 $tokenarchiversmc 2>@1 } msg]
+         if { $err } {
+            Log::Print ERROR "Problem to delete RSMC Montreal products on the mirror RSMC web pages.\n\n$msg"
          }
       }
 
       #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
 
       if { $Exp::Data(JntStat34)==1 } {
-         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } MsgCatch ]
-
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$MsgCatch"
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
+         if { $err } {
+            Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$msg"
          }
       }
 
       #----- imposer le lead sur tout les sites mirroirs.
 
       if { $Exp::Data(RSMCLead)!=99 } {
-         set ErrCatch [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } MsgCatch ]
-
-         if { $ErrCatch != 0 } {
-            Log::Print ERROR "Problem to copy the lead ( $Exp::Data(RSMCLead) ) on the mirror RSMC web pages.\n\n$MsgCatch"
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
+         if { $err } {
+            Log::Print ERROR "Problem to copy the lead ( $Exp::Data(RSMCLead) ) on the mirror RSMC web pages.\n\n$msg"
          }
       }
    }
@@ -1229,6 +1225,9 @@ proc Exp::ProductRSMCJointData { } {
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
       set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
+      if { $err != 0 } {
+         Log::Print ERROR "Problem sending RSMC joint statement on the mirror RSMC web pages.\n\n$msg"
+      }
    } else {
       file delete -force $path/leadrsmc.txt
    }
@@ -1244,6 +1243,9 @@ proc Exp::ProductRSMCJointData { } {
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
    set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $GDefs(Dir)/Script/RSMCTransferProducts.sh $path $nbip2 $tokenarchiversmc 2>@1 } msg]
+   if { $err } {
+      Log::Print ERROR "Problem sending RSMC Montreal products on the mirror RSMC web pages.\n\n$msg"
+   }
 
    Dialog::WaitDestroy
    . config -cursor left_ptr
