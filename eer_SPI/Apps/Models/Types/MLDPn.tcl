@@ -841,6 +841,7 @@ proc MLDPn::ScenarioSelect { } {
 proc MLDPn::EmissionRead { } {
    variable Sim
 
+   MLDPn::ScenarioClear
    MLDPn::ScenarioDecode $Sim(SrcType) $Sim(Scenario) "|"
 }
 
@@ -1790,7 +1791,7 @@ proc MLDPn::ComputeMass { Id } {
 
    #----- Calculate the total released mass calculation
    #----- according to empirical formula of Sparks et al. (1997).
-   if { ![winfo exists .modelnew] || [MLDPn::ValidateMassInputParams $Id] } {
+   if { ![info exists ::tk_version] || [MLDPn::ValidateMassInputParams $Id] } {
       set em [expr $Tmp(EmInter.$Id)*$Sim(EmInterMode)]
 
       if { $Tmp(EmMassMode.$Id) == 0 } {

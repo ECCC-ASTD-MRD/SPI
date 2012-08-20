@@ -67,9 +67,15 @@ namespace eval MLDPn {
    set Sim(EmDir)                "$env(HOME)/.spi/Scenario"    ;#----- Directory containing emission scenario files.
    set Sim(EmEpsilon)            1.0e-05                       ;#----- Small value.
    set Sim(EmInterMode)          3600                          ;#----- Mode of the interval duration. (H or S)
+   set Sim(EmInterStart)         0                             ;#----- Starting index for emission intervals.
+   set Sim(EmSizeDistDefault)    "N/A"
+   set Sim(EmDensityDefault)     2.500e+12
+   set Sim(EmVerticalDistDefault) "Uniform"
 
    set Sim(EmIsAutoNPDefault)    1                             ;#----- Flag indicating if particles are to be automatically distributed
 
+   set Sim(OutputDelta)          24                            ;#----- Output file delta in hours
+   set Sim(OutVar)               { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    set Sim(OutCV) {}
    set Sim(OutAV) {}
    set Sim(BubbleId)             -1

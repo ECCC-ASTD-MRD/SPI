@@ -16,6 +16,11 @@
 #
 #===============================================================================
 
+#----- If the Global path does not exits, set it to env
+if { ![info exists GDefs(Dir)] } {
+   set GDefs(Dir) $env(SPI_PATH)
+}
+
 package require Dialog
 package require CanvasBubble
 package require Calendar
@@ -23,11 +28,6 @@ package require Clock
 package require MetData
 package require Tree
 package require IsoBox
-
-#----- If the Global path does not exits, set it to env
-if { ![info exists GDefs(Dir)] } {
-   set GDefs(Dir) $env(SPI_PATH)
-}
 
 namespace eval Model {
    global GDefs
@@ -298,7 +298,7 @@ proc Model::GetMetData { Model } {
 }
 
 proc Model::CreateInput { Model } {
-   catch { ${Model}::EmissionRead }
+    ${Model}::EmissionRead
    ${Model}::CreateModelInput
    ${Model}::CreateScriptInput
 
@@ -449,9 +449,6 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
 
    upvar ${Model}::Sim sim
 
-   set Data(Frame) $Page::Data(Frame)
-   set Data(VP)    $Viewport::Data(VP)
-
    if { $Mode!="NEW" } {
       set sim(NI)     [lindex $sim(Grid) 0]
       set sim(NJ)     [lindex $sim(Grid) 1]
@@ -489,10 +486,16 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    set sim(NK) 25 ;#----- Number of vertical levels in the model (MLDP).
 
    fstdfield define MODELGRID -NOMVAR GRID -DATEO [fstdstamp fromseconds [clock seconds]]
-   fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
 
-   Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
-   Viewport::UpdateData $Data(Frame)
+   if { [info exists ::tk_version] } {
+      fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
+
+      set Data(Frame) $Page::Data(Frame)
+      set Data(VP)    $Viewport::Data(VP)
+
+      Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
+      Viewport::UpdateData $Data(Frame)
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -989,6 +992,7 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    if { $env(USER)=="afseeer" || $env(USER)=="afsepar" } {
       set sim(Blame) ""
    } else {
+      set str ""
       catch { set str [exec finger $env(USER) 2>/dev/null] }
       set sim(Blame)        [string trim [lindex [split [lindex [split $str \n] 0] :] end]]
    }
