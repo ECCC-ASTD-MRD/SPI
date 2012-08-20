@@ -641,71 +641,71 @@ proc Mapper::ParamsGDAL { Object Tab } {
             pack $Data(Frame3).meta.scroll -side left -fill y
          pack $Data(Frame3).meta -side top -fill both -expand true -padx 5 -pady 5
 
-      set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(GeoLoc) $GDefs(Lang)] False ""]
-
-         frame $Data(Frame4).georef
-            frame $Data(Frame4).georef.tool
-               button $Data(Frame4).georef.tool.add -image PINADD -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordAdd
-               button $Data(Frame4).georef.tool.del -image PINDEL -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordDel
-               checkbutton $Data(Frame4).georef.tool.mode -variable Page::Data(ToolMode) -onvalue Mapper::GeoLocator -offvalue SPI \
-                  -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-                  -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-               button $Data(Frame4).georef.tool.calcul -text [lindex $Lbl(Calcul) $GDefs(Lang)] -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordSet
-               ComboBox::Create $Data(Frame4).georef.tool.fit Mapper::GeoLocator::Data(Mode) noedit unsorted nodouble -1 $Mapper::GeoLocator::Data(Modes) 10 10 ""
-               pack $Data(Frame4).georef.tool.mode $Data(Frame4).georef.tool.add $Data(Frame4).georef.tool.del \
-                  $Data(Frame4).georef.tool.fit $Data(Frame4).georef.tool.calcul -side left -padx 2
-            pack $Data(Frame4).georef.tool -side top -fill x
-
-            frame $Data(Frame4).georef.pt
-               listbox $Data(Frame4).georef.pt.list -width 16 -height 1 -bd 1 -relief sunken -exportselection False \
-                  -listvariable Mapper::GeoLocator::Data(GCPS) -yscrollcommand "$Data(Frame4).georef.pt.scroll set" -selectmode single -bg white
-               bind $Data(Frame4).georef.pt.list <ButtonRelease-1> { Mapper::GeoLocator::CoordView }
-               scrollbar $Data(Frame4).georef.pt.scroll -relief sunken -command "$Data(Frame4).georef.pt.list yview" -bd 1 -width 10
-               pack $Data(Frame4).georef.pt.list -side left -fill y
-               pack $Data(Frame4).georef.pt.scroll -side right -fill y
-            pack $Data(Frame4).georef.pt -side left -fill y -padx 2 -pady 5
-
-            frame $Data(Frame4).georef.hfrm
-               Page::Create $Data(Frame4).georef.hfrm.map -1 -1
-               pack $Data(Frame4).georef.hfrm.map -side top -expand true -fill both
-
-               frame $Data(Frame4).georef.hfrm.info -relief sunken -bd 1
-                  frame $Data(Frame4).georef.hfrm.info.xy
-                     label $Data(Frame4).georef.hfrm.info.xy.n -relief raised -bd 1 -text "    "
-                     label $Data(Frame4).georef.hfrm.info.xy.x -relief raised -bd 1 -text X
-                     label $Data(Frame4).georef.hfrm.info.xy.y -relief raised -bd 1 -text Y
-                     pack $Data(Frame4).georef.hfrm.info.xy.n $Data(Frame4).georef.hfrm.info.xy.x $Data(Frame4).georef.hfrm.info.xy.y \
-                        -side top -fill both
-                  frame $Data(Frame4).georef.hfrm.info.img
-                     label $Data(Frame4).georef.hfrm.info.img.lbl -text [lindex $Lbl(Image) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
-                     label $Data(Frame4).georef.hfrm.info.img.x -textvariable Mapper::GeoLocator::Data(X) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     label $Data(Frame4).georef.hfrm.info.img.y -textvariable Mapper::GeoLocator::Data(Y) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     pack  $Data(Frame4).georef.hfrm.info.img.lbl $Data(Frame4).georef.hfrm.info.img.x $Data(Frame4).georef.hfrm.info.img.y \
-                        -side top -fill x
-                  frame $Data(Frame4).georef.hfrm.info.ref
-                     label $Data(Frame4).georef.hfrm.info.ref.lbl -text [lindex $Lbl(Ref) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
-                     label $Data(Frame4).georef.hfrm.info.ref.x -textvariable Mapper::GeoLocator::Data(RefX) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     label $Data(Frame4).georef.hfrm.info.ref.y -textvariable Mapper::GeoLocator::Data(RefY) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     pack  $Data(Frame4).georef.hfrm.info.ref.lbl $Data(Frame4).georef.hfrm.info.ref.x $Data(Frame4).georef.hfrm.info.ref.y \
-                        -side top -fill x
-                  frame $Data(Frame4).georef.hfrm.info.coo
-                     label $Data(Frame4).georef.hfrm.info.coo.lbl -text [lindex $Lbl(Coord) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
-                     label $Data(Frame4).georef.hfrm.info.coo.x -textvariable Mapper::GeoLocator::Data(Lon) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     label $Data(Frame4).georef.hfrm.info.coo.y -textvariable Mapper::GeoLocator::Data(Lat) -width 15 -bg $GDefs(ColorLight) -bd 1
-                     pack  $Data(Frame4).georef.hfrm.info.coo.lbl $Data(Frame4).georef.hfrm.info.coo.x $Data(Frame4).georef.hfrm.info.coo.y \
-                        -side top -fill x
-                  pack $Data(Frame4).georef.hfrm.info.xy -side left
-                  pack $Data(Frame4).georef.hfrm.info.img $Data(Frame4).georef.hfrm.info.ref $Data(Frame4).georef.hfrm.info.coo \
-                     -side left -fill x -expand True
-               pack $Data(Frame4).georef.hfrm.info -side top -fill x
-            pack $Data(Frame4).georef.hfrm -side left -fill both -expand True -padx 2 -pady 5
-         pack $Data(Frame4).georef -side top -expand true -fill both -padx 5 -pady 5
-
-         Bubble::Create $Data(Frame4).georef.tool.add    $Bubble(RefAdd)
-         Bubble::Create $Data(Frame4).georef.tool.del    $Bubble(RefDel)
-         Bubble::Create $Data(Frame4).georef.tool.mode   $Bubble(RefMode)
-         Bubble::Create $Data(Frame4).georef.tool.calcul $Bubble(RefCalcul)
-         Bubble::Create $Data(Frame4).georef.tool.fit    $Bubble(RefFit)
+#       set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Lbl(GeoLoc) $GDefs(Lang)] False ""]
+#
+#          frame $Data(Frame4).georef
+#             frame $Data(Frame4).georef.tool
+#                button $Data(Frame4).georef.tool.add -image PINADD -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordAdd
+#                button $Data(Frame4).georef.tool.del -image PINDEL -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordDel
+#                checkbutton $Data(Frame4).georef.tool.mode -variable Page::Data(ToolMode) -onvalue Mapper::GeoLocator -offvalue SPI \
+#                   -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+#                   -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+#                button $Data(Frame4).georef.tool.calcul -text [lindex $Lbl(Calcul) $GDefs(Lang)] -relief raised -bd 0 -overrelief raised -command Mapper::GeoLocator::CoordSet
+#                ComboBox::Create $Data(Frame4).georef.tool.fit Mapper::GeoLocator::Data(Mode) noedit unsorted nodouble -1 $Mapper::GeoLocator::Data(Modes) 10 10 ""
+#                pack $Data(Frame4).georef.tool.mode $Data(Frame4).georef.tool.add $Data(Frame4).georef.tool.del \
+#                   $Data(Frame4).georef.tool.fit $Data(Frame4).georef.tool.calcul -side left -padx 2
+#             pack $Data(Frame4).georef.tool -side top -fill x
+#
+#             frame $Data(Frame4).georef.pt
+#                listbox $Data(Frame4).georef.pt.list -width 16 -height 1 -bd 1 -relief sunken -exportselection False \
+#                   -listvariable Mapper::GeoLocator::Data(GCPS) -yscrollcommand "$Data(Frame4).georef.pt.scroll set" -selectmode single -bg white
+#                bind $Data(Frame4).georef.pt.list <ButtonRelease-1> { Mapper::GeoLocator::CoordView }
+#                scrollbar $Data(Frame4).georef.pt.scroll -relief sunken -command "$Data(Frame4).georef.pt.list yview" -bd 1 -width 10
+#                pack $Data(Frame4).georef.pt.list -side left -fill y
+#                pack $Data(Frame4).georef.pt.scroll -side right -fill y
+#             pack $Data(Frame4).georef.pt -side left -fill y -padx 2 -pady 5
+#
+#             frame $Data(Frame4).georef.hfrm
+#                Page::Create $Data(Frame4).georef.hfrm.map -1 -1
+#                pack $Data(Frame4).georef.hfrm.map -side top -expand true -fill both
+#
+#                frame $Data(Frame4).georef.hfrm.info -relief sunken -bd 1
+#                   frame $Data(Frame4).georef.hfrm.info.xy
+#                      label $Data(Frame4).georef.hfrm.info.xy.n -relief raised -bd 1 -text "    "
+#                      label $Data(Frame4).georef.hfrm.info.xy.x -relief raised -bd 1 -text X
+#                      label $Data(Frame4).georef.hfrm.info.xy.y -relief raised -bd 1 -text Y
+#                      pack $Data(Frame4).georef.hfrm.info.xy.n $Data(Frame4).georef.hfrm.info.xy.x $Data(Frame4).georef.hfrm.info.xy.y \
+#                         -side top -fill both
+#                   frame $Data(Frame4).georef.hfrm.info.img
+#                      label $Data(Frame4).georef.hfrm.info.img.lbl -text [lindex $Lbl(Image) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.img.x -textvariable Mapper::GeoLocator::Data(X) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.img.y -textvariable Mapper::GeoLocator::Data(Y) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      pack  $Data(Frame4).georef.hfrm.info.img.lbl $Data(Frame4).georef.hfrm.info.img.x $Data(Frame4).georef.hfrm.info.img.y \
+#                         -side top -fill x
+#                   frame $Data(Frame4).georef.hfrm.info.ref
+#                      label $Data(Frame4).georef.hfrm.info.ref.lbl -text [lindex $Lbl(Ref) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.ref.x -textvariable Mapper::GeoLocator::Data(RefX) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.ref.y -textvariable Mapper::GeoLocator::Data(RefY) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      pack  $Data(Frame4).georef.hfrm.info.ref.lbl $Data(Frame4).georef.hfrm.info.ref.x $Data(Frame4).georef.hfrm.info.ref.y \
+#                         -side top -fill x
+#                   frame $Data(Frame4).georef.hfrm.info.coo
+#                      label $Data(Frame4).georef.hfrm.info.coo.lbl -text [lindex $Lbl(Coord) $GDefs(Lang)] -width 5 -anchor w -relief raised -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.coo.x -textvariable Mapper::GeoLocator::Data(Lon) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      label $Data(Frame4).georef.hfrm.info.coo.y -textvariable Mapper::GeoLocator::Data(Lat) -width 15 -bg $GDefs(ColorLight) -bd 1
+#                      pack  $Data(Frame4).georef.hfrm.info.coo.lbl $Data(Frame4).georef.hfrm.info.coo.x $Data(Frame4).georef.hfrm.info.coo.y \
+#                         -side top -fill x
+#                   pack $Data(Frame4).georef.hfrm.info.xy -side left
+#                   pack $Data(Frame4).georef.hfrm.info.img $Data(Frame4).georef.hfrm.info.ref $Data(Frame4).georef.hfrm.info.coo \
+#                      -side left -fill x -expand True
+#                pack $Data(Frame4).georef.hfrm.info -side top -fill x
+#             pack $Data(Frame4).georef.hfrm -side left -fill both -expand True -padx 2 -pady 5
+#          pack $Data(Frame4).georef -side top -expand true -fill both -padx 5 -pady 5
+#
+#          Bubble::Create $Data(Frame4).georef.tool.add    $Bubble(RefAdd)
+#          Bubble::Create $Data(Frame4).georef.tool.del    $Bubble(RefDel)
+#          Bubble::Create $Data(Frame4).georef.tool.mode   $Bubble(RefMode)
+#          Bubble::Create $Data(Frame4).georef.tool.calcul $Bubble(RefCalcul)
+#          Bubble::Create $Data(Frame4).georef.tool.fit    $Bubble(RefFit)
 
       frame .mapperparams.com
          checkbutton .mapperparams.com.real -image DOCSEL -bd 1 -relief raised \
