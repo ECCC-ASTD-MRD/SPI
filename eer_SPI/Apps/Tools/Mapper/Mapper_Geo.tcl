@@ -178,7 +178,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
       }
       "Geocoder" {
          #----- Send request through Geocoder.ca
-         set req [http::geturl "http://geocoder.ca/?[http::formatQuery locate [join ${Request} %20] geoit XML]"]
+         set req [http::geturl "http://geocoder.ca/?[http::formatQuery locate [join ${Request} " "] geoit XML]"]
          if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
             Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
             return
