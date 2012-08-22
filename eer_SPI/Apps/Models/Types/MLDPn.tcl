@@ -341,10 +341,6 @@ proc MLDPn::CreateModelInput { } {
 
       puts $file [format "%-21s= %-25s # Emission date-time \[UTC\]: YearMonthDayHourMinute" SRC_TIME [clock format $Sim(AccSecs) -format "%Y%m%d%H%M" -gmt True]]
 
-      if { $Sim(SrcType) == "VOLCANO" } {
-         puts $file [format "%-21s= %-25s # Total released mass for volcanic eruption \[micrograms\]" SRC_EMI_MASS_VOLCANO $Sim(EmMass)]
-      }
-
       if { [set vert [lsearch -exact [lindex $MLDPn::Sim(ListEmVerticalDist) 0] $Sim(EmVerticalDist)]]==-1 } {
          set vert [lsearch -exact [lindex $MLDPn::Sim(ListEmVerticalDist) 1] $Sim(EmVerticalDist)]
       }
@@ -1315,7 +1311,6 @@ proc MLDPn::InitNew { Type } {
    set Sim(WetScaMode)           DEFAULT                             ;#----- Jian's 4mode scheme wet scavenging.
    set Sim(DryDepMode)           DEFAULT                             ;#----- Jian's 4mode scheme dry deposition.
    set Sim(EmScenario)           "default"                           ;#----- Scenario name.
-   set Sim(EmMass)               0.0                                 ;#----- Total mass released.
    set Sim(EmList)               {}                                  ;#----- List of emission scenarios.
    set Sim(EmNbIntervals)        0                                   ;#----- Number of emission intervals.
    set Sim(EmInterStart)         0                                   ;#----- Starting index for emission intervals.
@@ -1363,7 +1358,6 @@ proc MLDPn::InitNew { Type } {
    #----- Initialize unused variables to "not available" for pool information.
    if { $Sim(SrcType) == "ACCIDENT" || $Sim(SrcType) == "VIRUS" } {
       set Sim(EmDensityDefault)  2.500e+12
-      set Sim(EmMass)            $NA
       set Sim(EmSizeDistDefault) $NA
    }
 
