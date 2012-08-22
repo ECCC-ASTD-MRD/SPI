@@ -1264,7 +1264,7 @@ proc Graph::DataSheet { Type Graph } {
          #----- Graph Raster
          set ditem [graphitem configure $item -data]
          if { $ditem!="" } {
-            if { [fstdfield define $ditem -GraphTYP]=="V" } {
+            if { [fstdfield define $ditem -GRTYP]=="V" } {
                $text insert end "Levels     :[fstdfield stats $ditem -levels]\n"
             }
             for { set j 0 } { $j < [fstdfield define $ditem -NJ] } { incr j } {
@@ -2618,8 +2618,25 @@ proc Graph::DrawInit { Frame VP } {
       set data(FrameData) $Frame
       Graph::${Type}::Update $Frame $Graph::Data(Graph)
    } else {
+      set coords [list $data(Lat0) $data(Lon0)]
+      switch [lindex $Viewport::Data(Picked) 0] {
+         "observation" {
+            set obj [lindex $Viewport::Data(Picked) 1]
+            set idx [lindex $Viewport::Data(Picked) 2]
+            set coords [lrange [observation define $obj -COORD $idx] 0 1]
+            set data(Obs$Graph::Data(Pos)) [observation define $obj -ID $idx]
+         }
+         "metobs" {
+            set obj [lindex $Viewport::Data(Picked) 1]
+            set idx [lindex $Viewport::Data(Picked) 2]
+            set coords [metobs define $obj -COORD $idx]
+            set data(Obs$Graph::Data(Pos)) [metobs define $obj -ID $idx]
+            set data(Elem$Graph::Data(Pos)) [lindex [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $Viewport::Data(Picked) 3]] 2]
+         }
+      }
+
       switch $Param(SelectMode) {
-         "POINT" { Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [list $data(Lat0) $data(Lon0)] }
+         "POINT" { Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords }
       }
    }
 }

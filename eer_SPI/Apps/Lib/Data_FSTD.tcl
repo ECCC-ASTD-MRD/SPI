@@ -1060,6 +1060,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    foreach fld $Fields {
       if { [fstdfield is $fld] } {
 
+          #----- Get the name of the configuration object
           switch $Param(Mode) {
             "FLD"   { set var $fld }
             "VAR"   { set var [fstdfield configure $fld -desc] }
@@ -1075,8 +1076,11 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { [set var [string trim $var]]=="" } {
             set var "<>"
          }
+
+         #----- Check if field has already been setup
          set set [fstdfield configure $fld -set]
 
+         #----- Define default config for this object
          if { ![dataspec is $var] || $set } {
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {

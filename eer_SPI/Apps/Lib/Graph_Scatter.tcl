@@ -188,7 +188,7 @@ proc Graph::Scatter::Clean { GR } {
 
    upvar #0 Graph::Scatter::Scatter${GR}::Data  data
 
-   if { $data(Stat)!="" && [llength [$Frame.page.canvas find withtag GRAPHSTAT$data(Stat)]] } {
+   if { $data(Stat)!="" && [llength [$data(Frame).page.canvas find withtag GRAPHSTAT$data(Stat)]] } {
       Graph::Destroy $data(Frame) $data(Stat) Stat
    }
 }
@@ -918,5 +918,42 @@ proc Graph::Scatter::ItemDataObs { Item Coords Data0 Data1 } {
    if { [fstdfield is $Data0] } {
       observation free $Data0
    }
+   SPI::Progress 0
+}
+
+proc Graph::Scatter::ItemDataMetObs { Item Coords Data0 Data1 } {
+   global GDefs
+
+   if { [fstdfield is $Data1] } {
+      set field $Data1
+      set obs   $Data0
+   }
+
+   if { [fstdfield is $Data0] } {
+      set field $Data0
+      set obs   $Data1
+   }
+
+   #----- Selection des limites
+
+   set date [fstdstamp toseconds [fstdfield define $field -DATEV]]
+
+   set idxs  [metobs define $obs -NB]
+   set nidx [llength $idxs]
+   set n 0
+   set df  [expr 100.0/([llength $idxs]-1)]
+
+   foreach id [metobs define $obs -ID] coords [metobs define $obs -COORD] {
+      set val0  [metobs define $obs -ELEMENT $id $data(Elem$Pos) $date]
+      set val1 [fstdfield stats $field -coordvalue [lindex $coords 0] [lindex $coords 1]]
+
+      if { $val0!="-" && $val1!="-" } {
+         vector append $Item.X $val0
+         vector append $Item.Y $val1
+      }
+      incr n
+      SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)] ($n/$nidx)"
+   }
+
    SPI::Progress 0
 }

@@ -647,14 +647,14 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 
    if { [graphitem is $Item] && [llength $data(Data$Data)] && [llength $data(Pos$Pos)] } {
 
+      vector set $Item.X {}
+      vector set $Item.Y {}
+
       set lat [lindex $data(Pos$Pos) 0]
       set lon [lindex $data(Pos$Pos) 1]
       set df  [expr 100.0/([llength $data(Data$Data)]-1)]
 
       if { [fstdfield is $Data] } {
-
-         vector set $Item.X {}
-         vector set $Item.Y {}
 
          foreach field $data(Data$Data) {
             if { [llength $data(Pos$Pos)]>2 } {
@@ -676,11 +676,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
          set graph(UnitY) [fstdfield configure $Data -unit]
       } elseif { [observation is $Data] } {
 
-         vector set $Item.X {}
-         vector set $Item.Y {}
-
          foreach obs $data(Data$Data) {
-
             if { [info exists data(Obs$Pos)] && [set idx [lindex [observation define [lindex $obs 1] -IDX $data(Obs$Pos)] 0]]!="" } {
 
                set val  [observation define [lindex $obs 1] -DATA $idx]
@@ -693,10 +689,18 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
                }
             }
             SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
-        }
+         }
          set graph(UnitY) [observation configure $Data -unit]
+      } elseif { [metobs is $Data] } {
+
+          foreach val [metobs define $Data -ELEMENT $data(Obs$Pos) $data(Elem$Pos)] {
+             vector append $Item.X [lindex $val 0]
+             vector append $Item.Y [lindex $val 1]
+          }
+          set graph(UnitY) [metobs table -unit $data(Elem$Pos)]
       }
    }
+   SPI::Progress 0
 }
 
 #-------------------------------------------------------------------------------
@@ -903,6 +907,9 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
          set data(Data$item) [lsort -integer -increasing -index 0 $data(Data$item)]
          set data(ObsIds)    [lsort -unique -dictionary -increasing $data(ObsIds)]
          lappend data(Data)  $item
+      } elseif { [metobs is $item] } {
+         set data(Data$item) $item
+         lappend data(Data) $item
       }
       SPI::Progress +$nb "[lindex $Graph::Msg(Reading) $GDefs(Lang)] $sec"
    }

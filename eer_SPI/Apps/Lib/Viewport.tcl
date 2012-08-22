@@ -78,6 +78,7 @@ namespace eval Viewport {
    set Data(FollowerNb) 0            ;#Nombre de suivit courant
    set Data(Link)       {}           ;#Lien source
    set Data(Data)       {}           ;#Liste des donnees
+   set Data(Picked)     {}           ;#Objet ous le curseur
 
    set Map(MinSize)     5            ;#Dimension minimale
    set Map(Sun)         0            ;#Affichage du Soleil
@@ -816,11 +817,11 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
    set sec   ""
 
    if { $Map(Speed)==0.0 } {
-      set data [$VP -pick $X $Y { trajectory observation metobs } False]
+      set Data(Picked) [$VP -pick $X $Y { trajectory observation metobs } False]
 
-      if { [llength $data] && [set tag [lindex $data 2]]!="" && [set obj [lindex $data 1]]!="" } {
+      if { [llength $Data(Picked)] && [set tag [lindex $Data(Picked) 2]]!="" && [set obj [lindex $Data(Picked) 1]]!="" } {
          set id ""
-         switch [lindex $data 0] {
+         switch [lindex $Data(Picked) 0] {
             "trajectory"  { set info   [Trajectory::ParcelInfo $obj $tag]
                             set parcel [trajectory define $obj -PARCEL $tag]
                             set coord  [list [lindex $parcel 1] [lindex $parcel 2] [lindex $parcel 5]]
@@ -840,10 +841,9 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                                append Page::Data(Value) "$id:$vals "
                             }
                           }
-            "metobs"      { set info  [lindex [metobs define $obj -ID $tag]]
+            "metobs"      { set info  [metobs define $obj -ID $tag]
                             set coord [metobs define $obj -COORD $tag]
-                            set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $data 3]]
-                            set spec  [metmodel configure [metobs define $obj -MODEL] [lindex $item 2] -dataspec]
+                            set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $Data(Picked) 3]]
                             set id    [lindex [metobs table -desc [lindex $item 2]] 0]
                             set vals  [lindex [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]] 0]
 
