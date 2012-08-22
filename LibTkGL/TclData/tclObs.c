@@ -2399,7 +2399,7 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj;
-   int      f,n=0,nc,vnb,vn0,vn1;
+   int      f,n=0,nc,vnb,vn0,vn1,o;
    double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
    Vect3d   vp,*vn=NULL;
 
@@ -2455,26 +2455,26 @@ int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CON
    n=0;
 
    obj=Tcl_NewListObj(0,NULL);
-   for(n=0;n<Obs->Loc->Nb;n++) {
+   for(o=0;o<Obs->Loc->Nb;o++) {
       if (nc==4) {
          if (dlat0==0 && dlat1==0 && dlon0==0 && dlon1==0) {
             f=1;
          } else {
             f=0;
-            if (Obs->Loc->Coord[n].Lat>=dlat0 && Obs->Loc->Coord[n].Lat<=dlat1) {
+            if (Obs->Loc->Coord[o].Lat>=dlat0 && Obs->Loc->Coord[o].Lat<=dlat1) {
                if (dl<=180) {
-                  if (Obs->Loc->Coord[n].Lon>=dlon0 && Obs->Loc->Coord[n].Lon<=dlon1) {
+                  if (Obs->Loc->Coord[o].Lon>=dlon0 && Obs->Loc->Coord[o].Lon<=dlon1) {
                      f=1;
                   }
                } else {
-                  if ((Obs->Loc->Coord[n].Lon<=dlon0 && Obs->Loc->Coord[n].Lon>-180) || (Obs->Loc->Coord[n].Lon>=dlon1 && Obs->Loc->Coord[n].Lon<180)) {
+                  if ((Obs->Loc->Coord[o].Lon<=dlon0 && Obs->Loc->Coord[o].Lon>-180) || (Obs->Loc->Coord[o].Lon>=dlon1 && Obs->Loc->Coord[o].Lon<180)) {
                      f=1;
                   }
                }
             }
          }
       } else {
-         Vect_Init(vp,Obs->Loc->Coord[n].Lat,Obs->Loc->Coord[n].Lon,0.0);
+         Vect_Init(vp,Obs->Loc->Coord[o].Lat,Obs->Loc->Coord[o].Lon,0.0);
 
          f=0;
          for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
@@ -2495,7 +2495,7 @@ int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CON
             case 2: tot=tot>v?v:tot; break;
             case 3: tot=tot<v?v:tot; break;
             case 4:
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(n));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(o));
                break;
          }
       }
