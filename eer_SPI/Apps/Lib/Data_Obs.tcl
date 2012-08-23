@@ -220,7 +220,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
 
    #----- Is it a profile ?
    if { [llength [lindex [lindex $items 0] 1]]>1 } {
-      if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]]!="" } {
+      if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]] } {
          set elevs [metobs define $Obs -ELEMENT $Tag $elem]
          foreach item [lindex [lindex $items 0] 1] elev [lindex [lindex $elevs 0] 1] {
             vector append PAGEOBSGRAPHDATA.X $item

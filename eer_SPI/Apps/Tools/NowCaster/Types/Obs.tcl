@@ -1271,7 +1271,7 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
       set Data(Var0) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 0]]
       set Data(Var1) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 1]]
 
-      if { [set topo [metmodel define [metobs define $Data(CurrentObs) -MODEL] -topography]]!="" } {
+      if { [set topo [metmodel define [metobs define $Data(CurrentObs) -MODEL] -topography]] } {
          set Data(Topo) "$topo [lindex [metobs table -desc $topo] 0]"
       } else {
          set Data(Topo) ""

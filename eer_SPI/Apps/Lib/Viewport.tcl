@@ -1618,6 +1618,11 @@ proc Viewport::ParamProj { Ref } {
    variable Lbl
    variable Map
 
+   if { ![winfo exists .viewportproj] } {
+      raise .viewportproj
+      return
+   }
+
    toplevel         .viewportproj -class Dialog
    wm title         .viewportproj "[lindex $Lbl(Proj) $GDefs(Lang)]"
    wm resizable     .viewportproj 1 1
@@ -2946,11 +2951,13 @@ proc Viewport::Link { } {
 proc Viewport::LinkDo { VP } {
    variable Data
 
-   foreach link $Data(Linked$VP) {
-      set frame [lindex $link 0]
-      set vpdst [lindex $link 1]
-      if { [winfo exists $frame] && [llength [$frame.page.canvas find withtag $vpdst]] } {
-         $frame.page.canvas itemconf $vpdst -data $Animator::Play(Data)
+   if { $VP!="" } {
+      foreach link $Data(Linked$VP) {
+         set frame [lindex $link 0]
+         set vpdst [lindex $link 1]
+         if { [winfo exists $frame] && [llength [$frame.page.canvas find withtag $vpdst]] } {
+            $frame.page.canvas itemconf $vpdst -data $Animator::Play(Data)
+         }
       }
    }
 }
