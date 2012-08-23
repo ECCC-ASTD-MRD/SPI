@@ -332,13 +332,19 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
 
          case TOPOGRAPHY:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Topo,-1));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(mdl->Topo));
             } else {
                ++i;
-               if (!mdl->Topo || strcmp(mdl->Topo,Tcl_GetString(Objv[i]))!=0) {
-                  if (mdl->Topo)
-                     free(mdl->Topo);
-                  mdl->Topo=(char*)strdup(Tcl_GetString(Objv[i]));
+               if (!strlen(Tcl_GetString(Objv[i]))) {
+                  mdl->Topo=0;
+               } else {
+                  if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[i]))) {
+                  Tcl_AppendResult(Interp,"\n   MetModel_Define: Wrong element",(char*)NULL);
+                  return(TCL_ERROR);
+                  }
+                  if (!mdl->Topo || mdl->Topo!=eb->descriptor) {
+                     mdl->Topo=eb->descriptor;
+                  }
                }
             }
             break;
@@ -376,8 +382,8 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
    mdl->Space    = 25;
    mdl->Flat     = 1;
    mdl->Overspace= 0;
+   mdl->Topo     = 0;
    mdl->Items    = NULL;
-   mdl->Topo     = NULL;
    mdl->Name     = strdup(Name);
 
    return(TCL_OK);
@@ -465,7 +471,6 @@ int MetModel_Free(TMetModel *Model) {
       free(Model->Items);
    }
 
-   if (Model->Topo) free(Model->Topo);
    free(Model->Name);
    free(Model);
 

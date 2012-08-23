@@ -334,7 +334,7 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
             Tcl_GetLongFromObj(Interp,Objv[++i],&code);
-            if (!(eb=bufr_tableb_fetch_entry(BUFRTable->master.tableB,code))) {
+            if (!(eb=MetObs_BUFRFindTableCode(code))) {
                Tcl_AppendResult(Interp,"\n   MetObs_Table: Could not find element",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -2586,9 +2586,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations meteorologiques\n",(char*)NULL);
 
-  if (Obs->Model->Topo && strlen(Obs->Model->Topo)) {
+  if (Obs->Model->Topo) {
       glEnable(GL_DEPTH_TEST);
-      eb=MetObs_BUFRFindTableDesc(Obs->Model->Topo);
+      eb=MetObs_BUFRFindTableCode(Obs->Model->Topo);
    } else {
       eb=NULL;
    }
