@@ -57,6 +57,7 @@ typedef struct TMaterial {
    float  Alpha;
    char   Path[256];
    char   Name[256];
+   char   Target[256];
    GLuint Tex;
 } TMaterial;
 

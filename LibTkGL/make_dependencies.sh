@@ -27,6 +27,7 @@ HDF5=hdf5-1.6.10
 POSTGRESQL=postgresql-8.4.1
 ODBC=unixODBC-2.3.0
 GRIB=grib_api-1.9.9
+OCI=instantclient_11_2
 
 #----- not recompiled yet
 NETCDF=netcdf-4.1.1
@@ -240,7 +241,9 @@ make distclean
 --with-hdf5=${LIBPATH}/${HDF5} \
 --with-pg=${LIBPATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIBPATH}/${ODBC} \
---with-netcdf=${LIBPATH}/${NETCDF}
+--with-netcdf=${LIBPATH}/${NETCDF} \
+--with-oci-lib=${LIBPATH}/${OCI} \
+--with-oci-include=${LIBPATH}/${OCI}/sdk/include
 
 make install
 if [[ $? -ne 0 ]] ; then

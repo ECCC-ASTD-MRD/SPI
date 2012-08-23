@@ -115,69 +115,67 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
       strncpy(data->Tag,Elem,255);
 
-      if (data->Pass==0) {
-         if (strcmp(Elem,"cityObjectMember")==0) {
-   //         data->Scene=Model_SceneAdd(data->Model,data->Scene,1);
-         } else
+      if (strcmp(Elem,"cityObjectMember")==0) {
+//         data->Scene=Model_SceneAdd(data->Model,data->Scene,1);
+      } else
+fprintf(stderr,"=== %s\n",Elem);
+      if (strcmp(Elem,"bldg:Building")==0 || strcmp(Elem,"citygml:Building")==0 || strcmp(Elem,"bldg:BuildingInstallation")==0 || strcmp(Elem,"dem:TINRelief")==0 ||
+         strcmp(Elem,"trans:Road")==0) {
+         data->Object=Model_ObjectAdd(data->Model,1);
+         data->Object->NFc=0;
+         data->Object->NVr=0;
 
-         if (strcmp(Elem,"bldg:Building")==0 || strcmp(Elem,"citygml:Building")==0 || strcmp(Elem,"bldg:BuildingInstallation")==0 || strcmp(Elem,"dem:TINRelief")==0) {
-            data->Object=Model_ObjectAdd(data->Model,1);
-            data->Object->NFc=0;
-            data->Object->NVr=0;
-
-            for (i=0;Attr[i];i+=2) {
-               if (strcmp(Attr[i],"gml:id")==0) {
-                  data->Object->Name=strndup(Attr[i+1],256);
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"gml:Envelope")==0) {
          for (i=0;Attr[i];i+=2) {
-               if (strcmp(Attr[i],"srsName")==0) {
-                  data->Model->Ref=GeoRef_New();
-                  GeoRef_WKTSet(data->Model->Ref,Attr[i+1],NULL,NULL,NULL);
-               }
+            if (strcmp(Attr[i],"gml:id")==0) {
+               data->Object->Name=strndup(Attr[i+1],256);
             }
-            data->Env=1;
-         } else
+         }
+      } else
 
-         if (strcmp(Elem,"gml:Polygon")==0 || strcmp(Elem,"gml:Triangle")==0) {
-            if (!data->Object) {
-               fprintf(stdout,"(ERROR) No object defined\n");
+      if (strcmp(Elem,"gml:Envelope")==0) {
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"srsName")==0) {
+               data->Model->Ref=GeoRef_New();
+               GeoRef_WKTSet(data->Model->Ref,Attr[i+1],NULL,NULL,NULL);
             }
-            data->Fc=Model_ObjectFaceAdd(data->Object,1);
+         }
+         data->Env=1;
+      } else
 
-            for (i=0;Attr[i];i+=2) {
-               if (strcmp(Attr[i],"gml:id")==0) {
-                  data->Fc->Name=strndup(Attr[i+1],256);
-               }
+      if (strcmp(Elem,"gml:Polygon")==0 || strcmp(Elem,"gml:Triangle")==0) {
+         if (!data->Object) {
+            fprintf(stdout,"(ERROR) No object defined\n");
+         }
+         data->Fc=Model_ObjectFaceAdd(data->Object,1);
+
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"gml:id")==0) {
+               data->Fc->Name=strndup(Attr[i+1],256);
             }
-         } else
+         }
+      } else
 
-         if (strcmp(Elem,"gml:posList")==0) {
-            for (i=0;Attr[i];i+=2) {
-               if (strcmp(Attr[i],"srsDimension")==0) {
-                  data->VrDim=atoi(Attr[i+1]);
+      if (strcmp(Elem,"gml:posList")==0) {
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"srsDimension")==0) {
+               data->VrDim=atoi(Attr[i+1]);
+            }
+         }
+      } else
+
+      if (strcmp(Elem,"app:target")==0) {
+         for (i=0;Attr[i];i+=2) {
+            if (strcmp(Attr[i],"uri")==0) {
+               if ((data->Fc=Model_FaceFind(data->Model,&Attr[i+1][1],&obj))) {
+                  data->Object=obj;
+                  data->Fc->Mt=data->Mt;
                }
             }
          }
-      }
+      } else
 
-      if (data->Pass==1) {
-         if (strcmp(Elem,"app:target")==0) {
-            for (i=0;Attr[i];i+=2) {
-               if (strcmp(Attr[i],"uri")==0) {
-                  if ((data->Fc=Model_FaceFind(data->Model,&Attr[i+1][1],&data->Object))) {
-                     data->Fc->Mt=data->Mt;
-                  }
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"app:surfaceDataMember")==0) {
-            data->Mt=Model_MaterialAdd(data->Model,1);
-         }
+      if (strcmp(Elem,"app:surfaceDataMember")==0) {
+         data->Mt=Model_MaterialAdd(data->Model,1);
       }
    }
 }
@@ -188,7 +186,7 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
    T3DObject   *obj=NULL;
    TFace       *fc=NULL;
    char        *buf,*c;
-   int          n;
+   int          n,i;
 
    if (Elem) {
 #ifdef DEBUG
@@ -196,97 +194,96 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
 #endif
       data->Tag[0]='\0';
 
-      if (data->Pass==0) {
-         if (strcmp(Elem,"gml:Envelope")==0) {
-            data->Env=0;
-         } else
+      if (strcmp(Elem,"gml:Envelope")==0) {
+         data->Env=0;
+      } else
 
-         if (strcmp(Elem,"gml:posList")==0 || strcmp(Elem,"gml:pos")==0) {
-            if (!data->Env && data->Object && (n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-               n/=3;
-               data->Object->Vr=realloc(data->Object->Vr,(data->Object->NVr+n)*sizeof(Vect3f));
-               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,&data->Object->Vr[data->Object->NVr]);
-               data->Object->NVr+=n;
-               data->Fc->NIdx+=n;
-            }
-         } else
+      if (strcmp(Elem,"gml:posList")==0 || strcmp(Elem,"gml:pos")==0) {
+         if (!data->Env && data->Object && (n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+            n/=3;
+            data->Object->Vr=realloc(data->Object->Vr,(data->Object->NVr+n)*sizeof(Vect3f));
+            XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,&data->Object->Vr[data->Object->NVr]);
+            data->Object->NVr+=n;
+            data->Fc->NIdx+=n;
+         }
+      } else
 
-         if (strcmp(Elem,"gml:LinearRing")==0) {
-            data->Fc->Idx=(unsigned int*)malloc(data->Fc->NIdx*sizeof(unsigned int));
-            for(n=0;n<data->Fc->NIdx;n++) {
-               data->Fc->Idx[n]=data->Object->NVr-data->Fc->NIdx+n;
+      if (strcmp(Elem,"gml:LinearRing")==0) {
+         data->Fc->Idx=(unsigned int*)malloc(data->Fc->NIdx*sizeof(unsigned int));
+         for(n=0;n<data->Fc->NIdx;n++) {
+            data->Fc->Idx[n]=data->Object->NVr-data->Fc->NIdx+n;
+         }
+      } else
+
+      if (strcmp(Elem,"app:diffuseColor")==0) {
+         if (data->Mt) {
+            if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Dif);
+               data->Mt->Dif[3]=1.0;
             }
          }
-      }
+      } else
 
-      if (data->Pass==1) {
+      if (strcmp(Elem,"app:emissiveColor")==0) {
+         if (data->Mt) {
+            if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Emi);
+               data->Mt->Emi[3]=1.0;
+            }
+         }
+      } else
 
-         if (strcmp(Elem,"app:diffuseColor")==0) {
-            if (data->Mt) {
+      if (strcmp(Elem,"app:specularColor")==0) {
+         if (data->Mt) {
+            if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Spe);
+               data->Mt->Spe[3]=1.0;
+            }
+         }
+      } else
+
+      if (strcmp(Elem,"app:shininess")==0) {
+         if (data->Mt) {
+            if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',1,&data->Mt->Shi);
+            }
+         }
+      } else
+
+      if (strcmp(Elem,"app:transparency")==0) {
+         if (data->Mt) {
+            if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
+               XML_ArrayExpandVect(data->Buf,data->BufLen,' ',1,&data->Mt->Alpha);
+            }
+         }
+      } else
+
+         if (strcmp(Elem,"app:imageURI")==0) {
+         if (data->Mt) {
+            strncpy(data->Mt->Path,data->Buf,256);
+         }
+      } else
+
+      if (strcmp(Elem,"app:textureCoordinates")==0) {
+         if (data->Fc) {
+            if (!data->Object->Tx) {
+               data->Object->Tx=(Vect3f*)calloc(data->Object->NVr,sizeof(Vect3f));
+            }
+            if (data->Object->Tx) {
                if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                  XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Dif);
-                  data->Mt->Dif[3]=1.0;
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"app:emissiveColor")==0) {
-            if (data->Mt) {
-               if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                  XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Emi);
-                  data->Mt->Emi[3]=1.0;
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"app:specularColor")==0) {
-            if (data->Mt) {
-               if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                  XML_ArrayExpandVect(data->Buf,data->BufLen,' ',3,data->Mt->Spe);
-                  data->Mt->Spe[3]=1.0;
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"app:shininess")==0) {
-            if (data->Mt) {
-               if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                  XML_ArrayExpandVect(data->Buf,data->BufLen,' ',1,&data->Mt->Shi);
-               }
-            }
-         } else
-
-         if (strcmp(Elem,"app:transparency")==0) {
-            if (data->Mt) {
-               if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                  XML_ArrayExpandVect(data->Buf,data->BufLen,' ',1,&data->Mt->Alpha);
-               }
-            }
-         } else
-
-            if (strcmp(Elem,"app:imageURI")==0) {
-            if (data->Mt) {
-               strncpy(data->Mt->Path,data->Buf,256);
-            }
-         } else
-
-         if (strcmp(Elem,"app:textureCoordinates")==0) {
-            if (data->Fc) {
-               if (!data->Object->Tx) {
-                  data->Object->Tx=(Vect3f*)calloc(data->Object->NVr,sizeof(Vect3f));
-               }
-               if (data->Object->Tx) {
-                  if ((n=XML_ArrayCheck(data->Buf,data->BufLen,' '))) {
-                     XML_ArrayExpandVect(data->Buf,data->BufLen,' ',2,&data->Object->Tx[data->Fc->Idx[0]]);
+                  n=XML_ArrayExpandVect(data->Buf,data->BufLen,' ',2,&data->Object->Tx[data->Fc->Idx[0]]);
+                  for(i=0;i<n;i++) {
+                     data->Object->Tx[data->Fc->Idx[0]+i][1]=1.0-data->Object->Tx[data->Fc->Idx[0]+i][1];
                   }
                }
             }
-         } else
+         }
+      } else
 
-         if (strcmp(Elem,"app:target")==0) {
-            if ((data->Fc=Model_FaceFind(data->Model,&data->Buf[1],&data->Object))) {
-               data->Fc->Mt=data->Mt;
-            }
+      if (strcmp(Elem,"app:target")==0 && strlen(data->Buf)>1) {
+         if ((data->Fc=Model_FaceFind(data->Model,&data->Buf[1],&obj))) {
+            data->Object=obj;
+            data->Fc->Mt=data->Mt;
          }
       }
    }
@@ -309,6 +306,17 @@ void ModelCityGML_CharHandler(void *Data,const char *Txt,int Len) {
       data->BufLen+=Len;
    }
 }
+
+void NS_StartHandler(void *Data,const char *Prefix,const char *URI) {
+
+  printf("in %s => %s\n", Prefix ? Prefix : "(null)", URI ? URI : "(null)");
+}
+
+void NS_EndHandler(void *Data,const char *Prefix) {
+
+  printf("ou %s\n", Prefix ? Prefix : "(null)");
+}
+
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_LoadCityGML>
@@ -336,6 +344,8 @@ int Model_LoadCityGML(T3DModel *M,char *Path) {
 
    /*Create expat XML parser*/
    parser=XML_ParserCreate(NULL);
+//   parser=XML_ParserCreateNS(NULL,'.');
+
    if (!parser) {
       fprintf(stderr,"(ERROR) Model_LoadCityGML: Couldn't initiate XML parser\n");
       return(0);
@@ -351,7 +361,6 @@ int Model_LoadCityGML(T3DModel *M,char *Path) {
    data->Buf=NULL;
    data->BufLen=data->BufRLen=0;
    data->Env=0;
-   data->Pass=0;
 
    data->Scene=NULL;
    data->Object=NULL;
@@ -360,16 +369,11 @@ int Model_LoadCityGML(T3DModel *M,char *Path) {
 
    /*Initialise expat XML parser*/
    XML_SetUserData(parser,data);
-   XML_SetElementHandler(parser,ModelCityGML_StartHandler,ModelCityGML_EndHandler);
    XML_SetCharacterDataHandler(parser,ModelCityGML_CharHandler);
+   XML_SetElementHandler(parser,ModelCityGML_StartHandler,ModelCityGML_EndHandler);
+//   XML_SetNamespaceDeclHandler(parser,NS_StartHandler,NS_EndHandler);
 
    /*Parse the XML by chunk*/
-   for(data->Pass=0;data->Pass<=1;data->Pass++) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Model_LoadCityGML: Pass %i\n",data->Pass);
-#endif
-      fseek(file,0,SEEK_SET);
-
    for (;;) {
       if (!(buf=XML_GetBuffer(parser,XMLBUFSIZE))) {
          fprintf(stderr,"(ERROR) Model_LoadCityGML: Could not allocate XML IO buffer\n");
@@ -392,13 +396,21 @@ int Model_LoadCityGML(T3DModel *M,char *Path) {
 
       if (!len)
          break;
-    }
    }
-    XML_ParserFree(parser);
+   XML_ParserFree(parser);
 
-    /*Free associates parsing data structure*/
-    free(data);
+   /*Parse materials
+   fprintf(stderr,"---1\n");
+   for (len=0;len<M->NMt;len++) {
+      data->Mt=&M->Mt[len];
+      if ((data->Fc=Model_FaceFind(data->Model,&data->Mt->Target[1],NULL))) {
+         data->Fc->Mt=data->Mt;
+      }
+   }*/
 
-    fclose(file);
-    return(state);
+   /*Free associates parsing data structure*/
+   free(data);
+
+   fclose(file);
+   return(state);
 }

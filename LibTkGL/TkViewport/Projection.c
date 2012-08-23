@@ -1708,7 +1708,6 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
    } else {
       Proj->ZFactor=1.0/EARTHRADIUS;
    }
-
    /*Calcul de la position centrale*/
    if (Proj->Type->Def==PROJGLOBE) {
       gluProject(0.0,0.0,0.0,VP->GLModS,VP->GLProj,VP->GLView,&Proj->ZPos[0],&Proj->ZPos[1],&Proj->ZPos[2]);

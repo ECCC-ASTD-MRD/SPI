@@ -2025,9 +2025,9 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
             if (Obs->Spec->RenderVol && OBSVALID(val)) {
                if (Obs->Spec->RenderVol==-1) {
-                  z=Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
+                  z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
                } else {
-                  z=Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
+                  z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
                }
                glDisable(GL_STENCIL_TEST);
                glBegin(GL_QUAD_STRIP);

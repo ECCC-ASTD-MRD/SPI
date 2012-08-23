@@ -42,7 +42,7 @@ typedef struct CityGMLData {
    TFace     *Fc;
    int        NFc,NVr,VrDim;
 
-   int        Env,Pass;
+   int        Env;
 
    char        *Buf;
    unsigned int BufLen,BufRLen;

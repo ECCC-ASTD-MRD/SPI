@@ -2254,6 +2254,7 @@ GLuint Texture_Read(char *File) {
    if (map) free(map);
    if (buf) free(buf);
    GDALClose(set);
+
    return(id);
 }
 
