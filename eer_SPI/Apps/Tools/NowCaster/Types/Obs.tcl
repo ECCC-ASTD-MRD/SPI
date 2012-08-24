@@ -808,6 +808,12 @@ proc NowCaster::Obs::Read { Obs Files } {
 
       proc NowCasterObsReader { Obs Files { Thread 0 } } {
 
+         #----- Make sure the layout is initialised, wait for a viewport to be created
+         set vp ""
+         while { $vp=="" } {
+            thread::send $Thread "set a \$Viewport::Data(VP)" vp
+         }
+
          foreach file $Files {
             thread::send -async $Thread "set NowCaster::Data(Job) \"\[lindex \$NowCaster::Obs::Msg(Read) \$GDefs(Lang)\] $file\""
             if { [catch { metobs read $Obs $file }] } {

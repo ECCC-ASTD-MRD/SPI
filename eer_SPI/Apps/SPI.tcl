@@ -2339,11 +2339,6 @@ if { $SPI::Param(Exp) } {
    Model::Window True
 }
 
-#----- Selection d'un outils
-foreach tool $SPI::Param(Tool) {
-   eval ${tool}::Window
-}
-
 #----- Ouvrir les fichiers icons
 SPI::IcoOpen $SPI::Param(Icons)
 
@@ -2357,6 +2352,11 @@ if { $SPI::Param(Project)!="" } {
    if { ![SPI::LayoutLoad [lindex $Page::Data(Frames) 0] $layout] } {
       SPI::Quit 1
    }
+}
+
+#----- Selection d'un outils
+foreach tool $SPI::Param(Tool) {
+   eval ${tool}::Window
 }
 
 #----- Refresh final
