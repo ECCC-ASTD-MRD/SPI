@@ -1599,7 +1599,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case MAX:
             if (Objc==1) {
                if (!Field->Stat)
-               Data_GetStat(Field);
+                  Data_GetStat(Field);
 
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,Field->Stat->Max)));
@@ -1937,6 +1937,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDVALUE:
+            if (!Field->Stat)
+               Data_GetStat(Field);
+
             if (Objc==1 || Objc==2) {
 
                /*Check for maximum number of elements*/
@@ -2021,6 +2024,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
             Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,1,1);
 
+            if (!Field->Stat)
+               Data_GetStat(Field);
+
             if (Objc==4) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
                Data_ValSet(Field,dx,dy,val);
@@ -2056,6 +2062,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
+
+            if (!Field->Stat)
+               Data_GetStat(Field);
 
             if (Field->Def->Data[1]) {
                vbuf=VBuffer_Alloc(len*2+1);
@@ -2098,6 +2107,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
+            if (!Field->Stat)
+               Data_GetStat(Field);
+
             if (Field->Def->Data[1]) {
                vbuf=VBuffer_Alloc(len*2+1);
 
@@ -2135,6 +2147,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
+
+            if (!Field->Stat)
+               Data_GetStat(Field);
+
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
                FFContour(REF_GRID,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
@@ -2187,6 +2203,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                mode=Tcl_GetString(Objv[++i])[0];
                i++;
             }
+
+            if (!Field->Stat)
+               Data_GetStat(Field);
+
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
                FFContour(REF_COOR,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);

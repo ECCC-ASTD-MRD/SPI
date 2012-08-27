@@ -1416,8 +1416,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
 
       if (CSLCount(sub)>0) {
          subid=(char*)malloc(strlen(Id)+8);
-
-         /* Loop over bands */
+        /* Loop over bands */
          for (si=0;sub[si]!=NULL;si++) {
             snprintf(subid,(strlen(Id)+8),"%s%04i",Id,si>>1);
 
@@ -1458,7 +1457,6 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
          Tcl_AppendElement(Interp,buf);
       }
    }
-
    file=(GDAL_File*)malloc(sizeof(GDAL_File));
    file->ColorInterp=ci;
    file->Driver=driver;

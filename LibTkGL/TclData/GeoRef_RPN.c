@@ -190,7 +190,10 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             Def_Pointer(Def,1,mem,p1);
             EZLock_RPNInt();
             c_gdxywdval(Ref->Id,&valf,&valdf,p0,p1,&x,&y,1);
-            c_gdxysval(Ref->Id,&valf,&Def->Mode[mem],&x,&y,1);
+
+            /*If it's 3D, use the mode for speed since c_gdxywdval only uses 2D*/
+            if (Def->Data[2])
+               c_gdxysval(Ref->Id,&valf,&Def->Mode[mem],&x,&y,1);
             *Length=valf;
             *ThetaXY=valdf;
             EZUnLock_RPNInt();
