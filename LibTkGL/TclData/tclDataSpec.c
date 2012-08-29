@@ -777,17 +777,16 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      tmp=10.0;
                   }
                }
+               if (Spec->InterVals && new) {
+                  Tcl_DecrRefCount(Spec->InterVals);
+                  Spec->InterVals=NULL;
+               }
 
                if (new!=Spec->InterMode || tmp!=Spec->InterModeParam) {
                   Spec->InterNb=0;
                   Spec->InterMode=new;
                   Spec->InterModeParam=tmp;
                   cmap=cseg=1;
-
-                  if (Spec->InterVals && new==0) {
-                     Tcl_DecrRefCount(Spec->InterVals);
-                     Spec->InterVals=NULL;
-                  }
                }
             }
             break;
@@ -1777,6 +1776,10 @@ void DataSpec_Define(TDataSpec *Spec){
       return;
    }
 
+   if (Spec->InterMode) {
+      DataSpec_Intervals(Spec,Spec->Min,Spec->Max);
+   }
+
    /*Redefinir le facteur de conversion de la palette*/
    if (Spec->Map) {
       if (Spec->InterNb>0) {
@@ -1865,7 +1868,7 @@ void DataSpec_IntervalsLogList(TDataSpec *Spec,double Min,double Max,double Delt
    if (Min==0)
       Spec->Inter[Spec->InterNb++]=0.0;
 
-   while(Min>Max?min>=max:min<max) {
+   while(Delta!=0.0 && (Min>Max?min>=max:min<max)) {
       Spec->Inter[Spec->InterNb++]=Delta*pow(10,min);
       min+=Delta;
    }
