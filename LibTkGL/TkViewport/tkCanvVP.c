@@ -1345,9 +1345,12 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glLineWidth(vp->BDWidth);
       glPolygonMode(GL_FRONT,GL_LINE);
       glColor3us(vp->FGColor->red,vp->FGColor->green,vp->FGColor->blue);
+
+      /*There's a 1 pixel offset on X0 when saving image in GPU mode, can't find why*/
+      n=(GLRender->TRCon && !GLRender->Soft)?1:0;
       glBegin(GL_QUADS);
-         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
-         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
          glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
          glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
       glEnd();
@@ -1952,10 +1955,10 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    }
 
    /*Coordonnee du viewport*/
-   coords[0]=vp->header.x1 ; coords[1]=vp->header.y1;
-   coords[2]=vp->header.x2 ; coords[3]=vp->header.y1;
-   coords[4]=vp->header.x2 ; coords[5]=vp->header.y2;
-   coords[6]=vp->header.x1 ; coords[7]=vp->header.y2;
+   coords[0]=vp->header.x1+1 ; coords[1]=vp->header.y1;
+   coords[2]=vp->header.x2   ; coords[3]=vp->header.y1;
+   coords[4]=vp->header.x2   ; coords[5]=vp->header.y2;
+   coords[6]=vp->header.x1+1 ; coords[7]=vp->header.y2;
 
    /*Creer le background*/
    if (vp->BGColor) {
