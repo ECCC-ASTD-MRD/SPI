@@ -1020,6 +1020,7 @@ proc Animator::PlayWeb { } {
    variable Error
 
    if { !$Play(Web) || $Param(WebHost)=="" || $Param(WebDest)=="" } {
+      set Play(Web) 0
       return
    }
 

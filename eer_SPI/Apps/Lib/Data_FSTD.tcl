@@ -442,7 +442,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       $Data(Frame).lev.select.mode.list add cascade -label [lindex $Param(IntervalModes) 2] \
          -menu $Data(Frame).lev.select.mode.list.nb
       $Data(Frame).lev.select.mode.list add command -label [lindex $Param(IntervalModes) 3] \
-         -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 3]"
+         -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 3] 1"
       $Data(Frame).lev.select.mode.list add command -label [lindex $Param(IntervalModes) 4] \
          -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 4]"
       $Data(Frame).lev.select.mode.list add separator
@@ -828,6 +828,10 @@ proc FSTD::ParamSet { { Spec "" } } {
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)  -size $Param(Size) -sizerange $Param(SizeRange) \
       -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
+
+   if { $Param(IntervalMode)!="NONE" } {
+      set Param(Intervals) [dataspec configure $Spec -intervals]
+   }
 
    catch { $Data(ApplyButton) configure -state normal }
 
