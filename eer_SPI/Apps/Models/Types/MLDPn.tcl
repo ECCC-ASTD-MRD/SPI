@@ -1327,7 +1327,7 @@ proc MLDPn::InitNew { Type } {
 
    set Sim(OutCV)                [lindex $Sim(ListOutCV) 0]          ; #----- CV Vertical levels [m].
    set Sim(OutAV)                { }                                 ; #----- AVVertical levels [m].
-   set Sim(OutVar)               { AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
+   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    #----- Set source type according to experiment data type.

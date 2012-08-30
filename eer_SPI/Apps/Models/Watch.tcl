@@ -1410,6 +1410,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
       "NEW" {
          $Data(Modelbase)::ParamsNew .modelnew.params True
          set $Data(Modelbase)::Sim(NoSim) $Data(No)
+         set $Data(Modelbase)::Sim(Event) "AUTOMATED"
       }
       default {
          set Data(OldInfo) "$Data(Info)"

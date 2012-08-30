@@ -78,7 +78,7 @@ namespace eval Model {
    set Param(WallClock)         10800
    set Param(ListWallClock)     { 600 1200 3600 10800 21600 28800 }
    set Param(Submit)            ord_soumet            ;#Queue launcher
-   set Param(Events)            { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" } ;#----- List of type of events.
+   set Param(Events)            { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" "AUTOMATED" } ;#----- List of type of events.
    set Param(Bys)               { "Internal" "IAEA" "Health Canada" "REEC" }                       ;#----- List of requesters.
 
    set Data(Job)    ""                    ;#Texte de processus
