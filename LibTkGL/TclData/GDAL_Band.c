@@ -1065,7 +1065,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
       }
    }
 #ifdef DEBUG
-   fprintf(stdout,"(DEGBU) Data_GridOGR: %i total hits\n",nt);
+   fprintf(stdout,"(DEBUG) Data_GridOGR: %i total hits\n",nt);
 #endif
 
    if (tr)

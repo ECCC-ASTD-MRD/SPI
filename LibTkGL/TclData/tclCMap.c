@@ -1447,7 +1447,6 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
        }
    }
 
-
    fclose(fp);
 
    CMap_ControlDefine(CMap);
@@ -1687,7 +1686,7 @@ void CMap_CurveDefine(CMap_Rec *CMap){
 
          /*Check inversion en X*/
          if (CMap->InvertX[c]) {
-            it=CMap->NbPixels-i;
+            it=(CMap->NbPixels-1)-i;
          } else {
             it=i;
          }

@@ -1918,7 +1918,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    }
 
    if (Mode & GDB_TEXT) {
-      if (GDB->Params.CoordLoc && GDB->Params.CoordNum) {
+      if (GDB->Params.CoordLoc && GDB->Params.CoordNum && Proj->VP->ColorCoord) {
          GDB_CoordRender(Interp,Proj->VP,Proj,GDB);
       }
    }

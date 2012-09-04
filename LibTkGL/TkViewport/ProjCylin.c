@@ -126,7 +126,7 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    char    buf[256];
 
    /*Latlons*/
-   if (Proj->Geo->Params.CoordLoc) {
+   if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
       glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
       glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
@@ -451,7 +451,7 @@ void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,ch
    /*On verifie si les donnees depasse d'un cote*/
    if (V0) f0=CYLFLIP(Proj->L,V0[0]);
    if (V1) f1=CYLFLIP(Proj->L,V1[0]);
-   
+
    if (f0)       glTranslated(f0,0.0,0.0);
    if (Data)     { if (Idx) { glDrawElements(Mode,Nb,GL_UNSIGNED_INT,Idx); } else { glDrawArrays(Mode,0,Nb);} }
    if (List)     glCallList(List);
@@ -848,7 +848,7 @@ void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    }
 
    /*Latlons*/
-   if (Proj->Geo->Params.CoordLoc) {
+   if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
       if (Interp) {
          glFeedbackInit(MAXGEOSEG*2,GL_2D);

@@ -229,7 +229,7 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    double  lat,lon,delt;
 
    /*Affichage des latlons*/
-   if (Proj->Geo->Params.CoordLoc) {
+   if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
      if (Interp) {
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoord);

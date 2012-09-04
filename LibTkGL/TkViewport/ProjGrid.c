@@ -127,7 +127,7 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    Vect3d  pix,prev;
 
    /*Latlons*/
-   if (Proj->Geo->Params.CoordLoc) {
+   if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
       glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
       glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
