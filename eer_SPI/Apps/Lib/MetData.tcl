@@ -741,7 +741,7 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
    }
 
    fstdfield create GRIDLLMEM $ni $nj 1
-   fstdfield define GRIDLLMEM -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IG1 0 -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
+   fstdfield define GRIDLLMEM -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IP1 1200 -IP2 0 -IP3 0 -IG1 0 -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
    fstdfield define GRIDLLMEM -positional GRIDLLTIC GRIDLLTAC
 
    return GRIDLLMEM

@@ -656,7 +656,7 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
 
       if { $Sim(Restart)=="" } {
          #----- Automatic distribution of particules
-         checkbutton $base.isautonp -anchor w -text "[lindex $Lbl(EmIsAutoNP) $GDefs(Lang)]" -variable MLDPn::Tmp(EmIsAutoNP) -indicatoron True \
+         checkbutton $base.isautonp -anchor w -text "[lindex $Lbl(EmIsAutoNP) $GDefs(Lang)]" -variable MLDPn::Tmp(EmIsAutoNP) -indicatoron True -selectcolor $GDefs(ColorLight) \
             -command "if { \$MLDPn::Tmp(EmIsAutoNP) } {
                         pack $base.nbpart -after $base.isautonp -side top -anchor w -padx 2 -fill x
                         Bubble::Create $base.nbpart \{ $MLDPn::Bubble(EmNumberParticles)] \}
@@ -674,12 +674,12 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
          label $base.nbpart.lbl -relief flat -anchor w -text "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)]"
          entry $base.nbpart.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmNumberParticles) -width 60
          pack $base.nbpart.lbl $base.nbpart.ent -side left
-      Bubble::Create $base.nbpart $Bubble(EmNumberParticles)
+         Bubble::Create $base.nbpart $Bubble(EmNumberParticles)
+
       if { $Sim(EmIsAutoNP) } {
          pack $base.nbpart -side top -anchor w -padx 2 -fill x
          Bubble::Create $base.nbpart $Bubble(EmNumberParticles)
       }
-
    pack $base -side top -padx 5 -pady 5 -fill x
    Bubble::Create $base $Bubble(EmissionGlobal)
 
@@ -765,25 +765,32 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
       labelframe .emintdetails.frm.iso -text "Isotopes"
       set base .emintdetails.frm.iso
       set Sim(EmissionIsoFrame) $base
-         for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
-            frame $base.$i
-               button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
-               button $base.$i.btn -relief flat -anchor w -text $Tmp(EmIso$i) -command "IsoBox::Create .emintdetails \"MLDPn::IsoUpdate $i\"; MLDPn::IsoDetailsUpdate $Id" -width 8
-               entry  $base.$i.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmRate.${Id}.$i)
-               button $base.$i.unt -relief flat -text "[lindex $Lbl(ReleaseRateUnit$Tmp(EmRateMode.$Id.$i)) $GDefs(Lang)]" -command "MLDPn::EmRateModeToggle $base $Id $i" -width 7
-               pack $base.$i.del $base.$i.btn -side left -padx 2 -anchor w
-               pack $base.$i.unt -side right -anchor e -padx 2
-               pack $base.$i.ent -side left -anchor center
-               Bubble::Create $base.$i.del $Bubble(IsoDelete)
-               Bubble::Create $base.$i.btn $Bubble(Isotope)
-               Bubble::Create $base.$i.ent $Bubble(ReleaseRateIso)
-            pack $base.$i -side top -anchor w
-         }
-         frame $base.button
-            button $base.button.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -bd 1 -command "IsoBox::Create .emintdetails MLDPn::IsoAdd; MLDPn::IsoDetailsUpdate $Id"
-            pack $base.button.add -side right
-            Bubble::Create $base.button.add $Bubble(IsoAdd)
-         pack $base.button -side top -anchor w -padx 2 -fill x -pady 2
+
+      #----- Isotop chain.
+      checkbutton $base.chain -anchor w -text "[lindex $Lbl(IsoChain) $GDefs(Lang)]" -variable MLDPn::Sim(IsoChain) -indicatoron True -selectcolor $GDefs(ColorLight)
+      pack $base.chain -side top -anchor w -padx 2 -fill x
+      Bubble::Create $base.chain $Bubble(IsoChain)
+
+      for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
+         frame $base.$i
+            button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
+            button $base.$i.btn -relief flat -anchor w -text $Tmp(EmIso$i) -command "IsoBox::Create .emintdetails \"MLDPn::IsoUpdate $i\"; MLDPn::IsoDetailsUpdate $Id" -width 8
+            entry  $base.$i.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmRate.${Id}.$i)
+            button $base.$i.unt -relief flat -text "[lindex $Lbl(ReleaseRateUnit$Tmp(EmRateMode.$Id.$i)) $GDefs(Lang)]" -command "MLDPn::EmRateModeToggle $base $Id $i" -width 7
+            pack $base.$i.del $base.$i.btn -side left -padx 2 -anchor w
+            pack $base.$i.unt -side right -anchor e -padx 2
+            pack $base.$i.ent -side left -anchor center
+            Bubble::Create $base.$i.del $Bubble(IsoDelete)
+            Bubble::Create $base.$i.btn $Bubble(Isotope)
+            Bubble::Create $base.$i.ent $Bubble(ReleaseRateIso)
+         pack $base.$i -side top -anchor w
+      }
+      frame $base.button
+         button $base.button.add -text "[lindex $Lbl(Add) $GDefs(Lang)]" -bd 1 -command "IsoBox::Create .emintdetails MLDPn::IsoAdd; MLDPn::IsoDetailsUpdate $Id"
+         pack $base.button.add -side right
+         Bubble::Create $base.button.add $Bubble(IsoAdd)
+      pack $base.button -side top -anchor w -padx 2 -fill x -pady 2
+
       if { $Tmp(EmIsEm.$Id) } {
          pack $base -side top -anchor w -padx 5 -fill x -pady 5
          Bubble::Create $base $Bubble(Isotopes)

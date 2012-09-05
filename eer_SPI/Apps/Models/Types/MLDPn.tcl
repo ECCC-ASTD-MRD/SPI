@@ -326,7 +326,7 @@ proc MLDPn::CreateModelInput { } {
 
    puts $file "\n#----- Isotope parameters\n"
    puts $file [format "%-10s = $Sim(EmIsos)      # Chemical symbol of radionuclide" ISO_EMI]
-   puts $file [format "%-10s = FALSE          # Do we take the isotope decay chain into accounte" ISO_CHAIN]
+   puts $file [format "%-10s = $Sim(IsoChain)    # Do we take the isotope decay chain into accounte" ISO_CHAIN]
 
    puts $file "\n#----- Source parameters\n"
    foreach name $Sim(Name) coords $Sim(Coords) {
@@ -1322,6 +1322,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(EmRateMode)           0                                   ;#----- Mode of the release rate. 0 is "unit/h", 1 is "unit"
    set Sim(RestartTrialDate)     0                                   ;#----- Date of the switch between trial and prog to create a restart
    set Sim(RestartDeltas)        {}
+   set Sim(IsoChain)             0                                   ;#----- Apply isotope decay chain
 
    MLDPn::InitKernel
 

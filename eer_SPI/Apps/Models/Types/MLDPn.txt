@@ -62,6 +62,7 @@ namespace eval MLDPn {
    set Lbl(DryDep)              { "Dépot sec        " "Dry deposition  " }
    set Lbl(Forward)             { "Avant" "Forward" }
    set Lbl(Backward)            { "Arrière" "Backward" }
+   set Lbl(IsoChain)            { "Appliquer la chaine de décompositions" "Apply isotope decay chain" }
 
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
@@ -73,11 +74,8 @@ namespace eval MLDPn {
    set Lbl(EmSizeDist)          { "Distribution de la taille" "Size distribution        " }
    set Lbl(EmVerticalDist)      { "Distribution verticale   " "Vertical distribution    " }
    set Lbl(EmInter)             { "Durée de l'intervalle    " "Interval duration        " }
-   set Lbl(NbIsotopes)          { "Nombre d'isotopes        " "Number of isotopes       " }
-
    set Lbl(EmInterUnit3600)     { "(h)" "(h)" }
    set Lbl(EmInterUnit1)        { "(s)" "(s)" }
-
    set Lbl(EmIsAutoNP)          { "Distribution automatique des particules" "Automatic particles distribution" }
    set Lbl(EmIsEm)              { "Type d'intervalle        " "Type of interval         " }
 
@@ -153,7 +151,6 @@ namespace eval MLDPn {
    set Bubble(EmVerticalDist)         { "Sélectionner le type de distribution verticale\npour modéliser le panache d'émission." "Select the type of vertical distribution\nto model the released plume." }
    set Bubble(EmIsAutoNP)             { "Détermine la répartition des particules (automatique ou manuelle).\nLa répartition automatique distribue les particules en fonction de la masse de chaque interval d'émission." "Switch between automatic or manual particles distribution.\nAutomatic distribution is done proportionnaly to the released mass of emission intervals." }
    set Bubble(EmNumberParticles)      { "Nombre de particules à être automatiquement réparties parmis les intervals d'émission." "Number of particles to be distributed amongst emission intervals" }
-
    set Bubble(EmissionDetails)        { "Paramètre de l'interval d'émission courant." "Current emission interval parameters." }
    set Bubble(DurationInter)          { "Durée de l'intervalle." "Interval duration." }
    set Bubble(EmIsEm)                 { "Type de période d'émission (relâchement ou accalmie)." "Type of release period (release or lull)." }
@@ -168,6 +165,7 @@ namespace eval MLDPn {
    set Bubble(Isotope)                { "Symbol de l'isotope radioactif." "Radioactive isotope symbol." }
    set Bubble(IsoAdd)                 { "Ajouter un nouvel isotope radioactif." "Add a new radioactive isotope." }
    set Bubble(IsoDelete)              { "Supprimer l'isotope radioactif sélectionné." "Delete the selected radioactive isotope." }
+   set Bubble(IsoChain)               { "Suivre la chaine de décompositions des isotopes à travers les enfants instables." "Follow the isotopes decay chain through alll of the unstable childs." }
 
    set Bubble(Cancel)                 { "Annuler les modifications apportées." "Cancel the modifications made." }
    set Bubble(Apply)                  { "Appliquer les changements." "Apply changes." }

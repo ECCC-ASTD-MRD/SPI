@@ -48,7 +48,7 @@ namespace eval Info {
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
-                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin \
+                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin IsoChain \
                         SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
@@ -150,6 +150,7 @@ namespace eval Info {
    set Lbl(IsoDry)               { "Taux de lessivage sec (s -1)" "Dry scavenging rate (s -1)" }
    set Lbl(IsoWet)               { "Taux de lessivage humide (s -1)" "Wet scavenging rate (s -1)" }
    set Lbl(IsoRelease)           { "Quantité totale relâchée" "Total released quantity" }
+   set Lbl(IsoChain)             { "Chaine de décomposition" "Decay chain" }
 
    set Lbl(NbSpecies)            { "Nombre d'espèces" "Number of species" }
    set Lbl(Species)              { "Espèces" "Species" }
