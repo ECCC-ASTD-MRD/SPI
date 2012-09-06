@@ -73,7 +73,7 @@ function MLDPn_Run {
          -pgm ${EER_DIRBIN}/${MODEL_NAME} \
          >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    else
-      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME} \
+      ${MODEL_TIMER} r.mpirun2 ${EER_DIRBIN}/${MODEL_NAME} \
          -i ${MLDP_INPUT} \
          -o ${MLDP_RESULT} \
          -v ${LOG_LEVEL} \

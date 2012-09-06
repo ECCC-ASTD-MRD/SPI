@@ -81,7 +81,7 @@ function MLDP_Run {
          -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
          >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
    else
-      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+      ${MODEL_TIMER} r.mpirun2 ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
          -input ${MLDP_INPUT} \
          -print ${MLDP_LOGLEVEL} \
          -seed ${MLDP_SEED} \
