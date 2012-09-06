@@ -65,20 +65,13 @@ function MLDPn_Run {
 
    #----- Check for MPI params.
    if [[ ${ARCH} = "Linux" && ${MODEL_NBMPITASKS} -gt 1 && ${MODEL_ISREMOTE} -eq 0 ]] ;then
-      export PATH=/home/dormrb02/ssm-mpich2-pgi6/mpich2_1.0.6_linux24-i386/bin:${PATH}
-      Log_Print DEBUG "Version of r.mpiexec: `which r.mpiexec`"
-      ${MODEL_TIMER} r.mpiexec \
-         -npex ${MODEL_NBMPITASKS} \
+      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME} \
          -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
-         -pgm ${EER_DIRBIN}/${MODEL_NAME} \
+         -npex ${MODEL_NBMPITASKS} \
          >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    else
-      ${MODEL_TIMER} r.mpirun2 ${EER_DIRBIN}/${MODEL_NAME} \
-         -i ${MLDP_INPUT} \
-         -o ${MLDP_RESULT} \
-         -v ${LOG_LEVEL} \
-         -s ${MODEL_SEED} \
-         -t ${MODEL_NBOMPTHREADS} \
+      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME} \
+         -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
          >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    fi
 

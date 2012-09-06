@@ -75,18 +75,13 @@ function MLDP_Run {
    #----- Check for MPI params.
    if [[ `uname` = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
       export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
-      ${MODEL_TIMER} r.mpirun2 \
-         -npex ${MODEL_NBMPITASKS} \
+      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
          -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
-         -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+         -npex ${MODEL_NBMPITASKS} \
          >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
    else
-      ${MODEL_TIMER} r.mpirun2 ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
-         -input ${MLDP_INPUT} \
-         -print ${MLDP_LOGLEVEL} \
-         -seed ${MLDP_SEED} \
-         -source ${MLDP_SOURCE} \
-         -outmode ${MLDP_OUTMODE} \
+      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+         -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
          >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
    fi
    taskstatus=$?
