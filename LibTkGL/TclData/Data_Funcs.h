@@ -110,6 +110,7 @@ double stat_rmse(TDataDef *MA,TDataDef *MB);  /* Root mean square error */
 double stat_nrmse(TDataDef *MA,TDataDef *MB); /* Normalized Root mean square error */
 double stat_corr(TDataDef *MA,TDataDef *MB);  /* Correlation coeficient */
 double stat_covar(TDataDef *MA,TDataDef *MB); /* Covariance */
+double stat_sdev(TDataDef *MA);               /* Standard deviation */
 double stat_varx(TDataDef *MA);               /* Variance */
 double stat_vary(TDataDef *MA);               /* Variance */
 double stat_regb(TDataDef *MA,TDataDef *MB);  /* Regression coeficient (Slope of curve fitting) */
@@ -123,6 +124,7 @@ double stat_maxe(TDataDef *M,TDataDef *MB);   /* Maximum error*/
 double stat_maxre(TDataDef *MA,TDataDef *MB); /* Maximum relative error*/
 double stat_mre(TDataDef *MA,TDataDef *MB);   /* Mean Relative error*/
 double stat_nb(TDataDef *M);                  /* Number of sample */
+double stat_median(TDataDef *MA);             /* Median */
 double stat_sum(TDataDef *M);                 /* Sum */
 double stat_min(TDataDef *M);                 /* Minimum */
 double stat_max(TDataDef *M);                 /* Maximum */

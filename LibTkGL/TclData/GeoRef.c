@@ -1819,10 +1819,9 @@ int GeoRef_WithinRange(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double L
    return(0);
 }
 
-int GeoRef_BoundingBox(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1,int *I0,int *J0,int *I1,int *J1) {
+int GeoRef_BoundingBox(TGeoRef *Ref,double Lat0,double Lon0,double Lat1,double Lon1,double *I0,double *J0,double *I1,double *J1) {
 
    double di,dj;
-   int    i0,j0,i1,j1;
 
    *I0=*J0=1000000;
    *I1=*J1=-1000000;

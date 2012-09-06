@@ -80,6 +80,7 @@ TFuncDef FuncD[] = {
 TFuncDef FuncF[] = {
   { "sall"  , stat_all    , 2 , TD_Float64 },
   { "snb"   , stat_nb     , 1 , TD_Float64 },
+  { "smed"  , stat_median , 1 , TD_Float64 },
   { "ssum"  , stat_sum    , 1 , TD_Float64 },
   { "smin"  , stat_min    , 1 , TD_Float64 },
   { "smax"  , stat_max    , 1 , TD_Float64 },
@@ -95,6 +96,7 @@ TFuncDef FuncF[] = {
   { "svary" , stat_vary   , 1 , TD_Float64 },
   { "sssx"  , stat_ssx    , 1 , TD_Float64 },
   { "srmse" , stat_rmse   , 2 , TD_Float64 },
+  { "ssdev" , stat_sdev   , 1 , TD_Float64 },
   { "scor"  , stat_corr   , 2 , TD_Float64 },
   { "scov"  , stat_covar  , 2 , TD_Float64 },
   { "sregb" , stat_regb   , 2 , TD_Float64 },
@@ -869,11 +871,12 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       if (MB)
          Def_Get(MB,0,i,vb);
 
-      if (va!=MA->NoData && (MB && vb!=MB->NoData)) {
+      if (va!=MA->NoData)
          Vvarx+=(va-Vavgx)*(va-Vavgx);
+      if (MB && vb!=MB->NoData)
          Vvary+=(vb-Vavgy)*(vb-Vavgy);
+      if (va!=MA->NoData && (MB && vb!=MB->NoData))
          Vcovar+=(va-Vavgx)*(vb-Vavgy);
-      }
    }
 
    Vvarx/=Vnb;
@@ -1107,10 +1110,39 @@ double stat_ssxy(TDataDef *MA,TDataDef *MB) {
    return(Vssy);
 }
 
+double stat_sdev(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+
+   return(sqrt(Vvarx));
+}
+
 double stat_nb(TDataDef *MA) {
    if (MA)
       stat_core(MA,NULL);
    return(Vnb);
+}
+
+double stat_median(TDataDef *M) {
+
+   int     n,nb;
+   double *v,med=0;
+
+   nb=FSIZE3D(M);
+   if ((v=(double*)malloc(nb*sizeof(double)))) {
+      for(n=0;n<nb;n++) {
+         Def_Get(M,0,n,v[n]);
+      }
+
+      qsort(v,nb,sizeof(double),QSort_Double);
+
+      n=nb>>1;
+      med=(nb%2)?v[n]:(v[n-1]+v[n])*0.5;
+
+      free(v);
+   }
+
+   return(med);
 }
 
 double stat_sum(TDataDef *M) {

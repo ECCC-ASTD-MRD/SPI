@@ -546,7 +546,7 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
       vec=(TVector*)Tcl_GetHashValue(entry);
       if (vec->V || vec->Cn) {
          Tcl_AppendResult(Interp,"\n   Vector_Create:name already used: \"",Name,"\"",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
    } else {
       vec=(TVector*)malloc(sizeof(TVector));

@@ -1533,9 +1533,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-height","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -1855,10 +1855,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat1);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon1);
 
-            if (!Field->Ref->UnProject(Field->Ref,&dx0,&dy0,dlat0,dlon0,0,1)) {
+            if (!Field->Ref->UnProject(Field->Ref,&dx0,&dy0,dlat0,dlon0,1,1)) {
                break;
             }
-            if (!Field->Ref->UnProject(Field->Ref,&dx1,&dy1,dlat1,dlon1,0,1)) {
+            if (!Field->Ref->UnProject(Field->Ref,&dx1,&dy1,dlat1,dlon1,1,1)) {
                break;
             }
 
@@ -1910,6 +1910,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
 
             if (Data_GetAreaValue(Interp,4,Field,Objc-1,Objv+1)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
+            i++;
+            break;
+
+         case WITHINVALUE:
+            if (!Field->Ref) {
+               Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (Data_GetAreaValue(Interp,5,Field,Objc-1,Objv+1)==TCL_ERROR) {
                return(TCL_ERROR);
             }
             i++;
@@ -2630,8 +2642,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj,*sub;
-   int      f,n=0,ni,nj,i0,j0,i1,j1,nc,vnb,vn0,vn1;
-   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
+   int      f,n=0,ni,nj,nc,vnb,vn0,vn1;
+   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {
@@ -2689,7 +2701,8 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 1: tot=0; break;
       case 2: tot=1e38; break;
       case 3: tot=-1e38; break;
-      case 4: obj=Tcl_NewListObj(0,NULL); break;
+      case 4:
+      case 5: obj=Tcl_NewListObj(0,NULL); break;
    }
 
    n=0;
@@ -2697,8 +2710,8 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    if (Field->Ref->Grid[0]!='V') {
 
       // Loop on ij bounding box
-      for (ni=i0;ni<i1;ni++) {
-         for (nj=j0;nj<j1;nj++) {
+      for (ni=floor(i0);ni<ceil(i1);ni++) {
+         for (nj=floor(j0);nj<ceil(j1);nj++) {
             if (nc==4) {
                Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                f=0;
@@ -2741,6 +2754,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(nj));
                      Tcl_ListObjAppendElement(Interp,obj,sub);
                      break;
+                  case 5:
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                     break;
                }
             }
          }
@@ -2778,7 +2794,10 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                   break;
-            }
+               case 5:
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                  break;
+           }
          }
       }
    }
