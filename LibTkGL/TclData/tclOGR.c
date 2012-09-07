@@ -822,9 +822,9 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);
 
-   if (Layer->SQLed) {
-      OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);
-   }
+   if (Layer->SQLed)      OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);
+   if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
+   if (Layer->Def)        OGR_FD_Release(Layer->Def);
 
    OGR_LayerClean(Layer);
 }

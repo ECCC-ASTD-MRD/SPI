@@ -1394,7 +1394,8 @@ int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
    entry=TclY_FindHashEntry(&TDataSpec_Table,Name);
 
    if (!entry) {
-      Tcl_AppendResult(Interp,"\n   DataSpec_FreeHash:  Configuration object name unknown: \"",Name,"\"",(char*)NULL);
+      if (Interp)
+         Tcl_AppendResult(Interp,"\n   DataSpec_FreeHash:  Configuration object name unknown: \"",Name,"\"",(char*)NULL);
       return(TCL_ERROR);
    } else {
       if (DataSpec_Free((TDataSpec*)Tcl_GetHashValue(entry))) {
