@@ -2904,23 +2904,29 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
    double   value;
+   unsigned char *data;
 
    /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
    Tcl_ListObjLength(Interp,List,&nobjj);
 
-   for (j=0;j<nobjj;j++){
+   if (nobjj>1) {
+      for (j=0;j<nobjj;j++){
 
-      /*Extraire les ni points de la nj ieme ligne*/
-      Tcl_ListObjIndex(Interp,List,j,&objj);
-      Tcl_ListObjLength(Interp,objj,&nobji);
+         /*Extraire les ni points de la nj ieme ligne*/
+         Tcl_ListObjIndex(Interp,List,j,&objj);
+         Tcl_ListObjLength(Interp,objj,&nobji);
 
-      /*Assigner les valeurs ni de la nj ieme ligne*/
-      for (i=0;i<nobji;i++){
-         Tcl_ListObjIndex(Interp,objj,i,&obji);
-         Tcl_GetDoubleFromObj(Interp,obji,&value);
-         value=SPEC2VAL(Field->Spec,value);
-         Def_Set(Field->Def,0,j*nobji+i,value);
+         /*Assigner les valeurs ni de la nj ieme ligne*/
+         for (i=0;i<nobji;i++){
+            Tcl_ListObjIndex(Interp,objj,i,&obji);
+            Tcl_GetDoubleFromObj(Interp,obji,&value);
+            value=SPEC2VAL(Field->Spec,value);
+            Def_Set(Field->Def,0,j*nobji+i,value);
+         }
       }
+   } else {
+//      data=Tcl_GetByteArrayFromObj(List,&nobjj);
+//      memcpy(Field->Def->Data[0],data,nobjj);
    }
 
    return(TCL_OK);

@@ -1823,10 +1823,11 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
          if (spec->MapAll && spec->Map) {
             VAL2COL(cidx,spec,spec->Inter[n]);
             sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
-         } else {
+            OGR_F_SetStyleString(Layer->Feature[n],style);
+         } else if (spec->Outline) {
             sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
+            OGR_F_SetStyleString(Layer->Feature[n],style);
          }
-         OGR_F_SetStyleString(Layer->Feature[n],style);
 
          Data_Clean(field[0],0,0,1);
          FFContour(REF_COOR,field[0]->Ref,field[0]->Def,field[0]->Stat,NULL,1,&spec->Inter[n],3,1);
