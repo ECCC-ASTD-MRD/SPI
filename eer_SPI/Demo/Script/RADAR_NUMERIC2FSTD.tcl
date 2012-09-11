@@ -22,8 +22,14 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+package require Logger
 
-puts \n[file tail [info script]]
+#----- This is where it all starts
+set Log::Param(Level) DEBUG      ;#Log level
+set Log::Param(Time)  False      ;#Print the time
+set Log::Param(Proc)  False      ;#Print the calling proc
+
+Log::Start [info script] 0.2
 
 set Param(N)        RIDX
 set Param(DBZ)      RDBR
@@ -34,6 +40,8 @@ set Param(CM/HR)    RSNO
 set Data(Table) ""
 
 set numeric [lindex $argv 0]
+
+Log::Print INFO "Reading NUMERIC data"
 
 #----- Read the NUMERIC file
 set f [open $numeric r]
@@ -73,9 +81,11 @@ while { ![eof $f] } {
          set Data(Data) [read $f $Data(SizeInBytes)]
          break;
       }
-      default { puts stderr "(ERROR) Unrecognized header:\n\t $line"; exit 1 }
+      default { Log::Print ERROR "Unrecognized header:\n\t $line"; Log::End 1 }
    }
 }
+
+Log::Print INFO "Building lookup tables"
 
 #----- Build lookup tables
 set Data(Table) [lrange [split $Data(Table) \;] 0 end-1]
@@ -93,8 +103,10 @@ foreach val $Data(Table) {
 
 close $f
 
+Log::Print INFO "Defining grid projection"
+
 #----- Process to FSTD
-set fstd [string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km
+set fstd /tmp/[string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km.stnd
 file delete $fstd
 fstdfile open FSTD write $fstd
 
@@ -125,26 +137,19 @@ switch $Data(Projection) {
    }
 }
 
+Log::Print INFO "Parsing raw data"
+
 #----- Get the data indexes
-binary scan $Data(Data) c* Data(Indexes)
+binary scan $Data(Data) cu* Data(Indexes)
 
 if { [llength $Data(Indexes)] != $Data(SizeInBytes) } {
-   puts stderr "(WARNING) Mismatch between data length ([llength $Data(Indexes)]) and specifid size $Data(SizeInBytes)"
+   Log::Print WARNING "Mismatch between data length ([llength $Data(Indexes)]) and specifid size $Data(SizeInBytes)"
 }
 
 #----- Create index field
-set i 0
-set j 0
-foreach index $Data(Indexes) {
+fstdfield define GRID -DATA $Data(Indexes)
 
-   #----- Integer are signed so we unsign them
-   fstdfield stats GRID -gridvalue $i $j [expr { $index & 0xff }]
-
-   if { [incr i]==$Data(Width) } {
-      incr j
-      set i 0
-   }
-}
+Log::Print INFO "Applying lookup table"
 
 #----- LUT and Save fields
 set i 0
@@ -152,8 +157,10 @@ foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {
    vexpr FLD$field lut(GRID,VECT0,VECT$i)
 
    fstdfield define FLD$field -NOMVAR $Param($field) -ETIKET $field -DATEO [fstdstamp fromdate [string range $Data(ValidTime) 0 7] [string range $Data(ValidTime) 8 end]0000]
+
    fstdfield write FLD$field FSTD -32 True
    incr i
 }
-
 fstdfile close FSTD
+
+Log::End 0

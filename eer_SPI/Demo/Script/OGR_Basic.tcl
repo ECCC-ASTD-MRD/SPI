@@ -41,7 +41,7 @@ puts  "   NB Feature : [ogrlayer define LAYER -nb]"
 
 for { set i 0 } { $i<[ogrlayer define LAYER -nb] } { incr i } {
    puts  "      Fields($i)  : [ogrlayer define LAYER -feature $i]"
-   puts  "      Geometry($i): [ogrlayer define LAYER -geometry $i]"
+   puts  "      Geometry($i): [ogrgeometry define [ogrlayer define LAYER -geometry $i] -kml]"
 }
 
 #----- Changement de la projection

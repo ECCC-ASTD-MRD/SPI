@@ -31,6 +31,10 @@ file delete DataOut/TRAJ_Rasterize.fstd DataOut/TRAJ_Rasterize.shp
 #----- We have to create an OGR object. this is done by transforming to shapefile
 ogrfile open FILE write DataOut/TRAJ_Rasterize.shp "ESRI Shapefile"
 ogrlayer create FILE LAYER "Traj"
+
+#----- Define the HEIGHT field for trajectory start level
+ogrlayer define LAYER -field HEIGHT Real
+
 ogrgeometry create LINE "Line String"
 
 #----- Loop on the files
@@ -52,8 +56,13 @@ foreach file $argv {
          ogrgeometry define LINE -addpoint [lindex $parcel 2] [lindex $parcel 1]
       }
 
-      #----- Add the linestring to the layer
+      #----- Add a feature to the layer
       ogrlayer define LAYER -nb [incr nb]
+
+      #----- Set it's height field to the trajectory start height
+      ogrlayer define LAYER -feature  [expr $nb-1] HEIGHT [trajectory define $traj -LEVEL]
+
+      #----- Add the linestring to the layer
       ogrlayer define LAYER -geometry [expr $nb-1] False LINE
    }
 }

@@ -312,8 +312,8 @@ proc Bulletin::FXCN3X::Process { } {
       if { $errct>0.0 } {
          set bearing [projection function PROJ -bearing $plat $plon $lat $lon]
          set dist    [expr $errct*1852.0]
-         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
-         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
+         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
+         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
          set cone0  "$cone0 [lindex $ll0 1] [lindex $ll0 0]"
          set cone1  "[lindex $ll1 1] [lindex $ll1 0] $cone1"
       } else {
@@ -382,9 +382,9 @@ proc Bulletin::FXCN3X::Process { } {
    ogrlayer define LINE -geometry 0 False LINE
 
    #----- Finalize uncertainty cone
-   set a [expr int(fmod(-$bearing+90.0,360))]
+   set a [expr int(fmod($bearing-90.0,360))]
    for { set b 10 } { $b<=170 } { incr b 10 } {
-      set ll [projection function PROJ -circle $lat $lon $dist [expr $a-$b]]
+      set ll [projection function PROJ -circle $lat $lon $dist [expr $a+$b]]
       append cone0 " [lindex $ll 1] [lindex $ll 0]"
    }
 
