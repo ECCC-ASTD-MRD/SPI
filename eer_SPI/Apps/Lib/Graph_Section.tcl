@@ -440,7 +440,7 @@ proc Graph::Section::Params { Parent GR } {
 
    Graph::ParamsAxis $Parent $GR Section X MARK
    Graph::ParamsAxis $Parent $GR Section Y VERTICAL
-   Graph::ModeSelect LINE LINE
+   Graph::ModeSelect LINE LINE NIL
 
    Bubble::Create $Parent.params.disp.proj $Graph::Bubble(Viewport)
    Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)

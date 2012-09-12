@@ -121,6 +121,7 @@ namespace eval Graph {
    set Param(AxisTypes)       { LINEAR LOG LN }
    set Param(AxisZs)          { GRID PRESSURE MASL }
    set Param(SelectMode)      POINT
+   set Param(SelectType)      AVG
 
    set Param(NONE)            ""
    set Param(LOCATION)        ""
@@ -253,6 +254,12 @@ namespace eval Graph {
    set Lbl(Angle)      { "Angle" "Angle" }
    set Lbl(PRESSURE)   { "Pression" "Pressure" }
    set Lbl(MASL)       { "Metres au dessus du niveaux de la mer" "Meters above sea level" }
+   set Lbl(Average)    { "Moyenne" "Average" }
+   set Lbl(Minimum)    { "Minimum" "Minimum" }
+   set Lbl(Maximum)    { "Maximum" "Maximum" }
+   set Lbl(Median)     { "Mediane" "Median" }
+   set Lbl(StdDev)     { "Ecart type" "Standard deviation" }
+   set Lbl(Nb)         { "Nombre de valeur" "Sample number" }
 
    #----- Messages
 
@@ -758,13 +765,13 @@ proc Graph::Mode { Graph Type { Zoom False } } {
 #
 # Parametres :
 #  <Mode>    : mode de selection (1=point, 2=carre)
-#  <Valid>   : List des modes valides
-#
+#  <Valid>   : Liste des modes valides
+#  <Type>    : Liste des types valides
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Graph::ModeSelect { Mode { Valid {} } } {
+proc Graph::ModeSelect { Mode { Valid {} } { Type {} } } {
    global GDefs
    variable Data
    variable Param
@@ -792,6 +799,23 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
          }
       }
    }
+
+   if { [llength $Type] } {
+      $Data(Tab).head.sel.down.menu entryconfigure 5 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 6 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 7 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 8 -state disabled
+      $Data(Tab).head.sel.down.menu entryconfigure 9 -state disabled
+      foreach mode $Type {
+         switch $mode {
+           "AVG" { $Data(Tab).head.sel.down.menu entryconfigure 5 -state normal }
+           "MIN" { $Data(Tab).head.sel.down.menu entryconfigure 6 -state normal }
+           "MAX" { $Data(Tab).head.sel.down.menu entryconfigure 7 -state normal }
+           "MED" { $Data(Tab).head.sel.down.menu entryconfigure 8 -state normal }
+           "STD" { $Data(Tab).head.sel.down.menu entryconfigure 9 -state normal }
+         }
+      }
+   }
    switch $Param(SelectMode) {
       "POINT"   { $Data(Tab).head.sel configure -image ARROW;       set Data(ToolMode) Data; $Data(Tab).head.sel.down.menu entryconfigure 0 -state normal }
       "LINE"    { $Data(Tab).head.sel configure -image ARROWLINE;   set Data(ToolMode) Draw; $Data(Tab).head.sel.down.menu entryconfigure 1 -state normal }
@@ -802,8 +826,8 @@ proc Graph::ModeSelect { Mode { Valid {} } } {
    SPI::ToolMode $Page::Data(ToolMode) $Graph::Data(ToolMode) True
 
    #----- Insert saved locations
-   if { [set idx [$Data(Tab).head.sel.down.menu index end]]>7 } {
-      $Data(Tab).head.sel.down.menu delete 8 $idx
+   if { [set idx [$Data(Tab).head.sel.down.menu index end]]>13 } {
+      $Data(Tab).head.sel.down.menu delete 14 $idx
    }
    foreach item $Param($Param(SelectMode)) {
       $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $item 0] -variable Graph::Param(LOCATION) \
@@ -899,6 +923,17 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
          $Data(Tab).head.sel.down.menu add command -image ARROWLINE   -command { Graph::ModeSelect LINE ;    if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
          $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect BOX ;     if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
          $Data(Tab).head.sel.down.menu add command -image ARROWPOLY   -command { Graph::ModeSelect POLYGON ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add separator
+         $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(Average) $GDefs(Lang)] -variable Graph::Param(SelectType) -value AVG \
+            -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
+         $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(Minimum) $GDefs(Lang)] -variable Graph::Param(SelectType) -value MIN\
+            -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
+         $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(Maximum) $GDefs(Lang)] -variable Graph::Param(SelectType) -value MAX\
+            -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
+         $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(Median) $GDefs(Lang)] -variable Graph::Param(SelectType) -value MED \
+            -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
+         $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(StdDev) $GDefs(Lang)] -variable Graph::Param(SelectType) -value STD \
+            -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
          $Data(Tab).head.sel.down.menu add separator
          $Data(Tab).head.sel.down.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] -command { Graph::PosSave $Graph::Data(Type) $Graph::Data(Graph) $Graph::Data(Pos) }
          $Data(Tab).head.sel.down.menu add command -label [lindex $Lbl(Del) $GDefs(Lang)] -command { Graph::PosDelete $Graph::Data(Type) $Graph::Data(Graph) $Graph::Data(Pos) }

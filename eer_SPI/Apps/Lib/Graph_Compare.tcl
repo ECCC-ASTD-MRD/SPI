@@ -345,7 +345,7 @@ proc Graph::Compare::Params { Parent GR } {
    Graph::ParamsItem $Parent
    Graph::ParamsAxis $Parent $GR Compare Y
    Graph::ParamsObs  $Parent $GR Compare
-   Graph::ModeSelect POINT POINT
+   Graph::ModeSelect POINT POINT NIL
 }
 
 #-------------------------------------------------------------------------------

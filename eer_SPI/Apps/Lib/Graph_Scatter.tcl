@@ -440,7 +440,7 @@ proc Graph::Scatter::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Scatter Y
 
    Graph::ParamsAxisUniform Scatter $GR
-   Graph::ModeSelect BOX BOX
+   Graph::ModeSelect BOX BOX NIL
 
    Bubble::Create $Parent.par.sel.stat       $Graph::Bubble(Stat)
    Bubble::Create $Parent.par.sel.sel        $Graph::Bubble(Select)

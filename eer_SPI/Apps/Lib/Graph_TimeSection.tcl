@@ -489,7 +489,7 @@ proc Graph::TimeSection::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsAxis $Parent $GR TimeSection X TIME
    Graph::ParamsAxis $Parent $GR TimeSection Y VERTICAL
-   Graph::ModeSelect POINT { POINT BOX POLYGON }
+   Graph::ModeSelect POINT { POINT BOX POLYGON } NIL
 }
 
 #-------------------------------------------------------------------------------

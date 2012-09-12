@@ -370,7 +370,7 @@ proc Graph::Contingency::Params { Parent GR } {
    Bubble::Create $Parent.par.sel.same       $Graph::Bubble(Uniform)
    Bubble::Create $Parent.par.sel.fitlinear  $Graph::Bubble(TimeMatch)
 
-   Graph::ModeSelect BOX BOX
+   Graph::ModeSelect BOX BOX NIL
 }
 
 #-------------------------------------------------------------------------------

@@ -391,7 +391,7 @@ proc Graph::Profile::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Profile X
    Graph::ParamsAxis $Parent $GR Profile Y VERTICAL
    Graph::ParamsObs  $Parent $GR Profile
-   Graph::ModeSelect POINT { POINT BOX POLYGON }
+   Graph::ModeSelect POINT { POINT BOX POLYGON } NIL
 }
 
 #-------------------------------------------------------------------------------

@@ -346,7 +346,7 @@ proc Graph::Frequence::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsItem $Parent
    Graph::ParamsAxis $Parent $GR Frequence X
-   Graph::ModeSelect BOX BOX
+   Graph::ModeSelect BOX BOX NIL
 }
 
 #-------------------------------------------------------------------------------

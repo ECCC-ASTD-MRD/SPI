@@ -439,7 +439,7 @@ proc Graph::Time::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Time X TIME
    Graph::ParamsAxis $Parent $GR Time Y
    Graph::ParamsObs  $Parent $GR Time
-   Graph::ModeSelect POINT { POINT BOX POLYGON }
+   Graph::ModeSelect POINT { POINT BOX POLYGON } { AVG MIN MAX MED STD }
 }
 
 #-------------------------------------------------------------------------------
@@ -659,7 +659,16 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
          foreach field $data(Data$Data) {
             if { [llength $data(Pos$Pos)]>2 } {
                set n 0
-               set val [fstdfield stats [lindex $field 1] -avg $data(Pos$Pos)]
+
+               catch { vector create VALVEC }
+               vector set VALVEC [fstdfield stats [lindex $field 1] -withinvalue $data(Pos$Pos)]
+               switch $Graph::Param(SelectType) {
+                  AVG { set val [vexpr NIL savg(VALVEC)] }
+                  MIN { set val [vexpr NIL smin(VALVEC)] }
+                  MAX { set val [vexpr NIL smax(VALVEC)] }
+                  MED { set val [vexpr NIL smed(VALVEC)] }
+                  STD { set val [vexpr NIL ssdev(VALVEC)] }
+               }
                SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
             } else {
                set val  [fstdfield stats [lindex $field 1] -coordvalue $lat $lon]

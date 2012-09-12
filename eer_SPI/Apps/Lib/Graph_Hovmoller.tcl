@@ -455,7 +455,7 @@ proc Graph::Hovmoller::Params { Parent GR } {
 
    Graph::ParamsAxis $Parent $GR Hovmoller X MARK
    Graph::ParamsAxis $Parent $GR Hovmoller Y TIME
-   Graph::ModeSelect LINE LINE
+   Graph::ModeSelect LINE LINE NIL
 
    Bubble::Create $Parent.params.res.val   $Graph::Bubble(Sample)
 

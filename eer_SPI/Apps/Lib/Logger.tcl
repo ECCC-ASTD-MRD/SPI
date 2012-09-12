@@ -385,7 +385,7 @@ proc Log::Print { Type Message { Var "" } } {
          }
          set Param(OutFile) $Param(Out)
       }
-      set Param(Out) [open $Param(OutFile) w]
+      set Param(Out) [open $Param(OutFile) a]
       fconfigure $Param(Out) -buffering line
    }
 
