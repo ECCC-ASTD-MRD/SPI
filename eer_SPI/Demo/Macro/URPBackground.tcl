@@ -24,8 +24,9 @@ namespace eval Macro::URPBackground {} {
 
    set Param(Geodef)    ""  ;#Geo definition file
 
-   set Param(Info)   { "Creer un background pour un radar URP a partir d'un fichier geodef"
-                       "Create an URP radar background from a geodef file" }
+   set Param(Info)     { "Creer un background pour un radar URP a partir d'un fichier geodef"
+                         "Create an URP radar background from a geodef file" }
+   set Param(InfoArgs) { { "Fichier de définition géographique" } { "Geographical definition file" } }
 }
 
 proc Macro::URPBackground::Execute { } {

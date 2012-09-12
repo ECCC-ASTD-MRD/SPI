@@ -23,7 +23,6 @@ namespace eval Macro::Flux {} {
    variable Error
    variable Lbl
 
-   set Param(In)      ""
    set Param(Info)   { "Calcul du flux traversant une coupe transversale"
                        "Calculate flux through a vertical cross section" }
 

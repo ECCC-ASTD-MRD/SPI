@@ -26,6 +26,7 @@ namespace eval Macro::PathWays {} {
 
    set Param(Info) { "Creer une carte/produit du parcours de\nl'air arrivant a diverses villes canadiennes."
                      "Create a trajectory map/product for\nair arriving at several canadian cities." }
+   set Param(InfoArgs) { { "Répertoire des fichiers trajectoires" "Format d'image" } { "Trajectory path" "Image format" } }
 
    set Param(Path)   ./     ;#Chemin par defaut pour les fichiers trajectoires
    set Param(Format) png    ;#Type de fichier image a generer
@@ -156,8 +157,9 @@ proc Macro::PathWays::Clean { } {
 
 proc Macro::PathWays::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::PathWays::Param(Path)   [lindex $argv 0] }
-   if { $argc>1 } { set Macro::TrajPlot::Param(Format) [lindex $argv 1] }
+   if { $argc>0 } { set Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Param(Format) [lindex $argv 1] }
 }

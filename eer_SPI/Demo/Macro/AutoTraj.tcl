@@ -25,8 +25,10 @@ namespace eval Macro::AutoTraj {} {
    variable Data
    variable Error
 
-   set Param(Info) { "Creer une carte/produit de trajectoire pour\nchaque fichier de trajectoires dans une repertoire."
-                     "Create a trajectory map/product for each\n trajectory file in a directory." }
+   set Param(Info)     { "Creer une carte/produit de trajectoire pour\nchaque fichier de trajectoires dans une repertoire."
+                         "Create a trajectory map/product for each\n trajectory file in a directory." }
+   set Param(InfoArgs) { { "Répertoire des fichiers trajectoires" "Format image" "Légende" "Hauteurs" "Graphs" }
+                         { "Trajectory file path" "Image format" "Legend" "Heights" "Graphs" } }
 
    set Param(Path)   ./     ;#Chemin par defaut pour les fichiers trajectoires
    set Param(Format) png    ;#Type de fichier image a generer
@@ -128,12 +130,13 @@ proc Macro::AutoTraj::Clean { } {
 
 proc Macro::AutoTraj::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::AutoTraj::Param(Path)   [lindex $argv 0] }
-   if { $argc>1 } { set Macro::AutoTraj::Param(Format) [lindex $argv 1] }
-   if { $argc>2 } { set Macro::AutoTraj::Param(Height) [lindex $argv 2] }
-   if { $argc>3 } { set Macro::AutoTraj::Param(Legend) [lindex $argv 3] }
-   if { $argc>4 } { set Macro::AutoTraj::Param(Graph)  [lindex $argv 4] }
+   if { $argc>0 } { set Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Param(Format) [lindex $argv 1] }
+   if { $argc>2 } { set Param(Height) [lindex $argv 2] }
+   if { $argc>3 } { set Param(Legend) [lindex $argv 3] }
+   if { $argc>4 } { set Param(Graph)  [lindex $argv 4] }
 }
 

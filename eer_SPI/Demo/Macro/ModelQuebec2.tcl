@@ -36,7 +36,7 @@ proc Macro::ModelQuebec2::Execute { } {
    georef create QCREF
    georef define QCREF -projection {PROJCS["NAD83 UTM, Zone 18 North, Meter",GEOGCS["North_American_Datum_1983",DATUM["D_North_American_1983",SPHEROID["Geodetic_Reference_System_of_1980",6378137,298.2572221009113]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",47.0],PARAMETER["central_meridian",-64.66],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]}
 
-   model read QCC3D /data/goodenough/afsr005/3DModel/Quebec/Quebec_RDDC_flt/quebec.flt
+   model read QCC3D /cnfs/ops/production/cmoe/geo/3DModel/Quebec/Quebec_RDDC_flt/quebec.flt
    model define QCC3D -georef QCREF
    Mapper::UpdateData $Page::Data(Frame) QCC3D
 }

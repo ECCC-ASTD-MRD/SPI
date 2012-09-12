@@ -9,6 +9,7 @@ namespace eval Macro::Urban {} {
 
    set Param(Info) { "Generation de produits 3D."
                      "Generate 3D urban products." }
+   set Param(InfoArgs) { { "Fichier standard" "Latitude" "Longitude" } { "Standard file" "Latitude" "Longitude" } }
 }
 
 proc Macro::Urban::Execute { } {
@@ -81,9 +82,10 @@ proc Macro::Urban::Clean { } {
 
 proc Macro::Urban::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::Urban::Param(File) [lindex $argv 0] }
-   if { $argc>1 } { set Macro::Urban::Param(Lat)  [lindex $argv 0] }
-   if { $argc>2 } { set Macro::Urban::Param(Lon)  [lindex $argv 0] }
+   if { $argc>0 } { set Param(File) [lindex $argv 0] }
+   if { $argc>1 } { set Param(Lat)  [lindex $argv 1] }
+   if { $argc>2 } { set Param(Lon)  [lindex $argv 2] }
 }

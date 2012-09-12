@@ -24,8 +24,9 @@ namespace eval Macro::OA4Pan {} {
    variable Data
    variable Error
 
-   set Param(Info) { "Carte d'analyse objective pour GEM-MACH"
-                     "GEM_MACH objective analysis map. " }
+   set Param(Info)     { "Carte d'analyse objective pour GEM-MACH"
+                         "GEM_MACH objective analysis map. " }
+   set Param(InfoArgs) { { "Fichier modèle" "Fichier observations" } { "Model file" "Observation file" } }
 
    set Param(Model) DataIn/modelOA.fst             ;#Model FSTD file
    set Param(Obs)   DataIn/O3.obs                  ;#Observation data file
@@ -142,9 +143,10 @@ proc Macro::OA4Pan::Clean { } {
 
 proc Macro::OA4Pan::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::OA4Pan::Param(Model) [lindex $argv 0] }
-   if { $argc>1 } { set Macro::OA4Pan::Param(Obs)   [lindex $argv 1] }
+   if { $argc>0 } { set Param(Model) [lindex $argv 0] }
+   if { $argc>1 } { set Param(Obs)   [lindex $argv 1] }
 }
 

@@ -30,6 +30,8 @@ namespace eval Macro::SatMod {} {
 Vitesse du vent / Wind speed Radarsat
 Modèle numérique / Numerical model: Barbules / Wind barbs
 Heure de validitée / Valid time:"
+
+   set Param(InfoArgs) { { "Fichier dtandard" } { "Standard file" } }
 }
 
 proc Macro::SatMod::Execute { } {
@@ -103,9 +105,10 @@ proc Macro::SatMod::Clean { } {
 
 proc Macro::SatMod::Args{ } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::SatMod::Param(File) [lindex $argv 0] }
+   if { $argc>0 } { set Param(File) [lindex $argv 0] }
 }
 
 

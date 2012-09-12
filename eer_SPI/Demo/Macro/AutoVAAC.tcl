@@ -26,6 +26,7 @@ namespace eval Macro::AutoVAAC {} {
 
    set Param(Info) { "Creer une carte/produit au standard VAAC pour les simulations automatiques."
                      "Create an VAAC standard  map/product for automated simulations." }
+   set Param(InfoArgs) { { "Répertoire des fichiers" "Format d'image" } { "Data path" "Image format" } }
 
    set Param(Path)   ./     ;#Chemin par defaut pour les fichiers trajectoires
    set Param(Format) png    ;#Type de fichier image a generer
@@ -116,8 +117,9 @@ proc Macro::AutoVAAC::Clean { } {
 
 proc Macro::AutoVAAC::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::AutoVAAC::Param(Path)   [lindex $argv 0] }
-   if { $argc>1 } { set Macro::AutoVAAC::Param(Format) [lindex $argv 1] }
+   if { $argc>0 } { set Param(Path)   [lindex $argv 0] }
+   if { $argc>1 } { set Param(Format) [lindex $argv 1] }
 }

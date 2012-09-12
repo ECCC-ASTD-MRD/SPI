@@ -24,7 +24,7 @@ namespace eval Macro::URPMap {} {
    variable Error
 
    set Param(Radius)    242000                                       ;#Rayon du radar
-   set Param(Date)      ""                                           ;#Rayon du radar
+   set Param(Date)      ""                                           ;#Date a processer
    set Param(Pixels)    600                                          ;#dimension de l'image en pixels
    set Param(Radars)    "WMB"                                        ;#Identificateur du radar
    set Param(Intervals) { 7 23 38 33 37 40 43 45 47 50 53 55 57 60 } ;#Liste des intervals
@@ -32,6 +32,7 @@ namespace eval Macro::URPMap {} {
 
    set Param(Info)   { "Centrer et zoomer sur la position d'un radar"
                        "Center and zoom on a radar" }
+   set Param(InfoArgs) { { "Identificateur du radar" "Date a processer" } { "Radar identifier" "Processing date" } }
 }
 
 proc Macro::URPMap::Execute { } {
@@ -137,8 +138,9 @@ proc Macro::URPMap::Clean { } {
 
 proc Macro::URPMap::Args { } {
    global argv argc
+   variable Param
 
    #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Macro::URPMap::Param(Radars) [lindex $argv 0] }
-   if { $argc>1 } { set Macro::URPMap::Param(Date)   [lindex $argv 1] }
+   if { $argc>0 } { set Param(Radars) [lindex $argv 0] }
+   if { $argc>1 } { set Param(Date)   [lindex $argv 1] }
 }

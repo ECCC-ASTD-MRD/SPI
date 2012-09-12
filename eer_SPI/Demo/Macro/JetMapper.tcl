@@ -33,7 +33,7 @@ namespace eval Macro::JetMapper { } {
    variable Lbl
 
    set Param(Info)      { "Produit WXO JetMap" "WXO JetMap product" }
-   set Param(InfoArgs)  { { "Run" "Heure" "Repertoirede sortie" "Produit (WXO+PYR)" } { "Run" "Hour" "Output directory" "Product (WXO+PYR)" } }
+   set Param(InfoArgs)  { { "Run" "Heure" "Repertoire de sortie" "Produit (WXO+PYR)" } { "Run" "Hour" "Output directory" "Product (WXO+PYR)" } }
 
    set Param(Run)   00              ;#Run to be used
    set Param(Hour)  18              ;#Valid time of map to be generated
