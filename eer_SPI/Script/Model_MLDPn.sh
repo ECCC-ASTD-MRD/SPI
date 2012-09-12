@@ -64,14 +64,18 @@ function MLDPn_Run {
    unset MODEL_PARAMS
 
    #----- Check for MPI params.
-   if [[ ${ARCH} = "Linux" && ${MODEL_NBMPITASKS} -gt 1 && ${MODEL_ISREMOTE} -eq 0 ]] ;then
+   if [[ ${ARCH} = "Linux" && ${MODEL_NBMPITASKS} -gt 1 ]] ;then
       ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME} \
          -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
          -npex ${MODEL_NBMPITASKS} \
          >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
-   else
-      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME} \
-         -args "\-i ${MLDP_INPUT} \-o ${MLDP_RESULT} \-v ${LOG_LEVEL} \-s ${MODEL_SEED} \-t ${MODEL_NBOMPTHREADS}" \
+   elif [[ ${ARCH} = "AIX" ]] ;then
+      ${MODEL_TIMER} poe ${EER_DIRBIN}/${MODEL_NAME} \
+         -i ${MLDP_INPUT} -o ${MLDP_RESULT} -v ${LOG_LEVEL} -s ${MODEL_SEED} -t ${MODEL_NBOMPTHREADS} \
+         >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
+  else
+      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME} \
+         -i ${MLDP_INPUT} -o ${MLDP_RESULT} -v ${LOG_LEVEL} -s ${MODEL_SEED} -t ${MODEL_NBOMPTHREADS} \
          >tmp/${MODEL_NAME}.out 2>tmp/${MODEL_NAME}.err
    fi
 

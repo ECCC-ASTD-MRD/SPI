@@ -73,17 +73,28 @@ function MLDP_Run {
    export MLDP1_MPI_OMP_PARAMS=""
 
    #----- Check for MPI params.
-   if [[ `uname` = "Linux" && ${MODEL_ISREMOTE} -eq 0 && ${MODEL_TYPE} = "1" ]] ;then
-      export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
-      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
-         -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
-         -npex ${MODEL_NBMPITASKS} \
-         >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
+   if [[ ${MODEL_TYPE} = "1" ]] ;then
+      if [[ `uname` = "Linux" && ${MODEL_ISREMOTE} -eq 0  ]] ;then
+         export OMP_NUM_THREADS=${MODEL_NBOMPTHREADS}
+         ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+            -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
+            -npex ${MODEL_NBMPITASKS} \
+            >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
+      elif [[ `uname` = "AIX" ]] ;then
+         ${MODEL_TIMER} poe ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+            -input ${MLDP_INPUT} -print ${MLDP_LOGLEVEL} -seed ${MLDP_SEED} -source ${MLDP_SOURCE} -outmode ${MLDP_OUTMODE} \
+            >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
+      else
+         ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+            -input ${MLDP_INPUT} -print ${MLDP_LOGLEVEL} -seed ${MLDP_SEED} -source ${MLDP_SOURCE} -outmode ${MLDP_OUTMODE} \
+            >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
+      fi
    else
-      ${MODEL_TIMER} r.mpirun2 -pgm ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
-         -args "\-input ${MLDP_INPUT} \-print ${MLDP_LOGLEVEL} \-seed ${MLDP_SEED} \-source ${MLDP_SOURCE} \-outmode ${MLDP_OUTMODE}" \
+      ${MODEL_TIMER} ${EER_DIRBIN}/${MODEL_NAME}${MODEL_TYPE}${ARGOS} \
+         -input ${MLDP_INPUT} -print ${MLDP_LOGLEVEL} -seed ${MLDP_SEED} -source ${MLDP_SOURCE} -outmode ${MLDP_OUTMODE} \
          >tmp/${MODEL_NAME}${MODEL_TYPE}.out 2>tmp/${MODEL_NAME}${MODEL_TYPE}.err
    fi
+
    taskstatus=$?
    MODEL_EXITSTATUS=$((MODEL_EXITSTATUS+$taskstatus))
 
