@@ -489,7 +489,7 @@ proc Graph::TimeSection::Params { Parent GR } {
    Graph::ParamsPos  $Parent
    Graph::ParamsAxis $Parent $GR TimeSection X TIME
    Graph::ParamsAxis $Parent $GR TimeSection Y VERTICAL
-   Graph::ModeSelect POINT { POINT BOX POLYGON } NIL
+   Graph::ModeSelect POINT { POINT BOX POLYGON } { AVG MIN MAX }
 }
 
 #-------------------------------------------------------------------------------
@@ -719,18 +719,27 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          foreach ij $ijs {
             fstdfield vertical TIMESECTION $fields [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
             if { [fstdfield is TIMESECTION$Item] } {
-               vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION
+               switch $Graph::Param(SelectType) {
+                  AVG { vexpr TIMESECTION$Item TIMESECTION$Item+TIMESECTION }
+                  MIN { vexpr TIMESECTION$Item min(TIMESECTION$Item,TIMESECTION) }
+                  MAX { vexpr TIMESECTION$Item max(TIMESECTION$Item,TIMESECTION) }
+                  MED { }
+                  STD { }
+               }
             } else {
                fstdfield copy TIMESECTION$Item TIMESECTION
             }
+
             incr n
             SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
          }
          if { !$n } {
             return
          }
-         fstdfield free GTIMESECTION
-         vexpr TIMESECTION$Item TIMESECTION$Item/$n
+         fstdfield free TIMESECTION
+         if { $Graph::Param(SelectType)=="AVG" } {
+            vexpr TIMESECTION$Item TIMESECTION$Item/$n
+         }
          SPI::Progress 0
       } else {
          fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)

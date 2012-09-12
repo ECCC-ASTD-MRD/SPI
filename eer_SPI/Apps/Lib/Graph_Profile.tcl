@@ -391,7 +391,7 @@ proc Graph::Profile::Params { Parent GR } {
    Graph::ParamsAxis $Parent $GR Profile X
    Graph::ParamsAxis $Parent $GR Profile Y VERTICAL
    Graph::ParamsObs  $Parent $GR Profile
-   Graph::ModeSelect POINT { POINT BOX POLYGON } NIL
+   Graph::ModeSelect POINT { POINT BOX POLYGON } { AVG MIN MAX }
 }
 
 #-------------------------------------------------------------------------------
@@ -613,11 +613,17 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
             fstdfield free GRAPHPROFILE
 
             foreach ij $ijs {
-               fstdfield vertical GRAPHPROFILEAVG $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
+               fstdfield vertical GRAPHPROFILE_TMP $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
                if { [fstdfield is GRAPHPROFILE] } {
-                  vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILEAVG
+                  switch $Graph::Param(SelectType) {
+                     AVG { vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILE_TMP }
+                     MIN { vexpr GRAPHPROFILE min(GRAPHPROFILE,GRAPHPROFILE_TMP) }
+                     MAX { vexpr GRAPHPROFILE max(GRAPHPROFILE,GRAPHPROFILE_TMP) }
+                     MED { }
+                     STD { }
+                  }
                } else {
-                  fstdfield copy GRAPHPROFILE GRAPHPROFILEAVG
+                  fstdfield copy GRAPHPROFILE GRAPHPROFILE_TMP
                }
                incr n
                SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
@@ -625,8 +631,11 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
             if { !$n } {
                return
             }
-            fstdfield free GRAPHPROFILEAVG
-            vexpr GRAPHPROFILE GRAPHPROFILE/$n
+            fstdfield free GRAPHPROFILE_TMP
+
+            if { $Graph::Param(SelectType)=="AVG" } {
+               vexpr GRAPHPROFILE GRAPHPROFILE/$n
+            }
             SPI::Progress 0
          } else {
             fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
