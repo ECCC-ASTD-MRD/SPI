@@ -396,7 +396,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    set Data(FT10) "Initial column radius       :"
    set Data(FT11) "Vertical distribution       :"
    set Data(FT12) "Number of particles         :"
-   set Data(FT13) "Maximum value at o          :"
+   set Data(FT13) "Maximum value at *          :"
 
    set ListIsoSymbol   $Sim(EmIsoSymbol)
    set ListIsoQuant    $Sim(EmIsoQuantity)
@@ -921,6 +921,6 @@ proc RSMC::UpdateItems { Frame } {
    }
 
    if { [set xy [$Page(VP) -project [lindex $Data(Max) 1] [lindex $Data(Max) 2] 0]]!="" && [lindex $xy 2]>0 } {
-      $Frame.page.canvas create text [lindex $xy 0] [lindex $xy 1] -text "o" -fill black -tag LAYOUTRSMC
+      $Frame.page.canvas create text [lindex $xy 0] [lindex $xy 1] -text "*" -font XFont18 -fill black -tag LAYOUTRSMC
    }
 }
