@@ -154,8 +154,9 @@ proc TRAJECT::ParamsCheck { Tab No } {
       return True
    }
 
+   scan $Sim(Min)  "%02d" min
    scan $Sim(Hour) "%02d" hour
-   set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600]
+   set Sim(AccSecs) [expr $Sim(Secs)+$hour*3600+$min*60]
 
    #----- Get the levels
    set Sim(Level) ""
