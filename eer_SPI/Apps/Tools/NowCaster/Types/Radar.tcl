@@ -811,8 +811,9 @@ proc NowCaster::Radar::DrawInit  { Frame VP } {
    variable Param
    variable Lbl
 
-   if { [set index [lindex [ogrlayer pick RADAR [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor) ] 0]]]!="" } {
-      set radar [ogrlayer define RADAR -feature $index ID]
+   if { [llength [set index [lindex [ogrlayer pick RADAR [list $Viewport::Map(LatCursor) $Viewport::Map(LonCursor) ] True]]]] } {
+puts stderr $index
+      set radar [ogrlayer define RADAR -feature [lindex $index end] ID]
       NowCaster::Radar::Add $Param(Path)/$radar
    }
 }

@@ -202,22 +202,25 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
       set Viewport::Data(Data$Frame) [lreplace $Viewport::Data(Data$Frame) $idx $idx]
       Mapper::UpdateData $Frame
 
-      if { [gdalband is $Object] && [info exists Mapper::Data(Id$Object)]} {
-         gdalband free $Object
-         gdalfile close $Data(Id$Object)
-         ogrgeometry free MASK$Object  MASKRING$Object
+      if { [info exists Mapper::Data(Id$Object)] } {
+         if { [gdalband is $Object] } {
+            gdalband free $Object
+            gdalfile close $Data(Id$Object)
+            ogrgeometry free MASK$Object  MASKRING$Object
 
-         set tag WMSLEGEND[string map { % "" . "" " " "" \' " " \" " " } $Object]
-         Shape::UnBind $Frame.page.canvas $tag
-         $Frame.page.canvas delete $tag
-         catch { image delete $tag }
+            set tag WMSLEGEND[string map { % "" . "" " " "" \' " " \" " " } $Object]
+            Shape::UnBind $Frame.page.canvas $tag
+            $Frame.page.canvas delete $tag
+            catch { image delete $tag }
 
-      } elseif { [ogrlayer is $Object] } {
-         ogrlayer free $Object
-         ogrfile close $Data(Id$Object)
-      } elseif { [model is $Object] } {
-         model free $Object
+         } elseif { [ogrlayer is $Object] } {
+            ogrlayer free $Object
+            ogrfile close $Data(Id$Object)
+         } elseif { [model is $Object] } {
+            model free $Object
+         }
       }
+
       if { [colormap is $Object] } {
          colormap free $Object
       }
