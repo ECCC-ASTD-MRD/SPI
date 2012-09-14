@@ -552,7 +552,7 @@ proc Watch::GetType { Project } {
    variable Param
 
    foreach proj $Param(Projects) no { 0 1 2 3 4 5 } {
-      if { [string first $proj $Project]!=-1 } {
+      if { [string first $proj [string toupper $Project]]!=-1 } {
          return $no
       }
    }
