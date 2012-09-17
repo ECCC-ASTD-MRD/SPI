@@ -40,7 +40,6 @@ Installation:
    A) Packages description
 
       - Geographical database (GDB)
-        YOU WILL HAVE TO REINSTALL THE DBGEO FROM THE LATEST VERSION FOR THIS VERSION OF SPI
 
             DBGeo.tgz
 
@@ -50,70 +49,63 @@ Installation:
    B) Decompressing the packages
 
       - You will need to install the geographical database (DBGEO_?.zip) first by decompressing it
-      into it's final installation directory if it has'nt been installed before.
+        into it's final installation directory if it has'nt been installed before.
 
-      This will take up to 2.3 Gig for the global coverage
+        This will take up to 2.3 Gig for the global coverage
 
-         tar -zxvf DBGeo.tgz -C [your geo_path]
+           tar -zxvf DBGeo.tgz -C [your geo_path]
 
-      - Next, You may go on with the SPI package by untarring it to a temporary
-      directory since it will install itself somewhere else later.
+      - Then you can uncompress the SPI package to it's final installation directory.
 
-         tar -zxvf SPI-x.x.x.tgz -C [your temp_path]
-
-   C) Package installation
-
-      - Call the "Install" script with the installation path as the first parameter
-         This script will create a SPI directory and install itself there.
-
-         ./Install [your spi_path]
+           tar -zxvf SPI-x.x.x.tgz -C [your spi_path]
 
    D) Profile setup.
 
       - You will have to define the GDB_PATH variable to the location of the geographical database for SPI to use it:
-      Depending on the shell you are using, this might mean:
+        Depending on the shell you are using, this might mean:
 
-      sh/ksh/bash
-         add this line to the .profile or .profile_usr
+        sh/ksh/bash
+           add this line to the .profile or .profile_usr
 
-         export GDB_PATH=[your geo_path]/data
+           export GDB_PATH=[your geo_path]/data
 
-      csh
+        csh
 
-         add this line to the .cshrc
+           add this line to the .cshrc
 
-         setenv GDB_PATH [your geo_path]/data
+           setenv GDB_PATH [your geo_path]/data
 
       - If you want to run scripts, you will have to define an environment variable pointing to the path
-      where you installed SPI. Depending on the shell you are using, this might mean:
+        where you installed SPI. Depending on the shell you are using, this might mean:
 
-      sh/ksh/bash
+        sh/ksh/bash
 
-         add this line to the .profile or .profile_usr
+           add this line to the .profile or .profile_usr
 
-         export SPI_PATH=[your spi_path]
+           export SPI_PATH=[your spi_path]
 
-      csh
+        csh
 
-         add this line to the .cshrc
+           add this line to the .cshrc
 
-         setenv SPI_PATH [your spi_path]
+           setenv SPI_PATH [your spi_path]
 
    E) Run SPI.
 
       - You can now launch SPI by calling
 
-      [your  spi_path]/SPI
+           [your  spi_path]/SPI
 
-      or
+        or
 
-      $SPI_PATH/SPI
+           $SPI_PATH/SPI
 
-      The first time you run it SPI will create a setup directory called .spi in
-      your home directory where the parameters are saved. You can edit theses files, primarily
-      the one called ~/.spi/SPI, carefully to configure SPI to your likings.
+        The first time you run it SPI will create a setup directory called .spi in
+        your home directory where the parameters are saved. You can edit theses files, primarily
+        the one called ~/.spi/SPI, carefully to configure SPI to your likings.
 
 Developers:
+- Source code is available at http://subversion.cmc.ec.gc.ca/repos/eerSPI
 - The package comes with two distinct parts, the Tcl code (eer_SPI directory) and the Tcl extensions (LibTkGL directory)
 - To build the Tcl extensions, go in the LibTkGL directory and use the "makeit" script. The built libraries will be copied to the eer_SPI/Lib/$ARCH directory
 - SPI needs a lot of support libraries which have already been precompiled for you convenience in the eer_SPI/Lib/$ARCH directory

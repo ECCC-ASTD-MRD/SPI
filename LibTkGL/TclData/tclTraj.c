@@ -699,7 +699,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    TTraj     *traj=NULL,head;
    TDataSpec *spec=NULL;
    char       buf[512],date[16];
-   int        i,j,year,month,day,hour,nb,ap,ntr=0;
+   int        i,j,year,month,day,hour,min=0,nb,ap,ntr=0;
 
    obj=Tcl_NewListObj(0,NULL);
 
@@ -733,9 +733,9 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       fgets(buf,512,Stream);sscanf(buf,"%i %s",&nb,buf);
       fgets(buf,512,Stream);sscanf(buf,"%i %s",&head.Lapse,buf);
       fgets(buf,512,Stream);sscanf(buf,"%i",&head.NPr);
-      fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i",&year,&month,&day,&hour);
+      fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %i",&year,&month,&day,&hour,&min);
 
-      head.Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000,1);
+      head.Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100,1);
 
       /*Check for AP date availability*/
       fgets(buf,512,Stream);

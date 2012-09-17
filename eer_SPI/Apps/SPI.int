@@ -787,7 +787,7 @@ proc SPI::ToolBar { Frame } {
          button $Frame.cam.down  -image CAMDOWN  -relief flat -bd 0 -overrelief raised \
             -command { ProjCam::Reset $Page::Data(Frame) False ; Page::Update $Page::Data(Frame) }
          button $Frame.cam.zclr  -image ZOOMCLR  -relief flat -bd 0 -overrelief raised \
-            -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) True }
+            -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) True True }
          button $Frame.cam.zback -image ZOOMBACK -relief flat -bd 0 -overrelief raised \
             -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) False True }
          button $Frame.cam.out   -image CAMSAVE  -relief flat -bd 0 -overrelief raised \
