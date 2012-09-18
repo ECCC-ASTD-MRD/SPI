@@ -772,8 +772,15 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    c_visetopt(threadData->viInterp,"VERBOSE","NO");
 
    /*Try to read HY for hybrid levels*/
-   if (!FSTD_DecodeRPNLevelParams(FieldFrom)) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find source hybrid definition field HY",(char*)NULL);
+   FSTD_DecodeRPNLevelParams(FieldFrom);
+
+   if (FieldFrom->Ref->ZRef.Type==LVL_UNDEF && ZFieldFrom->Def->NK==1) {
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for source Z field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (FieldTo->Ref->ZRef.Type==LVL_UNDEF && ZFieldTo->Def->NK==1) {
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for destination Z field",(char*)NULL);
+      return(TCL_ERROR);
    }
 
    FieldFrom->Ref->ZRef.P0=ZFieldFrom?(float*)(ZFieldFrom->Def->Data[0]):NULL;
