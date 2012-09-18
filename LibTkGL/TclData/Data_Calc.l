@@ -46,8 +46,9 @@ extern int        GDataN;
 %}
 
 DIGIT   [0-9]
+HEXA    [A-Fa-f0-9]
 CHAR    [A-Za-z_]
-EXTCHAR [A-Za-z0-9_.:#~]
+EXTCHAR [A-Za-z0-9_.:#]
 
 %option noyywrap
 
@@ -55,6 +56,14 @@ EXTCHAR [A-Za-z0-9_.:#~]
 
 "field" {
    return T_FIELD_FUNC;
+}
+
+("0x"{HEXA}+) {
+   int i;
+
+   sscanf(yytext,"%i",&i);
+   vexpr_lval.Num = i;
+   return T_INT;
 }
 
 {DIGIT}+ {
@@ -246,6 +255,21 @@ EXTCHAR [A-Za-z0-9_.:#~]
 "||" {
    vexpr_lval.Operator = OP_OR;
    return T_OR;
+}
+
+"~" {
+   vexpr_lval.Operator = OP_BNOT;
+   return T_BNOT;
+}
+
+"&" {
+   vexpr_lval.Operator = OP_BND;
+   return T_BND;
+}
+
+"|" {
+   vexpr_lval.Operator = OP_BOR;
+   return T_BOR;
 }
 
 ";" {

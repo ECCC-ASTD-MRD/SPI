@@ -1259,6 +1259,18 @@ double or(double a,double b) {
    return(a!=0.0 || b!=0.0);
 }
 
+double bnot(double a) {
+   return(~((int)a));
+}
+
+double band(double a,double b) {
+   return(((int)a)&((int)b));
+}
+
+double bor(double a,double b) {
+   return(((int)a)| ((int)b));
+}
+
 double min(double a,double b) {
    return(a<=b?a:b);
 }

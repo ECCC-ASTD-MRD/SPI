@@ -40,6 +40,9 @@ int vexpr_error(char* s);
     OP_NOT,                   /*!< Logical NOT */
     OP_AND,                   /*!< Logical AND */
     OP_OR,                    /*!< Logical OR */
+    OP_BNOT,                  /*!< Bitwise NOT */
+    OP_BND,                   /*!< Bitwise AND */
+    OP_BOR,                   /*!< Bitwise OR */
     OP_EQU,                   /*!< Equality conditional operator */
     OP_NEQ,                   /*!< Non-equality conditional operator */
     OP_GRQ,                   /*!< Greater-or-equal conditional operator */
@@ -72,14 +75,15 @@ int vexpr_error(char* s);
 %type  <Val>       exp
 %type  <Operator>  T_ADD T_SUB T_MUL T_DIV T_EXP T_INTERP2 T_INTERP3 T_ASSIGN
 %type  <Operator>  T_EQU T_NEQ T_GRQ T_GRE T_SMQ T_SMA
+%type  <Operator>  T_BNOT T_BND T_BOR
 %type  <Operator>  T_NOT T_AND T_OR T_AROB
 %type  <Operator>  T_OPEN_BRA T_CLOSE_BRA
 %type  <Operator>  T_OPEN_PAR T_CLOSE_PAR T_COMMA
 
 %nonassoc          T_INTERP2 T_INTERP3 T_ASSIGN
-%left              T_OR
-%left              T_AND
-%nonassoc          T_NOT
+%left              T_OR T_BOR
+%left              T_AND T_BND
+%nonassoc          T_NOT T_BNOT
 %left              T_EQU T_NEQ T_GRQ T_GRE T_SMQ T_SMA
 %left              T_ADD T_SUB
 %left              T_MUL T_DIV T_MOD
@@ -733,6 +737,33 @@ exp:
 
       if (!$$) {
          vexpr_error("Calc_Matrix2 failed (T_OR): Critical!");
+         YYERROR;
+      }
+   }
+
+   |  T_BNOT exp {
+      $$ = Calc_Matrix1($2,bnot,1,0,TD_Unknown);
+
+      if (!$$) {
+         vexpr_error("Calc_Matrix1 failed (T_BNOT): Critical!");
+         YYERROR;
+      }
+   }
+
+   | exp T_BND exp {
+      $$ = Calc_Matrix2($1, $3,band,1,0,TD_Unknown);
+
+      if (!$$) {
+         vexpr_error("Calc_Matrix2 failed (T_BND): Critical!");
+         YYERROR;
+      }
+   }
+
+   | exp T_BOR exp {
+      $$ = Calc_Matrix2($1, $3,bor,1,0,TD_Unknown);
+
+      if (!$$) {
+         vexpr_error("Calc_Matrix2 failed (T_BOR): Critical!");
          YYERROR;
       }
    }

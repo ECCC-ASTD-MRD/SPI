@@ -155,6 +155,9 @@ double smq(double a,double b);
 double not(double a);
 double and(double a,double b);
 double or(double a,double b);
+double bnot(double a);
+double band(double a,double b);
+double bor(double a,double b);
 
 /*Conditionnal operators*/
 double min(double a,double b);
