@@ -1410,7 +1410,7 @@ proc MLDPn::InitKernel { } {
          set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
          set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
          set Sim(Meteo)                glb                                 ; #----- Meteorological model.
-         set Sim(ListScale)           { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+         set Sim(Grids)               { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
          set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
          set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
@@ -1445,8 +1445,8 @@ proc MLDPn::InitKernel { } {
          set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
          set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
          set Sim(Meteo)                reg                                 ; #----- Meteorological model.
-         set Sim(ListScale)             { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
-         set Sim(ListMeteoModel)        { glb reg }
+         set Sim(Grids)                { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
+         set Sim(ListMeteoModel)       { glb reg }
          set Sim(VarMesoscale)        0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          set Sim(Timescale)           2700                                ; #----- Lagrangian time scale [s].
          set Sim(ReflectionLevel)     0.9990                              ; #----- Reflection level [hyb|eta|sig].

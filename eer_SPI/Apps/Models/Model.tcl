@@ -80,6 +80,7 @@ namespace eval Model {
    set Param(Submit)            ord_soumet            ;#Queue launcher
    set Param(Events)            { "TEST/EXERCISE" "REQUESTED SERVICES" "IAEA NOTIFIED EMERGENCY" "AUTOMATED" } ;#----- List of type of events.
    set Param(Bys)               { "Internal" "IAEA" "Health Canada" "REEC" }                       ;#----- List of requesters.
+   set Param(Grids)             { }   ; #----- List of grid resolutions [km].
 
    set Data(Job)    ""                    ;#Texte de processus
    set Data(Active) 0                     ;#Flag d'activation de l'outils
@@ -427,6 +428,37 @@ proc Model::ParamsMetPath { } {
 }
 
 #----------------------------------------------------------------------------
+# Nom        : <Model::ParamsGridGet>
+# Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Lire les definitions de grilles
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Model::ParamsGridGet { } {
+   global env
+   variable Param
+
+   set Param(Grids) {}
+
+   foreach grid [glob -nocomplain $env(HOME)/.spi/Scenario/GRID/*.grid] {
+      set params [split [exec cat $grid] ,]
+      set name   [file rootname [file tail $grid]]
+      set res    [expr [lindex $params 4]/1000.0]
+      set ni     [lindex $params 0]
+      set nj     [lindex $params 1]
+      set Param(Grid$name) $params
+      lappend Param(Grids) "$name ([format $res "%.1f"] km, ${ni}x${nj})"
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom        : <Model::ParamsGridDefine>
 # Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
 #
@@ -442,6 +474,7 @@ proc Model::ParamsMetPath { } {
 
 proc Model::ParamsGridDefine { Model { Mode NEW } } {
    variable Data
+   variable Param
 
    if { $Model=="TRAJECT" || $Model=="MLCD" } {
       return
@@ -450,6 +483,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    upvar ${Model}::Sim sim
 
    if { $Mode!="NEW" } {
+      #----- If we're continuing a simulation, use it's previoulsy defined grid
       set sim(NI)     [lindex $sim(Grid) 0]
       set sim(NJ)     [lindex $sim(Grid) 1]
 
@@ -461,28 +495,47 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
       set sim(GridLat) [lindex $grid 0]
       set sim(GridLon) [lindex $grid 1]
    } else {
-      if { [llength $sim(Scale)] > 1 } {
-         set sim(GridRes)  [string trimleft  [lindex $sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
-         set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
-         set sim(Scale)    [lindex $sim(Scale) 0]                        ; #----- Grid scale name.
+
+      #----- If this grid exists in the predefined grid
+      if { [lsearch -exact -index 0  $Param(Grids) [set name [lindex $sim(Scale) 0]]]!=-1 } {
+         set sim(Grid) $Param(Grid[lindex $sim(Scale) 0])
+         set sim(NI)   [lindex $sim(Grid) 0]
+         set sim(NJ)   [lindex $sim(Grid) 1]
+
+         fstdfield create MODELGRID $sim(NI) $sim(NJ) 1
+         fstdfield define MODELGRID -NOMVAR GRID
+         fstdfield define MODELGRID -GRTYP  [lindex $sim(Grid) 6] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5]
+
+         set grid [fstdfield stats MODELGRID -gridpoint [expr $sim(NI)/2+1] [expr $sim(NJ)/2+1]]
+         set sim(GridLat) [lindex $grid 0]
+         set sim(GridLon) [lindex $grid 1]
       } else {
-         set idx [lsearch -regexp $sim(ListScale) "^$sim(Scale) *"]
-         if { $idx != -1 } {
-            set string [lindex $sim(ListScale) $idx]
-            set sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
-            set sim(GridSize) [string trimright [lindex $string 3] ")"] ; #----- Grid size NIxNJ.
+
+         #----- Otherwise create from parameters
+         if { [llength $sim(Scale)] > 1 } {
+            set sim(GridRes)  [string trimleft  [lindex $sim(Scale) 1] "("] ; #----- Grid scale resolution [km].
+            set sim(GridSize) [string trimright [lindex $sim(Scale) 3] ")"] ; #----- Grid size NIxNJ.
+            set sim(Scale)    [lindex $sim(Scale) 0]                        ; #----- Grid scale name.
+         } else {
+            set idx [lsearch -regexp $sim(Grids) "^$sim(Scale) *"]
+            if { $idx != -1 } {
+               set string [lindex $sim(Grids) $idx]
+               set sim(GridRes)  [string trimleft  [lindex $string 1] "("] ; #----- Grid scale resolution [km].
+               set sim(GridSize) [string trimright [lindex $string 3] ")"] ; #----- Grid size NIxNJ.
+            }
          }
-      }
 
-      set idx [string first "x" $sim(GridSize)]
-      if { $idx != -1 } {
-         set sim(NI) [string range $sim(GridSize) 0 [expr $idx - 1]]
-         set sim(NJ) [string range $sim(GridSize) [expr $idx + 1] end]
-      }
+         set idx [string first "x" $sim(GridSize)]
+         if { $idx != -1 } {
+            set sim(NI) [string range $sim(GridSize) 0 [expr $idx - 1]]
+            set sim(NJ) [string range $sim(GridSize) [expr $idx + 1] end]
+         }
 
-      set sim(GridRes) [expr $sim(GridRes)*1000]; #----- Convert grid resolution from [km] to [m].
-      set sim(Grid) [MetData::GridDefinePS [list $sim(Scale) $sim(GridRes)] $sim(NI) $sim(NJ) $sim(GridLat) $sim(GridLon) MODELGRID]
+         set sim(GridRes) [expr $sim(GridRes)*1000]; #----- Convert grid resolution from [km] to [m].
+         set sim(Grid) [MetData::GridDefinePS [list $sim(Scale) $sim(GridRes)] $sim(NI) $sim(NJ) $sim(GridLat) $sim(GridLon) MODELGRID]
+      }
    }
+
    set sim(NK) 25 ;#----- Number of vertical levels in the model (MLDP).
 
    fstdfield define MODELGRID -NOMVAR GRID -DATEO [fstdstamp fromseconds [clock seconds]]
@@ -1000,6 +1053,8 @@ proc Model::InitNew { Model { No -1 } { Name "" } { Pos {} } } {
    set sim(Click)        [clock seconds]
 
    #----- Initialize grid related stuff
+   Model::ParamsGridGet
+
    catch {
       fstdfield free MODELGRID
       set Data(Frame) $Page::Data(Frame)
@@ -1093,6 +1148,7 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 
    #----- Model specific parameters
    ${Data(Modelbase)}::InitNew $Exp::Data(Type)
+   eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Param(Grids)\]
 
    switch $Mode {
       "NEW" {
@@ -1114,6 +1170,7 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
    if { [info proc ::${Data(Modelbase)}::ParamsEmission]!="" } {
       ${Data(Modelbase)}::ParamsEmission .modelnew.params $Mode
    }
+
    Model::ParamsGridDefine $Data(Modelbase) $Mode
 
    #----- Launching Tab.

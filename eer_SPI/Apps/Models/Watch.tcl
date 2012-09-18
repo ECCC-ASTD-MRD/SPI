@@ -1404,7 +1404,9 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    #----- Run parameters
    set $Data(Modelbase)::Sim(ReNewMeteo) "None"
    set $Data(Modelbase)::Sim(Auto) True
+
    $Data(Modelbase)::InitNew $Data(Type)
+   eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Model::Param(Grids)\]
 
    switch $Mode {
       "NEW" {

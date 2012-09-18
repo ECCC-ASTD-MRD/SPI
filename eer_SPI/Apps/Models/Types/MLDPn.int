@@ -120,7 +120,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
 
          #----- Grid Resolution.
          frame $tabframe.others.opt.grid
-         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(ListScale) "Model::ParamsGridDefine MLDPn"
+         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(Grids) "Model::ParamsGridDefine MLDPn"
          Option::Create $tabframe.others.opt.grid.src "" MLDPn::Sim(GridSrc) 0 -1 $Sim(Pos) \
             "set MLDPn::Sim(GridLat) \[lindex \$MLDPn::Sim(GridSrc) 1\];
              set MLDPn::Sim(GridLon) \[lindex \$MLDPn::Sim(GridSrc) 2\];

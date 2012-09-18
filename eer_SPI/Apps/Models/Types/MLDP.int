@@ -100,7 +100,7 @@ proc MLDP::ParamsNew { Tab { Auto False } } {
 
          #----- Grid Resolution.
          frame $tabframe.others.opt.grid
-         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDP::Sim(Scale) 0 7 $MLDP::Sim(ListScale) "Model::ParamsGridDefine MLDP ; MLDP::ValidateModelTimeStepGrid ; MLDP::UpdateVarMesoscale ; MLDP::UpdateListVerticalLevels"
+         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDP::Sim(Scale) 0 7 $MLDP::Sim(Grids) "Model::ParamsGridDefine MLDP ; MLDP::ValidateModelTimeStepGrid ; MLDP::UpdateVarMesoscale ; MLDP::UpdateListVerticalLevels"
          Option::Create $tabframe.others.opt.grid.src "" MLDP::Sim(GridSrc) 0 14 $Sim(Pos) \
             "set MLDP::Sim(GridLat) \[lindex \$MLDP::Sim(GridSrc) 1\];
              set MLDP::Sim(GridLon) \[lindex \$MLDP::Sim(GridSrc) 2\];
