@@ -486,7 +486,7 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
          } else if (t1==1) {
             return(GPC_LinePolyIntersect(Geom1,Geom0));
          } else {
-            if (GPC_PolyPolyIntersect(Geom1,Geom0)) {
+            if (GPC_PolyPolyIntersect(Geom0,Geom1)) {
                return(1);
             }
             return(GPC_PointPolyIntersect(Geom1,Geom0,0));

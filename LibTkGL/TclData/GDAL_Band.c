@@ -502,6 +502,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    OGR_G_GetEnvelope(Geom,&envg);
 
    val=Value;
+fprintf(stderr,"---- %c %f %f %i\n",Mode,Area,val,GPC_Intersect(Geom,Def->Pick,&envg,&envp));
 
    /* Test for intersection */
    if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick,&envg,&envp)) {
