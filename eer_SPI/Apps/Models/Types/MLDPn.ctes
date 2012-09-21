@@ -169,4 +169,5 @@ namespace eval MLDPn {
 
    #----- Add back-end machines to list of hosts.
    set Sim(Hosts) [concat $GDefs(BackEnds) $Sim(Hosts)]
+   catch { set ::Model::Param(HostMLDPn) [exec cat $env(HOME)/.spi/.backend] }
 }
