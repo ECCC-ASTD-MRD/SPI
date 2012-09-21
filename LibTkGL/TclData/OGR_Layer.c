@@ -2178,6 +2178,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
                   geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
+                  r=0.0;
 
                   /* If it's a point, do simple interpolation */
                   if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
@@ -2191,7 +2192,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
                      FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
                      OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-                     r=0.0;
                      rw++;
                   } else {
 
