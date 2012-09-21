@@ -2200,7 +2200,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         OGR_G_GetEnvelope(geom,&env1[f]);
 
                      if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
-                        inter=GPC_OnOGR(GPC_INT,cell,OGR_F_GetGeometryRef(Layer->Feature[f]));
+                        inter=GPC_OnOGR(GPC_INT,cell,geom);
                         dp=OGR_G_GetArea(inter);
                         r=dp/area;
                         rt+=r;
@@ -2222,9 +2222,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                               Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
                               return(TCL_ERROR);
                         }
+                        OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                      }
-
-                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
 
                      /*Append intersection info to the list*/
                      if ((List || chan) && r>0.0) {
