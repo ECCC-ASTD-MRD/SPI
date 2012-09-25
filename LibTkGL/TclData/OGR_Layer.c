@@ -1920,19 +1920,19 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                   geom=OGR_G_CreateGeometry(wkbPolygon);
                   poly=OGR_G_CreateGeometry(wkbLinearRing);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
                   OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j+0.5,&lat,&lon,1,1);
-                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
                   OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i+0.5,j+0.5,&lat,&lon,1,1);
-                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
                   OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i+0.5,j-0.5,&lat,&lon,1,1);
-                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
                   OGR_G_AddPoint_2D(poly,x,y);
                   field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                  Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                  Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
                   OGR_G_AddPoint_2D(poly,x,y);
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {

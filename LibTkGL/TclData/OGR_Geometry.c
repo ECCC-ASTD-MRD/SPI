@@ -923,6 +923,7 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
  *
  *----------------------------------------------------------------------------
 */
+
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
    unsigned int  g,n,nv=0,pnv;
