@@ -790,7 +790,8 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       set date0 [lindex [trajectory define $t -PARCEL 0] 0]
       set date1 [lindex [trajectory define $t -PARCEL end] 0]
       set datea [trajectory define $t -DATEAP]
-      set inter [expr int([trajectory configure $t -intervals]/3600)]
+      set inter [trajectory configure $t -intervals]
+      set mark  [trajectory configure $t -mark]
 
       if { ![vector is TRAJGRAPH$t] } {
          vector create TRAJGRAPH$t
@@ -854,7 +855,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
          -icon [trajectory configure $t -icon] -outline [trajectory configure $t -color] -iconoutline [trajectory configure $t -color] \
          -size [trajectory configure $t -size] -width [trajectory configure $t -width] -iconfill [trajectory configure $t -color] \
-         -iconxshowvalue [expr $inter*3600] -iconxfillvalue [expr 24*3600] -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y -tag $t
+         -iconxshowvalue $inter -iconxfillvalue $mark -xdata TRAJGRAPH$t.X -ydata TRAJGRAPH$t.Y -tag $t
 
    }
    $Frame.page.canvas itemconfigure TRAJGRAPH -item $items

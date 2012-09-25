@@ -1148,7 +1148,7 @@ proc Model::ParamsWindow { Model { Mode NEW } } {
 
    #----- Model specific parameters
    ${Data(Modelbase)}::InitNew $Exp::Data(Type)
-   eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Param(Grids)\]
+   catch { eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Param(Grids)\] }
 
    switch $Mode {
       "NEW" {
