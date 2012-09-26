@@ -42,7 +42,7 @@
 #   FieldParams::Window     { { Field "" } }
 #   FieldParams::GetInfo    { { Field "" } }
 #   FieldParams::GetMatrix  { { Field "" } }
-#   FieldParams::SetInfo    { { Field "" } }
+#   FieldParams::SetInfo    { { Field "" } { Write False } }
 #
 # Remarques :
 #
@@ -1529,11 +1529,12 @@ namespace eval FieldParams {
    variable Param
    variable Data
 
-   set Param(Geom)     { 225x570+[winfo rootx .]+[winfo rooty .] }
+   set Param(Geom)     { 250x570+[winfo rootx .]+[winfo rooty .] }
    set Param(Title)    { "Détails du champs" "Field details" }
 
    set Lbl(Close)      { "Fermer" "Close" }
    set Lbl(Apply)      { "Appliquer" "Apply" }
+   set Lbl(Save)       { "Enregistrer" "Save" }
    set Lbl(Values)     { "Valeurs" "Values" }
    set Lbl(Info)       { "Informations" "Informations" }
 
@@ -1645,8 +1646,11 @@ proc FieldParams::Window { { Field "" } } {
       $Data(Tab2).data.table window configure 0,0 -window $Data(Tab2).data.table.lock -sticky nsew
 
       frame .fieldboxparams.cmd
-         button .fieldboxparams.cmd.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field); Viewport::FollowerRemove FieldParams; destroy .fieldboxparams; set FieldParams::Data(Done) True }
-         pack .fieldboxparams.cmd.apply -side left
+         button .fieldboxparams.cmd.close  -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command { Viewport::FollowerRemove FieldParams; destroy .fieldboxparams; set FieldParams::Data(Done) True }
+         button .fieldboxparams.cmd.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field); Viewport::FollowerRemove FieldParams; destroy .fieldboxparams; set FieldParams::Data(Done) True }
+         button .fieldboxparams.cmd.save   -text [lindex $Lbl(Save) $GDefs(Lang)]  -bd 1 -command { FieldParams::SetInfo $FieldParams::Data(Field) True; Viewport::FollowerRemove FieldParams; destroy .fieldboxparams; set FieldParams::Data(Done) True }
+         pack .fieldboxparams.cmd.close .fieldboxparams.cmd.apply .fieldboxparams.cmd.save -side left
+         pack .fieldboxparams.cmd.save -side left
       pack .fieldboxparams.tab -side top -fill both -expand True -padx 5 -pady 5 -ipadx 5
       pack .fieldboxparams.cmd -side top -anchor e -padx 5 -pady 5
 
@@ -1704,14 +1708,46 @@ proc FieldParams::GetInfo { { Field "" } } {
       foreach param $Data(ParamsOut) {
          set Data($param) [fstdfield define $Field -$param]
       }
-      .fieldboxparams.cmd.apply configure -state normal
       wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([lindex [fstdfield stats $Field -levels] [fstdfield stats $Field -level]] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
    } else {
       foreach param $Data(ParamsOut) {
          set Data($param) ""
       }
-      .fieldboxparams.cmd.apply configure -state disabled
       wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]"
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FieldParams::SetInfo>
+# Creation : Juin 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Instaurer les parametres d'un champs dans les variables de l'interface
+#            des parametres.
+#
+# Parametres  :
+#   <Field>   : Identificateur du champs
+#   <Write>   : Write the modified field to it's file
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldParams::SetInfo { { Field "" } { Write False } } {
+   variable Data
+
+   if { [fstdfield is $Field] } {
+      foreach param $Data(ParamsIn) {
+         fstdfield define $Field -$param $Data($param)
+      }
+      if { $Write } {
+         if { [set file [FileBox::Create .fieldboxparams "" Save [list $FileBox::Type(FSTD)]]]!="" } {
+            fstdfile open FIELDPARAMS write $file
+            fstdfield write $Field FIELDPARAMS 0 True
+            fstdfile close FIELDPARAMS
+         }
+      }
    }
 }
 
@@ -1778,33 +1814,6 @@ proc FieldParams::GetMatrix { { Field "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <FieldParams::SetInfo>
-# Creation : Juin 2000 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Instaurer les parametres d'un champs dans les variables de l'interface
-#            des parametres.
-#
-# Parametres  :
-#   <Field>   : Identificateur du champs
-#
-# Retour:
-#
-# Remarques :
-#     - Si il n'y as pas de champs specifie, on utilise la selection de la boite de champs
-#
-#----------------------------------------------------------------------------
-
-proc FieldParams::SetInfo { { Field "" } } {
-   variable Data
-
-   if { [fstdfield is $Field] } {
-      foreach param $Data(ParamsIn) {
-         fstdfield define $Field -$param $Data($param)
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <FieldParams::SetMatrix>
 # Creation : Fevrier 2007 - J.P. Gauthier - CMC/CMOE
 #
@@ -1832,4 +1841,3 @@ proc FieldParams::SetMatrix { I J Value } {
    }
    return True
 }
-

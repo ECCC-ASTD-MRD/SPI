@@ -90,7 +90,7 @@ namespace eval FieldCalc {
 
    #----- Bulles d'aides
 
-   set Bubble(Param)   { "Définir les paramêtres dur champs résultant" "Define the result field parameters" }
+   set Bubble(Param)   { "Définir/Sauvegader les paramêtres du champs résultant" "Define/Save the result field parameters" }
    set Bubble(Formula) { "Nom de la formule courante" "Current formula name" }
    set Bubble(Save)    { "Sauvegarde de la formule courante" "Save the current formula" }
    set Bubble(Del)     { "Suppression de la formule courante de la liste des formules sauvegardees" "Suppress the current formula from the saved list" }
@@ -99,7 +99,6 @@ namespace eval FieldCalc {
                          "Mantisse\nType in the formula or use the calculator buttons\nTo insert a field,\
                           click on it with the middle mouse button in a fieldbox." }
    set Bubble(List)  { "Liste des operations effectuees" "Past operations made" }
-   set Bubble(Field) { "Sauvegarder le champs resultant" "Save the result field" }
 
    set Bubble(STO)   { "Memoriser le resultat" "Memorize the result" }
    set Bubble(RCL)   { "Rappeler le resultat memorise" "Recall memorized result" }
@@ -574,21 +573,18 @@ proc FieldCalc::Window { { Parent .} } {
 
    frame .fieldcalc.expr -relief raised -bd 1
       entry .fieldcalc.expr.op -textvariable FieldCalc::Data(Operand) -bd 1 -bg $GDefs(ColorLight)
-      button .fieldcalc.expr.save -image FOLDIN -relief flat -state disabled -overrelief raised -bd 1 \
-         -command { if { [fstdfield is CALC$Page::Data(VP)] } { FieldCalc::Save [FileBox::Create .fieldcalc "" Save [list $FileBox::Type(FSTD)]] } }
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is CALC$Page::Data(VP)] } { FieldParams::Window CALC$Page::Data(VP) } }
       ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
       button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::Get . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
       pack .fieldcalc.expr.op -side left -fill both -expand true
-      pack .fieldcalc.expr.param .fieldcalc.expr.save -side left
+      pack .fieldcalc.expr.param -side left
       pack .fieldcalc.expr.sel -side left -fill both
       pack .fieldcalc.expr.fsave .fieldcalc.expr.fdel -side left -fill both
    pack .fieldcalc.expr -side top -anchor e -padx 2 -pady 2 -fill x
 
    Bubble::Create .fieldcalc.expr.sel   $Bubble(Formula)
-   Bubble::Create .fieldcalc.expr.save  $Bubble(Field)
    Bubble::Create .fieldcalc.expr.param $Bubble(Param)
    Bubble::Create .fieldcalc.expr.fsave $Bubble(Save)
    Bubble::Create .fieldcalc.expr.fdel  $Bubble(Del)
@@ -946,7 +942,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
       FSTD::UnRegister $Result False
    }
 
-   catch { .fieldcalc.expr.save configure -state disabled; .fieldcalc.expr.param configure -state disabled }
+   catch { .fieldcalc.expr.param configure -state disabled }
 
    #----- If no operand vailable, do nothing
    if { ![FieldCalc::IsOperand $VP] } {
@@ -1017,7 +1013,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
          FSTD::Register $res
          lappend data $res
          fstdfield stats $res -tag [fstdfield stats [lindex $fields 0] -tag]
-         catch { .fieldcalc.expr.save configure -state normal; .fieldcalc.expr.param configure -state normal }
+         catch { .fieldcalc.expr.param configure -state normal }
       }
    } else {
        return $Fields
@@ -1057,35 +1053,6 @@ proc FieldCalc::Paste { File Field } {
    } else {
      .fieldcalc.expr.op insert insert "field($File,$Field)"
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::Save>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Sauvegarder le champs resultat.
-#
-# Parametres :
-#   <File>   : Fichier
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::Save { File } {
-   variable Data
-
-   if { $File=="" } {
-      return
-   }
-
-   FieldParams::Window CALC$Page::Data(VP)
-
-   fstdfile open CALCFILE write $File
-   fstdfield write CALC$Page::Data(VP) CALCFILE 0 True
-   fstdfile close CALCFILE
 }
 
 #----------------------------------------------------------------------------
