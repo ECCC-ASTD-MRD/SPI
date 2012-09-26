@@ -469,9 +469,10 @@ proc Exp::CreateTree { } {
                set y1 [incr y 21]
 
                $canvas create line 10 $y 20 $y -tags TREE
-               $canvas create text 40 $y -text $model -font $GDefs(Font) -anchor w -tags "TREE"
+               $canvas create text 40 $y -text $model -font $GDefs(Font) -anchor w -tags "TREE TREE$model$no"
                $canvas create bitmap 30 $y -bitmap $Model::Resources(Plus) -tags "SIGN $model$no"
-               $canvas bind $model$no <ButtonPress-1> "Exp::SelectBranchSim $model$no"
+               $canvas bind $model$no      <ButtonPress-1> "Exp::SelectBranchSim $model$no"
+               $canvas bind TREE$model$no <ButtonPress-1> "Exp::SelectBranchSim $model$no"
 
                if { [lsearch -exact $Exp::Data(BranchSim) $model$no] != -1 } {
                   $canvas itemconfigure $model$no -bitmap $Model::Resources(Minus)
