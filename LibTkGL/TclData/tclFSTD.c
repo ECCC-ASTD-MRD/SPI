@@ -1029,8 +1029,8 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    FSTD_File         *file=NULL;
 
    static CONST char *types[] = { "ALL","NOMVAR","TYPVAR","DATEV","IP1" };
-   static CONST char *sopt[] = { "is","open","close","filename","info",NULL };
-   enum               opt { IS,OPEN,CLOSE,FILENAME,INFO };
+   static CONST char *sopt[] = { "is","open","close","filename","mode","info",NULL };
+   enum               opt { IS,OPEN,CLOSE,FILENAME,MODE,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -1086,6 +1086,18 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->Name,-1));
+         return(TCL_OK);
+         break;
+
+      case MODE:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id");
+            return(TCL_ERROR);
+         }
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(&file->Mode,1));
          return(TCL_OK);
          break;
 
@@ -1174,7 +1186,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
 
    file=(FSTD_File*)malloc(sizeof(FSTD_File));
-   file->Mode=Mode;
+   file->Mode=toupper(Mode);
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();
    file->Open=file->Id<1?-1:0;
@@ -1248,12 +1260,12 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    if (!File->Open || File->Open==-1) {
 #ifdef LNK_FSTD
 
-      if (File->Mode=='w' ||  File->Mode=='W') {                /*Write Mode*/
+      if ( File->Mode=='W') {                /*Write Mode*/
           if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
           else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W",0);
-      } else if (File->Mode=='a' ||  File->Mode=='A') {         /*Append Mode*/
+      } else if (File->Mode=='A') {         /*Append Mode*/
          if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+OLD+R/W+REMOTE",0);
          else

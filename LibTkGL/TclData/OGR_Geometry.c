@@ -938,6 +938,95 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
       }
    }
 
+/*   GLfloat uknots[8]= { -1.570796f,-1.570796f,-1.570796f,0.000000f,0.000000f,1.570796f,1.570796f,1.570796f };
+   GLfloat vknots[12]= { 0.000000f,0.000000f,0.000000f,1.570796f,1.570796f,3.141593f,3.141593f,4.712389f,4.712389f,6.283185f,6.283185f,6.283185f };
+   GLfloat ctrls[180] = { 0.000000f,0.000000f,-1.000000f,1.000000f,
+0.000000f,-0.000000f,-0.70710678f,0.707107f,
+0.000000f,-0.000000f,-1.000000f,1.000000f,
+-0.000000f,-0.000000f,-0.70710678f,0.707107f,
+-0.000000f,-0.000000f,-1.000000f,1.000000f,
+-0.000000f,0.000000f,-0.70710678f,0.707107f,
+-0.000000f,0.000000f,-1.000000f,1.000000f,
+0.000000f,0.000000f,-0.70710678f,0.707107f,
+0.000000f,0.000000f,-1.000000f,1.000000f,
+-0.70710678f,-0.000000f,-0.70710678f,0.707107f,
+-0.50000000f,0.50000000f,-0.50000000f,0.500000f,
+-0.000000f,0.70710678f,-0.70710678f,0.707107f,
+0.50000000f,0.50000000f,-0.50000000f,0.500000f,
+0.70710678f,0.000000f,-0.70710678f,0.707107f,
+0.50000000f,-0.50000000f,-0.50000000f,0.500000f,
+0.000000f,-0.70710678f,-0.70710678f,0.707107f,
+-0.50000000f,-0.50000000f,-0.50000000f,0.500000f,
+-0.70710678f,-0.000000f,-0.70710678f,0.707107f,
+-1.000000f,-0.000000f,0.000000f,1.000000f,
+-0.70710678f,0.70710678f,0.000000f,0.707107f,
+-0.000000f,1.000000f,0.000000f,1.000000f,
+0.70710678f,0.70710678f,0.000000f,0.707107f,
+1.000000f,0.000000f,0.000000f,1.000000f,
+0.70710678f,-0.70710678f,0.000000f,0.707107f,
+0.000000f,-1.000000f,0.000000f,1.000000f,
+-0.70710678f,-0.70710678f,0.000000f,0.707107f,
+-1.000000f,-0.000000f,0.000000f,1.000000f,
+-0.70710678f,-0.000000f,0.70710678f,0.707107f,
+-0.50000000f,0.50000000f,0.50000000f,0.500000f,
+-0.000000f,0.70710678f,0.70710678f,0.707107f,
+0.50000000f,0.50000000f,0.50000000f,0.500000f,
+0.70710678f,0.000000f,0.70710678f,0.707107f,
+0.50000000f,-0.50000000f,0.50000000f,0.500000f,
+0.000000f,-0.70710678f,0.70710678f,0.707107f,
+-0.50000000f,-0.50000000f,0.50000000f,0.500000f,
+-0.70710678f,-0.000000f,0.70710678f,0.707107f,
+0.000000f,0.000000f,1.000000f,1.000000f,
+0.000000f,-0.000000f,0.70710678f,0.707107f,
+0.000000f,-0.000000f,1.000000f,1.000000f,
+-0.000000f,-0.000000f,0.70710678f,0.707107f,
+-0.000000f,-0.000000f,1.000000f,1.000000f,
+-0.000000f,0.000000f,0.70710678f,0.707107f,
+-0.000000f,0.000000f,1.000000f,1.000000f,
+0.000000f,0.000000f,0.70710678f,0.707107f,
+0.000000f,0.000000f,1.000000f,1.000000f };
+
+   GLUnurbsObj *nurb;
+   Vect3f       temp[1000];
+   Vect3d       t;
+   int          i;
+
+      nurb=gluNewNurbsRenderer();
+      gluNurbsProperty(nurb,GLU_NURBS_MODE,GLU_NURBS_TESSELLATOR);
+      gluNurbsProperty(nurb,GLU_SAMPLING_TOLERANCE,10.0);
+      gluNurbsProperty(nurb,GLU_DISPLAY_MODE,GLU_FILL);
+      gluNurbsCallback(nurb,GLU_ERROR,glTessError);
+      gluNurbsCallback(nurb,GLU_NURBS_BEGIN,glBegin);
+      gluNurbsCallback(nurb,GLU_NURBS_VERTEX,glVertex3fv);
+      gluNurbsCallback(nurb,GLU_NURBS_NORMAL,glNormal3fv);
+      gluNurbsCallback(nurb,GLU_NURBS_END,glEnd);
+
+      glRotatef(-90.0,1.0,0.0,0.0);
+      glRotatef(90.0,0.0,0.0,1.0);
+      glScalef(-1.0,1.0,1.0);
+      gluBeginSurface(nurb);
+         gluNurbsSurface(nurb,8,uknots,12,vknots,4*9,4,ctrls,3,3,GL_MAP2_VERTEX_4);
+   //            gluBeginTrim(nurb);
+   //            gluPwlCurve(nurb,5,dmn,2,GLU_MAP1_TRIM_2);
+   //            gluEndTrim(nurb);
+         for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+            geom=OGR_G_GetGeometryRef(Geom,g);
+            if ((nv=OGR_G_GetPointCount(geom))) {
+               for(i=0;i<nv;i++) {
+                  OGR_G_GetPoint(geom,i,&t[0],&t[1],&t[2]);
+                  temp[i][1]=(t[0]+180.0)/360.0*M_2PI;
+                  temp[i][0]=t[1]/180.0*M_PI;
+                  fprintf(stderr,"---- %i %f %f\n",i,temp[i][0],temp[i][1]);
+               }
+               gluBeginTrim(nurb);
+               gluPwlCurve(nurb,nv,temp,3,GLU_MAP1_TRIM_2);
+               gluEndTrim(nurb);
+            }
+         }
+      gluEndSurface(nurb);
+
+      gluDeleteNurbsRenderer(nurb);*/
+
    /*Tessellate polygon*/
    gluTessBeginPolygon(GLRender->GLTess,NULL);
    for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
@@ -1076,7 +1165,8 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
 
          Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
-         co.Lat=CLAMP(co.Lat,-90.0,90.0);
+         co.Lat=CLAMPLAT(co.Lat);
+         co.Lon=CLAMPLON(co.Lon);
          co.Lon=CLAMP(co.Lon,-180.0,180.0);
 
          /*Keep latlon extent since it's not the same than the original extent reprojected to latlon*/
