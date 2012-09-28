@@ -573,20 +573,21 @@ proc MLDPn::ValidateDuration { Duration Parent } {
    }
 
    #----- Compute  model time step [s].
-   set timestephour [expr $Sim(ModelTimeStepMin)/60.0]
+   if { [info exist ::MLDPn::Sim(ModelTimeStepMin)] } {
+      set timestephour [expr $Sim(ModelTimeStepMin)/60.0]
 
-   #----- Verify if duration is greater or equal to the model time step.
-   if { $dur < $timestephour } {
-      Dialog::Error $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
-      return 0
+      #----- Verify if duration is greater or equal to the model time step.
+      if { $dur < $timestephour } {
+         Dialog::Error $Parent $Error(Duration2) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+         return 0
+      }
+
+      #----- Verify if duration is an integer multiple of the model time step.
+      if { [expr fmod($dur, $timestephour)] > $Sim(EmEpsilon) } {
+         Dialog::Error $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
+         return 0
+      }
    }
-
-   #----- Verify if duration is an integer multiple of the model time step.
-   if { [expr fmod($dur, $timestephour)] > $Sim(EmEpsilon) } {
-      Dialog::Error $Parent $Error(Duration3) "[lindex $Error(Duration4) $GDefs(Lang)] $dur $Error(UnitHours)\n[lindex $Error(Duration5) $GDefs(Lang)] $timestephour $Error(UnitHours) ($Sim(ModelTimeStepMin) $Error(UnitMinutes))"
-      return 0
-   }
-
    return 1
 }
 

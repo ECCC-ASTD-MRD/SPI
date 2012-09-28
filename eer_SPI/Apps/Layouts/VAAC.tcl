@@ -198,18 +198,24 @@ proc VAAC::LoadFields { Frame { Hours {} } } {
    set Data(Hour1) [lindex $hours 1]
    set fid         [FieldBox::GetFID $Data(FieldBox)]
 
+   if { $Sim(Model)=="MLDPn" } {
+      set dip 1
+   } else {
+      set dip 0
+   }
+
    if { $Data(Hour0) != "" } {
       set stamp [fstdstamp incr $Sim(Stamp0) $Data(Hour0)]
 
-      if { [MetData::Find FLD1 $fid $stamp "" -1 -1 4 "" AV] } {
+      if { [MetData::Find FLD1 $fid $stamp "" -1 -1 [expr 4-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP1) FLD1
       }
 
-      if { [MetData::Find FLD3 $fid $stamp "" -1 -1 3 "" AV] } {
+      if { [MetData::Find FLD3 $fid $stamp "" -1 -1 [expr 3-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP3) FLD3
       }
 
-      if { [MetData::Find FLD5 $fid $stamp "" -1 -1 2 "" AV] } {
+      if { [MetData::Find FLD5 $fid $stamp "" -1 -1 [expr 2-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP5) FLD5
       }
    }
@@ -217,13 +223,13 @@ proc VAAC::LoadFields { Frame { Hours {} } } {
    if { $Data(Hour1) != "" } {
       set stamp [fstdstamp incr $Sim(Stamp0) $Data(Hour1)]
 
-      if { [MetData::Find FLD2 $fid $stamp "" -1 -1 4 "" AV] } {
+      if { [MetData::Find FLD2 $fid $stamp "" -1 -1 [expr 4-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP2) FLD2
       }
-      if { [MetData::Find FLD4 $fid $stamp "" -1 -1 3 "" AV] } {
+      if { [MetData::Find FLD4 $fid $stamp "" -1 -1 [expr 3-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP4) FLD4
       }
-      if { [MetData::Find FLD6 $fid $stamp "" -1 -1 2 "" AV] } {
+      if { [MetData::Find FLD6 $fid $stamp "" -1 -1 [expr 2-$dip] "" AV] } {
          Viewport::Assign $Frame $Page(VP6) FLD6
       }
    }
