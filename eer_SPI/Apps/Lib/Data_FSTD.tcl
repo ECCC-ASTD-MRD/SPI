@@ -41,6 +41,7 @@ package require Bubble
 package require MapBox
 package require VectorBox
 package require MetStat
+package require FieldFunc
 
 namespace eval FSTD {
    global   env

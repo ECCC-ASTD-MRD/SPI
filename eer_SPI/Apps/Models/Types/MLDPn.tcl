@@ -1108,15 +1108,15 @@ proc MLDPn::File { Info Path Type Back } {
       set simdate [clock format $Tmp(Sim0Secs) -format "%Y%m%d%H" -gmt True]
 
       set results    [glob $simpath/results/${simdate}_???]                     ;#----- Particle positions result output file.
-      set restart    [glob $simpath/results/${simdate}_???.rst]                     ;#----- Particle positions result output file.
+      set restart    [glob $simpath/results/${simdate}_???.rst]                 ;#----- Particle positions result output file.
       set metfields  [glob -nocomplain $simpath/results/${simdate}_000m ]       ;#----- Meteorological fields for RSMC response.
       set metfiles   [glob -nocomplain $simpath/meteo/*]                        ;#----- Meteorological files required for launching model.
 
       switch $Type {
-         "all"     { eval set files \[concat $files $results $metfields\] }
-         "restart" { eval set files \[concat $files $restart\] }
-         "result"  { eval set files \[concat $files $results\] }
-         "meteo"   { eval set files \[concat $files $metfiles\] }
+         "all"     { eval set files \[concat $results $metfields $files\] }
+         "restart" { eval set files \[concat $restart $files\] }
+         "result"  { eval set files \[concat $results $files\] }
+         "meteo"   { eval set files \[concat $metfiles $files\] }
          "metf"    { if { [llength $metfields] } { lappend files $metfields } }
       }
 
@@ -1127,7 +1127,7 @@ proc MLDPn::File { Info Path Type Back } {
       }
    }
 
-   return [lreverse $files]
+   return $files
 }
 
 #----------------------------------------------------------------------------
