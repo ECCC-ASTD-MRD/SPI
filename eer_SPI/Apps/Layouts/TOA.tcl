@@ -318,8 +318,14 @@ proc TOA::LayoutUpdate { Frame { Field "" } } {
    set coord [Convert::FormatCoord $lat $lon DEG]
    $canvas itemconf TOASOURCE      -text "Source           : $Sim(Name)"
    $canvas itemconf TOALOC         -text "Location         : $coord"
-   $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(EmIsoSymbol)"
-   $canvas itemconf TOARELEASEQT   -text "Total release    : [format "%.2f" [lindex $Sim(EmIsoQuantity) [lsearch -exact [string toupper $Sim(EmIsoSymbol)] $etiket]]] $unit over [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]] Hour(s)"
+
+   if { [set idx [lsearch -exact [string toupper $Sim(EmIsoSymbol)] $etiket]]!=-1 } {
+      $canvas itemconf TOARELEASEISO  -text "Isotope          : $Sim(EmIsoSymbol)"
+      $canvas itemconf TOARELEASEQT   -text "Total release    : [format "%.2f" [lindex $Sim(EmIsoQuantity) $idx]] $unit over [format "%.2f" [expr double($Sim(EmTotalDuration))/3600.0]] Hour(s)"
+   } else {
+      $canvas itemconf TOARELEASEISO  -text ""
+      $canvas itemconf TOARELEASEQT   -text ""
+   }
    $canvas itemconf TOATITLE       -text "Plume arrival time from initial release\n[DateStuff::StringDateFromSeconds $Sim(AccSecs) 1]"
 
    if { $Param(Treshold)<0 } {
