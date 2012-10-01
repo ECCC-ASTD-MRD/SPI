@@ -1846,6 +1846,35 @@ proc Writer::FVCN::UpdateTime { Pad Delay { Hours 6 } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::GetFL>
+# Creation : Septembre 2012 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Get flight level index from field etiket.
+#
+# Parametres :
+#  <Field>   : Field id
+#
+# Retour     :
+#  <Idx>     : Flight level index
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc Writer::FVCN::GetFL { Field }  {
+
+   switch [fstdfield define $Field -ETIKET] {
+      "SFC-FL200"   { set idx 0 }
+      "FL200-FL350" { set idx 1 }
+      "FL200-350"   { set idx 1 }
+      "FL350-FL600" { set idx 2 }
+      "FL350-600"   { set idx 2 }
+      default       { set idx 0 }
+   }
+   return $idx
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::VertexAdd>
 # Creation : Septembvre 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -1891,7 +1920,8 @@ proc Writer::FVCN::VertexAdd { Frame VP X Y } {
 
          set date [fstdstamp todate [fstdfield define $field -DATEV]]
          set Data(Date$h$p) "[lindex $date 2]/[lindex $date 3][lindex $date 4]Z"
-         set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
+
+         set Data(Level$p) L[Writer::FVCN::GetFL $field]
 
          lappend Data($Data(Level$p)$h$p) $X $Y 0
 
@@ -1937,7 +1967,7 @@ proc Writer::FVCN::VertexDelete { Frame VP } {
       set p $Writer::Data(Pad)
       set h $Data(Hour$p)
 
-      set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
+      set Data(Level$p)            L[Writer::FVCN::GetFL $field]
       set Data($Data(Level$p)$h$p) [lreplace $Data($Data(Level$p)$h$p) end-2 end]
 
       set Writer::Data(Canvas) $Page::Data(Canvas)
@@ -1994,7 +2024,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
          set p $Writer::Data(Pad)
          set h $Data(Hour$p)
 
-         set Data(Level$p) [lindex { L0 L0 L0 L1 L2 } [expr [fstdfield define $field -IP3]>4?0:[fstdfield define $field -IP3]]]
+         set Data(Level$p) L[Writer::FVCN::GetFL $field]
 
          set Writer::Data(Canvas) $Page::Data(Canvas)
          set Writer::Data(Frame)  $Frame
