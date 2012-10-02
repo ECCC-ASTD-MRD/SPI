@@ -54,6 +54,7 @@ typedef struct ColorbarItem  {
    int            NbData;          /*Nombre de donnees associees*/
    int            Alpha;           /*Transparency*/
    int            Id;              /*Identification enable*/
+   int            Icon;            /*Icon enable*/
    int            ShowFactor;      /*Afficher les facteurs*/
    int            BarSplit;        /*Separer les couleurs*/
    int            BarWidth;        /*Largeur de la barre de couleur*/

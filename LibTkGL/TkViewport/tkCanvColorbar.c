@@ -79,6 +79,8 @@ static Tk_ConfigSpec ColorbarSpecs[] = {
         "100", Tk_Offset(ColorbarItem,Alpha), TK_CONFIG_DONT_SET_DEFAULT},
    { TK_CONFIG_BOOLEAN, "-id", (char *) NULL, (char *) NULL,
         "1", Tk_Offset(ColorbarItem,Id), TK_CONFIG_DONT_SET_DEFAULT},
+   { TK_CONFIG_BOOLEAN, "-icon", (char *) NULL, (char *) NULL,
+        "1", Tk_Offset(ColorbarItem,Icon), TK_CONFIG_DONT_SET_DEFAULT},
    { TK_CONFIG_INT, "-barsplit", (char *) NULL, (char *) NULL,
         "0", Tk_Offset(ColorbarItem,BarSplit), TK_CONFIG_DONT_SET_DEFAULT},
    { TK_CONFIG_INT, "-barwidth", (char *) NULL, (char *) NULL,
@@ -184,6 +186,7 @@ int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
    cb->NbData     = 0;
    cb->Alpha      = 100;
    cb->Id         = 1;
+   cb->Icon       = 1;
    cb->BarSplit   = 0;
    cb->BarWidth   = 15;
    cb->BarBorder  = 0;
@@ -559,62 +562,64 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    char buf[128];
    int  dx=0,dy=0;
 
-   if (Interp) {
-      if (Spec->Width) {
-         sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Spec->Width);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-      }
-      if (Spec->Outline)
-         Tk_CanvasPsColor(Interp,CB->canvas,Spec->Outline);
-   } else {
-      if (Spec->Width)
-         glLineWidth(Spec->Width);
-      if (Spec->Outline)
-         glColor3us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue);
-   }
-
-   if (Spec->Icon) {
+   if (CB->Icon) {
       if (Interp) {
-         glFeedbackInit(IconList[Spec->Icon].Nb*40,GL_2D);
-      }
-
-      glPushMatrix();
-      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(2,GL_DOUBLE,0,IconList[Spec->Icon].Co);
-      glTranslated(X2-13,Y1+8,0.0);
-      glScalef(7.0,-7.0,1.0);
-      glDrawArrays(IconList[Spec->Icon].Type,0,IconList[Spec->Icon].Nb);
-      glDisableClientState(GL_VERTEX_ARRAY);
-      glPopMatrix();
-      dx+=20;
-      dy=14+Spec->Width;
-
-      if (Interp) {
-         glFeedbackProcess(Interp,GL_2D);
-      }
-   }
-
-   if (Spec->RenderContour || Spec->Width) {
-
-      if (Interp) {
-         glPostscriptDash(Interp,&Spec->Dash,Spec->Width);
+         if (Spec->Width) {
+            sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",Spec->Width);
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+         }
+         if (Spec->Outline)
+            Tk_CanvasPsColor(Interp,CB->canvas,Spec->Outline);
       } else {
-         glDash(&Spec->Dash);
+         if (Spec->Width)
+            glLineWidth(Spec->Width);
+         if (Spec->Outline)
+            glColor3us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue);
       }
 
-      if (Interp) {
-         sprintf(buf,"%i %i moveto %i %i lineto stroke\n",X1+5,(int)Tk_CanvasPsY(CB->canvas,Y1+8),X2-5-dx,(int)Tk_CanvasPsY(CB->canvas,Y1+8));
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-         glPostscriptDash(Interp,NULL,Spec->Width);
-      } else {
-         glBegin(GL_LINES);
-            glVertex2i(X1+5,Y1+8);
-            glVertex2i(X2-5-dx,Y1+8);
-         glEnd();
-         glDisable(GL_LINE_STIPPLE);
+      if (Spec->Icon) {
+         if (Interp) {
+            glFeedbackInit(IconList[Spec->Icon].Nb*40,GL_2D);
+         }
+
+         glPushMatrix();
+         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+         glEnableClientState(GL_VERTEX_ARRAY);
+         glVertexPointer(2,GL_DOUBLE,0,IconList[Spec->Icon].Co);
+         glTranslated(X2-13,Y1+8,0.0);
+         glScalef(7.0,-7.0,1.0);
+         glDrawArrays(IconList[Spec->Icon].Type,0,IconList[Spec->Icon].Nb);
+         glDisableClientState(GL_VERTEX_ARRAY);
+         glPopMatrix();
+         dx+=20;
+         dy=14+Spec->Width;
+
+         if (Interp) {
+            glFeedbackProcess(Interp,GL_2D);
+         }
       }
-      dy=14+Spec->Width;
+
+      if (Spec->RenderContour || Spec->Width) {
+
+         if (Interp) {
+            glPostscriptDash(Interp,&Spec->Dash,Spec->Width);
+         } else {
+            glDash(&Spec->Dash);
+         }
+
+         if (Interp) {
+            sprintf(buf,"%i %i moveto %i %i lineto stroke\n",X1+5,(int)Tk_CanvasPsY(CB->canvas,Y1+8),X2-5-dx,(int)Tk_CanvasPsY(CB->canvas,Y1+8));
+            Tcl_AppendResult(Interp,buf,(char*)NULL);
+            glPostscriptDash(Interp,NULL,Spec->Width);
+         } else {
+            glBegin(GL_LINES);
+               glVertex2i(X1+5,Y1+8);
+               glVertex2i(X2-5-dx,Y1+8);
+            glEnd();
+            glDisable(GL_LINE_STIPPLE);
+         }
+         dy=14+Spec->Width;
+      }
    }
 
    return(dy);
