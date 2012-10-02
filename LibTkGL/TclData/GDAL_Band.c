@@ -2193,10 +2193,6 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
       return(TCL_ERROR);
    }
 
-   if (!band->Ref) {
-      return(TCL_OK);
-   }
-
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
@@ -2364,6 +2360,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRID:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
@@ -2376,7 +2376,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDLAT:
-            obj=Tcl_NewListObj(0,NULL);
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
+             obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
                   band->Ref->Project(band->Ref,w,h,&lat,&lon,0,1);
@@ -2387,6 +2391,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDLON:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
@@ -2401,6 +2409,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             tr=0;
             ex=1;
          case GRIDPOINT:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             obj=Tcl_NewListObj(0,NULL);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&x0);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&y0);
@@ -2417,6 +2429,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             tr=0;
             ex=1;
          case COORDPOINT:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             obj=Tcl_NewListObj(0,NULL);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon);
@@ -2439,6 +2455,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case LLEXTENT:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             /*If not calculated yet, get latlon extent*/
             if (band->Ref->LLExtent.MinY==1e32) {
                GeoRef_Limits(band->Ref,&band->Ref->LLExtent.MinY,&band->Ref->LLExtent.MinX,&band->Ref->LLExtent.MaxY,&band->Ref->LLExtent.MaxX);
@@ -2472,7 +2492,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                x0=ROUND(x0);
                y0=ROUND(y0);
 
-               if (Objc==5) {
+               if (Objc==5 || Objc==3) {
                   Tcl_GetIntFromObj(Interp,Objv[++i],&h);
                } else {
                   h=0;
@@ -2495,6 +2515,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDVALUE:
+            if (!band->Ref) {
+               Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
+               return(TCL_ERROR);
+            }
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon);
 
@@ -2802,12 +2826,11 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"invalid Y Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
-
                if (!GeoRef_Positional(band->Ref,xband->Def,yband->Def)) {
                   Tcl_AppendResult(Interp,"unable to initialize positional data",(char*)NULL);
                   return(TCL_ERROR);
                }
-               if (band->Stat) { free(band->Stat); band->Stat=NULL; }
+              if (band->Stat) { free(band->Stat); band->Stat=NULL; }
 
                GeoRef_Qualify(band->Ref);
                GDAL_BandClean(band,1,1,1);

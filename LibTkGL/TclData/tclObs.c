@@ -2223,7 +2223,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    /*Afficher toutes les barbules*/
    glMatrixMode(GL_MODELVIEW);
    glPolygonMode(GL_FRONT,GL_FILL);
-   glLineWidth(1.0);
+   glLineWidth(Obs->Spec->Width);
    glPushName(PICK_OBS);
 
    if (Obs->Spec->Outline) {

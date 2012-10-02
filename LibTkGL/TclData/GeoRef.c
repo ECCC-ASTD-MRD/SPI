@@ -1909,7 +1909,11 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
 
    int d;
 
-   /*Clear arrays*/
+   if (!Ref) {
+      return(0);
+   }
+
+    /*Clear arrays*/
    if (Ref->Lat) free(Ref->Lat);
    if (Ref->Lon) free(Ref->Lon);
 
