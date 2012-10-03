@@ -222,6 +222,8 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
 
    update idletasks
    $Frame.page.canvas configure -cursor left_ptr
+
+   return $mini
 }
 
 proc Miniport::Select { Frame Mini } {

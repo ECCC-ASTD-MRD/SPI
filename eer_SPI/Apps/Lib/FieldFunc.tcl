@@ -61,23 +61,17 @@ proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
    fstdfield stats TOAFIELD -nodata -1
    fstdfield clear TOAFIELD -1
 
-   if { $box=="" } {
-      #----- If the Fields is not a list, get all corresponding
-      if { ![llength $Fields] } {
-         set fid    [fstdfield define $fld -FID]
-         set Fields [fstdfield find $fid -1 $etiket $ip1 -1 $ip3 "" $var]
-      }
+   if { [llength $Fields]>1 } {
 
       foreach field $Fields {
-         fstdfield read TOATMP $fid $field
-         set t    [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$Since+1)]
+         set t [expr [fstdstamp toseconds [fstdfield define $field -DATEV]]-$Since+1]
 
          if { $Treshold<0 } {
             fstdfield copy TOACHG TOAMAX
-            vexpr TOAMAX max(TOAMAX,TOATMP)
-            vexpr TOAFIELD ifelse(TOATMP!=0.0 && TOATMP==TOAMAX && TOACHG!=TOAMAX,$t,TOAFIELD)
+            vexpr TOAMAX max(TOAMAX,$field)
+            vexpr TOAFIELD ifelse($field!=0.0 && $field==TOAMAX && TOACHG!=TOAMAX,$t,TOAFIELD)
          } else {
-            vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && TOATMP>$Treshold,$t,TOAFIELD)
+            vexpr TOAFIELD ifelse(TOAFIELD==-1.0 && $field>$Treshold,$t,TOAFIELD)
          }
       }
    } else {
@@ -99,7 +93,7 @@ proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
          if { $var==$tvar && $ip1==$tip1 && $ip3==$tip3 && $etiket==$tetiket } {
             fstdfield read TOATMP $fid $idx
 
-            set t [expr double([fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$Since+1)]
+            set t [expr [fstdstamp toseconds [fstdfield define TOATMP -DATEV]]-$Since+1]
 
             if { $Treshold<0 } {
                fstdfield copy TOACHG TOAMAX
@@ -115,7 +109,7 @@ proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
    #----- Make sure we can show from T0 by setting notime data to -1
    vexpr (Int32)TOAFIELD ifelse(TOAFIELD==0.0,-1,TOAFIELD)
 
-   fstdfield define TOAFIELD -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
+   fstdfield define TOAFIELD -NOMVAR TOA -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
    fstdfield free TOAMAX TOATMP TOACHG
 
    return TOAFIELD
