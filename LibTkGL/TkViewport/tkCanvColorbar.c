@@ -1350,11 +1350,11 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
       sz=1.0;
    } else {
       if (Spec->InterNb) {
-         r0=Spec->Inter[0];
-         r1=Spec->Inter[Spec->InterNb-1];
+         r0=VAL2SPEC(Spec,Spec->Inter[0]);
+         r1=VAL2SPEC(Spec,Spec->Inter[Spec->InterNb-1]);
       } else {
-         r0=Spec->Min;
-         r1=Spec->Max;
+         r0=VAL2SPEC(Spec,Spec->Min);
+         r1=VAL2SPEC(Spec,Spec->Max);
       }
       r1=r0==r1?r1+1:r1;
 
@@ -1412,7 +1412,7 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
             glColor4ubv(Spec->Map->Color[col]);
          }
       }
-      size=VECTORSIZE(Spec,inter[i]);
+      size=VECTORSIZE(Spec,SPEC2VAL(Spec,inter[i]));
       Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-pix[i],0.0,inter[i],270.0,size,NULL);
       pix[i+1]=pix[i]+size*sz+10;
    }
@@ -1474,11 +1474,11 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
       sz=2.0;
    } else {
       if (Spec->InterNb) {
-         r0=Spec->Inter[0];
-         r1=Spec->Inter[Spec->InterNb-1];
+         r0=VAL2SPEC(Spec,Spec->Inter[0]);
+         r1=VAL2SPEC(Spec,Spec->Inter[Spec->InterNb-1]);
       } else {
-         r0=Spec->Min;
-         r1=Spec->Max;
+         r0=VAL2SPEC(Spec,Spec->Min);
+         r1=VAL2SPEC(Spec,Spec->Max);
       }
       r1=r0==r1?r1+1:r1;
 
@@ -1536,7 +1536,7 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
             glColor4ubv(Spec->Map->Color[col]);
          }
       }
-      size=VECTORSIZE(Spec,inter[i]);
+      size=VECTORSIZE(Spec,SPEC2VAL(Spec,inter[i]));
       Data_RenderBarbule(Spec->RenderVector,0,0.0,X2-pix[i],y0,0.0,inter[i],270.0,size,NULL);
       pix[i]+=(size*sz);
       pix[i+1]=pix[i]+10;
