@@ -1406,7 +1406,7 @@ proc Watch::ParamsWindow { Model { Mode NEW } } {
    set $Data(Modelbase)::Sim(Auto) True
 
    $Data(Modelbase)::InitNew $Data(Type)
-   eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Model::Param(Grids)\]
+   catch { eval set ${Data(Modelbase)}::Sim(Grids) \[concat \$${Data(Modelbase)}::Sim(Grids) \$Param(Grids)\] }
 
    switch $Mode {
       "NEW" {
