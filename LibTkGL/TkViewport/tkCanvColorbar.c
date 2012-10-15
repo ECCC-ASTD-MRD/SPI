@@ -1404,15 +1404,17 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
    pix[0]=10;
 
    for(i=0;i<5;i++) {
+      d=SPEC2VAL(Spec,inter[i]);
+
       if (Spec->MapAll) {
-         VAL2COL(col,Spec,inter[i]);
+         VAL2COL(col,Spec,d);
          if (Interp) {
             CMap_PostscriptColor(Interp,Spec->Map,col);
          } else {
             glColor4ubv(Spec->Map->Color[col]);
          }
       }
-      size=VECTORSIZE(Spec,SPEC2VAL(Spec,inter[i]));
+      size=VECTORSIZE(Spec,d);
       Data_RenderBarbule(Spec->RenderVector,0,0.0,x0,Y2-pix[i],0.0,inter[i],270.0,size,NULL);
       pix[i+1]=pix[i]+size*sz+10;
    }
@@ -1528,15 +1530,17 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    pix[0]=10;
 
    for(i=0;i<5;i++) {
+      d=SPEC2VAL(Spec,inter[i]);
+
       if (Spec->MapAll) {
-         VAL2COL(col,Spec,inter[i]);
+         VAL2COL(col,Spec,d);
          if (Interp) {
             CMap_PostscriptColor(Interp,Spec->Map,col);
          } else {
             glColor4ubv(Spec->Map->Color[col]);
          }
       }
-      size=VECTORSIZE(Spec,SPEC2VAL(Spec,inter[i]));
+      size=VECTORSIZE(Spec,d);
       Data_RenderBarbule(Spec->RenderVector,0,0.0,X2-pix[i],y0,0.0,inter[i],270.0,size,NULL);
       pix[i]+=(size*sz);
       pix[i+1]=pix[i]+10;
