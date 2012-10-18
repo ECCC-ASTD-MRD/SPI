@@ -559,36 +559,39 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
    set Data(Path) [TREE get $Branch path]
    set Data(Type) [TREE get $Branch type]
 
-   .depotwaremenu entryconfigure 0 -state disabled
-   .depotwaremenu entryconfigure 1 -state disabled
-   .depotwaremenu entryconfigure 3 -state disabled
-   .depotwaremenu entryconfigure 4 -state disabled
-   .depotwaremenu.idx delete 0 end
+   if { $Data(Type)!="ROOT" } {
 
-   if { [TREE depth $Branch]==1 } {
-      .depotwaremenu entryconfigure 3 -state normal
-      .depotwaremenu entryconfigure 4 -state normal
-   }
+      .depotwaremenu entryconfigure 0 -state disabled
+      .depotwaremenu entryconfigure 1 -state disabled
+      .depotwaremenu entryconfigure 3 -state disabled
+      .depotwaremenu entryconfigure 4 -state disabled
+      .depotwaremenu.idx delete 0 end
 
-   if { $Data(Type)=="DIR" } {
-      if { [file exists $Data(Path)/Index/] } {
-         foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
-            .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::ReadLayer $file; Mapper::UpdateData $Page::Data(Frame)"
+      if { [TREE depth $Branch]==1 } {
+         .depotwaremenu entryconfigure 3 -state normal
+         .depotwaremenu entryconfigure 4 -state normal
+      }
+
+      if { $Data(Type)=="DIR" } {
+         if { [file exists $Data(Path)/Index/] } {
+            foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
+               .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::ReadLayer $file; Mapper::UpdateData $Page::Data(Frame)"
+            }
+            .depotwaremenu entryconfigure 1 -state normal
          }
-         .depotwaremenu entryconfigure 1 -state normal
+      } elseif { [TREE isleaf $Branch] } {
+         .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True"
       }
-   } elseif { [TREE isleaf $Branch] } {
-      .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True"
-   }
 
-   set type [lindex $Data(Type) end]
-   foreach lbl  $Lbl(Types) {
-      if { $type==[lindex $lbl 0] } {
-         set Data(Type) $lbl
-         break
+      set type [lindex $Data(Type) end]
+      foreach lbl  $Lbl(Types) {
+         if { $type==[lindex $lbl 0] } {
+            set Data(Type) $lbl
+            break
+         }
       }
+      tk_popup .depotwaremenu $X $Y 0
    }
-   tk_popup .depotwaremenu $X $Y 0
 }
 
 #-------------------------------------------------------------------------------
@@ -628,6 +631,7 @@ proc Mapper::DepotWare::Create { } {
       }
       TREE set $type name $type
       TREE set $type type ROOT
+      TREE set $type path ""
    }
 
    #----- Add standard TMS

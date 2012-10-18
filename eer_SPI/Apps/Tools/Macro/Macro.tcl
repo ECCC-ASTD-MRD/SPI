@@ -419,8 +419,8 @@ proc Macro::Run { Macro { Interactive True } } {
          if { $Interactive } {
             set msg $Msg(Args)
 
-            if { [info exists Macro:::${Macro}::Param(InfoArgs)] } {
-               eval set args \$Macro:::${Macro}::Param(InfoArgs)
+            if { [info exists Macro::${Macro}::Param(InfoArgs)] } {
+               eval set args \$\{Macro::${Macro}::Param(InfoArgs)\}
                if { [llength [lindex $args 0]] } {
                   set msg [list "[lindex $Msg(Args) 0]\n\n\t-[join [lindex $args 0] \n\t-]" "[lindex $Msg(Args) 1]\n\n\t-[join [lindex $args 1] \n\t-]"]
                }
@@ -667,10 +667,10 @@ proc Macro::Bubble { Index } {
 
    set macro [lindex $Data(List) $Index]
    if { [info exists ::Macro::${macro}::Param(Info)] } {
-      eval set info \[lindex \$Macro::${macro}::Param(Info) \$GDefs(Lang)\]
+      eval set info \[lindex \$\{Macro::${macro}::Param(Info)\} \$GDefs(Lang)\]
 
-      if { [info exists Macro:::${macro}::Param(InfoArgs)] } {
-         eval set args \$Macro:::${macro}::Param(InfoArgs)
+      if { [info exists Macro::${macro}::Param(InfoArgs)] } {
+         eval set args \$\{Macro::${macro}::Param(InfoArgs)\}
          if { [llength [lindex $args $GDefs(Lang)]] } {
             append info "\n\n[lindex $Lbl(Args) $GDefs(Lang)]:\n\t-[join [lindex $args $GDefs(Lang)] \n\t-]"
          }
