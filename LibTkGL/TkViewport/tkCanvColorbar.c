@@ -1387,7 +1387,6 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
       just=TK_JUSTIFY_RIGHT;
    }
 
-//   glMatrixMode(GL_MODELVIEW);
    glPolygonMode(GL_FRONT,GL_FILL);
    glLineWidth(Spec->Width);
 
@@ -1512,7 +1511,6 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    jan=0.0;
    just=TK_JUSTIFY_LEFT;
 
-//   glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
    glPolygonMode(GL_FRONT,GL_FILL);
    glLineWidth(Spec->Width);

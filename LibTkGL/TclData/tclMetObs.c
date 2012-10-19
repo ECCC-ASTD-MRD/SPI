@@ -1742,7 +1742,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    return(res);
 }
 
-int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *PrevId,char *Multi) {
+int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *Multi) {
 
    TMetLoc *loc=NULL;
    time_t   time=0;
@@ -1753,8 +1753,6 @@ int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float H
       /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
  //     if (!Multi || strcmp(PrevId,Id)!=0)
       loc=TMetLoc_FindWithCoord(Obs,NULL,Id,Lat,Lon,-999.0,MET_TYPEID,Multi);
-
-      strcpy(PrevId,Id);
 
       if (!loc) {
          loc=TMetLoc_New(Obs,Id,NULL,Lat,Lon,Hgt);
@@ -1797,7 +1795,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    BufrDescriptor *bcv;
    EntryTableB    *eb;
    int             i,j,ne,len,strid=0;
-   char            stnid[256],previd[256],multi=0;
+   char            stnid[256],multi=0;
    double          value,lat,lon,hgt=0.0;
    int             yyyy,mm,dd,hh,mn,ss;
 
@@ -1911,37 +1909,37 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
                      /*Time displacement*/
                      case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
                          break;
                      case 4012:  mm+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
                          break;
                      case 4013:  dd+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
                          break;
                      case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
                          break;
                      case 4015:  mn+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
                          break;
                      case 4016:  ss+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi)) {
+                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
                             data=TMetElemData_New(ne,1,1);
                             data->Ne=0;
                          }
@@ -1990,7 +1988,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
          }
          /*Insert station in list if not already done*/
-         TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,previd,&multi);
+         TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi);
 
       }
       bufr_free_dataset(dts);
