@@ -49,6 +49,8 @@
 #define MET_TYPENO   0x1
 #define MET_TYPETG   0x2
 
+#define fgetskip(BYTES,LEN,STREAM)   BYTES[0]='\0';while (fgets(BYTES,LEN,STREAM) && BYTES[0]=='#')
+
 struct TMetObs;
 
 typedef struct TMetModelItem {
@@ -65,7 +67,7 @@ typedef struct TMetModel {
 
 typedef struct TMetElemData {
 
-   struct TMetObs *Obs;            /*Provenance de ce MetElemData quand detache*/
+   struct TMetObs *Obs;             /*Provenance de ce MetElemData quand detache*/
    int             Nv,Nt,Ne;        /*Data dimensions*/
    int             Family;          /*Data Family descriptor*/
    int             Type,SType;      /*Data Type descriptor*/
@@ -136,14 +138,17 @@ int      MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs);
 int      MetObs_LoadASCII(Tcl_Interp* Interp,char* File,TMetObs *Obs);
+int      MetObs_LoadSWOB(Tcl_Interp* Interp,char* File,TMetObs *Obs);
 int      MetObs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title);
 void     MetObs_LocFree(TMetLoc *Loc);
 int      MetObs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token);
 int      MetObs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token);
 void     MetObs_Wipe();
+
 EntryTableB *MetObs_BUFRFindTableCode(unsigned int Code);
 EntryTableB *MetObs_BUFRFindTableDesc(char *Desc);
 EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code);
+BUFR_Tables *MetObs_GetTables(void);
 
 TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
@@ -157,8 +162,11 @@ void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
 float         TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt);
 float         TMetElem_Height(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt);
+int           TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *Multi);
 
+TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt);
 void          TMetElemData_Free(TMetElemData *Data);
+TMetElemData *TMetElemData_Resize(TMetElemData *Data,int Ne,int Nv,int Nt);
 
 TMetElemData *MetReport_Get(char *Name);
 Tcl_Obj      *MetReport_Put(Tcl_Interp *Interp,char *Name,TMetElemData *Report);

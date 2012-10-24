@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvUtil.c --
  *
  *	This procedure contains a collection of utility procedures
@@ -18,7 +18,7 @@
 #include "tkPort.h"
 #include <assert.h>
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -43,7 +43,7 @@ Tk_CanvasTkwin(canvas)
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     return canvasPtr->tkwin;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -104,7 +104,7 @@ Tk_CanvasDrawableCoords(canvas, x, y, drawableXPtr, drawableYPtr)
 	*drawableYPtr = (short) tmp;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -164,7 +164,7 @@ Tk_CanvasWindowCoords(canvas, x, y, screenXPtr, screenYPtr)
 	*screenYPtr = (short) tmp;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -240,7 +240,7 @@ Tk_CanvasGetCoordFromObj(interp, canvas, obj, doublePtr)
     *doublePtr *= canvasPtr->pixelsPerMM;
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -272,7 +272,7 @@ Tk_CanvasSetStippleOrigin(canvas, gc)
     XSetTSOrigin(canvasPtr->display, gc, -canvasPtr->drawableXOrigin,
 	    -canvasPtr->drawableYOrigin);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -316,7 +316,7 @@ Tk_CanvasSetOffset(canvas, gc, offset)
 	XSetTSOrigin(canvasPtr->display, gc, x, y);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -346,7 +346,7 @@ Tk_CanvasGetTextInfo(canvas)
 {
     return &((TkCanvas *) canvas)->textInfo;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -411,7 +411,7 @@ Tk_CanvasTagsParseProc(clientData, interp, tkwin, value, widgRec, offset)
     ckfree((char *) argv);
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -457,7 +457,7 @@ Tk_CanvasTagsPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     *freeProcPtr = TCL_DYNAMIC;
     return Tcl_Merge(itemPtr->numTags, (CONST char **) itemPtr->tagPtr);
 }
-
+
 
 static int	DashConvert _ANSI_ARGS_((char *l, CONST char *p,
 			int n, double width));
@@ -493,7 +493,7 @@ TkCanvasDashParseProc(clientData, interp, tkwin, value, widgRec, offset)
 {
     return Tk_GetDash(interp, value, (Tk_Dash *)(widgRec+offset));
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -553,7 +553,7 @@ TkCanvasDashPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     }
     return buffer;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -845,16 +845,16 @@ Tk_GetDash(interp, value, dash)
 	    goto syntaxError;
 	}
 	*pt++ = i;
-	argc--; largv++; 
+	argc--; largv++;
     }
-  
+
     if (argv != NULL) {
 	ckfree((char *) argv);
     }
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -893,7 +893,7 @@ void Tk_CreateOutline(outline)
     outline->activeStipple = None;
     outline->disabledStipple = None;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -946,7 +946,7 @@ void Tk_DeleteOutline(display, outline)
 	Tk_FreeBitmap(display, outline->disabledStipple);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1060,7 +1060,7 @@ int Tk_ConfigOutlineGC(gcValues, canvas, item, outline)
     }
     return mask;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1177,13 +1177,13 @@ Tk_ChangeOutlineGC(canvas, item, outline)
     return 0;
 }
 
-
+
 /*
  *--------------------------------------------------------------
  *
  * Tk_ResetOutlineGC
  *
- *	Restores the GC to the situation before 
+ *	Restores the GC to the situation before
  *	Tk_ChangeDashGC() was called.
  *	This function should be called just after the dashed
  *	item is drawn, because the GC is supposed to be
@@ -1272,7 +1272,7 @@ Tk_ResetOutlineGC(canvas, item, outline)
     return 0;
 }
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1406,7 +1406,7 @@ Tk_CanvasPsOutline(canvas, item, outline)
     return TCL_OK;
 }
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1480,7 +1480,7 @@ DashConvert (l, p, n, width)
     }
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1527,7 +1527,7 @@ translateAndAppendCoords(canvPtr, x, y, outArr, numOut)
     }
     outArr[numOut].y = (short) tmp;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1609,7 +1609,7 @@ TkCanvTranslatePath (canvPtr, numVertex, coordArr, closedPath, outArr)
     ** But if a vertex outside of the bounding box is seen, break out of
     ** the loop.
     **
-    ** Most of the time, no clipping is needed, so this one loop is 
+    ** Most of the time, no clipping is needed, so this one loop is
     ** sufficient to do the translation.
     */
     for(i=0; i<numVertex; i++){
@@ -1649,7 +1649,7 @@ TkCanvTranslatePath (canvPtr, numVertex, coordArr, closedPath, outArr)
     **
     ** Each pass clips line segments that extend beyond a single side
     ** of the bounding box, and four passes rotate the coordinate system
-    ** back to its original value.  I'm not an expert on graphics 
+    ** back to its original value.  I'm not an expert on graphics
     ** algorithms, but I think this is called Cohen-Sutherland polygon
     ** clipping.
     **

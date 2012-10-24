@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvWind.c --
  *
  *	This file implements window items for canvas widgets.
@@ -152,7 +152,7 @@ static Tk_GeomMgr canvasGeomType = {
     WinItemRequestProc,			/* requestProc */
     WinItemLostSlaveProc,		/* lostSlaveProc */
 };
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -226,7 +226,7 @@ CreateWinItem(interp, canvas, itemPtr, objc, objv)
     DeleteWinItem(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -293,7 +293,7 @@ WinItemCoords(interp, canvas, itemPtr, objc, objv)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -387,7 +387,7 @@ ConfigureWinItem(interp, canvas, itemPtr, objc, objv, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -426,7 +426,7 @@ DeleteWinItem(canvas, itemPtr, display)
 	Tk_UnmapWindow(winItemPtr->tkwin);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -542,7 +542,7 @@ ComputeWindowBbox(canvas, winItemPtr)
     winItemPtr->header.x2 = x + width;
     winItemPtr->header.y2 = y + height;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -610,7 +610,7 @@ DisplayWinItem(canvas, itemPtr, display, drawable, regionX, regionY,
     if (((x + width) <= 0) || ((y + height) <= 0)
 	    || (x >= Tk_Width(canvasTkwin)) || (y >= Tk_Height(canvasTkwin))) {
 	if (canvasTkwin == Tk_Parent(winItemPtr->tkwin)) {
-	    Tk_UnmapWindow(winItemPtr->tkwin); 
+	    Tk_UnmapWindow(winItemPtr->tkwin);
 	} else {
 	    Tk_UnmaintainGeometry(winItemPtr->tkwin, canvasTkwin);
 	}
@@ -634,7 +634,7 @@ DisplayWinItem(canvas, itemPtr, display, drawable, regionX, regionY,
 		width, height);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -691,7 +691,7 @@ WinItemToPoint(canvas, itemPtr, pointPtr)
 
     return hypot(xDiff, yDiff);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -736,7 +736,7 @@ WinItemToArea(canvas, itemPtr, rectPtr)
     }
     return 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -764,7 +764,7 @@ xerrorhandler(clientData, e)
 }
 #endif
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -806,7 +806,7 @@ WinItemToPostscript(interp, canvas, itemPtr, prepass)
     if (prepass || winItemPtr->tkwin == NULL) {
         return TCL_OK;
     }
-    
+
     width = Tk_Width(tkwin);
     height = Tk_Height(tkwin);
 
@@ -817,7 +817,7 @@ WinItemToPostscript(interp, canvas, itemPtr, prepass)
 
     x = winItemPtr->x;
     y = Tk_CanvasPsY(canvas, winItemPtr->y);
-    
+
     switch (winItemPtr->anchor) {
 	case TK_ANCHOR_NW:			y -= height;		break;
 	case TK_ANCHOR_N:	x -= width/2.0; y -= height;		break;
@@ -896,7 +896,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
 #endif
 
     /*
-     * Generate an XImage from the window.  We can then read pixel 
+     * Generate an XImage from the window.  We can then read pixel
      * values out of the XImage.
      */
 
@@ -907,7 +907,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
     Tk_DeleteErrorHandler(handle);
 #endif
 
-    if (ximage == (XImage*) NULL) { 
+    if (ximage == (XImage*) NULL) {
 	return TCL_OK;
     }
 
@@ -917,7 +917,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
     XDestroyImage(ximage);
     return result;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -958,7 +958,7 @@ ScaleWinItem(canvas, itemPtr, originX, originY, scaleX, scaleY)
     }
     ComputeWindowBbox(canvas, winItemPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -990,7 +990,7 @@ TranslateWinItem(canvas, itemPtr, deltaX, deltaY)
     winItemPtr->y += deltaY;
     ComputeWindowBbox(canvas, winItemPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1022,7 +1022,7 @@ WinItemStructureProc(clientData, eventPtr)
 	winItemPtr->tkwin = NULL;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1053,7 +1053,7 @@ WinItemRequestProc(clientData, tkwin)
     DisplayWinItem(winItemPtr->canvas, (Tk_Item *) winItemPtr,
 	    (Display *) NULL, (Drawable) None, 0, 0, 0, 0);
 }
-
+
 /*
  *--------------------------------------------------------------
  *

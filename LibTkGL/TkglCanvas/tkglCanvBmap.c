@@ -257,7 +257,7 @@ static int glBitmapCoords(interp, canvas, itemPtr, argc, argv)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -654,7 +654,7 @@ static int glBitmapToArea(canvas, itemPtr, rectPtr)
     }
     return 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -689,7 +689,7 @@ static void glScaleBitmap(canvas, itemPtr, originX, originY, scaleX, scaleY)
     bmapPtr->y = originY + scaleY*(bmapPtr->y - originY);
     glComputeBitmapBbox(canvas, bmapPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *

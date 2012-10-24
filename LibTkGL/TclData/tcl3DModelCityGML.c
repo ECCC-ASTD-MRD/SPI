@@ -33,67 +33,7 @@
 
 #include "tcl3DModel.h"
 #include "tcl3DModelCityGML.h"
-#include <string.h>
-#include <expat.h>
-
-int XML_ArrayCheck(char *Txt,unsigned int Len,char Sep) {
-
-   char *tok=NULL;
-   int   n=0;
-
-   if (Txt && Len) {
-      // Get rid of carriage returns
-      tok=Txt;
-      while(tok<Txt+Len) {
-         if (*tok=='\n')
-            *tok=' ';
-         tok++;
-      }
-
-      // Count number of items
-      n=1;
-      tok=Txt;
-      while(tok<(Txt+Len) && (tok=strchr(tok,Sep))) {
-         // Check for consecutive token
-         if (*tok!=*(tok-1)) n++;
-         tok++;
-      }
-
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) XML_ArrayCheck: Found %i items in array\n",n);
-#endif
-   }
-   return(n);
-}
-
-int XML_ArrayExpandVect(char *Txt,unsigned int Len,char Sep,int Dim,Vect3f *Array) {
-
-   char *tok,*save=NULL;
-   int   i,n;
-
-   if (Txt && Len) {
-
-      // Parse all tokens
-      n=0;
-      i=0;
-      tok=strtok_r(Txt,&Sep,&save);
-      while(tok) {
-         Array[n][i++]=atof(tok);
-
-         if (i==Dim) {
-            i=0;
-            n++;
-         }
-
-         //Check for buffer overrun
-         if (save>=(Txt+Len)-1)
-            break;
-         tok=strtok_r(NULL,&Sep,&save);
-      }
-   }
-
-   return(n);
-}
+#include "tclXML.h"
 
 void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
@@ -103,10 +43,7 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
    char         dim;
    int          i;
 
-   if (data->Buf) {
-      data->Buf[0]='\0';
-      data->BufLen=0;
-   }
+   XML_CharReset(Data);
 
    if (Elem) {
 #ifdef DEBUG

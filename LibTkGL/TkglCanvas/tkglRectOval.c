@@ -597,7 +597,7 @@ static void glComputeRectOvalBbox(canvas, rectOvalPtr)
     tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
     rectOvalPtr->header.y2 = tmp + bloat;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -843,7 +843,7 @@ static double glRectToPoint(canvas, itemPtr, pointPtr)
 
     return hypot(xDiff, yDiff);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -894,7 +894,7 @@ static double glOvalToPoint(canvas, itemPtr, pointPtr)
 
     return TkOvalToPoint(ovalPtr->bbox, width, filled, pointPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1065,7 +1065,7 @@ static int glOvalToArea(canvas, itemPtr, areaPtr)
     }
     return result;
 }
-
+
 /*
  *--------------------------------------------------------------
  *

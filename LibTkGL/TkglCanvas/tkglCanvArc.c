@@ -338,7 +338,7 @@ static int glArcCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    } else if (argc != 4) {
 		char buf[64 + TCL_INTEGER_SPACE];
-	
+
 		sprintf(buf, "wrong # coordinates: expected 4, got %d", argc);
 		Tcl_SetResult(interp, buf, TCL_VOLATILE);
 		return TCL_ERROR;
@@ -357,7 +357,7 @@ static int glArcCoords(interp, canvas, itemPtr, argc, argv)
 	glComputeArcBbox(canvas, arcPtr);
     } else {
 	char buf[64 + TCL_INTEGER_SPACE];
-	
+
 	sprintf(buf, "wrong # coordinates: expected 0 or 4, got %d", argc);
 	Tcl_SetResult(interp, buf, TCL_VOLATILE);
 	return TCL_ERROR;
@@ -1501,7 +1501,7 @@ static void glComputeArcOutline(canvas,arcPtr)
  */
 
 static int HorizLineToArc(x1, x2, y, rx, ry, start, extent)
-    double x1, x2;		/* X-coords of endpoints of line segment. 
+    double x1, x2;		/* X-coords of endpoints of line segment.
 				 * X1 must be <= x2. */
     double y;			/* Y-coordinate of line segment. */
     double rx, ry;		/* These x- and y-radii define an oval
@@ -1565,7 +1565,7 @@ static int HorizLineToArc(x1, x2, y, rx, ry, start, extent)
 
 static int VertLineToArc(x, y1, y2, rx, ry, start, extent)
     double x;			/* X-coordinate of line segment. */
-    double y1, y2;		/* Y-coords of endpoints of line segment. 
+    double y1, y2;		/* Y-coords of endpoints of line segment.
 				 * Y1 must be <= y2. */
     double rx, ry;		/* These x- and y-radii define an oval
 				 * centered at the origin. */
