@@ -224,7 +224,7 @@ int XML_ParseFile(Tcl_Interp *Interp,XML_Parser Parser,void *Data,char *Path) {
 
    /*Parse the XML by chunk*/
    for (;;) {
-      if (!(buf=XML_GetBuffer(Parser,XML_BUFSIZE))) {
+     if (!(buf=XML_GetBuffer(Parser,XML_BUFSIZE))) {
          fprintf(stderr,"(ERROR) XML_Parse: Could not allocate XML IO buffer\n");
          state=0;
          break;
@@ -237,13 +237,13 @@ int XML_ParseFile(Tcl_Interp *Interp,XML_Parser Parser,void *Data,char *Path) {
          break;
       }
 
-      if (!XML_ParseBuffer(Parser,len,len==0)) {
+     if (!XML_ParseBuffer(Parser,len,len==0)) {
          fprintf(stderr,"(ERROR) XML_Parse: Parse error at line %li:\n\t%s\n",XML_GetCurrentLineNumber(Parser),XML_ErrorString(XML_GetErrorCode(Parser)));
          state=0;
          break;
       }
 
-      if (data.Bloc==XML_BAD) {
+     if (data.Bloc==XML_BAD) {
          fprintf(stderr,"(INFO) XML_Parse: Wrong file format\n");
          state=0;
          break;

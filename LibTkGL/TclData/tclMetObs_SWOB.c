@@ -33,7 +33,6 @@
 #include "tclMetObs.h"
 #include "tclXML.h"
 
-#define SWOB_NIL          0
 #define SWOB_ELEMENTS     1
 #define SWOB_IDELEMENTS   2
 #define SWOB_SAMPLINGTIME 3
@@ -46,6 +45,7 @@ typedef struct SWOB_Data {
    TMetLoc      *Loc;
    TMetElemData *EData;
    char         *Id,*Name;
+   char         *Ename,*Euom,*Evalue;
    Coord         Co;
    time_t        Sec;
 } SWOB_Data;
@@ -54,18 +54,13 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
    XML_Data    *data=(XML_Data*)Data;
    SWOB_Data   *swob=(SWOB_Data*)data->Specific;
-   BUFR_Tables *table;
-   EntryTableB *eb;
-   Tcl_Obj     *obj;
    int          i;
-   char        *name,*uom,*value,multi=0;
+   char        *qname,*quom,*qvalue,multi=0;
 
    XML_CharReset(Data);
    XML_Check(Data,Elem,"om:ObservationCollection");
 
-   obj=Tcl_NewIntObj(0);
-
-   name=uom=value=NULL;
+   qname=quom=qvalue=NULL;
 
    if (Elem && XML_Valid(Data)) {
       if (strcmp(Elem,"identification-elements")==0) {
@@ -83,9 +78,9 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
             if (strcmp(Attr[i],"code-type")==0) { }
             if (strcmp(Attr[i],"group")==0)     { }
             if (strcmp(Attr[i],"orig-name")==0) { }
-            if (strcmp(Attr[i],"name")==0)      name=Attr[i+1];
-            if (strcmp(Attr[i],"uom")==0)       uom=Attr[i+1];
-            if (strcmp(Attr[i],"value")==0)     value=Attr[i+1];
+            if (strcmp(Attr[i],"name")==0)      swob->Ename=strdup(Attr[i+1]);
+            if (strcmp(Attr[i],"uom")==0)       swob->Euom=strdup(Attr[i+1]);
+            if (strcmp(Attr[i],"value")==0)     swob->Evalue=strdup(Attr[i+1]);
          }
       } else if (strcmp(Elem,"qualifier")==0) {
          for (i=0;Attr[i];i+=2) {
@@ -93,9 +88,9 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
             if (strcmp(Attr[i],"code-type")==0) { }
             if (strcmp(Attr[i],"group")==0)     { }
             if (strcmp(Attr[i],"orig-name")==0) { }
-            if (strcmp(Attr[i],"name")==0)      { }
-            if (strcmp(Attr[i],"uom")==0)       { }
-            if (strcmp(Attr[i],"value")==0)     { }
+            if (strcmp(Attr[i],"name")==0)      qname=Attr[i+1];
+            if (strcmp(Attr[i],"uom")==0)       quom=Attr[i+1];
+            if (strcmp(Attr[i],"value")==0)     qvalue=Attr[i+1];
          }
       } else if (strcmp(Elem,"om:result")==0) {
          if (!swob->Name) swob->Name=strdup("NIL");
@@ -110,62 +105,74 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
          data->Bloc=SWOB_RESULTTIME;
       }
 
-      if (name && value) {
+      if (swob->Ename && swob->Evalue) {
           switch (data->Bloc) {
             case SWOB_IDELEMENTS:
-               if (strcmp(name,"wmo_station_id")==0 || strcmp(name,"stn_name")==0) swob->Name=strdup(value);
-               if (strcmp(name,"wmo_station_number")==0 ||strcmp(name,"stn_id")==0 || strcmp(name,"icao_stn_id")==0) swob->Id=strdup(value);
-               if (strcmp(name,"lat")==0) swob->Co.Lat=atof(value);
-               if (strcmp(name,"long")==0) swob->Co.Lon=atof(value);
-               if (strcmp(name,"stn_elev")==0) swob->Co.Elev=atof(value);
+               if (strcmp(swob->Ename,"wmo_station_id")==0 || strcmp(swob->Ename,"stn_name")==0) swob->Name=strdup(swob->Evalue);
+               if (strcmp(swob->Ename,"wmo_station_number")==0 ||strcmp(swob->Ename,"stn_id")==0 || strcmp(swob->Ename,"icao_stn_id")==0) swob->Id=strdup(swob->Evalue);
+               if (strcmp(swob->Ename,"lat")==0) swob->Co.Lat=atof(swob->Evalue);
+               if (strcmp(swob->Ename,"long")==0) swob->Co.Lon=atof(swob->Evalue);
+               if (strcmp(swob->Ename,"stn_elev")==0) swob->Co.Elev=atof(swob->Evalue);
                break;
 
             case SWOB_ELEMENTS:
-               // Check if element exists
-               if (!(eb=MetObs_BUFRFindTableDesc(name))) {
-                  table=MetObs_GetTables();
-                  eb=bufr_new_EntryTableB();
-
-                  eb->descriptor=SWOB_DESCRIPTOR++;
-                  eb->description=strdup(name);
-                  eb->unit=strdup(uom);
-                  arr_add(table->master.tableB,(char*)&eb);
-               }
-               // Add element to list of obs elements
-               Tcl_SetIntObj(obj,eb->descriptor);
-               if (TclY_ListObjFind(data->Interp,swob->Obs->Elems,obj)==-1) {
-                  Tcl_ListObjAppendElement(data->Interp,swob->Obs->Elems,Tcl_DuplicateObj(obj));
-               }
-               TMetElemData_Resize(swob->EData,swob->EData?swob->EData->Ne+1:1,1,1);
-               swob->EData->Data[swob->EData->Ne]=atof(value);
-               swob->EData->Code[swob->EData->Ne]=eb;
-               swob->EData->Ne++;
-               break;
+                if (qname && strcmp(qname,"statistical_significance")==0) {
+                   swob->Ename=strcatalloc(swob->Ename,":");
+                   swob->Ename=strcatalloc(swob->Ename,qvalue);
+                }
+                break;
          }
       }
    }
-
-   Tcl_Free(obj);
 }
 
 void SWOB_EndHandler(void *Data,const char *Elem) {
 
-   XML_Data  *data=(XML_Data*)Data;
-   SWOB_Data *swob=(SWOB_Data*)data->Specific;
-   char      *buf,*c;
-   Vect3f     vf;
+   XML_Data    *data=(XML_Data*)Data;
+   SWOB_Data   *swob=(SWOB_Data*)data->Specific;
+   BUFR_Tables *table;
+   EntryTableB *eb;
+   Tcl_Obj     *obj;
+   char        *buf,*c;
+   Vect3f       vf;
 
    if (Elem && XML_Valid(Data)) {
       if (strcmp(Elem,"elements")==0) {
-          switch (data->Bloc) {
+         TMetElem_Add(swob->Loc,swob->EData,swob->Sec);
+         data->Bloc=XML_NIL;
+
+      } else if (strcmp(Elem,"element")==0) {
+         switch (data->Bloc) {
             case SWOB_IDELEMENTS:
                break;
 
             case SWOB_ELEMENTS:
-               TMetElem_Add(swob->Loc,swob->EData,swob->Sec);
+               // Check if element exists
+               if (!(eb=MetObs_BUFRFindTableDesc(swob->Ename))) {
+                  table=MetObs_GetTables();
+                  eb=bufr_new_EntryTableB();
+
+                  eb->descriptor=SWOB_DESCRIPTOR++;
+                  eb->description=strdup(swob->Ename);
+                  eb->unit=strdup(swob->Euom);
+                  arr_add(table->master.tableB,(char*)&eb);
+               }
+               // Add element to list of obs elements
+               obj=Tcl_NewIntObj(eb->descriptor);
+               if (TclY_ListObjFind(data->Interp,swob->Obs->Elems,obj)==-1) {
+                  Tcl_ListObjAppendElement(data->Interp,swob->Obs->Elems,Tcl_DuplicateObj(obj));
+               }
+               Tcl_DecrRefCount(obj);
+
+               TMetElemData_Resize(swob->EData,swob->EData?swob->EData->Ne+1:1,1,1);
+               swob->EData->Data[swob->EData->Ne]=atof(swob->Evalue);
+               swob->EData->Code[swob->EData->Ne]=eb;
+               swob->EData->Ne++;
                break;
          }
-         data->Bloc=SWOB_NIL;
+         if (swob->Ename)  free(swob->Ename);
+         if (swob->Euom)   free(swob->Euom);
+         if (swob->Evalue) free(swob->Evalue);
 
       } else if (strcmp(Elem,"gml:pos")==0) {
          // Get the station coordinates

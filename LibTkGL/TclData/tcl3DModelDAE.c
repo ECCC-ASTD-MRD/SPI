@@ -59,11 +59,9 @@ DAESource *ModelDAE_SourceFind(DAE_Data *Data,char* Id);
 void ModelDAE_SourceFree(DAESource *Source) {
 
    if (Source) {
-      if (Source->Id)    free(Source->Id);    Source->Id=NULL;
+      if (Source->Id)                      free(Source->Id);    Source->Id=NULL;
+      if (!Source->Alias && Source->Array) free(Source->Array); Source->Array=NULL;
 
-      if (!Source->Alias) {
-         if (Source->Array) free(Source->Array); Source->Array=NULL;
-      }
       Source->Nb=0;
    }
 }

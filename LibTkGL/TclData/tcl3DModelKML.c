@@ -161,7 +161,6 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
 
    /*Parse the XML*/
    state=XML_ParseFile(Interp,parser,kml,Path);
-
    XML_ParserFree(parser);
 
    /*Free associates parsing data structure*/

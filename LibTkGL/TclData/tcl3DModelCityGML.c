@@ -34,7 +34,6 @@
 #include "tcl3DModel.h"
 #include "tclXML.h"
 
-#define GML_NIL      0
 #define GML_ENVELOPE 1
 
 typedef struct GML_Data {
@@ -142,7 +141,7 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
       fprintf(stdout,"(DEBUG) ModelCityGML_EndHandler: Token %s\n",Elem);
 #endif
       if (strcmp(Elem,"gml:Envelope")==0) {
-         data->Bloc=GML_NIL;
+         data->Bloc=XML_NIL;
       } else
 
       if (strcmp(Elem,"gml:posList")==0 || strcmp(Elem,"gml:pos")==0) {
@@ -236,17 +235,6 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
    }
 }
 
-void NS_StartHandler(void *Data,const char *Prefix,const char *URI) {
-
-  printf("in %s => %s\n", Prefix ? Prefix : "(null)", URI ? URI : "(null)");
-}
-
-void NS_EndHandler(void *Data,const char *Prefix) {
-
-  printf("ou %s\n", Prefix ? Prefix : "(null)");
-}
-
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_LoadCityGML>
  * Creation     : Janvier 2003 J.P. Gauthier
@@ -271,7 +259,6 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
    int         state=1;
 
    /*Create expat XML parser*/
-//   parser=XML_ParserCreateNS(NULL,'.');
    if (!(parser=XML_ParserCreate(NULL))) {
       fprintf(stderr,"(ERROR) Model_LoadCityGML: Couldn't initiate XML parser\n");
       return(0);
@@ -287,11 +274,9 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
 
    /*Initialise expat XML parser*/
    XML_SetElementHandler(parser,ModelCityGML_StartHandler,ModelCityGML_EndHandler);
-//   XML_SetNamespaceDeclHandler(parser,NS_StartHandler,NS_EndHandler);
 
    /*Parse the XML*/
    state=XML_ParseFile(Interp,parser,gml,Path);
-
    XML_ParserFree(parser);
 
    /*Parse materials

@@ -1710,11 +1710,10 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       case 6 : res=MetObs_LoadBURP(Interp,File,Obs); break;
 //      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs); break;
       case 31: res=MetObs_LoadASCII(Interp,File,Obs); break;
-      default: res=MetObs_LoadSWOB(Interp,File,Obs); break;
-//      default: res=MetObs_LoadBUFR(Interp,File,Obs); break;
-/*      default: Tcl_AppendResult(Interp,"\n   MetObs_Load : Invalid file type ",File,(char*)NULL);
-               res=TCL_ERROR;
-*/
+      default: if (!(res=MetObs_LoadSWOB(Interp,File,Obs))) {
+                  res=MetObs_LoadBUFR(Interp,File,Obs);
+               }
+               break;
    }
 
    if (!Obs->Time)
