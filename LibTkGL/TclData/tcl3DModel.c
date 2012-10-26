@@ -396,14 +396,16 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
 
       case LLEXTENT:
          /*If not calculated yet, get latlon extent*/
-         if (mdl->Ref->LLExtent.MinY==1e32) {
-            mdl->Ref->Project(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],&mdl->Ref->LLExtent.MinY,&mdl->Ref->LLExtent.MinX,1,1);
-            mdl->Ref->Project(mdl->Ref,mdl->Extent[1][0],mdl->Extent[1][1],&mdl->Ref->LLExtent.MaxY,&mdl->Ref->LLExtent.MaxX,1,1);
+         if (mdl->Ref) {
+            if (mdl->Ref->LLExtent.MinY==1e32) {
+               mdl->Ref->Project(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],&mdl->Ref->LLExtent.MinY,&mdl->Ref->LLExtent.MinX,1,1);
+               mdl->Ref->Project(mdl->Ref,mdl->Extent[1][0],mdl->Extent[1][1],&mdl->Ref->LLExtent.MaxY,&mdl->Ref->LLExtent.MaxX,1,1);
+            }
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinY));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinX));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxY));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxX));
          }
-         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinY));
-         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinX));
-         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxY));
-         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxX));
          break;
    }
    Tcl_SetObjResult(Interp,lst);
@@ -1152,7 +1154,6 @@ void Model_ExtentScene(T3DModel *Model,T3DScene *Scene,Matrix4d Matrix) {
    } else {
       Matrix_Assign(mx,Matrix);
    }
-
 
    for(o=0;o<Scene->NObj;o++) {
       /*Apply transform ot scene objects*/
