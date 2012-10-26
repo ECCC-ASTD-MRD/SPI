@@ -423,6 +423,8 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
+   if (GRTYP[0]==' ') GRTYP[0]='X';
+
    if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
       grtyp[0]=GRTYP[0];
       grtyp[1]='\0';

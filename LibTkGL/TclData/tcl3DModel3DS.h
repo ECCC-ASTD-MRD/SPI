@@ -72,8 +72,6 @@ typedef struct T3DSChunk {
    unsigned int bytes;                 // The amount of bytes read within that chunk
 } T3DSChunk;
 
-int Model_Load3DS(T3DModel *M,char *Path);
-
 int  Model3DS_GetString(FILE *File,char *Buf);
 void Model3DS_ChunkRead(FILE *File,T3DSChunk *Chunk);
 void Model3DS_ChunkReadColor(FILE *File,float *Color,T3DSChunk *Chunk);

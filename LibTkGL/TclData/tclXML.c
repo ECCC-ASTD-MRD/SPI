@@ -99,8 +99,7 @@ void XML_CharReset(void *Data) {
  * But          : Check number of item in char stream array.
  *
  * Parametres   :
- *   <Txt>      : Char stream
- *   <Len>      : Char stream length
+ *   <Data>     : XML opaque data pointer
  *   <Sep>      : Array item separator char
  *
  * Retour       :
@@ -109,24 +108,28 @@ void XML_CharReset(void *Data) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int XML_ArrayCheck(char *Txt,unsigned int Len,char Sep) {
+int XML_ArrayCheck(void *Data,char Sep) {
 
+   XML_Data *data=(XML_Data*)Data;
    char *tok=NULL;
-   int   n=0;
+   long   n=0,s;
 
-   if (Txt && Len) {
+   if (data->Buf && data->BufLen) {
+
       // Get rid of carriage returns
-      tok=Txt;
-      while(tok<Txt+Len) {
+      tok=data->Buf;
+      s=(long)data->Buf+data->BufLen;
+
+      while((long)tok<s) {
          if (*tok=='\n')
             *tok=' ';
          tok++;
       }
 
       // Count number of items
-      n=1;
-      tok=Txt;
-      while(tok<(Txt+Len) && (tok=strchr(tok,Sep))) {
+      n=0;
+      tok=data->Buf;
+      while((long)tok<s && (tok=strchr(tok,Sep))) {
          // Check for consecutive token
          if (*tok!=*(tok-1)) n++;
          tok++;
@@ -146,10 +149,8 @@ int XML_ArrayCheck(char *Txt,unsigned int Len,char Sep) {
  * But          : Expand char stream into an array.
  *
  * Parametres   :
- *   <Txt>      : Char stream
- *   <Len>      : Char stream length
+ *   <Data>     : XML opaque data pointer
  *   <Sep>      : Array item separator char
- *   <Dim>      : Item dimensions (nb coordinates per item)
  *   <Array>    : Array
  *
  * Retour       :
@@ -158,31 +159,101 @@ int XML_ArrayCheck(char *Txt,unsigned int Len,char Sep) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int XML_ArrayExpandVect(char *Txt,unsigned int Len,char Sep,int Dim,Vect3f *Array) {
+int XML_ArrayExpandVect(void *Data,char Sep,float *Array) {
 
+   XML_Data *data=(XML_Data*)Data;
    char *tok,*save=NULL;
-   int   i,n;
+   int   n;
 
-   if (Txt && Len) {
+   if (data->Buf && data->BufLen) {
 
       // Parse all tokens
       n=0;
-      i=0;
-      tok=strtok_r(Txt,&Sep,&save);
+      tok=strtok_r(data->Buf,&Sep,&save);
       while(tok) {
-         Array[n][i++]=atof(tok);
-
-         if (i==Dim) {
-            i=0;
-            n++;
-         }
+         Array[n++]=atof(tok);
 
          //Check for buffer overrun
-         if (save>=(Txt+Len)-1)
+         if (save>=(data->Buf+data->BufLen)-1)
             break;
+
          tok=strtok_r(NULL,&Sep,&save);
       }
    }
 
    return(n);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <XML_ParseFile>
+ * Creation     : Octobre 2012 J.P. Gauthier
+ *
+ * But          : Parse an XML file
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Parser>   : XML parser
+ *   <Data>     : Specific data object
+ *   <Path>     : XML file path
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int XML_ParseFile(Tcl_Interp *Interp,XML_Parser Parser,void *Data,char *Path) {
+
+   FILE     *file;
+   XML_Data  data;
+   void     *buf;
+   int       len,state=1;
+
+   if (!(file=fopen(Path,"r"))) {
+      return(0);
+   }
+
+   /*Initialise expat XML parser*/
+   memset(&data,0x0,sizeof(XML_Data));
+   data.Interp=Interp;
+   data.Specific=Data;
+   data.Bloc=XML_INIT;
+
+   XML_SetUserData(Parser,&data);
+   XML_SetCharacterDataHandler(Parser,XML_CharHandler);
+
+   /*Parse the XML by chunk*/
+   for (;;) {
+      if (!(buf=XML_GetBuffer(Parser,XML_BUFSIZE))) {
+         fprintf(stderr,"(ERROR) XML_Parse: Could not allocate XML IO buffer\n");
+         state=0;
+         break;
+      }
+
+      len=fread(buf,1,XML_BUFSIZE,file);
+      if (ferror(file)) {
+         fprintf(stderr,"(ERROR) XML_Parse: Read error on %s\n",Path);
+         state=0;
+         break;
+      }
+
+      if (!XML_ParseBuffer(Parser,len,len==0)) {
+         fprintf(stderr,"(ERROR) XML_Parse: Parse error at line %li:\n\t%s\n",XML_GetCurrentLineNumber(Parser),XML_ErrorString(XML_GetErrorCode(Parser)));
+         state=0;
+         break;
+      }
+
+      if (data.Bloc==XML_BAD) {
+         fprintf(stderr,"(INFO) XML_Parse: Wrong file format\n");
+         state=0;
+         break;
+      }
+
+      if (!len)
+         break;
+   }
+
+   fclose(file);
+
+   return(state);
 }

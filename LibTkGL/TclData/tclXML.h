@@ -38,7 +38,11 @@
 #include <expat.h>
 #include "Vector.h"
 
-#define XMLBUFSIZE 8192
+#define XML_BUFSIZE 8192
+
+#define XML_BAD  -2
+#define XML_INIT -1
+#define XML_NIL   0
 
 typedef struct XML_Data {
 
@@ -49,9 +53,30 @@ typedef struct XML_Data {
    unsigned int BufLen,BufRLen;
 } XML_Data;
 
+static inline int XML_Check(void *Data,const char *Elem,char *Tag) {
+
+   XML_Data *data=(XML_Data*)Data;
+
+   if (data->Bloc==XML_INIT) {
+      if (strcmp(Elem,Tag)!=0) {
+         data->Bloc=XML_BAD;
+      } else {
+         data->Bloc=XML_NIL;
+      }
+   }
+}
+
+static inline int XML_Valid(void *Data) {
+
+   XML_Data  *data=(XML_Data*)Data;
+
+   return (data->Bloc!=XML_BAD);
+}
+
 void XML_CharHandler(void *Data,const char *Txt,int Len);
 void XML_CharReset(void *Data);
-int  XML_ArrayCheck(char *Txt,unsigned int Len,char Sep);
-int  XML_ArrayExpandVect(char *Txt,unsigned int Len,char Sep,int Dim,Vect3f *Array);
+int  XML_ArrayCheck(void *Data,char Sep);
+int  XML_ArrayExpandVect(void *Data,char Sep,float *Array);
+int  XML_ParseFile(Tcl_Interp *Interp,XML_Parser Parser,void *Data,char *Path);
 
 #endif

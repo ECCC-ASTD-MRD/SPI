@@ -40,6 +40,7 @@
  * But          : Lire un fichier MDL
  *
  * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
  *   <M>        : Objet Model
  *   <Path>     : Path du fichier
  *
@@ -49,7 +50,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_LoadMDL(T3DModel *M,char *Path) {
+int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    int       i,m;
    T3DObject *obj;

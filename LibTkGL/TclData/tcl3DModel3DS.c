@@ -41,6 +41,7 @@
  * But          : Lire un fichier MDL
  *
  * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
  *   <M>        : Objet Model
  *   <Path>     : Path complet du fichier MDL
  *
@@ -50,7 +51,7 @@
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_Load3DS(T3DModel *M,char *Path) {
+int Model_Load3DS(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    T3DSChunk chunk;
    FILE *file;

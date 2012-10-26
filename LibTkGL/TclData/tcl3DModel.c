@@ -1084,12 +1084,12 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
    mdl=Model_Get(Name);
    mdl->Path=strdup(Path);
 
-   if (!(c=Model_LoadMDL(mdl,Path))) {
-      if (!(c=Model_LoadCityGML(mdl,Path))) {
-         if (!(c=Model_LoadKML(mdl,Path))) {
-            if (!(c=Model_LoadDAE(mdl,Path))) {
-               if (!(c=Model_Load3DS(mdl,Path))) {
-                  c=Model_LoadFLT(mdl,Path);
+   if (!(c=Model_LoadMDL(Interp,mdl,Path))) {
+      if (!(c=Model_LoadCityGML(Interp,mdl,Path))) {
+         if (!(c=Model_LoadKML(Interp,mdl,Path))) {
+            if (!(c=Model_LoadDAE(Interp,mdl,Path))) {
+               if (!(c=Model_Load3DS(Interp,mdl,Path))) {
+                  c=Model_LoadFLT(Interp,mdl,Path);
                }
             }
          }

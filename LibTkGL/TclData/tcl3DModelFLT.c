@@ -40,7 +40,6 @@ static T3DObject *GOBJ=NULL;
 static int        NVR,NFCE,NOBJ,NMT,NSW;
 static float      GCOL[4]={ 0.0,0.0,0.0,0.0 };
 
-int Model_LoadFLT(T3DModel *M,char *Path);
 int ModelFLT_NodeCount(FltNode *Node,int Type);
 int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
 
@@ -60,7 +59,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_LoadFLT(T3DModel *M,char *Path) {
+int Model_LoadFLT(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    FltFile     *flt;
    unsigned int nobj;

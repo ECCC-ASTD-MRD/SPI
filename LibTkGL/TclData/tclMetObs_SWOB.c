@@ -61,11 +61,13 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
    char        *name,*uom,*value,multi=0;
 
    XML_CharReset(Data);
+   XML_Check(Data,Elem,"om:ObservationCollection");
+
    obj=Tcl_NewIntObj(0);
 
    name=uom=value=NULL;
 
-   if (Elem) {
+   if (Elem && XML_Valid(Data)) {
       if (strcmp(Elem,"identification-elements")==0) {
          data->Bloc=SWOB_IDELEMENTS;
          if (swob->Name) free(swob->Name); swob->Name=NULL;
@@ -142,6 +144,8 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
          }
       }
    }
+
+   Tcl_Free(obj);
 }
 
 void SWOB_EndHandler(void *Data,const char *Elem) {
@@ -151,7 +155,7 @@ void SWOB_EndHandler(void *Data,const char *Elem) {
    char      *buf,*c;
    Vect3f     vf;
 
-   if (Elem) {
+   if (Elem && XML_Valid(Data)) {
       if (strcmp(Elem,"elements")==0) {
           switch (data->Bloc) {
             case SWOB_IDELEMENTS:
@@ -165,8 +169,8 @@ void SWOB_EndHandler(void *Data,const char *Elem) {
 
       } else if (strcmp(Elem,"gml:pos")==0) {
          // Get the station coordinates
-         if (XML_ArrayCheck(data->Buf,data->BufLen,' ')) {
-            XML_ArrayExpandVect(data->Buf,data->BufLen,' ',2,&vf);
+         if (XML_ArrayCheck(data,' ')) {
+            XML_ArrayExpandVect(data,' ',(float*)&vf);
             swob->Co.Lat=vf[0];
             swob->Co.Lon=vf[1];
          }
@@ -183,7 +187,7 @@ void SWOB_EndHandler(void *Data,const char *Elem) {
  * Nom          : <MetObs_LoadSWOB>
  * Creation     : Mars 2008 J.P. Gauthier
  *
- * But          : Chargement d'un fichier d'observations en format BUFR.
+ * But          : Chargement d'un fichier d'observations en format SWOB.
  *
  * Parametres   :
  *   <Interp>   : L'interpreteur Tcl
@@ -198,21 +202,13 @@ void SWOB_EndHandler(void *Data,const char *Elem) {
 */
 int MetObs_LoadSWOB(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   FILE      *file;
    XML_Parser parser;
-   XML_Data   data;
    SWOB_Data *swob;
-   int        len,state=TCL_OK;
-   void      *buf;
+   int        state=1;
 
    /*Create expat XML parser*/
-   parser=XML_ParserCreate(NULL);
-   if (!parser) {
+   if (!(parser=XML_ParserCreate(NULL))) {
       fprintf(stderr,"(ERROR) MetObs_LoadSWOB: Couldn't initiate XML parser\n");
-      return(0);
-   }
-
-   if (!(file=fopen(File,"r"))) {
       return(0);
    }
 
@@ -220,43 +216,14 @@ int MetObs_LoadSWOB(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    swob=(SWOB_Data*)calloc(1,sizeof(SWOB_Data));
    swob->Obs=Obs;
 
-   memset(&data,0x0,sizeof(XML_Data));
-   data.Interp=Interp;
-   data.Specific=swob;
-
    /*Initialise expat XML parser*/
-   XML_SetUserData(parser,&data);
    XML_SetElementHandler(parser,SWOB_StartHandler,SWOB_EndHandler);
-   XML_SetCharacterDataHandler(parser,XML_CharHandler);
 
-   /*Parse the XML by chunk*/
-   for (;;) {
-      if (!(buf=XML_GetBuffer(parser,XMLBUFSIZE))) {
-         fprintf(stderr,"(ERROR) MetObs_LoadSWOB: Could not allocate XML IO buffer\n");
-         state=TCL_ERROR;
-         break;
-      }
+   /*Parse the XML*/
+   state=XML_ParseFile(Interp,parser,swob,File);
 
-      len=fread(buf,1,XMLBUFSIZE,file);
-      if (ferror(file)) {
-         fprintf(stderr,"(ERROR) MetObs_LoadSWOB: Read error on %s\n",File);
-         state=TCL_ERROR;
-         break;
-      }
+   XML_ParserFree(parser);
+   free(swob);
 
-      if (!XML_ParseBuffer(parser,len,len==0)) {
-         fprintf(stderr,"(ERROR) MetObs_LoadSWOB: XML Parse error at line %li:\n\t%s\n",XML_GetCurrentLineNumber(parser),XML_ErrorString(XML_GetErrorCode(parser)));
-         state=TCL_ERROR;
-         break;
-      }
-
-      if (!len)
-         break;
-    }
-
-    XML_ParserFree(parser);
-    free(swob);
-    fclose(file);
-
-    return(state);
+   return(state?TCL_OK:TCL_ERROR);
 }
