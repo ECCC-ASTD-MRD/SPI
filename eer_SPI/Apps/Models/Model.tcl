@@ -299,7 +299,12 @@ proc Model::GetMetData { Model } {
 }
 
 proc Model::CreateInput { Model } {
-    ${Model}::EmissionRead
+
+   eval set proc \[info procs ::${Model}::EmissionRead\]
+   if { $proc!="" } {
+      ${Model}::EmissionRead
+   }
+
    ${Model}::CreateModelInput
    ${Model}::CreateScriptInput
 
