@@ -29,8 +29,7 @@ puts \n[file tail [info script]]
 set fields [fstdfile open 1 read  DataIn/2005120600_012]
 fstdfile open 2 write DataOut/FSTD_8HourAverage.fstd
 
-puts stderr [fstdfile info 1 DATEV]
-exit
+puts "   Found date: [fstdfile info 1 DATEV]"
 
 #----- Recuperer les TICTAC
 
@@ -53,7 +52,6 @@ set fields $f
 #----- Trier en ordre croissant de IP2
 
 set fields [lsort -index 5 -integer -increasing $fields]
-
 
 for { set i 7 } { $i < [llength $fields] } { incr i } {
 

@@ -32,19 +32,18 @@ set models [glob -tails -directory /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collad
 foreach model $models {
    puts "   Reading $model"
    model read $model /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/$model/doc.kml
-puts stderr aaaa
-#   model configure $model -outline blue -width 1
-puts stderr aaaa333
+   model configure $model -outline blue -width 1
 }
 
-#model read DAE /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/olympic/models/model.dae
+#model read DAE /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/StadeOlympiqueEtBiodome/models/model.dae
+#model read DAE /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada/StadeOlympiqueEtBiodome/doc.kml
 #model configure DAE -outline black -width 1 -renderface False
 #model matrix DAE -locate 46.8086773762 -71.2179046536 125
-#model matrix DAE -scale 1000 1000 1000
+#model matrix DAE -scale 1 1 1
 
-#eval Mapper::UpdateData $Page::Data(Frame) $models
+eval Mapper::UpdateData $Page::Data(Frame) $models
 
-if { 1 } {
+if { 0 } {
    file copy -force DataIn/Montreal.fstd DataOut/Montreal.fstd
    fstdfile open FILE append DataOut/Montreal.fstd
    fstdfield read FLD FILE -1 "" -1 -1 -1 "" "IBLK"

@@ -72,6 +72,7 @@ while { ![eof $f] } {
    ogrlayer define AIRPORT -feature $no TZ      [string trim [lindex $info 9] \"]
    ogrlayer define AIRPORT -feature $no DST     [string trim [lindex $info 10] \"]
 
+   #---- If no height specified, use 0
    set z [lindex $info 8]
    if { $z=="" } {set z 0 }
 
@@ -111,6 +112,7 @@ while { ![eof $f] } {
 
    set info [split $line ,]
 
+   #----- Find source and destination airport
    set airport_src [ogrlayer define AIRPORT -featureselect [list [list ID == [string trim [lindex $info 3] \"]]]]
    set airport_dst [ogrlayer define AIRPORT -featureselect [list [list ID == [string trim [lindex $info 5] \"]]]]
 
@@ -131,9 +133,11 @@ while { ![eof $f] } {
       ogrlayer define ROUTE -feature $no STOPS     [string trim [lindex $info 7] \"]
       ogrlayer define ROUTE -feature $no PLANE     [string trim [lindex $info 8] \"]
 
+      #----- Get source and destination coordinates
       set coord_src [ogrgeometry define [ogrlayer define AIRPORT -geometry $airport_src] -points]
       set coord_dst [ogrgeometry define [ogrlayer define AIRPORT -geometry $airport_dst] -points]
 
+      #----- Project a great circel between the two at 10km sampling resolution
       ogrgeometry define LINE -points {}
       foreach { la lo } [projection  function PROJ -path [list [lindex $coord_src 1] [lindex $coord_src 0] [lindex $coord_dst 1] [lindex $coord_dst 0]] 10000] {
          ogrgeometry define LINE -addpoint $lo $la 0.0

@@ -31,14 +31,17 @@ fstdfile open 1 read  DataIn/2005120600_012
 
 set fldlist {}
 
+puts  -nonewline "Before sort:"
+
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    fstdfield read FLD$fld 1 $fld
    lappend fldlist FLD$fld
-   puts "   [fstdfield stats FLD$fld -gridvalue 0 0]"
+   puts  -nonewline " [fstdfield stats FLD$fld -gridvalue 0 0]"
 }
 
 fstdfield sort $fldlist
 
+puts -nonewline "\n\nAfter sort :"
 foreach field $fldlist {
-   puts "   [fstdfield stats $field -gridvalue 0 0]"
+   puts -nonewline " [fstdfield stats $field -gridvalue 0 0]"
 }
