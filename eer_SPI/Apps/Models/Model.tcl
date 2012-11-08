@@ -2342,8 +2342,8 @@ proc Model::VertexAdd { Frame VP X Y } {
       set lat [Convert::Decimal2Minute [lindex $loc 0] 2]
       set lon [Convert::Decimal2Minute [lindex $loc 1] 2]
    } else {
-      set lat [format "%.5f" [lindex $loc 0]]
-      set lon [format "%.5f" [lindex $loc 1]]
+      set lat [format "%.6f" [lindex $loc 0]]
+      set lon [format "%.6f" [lindex $loc 1]]
    }
 
    set Data(Id)   "-"
