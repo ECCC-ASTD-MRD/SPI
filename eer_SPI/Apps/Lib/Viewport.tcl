@@ -1618,7 +1618,7 @@ proc Viewport::ParamProj { Ref } {
    variable Lbl
    variable Map
 
-   if { ![winfo exists .viewportproj] } {
+   if { [winfo exists .viewportproj] } {
       raise .viewportproj
       return
    }

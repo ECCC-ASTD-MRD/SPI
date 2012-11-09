@@ -48,7 +48,6 @@ namespace eval Miniport { } {
    set Lbl(Ortho)      { "Projection Orthographique" "Orthographic projection" }
    set Lbl(Cylin)      { "Projection Cylindrique" "Cylindric projection" }
    set Lbl(Same)       { "Projection maitre" "Master projection" }
-
 }
 
 #----------------------------------------------------------------------------

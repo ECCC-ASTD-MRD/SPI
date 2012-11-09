@@ -164,7 +164,6 @@ namespace eval Page {
    set Data(X)          0           ;#Coordonnee de base
    set Data(Y)          0           ;#Coordonnee de base
 
-
    set Data(Tag)        PAGE        ;#Tag identifiant la projection
 
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
@@ -190,19 +189,6 @@ namespace eval Page {
 proc VertexAdd    { Frame VP X Y } { }
 proc VertexDelete { Frame VP }     { }
 proc VertexFollow { Frame VP X Y Scan } { }
-
-proc lsearchsub { List Pattern Idx } {
-
-   set i 0
-
-   foreach item $List {
-      if { [string match $Pattern [lindex $item $Idx]] } {
-         return $i
-      }
-      incr i
-   }
-   return -1
-}
 
 proc Page::Activate { Frame { Force 0 } } {
 }
