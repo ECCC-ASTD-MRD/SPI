@@ -61,19 +61,8 @@ namespace eval PrintBox {
    #----- Recuperer les imprimantes
    catch {
       set Param(Printers)    {}
-
-      if { [file readable /etc/printcap] } {
-
-         set f [open /etc/printcap r]
-
-         while { ![eof $f] } {
-            gets $f printer
-
-            if { [string index $printer 0]!="#" && $printer!="" } {
-               lappend Param(Printers) [lindex [split [lindex [split $printer :] 0] |] 0]
-            }
-         }
-         close $f
+      foreach printer [split [exec lpstat -a] \n] {
+         lappend Param(Printers) [lindex $printer 0]
       }
       set Param(Printer) [lindex $Param(Printers) 0]                  ;#Imprimante par defaut
    }
