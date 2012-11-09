@@ -19,9 +19,10 @@
 
 package provide FieldFunc 1.0
 
-catch { SPI::Splash "Loading Widget Package FieldFunc 1.0" }
+catch { SPI::Splash "Loading Package FieldFunc 1.0" }
 
-namespace eval FieldFunc { }
+namespace eval FieldFunc { } {
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <FieldFunc::TimeOfArrival>

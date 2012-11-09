@@ -14,9 +14,17 @@
 #
 #============================================================================
 
+package provide Export 1.0
+
+catch { SPI::Splash "Loading Package Export 1.0" }
+
+package require Dialog
+package require Convert
+
 namespace eval Export {
    variable Lbl
    variable Bubble
+   variable Param
    variable Data
    variable Msg
    variable Error
@@ -25,11 +33,6 @@ namespace eval Export {
    set Data(Frame)  ""                    ;#Frame actif
    set Data(VP)     ""                    ;#Viewport actif
 
-   set Data(Lat0)  -90.0
-   set Data(Lat1)   90.0
-   set Data(Lon0)  -180.0
-   set Data(Lon1)   180.0
-   set Data(Res)    0.01
    set Data(Coo)    ""
    set Data(Path)   ""
    set Data(Type)   Vector
@@ -70,13 +73,25 @@ namespace eval Export {
 }
 
 namespace eval Export::Raster {
-   variable Data
+   variable Param
    variable Lbl
    variable Bubble
    variable Error
 
-   set Data(Image)   1
-   set Data(Formats) { {GeoTIFF "GTiff" {*.tif}}
+   set Param(Res)     0.1
+   set Param(Dim)     " deg = -"
+   set Param(DY)      0
+   set Param(DX)      0
+   set Param(DLat)    0
+   set Param(DLon)    0
+   set Param(Lat0)    -999
+   set Param(Lon0)    -999
+   set Param(Lat1)    -999
+   set Param(Lon1)    -999
+   set Param(Mode)    RGBA
+   set Param(Modes)   { INDEX RGBA DATA }
+
+   set Param(Formats) { {GeoTIFF "GTiff" {*.tif}}
                        {KML "KMZ" {*.kmz}}
                        {Arc/Info ASCII Grid "AAIGrid" {*.adf}}
                        {ADRG/ARC Digitilized Raster Graphics "ADRG" {*.gen *.thf}}
@@ -96,7 +111,7 @@ namespace eval Export::Raster {
                        {SRTM HGT Format "SRTMHGT" {*.hgt}}
                        {Raster Matrix Format "RMF" {*.rsw *.mtw}}
                        {ENVI .hdr Labelled "ENVI" {*.envi}}
-                       {ESRI .hdr Labelled "EHdr"{*.hdr}}
+                       {ESRI .hdr Labelled "EHdr" {*.hdr}}
                        {Atlantis MFF Raster "MFF" {*.mff}}
                        {Atlantis MFF2 (HKV) Raster "MFF2" {*.mff}}
                        {NASA ELAS "ELAS" {*}}
@@ -127,7 +142,7 @@ namespace eval Export::Raster {
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
 
-   set Error(Size)    { "Les dimensions sont invaldes, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
+   set Error(Size)    { "Les dimensions sont invalides, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
 
    set Bubble(Lat0)   { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
    set Bubble(Lon0)   { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
@@ -138,11 +153,10 @@ namespace eval Export::Raster {
 }
 
 namespace eval Export::Vector {
-   variable Data
-   variable Lbl
-   variable Bubble
+   variable Param
 
-   set Data(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+   set Param(Modes)   { POINT CELL CONTOUR }
+   set Param(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
                        {GeoJSON  "GeoJSON" {*.json}}
                        {KML "KMZ" {*.kml}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
@@ -156,7 +170,7 @@ namespace eval Export::Vector {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Export::Raster::Legend>
+# Nom      : <Export::Legend>
 # Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Creer une image legende echelle de couleur
@@ -185,6 +199,10 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
    set max    [fstdfield configure $Field -max]
    set factor [fstdfield configure $Field -factor]
    set unit   [fstdfield configure $Field -unit]
+
+   if { $map=="" } {
+      return
+   }
 
    if { $min=="" } {
       set min [lindex [fstdfield stats $Field -min] 0]
@@ -274,26 +292,27 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Raster::Export { Path Format } {
-   global GDefs
-   variable Data
+proc Export::Raster::Export { Path Format Mode Fields } {
+   global   env
+   variable Param
+   variable Msg
    variable Error
 
-   set no   0
+   if { ![llength $Fields] } {
+      return True
+   }
 
-   if { $Export::Data(RPN) } {
+   set file [file rootname $Path]
+   set ext  [file extension $Path]
 
-      set file [file rootname $Path]
-      set ext  [file extension $Path]
+   if { $Param(DX)==0 || $Param(DY)==0 } {
+      Dialog::Error .export $Error(Size)
+      return False
+   }
 
-      if { $Export::Data(DX)==0 || $Export::Data(DY)==0 } {
-         Dialog::Error .export $Error(Size)
-         return False
-      }
-
-      if { $Format=="KMZ" } {
-         set f [open ${file}.kml w]
-         puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+   if { $Format=="KMZ" } {
+      set f [open ${file}.kml w]
+      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
 <Document>
    <ScreenOverlay>
       <name>Logo</name>
@@ -303,34 +322,36 @@ proc Export::Raster::Export { Path Format } {
       <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
       <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
    </ScreenOverlay>"
-      }
+   }
 
-      foreach field $FSTD::Data(List) {
+   foreach field $Fields {
 
-         set nv      [fstdfield define $field -NOMVAR]
-         set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
-         set lvltype [fstdfield stats $field -leveltype]
-         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-         set sec1    [expr $sec0+[fstdfield define $field -DEET]]
+      set nv      [fstdfield define $field -NOMVAR]
+      set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+      set lvltype [fstdfield stats $field -leveltype]
+      set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+      set sec1    [expr $sec0+[fstdfield define $field -DEET]]
+      set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
+      set name    ${file}_${nv}_${date}_${lvl}_${lvltype}
+      set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
 
-         set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
-         Dialog::Wait .export $Export::Msg(Export) $desc
+      Dialog::Wait .export $Export::Msg(Export) $desc
 
-         switch $Data(Image) {
-            0 {  set map [fstdfield configure $field -colormap]
-               fstdfield configure $field -colormap ""
-               gdalband create BAND $Export::Data(DX) $Export::Data(DY) 1 Float32
-            }
-            1 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 4 Byte }
-            2 { gdalband create BAND $Export::Data(DX) $Export::Data(DY) 1 Byte }
+      switch $Mode {
+         INDEX {  set map [fstdfield configure $field -colormap]
+            fstdfield configure $field -colormap ""
+            gdalband create BAND $Param(DX) $Param(DY) 1 Float32
          }
-         gdalband define BAND -transform [list $Export::Data(Lon0) $Export::Data(DLon) 0.0 $Export::Data(Lat1) 0.0 -$Export::Data(DLat)]
-         gdalband import BAND $field
+         RGBA { gdalband create BAND $Param(DX) $Param(DY) 4 Byte }
+         DATA { gdalband create BAND $Param(DX) $Param(DY) 1 Byte }
+      }
+      gdalband define BAND -transform [list $Param(Lon0) $Param(DLon) 0.0 $Param(Lat1) 0.0 -$Param(DLat)]
+      gdalband import BAND $field
 
-         if { $Format=="KMZ" } {
-            Export::Legend ${file}_${no}_${nv}_legend.png $field 270 120 #FFFFFF
+      if { $Format=="KMZ" } {
+         Export::Legend ${name}_legend.png $field 270 120 #FFFFFF
 
-            puts $f "
+         puts $f "
    <ScreenOverlay>
       <TimeSpan>
          <begin>[ISO8601::FromSeconds $sec0]</begin>
@@ -338,7 +359,7 @@ proc Export::Raster::Export { Path Format } {
       </TimeSpan>
       <name>Legend</name>
          <Icon>
-            <href>[file tail ${file}_${no}_${nv}_legend.png]</href>
+            <href>[file tail ${name}_legend.png]</href>
          </Icon>
       <overlayXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
       <screenXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
@@ -353,43 +374,40 @@ proc Export::Raster::Export { Path Format } {
       <name>[fstdfield configure $field -desc] at $lvl $lvltype</name>
       <description>Valid [clock format $sec0]</description>
       <LatLonBox>
-         <north>$Export::Data(Lat1)</north>
-         <south>$Export::Data(Lat0)</south>
-         <east>$Export::Data(Lon1)</east>
-         <west>$Export::Data(Lon0)</west>
+         <north>$Param(Lat1)</north>
+         <south>$Param(Lat0)</south>
+         <east>$Param(Lon1)</east>
+         <west>$Param(Lon0)</west>
       </LatLonBox>
       <Icon>
-         <href>[file tail ${file}_${no}_${nv}.tif]</href>
+         <href>[file tail ${name}.tif]</href>
       </Icon>
    </GroundOverlay>\n"
-            gdalfile open FILE write ${file}_${no}_${nv}.tif GTiff
+         gdalfile open FILE write ${name}.tif GTiff
 
-            lappend kmz ${file}_${no}_${nv}.tif ${file}_${no}_${nv}_legend.png
-         } else {
-            gdalfile open FILE write ${file}_${no}_${nv}${ext} $Format
-         }
-         gdalband write BAND FILE
-         gdalfile close FILE
-         gdalband free BAND
-
-
-         if { $Data(Image)==0 } {
-            fstdfield configure $field -colormap $map
-         }
-
-         incr no
+         lappend kmz ${name}.tif ${name}_legend.png
+      } else {
+         gdalfile open FILE write ${name}${ext} $Format
       }
+      gdalband write BAND FILE
+      gdalfile close FILE
+      gdalband free BAND
 
-      if { $Format=="KMZ" } {
-         puts $f "</Document>\n</kml>"
-         close $f
-         file delete -force ${file}.kmz
-         eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
-         eval file delete ${file}.kml $kmz
+      if { $Mode=="INDEX" } {
+         fstdfield configure $field -colormap $map
       }
-
-      Dialog::WaitDestroy
    }
+
+   if { $Format=="KMZ" } {
+      puts $f "</Document>\n</kml>"
+      close $f
+      file delete -force ${file}.kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+      eval file delete ${file}.kml $kmz
+   }
+
+   Dialog::WaitDestroy
+
    return True
 }
 
@@ -410,19 +428,20 @@ proc Export::Raster::Export { Path Format } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Vector::Export { Path Format } {
-   global GDefs
-   variable Data
+proc Export::Vector::Export { Path Format Fields } {
+   global env
+   variable Msg
 
-   set no 0
+   if { ![llength $Fields] } {
+      return True
+   }
 
-   if { $Export::Data(RPN) } {
-      set file [file rootname $Path]
-      set ext  [file extension $Path]
+   set file [file rootname $Path]
+   set ext  [file extension $Path]
 
-      if { $Format=="KMZ" } {
-         set f [open ${file}.kml w]
-         puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+   if { $Format=="KMZ" } {
+      set f [open ${file}.kml w]
+      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
 <Document>
    <ScreenOverlay>
       <name>Logo</name>
@@ -432,46 +451,41 @@ proc Export::Vector::Export { Path Format } {
       <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
       <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
    </ScreenOverlay>"
+   }
+
+   foreach field $Fields {
+
+      set nv      [fstdfield define $field -NOMVAR]
+      set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+      set lvltype [fstdfield stats $field -leveltype]
+      set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+      set sec1    [expr $sec0+[fstdfield define $field -DEET]]
+      set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
+      set name    ${file}_${nv}_${date}_${lvl}_${lvltype}
+      set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+
+      Dialog::Wait .export $Export::Msg(Export) $desc
+
+      if { [file exists ${name}${ext}] } {
+         file delete -force ${name}${ext}
       }
+      switch $Format {
+         "PostgreSQL" {
+            set req "PG:"
+            if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
+            if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
+            if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
+            if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
+            if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
 
-      foreach field $FSTD::Data(List) {
-
-         set nv      [fstdfield define $field -NOMVAR]
-         set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
-         set lvltype [fstdfield stats $field -leveltype]
-         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-         set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-         set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
-
-         set desc "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
-         Dialog::Wait .export $Export::Msg(Export) $desc
-
-         set layer ${nv}_${date}_${lvl}_${lvltype}
-
-         set file [file rootname $Path]
-         set ext  [file extension $Path]
-         set name ${file}_${no}_${nv}${ext}
-
-         if { [file exists $name] } {
-            file delete -force $name
+            ogrfile open FILE write $req $Format
          }
-         switch $Format {
-            "PostgreSQL" {
-               set req "PG:"
-               if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
-               if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
-               if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
-               if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
-               if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
-
-               ogrfile open FILE write $req $Format
-            }
-            "MapInfo File" {
-               ogrfile open FILE write $name $Format { FORMAT=MIF }
-            }
-            "KMZ" {
-               Export::Legend ${file}_${no}_${nv}_legend.png $field 270 120 #FFFFFF
-               puts $f "
+         "MapInfo File" {
+            ogrfile open FILE write ${name}${ext} $Format { FORMAT=MIF }
+         }
+         "KMZ" {
+            Export::Legend ${name}_legend.png $field 270 120 #FFFFFF
+            puts $f "
    <Folder>
       <name>[fstdfield configure $field -desc] at $lvl $lvltype</name>
       <description>Valid [clock format $sec0]</description>
@@ -482,7 +496,7 @@ proc Export::Vector::Export { Path Format } {
       <ScreenOverlay>
          <name>Legend</name>
             <Icon>
-               <href>[file tail ${file}_${no}_${nv}_legend.png]</href>
+               <href>[file tail ${name}_legend.png]</href>
             </Icon>
          <overlayXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
          <screenXY x=\"1\" y=\".5\" xunits=\"fraction\" yunits=\"fraction\"/>
@@ -491,34 +505,33 @@ proc Export::Vector::Export { Path Format } {
       </ScreenOverlay>
       <NetworkLink>
          <Link>
-            <href>[file tail ${file}_${no}_${nv}${ext}]</href>
+            <href>[file tail ${name}${ext}]</href>
          </Link>
       </NetworkLink>
    </Folder>\n"
-               lappend kmz ${file}_${no}_${nv}${ext} ${file}_${no}_${nv}_legend.png
-               ogrfile open FILE write $name KML
-            }
-            default {
-               ogrfile open FILE write $name $Format
-            }
+            lappend kmz ${name}${ext} ${name}_legend.png
+            ogrfile open FILE write $name${ext} KML
          }
-
-         ogrlayer create FILE LAYER $layer
-         ogrlayer import LAYER $field
-         ogrfile close FILE
-         ogrlayer free LAYER
-         incr no
+         default {
+            ogrfile open FILE write $name${ext} $Format
+         }
       }
 
-      if { $Format=="KMZ" } {
-         puts $f "</Document>\n</kml>"
-         close $f
-         file delete -force ${file}.kmz
-         eval exec zip -j ${file}.kmz ${file}.kml $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
-         eval file delete ${file}.kml $kmz
-      }
-      Dialog::WaitDestroy
+      ogrlayer create FILE LAYER $name
+      ogrlayer import LAYER $field
+      ogrfile close FILE
+      ogrlayer free LAYER
    }
+
+   if { $Format=="KMZ" } {
+      puts $f "</Document>\n</kml>"
+      close $f
+      file delete -force ${file}.kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+      eval file delete ${file}.kml $kmz
+   }
+
+   Dialog::WaitDestroy
 
    return True
 }
@@ -564,35 +577,35 @@ proc Export::Raster::Option { Frame } {
 
    frame $Frame.area
       label $Frame.area.lbl -text [lindex $Lbl(Area) $GDefs(Lang)] -width 10 -anchor w
-      checkbutton $Frame.area.mode -variable Page::Data(ToolMode) -onvalue Export \
+      checkbutton $Frame.area.mode -variable Page::Data(ToolMode) -onvalue Export::Raster \
          -offvalue SPI -image ARROW -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor  $GDefs(ColorLight)
-      entry $Frame.area.lat0 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Data(Lat0)
-      entry $Frame.area.lon0 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Data(Lon0)
-      entry $Frame.area.lat1 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Data(Lat1)
-      entry $Frame.area.lon1 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Data(Lon1)
+      entry $Frame.area.lat0 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Raster::Param(Lat0)
+      entry $Frame.area.lon0 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Raster::Param(Lon0)
+      entry $Frame.area.lat1 -bd 1 -bg $GDefs(ColorLight) -width 7 -textvariable Export::Raster::Param(Lat1)
+      entry $Frame.area.lon1 -bd 1 -bg $GDefs(ColorLight) -width 8 -textvariable Export::Raster::Param(Lon1)
       pack $Frame.area.lbl $Frame.area.lat0 $Frame.area.lon0 $Frame.area.lat1 $Frame.area.lon1 -side left -fill y
       pack $Frame.area.mode -side left -fill x -expand true
-      bind $Frame.area.lat0 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
-      bind $Frame.area.lat1 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
-      bind $Frame.area.lon0 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
-      bind $Frame.area.lon1 <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+      bind $Frame.area.lat0 <Any-KeyRelease> { Export::Raster::Init $Export::Raster::Param(Res) }
+      bind $Frame.area.lat1 <Any-KeyRelease> { Export::Raster::Init $Export::Raster::Param(Res) }
+      bind $Frame.area.lon0 <Any-KeyRelease> { Export::Raster::Init $Export::Raster::Param(Res) }
+      bind $Frame.area.lon1 <Any-KeyRelease> { Export::Raster::Init $Export::Raster::Param(Res) }
 
    frame $Frame.res
       label $Frame.res.lbl -text [lindex $Lbl(Res) $GDefs(Lang)] -width 10 -anchor w
-      entry $Frame.res.sel  -bd 1 -bg $GDefs(ColorLight) -width 6 -textvariable Export::Data(Res) -validate focusout -validatecommand { Export::SetDim %P }
-      label $Frame.res.dim -textvariable Export::Data(Dim) -anchor w
+      entry $Frame.res.sel  -bd 1 -bg $GDefs(ColorLight) -width 6 -textvariable Export::Raster::Param(Res) -validate focusout -validatecommand { Export::Raster::Init %P }
+      label $Frame.res.dim -textvariable Export::Raster::Param(Dim) -anchor w
       pack $Frame.res.lbl $Frame.res.sel -side left
       pack $Frame.res.dim -side left -fill x -expand True
-      bind $Frame.res.sel <Any-KeyRelease> { Export::SetDim $Export::Data(Res) }
+      bind $Frame.res.sel <Any-KeyRelease> { Export::Raster::Init $Export::Raster::Param(Res) }
 
    frame $Frame.type
       label $Frame.type.lbl -text [lindex $Lbl(Values) $GDefs(Lang)] -width 10 -anchor w
-      radiobutton $Frame.type.data -text [lindex $Lbl(Data) $GDefs(Lang)] -variable Export::Raster::Data(Image) -value 0 \
+      radiobutton $Frame.type.data -text [lindex $Lbl(Data) $GDefs(Lang)] -variable Export::Raster::Param(Mode) -value DATA \
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
-      radiobutton $Frame.type.rgb  -text [lindex $Lbl(ImageRGB) $GDefs(Lang)] -variable Export::Raster::Data(Image) -value 1 \
+      radiobutton $Frame.type.rgb  -text [lindex $Lbl(ImageRGB) $GDefs(Lang)] -variable Export::Raster::Param(Mode) -value RGBA \
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
-      radiobutton $Frame.type.idx  -text [lindex $Lbl(ImageIDX) $GDefs(Lang)] -variable Export::Raster::Data(Image) -value 2 \
+      radiobutton $Frame.type.idx  -text [lindex $Lbl(ImageIDX) $GDefs(Lang)] -variable Export::Raster::Param(Mode) -value INDEX \
          -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
       pack  $Frame.type.lbl -side left
       pack  $Frame.type.data $Frame.type.rgb $Frame.type.idx -side left -fill x -expand true
@@ -624,7 +637,7 @@ proc Export::Raster::Option { Frame } {
 proc Export::Close { } {
    variable Data
 
-   if { $Page::Data(ToolMode)=="Export" } {
+   if { $Page::Data(ToolMode)=="Export::Raster" } {
       SPI::ToolMode SPI Zoom
    }
    set Data(Coo)    ""
@@ -751,11 +764,11 @@ proc Export::Window { } {
    set format $Data(Format)
    Export::SetType $Data(Type)
    Export::SetFormat $format
-   Export::SetDim $Data(Res)
+   Export::Raster::Init $Export::Raster::Param(Res)
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Export::SetDim>
+# Nom      : <Export::Raster::Init>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Calculer les parametres des dimensions de l'image raster
@@ -769,13 +782,29 @@ proc Export::Window { } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::SetDim { Res } {
-   variable Data
+proc Export::Raster::Init { Res { Lat0 -999 } { Lon0 -999 }  { Lat1 -999 } { Lon1 -999 } } {
+   variable Param
 
-   set Data(Res) $Res
-   set Data(Dim) " deg = -"
-   set Data(DY)  0
-   set Data(DX)  0
+   set Param(Res) $Res
+   set Param(Dim) " deg = -"
+   set Param(DY)   0
+   set Param(DX)   0
+   set Param(DLat) 0
+   set Param(DLon) 0
+
+   if { $Lat0!=-999 } {
+      set Param(Lat0) [expr double($Lat0<$Lat1?$Lat0:$Lat1)]
+      set Param(Lon0) [expr double($Lon0<$Lon1?$Lon0:$Lon1)]
+      set Param(Lat1) [expr double($Lat0<$Lat1?$Lat1:$Lat0)]
+      set Param(Lon1) [expr double($Lon0<$Lon1?$Lon1:$Lon0)]
+   }
+      set dlon [expr $Param(Lon1)-$Param(Lon0)]
+      if { $dlon>180 && $dlon<358 } {
+         set l $Param(Lon0)
+         set Param(Lon0) [expr ($Param(Lon0)<0 && $Param(Lon1)>0 && ($dlon>180))?$Param(Lon0)-(360-$dlon):$Param(Lon1)]
+         set $Param(Lon1) $l
+      }
+
 
    if { ![string is double $Res] } {
       return True
@@ -783,21 +812,22 @@ proc Export::SetDim { Res } {
 
    set t [catch {
 
-      set dlat [expr $Export::Data(Lat1)-$Export::Data(Lat0)]
-      set dlon [expr $Export::Data(Lon1)-$Export::Data(Lon0)]
+      set dlat [expr $Param(Lat1)-$Param(Lat0)]
+      set dlon [expr $Param(Lon1)-$Param(Lon0)]
 
       set dy [expr abs(int($dlat/$Res))]
       set dx [expr abs(int($dlon/$Res))]
 
       if { $dx>1 && $dy>1 } {
-         set Data(DLat) [expr $dlat/($dy-1)]
-         set Data(DLon) [expr $dlon/($dx-1)]
+         set Param(DLat) [expr $dlat/($dy-1)]
+         set Param(DLon) [expr $dlon/($dx-1)]
 
-         set Data(DY)  $dy
-         set Data(DX)  $dx
-         set Data(Dim) " deg = $Data(DX) x $Data(DY)"
+         set Param(DY)  $dy
+         set Param(DX)  $dx
+         set Param(Dim) " deg = $Param(DX) x $Param(DY)"
       }
    }]
+
    return True
 }
 
@@ -830,7 +860,7 @@ proc Export::SetFormat { Format } {
    }
 
    if { [lindex $Format 0]=="KML" } {
-      set Export::Raster::Data(Image) 1
+      set Export::Raster::Param(Mode) RGBA
       catch { .export.option.type.data configure -state disabled }
    } else {
       catch { .export.option.type.data configure -state normal }
@@ -856,7 +886,7 @@ proc Export::SetType { Type } {
    variable Data
 
    ComboBox::DelAll .export.how.sel.sel
-   eval ComboBox::AddList .export.how.sel.sel \${Export::${Type}::Data(Formats)}
+   eval ComboBox::AddList .export.how.sel.sel \${Export::${Type}::Param(Formats)}
 
    destroy .export.option
    labelframe .export.option -text Options
@@ -885,6 +915,7 @@ proc Export::Do { } {
    variable Error
 
    set format [lindex $Data(Format) end-1]
+   set ok 1
 
    if { $format=="PostgreSQL" } {
 
@@ -898,8 +929,10 @@ proc Export::Do { } {
    .export configure -cursor watch
    update idletasks
 
-   eval set proc Export::${Data(Type)}::Export
-   set ok [$proc $Data(Path) $format]
+   switch $Data(Type) {
+      "Raster" { set ok [Export::Raster::Export $Data(Path) $format $Export::Raster::Param(Mode) $FSTD::Data(List)] }
+      "Vector" { set ok [Export::Vector::Export $Data(Path) $format $FSTD::Data(List)] }
+   }
 
    .export configure -cursor left_ptr
 
@@ -930,7 +963,7 @@ proc Export::UpdateItems { Frame } {
 
    if { $Data(Coo)!="" && $Frame==$Data(Frame) } {
      $Data(Canvas) delete RANGEEXPORT
-     Viewport::DrawRange $Frame $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) RANGEEXPORT red
+     Viewport::DrawRange $Frame $Data(VP) $Export::Raster::Param(Lat0) $Export::Raster::Param(Lon0) $Export::Raster::Param(Lat1) $Export::Raster::Param(Lon1) RANGEEXPORT red
    }
 }
 
@@ -950,95 +983,100 @@ proc Export::UpdateItems { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::DrawInit  { Frame VP } {
-   variable Data
+proc Export::Raster::DrawInit  { Frame VP } {
+   variable Param
 
-   set Data(Color)  red
-   set Data(Lat0)   $Viewport::Map(LatCursor)
-   set Data(Lon0)   $Viewport::Map(LonCursor)
+   set Param(Lat0)   $Viewport::Map(LatCursor)
+   set Param(Lon0)   $Viewport::Map(LonCursor)
 }
 
-proc Export::Draw       { Frame VP } {
-   variable Data
+proc Export::Raster::Draw       { Frame VP } {
+   variable Param
 
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete RANGEEXPORT
+   if { $Export::Data(Canvas)!="" } {
+      $Export::Data(Canvas) delete RANGEEXPORT
    }
 
-   set Data(Lat1)   $Viewport::Map(LatCursor)
-   set Data(Lon1)   $Viewport::Map(LonCursor)
+   set Param(Lat1)   $Viewport::Map(LatCursor)
+   set Param(Lon1)   $Viewport::Map(LonCursor)
 
-   set Data(Canvas) $Page::Data(Canvas)
-   set Data(Frame)  $Frame
-   set Data(VP)     $VP
+   set Export::Data(Canvas) $Page::Data(Canvas)
+   set Export::Data(Frame)  $Frame
+   set Export::Data(VP)     $VP
 
-   Viewport::DrawRange $Frame $VP $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) RANGEEXPORT red
-   Export::SetDim $Data(Res)
+   Viewport::DrawRange $Frame $VP $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) RANGEEXPORT red
+   Export::Raster::Init $Export::Raster::Param(Res)
 }
 
-proc Export::DrawDone { Frame VP } {
-   variable Data
+proc Export::Raster::DrawDone { Frame VP } {
+   variable Param
 
-   if { $Data(Lat0)>$Data(Lat1) } {
-      set tmp $Data(Lat1)
-      set Data(Lat1) $Data(Lat0)
-      set Data(Lat0) $tmp
+   if { $Param(Lat0)>$Param(Lat1) } {
+      set tmp $Param(Lat1)
+      set Param(Lat1) $Param(Lat0)
+      set Param(Lat0) $tmp
    }
 
-   if { $Data(Lon0)>$Data(Lon1) && ([expr $Data(Lon0)*$Data(Lon1)]>0 || [expr 360-($Data(Lon0)-$Data(Lon1))]>180) } {
-      set tmp $Data(Lon1)
-      set Data(Lon1) $Data(Lon0)
-      set Data(Lon0) $tmp
+   if { $Param(Lon0)>$Param(Lon1) && ([expr $Param(Lon0)*$Param(Lon1)]>0 || [expr 360-($Param(Lon0)-$Param(Lon1))]>180) } {
+      set tmp $Param(Lon1)
+      set Param(Lon1) $Param(Lon0)
+      set Param(Lon0) $tmp
    }
 
-   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
-      set Data(Coo) ""
+   if { $Param(Lon0)>$Param(Lon1) } {
+      set tmp $Param(Lon1)
+      set Param(Lon1) $Param(Lon0)
+      set Param(Lon0) $tmp
+   }
+
+   if { $Param(Lat0)==$Param(Lat1) || $Param(Lon0)==$Param(Lon1) } {
+      set Param(Coo) ""
    } else {
-      set Data(Coo) "$Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1)"
+      set Param(Coo) "$Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)"
    }
-   Export::SetDim $Data(Res)
+   Export::Raster::Init $Export::Raster::Param(Res) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)
 }
 
-proc Export::MoveInit { Frame VP } {
-   variable Data
+proc Export::Raster::MoveInit { Frame VP } {
+   variable Param
 
-   set Data(LonD) $Viewport::Map(LonCursor)
-   set Data(LatD) $Viewport::Map(LatCursor)
+   set Param(LonD) $Viewport::Map(LonCursor)
+   set Param(LatD) $Viewport::Map(LatCursor)
 }
 
-proc Export::Move { Frame VP } {
-   variable Data
+proc Export::Raster::Move { Frame VP } {
+   variable Param
 
    #----- Effectuer la translation
 
-   set lat0 [expr $Data(Lat0) + $Viewport::Map(LatCursor) - $Data(LatD)]
-   set lat1 [expr $Data(Lat1) + $Viewport::Map(LatCursor) - $Data(LatD)]
+   set lat0 [expr $Param(Lat0) + $Viewport::Map(LatCursor) - $Param(LatD)]
+   set lat1 [expr $Param(Lat1) + $Viewport::Map(LatCursor) - $Param(LatD)]
 
    if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
 
-      set Data(Lat0) $lat0
-      set Data(Lat1) $lat1
-      eval set Data(Lon0) [Viewport::CheckCoord [expr $Data(Lon0) + $Viewport::Map(LonCursor) - $Data(LonD)]]
-      eval set Data(Lon1) [Viewport::CheckCoord [expr $Data(Lon1) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+      set Param(Lat0) $lat0
+      set Param(Lat1) $lat1
+      eval set Param(Lon0) [Viewport::CheckCoord [expr $Param(Lon0) + $Viewport::Map(LonCursor) - $Param(LonD)]]
+      eval set Param(Lon1) [Viewport::CheckCoord [expr $Param(Lon1) + $Viewport::Map(LonCursor) - $Param(LonD)]]
    }
 
    #----- Reaffecter le point de reference de translation
 
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete RANGEEXPORT
+   if { $Export::Data(Canvas)!="" } {
+      $Export::Data(Canvas) delete RANGEEXPORT
    }
 
-   set Data(LonD) $Viewport::Map(LonCursor)
-   set Data(LatD) $Viewport::Map(LatCursor)
-   set Data(Canvas) $Page::Data(Canvas)
-   set Data(Frame)  $Frame
-   set Data(VP)     $VP
+   set Param(LonD) $Viewport::Map(LonCursor)
+   set Param(LatD) $Viewport::Map(LatCursor)
 
-   Viewport::DrawRange $Frame $VP $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) RANGEEXPORT red
+   set Export::Data(Canvas) $Page::Data(Canvas)
+   set Export::Data(Frame)  $Frame
+   set Export::Data(VP)     $VP
+
+   Viewport::DrawRange $Frame $VP $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) RANGEEXPORT red
 }
 
-proc Export::MoveDone { Frame VP } {
-   variable Data
+proc Export::Raster::MoveDone { Frame VP } {
 
-   Export::DrawDone $Frame $VP
+   Export::Raster::DrawDone $Frame $VP
 }

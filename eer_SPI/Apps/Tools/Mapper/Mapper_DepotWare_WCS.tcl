@@ -26,6 +26,7 @@ namespace eval Mapper::DepotWare::WCS {
    set Msg(Version) { "Version non supportée" "Version not supported" }
 
    set Data(URL) ""
+   set Data(Version) 1.0.0
 }
 
 #-------------------------------------------------------------------------------
@@ -76,25 +77,25 @@ proc Mapper::DepotWare::WCS::Params { Frame } {
 
 proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
    global GDefs
+   variable Data
    variable Msg
 
    if { $URL=="URL" }  {
       if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?SERVICE=WCS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}?SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
       } else {
-         set req [http::geturl "${Path}SERVICE=WCS&REQUEST=GetCapabilities"]
+         set req [http::geturl "${Path}SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
       }
       if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
          Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
          return
       }
-      puts stderr "${Path}?&SERVICE=WCS&REQUEST=GetCapabilities"
       set root [$doc documentElement]
 
       #----- Check wich version this is
-      set WCS(Version) [$root getAttribute version]
+      set Data(Version) [$root getAttribute version]
 
-      switch $WCS(Version) {
+      switch $Data(Version) {
          1.1.0 { set layer [lindex [$root getElementsByTagName Contents] 0] }
          1.0.0 { set layer [lindex [$root getElementsByTagName ContentMetadata] 0] }
          default { Dialog::ErrorListing . $Msg(Version) "$msg\n[http::data $req]"; return }
@@ -288,7 +289,7 @@ proc Mapper::DepotWare::WCS::BuildXMLDef { Layer } {
 puts stderr .$file.
    set xml "<WCS_GDAL>\n"
    append xml "   <ServiceURL>${url}</ServiceURL>\n"
-   append xml "   <Version>1.1.0</Version>\n"
+   append xml "   <Version>$Data(Version)</Version>\n"
    append xml "   <Timeout>60</Timeout>\n"
    append xml "   <CoverageName>$layer</CoverageName>\n"
    append xml "</WCS_GDAL>"

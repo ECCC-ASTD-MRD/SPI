@@ -191,11 +191,11 @@ package require Areas
 package require TabFrame
 package require InfoFrame
 package require FieldCalc
+package require Export
 package require Animator
 package require Info
 
 #----- Fichiers complementaires
-source $GDefs(Dir)/Apps/Export.tcl
 source $GDefs(Dir)/Apps/Models/Model.tcl
 
 #----- Liste des outils
