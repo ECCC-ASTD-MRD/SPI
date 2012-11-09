@@ -66,7 +66,7 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
    if (!GDALInit++) {
       GDALAllRegister();
       CPLSetConfigOption("GDAL_PAM_ENABLED","NO");
-      CPLSetConfigOption("CPL_LOG","NO");
+      CPLSetConfigOption("CPL_LOG","/dev/null");
 
       Tcl_InitHashTable(&GDAL_FileTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&GDAL_BandTable,TCL_STRING_KEYS);

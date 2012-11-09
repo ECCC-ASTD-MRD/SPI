@@ -1246,6 +1246,11 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    double        vps[4];
    int           n,nbclips,c0,c1;
 
+   // When in batch mode, do not render unless this is the final output
+   if (GLRender->XBatch && !GLRender->TRCon) {
+      return;
+   }
+
    /*Take care of automated refresh handler*/
    load=vp->Loading;
    Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
@@ -1289,7 +1294,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          Projection_Render(NULL,vp,proj,GL_ALL);
          ProjCam_Render(vp->Cam,proj);
 
-         /*Rendue des donnees raster*/
+        /*Rendue des donnees raster*/
          for (i=0;i<vp->DataItem.Nb;i++) {
             fld=Data_Get(vp->DataItem.Array[i]);
             if (fld) {

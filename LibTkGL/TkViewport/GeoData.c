@@ -1811,7 +1811,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
 
             /*If resolution has changed and we're not doing outputs, reload data*/
             tile->Res=res;
-            if (!GLRender->TRCon && GLRender->Resolution<=2) {
+            if (GLRender->Resolution<=2) {
                GDB_TileGetData(tile,GDB,Proj);
             }
 
