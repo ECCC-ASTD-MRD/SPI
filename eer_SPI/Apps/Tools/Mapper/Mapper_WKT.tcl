@@ -32,9 +32,6 @@ namespace eval Mapper::WKT {
    set Data(Units)          {}
    set Data(Files) { "CoordinateReferenceSystem" "CoordinateOperationMethod" "Datum" "Ellipsoid" "PrimeMeridian" "UnitOfMeasure" }
 
-   foreach file $Data(Files) {
-      source  $GDefs(Dir)/Apps/Tools/Mapper/EPSG/$file.tcl
-   }
 }
 
 #-------------------------------------------------------------------------------
@@ -56,6 +53,14 @@ namespace eval Mapper::WKT {
 proc Mapper::WKT::Param { Proj } {
    global GDefs
    variable Data
+
+   #----- Load data files
+   if { [llength $Data(Files)] } {
+      foreach file $Data(Files) {
+         source $GDefs(Dir)/Apps/Tools/Mapper/EPSG/$file.tcl
+      }
+      set Data(Files) {}
+   }
 
    #----- Charger les listes des valeur possibles des différents combobox
 

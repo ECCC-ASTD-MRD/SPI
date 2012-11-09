@@ -33,38 +33,41 @@
 proc SPI::Splash { { Msg "" } } {
    global GDefs
 
-   set SPI::Param(Loading) $Msg
+   if { !$SPI::Param(Batch) } {
 
-   if { $Msg!="" } {
+      set SPI::Param(Loading) $Msg
 
-      if { ![winfo exists .splash] } {
-         toplevel     .splash
-         wm overrideredirect .splash true
+      if { $Msg!="" } {
 
-         image create photo SPLASH -file $GDefs(Dir)/Apps/SPI.gif
-         label .splash.img -image SPLASH -relief raised -bd 2 -bg #FFFFFF
-         label .splash.info -relief flat -bd 0 -font -*-arial-bold-*-*-*-18-*-*-*-*-* -bg #FFFFFF -fg #666666 -textvariable SPI::Param(Loading) -anchor w
+         if { ![winfo exists .splash] } {
+            toplevel     .splash
+            wm overrideredirect .splash true
 
-         set h [winfo screenheight .]
-         set w [winfo screenwidth  .]
+            image create photo SPLASH -file $GDefs(Dir)/Apps/SPI.gif
+            label .splash.img -image SPLASH -relief raised -bd 2 -bg #FFFFFF
+            label .splash.info -relief flat -bd 0 -font -*-arial-bold-*-*-*-18-*-*-*-*-* -bg #FFFFFF -fg #666666 -textvariable SPI::Param(Loading) -anchor w
 
-         #----- Test for multiple screens
-         if  { [expr $w/2]>$h } {
-            set w [expr $w/2]
+            set h [winfo screenheight .]
+            set w [winfo screenwidth  .]
+
+            #----- Test for multiple screens
+            if  { [expr $w/2]>$h } {
+               set w [expr $w/2]
+            }
+            set x [expr int($w/2.0-[image width  SPLASH]/2.0)]
+            set y [expr int($h/2.0-[image height SPLASH]/2.0)]
+
+            wm geometry .splash +$x+$y
+            pack .splash.img -side top -fill x
+            place .splash.info -in .splash.img -x 0 -y 35
+
+            wm withdraw .
          }
-         set x [expr int($w/2.0-[image width  SPLASH]/2.0)]
-         set y [expr int($h/2.0-[image height SPLASH]/2.0)]
-
-         wm geometry .splash +$x+$y
-         pack .splash.img -side top -fill x
-         place .splash.info -in .splash.img -x 0 -y 35
-
-         wm withdraw .
+      } else {
+         destroy .splash
       }
-   } else {
-      destroy .splash
+      update idletasks
    }
-   update idletasks
 }
 
 #-------------------------------------------------------------------------------

@@ -195,25 +195,28 @@ package require Export
 package require Animator
 package require Info
 
-#----- Fichiers complementaires
-source $GDefs(Dir)/Apps/Models/Model.tcl
-
 #----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
    set name [file tail [file rootname $tool]]
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name
 }
-Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
-#----- Liste des layouts
-foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {
-    lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
+if { !$SPI::Param(Batch) } {
+   Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
+
+   #----- Liste des layouts
+   foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {
+      lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
+   }
+   foreach layout [glob -nocomplain $env(HOME)/.spi/Layout/*.tcl] {
+      lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
+   }
+   Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
+
+   #----- Fichiers complementaires
+   source $GDefs(Dir)/Apps/Models/Model.tcl
 }
-foreach layout [glob -nocomplain $env(HOME)/.spi/Layout/*.tcl] {
-    lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
-}
-Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
 
 #-------------------------------------------------------------------------------
 # Nom      : <Page::Activate>
@@ -1810,8 +1813,8 @@ proc SPI::Quit { { Code 0 } } {
    variable Param
    variable Data
 
-   #----- Check if any process is running
-   if { [Dialog::WaitDestroy True] } {
+   #----- Check if any process is running unless in batch mode where we exit ASAP
+   if { !$SPI::Param(Batch) && [Dialog::WaitDestroy True] } {
 
       #----- Cleanup des outils
       foreach tool $SPI::Param(Tools) {
@@ -1835,9 +1838,10 @@ proc SPI::Quit { { Code 0 } } {
 
       glrender -shutdown
 
-      Log::Print INFO "Execution time : [expr ([clock clicks -milliseconds]-$Param(Time))/1000.0]s"
-      exit $Code
    }
+
+   Log::Print INFO "Execution time : [expr ([clock clicks -milliseconds]-$Param(Time))/1000.0]s"
+   exit $Code
 }
 
 #---------------------------------------------------------------------------
