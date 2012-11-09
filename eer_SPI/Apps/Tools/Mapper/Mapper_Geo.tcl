@@ -30,6 +30,9 @@ namespace eval Mapper::Geo { } {
    set Param(Zoom)      128
    set Param(Key)       ""
 
+   set Data(tz_world_mp) ""
+
+   set Data(Date)     ""
    set Data(Address)  ""
    set Data(Street)   ""
    set Data(City)     ""
@@ -40,6 +43,7 @@ namespace eval Mapper::Geo { } {
    set Data(Lon)      0.0
 
    set Lbl(Locate)      { "Centrer sur la localisation" "Zoom to localisation" }
+   set Lbl(NoAddress)   { "Aucune adresse" "No address" }
 
    set Msg(Request)     { "Requète de geo-localisation en cours ..." "Sending geocoding request ..." }
 
@@ -195,12 +199,13 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
          http::cleanup $req
       }
    }
+
    Dialog::WaitDestroy
 
    if { $Data(Lat)==0.0 && $Data(Lon)==0.0 } {
       Dialog::Error . $Error(NoneFound)
    } elseif { $Param(Locate) } {
-      SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
+      SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list "$Data(Address)\n$Data(Date)" $Data(Lat) $Data(Lon) 0 ICO_THERE]]
       SPI::Locate $Data(Lat) $Data(Lon) $Param(Zoom)
    }
    return [list $Data(Lat) $Data(Lon)]
@@ -227,12 +232,14 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
 
 proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    global GDefs
+   variable Lbl
    variable Msg
    variable Error
    variable Data
    variable Param
 
    #----- Cleanup location info
+   set Data(Date)     ""
    set Data(Address)  ""
    set Data(Street)   ""
    set Data(City)     ""
@@ -281,14 +288,49 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
          http::cleanup $req
       }
    }
+
+   if { ! [ogrlayer is $Data(tz_world_mp)]} {
+      set layer [ogrfile open OGRFILE read $GDefs(Dir)/Data/tz_world_mp.shp]
+      set Data(tz_world_mp) tz_world_mp
+      eval ogrlayer read $Data(tz_world_mp) OGRFILE 0
+   }
+
+   set idx [ogrlayer pick $Data(tz_world_mp) "$Lat $Lon"]
+   if { [llength $idx ] } {
+      set TZ [ogrlayer define $Data(tz_world_mp) -feature $idx TZID]
+      if { [catch { set Data(Date) [clock format [clock seconds] -format "%Y%m%d %H%M" -timezone :$TZ] } ] } {
+#         puts stderr "TZ = $TZ , currentDate for $TZ is impossible"
+      } else {
+#         puts stderr "TZ = $TZ , currentDate = $Data(Date) , TZ = $TZ"
+      }
+   } else {
+      #------ On recherche dans le shapefile TimeZone afin de completer la partie ocean.
+      set idx [ogrlayer pick TimeZone "$Lat $Lon"]
+      if { [llength $idx ] } {
+         set TZ [ogrlayer define TimeZone -feature $idx TZ]
+         if { [catch { set Data(Date) [clock format [expr int([clock seconds] + $TZ*3600)] -format "%Y%m%d %H%M" -gmt True] } ] } {
+#            puts stderr "Ocean TZ = $TZ , currentDate ( $Data(Date) ) for $TZ is impossible"
+         } else {
+#            puts stderr "Ocean TZ = $TZ , currentDate = $Data(Date) , TZ = $TZ"
+         }
+      } else {
+         #------ Localisation ne correspondant a aucun shapefile ( tz_world_mp et TimeZone ).
+         set Data(Date) ""
+      }
+   }
+
    Dialog::WaitDestroy
 
-   if { $Data(Address)=="" } {
+   if { $Data(Address)=="" && $Data(Date)=="" } {
       Dialog::Error . $Error(NoneFound)
    } elseif { $Param(Locate) } {
       set Data(Lat) $Lat
       set Data(Lon) $Lon
-      SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list $Data(Address) $Data(Lat) $Data(Lon) 0 ICO_THERE]]
+      if { $Data(Address)=="" } {
+         SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list "[lindex $Lbl(NoAddress) $GDefs(Lang)]\n$Data(Date) TimeZone : $TZ" $Data(Lat) $Data(Lon) 0 ICO_THERE]]
+      } else {
+         SPI::IcoAdd $Page::Data(Frame) GEOCODE "" [list [list "$Data(Address)\n$Data(Date) TimeZone : $TZ" $Data(Lat) $Data(Lon) 0 ICO_THERE]]
+      }
    }
    return $Data(Address)
 }
