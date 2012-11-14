@@ -1916,7 +1916,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                            case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         }
                      } else {
-                        sprintf(buf,"%s %8i %-2s",buf,head.IP2,LVL_UNITS[LVL_HOUR]);
+                        sprintf(buf,"%s %8i %-2s",buf,head.IP2,LVL_UNITS[LVL_UNDEF]);
                      }
 
                      if (head.IP3>32000) {
