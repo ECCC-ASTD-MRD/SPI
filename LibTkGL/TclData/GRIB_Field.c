@@ -792,6 +792,10 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    char           buf[1024];
    float          lvl;
 
+   if (Mode==FSTD_LISTNONE) {
+      return(TCL_OK);
+   }
+
    list=Tcl_NewListObj(0,NULL);
    obj=Tcl_NewObj();
 
@@ -857,6 +861,23 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          head.DATEV=System_DateTime2Seconds(date,time*100,1);
 
          switch(Mode) {
+            case FSTD_LISTSPI:
+               sprintf(buf,"%-4s %-2c  ",head.NOMVAR,(char)type);
+               switch(lvtyp) {
+                  case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+                  case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
+               }
+               sprintf(buf,"%s %8i %-2s %8i %-2s GRIB%-8i %08i%04i %s %i gribfield",buf,0,LVL_UNITS[LVL_HOUR],0,LVL_UNITS[LVL_UNDEF],head.Version,date,time/100,File->Id,nb);
+               Tcl_SetStringObj(obj,buf,-1);
+               Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               break;
+
             case FSTD_LISTALL:
                snprintf(buf,1024,"%s %i {%s} {%c} %i %i %i GRIB%i %09li %09li %li %li %li",
                   File->Id,nb,head.NOMVAR,(char)type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);

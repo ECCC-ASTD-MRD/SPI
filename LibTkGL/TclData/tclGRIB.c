@@ -47,7 +47,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    int        n,id,idx,type;
    GRIB_File *file=NULL;
 
-   static CONST char *types[] = { "ALL","NOMVAR","DATEV","IP1" };
+   static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","DATEV","IP1" };
    static CONST char *sopt[] = { "is","open","close","filename","info",NULL };
    enum                opt { IS,OPEN,CLOSE,FILENAME,INFO };
 
@@ -78,11 +78,18 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case OPEN:
-         if(Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename");
+         if(Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [index]");
             return(TCL_ERROR);
          }
-         return(GRIB_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4])));
+         type=2;
+
+         if(Objc==6) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",0,&type)!=TCL_OK) {
+               return(TCL_ERROR);
+            }
+         }
+         return(GRIB_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),type));
          break;
 
       case CLOSE:
@@ -293,6 +300,7 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
  *  <Id>      : Identificateur a donner au fichier
  *  <Mode>    : Mode d'ouverture (R ou W)
  *  <Name>    : Non du fichier
+ *  <Index>   : Format de l'index
  *
  * Retour:
  *  <TCL_...> : Code d'erreur de TCL.
@@ -302,7 +310,7 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
  *
  *----------------------------------------------------------------------------
 */
-int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
+int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index){
 
    GRIB_File *file;
    FILE      *fi;
@@ -329,7 +337,7 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name){
 
    GRIB_FilePut(Interp,file);
 
-   return(GRIB_FieldList(Interp,file,FSTD_LISTALL,NULL));
+   return(GRIB_FieldList(Interp,file,Index,NULL));
 
    return(TCL_OK);
 }

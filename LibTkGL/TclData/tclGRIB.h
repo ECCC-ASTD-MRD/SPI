@@ -54,7 +54,7 @@ typedef struct GRIB_File {
 
 int TclGRIB_Init(Tcl_Interp *Interp);
 
-int        GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name);
+int        GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index);
 int        GRIB_FileClose(Tcl_Interp *Interp,char *Id);
 GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id);
 int        GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File);

@@ -40,11 +40,15 @@
 #include "EZVrInt.h"
 
 #define FSTD_NKMAX     1024
-#define FSTD_LISTALL    0
-#define FSTD_LISTVAR    1
-#define FSTD_LISTTYPVAR 2
-#define FSTD_LISTDATEV  3
-#define FSTD_LISTIP1    4
+#define FSTD_LISTNONE   0
+#define FSTD_LISTSPI    1
+#define FSTD_LISTALL    2
+#define FSTD_LISTVAR    3
+#define FSTD_LISTTYPVAR 4
+#define FSTD_LISTDATEV  5
+#define FSTD_LISTIP1    6
+#define FSTD_LISTIP2    7
+#define FSTD_LISTIP3    8
 
 typedef struct FSTD_File {
    char *CId;              /*Identificateur du fichier*/
@@ -98,6 +102,7 @@ int    FSTD_FieldStat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Ob
 void   FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom);
 int    FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress);
 void   FSTD_FieldSet(TData *Data);
+int    FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType);
 
 void   FSTD_DataMap(TData *Field,int Idx);
 int    FSTD_DecodeRPNLevelParams(TData *Field);
@@ -107,7 +112,7 @@ void       FSTD_HeadCopy(void *To,void *From);
 TData_Type FSTD_TypeCheck(int Type,int Size);
 
 int         FSTD_FileClose(Tcl_Interp *Interp,char *Id);
-int         FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name);
+int         FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index);
 FSTD_File*  FSTD_FileGet(Tcl_Interp *Interp,char *Id);
 int         FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File);
 int         FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File);

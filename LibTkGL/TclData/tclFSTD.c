@@ -51,6 +51,54 @@ static int FSTD_GridCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 static int FSTD_StampCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FieldIPGet>
+ * Creation : Novembre 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Conversion des IP provenant de Tcl
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL.
+ *  <Obj>         : IP ou { Valeur Type }
+ *  <ObjType>     : Type ou NULL
+ *
+ * Retour:
+ *  <IP> : Valeur du IP.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
+
+   Tcl_Obj *obj=NULL;
+   int      ip=-1,n,type;
+   double   val;
+
+   /*Get Value and Type*/
+   Tcl_ListObjLength(Interp,Obj,&n);
+   if (n==2) {
+      Tcl_ListObjIndex(Interp,Obj,0,&obj);
+      Tcl_GetDoubleFromObj(Interp,obj,&val);
+
+      Tcl_ListObjIndex(Interp,Obj,1,&obj);
+   } else {
+      Tcl_GetDoubleFromObj(Interp,Obj,&val);
+      obj=ObjType;
+   }
+
+   if (!obj) {
+      Tcl_AppendResult(Interp,"invalid description, must be IP[1,2,3] or { value type }",(char*)NULL);
+      return(-1);
+   }
+
+   if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
+      return(-1);
+   }
+
+   return(ZRef_Level2IP(val,type));
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_GridCmd>
  * Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
  *
@@ -75,7 +123,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TData      *field,*p0;
    FSTD_Head  *head;
    float       dlat,dlon,dd60,dgrw,x,y,level=0.0;
-   int         ip1,n,kind;
+   int         ip,n,kind;
    char        buf[50];
    double      tmp;
    int         idx,idxk,i,j,k;
@@ -84,7 +132,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter","pressure",NULL };
    enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER,PRESSURE };
 
@@ -233,13 +280,13 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
 
       case CONVIP:
-         if(Objc!=3 && Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"IP1 | Level Type");
+         if (Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"IP | Type");
             return(TCL_ERROR);
          }
-         if(Objc==3) {
-            Tcl_GetIntFromObj(Interp,Objv[2],&ip1);
-            level=ZRef_IP2Level(ip1,&kind);
+         if (Objc==3) {
+            Tcl_GetIntFromObj(Interp,Objv[2],&ip);
+            level=ZRef_IP2Level(ip,&kind);
             switch(kind) {
                case LVL_MASL  : sprintf(buf,"%.1f  m (Meter above sea level)",level); break;
                case LVL_SIGMA : sprintf(buf,"%.4f sg (Sigma)",level); break;
@@ -248,17 +295,14 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                case LVL_MAGL  : sprintf(buf,"%.1f  m (Meter above groud level)",level); break;
                case LVL_HYBRID: sprintf(buf,"%.6f hy (Hybrid)",level); break;
                case LVL_THETA : sprintf(buf,"%.4f th (Theta)",level); break;
+               case LVL_HOUR  : sprintf(buf,"%.1f hr (Hours)",level); break;
             }
             Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
          } else {
-            Tcl_GetDoubleFromObj(Interp,Objv[2],&tmp);
-
-            if (Tcl_GetIndexFromObj(Interp,Objv[3],type,"type",0,&n)!=TCL_OK) {
-               Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
+            if ((ip=FSTD_FieldIPGet(Interp,Objv[2],Objv[3]))==-1) {
                return(TCL_ERROR);
             }
-            ip1=ZRef_Level2IP(tmp,n);
-            Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip1));
+            Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip));
          }
          break;
 
@@ -300,8 +344,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  *----------------------------------------------------------------------------
 */
-
-static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,i,compress=0;
    unsigned long dk;
@@ -400,27 +443,16 @@ static int FSTD_FieldCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return TCL_ERROR;
          }
          if (Objc==11) {
-            /*Check the level description*/
-            if (Tcl_GetIntFromObj(Interp,Objv[6],&ip1)==TCL_ERROR) {
-               Tcl_ResetResult(Interp);
-               Tcl_ListObjLength(Interp,Objv[6],&n);
-               if (n<2) {
-                  Tcl_AppendResult(Interp,"invalid level description, must be IP1 or { level leveltype )",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-               Tcl_ListObjIndex(Interp,Objv[6],0,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
-
-               Tcl_ListObjIndex(Interp,Objv[6],1,&obj);
-               if (Tcl_GetIndexFromObj(Interp,obj,type,"type",0,&n)!=TCL_OK) {
-                  Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-               ip1=ZRef_Level2IP(tmpd,n);
+            /*Get the IPs*/
+            if ((ip1=FSTD_FieldIPGet(Interp,Objv[6],NULL))==-1) {
+               return(TCL_ERROR);
             }
-
-            Tcl_GetIntFromObj(Interp,Objv[7],&ip2);
-            Tcl_GetIntFromObj(Interp,Objv[8],&ip3);
+            if ((ip2=FSTD_FieldIPGet(Interp,Objv[7],NULL))==-1) {
+               return(TCL_ERROR);
+            }
+            if ((ip3=FSTD_FieldIPGet(Interp,Objv[8],NULL))==-1) {
+               return(TCL_ERROR);
+            }
 
             /*Get the bogus date*/
             TclY_Get0IntFromObj(Interp,Objv[4],&datev);
@@ -1028,7 +1060,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    int                n,idx,itype,type;
    FSTD_File         *file=NULL;
 
-   static CONST char *types[] = { "ALL","NOMVAR","TYPVAR","DATEV","IP1" };
+   static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","TYPVAR","DATEV","IP1","IP2","IP3" };
    static CONST char *sopt[] = { "is","open","close","filename","mode","info",NULL };
    enum               opt { IS,OPEN,CLOSE,FILENAME,MODE,INFO };
 
@@ -1059,11 +1091,18 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case OPEN:
-         if(Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename");
+         if(Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [index]");
             return(TCL_ERROR);
          }
-         return(FSTD_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4])));
+         itype=2;
+
+         if(Objc==6) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",0,&itype)!=TCL_OK) {
+               return(TCL_ERROR);
+            }
+         }
+         return(FSTD_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),itype));
          break;
 
       case CLOSE:
@@ -1162,6 +1201,7 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
  *  <Id>      : Identificateur a donner au fichier
  *  <Mode>    : Mode d'ouverture (R ou W)
  *  <Name>    : Non du fichier
+ *  <Index>   : Format de l'index
  *
  * Retour:
  *  <TCL_...> : Code d'erreur de TCL.
@@ -1171,7 +1211,7 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
+int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
 
    Tcl_HashEntry *entry;
    FSTD_File     *file;
@@ -1194,7 +1234,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    Tcl_SetHashValue(entry,file);
 
-   return(FSTD_FieldList(Interp,file,FSTD_LISTALL,NULL));
+   return(FSTD_FieldList(Interp,file,Index,NULL));
 }
 
 /*----------------------------------------------------------------------------
