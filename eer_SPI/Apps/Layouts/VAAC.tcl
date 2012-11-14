@@ -73,7 +73,7 @@ namespace eval VAAC {
 
    set Data(Hour)     ""       ;#Heure selectionnee
    set Data(Hours)    ""       ;#Heures disponibles
-   set Data(Index)    ""       ;#Fichier de donnees standard
+   set Data(Index)    ""       ;#Ligne index de la boite de champs
 
    set Data(SendSAT)  0        ;#Transmission sur SATNET
    set Data(SendWAS)  0        ;#Transmission sur WAFS WashingtonT
@@ -286,12 +286,12 @@ proc VAAC::DataInit { Frame } {
    }
 
    foreach field [FieldBox::GetContent $Data(FieldBox)] {
-      if { [lindex $field 2] == "AV" } {
+      if { [lindex $field 0] == "AV" } {
          lappend Data(Index) $field
       }
    }
 
-   if { [set info [Info::Read [lindex [lindex $Data(Index) 0] 0]]]=="" } {
+   if { [set info [Info::Read [lindex [lindex $Data(Index) 0] end-5]]]=="" } {
       return
    }
    eval Info::Decode ::VAAC::Sim \$info

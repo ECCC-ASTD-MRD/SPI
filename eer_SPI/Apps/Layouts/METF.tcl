@@ -124,8 +124,8 @@ proc METF::LoadFields { Frame } {
    set ip2 $Data(Hour)
 
    foreach field $Data(Index) {
-      if { [lindex $field 5] == $ip2 } {
-         set file [lindex $field 0]
+      if { [lindex $field end-2] == $ip2 } {
+         set file [lindex $field end-5]
          break
       }
    }
@@ -178,15 +178,15 @@ proc METF::DataInit { Frame } {
    }
 
    foreach field [FieldBox::GetContent $Data(FieldBox)] {
-      if { [lindex $field 2]=="HR" } {
+      if { [lindex $field 0]=="HR" } {
          lappend Data(Index) $field
       }
-      if { [lindex $field 2]=="OL" || [lindex $field 2]=="INFO" } {
+      if { [lindex $field 0]=="OL" || [lindex $field 0]=="INFO" } {
          set info $field
       }
    }
 
-   if { [set info [Info::Read [lindex [lindex $info 0] 0]]]=="" } {
+   if { [set info [Info::Read [lindex $info end-5]]]=="" } {
       return
    }
    eval Info::Decode ::METF::Sim \$info

@@ -83,7 +83,6 @@ proc CHEM::LayoutUpdate { Frame } {
    }
 
    #----- Get information on selected field
-   set Data(FieldList) [FieldBox::GetContent -1]
    set nv [string trim [fstdfield define $field -NOMVAR]]
 
    #----- Get the simulation info

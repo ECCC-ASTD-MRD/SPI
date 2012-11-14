@@ -176,8 +176,8 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    wm title     $id "[lindex $Param(Title) $GDefs(Lang)] ($Title)"
    wm transient $id .
    wm resizable $id False True
-   wm maxsize   $id 425 10000
-   wm minsize   $id 425 300
+   wm maxsize   $id 515 10000
+   wm minsize   $id 515 300
    wm protocol  $id WM_DELETE_WINDOW "FieldBox::Close $no"
 
    #----- Afficher la fenetre par dessus la derniere
@@ -201,11 +201,11 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
       SelectBox::Create $id.header.type "TYPE"  \
          FieldBox::${spc}::Data(Type) "" 4 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.level [lindex $Lbl(Level) $GDefs(Lang)]  \
-         FieldBox::${spc}::Data(Level) "" 9 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(Level) "" 10 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.ip2 "IP2"  \
-         FieldBox::${spc}::Data(IP2) "" 5 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(IP2) "" 10 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.ip3 "IP3"  \
-         FieldBox::${spc}::Data(IP3) "" 4 10 FieldBox::Restrict $no
+         FieldBox::${spc}::Data(IP3) "" 10 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.eticket "ETICKET"  \
          FieldBox::${spc}::Data(Eticket) "" 12 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.date "DATEV"  \
@@ -504,14 +504,14 @@ proc FieldBox::FileOpen { No File } {
       #----- Ouvrir le fichier
       set index ""
       if { [fstdfile is $file] || $rem } {
-         set bad [catch { set index [fstdfile open $fid read $file] }]
+         set bad [catch { set index [fstdfile open $fid read $file SPI] }]
          if { $bad } {
             fstdfile close $fid
          } else {
             lappend data(TypeList) fstdfield
          }
       } elseif { [gribfile is $file] } {
-         set bad [catch { set index [gribfile open $fid read $file] }]
+         set bad [catch { set index [gribfile open $fid read $file SPI] }]
          if { $bad } {
             gribfile close $fid
          } else {
@@ -596,13 +596,13 @@ proc FieldBox::FileReOpen { No } {
       } else {
          if { $type=="fstdfield" } {
             fstdfile close $fid
-            catch { set index [fstdfile open $fid read $file] }
+            catch { set index [fstdfile open $fid read $file SPI] }
             if { $index=="" } {
                fstdfile close $fid
             }
         } else {
             gribfile close $fid
-            catch { set index [gribfile open $fid read $file] }
+            catch { set index [gribfile open $fid read $file SPI] }
             if { $index=="" } {
                gribfile close $fid
             }
@@ -895,7 +895,7 @@ proc FieldBox::InfoCommand { No Index } {
    set ip2   [lindex $line 4]
    set id    [lindex $line end-2]_[lindex $line end-1]
    set type  [lindex $line end]
-   set date  [lindex $line end-3]
+   set date  [lindex $line end-6]
 
    #----- Date de validite
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
@@ -999,41 +999,31 @@ proc FieldBox::Insert { No } {
 
    set data(NbRead)  0
 
-   foreach fields $data(FieldList) type $data(TypeList) {
+   foreach fields $data(FieldList) {
       foreach field $fields {
 
          #----- Extraire les informations
 
-         set var     [lindex $field 2]
-         set tvar    [lindex $field 3]
-         set ip2     [lindex $field 5]
-         set ip3     [lindex $field 6]
-         set eticket [lindex $field 7]
-
-         set fid     [lindex $field 0]
-         set idx     [lindex $field 1]
-
-         set level   [lrange [fstdgrid convip [lindex $field 4]] 0 1]
-
-         if { $type=="fstdfield" } {
-            set date    [join [lrange [fstdstamp todate [lindex $field 9]] 0 4] ""]
-         } else {
-            set date    [clock format [lindex $field 9] -format "%Y%m%d%H%M" -gmt True]
-         }
+         set var     [lindex $field 0]
+         set tvar    [lindex $field 1]
+         set level   [lrange $field 2 3]
+         set ip2     [lrange $field 4 5]
+         set ip3     [lrange $field 6 7]
+         set eticket [lindex $field 8]
+         set date    [lindex $field 9]
 
          #----- Determiner la liste de selection
 
-         set ADAT($date)    1
          set AVAR($var)     1
          set ATYP($tvar)    1
          set ALEV($level)   1
          set AIP2($ip2)     1
          set AIP3($ip3)     1
          set AETI($eticket) 1
+         set ADAT($date)    1
 
          #----- Inserer les donnees dans la liste
-
-         $id.data.list insert end [format "%-4s %-2s   %11s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
+         $id.data.list insert end $field
       }
       incr data(NbRead) [llength $fields]
    }
@@ -1204,12 +1194,12 @@ proc FieldBox::Restrict { No args } {
       set slev ([join $data(Level) |])
    }
    if { $data(IP2)=="" } {
-      set sip2 "\\d+"
+      set sip2 ".+ .+"
    } else {
       set sip2 ([join $data(IP2) |])
    }
    if { $data(IP3)=="" } {
-      set sip3 "\\d+"
+      set sip3 ".+ .+"
    } else {
       set sip3 ([join $data(IP3) |])
    }
@@ -1234,32 +1224,10 @@ proc FieldBox::Restrict { No args } {
    .fieldbox$No.data.list delete 0 end
    set data(NbShow) 0
 
-   foreach fields $data(FieldList) type $data(TypeList) {
-      foreach field $fields {
-
-         set fid     [lindex $field 0]
-         set idx     [lindex $field 1]
-
-         set var     [lindex $field 2]
-         set tvar    [lindex $field 3]
-         set ip2     [lindex $field 5]
-         set ip3     [lindex $field 6]
-         set eticket [lindex $field 7]
-
-         set level   [lrange [fstdgrid convip [lindex $field 4]] 0 1]
-         if { $type=="fstdfield" } {
-            set date    [join [lrange [fstdstamp todate [lindex $field 9]] 0 4] ""]
-         } else {
-            set date    [clock format [lindex $field 9] -format "%Y%m%d%H%M" -gmt True]
-         }
-         set line [format "%-4s %-2s   %11s %5i %4i %-12s %-12s %-4i %-10i $type" $var $tvar $level $ip2 $ip3 $eticket $date $fid $idx]
-
-         if { [regexp $str $line] } {
-            .fieldbox$No.data.list insert end $line
-            incr data(NbShow)
-         }
-      }
+   foreach fields $data(FieldList) {
+      eval .fieldbox$No.data.list insert end [lsearch -all -inline -regexp $fields $str]
    }
+   set data(NbShow) [.fieldbox$No.data.list index end]
    set data(ShowRead) "$data(NbShow)/$data(NbRead)"
    .fieldbox${No} configure -cursor left_ptr
 }
@@ -1407,8 +1375,8 @@ proc FieldBox::Select { } {
       foreach idx $idxs {
 
          set info [.fieldbox$box.data.list get $idx]
-         set fid  [lindex $info end-2]
-         set fidx [lindex $info end-1]
+         set fid  [lindex $info end-5]
+         set fidx [lindex $info end-4]
          set type [lindex $info end]
 
          set fld  FLD${fid}_${fidx}

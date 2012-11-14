@@ -534,63 +534,54 @@ proc Animator::GetPlayListField { } {
          set ip2     [fstdfield define $fld -IP2]
          set ip3     [fstdfield define $fld -IP3]
          set etiket  [fstdfield define $fld -ETIKET]
-         set date    [fstdfield define $fld -DATEV]
+         set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -gmt True]
 
-         foreach field [FieldBox::GetContent $box] {
+         if { !$Play(IP3) } {
+            set ip3 \\d+
+         }
 
-            set fid     [lindex $field 0]
-            set idx     [lindex $field 1]
-            set tvar    [lindex $field 2]
-            set tip1    [lindex $field 4]
-            set tip2    [lindex $field 5]
-            set tip3    [lindex $field 6]
-            set tetiket [string trim [lindex $field 7]]
-            set tdate   [lindex $field 9]
+         switch $Play(Type) {
+            "IP1"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 $ip3 fstdfield$" }
+            "IP2"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 fstdfield$" }
+            "IP3"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ $ip1 $ip2 \\d+ fstdfield$" }
+            "ETIKET"  { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 fstdfield$" }
+            "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 fstdfield$" }
+         }
 
-            #----- Si ce champs fait partie de la serie temporelle correspondante
+         set no 0
+         foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+            set fid     [lindex $field end-5]
+            set idx     [lindex $field end-4]
 
-            set in 0
+            set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
+            update idletask
+
+            fstdfield read ANI$no $fid $idx
+            fstdfield stats ANI$no -tag $tags
+
+            lappend FSTD::Data(ListTool) ANI$no
+            FSTD::ParamUpdate ANI$no
+
             switch $Play(Type) {
+               "IP1"     { set info [lrange $field 2 3] }
+               "IP2"     { set info [lrange $field 4 5] }
+               "IP3"     { set info [lrange $field 6 7] }
+               "ETIKET"  { set info [lindex $field 8] }
+               "DATE"    { set dat  [fstdstamp todate [fstdfield define ANI$no -DATEV]]
+                           set info [fstdstamp toseconds [fstdfield define ANI$no -DATEV]]
+                           }
+            }
+            #----- Ajouter a la liste du frame temporel correspondant
 
-               "IP1"     { if { $var==$tvar && "$etiket"=="$tetiket" && "$date"=="$tdate" && [expr $Play(IP3)?$ip3==$tip3:1] } { set in  1 } }
-               "IP2"     { if { $var==$tvar && "$etiket"=="$tetiket" &&  $ip1==$tip1 && [expr $Play(IP3)?$ip3==$tip3:1] } { set in  1 } }
-               "IP3"     { if { $var==$tvar && "$etiket"=="$tetiket" && "$date"=="$tdate" &&  $ip1==$tip1 } { set in  1 } }
-               "ETICKET" { if { $var==$tvar && "$date"=="$tdate" && $ip1==$tip1 && [expr $Play(IP3)?$ip3==$tip3:1] } { set in  1 } }
-               "DATE"    { if { $var==$tvar && $ip1==$tip1 && "$etiket"=="$tetiket" && [expr $Play(IP3)?$ip3==$tip3:1] } { set in  1 } }
+            if { ![info exists Play($vp$info)] } {
+               set Play($vp$info) ""
+               lappend Play(Frames) $info
             }
 
-            if { $in } {
-               set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
-               update idletask
-
-               fstdfield read ANI$no $fid $idx
-               fstdfield stats ANI$no -tag $tags
-
-               lappend FSTD::Data(ListTool) ANI$no
-               FSTD::ParamUpdate ANI$no
-
-               switch $Play(Type) {
-                  "IP1"     { set info [fstdgrid convip $tip1] }
-                  "IP2"     { set info $tip2 }
-                  "IP3"     { set info $tip3 }
-                  "ETICKET" { set info $tetiket }
-                  "DATE"    { set dat  [fstdstamp todate [fstdfield define ANI$no -DATEV]]
-                              set info [fstdstamp toseconds [fstdfield define ANI$no -DATEV]]
-                            }
-               }
-               #----- Ajouter a la liste du frame temporel correspondant
-
-               if { ![info exists Play($vp$info)] } {
-                  set Play($vp$info) ""
-                  lappend Play(Frames) $info
-               }
-
-               lappend Play($vp$info) ANI$no
-               incr no
-            }
+            lappend Play($vp$info) ANI$no
+            incr no
 
             #----- On verifie les demandes d'arret
-
             update
             if { $Play(Stop) } {
                set Play(File)  0

@@ -847,12 +847,13 @@ proc MetData::ListIP2 { Index Var { Stamp 0 } } {
 
    foreach line $Index {
 
-      if { [string trim [lindex $line 2]]==$Var } {
+      if { [string trim [lindex $line 0]]==$Var } {
          if { $Stamp } {
             set datev [lindex $line 9]
+            set datev [fstdstamp fromdate [string range $datev 0 7] [string range $datev 8 11]0000]
             lappend ip2list [expr int([fstdstamp diff $datev $Stamp])]
          } else {
-            lappend ip2list [lindex $line 5]
+            lappend ip2list [lindex $line end-2]
          }
       }
    }

@@ -197,13 +197,14 @@ package require Info
 
 #----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
+#foreach tool { $GDefs(Dir)/Apps/Tools/Macro $GDefs(Dir)/Apps/Tools/Mapper $GDefs(Dir)/Apps/Tools/Drawing }
    set name [file tail [file rootname $tool]]
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name
 }
+Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
 if { !$SPI::Param(Batch) } {
-   Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
    #----- Liste des layouts
    foreach layout [glob -nocomplain $GDefs(Dir)/Apps/Layouts/*.tcl] {

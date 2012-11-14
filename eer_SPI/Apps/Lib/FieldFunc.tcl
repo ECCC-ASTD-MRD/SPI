@@ -82,12 +82,13 @@ proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
 
       foreach field $fields {
 
-         set fid     [lindex $field 0]
-         set idx     [lindex $field 1]
-         set tvar    [lindex $field 2]
-         set tip1    [lindex $field 4]
-         set tip3    [lindex $field 6]
-         set tetiket [string trim [lindex $field 7]]
+         set fid     [lindex $field end-5]
+         set idx     [lindex $field end-4]
+
+         set tvar    [lindex $field 0]
+         set tip1    [lindex $field end-3]
+         set tip3    [lindex $field end-1]
+         set tetiket [string trim [lindex $field 8]]
 
          SPI::Progress [expr double([incr n])/$nx*100] "Processing fields ($idx)"
 

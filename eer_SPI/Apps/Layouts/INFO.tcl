@@ -435,8 +435,8 @@ proc INFO::LayoutUpdate { Frame } {
    set Sim(Model)             ""
 
    foreach field [FieldBox::GetContent] {
-      if { [lindex $field 2]=="OL" || [lindex $field 2]=="INFO" } {
-         set info [Info::Read [lindex $field 0]]
+      if { [lindex $field 0]=="OL" || [lindex $field 0]=="INFO" } {
+         set info [Info::Read [lindex $field end-5]]
          eval Info::Decode ::INFO::Sim \$info
          set found 1
          break
