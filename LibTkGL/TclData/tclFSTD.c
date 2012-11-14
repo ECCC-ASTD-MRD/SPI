@@ -71,7 +71,7 @@ static int FSTD_StampCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
 
    Tcl_Obj *obj=NULL;
-   int      ip=-1,n,type;
+   int      n,type;
    double   val;
 
    /*Get Value and Type*/
@@ -86,16 +86,14 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
       obj=ObjType;
    }
 
-   if (!obj) {
-      Tcl_AppendResult(Interp,"invalid description, must be IP[1,2,3] or { value type }",(char*)NULL);
-      return(-1);
+   if (obj) {
+      if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
+         return(-2);
+      }
+      return(ZRef_Level2IP(val,type));
+   } else {
+      return(val);
    }
-
-   if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
-      return(-1);
-   }
-
-   return(ZRef_Level2IP(val,type));
 }
 
 /*----------------------------------------------------------------------------
@@ -299,7 +297,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
          } else {
-            if ((ip=FSTD_FieldIPGet(Interp,Objv[2],Objv[3]))==-1) {
+            if ((ip=FSTD_FieldIPGet(Interp,Objv[2],Objv[3]))==-2) {
                return(TCL_ERROR);
             }
             Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip));
@@ -444,17 +442,17 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          if (Objc==11) {
             /*Get the IPs*/
-            if ((ip1=FSTD_FieldIPGet(Interp,Objv[6],NULL))==-1) {
+            if ((ip1=FSTD_FieldIPGet(Interp,Objv[6],NULL))==-2) {
                return(TCL_ERROR);
             }
-            if ((ip2=FSTD_FieldIPGet(Interp,Objv[7],NULL))==-1) {
-               return(TCL_ERROR);
+            if ((ip2=FSTD_FieldIPGet(Interp,Objv[7],NULL))==-2) {
+              return(TCL_ERROR);
             }
-            if ((ip3=FSTD_FieldIPGet(Interp,Objv[8],NULL))==-1) {
+            if ((ip3=FSTD_FieldIPGet(Interp,Objv[8],NULL))==-2) {
                return(TCL_ERROR);
             }
 
-            /*Get the bogus date*/
+           /*Get the bogus date*/
             TclY_Get0IntFromObj(Interp,Objv[4],&datev);
 
             return FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),-1,datev,Tcl_GetString(Objv[5]),ip1,ip2,ip3,Tcl_GetString(Objv[9]),Tcl_GetString(Objv[10]));

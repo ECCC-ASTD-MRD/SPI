@@ -1936,7 +1936,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                      }
 
                      System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);
-                     sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY);
+                     sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
                      Tcl_SetStringObj(obj,buf,-1);
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                      break;
