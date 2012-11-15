@@ -1021,12 +1021,13 @@ proc FieldBox::Insert { No } {
          set AIP3($ip3)     1
          set AETI($eticket) 1
          set ADAT($date)    1
-
-         #----- Inserer les donnees dans la liste
-         $id.data.list insert end $field
       }
-      incr data(NbRead) [llength $fields]
+      #----- Inserer les donnees dans la liste
+      eval .fieldbox$No.data.list insert end $fields
    }
+
+   set data(NbRead) [.fieldbox$No.data.list index end]
+   set data(NbShow) $data(NbRead)
 
    set data(FID)     ""
    set data(Var)     ""
@@ -1037,7 +1038,6 @@ proc FieldBox::Insert { No } {
    set data(Eticket) ""
    set data(Date)    ""
 
-   set data(NbShow)   "$data(NbRead)"
    set data(ShowRead) "$data(NbShow)/$data(NbRead)"
 
    #----- Update des listes de selections
@@ -1179,32 +1179,32 @@ proc FieldBox::Restrict { No args } {
    #----- Creer la chaine de selection
 
    if { $data(Var)=="" } {
-      set svar ".+"
+      set svar "\\S+"
    } else {
       set svar ([join [string map { + \\\\+ ^ \\\\^ } $data(Var)] |])
    }
    if { $data(Type)=="" } {
-      set styp ".+"
+      set styp "\\S+"
    } else {
       set styp ([join $data(Type) |])
    }
    if { $data(Level)=="" } {
-      set slev ".+ .+"
+      set sip1 "\\S+ \\S+"
    } else {
-      set slev ([join $data(Level) |])
+      set sip1 ([join $data(Level) |])
    }
    if { $data(IP2)=="" } {
-      set sip2 ".+ .+"
+      set sip2 "\\S+ \\S+"
    } else {
       set sip2 ([join $data(IP2) |])
    }
    if { $data(IP3)=="" } {
-      set sip3 ".+ .+"
+      set sip3 "\\S+ \\S+"
    } else {
       set sip3 ([join $data(IP3) |])
    }
    if { $data(Eticket)=="" } {
-      set seti ".+"
+      set seti "\\S+"
    } else {
       set seti ([join [string map { + \\\\+ } $data(Eticket)] |])
    }
@@ -1219,7 +1219,7 @@ proc FieldBox::Restrict { No args } {
       set sfid ($data(FID))
    }
 
-   set str "^$svar\\s+$styp\\s+$slev\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat\\s+$sfid\\s+\\d+"
+   set str "^$svar\\s+$styp\\s+$sip1\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat $sfid \\d+ \\d+ \\d+ \\d+ .+field$"
 
    .fieldbox$No.data.list delete 0 end
    set data(NbShow) 0

@@ -31,6 +31,9 @@ package require TclSystem
 
 catch { SPI::Splash "Loading Package Logger 1.1" }
 
+#----- Force default language
+set GDefs(Lang) 1
+
 namespace eval Log { } {
    global env
    variable Param
