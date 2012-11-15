@@ -412,6 +412,7 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    if (String)
       string=strdup(String);
 
+   strtrim(string,' ');
    GeoRef_Clear(Ref,0);
 
    if (Transform) {

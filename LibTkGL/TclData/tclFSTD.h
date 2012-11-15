@@ -49,6 +49,7 @@
 #define FSTD_LISTIP1    6
 #define FSTD_LISTIP2    7
 #define FSTD_LISTIP3    8
+#define FSTD_LISTETIKET 9
 
 typedef struct FSTD_File {
    char *CId;              /*Identificateur du fichier*/

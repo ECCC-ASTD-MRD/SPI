@@ -748,7 +748,6 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
    }
 
    if (OGR_DS_TestCapability(File->Data,ODsCCreateLayer)) {
-
       if (Ref) {
          Layer->Ref=Ref;
          GeoRef_Incr(Ref);
