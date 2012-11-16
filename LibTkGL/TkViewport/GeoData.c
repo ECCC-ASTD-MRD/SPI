@@ -61,7 +61,7 @@ int   GDB_TileResolution(GDB_Data *GDB,double Dist);
 void  GDB_TxtGet(int Type,float Lat,float Lon,char *Txt);
 void  GDB_TxtFree(GDB_Txt *Txt);
 void  GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Color,int Point);
-void  GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta);
+void  GDB_MapRender(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0,float Lon0);
 
 GLuint Texture_Read(char *File);
 
@@ -378,6 +378,7 @@ int GDB_Init(GDB_Data *GDB) {
       for(y=0;y<GDB_DEGY;y++) {
 
          GDB->Tile[x][y].Topo.Map=NULL;
+         GDB->Tile[x][y].Topo.Mask=NULL;
          GDB->Tile[x][y].Topo.Vr=NULL;
          GDB->Tile[x][y].Topo.Tex=0;
 
@@ -696,6 +697,11 @@ void GDB_TileFree(GDB_Tile *Tile,int Force) {
       free(Tile->Topo.Map);
       Tile->Topo.Map=NULL;
    }
+   if (Tile->Topo.Mask) {
+      free(Tile->Topo.Mask);
+      Tile->Topo.Mask=NULL;
+   }
+
    if (Tile->Topo.Vr) {
       free(Tile->Topo.Vr);
       Tile->Topo.Vr=NULL;
@@ -791,8 +797,9 @@ void GDB_TileFreeType(GDB_Data *GDB,GDB_Type Type) {
          tile=&GDB->Tile[x][y];
 
          switch(Type) {
-            case GDB_TYPE_MAP  : if (tile->Topo.Map) { free(tile->Topo.Map); tile->Topo.Map=NULL; }
-                                 if (tile->Topo.Vr) { free(tile->Topo.Vr); tile->Topo.Vr=NULL; }
+            case GDB_TYPE_MAP  : if (tile->Topo.Map)  { free(tile->Topo.Map); tile->Topo.Map=NULL;  }
+                                 if (tile->Topo.Mask) { free(tile->Topo.Mask); tile->Topo.Mask=NULL; }
+                                 if (tile->Topo.Vr)   { free(tile->Topo.Vr); tile->Topo.Vr=NULL; }
                                  break;
             case GDB_TYPE_TEXT : if (tile->Topo.Tex) { glDeleteTextures(1,&tile->Topo.Tex); tile->Topo.Tex=0; }
                                  break;
@@ -952,29 +959,31 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
          gdb_limit(tile->Box.Co[0].Lat,tile->Box.Co[0].Lon,tile->Box.Co[2].Lat,tile->Box.Co[2].Lon);
          gdb_text(tile->Res<16?16:tile->Res,Data,GDB_TxtGet);
          switch(Data) {
-            case GDB_TXT_POLIT: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
-            case GDB_TXT_AIRP: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
-            case GDB_TXT_CITY : tile->TCity=TxtPtr?TxtPtr:(GDB_Txt*)0x1  ; break;
+            case GDB_TXT_POLIT: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1; break;
+            case GDB_TXT_AIRP: tile->TPlace=TxtPtr?TxtPtr:(GDB_Txt*)0x1;  break;
+            case GDB_TXT_CITY : tile->TCity=TxtPtr?TxtPtr:(GDB_Txt*)0x1 ; break;
          }
          break;
 
       case GDB_MAP:
          over=1.0/MAX(1,tile->Res);
          gdb_limit(tile->Box.Co[0].Lat-over,tile->Box.Co[0].Lon-over,tile->Box.Co[2].Lat+over,tile->Box.Co[2].Lon+over);
-         switch(Data) {
-//            case GDB_MAP_TEX: gdb_map(MAX(1,tile->Res),GDB_MAP_BAT,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size); break;
-            case GDB_MAP_DEM: gdb_map(MAX(1,tile->Res),GDB_MAP_DEM,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size); break;
-            case GDB_MAP_BAT: gdb_map(MAX(1,tile->Res),GDB_MAP_BAT,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size); break;
-            case GDB_MAP_MSK: gdb_map(MAX(1,tile->Res),GDB_MAP_DEM,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size);
-                              gdb_map(MAX(1,tile->Res),GDB_MAP_BAT,(char**)&tmp,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size);
-                              i=0;
-                              while (i<tile->Topo.Height*tile->Topo.Width) {
-                                 tile->Topo.Map[i]=tmp[i]<0?tmp[i]:tile->Topo.Map[i];
-                                 i++;
+
+         // Read the land/sea mask
+         gdb_map(MAX(1,tile->Res),GDB_MAP_MSK,(char**)&tile->Topo.Mask,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size);
+
+         // Read the topo and bathy to build height field
+         gdb_map(MAX(1,tile->Res),GDB_MAP_DEM,(char**)&tile->Topo.Map,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size);
+         gdb_map(MAX(1,tile->Res),GDB_MAP_BAT,(char**)&tmp,&tile->Topo.Width,&tile->Topo.Height,&tile->Topo.Size);
+
+         i=0;
+         while (i<tile->Topo.Height*tile->Topo.Width) {
+            tile->Topo.Map[i]=tmp[i]<0?tmp[i]:tile->Topo.Map[i];
+            i++;
          }
-                              free(tmp);
+         free(tmp);
+
          break;
-      }
    }
    Proj->Loading--;
 
@@ -1427,7 +1436,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
  *
  *----------------------------------------------------------------------------
 */
-void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta) {
+void GDB_MapRender(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0,float Lon0) {
 
    Coord   loc;
    Vect3d *vbuf;
@@ -1435,27 +1444,40 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    float   dx,dy;
    float   dtx,dty,tx,ty;
    float   d;
+   int     width=Topo->Width;
+   int     height=Topo->Height;
+   int     what=GDB->Params.Bath+2*GDB->Params.Topo;
 
-   register int     x,y;
-   register short  *map=Topo->Map;
-   int              width=Topo->Width;
-   int              height=Topo->Height;
+   register int           x,y;
+   register short         *map=Topo->Map;
+   register unsigned char *msk=Topo->Mask;
 
-   GLfloat emi[4]  = { 0.012, 0.012, 0.012, 1.0 };
-   GLfloat amb[4]  = { 0.97, 0.97, 0.97, 1.0 };
-   GLfloat spe[4]  = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat dif[4]  = { 0.9, 0.9, 0.9, 1.0 };
    GLfloat shi     = 100.0;
+   GLfloat emi[4]  = { 0.012, 0.012, 0.012, 1.0 };
+   GLfloat spe[4]  = { 1.0, 1.0, 1.0, 1.0 };
+   GLfloat difs[4],dift[4];
+   GLfloat ambs[4],ambt[4];
 
    if (GLRender->Resolution>2) {
       dt=2;
    }
 
+   if (!Proj->VP->ColorFCoast || !Proj->VP->ColorFLake) {
+      return;
+   }
+
+   ambt[0]=dift[0]=Proj->VP->ColorFCoast->red/65535.0;
+   ambt[1]=dift[1]=Proj->VP->ColorFCoast->green/65535.0;
+   ambt[2]=dift[2]=Proj->VP->ColorFCoast->blue/65535.0;
+   ambt[3]=dift[3]=1.0;
+   ambs[0]=difs[0]=Proj->VP->ColorFLake->red/65535.0;
+   ambs[1]=difs[1]=Proj->VP->ColorFLake->green/65535.0;
+   ambs[2]=difs[2]=Proj->VP->ColorFLake->blue/65535.0;
+   ambs[3]=difs[3]=1.0;
+
    glNormal3dv(Proj->Nr);
 
    glMaterialf(GL_FRONT,GL_SHININESS,shi);
-   glMaterialfv(GL_FRONT,GL_AMBIENT,amb);
-   glMaterialfv(GL_FRONT,GL_DIFFUSE,dif);
    glMaterialfv(GL_FRONT,GL_SPECULAR,spe);
    glMaterialfv(GL_FRONT,GL_EMISSION,emi);
 
@@ -1468,35 +1490,35 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    if (!map) {
 
       /*On divise chaque tuile par 5 afin de creer une courbure*/
-      dc=(Delta/5.0);
-      dtx=1.0/(Delta/(Delta/5.0));
-      dty=1.0/(Delta/(Delta/5.0));
+      dc=(GDB->DegT/5.0);
+      dtx=1.0/(GDB->DegT/(GDB->DegT/5.0));
+      dty=1.0/(GDB->DegT/(GDB->DegT/5.0));
       loc.Elev=0.0;
       loc.Lon=Lon0;
 
-      vbuf=VBuffer_Alloc(Delta*dc);
+      vbuf=VBuffer_Alloc(GDB->DegT*dc);
 
       /*Construction de la surface en serie de quad dans la verticale*/
-      for(tx=-dtx,x=0;x<=Delta;x+=dc,tx+=dtx) {
+      for(tx=-dtx,x=0;x<=GDB->DegT;x+=dc,tx+=dtx) {
 
          if (Proj->Type->Def==PROJCYLIN) {
             d=CYLFLIP(Proj->L,vbuf[x][0]);
             glTranslated(d,0.0,0.0);
          }
          glBegin(GL_QUAD_STRIP);
-         for(ty=1.0,y=Delta;y>=0;y-=dc,ty-=dty) {
+         for(ty=1.0,y=GDB->DegT;y>=0;y-=dc,ty-=dty) {
 
             if (x) {
                glTexCoord2f(tx,ty);
                if (Proj->Sun) {
-                  loc.Lat=Lat0+Delta-y;
+                  loc.Lat=Lat0+GDB->DegT-y;
                   loc.Lon=Lon0+x-dc;
                   glNormal3dv(GDB_NMap[(int)loc.Lat+90][(int)loc.Lon+180]);
                }
                glVertex3dv(vbuf[y]);
             }
 
-            loc.Lat=Lat0+Delta-y;
+            loc.Lat=Lat0+GDB->DegT-y;
             loc.Lon=Lon0+x;
             Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&vbuf[y],1);
 
@@ -1521,8 +1543,8 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
       if (!Topo->Vr) {
          Topo->Vr=(Vect3d*)malloc((width-2)*(height-2)*sizeof(Vect3d));
 
-         dx=(float)Delta/(width-3);
-         dy=(float)Delta/(height-3);
+         dx=(float)GDB->DegT/(width-3);
+         dy=(float)GDB->DegT/(height-3);
 
          for(x=0;x<width-2;x++) {
             for(y=0;y<height-2;y++) {
@@ -1530,9 +1552,9 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                dc=(y+1)*width+(x+1);
                dr=y*(width-2)+x;
 
-               loc.Lat=Lat0+Delta-(y*dy);
+               loc.Lat=Lat0+GDB->DegT-(y*dy);
                loc.Lon=Lon0+(x*dx);
-               loc.Elev=map[dc];
+               loc.Elev=msk[dc] ? (what>1?map[dc]:0) : ((what==1 || what==3)?map[dc]:0);
                Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
             }
          }
@@ -1556,20 +1578,26 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
             dr=(y-1)*(width-2)+(x-1);
 
             if (x>1) {
-               if (Topo->Tex!=-1)
-                  glTexCoord2f(tx,ty);
-               else if (map[dc]<=0)
-                  glColor3ub(0,0,128);
-               else
-                  glColor3ub(128,128,128);
+               if (msk[dc]) {
+                  glMaterialfv(GL_FRONT,GL_DIFFUSE,dift);
+                  glMaterialfv(GL_FRONT,GL_AMBIENT,ambt);
+               } else {
+                  glMaterialfv(GL_FRONT,GL_DIFFUSE,difs);
+                  glMaterialfv(GL_FRONT,GL_AMBIENT,ambs);
+               }
 
+               if (Topo->Tex!=-1) glTexCoord2f(tx,ty);
                glNormal3dv(vbuf[y]);
                glVertex3dv(Topo->Vr[dr-dt]);
             }
 
-            vbuf[y][0]=-(map[dc+1]-map[dc-1]);
-            vbuf[y][1]=map[dc+width]-map[dc-width];
-            vbuf[y][2]=ABS(map[dc]);
+            if ((msk[dc]) ? (what>1?map[dc]:0) : ((what==1 || what==3)?map[dc]:0)) {
+               vbuf[y][0]=-(map[dc+1]-map[dc-1]);
+               vbuf[y][1]=map[dc+width]-map[dc-width];
+               vbuf[y][2]=ABS(map[dc]);
+            } else {
+               Vect_Init(vbuf[y],0.0,0.0,1.0);
+            }
 
             if (Proj->Sun && x>1) {
                vbuf[y][2]=0.0;
@@ -1577,6 +1605,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
                Vect_SMul(vbuf[y],vbuf[y],0.001);
                Vect_Add(vbuf[y],vbuf[y],Topo->Vr[dr-dt]);
             }
+
             if (vbuf[y][0]==0.0 && vbuf[y][1]==0.0 && vbuf[y][2]==0.0) {
                vbuf[y][2]=1.0;
             } else {
@@ -1584,18 +1613,21 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
             }
 
             if (x>1) {
-               if (Topo->Tex!=-1)
-                  glTexCoord2f(tx+dtx*dt,ty);
-               else if (map[dc]<=0)
-                  glColor3ub(0,0,128);
-               else
-                  glColor3ub(128,128,128);
+               if (msk[dc]) {
+                  glMaterialfv(GL_FRONT,GL_DIFFUSE,dift);
+                  glMaterialfv(GL_FRONT,GL_AMBIENT,ambt);
+               } else {
+                  glMaterialfv(GL_FRONT,GL_DIFFUSE,difs);
+                  glMaterialfv(GL_FRONT,GL_AMBIENT,ambs);
+               }
+               if (Topo->Tex!=-1) glTexCoord2f(tx+dtx*dt,ty);
 
                glNormal3dv(vbuf[y]);
                glVertex3dv(Topo->Vr[dr]);
             }
          }
          glEnd();
+
          if (Proj->Type->Def==PROJCYLIN) {
             glTranslated(-d,0.0,0.0);
          }
@@ -1604,7 +1636,7 @@ void GDB_MapRender(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float De
    glDisable(GL_TEXTURE_2D);
 }
 
-void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,float Delta) {
+void GDB_MapRenderShader(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0,float Lon0) {
 
    Coord  loc;
    int    dc,dr;
@@ -1626,8 +1658,8 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
       if (!Topo->Vr) {
          Topo->Vr=(Vect3d*)malloc((width-2)*(height-2)*sizeof(Vect3d));
 
-         dx=(float)Delta/(width-3);
-         dy=(float)Delta/(height-3);
+         dx=(float)GDB->DegT/(width-3);
+         dy=(float)GDB->DegT/(height-3);
 
          for(x=0;x<width-2;x++) {
             for(y=0;y<height-2;y++) {
@@ -1635,7 +1667,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Map *Topo,float Lat0,float Lon0,fl
                dc=(y+1)*width+(x+1);
                dr=y*(width-2)+x;
 
-               loc.Lat=Lat0+Delta-(y*dy);
+               loc.Lat=Lat0+GDB->DegT-(y*dy);
                loc.Lon=Lon0+(x*dx);
                loc.Elev=map[dc];
                Proj->Type->Project(Proj,(GeoVect*)&loc,(GeoVect*)&Topo->Vr[dr],1);
@@ -1746,14 +1778,8 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
    if (GDB->Params.Rail && !Tile->Rail)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_LIN,GDB_LIN_RAIL);
 
-   if (GDB->Params.Topo && !GDB->Params.Bath && !Tile->Topo.Map)
+   if ((GDB->Params.Topo || GDB->Params.Bath) && !Tile->Topo.Map)
       GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_MAP,GDB_MAP_DEM);
-
-   if (!GDB->Params.Topo && GDB->Params.Bath && !Tile->Topo.Map)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_MAP,GDB_MAP_BAT);
-
-   if (GDB->Params.Topo && GDB->Params.Bath && !Tile->Topo.Map)
-      GDB_ThreadQueueAdd(0x0,Proj,Tile,GDB_TileGet,GDB_MAP,GDB_MAP_MSK);
 
    if (GDB->Params.Text && !Tile->Topo.Tex) {
       char  file[256];
@@ -1830,16 +1856,16 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             }
 
             if (Mode & GDB_FILL) {
-               if (Proj->VP->ColorFCoast && tile->FCoast) {
+               if (Proj->VP->ColorFCoast && tile->FCoast && !GDB->Params.Topo) {
                   GDB_FillRender(Interp,Proj,tile->FCoast,Proj->VP->ColorFCoast,0xff,0);
                }
-               if (Proj->VP->ColorFLake && tile->FLake) {
+               if (Proj->VP->ColorFLake && tile->FLake && !GDB->Params.Bath) {
                   GDB_FillRender(Interp,Proj,tile->FLake,Proj->VP->ColorFLake,0xff,1);
                }
-               if (Proj->VP->ColorFCoast && tile->FCoastIn) {
+               if (Proj->VP->ColorFCoast && tile->FCoastIn && !GDB->Params.Topo) {
                   GDB_FillRender(Interp,Proj,tile->FCoastIn,Proj->VP->ColorFCoast,0xff,1);
                }
-               if (Proj->VP->ColorFLake && tile->FLakeIn) {
+               if (Proj->VP->ColorFLake && tile->FLakeIn && !GDB->Params.Bath) {
                   GDB_FillRender(Interp,Proj,tile->FLakeIn,Proj->VP->ColorFLake,0xff,1);
                }
             }
@@ -1904,7 +1930,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                glEnable(GL_LIGHTING);
                glEnable(GL_LIGHT0);
                glDisable(GL_COLOR_MATERIAL);
-               GDB_MapRender(Proj,&tile->Topo,lat,lon,GDB->DegT);
+               GDB_MapRender(Proj,GDB,&tile->Topo,lat,lon);
 //               GDB_MapRenderShader(Proj,&tile->Topo,lat,lon,GDB->DegT);
                ras++;
                glEnable(GL_COLOR_MATERIAL);

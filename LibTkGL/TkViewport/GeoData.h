@@ -100,8 +100,8 @@ typedef struct GDB_Map {
    Vect3d        *Vr;
    int            Width,Height,Size;
    short         *Map;
+   unsigned char *Mask;
    unsigned int   Tex;
-   unsigned char *Dat;
 } GDB_Map;
 
 typedef struct GDB_Tile {

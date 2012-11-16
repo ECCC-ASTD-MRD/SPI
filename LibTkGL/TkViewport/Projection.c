@@ -1552,7 +1552,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
       }
 
       /*Afficher les parties dependantes de la projection*/
-      if (!Interp && Proj->Type->DrawGlobe)
+      if (!Interp && Proj->Type->DrawGlobe && !Proj->Geo->Params.Bath)
          Proj->Type->DrawGlobe(Interp,VP,Proj);
 
       if (Proj->Geographic) {
@@ -1583,7 +1583,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
       /*Display geography filling for raster background*/
       if (Proj->Geographic) {
          if (Interp) {
-            if (VP->ColorFLake && VP->ColorFCoast)
+            if (VP->ColorFLake && VP->ColorFCoast && !Proj->Geo->Params.Bath)
                Proj->Type->DrawGlobe(NULL,Proj->VP,Proj);
             GDB_TileRender(NULL,Proj,Proj->Geo,GDB_FILL);
          }

@@ -409,10 +409,11 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    OGRSpatialReferenceH llref=NULL;
    char                *string=NULL;
 
-   if (String)
+   if (String) {
       string=strdup(String);
+      strtrim(string,' ');
+   }
 
-   strtrim(string,' ');
    GeoRef_Clear(Ref,0);
 
    if (Transform) {
