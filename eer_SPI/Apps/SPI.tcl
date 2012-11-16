@@ -197,7 +197,6 @@ package require Info
 
 #----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/Apps/Tools/*]] {
-#foreach tool { $GDefs(Dir)/Apps/Tools/Macro $GDefs(Dir)/Apps/Tools/Mapper $GDefs(Dir)/Apps/Tools/Drawing }
    set name [file tail [file rootname $tool]]
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name

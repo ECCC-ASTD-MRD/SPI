@@ -45,7 +45,6 @@ namespace eval RSMC {
    set Ico(Nuclear)      "@$GDefs(Dir)/Resources/Bitmap/nucleaire.ico"
    set Ico(Flag)         "@$GDefs(Dir)/Resources/Bitmap/SMC_ver_small.xbm"
    set Ico(RSMC)         "@$GDefs(Dir)/Resources/Bitmap/RSMC_ver_small.xbm"
-   set Ico(Contour)      "@$GDefs(Dir)/Resources/Bitmap/string_contour.xbm"
 
    set Sim(Lat)          0
    set Sim(Lon)          0
@@ -59,6 +58,7 @@ namespace eval RSMC {
    set Data(Units)      { "/m³" "*s/m³" "/m²" "/m²" "/m²" "/m²" "/m²" }
    set Data(Desc)       { "Surface to 500 m mean concentration" "Time integrated surface to 500 m layer concentrations" \
                           "6 hours dry deposition" "Total dry deposition" "6 hours wet deposition" "Total wet deposition" "Total deposition" }
+   set Data(Contour)    "Contour values may change\nfrom chart to chart"
 
    set Data(DoseFields) { CI CC CG CT }
    set Data(DoseGroups) { "All ages" "3 month" "1 year" "5 year" "10 year" "15 year" "Adult" }
@@ -97,24 +97,23 @@ proc RSMC::DrawScale { Frame } {
 
    #----- Determine l'espacement et le point de depart de l'echelle
 
-   set start [expr $Viewport::Data(Height$Page(VP)) + $Viewport::Data(Y$Page(VP))]
+   set x0    [expr $Viewport::Data(Width$Page(VP))  + $Viewport::Data(X$Page(VP))]
+   set y0    [expr $Viewport::Data(Height$Page(VP)) + $Viewport::Data(Y$Page(VP))]
    set i 0
    set field [lindex [Viewport::Assigned $Frame $Page(VP) fstdfield] 0]
 
    foreach level [fstdfield configure $field -intervals] {
 
-      $Frame.page.canvas create rectangle [expr $Viewport::Data(Width$Page(VP)) + $Viewport::Data(X$Page(VP)) + 5] [expr $start-10] \
-      [expr $Viewport::Data(Width$Page(VP)) + $Viewport::Data(X$Page(VP)) + 40] [expr $start-30] \
+      $Frame.page.canvas create rectangle [expr $x0+5] $y0 [expr $x0+25] [expr $y0-100] \
          -fill "#[fstdfield configure $field -val2map $level]" -outline black -tags "LAYOUTRSMCSCALE LAYOUTRSMCCOLORMAP"
-      $Frame.page.canvas create text [expr $Viewport::Data(Width$Page(VP)) + $Viewport::Data(X$Page(VP)) + 4] [expr $start] \
-         -text [format %1.1e $level] -font XFont10 -anchor sw -fill black -tags "LAYOUTRSMCSCALE"
+      $Frame.page.canvas create text [expr $x0+30] $y0 \
+         -text [format %1.1e $level] -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle -90
 
-      set start [expr $start-40]
+      incr y0 -105
       incr i
    }
 
-   $Frame.page.canvas create text [expr $Viewport::Data(Width$Page(VP)) + $Viewport::Data(X$Page(VP)) + 5] [expr $start-5] \
-      -text $Data(Unit) -font XFont10 -anchor sw -fill black -tags "LAYOUTRSMCSCALE"
+   $Frame.page.canvas create text [expr $x0+5] [expr $y0-5] -text $Data(Unit)\n$Data(Contour) -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle -90
 }
 
 #----------------------------------------------------------------------------
@@ -287,9 +286,6 @@ proc RSMC::LayoutInit { Frame } {
 
    $canvas create text [expr $Page(Width)-1] [expr $Page(Height)-1] -font XFont10 -anchor se -text "[clock format [clock seconds] -format "%H%M %d/%m/%Y" -gmt true]" -tags FTID
    $canvas create text [expr $Page(Width)/2] [expr $Page(Height)/2] -font XFont24 -text "" -tags MSG
-
-   #----- Afficher l'entete d'echelle
-   $canvas create bitmap [expr $Page(Width)-$Page(Border)-10] 60 -bitmap $Ico(Contour) -foreground black -tags FIX -anchor ne
 }
 
 #----------------------------------------------------------------------------
