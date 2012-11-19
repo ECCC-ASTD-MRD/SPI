@@ -873,7 +873,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
                   case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
                   case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
                }
-               sprintf(buf,"%s %8i %-2s %8i %-2s GRIB%-8i %08i%04i %s %i gribfield",buf,0,LVL_UNITS[LVL_HOUR],0,LVL_UNITS[LVL_UNDEF],head.Version,date,time/100,File->Id,nb);
+               sprintf(buf,"%s %8i %-2s %8i %-2s GRIB%-8i %08i%04i %s %i %i %i %i gribfield",buf,0,LVL_UNITS[LVL_HOUR],0,LVL_UNITS[LVL_UNDEF],head.Version,date,time/100,File->Id,nb,head.IP1,0,0);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;
