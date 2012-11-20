@@ -8,13 +8,14 @@
 -       : Angra                        :Brazil              :23.010000:S: 44.470000:W:     0
 -       : Kozloduy                     :Bulgaria            :43.750000:N: 23.630000:E:     0
 -       : Bruce                        :Canada              :44.330000:N: 81.600000:W:     0
--       : Chalk River                  :Canada              :46.050330:N: 77.361975:W:     0
+-       : Chalk River (Moly Stack)     :Canada              :46.053343:N: 77.365074:W:     0
 -       : Darlington                   :Canada              :43.880000:N: 78.700000:W:     0
--       : Douglas Point                :Canada              :44.330000:N: 81.600000:W:     0
+-       : Douglas Point                :Canada              :44.326914:N: 81.599848:W:     0
 -       : Gentilly                     :Canada              :46.400000:N: 72.320000:W:     0
--       : NPD                          :Canada              :46.200000:N: 77.700000:W:     0
+-       : NPD                          :Canada              :46.186667:N: 77.657778:W:     0
 -       : Pickering                    :Canada              :43.820000:N: 79.070000:W:     0
 -       : Point Lepreau                :Canada              :45.070000:N: 66.470000:W:     0
+-       : Whiteshell                   :Canada              :50.179674:N: 96.060067:W:     0
 -       : Guangdong                    :China               :22.600000:N:114.530000:E:     0
 -       : Qinshan                      :China               :30.450000:N:120.930000:E:     0
 -       : Dukovany                     :Czech Republic      :49.080000:N: 16.130000:E:     0
@@ -77,6 +78,9 @@
 -       : Narora                       :India               :28.180000:N: 78.370000:E:     0
 -       : Rajasthan                    :India               :24.880000:N: 75.630000:E:     0
 -       : Tarapur                      :India               :19.830000:N: 72.670000:E:     0
+-       : Bushehr                      :Iran                :28.829725:N: 50.885805:E:     0
+-       : IR-40 Arak                   :Iran                :34.373306:N: 49.240768:E:     0
+-       : Darkhovin                    :Iran                :30.707778:N: 48.380000:E:     0
 -       : Caorso                       :Italy               :45.070000:N:  9.870000:E:     0
 -       : Enrico Fermi (TRINO)         :Italy               :45.180000:N:  8.280000:E:     0
 -       : Garigliano                   :Italy               :41.270000:N: 13.830000:E:     0
