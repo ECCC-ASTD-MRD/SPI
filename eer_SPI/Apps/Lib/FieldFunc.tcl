@@ -45,6 +45,11 @@ namespace eval FieldFunc { } {
 proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
 
    set fld  [lindex $Fields 0]
+
+   if { ![fstdfield is $fld] } {
+      return
+   }
+
    set tags [fstdfield stats $fld -tag]
    set box  [lindex $tags 2]
 

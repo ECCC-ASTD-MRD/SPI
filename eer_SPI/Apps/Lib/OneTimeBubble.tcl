@@ -28,7 +28,7 @@
 
 package provide OneTimeBubble 1.0
 
-catch { SPI::Splash "Loading Widget PackageOneTimeBubble 1.0" }
+catch { SPI::Splash "Loading Widget Package OneTimeBubble 1.0" }
 
 namespace eval OneTimeBubble {
    variable Data
@@ -44,7 +44,7 @@ namespace eval OneTimeBubble {
 
    #----- Definitions des variables de donnees du widget
 
-   set Data(Ids)          {}          ;#Liste des Ids valides. 
+   set Data(Ids)          {}          ;#Liste des Ids valides.
    set Data(Showing)      -1          ;#Id of the bubble being shown.
 }
 

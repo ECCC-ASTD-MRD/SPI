@@ -899,12 +899,7 @@ proc FieldBox::InfoCommand { No Index } {
 
    #----- Date de validite
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
-   if { $type=="fstdfield" } {
-#      catch { set date [DateStuff::StringDateFromSeconds [fstdstamp toseconds $date] $GDefs(Lang)] }
-      catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -gmt True] $GDefs(Lang)] }
-   } else {
-      catch { set date [DateStuff::StringDateFromSeconds $date $GDefs(Lang)] }
-   }
+   catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -gmt True] $GDefs(Lang)] }
 
    if { [info exists MetStat::Rec(Unit$nv)] } {
       set info  "$MetStat::Rec(Desc$nv) ($MetStat::Rec(Unit$nv))"
