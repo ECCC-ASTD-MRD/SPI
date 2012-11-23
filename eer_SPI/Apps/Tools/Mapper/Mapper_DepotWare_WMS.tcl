@@ -533,9 +533,8 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
 
    if { $URL!="" } {
       #----- get the data from the url and save to tempdir
-      set req [http::geturl $URL -blocksize 1048580]
       set f [open /tmp/lg[pid] w]
-      puts $f [http::data $req]
+      set req [http::geturl $URL -binary True -blocksize 1048580 -channel $f]
       close $f
 
       #----- Read the legend with gdal
