@@ -139,10 +139,16 @@ proc ComboBox::Add { W Item } {
 #
 #-------------------------------------------------------------------------------
 
-proc ComboBox::AddList { W List } {
+proc ComboBox::AddList { W List { Check True } } {
 
-   foreach item "$List" {
-      ComboBox::Add $W $item
+   if { $Check } {
+      foreach item "$List" {
+         ComboBox::Add $W $item
+      }
+   } else {
+      upvar #0 ComboBox::${W}top Top
+
+      eval $Top.content insert end $List
    }
 }
 

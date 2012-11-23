@@ -752,7 +752,6 @@ proc Mapper::ParamsGDAL { Object Tab } {
       pack forget $Data(Frame2).col.def.style
       pack forget $Data(Frame1).time
    }
-
    $Data(Frame1).proj.val delete 0.0 end
    $Data(Frame1).proj.val insert end $Data(Proj)
 
@@ -764,23 +763,23 @@ proc Mapper::ParamsGDAL { Object Tab } {
 
    ComboBox::DelAll $Data(Frame2).band.red.val False
    ComboBox::Add $Data(Frame2).band.red.val ""
-   ComboBox::AddList $Data(Frame2).band.red.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame2).band.red.val $Data(Band$Object) False
    ComboBox::DelAll $Data(Frame2).band.green.val False
    ComboBox::Add $Data(Frame2).band.green.val ""
-   ComboBox::AddList $Data(Frame2).band.green.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame2).band.green.val $Data(Band$Object) False
    ComboBox::DelAll $Data(Frame2).band.blue.val False
    ComboBox::Add $Data(Frame2).band.blue.val ""
-   ComboBox::AddList $Data(Frame2).band.blue.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame2).band.blue.val $Data(Band$Object) False
    ComboBox::DelAll $Data(Frame2).band.alpha.val False
    ComboBox::Add $Data(Frame2).band.alpha.val ""
-   ComboBox::AddList $Data(Frame2).band.alpha.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame2).band.alpha.val $Data(Band$Object) False
 
    ComboBox::DelAll $Data(Frame1).pos.x.val False
    ComboBox::Add $Data(Frame1).pos.x.val ""
-   ComboBox::AddList $Data(Frame1).pos.x.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame1).pos.x.val $Data(Band$Object) False
    ComboBox::DelAll $Data(Frame1).pos.y.val False
    ComboBox::Add $Data(Frame1).pos.y.val ""
-   ComboBox::AddList $Data(Frame1).pos.y.val $Data(Band$Object)
+   ComboBox::AddList $Data(Frame1).pos.y.val $Data(Band$Object) False
 
    bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) False } }
    bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { Mapper::CurveSelect $Mapper::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::Data(Band) False } }
