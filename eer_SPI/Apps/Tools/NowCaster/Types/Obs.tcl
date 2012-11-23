@@ -963,9 +963,7 @@ proc NowCaster::Obs::Add { Path } {
       set files [lsort -decreasing -dictionary [glob -nocomplain $path/2*_]]
       NowCaster::Obs::Read $obs [lrange $files 0 4]
    } else {
-      foreach file $Path {
-         NowCaster::Obs::Read $obs $file
-      }
+      NowCaster::Obs::Read $obs $Path
    }
 
    Page::Update        $Page::Data(Frame)
