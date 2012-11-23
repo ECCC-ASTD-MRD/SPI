@@ -7,6 +7,9 @@ echo "Architecture: ${ARCH}_${PROC}"
 ARCHPATH=/cnfs/ops/cmoe/afsr005/Archive
 LIBPATH=/cnfs/ops/cmoe/afsr005/Lib/${ARCH}_${PROC}
 TCLPATH=/home/afsr/005/Projects/eerSPI/eer_SPI/Lib/${ARCH}_${PROC}/TclTk
+HOMEPATH=/home/afsr/005/lib/${ARCH}_${PROC}
+
+export LD_LIBRARY_PATH=${HOMEPATH}:$LD_LIBRARY_PATH
 
 TCL_VERSION=8.5.7
 THREAD=thread2.6.5
@@ -19,14 +22,14 @@ EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
 GEOS=geos-3.2.2
-GDAL=gdal-1.9.0
+GDAL=gdal-1.9.2
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
 HDF4=hdf-4.2.5
 HDF5=hdf5-1.6.10
 POSTGRESQL=postgresql-8.4.1
 ODBC=unixODBC-2.3.0
-GRIB=grib_api-1.9.9
+GRIB=grib_api-1.9.18
 OCI=instantclient_11_2
 
 #----- not recompiled yet
@@ -235,14 +238,14 @@ make distclean
 --with-mysql=${LIBPATH}/${MYSQL}/bin/mysql_config \
 --with-expat=${LIBPATH}/${EXPAT} \
 --with-curl=${LIBPATH}/${CURL}/bin/curl-config \
---with-sqlite3=${LIBPATH}/${SQLITE}/lib \
+--with-sqlite3=${LIBPATH}/${SQLITE} \
 --with-geos=${LIBPATH}/${GEOS}/bin/geos-config \
 --with-hdf4=${LIBPATH}/${HDF4} \
 --with-hdf5=${LIBPATH}/${HDF5} \
 --with-pg=${LIBPATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIBPATH}/${ODBC} \
 --with-netcdf=${LIBPATH}/${NETCDF} \
---with-oci-lib=${LIBPATH}/${OCI} \
+--with-oci-lib=${HOMEPATH} \
 --with-oci-include=${LIBPATH}/${OCI}/sdk/include
 
 make install

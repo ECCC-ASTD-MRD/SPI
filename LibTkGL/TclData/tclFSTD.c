@@ -90,7 +90,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
       if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
          return(-2);
       }
-      return(ZRef_Level2IP(val,type));
+      return(ZRef_Level2IP(val,type-1));
    } else {
       return(val);
    }
@@ -513,26 +513,17 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          TclY_Get0IntFromObj(Interp,Objv[3],&datev);
 
-         if (Tcl_GetIntFromObj(Interp,Objv[5],&ip1)==TCL_ERROR) {
-            Tcl_ResetResult(Interp);
-            Tcl_ListObjLength(Interp,Objv[5],&n);
-            if (n<2) {
-               Tcl_AppendResult(Interp,"invalid level description, must be IP1 or { level leveltype )",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            Tcl_ListObjIndex(Interp,Objv[5],0,&obj);
-            Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
-
-            Tcl_ListObjIndex(Interp,Objv[5],1,&obj);
-            if (Tcl_GetIndexFromObj(Interp,obj,type,"type",0,&n)!=TCL_OK) {
-               Tcl_AppendResult(Interp,"invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            ip1=ZRef_Level2IP(tmpd,n);
+         /*Get the IPs*/
+         if ((ip1=FSTD_FieldIPGet(Interp,Objv[5],NULL))==-2) {
+            return(TCL_ERROR);
+         }
+         if ((ip2=FSTD_FieldIPGet(Interp,Objv[6],NULL))==-2) {
+           return(TCL_ERROR);
+         }
+         if ((ip3=FSTD_FieldIPGet(Interp,Objv[7],NULL))==-2) {
+            return(TCL_ERROR);
          }
 
-         Tcl_GetIntFromObj(Interp,Objv[6],&ip2);
-         Tcl_GetIntFromObj(Interp,Objv[7],&ip3);
          n=1000;
          if (Objc==11) {
             Tcl_GetIntFromObj(Interp,Objv[10],&n);
