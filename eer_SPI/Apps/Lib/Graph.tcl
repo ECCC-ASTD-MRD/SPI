@@ -919,10 +919,10 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
          menubutton $Data(Tab).head.sel.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.sel.down.menu -state disabled
          place $Data(Tab).head.sel.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.sel.down.menu
-         $Data(Tab).head.sel.down.menu add command -image ARROW       -command { Graph::ModeSelect POINT ;   if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWLINE   -command { Graph::ModeSelect LINE ;    if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWSQUARE -command { Graph::ModeSelect BOX ;     if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
-         $Data(Tab).head.sel.down.menu add command -image ARROWPOLY   -command { Graph::ModeSelect POLYGON ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add radiobutton -image ARROW       -value POINT   -variable Graph::Param(SelectMode) -command { Graph::ModeSelect POINT ;   if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add radiobutton -image ARROWLINE   -value LINE    -variable Graph::Param(SelectMode) -command { Graph::ModeSelect LINE ;    if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add radiobutton -image ARROWSQUARE -value BOX     -variable Graph::Param(SelectMode) -command { Graph::ModeSelect BOX ;     if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
+         $Data(Tab).head.sel.down.menu add radiobutton -image ARROWPOLY   -value POLYGON -variable Graph::Param(SelectMode) -command { Graph::ModeSelect POLYGON ; if { $Page::Data(ToolMode)=="SPI" } { $Graph::Data(Tab).head.sel invoke } }
          $Data(Tab).head.sel.down.menu add separator
          $Data(Tab).head.sel.down.menu add radiobutton -label [lindex $Lbl(Average) $GDefs(Lang)] -variable Graph::Param(SelectType) -value AVG \
             -command { eval Graph::${Graph::Data(Type)}::Update \$Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(FrameData) $Graph::Data(Graph) }
@@ -2664,7 +2664,7 @@ proc Graph::DrawInit { Frame VP } {
          "metobs" {
             set obj [lindex $Viewport::Data(Picked) 1]
             set idx [lindex $Viewport::Data(Picked) 2]
-            set coords [metobs define $obj -COORD $idx]
+            set coords [lrange [metobs define $obj -COORD $idx] 0 1]
             set data(Obs$Graph::Data(Pos)) [metobs define $obj -ID $idx]
             set data(Elem$Graph::Data(Pos)) [lindex [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $Viewport::Data(Picked) 3]] 2]
          }

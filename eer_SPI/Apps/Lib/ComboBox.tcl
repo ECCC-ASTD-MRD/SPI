@@ -131,6 +131,7 @@ proc ComboBox::Add { W Item } {
 # Parametres :
 #   <W>      : Nom du widget ComboBox ou inserer
 #   <List>   : Liste d'item a inserer dans la liste du ComboBox
+#   <Check>  : Verification des contraintes
 #
 # Retour   :
 #  <index> : Index ou l'item a ete inserer dans la liste (-1 si pas inserer)
@@ -147,8 +148,17 @@ proc ComboBox::AddList { W List { Check True } } {
       }
    } else {
       upvar #0 ComboBox::${W}top Top
+      upvar #0 ComboBox::${W}lst Lst
+      upvar #0 ComboBox::${W}typ Typ
 
-      eval $Top.content insert end $List
+      set Lst [concat Lst $List]
+
+      if { $Typ == "sorted" } {
+         set Lst [lsort $Lst]
+      }
+
+      $Top.content delete 0 end
+      eval $Top.content insert end $Lst
    }
 }
 
@@ -523,7 +533,6 @@ proc ComboBox::Index { W Search Item } {
    upvar #0 ComboBox::${W}lst Lst
 
    #----- Recherche de l'item selectionne, Si non trouve on retourne -1
-
    return [lsearch -$Search $Lst $Item]
 }
 
@@ -738,7 +747,6 @@ proc ComboBox::Select { W { Set True } } {
    upvar #0 ComboBox::${W}top Top
 
    #----- Extraire la valeur affichee
-
    set index [ComboBox::Index $W glob *[$W.select get]*]
 
    #----- Selectionner la valeur
