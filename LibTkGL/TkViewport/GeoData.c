@@ -1478,8 +1478,10 @@ void GDB_MapRender(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0,float
    glNormal3dv(Proj->Nr);
 
    glMaterialf(GL_FRONT,GL_SHININESS,shi);
-   glMaterialfv(GL_FRONT,GL_SPECULAR,spe);
    glMaterialfv(GL_FRONT,GL_EMISSION,emi);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,spe);
+   glMaterialfv(GL_FRONT,GL_DIFFUSE,spe);
+   glMaterialfv(GL_FRONT,GL_AMBIENT,spe);
 
    if (Topo->Tex!=-1) {
       glEnable(GL_TEXTURE_2D);
