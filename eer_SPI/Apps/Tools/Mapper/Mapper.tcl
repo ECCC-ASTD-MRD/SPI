@@ -204,7 +204,7 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
 
       if { [info exists Mapper::Data(Id$Object)] } {
          if { [gdalband is $Object] } {
-            gdalband free $Object
+            gdalband free $Object BandX$Object BandY$Object
             gdalfile close $Data(Id$Object)
             ogrgeometry free MASK$Object  MASKRING$Object
 
@@ -465,6 +465,8 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
          return ""
       }
       set Data(Band$id) $bands
+      set Data(BandX$id) ""
+      set Data(BandY$id) ""
    }
 
    set Data(Job) [lindex $Msg(Read) $GDefs(Lang)]
@@ -495,8 +497,6 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
    set Data(Band2$id) ""
    set Data(Band3$id) ""
    set Data(Bands$id) {}
-   set Data(BandX$id) ""
-   set Data(BandY$id) ""
 
    if  { [llength $Bands]>=1 } {
       set Data(Band0$id) [lindex $Bands 0]
@@ -519,6 +519,11 @@ proc Mapper::ReadBand { File { Bands "" } { Nb 3 } { Full False } } {
 
    if { $er } {
       error $errmsg $errorInfo
+   }
+
+   #----- Reassign positionnal if any
+   if  { [gdalband is BandX$id] && [gdalband is BandY$id] } {
+      gdalband define $id -positional BandX$id BandY$id
    }
 
    set map [gdalband configure $id -colormap]
@@ -545,7 +550,7 @@ proc Mapper::ReadPos { Id BandX BandY } {
    variable Data
    variable Msg
 
-   if  { ![info exists Data(Id$Id)] } {
+   if  { ![info exists Data(Id$Id)] || $BandX=="" || $BandY=="" } {
       return
    }
 
@@ -755,7 +760,11 @@ proc Mapper::ParamsGDALSet { Object { CheckData True } } {
    if { [winfo exists .mapper] } {
       set Data(Proj) [string trim [$Data(Frame1).proj.val get 0.0 end] "\n"]
       gdalband define $Object -projection $Data(Proj) -transform $Data(Trans)
-   #   gdalband define $Object -invtransform $Data(InvTrans)
+
+      #----- Reassign positionnal if any
+      if  { [gdalband is BandX$Object] && [gdalband is BandY$Object] } {
+         gdalband define $Object -positional BandX$Object BandY$Object
+      }
 
       Page::Update $Page::Data(Frame)
       Mapper::CurveDefine $Object $Data(Bands$Object)

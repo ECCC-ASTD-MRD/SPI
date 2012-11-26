@@ -499,22 +499,22 @@ proc Mapper::ParamsGDAL { Object Tab } {
          labelframe $Data(Frame2).band -text [lindex $Lbl(Band) $GDefs(Lang)]
             frame $Data(Frame2).band.red
                label $Data(Frame2).band.red.lbl -text [lindex $Lbl(Red) $GDefs(Lang)] -width 6 -anchor w
-               ComboBox::Create $Data(Frame2).band.red.val Mapper::Data(Red) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame2).band.red.val Mapper::Data(Red) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame2).band.red.lbl -side left
                pack $Data(Frame2).band.red.val -side left -fill x -expand true
             frame $Data(Frame2).band.green
                label $Data(Frame2).band.green.lbl -text [lindex $Lbl(Green) $GDefs(Lang)] -width 6 -anchor w
-               ComboBox::Create $Data(Frame2).band.green.val Mapper::Data(Green) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame2).band.green.val Mapper::Data(Green) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame2).band.green.lbl -side left
                pack $Data(Frame2).band.green.val -side left -fill x -expand true
             frame $Data(Frame2).band.blue
                label $Data(Frame2).band.blue.lbl -text [lindex $Lbl(Blue) $GDefs(Lang)] -width 6 -anchor w
-               ComboBox::Create $Data(Frame2).band.blue.val Mapper::Data(Blue) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame2).band.blue.val Mapper::Data(Blue) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame2).band.blue.lbl -side left
                pack $Data(Frame2).band.blue.val -side left -fill x -expand true
             frame $Data(Frame2).band.alpha
                label $Data(Frame2).band.alpha.lbl -text [lindex $Lbl(Alpha) $GDefs(Lang)] -width 6 -anchor w
-               ComboBox::Create $Data(Frame2).band.alpha.val Mapper::Data(Alpha) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame2).band.alpha.val Mapper::Data(Alpha) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame2).band.alpha.lbl -side left
                pack $Data(Frame2).band.alpha.val -side left -fill x -expand true
             pack $Data(Frame2).band.red -side top -fill x -padx 5
@@ -601,12 +601,12 @@ proc Mapper::ParamsGDAL { Object Tab } {
          labelframe $Data(Frame1).pos -text [lindex $Lbl(Position) $GDefs(Lang)]
             frame $Data(Frame1).pos.x
                label $Data(Frame1).pos.x.lbl -text X -width 6 -anchor w
-               ComboBox::Create $Data(Frame1).pos.x.val Mapper::Data(BandX) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame1).pos.x.val Mapper::Data(BandX) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame1).pos.x.lbl -side left
                pack $Data(Frame1).pos.x.val -side left -fill x -expand true
             frame $Data(Frame1).pos.y
                label $Data(Frame1).pos.y.lbl -text Y -width 6 -anchor w
-               ComboBox::Create $Data(Frame1).pos.y.val Mapper::Data(BandY) noedit sorted nodouble -1 "" 1 8 ""
+               ComboBox::Create $Data(Frame1).pos.y.val Mapper::Data(BandY) edit sorted nodouble -1 "" 1 8 ""
                pack $Data(Frame1).pos.y.lbl -side left
                pack $Data(Frame1).pos.y.val -side left -fill x -expand true
             pack $Data(Frame1).pos.x -side top -fill x -padx 5
