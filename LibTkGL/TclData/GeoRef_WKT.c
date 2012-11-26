@@ -487,12 +487,12 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    GeoRef_Size(ref,0,0,0,NI>0?NI-1:0,NJ>0?NJ-1:0,NK>0?NK-1:0,0);
    GeoRef_WKTSet(ref,String,Transform,InvTransform,Spatial);
 
-   ref->Grid[1]=ref->Grid[2]='\0';
    if (GRTYP) {
       ref->Grid[0]=GRTYP[0];
       ref->Grid[1]=GRTYP[1];
    } else {
       ref->Grid[0]='W';
+      ref->Grid[1]='\0';
    }
    ref->IG1=IG1;
    ref->IG2=IG2;

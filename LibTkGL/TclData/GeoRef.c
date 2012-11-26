@@ -1907,9 +1907,17 @@ int GeoRef_Valid(TGeoRef *Ref) {
 */
 int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
 
-   int d;
+   int d,nx,ny;
 
    if (!Ref) {
+      return(0);
+   }
+
+   /* Check the dimensions */
+   nx=FSIZE2D(XDef);
+   ny=FSIZE2D(YDef);
+
+   if (nx!=ny || nx!=(Ref->X1-Ref->X0+1)*(Ref->Y1-Ref->Y0+1)) {
       return(0);
    }
 
@@ -1917,8 +1925,8 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
    if (Ref->Lat) free(Ref->Lat);
    if (Ref->Lon) free(Ref->Lon);
 
-   Ref->Lat=(float*)malloc(FSIZE2D(YDef)*sizeof(float));
-   Ref->Lon=(float*)malloc(FSIZE2D(XDef)*sizeof(float));
+   Ref->Lat=(float*)malloc(nx*sizeof(float));
+   Ref->Lon=(float*)malloc(nx*sizeof(float));
 
    if (!Ref->Lat || !Ref->Lon) {
       return(0);
@@ -1926,17 +1934,17 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
 
    /*Assign positionals, if size is float, just memcopy otherwise, assign*/
    if (XDef->Type==TD_Float32) {
-      memcpy(Ref->Lon,XDef->Data[0],FSIZE2D(XDef)*sizeof(float));
+      memcpy(Ref->Lon,XDef->Data[0],nx*sizeof(float));
    } else {
-      for(d=0;d<FSIZE2D(XDef);d++) {
+      for(d=0;d<nx;d++) {
          Def_Get(XDef,0,d,Ref->Lon[d]);
       }
    }
 
    if (YDef->Type==TD_Float32) {
-      memcpy(Ref->Lat,YDef->Data[0],FSIZE2D(YDef)*sizeof(float));
+      memcpy(Ref->Lat,YDef->Data[0],nx*sizeof(float));
    } else {
-      for(d=0;d<FSIZE2D(YDef);d++) {
+      for(d=0;d<nx;d++) {
          Def_Get(YDef,0,d,Ref->Lat[d]);
       }
    }
@@ -1949,11 +1957,18 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
          OCTDestroyCoordinateTransformation(Ref->Function);
          Ref->Function=NULL;
       }
+      if (Ref->InvFunction) {
+         OCTDestroyCoordinateTransformation(Ref->InvFunction);
+         Ref->InvFunction=NULL;
+      }
+      OSRDestroySpatialReference(Ref->Spatial);
+      Ref->Spatial=NULL;
    }
 
    /*Set secondary gridtype to Y for the project/unproject functions to work correctly*/
-   if (Ref->Grid[0]=='W')
+   if (Ref->Grid[0]=='W') {
       Ref->Grid[1]='Y';
+   }
 
    return(1);
 }

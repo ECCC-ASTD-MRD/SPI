@@ -1456,6 +1456,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
          Tcl_AppendElement(Interp,buf);
       }
    }
+
    file=(GDAL_File*)malloc(sizeof(GDAL_File));
    file->ColorInterp=ci;
    file->Driver=driver;

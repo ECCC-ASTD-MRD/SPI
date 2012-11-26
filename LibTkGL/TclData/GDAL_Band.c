@@ -2830,7 +2830,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"unable to initialize positional data",(char*)NULL);
                   return(TCL_ERROR);
                }
-              if (band->Stat) { free(band->Stat); band->Stat=NULL; }
+               if (band->Stat) { free(band->Stat); band->Stat=NULL; }
 
                GeoRef_Qualify(band->Ref);
                GDAL_BandClean(band,1,1,1);
@@ -2850,10 +2850,11 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                } else {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),band->Ref->Transform,band->Ref->InvTransform,NULL);
-                     GeoRef_Destroy(Interp,ref->Name);
+                     GeoRef_WKTSet(ref,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+//                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+//                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                    band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
@@ -2896,9 +2897,10 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (!band->Ref || !band->Ref->Transform || !tm || memcmp(tm,band->Ref->Transform,6*sizeof(double))!=0) {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,band->Ref->String,tm,im,NULL);
-                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
-                     GeoRef_Destroy(Interp,ref->Name);
+                     GeoRef_WKTSet(ref,ref->String,tm,im,NULL);
+//                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
+//                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
+//                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
@@ -2943,9 +2945,10 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (!band->Ref || !band->Ref->InvTransform || !tm || memcmp(tm,band->Ref->InvTransform,6*sizeof(double))!=0) {
                   ref=band->Ref;
                   if (ref) {
-                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,band->Ref->String,tm,im,NULL);
-                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
-                     GeoRef_Destroy(Interp,ref->Name);
+                     GeoRef_WKTSet(ref,ref->String,tm,im,NULL);
+//                     band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
+//                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
+//                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
