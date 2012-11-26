@@ -92,6 +92,93 @@ int TclDataSpec_Init(Tcl_Interp *Interp) {
    return(TCL_OK);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_PutColor>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Extraire la couleur de la configuration selon que Tk est actif ou non
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <Color>       : Definition de la couleur
+ *
+ * Retour:
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void DataSpec_PutColor(Tcl_Interp *Interp,XColor *Color) {
+
+   char buf[16];
+
+   if (Color) {
+      if (GLRender) {
+         Tcl_AppendResult(Interp,Tk_NameOfColor(Color),(char*)NULL);
+      } else {
+         sprintf(buf,"#%02x%02x%02x",Color->red,Color->green,Color->blue);
+         Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
+      }
+   } else {
+      Tcl_AppendResult(Interp,"",(char*)NULL);
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_GetColor>
+ * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Recupere la couleur pour la configuration selon que Tk est actif ou non
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <Obj>         : Objet Tcl contenant la couleur
+ *  <Color>       : Definition de la couleur
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
+
+   int r,g,b,t;
+
+   if (*Color) GLRender?Tk_FreeColor(*Color):free(*Color);
+   *Color=NULL;
+
+   if (strlen(Tcl_GetString(Obj))) {
+      if (GLRender) {
+         if (!(*Color=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Obj))) {
+            return(TCL_ERROR);
+         }
+      } else {
+         *Color=(XColor*)malloc(sizeof(XColor));
+         if (strlen(Tcl_GetString(Obj))>7) {
+            if ((t=sscanf(Tcl_GetString(Obj),"#%04x%04x%04x",&r,&g,&b))!=3) {
+               Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            if ((t=sscanf(Tcl_GetString(Obj),"#%02x%02x%02x",&r,&g,&b))!=3) {
+               Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         (*Color)->red=r;
+         (*Color)->green=g;
+         (*Color)->blue=b;
+      }
+   }
+   return(TCL_OK);
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <DataSpec_Cmd>
  * Creation     : Avril 2006 J.P. Gauthier
@@ -1188,86 +1275,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       Spec->Set=1;
 
    DataSpec_Define(Spec);
-   return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <DataSpec_PutColor>
- * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Extraire la couleur de la configuration selon que Tk est actif ou non
- *
- * Parametres :
- *  <Interp>      : Interpreteur TCL
- *  <Color>       : Definition de la couleur
- *
- * Retour:
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void DataSpec_PutColor(Tcl_Interp *Interp,XColor *Color) {
-
-   char buf[16];
-
-   if (Color) {
-      if (GLRender) {
-         Tcl_AppendResult(Interp,Tk_NameOfColor(Color),(char*)NULL);
-      } else {
-         sprintf(buf,"#%02x%02x%02x",Color->red,Color->green,Color->blue);
-         Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
-      }
-   } else {
-      Tcl_AppendResult(Interp,"",(char*)NULL);
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <DataSpec_PutColor>
- * Creation : Mai 2012 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Recupere la couleur pour la configuration selon que Tk est actif ou non
- *
- * Parametres :
- *  <Interp>      : Interpreteur TCL
- *  <Obj>         : Objet Tcl contenant la couleur
- *  <Color>       : Definition de la couleur
- *
- * Retour:
- *  <TCL_...> : Code d'erreur de TCL.
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
-
-   int r,g,b,t;
-
-   if (*Color) GLRender?Tk_FreeColor(*Color):free(*Color);
-   *Color=NULL;
-
-   if (strlen(Tcl_GetString(Obj))) {
-      if (GLRender) {
-         if (!(*Color=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Obj))) {
-            return(TCL_ERROR);
-         }
-      } else {
-         *Color=(XColor*)malloc(sizeof(XColor));
-         if ((t=sscanf(Tcl_GetString(Obj),"#%02x%02x%02x",&r,&g,&b))!=3) {
-            Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         (*Color)->red=r;
-         (*Color)->green=g;
-         (*Color)->blue=b;
-      }
-   }
    return(TCL_OK);
 }
 
