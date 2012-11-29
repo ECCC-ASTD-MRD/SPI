@@ -179,7 +179,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return
    }
 
@@ -241,7 +241,7 @@ proc Dialog::ErrorListing { Master Text List } {
 
    uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]\}"
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return
    }
 
@@ -311,7 +311,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return
    }
 
@@ -369,7 +369,7 @@ proc Dialog::Wait { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return
    }
 
@@ -416,7 +416,7 @@ proc Dialog::Wait { Master Text { Extra "" } } {
 proc Dialog::WaitDestroy { { Ask False } } {
    variable Lbl
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return True
    }
 
@@ -454,7 +454,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] } {
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
       return
    }
 

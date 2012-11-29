@@ -1837,7 +1837,6 @@ proc SPI::Quit { { Code 0 } } {
       graphaxis   wipe
 
       glrender -shutdown
-
    }
 
    Log::Print INFO "Execution time : [expr ([clock clicks -milliseconds]-$Param(Time))/1000.0]s"

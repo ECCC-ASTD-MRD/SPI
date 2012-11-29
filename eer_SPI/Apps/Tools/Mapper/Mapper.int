@@ -288,6 +288,7 @@ proc Mapper::ParamsClose { } {
 #   <Cursor> : curseur a utiliser
 #
 #-------------------------------------------------------------------------------
+
 proc Mapper::Cursor { { Cursor left_ptr } } {
     variable Data
 

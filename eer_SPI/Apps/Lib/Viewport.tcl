@@ -1796,7 +1796,7 @@ proc Viewport::ParamFrame { Frame Apply } {
       pack $Data(Frame).left.axis.pick -side left -padx 2 -pady 2
 
    labelframe $Data(Frame).left.scale -text "Elevation"
-      scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 100\
+      scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 200 \
          -showvalue true -variable Viewport::Map(Elev) -relief flat \
          -command "if { \[projection is  \$Page::Data(Frame)\] && \[projection configure \$Page::Data(Frame) -scale\]!=\$Viewport::Map(Elev) } { Viewport::ParamSet }; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
       pack $Data(Frame).left.scale.height -side left -fill x -expand true -padx 2 -pady 2

@@ -151,7 +151,7 @@ proc ComboBox::AddList { W List { Check True } } {
       upvar #0 ComboBox::${W}lst Lst
       upvar #0 ComboBox::${W}typ Typ
 
-      set Lst [concat Lst $List]
+      set Lst [concat $Lst $List]
 
       if { $Typ == "sorted" } {
          set Lst [lsort $Lst]
