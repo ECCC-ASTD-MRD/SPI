@@ -212,9 +212,9 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    } else {
       band->Spec->Map=CMap_New(NULL,256);
-      band->Spec->Map->Control[0][0]=0;
-      band->Spec->Map->Control[0][1]=0;
-      band->Spec->Map->Control[0][2]=0;
+      band->Spec->Map->Control[0][0]=1;
+      band->Spec->Map->Control[0][1]=1;
+      band->Spec->Map->Control[0][2]=1;
       band->Spec->Map->Control[0][3]=NIdx==4?0:255;
       band->Spec->Map->Control[255][0]=255;
       band->Spec->Map->Control[255][1]=255;
@@ -2250,6 +2250,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"band index [min max bin approx]");
                return(TCL_ERROR);
             } else {
+               c=0;
                Tcl_GetIntFromObj(Interp,Objv[++i],&c);
                if (c<band->Def->NC) {
                   if (!band->Stat)
@@ -3066,6 +3067,8 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    int           n;
    GLuint        tx=0;
    GLhandleARB   prog;
+   OGR_Layer     *layer;
+   OGRGeometryH  *geom;
    Tcl_ThreadId  id;
 
    if (!Band || !Band->Spec) {
@@ -3105,6 +3108,22 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       }
    }
 
+   if (Band->Spec->OGRMask) {
+      glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+      glStencilMask(0x04);
+      glStencilFunc(GL_ALWAYS,0x4,0x4);
+      glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+      if (geom=OGR_GeometryGet(Tcl_GetString(Band->Spec->OGRMask))) {
+         OGR_GeometryRender(Proj,Band->Ref,NULL,geom,0.0,0.0);
+      } else if (layer=OGR_LayerGet(Tcl_GetString(Band->Spec->OGRMask))) {
+         OGR_LayerRender(NULL,Proj,Proj->VP,layer,1);
+      }
+      glStencilMask(0x04);
+      glStencilFunc(GL_EQUAL,0x04,0x04);
+      glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
+      glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+   }
+
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glEnable(GL_STENCIL_TEST);
@@ -3115,17 +3134,6 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glEnable(GL_COLOR_MATERIAL);
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
-   }
-
-   if (Band->Spec->OGRMask) {
-      glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-      glStencilMask(0x04);
-      glStencilFunc(GL_ALWAYS,0x4,0x4);
-      glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-      OGR_GeometryRender(Proj,Band->Ref,NULL,Band->Spec->OGRMask,0.0,0.0);
-      glStencilFunc(GL_EQUAL,0x04,0x04);
-      glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
-      glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
    }
 
    if (GLRender->GLZBuf || Band->Spec->Topo) {

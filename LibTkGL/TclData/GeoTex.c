@@ -194,8 +194,8 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 
    int       nc;
    float    *buf;
-   GLuint    sc[]={GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
-   GLuint    bc[]={GL_RED_BIAS, GL_GREEN_BIAS, GL_BLUE_BIAS, GL_ALPHA_BIAS };
+   GLuint    sc[]={ GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
+   GLuint    bc[]={ GL_RED_BIAS, GL_GREEN_BIAS, GL_BLUE_BIAS, GL_ALPHA_BIAS };
 
    if (!Band->Tex.Indexed && Band->Spec->Map) {
       Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
@@ -205,7 +205,7 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
          glEnable(GL_COLOR_TABLE);
          glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
 
-         for (nc=0;nc<Band->Def->NC;nc++) {
+         for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
             switch(Band->Def->Type) {
                case TD_UByte:  Band->Tex.Scale[nc]=((0x1<<8)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<8)-1);
@@ -257,6 +257,7 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
       } else {
          if (!GLRender->ShaderAvailable && Band->Def->NC==1) {
             Band->Tex.IType=GL_RGBA;
+
             glPixelTransferf(sc[1],Band->Tex.Scale[0]);
             glPixelTransferf(bc[1],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
             glPixelTransferf(sc[2],Band->Tex.Scale[0]);

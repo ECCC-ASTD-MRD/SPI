@@ -1553,7 +1553,7 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
          break;
       }
    }
-   if (i0<CMap->NbPixels-2) {
+   if (i0 && i0<CMap->NbPixels-2) {
       for(i=0;i<i0;i++) {
          memcpy(CMap->Table[i],CMap->Control[i0],4);
       }

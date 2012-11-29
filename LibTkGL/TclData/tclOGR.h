@@ -115,7 +115,7 @@ int              OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,c
 int              OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
 int              OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
 int              OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
-int              OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer);
+int              OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);
 void             OGR_LayerLimit(OGR_Layer *Layer);
 int              OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields);
 int              OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);

@@ -320,10 +320,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
    Tcl_Obj  *obj,*lst;
    CMap_Rec *map;
-   int       idx,i,ii,n,s=1,nobj,new;
+   int       idx,i,ii,n,s=1,nobj,new,internew;
    int       cminmax=0,cmap=0,cpos=0,cseg=0;
    char      buf[64];
-   double    tmp,min=0.0,max=0.0;
+   double    tmp,val,min=0.0,max=0.0;
 
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
@@ -346,6 +346,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    }
 
    if (Objc==1)  s=0;
+   internew=0;
 
    for(i=0;i<Objc;i++) {
 
@@ -903,18 +904,17 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_IncrRefCount(Spec->InterVals);
 
                /*Determine si ils sont nouveaux*/
-               new=0;
                for (ii=0;ii<nobj;ii++){
                   Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
-                  Tcl_GetDoubleFromObj(Interp,obj,&tmp);
-                  tmp=SPEC2VAL(Spec,tmp);
+                  Tcl_GetDoubleFromObj(Interp,obj,&val);
+                  tmp=SPEC2VAL(Spec,val);
                   if (nobj!=Spec->InterNb || tmp!=Spec->Inter[ii]) {
-                     new=1;
-                     Spec->Inter[ii]=tmp;
+                     internew=1;
+                     Spec->Inter[ii]=val;
                   }
                }
 
-               if (!Spec->InterMode && (new || nobj!=Spec->InterNb)) {
+               if (!Spec->InterMode && (internew || nobj!=Spec->InterNb)) {
                   Spec->InterNb=nobj;
                   cmap=cseg=1;
                }
@@ -1249,12 +1249,26 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case MASK:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj("",-1));
+               if (Spec->OGRMask)
+                  Tcl_SetObjResult(Interp,Spec->OGRMask);
             } else {
-               Spec->OGRMask=OGR_GeometryGet(Tcl_GetString(Objv[++i]));
+               if (Spec->OGRMask) {
+                  Tcl_DecrRefCount(Spec->OGRMask);
+                  Spec->OGRMask=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  Spec->OGRMask=Objv[i];
+                  Tcl_IncrRefCount(Spec->OGRMask);
+               }
             }
             break;
+      }
+   }
 
+   /*Appliquer les facteurs et delta aux nouveaux intervals*/
+   if (internew) {
+      for (ii=0;ii<Spec->InterNb;ii++){
+         Spec->Inter[ii]=SPEC2VAL(Spec,Spec->Inter[ii]);
       }
    }
 

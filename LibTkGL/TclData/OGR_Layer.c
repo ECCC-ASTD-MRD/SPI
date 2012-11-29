@@ -2409,7 +2409,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer) {
+int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask) {
 
    int     f,idx=-1,x,y,g,id,nf;
    int     fsize=-1,fmap=-1,flabel=-1;
@@ -2472,11 +2472,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    }
 
    /*Read in data in another thread*/
-   g=OGR_LayerParse(Layer,Proj,(GLRender->XBatch || GLRender->TRCon)?0:1);
+   g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->XBatch || GLRender->TRCon)?0:1);
 
    glDash(&spec->Dash);
    glEnable(GL_STENCIL_TEST);
-   glStencilMask(0xff);
+   if (!Mask)
+      glStencilMask(0xff);
 
    if (spec->Alpha<100 || (spec->Map && spec->Map->Alpha)) {
       glEnable(GL_BLEND);
@@ -2527,34 +2528,36 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    OGR_LayerPreInit(Layer);
 
-   if (Layer->Mask) {
-      if (Proj->Geo->Params.Mask==0) {
-         glMatrixMode(GL_PROJECTION);
-         glPushMatrix();
-         glLoadIdentity();
-         gluOrtho2D(0,VP->Width,0,VP->Height);
+   if (!Mask) {
+      if (Layer->Mask) {
+         if (Proj->Geo->Params.Mask==0) {
+            glMatrixMode(GL_PROJECTION);
+            glPushMatrix();
+            glLoadIdentity();
+            gluOrtho2D(0,VP->Width,0,VP->Height);
 
-         glMatrixMode(GL_MODELVIEW);
-         glPushMatrix();
-         glLoadIdentity();
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            glLoadIdentity();
 
-         glStencilFunc(GL_ALWAYS,0x2,0xff);
-         glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-         glDisable(GL_DEPTH_TEST);
+            glStencilFunc(GL_ALWAYS,0x2,0xff);
+            glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+            glDisable(GL_DEPTH_TEST);
 
-         glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-         ViewportClear(VP,0);
-         glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+            glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+            ViewportClear(VP,0);
+            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
 
-         glPopMatrix();
-         glMatrixMode(GL_PROJECTION);
-         glPopMatrix();
+            glPopMatrix();
+            glMatrixMode(GL_PROJECTION);
+            glPopMatrix();
+         }
+         glStencilFunc(GL_EQUAL,0x2,0xff);
+         glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
+      } else {
+         glStencilFunc(GL_EQUAL,0x0,0xff);
+         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
       }
-      glStencilFunc(GL_EQUAL,0x2,0xff);
-      glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
-   } else {
-      glStencilFunc(GL_EQUAL,0x0,0xff);
-      glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
 
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
@@ -2612,7 +2615,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glPointSize(0.0001);
 
             if (idx>=0) {
-                glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
             } else {
                glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
             }

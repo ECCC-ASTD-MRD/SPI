@@ -1598,7 +1598,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
          Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
 
          if ((layer=OGR_LayerGet(Tcl_GetString(obj)))) {
-            ras+=OGR_LayerRender(NULL,Proj,VP,layer);
+            ras+=OGR_LayerRender(NULL,Proj,VP,layer,0);
          }
          if ((band=GDAL_BandGet(Tcl_GetString(obj)))) {
             ras+=GDAL_BandRender(Proj,VP,band);

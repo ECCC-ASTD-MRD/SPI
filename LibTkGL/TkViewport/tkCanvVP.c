@@ -1303,7 +1303,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
                   Data_Render(NULL,fld,vp,proj,GL_RENDER,GL_VECTOR);
             }
             if ((layer=OGR_LayerGet(vp->DataItem.Array[i]))) {
-               OGR_LayerRender(NULL,proj,vp,layer);
+               OGR_LayerRender(NULL,proj,vp,layer,0);
             }
             if ((band=GDAL_BandGet(vp->DataItem.Array[i]))) {
                GDAL_BandRender(proj,vp,band);
@@ -2045,7 +2045,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
             }
          }
          if ((layer=OGR_LayerGet(vp->DataItem.Array[i]))) {
-            ras+=OGR_LayerRender(NULL,proj,vp,layer);
+            ras+=OGR_LayerRender(NULL,proj,vp,layer,0);
          }
          if ((band=GDAL_BandGet(vp->DataItem.Array[i]))) {
             ras+=GDAL_BandRender(proj,vp,band);
