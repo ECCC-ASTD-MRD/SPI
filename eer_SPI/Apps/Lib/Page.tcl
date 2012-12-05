@@ -853,35 +853,38 @@ proc Page::CursorInfo { Frame X Y Info { Graph "" } } {
 proc Page::Destroy { Frame } {
    variable Data
 
-   foreach object [Page::Registered $Frame] {
-      if { [set object [lindex [split [lindex $object 0] ":"] 0]]!="" } {
-         eval [lindex [split [lindex $object 0] ":"] 0]::Destroy $Frame
+   if { [llength [set objects [Page::Registered $Frame]]] } {
+
+      foreach object $objects {
+         if { [set object [lindex [split [lindex $object 0] ":"] 0]]!="" } {
+            eval [lindex [split [lindex $object 0] ":"] 0]::Destroy $Frame
+         }
       }
+
+      Viewport::UnSetup $Frame
+
+      if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
+         return
+      }
+      set Data(Frames) [lreplace $Data(Frames) $idx $idx]
+
+      #----- Activer la page precedente
+      if { $Data(Frame)==$Frame } {
+         set Data(Canvas)  ""
+         set Data(Frame)  ""
+         Page::Activate [lindex $Data(Frames) end] True
+      }
+
+
+      unset Data(Scale$Frame)
+      unset Data(Full$Frame)
+      unset Data(Width$Frame)
+      unset Data(Height$Frame)
+
+      #----- Suppression des objects
+
+      destroy $Frame
    }
-
-   Viewport::UnSetup $Frame
-
-   if { [set idx [lsearch -exact $Data(Frames) $Frame]]<0 } {
-      return
-   }
-   set Data(Frames) [lreplace $Data(Frames) $idx $idx]
-
-   #----- Activer la page precedente
-   if { $Data(Frame)==$Frame } {
-      set Data(Canvas)  ""
-      set Data(Frame)  ""
-      Page::Activate [lindex $Data(Frames) end] True
-   }
-
-
-   unset Data(Scale$Frame)
-   unset Data(Full$Frame)
-   unset Data(Width$Frame)
-   unset Data(Height$Frame)
-
-   #----- Suppression des objects
-
-   destroy $Frame
 }
 
 #----------------------------------------------------------------------------

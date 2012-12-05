@@ -580,7 +580,7 @@ proc ColorBar::Write { Frame File } {
    foreach vp [Page::Registered $Frame Viewport] {
       set i 0
       foreach field [Viewport::Assigned $Frame $vp { fstdfield observation }] {
-         if { [info exists ColorBar::Data($vp$i)] } {
+         if { [info exists ColorBar::Data($vp$i)] && [lindex $Data($vp$i) 0]!="" } {
             puts $File "   set ColorBar::Data(\$\{$Viewport::Data(Alias$vp)\}$i) \[list $ColorBar::Data($vp$i)\]"
          }
          incr i
