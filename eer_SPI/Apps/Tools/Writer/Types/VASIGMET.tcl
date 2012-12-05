@@ -411,13 +411,13 @@ proc Writer::VASIGMET::ToolBar { Pad } {
       -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
       -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
-      -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
+      -command "Writer::VASIGMAT::Write $Pad 0"
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
+      -command "PrintBox::Create $Pad PRINT Writer::VASIGMET"
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::Send }
+      -command "Writer::Send"
    button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::PadClose 1 }
+      -command "Writer::PadClose $Pad 1"
    pack $Pad.head.mode $Pad.head.save $Pad.head.print $Pad.head.send -side left -padx 2
    pack $Pad.head.close -side right -padx 2
 

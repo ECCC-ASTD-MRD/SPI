@@ -92,9 +92,9 @@ proc Writer::Menu { } {
       .writer.menu.win.menu add command -label [lindex $Lbl(Open) $GDefs(Lang)] \
          -command { Writer::PadNew "" Open NEW [FileBox::Create .writer $Writer::Param(Path) Load [list {EER Messages {*.msg*}}] ] }
       .writer.menu.win.menu add command -label [lindex $Lbl(Close) $GDefs(Lang)] \
-         -command { Writer::PadClose 1 }
+         -command { Writer::PadClose $Writer::Data(Pad) 1 }
       .writer.menu.win.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] \
-         -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
+         -command { Writer::${Writer::Data(Type$Writer::Data(Pad))}::Write $Writer::Data(Pad) 0 }
       .writer.menu.win.menu add separator
       .writer.menu.win.menu add command -label [lindex $Lbl(Send) $GDefs(Lang)] \
          -command { Writer::Send }
@@ -102,7 +102,7 @@ proc Writer::Menu { } {
          -command { Writer::Send 1 }
       .writer.menu.win.menu add separator
       .writer.menu.win.menu add command -label [lindex $Lbl(Print) $GDefs(Lang)] -underline 0 \
-         -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) } -state normal
+         -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type$Writer::Data(Pad)) } -state normal
       .writer.menu.win.menu add separator
       .writer.menu.win.menu add command -label [lindex $Lbl(Quit) $GDefs(Lang)] -underline 0 \
          -command { Writer::Close }
@@ -123,7 +123,7 @@ proc Writer::Menu { } {
 
    menu .writer.menu.msg.menu
       .writer.menu.msg.menu add command -label [lindex $Lbl(Update) $GDefs(Lang)] \
-         -command { Writer::${Writer::Data(Type)}::Update $Writer::Data(Pad) }
+         -command { Writer::${Writer::Data(Type$Writer::Data(Pad))}::Update $Writer::Data(Pad) }
       .writer.menu.msg.menu add command -label [lindex $Lbl(Correct) $GDefs(Lang)] \
-         -command { Writer::${Writer::Data(Type)}::Correct $Writer::Data(Pad) }
+         -command { Writer::${Writer::Data(Type$Writer::Data(Pad))}::Correct $Writer::Data(Pad) }
 }

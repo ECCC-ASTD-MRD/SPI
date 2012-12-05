@@ -88,6 +88,11 @@ proc Writer::Close { } {
       $Data(Canvas) delete FVCN
    }
 
+   #----- Detruire les onglets existants
+   foreach pad [TabFrame::GetTabs .writer.pad] {
+      Writer::PadClose .writer.pad.frame$pad
+   }
+
    set Data(Active) 0
 
    #----- Supprimer les autosave
@@ -106,6 +111,7 @@ proc Writer::Close { } {
 # But      : Supprime un onglet/message
 #
 # Parametres :
+#   <Pad>    : Onglet du message
 #   <Save>   : Demande de sauvegarde
 #
 # Retour:
@@ -114,22 +120,22 @@ proc Writer::Close { } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::PadClose { Save } {
+proc Writer::PadClose { Pad { Save True } } {
    global   GDefs
    variable Data
    variable Lbl
    variable Msg
 
-   if { $Data(Pad)!="" } {
+   if { $Pad!="" } {
 
       #----- Verification de l'edition du message
 
-      eval set upd \$Writer::$Data(Type)::Data(Handle$Data(Pad))
+      eval set upd \$Writer::$Data(Type$Pad)::Data(Handle$Pad)
 
       #----- Sauvegarde
       if { $upd!="" && $Save } {
-         if { [Dialog::Default .writer 300 WARNING $Msg(Save) "" 0 $Lbl(No) $Lbl(Yes)] } {
-            Writer::${Data(Type)}::Write $Data(Pad) 0
+         if { [Dialog::Default .writer 300 WARNING $Msg(Save) "($Data(Type$Pad))" 0 $Lbl(No) $Lbl(Yes)] } {
+            Writer::${Data(Type$Pad)}::Write $Pad 0
          }
       }
 
@@ -139,10 +145,10 @@ proc Writer::PadClose { Save } {
       }
 
       #----- Nettoyage du message
-      Writer::$Data(Type)::Clear $Data(Pad)
+      Writer::$Data(Type$Pad)::Clear $Pad
 
       #----- Suppression de l'onget
-      TabFrame::Delete .writer.pad 1 [string index $Data(Pad) end]
+      TabFrame::Delete .writer.pad 1 [string index $Pad end]
       set Data(Pad) ""
       TabFrame::Select .writer.pad [TabFrame::Current .writer.pad]
    }
@@ -184,7 +190,7 @@ proc Writer::PadNew { Type Mode Layout File } {
    }
 
    set Data(Pad)  [TabFrame::Add .writer.pad 1 $title False]
-   set Data(Type) $Type
+   set Data(Type$Data(Pad)) $Type
 
    frame $Data(Pad).head
    pack $Data(Pad).head -side top -fill x
@@ -254,20 +260,7 @@ proc Writer::PadSwitch { Tab No } {
    variable Data
 
    set Data(Pad)  $Tab.frame$No
-
-   set Data(Type) ""
-
-   if { [winfo exists $Data(Pad).fvcn] } {
-      set Data(Type) FVCN
-   }
-   if { [winfo exists $Data(Pad).aacn] } {
-      set Data(Type) AACN
-   }
-   if { [winfo exists $Data(Pad).vasigmet] } {
-      set Data(Type) VASIGMET
-   }
 }
-
 
 #----------------------------------------------------------------------------
 # Nom      : <Writer::Send>
@@ -296,8 +289,8 @@ proc Writer::Send { { Backup 0 } } {
       return
    }
 
-   Writer::$Data(Type)::Send $Data(Pad) $Backup
-   Writer::PadClose 0
+   Writer::$Data(Type$Data(Pad))::Send $Data(Pad) $Backup
+   Writer::PadClose $Data(Pad) 0
 
    Dialog::Info .writer $Writer::Msg(Sent)
 }
@@ -522,7 +515,7 @@ proc Writer::UpdateItems { Frame } {
    global GDefs
    variable Data
 
-   Writer::$Data(Type)::UpdateItems $Frame "" $Data(Pad)
+   Writer::$Data(Type$Data(Pad))::UpdateItems $Frame "" $Data(Pad)
 }
 
 #-------------------------------------------------------------------------------

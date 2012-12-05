@@ -512,7 +512,7 @@ proc Writer::AACN::Source { Array Index Op } {
 proc Writer::AACN::Site { No Name Lat Lon Elev Area } {
    variable Data
 
-   if { $Writer::Data(Type)!="AACN" } {
+   if { $Writer::Data(Type$Writer::Data(Pad))!="AACN" } {
       return
    }
    if  { $Name!="UNKNOWN" } {
@@ -561,15 +561,15 @@ proc Writer::AACN::ToolBar { Pad } {
    global GDefs
 
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
-      -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
+      -command "Writer::AACN::Write $Pad 0"
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
+      -command "PrintBox::Create $Pad PRINT Writer::AACN"
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::Send }
+      -command "Writer::Send"
    button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
-      -command { Writer::Send 1 }
+      -command "Writer::Send 1"
    button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::PadClose 1 }
+      -command "Writer::PadClose $Pad 1"
    pack $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
    pack $Pad.head.close -side right -padx 2
 

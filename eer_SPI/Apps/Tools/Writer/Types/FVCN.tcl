@@ -135,7 +135,7 @@ proc Writer::FVCN::New { Pad Mode } {
          Writer::FVCN::SetNext $Pad $Pad.next 1 FVCN
          Writer::FVCN::SetInfo $Pad $Pad.info
          pack forget $Pad.head.test
-     }
+      }
       default {
          $Pad.remarks insert 0.0 NIL
          $Pad.details insert 0.0 UNKNOWN
@@ -1047,6 +1047,8 @@ proc Writer::FVCN::Clear { Pad } {
    if { [winfo exists $Writer::Data(Canvas)] } {
       $Writer::Data(Canvas) delete FVCN
    }
+
+   Page::Destroy $Pad.pg
 }
 
 #----------------------------------------------------------------------------
@@ -1748,18 +1750,18 @@ proc Writer::FVCN::ToolBar { Pad } {
       -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
       -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
    button $Pad.head.save -image OPEN -bd 0 -relief flat -overrelief raised \
-      -command { Writer::${Writer::Data(Type)}::Write $Writer::Data(Pad) 0 }
+      -command "Writer::FVCN::Write $Pad 0"
    button $Pad.head.print -image PRINT -bd 0 -relief flat -overrelief raised \
-      -command { PrintBox::Create $Writer::Data(Pad) PRINT Writer::$Writer::Data(Type) }
+      -command "PrintBox::Create $Pad PRINT Writer::FVCN"
    button $Pad.head.send -image ENVELOPE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::Send }
+      -command "Writer::Send"
    button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
-      -command { Writer::Send 1 }
-   checkbutton $Pad.head.test -variable Writer::${Writer::Data(Type)}::Data(Test$Pad) -onvalue True -offvalue False \
+      -command "Writer::Send 1"
+   checkbutton $Pad.head.test -variable Writer::FVCN::Data(Test$Pad) -onvalue True -offvalue False \
       -text [lindex $Writer::Lbl(Test) $GDefs(Lang)] -indicatoron 0 -relief groove -bd 2 -overrelief flat -offrelief groove  \
-      -command { Writer::${Writer::Data(Type)}::Test $Writer::Data(Pad) }
+      -command "Writer::FVCN::Test $Pad"
    button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
-      -command { Writer::PadClose 1 }
+      -command "Writer::PadClose $Pad 1"
    pack $Pad.head.mode $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
    pack $Pad.head.test -side left -ipadx 2 -padx 2 -fill y
    pack $Pad.head.close -side right -padx 2
@@ -1786,6 +1788,7 @@ proc Writer::FVCN::ToolBar { Pad } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
+
 proc Writer::FVCN::Test { Pad } {
    variable Data
 
@@ -2061,7 +2064,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
 proc Writer::FVCN::Site { No Name Lat Lon Elev Area } {
    variable Data
 
-   if { $Writer::Data(Type)!="FVCN" } {
+   if { $Writer::Data(Type$Writer::Data(Pad))!="FVCN" } {
       return
    }
 
