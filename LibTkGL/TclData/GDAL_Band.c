@@ -212,9 +212,9 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       }
    } else {
       band->Spec->Map=CMap_New(NULL,256);
-      band->Spec->Map->Control[0][0]=1;
-      band->Spec->Map->Control[0][1]=1;
-      band->Spec->Map->Control[0][2]=1;
+      band->Spec->Map->Control[0][0]=0;
+      band->Spec->Map->Control[0][1]=0;
+      band->Spec->Map->Control[0][2]=0;
       band->Spec->Map->Control[0][3]=NIdx==4?0:255;
       band->Spec->Map->Control[255][0]=255;
       band->Spec->Map->Control[255][1]=255;
@@ -2178,14 +2178,14 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int          i,c,w,h,idx,*histo,ex=0,tr=1;
+   int          i,c,w,h,idx,*histo,ex=0,tr=1,i0,i1,b,c0,c1,cnt;
    double       lat,lon,x0,y0,dval,min,max;
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
-      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM };
+      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch",NULL };
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2250,13 +2250,13 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"band index [min max bin approx]");
                return(TCL_ERROR);
             } else {
-               c=0;
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
+               b=0;
+               Tcl_GetIntFromObj(Interp,Objv[++i],&b);
                if (c<band->Def->NC) {
                   if (!band->Stat)
                      GDAL_BandGetStat(band);
-                  min=band->Stat[c].Min;
-                  max=band->Stat[c].Max;
+                  min=band->Stat[b].Min;
+                  max=band->Stat[b].Max;
                   h=256;
                   w=1;
                   if (Objc>2) {
@@ -2269,12 +2269,66 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
                      return(TCL_ERROR);
                   } else {
-                     GDALGetRasterHistogram(band->Band[c],min,max,h,histo,FALSE,w,GDALDummyProgress,NULL);
+                     GDALGetRasterHistogram(band->Band[b],min,max,h,histo,FALSE,w,GDALDummyProgress,NULL);
                      obj=Tcl_NewListObj(0,NULL);
                      for(c=0;c<h;c++) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(histo[c]));
                      }
                   free(histo);
+                     Tcl_SetObjResult(Interp,obj);
+                  }
+               }
+            }
+            break;
+
+         case STRETCH:
+            if (Objc!=4) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"band index from_percent to_percent");
+               return(TCL_ERROR);
+            } else {
+               b=0;
+               Tcl_GetIntFromObj(Interp,Objv[++i],&b);
+               if (b<band->Def->NC) {
+                  if (!band->Stat)
+                     GDAL_BandGetStat(band);
+                  min=band->Stat[b].Min;
+                  max=band->Stat[b].Max;
+                  h=1024;
+                  dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
+                  if (!(histo=(int*)malloc(h*sizeof(int)))) {
+                     Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
+                     return(TCL_ERROR);
+                  } else {
+                     GDALGetRasterHistogram(band->Band[b],min,max,h,histo,FALSE,FALSE,GDALDummyProgress,NULL);
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
+                     obj=Tcl_NewListObj(0,NULL);
+
+                     c0=FSIZE2D(band->Def)*(min/100.0);
+                     c1=FSIZE2D(band->Def)*(max/100.0);
+                     cnt=0;
+                     i0=-1;
+                     i1=-1;
+                     for(c=0;c<h;c++) {
+                        if (cnt<=c0)
+                           i0=c;
+
+                        cnt+=histo[c];
+
+                        if (cnt<=c1)
+                           i1=c;
+                        else
+                           break;
+                     }
+                     free(histo);
+
+                     if (i0==i1) {
+                        i0=0;
+                        i1=h-1;
+                     }
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i0*dval));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i1*dval));
+
                      Tcl_SetObjResult(Interp,obj);
                   }
                }
