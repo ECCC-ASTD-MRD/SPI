@@ -1758,9 +1758,13 @@ int DataSpec_Free(TDataSpec *Spec){
 
    if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
    if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);
+   if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);
 
    if (Spec->InterpDegree) free(Spec->InterpDegree);
    if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);
+   if (Spec->LabelVar)     free(Spec->LabelVar);
+   if (Spec->SizeVar)      free(Spec->SizeVar);
+   if (Spec->MapVar)       free(Spec->MapVar);
 
    if (Spec->Map) CMap_Free(Spec->Map);
 

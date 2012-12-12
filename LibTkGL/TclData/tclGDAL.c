@@ -276,7 +276,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
             }
 
-            if (field0->Ref->Id==field1->Ref->Id) {
+            if (field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
                return(Data_Copy(Interp,field1,Tcl_GetString(Objv[2])));
             }
 
@@ -1663,7 +1663,10 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Could not initialise VRT driver",(char*)NULL);
       return(TCL_ERROR);
    }
-   vds=GDALCreate(dr,"",band->Def->NI,band->Def->NJ,0,TD2GDAL[band->Def->Type],NULL);
+   if (!(vds=GDALCreate(dr,"",band->Def->NI,band->Def->NJ,0,TD2GDAL[band->Def->Type],NULL))) {
+      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Could not create in memory dataset",(char*)NULL);
+      return(TCL_ERROR);
+   }
 
    /*Set the georeference stuff*/
    if (band->NbGCPs) {
@@ -1720,6 +1723,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
             if (band->Tex.Indexed) {
                GDALSetRasterColorInterpretation(band->Band[i],GCI_PaletteIndex);
             }
+            GDALDestroyColorTable(htable);
          }
          nc++;
       }
@@ -1738,6 +1742,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       Tcl_AppendResult(Interp,"Could not create dataset ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
+   GDALClose(vds);
 
    return(TCL_OK);
 }

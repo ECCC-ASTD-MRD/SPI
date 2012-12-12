@@ -94,7 +94,6 @@ typedef struct TDataSpec {
    int         NRef;                /*Compteur de reference*/
 
    int             Active;              /*Flag d'activation de l'affichage*/
-   Tcl_Obj        *OGRMask;             /*Masque vectoriel*/
    CMap_Rec       *Map;                 /*Palette Associee*/
    XColor         *Outline,*HighLine;   /*Couleur des segments*/
    XColor         *Fill,*HighFill;      /*Couleur de remplissage*/
@@ -115,6 +114,7 @@ typedef struct TDataSpec {
    float           Inter[DATASPEC_MAX]; /*Intervalles de contours*/
    Tcl_Obj        *InterLabels;         /*Libelle des intervalles*/
    Tcl_Obj        *InterVals;           /*Intervalles*/
+   Tcl_Obj        *OGRMask;             /*Masque vectoriel*/
    int             InterNb;             /*Nombre d'intervalles de contour*/
    int             InterMode;           /*Mode de calcul des intervalles de contour*/
    double          InterModeParam;      /*Parameter du mode de calcul des intervalles de contours*/
