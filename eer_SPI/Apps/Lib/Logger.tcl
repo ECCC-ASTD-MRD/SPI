@@ -54,6 +54,7 @@ namespace eval Log { } {
    set Param(SecLog)      $Param(SecTime)       ;#Log time
    set Param(SecStart)    $Param(SecTime)       ;#Start time
    set Param(SecEnd)      $Param(SecTime)       ;#End time
+   set Param(Rotate)      86400                 ;#Log rotate time
 
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
    set Param(MailTitle)   "Job Info"            ;#Mail title
@@ -392,15 +393,15 @@ proc Log::Print { Type Message { Var "" } } {
       fconfigure $Param(Out) -buffering line
    }
 
-   #----- Check if we need to split the log file
-   if { $Param(JobClass)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>86400 } {
+   #----- Check if we need to rotate the log file
+   if { $Param(JobClass)=="DAEMON" && $Param(Rotate) && [expr [clock seconds]-$Param(SecLog)]>$Param(Rotate) } {
       if { [file exists $Param(OutFile)] } {
          close $Param(Out)
          file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
          set Param(Out) [open $Param(OutFile) w]
          fconfigure $Param(Out) -buffering line
       }
-      incr Param(SecLog) 86400
+      incr Param(SecLog) $Param(Rotate)
 
       #----- Print stats up til now
       Log::CyclopeSysInfo
