@@ -49,6 +49,9 @@ gdalband read RASTER $bands
 puts "   Min     : [gdalband stats RASTER -min]"
 puts "   Max     : [gdalband stats RASTER -max]"
 
+puts "   Histogram  : [gdalband stats RASTER -histogram 0]"
+puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 10 90]"
+
 #----- converions pixel-latlon et inverse
 
 set ll [gdalband project RASTER 100 100]
@@ -63,13 +66,15 @@ gdalband create NEWRASTER 900 900 1 Byte
 puts "    Saving direct mode"
 gdalfile open NEWFILE write DataOut/GDAL_Basic.envi "ENVI"
 gdalband write NEWRASTER NEWFILE
-gdalfile close NEWFILE
 
-puts "    Saving copy mode (PNG)"
 gdalband stats NEWRASTER -nodata 100
 gdalband clear NEWRASTER
 
-gdalfile createcopy  DataOut/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
+gdalfile close NEWFILE
+
+puts "    Saving copy mode (PNG)"
+
+gdalfile createcopy DataOut/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
 
 puts "    Freeing a band "
 gdalband free NEWRASTER

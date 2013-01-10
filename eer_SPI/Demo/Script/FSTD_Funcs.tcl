@@ -24,6 +24,8 @@ package require TclData
 
 puts \n[file tail [info script]]
 
+fstdfield ip1mode NEW
+
 set secs [clock seconds]
 puts "Testing stamp functions for [clock format $secs]"
 puts "   seconds: $secs"
@@ -33,11 +35,14 @@ puts "   r.date : [exec r.date $stamp]"
 puts "   date   : [clock format [fstdstamp toseconds $stamp]]"
 
 puts "\nTesting ip conversion :"
-puts "   ip1 12000      : [fstdgrid convip 12000]"
+puts "   ip 12000       : [fstdgrid convip 12000]"
+puts "   ip 176260768   : [fstdgrid convip 176260768]"
+puts ""
 puts "   1000.0 PRESSURE: [fstdgrid convip 1000.0 PRESSURE]"
 puts "   0.9    ETA     : [fstdgrid convip 0.9 ETA]"
 puts "   2500   MASL    : [fstdgrid convip 2500.0 MASL]"
 puts "   2500   MAGL    : [fstdgrid convip 2500.0 MAGL]"
+puts "   10     HOUR    : [fstdgrid convip 10.0 HOUR]"
 
 puts "\nTesting integer data"
 fstdfield create FLDINT 10 10 1 UInt32
@@ -49,6 +54,14 @@ puts "\nTesting contour extraction ($inter):"
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read TT 1 -1 "" 12000 -1 -1 "" "TT"
 
+fstdfield configure TT -intervals $inter
+fstdfield stats TT -limits { 10 10 0 100 100 0 }
+
+set n 0
+foreach contour [fstdfield stats TT -coordcontour] {
+   puts "  Contour [incr n] length [llength $contour]"
+}
+
 puts "\nTesting insideness functions"
 puts "   Range : 50 -150 60 -140"
 puts "      Gridpoints within range : [fstdfield stats TT -within [list 50 -150 60 -140]]"
@@ -59,14 +72,6 @@ puts "   Polygon : 50 -150 50 -140 60 -140 60 -150"
 puts "      Gridpoints within polygon : [fstdfield stats TT -within [list 50 -150 50 -140 60 -140 60 -150]]"
 puts "      Minimum within polygon    : [fstdfield stats TT -min [list 50 -150 50 -140 60 -140 60 -150]]"
 puts "      Avegage within polygon    : [fstdfield stats TT -avg [list 50 -150 50 -140 60 -140 60 -150]]"
-
-fstdfield configure TT -intervals $inter
-fstdfield stats TT -limits { 10 10 0 100 100 0 }
-
-set n 0
-foreach contour [fstdfield stats TT -coordcontour] {
-   puts "  Contour [incr n] length [llength $contour]"
-}
 
 puts "\nTesting parser's slicers"
 puts "   min=[vexpr NIL smin(TT)] [fstdfield stats TT -min]"
@@ -110,6 +115,8 @@ if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
 }
 fstdfile close TRUNC
 
+puts stderr 111
+exit 0
 #----- Test l'ouverture de plus de 1000 fichiers
 puts "\nTesting multiple file open:"
 for { set i 0 } { $i<=1001 } { incr i } {

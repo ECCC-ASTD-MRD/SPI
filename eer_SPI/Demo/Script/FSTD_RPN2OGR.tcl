@@ -24,8 +24,6 @@ package require TclData
 package require Export
 package require Logger
 
-set GDefs(Lang) 0
-
 namespace eval RPN2OGR { } {
    variable Param
 
@@ -40,19 +38,24 @@ namespace eval RPN2OGR { } {
    set Param(ProjFile)  ""
    set Param(Intervals) {}
    set Param(Vars)      {}
+   set Param(Factors)   {}
    set Param(Out)       ./out
 
-   set Param(CommandLine) "   -format : Output format (Default: \"$Param(Format)\")
-   -var    : List of variables to process (Mandatory)
-   -map    : Colormap (Default: $Param(Map))
-   -mode   : Feature type ($Export::Vector::Param(Modes)) (Default: \"$Param(Mode)\")
-   -inter  : List of coutour to use (Default: None)
-   -fstd   : List of RPN files to process (Mandatory)
-   -ip1    : IP1 to use (Default: $Param(IP1))
-   -ip3    : IP3 to use (Default: $Param(IP3))
-   -prj    : prj georeference file to use for output file (default: WGS84 latlon)
-   -out    : Output directory (Default: $Param(Out))
-   -help   : This information"
+   set Param(CommandLine) "   Command line otions are:\n
+      -format : Output format (Default: \"$Param(Format)\")
+      -var    : List of variables to process (Mandatory)
+      -factor : List of factors per variables (Default:{})
+      -map    : Colormap (Default: $Param(Map))
+      -mode   : Feature type ($Export::Vector::Param(Modes)) (Default: \"$Param(Mode)\")
+      -inter  : List of coutour to use (Default: None)
+      -fstd   : List of RPN files to process (Mandatory)
+      -ip1    : IP1 to use (Default: $Param(IP1))
+      -ip3    : IP3 to use (Default: $Param(IP3))
+      -prj    : prj georeference file to use for output file (default: WGS84 latlon)
+      -out    : Output directory (Default: $Param(Out))
+      -help   : This information
+      
+      Available formats: \n\t[ogrfile format]"
 }
 
 proc RPN2OGR::Run { } {
@@ -73,12 +76,18 @@ proc RPN2OGR::Run { } {
          set time [clock format $datev -format "%Y%m%d_%H%M" -gmt True]
          Log::Print INFO "   Found date $time"
 
+         set v 0
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
             foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] "" $Param(IP1) -1 $Param(IP3) "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
+               
+               if { [llength $Param(Factors)] } {
+                  fstdfield configure DATA$n -factor [lindex $Param(Factors) $v]
+               }
+               
                switch $Param(Mode) {
                   "POINT"   { fstdfield configure DATA$n -rendergrid 1 }
                   "CELL"    { fstdfield configure DATA$n -rendertexture 1 }
@@ -88,6 +97,7 @@ proc RPN2OGR::Run { } {
                lappend fields DATA$n
                lappend kmlfields DATA$n
                incr n
+               incr v
             }
          }
 
@@ -139,6 +149,7 @@ proc RPN2OGR::ParseCommandLine { } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          "format"   { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Format)] }
          "var"      { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Vars)] }
+         "factor"   { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Factors)] }
          "map"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Map)] }
          "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Mode) $Export::Vector::Param(Modes)] }
          "inter"    { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Intervals)] }

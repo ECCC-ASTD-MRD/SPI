@@ -24,7 +24,7 @@ puts \n[file tail [info script]]
 
 package require TkglCanvas
 package require TkViewport
-package require Img
+#package require Img
 #package require tkpng
 
 #----- Creation des fonctions de manipulation des objets du canvas

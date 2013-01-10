@@ -26,7 +26,7 @@ puts \n[file tail [info script]]
 
 fstdfile open FILE read [lindex $argv 0]
 
-foreach field [fstdfield find FILE -1 "" -1 -1 -1 "" ""] {
+foreach field [fstdfield find FILE -1 "" { 0.0510 ETA } -1 -1 "" ""] {
    puts "   [fstdfield head FILE $field]"
 }
 
