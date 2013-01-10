@@ -35,7 +35,9 @@ OBJ = $(GRAMMAR).tab.o lex.vexpr_.o $(GRAMMAR).o gpc.o \
 all: $(OBJ)
 
 link:
-	$(LD) -o libTclData-$(LIB_VER).so $(OBJ) $(LDFLAGS) $(LIBS) $(LIBTCLTK)
+#	$(LD) -o libTclData-$(LIB_VER).so /users/dor/armn/viv/cnfs/EZ/Linux_x86-64/pgi9xx/c_ezscint.o $(OBJ) $(LDFLAGS) $(LIBS) $(LIBTCLTK)
+	$(LD) -o libTclData-$(LIB_VER).so /cnfs/ops/cmoe/afsr005/Archive/ezscint/c_ezscint.o $(OBJ) $(LDFLAGS) $(LIBS) $(LIBTCLTK)
+#	$(LD) -o libTclData-$(LIB_VER).so $(OBJ) $(LDFLAGS) $(LIBS) $(LIBTCLTK)
 	cp libTclData-$(LIB_VER).so $(LIB_PATH)
 	rm -f libTclData.so $(LIB_PATH)/libTclData.so
 	ln -s libTclData-$(LIB_VER).so libTclData.so

@@ -126,7 +126,7 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          break;
 
       case CLEAN:
-        proj=Projection_Get(Tcl_GetString(Objv[2]));
+         proj=Projection_Get(Tcl_GetString(Objv[2]));
          if (!proj) {
             Tcl_AppendResult(Interp,"\n   Projection_Cmd: Projection name unknown: \"",Tcl_GetString(Objv[2]),"\"",(char *)NULL);
             return(TCL_ERROR);
@@ -1529,7 +1529,8 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    OGR_Layer *layer;
    int        ras=0,i;
 
-   if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
+   // If it's a grid projection without a referential or aglobal  U grid
+   if (Proj->Type->Def==PROJPLANE && (!Proj->Ref || (Proj->Ref->NbId>1 && Proj->Ref->NId==0))) {
       return(0);
    }
 

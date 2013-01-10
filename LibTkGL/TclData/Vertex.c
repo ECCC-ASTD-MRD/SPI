@@ -335,7 +335,7 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
    k=Z;Z-=k;
 
    /*Get gridpoint indexes*/
-   idx0=j*Def->NI+i;
+   idx0=Def->Idx+j*Def->NI+i;
    idx1=idx0+1;
    idx3=(j==Def->NJ-1)?idx0:idx0+Def->NI;
    idx2=idx3+1;

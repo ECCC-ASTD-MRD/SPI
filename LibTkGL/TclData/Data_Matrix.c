@@ -266,7 +266,7 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
          n++;
       }
    } else {
-      if (GField->Ref->Id<=-1 || GFieldP->Ref->Id<=-1) {
+      if (GField->Ref->Ids[GField->Ref->NId]<=-1 || GFieldP->Ref->Ids[GFieldP->Ref->NId]<=-1) {
          Data_GridInterpolate(NULL,'L',GField->Ref,GData[GDataN],GFieldP->Ref,B);
       } else {
          switch(Degree) {
@@ -275,7 +275,7 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
             case 3:c_ezsetopt("INTERP_DEGREE","CUBIC");break;
          }
          c_ezsetopt("EXTRAP_DEGREE","NEUTRAL");
-         n=c_ezdefset(GField->Ref->Id,GFieldP->Ref->Id);
+         n=c_ezdefset(GField->Ref->Ids[GField->Ref->NId],GFieldP->Ref->Ids[GFieldP->Ref->NId]);
 
          for(k=0;k<B->NK;k++) {
             /*Interpolation vectorielle*/
@@ -561,7 +561,7 @@ TDataDef* Calc_Dir(TDataDef* A) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
-         c_gdxywdval(GField->Ref->Id,spd,p,p0,p1,fx,fy,FSIZE2D(A));
+         c_gdxywdval(GField->Ref->Ids[GField->Ref->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
       EZUnLock_RPNInt();
 

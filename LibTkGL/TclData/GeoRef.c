@@ -207,7 +207,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          }
       }
       EZLock_RPNInt();
-      c_gdllfxy(FromRef->Id,(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
+      c_gdllfxy(FromRef->Ids[FromRef->NId],(float*)Scan->Y,(float*)Scan->X,(float*)Scan->X,(float*)Scan->Y,n);
       EZUnLock_RPNInt();
 
       d=dd?2:1;
@@ -270,12 +270,12 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
       }
 
       EZLock_RPNInt();
-      c_gdxyfll(ToRef->Id,(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      c_gdxyfll(ToRef->Ids[ToRef->NId],(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
       /*If we have the data of source, get it's values right now*/
       if (ToDef) {
          if (Degree)
             c_ezsetopt("INTERP_DEGREE",Degree);
-         c_gdxysval(ToRef->Id,Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
+         c_gdxysval(ToRef->Ids[ToRef->NId],Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
       }
       EZUnLock_RPNInt();
 
@@ -468,7 +468,6 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          }
 
          ref0=GeoRef_New();
-         ref0->Id=-(++TGeoRef_TableNo);
 
          if (Objc==4) {
             if (!GeoRef_WKTSet(ref0,Tcl_GetString(Objv[3]),NULL,NULL,NULL)) {
@@ -723,7 +722,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj     *obj;
 
    static CONST char *sopt[] = { "-projection","-transform","-invtransform","-extent","-location","-type","-border",NULL };
-   enum        opt {  PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER };
+   enum        opt { PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER };
 
    ref=GeoRef_Get(Name);
    if (!ref) {
@@ -1149,9 +1148,14 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       Ref->Pos=NULL;
    }
 
-   // Release ezscint grid if ok
-   if (Ref->Id>-1)
-      EZGrid_IdFree(Ref->Id);
+   // Release ezscint sub-grid
+   if (Ref->Ids) {
+      for(n=0;n<Ref->NbId+1;n++) {
+         if (Ref->Ids[n]>-1)
+            EZGrid_IdFree(Ref->Ids[n]);
+      }
+      free(Ref->Ids);  Ref->Ids=NULL;
+   }
 
    if (Ref->GCPTransform) {
       GDALDestroyGCPTransformer(Ref->GCPTransform);
@@ -1226,7 +1230,6 @@ void GeoRef_Qualify(TGeoRef *Ref) {
          }
       }
 
-
       if (Ref->Grid[0]=='V') {
          Ref->Type|=GRID_VERTICAL;
       }
@@ -1264,7 +1267,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
    if (Dim==3 && !ZRef_Equal(&Ref0->ZRef,&Ref1->ZRef))
       return(0);
 
-   if (Ref0->Id>-1 && Ref1->Id>-1 && Ref0->Id!=Ref1->Id)
+   if (Ref0->Ids && Ref1->Ids && Ref0->Ids[Ref0->NId]!=Ref1->Ids[Ref1->NId])
       return(0);
 
    if (Ref0->R!=Ref1->R || Ref0->ResR!=Ref1->ResR || Ref0->ResA!=Ref1->ResA || Ref0->Loc.Lat!=Ref1->Loc.Lat || Ref0->Loc.Lon!=Ref1->Loc.Lon || Ref0->Loc.Elev!=Ref1->Loc.Elev)
@@ -1312,6 +1315,8 @@ TGeoRef *GeoRef_Reference(TGeoRef *Ref) {
    ref->R=Ref->R;
    ref->ResR=Ref->ResR;
    ref->ResA=Ref->ResA;
+   ref->NbId=1;
+   ref->NId=0;
 
    GeoRef_Put(NULL,NULL,ref);
    return(ref);
@@ -1331,7 +1336,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 
       /*Look for an already existing object that could match*/
       entry=Tcl_FirstHashEntry(&GeoRef_Table,&ptr);
-
       while (entry) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
 
@@ -1348,7 +1352,6 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 
    /*Otherwise, create a new one*/
    ref=Ref;
-   ref->Id=ref->Id==-1?-(++TGeoRef_TableNo):ref->Id;
 
    GeoRef_Put(NULL,NULL,ref);
 
@@ -1358,6 +1361,7 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref) {
 TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
 
    TGeoRef *ref;
+   int      i;
 
    ref=GeoRef_New();
    GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->Z0,Ref->X1,Ref->Y1,Ref->Z1,Ref->BD);
@@ -1367,6 +1371,15 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
    ref->Type=Ref->Type;
+   ref->NbId=Ref->NbId;
+   ref->NId=Ref->NId;
+
+   if (Ref->Ids) {
+      ref->Ids=(int*)malloc(Ref->NbId*sizeof(int));
+      memcpy(ref->Ids,Ref->Ids,Ref->NbId*sizeof(int));
+      for(i=0;i<ref->NbId;i++)
+         EZGrid_IdIncr(ref->Ids[i]);
+   }
 
    ref->IG1==Ref->IG1;
    ref->IG2==Ref->IG2;
@@ -1377,7 +1390,6 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
 
    switch(ref->Grid[0]) {
       case 'R' :
-         ref->Id=-(++TGeoRef_TableNo);
          ref->Loc.Lat=Ref->Loc.Lat;
          ref->Loc.Lon=Ref->Loc.Lon;
          ref->Loc.Elev=Ref->Loc.Elev;
@@ -1385,12 +1397,8 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
          ref->ResR=Ref->ResR;
          ref->ResA=Ref->ResA;
       case 'W' :
-         ref->Id=-(++TGeoRef_TableNo);
          GeoRef_WKTSet(ref,Ref->String,Ref->Transform,Ref->InvTransform,Ref->Spatial);
-      default  :
-         ref->Id=Ref->Id;
   }
-  EZGrid_IdIncr(ref->Id);
 
   return(ref);
 }
@@ -1454,7 +1462,9 @@ TGeoRef* GeoRef_New() {
 
    /*General*/
    ref->Name=NULL;
-   ref->Id=-1;
+   ref->NbId=0;
+   ref->NId=0;
+   ref->Ids=NULL;
    ref->Type=GRID_NONE;
    ref->NRef=1;
    ref->NIdx=0;

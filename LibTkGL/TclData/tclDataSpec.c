@@ -445,9 +445,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case RENDERFACE:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->RenderFace));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderFace));
             } else {
-               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->RenderFace);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderFace);
+               Spec->RenderFace=FMAX(Spec->RenderFace,0);
             }
             break;
 
@@ -893,7 +894,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
                if (nobj>DATASPEC_MAX) {
-                  Tcl_AppendResult(Interp,"DataSpec_Config: too many levels, maximum is DATASPEC_MAX",(char*) NULL);
+                  Tcl_AppendResult(Interp,"DataSpec_Config: too many intervals, maximum is 256",(char*) NULL);
                   return(TCL_ERROR);
                }
 
@@ -1798,7 +1799,7 @@ void DataSpec_Define(TDataSpec *Spec){
    }
    Spec->MapFactor=0.0;
 
-   if (isnan(Spec->Min) || isnan(Spec->Max)) {
+   if (!Spec->InterNb && (isnan(Spec->Min) || isnan(Spec->Max))) {
       return;
    }
 

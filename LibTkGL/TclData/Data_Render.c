@@ -93,12 +93,26 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
-   int nras=0;
-
+   int    nras=0,u,u0,u1,udef;
+   double d;
    /*Verifier l'existence du champs*/
    if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
    }
+
+   // Check for U grid (grid index 0=loop on sub grid)
+   if (Field->Ref->NbId>1) {
+      FSTD_FieldSubSelect(Field,Field->Spec->RenderFace);
+      if (Field->Ref->NId==0) {
+         u0=1; u1=Field->Ref->NbId;
+      } else {
+         u0=u1=Field->Ref->NId;
+      }
+   } else {
+      u0=u1=0;
+   }
+   udef=Field->Ref->NId;
+
    Data_PreInit(Field);
 
    if (!Field->Spec->Active) {
@@ -113,82 +127,95 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       glEnable(GL_DEPTH_TEST);
    }
 
-   glPushName(PICK_FSTDFIELD);
-   if (Mode==GL_ALL || Mode==GL_VECTOR) {
-
-      if (Field->Spec->RenderGrid)
-         Data_RenderGrid(Interp,Field,VP,(Projection*)Proj);
-
-      if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
-         Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
-
-      if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
-         Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
-
-      if (Field->Spec->RenderValue)
-         Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
-   }
-
-   if (GLRender->GLZBuf) {
-      glEnable(GL_POLYGON_OFFSET_FILL);
-      glPolygonOffset(1.0,1.0);
-   }
-
-   if (Mode==GL_ALL || Mode==GL_RASTER) {
-
-      /*Verifier la presence d'une palette de couleur si elle est necessaire*/
-      if (Field->Spec->Map) {
-
-         if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
-            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
-               if (GLRender->ShaderAvailable) {
-                  nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
-               } else {
-                  nras+=Data_RenderTexture(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderVector==STREAMLINE) {
-            nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
-         }
-
-         glEnable(GL_DEPTH_TEST);
-         if (Field->Spec->RenderVector==STREAMLINE3D) {
-            if (Field->Def->Data[2]) {
-               if (Data_Grid3D(Field,Proj)) {
-                  nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderVol) {
-            if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
-               /*Recuperer les niveaux disponibles*/
-               if (Data_Grid3D(Field,Proj)) {
-                  nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
-               }
-            }
-         }
-
-         if (Field->Spec->RenderParticle) {
-            if (GLRender->ShaderAvailable) {
-               nras+=Data_RenderShaderParticle(Field,VP,(Projection*)Proj);
-            } else {
-               nras+=Data_RenderParticle(Field,VP,(Projection*)Proj);
-            }
-         }
-
-         if (Field->Spec->RangeNb) {
-            nras+=Data_RenderRange(Field,VP,(Projection*)Proj);
-         }
-
-         if (GLRender->GLZBuf) {
-            glStencilMask(0xf0);
-            glClear(GL_STENCIL_BUFFER_BIT);
-         }
-         glDisable(GL_DEPTH_TEST);
+   for(u=u0;u<=u1;u++) {
+      // Point to subgrid data within global data array
+      if (Field->SDef) {
+         Field->Ref->NId=u;
+         Field->Def=Field->SDef[Field->Ref->NId];
       }
+
+      glPushName(PICK_FSTDFIELD);
+      if (Mode==GL_ALL || Mode==GL_VECTOR) {
+
+         if (Field->Spec->RenderGrid)
+            Data_RenderGrid(Interp,Field,VP,(Projection*)Proj);
+
+         if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
+            Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
+
+         if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
+            Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
+
+         if (Field->Spec->RenderValue)
+            Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
+      }
+
+      if (GLRender->GLZBuf) {
+         glEnable(GL_POLYGON_OFFSET_FILL);
+         glPolygonOffset(1.0,1.0);
+      }
+
+      if (Mode==GL_ALL || Mode==GL_RASTER) {
+
+         /*Verifier la presence d'une palette de couleur si elle est necessaire*/
+         if (Field->Spec->Map) {
+            if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
+               if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
+                  if (GLRender->ShaderAvailable) {
+                     nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
+                  } else {
+                     nras+=Data_RenderTexture(Field,VP,(Projection*)Proj);
+                  }
+               }
+            }
+
+            if (Field->Spec->RenderVector==STREAMLINE) {
+               nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
+            }
+
+            glEnable(GL_DEPTH_TEST);
+            if (Field->Spec->RenderVector==STREAMLINE3D) {
+               if (Field->Def->Data[2]) {
+                  if (Data_Grid3D(Field,Proj)) {
+                     nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
+                  }
+               }
+            }
+
+            if (Field->Spec->RenderVol) {
+               if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
+                  /*Recuperer les niveaux disponibles*/
+                  if (Data_Grid3D(Field,Proj)) {
+                     nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
+                  }
+               }
+            }
+
+            if (Field->Spec->RenderParticle) {
+               if (GLRender->ShaderAvailable) {
+                  nras+=Data_RenderShaderParticle(Field,VP,(Projection*)Proj);
+               } else {
+                  nras+=Data_RenderParticle(Field,VP,(Projection*)Proj);
+               }
+            }
+
+            if (Field->Spec->RangeNb) {
+               nras+=Data_RenderRange(Field,VP,(Projection*)Proj);
+            }
+
+            if (GLRender->GLZBuf) {
+               glStencilMask(0xf0);
+               glClear(GL_STENCIL_BUFFER_BIT);
+            }
+            glDisable(GL_DEPTH_TEST);
+         }
+      }
+  }
+
+   // Put back default grid
+   if (Field->SDef) {
+      Field->Ref->NId=udef;
+      Field->Def=Field->SDef[Field->Ref->NId];
    }
 
    glDisable(GL_POLYGON_OFFSET_FILL);
@@ -433,7 +460,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
  * Nom      : <Data_RenderLabel>
  * Creation : Juin 2005 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue l'affichage des labels des niveauxle long des lignes de contours.
+ * But      : Effectue l'affichage des labels des niveaux le long des lignes de contours.
  *
  * Parametres :
  *  <Interp>  : Interpreteur TCL
@@ -548,7 +575,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                dny=dx*0.5*sin(th)+dy*0.5*sin(M_PI2-th);
                th=RAD2DEG(th);
 
-               if (glCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,5)) {
+               if (glCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,10)) {
 
                   p1[0]-=dnx; p1[1]-=dny;
 
@@ -625,7 +652,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    glPointSize(Field->Spec->RenderGrid+0.1);
    glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
-   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
@@ -633,7 +660,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    if (Field->Ref->Grid[0]=='M') {
       glPolygonMode(GL_FRONT,GL_LINE);
       glLineWidth(1.0);
-      Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
+      Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
    }
    glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -723,7 +750,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glPointSize(Field->Spec->RenderParticle+0.1);
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,Field->Ref->Pos[Field->Def->Level],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,0,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,0,NULL,NULL);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_BLEND);
@@ -1199,7 +1226,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    /*Process gridpoints*/
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   pos=Field->Ref->Pos[Field->Def->Level];
+   pos=Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
 
    /*Resolution selon la dimension des cellules (mid-grid)*/
    dp=1;
@@ -1570,9 +1597,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          break;
 
       default:
-         if (Field->Ref->Id<0)
-            return;
-
          if (Field->Spec->SampleType=='P') {
             dz=Field->Spec->Sample*10;
 
@@ -1601,7 +1625,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
             /*Recuperer les informations sur les vents et leurs localisations*/
             EZLock_RPNInt();
-            c_gdxyfll(Field->Ref->Id,x,y,lat,lon,n);
+            c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
             EZUnLock_RPNInt();
 
             mem=0;i=0;
@@ -1622,7 +1646,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             lon=(float*)malloc(mem*sizeof(float));
 
             EZLock_RPNInt();
-            c_gdll(Field->Ref->Id,lat,lon);
+            c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
             EZUnLock_RPNInt();
 
             n=0;
@@ -1640,14 +1664,13 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
          EZLock_RPNInt();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
-
          if (Field->Spec->GridVector) {
-            c_gdllwdval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
+            c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          } else {
-            c_gdllvval(Field->Ref->Id,x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
+            c_gdllvval(Field->Ref->Ids[Field->Ref->NId],x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
          }
          // We have to get the speed from the modulus in case of 3 component vector
-         c_gdllsval(Field->Ref->Id,x,&Field->Def->Mode[mem],lat,lon,n);
+         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,&Field->Def->Mode[mem],lat,lon,n);
          EZUnLock_RPNInt();
 
          while (n--) {

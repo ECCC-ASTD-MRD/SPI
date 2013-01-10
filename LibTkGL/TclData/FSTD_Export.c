@@ -73,12 +73,12 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
 
    if (Mode[0]!='E' && Mode[0]!='I') {
        Tcl_AppendResult(Interp,"HIRLAM_Export: Invalid export format",(char*)NULL);
-       return TCL_ERROR;
+       return(TCL_ERROR);
    }
 
    if (!(fid=fopen(File,"a"))) {
        Tcl_AppendResult(Interp,"HIRLAM_Export: Could not open output file \"",File,"\"",(char*)NULL);
-       return TCL_ERROR;
+       return(TCL_ERROR);
    }
 
    /* Calculer la region */
@@ -95,16 +95,16 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
       fy=(float*)malloc(sz*sizeof(float));
       if (!fx || !fy) {
          Tcl_AppendResult(Interp,"HIRLAM_Export: Could not allocate memory for grid processing",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
       EZLock_RPNInt();
-      c_gdll(Field->Ref->Id,fy,fx);
+      c_gdll(Field->Ref->Ids[Field->Ref->NId],fy,fx);
       EZUnLock_RPNInt();
 
       /* Output grid longitude*/
 
       for (i=0;i<sz;i++,x++) {
-           *x=CLAMPLON(*x);
+         *x=CLAMPLON(*x);
       }
 
       HIRLAM_WriteHead(fid,"longitude (decimal deg.)",Info,Factor);
@@ -121,7 +121,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
 
       if (!Field->Def->Data[1]) {
          Tcl_AppendResult(Interp,"HIRLAM_Export: Field is not vetorial",(char*)NULL);
-          return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       spd=(float*)malloc(sz*sizeof(float));
@@ -131,7 +131,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
 
       if (!fx || !fy || !dir || !spd) {
          Tcl_AppendResult(Interp,"HIRLAM_Export: Could not allocate memory for data processing",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       for (j=1;j<=Field->Def->NJ;j++) {
@@ -142,7 +142,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
          }
       }
       EZLock_RPNInt();
-      c_gdxywdval(Field->Ref->Id,spd,dir,Field->Def->Data[0],Field->Def->Data[1],fx,fy,sz);
+      c_gdxywdval(Field->Ref->Ids[Field->Ref->NId],spd,dir,Field->Def->Data[0],Field->Def->Data[1],fx,fy,sz);
       EZUnLock_RPNInt();
 
       if (Type[1]=='P') {
@@ -162,7 +162,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
    }
 
    fclose(fid);
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -285,20 +285,20 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
 
    if (!(fid=fopen(File,"w"))) {
        Tcl_AppendResult(Interp,"WIX_Export: Could not open output file \"",File,"\"",(char*)NULL);
-       return TCL_ERROR;
+       return(TCL_ERROR);
    }
 
    Tcl_ListObjLength(Interp,Fields,&nb);
    if (nb<=0) {
        Tcl_AppendResult(Interp,"WIX_Export: No fields were specified",(char*)NULL);
-       return TCL_ERROR;
+       return(TCL_ERROR);
    }
 
    Tcl_ListObjIndex(Interp,Fields,0,&obj);
    fld=Data_Get(Tcl_GetString(obj));
    if (!fld) {
        Tcl_AppendResult(Interp,"WIX_Export: Invalid field \"",Tcl_GetString(obj),"\"",(char*)NULL);
-       return TCL_ERROR;
+       return(TCL_ERROR);
    }
 
    endian=System_ByteOrder();
@@ -378,5 +378,5 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
       }
    }
    fclose(fid);
-   return TCL_OK;
+   return(TCL_OK);
 }

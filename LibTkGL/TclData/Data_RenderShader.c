@@ -464,7 +464,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos[Field->Def->Level];
+   pos=Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    Def_PointerMode(Field->Def,idxk,ptr);
 

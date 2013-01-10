@@ -131,23 +131,78 @@ void FSTD_HeadCopy(void *To,void *From) {
    memcpy((FSTD_Head*)To,(FSTD_Head*)From,sizeof(FSTD_Head));
 }
 
+ int FSTD_FieldSubBuild(TData *Field) {
+
+   unsigned long long dij=0;
+   int ni,nj,ig;
+   char grtyp[2];
+   int i,c;
+
+  // Allocate subgrid array ans set index 0 to supergrid
+   Field->SDef=(TDataDef**)malloc((Field->Ref->NbId+1)*sizeof(TDataDef*));
+   Field->SDef[0]=Field->Def;
+
+  // Loop on subgrids
+   for(i=1;i<=Field->Ref->NbId;i++) {
+      c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+
+     // Allocate a container
+      if ((Field->SDef[i]=DataDef_New(ni,nj,1,-Field->Def->NC,Field->Def->Type))) {
+
+         // Point to subgrid data within global data array
+         for(c=0;c<Field->Def->NC;c++) {
+            Field->SDef[i]->Idx=dij;
+            Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij];
+         }
+         // Increment after global grid
+         dij+=ni*nj;
+      }
+   }
+}
+
+int FSTD_FieldSubSelect(TData *Field,int N) {
+
+   int ni,nj,ig;
+   char grtyp[2];
+
+   // If the subgrid index is different from thte current
+   if (N!=Field->Ref->NId &&  N<=Field->Ref->NbId) {
+      Field->Ref->NId=N;
+
+      // Point to subgrid data within global data array
+      Field->Def=Field->SDef[N];
+
+      // Define grid limits
+      c_ezgprm(Field->Ref->Ids[N],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+      Field->Ref->X0=0;    Field->Ref->Y0=0;
+      Field->Ref->X1=ni-1; Field->Ref->Y1=nj-1;
+
+      // Clean positionnal data
+      Data_Clean(Field,1,1,1);
+   }
+   return(0);
+}
+
 void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
 
    float d;
-   int   n;
+   int   n,di,dj;
 
    for (n=0;n<Nb;n++) {
 
       if (Proj->Ref->AX) {
          Grid[n][0]=Proj->Ref->AX[(int)Grid[n][0]]-Proj->Ref->AX[0];
          Grid[n][1]=Proj->Ref->AY[(int)Grid[n][1]]-Proj->Ref->AY[0];
-         d=Proj->L*0.5;
-      } else {
-         d=(Proj->L-1)*0.5;
       }
+      d=Proj->L*0.5;
 
-      Grid[n][0]=Grid[n][0]/d-Proj->LI;
-      Grid[n][1]=Grid[n][1]/d-Proj->LJ;
+      di=dj=0;
+      //TODO: this is not general enough
+      if (Proj->Ref->NId==2) {
+         dj-=(Proj->Ref->Y1+1);
+      }
+      Grid[n][0]=(di+Grid[n][0])/d-Proj->LI;
+      Grid[n][1]=(dj+Grid[n][1])/d-Proj->LJ;
       Grid[n][2]=1.0+Grid[n][2]*Proj->Scale*Proj->ZFactor;
    }
 }
@@ -158,6 +213,8 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
  *
  * But      : Effectue la lecture d'un champ complementaire.
  *
+         d=Proj->L*0.5;
+         d=Proj->L*0.5;
  * Parametres :
  *  <Head>    : Entete de la donnee
  *  <Ptr>     : Pointeur sur le vecteur a allouer
@@ -454,12 +511,15 @@ void FSTD_DataMap(TData *Field,int Idx) {
 Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
+   TDataDef  *def;
    Coord      coord;
    float     *lat,*lon,*gz=NULL,flat,flon,fele;
    int        i,j,idx,ni,nj,nk,ip1;
    int        idxi,idxk;
 
 #ifdef LNK_FSTD
+   def=Field->SDef?Field->SDef[0]:Field->Def;
+
    /*Verifier la validite de la grille*/
    if (!Field->Ref || Field->Ref->Type==GRID_NONE)
       return(NULL);
@@ -477,7 +537,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));
 
    if (!Field->Ref->Pos[Level]) {
-      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
+      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(def)*sizeof(Vect3d));
       if (!Field->Ref->Pos[Level]) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);
@@ -495,7 +555,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       if (FSTD_FileSet(NULL,head->FID)<0) {
          return(NULL);
       }
-      for (j=0;j<Field->Def->NJ;j++) {
+      for (j=0;j<def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
          if (head->FID && Field->Spec->Topo) {
@@ -513,13 +573,13 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
 
          coord.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type)*Field->Spec->TopoFactor;
-         for (i=0;i<Field->Def->NI;i++) {
+         for (i=0;i<def->NI;i++) {
             flat=coord.Lat=Field->Ref->Lat[i];
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
-            idx=j*Field->Def->NI+i;
-            if (gz && Field->Ref->RefFrom->Id>-1) {
+            idx=j*def->NI+i;
+            if (gz && Field->Ref->RefFrom->Ids[0]>-1) {
                EZLock_RPNInt();
-               c_gdllsval(Field->Ref->RefFrom->Id,&fele,gz,&flat,&flon,1);
+               c_gdllsval(Field->Ref->RefFrom->Ids[0],&fele,gz,&flat,&flon,1);
                EZUnLock_RPNInt();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             }
@@ -528,15 +588,14 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
 
       if (Proj) {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
-
-      if (Field->Ref->Id>-1) {
+      if (Field->Ref->Ids[0]>-1) {
          /*Recuperer les coordonnees des points de grille*/
-         lat=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float));
-         lon=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float));
+         lat=(float*)malloc(FSIZE2D(def)*sizeof(float));
+         lon=(float*)malloc(FSIZE2D(def)*sizeof(float));
 
          if (!lat || !lon) {
             fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to process gridpoint location");
@@ -544,7 +603,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             return(Field->Ref->Pos[Level]=NULL);
          }
          EZLock_RPNInt();
-         c_gdll(Field->Ref->Id,lat,lon);
+         c_gdll(Field->Ref->Ids[0],lat,lon);
          EZUnLock_RPNInt();
       }
 
@@ -561,7 +620,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                   fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
                   idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
                }
-               if (ni!=Field->Def->NI || nj!=Field->Def->NJ) {
+               if (ni!=def->NI || nj!=def->NJ) {
                   idx=-1;
                   }
             } else {
@@ -580,11 +639,11 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
       coord.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type)*Field->Spec->TopoFactor;
       /*For every gridpoints*/
-      for (j=0;j<Field->Def->NJ;j++) {
-         for (i=0;i<Field->Def->NI;i++) {
+      for (j=0;j<def->NJ;j++) {
+         for (i=0;i<def->NI;i++) {
 
             /*Figure out table plane indexes*/
-            idxi=j*Field->Def->NI+i;
+            idxi=j*def->NI+i;
 
             /*Get height from topographic field*/
             if (gz) {
@@ -594,10 +653,10 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                }
             }
 
-            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Id==Field->Ref->Id) {
+            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
             } else {
-              if (Field->Ref->Id>-1) {
+              if (Field->Ref->Ids[0]>-1) {
                   coord.Lat=lat[idxi];
                   coord.Lon=CLAMPLON(lon[idxi]);
                } else {
@@ -607,14 +666,14 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             }
          }
       }
-      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Id==Field->Ref->Id) {
-         FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(Field->Def));
+      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
+         FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
       } else {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
 
       FSTD_FileUnset(NULL,head->FID);
-      if (Field->Ref->Id>-1) {
+      if (Field->Ref->Ids[0]>-1) {
          free(lat);
          free(lon);
       }
@@ -838,13 +897,17 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    FieldFrom->Ref->ZRef.P0=NULL;
    FieldTo->Ref->ZRef.P0=NULL;
 
-   if (FieldTo->Ref->Id!=FieldFrom->Ref->Id) {
+   if (FieldTo->Ref->NbId!=FieldFrom->Ref->NbId) {
+      FieldTo->Ref->Ids=(int*)realloc(FieldTo->Ref->Ids,FieldFrom->Ref->NbId*sizeof(int));
+   }
+   if (FieldTo->Ref->Ids[FieldTo->Ref->NId]!=FieldFrom->Ref->Ids[FieldFrom->Ref->NId]) {
       FieldTo->Ref->Grid[0]=FieldFrom->Ref->Grid[0];
       FieldTo->Ref->Project=FieldFrom->Ref->Project;
       FieldTo->Ref->UnProject=FieldFrom->Ref->UnProject;
       FieldTo->Ref->Value=FieldFrom->Ref->Value;
       FieldTo->Ref->Type=FieldFrom->Ref->Type;
-      FieldTo->Ref->Id=FieldFrom->Ref->Id;
+      memcpy(FieldTo->Ref->Ids,FieldFrom->Ref->Ids,FieldFrom->Ref->NbId*sizeof(int));
+     FieldTo->Ref->NId=FieldFrom->Ref->NId;
    }
 
    ip1=((FSTD_Head*)FieldTo->Head)->IP1;
@@ -977,7 +1040,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
       c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
 
-      ok=c_ezdefset(FieldTo->Ref->Id,FieldFrom->Ref->Id);
+      ok=c_ezdefset(FieldTo->Ref->Ids[FieldTo->Ref->NId],FieldFrom->Ref->Ids[FieldFrom->Ref->NId]);
 
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate:  EZSCINT internal error, could not define gridset",(char*)NULL);
@@ -1176,9 +1239,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
    static CONST char *sopt[] = { "-DATEO","-DATEV","-DEET","-FID","-KEY","-NPAS","-NI","-NJ","-NK","-NBITS","-DATYP","-IP1","-IP2","-IP3",
                                  "-TYPVAR","-NOMVAR","-ETIKET","-GRIDID","-GRTYP","-IG1","-IG2","-IG3","-IG4","-SWA","-LNG","-DLTF",
-                                 "-UBC","-EX1","-EX2","-EX3","-DATA","-positional","-projection","-transform","-georef",NULL };
+                                 "-UBC","-EX1","-EX2","-EX3","-DATA","-grid","-positional","-projection","-transform","-georef",NULL };
    enum        opt { DATEO,DATEV,DEET,FID,KEY,NPAS,NI,NJ,NK,NBITS,DATYP,IP1,IP2,IP3,TYPVAR,NOMVAR,ETIKET,GRIDID,GRTYP,
-                     IG1,IG2,IG3,IG4,SWA,LNG,DLTF,UBC,EX1,EX2,EX3,DATA,POSITIONAL,PROJECTION,TRANSFORM,GEOREF };
+                     IG1,IG2,IG3,IG4,SWA,LNG,DLTF,UBC,EX1,EX2,EX3,DATA,GRID,POSITIONAL,PROJECTION,TRANSFORM,GEOREF };
 
    if (!Field) {
       Tcl_AppendResult(Interp,"Invalid field",(char*)NULL);
@@ -1340,9 +1403,27 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             }
             break;
 
+        case GRID:
+            if (Objc==1 && Field->Ref) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Ref->NId));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
+               if (nidx>Field->Ref->NbId) {
+                  Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid subgrid index",(char*)NULL);
+                  return(TCL_ERROR);
+               } else {
+                  FSTD_FieldSubSelect(Field,nidx);
+               }
+            }
+            break;
+
          case GRIDID:
             if (Objc==1 && Field->Ref) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Ref->Id));
+               obj=Tcl_NewListObj(0,NULL);
+               for(nidx=0;nidx<Field->Ref->NbId;nidx++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Field->Ref->Ids[nidx]));
+               }
+               Tcl_SetObjResult(Interp,obj);
             } else {
             }
             break;
@@ -1382,7 +1463,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                if (nidx!=6) {
                   Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid number of transform element, must be 6 \"",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                for(j=0;j<6;j++) {
                   Tcl_GetDouble(Interp,list[j],&tra[j]);
@@ -1452,9 +1533,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (Field->Ref->Grid[0]=='Z' || Field->Ref->Grid[0]=='Y') {
                   head=(FSTD_Head*)fieldAX->Head;
                   EZLock_RPNInt();
-                  Field->Ref->Id=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
+                  Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,fieldAX->Def->Data[0],fieldAY->Def->Data[0]);
                   EZUnLock_RPNInt();
-                  EZGrid_IdIncr(Field->Ref->Id);
+                  EZGrid_IdIncr(Field->Ref->Ids[Field->Ref->NId]);
                }
                if (Field->Stat) { free(Field->Stat); Field->Stat=NULL; }
 
@@ -1852,164 +1933,160 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    }
 #ifdef LNK_FSTD
 
-   nb=FSTD_FileSet(Interp,File);
+   if((nb=FSTD_FileSet(Interp,File))<0)
+      return(TCL_ERROR);
 
    list=Tcl_NewListObj(0,NULL);
    obj=Tcl_NewObj();
 
-   if (nb>=0) {
-      EZLock_RPNField();
-      head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
+   EZLock_RPNField();
+   head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
 
-      for (i=0;i<nb;i++) {
-          /* On saute les enregistrements invalides (Pour les cas ou ca arrive ????) */
-          if (head.KEY>=0) {
+   for (i=0;i<nb;i++) {
+         /* On saute les enregistrements invalides (Pour les cas ou ca arrive ????) */
+         if (head.KEY>=0) {
 
-            strcpy(head.NOMVAR,"    ");
-            strcpy(head.TYPVAR,"  ");
-            strcpy(head.ETIKET,"            ");
-            c_fstprm(head.KEY,&head.DATEO,&head.DEET,&head.NPAS,&ni,&nj,&nk,&head.NBITS,
-                    &head.DATYP,&head.IP1,&head.IP2,&head.IP3,head.TYPVAR,head.NOMVAR,head.ETIKET,
-                    grtyp,&head.IG1,&head.IG2,&head.IG3,&head.IG4,&head.SWA,&head.LNG,&head.DLTF,
-                    &head.UBC,&head.EX1,&head.EX2,&head.EX3);
+         strcpy(head.NOMVAR,"    ");
+         strcpy(head.TYPVAR,"  ");
+         strcpy(head.ETIKET,"            ");
+         c_fstprm(head.KEY,&head.DATEO,&head.DEET,&head.NPAS,&ni,&nj,&nk,&head.NBITS,
+                  &head.DATYP,&head.IP1,&head.IP2,&head.IP3,head.TYPVAR,head.NOMVAR,head.ETIKET,
+                  grtyp,&head.IG1,&head.IG2,&head.IG3,&head.IG4,&head.SWA,&head.LNG,&head.DLTF,
+                  &head.UBC,&head.EX1,&head.EX2,&head.EX3);
 
-            strtrim(head.NOMVAR,' ');
-            strtrim(head.TYPVAR,' ');
-            strtrim(head.ETIKET,' ');
+         strtrim(head.NOMVAR,' ');
+         strtrim(head.TYPVAR,' ');
+         strtrim(head.ETIKET,' ');
 
-            /*Check for var if provided*/
-            if (!Var || strcmp(Var,head.NOMVAR)==0) {
+         /*Check for var if provided*/
+         if (!Var || strcmp(Var,head.NOMVAR)==0) {
 
-               /*Calculer la date de validitee du champs*/
-               nhour=(head.NPAS*head.DEET)/3600.0;
-               if (head.DATEO==0) {
-                  head.DATEV=0;
-               } else {
-                  f77name(incdatr)(&head.DATEV,&head.DATEO,&nhour);
-               }
-               if (head.DATEV==101010101) head.DATEV=0;
-               switch(Mode) {
-                  case FSTD_LISTSPI:
-                     sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
-                     lvl=ZRef_IP2Level(head.IP1,&type);
+            /*Calculer la date de validitee du champs*/
+            nhour=(head.NPAS*head.DEET)/3600.0;
+            if (head.DATEO==0) {
+               head.DATEV=0;
+            } else {
+               f77name(incdatr)(&head.DATEV,&head.DATEO,&nhour);
+            }
+            if (head.DATEV==101010101) head.DATEV=0;
+            switch(Mode) {
+               case FSTD_LISTSPI:
+                  sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
+                  lvl=ZRef_IP2Level(head.IP1,&type);
+                  switch(type) {
+                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                  }
+
+                  if (head.IP2>32000) {
+                     lvl=ZRef_IP2Level(head.IP2,&type);
                      switch(type) {
                         case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                        case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
                         case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
                      }
+                  } else {
+                     sprintf(buf,"%s %8i %-2s",buf,head.IP2,LVL_UNITS[LVL_UNDEF]);
+                  }
 
-                     if (head.IP2>32000) {
-                        lvl=ZRef_IP2Level(head.IP2,&type);
-                        switch(type) {
-                           case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                        }
-                     } else {
-                        sprintf(buf,"%s %8i %-2s",buf,head.IP2,LVL_UNITS[LVL_UNDEF]);
+                  if (head.IP3>32000) {
+                     lvl=ZRef_IP2Level(head.IP3,&type);
+                     switch(type) {
+                        case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                        case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
                      }
+                  } else {
+                     sprintf(buf,"%s %8i %-2s",buf,head.IP3,LVL_UNITS[LVL_UNDEF]);
+                  }
 
-                     if (head.IP3>32000) {
-                        lvl=ZRef_IP2Level(head.IP3,&type);
-                        switch(type) {
-                           case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                           case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                        }
-                     } else {
-                        sprintf(buf,"%s %8i %-2s",buf,head.IP3,LVL_UNITS[LVL_UNDEF]);
-                     }
+                  System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);
+                  sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
+                  Tcl_SetStringObj(obj,buf,-1);
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  break;
 
-                     System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);
-                     sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
-                     Tcl_SetStringObj(obj,buf,-1);
+               case FSTD_LISTALL:
+                  sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i",
+                     File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nk);
+                  Tcl_SetStringObj(obj,buf,-1);
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  break;
+
+               case FSTD_LISTVAR:
+                  Tcl_SetStringObj(obj,head.NOMVAR,-1);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     break;
+                  }
+                  break;
 
-                  case FSTD_LISTALL:
-                     sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i",
-                        File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nk);
-                     Tcl_SetStringObj(obj,buf,-1);
+               case FSTD_LISTTYPVAR:
+                  Tcl_SetStringObj(obj,head.TYPVAR,-1);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     break;
+                  }
+                  break;
 
-                  case FSTD_LISTVAR:
-                     Tcl_SetStringObj(obj,head.NOMVAR,-1);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+               case FSTD_LISTETIKET:
+                  Tcl_SetStringObj(obj,head.ETIKET,-1);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  }
+                  break;
+
+               case FSTD_LISTDATEV:
+                  Tcl_SetLongObj(obj,System_Stamp2Seconds(head.DATEV));
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  }
+                  break;
+
+               case FSTD_LISTIP1:
+                  Tcl_SetIntObj(obj,head.IP1);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
+                  }
+                  break;
 
-                  case FSTD_LISTTYPVAR:
-                     Tcl_SetStringObj(obj,head.TYPVAR,-1);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+               case FSTD_LISTIP2:
+                  Tcl_SetIntObj(obj,head.IP2);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
+                  }
+                  break;
 
-                  case FSTD_LISTETIKET:
-                     Tcl_SetStringObj(obj,head.ETIKET,-1);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
+               case FSTD_LISTIP3:
+                  Tcl_SetIntObj(obj,head.IP3);
+                  if (TclY_ListObjFind(Interp,list,obj)==-1) {
                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
-
-                  case FSTD_LISTDATEV:
-                     Tcl_SetLongObj(obj,System_Stamp2Seconds(head.DATEV));
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                        Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
-
-                  case FSTD_LISTIP1:
-                     Tcl_SetIntObj(obj,head.IP1);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
-
-                  case FSTD_LISTIP2:
-                     Tcl_SetIntObj(obj,head.IP2);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
-
-                  case FSTD_LISTIP3:
-                     Tcl_SetIntObj(obj,head.IP3);
-                     if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                         Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
-                     }
-                     break;
-               }
+                  }
+                  break;
             }
-            head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
          }
+         head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
       }
-      EZUnLock_RPNField();
-   } else {
-      return(TCL_ERROR);
    }
-
-#endif
-   Tcl_SetObjResult(Interp,list);
-
+   EZUnLock_RPNField();
    FSTD_FileUnset(Interp,File);
+#endif
+
+   Tcl_SetObjResult(Interp,list);
    return(TCL_OK);
 }
 
@@ -2202,7 +2279,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
-      if (c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk)<0) {
+      if (ok=c_fstluk(field->Def->Data[0],h.KEY,&ni,&nj,&nk)<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find read field data (c_fstluk failed)",(char*)NULL);
          EZUnLock_RPNField();
          FSTD_FileUnset(Interp,file);
@@ -2308,8 +2385,13 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (proj) free(proj);
       }
    }
+
    if (grtyp[0]!='W') {
       field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,h.FID->Id);
+   }
+
+   if (grtyp[0]=='U') {
+      FSTD_FieldSubBuild(field);
    }
    EZUnLock_RPNField();
 

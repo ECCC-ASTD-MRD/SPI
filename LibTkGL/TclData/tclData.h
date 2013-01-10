@@ -102,20 +102,20 @@ typedef void    (TData_Set)      (struct TData *Field);
 
 typedef struct TData {
    Tcl_Obj      *Tag;
-   void         *Head;      /*Entete de l'enregistrement (metadata)*/
+   void         *Head;       /*Entete de l'enregistrement (metadata)*/
 
-   TGeoRef      *Ref;       /*Reference geographique horizontale*/
-   TDataDef     *Def;       /*Definition des donnees*/
-   TDataSpec    *Spec;      /*Specification des donnees (pour l'affichage)*/
-   TDataStat    *Stat;      /*Statistiques de l'enregistrement*/
+   TGeoRef      *Ref;        /*Reference geographique horizontale*/
+   TDataDef     *Def,**SDef; /*Definition des donnees*/
+   TDataSpec    *Spec;       /*Specification des donnees (pour l'affichage)*/
+   TDataStat    *Stat;       /*Statistiques de l'enregistrement*/
 
-   TData_Set      *Set;     /*Fonction d'initialisation*/
-   TData_Free     *Free;    /*Fonction de liberation*/
-   TData_Copy     *Copy;    /*Fonction de copie de champs*/
-   TData_ReadCube *ReadCube;/*Fonction de lecture du cube de donnees (niveaux verticaux)*/
-   TData_Grid     *Grid;    /*Fonction de recuperation de la grille (geo-localisation)*/
+   TData_Set      *Set;      /*Fonction d'initialisation*/
+   TData_Free     *Free;     /*Fonction de liberation*/
+   TData_Copy     *Copy;     /*Fonction de copie de champs*/
+   TData_ReadCube *ReadCube; /*Fonction de lecture du cube de donnees (niveaux verticaux)*/
+   TData_Grid     *Grid;     /*Fonction de recuperation de la grille (geo-localisation)*/
 
-   float  *Map;             /*Texture du champs*/
+   float  *Map;              /*Texture du champs*/
 } TData;
 
 #include "Vertex.h"

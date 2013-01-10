@@ -55,11 +55,11 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
 */
 void GeoRef_Expand(TGeoRef *Ref) {
 
-   if (Ref->Id>=0 && !Ref->AX && Ref->Grid[0]=='Z') {
+   if (Ref->Ids && !Ref->AX && Ref->Grid[0]=='Z') {
       Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
       Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
       EZLock_RPNInt();
-      c_gdgaxes(Ref->Id,Ref->AX,Ref->AY);
+      c_gdgaxes(Ref->Ids[Ref->NId],Ref->AX,Ref->AY);
       EZUnLock_RPNInt();
    }
 }
@@ -93,7 +93,7 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
    j[1]=Y1+1.0;
 
    EZLock_RPNInt();
-   c_gdllfxy(Ref->Id,lat,lon,i,j,2);
+   c_gdllfxy(Ref->Ids[Ref->NId],lat,lon,i,j,2);
    EZUnLock_RPNInt();
 
    X0=DEG2RAD(lon[0]);
@@ -185,15 +185,15 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
       }
 
       if (Ref->Grid[0]!='Y' && Ref->Grid[0]!='P' && Def->Data[1] && !C) {
-         if (Ref && Ref->Id>-1) {
+         if (Ref && Ref->Ids) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
             EZLock_RPNInt();
-            c_gdxywdval(Ref->Id,&valf,&valdf,p0,p1,&x,&y,1);
+            c_gdxywdval(Ref->Ids[Ref->NId],&valf,&valdf,p0,p1,&x,&y,1);
 
             /*If it's 3D, use the mode for speed since c_gdxywdval only uses 2D*/
             if (Def->Data[2])
-               c_gdxysval(Ref->Id,&valf,&Def->Mode[mem],&x,&y,1);
+               c_gdxysval(Ref->Ids[Ref->NId],&valf,&Def->Mode[mem],&x,&y,1);
             *Length=valf;
             *ThetaXY=valdf;
             EZUnLock_RPNInt();
@@ -213,10 +213,11 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             if (Def->Data[1] && !C)
                Def_Get(Def,1,mem,*ThetaXY);
          } else {
-            if (Ref && Ref->Id>-1) {
+            if (Ref && Ref->Ids) {
                Def_Pointer(Def,C,mem,p0);
                EZLock_RPNInt();
-               c_gdxysval(Ref->Id,&valf,p0,&x,&y,1);
+               c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
+//               fprintf(stderr,"---- %f %f   %f\n",x,y,valf);
                *Length=valf;
                EZUnLock_RPNInt();
             } else {
@@ -261,10 +262,9 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
       return(1);
    }
 */
-
    /*Verifier si la grille est valide et que l'on est dans la grille*/
-   if (Ref->Id<0 || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
-      if (!Extrap || Ref->Id<0) {
+   if (!Ref->Ids || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
+      if (!Extrap || !Ref->Ids) {
          *Lat=-999.0;
          *Lon=-999.0;
          return(0);
@@ -284,9 +284,11 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 
    i=X+1.0;
    j=Y+1.0;
+
    EZLock_RPNInt();
-   c_gdllfxy(Ref->Id,&lat,&lon,&i,&j,1);
+   c_gdllfxy(Ref->Ids[Ref->NId],&lat,&lon,&i,&j,1);
    EZUnLock_RPNInt();
+
    *Lat=lat;
    *Lon=lon>180?lon-=360:lon;
 
@@ -360,14 +362,14 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       }
    }
 
-   if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0 && Ref->Id>-1) {
+   if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0 && Ref->Ids) {
 
       lon=Lon<0?Lon+360:Lon;
       lat=Lat;
 
       /*Extraire la valeur du point de grille*/
       EZLock_RPNInt();
-      c_gdxyfll(Ref->Id,&i,&j,&lat,&lon,1);
+      c_gdxyfll(Ref->Ids[Ref->NId],&i,&j,&lat,&lon,1);
       EZUnLock_RPNInt();
 
       *X=i-1.0;
@@ -418,19 +420,30 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref;
+   int      id,i;
    char     grtyp[2];
 
    ref=GeoRef_New();
    GeoRef_Size(ref,0,0,0,NI-1,NJ-1,NK-1,0);
 
+   // If not specified, type is X
    if (GRTYP[0]==' ') GRTYP[0]='X';
 
    if ((NI>1 || NJ>1) && GRTYP[0]!='X' && GRTYP[0]!='P' && GRTYP[0]!='M' && GRTYP[0]!='V' && ((GRTYP[0]!='Z' && GRTYP[0]!='Y') || FID!=-1)) {
       grtyp[0]=GRTYP[0];
       grtyp[1]='\0';
-      ref->Id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
-   } else {
-      ref->Id=-1;
+
+      // Create master gridid
+      id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
+
+      // Check for sub-grids (U grids can have sub grids)
+      ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
+//      ref->NbId=1;
+      ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int));
+      ref->Ids[0]=id;
+      if (ref->NbId>1) {
+         c_ezget_subgridids(id,&ref->Ids[1]);
+      }
    }
 
    ref->IG1=IG1;

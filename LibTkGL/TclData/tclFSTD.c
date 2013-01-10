@@ -90,7 +90,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
       if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
          return(-2);
       }
-      return(ZRef_Level2IP(val,type-1));
+      return(ZRef_Level2IP(val,type));
    } else {
       return(val);
    }
@@ -699,7 +699,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
 
             /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
-            if (n<16 && field0->Ref->Id==field1->Ref->Id) {
+            if (n<16 && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
                if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1)) {
                   return(TCL_ERROR);
                } else {
@@ -1168,7 +1168,7 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
    FSTD_File *file;
 
    if ((file=(FSTD_File*)TclY_HashDel(&FSTD_FileTable,Id))) {
-      file->Open=file->Open<0?1:file->Open;
+      file->Open=file->Open>0?1:file->Open;
       FSTD_FileUnset(Interp,file);
       cs_fstunlockid(file->Id);
 
@@ -1218,7 +1218,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
    file->Mode=toupper(Mode);
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();
-   file->Open=file->Id<1?-1:0;
+   file->Open=0;
    file->Name=strdup(Name);
 
    Tcl_SetHashValue(entry,file);
@@ -1286,7 +1286,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    }
 
    EZLock_RPNFile();
-   if (!File->Open || File->Open==-1) {
+   if (!File->Open) {
 #ifdef LNK_FSTD
 
       if ( File->Mode=='W') {                /*Write Mode*/
@@ -1323,7 +1323,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       }
    }
 #endif
-   File->Open=File->Open<0?-2:File->Open+1;
+   File->Open++;
    EZUnLock_RPNFile();
 
    return(ok);

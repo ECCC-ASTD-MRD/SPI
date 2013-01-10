@@ -458,6 +458,7 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
 */
 void Data_GetStat(TData *Field){
 
+   TDataDef     *def;
    double        val,mode;
    int           i,j,k,d,imin=0,jmin=0,imax=0,jmax=0,kmin=0,kmax=0;
    unsigned long idxk,idx,n=0;
@@ -492,7 +493,15 @@ void Data_GetStat(TData *Field){
       Field->Def->Mode=Field->Def->Data[0];
    }
 
-   /*Initialiser la structure*/
+   // For supergrids, point the subgrids mode to the right place
+   if (Field->SDef) {
+      for(i=1;i<=Field->Ref->NbId;i++) {
+         // Point to subgrid data within global data array
+         Field->SDef[i]->Mode=Field->SDef[0]->Mode+(Field->SDef[i]->Data[0]-Field->SDef[0]->Data[0])*TData_Size[Field->Def->Type];
+      }
+   }
+
+  /*Initialiser la structure*/
    if (!Field->Stat)
       Field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
 
@@ -509,6 +518,7 @@ void Data_GetStat(TData *Field){
          for (i=0;i<Field->Def->NI;i++,idx++) {
 
             Def_GetMod(Field->Def,idx,val);
+
             if (val!=Field->Def->NoData) {
                n++;
                Field->Stat->Avg+=val;
@@ -565,6 +575,8 @@ void Data_GetStat(TData *Field){
 
 int Data_Free(TData *Field) {
 
+   int i;
+
    if (Field) {
 
       /*Liberer l'espace specifique au type de donnees*/
@@ -572,7 +584,16 @@ int Data_Free(TData *Field) {
 
       /*Liberer l'espace de donnees*/
       Data_Clean(Field,1,1,1);
-      DataDef_Free(Field->Def);
+
+     /*Free subgrids but make sure it was not freed above*/
+      if (Field->SDef) {
+         for(i=0;i<Field->Ref->NbId+1;i++) {
+           DataDef_Free(Field->SDef[i]);
+         }
+         free(Field->SDef);
+      } else {
+         DataDef_Free(Field->Def);
+      }
 
       /*Liberer l'espace du descriptif*/
       if (Field->Stat) free(Field->Stat);
@@ -996,6 +1017,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       }
 
       field->Def=NULL;
+      field->SDef=NULL;
       field->Stat=NULL;
       field->Ref=NULL;
       field->Head=NULL;

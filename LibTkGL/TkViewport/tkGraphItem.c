@@ -2059,10 +2059,8 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
             if (depth==0) {
                dx=fabs(g2[0]-g0[0]);
                dy=fabs(g2[1]-g0[1]);
-               dx=MIN(dx,dy);
+               dx=Data->Spec->InterNb?MAX(dx,dy):MIN(dx,dy);
                while (dx>>=1) depth++;
-               if (Data->Spec->InterNb)
-                  depth++;
             }
 
             if (Data->Spec->InterpDegree[0]=='N') {

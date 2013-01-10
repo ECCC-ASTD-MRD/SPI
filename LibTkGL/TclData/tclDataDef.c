@@ -189,6 +189,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->NoData=Def->NoData;
       def->Type=Def->Type;
       def->Level=Def->Level;
+      def->Idx=Def->Idx;
       def->Buffer=NULL;
       def->Segments=NULL;
       def->Accum=NULL;
@@ -235,6 +236,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->NoData=Def->NoData;
       def->Type=Type;
       def->Level=Def->Level;
+      def->Idx=Def->Idx;
       def->Buffer=NULL;
       def->Segments=NULL;
       def->Accum=NULL;
@@ -242,7 +244,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->Pres=NULL;
       def->Height=NULL;
       def->Pick=def->Poly=NULL;
-      def->Sample=def->Sample;
+      def->Sample=Def->Sample;
 
       memcpy(def->Limits,Def->Limits,6*sizeof(int));
       def->CoordLimits[0][0]=Def->CoordLimits[0][0];
@@ -335,10 +337,11 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->NJ=NJ;
    def->NK=NK;
    def->NC=abs(Dim);
-   def->Container=abs(Dim)==0;
+   def->Container=Dim<=0;
    def->CellDim=2;
    def->NoData=nan("NaN");
    def->Level=0;
+   def->Idx=0;
 
    def->Limits[0][0]=0;
    def->Limits[1][0]=0;
@@ -355,10 +358,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Sample=1;
 
    /* Allocate data vector */
-   def->Data[0]=NULL;
-   def->Data[1]=NULL;
-   def->Data[2]=NULL;
-   def->Data[3]=NULL;
+   def->Data[0]=def->Data[1]=def->Data[2]=def->Data[3]=NULL;
    def->Type=Type;
    def->Buffer=NULL;
    def->Segments=NULL;

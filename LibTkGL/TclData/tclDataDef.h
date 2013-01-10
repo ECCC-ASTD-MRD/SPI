@@ -49,188 +49,188 @@
 #define DEF2DIN(D,I,J)      ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1])
 #define DEF3DIN(D,I,J,K)    ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1] && (K)>=D->Limits[2][0] && (K)<=D->Limits[2][1])
 
-#define Def_Pointer(Def,Comp,Idx,Ptr) Ptr=Def->Data[Comp]+(Idx)*TData_Size[Def->Type];
-#define Def_PointerMode(Def,Idx,Ptr) Ptr=Def->Mode+(Idx)*TData_Size[Def->Type];
+#define Def_Pointer(DEF,COMP,IDX,PTR) PTR=DEF->Data[COMP]+(IDX)*TData_Size[DEF->Type];
+#define Def_PointerMode(DEF,IDX,PTR) PTR=DEF->Mode+(IDX)*TData_Size[DEF->Type];
 
-#define Def_Set(Def,Comp,Idx,Val) {\
-switch(Def->Type) {\
+#define Def_Set(DEF,COMP,IDX,VAL) {\
+switch(DEF->Type) {\
    case TD_Unknown:break;\
    case TD_Binary: break;\
-   case TD_UByte:  ((unsigned char*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Byte:   ((char*)Def->Data[Comp])[Idx]=Val; break;\
-   case TD_UInt16: ((unsigned short*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Int16:  ((short*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_UInt32: ((unsigned int*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Int32:  ((int*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_UInt64: ((unsigned long long*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Int64:  ((long long*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Float32:((float*)Def->Data[Comp])[Idx]=Val;break;\
-   case TD_Float64:((double*)Def->Data[Comp])[Idx]=Val;break;\
+   case TD_UByte:  ((unsigned char*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Byte:   ((char*)DEF->Data[COMP])[IDX]=VAL; break;\
+   case TD_UInt16: ((unsigned short*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Int16:  ((short*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_UInt32: ((unsigned int*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Int32:  ((int*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_UInt64: ((unsigned long long*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Int64:  ((long long*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Float32:((float*)DEF->Data[COMP])[IDX]=VAL;break;\
+   case TD_Float64:((double*)DEF->Data[COMP])[IDX]=VAL;break;\
    }\
 }
 
-#define Def_GetQuad(Def,Comp,Idx,Val) {\
-switch(Def->Type) {\
-   case TD_Unknown:Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
-   case TD_Binary: Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
-   case TD_UByte:  Val[0]=((unsigned char*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((unsigned char*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((unsigned char*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((unsigned char*)Def->Data[Comp])[Idx[3]];\
+#define Def_GetQuad(DEF,COMP,IDX,VAL) {\
+switch(DEF->Type) {\
+   case TD_Unknown:VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
+   case TD_Binary: VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
+   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((unsigned char*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((unsigned char*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((unsigned char*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Byte:   Val[0]=((char*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((char*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((char*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((char*)Def->Data[Comp])[Idx[3]];\
+   case TD_Byte:   VAL[0]=((char*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((char*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((char*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((char*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_UInt16: Val[0]=((unsigned short*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((unsigned short*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((unsigned short*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((unsigned short*)Def->Data[Comp])[Idx[3]];\
+   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((unsigned short*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((unsigned short*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((unsigned short*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Int16:  Val[0]=((short*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((short*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((short*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((short*)Def->Data[Comp])[Idx[3]];\
+   case TD_Int16:  VAL[0]=((short*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((short*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((short*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((short*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_UInt32: Val[0]=((unsigned int*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((unsigned int*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((unsigned int*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((unsigned int*)Def->Data[Comp])[Idx[3]];\
+   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((unsigned int*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((unsigned int*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((unsigned int*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Int32:  Val[0]=((int*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((int*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((int*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((int*)Def->Data[Comp])[Idx[3]];\
+   case TD_Int32:  VAL[0]=((int*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((int*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((int*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((int*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_UInt64: Val[0]=((unsigned long long*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((unsigned long long*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((unsigned long long*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((unsigned long long*)Def->Data[Comp])[Idx[3]];\
+   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((unsigned long long*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((unsigned long long*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((unsigned long long*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Int64:  Val[0]=((long long*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((long long*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((long long*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((long long*)Def->Data[Comp])[Idx[3]];\
+   case TD_Int64:  VAL[0]=((long long*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((long long*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((long long*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((long long*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Float32:Val[0]=((float*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((float*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((float*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((float*)Def->Data[Comp])[Idx[3]];\
+   case TD_Float32:VAL[0]=((float*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((float*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((float*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((float*)DEF->Data[COMP])[IDX[3]];\
                    break;\
-   case TD_Float64:Val[0]=((double*)Def->Data[Comp])[Idx[0]];\
-                   Val[1]=((double*)Def->Data[Comp])[Idx[1]];\
-                   Val[2]=((double*)Def->Data[Comp])[Idx[2]];\
-                   Val[3]=((double*)Def->Data[Comp])[Idx[3]];\
-                   break;\
-   }\
-}
-
-#define Def_GetQuadMod(Def,Idx,Val) {\
-switch(Def->Type) {\
-   case TD_Unknown:Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
-   case TD_Binary: Val[0]=Val[1]=Val[2]=Val[3]=0.0;break;\
-   case TD_UByte:  Val[0]=((unsigned char*)Def->Mode)[Idx[0]];\
-                   Val[1]=((unsigned char*)Def->Mode)[Idx[1]];\
-                   Val[2]=((unsigned char*)Def->Mode)[Idx[2]];\
-                   Val[3]=((unsigned char*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Byte:   Val[0]=((char*)Def->Mode)[Idx[0]];\
-                   Val[1]=((char*)Def->Mode)[Idx[1]];\
-                   Val[2]=((char*)Def->Mode)[Idx[2]];\
-                   Val[3]=((char*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_UInt16: Val[0]=((unsigned short*)Def->Mode)[Idx[0]];\
-                   Val[1]=((unsigned short*)Def->Mode)[Idx[1]];\
-                   Val[2]=((unsigned short*)Def->Mode)[Idx[2]];\
-                   Val[3]=((unsigned short*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Int16:  Val[0]=((short*)Def->Mode)[Idx[0]];\
-                   Val[1]=((short*)Def->Mode)[Idx[1]];\
-                   Val[2]=((short*)Def->Mode)[Idx[2]];\
-                   Val[3]=((short*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_UInt32: Val[0]=((unsigned int*)Def->Mode)[Idx[0]];\
-                   Val[1]=((unsigned int*)Def->Mode)[Idx[1]];\
-                   Val[2]=((unsigned int*)Def->Mode)[Idx[2]];\
-                   Val[3]=((unsigned int*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Int32:  Val[0]=((int*)Def->Mode)[Idx[0]];\
-                   Val[1]=((int*)Def->Mode)[Idx[1]];\
-                   Val[2]=((int*)Def->Mode)[Idx[2]];\
-                   Val[3]=((int*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_UInt64: Val[0]=((unsigned long long*)Def->Mode)[Idx[0]];\
-                   Val[1]=((unsigned long long*)Def->Mode)[Idx[1]];\
-                   Val[2]=((unsigned long long*)Def->Mode)[Idx[2]];\
-                   Val[3]=((unsigned long long*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Int64:  Val[0]=((long long*)Def->Mode)[Idx[0]];\
-                   Val[1]=((long long*)Def->Mode)[Idx[1]];\
-                   Val[2]=((long long*)Def->Mode)[Idx[2]];\
-                   Val[3]=((long long*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Float32:Val[0]=((float*)Def->Mode)[Idx[0]];\
-                   Val[1]=((float*)Def->Mode)[Idx[1]];\
-                   Val[2]=((float*)Def->Mode)[Idx[2]];\
-                   Val[3]=((float*)Def->Mode)[Idx[3]];\
-                   break;\
-   case TD_Float64:Val[0]=((double*)Def->Mode)[Idx[0]];\
-                   Val[1]=((double*)Def->Mode)[Idx[1]];\
-                   Val[2]=((double*)Def->Mode)[Idx[2]];\
-                   Val[3]=((double*)Def->Mode)[Idx[3]];\
+   case TD_Float64:VAL[0]=((double*)DEF->Data[COMP])[IDX[0]];\
+                   VAL[1]=((double*)DEF->Data[COMP])[IDX[1]];\
+                   VAL[2]=((double*)DEF->Data[COMP])[IDX[2]];\
+                   VAL[3]=((double*)DEF->Data[COMP])[IDX[3]];\
                    break;\
    }\
 }
 
-#define Def_Get(Def,Comp,Idx,Val) {\
-switch(Def->Type) {\
-   case TD_Unknown:Val=0.0;break;\
-   case TD_Binary: Val=0.0;break;\
-   case TD_UByte:  Val=((unsigned char*)Def->Data[Comp])[Idx];break;\
-   case TD_Byte:   Val=((char*)Def->Data[Comp])[Idx]; break;\
-   case TD_UInt16: Val=((unsigned short*)Def->Data[Comp])[Idx];break;\
-   case TD_Int16:  Val=((short*)Def->Data[Comp])[Idx];break;\
-   case TD_UInt32: Val=((unsigned int*)Def->Data[Comp])[Idx];break;\
-   case TD_Int32:  Val=((int*)Def->Data[Comp])[Idx];break;\
-   case TD_UInt64: Val=((unsigned long long*)Def->Data[Comp])[Idx];break;\
-   case TD_Int64:  Val=((long long*)Def->Data[Comp])[Idx];break;\
-   case TD_Float32:Val=((float*)Def->Data[Comp])[Idx];break;\
-   case TD_Float64:Val=((double*)Def->Data[Comp])[Idx];break;\
+#define Def_GetQuadMod(DEF,IDX,VAL) {\
+switch(DEF->Type) {\
+   case TD_Unknown:VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
+   case TD_Binary: VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
+   case TD_UByte:  VAL[0]=((unsigned char*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((unsigned char*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((unsigned char*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((unsigned char*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Byte:   VAL[0]=((char*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((char*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((char*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((char*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_UInt16: VAL[0]=((unsigned short*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((unsigned short*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((unsigned short*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((unsigned short*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Int16:  VAL[0]=((short*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((short*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((short*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((short*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_UInt32: VAL[0]=((unsigned int*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((unsigned int*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((unsigned int*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((unsigned int*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Int32:  VAL[0]=((int*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((int*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((int*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((int*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_UInt64: VAL[0]=((unsigned long long*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((unsigned long long*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((unsigned long long*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((unsigned long long*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Int64:  VAL[0]=((long long*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((long long*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((long long*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((long long*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Float32:VAL[0]=((float*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((float*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((float*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((float*)DEF->Mode)[IDX[3]];\
+                   break;\
+   case TD_Float64:VAL[0]=((double*)DEF->Mode)[IDX[0]];\
+                   VAL[1]=((double*)DEF->Mode)[IDX[1]];\
+                   VAL[2]=((double*)DEF->Mode)[IDX[2]];\
+                   VAL[3]=((double*)DEF->Mode)[IDX[3]];\
+                   break;\
    }\
 }
 
-#define Def_GetMod(Def,Idx,Val) {\
-switch(Def->Type) {\
-   case TD_Unknown:Val=0.0;break;\
-   case TD_Binary: Val=0.0;break;\
-   case TD_UByte:  Val=((unsigned char*)Def->Mode)[Idx];break;\
-   case TD_Byte:   Val=((char*)Def->Mode)[Idx]; break;\
-   case TD_UInt16: Val=((unsigned short*)Def->Mode)[Idx];break;\
-   case TD_Int16:  Val=((short*)Def->Mode)[Idx];break;\
-   case TD_UInt32: Val=((unsigned int*)Def->Mode)[Idx];break;\
-   case TD_Int32:  Val=((int*)Def->Mode)[Idx];break;\
-   case TD_UInt64: Val=((unsigned long long*)Def->Mode)[Idx];break;\
-   case TD_Int64:  Val=((long long*)Def->Mode)[Idx];break;\
-   case TD_Float32:Val=((float*)Def->Mode)[Idx];break;\
-   case TD_Float64:Val=((double*)Def->Mode)[Idx];break;\
+#define Def_Get(DEF,COMP,IDX,VAL) {\
+switch(DEF->Type) {\
+   case TD_Unknown:VAL=0.0;break;\
+   case TD_Binary: VAL=0.0;break;\
+   case TD_UByte:  VAL=((unsigned char*)DEF->Data[COMP])[IDX];break;\
+   case TD_Byte:   VAL=((char*)DEF->Data[COMP])[IDX]; break;\
+   case TD_UInt16: VAL=((unsigned short*)DEF->Data[COMP])[IDX];break;\
+   case TD_Int16:  VAL=((short*)DEF->Data[COMP])[IDX];break;\
+   case TD_UInt32: VAL=((unsigned int*)DEF->Data[COMP])[IDX];break;\
+   case TD_Int32:  VAL=((int*)DEF->Data[COMP])[IDX];break;\
+   case TD_UInt64: VAL=((unsigned long long*)DEF->Data[COMP])[IDX];break;\
+   case TD_Int64:  VAL=((long long*)DEF->Data[COMP])[IDX];break;\
+   case TD_Float32:VAL=((float*)DEF->Data[COMP])[IDX];break;\
+   case TD_Float64:VAL=((double*)DEF->Data[COMP])[IDX];break;\
    }\
 }
 
-#define Def_SetMod(Def,Idx,Val) {\
-switch(Def->Type) {\
+#define Def_GetMod(DEF,IDX,VAL) {\
+switch(DEF->Type) {\
+   case TD_Unknown:VAL=0.0;break;\
+   case TD_Binary: VAL=0.0;break;\
+   case TD_UByte:  VAL=((unsigned char*)DEF->Mode)[IDX];break;\
+   case TD_Byte:   VAL=((char*)DEF->Mode)[IDX]; break;\
+   case TD_UInt16: VAL=((unsigned short*)DEF->Mode)[IDX];break;\
+   case TD_Int16:  VAL=((short*)DEF->Mode)[IDX];break;\
+   case TD_UInt32: VAL=((unsigned int*)DEF->Mode)[IDX];break;\
+   case TD_Int32:  VAL=((int*)DEF->Mode)[IDX];break;\
+   case TD_UInt64: VAL=((unsigned long long*)DEF->Mode)[IDX];break;\
+   case TD_Int64:  VAL=((long long*)DEF->Mode)[IDX];break;\
+   case TD_Float32:VAL=((float*)DEF->Mode)[IDX];break;\
+   case TD_Float64:VAL=((double*)DEF->Mode)[IDX];break;\
+   }\
+}
+
+#define Def_SetMod(DEF,IDX,VAL) {\
+switch(DEF->Type) {\
    case TD_Unknown:break;\
    case TD_Binary: break;\
-   case TD_UByte:  ((unsigned char*)Def->Mode)[Idx]=Val;break;\
-   case TD_Byte:   ((char*)Def->Mode)[Idx]=Val; break;\
-   case TD_UInt16: ((unsigned short*)Def->Mode)[Idx]=Val;break;\
-   case TD_Int16:  ((short*)Def->Mode)[Idx]=Val;break;\
-   case TD_UInt32: ((unsigned int*)Def->Mode)[Idx]=Val;break;\
-   case TD_Int32:  ((int*)Def->Mode)[Idx]=Val;break;\
-   case TD_UInt64: ((unsigned long long*)Def->Mode)[Idx]=Val;break;\
-   case TD_Int64:  ((long long*)Def->Mode)[Idx]=Val;break;\
-   case TD_Float32:((float*)Def->Mode)[Idx]=Val;break;\
-   case TD_Float64:((double*)Def->Mode)[Idx]=Val;break;\
+   case TD_UByte:  ((unsigned char*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Byte:   ((char*)DEF->Mode)[IDX]=VAL; break;\
+   case TD_UInt16: ((unsigned short*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Int16:  ((short*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_UInt32: ((unsigned int*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Int32:  ((int*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_UInt64: ((unsigned long long*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Int64:  ((long long*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Float32:((float*)DEF->Mode)[IDX]=VAL;break;\
+   case TD_Float64:((double*)DEF->Mode)[IDX]=VAL;break;\
    }\
 }
 
@@ -263,6 +263,7 @@ typedef struct TDataDef {
 
    TData_Type Type;           /*Type de donnees du champs*/
    int NI,NJ,NK,NC;           /*Dimensions du champs*/
+   int Idx;                   /*Index displacement into supergrid*/
 
    int     CellDim;           /*Defined grid point coverage, point=1 or area=2*/
    char    Container;         /*Container pointant sur d'autres donnees*/

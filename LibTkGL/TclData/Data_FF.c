@@ -407,6 +407,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
       return(0);
 
    for (n=0;n<NbInter;n++) {
+
       /*If the interval is not within the value limits, skip*/
       if (Stat && (Inter[n]>=Stat->Max || Inter[n]<=Stat->Min))
          continue;
@@ -440,7 +441,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
 
          /*If this gridpoint has'nt yet been visited*/
          if (!buf[Def->NI*j+i]) {
-           len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth,Limit);
+            len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth,Limit);
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
@@ -448,7 +449,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
                   Def->Segments=TList_Add(Def->Segments,array);
                   VBuffer_Copy(array->Data,len);
                } else {
-                 fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);
+                  fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);
                }
             }
          }

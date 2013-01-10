@@ -38,8 +38,9 @@
 TCL_DECLARE_MUTEX(MUTEX_CMAP)
 
 static Tcl_HashTable CMapTable;
-static int  CMapInit=0;
-static long CMapNo=0;
+static int           CMapInit=0;
+static long          CMapNo=0;
+static GLubyte       CMapEmptyCell[4]={ 0,0,0,0 };
 
 static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -146,7 +147,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
       cmap->Interp = 1;
       cmap->Ratio[0]=cmap->Ratio[1]=cmap->Ratio[2]=cmap->Ratio[3]=100;
       cmap->Min[0]=cmap->Min[1]=cmap->Min[2]=cmap->Min[3]=0.0;
-      cmap->Max[0]=cmap->Max[1]=cmap->Max[2]=cmap->Max[3]=0.0;
+      cmap->Max[0]=cmap->Max[1]=cmap->Max[2]=255.0;cmap->Max[3]=0.0;
       cmap->InvertX[0]=cmap->InvertX[1]=cmap->InvertX[2]=cmap->InvertX[3]=0;
       cmap->InvertY[0]=cmap->InvertY[1]=cmap->InvertY[2]=cmap->InvertY[3]=0;
 
@@ -958,7 +959,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
 
    Tcl_Obj *obj,*item;
    int     i,ii,index,idx,n,nn,nc;
-   GLubyte cell[4]={ 0,0,0,0 };
 
    static CONST char *sopt[] = { "-add","-get","-list","-del","-move","-update",NULL };
    enum                opt { ADD,GET,LIST,DEL,MOVE,UPDATE };
@@ -989,6 +989,10 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                   CMap->Control[index][2]=ii;
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   CMap->Control[index][3]=ii;
+               }
+               /* 0,0,0,0 is empty cell so mkae sure this control point is not empty */
+               if (memcmp(CMap->Control[index],CMapEmptyCell,4)==0) {
+                  CMap->Control[index][0]=CMap->Control[index][1]=CMap->Control[index][2]=1;
                }
             }
             break;
@@ -1073,7 +1077,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
 
-            if (memcmp(CMap->Control[index],cell,4)==0 && index>=0 && index<CR_MAX && ii>=0 && ii<CMap->NbPixels) {
+            if (memcmp(CMap->Control[index],CMapEmptyCell,4)==0 && index>=0 && index<CR_MAX && ii>=0 && ii<CMap->NbPixels) {
                memcpy(CMap->Control[index],CMap->Control[ii],4);
                memset(CMap->Control[ii],0,4);
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -1447,6 +1451,11 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
          CMap->Control[idx][1] = atoi(buf+8);
          CMap->Control[idx][2] = atoi(buf+12);
          CMap->Control[idx][3] = atoi(buf+16);
+
+         /* 0,0,0,0 is empty cell so mkae sure this control point is not empty */
+         if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
+            CMap->Control[idx][0]=CMap->Control[idx][1]=CMap->Control[idx][2]=1;
+         }
        }
    }
 
@@ -1533,7 +1542,6 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
 
    int i,i0,i1,ie;
    float delta,r;
-   GLubyte cell[4]={ 0,0,0,0 };
 
    if (!CMap) {
       return;
@@ -1541,7 +1549,7 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
 
    /*Find NbPixels which is the last control point*/
    for(i0=CR_MAX-1;i0>=0;i0--) {
-      if (memcmp(CMap->Control[i0],cell,4)!=0) {
+      if (memcmp(CMap->Control[i0],CMapEmptyCell,4)!=0) {
          break;
       }
    }
@@ -1549,7 +1557,7 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
 
    /*Find first control point and set all up to it*/
    for(i0=0;i0<CMap->NbPixels;i0++) {
-      if (memcmp(CMap->Control[i0],cell,4)!=0) {
+      if (memcmp(CMap->Control[i0],CMapEmptyCell,4)!=0) {
          break;
       }
    }
@@ -1565,7 +1573,7 @@ void CMap_ControlDefine(CMap_Rec *CMap) {
    ie=i1=i0;
    while(i1<CMap->NbPixels) {
       memcpy(CMap->Table[i0],CMap->Control[i0],4);
-      while(memcmp(CMap->Control[++i1],cell,4)==0 && i1<CMap->NbPixels);
+      while(memcmp(CMap->Control[++i1],CMapEmptyCell,4)==0 && i1<CMap->NbPixels);
 
       delta=(i1-i0);
       for(i=i0+1;i<i1;i++) {
