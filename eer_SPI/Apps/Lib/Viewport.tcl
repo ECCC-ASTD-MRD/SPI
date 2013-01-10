@@ -35,7 +35,7 @@
 #    Viewport::DrawArea       { Frame VP Coords Tags SingleTag Color Outline Stipple Smooth BD }
 #    Viewport::DrawLine       { Frame VP Coords Tags Color BD }
 #    Viewport::DrawRange      { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } }
-#    Viewport::ForceGrid      { Frame }
+#    Viewport::ForceGrid      { Frame } { Clean False }
 #    Viewport::GoAlong        { Frame Speed Bearing Lat Lon { Damping True } }
 #    Viewport::GoARound       { Frame Speed Lat Lon { Damping True } }
 #    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
@@ -1465,6 +1465,7 @@ proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { 
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
+#  <Clean>   : Force cleanup/reset
 #
 # Retour:
 #
@@ -1472,20 +1473,21 @@ proc Viewport::DrawRange { Frame VP Lat0 Lon0 Lat1 Lon1 Tag Color { Text "" } { 
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::ForceGrid { Frame } {
+proc Viewport::ForceGrid { Frame { Clean False } } {
    variable Map
 
    if { $Map(Type$Frame)=="grid" } {
-      if { $Viewport::Map(GeoRef)=="" } {
+      if { $Map(GeoRef)=="" } {
          if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
             if { [set fld [lindex [Viewport::Assigned $Frame $vp fstdfield] 0]]!="" } {
                if { [set georef [fstdfield define $fld -georef]]!="" } {
+                  set Map(GeoRef) $georef
                   set pref  [projection configure $Frame -georef]
-                  projection configure $Frame -georef $georef
+                  projection configure $Frame -type grid -georef $georef
 
                   #----- If georef is different, reset projection
                   if { ![georef isequal $georef $pref] } {
-                     Viewport::Reset $Frame True
+                     set Clean True
                   }
                }
             }
@@ -1493,10 +1495,24 @@ proc Viewport::ForceGrid { Frame } {
       } else {
          projection configure $Frame -georef $Map(GeoRef)
       }
+
+      if { $Clean } {
+         #----- Force redraw to set internal gridid (U grids)
+         foreach vp [Page::Registered $Frame Viewport] {
+            $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
+         }
+         update idletasks
+
+         projection clean $Frame
+         Viewport::Reset $Frame True
+      }
+
       set ij [projection configure $Frame -gridpoint]
 
       set Map(GridI) [lindex $ij 0]
       set Map(GridJ) [lindex $ij 1]
+   } else {
+      projection configure $Frame -georef ""
    }
 }
 
@@ -2047,8 +2063,8 @@ proc Viewport::Reset { Frame { Fast False } } {
    if { $Map(Type$Frame)=="grid" } {
       set ninj [projection configure $Frame -gridsize]
       set ext  [projection configure $Frame -gridextent]
-      set Map(GridI) [expr ([lindex $ninj 0]-1.0)*0.5+[lindex $ext 0]]
-      set Map(GridJ) [expr ([lindex $ninj 1]-1.0)*0.5+[lindex $ext 1]]
+      set Map(GridI) [expr ([lindex $ninj 0])*0.5+[lindex $ext 0]]
+      set Map(GridJ) [expr ([lindex $ninj 1])*0.5+[lindex $ext 1]]
       set ll [projection function $Frame -coordgrid $Map(GridI) $Map(GridJ)]
       set Map(LatReset) [lindex $ll 0]
       set Map(LonReset) [lindex $ll 1]
@@ -2336,9 +2352,7 @@ proc Viewport::RotateInit { Frame VP X Y } {
       set Map(LatRot) $Map(LatCursor)
    }
 
-   if { $Map(LonRot)!=-999.0 && $Map(LatRot)!=-999.0 } {
-      Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]
-   }
+   Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]
 }
 
 #----------------------------------------------------------------------------

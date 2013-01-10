@@ -62,7 +62,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbellow False -mapabove True
+      -intervals {} -mapbellow False -mapabove True -renderface 0
 
    fstdfield vector { UU VV }
    fstdfield vector { UP VP }
@@ -87,6 +87,7 @@ namespace eval FSTD {
    set Param(Extrapolator)   { NEUTRAL MAXIMUM MINIMUM }
    set Param(Orders)         { AUTO INTEGER FLOAT EXPONENTIAL }
    set Param(IntervalModes)  { NONE INTERVAL LINEAR LOGARITHMIC RSMC }
+   set Param(GridIds)        { SUPER YIN YANG }
 
    set Param(Mode)          VAR            ;#Mode de selection des parametres
    set Param(Map)           FLDMAPDEFAULT  ;#Palette de couleur
@@ -116,6 +117,8 @@ namespace eval FSTD {
    set Param(Size)          10.0           ;#Facteur de dimensionnemenr
    set Param(GridVec)       1              ;#Reference geographique des composantes de vecteurs
    set Param(Width)         1              ;#Largeur des segments
+   set Param(Face)          0              ;#Face to display (grid/subgrid)
+   set Param(GridId)        SUPER          ;#Face to display (grid/subgrid)
 
    set Param(Inters)        {}
    set Param(Labels)        {}
@@ -152,7 +155,7 @@ namespace eval FSTD {
    set Lbl(Unit)          { "Unité  " "Units  " }
    set Lbl(Desc)          { "Desc   " "Desc   " }
    set Lbl(Field)         { "Champs" "Field" }
-   set Lbl(Grid)          { "Grille" "Grid" }
+   set Lbl(Grid)          { "Grille " "Grid   " }
    set Lbl(Particle)      { "Particule" "Particle" }
    set Lbl(Label)         { "Étiquette" "Labels" }
    set Lbl(Intervals)     { "Intervalles" "Intervals" }
@@ -313,8 +316,14 @@ proc FSTD::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.l.val.desc.lbl -side left
                pack $Data(Frame).def.l.val.desc.sel -side left -fill x -expand true
                bind $Data(Frame).def.l.val.desc.sel <Any-KeyRelease> { FSTD::ParamSet }
-            pack $Data(Frame).def.l.val.interp $Data(Frame).def.l.val.order $Data(Frame).def.l.val.mod $Data(Frame).def.l.val.fac $Data(Frame).def.l.val.unit $Data(Frame).def.l.val.desc \
-               -side top -padx 2 -anchor n -fill x
+            frame $Data(Frame).def.l.val.grid
+               label $Data(Frame).def.l.val.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)]
+               ComboBox::Create $Data(Frame).def.l.val.grid.sel FSTD::Param(GridId) noedit unsorted nodouble -1 \
+                  $FSTD::Param(GridIds) 7 3 "FSTD::ParamSet; Viewport::ForceGrid \$Page::Data(Frame) True"
+               pack $Data(Frame).def.l.val.grid.lbl -side left
+               pack $Data(Frame).def.l.val.grid.sel -side left -fill x -expand true
+            pack $Data(Frame).def.l.val.interp $Data(Frame).def.l.val.order $Data(Frame).def.l.val.mod $Data(Frame).def.l.val.fac \
+               $Data(Frame).def.l.val.unit $Data(Frame).def.l.val.desc $Data(Frame).def.l.val.grid -side top -padx 2 -anchor n -fill x
 
          labelframe $Data(Frame).def.l.pal -text [lindex $Lbl(Map) $GDefs(Lang)]
             button $Data(Frame).def.l.pal.cmap -bd 1 -relief flat -image FLDMAPImg \
@@ -649,8 +658,8 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
    foreach field [lindex [$Canvas itemconfigure $VP -data] 4] {
 
       if { [fstdfield is $field] && [fstdfield define $field -GRTYP]!="V" } {
-         set ij [fstdfield stats $field -coordpoint $Lat $Lon]
-         set pij [fstdfield stats $field -unproject $Lat $Lon]
+         set ij    [fstdfield stats $field -coordpoint $Lat $Lon]
+         set pij   [fstdfield stats $field -unproject $Lat $Lon]
          set value [fstdfield stats $field -coordvalue $Lat $Lon]
          set spd [lindex $value 0]
          set dir [lindex $value 1]
@@ -693,6 +702,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    if { ![dataspec is $Spec] } {
       return
    }
+
 
    set val  [dataspec configure $Spec -value]
    set Param(Order)     [lindex $val 0]
@@ -821,6 +831,8 @@ proc FSTD::ParamSet { { Spec "" } } {
       }
    }
 
+   set Param(Face) [lsearch -exact $Param(GridIds) $Param(GridId)]
+
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
@@ -828,7 +840,8 @@ proc FSTD::ParamSet { { Spec "" } } {
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)  -size $Param(Size) -sizerange $Param(SizeRange) \
       -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
-      -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
+      -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow) -renderface $Param(Face)
+
 
    if { $Param(IntervalMode)!="NONE" } {
       set Param(Intervals) [dataspec configure $Spec -intervals]
