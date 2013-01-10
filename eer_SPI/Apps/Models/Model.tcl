@@ -665,6 +665,7 @@ proc Model::ParamsCheck { Model { Get True } } {
 
    if { $Get && $Model!="MLCD" && [info proc ::${Model}::GetMetData]!="" } {
       if { ![${Model}::GetMetData] } {
+         Log::Print ERROR "Problems searching for metdata"
          return False
       }
    }

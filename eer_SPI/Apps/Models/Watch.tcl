@@ -56,8 +56,10 @@ namespace eval Watch {
    set Lbl(CloseBranch) { "Fermer branches" "Close branches" }
 
    #--- Definitions des messages
-   set Msg(Suppress)    { "Voulez-vous reellement desactiver cette veille ?"
-                         "Do you really want to desactivate this watch ?" }
+   set Msg(Suppress)      { "Voulez-vous reellement desactiver cette veille ?"
+                            "Do you really want to desactivate this watch ?" }
+   set Msg(SuppressData)  { "Voulez-vous supprimer les résultats de simulation de cette veille ?"
+                            "Do you want to delete this watch's simulation results ?" }
 }
 
 #-------------------------------------------------------------------------------
@@ -1172,8 +1174,10 @@ proc Watch::Suppress { } {
    }
 
    #----- Supprimer tous les resultats pour la source
-   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Exp)]]] } {
-      eval file delete -force $files
+   if { ![Dialog::Default . 400 WARNING $Msg(SuppressData) "\n\n$Data(Exp)" 0 $Lbl(Yes) $Lbl(No)] } {
+      if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Exp)]]] } {
+         eval file delete -force $files
+      }
    }
 
    #----- Relire les experiences

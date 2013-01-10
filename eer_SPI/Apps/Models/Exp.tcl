@@ -26,6 +26,7 @@ namespace eval Exp {
    set Param(Path)      ""                                  ;#Fichier d'experiences courant
    set Param(StoreHost) ""
    set Param(StorePath) /tmp
+   set Param(StoreLog)  /dev/null
    set Param(Proc)      $GDefs(Dir)/Apps/Models/procedures_0
 
    #----- Variables relatives aux experiences
