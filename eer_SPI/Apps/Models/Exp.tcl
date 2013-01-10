@@ -1528,7 +1528,8 @@ proc Exp::Store { Id } {
       #----- Build the archive
       cd  [set path [Exp::Path]]/../
 
-      set arch $Id.tgz
+      set arch $Id.cmcarc
+#      set arch $Id.tgz
       file delete -force /tmp/$arch
       set err [catch { exec cmcarc -a [file tail $path] -f /tmp/$arch --md5 --dereference >$Param(StoreLog) } msg]
 #      set err [catch { exec tar -zcvf /tmp/$arch [file tail $path] 2>@1 } msg]
