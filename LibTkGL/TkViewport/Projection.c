@@ -254,7 +254,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
-         if (proj->Ref) {
+         if (proj->Ref && proj->Geographic) {
             proj->Ref->Project(proj->Ref,x,y,&loc0.Lat,&loc0.Lon,1,1);
          } else {
             loc0.Lat=y;
@@ -273,7 +273,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
-         if (proj->Ref) {
+         if (proj->Ref && proj->Geographic) {
             proj->Ref->UnProject(proj->Ref,&x,&y,loc0.Lat,loc0.Lon,1,1);
          } else {
             y=loc0.Lat;
@@ -304,6 +304,11 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,0,Objv,"lat lon dist angle [coords]");
             return(TCL_ERROR);
          }
+         if (!proj->Geographic) {
+            Tcl_AppendResult(Interp,"Projection is not geographic",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
          Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&d);
@@ -353,6 +358,10 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,0,Objv,"{ coords } elev");
             return(TCL_ERROR);
          }
+         if (!proj->Geographic) {
+            Tcl_AppendResult(Interp,"Projection is not geographic",(char*)NULL);
+            return(TCL_ERROR);
+         }
 
          if (Objc==3) {
             Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
@@ -391,6 +400,11 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_WrongNumArgs(Interp,0,Objv,"lat0 lon0 lat1 lon1");
             return(TCL_ERROR);
          }
+         if (!proj->Geographic) {
+            Tcl_AppendResult(Interp,"Projection is not geographic",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
          Tcl_GetDoubleFromObj(Interp,Objv[1],&loc0.Lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lon);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&loc1.Lat);
@@ -1025,11 +1039,11 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      GeoRef_Destroy(Interp,proj->Ref->Name);
                   proj->Ref=ref;
                   GeoRef_Incr(proj->Ref);
-                  if (strcmp(proj->Type->Name,"grid")==0) {
-                     Grid_Setup(Interp,proj);
-                  }
                   ViewportClean(proj->VP,1,1);
                   Projection_Clean(Interp,proj,GDB_FORCE);
+               }
+               if (strcmp(proj->Type->Name,"grid")==0) {
+                  Grid_Setup(Interp,proj);
                }
             }
             break;
@@ -1059,6 +1073,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   if (type!=proj->Type) {
                      proj->Type=type;
                      proj->L=proj->LI=proj->LJ=1.0;
+                     proj->Geographic=1;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
                         Grid_Setup(Interp,proj);
                      }
@@ -1530,7 +1545,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    int        ras=0,i;
 
    // If it's a grid projection without a referential or aglobal  U grid
-   if (Proj->Type->Def==PROJPLANE && (!Proj->Ref || (Proj->Ref->NbId>1 && Proj->Ref->NId==0))) {
+   if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
       return(0);
    }
 

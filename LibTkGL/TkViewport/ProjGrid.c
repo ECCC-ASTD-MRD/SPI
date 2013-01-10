@@ -738,12 +738,6 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
    if (!(ref=Proj->Ref))
       return;
 
-   if (Proj->Geographic) {
-      ref->UnProject(ref,&i,&j,Proj->Lat,Proj->Lon,1,1);
-      Proj->I=i;
-      Proj->J=j;
-   }
-
    /* Recuperer les parametres de deformations */
    switch(ref->Grid[0]) {
       case 'Z':
@@ -753,11 +747,18 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
          break;
 
       case 'U':
-         Proj->Ref->LLExtent.MinY=1e32;
+         ref->LLExtent.MinY=1e32;
+         Proj->Geographic=ref->NId?1:0;
 
       default:
          Proj->LI=ref->X1-ref->X0;
          Proj->LJ=ref->Y1-ref->Y0;
+   }
+
+   if (Proj->Geographic) {
+      ref->UnProject(ref,&i,&j,Proj->Lat,Proj->Lon,1,1);
+      Proj->I=i;
+      Proj->J=j;
    }
 
    Proj->L=Proj->LI>Proj->LJ?Proj->LI:Proj->LJ;

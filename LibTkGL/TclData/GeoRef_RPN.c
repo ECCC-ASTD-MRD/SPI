@@ -286,7 +286,7 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    j=Y+1.0;
 
    EZLock_RPNInt();
-   c_gdllfxy(Ref->Ids[Ref->NId],&lat,&lon,&i,&j,1);
+   c_gdllfxy(Ref->Ids[(Ref->NId==0&&Ref->Grid[0]=='U'?1:Ref->NId)],&lat,&lon,&i,&j,1);
    EZUnLock_RPNInt();
 
    *Lat=lat;
