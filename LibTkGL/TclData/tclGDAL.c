@@ -190,16 +190,17 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : invalid band",Tcl_GetString(Objv[nidx+3]),(char*)NULL);
                return(TCL_ERROR);
             }
-            if (nidx!=0 && FSIZE2D(band->Def)!=FSIZE2D(comb->Def)) {
-               Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : incompatible dimension",(char*)NULL);
-               return(TCL_ERROR);
-            } else {
-               GeoRef_Copy(band->Ref);
+            if (nidx==0) {
                band->Ref=GeoRef_Copy(comb->Ref);
                band->Def->NI=comb->Def->NI;
                band->Def->NJ=comb->Def->NJ;
                band->Def->NK=comb->Def->NK;
                band->Def->Type=comb->Def->Type;
+            } else {
+               if (FSIZE2D(band->Def)!=FSIZE2D(comb->Def)) {
+                  Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : incompatible dimension",(char*)NULL);
+                  return(TCL_ERROR);
+               }
             }
             band->Def->NC++;
             band->Def->Data[nidx]=comb->Def->Data[0];
@@ -1778,6 +1779,7 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
       Tcl_AppendResult(Interp,"GDAL_GetMapImage: Invalid number of bands, must be 1, 3 or 4",(char*)NULL);
       return(TCL_ERROR);
    }
+
    DataSpec_Define(Band->Spec);
 
    obj=Tcl_NewListObj(0,NULL);
