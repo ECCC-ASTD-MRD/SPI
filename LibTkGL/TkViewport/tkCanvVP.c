@@ -416,16 +416,20 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_GetDoubleFromObj(Interp,Objv[3],&pt0[1]);
                pt0[0]-=vp->x;
                pt0[1]-=vp->y;
-               proj->Type->UnProject(vp,proj,&loc0,pt0);
+               // If geographic, get the height
                if (proj->Geographic) {
+                  proj->Type->UnProject(vp,proj,&loc0,pt0);
                   CLAMPLON(loc0.Lon);
                   h=GDB_GetMap(proj->Geo,loc0.Lat,loc0.Lon);
-
-                  proj->Ref->UnProject(proj->Ref,&pt0[0],&pt0[1],loc0.Lat,loc0.Lon,0,1);
-               } else {
-                  pt0[0]=loc0.Lon;
-                  pt0[1]=loc0.Lat;
                }
+               // Force non-geographic to get the gridpoint
+               n=proj->Geographic;
+               proj->Geographic=0;
+               proj->Type->UnProject(vp,proj,&loc0,pt0);
+               proj->Geographic=n;
+               pt0[0]=loc0.Lon;
+               pt0[1]=loc0.Lat;
+
             } else {
                pt0[0]=pt0[1]=-1.0;
             }
