@@ -892,9 +892,7 @@ proc FieldBox::InfoCommand { No Index } {
    set nv    [lindex $line 0]
    set tv    [lindex $line 1]
    set level "[lindex $line 2] [lindex $line 3]"
-   set ip2   [lindex $line 4]
-   set id    [lindex $line end-2]_[lindex $line end-1]
-   set type  [lindex $line end]
+   set id    [lindex $line end-5]_[lindex $line end-4]
    set date  [lindex $line end-6]
 
    #----- Date de validite
@@ -1379,7 +1377,6 @@ proc FieldBox::Select { } {
 
          if { $lidx==-1 } {
             eval $type read $fld $fid $fidx
-
             set nv [fstdfield define $fld -NOMVAR]
             if { $nv=="INFO" || $nv=="META" || $nv=="TEXT" || $nv=="PROJ" || ($nv=="OL" && [fstdfield define $fld -TYPVAR]=="X") } {
                if { [winfo exists .fieldboxparams] } {
