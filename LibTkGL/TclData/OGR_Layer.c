@@ -1817,8 +1817,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
       for(n=0;n<spec->InterNb;n++) {
          Layer->Feature[n]=OGR_F_Create(Layer->Def);
-
-         OGR_F_SetFieldDouble(Layer->Feature[n],0,spec->Inter[n]);
+         OGR_F_SetFieldDouble(Layer->Feature[n],0,VAL2SPEC(Spec,spec->Inter[n]));
 
          if (spec->MapAll && spec->Map) {
             VAL2COL(cidx,spec,spec->Inter[n]);
