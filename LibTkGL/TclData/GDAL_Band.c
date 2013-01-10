@@ -209,6 +209,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
           band->Spec->Map->Control[c][1]=entry.c2;
           band->Spec->Map->Control[c][2]=entry.c3;
           band->Spec->Map->Control[c][3]=entry.c4;
+          band->Spec->Map->Max[c]=255;
       }
    } else {
       band->Spec->Map=CMap_New(NULL,256);
@@ -2325,6 +2326,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      if (i0==i1) {
                         i0=0;
                         i1=h-1;
+                     }
+                     if (band->Spec->Map) {
+                        band->Spec->Map->Min[b]=band->Stat[b].Min+i0*dval;
+                        band->Spec->Map->Max[b]=band->Stat[b].Min+i1*dval;
                      }
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i0*dval));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i1*dval));
