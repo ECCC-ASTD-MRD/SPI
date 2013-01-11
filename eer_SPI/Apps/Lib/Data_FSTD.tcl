@@ -62,7 +62,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbellow False -mapabove True -renderface 0
+      -intervals {} -mapbellow False -mapabove True
 
    fstdfield vector { UU VV }
    fstdfield vector { UP VP }
@@ -117,8 +117,8 @@ namespace eval FSTD {
    set Param(Size)          10.0           ;#Facteur de dimensionnemenr
    set Param(GridVec)       1              ;#Reference geographique des composantes de vecteurs
    set Param(Width)         1              ;#Largeur des segments
-   set Param(Face)          0              ;#Face to display (grid/subgrid)
-   set Param(GridId)        SUPER          ;#Face to display (grid/subgrid)
+   set Param(GridNo)        0              ;#Grid to display no (grid/subgrid)
+   set Param(GridId)        SUPER          ;#Grid to display name (grid/subgrid)
 
    set Param(Inters)        {}
    set Param(Labels)        {}
@@ -319,7 +319,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.l.val.grid
                label $Data(Frame).def.l.val.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)]
                ComboBox::Create $Data(Frame).def.l.val.grid.sel FSTD::Param(GridId) noedit unsorted nodouble -1 \
-                  $FSTD::Param(GridIds) 7 3 "FSTD::ParamSet; Viewport::ForceGrid \$Page::Data(Frame) True"
+                  $FSTD::Param(GridIds) 7 3 "FSTD::ParamSet; FSTD::ParamUpdate; Viewport::ForceGrid \$Page::Data(Frame) True"
                pack $Data(Frame).def.l.val.grid.lbl -side left
                pack $Data(Frame).def.l.val.grid.sel -side left -fill x -expand true
             pack $Data(Frame).def.l.val.interp $Data(Frame).def.l.val.order $Data(Frame).def.l.val.mod $Data(Frame).def.l.val.fac \
@@ -658,9 +658,15 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
    foreach field [lindex [$Canvas itemconfigure $VP -data] 4] {
 
       if { [fstdfield is $field] && [fstdfield define $field -GRTYP]!="V" } {
-         set ij    [fstdfield stats $field -coordpoint $Lat $Lon]
-         set pij   [fstdfield stats $field -unproject $Lat $Lon]
-         set value [fstdfield stats $field -coordvalue $Lat $Lon]
+         if { ![projection configure $Page -geographic] } {
+            set ij    [projection function $Page -gridcoord $Lat $Lon]
+            set pij   $ij
+            set value [fstdfield stats $field -gridvalue [lindex $ij 0] [lindex $ij 1]]
+         } else {
+            set ij    [fstdfield stats $field -coordpoint $Lat $Lon]
+            set pij   [fstdfield stats $field -unproject $Lat $Lon]
+            set value [fstdfield stats $field -coordvalue $Lat $Lon]
+         }
          set spd [lindex $value 0]
          set dir [lindex $value 1]
 
@@ -831,7 +837,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       }
    }
 
-   set Param(Face) [lsearch -exact $Param(GridIds) $Param(GridId)]
+   set Param(GridNo) [lsearch -exact $Param(GridIds) $Param(GridId)]
 
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
@@ -840,7 +846,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)  -size $Param(Size) -sizerange $Param(SizeRange) \
       -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
-      -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow) -renderface $Param(Face)
+      -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
 
    if { $Param(IntervalMode)!="NONE" } {
@@ -1076,6 +1082,8 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    ComboBox::DelAll $Data(Frame).var.sel
 
    foreach fld $Fields {
+      fstdfield define $fld -grid $Param(GridNo)
+
       if { [fstdfield is $fld] } {
 
           #----- Get the name of the configuration object

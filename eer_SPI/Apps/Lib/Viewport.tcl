@@ -717,7 +717,11 @@ proc Viewport::Follow { Frame VP X Y } {
       set Map(GridJCursor)   [lindex $ij 1]
    }
 
-   catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
+   if { ![projection configure $Frame -geographic] } {
+      catch { set Page::Data(Coord) [format "%.$Page::Data(CoordPrec)f %.$Page::Data(CoordPrec)f" $Map(GridICursor) $Map(GridJCursor)] }
+   } else {
+      catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }
+   }
    set Page::Data(Altitude) $Map(AltCursor)
 
    $Frame.page.canvas delete COORDLINK SQUARECURSOR
@@ -1497,6 +1501,8 @@ proc Viewport::ForceGrid { Frame { Clean False } } {
       }
 
       if { $Clean } {
+         georef define $Map(GeoRef) -grid $FSTD::Param(GridNo)
+
          #----- Force redraw to set internal gridid (U grids)
          foreach vp [Page::Registered $Frame Viewport] {
             $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
