@@ -1146,24 +1146,25 @@ proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
       $Frame.page.canvas itemconf $VP -projection $Frame -frame 0
       set ll1 [$VP -unproject $X $Y]
 
-      #----- Calculate displacement needed to focus on cursor (course-distance method)
-      set d  [projection function $Frame -dist    [list [lindex $ll0 0] [lindex $ll0 1]  [lindex $ll1 0] [lindex $ll1 1]]]
-      set c  [projection function $Frame -bearing [lindex $ll1 0] [lindex $ll1 1]  [lindex $ll0 0] [lindex $ll0 1]]
-      set ll [projection function $Frame -circle  $Viewport::Map(Lat) $Viewport::Map(Lon) $d $c]
+      if { [projection configure $Frame -geographic] } {
+         #----- Calculate displacement needed to focus on cursor (course-distance method)
+         set d  [projection function $Frame -dist    [list [lindex $ll0 0] [lindex $ll0 1]  [lindex $ll1 0] [lindex $ll1 1]]]
+         set c  [projection function $Frame -bearing [lindex $ll1 0] [lindex $ll1 1]  [lindex $ll0 0] [lindex $ll0 1]]
+         set ll [projection function $Frame -circle  $Viewport::Map(Lat) $Viewport::Map(Lon) $d $c]
 
-      set lat [lindex $ll 0]
-      set lon [lindex $ll 1]
+         set lat [lindex $ll 0]
+         set lon [lindex $ll 1]
+      } else {
+         #-----  Calculate displacement needed to focus on cursor (delta coord method)
+         set da [expr [lindex $ll1 0]-[lindex $ll0 0]]
+         set do [expr [lindex $ll1 1]-[lindex $ll0 1]]
 
-      #-----  Calculate displacement needed to focus on cursor (delta coord method)
-   #   set da [expr [lindex $ll1 0]-[lindex $ll0 0]]
-   #   set do [expr [lindex $ll1 1]-[lindex $ll0 1]]
+         set lat [expr $Viewport::Map(Lat)-$da]
+         set lon [expr $Viewport::Map(Lon)-$do]
 
-   #   set lat [expr $Viewport::Map(Lat)-$da]
-   #   set lon [expr $Viewport::Map(Lon)-$do]
-
-   #   set lat [expr ($lat>90.0  || $lat<-90.0) ?$Viewport::Map(Lat):$lat]
-   #   set lon [expr $lon>180?$lon-360:$lon<-180?$lon+360:$lon]
-
+         set lat [expr ($lat>90.0  || $lat<-90.0) ?$Viewport::Map(Lat):$lat]
+         set lon [expr $lon>180?$lon-360:$lon<-180?$lon+360:$lon]
+      }
       Viewport::Rotate $Frame $lat $lon $Lens
    } else {
       ProjCam::Zoom $Cam $Frame $Lens
