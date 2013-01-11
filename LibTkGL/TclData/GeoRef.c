@@ -721,8 +721,8 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    TGeoRef     *ref;
    Tcl_Obj     *obj;
 
-   static CONST char *sopt[] = { "-projection","-transform","-invtransform","-extent","-location","-type","-border",NULL };
-   enum        opt { PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER };
+   static CONST char *sopt[] = { "-projection","-transform","-invtransform","-extent","-location","-type","-border","-grid",NULL };
+   enum        opt { PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER,GRID };
 
    ref=GeoRef_Get(Name);
    if (!ref) {
@@ -738,7 +738,32 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
       switch ((enum opt)idx) {
 
-         case TYPE:
+        case GRID:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(ref->NId));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
+               if (nidx>ref->NbId) {
+                  Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid subgrid index",(char*)NULL);
+                  return(TCL_ERROR);
+               } else {
+                  int ni,nj,ig;
+                  char grtyp[2];
+
+                  // If the subgrid index is different from thte current
+                  if (nidx!=ref->NId && nidx<=ref->NbId) {
+                     ref->NId=nidx;
+
+                     // Define grid limits
+                     c_ezgprm(ref->Ids[nidx],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+                     ref->X0=0;    ref->Y0=0;
+                     ref->X1=ni-1; ref->Y1=nj-1;
+                  }
+               }
+            }
+            break;
+
+        case TYPE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
                if (ref->Type&=GRID_REGULAR) {

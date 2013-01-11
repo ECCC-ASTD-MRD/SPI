@@ -102,7 +102,6 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
    // Check for U grid (grid index 0=loop on sub grid)
    if (Field->Ref->NbId>1) {
-      FSTD_FieldSubSelect(Field,Field->Spec->RenderFace);
       if (Field->Ref->NId==0) {
          u0=1; u1=Field->Ref->NbId;
       } else {

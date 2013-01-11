@@ -166,7 +166,7 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
    char grtyp[2];
 
    // If the subgrid index is different from thte current
-   if (N!=Field->Ref->NId &&  N<=Field->Ref->NbId) {
+   if (N!=Field->Ref->NId && N<=Field->Ref->NbId) {
       Field->Ref->NId=N;
 
       // Point to subgrid data within global data array
@@ -179,6 +179,8 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
 
       // Clean positionnal data
       Data_Clean(Field,1,1,1);
+
+      return(1);
    }
    return(0);
 }
