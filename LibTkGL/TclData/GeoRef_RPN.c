@@ -217,7 +217,6 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                Def_Pointer(Def,C,mem,p0);
                EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
-//               fprintf(stderr,"%i %i ---- %f %f   %f\n",Ref->NId,mem,x,y,valf);
                *Length=valf;
                EZUnLock_RPNInt();
             } else {

@@ -152,7 +152,7 @@ void FSTD_HeadCopy(void *To,void *From) {
          // Point to subgrid data within global data array
          for(c=0;c<Field->Def->NC;c++) {
             Field->SDef[i]->Idx=dij;
-            Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij];
+            Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
          }
          // Increment after global grid
          dij+=ni*nj;

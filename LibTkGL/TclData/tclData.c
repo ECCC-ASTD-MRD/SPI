@@ -463,41 +463,43 @@ void Data_GetStat(TData *Field){
    int           i,j,k,d,imin=0,jmin=0,imax=0,jmax=0,kmin=0,kmax=0;
    unsigned long idxk,idx,n=0;
 
+   def=Field->SDef?Field->SDef[0]:Field->Def;
+
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 
    /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
-   if (Field->Def->NC>1 && Field->Ref->Grid[0]!='Y') {
-      if (!Field->Def->Mode || Field->Def->Mode==Field->Def->Data[0]) {
-         Field->Def->Mode=(char*)malloc(FSIZE3D(Field->Def)*TData_Size[Field->Def->Type]);
+   if (def->NC>1 && Field->Ref->Grid[0]!='Y') {
+      if (!def->Mode || def->Mode==def->Data[0]) {
+         def->Mode=(char*)malloc(FSIZE3D(def)*TData_Size[def->Type]);
       } else {
-         Field->Def->Mode=(char*)realloc(Field->Def->Mode,FSIZE3D(Field->Def)*TData_Size[Field->Def->Type]);
+         def->Mode=(char*)realloc(def->Mode,FSIZE3D(def)*TData_Size[def->Type]);
       }
-      if (Field->Def->Mode) {
-         for (k=0;k<Field->Def->NK;k++) {
-         idxk=FSIZE2D(Field->Def)*k;
-         for (j=0;j<Field->Def->NJ;j++) {
-               idx=idxk+j*Field->Def->NI;
-               for (i=0;i<Field->Def->NI;i++,idx++) {
+      if (def->Mode) {
+         for (k=0;k<def->NK;k++) {
+         idxk=FSIZE2D(def)*k;
+         for (j=0;j<def->NJ;j++) {
+               idx=idxk+j*def->NI;
+               for (i=0;i<def->NI;i++,idx++) {
                   mode=0;
-                  for (d=0;d<Field->Def->NC;d++) {
-                     Def_Get(Field->Def,d,idx,val);
+                  for (d=0;d<def->NC;d++) {
+                     Def_Get(def,d,idx,val);
                      mode+=val*val;
                   }
-                  Def_SetMod(Field->Def,idx,sqrt(mode));
+                  Def_SetMod(def,idx,sqrt(mode));
                }
             }
          }
       }
    } else {
-      Field->Def->Mode=Field->Def->Data[0];
+      def->Mode=def->Data[0];
    }
 
    // For supergrids, point the subgrids mode to the right place
    if (Field->SDef) {
       for(i=1;i<=Field->Ref->NbId;i++) {
          // Point to subgrid data within global data array
-         Field->SDef[i]->Mode=Field->SDef[0]->Mode+(Field->SDef[i]->Data[0]-Field->SDef[0]->Data[0])*TData_Size[Field->Def->Type];
+         Field->SDef[i]->Mode=def->Mode+(Field->SDef[i]->Data[0]-def->Data[0]);
       }
    }
 
@@ -509,17 +511,17 @@ void Data_GetStat(TData *Field){
    Field->Stat->Max=-1e200;
    Field->Stat->Avg=0.0;
 
-   for (k=0;k<Field->Def->NK;k++) {
-      idxk=FSIZE2D(Field->Def)*k;
+   for (k=0;k<def->NK;k++) {
+      idxk=FSIZE2D(def)*k;
 
       /*Calculer les statistiques*/
-      for (j=0;j<Field->Def->NJ;j++) {
-         idx=idxk+j*Field->Def->NI;
-         for (i=0;i<Field->Def->NI;i++,idx++) {
+      for (j=0;j<def->NJ;j++) {
+         idx=idxk+j*def->NI;
+         for (i=0;i<def->NI;i++,idx++) {
 
-            Def_GetMod(Field->Def,idx,val);
+            Def_GetMod(def,idx,val);
 
-            if (val!=Field->Def->NoData) {
+            if (val!=def->NoData) {
                n++;
                Field->Stat->Avg+=val;
 
@@ -555,17 +557,17 @@ void Data_GetStat(TData *Field){
 
    if (Field->Ref && Field->Ref->Grid[0]!='V') {
       if (Field->Ref->Lat && Field->Ref->Lon) {
-         Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(Field->Def,imax,jmax)];
-         Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(Field->Def,imax,jmax)];
+         Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(def,imin,jmin)];
+         Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(def,imin,jmin)];
+         Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(def,imax,jmax)];
+         Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(def,imax,jmax)];
       } else if (Field->Ref->Project) {
          Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
          Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
       }
       if (Field->Ref->Hgt) {
-         Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imin,jmin)];
-         Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(Field->Def,imax,jmax)];
+         Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imin,jmin)];
+         Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imax,jmax)];
       }  else {
          Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
          Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
@@ -1611,7 +1613,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             if (!Field->Stat)
                Data_GetStat(Field);
-            return Data_GetImage(Interp,Field,Tcl_GetString(Objv[++i]));
+            return(Data_GetImage(Interp,Field,Tcl_GetString(Objv[++i])));
             break;
 
          case MAX:
