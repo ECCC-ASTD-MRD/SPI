@@ -1394,13 +1394,16 @@ float FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1) {
 int FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim) {
 
    Vect3d min,max,pix;
+   double dx,dy;
 
    PROJCHECK(Proj,G0[0]);
    PROJCHECK(Proj,G1[0]);
    PROJCHECK(Proj,G2[0]);
    PROJCHECK(Proj,G3[0]);
 
-   if (ABS(G0[0]-G1[0])>1 || ABS(G2[0]-G3[0])>1) {
+   dx=G0[0]-G1[0];
+   dy=G2[0]-G3[0];
+   if (ABS(dx)>1 || ABS(dy)>1) {
       return(0);
    }
 

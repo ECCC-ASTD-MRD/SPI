@@ -166,20 +166,13 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    Vect3d p,p0,p1,p2,p3;
 
    /*Interpolate the localisations*/
-   Vect_Interp(p0,P0,P1,0.5);
-   Vect_Interp(p1,P1,P2,0.5);
-   Vect_Interp(p2,P2,P3,0.5);
-   Vect_Interp(p3,P3,P0,0.5);
-   Vect_Interp(p,p0,p2,0.5);
+   Vect_Mid(p0,P0,P1);
+   Vect_Mid(p1,P1,P2);
+   Vect_Mid(p2,P2,P3);
+   Vect_Mid(p3,P3,P0);
+   Vect_Mid(p,p0,p2);
 
    /*Interpolate the values*/
-/*
-   v0=ILIN(V0,V1,0.5);
-   v1=ILIN(V1,V2,0.5);
-   v2=ILIN(V2,V3,0.5);
-   v3=ILIN(V3,V0,0.5);
-   v=ILIN(v0,v2,0.5);
-*/
    v=(V0+V1+V2+V3)*0.25;
    v0=(V0+V1)*0.5;
    v1=(V1+V2)*0.5;
@@ -197,7 +190,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
 
    /*Draw if visible*/
    if (C0>-1 || c0>-1 || c>-1 || c3>-1) {
-      if (Depth && (ABS(C0-c0) || ABS(c0-c) || ABS(c-c3) || ABS(c3-C0))) {
+      if (Depth && ((C0!=c0) || (c0!=c) || (c!=c3) || (c3!=C0))) {
          VertexQuad_Linear(Field,P0,p0,p,p3,C0,c0,c,c3,V0,v0,v,v3,Depth,Base);
       } else {
          VR(P0,C0,Base);
@@ -208,7 +201,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c0>-1 || C1>-1 || c1>-1 || c>-1) {
-      if (Depth && (ABS(c0-C1) || ABS(C1-c1) || ABS(C1-c) || ABS(c-c0))) {
+      if (Depth && ((c0!=C1) || (C1!=c1) || (C1!=c) || (c!=c0))) {
          VertexQuad_Linear(Field,p0,P1,p1,p,c0,C1,c1,c,v0,V1,v1,v,Depth,Base);
       } else {
          VR(p0,c0,Base);
@@ -219,7 +212,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c>-1 || c1>-1 || C2>-1 || c2>-1) {
-      if (Depth && (ABS(c-c1) || ABS(c1-C2) || ABS(C2-c2) || ABS(c2-c))) {
+      if (Depth && ((c!=c1) || (c1!=C2) || (C2!=c2) || (c2!=c))) {
          VertexQuad_Linear(Field,p,p1,P2,p2,c,c1,C2,c2,v,v1,V2,v2,Depth,Base);
       } else {
          VR(p,c,Base);
@@ -230,7 +223,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
    }
 
    if (c3>-1 || c>-1 || c2>-1 || C3>-1) {
-      if (Depth && (ABS(c3-c) || ABS(c-c2) || ABS(c2-C3) || ABS(C3-c3))) {
+      if (Depth && ((c3!=c) || (c!=c2) || (c2!=C3) || (C3!=c3))) {
          VertexQuad_Linear(Field,p3,p,p2,P3,c3,c,c2,C3,v3,v,v2,V3,Depth,Base);
       } else {
          VR(p3,c3,Base);
@@ -240,6 +233,7 @@ void VertexQuad_Linear(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int 
       }
    }
 }
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <VertexQuad_Nearest>
@@ -263,11 +257,11 @@ void VertexQuad_Nearest(TData *Field,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int
    Vect3d p,p0,p1,p2,p3;
 
    /*Interpolate the localisations*/
-   Vect_Interp(p0,P0,P1,0.5);
-   Vect_Interp(p1,P1,P2,0.5);
-   Vect_Interp(p2,P2,P3,0.5);
-   Vect_Interp(p3,P3,P0,0.5);
-   Vect_Interp(p,p0,p2,0.5);
+   Vect_Mid(p0,P0,P1);
+   Vect_Mid(p1,P1,P2);
+   Vect_Mid(p2,P2,P3);
+   Vect_Mid(p3,P3,P0);
+   Vect_Mid(p,p0,p2);
 
    /*Draw quads*/
    if (C0>-1) {

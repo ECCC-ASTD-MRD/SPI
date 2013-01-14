@@ -1297,14 +1297,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
                } else {
 
-                  dx=ABS(dim[0]);
-                  dy=ABS(dim[1]);
+                  dx=fabs(dim[0]);
+                  dy=fabs(dim[1]);
                   dx=MIN(dx,dy);
-                  depth=1;
-                  while (dx>>=1) depth++;
+                  depth=LOG2(dx);
 
                   /* Is the cell resolution enough ??? */
-                  if (depth>=2 && (ABS(c0-c1) || ABS(c1-c2) || ABS(c2-c3) || ABS(c3-c0))) {
+                  if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
                      VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
                      VR(g0,c0,base);
