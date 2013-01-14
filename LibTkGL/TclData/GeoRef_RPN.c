@@ -166,7 +166,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
       valid=1;
 
       /*Index memoire du niveau desire*/
-      mem=Def->NI*Def->NJ*(int)Z;
+      mem=Def->NIJ*(int)Z;
 
       /*Pour un champs vectoriel*/
       x=X+1.0;

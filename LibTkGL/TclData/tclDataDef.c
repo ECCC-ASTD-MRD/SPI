@@ -186,6 +186,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
       def->NJ=Def->NJ;
       def->NK=Def->NK;
       def->NC=Def->NC;
+      def->NIJ=Def->NI*Def->NJ;
       def->NoData=Def->NoData;
       def->Type=Def->Type;
       def->Level=Def->Level;
@@ -233,6 +234,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
       def->NJ=Def->NJ;
       def->NK=Def->NK;
       def->NC=Def->NC;
+      def->NIJ=Def->NI*Def->NJ;
       def->NoData=Def->NoData;
       def->Type=Type;
       def->Level=Def->Level;
@@ -336,6 +338,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->NI=NI;
    def->NJ=NJ;
    def->NK=NK;
+   def->NIJ=NI*NJ;
    def->NC=abs(Dim);
    def->Container=Dim<=0;
    def->CellDim=2;
@@ -409,6 +412,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       Def->NI=NI;
       Def->NJ=NJ;
       Def->NK=NK;
+      Def->NIJ=NI*NJ;
 
       Def->Limits[0][0]=0;
       Def->Limits[1][0]=0;

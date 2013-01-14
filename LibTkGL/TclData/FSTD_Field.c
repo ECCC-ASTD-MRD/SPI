@@ -131,27 +131,34 @@ void FSTD_HeadCopy(void *To,void *From) {
    memcpy((FSTD_Head*)To,(FSTD_Head*)From,sizeof(FSTD_Head));
 }
 
- int FSTD_FieldSubBuild(TData *Field) {
+int FSTD_FieldSubBuild(TData *Field) {
 
    unsigned long long dij=0;
    int ni,nj,ig;
    char grtyp[2];
    int i,c;
 
-  // Allocate subgrid array ans set index 0 to supergrid
-   Field->SDef=(TDataDef**)malloc((Field->Ref->NbId+1)*sizeof(TDataDef*));
+   // Allocate subgrid array ans set index 0 to supergrid
+   if (!Field->SDef) {
+      Field->SDef=(TDataDef**)calloc((Field->Ref->NbId+1),sizeof(TDataDef*));
+   }
    Field->SDef[0]=Field->Def;
 
   // Loop on subgrids
    for(i=1;i<=Field->Ref->NbId;i++) {
       c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
 
+      if (Field->SDef[i])
+         DataDef_Free(Field->SDef[i]);
+
      // Allocate a container
-      if ((Field->SDef[i]=DataDef_New(ni,nj,1,-Field->Def->NC,Field->Def->Type))) {
+      if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
 
          // Point to subgrid data within global data array
          for(c=0;c<Field->Def->NC;c++) {
             Field->SDef[i]->Idx=dij;
+            Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
+            Field->SDef[i]->Level=Field->Def->Level;
             Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
          }
          // Increment after global grid
@@ -166,7 +173,10 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
    char grtyp[2];
 
    // If the subgrid index is different from thte current
-   if (N!=Field->Ref->NId && N<=Field->Ref->NbId) {
+   if (Field->Ref->Grid[0]=='U' && N!=Field->Ref->NId && N<=Field->Ref->NbId) {
+      // Clean positionnal data
+      Data_Clean(Field,1,1,1);
+
       Field->Ref->NId=N;
 
       // Point to subgrid data within global data array
@@ -176,9 +186,6 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
       c_ezgprm(Field->Ref->Ids[N],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
       Field->Ref->X0=0;    Field->Ref->Y0=0;
       Field->Ref->X1=ni-1; Field->Ref->Y1=nj-1;
-
-      // Clean positionnal data
-      Data_Clean(Field,1,1,1);
 
       return(1);
    }
@@ -1410,11 +1417,13 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Ref->NId));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
-               if (nidx>Field->Ref->NbId) {
-                  Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid subgrid index",(char*)NULL);
-                  return(TCL_ERROR);
-               } else {
-                  FSTD_FieldSubSelect(Field,nidx);
+               if (Field->Ref->NbId>1) {
+                  if (nidx>Field->Ref->NbId) {
+                     Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid subgrid index",(char*)NULL);
+                     return(TCL_ERROR);
+                  } else {
+                     FSTD_FieldSubSelect(Field,nidx);
+                  }
                }
             }
             break;
@@ -2538,6 +2547,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       }
    }
 
+   k2=Field->Ref->NId;
+   FSTD_FieldSubSelect(Field,0);
+
    /*Augmenter la dimension du tableau*/
    if (!DataDef_Resize(Field->Def,ni,nj,nk)) {
       Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Not enough memory to allocate levels",(char*)NULL);
@@ -2621,6 +2633,11 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    } else {
       Data_Clean(Field,1,1,1);
    }
+
+   if (ref->Grid[0]=='U') {
+      FSTD_FieldSubBuild(Field);
+   }
+   FSTD_FieldSubSelect(Field,k2);
 
    EZUnLock_RPNField();
    FSTD_FileUnset(Interp,head->FID);

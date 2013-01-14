@@ -262,7 +262,7 @@ typedef struct TDataDef {
    OGRGeometryH *Pick,*Poly;  /*Geometry used in various interpolation method*/
 
    TData_Type Type;           /*Type de donnees du champs*/
-   int NI,NJ,NK,NC;           /*Dimensions du champs*/
+   int NI,NJ,NK,NC,NIJ;       /*Dimensions du champs*/
    int Idx;                   /*Index displacement into supergrid*/
 
    int     CellDim;           /*Defined grid point coverage, point=1 or area=2*/
