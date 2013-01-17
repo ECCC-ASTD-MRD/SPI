@@ -520,8 +520,8 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
    variable Param
    variable Data
 
-   if { $Mode!="NONE" } {
-#      set Param(Intervals)      {}
+   if { $Mode=="NONE" } {
+      set Param(Intervals)   {}
    }
    set Param(IntervalMode)   $Mode
    set Param(IntervalParam)  $Par
@@ -1113,7 +1113,6 @@ proc FSTD::ParamUpdate { { Fields { } } } {
                dataspec copy $var $spec
                dataspec free $spec
             }
-
             FSTD::ParamInit $fld $var
          }
 

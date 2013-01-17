@@ -1034,6 +1034,7 @@ proc MetData::Obukhov { Stamp File Lat Lon } {
 
    #----- Find inverse Obukhov length (aggregated value) [m-1] record.
    set io [fstdfield find $File $Stamp "" 1195 -1 -1 "" IO]
+   set ol 22856.0320937
 
    if { [llength $io] } {
 
@@ -1043,15 +1044,14 @@ proc MetData::Obukhov { Stamp File Lat Lon } {
       #----- Interpolate field at specific geographical coordinates.
       set io [fstdfield stats FLD -coordvalue $Lat $Lon]
 
-      #----- Compute Obukhov length [m].
-      set ol [expr 1.0/double($io)]
-
+      if { [expr abs($io)]>1e-32 } {
+         #----- Compute Obukhov length [m].
+         set ol [expr 1.0/double($io)]
+      }
    } else {
-
       Log::Print WARNING "Missing inverse Obukhov length field 'IO'. Using a neutral atmosphere."
-
-      set ol 22856.0320937
    }
+
    return $ol
 }
 
