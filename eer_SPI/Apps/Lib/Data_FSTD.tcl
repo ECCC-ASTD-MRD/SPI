@@ -521,7 +521,7 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
    variable Data
 
    if { $Mode=="NONE" } {
-      set Param(Intervals)   {}
+#      set Param(Intervals)   {}
    }
    set Param(IntervalMode)   $Mode
    set Param(IntervalParam)  $Par
