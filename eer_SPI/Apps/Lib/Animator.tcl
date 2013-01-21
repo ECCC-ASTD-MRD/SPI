@@ -548,7 +548,6 @@ proc Animator::GetPlayListField { } {
             "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
 
-         set no 0
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
@@ -567,9 +566,7 @@ proc Animator::GetPlayListField { } {
                "IP2"     { set info [lrange $field 4 5] }
                "IP3"     { set info [lrange $field 6 7] }
                "ETIKET"  { set info [lindex $field 8] }
-               "DATE"    { set dat  [fstdstamp todate [fstdfield define ANI$no -DATEV]]
-                           set info [fstdstamp toseconds [fstdfield define ANI$no -DATEV]]
-                           }
+               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI$no -DATEV]] }
             }
             #----- Ajouter a la liste du frame temporel correspondant
 
@@ -837,11 +834,10 @@ proc Animator::Play { } {
             set Play(Data$vp) $Play($vp$info)
             set Play(Data)    [FieldCalc::Operand $vp $Play($vp$info)]
 
-            #----- Check for persistnent data (time=0)
+            #----- Check for persistent data (time=0)
             if { $info!=0 && [info exists Play(${vp}0)] } {
                lappend Play(Data) $Play(${vp}0)
             }
-
             if { $Play(Cache) && !$Play(File) } {
                $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data)
             } else {
