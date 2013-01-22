@@ -361,6 +361,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TDataSpec   *spec;
    TDataVector *uvw;
    Vect3d      *pos;
+   FSTD_File   *file;
    char        *field,imode,itype;
 
    int         idx;
@@ -1022,7 +1023,8 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          return(FSTD_FieldDefine(Interp,field0,Objc-3,Objv+3));
          break;
    }
-   return TCL_OK;
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------

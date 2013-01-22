@@ -220,7 +220,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    switch ((enum opt)idx) {
 
       case COPY:
-         if(Objc<4) {
+         if (Objc<4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom");
             return(TCL_ERROR);
          }

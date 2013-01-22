@@ -1300,7 +1300,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   dx=fabs(dim[0]);
                   dy=fabs(dim[1]);
                   dx=MIN(dx,dy);
-                  depth=LOG2(dx);
+                  depth=ceil(LOG2(dx));
 
                   /* Is the cell resolution enough ??? */
                   if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {

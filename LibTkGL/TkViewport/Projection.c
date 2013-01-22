@@ -1703,7 +1703,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          co[1].Lon=DEG2RAD(co[1].Lon);
          d=DIST(0.0,co[0].Lat,co[0].Lon,co[1].Lat,co[1].Lon);
       } else {
-         d=1.0*VP->Cam->Aspect;
+         d=VP->Cam->Aspect;
       }
       if (d>0.0) {
          Proj->PixDist=d;

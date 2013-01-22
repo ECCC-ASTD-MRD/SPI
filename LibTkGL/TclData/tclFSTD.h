@@ -37,7 +37,7 @@
 
 #include "tclData.h"
 #include "EZTile.h"
-#include "EZVrInt.h"
+#include "ZRefInterp.h"
 
 #define FSTD_NKMAX     1024
 #define FSTD_LISTNONE   0
