@@ -341,7 +341,6 @@ proc ProjCam::Delete { Combo } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-
 proc ProjCam::Do { Cam Frame VP args } {
    variable Data
 
@@ -354,6 +353,18 @@ proc ProjCam::Do { Cam Frame VP args } {
    set Data(Name) ""
 
    Page::Update $Frame
+}
+
+proc ProjCam::Rotate { Cam Frame X { Y 0.0 } { Z 0.0 } } {
+   variable Data
+
+   upvar #0 ProjCam::Data${Cam}::Cam  cam
+
+   set cam(CFX) [expr $cam(CFX)+$X]
+   set cam(CFY) [expr $cam(CFY)+$Y]
+   set cam(CFZ) [expr $cam(CFZ)+$Z]
+
+   ProjCam::Do $Cam $Frame -
 }
 
 #----------------------------------------------------------------------------

@@ -144,6 +144,7 @@ namespace eval SPI {
                              "Page Magnifier. Use to mangify local spot\n\nLeft button: Loupe\nScroll     : Augmenter/diminuer le zoom" }
    set Bubble(ZoomBack)    { "Zoom arrière" "Zoom back" }
    set Bubble(ZoomClear)   { "Annuler le zoom" "Cancel zoom" }
+   set Bubble(Rotate)      { "Rotation de 90 degrées" "Rotate 90 degrees" }
    set Bubble(CamClear)    { "Réinitialiser la camera" "Reinitialize camera" }
    set Bubble(CamName)     { "Nom de la caméra courante" "Current camera name" }
    set Bubble(CamSave)     { "Sauvegarder les paramètres de caméra courants" "Save the current camera parameters" }

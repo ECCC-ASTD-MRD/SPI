@@ -328,8 +328,8 @@ proc FieldBox::FieldCopy { File } {
    foreach idx [.fieldbox$Data(Current).data.list curselection] {
 
       set info [.fieldbox$Data(Current).data.list get $idx]
-      set fid  [lindex $info end-2]
-      set fidx [lindex $info end-1]
+      set fid  [lindex $info end-5]
+      set fidx [lindex $info end-4]
 
       fstdfield read FIELDBOXTMP $fid $fidx
       fstdfield write FIELDBOXTMP FIELDBOXFILE 0 True
