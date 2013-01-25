@@ -330,6 +330,7 @@ namespace eval NowCaster::Obs { } {
    set Data(NVal)        -1
    set Data(Marker)      0
    set Data(Family)      0
+   set Data(Code)        0
    set Data(Type)        -1
    set Data(Spacing)     25
    set Data(Crowd)       0
@@ -405,6 +406,7 @@ namespace eval NowCaster::Obs { } {
    set Bubble(Grid)       { "Sélection du positionnement des élément\nrelativement à la position centrale en blanc" "Element position selection relative\not the central location in white" }
    set Bubble(Flat)       { "Affichage applati" "Flat display" }
    set Bubble(Flags)      { "Sélection du type/famille/marqueur d'observation" "Select type/family/marker of observation" }
+   set Bubble(Code)       { "Sélection du code de station (CODTYP)" "Select station type (CODTYP)" }
 }
 
 #----------------------------------------------------------------------------
@@ -498,7 +500,19 @@ proc NowCaster::Obs::Window { Frame } {
       pack $Frame.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
 
    labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
-      frame $Frame.flags.bfam
+      frame $Frame.flags.codtyp
+         label $Frame.flags.codtyp.lbl -text CODETYPE -width 11 -anchor w
+         menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -state disabled
+         entry $Frame.flags.codtyp.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Code)
+#         menu $Frame.flags.codtyp.sel.menu -tearoff 1
+#         foreach type $Param(Types) {
+#            $Frame.flags.codtyp.sel.menu add radiobutton -value [lindex $type 1] -label [lindex [lindex $type 2] $GDefs(Lang)] \
+#               -variable NowCaster::Obs::Data(Type) -command { NowCaster::Obs::UpdateFlags False }
+#         }
+         pack $Frame.flags.codtyp.lbl $Frame.flags.codtyp.sel  -side left -fill y
+         pack $Frame.flags.codtyp.ent -side left -fill x -expand True
+
+         frame $Frame.flags.bfam
          label $Frame.flags.bfam.lbl -text BFAM -width 11 -anchor w
          entry $Frame.flags.bfam.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Family)
          menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
@@ -553,12 +567,13 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.flags.nval.lbl -side left -fill y
          pack $Frame.flags.nval.ent -side left -fill x -expand True
 
-      pack $Frame.flags.bfam $Frame.flags.bktyp $Frame.flags.mark $Frame.flags.nval -side top -fill x -padx 2 -pady 2 -expand True
+      pack $Frame.flags.codtyp $Frame.flags.bfam $Frame.flags.bktyp $Frame.flags.mark $Frame.flags.nval -side top -fill x -padx 2 -pady 2 -expand True
 
-      bind $Frame.flags.bfam.ent <Return>  { NowCaster::Obs::UpdateFlags True }
-      bind $Frame.flags.bktyp.ent <Return> { NowCaster::Obs::UpdateFlags True }
-      bind $Frame.flags.mark.ent <Return>  { NowCaster::Obs::UpdateFlags True }
-      bind $Frame.flags.nval.ent <Return>  { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.bfam.ent <Return>   { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.codtyp.ent <Return> { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.bktyp.ent <Return>  { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.mark.ent <Return>   { NowCaster::Obs::UpdateFlags True }
+      bind $Frame.flags.nval.ent <Return>   { NowCaster::Obs::UpdateFlags True }
 
    labelframe $Frame.model -text [lindex $Lbl(ModelN) $GDefs(Lang)]
       frame $Frame.model.sel
@@ -957,6 +972,7 @@ proc NowCaster::Obs::Add { Path } {
    set Data(Family$obs)    $Data(Family)
    set Data(Marker$obs)    $Data(Marker)
    set Data(Type$obs)      $Data(Type)
+   set Data(Code$obs)      $Data(Code)
 
    #----- Read in the data
    if { [file isdirectory $path] } {
@@ -1085,6 +1101,7 @@ proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
    set Data(Family$Obs) $Data(Family)
    set Data(Type$Obs)   $Data(Type)
    set Data(Marker$Obs) $Data(Marker)
+   set Data(Code$Obs)   $Data(Code)
    set Data(NVal$Obs)   $Data(NVal)
 
    NowCaster::Obs::Update
@@ -1117,7 +1134,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
-         -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -FAMILYOP $Param(FamilyOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
+         -CODETYPE $Data(Code$obs) -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -FAMILYOP $Param(FamilyOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
 
       foreach item $Data(Model$obs) {
          set code [lindex $item 2]
@@ -1164,6 +1181,7 @@ proc NowCaster::Obs::ObsSelect { Obs } {
       set Data(Family)     $Data(Family$Obs)
       set Data(Type)       $Data(Type$Obs)
       set Data(Marker)     $Data(Marker$Obs)
+      set Data(Code)       $Data(Code$Obs)
       set Data(NVal)       $Data(NVal$Obs)
 
       if { [winfo exists .nowcaster] } {

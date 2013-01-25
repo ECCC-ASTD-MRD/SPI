@@ -666,13 +666,16 @@ proc Obs::ParamPut { } {
    ComboBox::DelAll $Data(Frame).lev.desc.edit
    $Data(Frame).lev.select.mode.list.inter delete 0 end
 
+   set spec ""
    if { [lsearch -exact $MetStat::Rec(Var) $Param(Spec)]!=-1 } {
-      ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$Param(Spec))
+      set spec $Param(Spec)
+   }
 
-      foreach inter $MetStat::Rec(Inter$Param(Spec)) {
-         $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
-            -command "set Obs::Param(IntervalParam) $inter; set Obs::Param(Intervals) \"\" ; set Obs::Param(IntervalMode) INTERVAL ;Obs::ParamSet"
-      }
+   ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$spec)
+
+   foreach inter $MetStat::Rec(Inter$spec) {
+      $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
+         -command "set Obs::Param(IntervalParam) $inter; set Obs::Param(Intervals) \"\" ; set Obs::Param(IntervalMode) INTERVAL ;Obs::ParamSet"
    }
 
    set Param(Intervals) $inters

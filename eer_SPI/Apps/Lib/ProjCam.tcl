@@ -17,6 +17,7 @@
 #    ProjCam::Create         { Cam }
 #    ProjCam::Delete         { Combo }
 #    ProjCam::Do             { Cam Frame VP args }
+#    ProjCam::Rotate         { Cam Frame X { Y 0.0 } { Z 0.0 } }
 #    ProjCam::Mem            { Cam Name }
 #    ProjCam::ParamFrame     { }
 #    ProjCam::Read           { }
@@ -341,6 +342,7 @@ proc ProjCam::Delete { Combo } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
+
 proc ProjCam::Do { Cam Frame VP args } {
    variable Data
 
@@ -354,6 +356,25 @@ proc ProjCam::Do { Cam Frame VP args } {
 
    Page::Update $Frame
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <ProjCam::Rotate>
+# Creation : Novembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectue la rotation de la camera selon un increment.
+#
+# Parametres :
+#  <Cam>     : Identificateur de Camera
+#  <Frame>   : Identificateur de Page
+#  <X>       : Rotation en X
+#  <Y>       : Rotation en Y
+#  <Z>       : Rotation en Z
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc ProjCam::Rotate { Cam Frame X { Y 0.0 } { Z 0.0 } } {
    variable Data
