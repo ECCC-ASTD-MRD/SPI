@@ -95,6 +95,7 @@ typedef struct TMetLoc {
    Vect3d   Pix;            /*Pixel ou positioner la station statique*/
    int      Grid[3];        /*Dimension de la grille pour les donnees regroupees*/
    int      Level;
+   char     CodeType;       /*Data type*/
 
    TMetElem *Elems;         /*Liste temporelle des donnees*/
 

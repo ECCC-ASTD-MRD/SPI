@@ -1107,7 +1107,6 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->NVal     = -1;
    obs->Type     = -1;
    obs->SType    = -1;
-   obs->CodeType = 0;
    obs->Family   = 0x0;
    obs->FamilyOp = 'O';
    obs->Marker   = 0x0;
@@ -1413,6 +1412,7 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    loc->Pix[1]=0.0;
    loc->Grid[0]=loc->Grid[1]=loc->Grid[2]=0;
    loc->Level=0;
+   loc->CodeType=0;
    loc->Elems=NULL;
 
    sprintf(loc->Tag,"|%u",MetLocNo++);
@@ -1967,6 +1967,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
       line=0;
       n++;
+
+      /*Check for data bktyp matching*/
+      if (Obs->CodeType && Obs->CodeType!=loc->CodeType) {
+         loc=loc->Next;
+         continue;
+      }
 
       if (GLMode==GL_SELECT) {
          if (!VP->ForcePick && (n && !(n%10)) && Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT)) {

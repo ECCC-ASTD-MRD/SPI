@@ -133,7 +133,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          code=TCL_ERROR;
          break;
       }
-      Obs->CodeType=codtyp;
 
       /*Skip if it is a resume or a header*/
       if (stnid[0]=='>')
@@ -151,6 +150,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
          loc->Grid[0]=dx/10.0;
          loc->Grid[1]=dy/10.0;
+         loc->CodeType=codtyp;
       }
       if ((time=System_DateTime2Seconds(yymmdd,hhmm*100,1))<0)
          continue;
