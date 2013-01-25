@@ -217,7 +217,9 @@ proc TRAJECT::CreateModelInput { } {
    if { $Sim(MultiLevel) } {
       set levelslist $Sim(Level)
    } else {
-      set levelslist [list $Sim(Level)]
+      foreach name $Sim(Name) {
+         lappend levelslist $Sim(Level)
+      }
    }
    foreach name $Sim(Name) lat $Sim(Lat) lon $Sim(Lon) levels $levelslist {
       foreach level $levels {
