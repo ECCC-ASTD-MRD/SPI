@@ -256,7 +256,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
 
    foreach node [$Node childNodes] {
       switch [$node nodeName] {
-         Layer                    { if { [$Node hasAttribute opaque] } {
+         Layer                    { if { [$node hasAttribute opaque] } {
                                        set Data(Opaque) [$node getAttribute opaque]
                                     }
                                     lappend childs $node }

@@ -319,6 +319,132 @@ namespace eval NowCaster::Obs { } {
       { 0010  2 { "Probabilité d'erreur" "Error probability" } } }
    set Param(BKSTypes1-27) { }
 
+   set Param(Codes-0-49) {
+      { 0   { "Tous" "All" } }
+      { 12  { "SYNOP, non automatique" "SYNOP, non automatic" } }
+      { 13  { "SHIP, non automatique" "SHIP, non automatic" } }
+      { 14  { "SYNOP MOBIL" "SYNOP MOBIL" } }
+      { 15  { "METAR" "METAR" } }
+      { 16  { "SPECI" "SPECI" } }
+      { 18  { "DRIFTER" "DRIFTER" } }
+      { 20  { "RADOB" "RADOB" } }
+      { 22  { "RADREP" "RADREP" } }
+      { 32  { "PILOT" "PILOT" } }
+      { 33  { "PILOT SHIP" "PILOT SHIP" } }
+      { 34  { "PILOT MOBIL" "PILOT MOBIL" } }
+      { 35  { "TEMP" "TEMP" } }
+      { 36  { "TEMP SHIP" "TEMP SHIP" } }
+      { 37  { "TEMP DROP" "TEMP DROP" } }
+      { 38  { "TEMP MOBIL" "TEMP MOBIL" } }
+      { 39  { "ROCOB" "ROCOB" } }
+      { 40  { "ROCOB SHIP" "ROCOB SHIP" } }
+      { 41  { "CODAR" "CODAR" } }
+      { 42  { "AMDAR" "AMDAR" } }
+      { 44  { "ICEAN" "ICEAN" } }
+      { 45  { "IAC" "IAC" } }
+      { 46  { "IAC FLEET" "AC FLEET" } }
+      { 47  { "GRID" "GRID" } }
+      { 49  { "GRAF" "GRAF" } } }
+   set Param(Codes-50-99) {
+      { 50  { "WINTEM" "WINTEM" } }
+      { 51  { "TAF" TAF"" } }
+      { 53  { "ARFOR" "ARFOR" } }
+      { 54  { "ROFOR" "ROFOR" } }
+      { 57  { "RADOF" "RADOF" } }
+      { 61  { "MAFOR" "MAFOR" } }
+      { 62  { "TRACKOB" "TRACKOB" } }
+      { 63  { "BATHY" "BATHY" } }
+      { 64  { "TESAC" "TESAC" } }
+      { 65  { "WAVEOB" "WAVEOB" } }
+      { 67  { "HYDRA" "HYDRA" } }
+      { 68  { "HYFOR" "HYFOR" } }
+      { 71  { "CLIMAT" "CLIMAT" } }
+      { 72  { "CLIMAT SHIP" "CLIMAT SHIP" } }
+      { 73  { "NACLI/CLINP/SPCLI/CLISA/INCLI" "NACLI/CLINP/SPCLI/CLISA/INCLI" } }
+      { 75  { "CLIMAT TEMP" "CLIMAT TEMP" } }
+      { 76  { "CLIMAT TEMP SHIP" "CLIMAT TEMP SHIP" } }
+      { 81  { "SFAZI" "SFAZI" } }
+      { 82  { "SFLOC" "SFLOC" } }
+      { 83  { "SFAZU" "SFAZU" } }
+      { 85  { "SAREP" "SAREP" } }
+      { 86  { "SATEM" "SATEM" } }
+      { 87  { "SARAD" "SARAD" } }
+      { 88  { "SATOB" "SATOB" } }
+      { 92  { "GRIB" "GRIB" } }
+      { 94  { "BUFR" "BUFR" } } }
+   set Param(Codes-100-149) {
+      { 127 { "Données de surface de qualité de l'air" "Air quality surface data" } }
+      { 128 { "AIREP" "AIREP" } }
+      { 129 { "PIREP" "PIREP" } }
+      { 130 { "Profileur de vent" "Wind profiler" } }
+      { 131 { "SUPEROBS de SYNOP" "SUPEROBS of SYNOP" } }
+      { 132 { "SUPEROBS de AIREP (pré 2010), RAOBS uni-niveaux (post 2012)" "SUPEROBS of AIREP (pre 2010), RAOBS uni-level (post 2012)" } }
+      { 133 { "Sa + SYNOP" "Sa + SYNOP" } }
+      { 134 { "PAOBS (pseudo-données d'Australie)" "PAOBS (pseudo-data from Australia)" } }
+      { 135 { "TEMP + PILOT" "TEMP + PILOT" } }
+      { 136 { "TEMP + SYNOP" "TEMP + SYNOP" } }
+      { 137 { "PILOT + SYNOP" "PILOT + SYNOP" } }
+      { 138 { "TEMP + PILOT + SYNOP" "TEMP + PILOT + SYNOP" } }
+      { 139 { "TEMP SHIP + PILOT SHIP" "TEMP SHIP + PILOT SHIP" } }
+      { 140 { "TEMP SHIP + SHIP" "TEMP SHIP + SHIP" } }
+      { 141 { "TEMPS SHIP + SHIP" "TEMPS SHIP + SHIP" } }
+      { 142 { "PILOT SHIP + SHIP" "PILOT SHIP + SHIP" } }
+      { 143 { "SAWR, station non automatique (régulier ou régulier spécial)" "AWR, non automated station (regular ou special regular)" } }
+      { 144 { "SAWR, station automatique (régulier ou régulier spécial)" "AWR, automated station (regular ou special regular)" } }
+      { 145 { "SYNOP («Patrol ships»)" "SYNOP («Patrol ships»)" } }
+      { 146 { "ASYNOP, station automatique" "ASYNOP, automated station" } }
+      { 147 { "ASHIP, station automatique, (bouées fixes, plates-formes.)" "ASHIP, automated station, (fixed buoys, plateforms.)" } }
+      { 148 { "SAWR, station non automatique (spécial)" "SAWR, non automated station (special)" } }
+      { 149 { "SAWR, station automatique (spécial)" "AWR, automated station (special)" } } }
+   set Param(Codes-150-255) {
+      { 150 { "Pseudo-données du CMC, surface, mode analyse" "CMC Pseudo-data, surface, anaylse mode" } }
+      { 151 { "Pseudo-données du CMC, altitude, mode analyse" "CMC Pseudo-data, altitude, anaylse mode" } }
+      { 152 { "Pseudo-données du CMC, surface, mode réparation" "CMC Pseudo-data, surface, fixing mode" } }
+      { 153 { "Pseudo-données du CMC, altitude, mode réparation" "CMC Pseudo-data, saltitude, fixing mode" } }
+      { 154 { "Prévisions de vents de type FD" "FD type wind prognostics" } }
+      { 155 { "Prévisions de vents de type FD amendées" "Ammended FD type wind prognostics" } }
+      { 156 { "Prévisions statistiques des éléments du temps" "Statistics prognostics of time elements" } }
+      { 157 { "ACARS (Aircraft Meteorological Data Report)" "ACARS (Aircraft Meteorological Data Report)" } }
+      { 158 { "HUMSAT" "HUMSAT" } }
+      { 159 { "TEMP MOBIL + PILOT MOBIL" "TEMP MOBIL + PILOT MOBIL" } }
+      { 160 { "TEMP MOBIL + SYNOP MOBIL" "TEMP MOBIL + SYNOP MOBIL" } }
+      { 161 { "PILOT MOBIL + SYNOP MOBIL" "PILOT MOBIL + SYNOP MOBI" } }
+      { 162 { "TEMP MOBIL + PILOT MOBIL + SYNOP MOBIL" "TEMP MOBIL + PILOT MOBIL + SYNOP MOBIL" } }
+      { 163 { "Radar" "Radar" } }
+      { 164 { "Radiances TOVS AMSUA" "Radiances TOVS AMSUA" } }
+      { 165 { "Profils verticaux analysés ou prévus" "Vertical profiles analysed or forecasted" } }
+      { 166 { "MOS évolutif (projet PENSé)" "Evolutive MOS (PENSé project)" } }
+      { 167 { "Données satellitaires provenant de scattéromètres (ERS, ADEOS, etc.)" "Scatterometer satellite data (ERS, ADEOS, etc.)" } }
+      { 168 { "Données satellitaires de type SSMI" "SSMI type satellite data" } }
+      { 169 { "Radio-occultations" "Radio-occultations" } }
+      { 170 { "Ozone" "Ozone" } }
+      { 171 { "Météosat" "Météosat" } }
+      { 172 { "Standard Hydrometeorological Exchange Format (S.H.E.F.)" "Standard Hydrometeorological Exchange Format (S.H.E.F.)" } }
+      { 173 { "Vérifications des modèles du CMC" "CMC model verification" } }
+      { 174 { "Données satellitaires provenant de radars Ã ouverture synthétique (ERS, etc.)" "Syntetic opening radar satellite data" } }
+      { 175 { "Données satellitaires provenant d'altimètres radar (ERS, etc.)" "Radar altimeter satellite data (ERS, etc.)" } }
+      { 176 { "Stations d'un réseau coopératif (interdit de redistribuer les données)" "Cooperative network data (Redistribution not allowed)" } }
+      { 177 { "ADS Automated Dependance Surveillance (Airep automatique)" "ADS Automated Dependance Surveillance (Airep automated)" } }
+      { 178 { "Données provenant de ICEC pour les lacs" "ICEC lake data" } }
+      { 179 { "Données provenant de ICEC pour les océans" "ICEC sea data" } }
+      { 180 { "Radiances GOES" "Radiances GOES" } }
+      { 181 { "Radiances ATOVS AMSUB" "Radiances ATOVS AMSUB" } }
+      { 182 { "Radiances MHS" "Radiances MHS" } }
+      { 183 { "Données AIRS" "AIRS data" } }
+      { 184 { "Radiances (generique)" "Radiances (generic)" } }
+      { 185 { "Clear Sky Radiances" "Clear Sky Radiances" } }
+      { 186 { "Radiances IASI" "Radiances IASI" } }
+      { 187 { "en réserve" "reserved" } }
+      { 188 { "Données satellitaires de vent améliorées (format BUFR)" "Improved satellite wind data (BUFR format)" } }
+      { 189 { "Données de surface GPS" "GPS surface data" } }
+      { 190 { "Données probabilistes" "Probabilistic data" } }
+      { 191 { "Données déterministes" "Deterministic data" } }
+      { 192 { "Radiances ATMS" "Radiances ATMS" } }
+      { 193 { "Radiances CrIS" "Radiances CrIS" } }
+      { 194 { "Humidité au sol (eg, SMOS, SMAP)" "Soile moisture (eg, SMOS, SMAP)" } }
+      { 254 { "ASCAT" "ASCAT" } }
+      { 255 { "en réserve" "Reserved" } } }
+
 
    set Data(Frame)       ""
 
@@ -502,13 +628,18 @@ proc NowCaster::Obs::Window { Frame } {
    labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
       frame $Frame.flags.codtyp
          label $Frame.flags.codtyp.lbl -text CODETYPE -width 11 -anchor w
-         menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -state disabled
+         menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
          entry $Frame.flags.codtyp.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Code)
-#         menu $Frame.flags.codtyp.sel.menu -tearoff 1
-#         foreach type $Param(Types) {
-#            $Frame.flags.codtyp.sel.menu add radiobutton -value [lindex $type 1] -label [lindex [lindex $type 2] $GDefs(Lang)] \
-#               -variable NowCaster::Obs::Data(Type) -command { NowCaster::Obs::UpdateFlags False }
-#         }
+         menu $Frame.flags.codtyp.sel.menu -tearoff 1
+         foreach rng { "0-49" "50-99" "100-149" "150-255" } {
+            $Frame.flags.codtyp.sel.menu add cascade -label $rng -menu  $Frame.flags.codtyp.sel.menu.rng$rng
+            menu $Frame.flags.codtyp.sel.menu.rng$rng -tearoff 1
+
+            foreach code $Param(Codes-$rng) {
+               $Frame.flags.codtyp.sel.menu.rng$rng add radiobutton -value [lindex $code 0] -label [lindex [lindex $code 1] $GDefs(Lang)] \
+                  -variable NowCaster::Obs::Data(Code) -command { NowCaster::Obs::UpdateFlags False }
+            }
+         }
          pack $Frame.flags.codtyp.lbl $Frame.flags.codtyp.sel  -side left -fill y
          pack $Frame.flags.codtyp.ent -side left -fill x -expand True
 
