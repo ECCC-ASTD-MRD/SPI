@@ -1313,31 +1313,55 @@ EntryTableB *MetObs_BUFRFindTableCodeOrDesc(Tcl_Interp *Interp,Tcl_Obj *Code) {
 
    EntryTableB *eb=NULL;
 
-   if (BUFRTable && BUFRTable->master.tableB) {
-      if (TclY_Get0IntFromObj(Interp,Code,&code)==TCL_OK) {
-         eb=bufr_tableb_fetch_entry(BUFRTable->master.tableB,code);
-      } else {
-         eb=bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Tcl_GetString(Code));
+   if (BUFRTable) {
+      if (BUFRTable->master.tableB) {
+         if (TclY_Get0IntFromObj(Interp,Code,&code)==TCL_OK) {
+            eb=bufr_tableb_fetch_entry(BUFRTable->master.tableB,code);
+         } else {
+            eb=bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Tcl_GetString(Code));
+         }
+      }
+      if (!eb && BUFRTable->local.tableB) {
+         if (TclY_Get0IntFromObj(Interp,Code,&code)==TCL_OK) {
+            eb=bufr_tableb_fetch_entry(BUFRTable->local.tableB,code);
+         } else {
+            eb=bufr_tableb_fetch_entry_desc(BUFRTable->local.tableB,Tcl_GetString(Code));
+         }
       }
    }
+
    Tcl_ResetResult(Interp);
    return(eb);
 }
 
 EntryTableB *MetObs_BUFRFindTableCode(unsigned int Code) {
 
-   if (!BUFRTable || !BUFRTable->master.tableB) {
-      return(NULL);
+   EntryTableB *eb=NULL;
+
+   if (BUFRTable) {
+      if (BUFRTable->master.tableB)
+         eb=bufr_tableb_fetch_entry(BUFRTable->master.tableB,Code);
+
+      if (!eb && BUFRTable->local.tableB)
+         eb=bufr_tableb_fetch_entry(BUFRTable->local.tableB,Code);
    }
-   return(bufr_tableb_fetch_entry(BUFRTable->master.tableB,Code));
+
+   return(eb);
 }
 
 EntryTableB *MetObs_BUFRFindTableDesc(char *Desc) {
 
-   if (!BUFRTable || !BUFRTable->master.tableB) {
-      return(NULL);
+   EntryTableB *eb=NULL;
+
+   if (BUFRTable) {
+      if (BUFRTable->master.tableB)
+         eb=bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Desc);
+
+      if (!eb && BUFRTable->local.tableB)
+         eb=bufr_tableb_fetch_entry_desc(BUFRTable->local.tableB,Desc);
    }
-   return(bufr_tableb_fetch_entry_desc(BUFRTable->master.tableB,Desc));
+
+   return(eb);
 }
 
 TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
@@ -1707,13 +1731,10 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 #endif
 
    switch (type) {
-      case 6 : res=MetObs_LoadBURP(Interp,File,Obs); break;
-//      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs); break;
+      case 6 : res=MetObs_LoadBURP(Interp,File,Obs);  break;
+      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
       case 31: res=MetObs_LoadASCII(Interp,File,Obs); break;
-      default: if (!(res=MetObs_LoadSWOB(Interp,File,Obs))) {
-                  res=MetObs_LoadBUFR(Interp,File,Obs);
-               }
-               break;
+      default: res=MetObs_LoadSWOB(Interp,File,Obs);  break;
    }
 
    if (!Obs->Time)
@@ -1969,7 +1990,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       n++;
 
       /*Check for data bktyp matching*/
-      if (Obs->CodeType && Obs->CodeType!=loc->CodeType) {
+      if (Obs->CodeType>0 && Obs->CodeType!=loc->CodeType) {
          loc=loc->Next;
          continue;
       }
