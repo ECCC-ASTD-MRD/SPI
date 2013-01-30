@@ -2210,23 +2210,20 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GraphItem_Display2DContour>
+ * Nom          : <GraphItem_VectorPlace>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
- * But          : Afficher l'item de graph dans le graph (champs en contour)
+ * But          : Reprojeter une coordonnee points de grille dans le referentiel du graph et slon la position des niveaux
  *
  * Parametres   :
- *   <Interp>   : Interpreteur Tcl
- *   <Graph>    : Item graph
- *   <Item>     : Item de graph
+ *   <Data>     : Champs
  *   <AxisX>    : Axe en X
  *   <AxisY>    : Axe en Y
  *   <AxisZ>    : Axe en Z
- *   <Data>     : Champs
  *   <X0>       : Limite inferieure gauche du graph
  *   <Y0>       : Limite inferieure gauche du graph
- *   <X1>       : Limite superieur  droite du graph
- *   <Y1>       : Limite superieur  droite du graph
+ *   <VIn>      : Vecteur en entree
+ *   <VOut>     : Vecteur reprojete
  *
  * Retour       :
  *
@@ -2267,6 +2264,31 @@ void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGrap
    VOut[2]=0.0;
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_Display2DContour>
+ * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Afficher l'item de graph dans le graph (champs en contour)
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Graph>    : Item graph
+ *   <Item>     : Item de graph
+ *   <AxisX>    : Axe en X
+ *   <AxisY>    : Axe en Y
+ *   <AxisZ>    : Axe en Z
+ *   <Data>     : Champs
+ *   <X0>       : Limite inferieure gauche du graph
+ *   <Y0>       : Limite inferieure gauche du graph
+ *   <X1>       : Limite superieur  droite du graph
+ *   <Y1>       : Limite superieur  droite du graph
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    int       c;
@@ -2352,6 +2374,31 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_Display2DGrid>
+ * Creation     : Janvier 2013 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Afficher l'item de graph dans le graph (point de grillesr)
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Graph>    : Item graph
+ *   <Item>     : Item de graph
+ *   <AxisX>    : Axe en X
+ *   <AxisY>    : Axe en Y
+ *   <AxisZ>    : Axe en Z
+ *   <Data>     : Champs
+ *   <X0>       : Limite inferieure gauche du graph
+ *   <Y0>       : Limite inferieure gauche du graph
+ *   <X1>       : Limite superieur  droite du graph
+ *   <Y1>       : Limite superieur  droite du graph
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    int       i,j;
@@ -2391,6 +2438,31 @@ void GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axi
 
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_Display2DStream>
+ * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Afficher l'item de graph dans le graph (champs en lignes de courants)
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Graph>    : Item graph
+ *   <Item>     : Item de graph
+ *   <AxisX>    : Axe en X
+ *   <AxisY>    : Axe en Y
+ *   <AxisZ>    : Axe en Z
+ *   <Data>     : Champs
+ *   <X0>       : Limite inferieure gauche du graph
+ *   <Y0>       : Limite inferieure gauche du graph
+ *   <X1>       : Limite superieur  droite du graph
+ *   <Y1>       : Limite superieur  droite du graph
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    double i,j,dt,v0,v1;
