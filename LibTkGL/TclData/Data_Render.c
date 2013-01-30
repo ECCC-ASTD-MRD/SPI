@@ -644,12 +644,13 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       sprintf(buf,"%% Postscript de la grille\n%.2f setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->RenderGrid-0.5);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
+   } else {
+      glPointSize(Field->Spec->RenderGrid+0.1);
+      glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
    }
 
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
-   glPointSize(Field->Spec->RenderGrid+0.1);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
 
    Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),0,NULL,NULL);
 

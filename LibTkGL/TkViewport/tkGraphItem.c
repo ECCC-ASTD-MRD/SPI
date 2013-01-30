@@ -61,6 +61,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
@@ -947,6 +948,9 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
 
          if (data->Spec->RenderContour)
             GraphItem_Display2DContour(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
+
+         if (data->Spec->RenderGrid)
+            GraphItem_Display2DGrid(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
          if (data->Spec->RenderVector==BARBULE || data->Spec->RenderVector==ARROW )
             GraphItem_Display2DVector(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
@@ -2348,6 +2352,45 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
 }
 
+void GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
+
+   int       i,j;
+   char      buf[256];
+   Vect3d    pin,pout;
+
+   if (!Data)
+      return;
+
+   if (!Data->Spec->Outline)
+      return;
+
+   if (Interp) {
+      glFeedbackInit(FSIZE2D(Data->Def)*3,GL_2D);
+      sprintf(buf,"%% Postscript de la grille\n%.2f setlinewidth 1 setlinecap 1 setlinejoin\n",Data->Spec->RenderGrid-0.5);
+      Tcl_AppendResult(Interp,buf,(char*)NULL);
+      Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
+   } else {
+      glPointSize(Data->Spec->RenderGrid+0.1);
+      glColor3us(Data->Spec->Outline->red,Data->Spec->Outline->green,Data->Spec->Outline->blue);
+   }
+
+   /*Afficher les points*/
+   glBegin(GL_POINTS);
+   for(i=0;i<Data->Def->NI;i++) {
+      for(j=0;j<Data->Def->NJ;j++) {
+         pin[0]=i;
+         pin[1]=j;
+         GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,pin,pout);
+         glVertex3dv(pout);
+      }
+   }
+   glEnd();
+
+   if (Interp)
+      glFeedbackProcess(Interp,GL_2D);
+
+}
+
 void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    double i,j,dt,v0,v1;
@@ -2901,6 +2944,9 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
 
          if (data->Spec->RenderContour)
             GraphItem_Display2DContour(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
+
+         if (data->Spec->RenderGrid)
+            GraphItem_Display2DGrid(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
          if (data->Spec->RenderVector)
             GraphItem_Display2DVector(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
