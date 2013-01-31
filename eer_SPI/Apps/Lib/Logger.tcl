@@ -377,7 +377,7 @@ proc Log::Print { Type Message { Var "" } } {
       #----- Use temp path of specified path
       if { $Param(Out)=="" } {
 
-         file mkdir -force $Param(Path)
+         file mkdir $Param(Path)
 
          #----- Keep only last $Param(Keep) hour logs
          set err [catch { exec find $Param(Path) -name *.log -ctime +$Param(Keep) -exec rm \{\} \; } msg]
