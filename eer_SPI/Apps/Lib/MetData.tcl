@@ -889,6 +889,22 @@ proc MetData::Path { Level Model DiagVar ProgVar } {
    upvar #0 $ProgVar prog
 
    switch $Level {
+      "hyb" {
+         switch $Model {
+            "glb" {
+               set diag "$Param(Path)/trial/glbhyb2"
+               set prog "$Param(Path)/prog/glbhyb"
+            }
+            "reg" {
+               set diag "$Param(Path)/trial/reghyb2"
+               set prog "$Param(Path)/prog/reghyb"
+            }
+            default {
+               set diag ""
+               set prog ""
+            }
+         }
+      }
       "eta" {
          switch $Model {
             "glb" {

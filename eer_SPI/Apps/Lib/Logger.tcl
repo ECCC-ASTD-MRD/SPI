@@ -70,6 +70,7 @@ namespace eval Log { } {
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
 
+   set Param(Levels)     { ERROR WARNING INFO DEBUG EXTRA }
    array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
 }
 
