@@ -13,12 +13,21 @@
  *
  * RCS: @(#) $Id: TkglCanvas.h,v 1.4 1999/12/14 06:52:27 hobbs Exp $
  */
-
 #ifndef _TKGLCANVAS
 #define _TKGLCANVAS
 #include "tkInt.h"
 #include "tkCanvas.h"   /* Pour garder les autres fonctions du Canvas */
 #include "glStuff.h"
+
+inline Tcl_Obj *Tk_GetPostscriptBuffer(Tcl_Interp *interp) {
+   Tcl_Obj *psObj = Tcl_GetObjResult(interp);
+
+   if (Tcl_IsShared(psObj)) {
+      psObj = Tcl_DuplicateObj(psObj);
+      Tcl_SetObjResult(interp, psObj);
+   }
+   return psObj;
+}
 
 int  Glcanvas_Init(Tcl_Interp* Interp);
 void Tk_glCreateItemType(Tk_ItemType *typePtr);

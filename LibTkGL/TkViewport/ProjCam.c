@@ -65,7 +65,7 @@ void ProjCam_RenderPos(Vect3d From,Vect3d To,Vect3d Up,double Size);
  *
  *----------------------------------------------------------------------------
 */
-ProjCam* ProjCam_Get(char* Name){
+ProjCam* ProjCam_Get(const char* Name){
    return((ProjCam*)TclY_HashGet(&ProjCamTable,Name));
 }
 

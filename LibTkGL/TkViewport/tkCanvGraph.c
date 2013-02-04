@@ -37,7 +37,7 @@
 static int tkCanvGraphInit=0;
 
 extern TData* Data_Get(char *Field);
-static int glCanvasWidgetCmd(ClientData clientData,Tcl_Interp *interp,int argc,Tcl_Obj *CONST argv[]);
+static int glCanvasWidgetCmd(ClientData clientData,Tcl_Interp *interp,int argc,Tcl_Obj *const argv[]);
 
 void     Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void     Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
@@ -50,73 +50,51 @@ double   Graph_Expand(TData *Data,double Y);
 Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 
-static int    GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static int    GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
 static int    GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
 static double GraphToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr);
 static int    GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass);
 static void   GraphBBox(Tk_Canvas Canvas,GraphItem *CB);
-static int    GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags);
-static int    GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static int    GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[],int Flags);
+static int    GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
 static void   GraphDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
 static void   GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
 static void   GraphScale(Tk_Canvas Canvas,Tk_Item *Item, double OriginX,double OriginY,double ScaleX,double ScaleY);
 static void   GraphTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double DeltaY);
 
-static int   GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-static int   Graph_ItemParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *Graph_ItemPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
+static int         GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *const Objv[]);
+static int         Graph_ItemParseProc(ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,const char *value,char *widgRec,int offset);
+static const char *Graph_ItemPrintProc(ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr);
 
-static Tk_CustomOption ItemOption = { (Tk_OptionParseProc*)Graph_ItemParseProc,Graph_ItemPrintProc,(ClientData)NULL };
-static Tk_CustomOption tagsOption = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
+static const Tk_CustomOption ItemOption = { Graph_ItemParseProc,Graph_ItemPrintProc,NULL };
+static const Tk_CustomOption tagsOption = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
 
 /*Information used for parsing configuration specs:*/
 
-static Tk_ConfigSpec GraphSpecs[] = {
-   { TK_CONFIG_ANCHOR, "-anchor",(char *)NULL,(char *)NULL,
-        "center",Tk_Offset(GraphItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_FONT, "-font",(char*)NULL,(char*)NULL,
-        "Helvetica -12",Tk_Offset(GraphItem,Font),0 },
-   { TK_CONFIG_DOUBLE,"-x",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,x),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_DOUBLE,"-y",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,y),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-width",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,Width),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-height",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,Height),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-bd",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,BDWidth),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-xlegend",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,xi),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-ylegend",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(GraphItem,yi),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-bdlegend",(char *)NULL,(char *)NULL,
-        "1",Tk_Offset(GraphItem,BDLegend),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_BOOLEAN, "-legend", (char *) NULL, (char *) NULL,
-        "1", Tk_Offset(GraphItem,Legend), TK_CONFIG_DONT_SET_DEFAULT},
-   { TK_CONFIG_BOOLEAN,"-update",(char *)NULL,(char *)NULL,
-        "1",Tk_Offset(GraphItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_COLOR,"-bg","-background",(char *)NULL,
-       "white",Tk_Offset(GraphItem,BGColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-fg","-foreground",(char *)NULL,
-       "black",Tk_Offset(GraphItem,FGColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-fill",(char*)NULL,(char *)NULL,
-       "white",Tk_Offset(GraphItem,FillColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_STRING,"-title",(char *)NULL,(char *)NULL,
-       "",Tk_Offset(GraphItem,Title),0 },
-   { TK_CONFIG_STRING,"-type",(char *)NULL,(char *)NULL,
-       "XY",Tk_Offset(GraphItem,Type),0 },
-   { TK_CONFIG_CUSTOM,"-item",(char *)NULL,(char *)NULL,
-       (char *)NULL,0,TK_CONFIG_NULL_OK,&ItemOption },
-   { TK_CONFIG_CUSTOM,"-tags",(char *)NULL,(char *)NULL,
-       (char *)NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
-   { TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,
-      "100", Tk_Offset(GraphItem,Alpha), TK_CONFIG_DONT_SET_DEFAULT},
-   { TK_CONFIG_INT, "-transparencylegend", (char *) NULL, (char *) NULL,
-      "100", Tk_Offset(GraphItem,AlphaLegend), TK_CONFIG_DONT_SET_DEFAULT},
-   { TK_CONFIG_STRING,"-command",(char*)NULL,(char *)NULL,
-      (char *)NULL,Tk_Offset(GraphItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_END,(char *)NULL,(char *)NULL,(char *)NULL,(char *)NULL,0,0 }
+static const Tk_ConfigSpec GraphSpecs[] = {
+   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "center",Tk_Offset(GraphItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_FONT, "-font", NULL, NULL, "Helvetica -12",Tk_Offset(GraphItem,Font),0 },
+   { TK_CONFIG_DOUBLE, "-x", NULL, NULL, "0",Tk_Offset(GraphItem,x),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_DOUBLE, "-y", NULL, NULL, "0",Tk_Offset(GraphItem,y),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-width", NULL, NULL, "0",Tk_Offset(GraphItem,Width),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-height", NULL, NULL, "0",Tk_Offset(GraphItem,Height),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-bd", NULL, NULL, "0",Tk_Offset(GraphItem,BDWidth),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-xlegend", NULL, NULL, "0",Tk_Offset(GraphItem,xi),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-ylegend", NULL, NULL, "0",Tk_Offset(GraphItem,yi),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-bdlegend", NULL, NULL, "1",Tk_Offset(GraphItem,BDLegend),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_BOOLEAN, "-legend",  NULL,  NULL, "1", Tk_Offset(GraphItem,Legend), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_BOOLEAN, "-update", NULL, NULL, "1",Tk_Offset(GraphItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_COLOR, "-bg","-background", NULL, "white",Tk_Offset(GraphItem,BGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-fg","-foreground", NULL, "black",Tk_Offset(GraphItem,FGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-fill", NULL, NULL, "white",Tk_Offset(GraphItem,FillColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_STRING, "-title", NULL, NULL, "",Tk_Offset(GraphItem,Title),0 },
+   { TK_CONFIG_STRING, "-type", NULL, NULL, "XY",Tk_Offset(GraphItem,Type),0 },
+   { TK_CONFIG_CUSTOM, "-item", NULL, NULL, NULL,0,TK_CONFIG_NULL_OK,&ItemOption },
+   { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
+   { TK_CONFIG_INT, "-transparency", NULL, NULL, "100", Tk_Offset(GraphItem,Alpha), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_INT, "-transparencylegend", NULL, NULL, "100", Tk_Offset(GraphItem,AlphaLegend), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_STRING, "-command", NULL, NULL, NULL,Tk_Offset(GraphItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL,0,0 }
 };
 
 /*
@@ -135,16 +113,16 @@ Tk_ItemType tkGraphType = {
    GraphDisplay,                 /* displayProc */
    0,                            /* alwaysRedraw */
    GraphToPoint,                 /* pointProc */
-   GraphToArea,                    /* areaProc */
+   GraphToArea,                  /* areaProc */
    GraphToPostscript,            /* postscriptProc */
    GraphScale,                   /* scaleProc */
    GraphTranslate,               /* translateProc */
-   (Tk_ItemIndexProc *)NULL,     /* indexProc */
-   (Tk_ItemCursorProc *)NULL,    /* icursorProc */
-   (Tk_ItemSelectionProc *)NULL, /* selectionProc */
-   (Tk_ItemInsertProc *)NULL,    /* insertProc */
-   (Tk_ItemDCharsProc *)NULL,    /* dTextProc */
-   (Tk_ItemType *)NULL           /* nextPtr */
+   NULL,                         /* indexProc */
+   NULL,                         /* icursorProc */
+   NULL,                         /* selectionProc */
+   NULL,                         /* insertProc */
+   NULL,                         /* dTextProc */
+   NULL                          /* nextPtr */
 };
 
 /*----------------------------------------------------------------------------
@@ -195,7 +173,7 @@ int Tkgraph_Init(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]){
 
    GraphItem *gr=(GraphItem*)Item;
     /*Initialize item's record.*/
@@ -275,7 +253,7 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  *
  *----------------------------------------------------------------------------
 */
-static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *const Objv[]){
 
    GraphItem   *gr=(GraphItem*)Data;
    TGraphItem  *item=NULL;
@@ -283,7 +261,7 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    int          idx,ex,ok;
    double       x,y,z=0.0;
 
-   static CONST char *sopt[] = { "-unproject","-project","-pick","-header",NULL };
+   static const char *sopt[] = { "-unproject","-project","-pick","-header",NULL };
    enum                opt { UNPROJECT,PROJECT,PICK,HEADER };
 
    Tcl_ResetResult(Interp);
@@ -403,7 +381,7 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
  *
  *----------------------------------------------------------------------------
 */
-static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]){
 
    GraphItem *gr=(GraphItem *)Item;
    char x[TCL_DOUBLE_SPACE],y[TCL_DOUBLE_SPACE];
@@ -419,7 +397,7 @@ static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
       }
       GraphBBox(Canvas,gr);
    } else {
-      sprintf(Interp->result,"GraphCoords: wrong # coordinates,  expected 0 or 2, got %d",Argc);
+      Tcl_AppendResult(Interp,"ViewportCoords: wrong # coordinates,  expected 0 or 2\n",(char*)NULL);
       return TCL_ERROR;
    }
    return TCL_OK;
@@ -447,7 +425,7 @@ static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  *
  *----------------------------------------------------------------------------
 */
-static int GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
+static int GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[],int Flags){
 
    GraphItem *gr=(GraphItem*)Item;
    int       width,height;
@@ -455,7 +433,7 @@ static int GraphConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    width  = gr->Width;
    height = gr->Height;
 
-   if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),GraphSpecs,Argc,(CONST84 char**)Argv,(char*)gr,Flags) != TCL_OK) {
+   if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),GraphSpecs,Argc,(const char**)Argv,(char*)gr,Flags) != TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -1515,7 +1493,7 @@ static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
  *
  *----------------------------------------------------------------------------
 */
-static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    GraphItem *gr=(GraphItem*)WidgRec;
    int i;
@@ -1559,7 +1537,7 @@ static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWi
  *
  *----------------------------------------------------------------------------
 */
-static char *Graph_ItemPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static const char *Graph_ItemPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    GraphItem *gr=(GraphItem*)WidgRec;
 

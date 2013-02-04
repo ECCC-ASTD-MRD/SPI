@@ -12,82 +12,56 @@
  * RCS: @(#) $Id: tkCanvText.c,v 1.8 1999/12/21 23:55:10 hobbs Exp $
  */
 
-#include <stdio.h>
+#include "tkInt.h"
 #include "tkglCanvText.h"
 
 /* Information used for parsing configuration specs */
 
-static Tk_CustomOption stateOption  = { (Tk_OptionParseProc*)TkStateParseProc,TkStatePrintProc,(ClientData)2 };
-static Tk_CustomOption tagsOption   = { (Tk_OptionParseProc*)Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
-static Tk_CustomOption offsetOption = { (Tk_OptionParseProc*)TkOffsetParseProc,TkOffsetPrintProc,(ClientData)(TK_OFFSET_RELATIVE) };
-static Tk_CustomOption bitmapOption = { (Tk_OptionParseProc*)glBitmapParseProc,glBitmapPrintProc,(ClientData)NULL };
+static const Tk_CustomOption stateOption  = { TkStateParseProc,TkStatePrintProc,INT2PTR(2) };
+static const Tk_CustomOption tagsOption   = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
+static const Tk_CustomOption offsetOption = { TkOffsetParseProc,TkOffsetPrintProc,INT2PTR(TK_OFFSET_RELATIVE) };
+static const Tk_CustomOption bitmapOption = { glBitmapParseProc,glBitmapPrintProc,NULL };
 
-static Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_COLOR, "-activefill", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(glTextItem, activeColor), TK_CONFIG_NULL_OK},
-
-   { TK_CONFIG_CUSTOM,"-activestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glTextItem,activeStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-
-    {TK_CONFIG_ANCHOR, "-anchor", (char *) NULL, (char *) NULL,
-   "center", Tk_Offset(glTextItem, anchor),TK_CONFIG_DONT_SET_DEFAULT},
-   {TK_CONFIG_INT, "-angle", (char *) NULL, (char *) NULL,
-   "0", Tk_Offset(glTextItem, angle), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_COLOR, "-disabledfill", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(glTextItem, disabledColor), TK_CONFIG_NULL_OK},
-
-   { TK_CONFIG_CUSTOM,"-disabledstipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glTextItem,disabledStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-
-    {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
-   "black", Tk_Offset(glTextItem, color), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_FONT, "-font", (char *) NULL, (char *) NULL,
-   DEF_CANVTEXT_FONT, Tk_Offset(glTextItem, tkfont), 0},
-    {TK_CONFIG_JUSTIFY, "-justify", (char *) NULL, (char *) NULL,
-   "left", Tk_Offset(glTextItem, justify),
-   TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-   "0,0", Tk_Offset(glTextItem, tsoffset),
-   TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
-
-   { TK_CONFIG_CUSTOM,"-state",(char*)NULL,(char*)NULL,(char*)NULL,
-       Tk_Offset(Tk_Item,state),TK_CONFIG_NULL_OK,&stateOption },
-
-   { TK_CONFIG_CUSTOM,"-stipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glTextItem,stipple),TK_CONFIG_NULL_OK,&bitmapOption },
-
-    {TK_CONFIG_CUSTOM, "-tags", (char *) NULL, (char *) NULL,
-   (char *) NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
-    {TK_CONFIG_STRING, "-text", (char *) NULL, (char *) NULL,
-   "", Tk_Offset(glTextItem, text), 0},
-   {TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,
-   "100", Tk_Offset(glTextItem, alpha), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_PIXELS, "-width", (char *) NULL, (char *) NULL,
-   "0", Tk_Offset(glTextItem, width), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
-   (char *) NULL, 0, 0}
+static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_COLOR, "-activefill", NULL, NULL, NULL, Tk_Offset(glTextItem, activeColor), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_CUSTOM,"-activestipple", NULL, NULL, NULL, Tk_Offset(glTextItem,activeStipple),TK_CONFIG_NULL_OK, &bitmapOption },
+   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "center", Tk_Offset(glTextItem, anchor), TK_CONFIG_DONT_SET_DEFAULT, NULL },
+   { TK_CONFIG_DOUBLE, "-angle",  NULL,  NULL, "0.0", Tk_Offset(glTextItem, angle), TK_CONFIG_DONT_SET_DEFAULT, NULL },
+   { TK_CONFIG_COLOR, "-disabledfill", NULL, NULL, NULL, Tk_Offset(glTextItem, disabledColor), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_CUSTOM,"-disabledstipple", NULL, NULL, NULL, Tk_Offset(glTextItem,disabledStipple), TK_CONFIG_NULL_OK, &bitmapOption },
+   { TK_CONFIG_COLOR, "-fill", NULL, NULL, "black", Tk_Offset(glTextItem, color), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_FONT, "-font", NULL, NULL, DEF_CANVTEXT_FONT, Tk_Offset(glTextItem, tkfont), 0, NULL },
+   { TK_CONFIG_JUSTIFY, "-justify", NULL, NULL, "left", Tk_Offset(glTextItem, justify), TK_CONFIG_DONT_SET_DEFAULT, NULL },
+   { TK_CONFIG_CUSTOM, "-offset", NULL, NULL, "0,0", Tk_Offset(glTextItem, tsoffset), TK_CONFIG_DONT_SET_DEFAULT, &offsetOption },
+   { TK_CONFIG_CUSTOM,"-state", NULL, NULL, NULL, Tk_Offset(Tk_Item,state),TK_CONFIG_NULL_OK, &stateOption },
+   { TK_CONFIG_CUSTOM,"-stipple", NULL, NULL, NULL, Tk_Offset(glTextItem,stipple), TK_CONFIG_NULL_OK, &bitmapOption },
+   { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL, 0, TK_CONFIG_NULL_OK, &tagsOption },
+   { TK_CONFIG_STRING, "-text", NULL, NULL, "", Tk_Offset(glTextItem, text), 0, NULL },
+   { TK_CONFIG_INT, "-transparency", NULL, NULL, "100", Tk_Offset(glTextItem, alpha), TK_CONFIG_DONT_SET_DEFAULT, NULL },
+   { TK_CONFIG_PIXELS, "-width", NULL, NULL, "0", Tk_Offset(glTextItem, width), TK_CONFIG_DONT_SET_DEFAULT, NULL},
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0}
 };
 
 /* Prototypes for procedures defined in this file */
 
-static int    glConfigureText _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[],int flags));
-static int    glCreateText _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static void   glDeleteText _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display));
-static void   glScaleText _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY));
-static int    glTextCoords _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static int    glTextToArea _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *rectPtr));
-static double glTextToPoint _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr, double *pointPtr));
-static int    glTextToPostscript _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int prepass));
-static void   glTranslateText _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY));
+static int    glConfigureText (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[],int flags);
+static int    glCreateText (Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[]);
+static void   glDeleteText (Tk_Canvas canvas,Tk_Item *itemPtr,Display *display);
+static void   glScaleText (Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY);
+static int    glTextCoords (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[]);
+static int    glTextToArea (Tk_Canvas canvas,Tk_Item *itemPtr,double *rectPtr);
+static double glTextToPoint (Tk_Canvas canvas,Tk_Item *itemPtr, double *pointPtr);
+static int    glTextToPostscript (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int prepass);
+static void   glTranslateText (Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY);
 
-void glComputeTextBbox _ANSI_ARGS_((Tk_Canvas canvas,glTextItem *textPtr));
-void glDisplayText _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height));
+void glComputeTextBbox (Tk_Canvas canvas,glTextItem *textPtr);
+void glDisplayText (Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height);
 
-static int    GetSelText _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int offset,char *buffer,int maxBytes));
-static int    GetTextIndex _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,Tcl_Obj *obj,int *indexPtr));
-static void   SetTextCursor _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int index));
-static void   TextDeleteChars _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int first,int last));
-static void   TextInsert _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int beforeThis,char *string));
+static int    GetSelText (Tk_Canvas canvas,Tk_Item *itemPtr,int offset,char *buffer,int maxBytes);
+static int    GetTextIndex (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,Tcl_Obj *obj,int *indexPtr);
+static void   SetTextCursor (Tk_Canvas canvas,Tk_Item *itemPtr,int index);
+static void   TextDeleteChars (Tk_Canvas canvas,Tk_Item *itemPtr,int first,int last);
+static void   TextInsert (Tk_Canvas canvas,Tk_Item *itemPtr,int beforeThis, Tcl_Obj *obj);
 
 /*
  * The structures below defines the rectangle and oval item types
@@ -97,25 +71,27 @@ static void   TextInsert _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int befo
 Tk_ItemType tkglTextType = {
     "text",                 /* name */
     sizeof(glTextItem),     /* itemSize */
-    glCreateText,             /* createProc */
+    glCreateText,           /* createProc */
     configSpecs,            /* configSpecs */
-    glConfigureText,          /* configureProc */
-    glTextCoords,             /* coordProc */
-    glDeleteText,             /* deleteProc */
-    glDisplayText,        /* displayProc */
+    glConfigureText,        /* configureProc */
+    glTextCoords,           /* coordProc */
+    glDeleteText,           /* deleteProc */
+    glDisplayText,          /* displayProc */
     TK_CONFIG_OBJS,         /* flags */
-    glTextToPoint,            /* pointProc */
-    glTextToArea,             /* areaProc */
-    glTextToPostscript,       /* postscriptProc */
-    glScaleText,              /* scaleProc */
-    glTranslateText,          /* translateProc */
-    (Tk_ItemIndexProc *) GetTextIndex,   /* indexProc */
-    SetTextCursor,                       /* icursorProc */
-    GetSelText,                          /* selectionProc */
-    TextInsert,                          /* insertProc */
-    TextDeleteChars,                     /* dTextProc */
-    (Tk_ItemType *) NULL,                /* nextPtr */
+    glTextToPoint,          /* pointProc */
+    glTextToArea,           /* areaProc */
+    glTextToPostscript,     /* postscriptProc */
+    glScaleText,            /* scaleProc */
+    glTranslateText,        /* translateProc */
+    GetTextIndex,           /* indexProc */
+    SetTextCursor,          /* icursorProc */
+    GetSelText,             /* selectionProc */
+    TextInsert,             /* insertProc */
+    TextDeleteChars,        /* dTextProc */
+    NULL,                   /* nextPtr */
 };
+
+#define ROUND(d) ((int) floor((d) + 0.5))
 
 /*
  *--------------------------------------------------------------
@@ -137,68 +113,70 @@ Tk_ItemType tkglTextType = {
  *--------------------------------------------------------------
  */
 
-static int glCreateText(interp, canvas, itemPtr, argc, argv)
-   Tcl_Interp *interp;         /* Interpreter for error reporting. */
-   Tk_Canvas canvas;           /* Canvas to hold new item. */
-   Tk_Item *itemPtr;           /* Record to hold new item; header has been initialized by caller. */
-   int argc;                   /* Number of arguments in argv. */
-   Tcl_Obj *CONST argv[];      /* Arguments describing rectangle. */
+static int glCreateText(
+    Tcl_Interp *interp,    /* Interpreter for error reporting. */
+    Tk_Canvas canvas,      /* Canvas to hold new item. */
+    Tk_Item *itemPtr,      /* Record to hold new item; header has been
+             * initialized by caller. */
+    int objc,        /* Number of arguments in objv. */
+    Tcl_Obj *const objv[]) /* Arguments describing rectangle. */
 {
 
    glTextItem *textPtr = (glTextItem *) itemPtr;
    int i;
 
-   if (argc==1) {
-      i = 1;
-   } else {
-      char *arg = Tcl_GetStringFromObj(argv[1], NULL);
-      if ((argc>1) && (arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
-         i = 1;
-      } else {
-         i = 2;
-      }
-   }
-
-   if (argc < i) {
-      Tcl_AppendResult(interp, "wrong # args: should be \"",
-      Tk_PathName(Tk_CanvasTkwin(canvas)), " create ",
-      itemPtr->typePtr->name, " x y ?options?\"", (char *) NULL);
-      return TCL_ERROR;
+   if (objc == 0) {
+      Tcl_Panic("canvas did not pass any coords");
    }
 
    /* Carry out initialization that is needed in order to clean up after errors during the the remainder of this procedure. */
 
-   textPtr->textInfoPtr = Tk_CanvasGetTextInfo(canvas);
-   textPtr->insertPos           = 0;
+   textPtr->textInfoPtr      = Tk_CanvasGetTextInfo(canvas);
+   textPtr->insertPos        = 0;
    textPtr->anchor           = TK_ANCHOR_CENTER;
-   textPtr->tsoffset.flags      = 0;
-   textPtr->tsoffset.xoffset    = 0;
-   textPtr->tsoffset.yoffset    = 0;
-   textPtr->color         = NULL;
-   textPtr->activeColor         = NULL;
-   textPtr->disabledColor       = NULL;
+   textPtr->tsoffset.flags   = 0;
+   textPtr->tsoffset.xoffset = 0;
+   textPtr->tsoffset.yoffset = 0;
+   textPtr->color            = NULL;
+   textPtr->activeColor      = NULL;
+   textPtr->disabledColor    = NULL;
    textPtr->tkfont           = NULL;
    textPtr->justify          = TK_JUSTIFY_LEFT;
-   textPtr->text          = NULL;
-   textPtr->width         = 0;
+   textPtr->stipple          = NULL;
+   textPtr->activeStipple    = NULL;
+   textPtr->disabledStipple  = NULL;
+   textPtr->text             = NULL;
+   textPtr->width            = 0;
+   textPtr->underline        = -1;
+   textPtr->angle            = 0;
+
    textPtr->numChars         = 0;
    textPtr->numBytes         = 0;
-   textPtr->textLayout          = NULL;
-   textPtr->leftEdge         = 0;
-   textPtr->rightEdge           = 0;
-   textPtr->dx             = 0;
-   textPtr->dy             = 0;
-
-   textPtr->alpha               = 100;
-   textPtr->angle               = 0;
-   textPtr->stipple          = NULL;
-   textPtr->activeStipple       = NULL;
-   textPtr->disabledStipple     = NULL;
+   textPtr->textLayout       = NULL;
+   textPtr->actualWidth      = 0;
+   textPtr->drawOrigin[0]    = 0.0;
+   textPtr->drawOrigin[1]    = 0.0;
+   textPtr->dx               = 0;
+   textPtr->dy               = 0;
+   textPtr->sine             = 0.0;
+   textPtr->cosine           = 1.0;
+   textPtr->alpha            = 100;
 
    /* Process the arguments to fill in the item record. */
 
-   if ((glTextCoords(interp,canvas,itemPtr,i,argv) == TCL_OK)) {
-      if (glConfigureText(interp, canvas, itemPtr, argc-i, argv+i, 0) == TCL_OK) {
+   if (objc == 1) {
+      i = 1;
+   } else {
+      const char *arg = Tcl_GetString(objv[1]);
+
+      i = 2;
+      if ((arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
+         i = 1;
+      }
+    }
+
+   if ((glTextCoords(interp,canvas,itemPtr,i,objv) == TCL_OK)) {
+      if (glConfigureText(interp, canvas, itemPtr, objc-i, objv+i, 0) == TCL_OK) {
          return TCL_OK;
       }
    }
@@ -225,49 +203,49 @@ static int glCreateText(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glTextCoords(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;     /* Used for error reporting. */
-    Tk_Canvas canvas;       /* Canvas containing item. */
-    Tk_Item *itemPtr;       /* Item whose coordinates are to be read or modified. */
-    int argc;               /* Number of coordinates supplied in argv. */
-    Tcl_Obj *CONST argv[];  /* Array of coordinates: x1, y1, x2, y2, ... */
+static int glTextCoords(
+    Tcl_Interp *interp,    /* Used for error reporting. */
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item whose coordinates are to be read or
+             * modified. */
+    int objc,        /* Number of coordinates supplied in objv. */
+    Tcl_Obj *const objv[]) /* Array of coordinates: x1, y1, x2, y2, ... */
 {
     glTextItem *textPtr = (glTextItem *) itemPtr;
 
-    if (argc == 0) {
-   Tcl_Obj *obj = Tcl_NewObj();
-   Tcl_Obj *subobj = Tcl_NewDoubleObj(textPtr->x);
-   Tcl_ListObjAppendElement(interp, obj, subobj);
-   subobj = Tcl_NewDoubleObj(textPtr->y);
-   Tcl_ListObjAppendElement(interp, obj, subobj);
-   Tcl_SetObjResult(interp, obj);
-    } else if (argc < 3) {
-   if (argc==1) {
-       if (Tcl_ListObjGetElements(interp, argv[0], &argc,
-          (Tcl_Obj ***) &argv) != TCL_OK) {
-      return TCL_ERROR;
-       } else if (argc != 2) {
-      char buf[64 + TCL_INTEGER_SPACE];
+   if (objc == 0) {
+      Tcl_Obj *obj = Tcl_NewObj();
+      Tcl_Obj *subobj = Tcl_NewDoubleObj(textPtr->x);
 
-      sprintf(buf, "wrong # coordinates: expected 2, got %d", argc);
-      Tcl_SetResult(interp, buf, TCL_VOLATILE);
+      Tcl_ListObjAppendElement(interp, obj, subobj);
+      subobj = Tcl_NewDoubleObj(textPtr->y);
+      Tcl_ListObjAppendElement(interp, obj, subobj);
+      Tcl_SetObjResult(interp, obj);
+      return TCL_OK;
+   } else if (objc > 2) {
+      Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+         "wrong # coordinates: expected 0 or 2, got %d", objc));
+      Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS", "TEXT", NULL);
       return TCL_ERROR;
-       }
    }
-   if ((Tk_CanvasGetCoordFromObj(interp, canvas, argv[0], &textPtr->x) != TCL_OK)
-      || (Tk_CanvasGetCoordFromObj(interp, canvas, argv[1],
-          &textPtr->y) != TCL_OK)) {
-       return TCL_ERROR;
+
+   if (objc == 1) {
+      if (Tcl_ListObjGetElements(interp, objv[0], &objc, (Tcl_Obj ***) &objv) != TCL_OK) {
+         return TCL_ERROR;
+      } else if (objc != 2) {
+         Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+            "wrong # coordinates: expected 2, got %d", objc));
+         Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS", "TEXT", NULL);
+         return TCL_ERROR;
+      }
    }
+   if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &textPtr->x) != TCL_OK)
+      || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1], &textPtr->y) != TCL_OK)) {
+      return TCL_ERROR;
+   }
+
    glComputeTextBbox(canvas, textPtr);
-    } else {
-   char buf[64 + TCL_INTEGER_SPACE];
-
-   sprintf(buf, "wrong # coordinates: expected 0 or 2, got %d", argc);
-   Tcl_SetResult(interp, buf, TCL_VOLATILE);
-   return TCL_ERROR;
-    }
-    return TCL_OK;
+   return TCL_OK;
 }
 
 /*
@@ -289,13 +267,13 @@ static int glTextCoords(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glConfigureText(interp, canvas, itemPtr, argc, argv, flags)
-    Tcl_Interp *interp;    /* Interpreter for error reporting. */
-    Tk_Canvas canvas;      /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;      /* Rectangle item to reconfigure. */
-    int argc;              /* Number of elements in argv.  */
-    Tcl_Obj *CONST argv[]; /* Arguments describing things to configure. */
-    int flags;             /* Flags to pass to Tk_ConfigureWidget. */
+static int glConfigureText(
+    Tcl_Interp *interp,    /* Interpreter for error reporting. */
+    Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+    Tk_Item *itemPtr,      /* Rectangle item to reconfigure. */
+    int objc,        /* Number of elements in objv. */
+    Tcl_Obj *const objv[], /* Arguments describing things to configure. */
+    int flags)       /* Flags to pass to Tk_ConfigureWidget. */
 {
     glTextItem *textPtr = (glTextItem *) itemPtr;
     Tk_Window tkwin;
@@ -303,9 +281,9 @@ static int glConfigureText(interp, canvas, itemPtr, argc, argv, flags)
     Tk_State state;
 
     tkwin = Tk_CanvasTkwin(canvas);
-    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, (char **) argv,
+    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, objc, (const char **)objv,
        (char *) textPtr, flags|TK_CONFIG_OBJS) != TCL_OK) {
-   return TCL_ERROR;
+       return TCL_ERROR;
     }
 
    /* A few of the options require additional processing, such as graphics contexts. */
@@ -327,19 +305,18 @@ static int glConfigureText(interp, canvas, itemPtr, argc, argv, flags)
      * to keep them inside the item.
      */
 
-    textPtr->numBytes = (int)strlen(textPtr->text);
-    textPtr->numChars = Tcl_NumUtfChars(textPtr->text, textPtr->numBytes);
-    if (textInfoPtr->selItemPtr == itemPtr) {
+   textPtr->numBytes = (int)strlen(textPtr->text);
+   textPtr->numChars = Tcl_NumUtfChars(textPtr->text, textPtr->numBytes);
+   if (textInfoPtr->selItemPtr == itemPtr) {
 
-   if (textInfoPtr->selectFirst >= textPtr->numChars) {
-       textInfoPtr->selItemPtr = NULL;
-   } else {
-       if (textInfoPtr->selectLast >= textPtr->numChars) {
-      textInfoPtr->selectLast = textPtr->numChars - 1;
-       }
-       if ((textInfoPtr->anchorItemPtr == itemPtr)
-          && (textInfoPtr->selectAnchor >= textPtr->numChars)) {
-      textInfoPtr->selectAnchor = textPtr->numChars - 1;
+      if (textInfoPtr->selectFirst >= textPtr->numChars) {
+         textInfoPtr->selItemPtr = NULL;
+      } else {
+         if (textInfoPtr->selectLast >= textPtr->numChars) {
+            textInfoPtr->selectLast = textPtr->numChars - 1;
+         }
+         if ((textInfoPtr->anchorItemPtr == itemPtr) && (textInfoPtr->selectAnchor >= textPtr->numChars)) {
+            textInfoPtr->selectAnchor = textPtr->numChars - 1;
          }
       }
    }
@@ -347,7 +324,24 @@ static int glConfigureText(interp, canvas, itemPtr, argc, argv, flags)
       textPtr->insertPos = textPtr->numChars;
    }
 
+    /*
+     * Restrict so that 0.0 <= angle < 360.0, and then recompute the cached
+     * sine and cosine of the angle. Note that fmod() can produce negative
+     * results, and we try to avoid negative zero as well.
+     */
+
+   textPtr->angle = fmod(textPtr->angle, 360.0);
+   if (textPtr->angle < 0.0) {
+      textPtr->angle += 360.0;
+   }
+   if (textPtr->angle == 0.0) {
+      textPtr->angle = 0.0;
+   }
+   textPtr->sine = sin(textPtr->angle * PI/180.0);
+   textPtr->cosine = cos(textPtr->angle * PI/180.0);
+
    textPtr->alpha=textPtr->alpha<0?0:textPtr->alpha>100?100:textPtr->alpha;
+
    glComputeTextBbox(canvas, textPtr);
    return TCL_OK;
 }
@@ -386,6 +380,7 @@ static void glDeleteText(canvas, itemPtr, display)
       Tk_FreeColor(textPtr->disabledColor);
    }
    Tk_FreeFont(textPtr->tkfont);
+
    if (textPtr->text != NULL) {
       ckfree(textPtr->text);
    }
@@ -413,139 +408,148 @@ static void glDeleteText(canvas, itemPtr, display)
  *
  *--------------------------------------------------------------
  */
-static void glTextRotateCoord(double Th,double Xr,double Yr,double *X,double *Y) {
-
-   double len,dx,dy;
-
-   dx=*X-Xr;
-   dy=*Y-Yr;
-
-   Th*=0.017453292519943295474371680598;
-   Th+=atan2(dy,dx);
-
-   len=sqrt(dx*dx+dy*dy);
-   *X=Xr+cos(Th)*len;
-   *Y=Yr+sin(Th)*len;
-}
-
-void glComputeTextBbox(canvas, textPtr)
-    Tk_Canvas canvas;      /* Canvas that contains item. */
-    glTextItem *textPtr;      /* Item whose bbox is to be recomputed. */
+void glComputeTextBbox(
+    Tk_Canvas canvas,      /* Canvas that contains item. */
+    glTextItem *textPtr)     /* Item whose bbox is to be recomputed. */
 {
-    Tk_CanvasTextInfo *textInfoPtr;
-    int leftX, topY, width, height, fudge;
-    double minx,miny,maxx,maxy,dx,dy;
-    Tk_State state = textPtr->header.state;
+   Tk_CanvasTextInfo *textInfoPtr;
+   int leftX, topY, width, height, fudge, i;
+   Tk_State state = textPtr->header.state;
+   double x[4], y[4], dx[4], dy[4], sinA, cosA, tmp;
 
-    if(state == TK_STATE_NULL) {
-   state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
 
-    Tk_FreeTextLayout(textPtr->textLayout);
-    textPtr->textLayout = Tk_ComputeTextLayout(textPtr->tkfont,
-       textPtr->text, textPtr->numChars, textPtr->width,
-       textPtr->justify, 0, &width, &height);
+   Tk_FreeTextLayout(textPtr->textLayout);
+   textPtr->textLayout = Tk_ComputeTextLayout(textPtr->tkfont,
+      textPtr->text, textPtr->numChars, textPtr->width,textPtr->justify, 0, &width, &height);
 
-    if (state == TK_STATE_HIDDEN || textPtr->color == NULL) {
-       width = height = 0;
-    }
+   if (state == TK_STATE_HIDDEN || textPtr->color == NULL) {
+      width = height = 0;
+   }
 
-    /*
-     * Use overall geometry information to compute the top-left corner
-     * of the bounding box for the text item.
-     */
+   /*
+   * Use overall geometry information to compute the top-left corner of the
+   * bounding box for the text item.
+   */
 
-    leftX = (int) (textPtr->x + 0.5);
-    topY = (int) (textPtr->y + 0.5);
-    switch (textPtr->anchor) {
-   case TK_ANCHOR_NW:
-   case TK_ANCHOR_N:
-   case TK_ANCHOR_NE:
-       break;
+   leftX = ROUND(textPtr->x);
+   topY = ROUND(textPtr->y);
+   for (i=0 ; i<4 ; i++) {
+      dx[i] = dy[i] = 0.0;
+   }
+   switch (textPtr->anchor) {
+      case TK_ANCHOR_NW:
+      case TK_ANCHOR_N:
+      case TK_ANCHOR_NE:
+         break;
 
-   case TK_ANCHOR_W:
-   case TK_ANCHOR_CENTER:
-   case TK_ANCHOR_E:
-       topY -= height / 2;
-       break;
+      case TK_ANCHOR_W:
+      case TK_ANCHOR_CENTER:
+      case TK_ANCHOR_E:
+         topY -= height / 2;
+         for (i=0 ; i<4 ; i++) {
+            dy[i] = -height / 2;
+         }
+         break;
 
-   case TK_ANCHOR_SW:
-   case TK_ANCHOR_S:
-   case TK_ANCHOR_SE:
-       topY -= height;
-       break;
-    }
-    switch (textPtr->anchor) {
-   case TK_ANCHOR_NW:
-   case TK_ANCHOR_W:
-   case TK_ANCHOR_SW:
-       break;
+      case TK_ANCHOR_SW:
+      case TK_ANCHOR_S:
+      case TK_ANCHOR_SE:
+         topY -= height;
+         for (i=0 ; i<4 ; i++) {
+            dy[i] = -height;
+         }
+         break;
+   }
+   switch (textPtr->anchor) {
+      case TK_ANCHOR_NW:
+      case TK_ANCHOR_W:
+      case TK_ANCHOR_SW:
+         break;
 
-   case TK_ANCHOR_N:
-   case TK_ANCHOR_CENTER:
-   case TK_ANCHOR_S:
-       leftX -= width / 2;
-       break;
+      case TK_ANCHOR_N:
+      case TK_ANCHOR_CENTER:
+      case TK_ANCHOR_S:
+         leftX -= width / 2;
+         for (i=0 ; i<4 ; i++) {
+            dx[i] = -width / 2;
+         }
+         break;
 
-   case TK_ANCHOR_NE:
-   case TK_ANCHOR_E:
-   case TK_ANCHOR_SE:
-       leftX -= width;
-       break;
-    }
+      case TK_ANCHOR_NE:
+      case TK_ANCHOR_E:
+      case TK_ANCHOR_SE:
+         leftX -= width;
+         for (i=0 ; i<4 ; i++) {
+            dx[i] = -width;
+         }
+         break;
+   }
 
-    textPtr->leftEdge  = leftX;
-    textPtr->rightEdge = leftX + width;
-    /*
-     * Last of all, update the bounding box for the item.  The item's
-     * bounding box includes the bounding box of all its lines, plus
-     * an extra fudge factor for the cursor border (which could
-     * potentially be quite large).
-     */
+   textPtr->actualWidth = width;
 
-    textInfoPtr = textPtr->textInfoPtr;
-    fudge = (textInfoPtr->insertWidth + 1) / 2;
-    if (textInfoPtr->selBorderWidth > fudge) {
-       fudge = textInfoPtr->selBorderWidth;
-    }
+   sinA = textPtr->sine;
+   cosA = textPtr->cosine;
+   textPtr->drawOrigin[0] = textPtr->x + dx[0]*cosA + dy[0]*sinA;
+   textPtr->drawOrigin[1] = textPtr->y + dy[0]*cosA - dx[0]*sinA;
 
-    textPtr->header.x1=leftX - fudge;
-    textPtr->header.y1=topY;
-    textPtr->header.x2 = leftX + width + fudge;
-    textPtr->header.y2 = topY + height;
+   /*
+   * Last of all, update the bounding box for the item. The item's bounding
+   * box includes the bounding box of all its lines, plus an extra fudge
+   * factor for the cursor border (which could potentially be quite large).
+   */
 
-    textPtr->dx=textPtr->header.x1;
-    textPtr->dy=textPtr->header.y1;
+   textInfoPtr = textPtr->textInfoPtr;
+   fudge = (textInfoPtr->insertWidth + 1) / 2;
+   if (textInfoPtr->selBorderWidth > fudge) {
+      fudge = textInfoPtr->selBorderWidth;
+   }
 
-    minx=miny=1e32;
-    maxx=maxy=-1e32;
+   /*
+   * Apply the rotation before computing the bounding box.
+   */
 
-    dx=textPtr->header.x1;
-    dy=textPtr->header.y1;
-    glTextRotateCoord(textPtr->angle,textPtr->x,textPtr->y,&dx,&dy);
-    minx=minx<dx?minx:dx;  miny=miny<dy?miny:dy;
-    maxx=maxx>dx?maxx:dx;  maxy=maxy>dy?maxy:dy;
+   dx[0] -= fudge;
+   dx[1] += width + fudge;
+   dx[2] += width + fudge;
+   dy[2] += height;
+   dx[3] -= fudge;
+   dy[3] += height;
+   for (i=0 ; i<4 ; i++) {
+      x[i] = textPtr->x + dx[i] * cosA + dy[i] * sinA;
+      y[i] = textPtr->y + dy[i] * cosA - dx[i] * sinA;
+   }
 
-    dx=textPtr->header.x1;
-    dy=textPtr->header.y2;
-    glTextRotateCoord(textPtr->angle,textPtr->x,textPtr->y,&dx,&dy);
-    minx=minx<dx?minx:dx;  miny=miny<dy?miny:dy;
-    maxx=maxx>dx?maxx:dx;  maxy=maxy>dy?maxy:dy;
+   /*
+   * Convert to a rectilinear bounding box.
+   */
 
-    dx=textPtr->header.x2;
-    dy=textPtr->header.y1;
-    glTextRotateCoord(textPtr->angle,textPtr->x,textPtr->y,&dx,&dy);
-    minx=minx<dx?minx:dx;  miny=miny<dy?miny:dy;
-    maxx=maxx>dx?maxx:dx;  maxy=maxy>dy?maxy:dy;
-
-    dx=textPtr->header.x2;
-    dy=textPtr->header.y2;
-    glTextRotateCoord(textPtr->angle,textPtr->x,textPtr->y,&dx,&dy);
-    minx=minx<dx?minx:dx;  miny=miny<dy?miny:dy;
-    maxx=maxx>dx?maxx:dx;  maxy=maxy>dy?maxy:dy;
-
-    textPtr->header.x1=minx; textPtr->header.y1=miny;
-    textPtr->header.x2=maxx; textPtr->header.y2=maxy;
+   for (i=1,tmp=x[0] ; i<4 ; i++) {
+      if (x[i] < tmp) {
+         tmp = x[i];
+      }
+   }
+   textPtr->header.x1 = ROUND(tmp);
+   for (i=1,tmp=y[0] ; i<4 ; i++) {
+      if (y[i] < tmp) {
+         tmp = y[i];
+      }
+   }
+   textPtr->header.y1 = ROUND(tmp);
+   for (i=1,tmp=x[0] ; i<4 ; i++) {
+      if (x[i] > tmp) {
+         tmp = x[i];
+      }
+   }
+   textPtr->header.x2 = ROUND(tmp);
+   for (i=1,tmp=y[0] ; i<4 ; i++) {
+      if (y[i] > tmp) {
+         tmp = y[i];
+      }
+   }
+   textPtr->header.y2 = ROUND(tmp);
 }
 
 /*
@@ -570,9 +574,10 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
 
    TextLayout *layoutPtr;
    int i, numDisplayChars, drawX;
-   CONST char *firstByte;
-   CONST char *lastByte;
+   const char *firstByte;
+   const char *lastByte;
    LayoutChunk *chunkPtr;
+   double sinA = sin(angle * PI/180.0), cosA = cos(angle * PI/180.0);
 
    Tcl_DString runString;
 
@@ -584,24 +589,12 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
       lastChar=100000000;
    }
 
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-
-   glTranslatef(x,y,0.0);
-   if (angle) {
-      if (angle>360) {
-         angle-=1000;
-         glRotatef(angle,0.0,0.0,1.0);
-         glRotatef(180,1.0,0.0,0.0);
-      } else {
-         glRotatef(angle,0.0,0.0,1.0);
-      }
-   }
-
    chunkPtr=layoutPtr->chunks;
    for (i=0;i<layoutPtr->numChunks;i++) {
       numDisplayChars=chunkPtr->numDisplayChars;
       if ((numDisplayChars>0) && (firstChar<numDisplayChars)) {
+         double dx, dy;
+
          if (firstChar<=0) {
             drawX=0;
             firstChar=0;
@@ -614,11 +607,13 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
             numDisplayChars=lastChar;
          }
          lastByte=Tcl_UtfAtIndex(chunkPtr->start,numDisplayChars);
+         dx = cosA * (chunkPtr->x + drawX) + sinA * (chunkPtr->y);
+         dy = -sinA * (chunkPtr->x + drawX) + cosA * (chunkPtr->y);
 
          Tcl_DStringInit(&runString);
          Tcl_UtfToUniCharDString(firstByte,lastByte-firstByte,&runString);
 
-         glDrawString(chunkPtr->x+drawX,chunkPtr->y,0,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
+         glDrawString(x+dx,y+dy,angle,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
          Tcl_DStringFree(&runString);
       }
       firstChar-=chunkPtr->numChars;
@@ -628,8 +623,6 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
       }
       chunkPtr++;
    }
-
-   glPopMatrix();
 }
 
 /*
@@ -650,16 +643,17 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
  *--------------------------------------------------------------
  */
 
-void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
-    Tk_Canvas canvas;          /* Canvas that contains item. */
-    Tk_Item *itemPtr;          /* Item to be displayed. */
-    Display *display;          /* Display on which to draw item. */
-    Drawable drawable;         /* Pixmap or window in which to draw item. */
-    int x, y, width, height;   /* Describes region of canvas that must be redisplayed (not used). */
+void glDisplayText(
+    Tk_Canvas canvas,          /* Canvas that contains item. */
+    Tk_Item *itemPtr,          /* Item to be displayed. */
+    Display *display,          /* Display on which to draw item. */
+    Drawable drawable,         /* Pixmap or window in which to draw item. */
+    int x, int y, int width, int height)   /* Describes region of canvas that must be redisplayed (not used). */
 {
    glTextItem *textPtr;
    Tk_CanvasTextInfo *textInfoPtr;
    int selFirstChar, selLastChar;
+   short drawableX, drawableY;
    T_glBitmap *stipple;
    Tk_State state = itemPtr->state;
 
@@ -691,6 +685,9 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
    selFirstChar = -1;
    selLastChar  = 0;
 
+    Tk_CanvasDrawableCoords(canvas, textPtr->drawOrigin[0],
+       textPtr->drawOrigin[1], &drawableX, &drawableY);
+
    if (textInfoPtr->selItemPtr==itemPtr) {
       selFirstChar = textInfoPtr->selectFirst;
       selLastChar  = textInfoPtr->selectLast;
@@ -701,7 +698,7 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
 
       if ((selFirstChar >= 0) && (selFirstChar <= selLastChar)) {
          int xFirst,yFirst,hFirst;
-         int xLast,yLast;
+         int xLast,yLast, wLast;
 
          /* Draw a special background under the selection */
 
@@ -714,28 +711,40 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
           * last character, not the end of the line.
           */
 
-         glMatrixMode(GL_MODELVIEW);
-         glPushMatrix();
-
-         glTranslatef(textPtr->dx-((TkCanvas *)canvas)->xOrigin,textPtr->dy-((TkCanvas *)canvas)->yOrigin,0.0);
-         glRotatef(textPtr->angle,0.0,0.0,1.0);
          glBegin(GL_QUADS);
+
          x = xFirst;
          height = hFirst;
          for (y=yFirst;y<=yLast;y+= height) {
-            if (y==yLast) {
-               width = xLast - x;
+            int dx1, dy1, dx2, dy2;
+            double s = textPtr->sine, c = textPtr->cosine;
+            XPoint points[4];
+
+            if (y == yLast) {
+               width = xLast + wLast - x;
             } else {
-               width = textPtr->rightEdge - textPtr->leftEdge - x;
+               width = textPtr->actualWidth - x;
             }
-            glVertex2d(x,y);
-            glVertex2d(x,y+height);
-            glVertex2d(x+width,y+height);
-            glVertex2d(x+width,y);
+            dx1 = x - textInfoPtr->selBorderWidth;
+            dy1 = y;
+            dx2 = width + 2 * textInfoPtr->selBorderWidth;
+            dy2 = height;
+            points[0].x = (short)(drawableX + dx1*c + dy1*s);
+            points[0].y = (short)(drawableY + dy1*c - dx1*s);
+            points[1].x = (short)(drawableX + (dx1+dx2)*c + dy1*s);
+            points[1].y = (short)(drawableY + dy1*c - (dx1+dx2)*s);
+            points[2].x = (short)(drawableX + (dx1+dx2)*c + (dy1+dy2)*s);
+            points[2].y = (short)(drawableY + (dy1+dy2)*c - (dx1+dx2)*s);
+            points[3].x = (short)(drawableX + dx1*c + (dy1+dy2)*s);
+            points[3].y = (short)(drawableY + (dy1+dy2)*c - dx1*s);
+
+            glVertex2d(points[0].x,points[0].y);
+            glVertex2d(points[1].x,points[1].y);
+            glVertex2d(points[2].x,points[2].y);
+            glVertex2d(points[3].x,points[3].y);
             x=0;
          }
          glEnd();
-         glPopMatrix();
       }
    }
 
@@ -753,18 +762,30 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
    if ((textInfoPtr->focusItemPtr == itemPtr) && (textInfoPtr->gotFocus)) {
       if (Tk_CharBbox(textPtr->textLayout,textPtr->insertPos,&x,&y,NULL,&height)) {
 
-         if (textInfoPtr->cursorOn) {
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
+         int dx1, dy1, dx2, dy2;
+         double s = textPtr->sine, c = textPtr->cosine;
+         XPoint points[4];
 
-            glTranslatef(textPtr->dx-((TkCanvas *)canvas)->xOrigin,textPtr->dy-((TkCanvas *)canvas)->yOrigin,0.0);
-            glRotatef(textPtr->angle,0.0,0.0,1.0);
-            glLineWidth(2.0);
-            glBegin(GL_LINES);
-            glVertex2d(x,y);
-            glVertex2d(x,y+height);
+         dx1 = x - (textInfoPtr->insertWidth / 2);
+         dy1 = y;
+         dx2 = textInfoPtr->insertWidth;
+         dy2 = height;
+         points[0].x = (short)(drawableX + dx1*c + dy1*s);
+         points[0].y = (short)(drawableY + dy1*c - dx1*s);
+         points[1].x = (short)(drawableX + (dx1+dx2)*c + dy1*s);
+         points[1].y = (short)(drawableY + dy1*c - (dx1+dx2)*s);
+         points[2].x = (short)(drawableX + (dx1+dx2)*c + (dy1+dy2)*s);
+         points[2].y = (short)(drawableY + (dy1+dy2)*c - (dx1+dx2)*s);
+         points[3].x = (short)(drawableX + dx1*c + (dy1+dy2)*s);
+         points[3].y = (short)(drawableY + (dy1+dy2)*c - dx1*s);
+
+         if (textInfoPtr->cursorOn) {
+            glBegin(GL_QUADS);
+            glVertex2d(points[0].x,points[0].y);
+            glVertex2d(points[1].x,points[1].y);
+            glVertex2d(points[2].x,points[2].y);
+            glVertex2d(points[3].x,points[3].y);
             glEnd();
-            glPopMatrix();
          }
       }
     }
@@ -802,11 +823,11 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
    }
 
    glFontUse(display,textPtr->tkfont);
-   glDisplayTextLayout(textPtr->textLayout,textPtr->angle,textPtr->dx-((TkCanvas *)canvas)->xOrigin,textPtr->dy-((TkCanvas *)canvas)->yOrigin,0,-1);
+   glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,0,-1);
 
    /* Draw the selected text*/
    if (selFirstChar >= 0) {
-      glDisplayTextLayout(textPtr->textLayout,textPtr->angle,textPtr->dx-((TkCanvas *)canvas)->xOrigin,textPtr->dy-((TkCanvas *)canvas)->yOrigin,selFirstChar,selLastChar + 1);
+      glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,selFirstChar,selLastChar + 1);
    }
 
    glDisable(GL_BLEND);
@@ -831,66 +852,67 @@ void glDisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
  *--------------------------------------------------------------
  */
 
-static void TextInsert(canvas, itemPtr, index, string)
-    Tk_Canvas canvas;      /* Canvas containing text item. */
-    Tk_Item *itemPtr;      /* Text item to be modified. */
-    int index;       /* Character index before which string is
-             * to be inserted. */
-    char *string;    /* New characters to be inserted. */
+static void TextInsert(
+    Tk_Canvas canvas,      /* Canvas containing text item. */
+    Tk_Item *itemPtr,      /* Text item to be modified. */
+    int index,       /* Character index before which string is to
+             * be inserted. */
+    Tcl_Obj *obj)    /* New characters to be inserted. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
-    int byteIndex, byteCount, charsAdded;
-    char *new, *text;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
+   int byteIndex, byteCount, charsAdded;
+   char *newStr, *text;
+   const char *string;
+   Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
-    string = Tcl_GetStringFromObj((Tcl_Obj *) string, &byteCount);
+   string = Tcl_GetStringFromObj(obj, &byteCount);
 
-    text = textPtr->text;
+   text = textPtr->text;
 
-    if (index < 0) {
-   index = 0;
-    }
-    if (index > textPtr->numChars) {
-   index = textPtr->numChars;
-    }
-    byteIndex = Tcl_UtfAtIndex(text, index) - text;
-    byteCount = (int)strlen(string);
-    if (byteCount == 0) {
-   return;
-    }
-
-    new = (char *) ckalloc((unsigned) textPtr->numBytes + byteCount + 1);
-    memcpy(new, text, (size_t) byteIndex);
-    strcpy(new + byteIndex, string);
-    strcpy(new + byteIndex + byteCount, text + byteIndex);
-
-    ckfree(text);
-    textPtr->text = new;
-    charsAdded = Tcl_NumUtfChars(string, byteCount);
-    textPtr->numChars += charsAdded;
-    textPtr->numBytes += byteCount;
-
-    /*
-     * Inserting characters invalidates indices such as those for the
-     * selection and cursor.  Update the indices appropriately.
-     */
-
-    if (textInfoPtr->selItemPtr == itemPtr) {
-   if (textInfoPtr->selectFirst >= index) {
-       textInfoPtr->selectFirst += charsAdded;
+   if (index < 0) {
+      index = 0;
    }
-   if (textInfoPtr->selectLast >= index) {
-       textInfoPtr->selectLast += charsAdded;
+   if (index > textPtr->numChars) {
+      index = textPtr->numChars;
    }
-   if ((textInfoPtr->anchorItemPtr == itemPtr)
-      && (textInfoPtr->selectAnchor >= index)) {
-       textInfoPtr->selectAnchor += charsAdded;
+   byteIndex = Tcl_UtfAtIndex(text, index) - text;
+   byteCount = strlen(string);
+   if (byteCount == 0) {
+      return;
    }
-    }
-    if (textPtr->insertPos >= index) {
-   textPtr->insertPos += charsAdded;
-    }
-    glComputeTextBbox(canvas, textPtr);
+
+   newStr = ckalloc(textPtr->numBytes + byteCount + 1);
+   memcpy(newStr, text, (size_t) byteIndex);
+   strcpy(newStr + byteIndex, string);
+   strcpy(newStr + byteIndex + byteCount, text + byteIndex);
+
+   ckfree(text);
+   textPtr->text = newStr;
+   charsAdded = Tcl_NumUtfChars(string, byteCount);
+   textPtr->numChars += charsAdded;
+   textPtr->numBytes += byteCount;
+
+   /*
+   * Inserting characters invalidates indices such as those for the
+   * selection and cursor. Update the indices appropriately.
+   */
+
+   if (textInfoPtr->selItemPtr == itemPtr) {
+      if (textInfoPtr->selectFirst >= index) {
+         textInfoPtr->selectFirst += charsAdded;
+      }
+      if (textInfoPtr->selectLast >= index) {
+         textInfoPtr->selectLast += charsAdded;
+      }
+      if ((textInfoPtr->anchorItemPtr == itemPtr)
+         && (textInfoPtr->selectAnchor >= index)) {
+         textInfoPtr->selectAnchor += charsAdded;
+      }
+   }
+   if (textPtr->insertPos >= index) {
+      textPtr->insertPos += charsAdded;
+   }
+   glComputeTextBbox(canvas, textPtr);
 }
 
 /*
@@ -911,81 +933,81 @@ static void TextInsert(canvas, itemPtr, index, string)
  *--------------------------------------------------------------
  */
 
-static void TextDeleteChars(canvas, itemPtr, first, last)
-    Tk_Canvas canvas;      /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;      /* Item in which to delete characters. */
-    int first;       /* Character index of first character to
+static void TextDeleteChars(
+    Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+    Tk_Item *itemPtr,      /* Item in which to delete characters. */
+    int first,       /* Character index of first character to
              * delete. */
-    int last;        /* Character index of last character to
-             * delete (inclusive). */
+    int last)        /* Character index of last character to delete
+             * (inclusive). */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
-    int byteIndex, byteCount, charsRemoved;
-    char *new, *text;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
+   int byteIndex, byteCount, charsRemoved;
+   char *newStr, *text;
+   Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
-    text = textPtr->text;
-    if (first < 0) {
-   first = 0;
-    }
-    if (last >= textPtr->numChars) {
-   last = textPtr->numChars - 1;
-    }
-    if (first > last) {
-   return;
-    }
-    charsRemoved = last + 1 - first;
+   text = textPtr->text;
+   if (first < 0) {
+      first = 0;
+   }
+   if (last >= textPtr->numChars) {
+      last = textPtr->numChars - 1;
+   }
+   if (first > last) {
+      return;
+   }
+   charsRemoved = last + 1 - first;
 
-    byteIndex = Tcl_UtfAtIndex(text, first) - text;
-    byteCount = Tcl_UtfAtIndex(text + byteIndex, charsRemoved)
+   byteIndex = Tcl_UtfAtIndex(text, first) - text;
+   byteCount = Tcl_UtfAtIndex(text + byteIndex, charsRemoved)
    - (text + byteIndex);
 
-    new = (char *) ckalloc((unsigned) (textPtr->numBytes + 1 - byteCount));
-    memcpy(new, text, (size_t) byteIndex);
-    strcpy(new + byteIndex, text + byteIndex + byteCount);
+   newStr = ckalloc(textPtr->numBytes + 1 - byteCount);
+   memcpy(newStr, text, (size_t) byteIndex);
+   strcpy(newStr + byteIndex, text + byteIndex + byteCount);
 
-    ckfree(text);
-    textPtr->text = new;
-    textPtr->numChars -= charsRemoved;
-    textPtr->numBytes -= byteCount;
+   ckfree(text);
+   textPtr->text = newStr;
+   textPtr->numChars -= charsRemoved;
+   textPtr->numBytes -= byteCount;
 
-    /*
-     * Update indexes for the selection and cursor to reflect the
-     * renumbering of the remaining characters.
-     */
+   /*
+   * Update indexes for the selection and cursor to reflect the renumbering
+   * of the remaining characters.
+   */
 
-    if (textInfoPtr->selItemPtr == itemPtr) {
-   if (textInfoPtr->selectFirst > first) {
-       textInfoPtr->selectFirst -= charsRemoved;
-       if (textInfoPtr->selectFirst < first) {
-      textInfoPtr->selectFirst = first;
-       }
+   if (textInfoPtr->selItemPtr == itemPtr) {
+      if (textInfoPtr->selectFirst > first) {
+         textInfoPtr->selectFirst -= charsRemoved;
+         if (textInfoPtr->selectFirst < first) {
+            textInfoPtr->selectFirst = first;
+         }
+      }
+      if (textInfoPtr->selectLast >= first) {
+         textInfoPtr->selectLast -= charsRemoved;
+         if (textInfoPtr->selectLast < first - 1) {
+         textInfoPtr->selectLast = first - 1;
+         }
+      }
+      if (textInfoPtr->selectFirst > textInfoPtr->selectLast) {
+         textInfoPtr->selItemPtr = NULL;
+      }
+      if ((textInfoPtr->anchorItemPtr == itemPtr)
+         && (textInfoPtr->selectAnchor > first)) {
+         textInfoPtr->selectAnchor -= charsRemoved;
+         if (textInfoPtr->selectAnchor < first) {
+         textInfoPtr->selectAnchor = first;
+         }
+      }
    }
-   if (textInfoPtr->selectLast >= first) {
-       textInfoPtr->selectLast -= charsRemoved;
-       if (textInfoPtr->selectLast < first - 1) {
-      textInfoPtr->selectLast = first - 1;
-       }
+   if (textPtr->insertPos > first) {
+      textPtr->insertPos -= charsRemoved;
+      if (textPtr->insertPos < first) {
+         textPtr->insertPos = first;
+      }
    }
-   if (textInfoPtr->selectFirst > textInfoPtr->selectLast) {
-       textInfoPtr->selItemPtr = NULL;
-   }
-   if ((textInfoPtr->anchorItemPtr == itemPtr)
-      && (textInfoPtr->selectAnchor > first)) {
-       textInfoPtr->selectAnchor -= charsRemoved;
-       if (textInfoPtr->selectAnchor < first) {
-      textInfoPtr->selectAnchor = first;
-       }
-   }
-    }
-    if (textPtr->insertPos > first) {
-   textPtr->insertPos -= charsRemoved;
-   if (textPtr->insertPos < first) {
-       textPtr->insertPos = first;
-   }
-    }
-    glComputeTextBbox(canvas, textPtr);
-    return;
+   glComputeTextBbox(canvas, textPtr);
+   return;
 }
 
 /*
@@ -1007,31 +1029,30 @@ static void TextDeleteChars(canvas, itemPtr, first, last)
  *
  *--------------------------------------------------------------
  */
-static double glTextToPoint(canvas, itemPtr, pointPtr)
-    Tk_Canvas canvas;      /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;      /* Item to check against point. */
-    double *pointPtr;      /* Pointer to x and y coordinates. */
+static double glTextToPoint(
+    Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+    Tk_Item *itemPtr,      /* Item to check against point. */
+    double *pointPtr)      /* Pointer to x and y coordinates. */
 {
-    glTextItem *textPtr;
-    Tk_State state = itemPtr->state;
-    double value;
+   glTextItem *textPtr;
+   Tk_State state = itemPtr->state;
+   double value, px, py;
 
-    if (state == TK_STATE_NULL) {
-       state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    textPtr = (glTextItem *) itemPtr;
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
+   textPtr = (glTextItem *) itemPtr;
+   px = pointPtr[0] - textPtr->drawOrigin[0];
+   py = pointPtr[1] - textPtr->drawOrigin[1];
+   value = (double) Tk_DistanceToTextLayout(textPtr->textLayout,
+      (int) (px*textPtr->cosine - py*textPtr->sine),
+      (int) (py*textPtr->cosine + px*textPtr->sine));
 
-   glTextRotateCoord(-textPtr->angle,textPtr->dx,textPtr->dy,&pointPtr[0],&pointPtr[1]);
-   pointPtr[0]-=textPtr->dx;
-   pointPtr[1]-=textPtr->dy;
-
-    value =  (double) Tk_DistanceToTextLayout(textPtr->textLayout,pointPtr[0],pointPtr[1]);
-
-    if ((state == TK_STATE_HIDDEN) || (textPtr->color == NULL) ||
-       (textPtr->text == NULL) || (*textPtr->text == 0)) {
-   value = 1.0e36;
-    }
-    return value;
+   if ((state == TK_STATE_HIDDEN) || (textPtr->color == NULL) ||
+      (textPtr->text == NULL) || (*textPtr->text == 0)) {
+      value = 1.0e36;
+   }
+   return value;
 }
 
 /*
@@ -1054,30 +1075,27 @@ static double glTextToPoint(canvas, itemPtr, pointPtr)
  *--------------------------------------------------------------
  */
 
-static int glTextToArea(canvas, itemPtr, rectPtr)
-    Tk_Canvas canvas;      /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;      /* Item to check against rectangle. */
-    double *rectPtr;    /* Pointer to array of four coordinates
+static int glTextToArea(
+    Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+    Tk_Item *itemPtr,      /* Item to check against rectangle. */
+    double *rectPtr)    /* Pointer to array of four coordinates
              * (x1, y1, x2, y2) describing rectangular
              * area.  */
 {
-    glTextItem *textPtr;
-    Tk_State state = itemPtr->state;
+   glTextItem *textPtr;
+   Tk_State state = itemPtr->state;
 
-    if (state == TK_STATE_NULL) {
-   state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
 
-    textPtr = (glTextItem *) itemPtr;
-
-   glTextRotateCoord(-textPtr->angle,textPtr->dx,textPtr->dy,&rectPtr[0],&rectPtr[1]);
-   glTextRotateCoord(-textPtr->angle,textPtr->dx,textPtr->dy,&rectPtr[2],&rectPtr[3]);
-
-    return Tk_IntersectTextLayout(textPtr->textLayout,
-       (int) (rectPtr[0] + 0.5) - textPtr->dx,
-       (int) (rectPtr[1] + 0.5) - textPtr->dy,
-       (int) (rectPtr[2] - rectPtr[0] + 0.5),
-       (int) (rectPtr[3] - rectPtr[1] + 0.5));
+   textPtr = (glTextItem *) itemPtr;
+   return TkIntersectAngledTextLayout(textPtr->textLayout,
+      (int) ((rectPtr[0] + 0.5) - textPtr->drawOrigin[0]),
+      (int) ((rectPtr[1] + 0.5) - textPtr->drawOrigin[1]),
+      (int) (rectPtr[2] - rectPtr[0] + 0.5),
+      (int) (rectPtr[3] - rectPtr[1] + 0.5),
+      textPtr->angle);
 }
 
 /*
@@ -1097,19 +1115,19 @@ static int glTextToArea(canvas, itemPtr, rectPtr)
  *--------------------------------------------------------------
  */
 
-static void glScaleText(canvas, itemPtr, originX, originY, scaleX, scaleY)
-    Tk_Canvas canvas;      /* Canvas containing rectangle. */
-    Tk_Item *itemPtr;      /* Rectangle to be scaled. */
-    double originX, originY;  /* Origin about which to scale rect. */
-    double scaleX;      /* Amount to scale in X direction. */
-    double scaleY;      /* Amount to scale in Y direction. */
+static void glScaleText(
+    Tk_Canvas canvas,      /* Canvas containing rectangle. */
+    Tk_Item *itemPtr,      /* Rectangle to be scaled. */
+    double originX, double originY,  /* Origin about which to scale rect. */
+    double scaleX,      /* Amount to scale in X direction. */
+    double scaleY)      /* Amount to scale in Y direction. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
 
-    textPtr->x = originX + scaleX*(textPtr->x - originX);
-    textPtr->y = originY + scaleY*(textPtr->y - originY);
-    glComputeTextBbox(canvas, textPtr);
-    return;
+   textPtr->x = originX + scaleX*(textPtr->x - originX);
+   textPtr->y = originY + scaleY*(textPtr->y - originY);
+   glComputeTextBbox(canvas, textPtr);
+   return;
 }
 
 /*
@@ -1131,16 +1149,16 @@ static void glScaleText(canvas, itemPtr, originX, originY, scaleX, scaleY)
  *--------------------------------------------------------------
  */
 
-static void glTranslateText(canvas, itemPtr, deltaX, deltaY)
-    Tk_Canvas canvas;      /* Canvas containing item. */
-    Tk_Item *itemPtr;      /* Item that is being moved. */
-    double deltaX, deltaY; /* Amount by which item is to be moved. */
+static void glTranslateText(
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item that is being moved. */
+    double deltaX, double deltaY) /* Amount by which item is to be moved. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
 
-    textPtr->x += deltaX;
-    textPtr->y += deltaY;
-    glComputeTextBbox(canvas, textPtr);
+   textPtr->x += deltaX;
+   textPtr->y += deltaY;
+   glComputeTextBbox(canvas, textPtr);
 }
 
 /*
@@ -1163,90 +1181,88 @@ static void glTranslateText(canvas, itemPtr, deltaX, deltaY)
  *--------------------------------------------------------------
  */
 
-static int GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
-    Tcl_Interp *interp;    /* Used for error reporting. */
-    Tk_Canvas canvas;      /* Canvas containing item. */
-    Tk_Item *itemPtr;      /* Item for which the index is being
+static int GetTextIndex(
+    Tcl_Interp *interp,    /* Used for error reporting. */
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item for which the index is being
              * specified. */
-    Tcl_Obj *obj;    /* Specification of a particular character
+    Tcl_Obj *obj,    /* Specification of a particular character
              * in itemPtr's text. */
-    int *indexPtr;      /* Where to store converted character
+    int *indexPtr)      /* Where to store converted character
              * index. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
-    size_t length;
-    int c;
-    TkCanvas *canvasPtr = (TkCanvas *) canvas;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
-    char *string = Tcl_GetStringFromObj(obj, (int *) &length);
+   glTextItem *textPtr = (glTextItem *) itemPtr;
+   int length;
+   int c;
+   TkCanvas *canvasPtr = (TkCanvas *) canvas;
+   Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+   const char *string = Tcl_GetStringFromObj(obj, &length);
 
-    c = string[0];
-    length = strlen(string);
+   c = string[0];
 
-    if ((c == 'e') && (strncmp(string, "end", length) == 0)) {
-   *indexPtr = textPtr->numChars;
-    } else if ((c == 'i') && (strncmp(string, "insert", length) == 0)) {
-   *indexPtr = textPtr->insertPos;
-    } else if ((c == 's') && (strncmp(string, "sel.first", length) == 0)
-       && (length >= 5)) {
-   if (textInfoPtr->selItemPtr != itemPtr) {
-       Tcl_SetResult(interp, "selection isn't in item", TCL_STATIC);
-       return TCL_ERROR;
-   }
-   *indexPtr = textInfoPtr->selectFirst;
-    } else if ((c == 's') && (strncmp(string, "sel.last", length) == 0)
-       && (length >= 5)) {
-   if (textInfoPtr->selItemPtr != itemPtr) {
-       Tcl_SetResult(interp, "selection isn't in item", TCL_STATIC);
-       return TCL_ERROR;
-   }
-   *indexPtr = textInfoPtr->selectLast;
-    } else if (c == '@') {
-   double x, y;
-   double tmp;
-   char *end, *p;
+   if ((c == 'e') && (strncmp(string, "end", (unsigned) length) == 0)) {
+      *indexPtr = textPtr->numChars;
+   } else if ((c == 'i')
+      && (strncmp(string, "insert", (unsigned) length) == 0)) {
+      *indexPtr = textPtr->insertPos;
+   } else if ((c == 's') && (length >= 5)
+      && (strncmp(string, "sel.first", (unsigned) length) == 0)) {
+      if (textInfoPtr->selItemPtr != itemPtr) {
+         Tcl_SetObjResult(interp, Tcl_NewStringObj(
+            "selection isn't in item", -1));
+         Tcl_SetErrorCode(interp, "TK", "CANVAS", "UNSELECTED", NULL);
+         return TCL_ERROR;
+      }
+      *indexPtr = textInfoPtr->selectFirst;
+   } else if ((c == 's') && (length >= 5)
+      && (strncmp(string, "sel.last", (unsigned) length) == 0)) {
+      if (textInfoPtr->selItemPtr != itemPtr) {
+         Tcl_SetObjResult(interp, Tcl_NewStringObj(
+            "selection isn't in item", -1));
+         Tcl_SetErrorCode(interp, "TK", "CANVAS", "UNSELECTED", NULL);
+         return TCL_ERROR;
+      }
+      *indexPtr = textInfoPtr->selectLast;
+   } else if (c == '@') {
+      int x, y;
+      double tmp, c = textPtr->cosine, s = textPtr->sine;
+      char *end;
+      const char *p;
 
-   p = string+1;
-   tmp = strtod(p, &end);
-   if ((end == p) || (*end != ',')) {
-       goto badIndex;
-   }
-   x = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
-   p = end+1;
-   tmp = strtod(p, &end);
-   if ((end == p) || (*end != 0)) {
-       goto badIndex;
-   }
-   y = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
-
-    x+=canvasPtr->scrollX1;
-    y+=canvasPtr->scrollY1;
-
-   glTextRotateCoord(-textPtr->angle,textPtr->dx,textPtr->dy,&x,&y);
-   x-=textPtr->dx;
-   y-=textPtr->dy;
-
-   *indexPtr = Tk_PointToChar(textPtr->textLayout,x,y);
-
-    } else if (Tcl_GetIntFromObj((Tcl_Interp *)NULL, obj, indexPtr) == TCL_OK) {
-   if (*indexPtr < 0){
-       *indexPtr = 0;
-   } else if (*indexPtr > textPtr->numChars) {
-       *indexPtr = textPtr->numChars;
-   }
-    } else {
+      p = string+1;
+      tmp = strtod(p, &end);
+      if ((end == p) || (*end != ',')) {
+         goto badIndex;
+      }
+      x = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
+      p = end+1;
+      tmp = strtod(p, &end);
+      if ((end == p) || (*end != 0)) {
+         goto badIndex;
+      }
+      y = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
+      x += canvasPtr->scrollX1 - (int) textPtr->drawOrigin[0];
+      y += canvasPtr->scrollY1 - (int) textPtr->drawOrigin[1];
+      *indexPtr = Tk_PointToChar(textPtr->textLayout,
+         (int) (x*c - y*s), (int) (y*c + x*s));
+   } else if (Tcl_GetIntFromObj(NULL, obj, indexPtr) == TCL_OK) {
+      if (*indexPtr < 0) {
+         *indexPtr = 0;
+      } else if (*indexPtr > textPtr->numChars) {
+         *indexPtr = textPtr->numChars;
+      }
+   } else {
    /*
-    * Some of the paths here leave messages in the interp's result,
-    * so we have to clear it out before storing our own message.
-    */
+   * Some of the paths here leave messages in the interp's result, so we
+   * have to clear it out before storing our own message.
+   */
 
-   badIndex:
-   Tcl_SetResult(interp, (char *) NULL, TCL_STATIC);
-   Tcl_AppendResult(interp, "bad index \"", string, "\"",
-      (char *) NULL);
-   return TCL_ERROR;
-    }
-    return TCL_OK;
+      badIndex:
+      Tcl_SetObjResult(interp, Tcl_ObjPrintf("bad index \"%s\"", string));
+      Tcl_SetErrorCode(interp, "TK", "CANVAS", "ITEM_INDEX", "TEXT", NULL);
+      return TCL_ERROR;
+   }
+   return TCL_OK;
 }
 
 /*
@@ -1265,22 +1281,22 @@ static int GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
  *--------------------------------------------------------------
  */
 
-static void SetTextCursor(canvas, itemPtr, index)
-    Tk_Canvas canvas;      /* Record describing canvas widget. */
-    Tk_Item *itemPtr;      /* Text item in which cursor position is to
+static void SetTextCursor(
+    Tk_Canvas canvas,      /* Record describing canvas widget. */
+    Tk_Item *itemPtr,      /* Text item in which cursor position is to
              * be set. */
-    int index;       /* Character index of character just before
+    int index)       /* Character index of character just before
              * which cursor is to be positioned. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
 
-    if (index < 0) {
-   textPtr->insertPos = 0;
-    } else  if (index > textPtr->numChars) {
-   textPtr->insertPos = textPtr->numChars;
-    } else {
-   textPtr->insertPos = index;
-    }
+   if (index < 0) {
+      textPtr->insertPos = 0;
+   } else  if (index > textPtr->numChars) {
+      textPtr->insertPos = textPtr->numChars;
+   } else {
+      textPtr->insertPos = index;
+   }
 }
 
 /*
@@ -1304,39 +1320,39 @@ static void SetTextCursor(canvas, itemPtr, index)
  *--------------------------------------------------------------
  */
 
-static int GetSelText(canvas, itemPtr, offset, buffer, maxBytes)
-    Tk_Canvas canvas;      /* Canvas containing selection. */
-    Tk_Item *itemPtr;      /* Text item containing selection. */
-    int offset;         /* Byte offset within selection of first
+static int GetSelText(
+    Tk_Canvas canvas,      /* Canvas containing selection. */
+    Tk_Item *itemPtr,      /* Text item containing selection. */
+    int offset,         /* Byte offset within selection of first
              * character to be returned. */
-    char *buffer;    /* Location in which to place selection. */
-    int maxBytes;    /* Maximum number of bytes to place at
+    char *buffer,    /* Location in which to place selection. */
+    int maxBytes)    /* Maximum number of bytes to place at
              * buffer, not including terminating NULL
              * character. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
-    int byteCount;
-    char *text, *selStart, *selEnd;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
+   int byteCount;
+   char *text, *selStart, *selEnd;
+   Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
-    if ((textInfoPtr->selectFirst < 0) ||
-       (textInfoPtr->selectFirst > textInfoPtr->selectLast)) {
-   return 0;
-    }
-    text = textPtr->text;
-    selStart = Tcl_UtfAtIndex(text, textInfoPtr->selectFirst);
-    selEnd = Tcl_UtfAtIndex(selStart,
-       textInfoPtr->selectLast + 1 - textInfoPtr->selectFirst);
-    byteCount = selEnd - selStart - offset;
-    if (byteCount > maxBytes) {
-   byteCount = maxBytes;
-    }
-    if (byteCount <= 0) {
-   return 0;
-    }
-    memcpy(buffer, selStart + offset, (size_t) byteCount);
-    buffer[byteCount] = '\0';
-    return byteCount;
+   if ((textInfoPtr->selectFirst < 0) ||
+      (textInfoPtr->selectFirst > textInfoPtr->selectLast)) {
+      return 0;
+   }
+   text = textPtr->text;
+   selStart = Tcl_UtfAtIndex(text, textInfoPtr->selectFirst);
+   selEnd = Tcl_UtfAtIndex(selStart,
+      textInfoPtr->selectLast + 1 - textInfoPtr->selectFirst);
+   byteCount = selEnd - selStart - offset;
+   if (byteCount > maxBytes) {
+      byteCount = maxBytes;
+   }
+   if (byteCount <= 0) {
+      return 0;
+   }
+   memcpy(buffer, selStart + offset, (size_t) byteCount);
+   buffer[byteCount] = '\0';
+   return byteCount;
 }
 
 /*
@@ -1360,40 +1376,50 @@ static int GetSelText(canvas, itemPtr, offset, buffer, maxBytes)
  *--------------------------------------------------------------
  */
 
-int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,int angle,int x,int y,Tk_Anchor anchor,Tk_Justify justify) {
+int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,double angle,double x,double y,Tk_Anchor anchor,Tk_Justify justify) {
 
    int    dx,dy;
    char   buf[64];
    char   *dj;
-   TextLayout *layoutPtr;
-   Tk_FontMetrics tkm;
+   TextLayout     *layoutPtr;
+   Tcl_InterpState interpState;
+   Tk_FontMetrics  fm;
+   Tcl_Obj        *psObj;
 
    layoutPtr=(TextLayout*)layout;
-   Tk_GetFontMetrics(layoutPtr->tkfont,&tkm);
 
+   psObj = Tcl_NewObj();
+   interpState = Tcl_SaveInterpState(Interp,TCL_OK);
+
+   Tcl_ResetResult(Interp);
    if (layoutPtr->tkfont) {
       if (Tk_CanvasPsFont(Interp,canvas,layoutPtr->tkfont)!=TCL_OK) {
-         return(TCL_ERROR);
+         goto error;
       }
+      Tcl_AppendObjToObj(psObj,Tcl_GetObjResult(Interp));
    }
 
+//TODO
+//   if (prepass!=0) {
+//      goto done;
+//   }
+
+   Tcl_ResetResult(Interp);
    if (color) {
       if (Tk_CanvasPsColor(Interp,canvas,color) != TCL_OK) {
-         return(TCL_ERROR);
+         goto error;
       }
+      Tcl_AppendObjToObj(psObj,Tcl_GetObjResult(Interp));
    }
 
    if (stipple) {
-      Tcl_AppendResult(Interp,"/StippleText {\n    ",(char*)NULL);
-      if (glPostscriptStipple(Interp,stipple)!= TCL_OK) {
+      Tcl_ResetResult(Interp);
+      Tcl_AppendPrintfToObj(psObj,"/StippleText {\n    ",(char*)NULL);
+      if (glPostscriptStipple(Interp,psObj,stipple)!= TCL_OK) {
          return(TCL_ERROR);
       }
-      Tcl_AppendResult(Interp,"} bind def\n",(char*)NULL);
+      Tcl_AppendPrintfToObj(psObj,"} bind def\n",(char*)NULL);
    }
-
-   sprintf(buf,"gsave %.15g %.15g %d [\n",(double)x,Tk_CanvasPsY(canvas,y),-angle);
-   Tcl_AppendResult(Interp,buf,(char*)NULL);
-   Tk_TextLayoutToPostscript(Interp,layout);
 
    dx=dy=0;
    dj=NULL;
@@ -1416,48 +1442,62 @@ int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layo
       case TK_JUSTIFY_RIGHT:  dj="1";break;
    }
 
-   sprintf(buf,"] %d %g %g %s %s DrawRotatedText grestore\n",tkm.linespace,dx/-2.0,dy/2.0,dj,((stipple==NULL)?"false":"true"));
-   Tcl_AppendResult(Interp,buf,(char*)NULL);
+   Tk_GetFontMetrics(layoutPtr->tkfont,&fm);
 
-   return(TCL_OK);
+   Tcl_AppendPrintfToObj(psObj,"%.15g %.15g %.15g [\n",angle,x,Tk_CanvasPsY(canvas,y));
+   Tcl_ResetResult(Interp);
+   Tk_TextLayoutToPostscript(Interp,layout);
+   Tcl_AppendObjToObj(psObj,Tcl_GetObjResult(Interp));
+   Tcl_AppendPrintfToObj(psObj,"] %d %g %g %s %s DrawText\n",fm.linespace,dx/-2.0,dy/2.0,dj,((stipple==None)?"false":"true"));
+
+  done:
+    (void) Tcl_RestoreInterpState(Interp, interpState);
+    Tcl_AppendObjToObj(Tcl_GetObjResult(Interp), psObj);
+    Tcl_DecrRefCount(psObj);
+    return(TCL_OK);
+
+  error:
+    Tcl_DiscardInterpState(interpState);
+    Tcl_DecrRefCount(psObj);
+    return(TCL_ERROR);
 }
 
-static int glTextToPostscript(interp, canvas, itemPtr, prepass)
-    Tcl_Interp *interp;    /* Leave Postscript or error message here. */
-    Tk_Canvas canvas;      /* Information about overall canvas. */
-    Tk_Item *itemPtr;      /* Item for which Postscript is wanted. */
-    int prepass;     /* 1 means this is a prepass to collect
+static int glTextToPostscript(
+    Tcl_Interp *interp,    /* Leave Postscript or error message here. */
+    Tk_Canvas canvas,      /* Information about overall canvas. */
+    Tk_Item *itemPtr,      /* Item for which Postscript is wanted. */
+    int prepass)     /* 1 means this is a prepass to collect
              * font information; 0 means final Postscript
              * is being created. */
 {
-    glTextItem *textPtr = (glTextItem *) itemPtr;
-    XColor *color;
-    T_glBitmap *stipple;
-    Tk_State state = itemPtr->state;
+   glTextItem *textPtr = (glTextItem *) itemPtr;
+   XColor *color;
+   T_glBitmap *stipple;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-   state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    color = textPtr->color;
-    stipple = textPtr->stipple;
-    if (state == TK_STATE_HIDDEN || textPtr->color == NULL ||
-       textPtr->text == NULL || *textPtr->text == 0) {
-   return TCL_OK;
-    } else if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-   if (textPtr->activeColor) {
-       color = textPtr->activeColor;
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
    }
-   if (textPtr->activeStipple) {
-       stipple = textPtr->activeStipple;
+   color = textPtr->color;
+   stipple = textPtr->stipple;
+   if (state == TK_STATE_HIDDEN || textPtr->color == NULL ||
+      textPtr->text == NULL || *textPtr->text == 0) {
+      return TCL_OK;
+   } else if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (textPtr->activeColor) {
+         color = textPtr->activeColor;
+      }
+      if (textPtr->activeStipple) {
+         stipple = textPtr->activeStipple;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (textPtr->disabledColor) {
+         color = textPtr->disabledColor;
+      }
+      if (textPtr->disabledStipple) {
+         stipple = textPtr->disabledStipple;
+      }
    }
-    } else if (state==TK_STATE_DISABLED) {
-   if (textPtr->disabledColor) {
-       color = textPtr->disabledColor;
-   }
-   if (textPtr->disabledStipple) {
-       stipple = textPtr->disabledStipple;
-   }
-    }
 
    return(glPostscripTextLayout(interp,canvas,textPtr->textLayout,color,stipple,textPtr->angle,textPtr->x,textPtr->y,textPtr->anchor,textPtr->justify));
 }

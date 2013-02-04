@@ -681,7 +681,7 @@ void glBitmapFree(T_glBitmap *Bitmap) {
  *
  *----------------------------------------------------------------------------
 */
-int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    Tcl_HashEntry  *entry;
    int             new;
@@ -729,7 +729,7 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *V
  *
  *----------------------------------------------------------------------------
 */
-char *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+const char *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    T_glBitmap **pbitmap=(T_glBitmap**)(WidgRec+Offset);
    T_glBitmap *bitmap=*pbitmap;
@@ -795,6 +795,7 @@ void DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,
  *  <Bitmap>   : Donnees du bitmap
  *  <Width>    : Largeur du bitmap
  *  <Height>   : Hauteur du bitmap
+ *  <psObj>    : Postscript object
  *
  * Retour      :
  *  <TCL...>   : Code de retour TCL
@@ -803,7 +804,8 @@ void DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,
  *
  *----------------------------------------------------------------------------
 */
-int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Height) {
+
+int glPostscriptBitmap(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap,int Width,int Height) {
 
    unsigned char bm;
    char          string[8];
@@ -812,26 +814,43 @@ int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Heigh
    if (Width*Height/8>65536) {
       Tcl_ResetResult(Interp);
       Tcl_AppendResult(Interp,"can't generate Postscript for bitmaps bigger than 64 K",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    sz=BITWIDTH(Width);
 
-   Tcl_AppendResult(Interp,"<",(char*)NULL);
+   if (psObj) {
+      Tcl_AppendToObj(psObj,"<",-1);
+   } else {
+      Tcl_AppendResult(Interp,"<",(char*)NULL);
+   }
 
    for (y=0;y<Height;y++) {
       idx=y*sz;
       for (x=0;x<sz;x++) {
           bm=Bitmap->Data[idx+x];
           BITSWAP(bm);
-          sprintf(string,"%02x",bm);
-          Tcl_AppendResult(Interp,string,(char*)NULL);
+
+          if (psObj) {
+             Tcl_AppendPrintfToObj(psObj,"%02x",bm);
+          } else {
+             sprintf(string,"%02x",bm);
+             Tcl_AppendResult(Interp,string,(char*)NULL);
+          }
       }
-      Tcl_AppendResult(Interp,"\n", (char *) NULL);
+      if (psObj) {
+         Tcl_AppendToObj(psObj, "\n", -1);
+      } else {
+         Tcl_AppendResult(Interp,"\n",(char*)NULL);
+      }
    }
 
-   Tcl_AppendResult(Interp, ">", (char *) NULL);
-   return TCL_OK;
+   if (psObj) {
+      Tcl_AppendToObj(psObj, ">", -1);
+   } else {
+      Tcl_AppendResult(Interp,">",(char*)NULL);
+   }
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -843,6 +862,7 @@ int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Heigh
  * Parametres  :
  *  <Interp>   : Interpreteur Tcl/Tk
  *  <Bitmap>   : Donnees du bitmap
+ *  <psObj>    : Postscript object
  *
  * Retour      :
  *  <TCL...>   : Code de retour TCL
@@ -851,14 +871,23 @@ int glPostscriptBitmap(Tcl_Interp *Interp,T_glBitmap *Bitmap,int Width,int Heigh
  *
  *----------------------------------------------------------------------------
 */
-int glPostscriptStipple(Tcl_Interp *Interp,T_glBitmap *Bitmap) {
+int glPostscriptStipple(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap) {
 
-   Tcl_AppendResult(Interp,"32 32 ",(char*)NULL);
-   if (glPostscriptBitmap(Interp,Bitmap,32,32) != TCL_OK) {
-      return TCL_ERROR;
+   if (psObj) {
+      Tcl_AppendToObj(psObj,"32 32 ",-1);
+   } else {
+      Tcl_AppendResult(Interp,"32 32 ",(char*)NULL);
    }
-   Tcl_AppendResult(Interp," StippleFill\n",(char*)NULL);
-   return TCL_OK;
+   if (glPostscriptBitmap(Interp,psObj,Bitmap,32,32) != TCL_OK) {
+      return(TCL_ERROR);
+   }
+   if (psObj) {
+      Tcl_AppendToObj(psObj," StippleFill\n",-1);
+   } else {
+      Tcl_AppendResult(Interp," StippleFill\n",(char*)NULL);
+   }
+
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1631,10 +1660,10 @@ void glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int 
    if (Color)
       Tk_CanvasPsColor(Interp,Canvas,Color);
 
-   sprintf(txt,"gsave %i %i %i [[(",X1,Y1,Angle);
+   sprintf(txt,"gsave %i %i %i [[(",Angle,X1,Y1);
    Tcl_AppendResult(Interp,txt,(char*)NULL);
    Tcl_AppendResult(Interp,Text,(char*)NULL);
-   sprintf(txt,")]] 18 %1.1f %1.1f %1.1f false DrawRotatedText grestore\n",XOff,YOff,Justify);
+   sprintf(txt,")]] 18 %1.1f %1.1f %1.1f false DrawText grestore\n",XOff,YOff,Justify);
    Tcl_AppendResult(Interp,txt,(char*)NULL);
 }
 

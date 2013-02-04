@@ -1536,7 +1536,7 @@ glCanvasWidgetCmd(clientData, interp, argc, argv)
       }
       case CANV_POSTSCRIPT: {
    char **args = GetStringsFromObjs(argc, argv);
-   result = TkglCanvPostscriptCmd(canvasPtr, interp, argc, args);
+   result = TkCanvPostscriptCmd(canvasPtr, interp, argc, args);
    if (args) ckfree((char *) args);
    break;
       }

@@ -9,7 +9,7 @@ include ../Makefile.$(ARCH)
 INCLUDES   = $(X_INCLUDE) $(INCLUDE)
 CFLAGS     = $(CDEBUGFLAGS) $(CCOPTIONS) $(INCLUDES) $(PROTO) $(DEFINES)
 LDFLAGS    = $(LDDEBUGFLAGS)
-LIBS       = -L$(LIB_PATH) -leerUtils -lGL -lGLU  -lTclData -lTkglCanvas -lgdb -lc -lpthread
+LIBS       = -L$(LIB_PATH) -leerUtils -lGL -lGLU  -lTclData -lTkglCanvas -lgdb -lc -lpthread 
 OBJS       = tkCanvVP.o Projection.o ProjCam.o ProjAzimuth.o ProjCylin.o ProjOrtho.o ProjGrid.o GeoData.o tkCanvColorbar.o tkCanvGraph.o tkGraphTephi.o tkGraphAxis.o tkGraphItem.o
 
 # Start of Makefile

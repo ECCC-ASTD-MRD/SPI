@@ -55,7 +55,7 @@ typedef struct ProjCam {
 } ProjCam;
 
 
-ProjCam* ProjCam_Get(char* Name);
+ProjCam* ProjCam_Get(const char* Name);
 
 int  ProjCam_Init(Tcl_Interp *Interp);
 void ProjCam_CircleFrom(ProjCam *Cam,double ThetaXY,double ThetaYZ,double Delta);

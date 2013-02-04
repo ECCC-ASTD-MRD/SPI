@@ -64,18 +64,22 @@ typedef struct glTextItem  {
    XColor *disabledColor;  /* Color for text. */
    Tk_Font tkfont;         /* Font for drawing text. */
    Tk_Justify justify;     /* Justification mode for text. */
-   char *text;                     /* Text for item (malloc-ed). */
-   int width;                      /* Width of lines for word-wrap, pixels. Zero means no word-wrap. */
-   int alpha;                      /* Text alpha value */
-   int angle;                      /* Angle of text */
+   char *text;             /* Text for item (malloc-ed). */
+   int width;              /* Width of lines for word-wrap, pixels. Zero means no word-wrap. */
+   int underline;          /* Index of character to put underline beneath or -1 for no underlining. */
+   int alpha;              /* Text alpha value */
+   double angle;           /* Angle of text */
 
    /* Fields whose values are derived from the current values of the configuration settings above. */
 
    int numChars;     /* Length of text in characters. */
    int numBytes;     /* Length of text in bytes. */
    Tk_TextLayout textLayout;     /* Cached text layout information. */
-   int leftEdge;                 /* Pixel location of the left edge of the text item; where the left border of the text layout is drawn. */
-   int rightEdge;                /* Pixel just to right of right edge of  area of text item.  Used for selecting up to end of line. */
+   int actualWidth;    /* Width of text as computed. Used to make selections of wrapped text display right. */
+   double drawOrigin[2];  /* Where we start drawing from. */
+   double sine;     /* Sine of angle field. */
+   double cosine;      /* Cosine of angle field. */
+
 
    T_glBitmap *stipple;              /* Stipple bitmap for filling item. */
    T_glBitmap *activeStipple;        /* Stipple bitmap for filling item if state is active. */

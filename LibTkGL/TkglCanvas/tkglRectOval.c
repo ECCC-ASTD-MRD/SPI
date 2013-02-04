@@ -13,9 +13,7 @@
  * RCS: @(#) $Id: tkRectOval.c,v 1.7 2000/04/19 22:20:45 ericm Exp $
  */
 
-#include <stdio.h>
 #include "tkInt.h"
-#include "tkPort.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each rectangle/oval item. */
@@ -32,105 +30,63 @@ typedef struct glRectOvalItem  {
    XColor *disabledFillColor;           /* Color for filling rectangle/oval if state is disabled. */
 
    T_glBitmap *fillStipple;             /* Stipple bitmap for filling item. */
-   T_glBitmap *activeStipple;           /* Stipple bitmap for filling item if state is active. */
-   T_glBitmap *disabledStipple;         /* Stipple bitmap for filling item if state is disabled. */
+   T_glBitmap *activeFillStipple;       /* Stipple bitmap for filling item if state is active. */
+   T_glBitmap *disabledFillStipple;     /* Stipple bitmap for filling item if state is disabled. */
    int alpha;                           /* Transparency factor */
 } glRectOvalItem;
 
 /* Information used for parsing configuration specs */
 
-static Tk_CustomOption bitmapOption = { (Tk_OptionParseProc*)glBitmapParseProc,glBitmapPrintProc,(ClientData)NULL };
-static Tk_CustomOption stateOption  = { (Tk_OptionParseProc*)TkStateParseProc,TkStatePrintProc,(ClientData)2 };
-static Tk_CustomOption tagsOption   = { (Tk_OptionParseProc*)Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
-static Tk_CustomOption dashOption   = { (Tk_OptionParseProc*)TkCanvasDashParseProc,TkCanvasDashPrintProc,(ClientData)NULL };
-static Tk_CustomOption offsetOption = { (Tk_OptionParseProc*)TkOffsetParseProc,TkOffsetPrintProc,(ClientData)TK_OFFSET_RELATIVE };
-static Tk_CustomOption pixelOption  = { (Tk_OptionParseProc*)TkPixelParseProc,TkPixelPrintProc,(ClientData)NULL };
+static const Tk_CustomOption bitmapOption = { glBitmapParseProc,glBitmapPrintProc,NULL };
+static const Tk_CustomOption stateOption  = { TkStateParseProc,TkStatePrintProc,INT2PTR(2) };
+static const Tk_CustomOption tagsOption   = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
+static const Tk_CustomOption dashOption   = { TkCanvasDashParseProc,TkCanvasDashPrintProc,NULL };
+static const Tk_CustomOption offsetOption = { TkOffsetParseProc,TkOffsetPrintProc,INT2PTR(TK_OFFSET_RELATIVE) };
+static const Tk_CustomOption pixelOption  = { TkPixelParseProc,TkPixelPrintProc,NULL };
 
-static Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_CUSTOM, "-activedash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.activeDash),
-	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_COLOR, "-activefill", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, activeFillColor),
-	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-activeoutline", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.activeColor),
-	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_BITMAP, "-activeoutlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.activeStipple),
-	TK_CONFIG_NULL_OK},
-   { TK_CONFIG_CUSTOM,"-activestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glRectOvalItem,activeStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-    {TK_CONFIG_CUSTOM, "-activewidth", (char *) NULL, (char *) NULL,
-	"0.0", Tk_Offset(glRectOvalItem, outline.activeWidth),
-	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_CUSTOM, "-dash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.dash),
-	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_PIXELS, "-dashoffset", (char *) NULL, (char *) NULL,
-	"0", Tk_Offset(glRectOvalItem, outline.offset),
-	TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_CUSTOM, "-disableddash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.disabledDash),
-	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_COLOR, "-disabledfill", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, disabledFillColor),
-	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-disabledoutline", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.disabledColor),
-	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_BITMAP, "-disabledoutlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.disabledStipple),
-	TK_CONFIG_NULL_OK},
-   { TK_CONFIG_CUSTOM,"-disabledstipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glRectOvalItem,disabledStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-    {TK_CONFIG_PIXELS, "-disabledwidth", (char *) NULL, (char *) NULL,
-	"0.0", Tk_Offset(glRectOvalItem, outline.disabledWidth),
-	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, fillColor), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(glRectOvalItem, tsoffset),
-	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
-    {TK_CONFIG_COLOR, "-outline", (char *) NULL, (char *) NULL,
-	"black", Tk_Offset(glRectOvalItem, outline.color), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-outlineoffset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(glRectOvalItem, outline.tsoffset),
-	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
-    {TK_CONFIG_BITMAP, "-outlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(glRectOvalItem, outline.stipple),
-	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-state", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(Tk_Item, state),TK_CONFIG_NULL_OK,
-	&stateOption},
-   { TK_CONFIG_CUSTOM,"-stipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glRectOvalItem,fillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-    {TK_CONFIG_CUSTOM, "-tags", (char *) NULL, (char *) NULL,
-	(char *) NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
-    {TK_CONFIG_CUSTOM, "-width", (char *) NULL, (char *) NULL,
-	"1.0", Tk_Offset(glRectOvalItem, outline.width),
-	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,
-	"100", Tk_Offset(glRectOvalItem,alpha), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
-	(char *) NULL, 0, 0}
+static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_CUSTOM, "-activedash", NULL, NULL, NULL, Tk_Offset(glRectOvalItem,outline.activeDash), TK_CONFIG_NULL_OK,&dashOption },
+   { TK_CONFIG_COLOR, "-activefill", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, activeFillColor), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-activeoutline", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.activeColor), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_BITMAP, "-activeoutlinestipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.activeStipple), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-activestipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem,activeFillStipple), TK_CONFIG_NULL_OK,&bitmapOption },
+   { TK_CONFIG_CUSTOM, "-activewidth", NULL, NULL, "0.0", Tk_Offset(glRectOvalItem, outline.activeWidth), TK_CONFIG_DONT_SET_DEFAULT, &pixelOption },
+   { TK_CONFIG_CUSTOM, "-dash", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.dash), TK_CONFIG_NULL_OK, &dashOption },
+   { TK_CONFIG_PIXELS, "-dashoffset", NULL, NULL, "0", Tk_Offset(glRectOvalItem, outline.offset), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM, "-disableddash", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.disabledDash), TK_CONFIG_NULL_OK, &dashOption },
+   { TK_CONFIG_COLOR, "-disabledfill", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, disabledFillColor), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-disabledoutline", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.disabledColor), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_BITMAP, "-disabledoutlinestipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.disabledStipple), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-disabledstipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem,disabledFillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
+   { TK_CONFIG_PIXELS, "-disabledwidth", NULL, NULL, "0.0", Tk_Offset(glRectOvalItem, outline.disabledWidth), TK_CONFIG_DONT_SET_DEFAULT, &pixelOption },
+   { TK_CONFIG_COLOR, "-fill", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, fillColor), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-offset", NULL, NULL, "0,0", Tk_Offset(glRectOvalItem, tsoffset), TK_CONFIG_DONT_SET_DEFAULT, &offsetOption },
+   { TK_CONFIG_COLOR, "-outline", NULL, NULL, "black", Tk_Offset(glRectOvalItem, outline.color), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-outlineoffset", NULL, NULL, "0,0", Tk_Offset(glRectOvalItem, outline.tsoffset), TK_CONFIG_DONT_SET_DEFAULT, &offsetOption },
+   { TK_CONFIG_BITMAP, "-outlinestipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem, outline.stipple), TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-state", NULL, NULL, NULL, Tk_Offset(Tk_Item, state),TK_CONFIG_NULL_OK, &stateOption },
+   { TK_CONFIG_CUSTOM,"-stipple", NULL, NULL, NULL, Tk_Offset(glRectOvalItem,fillStipple), TK_CONFIG_NULL_OK, &bitmapOption },
+   { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL, 0, TK_CONFIG_NULL_OK, &tagsOption },
+   { TK_CONFIG_CUSTOM, "-width", NULL, NULL, "1.0", Tk_Offset(glRectOvalItem, outline.width), TK_CONFIG_DONT_SET_DEFAULT, &pixelOption },
+   { TK_CONFIG_INT, "-transparency", NULL, NULL, "100", Tk_Offset(glRectOvalItem,alpha), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0 }
 };
 
 /* Prototypes for procedures defined in this file */
 
-static void   glComputeRectOvalBbox _ANSI_ARGS_((Tk_Canvas canvas,glRectOvalItem *rectOvalPtr));
-static int    glConfigureRectOval _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[],int flags));
-static int    glCreateRectOval _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static void   glDeleteRectOval _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display));
-static void   glDisplayRectOval _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height));
-static int    glOvalToArea _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *areaPtr));
-static double glOvalToPoint _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr));
-static int    glRectOvalCoords _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static int    glRectOvalToPostscript _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int prepass));
-static int    glRectToArea _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *areaPtr));
-static double glRectToPoint _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr));
-static void   glScaleRectOval _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY));
-static void   glTranslateRectOval _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY));
+static void   glComputeRectOvalBbox (Tk_Canvas canvas,glRectOvalItem *rectOvalPtr);
+static int    glConfigureRectOval (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *const objv[],int flags);
+static int    glCreateRectOval (Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int argc,Tcl_Obj *const objv[]);
+static void   glDeleteRectOval (Tk_Canvas canvas,Tk_Item *itemPtr,Display *display);
+static void   glDisplayRectOval (Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height);
+static int    glOvalToArea (Tk_Canvas canvas,Tk_Item *itemPtr,double *areaPtr);
+static double glOvalToPoint (Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr);
+static int    glRectOvalCoords (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *const objv[]);
+static int    glRectOvalToPostscript (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int prepass);
+static int    glRectToArea (Tk_Canvas canvas,Tk_Item *itemPtr,double *areaPtr);
+static double glRectToPoint (Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr);
+static void   glScaleRectOval (Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY);
+static void   glTranslateRectOval (Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY);
 
 /*
  * The structures below defines the rectangle and oval item types
@@ -138,49 +94,49 @@ static void   glTranslateRectOval _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr
  */
 
 Tk_ItemType tkglRectangleType = {
-   "rectangle",             /* name */
-    sizeof(glRectOvalItem), /* itemSize */
-    glCreateRectOval,         /* createProc */
-    configSpecs,            /* configSpecs */
-    glConfigureRectOval,      /* configureProc */
-    glRectOvalCoords,         /* coordProc */
-    glDeleteRectOval,       /* deleteProc */
-    glDisplayRectOval,      /* displayProc */
-    TK_CONFIG_OBJS,         /* flags */
-    glRectToPoint,            /* pointProc */
-    glRectToArea,             /* areaProc */
-    glRectOvalToPostscript,   /* postscriptProc */
-    glScaleRectOval,          /* scaleProc */
-    glTranslateRectOval,      /* translateProc */
-    (Tk_ItemIndexProc *) NULL,     /* indexProc */
-    (Tk_ItemCursorProc *) NULL,    /* icursorProc */
-    (Tk_ItemSelectionProc *) NULL, /* selectionProc */
-    (Tk_ItemInsertProc *) NULL,    /* insertProc */
-    (Tk_ItemDCharsProc *) NULL,    /* dTextProc */
-    (Tk_ItemType *) NULL,          /* nextPtr */
+   "rectangle",                 /* name */
+   sizeof(glRectOvalItem),      /* itemSize */
+   glCreateRectOval,            /* createProc */
+   configSpecs,                 /* configSpecs */
+   glConfigureRectOval,         /* configureProc */
+   glRectOvalCoords,            /* coordProc */
+   glDeleteRectOval,            /* deleteProc */
+   glDisplayRectOval,           /* displayProc */
+   TK_CONFIG_OBJS,              /* flags */
+   glRectToPoint,               /* pointProc */
+   glRectToArea,                /* areaProc */
+   glRectOvalToPostscript,      /* postscriptProc */
+   glScaleRectOval,             /* scaleProc */
+   glTranslateRectOval,         /* translateProc */
+   NULL,                        /* indexProc */
+   NULL,                        /* icursorProc */
+   NULL,                        /* selectionProc */
+   NULL,                        /* insertProc */
+   NULL,                        /* dTextProc */
+   NULL,                        /* nextPtr */
 };
 
 Tk_ItemType tkglOvalType = {
-   "oval",                    /* name */
-   sizeof(glRectOvalItem),    /* itemSize */
+   "oval",                      /* name */
+   sizeof(glRectOvalItem),      /* itemSize */
    glCreateRectOval,            /* createProc */
-   configSpecs,               /* configSpecs */
+   configSpecs,                 /* configSpecs */
    glConfigureRectOval,         /* configureProc */
    glRectOvalCoords,            /* coordProc */
-   glDeleteRectOval,          /* deleteProc */
-   glDisplayRectOval,         /* displayProc */
-   TK_CONFIG_OBJS,            /* flags */
+   glDeleteRectOval,            /* deleteProc */
+   glDisplayRectOval,           /* displayProc */
+   TK_CONFIG_OBJS,              /* flags */
    glOvalToPoint,               /* pointProc */
    glOvalToArea,                /* areaProc */
    glRectOvalToPostscript,      /* postscriptProc */
    glScaleRectOval,             /* scaleProc */
    glTranslateRectOval,         /* translateProc */
-   (Tk_ItemIndexProc *) NULL,      /* indexProc */
-   (Tk_ItemCursorProc *) NULL,     /* cursorProc */
-   (Tk_ItemSelectionProc *) NULL,  /* selectionProc */
-   (Tk_ItemInsertProc *) NULL,     /* insertProc */
-   (Tk_ItemDCharsProc *) NULL,     /* dTextProc */
-   (Tk_ItemType *) NULL,           /* nextPtr */
+   NULL,                        /* indexProc */
+   NULL,                        /* cursorProc */
+   NULL,                        /* selectionProc */
+   NULL,                        /* insertProc */
+   NULL,                        /* dTextProc */
+   NULL,                        /* nextPtr */
 };
 
 /*
@@ -203,33 +159,18 @@ Tk_ItemType tkglOvalType = {
  *--------------------------------------------------------------
  */
 
-static int glCreateRectOval(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;			/* For error reporting. */
-    Tk_Canvas canvas;			/* Canvas to hold new item. */
-    Tk_Item *itemPtr;			/* Record to hold new item;  header
-					 * has been initialized by caller. */
-    int argc;				/* Number of arguments in argv. */
-    Tcl_Obj *CONST argv[];		/* Arguments describing rectangle. */
+static int glCreateRectOval(
+   Tcl_Interp *interp,    /* For error reporting. */
+   Tk_Canvas canvas,      /* Canvas to hold new item. */
+   Tk_Item *itemPtr,      /* Record to hold new item; header has been * initialized by caller. */
+   int objc,              /* Number of arguments in objv. */
+   Tcl_Obj *const objv[]) /* Arguments describing rectangle. */
 {
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    int i;
 
-
-   if (argc==1) {
-      i = 1;
-   } else {
-      char *arg = Tcl_GetStringFromObj(argv[1],NULL);
-      if ((argc>1) && (arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
-         i = 1;
-      } else {
-         i = 4;
-      }
-   }
-
-   if (argc < i) {
-      Tcl_AppendResult(interp,"wrong # args: should be \"",Tk_PathName(Tk_CanvasTkwin(canvas))," create ",
-         itemPtr->typePtr->name," x1 y1 x2 y2 ?options?\"",(char*)NULL);
-      return TCL_ERROR;
+   if (objc == 0) {
+      Tcl_Panic("canvas did not pass any coords");
    }
 
    /* Carry out initialization that is needed in order to clean up after errors
@@ -243,15 +184,23 @@ static int glCreateRectOval(interp, canvas, itemPtr, argc, argv)
    rectOvalPtr->activeFillColor     = NULL;
    rectOvalPtr->disabledFillColor   = NULL;
    rectOvalPtr->fillStipple         = NULL;
-   rectOvalPtr->activeStipple       = NULL;
-   rectOvalPtr->disabledStipple     = NULL;
+   rectOvalPtr->activeFillStipple       = NULL;
+   rectOvalPtr->disabledFillStipple     = NULL;
    rectOvalPtr->alpha               = 100;
 
    /* Process the arguments to fill in the item record. */
 
-   if ((glRectOvalCoords(interp,canvas,itemPtr,i,argv) == TCL_OK)) {
-      if (glConfigureRectOval(interp,canvas,itemPtr,argc-i,argv+i,0) == TCL_OK) {
-	 return TCL_OK;
+   for (i = 1; i < objc; i++) {
+      const char *arg = Tcl_GetString(objv[i]);
+
+      if ((arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
+         break;
+      }
+   }
+
+   if ((glRectOvalCoords(interp,canvas,itemPtr,i,objv) == TCL_OK)) {
+      if (glConfigureRectOval(interp,canvas,itemPtr,objc-i,objv+i,0) == TCL_OK) {
+         return TCL_OK;
       }
    }
 
@@ -277,61 +226,70 @@ static int glCreateRectOval(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glRectOvalCoords(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;			/* Used for error reporting. */
-    Tk_Canvas canvas;			/* Canvas containing item. */
-    Tk_Item *itemPtr;			/* Item whose coordinates are to be
-					 * read or modified. */
-    int argc;				/* Number of coordinates supplied in
-					 * argv. */
-    Tcl_Obj *CONST argv[];		/* Array of coordinates: x1, y1,
-					 * x2, y2, ... */
+static int glRectOvalCoords(
+   Tcl_Interp *interp,    /* Used for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item whose coordinates are to be read or modified. */
+   int objc,              /* Number of coordinates supplied in objv. */
+   Tcl_Obj *const objv[]) /* Array of coordinates: x1,y1,x2,y2,... */
 {
-    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
+   glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
 
-    if (argc == 0) {
-	Tcl_Obj *obj = Tcl_NewObj();
-	Tcl_Obj *subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[0]);
-	Tcl_ListObjAppendElement(interp, obj, subobj);
-	subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[1]);
-	Tcl_ListObjAppendElement(interp, obj, subobj);
-	subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[2]);
-	Tcl_ListObjAppendElement(interp, obj, subobj);
-	subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[3]);
-	Tcl_ListObjAppendElement(interp, obj, subobj);
-	Tcl_SetObjResult(interp, obj);
-    } else if ((argc == 1)||(argc == 4)) {
- 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, argv[0], &argc,
-		    (Tcl_Obj ***) &argv) != TCL_OK) {
-		return TCL_ERROR;
-	    } else if (argc != 4) {
-		char buf[64 + TCL_INTEGER_SPACE];
+   /*
+   * If no coordinates, return the current coordinates (i.e. bounding box).
+   */
 
-		sprintf(buf, "wrong # coordinates: expected 0 or 4, got %d", argc);
-		Tcl_SetResult(interp, buf, TCL_VOLATILE);
-		return TCL_ERROR;
-	    }
-	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, argv[0],
- 		    &rectOvalPtr->bbox[0]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, argv[1],
-		    &rectOvalPtr->bbox[1]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, argv[2],
-			&rectOvalPtr->bbox[2]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, argv[3],
-			&rectOvalPtr->bbox[3]) != TCL_OK)) {
-	    return TCL_ERROR;
-	}
-	glComputeRectOvalBbox(canvas, rectOvalPtr);
-    } else {
-	char buf[64 + TCL_INTEGER_SPACE];
+   if (objc == 0) {
+      Tcl_Obj *bbox[4];
 
-	sprintf(buf, "wrong # coordinates: expected 0 or 4, got %d", argc);
-	Tcl_SetResult(interp, buf, TCL_VOLATILE);
-	return TCL_ERROR;
-    }
-    return TCL_OK;
+      bbox[0] = Tcl_NewDoubleObj(rectOvalPtr->bbox[0]);
+      bbox[1] = Tcl_NewDoubleObj(rectOvalPtr->bbox[1]);
+      bbox[2] = Tcl_NewDoubleObj(rectOvalPtr->bbox[2]);
+      bbox[3] = Tcl_NewDoubleObj(rectOvalPtr->bbox[3]);
+      Tcl_SetObjResult(interp, Tcl_NewListObj(4, bbox));
+      return TCL_OK;
+   }
+
+   /*
+   * If one "coordinate", treat as list of coordinates.
+   */
+
+   if (objc == 1) {
+      if (Tcl_ListObjGetElements(interp, objv[0], &objc,
+            (Tcl_Obj ***) &objv) != TCL_OK) {
+         return TCL_ERROR;
+      }
+   }
+
+   /*
+   * Better have four coordinates now. Spit out an error message otherwise.
+   */
+
+   if (objc != 4) {
+      Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+         "wrong # coordinates: expected 0 or 4, got %d", objc));
+      Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS",
+         (rectOvalPtr->header.typePtr == &tkRectangleType
+            ? "RECTANGLE" : "OVAL"), NULL);
+      return TCL_ERROR;
+   }
+
+   /*
+   * Parse the coordinates and update our bounding box.
+   */
+
+   if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0],
+      &rectOvalPtr->bbox[0]) != TCL_OK)
+      || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
+      &rectOvalPtr->bbox[1]) != TCL_OK)
+      || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[2],
+      &rectOvalPtr->bbox[2]) != TCL_OK)
+      || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[3],
+      &rectOvalPtr->bbox[3]) != TCL_OK)) {
+      return TCL_ERROR;
+   }
+   glComputeRectOvalBbox(canvas, rectOvalPtr);
+   return TCL_OK;
 }
 
 /*
@@ -354,13 +312,13 @@ static int glRectOvalCoords(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
-    Tcl_Interp *interp;		/* Used for error reporting. */
-    Tk_Canvas canvas;		/* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;		/* Rectangle item to reconfigure. */
-    int argc;			/* Number of elements in argv.  */
-    Tcl_Obj *CONST argv[];	/* Arguments describing things to configure. */
-    int flags;			/* Flags to pass to Tk_ConfigureWidget. */
+static int glConfigureRectOval(
+   Tcl_Interp *interp,    /* Used for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+   Tk_Item *itemPtr,      /* Rectangle item to reconfigure. */
+   int objc,              /* Number of elements in objv. */
+   Tcl_Obj *const objv[], /* Arguments describing things to configure. */
+   int flags)             /* Flags to pass to Tk_ConfigureWidget. */
 {
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    Tk_Window tkwin;
@@ -371,7 +329,7 @@ static int glConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
 
    tkwin = Tk_CanvasTkwin(canvas);
 
-   if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, (char **) argv,(char *) rectOvalPtr, flags|TK_CONFIG_OBJS) != TCL_OK)
+   if (Tk_ConfigureWidget(interp, tkwin, configSpecs, objc, (const char **)objv,(char *) rectOvalPtr, flags|TK_CONFIG_OBJS) != TCL_OK)
       return TCL_ERROR;
 
    state = itemPtr->state;  /* Get item state */
@@ -380,78 +338,79 @@ static int glConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
 
    if (rectOvalPtr->outline.activeWidth > rectOvalPtr->outline.width ||
       rectOvalPtr->outline.activeDash.number != 0 ||
-	   rectOvalPtr->outline.activeColor != NULL ||
-	   rectOvalPtr->outline.activeStipple != None ||
-	   rectOvalPtr->activeFillColor != NULL ||
-	   rectOvalPtr->activeStipple != NULL) {
-	itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
-    } else {
-	itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
-    }
+      rectOvalPtr->outline.activeColor != NULL ||
+      rectOvalPtr->outline.activeStipple != None ||
+      rectOvalPtr->activeFillColor != NULL ||
+      rectOvalPtr->activeFillStipple != NULL) {
+      itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
+   } else {
+      itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
+   }
 
-    tsoffset = &rectOvalPtr->outline.tsoffset;
-    flags = tsoffset->flags;
-    if (flags & TK_OFFSET_LEFT) {
-	tsoffset->xoffset = (int) (rectOvalPtr->bbox[0] + 0.5);
-    } else if (flags & TK_OFFSET_CENTER) {
-	tsoffset->xoffset = (int) ((rectOvalPtr->bbox[0]+rectOvalPtr->bbox[2]+1)/2);
-    } else if (flags & TK_OFFSET_RIGHT) {
-	tsoffset->xoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
-    }
-    if (flags & TK_OFFSET_TOP) {
-	tsoffset->yoffset = (int) (rectOvalPtr->bbox[1] + 0.5);
-    } else if (flags & TK_OFFSET_MIDDLE) {
-	tsoffset->yoffset = (int) ((rectOvalPtr->bbox[1]+rectOvalPtr->bbox[3]+1)/2);
-    } else if (flags & TK_OFFSET_BOTTOM) {
-	tsoffset->yoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
-    }
+   tsoffset = &rectOvalPtr->outline.tsoffset;
+      flags = tsoffset->flags;
+   if (flags & TK_OFFSET_LEFT) {
+      tsoffset->xoffset = (int) (rectOvalPtr->bbox[0] + 0.5);
+   } else if (flags & TK_OFFSET_CENTER) {
+      tsoffset->xoffset = (int) ((rectOvalPtr->bbox[0]+rectOvalPtr->bbox[2]+1)/2);
+   } else if (flags & TK_OFFSET_RIGHT) {
+      tsoffset->xoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
+   }
+   if (flags & TK_OFFSET_TOP) {
+      tsoffset->yoffset = (int) (rectOvalPtr->bbox[1] + 0.5);
+   } else if (flags & TK_OFFSET_MIDDLE) {
+      tsoffset->yoffset = (int) ((rectOvalPtr->bbox[1]+rectOvalPtr->bbox[3]+1)/2);
+   } else if (flags & TK_OFFSET_BOTTOM) {
+      tsoffset->yoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
+   }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    if (state==TK_STATE_HIDDEN) {
-	glComputeRectOvalBbox(canvas, rectOvalPtr);
-	return TCL_OK;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
+   if (state==TK_STATE_HIDDEN) {
+      glComputeRectOvalBbox(canvas, rectOvalPtr);
+      return TCL_OK;
+   }
 
-    color = rectOvalPtr->fillColor;
-    stipple = rectOvalPtr->fillStipple;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (rectOvalPtr->activeFillColor!=NULL) {
-	    color = rectOvalPtr->activeFillColor;
-	}
-	if (rectOvalPtr->activeStipple) {
-	    stipple = rectOvalPtr->activeStipple;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (rectOvalPtr->disabledFillColor!=NULL) {
-	    color = rectOvalPtr->disabledFillColor;
-	}
-	if (rectOvalPtr->disabledStipple) {
-	    stipple = rectOvalPtr->disabledStipple;
-	}
-    }
+   color = rectOvalPtr->fillColor;
+   stipple = rectOvalPtr->fillStipple;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (rectOvalPtr->activeFillColor!=NULL) {
+         color = rectOvalPtr->activeFillColor;
+      }
+      if (rectOvalPtr->activeFillStipple) {
+         stipple = rectOvalPtr->activeFillStipple;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (rectOvalPtr->disabledFillColor!=NULL) {
+         color = rectOvalPtr->disabledFillColor;
+      }
+      if (rectOvalPtr->disabledFillStipple) {
+         stipple = rectOvalPtr->disabledFillStipple;
+      }
+   }
 
-    tsoffset = &rectOvalPtr->tsoffset;
-    flags = tsoffset->flags;
-    if (flags & TK_OFFSET_LEFT) {
-	tsoffset->xoffset = (int) (rectOvalPtr->bbox[0] + 0.5);
-    } else if (flags & TK_OFFSET_CENTER) {
-	tsoffset->xoffset = (int) ((rectOvalPtr->bbox[0]+rectOvalPtr->bbox[2]+1)/2);
-    } else if (flags & TK_OFFSET_RIGHT) {
-	tsoffset->xoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
-    }
-    if (flags & TK_OFFSET_TOP) {
-	tsoffset->yoffset = (int) (rectOvalPtr->bbox[1] + 0.5);
-    } else if (flags & TK_OFFSET_MIDDLE) {
-	tsoffset->yoffset = (int) ((rectOvalPtr->bbox[1]+rectOvalPtr->bbox[3]+1)/2);
-    } else if (flags & TK_OFFSET_BOTTOM) {
-	tsoffset->yoffset = (int) (rectOvalPtr->bbox[3] + 0.5);
-    }
+   tsoffset = &rectOvalPtr->tsoffset;
+   flags = tsoffset->flags;
+   if (flags & TK_OFFSET_LEFT) {
+      tsoffset->xoffset = (int) (rectOvalPtr->bbox[0] + 0.5);
+   } else if (flags & TK_OFFSET_CENTER) {
+      tsoffset->xoffset = (int) ((rectOvalPtr->bbox[0]+rectOvalPtr->bbox[2]+1)/2);
+   } else if (flags & TK_OFFSET_RIGHT) {
+      tsoffset->xoffset = (int) (rectOvalPtr->bbox[2] + 0.5);
+   }
+   if (flags & TK_OFFSET_TOP) {
+      tsoffset->yoffset = (int) (rectOvalPtr->bbox[1] + 0.5);
+   } else if (flags & TK_OFFSET_MIDDLE) {
+      tsoffset->yoffset = (int) ((rectOvalPtr->bbox[1]+rectOvalPtr->bbox[3]+1)/2);
+   } else if (flags & TK_OFFSET_BOTTOM) {
+      tsoffset->yoffset = (int) (rectOvalPtr->bbox[3] + 0.5);
+   }
 
    rectOvalPtr->alpha=rectOvalPtr->alpha<0?0:rectOvalPtr->alpha>100?100:rectOvalPtr->alpha;
 
    glComputeRectOvalBbox(canvas, rectOvalPtr);
+
    return TCL_OK;
 }
 
@@ -472,13 +431,12 @@ static int glConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
  *--------------------------------------------------------------
  */
 
-static void glDeleteRectOval(canvas, itemPtr, display)
-    Tk_Canvas canvas;			/* Info about overall widget. */
-    Tk_Item *itemPtr;			/* Item that is being deleted. */
-    Display *display;			/* Display containing window for
-					 * canvas. */
+static void glDeleteRectOval(
+   Tk_Canvas canvas,      /* Info about overall widget. */
+   Tk_Item *itemPtr,      /* Item that is being deleted. */
+   Display *display)      /* Display containing window for canvas. */
 {
-    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
+   glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
 
    Tk_DeleteOutline(display, &(rectOvalPtr->outline));
    if (rectOvalPtr->fillColor != NULL) {
@@ -511,93 +469,87 @@ static void glDeleteRectOval(canvas, itemPtr, display)
  *--------------------------------------------------------------
  */
 
-static void glComputeRectOvalBbox(canvas, rectOvalPtr)
-    Tk_Canvas canvas;			/* Canvas that contains item. */
-    glRectOvalItem *rectOvalPtr;		/* Item whose bbox is to be
-					 * recomputed. */
+static void glComputeRectOvalBbox(
+   Tk_Canvas canvas,            /* Canvas that contains item. */
+   glRectOvalItem *rectOvalPtr)   /* Item whose bbox is to be recomputed. */
 {
-    int bloat, tmp;
-    double dtmp, width;
-    Tk_State state = rectOvalPtr->header.state;
+   int bloat, tmp;
+   double dtmp, width;
+   Tk_State state = rectOvalPtr->header.state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = rectOvalPtr->outline.width;
-    if (state==TK_STATE_HIDDEN) {
-	rectOvalPtr->header.x1 = rectOvalPtr->header.y1 =
-	rectOvalPtr->header.x2 = rectOvalPtr->header.y2 = -1;
-	return;
-    }
-    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
-	if (rectOvalPtr->outline.activeWidth>width) {
-	    width = rectOvalPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (rectOvalPtr->outline.disabledWidth>0) {
-	    width = rectOvalPtr->outline.disabledWidth;
-	}
-    }
+   width = rectOvalPtr->outline.width;
+   if (state==TK_STATE_HIDDEN) {
+      rectOvalPtr->header.x1 = rectOvalPtr->header.y1 =
+      rectOvalPtr->header.x2 = rectOvalPtr->header.y2 = -1;
+      return;
+   }
+   if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
+      if (rectOvalPtr->outline.activeWidth>width) {
+         width = rectOvalPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (rectOvalPtr->outline.disabledWidth>0) {
+         width = rectOvalPtr->outline.disabledWidth;
+      }
+   }
 
-    /*
-     * Make sure that the first coordinates are the lowest ones.
-     */
+   /*
+   * Make sure that the first coordinates are the lowest ones.
+   */
 
-    if (rectOvalPtr->bbox[1] > rectOvalPtr->bbox[3]) {
-	double tmp;
-	tmp = rectOvalPtr->bbox[3];
-	rectOvalPtr->bbox[3] = rectOvalPtr->bbox[1];
-	rectOvalPtr->bbox[1] = tmp;
-    }
-    if (rectOvalPtr->bbox[0] > rectOvalPtr->bbox[2]) {
-	double tmp;
-	tmp = rectOvalPtr->bbox[2];
-	rectOvalPtr->bbox[2] = rectOvalPtr->bbox[0];
-	rectOvalPtr->bbox[0] = tmp;
-    }
+   if (rectOvalPtr->bbox[1] > rectOvalPtr->bbox[3]) {
+      double tmpY = rectOvalPtr->bbox[3];
 
-    if (rectOvalPtr->outline.gc == None) {
-	/*
-	 * The Win32 switch was added for 8.3 to solve a problem
-	 * with ovals leaving traces on bottom and right of 1 pixel.
-	 * This may not be the correct place to solve it, but it works.
-	 */
-#ifdef __WIN32__
-	bloat = 1;
+      rectOvalPtr->bbox[3] = rectOvalPtr->bbox[1];
+      rectOvalPtr->bbox[1] = tmpY;
+   }
+   if (rectOvalPtr->bbox[0] > rectOvalPtr->bbox[2]) {
+      double tmpX = rectOvalPtr->bbox[2];
+
+      rectOvalPtr->bbox[2] = rectOvalPtr->bbox[0];
+      rectOvalPtr->bbox[0] = tmpX;
+   }
+
+   #ifdef MAC_OSX_TK
+   /*
+   * Mac OS X CoreGraphics needs correct rounding here otherwise it will
+   * draw outside the bounding box. Probably correct on other platforms
+   * as well?
+   */
+
+   bloat = (int) (width+1.5)/2;
 #else
-	bloat = 0;
-#endif
-    } else {
-	bloat = (int) (width+1)/2;
-    }
+   bloat = (int) (width+1)/2;
+#endif /* MAC_OSX_TK */
+   /*
+   * Special note: the rectangle is always drawn at least 1x1 in size, so
+   * round up the upper coordinates to be at least 1 unit greater than the
+   * lower ones.
+   */
 
-    /*
-     * Special note:  the rectangle is always drawn at least 1x1 in
-     * size, so round up the upper coordinates to be at least 1 unit
-     * greater than the lower ones.
-     */
-
-    tmp = (int) ((rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
-	    : rectOvalPtr->bbox[0] - .5);
-    rectOvalPtr->header.x1 = tmp - bloat;
-    tmp = (int) ((rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
-	    : rectOvalPtr->bbox[1] - .5);
-    rectOvalPtr->header.y1 = tmp - bloat;
-    dtmp = rectOvalPtr->bbox[2];
-    if (dtmp < (rectOvalPtr->bbox[0] + 1)) {
-	dtmp = rectOvalPtr->bbox[0] + 1;
-    }
-    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
-    rectOvalPtr->header.x2 = tmp + bloat;
-    dtmp = rectOvalPtr->bbox[3];
-    if (dtmp < (rectOvalPtr->bbox[1] + 1)) {
-	dtmp = rectOvalPtr->bbox[1] + 1;
-    }
-    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
-    rectOvalPtr->header.y2 = tmp + bloat;
+   tmp = (int) ((rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
+      : rectOvalPtr->bbox[0] - .5);
+   rectOvalPtr->header.x1 = tmp - bloat;
+   tmp = (int) ((rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
+      : rectOvalPtr->bbox[1] - .5);
+   rectOvalPtr->header.y1 = tmp - bloat;
+   dtmp = rectOvalPtr->bbox[2];
+   if (dtmp < (rectOvalPtr->bbox[0] + 1)) {
+      dtmp = rectOvalPtr->bbox[0] + 1;
+   }
+   tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
+   rectOvalPtr->header.x2 = tmp + bloat;
+   dtmp = rectOvalPtr->bbox[3];
+   if (dtmp < (rectOvalPtr->bbox[1] + 1)) {
+      dtmp = rectOvalPtr->bbox[1] + 1;
+   }
+   tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
+   rectOvalPtr->header.y2 = tmp + bloat;
 }
-
 /*
  *--------------------------------------------------------------
  *
@@ -616,7 +568,12 @@ static void glComputeRectOvalBbox(canvas, rectOvalPtr)
  *--------------------------------------------------------------
  */
 
-static void glDisplayRectOval(Tk_Canvas canvas,Tk_Item* itemPtr,Display* display,Drawable drawable,int x,int y,int width,int height)
+static void glDisplayRectOval(
+   Tk_Canvas canvas,      /* Canvas that contains item. */
+   Tk_Item *itemPtr,      /* Item to be displayed. */
+   Display *display,      /* Display on which to draw item. */
+   Drawable drawable,     /* Pixmap or window in which to draw item. */
+   int x, int y, int width, int height) /* Describes region of canvas that must be redisplayed (not used). */
 {
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    short x1, y1, x2, y2;              /* Rectangle coordinates */
@@ -637,18 +594,18 @@ static void glDisplayRectOval(Tk_Canvas canvas,Tk_Item* itemPtr,Display* display
    if (y2 <= y1)
       y2 = y1+1;
 
-   if(state == TK_STATE_NULL)
+   if (state == TK_STATE_NULL)
       state = ((TkCanvas *)canvas)->canvas_state;
 
    stipple = rectOvalPtr->fillStipple;   /* Get the bitmap for stippling */
 
    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
-      if (rectOvalPtr->activeStipple)
-         stipple = rectOvalPtr->activeStipple;
+      if (rectOvalPtr->activeFillStipple)
+         stipple = rectOvalPtr->activeFillStipple;
    } else if (state==TK_STATE_DISABLED) {
 
-      if (rectOvalPtr->disabledStipple)
-         stipple = rectOvalPtr->disabledStipple;
+      if (rectOvalPtr->disabledFillStipple)
+         stipple = rectOvalPtr->disabledFillStipple;
    }
 
    if(rectOvalPtr->alpha<100) {
@@ -743,105 +700,103 @@ static void glDisplayRectOval(Tk_Canvas canvas,Tk_Item* itemPtr,Display* display
  *--------------------------------------------------------------
  */
 
-static double glRectToPoint(canvas, itemPtr, pointPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against point. */
-    double *pointPtr;		/* Pointer to x and y coordinates. */
+static double glRectToPoint(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against point. */
+   double *pointPtr)      /* Pointer to x and y coordinates. */
 {
-    glRectOvalItem *rectPtr = (glRectOvalItem *) itemPtr;
-    double xDiff, yDiff, x1, y1, x2, y2, inc, tmp;
-    double width;
-    Tk_State state = itemPtr->state;
+   glRectOvalItem *rectPtr = (glRectOvalItem *) itemPtr;
+   double xDiff, yDiff, x1, y1, x2, y2, inc, tmp;
+   double width;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = rectPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (rectPtr->outline.activeWidth>width) {
-	    width = rectPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (rectPtr->outline.disabledWidth>0) {
-	    width = rectPtr->outline.disabledWidth;
-	}
-    }
+   width = rectPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (rectPtr->outline.activeWidth>width) {
+         width = rectPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (rectPtr->outline.disabledWidth>0) {
+         width = rectPtr->outline.disabledWidth;
+      }
+   }
 
-    /*
-     * Generate a new larger rectangle that includes the border
-     * width, if there is one.
-     */
+   /*
+   * Generate a new larger rectangle that includes the border
+   * width, if there is one.
+   */
 
-    x1 = rectPtr->bbox[0];
-    y1 = rectPtr->bbox[1];
-    x2 = rectPtr->bbox[2];
-    y2 = rectPtr->bbox[3];
-    if (rectPtr->outline.gc != None) {
-	inc = width/2.0;
-	x1 -= inc;
-	y1 -= inc;
-	x2 += inc;
-	y2 += inc;
-    }
+   x1 = rectPtr->bbox[0];
+   y1 = rectPtr->bbox[1];
+   x2 = rectPtr->bbox[2];
+   y2 = rectPtr->bbox[3];
+   inc = width/2.0;
+   x1 -= inc;
+   y1 -= inc;
+   x2 += inc;
+   y2 += inc;
 
-    /*
-     * If the point is inside the rectangle, handle specially:
-     * distance is 0 if rectangle is filled, otherwise compute
-     * distance to nearest edge of rectangle and subtract width
-     * of edge.
-     */
+   /*
+   * If the point is inside the rectangle, handle specially:
+   * distance is 0 if rectangle is filled, otherwise compute
+   * distance to nearest edge of rectangle and subtract width
+   * of edge.
+   */
 
-    if ((pointPtr[0] >= x1) && (pointPtr[0] < x2)
-		&& (pointPtr[1] >= y1) && (pointPtr[1] < y2)) {
+   if ((pointPtr[0] >= x1) && (pointPtr[0] < x2)
+      && (pointPtr[1] >= y1) && (pointPtr[1] < y2)) {
 
          /*I consider a non fill rectangle as a rectangle so return in*/
-	    return 0.0;
+      return 0.0;
 
-	if ((rectPtr->fillColor) || !(rectPtr->outline.color)) {
-	    return 0.0;
-	}
-	xDiff = pointPtr[0] - x1;
-	tmp = x2 - pointPtr[0];
-	if (tmp < xDiff) {
-	    xDiff = tmp;
-	}
-	yDiff = pointPtr[1] - y1;
-	tmp = y2 - pointPtr[1];
-	if (tmp < yDiff) {
-	    yDiff = tmp;
-	}
-	if (yDiff < xDiff) {
-	    xDiff = yDiff;
-	}
-	xDiff -= width;
-	if (xDiff < 0.0) {
-	    return 0.0;
-	}
-	return xDiff;
-    }
+      if ((rectPtr->fillColor) || !(rectPtr->outline.color)) {
+         return 0.0;
+      }
+      xDiff = pointPtr[0] - x1;
+      tmp = x2 - pointPtr[0];
+      if (tmp < xDiff) {
+         xDiff = tmp;
+      }
+      yDiff = pointPtr[1] - y1;
+      tmp = y2 - pointPtr[1];
+      if (tmp < yDiff) {
+         yDiff = tmp;
+      }
+      if (yDiff < xDiff) {
+         xDiff = yDiff;
+      }
+      xDiff -= width;
+      if (xDiff < 0.0) {
+         return 0.0;
+      }
+      return xDiff;
+   }
 
-    /*
-     * Point is outside rectangle.
-     */
+   /*
+   * Point is outside rectangle.
+   */
 
-    if (pointPtr[0] < x1) {
-	xDiff = x1 - pointPtr[0];
-    } else if (pointPtr[0] > x2)  {
-	xDiff = pointPtr[0] - x2;
-    } else {
-	xDiff = 0;
-    }
+   if (pointPtr[0] < x1) {
+      xDiff = x1 - pointPtr[0];
+   } else if (pointPtr[0] > x2)  {
+      xDiff = pointPtr[0] - x2;
+   } else {
+      xDiff = 0;
+   }
 
-    if (pointPtr[1] < y1) {
-	yDiff = y1 - pointPtr[1];
-    } else if (pointPtr[1] > y2)  {
-	yDiff = pointPtr[1] - y2;
-    } else {
-	yDiff = 0;
-    }
+   if (pointPtr[1] < y1) {
+      yDiff = y1 - pointPtr[1];
+   } else if (pointPtr[1] > y2)  {
+      yDiff = pointPtr[1] - y2;
+   } else {
+      yDiff = 0;
+   }
 
-    return hypot(xDiff, yDiff);
+   return hypot(xDiff, yDiff);
 }
 
 /*
@@ -867,32 +822,32 @@ static double glRectToPoint(canvas, itemPtr, pointPtr)
  *--------------------------------------------------------------
  */
 
-static double glOvalToPoint(canvas, itemPtr, pointPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against point. */
-    double *pointPtr;		/* Pointer to x and y coordinates. */
+static double glOvalToPoint(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against point. */
+   double *pointPtr)      /* Pointer to x and y coordinates. */
 {
-    glRectOvalItem *ovalPtr = (glRectOvalItem *) itemPtr;
-    double width;
-    int filled=1;
-    Tk_State state = itemPtr->state;
+   glRectOvalItem *ovalPtr = (glRectOvalItem *) itemPtr;
+   double width;
+   int filled=1;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = (double) ovalPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (ovalPtr->outline.activeWidth>width) {
-	    width = (double) ovalPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (ovalPtr->outline.disabledWidth>0) {
-	    width = (double) ovalPtr->outline.disabledWidth;
-	}
-    }
+   width = (double) ovalPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (ovalPtr->outline.activeWidth>width) {
+         width = (double) ovalPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (ovalPtr->outline.disabledWidth>0) {
+         width = (double) ovalPtr->outline.disabledWidth;
+      }
+   }
 
-    return TkOvalToPoint(ovalPtr->bbox, width, filled, pointPtr);
+   return TkOvalToPoint(ovalPtr->bbox, width, filled, pointPtr);
 }
 
 /*
@@ -915,58 +870,53 @@ static double glOvalToPoint(canvas, itemPtr, pointPtr)
  *--------------------------------------------------------------
  */
 
-static int glRectToArea(canvas, itemPtr, areaPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against rectangle. */
-    double *areaPtr;		/* Pointer to array of four coordinates
-				 * (x1, y1, x2, y2) describing rectangular
-				 * area.  */
+static int glRectToArea(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against rectangle. */
+   double *areaPtr)       /* Pointer to array of four coordinates (x1, y1, x2, y2) describing rectangular area. */
 {
-    glRectOvalItem *rectPtr = (glRectOvalItem *) itemPtr;
-    double halfWidth;
-    double width;
-    Tk_State state = itemPtr->state;
+   glRectOvalItem *rectPtr = (glRectOvalItem *) itemPtr;
+   double halfWidth;
+   double width;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = rectPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (rectPtr->outline.activeWidth>width) {
-	    width = rectPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (rectPtr->outline.disabledWidth>0) {
-	    width = rectPtr->outline.disabledWidth;
-	}
-    }
+   width = rectPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (rectPtr->outline.activeWidth>width) {
+         width = rectPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (rectPtr->outline.disabledWidth>0) {
+         width = rectPtr->outline.disabledWidth;
+      }
+   }
 
-    halfWidth = width/2.0;
-    if (rectPtr->outline.gc == None) {
-	halfWidth = 0.0;
-    }
+   halfWidth = width/2.0;
 
-    if ((areaPtr[2] <= (rectPtr->bbox[0] - halfWidth))
-	    || (areaPtr[0] >= (rectPtr->bbox[2] + halfWidth))
-	    || (areaPtr[3] <= (rectPtr->bbox[1] - halfWidth))
-	    || (areaPtr[1] >= (rectPtr->bbox[3] + halfWidth))) {
-	return -1;
-    }
-    if (!(rectPtr->fillColor) && (rectPtr->outline.color)
-	    && (areaPtr[0] >= (rectPtr->bbox[0] + halfWidth))
-	    && (areaPtr[1] >= (rectPtr->bbox[1] + halfWidth))
-	    && (areaPtr[2] <= (rectPtr->bbox[2] - halfWidth))
-	    && (areaPtr[3] <= (rectPtr->bbox[3] - halfWidth))) {
-	return -1;
-    }
-    if ((areaPtr[0] <= (rectPtr->bbox[0] - halfWidth))
-	    && (areaPtr[1] <= (rectPtr->bbox[1] - halfWidth))
-	    && (areaPtr[2] >= (rectPtr->bbox[2] + halfWidth))
-	    && (areaPtr[3] >= (rectPtr->bbox[3] + halfWidth))) {
-	return 1;
-    }
-    return 0;
+   if ((areaPtr[2] <= (rectPtr->bbox[0] - halfWidth))
+      || (areaPtr[0] >= (rectPtr->bbox[2] + halfWidth))
+      || (areaPtr[3] <= (rectPtr->bbox[1] - halfWidth))
+      || (areaPtr[1] >= (rectPtr->bbox[3] + halfWidth))) {
+      return -1;
+   }
+   if (!(rectPtr->fillColor) && (rectPtr->outline.color)
+      && (areaPtr[0] >= (rectPtr->bbox[0] + halfWidth))
+      && (areaPtr[1] >= (rectPtr->bbox[1] + halfWidth))
+      && (areaPtr[2] <= (rectPtr->bbox[2] - halfWidth))
+      && (areaPtr[3] <= (rectPtr->bbox[3] - halfWidth))) {
+      return -1;
+   }
+   if ((areaPtr[0] <= (rectPtr->bbox[0] - halfWidth))
+      && (areaPtr[1] <= (rectPtr->bbox[1] - halfWidth))
+      && (areaPtr[2] >= (rectPtr->bbox[2] + halfWidth))
+      && (areaPtr[3] >= (rectPtr->bbox[3] + halfWidth))) {
+      return 1;
+   }
+   return 0;
 }
 
 /*
@@ -989,81 +939,76 @@ static int glRectToArea(canvas, itemPtr, areaPtr)
  *--------------------------------------------------------------
  */
 
-static int glOvalToArea(canvas, itemPtr, areaPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against oval. */
-    double *areaPtr;		/* Pointer to array of four coordinates
-				 * (x1, y1, x2, y2) describing rectangular
-				 * area.  */
+static int glOvalToArea(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against oval. */
+   double *areaPtr)       /* Pointer to array of four coordinates (x1, y1, x2, y2) describing rectangular area. */
 {
-    glRectOvalItem *ovalPtr = (glRectOvalItem *) itemPtr;
-    double oval[4], halfWidth;
-    int result;
-    double width;
-    Tk_State state = itemPtr->state;
+   glRectOvalItem *ovalPtr = (glRectOvalItem *) itemPtr;
+   double oval[4], halfWidth;
+   int result;
+   double width;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = ovalPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (ovalPtr->outline.activeWidth>width) {
-	    width = ovalPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (ovalPtr->outline.disabledWidth>0) {
-	    width = ovalPtr->outline.disabledWidth;
-	}
-    }
+   width = ovalPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (ovalPtr->outline.activeWidth>width) {
+         width = ovalPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (ovalPtr->outline.disabledWidth>0) {
+         width = ovalPtr->outline.disabledWidth;
+      }
+   }
 
-    /*
-     * Expand the oval to include the width of the outline, if any.
-     */
+   /*
+   * Expand the oval to include the width of the outline, if any.
+   */
 
-    halfWidth = width/2.0;
-    if (ovalPtr->outline.gc == None) {
-	halfWidth = 0.0;
-    }
-    oval[0] = ovalPtr->bbox[0] - halfWidth;
-    oval[1] = ovalPtr->bbox[1] - halfWidth;
-    oval[2] = ovalPtr->bbox[2] + halfWidth;
-    oval[3] = ovalPtr->bbox[3] + halfWidth;
+   halfWidth = width/2.0;
+   oval[0] = ovalPtr->bbox[0] - halfWidth;
+   oval[1] = ovalPtr->bbox[1] - halfWidth;
+   oval[2] = ovalPtr->bbox[2] + halfWidth;
+   oval[3] = ovalPtr->bbox[3] + halfWidth;
 
-    result = TkOvalToArea(oval, areaPtr);
+   result = TkOvalToArea(oval, areaPtr);
 
-    /*
-     * If the rectangle appears to overlap the oval and the oval
-     * isn't filled, do one more check to see if perhaps all four
-     * of the rectangle's corners are totally inside the oval's
-     * unfilled center, in which case we should return "outside".
-     */
+   /*
+   * If the rectangle appears to overlap the oval and the oval
+   * isn't filled, do one more check to see if perhaps all four
+   * of the rectangle's corners are totally inside the oval's
+   * unfilled center, in which case we should return "outside".
+   */
 
-    if ((result == 0) && (ovalPtr->outline.color)
-	    && !(ovalPtr->fillColor)) {
-	double centerX, centerY, height;
-	double xDelta1, yDelta1, xDelta2, yDelta2;
+   if ((result == 0) && (ovalPtr->outline.color)
+      && !(ovalPtr->fillColor)) {
+      double centerX, centerY, height;
+      double xDelta1, yDelta1, xDelta2, yDelta2;
 
-	centerX = (ovalPtr->bbox[0] + ovalPtr->bbox[2])/2.0;
-	centerY = (ovalPtr->bbox[1] + ovalPtr->bbox[3])/2.0;
-	width = (ovalPtr->bbox[2] - ovalPtr->bbox[0])/2.0 - halfWidth;
-	height = (ovalPtr->bbox[3] - ovalPtr->bbox[1])/2.0 - halfWidth;
-	xDelta1 = (areaPtr[0] - centerX)/width;
-	xDelta1 *= xDelta1;
-	yDelta1 = (areaPtr[1] - centerY)/height;
-	yDelta1 *= yDelta1;
-	xDelta2 = (areaPtr[2] - centerX)/width;
-	xDelta2 *= xDelta2;
-	yDelta2 = (areaPtr[3] - centerY)/height;
-	yDelta2 *= yDelta2;
-	if (((xDelta1 + yDelta1) < 1.0)
-		&& ((xDelta1 + yDelta2) < 1.0)
-		&& ((xDelta2 + yDelta1) < 1.0)
-		&& ((xDelta2 + yDelta2) < 1.0)) {
-	    return -1;
-	}
-    }
-    return result;
+      centerX = (ovalPtr->bbox[0] + ovalPtr->bbox[2])/2.0;
+      centerY = (ovalPtr->bbox[1] + ovalPtr->bbox[3])/2.0;
+      width = (ovalPtr->bbox[2] - ovalPtr->bbox[0])/2.0 - halfWidth;
+      height = (ovalPtr->bbox[3] - ovalPtr->bbox[1])/2.0 - halfWidth;
+      xDelta1 = (areaPtr[0] - centerX)/width;
+      xDelta1 *= xDelta1;
+      yDelta1 = (areaPtr[1] - centerY)/height;
+      yDelta1 *= yDelta1;
+      xDelta2 = (areaPtr[2] - centerX)/width;
+      xDelta2 *= xDelta2;
+      yDelta2 = (areaPtr[3] - centerY)/height;
+      yDelta2 *= yDelta2;
+      if (((xDelta1 + yDelta1) < 1.0)
+         && ((xDelta1 + yDelta2) < 1.0)
+         && ((xDelta2 + yDelta1) < 1.0)
+         && ((xDelta2 + yDelta2) < 1.0)) {
+         return -1;
+      }
+   }
+   return result;
 }
 
 /*
@@ -1087,20 +1032,20 @@ static int glOvalToArea(canvas, itemPtr, areaPtr)
  *--------------------------------------------------------------
  */
 
-static void glScaleRectOval(canvas, itemPtr, originX, originY, scaleX, scaleY)
-    Tk_Canvas canvas;			/* Canvas containing rectangle. */
-    Tk_Item *itemPtr;			/* Rectangle to be scaled. */
-    double originX, originY;		/* Origin about which to scale rect. */
-    double scaleX;			/* Amount to scale in X direction. */
-    double scaleY;			/* Amount to scale in Y direction. */
+static void glScaleRectOval(
+   Tk_Canvas canvas,      /* Canvas containing rectangle. */
+   Tk_Item *itemPtr,      /* Rectangle to be scaled. */
+   double originX, double originY, /* Origin about which to scale rect. */
+   double scaleX,         /* Amount to scale in X direction. */
+   double scaleY)         /* Amount to scale in Y direction. */
 {
-    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
+   glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
 
-    rectOvalPtr->bbox[0] = originX + scaleX*(rectOvalPtr->bbox[0] - originX);
-    rectOvalPtr->bbox[1] = originY + scaleY*(rectOvalPtr->bbox[1] - originY);
-    rectOvalPtr->bbox[2] = originX + scaleX*(rectOvalPtr->bbox[2] - originX);
-    rectOvalPtr->bbox[3] = originY + scaleY*(rectOvalPtr->bbox[3] - originY);
-    glComputeRectOvalBbox(canvas, rectOvalPtr);
+   rectOvalPtr->bbox[0] = originX + scaleX*(rectOvalPtr->bbox[0] - originX);
+   rectOvalPtr->bbox[1] = originY + scaleY*(rectOvalPtr->bbox[1] - originY);
+   rectOvalPtr->bbox[2] = originX + scaleX*(rectOvalPtr->bbox[2] - originX);
+   rectOvalPtr->bbox[3] = originY + scaleY*(rectOvalPtr->bbox[3] - originY);
+   glComputeRectOvalBbox(canvas, rectOvalPtr);
 }
 
 /*
@@ -1122,19 +1067,18 @@ static void glScaleRectOval(canvas, itemPtr, originX, originY, scaleX, scaleY)
  *--------------------------------------------------------------
  */
 
-static void glTranslateRectOval(canvas, itemPtr, deltaX, deltaY)
-    Tk_Canvas canvas;			/* Canvas containing item. */
-    Tk_Item *itemPtr;			/* Item that is being moved. */
-    double deltaX, deltaY;		/* Amount by which item is to be
-					 * moved. */
+static void glTranslateRectOval(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item that is being moved. */
+   double deltaX, double deltaY)  /* Amount by which item is to be moved. */
 {
-    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
+   glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
 
-    rectOvalPtr->bbox[0] += deltaX;
-    rectOvalPtr->bbox[1] += deltaY;
-    rectOvalPtr->bbox[2] += deltaX;
-    rectOvalPtr->bbox[3] += deltaY;
-    glComputeRectOvalBbox(canvas, rectOvalPtr);
+   rectOvalPtr->bbox[0] += deltaX;
+   rectOvalPtr->bbox[1] += deltaY;
+   rectOvalPtr->bbox[2] += deltaX;
+   rectOvalPtr->bbox[3] += deltaY;
+   glComputeRectOvalBbox(canvas, rectOvalPtr);
 }
 
 /*
@@ -1158,106 +1102,144 @@ static void glTranslateRectOval(canvas, itemPtr, deltaX, deltaY)
  *--------------------------------------------------------------
  */
 
-static int glRectOvalToPostscript(interp, canvas, itemPtr, prepass)
-    Tcl_Interp *interp;			/* Interpreter for error reporting. */
-    Tk_Canvas canvas;			/* Information about overall canvas. */
-    Tk_Item *itemPtr;			/* Item for which Postscript is
-					 * wanted. */
-    int prepass;			/* 1 means this is a prepass to
-					 * collect font information;  0 means
-					 * final Postscript is being created. */
+static int glRectOvalToPostscript(
+   Tcl_Interp *interp,    /* Interpreter for error reporting. */
+   Tk_Canvas canvas,      /* Information about overall canvas. */
+   Tk_Item *itemPtr,      /* Item for which Postscript is wanted. */
+   int prepass)           /* 1 means this is a prepass to collect font information; 0 means final Postscript is being created. */
 {
-    char pathCmd[500];
-    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
-    double y1, y2;
-    XColor *color;
-    XColor *fillColor;
-    T_glBitmap *stipple;
-    Tk_State state = itemPtr->state;
+   Tcl_Obj *pathObj, *psObj;
+   glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
+   double y1, y2;
+   XColor *color;
+   XColor *fillColor;
+   T_glBitmap *fillStipple;
+   Tk_State state = itemPtr->state;
+   Tcl_InterpState interpState;
 
-    y1 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[1]);
-    y2 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[3]);
+   y1 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[1]);
+   y2 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[3]);
 
-    /*
-     * Generate a string that creates a path for the rectangle or oval.
-     * This is the only part of the procedure's code that is type-
-     * specific.
-     */
+   /*
+   * Generate a string that creates a path for the rectangle or oval. This
+   * is the only part of the function's code that is type-specific.
+   */
 
+   if (rectOvalPtr->header.typePtr == &tkRectangleType) {
+      pathObj = Tcl_ObjPrintf(
+         "%.15g %.15g moveto "
+         "%.15g 0 rlineto "
+         "0 %.15g rlineto "
+         "%.15g 0 rlineto "
+         "closepath\n",
+         rectOvalPtr->bbox[0], y1,
+         rectOvalPtr->bbox[2]-rectOvalPtr->bbox[0],
+         y2-y1,
+         rectOvalPtr->bbox[0]-rectOvalPtr->bbox[2]);
+   } else {
+      pathObj = Tcl_ObjPrintf(
+         "matrix currentmatrix\n"
+         "%.15g %.15g translate "
+         "%.15g %.15g scale "
+         "1 0 moveto 0 0 1 0 360 arc\n"
+         "setmatrix\n",
+         (rectOvalPtr->bbox[0] + rectOvalPtr->bbox[2])/2, (y1 + y2)/2,
+         (rectOvalPtr->bbox[2] - rectOvalPtr->bbox[0])/2, (y1 - y2)/2);
+   }
 
-    if (rectOvalPtr->header.typePtr == &tkglRectangleType) {
-	sprintf(pathCmd, "%.15g %.15g moveto %.15g 0 rlineto 0 %.15g rlineto %.15g 0 rlineto closepath\n",
-		rectOvalPtr->bbox[0], y1,
-		rectOvalPtr->bbox[2]-rectOvalPtr->bbox[0], y2-y1,
-		rectOvalPtr->bbox[0]-rectOvalPtr->bbox[2]);
-    } else {
-	sprintf(pathCmd, "matrix currentmatrix\n%.15g %.15g translate %.15g %.15g scale 1 0 moveto 0 0 1 0 360 arc\nsetmatrix\n",
-		(rectOvalPtr->bbox[0] + rectOvalPtr->bbox[2])/2, (y1 + y2)/2,
-		(rectOvalPtr->bbox[2] - rectOvalPtr->bbox[0])/2, (y1 - y2)/2);
-    }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
+   color = rectOvalPtr->outline.color;
+   fillColor = rectOvalPtr->fillColor;
+   fillStipple = rectOvalPtr->fillStipple;
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
+      if (rectOvalPtr->outline.activeColor!=NULL) {
+         color = rectOvalPtr->outline.activeColor;
+      }
+      if (rectOvalPtr->activeFillColor!=NULL) {
+         fillColor = rectOvalPtr->activeFillColor;
+      }
+      if (rectOvalPtr->activeFillStipple!=None) {
+         fillStipple = rectOvalPtr->activeFillStipple;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (rectOvalPtr->outline.disabledColor!=NULL) {
+         color = rectOvalPtr->outline.disabledColor;
+      }
+      if (rectOvalPtr->disabledFillColor!=NULL) {
+         fillColor = rectOvalPtr->disabledFillColor;
+      }
+      if (rectOvalPtr->disabledFillStipple!=None) {
+         fillStipple = rectOvalPtr->disabledFillStipple;
+      }
+   }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    color = rectOvalPtr->outline.color;
-    fillColor = rectOvalPtr->fillColor;
-    stipple = rectOvalPtr->fillStipple;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (rectOvalPtr->outline.activeColor!=NULL) {
-	    color = rectOvalPtr->outline.activeColor;
-	}
-	if (rectOvalPtr->activeFillColor!=NULL) {
-	    fillColor = rectOvalPtr->activeFillColor;
-	}
-	if (rectOvalPtr->activeStipple) {
-	    stipple = rectOvalPtr->activeStipple;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (rectOvalPtr->outline.disabledColor!=NULL) {
-	    color = rectOvalPtr->outline.disabledColor;
-	}
-	if (rectOvalPtr->disabledFillColor!=NULL) {
-	    fillColor = rectOvalPtr->disabledFillColor;
-	}
-	if (rectOvalPtr->disabledStipple) {
-	    stipple = rectOvalPtr->disabledStipple;
-	}
-    }
+   /*
+   * Make our working space.
+   */
 
-    /*
-     * First draw the filled area of the rectangle.
-     */
+   psObj = Tcl_NewObj();
+   interpState = Tcl_SaveInterpState(interp, TCL_OK);
 
-    if (fillColor != NULL) {
-	Tcl_AppendResult(interp, pathCmd, (char *) NULL);
-	if (Tk_CanvasPsColor(interp, canvas, fillColor)
-		!= TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (stipple) {
-	    Tcl_AppendResult(interp, "clip ", (char *) NULL);
-	    if (glPostscriptStipple(interp,stipple)!= TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (color != NULL) {
-		Tcl_AppendResult(interp, "grestore gsave\n", (char *) NULL);
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "fill\n", (char *) NULL);
-	}
-    }
+   /*
+   * First draw the filled area of the rectangle.
+   */
 
-    /*
-     * Now draw the outline, if there is one.
-     */
+   if (fillColor != NULL) {
+      Tcl_AppendObjToObj(psObj, pathObj);
 
-    if (color != NULL) {
-	Tcl_AppendResult(interp, pathCmd, "0 setlinejoin 2 setlinecap\n",
-		(char *) NULL);
-	if (Tk_CanvasPsOutline(canvas, itemPtr,
-		&(rectOvalPtr->outline))!= TCL_OK) {
-	    return TCL_ERROR;
-	}
-    }
-    return TCL_OK;
+      Tcl_ResetResult(interp);
+      if (Tk_CanvasPsColor(interp, canvas, fillColor) != TCL_OK) {
+         goto error;
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+
+      if (fillStipple != None) {
+         Tcl_AppendToObj(psObj, "clip ", -1);
+
+         Tcl_ResetResult(interp);
+         if (glPostscriptStipple(interp,psObj,fillStipple) != TCL_OK) {
+            goto error;
+         }
+         Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+         if (color != NULL) {
+            Tcl_AppendToObj(psObj, "grestore gsave\n", -1);
+         }
+      } else {
+         Tcl_AppendToObj(psObj, "fill\n", -1);
+      }
+   }
+
+   /*
+   * Now draw the outline, if there is one.
+   */
+
+   if (color != NULL) {
+      Tcl_AppendObjToObj(psObj, pathObj);
+      Tcl_AppendToObj(psObj, "0 setlinejoin 2 setlinecap\n", -1);
+
+      Tcl_ResetResult(interp);
+      if (Tk_CanvasPsOutline(canvas, itemPtr,
+         &rectOvalPtr->outline)!= TCL_OK) {
+         goto error;
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+   }
+
+   /*
+   * Plug the accumulated postscript back into the result.
+   */
+
+   (void) Tcl_RestoreInterpState(interp, interpState);
+   Tcl_AppendObjToObj(Tcl_GetObjResult(interp), psObj);
+   Tcl_DecrRefCount(psObj);
+   Tcl_DecrRefCount(pathObj);
+   return TCL_OK;
+
+   error:
+      Tcl_DiscardInterpState(interpState);
+      Tcl_DecrRefCount(psObj);
+      Tcl_DecrRefCount(pathObj);
+      return TCL_ERROR;
 }

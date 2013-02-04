@@ -12,9 +12,7 @@
  * RCS: @(#) $Id: tkCanvImg.c,v 1.4 1999/12/14 06:52:25 hobbs Exp $
  */
 
-#include <stdio.h>
 #include "tkInt.h"
-#include "tkPort.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each image item */
@@ -46,71 +44,35 @@ typedef struct ImageItem  {
  * Information used for parsing configuration specs:
  */
 
-static Tk_CustomOption stateOption = {
-    (Tk_OptionParseProc *) TkStateParseProc,
-    TkStatePrintProc, (ClientData) 2
-};
-static Tk_CustomOption tagsOption = {
-    (Tk_OptionParseProc *) Tk_CanvasTagsParseProc,
-    Tk_CanvasTagsPrintProc, (ClientData) NULL
-};
+static const Tk_CustomOption stateOption = { TkStateParseProc, TkStatePrintProc, INT2PTR(2) };
+static const Tk_CustomOption tagsOption = { Tk_CanvasTagsParseProc, Tk_CanvasTagsPrintProc, NULL };
 
-static Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_STRING, "-activeimage", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(ImageItem, activeImageString),
-   TK_CONFIG_NULL_OK},
-    {TK_CONFIG_ANCHOR, "-anchor", (char *) NULL, (char *) NULL,
-   "center", Tk_Offset(ImageItem, anchor), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_STRING, "-disabledimage", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(ImageItem, disabledImageString),
-   TK_CONFIG_NULL_OK},
-    {TK_CONFIG_STRING, "-image", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(ImageItem, imageString), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-state", (char *) NULL, (char *) NULL,
-   (char *) NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK,
-   &stateOption},
-    {TK_CONFIG_CUSTOM, "-tags", (char *) NULL, (char *) NULL,
-   (char *) NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
-    {TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,
-   "100", Tk_Offset(ImageItem, alpha), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
-   (char *) NULL, 0, 0}
+static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_STRING, "-activeimage", NULL, NULL, NULL, Tk_Offset(ImageItem, activeImageString), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "center", Tk_Offset(ImageItem, anchor), TK_CONFIG_DONT_SET_DEFAULT, NULL },
+   { TK_CONFIG_STRING, "-disabledimage", NULL, NULL, NULL, Tk_Offset(ImageItem, disabledImageString), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_STRING, "-image", NULL, NULL, NULL, Tk_Offset(ImageItem, imageString), TK_CONFIG_NULL_OK, NULL },
+   { TK_CONFIG_CUSTOM, "-state", NULL, NULL, NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK, &stateOption },
+   { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL, 0, TK_CONFIG_NULL_OK, &tagsOption },
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0, NULL }
 };
 
 /*
  * Prototypes for procedures defined in this file:
  */
 
-static void    ImageChangedProc _ANSI_ARGS_((ClientData clientData,
-             int x, int y, int width, int height, int imgWidth,
-             int imgHeight));
-static int     ImageCoords _ANSI_ARGS_((Tcl_Interp *interp,
-             Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-             Tcl_Obj *CONST argv[]));
-static int     ImageToArea _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, double *rectPtr));
-static double     ImageToPoint _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, double *coordPtr));
-static int     ImageToPostscript _ANSI_ARGS_((Tcl_Interp *interp,
-             Tk_Canvas canvas, Tk_Item *itemPtr, int prepass));
-static void    ComputeImageBbox _ANSI_ARGS_((Tk_Canvas canvas,
-             ImageItem *imgPtr));
-static int     ConfigureImage _ANSI_ARGS_((Tcl_Interp *interp,
-             Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-             Tcl_Obj *CONST argv[], int flags));
-static int     CreateImage _ANSI_ARGS_((Tcl_Interp *interp,
-             Tk_Canvas canvas, struct Tk_Item *itemPtr,
-             int argc, Tcl_Obj *CONST argv[]));
-static void    DeleteImage _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, Display *display));
-static void    DisplayImage _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, Display *display, Drawable dst,
-             int x, int y, int width, int height));
-static void    ScaleImage _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, double originX, double originY,
-             double scaleX, double scaleY));
-static void    TranslateImage _ANSI_ARGS_((Tk_Canvas canvas,
-             Tk_Item *itemPtr, double deltaX, double deltaY));
+static void    ImageChangedProc(ClientData clientData, int x, int y, int width, int height, int imgWidth, int imgHeight);
+static int     ImageCoords(Tcl_Interp *interp, Tk_Canvas canvas, Tk_Item *itemPtr, int objc, Tcl_Obj *const objv[]);
+static int     ImageToArea(Tk_Canvas canvas, Tk_Item *itemPtr, double *rectPtr);
+static double  ImageToPoint(Tk_Canvas canvas, Tk_Item *itemPtr, double *coordPtr);
+static int     ImageToPostscript(Tcl_Interp *interp, Tk_Canvas canvas, Tk_Item *itemPtr, int prepass);
+static void    ComputeImageBbox(Tk_Canvas canvas, ImageItem *imgPtr);
+static int     ConfigureImage(Tcl_Interp *interp, Tk_Canvas canvas, Tk_Item *itemPtr, int objc, Tcl_Obj *const objv[], int flags);
+static int     CreateImage(Tcl_Interp *interp, Tk_Canvas canvas, struct Tk_Item *itemPtr, int objc, Tcl_Obj *const objv[]);
+static void    DeleteImage(Tk_Canvas canvas, Tk_Item *itemPtr, Display *display);
+static void    DisplayImage(Tk_Canvas canvas, Tk_Item *itemPtr, Display *display, Drawable dst, int x, int y, int width, int height);
+static void    ScaleImage(Tk_Canvas canvas, Tk_Item *itemPtr, double originX, double originY, double scaleX, double scaleY);
+static void    TranslateImage(Tk_Canvas canvas, Tk_Item *itemPtr, double deltaX, double deltaY);
 
 /*
  * The structures below defines the image item type in terms of
@@ -119,25 +81,25 @@ static void    TranslateImage _ANSI_ARGS_((Tk_Canvas canvas,
 
 Tk_ItemType tkglImageType = {
     "image",            /* name */
-    sizeof(ImageItem),        /* itemSize */
+    sizeof(ImageItem),  /* itemSize */
     CreateImage,        /* createProc */
     configSpecs,        /* configSpecs */
-    ConfigureImage,        /* configureProc */
+    ConfigureImage,     /* configureProc */
     ImageCoords,        /* coordProc */
     DeleteImage,        /* deleteProc */
     DisplayImage,       /* displayProc */
-    TK_CONFIG_OBJS,        /* flags */
+    TK_CONFIG_OBJS,     /* flags */
     ImageToPoint,       /* pointProc */
     ImageToArea,        /* areaProc */
-    ImageToPostscript,                  /* postscriptProc */
-    ScaleImage,            /* scaleProc */
-    TranslateImage,        /* translateProc */
-    (Tk_ItemIndexProc *) NULL,      /* indexProc */
-    (Tk_ItemCursorProc *) NULL,     /* icursorProc */
-    (Tk_ItemSelectionProc *) NULL,  /* selectionProc */
-    (Tk_ItemInsertProc *) NULL,     /* insertProc */
-    (Tk_ItemDCharsProc *) NULL,     /* dTextProc */
-    (Tk_ItemType *) NULL,     /* nextPtr */
+    ImageToPostscript,  /* postscriptProc */
+    ScaleImage,         /* scaleProc */
+    TranslateImage,     /* translateProc */
+    NULL,               /* indexProc */
+    NULL,               /* icursorProc */
+    NULL,               /* selectionProc */
+    NULL,               /* insertProc */
+    NULL,               /* dTextProc */
+    NULL,               /* nextPtr */
 };
 
 /*
@@ -160,66 +122,57 @@ Tk_ItemType tkglImageType = {
  *--------------------------------------------------------------
  */
 
-static int
-CreateImage(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;       /* Interpreter for error reporting. */
-    Tk_Canvas canvas;         /* Canvas to hold new item. */
-    Tk_Item *itemPtr;         /* Record to hold new item;  header
-                * has been initialized by caller. */
-    int argc;           /* Number of arguments in argv. */
-    Tcl_Obj *CONST argv[];    /* Arguments describing rectangle. */
+static int CreateImage(
+   Tcl_Interp *interp,    /* Interpreter for error reporting. */
+   Tk_Canvas canvas,      /* Canvas to hold new item. */
+   Tk_Item *itemPtr,      /* Record to hold new item; header has been initialized by caller. */
+   int objc,              /* Number of arguments in objv. */
+   Tcl_Obj *const objv[]) /* Arguments describing rectangle. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
-    int i;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
+   int i;
 
-    if (argc==1) {
-   i = 1;
-    } else {
-   char *arg = Tcl_GetStringFromObj((Tcl_Obj *) argv[1], NULL);
-   if (((argc>1) && (arg[0] == '-')
-      && (arg[1] >= 'a') && (arg[1] <= 'z'))) {
-       i = 1;
-   } else {
-       i = 2;
+   if (objc == 0) {
+      Tcl_Panic("canvas did not pass any coords");
    }
-    }
 
-    if (argc < i) {
-   Tcl_AppendResult(interp, "wrong # args: should be \"",
-      Tk_PathName(Tk_CanvasTkwin(canvas)), " create ",
-      itemPtr->typePtr->name, " x y ?options?\"",
-      (char *) NULL);
+   /*
+   * Initialize item's record.
+   */
+
+   imgPtr->canvas = canvas;
+   imgPtr->anchor = TK_ANCHOR_CENTER;
+   imgPtr->imageString = NULL;
+   imgPtr->activeImageString = NULL;
+   imgPtr->disabledImageString = NULL;
+   imgPtr->image = NULL;
+   imgPtr->activeImage = NULL;
+   imgPtr->disabledImage = NULL;
+
+   /*
+   * Process the arguments to fill in the item record. Only 1 (list) or 2 (x
+   * y) coords are allowed.
+   */
+
+   if (objc == 1) {
+      i = 1;
+   } else {
+      const char *arg = Tcl_GetString(objv[1]);
+      i = 2;
+      if ((arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
+         i = 1;
+      }
+   }
+   if ((ImageCoords(interp, canvas, itemPtr, i, objv) != TCL_OK)) {
+      goto error;
+   }
+   if (ConfigureImage(interp, canvas, itemPtr, objc-i, objv+i, 0) == TCL_OK) {
+      return TCL_OK;
+   }
+
+   error:
+   DeleteImage(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
    return TCL_ERROR;
-    }
-
-    /*
-     * Initialize item's record.
-     */
-
-    imgPtr->canvas = canvas;
-    imgPtr->anchor = TK_ANCHOR_CENTER;
-    imgPtr->imageString = NULL;
-    imgPtr->activeImageString = NULL;
-    imgPtr->disabledImageString = NULL;
-    imgPtr->image = NULL;
-    imgPtr->activeImage = NULL;
-    imgPtr->disabledImage = NULL;
-    imgPtr->alpha = 100;
-
-    /*
-     * Process the arguments to fill in the item record.
-     */
-
-    if ((ImageCoords(interp, canvas, itemPtr, i, argv) != TCL_OK)) {
-   goto error;
-    }
-    if (ConfigureImage(interp, canvas, itemPtr, argc-i, argv+i, 0) == TCL_OK) {
-   return TCL_OK;
-    }
-
-    error:
-    DeleteImage(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
-    return TCL_ERROR;
 }
 
 /*
@@ -240,53 +193,48 @@ CreateImage(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int
-ImageCoords(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;       /* Used for error reporting. */
-    Tk_Canvas canvas;         /* Canvas containing item. */
-    Tk_Item *itemPtr;         /* Item whose coordinates are to be
-                * read or modified. */
-    int argc;           /* Number of coordinates supplied in
-                * argv. */
-    Tcl_Obj *CONST argv[];    /* Array of coordinates: x1, y1,
-                * x2, y2, ... */
+static int ImageCoords(
+   Tcl_Interp *interp,    /* Used for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item whose coordinates are to be read or modified. */
+   int objc,              /* Number of coordinates supplied in objv. */
+   Tcl_Obj *const objv[]) /* Array of coordinates: x1, y1, x2, y2, ... */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
 
-    if (argc == 0) {
-   Tcl_Obj *obj = Tcl_NewObj();
-   Tcl_Obj *subobj = Tcl_NewDoubleObj(imgPtr->x);
-   Tcl_ListObjAppendElement(interp, obj, subobj);
-   subobj = Tcl_NewDoubleObj(imgPtr->y);
-   Tcl_ListObjAppendElement(interp, obj, subobj);
-   Tcl_SetObjResult(interp, obj);
-    } else if (argc < 3) {
-   if (argc==1) {
-       if (Tcl_ListObjGetElements(interp, argv[0], &argc,
-          (Tcl_Obj ***) &argv) != TCL_OK) {
+   if (objc == 0) {
+      Tcl_Obj *objs[2];
+
+      objs[0] = Tcl_NewDoubleObj(imgPtr->x);
+      objs[1] = Tcl_NewDoubleObj(imgPtr->y);
+      Tcl_SetObjResult(interp, Tcl_NewListObj(2, objs));
+   } else if (objc < 3) {
+      if (objc==1) {
+         if (Tcl_ListObjGetElements(interp, objv[0], &objc,
+            (Tcl_Obj ***) &objv) != TCL_OK) {
+         return TCL_ERROR;
+         } else if (objc != 2) {
+         Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+            "wrong # coordinates: expected 2, got %d", objc));
+         Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS", "IMAGE",
+            NULL);
+         return TCL_ERROR;
+         }
+      }
+      if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0],
+            &imgPtr->x) != TCL_OK)
+         || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
+            &imgPtr->y) != TCL_OK)) {
+         return TCL_ERROR;
+      }
+      ComputeImageBbox(canvas, imgPtr);
+   } else {
+      Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+         "wrong # coordinates: expected 0 or 2, got %d", objc));
+      Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS", "IMAGE", NULL);
       return TCL_ERROR;
-       } else if (argc != 2) {
-      char buf[64];
-
-      sprintf(buf, "wrong # coordinates: expected 2, got %d", argc);
-      Tcl_SetResult(interp, buf, TCL_VOLATILE);
-      return TCL_ERROR;
-       }
    }
-   if ((Tk_CanvasGetCoordFromObj(interp, canvas, argv[0], &imgPtr->x) != TCL_OK)
-      || (Tk_CanvasGetCoordFromObj(interp, canvas, argv[1],
-          &imgPtr->y) != TCL_OK)) {
-       return TCL_ERROR;
-   }
-   ComputeImageBbox(canvas, imgPtr);
-    } else {
-   char buf[64];
-
-   sprintf(buf, "wrong # coordinates: expected 0 or 2, got %d", argc);
-   Tcl_SetResult(interp, buf, TCL_VOLATILE);
-   return TCL_ERROR;
-    }
-    return TCL_OK;
+   return TCL_OK;
 }
 
 /*
@@ -307,78 +255,77 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int
-ConfigureImage(interp, canvas, itemPtr, argc, argv, flags)
-    Tcl_Interp *interp;    /* Used for error reporting. */
-    Tk_Canvas canvas;      /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;      /* Image item to reconfigure. */
-    int argc;        /* Number of elements in argv.  */
-    Tcl_Obj *CONST argv[]; /* Arguments describing things to configure. */
-    int flags;       /* Flags to pass to Tk_ConfigureWidget. */
+static int ConfigureImage(
+   Tcl_Interp *interp,    /* Used for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+   Tk_Item *itemPtr,      /* Image item to reconfigure. */
+   int objc,              /* Number of elements in objv.  */
+   Tcl_Obj *const objv[], /* Arguments describing things to configure. */
+   int flags)             /* Flags to pass to Tk_ConfigureWidget. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
-    Tk_Window tkwin;
-    Tk_Image image;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
+   Tk_Window tkwin;
+   Tk_Image image;
 
-    tkwin = Tk_CanvasTkwin(canvas);
-    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, (char **) argv,
-       (char *) imgPtr, flags|TK_CONFIG_OBJS) != TCL_OK) {
-   return TCL_ERROR;
-    }
+   tkwin = Tk_CanvasTkwin(canvas);
+   if (TCL_OK != Tk_ConfigureWidget(interp, tkwin, configSpecs, objc,
+         (const char **) objv, (char *) imgPtr, flags|TK_CONFIG_OBJS)) {
+      return TCL_ERROR;
+   }
 
-    /*
-     * Create the image.  Save the old image around and don't free it
-     * until after the new one is allocated.  This keeps the reference
-     * count from going to zero so the image doesn't have to be recreated
-     * if it hasn't changed.
-     */
+   /*
+   * Create the image. Save the old image around and don't free it until
+   * after the new one is allocated. This keeps the reference count from
+   * going to zero so the image doesn't have to be recreated if it hasn't
+   * changed.
+   */
 
-    if (imgPtr->activeImageString != NULL) {
-   itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
-    } else {
-   itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
-    }
-    if (imgPtr->imageString != NULL) {
-   image = Tk_GetImage(interp, tkwin, imgPtr->imageString,
-      ImageChangedProc, (ClientData) imgPtr);
-   if (image == NULL) {
-       return TCL_ERROR;
+   if (imgPtr->activeImageString != NULL) {
+      itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
+   } else {
+      itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
    }
-    } else {
-   image = NULL;
-    }
-    if (imgPtr->image != NULL) {
-   Tk_FreeImage(imgPtr->image);
-    }
-    imgPtr->image = image;
-    if (imgPtr->activeImageString != NULL) {
-   image = Tk_GetImage(interp, tkwin, imgPtr->activeImageString,
-      ImageChangedProc, (ClientData) imgPtr);
-   if (image == NULL) {
-       return TCL_ERROR;
+   if (imgPtr->imageString != NULL) {
+      image = Tk_GetImage(interp, tkwin, imgPtr->imageString,
+         ImageChangedProc, imgPtr);
+      if (image == NULL) {
+         return TCL_ERROR;
+      }
+   } else {
+      image = NULL;
    }
-    } else {
-   image = NULL;
-    }
-    if (imgPtr->activeImage != NULL) {
-   Tk_FreeImage(imgPtr->activeImage);
-    }
-    imgPtr->activeImage = image;
-    if (imgPtr->disabledImageString != NULL) {
-   image = Tk_GetImage(interp, tkwin, imgPtr->disabledImageString,
-      ImageChangedProc, (ClientData) imgPtr);
-   if (image == NULL) {
-       return TCL_ERROR;
+   if (imgPtr->image != NULL) {
+      Tk_FreeImage(imgPtr->image);
    }
-    } else {
-   image = NULL;
-    }
-    if (imgPtr->disabledImage != NULL) {
-   Tk_FreeImage(imgPtr->disabledImage);
-    }
-    imgPtr->disabledImage = image;
-    ComputeImageBbox(canvas, imgPtr);
-    return TCL_OK;
+   imgPtr->image = image;
+   if (imgPtr->activeImageString != NULL) {
+      image = Tk_GetImage(interp, tkwin, imgPtr->activeImageString,
+         ImageChangedProc, imgPtr);
+      if (image == NULL) {
+         return TCL_ERROR;
+      }
+   } else {
+      image = NULL;
+   }
+   if (imgPtr->activeImage != NULL) {
+      Tk_FreeImage(imgPtr->activeImage);
+   }
+   imgPtr->activeImage = image;
+   if (imgPtr->disabledImageString != NULL) {
+      image = Tk_GetImage(interp, tkwin, imgPtr->disabledImageString,
+         ImageChangedProc, imgPtr);
+      if (image == NULL) {
+         return TCL_ERROR;
+      }
+   } else {
+      image = NULL;
+   }
+   if (imgPtr->disabledImage != NULL) {
+      Tk_FreeImage(imgPtr->disabledImage);
+   }
+   imgPtr->disabledImage = image;
+   ComputeImageBbox(canvas, imgPtr);
+   return TCL_OK;
 }
 
 /*
@@ -398,33 +345,31 @@ ConfigureImage(interp, canvas, itemPtr, argc, argv, flags)
  *--------------------------------------------------------------
  */
 
-static void
-DeleteImage(canvas, itemPtr, display)
-    Tk_Canvas canvas;         /* Info about overall canvas widget. */
-    Tk_Item *itemPtr;         /* Item that is being deleted. */
-    Display *display;         /* Display containing window for
-                * canvas. */
+static void DeleteImage(
+   Tk_Canvas canvas,      /* Info about overall canvas widget. */
+   Tk_Item *itemPtr,      /* Item that is being deleted. */
+   Display *display)      /* Display containing window for canvas. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
 
-    if (imgPtr->imageString != NULL) {
-   ckfree(imgPtr->imageString);
-    }
-    if (imgPtr->activeImageString != NULL) {
-   ckfree(imgPtr->activeImageString);
-    }
-    if (imgPtr->disabledImageString != NULL) {
-   ckfree(imgPtr->disabledImageString);
-    }
-    if (imgPtr->image != NULL) {
-   Tk_FreeImage(imgPtr->image);
-    }
-    if (imgPtr->activeImage != NULL) {
-   Tk_FreeImage(imgPtr->activeImage);
-    }
-    if (imgPtr->disabledImage != NULL) {
-   Tk_FreeImage(imgPtr->disabledImage);
-    }
+   if (imgPtr->imageString != NULL) {
+      ckfree(imgPtr->imageString);
+   }
+   if (imgPtr->activeImageString != NULL) {
+      ckfree(imgPtr->activeImageString);
+   }
+   if (imgPtr->disabledImageString != NULL) {
+      ckfree(imgPtr->disabledImageString);
+   }
+   if (imgPtr->image != NULL) {
+      Tk_FreeImage(imgPtr->image);
+   }
+   if (imgPtr->activeImage != NULL) {
+      Tk_FreeImage(imgPtr->activeImage);
+   }
+   if (imgPtr->disabledImage != NULL) {
+      Tk_FreeImage(imgPtr->disabledImage);
+   }
 }
 
 /*
@@ -448,86 +393,84 @@ DeleteImage(canvas, itemPtr, display)
  */
 
    /* ARGSUSED */
-static void
-ComputeImageBbox(canvas, imgPtr)
-    Tk_Canvas canvas;         /* Canvas that contains item. */
-    ImageItem *imgPtr;        /* Item whose bbox is to be
-                * recomputed. */
+static void ComputeImageBbox(
+   Tk_Canvas canvas,      /* Canvas that contains item. */
+   ImageItem *imgPtr)     /* Item whose bbox is to be recomputed. */
 {
-    int width, height;
-    int x, y;
-    Tk_Image image;
-    Tk_State state = imgPtr->header.state;
+   int width, height;
+   int x, y;
+   Tk_Image image;
+   Tk_State state = imgPtr->header.state;
 
-    if(state == TK_STATE_NULL) {
-   state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    image = imgPtr->image;
-    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)imgPtr) {
-   if (imgPtr->activeImage != NULL) {
-       image = imgPtr->activeImage;
+   if(state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
    }
-    } else if (state == TK_STATE_DISABLED) {
-   if (imgPtr->disabledImage != NULL) {
-       image = imgPtr->disabledImage;
+   image = imgPtr->image;
+   if (Canvas(canvas)->currentItemPtr == (Tk_Item *)imgPtr) {
+      if (imgPtr->activeImage != NULL) {
+         image = imgPtr->activeImage;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (imgPtr->disabledImage != NULL) {
+         image = imgPtr->disabledImage;
+      }
    }
-    }
 
-    x = (int) (imgPtr->x + ((imgPtr->x >= 0) ? 0.5 : - 0.5));
-    y = (int) (imgPtr->y + ((imgPtr->y >= 0) ? 0.5 : - 0.5));
+   x = (int) (imgPtr->x + ((imgPtr->x >= 0) ? 0.5 : - 0.5));
+   y = (int) (imgPtr->y + ((imgPtr->y >= 0) ? 0.5 : - 0.5));
 
-    if ((state == TK_STATE_HIDDEN) || (image == None)) {
-   imgPtr->header.x1 = imgPtr->header.x2 = x;
-   imgPtr->header.y1 = imgPtr->header.y2 = y;
-   return;
-    }
+   if ((state == TK_STATE_HIDDEN) || (image == None)) {
+      imgPtr->header.x1 = imgPtr->header.x2 = x;
+      imgPtr->header.y1 = imgPtr->header.y2 = y;
+      return;
+   }
 
-    /*
-     * Compute location and size of image, using anchor information.
-     */
+   /*
+   * Compute location and size of image, using anchor information.
+   */
 
-    Tk_SizeOfImage(image, &width, &height);
-    switch (imgPtr->anchor) {
-   case TK_ANCHOR_N:
-       x -= width/2;
-       break;
-   case TK_ANCHOR_NE:
-       x -= width;
-       break;
-   case TK_ANCHOR_E:
-       x -= width;
-       y -= height/2;
-       break;
-   case TK_ANCHOR_SE:
-       x -= width;
-       y -= height;
-       break;
-   case TK_ANCHOR_S:
-       x -= width/2;
-       y -= height;
-       break;
-   case TK_ANCHOR_SW:
-       y -= height;
-       break;
-   case TK_ANCHOR_W:
-       y -= height/2;
-       break;
-   case TK_ANCHOR_NW:
-       break;
-   case TK_ANCHOR_CENTER:
-       x -= width/2;
-       y -= height/2;
-       break;
-    }
+   Tk_SizeOfImage(image, &width, &height);
+   switch (imgPtr->anchor) {
+      case TK_ANCHOR_N:
+         x -= width/2;
+         break;
+      case TK_ANCHOR_NE:
+         x -= width;
+         break;
+      case TK_ANCHOR_E:
+         x -= width;
+         y -= height/2;
+         break;
+      case TK_ANCHOR_SE:
+         x -= width;
+         y -= height;
+         break;
+      case TK_ANCHOR_S:
+         x -= width/2;
+         y -= height;
+         break;
+      case TK_ANCHOR_SW:
+         y -= height;
+         break;
+      case TK_ANCHOR_W:
+         y -= height/2;
+         break;
+      case TK_ANCHOR_NW:
+      break;
+         case TK_ANCHOR_CENTER:
+         x -= width/2;
+         y -= height/2;
+      break;
+   }
 
-    /*
-     * Store the information in the item header.
-     */
+   /*
+   * Store the information in the item header.
+   */
 
-    imgPtr->header.x1 = x;
-    imgPtr->header.y1 = y;
-    imgPtr->header.x2 = x + width;
-    imgPtr->header.y2 = y + height;
+   imgPtr->header.x1 = x;
+   imgPtr->header.y1 = y;
+   imgPtr->header.x2 = x + width;
+   imgPtr->header.y2 = y + height;
 }
 
 /*
@@ -549,14 +492,12 @@ ComputeImageBbox(canvas, imgPtr)
  */
 
 static void
-DisplayImage(canvas, itemPtr, display, drawable, x, y, width, height)
-    Tk_Canvas canvas;         /* Canvas that contains item. */
-    Tk_Item *itemPtr;         /* Item to be displayed. */
-    Display *display;         /* Display on which to draw item. */
-    Drawable drawable;        /* Pixmap or window in which to draw
-                * item. */
-    int x, y, width, height;     /* Describes region of canvas that
-                * must be redisplayed (not used). */
+DisplayImage(
+   Tk_Canvas canvas,      /* Canvas that contains item. */
+   Tk_Item *itemPtr,      /* Item to be displayed. */
+   Display *display,      /* Display on which to draw item. */
+   Drawable drawable,     /* Pixmap or window in which to draw item. */
+   int x, int y, int width, int height) /* Describes region of canvas that must be redisplayed (not used). */
 {
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
@@ -626,41 +567,40 @@ DisplayImage(canvas, itemPtr, display, drawable, x, y, width, height)
  *--------------------------------------------------------------
  */
 
-static double
-ImageToPoint(canvas, itemPtr, coordPtr)
-    Tk_Canvas canvas;      /* Canvas containing item. */
-    Tk_Item *itemPtr;      /* Item to check against point. */
-    double *coordPtr;      /* Pointer to x and y coordinates. */
+static double ImageToPoint(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against point. */
+   double *coordPtr)      /* Pointer to x and y coordinates. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
-    double x1, x2, y1, y2, xDiff, yDiff;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
+   double x1, x2, y1, y2, xDiff, yDiff;
 
-    x1 = imgPtr->header.x1;
-    y1 = imgPtr->header.y1;
-    x2 = imgPtr->header.x2;
-    y2 = imgPtr->header.y2;
+   x1 = imgPtr->header.x1;
+   y1 = imgPtr->header.y1;
+   x2 = imgPtr->header.x2;
+   y2 = imgPtr->header.y2;
 
-    /*
-     * Point is outside rectangle.
-     */
+   /*
+   * Point is outside rectangle.
+   */
 
-    if (coordPtr[0] < x1) {
-   xDiff = x1 - coordPtr[0];
-    } else if (coordPtr[0] > x2)  {
-   xDiff = coordPtr[0] - x2;
-    } else {
-   xDiff = 0;
-    }
+   if (coordPtr[0] < x1) {
+      xDiff = x1 - coordPtr[0];
+   } else if (coordPtr[0] > x2)  {
+      xDiff = coordPtr[0] - x2;
+   } else {
+      xDiff = 0;
+   }
 
-    if (coordPtr[1] < y1) {
-   yDiff = y1 - coordPtr[1];
-    } else if (coordPtr[1] > y2)  {
-   yDiff = coordPtr[1] - y2;
-    } else {
-   yDiff = 0;
-    }
+   if (coordPtr[1] < y1) {
+      yDiff = y1 - coordPtr[1];
+   } else if (coordPtr[1] > y2)  {
+      yDiff = coordPtr[1] - y2;
+   } else {
+      yDiff = 0;
+   }
 
-    return hypot(xDiff, yDiff);
+   return hypot(xDiff, yDiff);
 }
 
 /*
@@ -683,29 +623,28 @@ ImageToPoint(canvas, itemPtr, coordPtr)
  *--------------------------------------------------------------
  */
 
-static int
-ImageToArea(canvas, itemPtr, rectPtr)
-    Tk_Canvas canvas;      /* Canvas containing item. */
-    Tk_Item *itemPtr;      /* Item to check against rectangle. */
-    double *rectPtr;    /* Pointer to array of four coordinates
-             * (x1, y1, x2, y2) describing rectangular
-             * area.  */
+static int ImageToArea(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against rectangle. */
+   double *rectPtr)    /* Pointer to array of four coordinates
+             * (x1,y1,x2,y2) describing rectangular
+             * area. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
 
-    if ((rectPtr[2] <= imgPtr->header.x1)
-       || (rectPtr[0] >= imgPtr->header.x2)
-       || (rectPtr[3] <= imgPtr->header.y1)
-       || (rectPtr[1] >= imgPtr->header.y2)) {
-   return -1;
-    }
-    if ((rectPtr[0] <= imgPtr->header.x1)
-       && (rectPtr[1] <= imgPtr->header.y1)
-       && (rectPtr[2] >= imgPtr->header.x2)
-       && (rectPtr[3] >= imgPtr->header.y2)) {
-   return 1;
-    }
-    return 0;
+   if ((rectPtr[2] <= imgPtr->header.x1)
+         || (rectPtr[0] >= imgPtr->header.x2)
+         || (rectPtr[3] <= imgPtr->header.y1)
+         || (rectPtr[1] >= imgPtr->header.y2)) {
+      return -1;
+   }
+   if ((rectPtr[0] <= imgPtr->header.x1)
+         && (rectPtr[1] <= imgPtr->header.y1)
+         && (rectPtr[2] >= imgPtr->header.x2)
+         && (rectPtr[3] >= imgPtr->header.y2)) {
+      return 1;
+   }
+   return 0;
 }
 
 /*
@@ -729,73 +668,77 @@ ImageToArea(canvas, itemPtr, rectPtr)
  *--------------------------------------------------------------
  */
 
-static int
-ImageToPostscript(interp, canvas, itemPtr, prepass)
-    Tcl_Interp *interp;       /* Leave Postscript or error message
-                * here. */
-    Tk_Canvas canvas;         /* Information about overall canvas. */
-    Tk_Item *itemPtr;         /* Item for which Postscript is
-                * wanted. */
-    int prepass;        /* 1 means this is a prepass to
-                * collect font information;  0 means
-                * final Postscript is being created.*/
+static int ImageToPostscript(
+   Tcl_Interp *interp,    /* Leave Postscript or error message here. */
+   Tk_Canvas canvas,      /* Information about overall canvas. */
+   Tk_Item *itemPtr,      /* Item for which Postscript is wanted. */
+   int prepass)     /* 1 means this is a prepass to collect font
+             * information; 0 means final Postscript is
+             * being created.*/
 {
-    ImageItem *imgPtr = (ImageItem *)itemPtr;
-    Tk_Window canvasWin = Tk_CanvasTkwin(canvas);
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
+   Tk_Window canvasWin = Tk_CanvasTkwin(canvas);
+   double x, y;
+   int width, height;
+   Tk_Image image;
+   Tk_State state = itemPtr->state;
 
-    char buffer[256];
-    double x, y;
-    int width, height;
-    Tk_Image image;
-    Tk_State state = itemPtr->state;
-
-    if(state == TK_STATE_NULL) {
-   state = ((TkCanvas *)canvas)->canvas_state;
-    }
-
-    image = imgPtr->image;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-   if (imgPtr->activeImage != NULL) {
-       image = imgPtr->activeImage;
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
    }
-    } else if (state == TK_STATE_DISABLED) {
-   if (imgPtr->disabledImage != NULL) {
-       image = imgPtr->disabledImage;
+
+   image = imgPtr->image;
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
+      if (imgPtr->activeImage != NULL) {
+         image = imgPtr->activeImage;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (imgPtr->disabledImage != NULL) {
+         image = imgPtr->disabledImage;
+      }
    }
-    }
-    Tk_SizeOfImage(image, &width, &height);
+   if (image == NULL) {
+   /*
+   * Image item without actual image specified.
+   */
 
-    /*
-     * Compute the coordinates of the lower-left corner of the image,
-     * taking into account the anchor position for the image.
-     */
+      return TCL_OK;
+   }
+   Tk_SizeOfImage(image, &width, &height);
 
-    x = imgPtr->x;
-    y = Tk_CanvasPsY(canvas, imgPtr->y);
+   /*
+   * Compute the coordinates of the lower-left corner of the image, taking
+   * into account the anchor position for the image.
+   */
 
-    switch (imgPtr->anchor) {
-   case TK_ANCHOR_NW:         y -= height;      break;
-   case TK_ANCHOR_N: x -= width/2.0; y -= height;     break;
-   case TK_ANCHOR_NE:   x -= width; y -= height;      break;
-   case TK_ANCHOR_E: x -= width; y -= height/2.0;  break;
-   case TK_ANCHOR_SE:   x -= width;          break;
-   case TK_ANCHOR_S: x -= width/2.0;            break;
-   case TK_ANCHOR_SW:                  break;
-   case TK_ANCHOR_W:       y -= height/2.0;  break;
-   case TK_ANCHOR_CENTER:  x -= width/2.0; y -= height/2.0; break;
-    }
+   x = imgPtr->x;
+   y = Tk_CanvasPsY(canvas, imgPtr->y);
 
-    if (image == NULL) {
-        return TCL_OK;
-    }
+   switch (imgPtr->anchor) {
+      case TK_ANCHOR_NW:           y -= height;      break;
+      case TK_ANCHOR_N:      x -= width/2.0; y -= height;     break;
+      case TK_ANCHOR_NE:     x -= width;    y -= height;      break;
+      case TK_ANCHOR_E:      x -= width;    y -= height/2.0;  break;
+      case TK_ANCHOR_SE:     x -= width;          break;
+      case TK_ANCHOR_S:      x -= width/2.0;         break;
+      case TK_ANCHOR_SW:                 break;
+      case TK_ANCHOR_W:            y -= height/2.0;  break;
+      case TK_ANCHOR_CENTER: x -= width/2.0; y -= height/2.0; break;
+   }
 
-    if (!prepass) {
-   sprintf(buffer, "%.15g %.15g", x, y);
-   Tcl_AppendResult(interp, buffer, " translate\n", (char *) NULL);
-    }
+   if (!prepass) {
+      Tcl_Obj *psObj = Tcl_GetObjResult(interp);
 
-    return Tk_PostscriptImage(image, interp, canvasWin,
-       ((TkCanvas *) canvas)->psInfo, 0, 0, width, height, prepass);
+      if (Tcl_IsShared(psObj)) {
+         psObj = Tcl_DuplicateObj(psObj);
+         Tcl_SetObjResult(interp, psObj);
+      }
+
+      Tcl_AppendPrintfToObj(psObj, "%.15g %.15g translate\n", x, y);
+   }
+
+   return Tk_PostscriptImage(image, interp, canvasWin,
+      ((TkCanvas *) canvas)->psInfo, 0, 0, width, height, prepass);
 }
 
 /*
@@ -817,19 +760,18 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
  *--------------------------------------------------------------
  */
 
-static void
-ScaleImage(canvas, itemPtr, originX, originY, scaleX, scaleY)
-    Tk_Canvas canvas;         /* Canvas containing rectangle. */
-    Tk_Item *itemPtr;         /* Rectangle to be scaled. */
-    double originX, originY;     /* Origin about which to scale rect. */
-    double scaleX;         /* Amount to scale in X direction. */
-    double scaleY;         /* Amount to scale in Y direction. */
+static void ScaleImage(
+   Tk_Canvas canvas,      /* Canvas containing rectangle. */
+   Tk_Item *itemPtr,      /* Rectangle to be scaled. */
+   double originX, double originY,  /* Origin about which to scale rect. */
+   double scaleX,      /* Amount to scale in X direction. */
+   double scaleY)      /* Amount to scale in Y direction. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
 
-    imgPtr->x = originX + scaleX*(imgPtr->x - originX);
-    imgPtr->y = originY + scaleY*(imgPtr->y - originY);
-    ComputeImageBbox(canvas, imgPtr);
+   imgPtr->x = originX + scaleX*(imgPtr->x - originX);
+   imgPtr->y = originY + scaleY*(imgPtr->y - originY);
+   ComputeImageBbox(canvas, imgPtr);
 }
 
 /*
@@ -850,18 +792,16 @@ ScaleImage(canvas, itemPtr, originX, originY, scaleX, scaleY)
  *--------------------------------------------------------------
  */
 
-static void
-TranslateImage(canvas, itemPtr, deltaX, deltaY)
-    Tk_Canvas canvas;         /* Canvas containing item. */
-    Tk_Item *itemPtr;         /* Item that is being moved. */
-    double deltaX, deltaY;    /* Amount by which item is to be
-                * moved. */
+static void TranslateImage(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item that is being moved. */
+   double deltaX, double deltaY) /* Amount by which item is to be moved. */
 {
-    ImageItem *imgPtr = (ImageItem *) itemPtr;
+   ImageItem *imgPtr = (ImageItem *) itemPtr;
 
-    imgPtr->x += deltaX;
-    imgPtr->y += deltaY;
-    ComputeImageBbox(canvas, imgPtr);
+   imgPtr->x += deltaX;
+   imgPtr->y += deltaY;
+   ComputeImageBbox(canvas, imgPtr);
 }
 
 /*
@@ -882,34 +822,31 @@ TranslateImage(canvas, itemPtr, deltaX, deltaY)
  *----------------------------------------------------------------------
  */
 
-static void
-ImageChangedProc(clientData, x, y, width, height, imgWidth, imgHeight)
-    ClientData clientData;    /* Pointer to canvas item for image. */
-    int x, y;           /* Upper left pixel (within image)
-                * that must be redisplayed. */
-    int width, height;        /* Dimensions of area to redisplay
-                * (may be <= 0). */
-    int imgWidth, imgHeight;     /* New dimensions of image. */
+static void ImageChangedProc(
+   ClientData clientData, /* Pointer to canvas item for image. */
+   int x, int y,    /* Upper left pixel (within image) that must be redisplayed. */
+   int width, int height, /* Dimensions of area to redisplay (may be <= 0). */
+   int imgWidth, int imgHeight)/* New dimensions of image. */
 {
-    ImageItem *imgPtr = (ImageItem *) clientData;
+   ImageItem *imgPtr = clientData;
 
-    /*
-     * If the image's size changed and it's not anchored at its
-     * northwest corner then just redisplay the entire area of the
-     * image.  This is a bit over-conservative, but we need to do
-     * something because a size change also means a position change.
-     */
+   /*
+   * If the image's size changed and it's not anchored at its northwest
+   * corner then just redisplay the entire area of the image. This is a bit
+   * over-conservative, but we need to do something because a size change
+   * also means a position change.
+   */
 
-    if (((imgPtr->header.x2 - imgPtr->header.x1) != imgWidth)
-       || ((imgPtr->header.y2 - imgPtr->header.y1) != imgHeight)) {
-   x = y = 0;
-   width = imgWidth;
-   height = imgHeight;
-   Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1,
-      imgPtr->header.y1, imgPtr->header.x2, imgPtr->header.y2);
-    }
-    ComputeImageBbox(imgPtr->canvas, imgPtr);
-    Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1 + x,
-       imgPtr->header.y1 + y, (int) (imgPtr->header.x1 + x + width),
-       (int) (imgPtr->header.y1 + y + height));
+   if (((imgPtr->header.x2 - imgPtr->header.x1) != imgWidth)
+      || ((imgPtr->header.y2 - imgPtr->header.y1) != imgHeight)) {
+      x = y = 0;
+      width = imgWidth;
+      height = imgHeight;
+      Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1,
+         imgPtr->header.y1, imgPtr->header.x2, imgPtr->header.y2);
+   }
+   ComputeImageBbox(imgPtr->canvas, imgPtr);
+   Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1 + x,
+      imgPtr->header.y1 + y, (int) (imgPtr->header.x1 + x + width),
+      (int) (imgPtr->header.y1 + y + height));
 }

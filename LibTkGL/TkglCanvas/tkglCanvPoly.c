@@ -13,9 +13,7 @@
  * RCS: @(#) $Id: tkCanvPoly.c,v 1.5.2.1 2000/08/05 23:53:11 hobbs Exp $
  */
 
-#include <stdio.h>
 #include "tkInt.h"
-#include "tkPort.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each polygon item */
@@ -31,107 +29,79 @@ typedef struct glPolygonItem  {
                           * are corresponding odd-valued indices. */
    int joinStyle;        /* Join style for outline */
    Tk_TSOffset tsoffset;
-
-
    XColor *fillColor;                  /* Foreground color for polygon. */
    XColor *activeFillColor;            /* Foreground color for polygon if state is active. */
    XColor *disabledFillColor;          /* Foreground color for polygon if state is disabled. */
 
    Tk_SmoothMethod *smooth;     /* Non-zero means draw shape smoothed (i.e. with Bezier splines). */
+   int numSmooth;               /* Number of vertex in line (always >= 0). */
+   double *SmoothPtr;           /* Pointer to malloc-ed array containing*/
    int splineSteps;             /* Number of steps in each spline segment. */
-   int numSmooth;		/* Number of vertex in line (always >= 0). */
-   double *SmoothPtr;		/* Pointer to malloc-ed array containing*/
+   int autoClosed;     /* Zero means the given polygon was closed, one means that we auto closed it. */
 
    T_glBitmap *fillStipple;          /* Stipple bitmap for filling item. */
-   T_glBitmap *activeStipple;        /* Stipple bitmap for filling item if state is active. */
-   T_glBitmap *disabledStipple;      /* Stipple bitmap for filling item if state is disabled. */
+   T_glBitmap *activeFillStipple;        /* Stipple bitmap for filling item if state is active. */
+   T_glBitmap *disabledFillStipple;      /* Stipple bitmap for filling item if state is disabled. */
    int  alpha;                       /* alpha value of the polygon & stipple bitmap */
 } glPolygonItem;
 
 /* Information used for parsing configuration specs: */
 
-static Tk_CustomOption bitmapOption = { (Tk_OptionParseProc*)glBitmapParseProc,glBitmapPrintProc,(ClientData)NULL };
-static Tk_CustomOption smoothOption = { (Tk_OptionParseProc*)TkSmoothParseProc,TkSmoothPrintProc,(ClientData)NULL };
-static Tk_CustomOption stateOption  = { (Tk_OptionParseProc*)TkStateParseProc,TkStatePrintProc,(ClientData)2 };
-static Tk_CustomOption tagsOption   = { (Tk_OptionParseProc*)Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
-static Tk_CustomOption dashOption   = { (Tk_OptionParseProc*)TkCanvasDashParseProc,TkCanvasDashPrintProc,(ClientData)NULL };
-static Tk_CustomOption offsetOption = { (Tk_OptionParseProc*)TkOffsetParseProc,TkOffsetPrintProc,(ClientData)(TK_OFFSET_RELATIVE|TK_OFFSET_INDEX) };
-static Tk_CustomOption pixelOption  = { (Tk_OptionParseProc*)TkPixelParseProc,TkPixelPrintProc,(ClientData)NULL };
+static const Tk_CustomOption bitmapOption = { glBitmapParseProc,glBitmapPrintProc,NULL };
+static const Tk_CustomOption smoothOption = { TkSmoothParseProc,TkSmoothPrintProc,NULL };
+static const Tk_CustomOption stateOption  = { TkStateParseProc,TkStatePrintProc,INT2PTR(2) };
+static const Tk_CustomOption tagsOption   = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
+static const Tk_CustomOption dashOption   = { TkCanvasDashParseProc,TkCanvasDashPrintProc,NULL };
+static const Tk_CustomOption offsetOption = { TkOffsetParseProc,TkOffsetPrintProc,INT2PTR(TK_OFFSET_RELATIVE|TK_OFFSET_INDEX) };
+static const Tk_CustomOption pixelOption  = { TkPixelParseProc,TkPixelPrintProc,NULL };
 
-static Tk_ConfigSpec configSpecs[] = {
-   { TK_CONFIG_CUSTOM,"-activedash",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.activeDash),TK_CONFIG_NULL_OK,&dashOption},
-   { TK_CONFIG_COLOR,"-activefill",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,activeFillColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-activeoutline",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.activeColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_BITMAP,"-activeoutlinestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.activeStipple),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_CUSTOM,"-activestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,activeStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-   { TK_CONFIG_CUSTOM,"-activewidth",(char*)NULL,(char*)NULL,"0.0",
-      Tk_Offset(glPolygonItem, outline.activeWidth),TK_CONFIG_DONT_SET_DEFAULT, &pixelOption },
-   { TK_CONFIG_CUSTOM,"-dash",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.dash),TK_CONFIG_NULL_OK,&dashOption },
-   { TK_CONFIG_PIXELS,"-dashoffset",(char*)NULL,(char*)NULL,"0",
-      Tk_Offset(glPolygonItem,outline.offset),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-disableddash",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.disabledDash),TK_CONFIG_NULL_OK,&dashOption },
-   { TK_CONFIG_COLOR,"-disabledfill",(char*)NULL,(char *) NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,disabledFillColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-disabledoutline",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.disabledColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_BITMAP,"-disabledoutlinestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-       Tk_Offset(glPolygonItem,outline.disabledStipple),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_CUSTOM,"-disabledstipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,disabledStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-   { TK_CONFIG_CUSTOM,"-disabledwidth",(char*)NULL,(char*)NULL,"0.0",
-       Tk_Offset(glPolygonItem, outline.disabledWidth),TK_CONFIG_DONT_SET_DEFAULT,&pixelOption },
-   { TK_CONFIG_COLOR,"-fill",(char*)NULL,(char*)NULL,"black",
-      Tk_Offset(glPolygonItem,fillColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_JOIN_STYLE, "-joinstyle", (char *) NULL, (char *) NULL,"round",
-      Tk_Offset(glPolygonItem,joinStyle),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-offset",(char*)NULL,(char*)NULL,"0,0",
-      Tk_Offset(glPolygonItem,tsoffset),TK_CONFIG_NULL_OK,&offsetOption },
-   { TK_CONFIG_COLOR,"-outline",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.color),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_CUSTOM,"-outlineoffset",(char*)NULL,(char*)NULL,"0,0",
-      Tk_Offset(glPolygonItem, outline.tsoffset),TK_CONFIG_NULL_OK,&offsetOption },
-   { TK_CONFIG_BITMAP,"-outlinestipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,outline.stipple),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_CUSTOM,"-smooth",(char*)NULL,(char*)NULL,"0",
-      Tk_Offset(glPolygonItem,smooth),TK_CONFIG_DONT_SET_DEFAULT,&smoothOption },
-   { TK_CONFIG_INT,"-splinesteps",(char*)NULL,(char*)NULL,"12",
-       Tk_Offset(glPolygonItem, splineSteps), TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-state",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(Tk_Item,state),TK_CONFIG_NULL_OK,&stateOption },
-   { TK_CONFIG_CUSTOM,"-stipple",(char*)NULL,(char*)NULL,(char*)NULL,
-      Tk_Offset(glPolygonItem,fillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
-   { TK_CONFIG_INT, "-transparency", (char *) NULL, (char *) NULL,"100",
-      Tk_Offset(glPolygonItem, alpha), TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-tags",(char*)NULL,(char*)NULL,(char*)NULL,
-       0,TK_CONFIG_NULL_OK, &tagsOption },
-   { TK_CONFIG_CUSTOM,"-width",(char*)NULL,(char*)NULL,"1.0",
-      Tk_Offset(glPolygonItem,outline.width),TK_CONFIG_DONT_SET_DEFAULT,&pixelOption },
-   { TK_CONFIG_END,(char*)NULL,(char*)NULL,(char*)NULL,(char*)NULL,0,0 }
+static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_CUSTOM,"-activedash", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.activeDash),TK_CONFIG_NULL_OK,&dashOption },
+   { TK_CONFIG_COLOR,"-activefill", NULL, NULL, NULL, Tk_Offset(glPolygonItem,activeFillColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR,"-activeoutline", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.activeColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_BITMAP,"-activeoutlinestipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.activeStipple),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM,"-activestipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,activeFillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
+   { TK_CONFIG_CUSTOM,"-activewidth", NULL, NULL,"0.0", Tk_Offset(glPolygonItem, outline.activeWidth),TK_CONFIG_DONT_SET_DEFAULT, &pixelOption },
+   { TK_CONFIG_CUSTOM,"-dash", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.dash),TK_CONFIG_NULL_OK,&dashOption },
+   { TK_CONFIG_PIXELS,"-dashoffset", NULL, NULL,"0", Tk_Offset(glPolygonItem,outline.offset),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM,"-disableddash", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.disabledDash),TK_CONFIG_NULL_OK,&dashOption },
+   { TK_CONFIG_COLOR,"-disabledfill", NULL, NULL, NULL, Tk_Offset(glPolygonItem,disabledFillColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR,"-disabledoutline", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.disabledColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_BITMAP,"-disabledoutlinestipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.disabledStipple),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM,"-disabledstipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,disabledFillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
+   { TK_CONFIG_CUSTOM,"-disabledwidth", NULL, NULL,"0.0", Tk_Offset(glPolygonItem, outline.disabledWidth),TK_CONFIG_DONT_SET_DEFAULT,&pixelOption },
+   { TK_CONFIG_COLOR,"-fill", NULL, NULL,"black", Tk_Offset(glPolygonItem,fillColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_JOIN_STYLE, "-joinstyle", NULL, NULL,"round", Tk_Offset(glPolygonItem,joinStyle),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM,"-offset", NULL, NULL,"0,0", Tk_Offset(glPolygonItem,tsoffset),TK_CONFIG_NULL_OK,&offsetOption },
+   { TK_CONFIG_COLOR,"-outline", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.color),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM,"-outlineoffset", NULL, NULL,"0,0", Tk_Offset(glPolygonItem, outline.tsoffset),TK_CONFIG_NULL_OK,&offsetOption },
+   { TK_CONFIG_BITMAP,"-outlinestipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,outline.stipple),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM,"-smooth", NULL, NULL,"0", Tk_Offset(glPolygonItem,smooth),TK_CONFIG_DONT_SET_DEFAULT,&smoothOption },
+   { TK_CONFIG_INT,"-splinesteps", NULL, NULL,"12", Tk_Offset(glPolygonItem, splineSteps), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM,"-state", NULL, NULL, NULL, Tk_Offset(Tk_Item,state),TK_CONFIG_NULL_OK,&stateOption },
+   { TK_CONFIG_CUSTOM,"-stipple", NULL, NULL, NULL, Tk_Offset(glPolygonItem,fillStipple),TK_CONFIG_NULL_OK,&bitmapOption },
+   { TK_CONFIG_INT, "-transparency", NULL, NULL,"100", Tk_Offset(glPolygonItem, alpha), TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM,"-tags", NULL, NULL, NULL, 0,TK_CONFIG_NULL_OK, &tagsOption },
+   { TK_CONFIG_CUSTOM,"-width", NULL, NULL,"1.0", Tk_Offset(glPolygonItem,outline.width),TK_CONFIG_DONT_SET_DEFAULT,&pixelOption },
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL,0,0 }
 };
 
 /* Prototypes for procedures defined in this file */
 
-static void   glComputePolygonBbox _ANSI_ARGS_((Tk_Canvas canvas,glPolygonItem *polyPtr));
-static int    glConfigurePolygon _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[], int flags));
-static int    glCreatePolygon _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static void   glDeletePolygon _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display));
-static void   glDisplayPolygon _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height));
-static int    glGetPolygonIndex _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,Tcl_Obj *obj,int *indexPtr));
-static int    glPolygonCoords _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int argc,Tcl_Obj *CONST argv[]));
-static void   glPolygonDeleteCoords _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int first,int last));
-static void   glPolygonInsert _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,int beforeThis,Tcl_Obj *obj));
-static int    glPolygonToArea _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *rectPtr));
-static double glPolygonToPoint _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr));
-static int    glPolygonToPostscript _ANSI_ARGS_((Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr, int prepass));
-static void   glScalePolygon _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY));
-static void   glTranslatePolygon _ANSI_ARGS_((Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY));
+static void   glComputePolygonBbox(Tk_Canvas canvas,glPolygonItem *polyPtr);
+static int    glConfigurePolygon(Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[], int flags);
+static int    glCreatePolygon(Tcl_Interp *interp,Tk_Canvas canvas,struct Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[]);
+static void   glDeletePolygon(Tk_Canvas canvas,Tk_Item *itemPtr,Display *display);
+static void   glDisplayPolygon(Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height);
+static int    glGetPolygonIndex(Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,Tcl_Obj *obj,int *indexPtr);
+static int    glPolygonCoords(Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int objc,Tcl_Obj *const objv[]);
+static void   glPolygonDeleteCoords(Tk_Canvas canvas,Tk_Item *itemPtr,int first,int last);
+static void   glPolygonInsert(Tk_Canvas canvas,Tk_Item *itemPtr,int beforeThis,Tcl_Obj *obj);
+static int    glPolygonToArea(Tk_Canvas canvas,Tk_Item *itemPtr,double *rectPtr);
+static double glPolygonToPoint(Tk_Canvas canvas,Tk_Item *itemPtr,double *pointPtr);
+static int    glPolygonToPostscript(Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr, int prepass);
+static void   glScalePolygon(Tk_Canvas canvas,Tk_Item *itemPtr,double originX,double originY,double scaleX,double scaleY);
+static void   glTranslatePolygon(Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY);
 
 /*
  * The structures below defines the polygon item type by means
@@ -147,20 +117,19 @@ Tk_ItemType tkglPolygonType = {
     glPolygonCoords,                          /* coordProc */
     glDeletePolygon,                          /* deleteProc */
     glDisplayPolygon,                         /* displayProc */
-    TK_CONFIG_OBJS,                           /* flags */
+    TK_CONFIG_OBJS | TK_MOVABLE_POINTS,       /* flags */
     glPolygonToPoint,                         /* pointProc */
     glPolygonToArea,                          /* areaProc */
     glPolygonToPostscript,                    /* postscriptProc */
     glScalePolygon,                           /* scaleProc */
     glTranslatePolygon,                       /* translateProc */
-    (Tk_ItemIndexProc *) glGetPolygonIndex,   /* indexProc */
-    (Tk_ItemCursorProc *) NULL,               /* icursorProc */
-    (Tk_ItemSelectionProc *) NULL,            /* selectionProc */
-    (Tk_ItemInsertProc *) glPolygonInsert,    /* insertProc */
+    glGetPolygonIndex,                        /* indexProc */
+    NULL,                                     /* icursorProc */
+    NULL,                                     /* selectionProc */
+    glPolygonInsert,                          /* insertProc */
     glPolygonDeleteCoords,                    /* dTextProc */
-    (Tk_ItemType *) NULL,                     /* nextPtr */
+    NULL,                                     /* nextPtr */
 };
-
 
 /*
  *--------------------------------------------------------------
@@ -183,17 +152,21 @@ Tk_ItemType tkglPolygonType = {
  *--------------------------------------------------------------
  */
 
-static int glCreatePolygon(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;       /* Interpreter for error reporting. */
-    Tk_Canvas canvas;         /* Canvas to hold new item. */
-    Tk_Item *itemPtr;         /* Record to hold new item;  header has been initialized by caller. */
-    int argc;                 /* Number of arguments in argv. */
-    Tcl_Obj *CONST argv[];    /* Arguments describing polygon. */
+static int glCreatePolygon(
+   Tcl_Interp *interp,    /* Interpreter for error reporting. */
+   Tk_Canvas canvas,      /* Canvas to hold new item. */
+   Tk_Item *itemPtr,      /* Record to hold new item; header has been initialized by caller. */
+   int objc,              /* Number of arguments in objv. */
+   Tcl_Obj *const objv[]) /* Arguments describing polygon. */
 {
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
    int i;
 
-   /*
+   if (objc == 0) {
+      Tcl_Panic("canvas did not pass any coords");
+   }
+
+    /*
     * Carry out initialization that is needed in order to clean
     * up after errors during the the remainder of this procedure.
     */
@@ -209,31 +182,34 @@ static int glCreatePolygon(interp, canvas, itemPtr, argc, argv)
    polyPtr->fillColor           = NULL;
    polyPtr->activeFillColor     = NULL;
    polyPtr->disabledFillColor   = NULL;
-   polyPtr->smooth              = (Tk_SmoothMethod *) NULL;
-   polyPtr->splineSteps         = 12;
+   polyPtr->smooth              = NULL;
    polyPtr->numSmooth           = 0;
    polyPtr->SmoothPtr           = NULL;
    polyPtr->fillStipple         = NULL;
-   polyPtr->activeStipple       = NULL;
-   polyPtr->disabledStipple     = NULL;
+   polyPtr->activeFillStipple   = NULL;
+   polyPtr->disabledFillStipple = NULL;
+   polyPtr->splineSteps         = 12;
+   polyPtr->autoClosed          = 0;
    polyPtr->alpha               = 100;
 
    /*
-     * Count the number of points and then parse them into a point
-     * array.  Leading arguments are assumed to be points if they
-     * start with a digit or a minus sign followed by a digit.
-     */
+   * Count the number of points and then parse them into a point
+   * array.  Leading arguments are assumed to be points if they
+   * start with a digit or a minus sign followed by a digit.
+   */
 
-   for (i = 0; i < argc; i++) {
-      char *arg = Tcl_GetStringFromObj((Tcl_Obj *) argv[i], NULL);
-      if ((arg[0] == '-') && (arg[1] >= 'a')&& (arg[1] <= 'z'))
+   for (i = 0; i < objc; i++) {
+      const char *arg = Tcl_GetString(objv[i]);
+
+      if ((arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
          break;
+      }
    }
 
    /* Process the arguments to fill in the item record */
 
-   if (i && glPolygonCoords(interp,canvas,itemPtr,i,argv) == TCL_OK) {
-      if (glConfigurePolygon(interp,canvas,itemPtr,argc-i,argv+i,0) == TCL_OK)
+   if (i && glPolygonCoords(interp,canvas,itemPtr,i,objv) == TCL_OK) {
+      if (glConfigurePolygon(interp,canvas,itemPtr,objc-i,objv+i,0) == TCL_OK)
          return TCL_OK;
    }
 
@@ -259,75 +235,82 @@ static int glCreatePolygon(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glPolygonCoords(interp, canvas, itemPtr, argc, argv)
-    Tcl_Interp *interp;    /* Used for error reporting. */
-    Tk_Canvas canvas;      /* Canvas containing item. */
-    Tk_Item *itemPtr;      /* Item whose coordinates are to be read or modified. */
-    int argc;              /* Number of coordinates supplied in argv. */
-    Tcl_Obj *CONST argv[]; /* Array of coordinates: x1, y1,x2, y2, ... */
+static int glPolygonCoords(
+   Tcl_Interp *interp,    /* Used for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item whose coordinates are to be read or modified. */
+   int objc,        /* Number of coordinates supplied in objv. */
+   Tcl_Obj *const objv[]) /* Array of coordinates: x1, y1, x2, y2, ... */
 {
 
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
    int i, numPoints;
 
-   if (argc == 0) {
-
-   /*
-    * Print the coords used to create the polygon.  If we auto
-    * closed the polygon then we don't report the last point.
-    */
+   if (objc == 0) {
+      /*
+      * Print the coords used to create the polygon. If we auto closed the
+      * polygon then we don't report the last point.
+      */
 
       Tcl_Obj *subobj, *obj = Tcl_NewObj();
 
-      for (i = 0; i < 2*polyPtr->numPoints; i++) {
+      for (i = 0; i < 2*(polyPtr->numPoints - polyPtr->autoClosed); i++) {
          subobj = Tcl_NewDoubleObj(polyPtr->coordPtr[i]);
          Tcl_ListObjAppendElement(interp, obj, subobj);
       }
-
       Tcl_SetObjResult(interp, obj);
       return TCL_OK;
    }
-
-
-   if (argc == 1) {
-      if (Tcl_ListObjGetElements(interp, argv[0], &argc,(Tcl_Obj ***) &argv) != TCL_OK)
+   if (objc == 1) {
+      if (Tcl_ListObjGetElements(interp, objv[0], &objc,
+         (Tcl_Obj ***) &objv) != TCL_OK) {
          return TCL_ERROR;
+      }
+   }
+   if (objc & 1) {
+      Tcl_SetObjResult(interp, Tcl_ObjPrintf(
+         "wrong # coordinates: expected an even number, got %d",
+         objc));
+      Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS", "POLYGON", NULL);
+      return TCL_ERROR;
    }
 
-   if (argc & 1) {
-      Tcl_AppendResult(interp,"odd number of coordinates specified for polygon",(char *) NULL);
-      return TCL_ERROR;
-   } else {
-
-      numPoints = argc/2;
-      if (polyPtr->pointsAllocated <= numPoints)
-         if (polyPtr->coordPtr != NULL)
-            ckfree((char *) polyPtr->coordPtr);
+   numPoints = objc/2;
+   if (polyPtr->pointsAllocated <= numPoints) {
+      if (polyPtr->coordPtr != NULL) {
+         ckfree(polyPtr->coordPtr);
+      }
 
       /*
-       * One extra point gets allocated here, because we always
-       * add another point to close the polygon.
-       */
+      * One extra point gets allocated here, because we always add
+      * another point to close the polygon.
+      */
 
-      polyPtr->coordPtr = (double *) ckalloc((unsigned)(sizeof(double) * (argc+2)));
+      polyPtr->coordPtr = ckalloc(sizeof(double) * (objc+2));
       polyPtr->pointsAllocated = numPoints+1;
    }
-
-   for (i = argc-1; i >= 0; i--) {
-      if (Tk_CanvasGetCoordFromObj(interp, canvas, argv[i],&polyPtr->coordPtr[i]) != TCL_OK)
+   for (i = objc-1; i >= 0; i--) {
+      if (Tk_CanvasGetCoordFromObj(interp, canvas, objv[i],
+         &polyPtr->coordPtr[i]) != TCL_OK) {
          return TCL_ERROR;
+      }
+   }
+   polyPtr->numPoints = numPoints;
+   polyPtr->autoClosed = 0;
+
+   /*
+   * Close the polygon if it isn't already closed.
+   */
+
+   if (objc>2 && ((polyPtr->coordPtr[objc-2] != polyPtr->coordPtr[0])
+         || (polyPtr->coordPtr[objc-1] != polyPtr->coordPtr[1]))) {
+      polyPtr->autoClosed = 1;
+      polyPtr->numPoints++;
+      polyPtr->coordPtr[objc] = polyPtr->coordPtr[0];
+      polyPtr->coordPtr[objc+1] = polyPtr->coordPtr[1];
    }
 
-   if (polyPtr->coordPtr[argc-2]!=polyPtr->coordPtr[0] || polyPtr->coordPtr[argc-1]!=polyPtr->coordPtr[1]) {
-
-      polyPtr->coordPtr[argc]=polyPtr->coordPtr[0];
-      polyPtr->coordPtr[argc+1]=polyPtr->coordPtr[1];
-      polyPtr->numPoints=numPoints+1;
-   } else {
-      polyPtr->numPoints = numPoints;
-   }
    glComputePolygonBbox(canvas, polyPtr);
-
    return TCL_OK;
 }
 
@@ -350,32 +333,69 @@ static int glPolygonCoords(interp, canvas, itemPtr, argc, argv)
  *--------------------------------------------------------------
  */
 
-static int glConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
-    Tcl_Interp *interp;         /* Interpreter for error reporting. */
-    Tk_Canvas canvas;           /* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;           /* Polygon item to reconfigure. */
-    int argc;                   /* Number of elements in argv.  */
-    Tcl_Obj *CONST argv[];      /* Arguments describing things to configure. */
-    int flags;                  /* Flags to pass to Tk_ConfigureWidget. */
+static int glConfigurePolygon(
+   Tcl_Interp *interp,    /* Interpreter for error reporting. */
+   Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+   Tk_Item *itemPtr,      /* Polygon item to reconfigure. */
+   int objc,              /* Number of elements in objv.  */
+   Tcl_Obj *const objv[], /* Arguments describing things to configure. */
+   int flags)             /* Flags to pass to Tk_ConfigureWidget. */
 {
 
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
    Tk_Window tkwin;
+   XColor *color;
+   T_glBitmap *stipple;
+   Tk_State state;
 
    tkwin = Tk_CanvasTkwin(canvas);
-   if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, (char **) argv,
-      (char *) polyPtr, flags|TK_CONFIG_OBJS) != TCL_OK)
+   if (Tk_ConfigureWidget(interp, tkwin, configSpecs, objc, (const char **) objv,
+      (char *) polyPtr, flags|TK_CONFIG_OBJS) != TCL_OK) {
       return TCL_ERROR;
+   }
+
+   /*
+   * A few of the options require additional processing, such as graphics
+   * contexts.
+   */
+
+   state = itemPtr->state;
 
    if (polyPtr->outline.activeWidth > polyPtr->outline.width ||
-	    polyPtr->outline.activeDash.number != 0 ||
-	    polyPtr->outline.activeColor != NULL ||
-	    polyPtr->outline.activeStipple != None ||
-	    polyPtr->activeFillColor != NULL ||
-	    polyPtr->activeStipple != NULL) {
-       itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
-    } else
-        itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
+      polyPtr->outline.activeDash.number != 0 ||
+      polyPtr->outline.activeColor != NULL ||
+      polyPtr->outline.activeStipple != None ||
+      polyPtr->activeFillColor != NULL ||
+      polyPtr->activeFillStipple != NULL) {
+      itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
+   } else {
+      itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
+   }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
+   if (state == TK_STATE_HIDDEN) {
+      glComputePolygonBbox(canvas, polyPtr);
+      return TCL_OK;
+   }
+
+   color = polyPtr->fillColor;
+   stipple = polyPtr->fillStipple;
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
+      if (polyPtr->activeFillColor != NULL) {
+         color = polyPtr->activeFillColor;
+      }
+      if (polyPtr->activeFillStipple != None) {
+         stipple = polyPtr->activeFillStipple;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (polyPtr->disabledFillColor != NULL) {
+         color = polyPtr->disabledFillColor;
+      }
+      if (polyPtr->disabledFillStipple != None) {
+         stipple = polyPtr->disabledFillStipple;
+      }
+   }
 
    /* Keep spline parameters within reasonable limits. */
    polyPtr->alpha=polyPtr->alpha<0?0:polyPtr->alpha>100?100:polyPtr->alpha;
@@ -402,17 +422,16 @@ static int glConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
  *--------------------------------------------------------------
  */
 
-static void glDeletePolygon(canvas, itemPtr, display)
-    Tk_Canvas canvas;			/* Info about overall canvas widget. */
-    Tk_Item *itemPtr;			/* Item that is being deleted. */
-    Display *display;			/* Display containing window for
-					 * canvas. */
+static void glDeletePolygon(
+   Tk_Canvas canvas,      /* Info about overall canvas widget. */
+   Tk_Item *itemPtr,      /* Item that is being deleted. */
+   Display *display)      /* Display containing window for canvas. */
 {
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
 
    Tk_DeleteOutline(display,&(polyPtr->outline));
    if (polyPtr->coordPtr != NULL) {
-      ckfree((char *) polyPtr->coordPtr);
+      ckfree(polyPtr->coordPtr);
    }
 
    if (polyPtr->fillColor != NULL) {
@@ -443,7 +462,7 @@ static void glComputePolygon(Tk_Canvas canvas,glPolygonItem *polyPtr) {
    }
 
    if (polyPtr->smooth && polyPtr->numPoints>2) {
-      polyPtr->numSmooth=polyPtr->smooth->coordProc(canvas,(double *)NULL,polyPtr->numPoints,polyPtr->splineSteps,(XPoint*)NULL,(double*)NULL);
+      polyPtr->numSmooth=polyPtr->smooth->coordProc(canvas,NULL,polyPtr->numPoints,polyPtr->splineSteps,NULL,NULL);
       polyPtr->SmoothPtr=(double*)ckalloc((unsigned)(2*polyPtr->numSmooth*sizeof(double)));
       polyPtr->numSmooth=polyPtr->smooth->coordProc(canvas,polyPtr->coordPtr,polyPtr->numPoints,polyPtr->splineSteps,(XPoint*)NULL,polyPtr->SmoothPtr);
    }
@@ -466,167 +485,167 @@ static void glComputePolygon(Tk_Canvas canvas,glPolygonItem *polyPtr) {
  *--------------------------------------------------------------
  */
 
-static void glComputePolygonBbox(canvas, polyPtr)
-    Tk_Canvas canvas;			/* Canvas that contains item. */
-    glPolygonItem *polyPtr;		/* Item whose bbox is to be
-					 * recomputed. */
+static void glComputePolygonBbox(
+   Tk_Canvas canvas,      /* Canvas that contains item. */
+   glPolygonItem *polyPtr)  /* Item whose bbox is to be recomputed. */
 {
-    double *coordPtr;
-    int i;
-    double width;
-    Tk_State state = polyPtr->header.state;
-    Tk_TSOffset *tsoffset;
+   double *coordPtr;
+   int i;
+   double width;
+   Tk_State state = polyPtr->header.state;
+   Tk_TSOffset *tsoffset;
 
-    glComputePolygon(canvas,polyPtr);
+   glComputePolygon(canvas,polyPtr);
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    width = polyPtr->outline.width;
-    if (polyPtr->coordPtr == NULL || (polyPtr->numPoints < 1) || (state==TK_STATE_HIDDEN)) {
-	polyPtr->header.x1 = polyPtr->header.x2 =
-	polyPtr->header.y1 = polyPtr->header.y2 = -1;
-	return;
-    }
-    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)polyPtr) {
-	if (polyPtr->outline.activeWidth>width) {
-	    width = polyPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (polyPtr->outline.disabledWidth>0.0) {
-	    width = polyPtr->outline.disabledWidth;
-	}
-    }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
+   width = polyPtr->outline.width;
+   if (polyPtr->coordPtr == NULL || (polyPtr->numPoints < 1)
+      || (state == TK_STATE_HIDDEN)) {
+      polyPtr->header.x1 = polyPtr->header.x2 =
+      polyPtr->header.y1 = polyPtr->header.y2 = -1;
+      return;
+   }
+   if (Canvas(canvas)->currentItemPtr == (Tk_Item *) polyPtr) {
+      if (polyPtr->outline.activeWidth > width) {
+         width = polyPtr->outline.activeWidth;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (polyPtr->outline.disabledWidth > 0.0) {
+         width = polyPtr->outline.disabledWidth;
+      }
+   }
 
-    coordPtr = polyPtr->coordPtr;
-    polyPtr->header.x1 = polyPtr->header.x2 = (int) *coordPtr;
-    polyPtr->header.y1 = polyPtr->header.y2 = (int) coordPtr[1];
+   coordPtr = polyPtr->coordPtr;
+   polyPtr->header.x1 = polyPtr->header.x2 = (int) *coordPtr;
+   polyPtr->header.y1 = polyPtr->header.y2 = (int) coordPtr[1];
 
-    /*
-     * Compute the bounding box of all the points in the polygon,
-     * then expand in all directions by the outline's width to take
-     * care of butting or rounded corners and projecting or
-     * rounded caps.  This expansion is an overestimate (worst-case
-     * is square root of two over two) but it's simple.  Don't do
-     * anything special for curves.  This causes an additional
-     * overestimate in the bounding box, but is faster.
-     */
+   /*
+   * Compute the bounding box of all the points in the polygon, then expand
+   * in all directions by the outline's width to take care of butting or
+   * rounded corners and projecting or rounded caps. This expansion is an
+   * overestimate (worst-case is square root of two over two) but it's
+   * simple. Don't do anything special for curves. This causes an additional
+   * overestimate in the bounding box, but is faster.
+   */
 
-    for (i = 1, coordPtr = polyPtr->coordPtr+2; i < polyPtr->numPoints-1;
-	    i++, coordPtr += 2) {
-	TkIncludePoint((Tk_Item *) polyPtr, coordPtr);
-    }
+   for (i = 1, coordPtr = polyPtr->coordPtr+2; i < polyPtr->numPoints-1;
+      i++, coordPtr += 2) {
+      TkIncludePoint((Tk_Item *) polyPtr, coordPtr);
+   }
 
-    tsoffset = &polyPtr->tsoffset;
-    if (tsoffset->flags & TK_OFFSET_INDEX) {
-	int index = tsoffset->flags & ~TK_OFFSET_INDEX;
-	if (tsoffset->flags == INT_MAX) {
-	    index = polyPtr->numPoints * 2;
-	    if (index < 0) {
-		index = 0;
-	    }
-	}
-	index %= polyPtr->numPoints * 2;
-	if (index <0) {
-	    index += polyPtr->numPoints * 2;
-	}
- 	tsoffset->xoffset = (int) (polyPtr->coordPtr[index] + 0.5);
-	tsoffset->yoffset = (int) (polyPtr->coordPtr[index+1] + 0.5);
-    } else {
-	if (tsoffset->flags & TK_OFFSET_LEFT) {
-	    tsoffset->xoffset = polyPtr->header.x1;
-	} else if (tsoffset->flags & TK_OFFSET_CENTER) {
-	    tsoffset->xoffset = (polyPtr->header.x1 + polyPtr->header.x2)/2;
-	} else if (tsoffset->flags & TK_OFFSET_RIGHT) {
-	    tsoffset->xoffset = polyPtr->header.x2;
-	}
-	if (tsoffset->flags & TK_OFFSET_TOP) {
-	    tsoffset->yoffset = polyPtr->header.y1;
-	} else if (tsoffset->flags & TK_OFFSET_MIDDLE) {
-	    tsoffset->yoffset = (polyPtr->header.y1 + polyPtr->header.y2)/2;
-	} else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
-	    tsoffset->yoffset = polyPtr->header.y2;
-	}
-    }
+   tsoffset = &polyPtr->tsoffset;
+   if (tsoffset->flags & TK_OFFSET_INDEX) {
+      int index = tsoffset->flags & ~TK_OFFSET_INDEX;
 
+      if (tsoffset->flags == INT_MAX) {
+         index = (polyPtr->numPoints - polyPtr->autoClosed) * 2;
+         if (index < 0) {
+         index = 0;
+         }
+      }
+      index %= (polyPtr->numPoints - polyPtr->autoClosed) * 2;
+      if (index < 0) {
+         index += (polyPtr->numPoints - polyPtr->autoClosed) * 2;
+      }
+      tsoffset->xoffset = (int) (polyPtr->coordPtr[index] + 0.5);
+      tsoffset->yoffset = (int) (polyPtr->coordPtr[index+1] + 0.5);
+   } else {
+      if (tsoffset->flags & TK_OFFSET_LEFT) {
+         tsoffset->xoffset = polyPtr->header.x1;
+      } else if (tsoffset->flags & TK_OFFSET_CENTER) {
+         tsoffset->xoffset = (polyPtr->header.x1 + polyPtr->header.x2)/2;
+      } else if (tsoffset->flags & TK_OFFSET_RIGHT) {
+         tsoffset->xoffset = polyPtr->header.x2;
+      }
+      if (tsoffset->flags & TK_OFFSET_TOP) {
+         tsoffset->yoffset = polyPtr->header.y1;
+      } else if (tsoffset->flags & TK_OFFSET_MIDDLE) {
+         tsoffset->yoffset = (polyPtr->header.y1 + polyPtr->header.y2)/2;
+      } else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
+         tsoffset->yoffset = polyPtr->header.y2;
+      }
+   }
 
-	tsoffset = &polyPtr->outline.tsoffset;
-	if (tsoffset) {
-	    if (tsoffset->flags & TK_OFFSET_INDEX) {
-		int index = tsoffset->flags & ~TK_OFFSET_INDEX;
-		if (tsoffset->flags == INT_MAX) {
-		    index = (polyPtr->numPoints - 1) * 2;
-		}
-		index %= (polyPtr->numPoints - 1) * 2;
-		if (index <0) {
-		    index += (polyPtr->numPoints - 1) * 2;
-		}
-		tsoffset->xoffset = (int) (polyPtr->coordPtr[index] + 0.5);
-		tsoffset->yoffset = (int) (polyPtr->coordPtr[index+1] + 0.5);
-	    } else {
-		if (tsoffset->flags & TK_OFFSET_LEFT) {
-		    tsoffset->xoffset = polyPtr->header.x1;
-		} else if (tsoffset->flags & TK_OFFSET_CENTER) {
-		    tsoffset->xoffset = (polyPtr->header.x1 + polyPtr->header.x2)/2;
-		} else if (tsoffset->flags & TK_OFFSET_RIGHT) {
-		    tsoffset->xoffset = polyPtr->header.x2;
-		}
-		if (tsoffset->flags & TK_OFFSET_TOP) {
-		    tsoffset->yoffset = polyPtr->header.y1;
-		} else if (tsoffset->flags & TK_OFFSET_MIDDLE) {
-		    tsoffset->yoffset = (polyPtr->header.y1 + polyPtr->header.y2)/2;
-		} else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
-		    tsoffset->yoffset = polyPtr->header.y2;
-		}
-	    }
+   tsoffset = &polyPtr->outline.tsoffset;
+   if (tsoffset) {
+      if (tsoffset->flags & TK_OFFSET_INDEX) {
+         int index = tsoffset->flags & ~TK_OFFSET_INDEX;
 
-	i = (int) ((width+1.5)/2.0);
-	polyPtr->header.x1 -= i;
-	polyPtr->header.x2 += i;
-	polyPtr->header.y1 -= i;
-	polyPtr->header.y2 += i;
+         if (tsoffset->flags == INT_MAX) {
+            index = (polyPtr->numPoints - 1) * 2;
+         }
+         index %= (polyPtr->numPoints - 1) * 2;
+         if (index < 0) {
+            index += (polyPtr->numPoints - 1) * 2;
+         }
+         tsoffset->xoffset = (int) (polyPtr->coordPtr[index] + 0.5);
+         tsoffset->yoffset = (int) (polyPtr->coordPtr[index+1] + 0.5);
+      } else {
+         if (tsoffset->flags & TK_OFFSET_LEFT) {
+            tsoffset->xoffset = polyPtr->header.x1;
+         } else if (tsoffset->flags & TK_OFFSET_CENTER) {
+            tsoffset->xoffset =
+               (polyPtr->header.x1 + polyPtr->header.x2) / 2;
+         } else if (tsoffset->flags & TK_OFFSET_RIGHT) {
+            tsoffset->xoffset = polyPtr->header.x2;
+         }
+         if (tsoffset->flags & TK_OFFSET_TOP) {
+            tsoffset->yoffset = polyPtr->header.y1;
+         } else if (tsoffset->flags & TK_OFFSET_MIDDLE) {
+            tsoffset->yoffset =
+               (polyPtr->header.y1 + polyPtr->header.y2) / 2;
+         } else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
+            tsoffset->yoffset = polyPtr->header.y2;
+         }
+      }
+   }
 
-	/*
-	 * For mitered lines, make a second pass through all the points.
-	 * Compute the locations of the two miter vertex points and add
-	 * those into the bounding box.
-	 */
+   i = (int) ((width+1.5) / 2.0);
+   polyPtr->header.x1 -= i;
+   polyPtr->header.x2 += i;
+   polyPtr->header.y1 -= i;
+   polyPtr->header.y2 += i;
 
-	if (polyPtr->joinStyle == JoinMiter) {
-	    double miter[4];
-	    int j;
-	    coordPtr = polyPtr->coordPtr;
-	    if (polyPtr->numPoints>3) {
-		if (TkGetMiterPoints(coordPtr+2*(polyPtr->numPoints-2),
-			coordPtr, coordPtr+2, width,
-			miter, miter+2)) {
-		    for (j = 0; j < 4; j += 2) {
-			TkIncludePoint((Tk_Item *) polyPtr, miter+j);
-		    }
-		}
-	     }
-	    for (i = polyPtr->numPoints ; i >= 3;
-		    i--, coordPtr += 2) {
+   /*
+   * For mitered lines, make a second pass through all the points.
+   * Compute the locations of the two miter vertex points and add those
+   * into the bounding box.
+   */
 
-		if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
-			width, miter, miter+2)) {
-		    for (j = 0; j < 4; j += 2) {
-			TkIncludePoint((Tk_Item *) polyPtr, miter+j);
-		    }
-		}
-	    }
-	}
-    }
+   if (polyPtr->joinStyle == JoinMiter) {
+      double miter[4];
+      int j;
 
-    /*
-     * Add one more pixel of fudge factor just to be safe (e.g.
-     * X may round differently than we do).
-     */
+      coordPtr = polyPtr->coordPtr;
+      if (polyPtr->numPoints > 3) {
+         if (TkGetMiterPoints(coordPtr+2*(polyPtr->numPoints-2),
+            coordPtr, coordPtr+2, width, miter, miter+2)) {
+            for (j = 0; j < 4; j += 2) {
+            TkIncludePoint((Tk_Item *) polyPtr, miter+j);
+            }
+         }
+      }
+      for (i = polyPtr->numPoints ; i >= 3; i--, coordPtr += 2) {
+         if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4, width,
+            miter, miter+2)) {
+            for (j = 0; j < 4; j += 2) {
+            TkIncludePoint((Tk_Item *) polyPtr, miter+j);
+            }
+         }
+      }
+   }
 
-    polyPtr->header.x1 -= 1;
-    polyPtr->header.x2 += 1;
-    polyPtr->header.y1 -= 1;
-    polyPtr->header.y2 += 1;
+   /*
+   * Add one more pixel of fudge factor just to be safe (e.g. X may round
+   * differently than we do).
+   */
+
+   polyPtr->header.x1 -= 1;
+   polyPtr->header.x2 += 1;
+   polyPtr->header.y1 -= 1;
+   polyPtr->header.y2 += 1;
 }
 
 /*
@@ -647,12 +666,12 @@ static void glComputePolygonBbox(canvas, polyPtr)
  *--------------------------------------------------------------
  */
 
-static void glDisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, height)
-    Tk_Canvas canvas;         /* Canvas that contains item. */
-    Tk_Item *itemPtr;         /* Item to be displayed. */
-    Display *display;         /* Display on which to draw item. */
-    Drawable drawable;        /* Pixmap or window in which to draw item. */
-    int x, y, width, height;  /* Describes region of canvas that must be redisplayed (not used). */
+static void glDisplayPolygon(
+   Tk_Canvas canvas,      /* Canvas that contains item. */
+   Tk_Item *itemPtr,      /* Item to be displayed. */
+   Display *display,      /* Display on which to draw item. */
+   Drawable drawable,     /* Pixmap or window in which to draw item. */
+   int x, int y, int width, int height)  /* Describes region of canvas that must be redisplayed (not used). */
 {
 
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
@@ -677,16 +696,16 @@ static void glDisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, he
       if (polyPtr->outline.activeWidth>polygonwidth)
          polygonwidth = polyPtr->outline.activeWidth;
 
-      if (polyPtr->activeStipple)
-         stipple = polyPtr->activeStipple;
+      if (polyPtr->activeFillStipple)
+         stipple = polyPtr->activeFillStipple;
 
    } else if (state==TK_STATE_DISABLED) {
 
       if (polyPtr->outline.disabledWidth>0.0)
          polygonwidth = polyPtr->outline.disabledWidth;
 
-      if (polyPtr->disabledStipple)
-         stipple = polyPtr->disabledStipple;
+      if (polyPtr->disabledFillStipple)
+         stipple = polyPtr->disabledFillStipple;
    }
 
    /* Draw the polygon according to the number of points available. */
@@ -771,103 +790,139 @@ static void glDisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, he
  *--------------------------------------------------------------
  */
 
-static void glPolygonInsert(canvas, itemPtr, beforeThis, obj)
-    Tk_Canvas canvas;		/* Canvas containing text item. */
-    Tk_Item *itemPtr;		/* Line item to be modified. */
-    int beforeThis;		/* Index before which new coordinates
-				 * are to be inserted. */
-    Tcl_Obj *obj;		/* New coordinates to be inserted. */
+static void glPolygonInsert(
+   Tk_Canvas canvas,      /* Canvas containing text item. */
+   Tk_Item *itemPtr,      /* Line item to be modified. */
+   int beforeThis,     /* Index before which new coordinates are to be inserted. */
+   Tcl_Obj *obj)    /* New coordinates to be inserted. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    int length, argc, i;
-    Tcl_Obj **objv;
-    double *new;
-    Tk_State state = itemPtr->state;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   int length, objc, i;
+   Tcl_Obj **objv;
+   double *newCoordPtr;
+   Tk_State state = itemPtr->state;
 
-    if (state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
 
-    if (!obj || (Tcl_ListObjGetElements((Tcl_Interp *) NULL, obj, &argc, &objv) != TCL_OK)
-	    || !argc || argc&1) {
-	return;
-    }
-    length = 2*polyPtr->numPoints;
-    while(beforeThis>length) beforeThis-=length;
-    while(beforeThis<0) beforeThis+=length;
-    new = (double *) ckalloc((unsigned)(sizeof(double) * (length + 2 + argc)));
-    for (i=0; i<beforeThis; i++) {
-	new[i] = polyPtr->coordPtr[i];
-    }
-    for (i=0; i<argc; i++) {
-	if (Tcl_GetDoubleFromObj((Tcl_Interp *) NULL,objv[i],
-		new+(i+beforeThis))!=TCL_OK) {
-	    ckfree((char *) new);
-	    return;
-	}
-    }
+   if (!obj || (Tcl_ListObjGetElements(NULL, obj, &objc, &objv) != TCL_OK)
+      || !objc || objc&1) {
+      return;
+   }
+   length = 2*(polyPtr->numPoints - polyPtr->autoClosed);
+   while (beforeThis > length) {
+      beforeThis -= length;
+   }
+   while (beforeThis < 0) {
+      beforeThis += length;
+   }
+   newCoordPtr = ckalloc(sizeof(double) * (length + 2 + objc));
+   for (i=0; i<beforeThis; i++) {
+      newCoordPtr[i] = polyPtr->coordPtr[i];
+   }
+   for (i=0; i<objc; i++) {
+      if (Tcl_GetDoubleFromObj(NULL, objv[i],
+         &newCoordPtr[i+beforeThis]) != TCL_OK){
+         ckfree(newCoordPtr);
+         return;
+      }
+   }
 
-    for(i=beforeThis; i<length; i++) {
-	new[i+argc] = polyPtr->coordPtr[i];
-    }
-    if(polyPtr->coordPtr) ckfree((char *) polyPtr->coordPtr);
-    length+=argc;
-    polyPtr->coordPtr = new;
-    polyPtr->numPoints = length/2;
+   for (i=beforeThis; i<length; i++) {
+      newCoordPtr[i+objc] = polyPtr->coordPtr[i];
+   }
+   if (polyPtr->coordPtr) {
+      ckfree(polyPtr->coordPtr);
+   }
+   length += objc;
+   polyPtr->coordPtr = newCoordPtr;
+   polyPtr->numPoints = (length/2) + polyPtr->autoClosed;
 
-    new[length] = new[0];
-    new[length+1] = new[1];
-    if (((length-argc)>3) && (state != TK_STATE_HIDDEN)) {
-	/*
-	 * This is some optimizing code that will result that only the part
-	 * of the polygon that changed (and the objects that are overlapping
-	 * with that part) need to be redrawn. A special flag is set that
-	 * instructs the general canvas code not to redraw the whole
-	 * object. If this flag is not set, the canvas will do the redrawing,
-	 * otherwise I have to do it here.
-	 */
-    	double width;
-	int j;
-	itemPtr->redraw_flags |= TK_ITEM_DONT_REDRAW;
+   /*
+   * Close the polygon if it isn't already closed, or remove autoclosing if
+   * the user's coordinates are now closed.
+   */
 
-	/*
-	 * The header elements that normally are used for the
-	 * bounding box, are now used to calculate the bounding
-	 * box for only the part that has to be redrawn. That
-	 * doesn't matter, because afterwards the bounding
-	 * box has to be re-calculated anyway.
-	 */
+   if (polyPtr->autoClosed) {
+      if ((newCoordPtr[length-2] == newCoordPtr[0])
+         && (newCoordPtr[length-1] == newCoordPtr[1])) {
+         polyPtr->autoClosed = 0;
+         polyPtr->numPoints--;
+      }
+   } else {
+      if ((newCoordPtr[length-2] != newCoordPtr[0])
+         || (newCoordPtr[length-1] != newCoordPtr[1])) {
+         polyPtr->autoClosed = 1;
+         polyPtr->numPoints++;
+      }
+   }
 
-	itemPtr->x1 = itemPtr->x2 = (int) polyPtr->coordPtr[beforeThis];
-	itemPtr->y1 = itemPtr->y2 = (int) polyPtr->coordPtr[beforeThis+1];
-	beforeThis-=2; argc+=4;
-	if(polyPtr->smooth) {
-	    beforeThis-=2; argc+=4;
-	} /* be carefull; beforeThis could now be negative */
-	for(i=beforeThis; i<beforeThis+argc; i+=2) {
-		j=i;
-		if(j<0) j+=length;
-		if(j>=length) j-=length;
-		TkIncludePoint(itemPtr, polyPtr->coordPtr+j);
-	}
-	width = polyPtr->outline.width;
-	if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-		if (polyPtr->outline.activeWidth>width) {
-		    width = polyPtr->outline.activeWidth;
-		}
-	} else if (state==TK_STATE_DISABLED) {
-		if (polyPtr->outline.disabledWidth>0.0) {
-		    width = polyPtr->outline.disabledWidth;
-		}
-	}
-	itemPtr->x1 -= (int) width; itemPtr->y1 -= (int) width;
-	itemPtr->x2 += (int) width; itemPtr->y2 += (int) width;
-	Tk_CanvasEventuallyRedraw(canvas,
-		itemPtr->x1, itemPtr->y1,
-		itemPtr->x2, itemPtr->y2);
-    }
+   newCoordPtr[length] = newCoordPtr[0];
+   newCoordPtr[length+1] = newCoordPtr[1];
+   if ((length-objc > 3) && (state != TK_STATE_HIDDEN)) {
+      /*
+      * This is some optimizing code that will result that only the part of
+      * the polygon that changed (and the objects that are overlapping with
+      * that part) need to be redrawn. A special flag is set that instructs
+      * the general canvas code not to redraw the whole object. If this
+      * flag is not set, the canvas will do the redrawing, otherwise I have
+      * to do it here.
+      */
 
-    glComputePolygonBbox(canvas, polyPtr);
+      double width;
+      int j;
+
+      itemPtr->redraw_flags |= TK_ITEM_DONT_REDRAW;
+
+      /*
+      * The header elements that normally are used for the bounding box,
+      * are now used to calculate the bounding box for only the part that
+      * has to be redrawn. That doesn't matter, because afterwards the
+      * bounding box has to be re-calculated anyway.
+      */
+
+      itemPtr->x1 = itemPtr->x2 = (int) polyPtr->coordPtr[beforeThis];
+      itemPtr->y1 = itemPtr->y2 = (int) polyPtr->coordPtr[beforeThis+1];
+      beforeThis -= 2;
+      objc += 4;
+      if (polyPtr->smooth) {
+         beforeThis -= 2;
+         objc += 4;
+      }
+
+      /*
+      * Be careful; beforeThis could now be negative
+      */
+
+      for (i=beforeThis; i<beforeThis+objc; i+=2) {
+         j = i;
+         if (j < 0) {
+            j += length;
+         } else if (j >= length) {
+            j -= length;
+         }
+         TkIncludePoint(itemPtr, polyPtr->coordPtr+j);
+      }
+      width = polyPtr->outline.width;
+      if (Canvas(canvas)->currentItemPtr == itemPtr) {
+         if (polyPtr->outline.activeWidth > width) {
+         width = polyPtr->outline.activeWidth;
+         }
+      } else if (state == TK_STATE_DISABLED) {
+         if (polyPtr->outline.disabledWidth > 0.0) {
+         width = polyPtr->outline.disabledWidth;
+         }
+      }
+      itemPtr->x1 -= (int) width;
+      itemPtr->y1 -= (int) width;
+      itemPtr->x2 += (int) width;
+      itemPtr->y2 += (int) width;
+      Tk_CanvasEventuallyRedraw(canvas,
+         itemPtr->x1, itemPtr->y1, itemPtr->x2, itemPtr->y2);
+   }
+
+   glComputePolygonBbox(canvas, polyPtr);
 }
 
 /*
@@ -887,49 +942,60 @@ static void glPolygonInsert(canvas, itemPtr, beforeThis, obj)
  *--------------------------------------------------------------
  */
 
-static void glPolygonDeleteCoords(canvas, itemPtr, first, last)
-    Tk_Canvas canvas;		/* Canvas containing itemPtr. */
-    Tk_Item *itemPtr;		/* Item in which to delete characters. */
-    int first;			/* Index of first character to delete. */
-    int last;			/* Index of last character to delete. */
+static void glPolygonDeleteCoords(
+   Tk_Canvas canvas,      /* Canvas containing itemPtr. */
+   Tk_Item *itemPtr,      /* Item in which to delete characters. */
+   int first,             /* Index of first character to delete. */
+   int last)              /* Index of last character to delete. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    int count, i;
-    int length = 2*polyPtr->numPoints;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   int count, i;
+   int length = 2*(polyPtr->numPoints - polyPtr->autoClosed);
 
-    while(first>=length) first-=length;
-    while(first<0)	 first+=length;
-    while(last>=length)	 last-=length;
-    while(last<0)	 last+=length;
+   while (first >= length) {
+      first -= length;
+   }
+   while (first < 0) {
+      first += length;
+   }
+   while (last >= length) {
+      last -= length;
+   }
+   while (last < 0) {
+      last += length;
+   }
 
-    first &= -2;
-    last &= -2;
+   first &= -2;
+   last &= -2;
 
-    count = last + 2 - first;
-    if(count<=0) count +=length;
+   count = last + 2 - first;
+   if (count <= 0) {
+      count += length;
+   }
 
-    if(count >= length) {
-	polyPtr->numPoints = 0;
-	if(polyPtr->coordPtr != NULL) {
-	    ckfree((char *) polyPtr->coordPtr);
-	}
-	glComputePolygonBbox(canvas, polyPtr);
-	return;
-    }
+   if (count >= length) {
+      polyPtr->numPoints = 0;
+      if (polyPtr->coordPtr != NULL) {
+         ckfree(polyPtr->coordPtr);
+         polyPtr->coordPtr = NULL;
+      }
+      glComputePolygonBbox(canvas, polyPtr);
+      return;
+   }
 
-    if(last>=first) {
-	for(i=last+2; i<length; i++) {
-	    polyPtr->coordPtr[i-count] = polyPtr->coordPtr[i];
-	}
-    } else {
-	for(i=last; i<=first; i++) {
-	    polyPtr->coordPtr[i-last] = polyPtr->coordPtr[i];
-	}
-    }
-    polyPtr->coordPtr[length-count] = polyPtr->coordPtr[0];
-    polyPtr->coordPtr[length-count+1] = polyPtr->coordPtr[1];
-    polyPtr->numPoints -= count/2;
-    glComputePolygonBbox(canvas, polyPtr);
+   if (last >= first) {
+      for (i=last+2; i<length; i++) {
+         polyPtr->coordPtr[i-count] = polyPtr->coordPtr[i];
+      }
+   } else {
+      for (i=last; i<=first; i++) {
+         polyPtr->coordPtr[i-last] = polyPtr->coordPtr[i];
+      }
+   }
+   polyPtr->coordPtr[length-count] = polyPtr->coordPtr[0];
+   polyPtr->coordPtr[length-count+1] = polyPtr->coordPtr[1];
+   polyPtr->numPoints -= count/2;
+   glComputePolygonBbox(canvas, polyPtr);
 }
 
 /*
@@ -952,158 +1018,158 @@ static void glPolygonDeleteCoords(canvas, itemPtr, first, last)
  *--------------------------------------------------------------
  */
 
-static double glPolygonToPoint(canvas, itemPtr, pointPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against point. */
-    double *pointPtr;		/* Pointer to x and y coordinates. */
+static double glPolygonToPoint(
+   Tk_Canvas canvas,      /* Canvas containing item. */
+   Tk_Item *itemPtr,      /* Item to check against point. */
+   double *pointPtr)      /* Pointer to x and y coordinates. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    double *coordPtr, *polyPoints;
-    double poly[10];
-    double radius;
-    double bestDist, dist;
-    int numPoints, count;
-    int changedMiterToBevel;	/* Non-zero means that a mitered corner
-				 * had to be treated as beveled after all
-				 * because the angle was < 11 degrees. */
-    double width;
-    Tk_State state = itemPtr->state;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   double *coordPtr, *polyPoints;
+   double poly[10];
+   double radius;
+   double bestDist, dist;
+   int numPoints, count;
+   int changedMiterToBevel;	/* Non-zero means that a mitered corner
+            * had to be treated as beveled after all
+            * because the angle was < 11 degrees. */
+   double width;
+   Tk_State state = itemPtr->state;
 
-    bestDist = 1.0e36;
+   bestDist = 1.0e36;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    width = polyPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (polyPtr->outline.activeWidth>width) {
-	    width = polyPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (polyPtr->outline.disabledWidth>0.0) {
-	    width = polyPtr->outline.disabledWidth;
-	}
-    }
-    radius = width/2.0;
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
+   width = polyPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (polyPtr->outline.activeWidth>width) {
+         width = polyPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (polyPtr->outline.disabledWidth>0.0) {
+         width = polyPtr->outline.disabledWidth;
+      }
+   }
+   radius = width/2.0;
 
-    /* Handle smoothed polygons by generating an expanded set of points against which to do the check */
+   /* Handle smoothed polygons by generating an expanded set of points against which to do the check */
 
-    if ((polyPtr->smooth) && (polyPtr->numPoints>2)) {
-	numPoints  = polyPtr->numSmooth;
-        polyPoints = polyPtr->SmoothPtr;
-    } else {
-	numPoints = polyPtr->numPoints;
-	polyPoints = polyPtr->coordPtr;
-    }
+   if ((polyPtr->smooth) && (polyPtr->numPoints>2)) {
+      numPoints  = polyPtr->numSmooth;
+      polyPoints = polyPtr->SmoothPtr;
+   } else {
+      numPoints = polyPtr->numPoints;
+      polyPoints = polyPtr->coordPtr;
+   }
 
-    bestDist = TkPolygonToPoint(polyPoints, numPoints, pointPtr);
-    if (bestDist<=0.0) {
-	goto donepoint;
-    }
-    if ((polyPtr->outline.gc != None) && (polyPtr->joinStyle == JoinRound)) {
-	dist = bestDist - radius;
-	if (dist <= 0.0) {
-	    bestDist = 0.0;
-	    goto donepoint;
-	} else {
-	    bestDist = dist;
-	}
-    }
+   bestDist = TkPolygonToPoint(polyPoints, numPoints, pointPtr);
+   if (bestDist<=0.0) {
+      goto donepoint;
+   }
+   if ((polyPtr->outline.gc != None) && (polyPtr->joinStyle == JoinRound)) {
+      dist = bestDist - radius;
+      if (dist <= 0.0) {
+         bestDist = 0.0;
+         goto donepoint;
+      } else {
+         bestDist = dist;
+      }
+   }
 
-    if ((polyPtr->outline.gc == None) || (width <= 1)) goto donepoint;
+   if ((polyPtr->outline.gc == None) || (width <= 1)) goto donepoint;
 
-    /*
-     * The overall idea is to iterate through all of the edges of
-     * the line, computing a polygon for each edge and testing the
-     * point against that polygon.  In addition, there are additional
-     * tests to deal with rounded joints and caps.
-     */
+   /*
+   * The overall idea is to iterate through all of the edges of
+   * the line, computing a polygon for each edge and testing the
+   * point against that polygon.  In addition, there are additional
+   * tests to deal with rounded joints and caps.
+   */
 
-    changedMiterToBevel = 0;
-    for (count = numPoints, coordPtr = polyPoints; count >= 2;
-	    count--, coordPtr += 2) {
+   changedMiterToBevel = 0;
+   for (count = numPoints, coordPtr = polyPoints; count >= 2;
+      count--, coordPtr += 2) {
 
-	/*
-	 * If rounding is done around the first point then compute
-	 * the distance between the point and the point.
-	 */
+      /*
+      * If rounding is done around the first point then compute
+      * the distance between the point and the point.
+      */
 
-	if (polyPtr->joinStyle == JoinRound) {
-	    dist = hypot(coordPtr[0] - pointPtr[0], coordPtr[1] - pointPtr[1])
-		    - radius;
-	    if (dist <= 0.0) {
-		bestDist = 0.0;
-		goto donepoint;
-	    } else if (dist < bestDist) {
-		bestDist = dist;
-	    }
-	}
+      if (polyPtr->joinStyle == JoinRound) {
+         dist = hypot(coordPtr[0] - pointPtr[0], coordPtr[1] - pointPtr[1])
+            - radius;
+         if (dist <= 0.0) {
+            bestDist = 0.0;
+            goto donepoint;
+         } else if (dist < bestDist) {
+            bestDist = dist;
+         }
+      }
 
-	/*
-	 * Compute the polygonal shape corresponding to this edge,
-	 * consisting of two points for the first point of the edge
-	 * and two points for the last point of the edge.
-	 */
+      /*
+      * Compute the polygonal shape corresponding to this edge,
+      * consisting of two points for the first point of the edge
+      * and two points for the last point of the edge.
+      */
 
-	if (count == numPoints) {
-	    TkGetButtPoints(coordPtr+2, coordPtr, (double) width,
-		    0, poly, poly+2);
-	} else if ((polyPtr->joinStyle == JoinMiter) && !changedMiterToBevel) {
-	    poly[0] = poly[6];
-	    poly[1] = poly[7];
-	    poly[2] = poly[4];
-	    poly[3] = poly[5];
-	} else {
-	    TkGetButtPoints(coordPtr+2, coordPtr, (double) width, 0,
-		    poly, poly+2);
+      if (count == numPoints) {
+         TkGetButtPoints(coordPtr+2, coordPtr, (double) width,
+            0, poly, poly+2);
+      } else if ((polyPtr->joinStyle == JoinMiter) && !changedMiterToBevel) {
+         poly[0] = poly[6];
+         poly[1] = poly[7];
+         poly[2] = poly[4];
+         poly[3] = poly[5];
+      } else {
+         TkGetButtPoints(coordPtr+2, coordPtr, (double) width, 0,
+            poly, poly+2);
 
-	    /*
-	     * If this line uses beveled joints, then check the distance
-	     * to a polygon comprising the last two points of the previous
-	     * polygon and the first two from this polygon;  this checks
-	     * the wedges that fill the mitered joint.
-	     */
+         /*
+         * If this line uses beveled joints, then check the distance
+         * to a polygon comprising the last two points of the previous
+         * polygon and the first two from this polygon;  this checks
+         * the wedges that fill the mitered joint.
+         */
 
-	    if ((polyPtr->joinStyle == JoinBevel) || changedMiterToBevel) {
-		poly[8] = poly[0];
-		poly[9] = poly[1];
-		dist = TkPolygonToPoint(poly, 5, pointPtr);
-		if (dist <= 0.0) {
-		    bestDist = 0.0;
-		    goto donepoint;
-		} else if (dist < bestDist) {
-		    bestDist = dist;
-		}
-		changedMiterToBevel = 0;
-	    }
-	}
-	if (count == 2) {
-	    TkGetButtPoints(coordPtr, coordPtr+2, (double) width,
-		    0, poly+4, poly+6);
-	} else if (polyPtr->joinStyle == JoinMiter) {
-	    if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
-		    (double) width, poly+4, poly+6) == 0) {
-		changedMiterToBevel = 1;
-		TkGetButtPoints(coordPtr, coordPtr+2, (double) width,
-			0, poly+4, poly+6);
-	    }
-	} else {
-	    TkGetButtPoints(coordPtr, coordPtr+2, (double) width, 0,
-		    poly+4, poly+6);
-	}
-	poly[8] = poly[0];
-	poly[9] = poly[1];
-	dist = TkPolygonToPoint(poly, 5, pointPtr);
-	if (dist <= 0.0) {
-	    bestDist = 0.0;
-	    goto donepoint;
-	} else if (dist < bestDist) {
-	    bestDist = dist;
-	}
-    }
+         if ((polyPtr->joinStyle == JoinBevel) || changedMiterToBevel) {
+         poly[8] = poly[0];
+         poly[9] = poly[1];
+         dist = TkPolygonToPoint(poly, 5, pointPtr);
+         if (dist <= 0.0) {
+            bestDist = 0.0;
+            goto donepoint;
+         } else if (dist < bestDist) {
+            bestDist = dist;
+         }
+         changedMiterToBevel = 0;
+         }
+      }
+      if (count == 2) {
+         TkGetButtPoints(coordPtr, coordPtr+2, (double) width,
+            0, poly+4, poly+6);
+      } else if (polyPtr->joinStyle == JoinMiter) {
+         if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
+            (double) width, poly+4, poly+6) == 0) {
+         changedMiterToBevel = 1;
+         TkGetButtPoints(coordPtr, coordPtr+2, (double) width,
+            0, poly+4, poly+6);
+         }
+      } else {
+         TkGetButtPoints(coordPtr, coordPtr+2, (double) width, 0,
+            poly+4, poly+6);
+      }
+      poly[8] = poly[0];
+      poly[9] = poly[1];
+      dist = TkPolygonToPoint(poly, 5, pointPtr);
+      if (dist <= 0.0) {
+         bestDist = 0.0;
+         goto donepoint;
+      } else if (dist < bestDist) {
+         bestDist = dist;
+      }
+   }
 
-    donepoint:
-    return bestDist;
+   donepoint:
+   return bestDist;
 }
 
 /*
@@ -1126,171 +1192,169 @@ static double glPolygonToPoint(canvas, itemPtr, pointPtr)
  *--------------------------------------------------------------
  */
 
-static int glPolygonToArea(canvas, itemPtr, rectPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against polygon. */
-    double *rectPtr;		/* Pointer to array of four coordinates
-				 * (x1, y1, x2, y2) describing rectangular
-				 * area.  */
+static int glPolygonToArea(
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item to check against polygon. */
+    double *rectPtr)    /* Pointer to array of four coordinates (x1,y1,x2,y2) describing rectangular area. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    double *coordPtr;
-    double *polyPoints, poly[10];
-    double radius;
-    int numPoints, count;
-    int changedMiterToBevel;	/* Non-zero means that a mitered corner
-				 * had to be treated as beveled after all
-				 * because the angle was < 11 degrees. */
-    int inside;			/* Tentative guess about what to return,
-				 * based on all points seen so far:  one
-				 * means everything seen so far was
-				 * inside the area;  -1 means everything
-				 * was outside the area.  0 means overlap
-				 * has been found. */
-    double width;
-    Tk_State state = itemPtr->state;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   double *coordPtr;
+   double *polyPoints, poly[10];
+   double radius;
+   int numPoints, count;
+   int changedMiterToBevel;	/* Non-zero means that a mitered corner
+            * had to be treated as beveled after all
+            * because the angle was < 11 degrees. */
+   int inside;			/* Tentative guess about what to return,
+            * based on all points seen so far:  one
+            * means everything seen so far was
+            * inside the area;  -1 means everything
+            * was outside the area.  0 means overlap
+            * has been found. */
+   double width;
+   Tk_State state = itemPtr->state;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+   if(state == TK_STATE_NULL) {
+      state = ((TkCanvas *)canvas)->canvas_state;
+   }
 
-    width = polyPtr->outline.width;
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (polyPtr->outline.activeWidth>width) {
-	    width = polyPtr->outline.activeWidth;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (polyPtr->outline.disabledWidth>0.0) {
-	    width = polyPtr->outline.disabledWidth;
-	}
-    }
+   width = polyPtr->outline.width;
+   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+      if (polyPtr->outline.activeWidth>width) {
+         width = polyPtr->outline.activeWidth;
+      }
+   } else if (state==TK_STATE_DISABLED) {
+      if (polyPtr->outline.disabledWidth>0.0) {
+         width = polyPtr->outline.disabledWidth;
+      }
+   }
 
-    radius = width/2.0;
-    inside = -1;
+   radius = width/2.0;
+   inside = -1;
 
-    if ((state==TK_STATE_HIDDEN) || polyPtr->numPoints<2) {
-	return -1;
-    } else if (polyPtr->numPoints <3) {
-	double oval[4];
-	oval[0] = polyPtr->coordPtr[0]-radius;
-	oval[1] = polyPtr->coordPtr[1]-radius;
-	oval[2] = polyPtr->coordPtr[0]+radius;
-	oval[3] = polyPtr->coordPtr[1]+radius;
-	return TkOvalToArea(oval, rectPtr);
-    }
+   if ((state==TK_STATE_HIDDEN) || polyPtr->numPoints<2) {
+      return -1;
+   } else if (polyPtr->numPoints <3) {
+      double oval[4];
+      oval[0] = polyPtr->coordPtr[0]-radius;
+      oval[1] = polyPtr->coordPtr[1]-radius;
+      oval[2] = polyPtr->coordPtr[0]+radius;
+      oval[3] = polyPtr->coordPtr[1]+radius;
+      return TkOvalToArea(oval, rectPtr);
+   }
 
-    /* Handle smoothed polygons by generating an expanded set of points against which to do the check */
+   /* Handle smoothed polygons by generating an expanded set of points against which to do the check */
 
-    if ((polyPtr->smooth) && (polyPtr->numPoints>2)) {
-	numPoints  = polyPtr->numSmooth;
-        polyPoints = polyPtr->SmoothPtr;
-    } else {
-	numPoints = polyPtr->numPoints;
-	polyPoints = polyPtr->coordPtr;
-    }
+   if ((polyPtr->smooth) && (polyPtr->numPoints>2)) {
+      numPoints  = polyPtr->numSmooth;
+         polyPoints = polyPtr->SmoothPtr;
+      } else {
+      numPoints = polyPtr->numPoints;
+      polyPoints = polyPtr->coordPtr;
+   }
 
-    if (polyPtr->fillColor) {
-	inside = TkPolygonToArea(polyPoints, numPoints, rectPtr);
-	if (inside==0) goto donearea;
-    } else {
-	if ((polyPoints[0] >= rectPtr[0])
-		&& (polyPoints[0] <= rectPtr[2])
-		&& (polyPoints[1] >= rectPtr[1])
-		&& (polyPoints[1] <= rectPtr[3])) {
-	    inside = 1;
-	}
-    }
+   /*
+    * Simple test to see if we are in the polygon. Polygons are different
+    * from othe canvas items in that they register points being inside even
+    * if it isn't filled.
+    */
 
-    if (polyPtr->outline.gc == None) goto donearea ;
+   inside = TkPolygonToArea(polyPoints, numPoints, rectPtr);
+   if (inside==0) {
+      goto donearea;
+   }
 
+   if (polyPtr->outline.gc == None) {
+      goto donearea ;
+   }
 
-    /*
-     * Iterate through all of the edges of the line, computing a polygon
-     * for each edge and testing the area against that polygon.  In
-     * addition, there are additional tests to deal with rounded joints
-     * and caps.
-     */
+   /*
+   * Iterate through all of the edges of the line, computing a polygon
+   * for each edge and testing the area against that polygon.  In
+   * addition, there are additional tests to deal with rounded joints
+   * and caps.
+   */
 
-    changedMiterToBevel = 0;
-    for (count = numPoints, coordPtr = polyPoints; count >= 2;
-	    count--, coordPtr += 2) {
+   changedMiterToBevel = 0;
+   for (count = numPoints, coordPtr = polyPoints; count >= 2;
+      count--, coordPtr += 2) {
 
-	/*
-	 * If rounding is done around the first point of the edge
-	 * then test a circular region around the point with the
-	 * area.
-	 */
+      /*
+      * If rounding is done around the first point of the edge
+      * then test a circular region around the point with the
+      * area.
+      */
 
-	if (polyPtr->joinStyle == JoinRound) {
-	    poly[0] = coordPtr[0] - radius;
-	    poly[1] = coordPtr[1] - radius;
-	    poly[2] = coordPtr[0] + radius;
-	    poly[3] = coordPtr[1] + radius;
-	    if (TkOvalToArea(poly, rectPtr) != inside) {
-		inside = 0;
-		goto donearea;
-	    }
-	}
+      if (polyPtr->joinStyle == JoinRound) {
+         poly[0] = coordPtr[0] - radius;
+         poly[1] = coordPtr[1] - radius;
+         poly[2] = coordPtr[0] + radius;
+         poly[3] = coordPtr[1] + radius;
+         if (TkOvalToArea(poly, rectPtr) != inside) {
+            inside = 0;
+            goto donearea;
+         }
+      }
 
-	/*
-	 * Compute the polygonal shape corresponding to this edge,
-	 * consisting of two points for the first point of the edge
-	 * and two points for the last point of the edge.
-	 */
+      /*
+      * Compute the polygonal shape corresponding to this edge,
+      * consisting of two points for the first point of the edge
+      * and two points for the last point of the edge.
+      */
 
-	if (count == numPoints) {
-	    TkGetButtPoints(coordPtr+2, coordPtr, width,
-		    0, poly, poly+2);
-	} else if ((polyPtr->joinStyle == JoinMiter) && !changedMiterToBevel) {
-	    poly[0] = poly[6];
-	    poly[1] = poly[7];
-	    poly[2] = poly[4];
-	    poly[3] = poly[5];
-	} else {
-	    TkGetButtPoints(coordPtr+2, coordPtr, width, 0,
-		    poly, poly+2);
+      if (count == numPoints) {
+         TkGetButtPoints(coordPtr+2, coordPtr, width,
+            0, poly, poly+2);
+      } else if ((polyPtr->joinStyle == JoinMiter) && !changedMiterToBevel) {
+         poly[0] = poly[6];
+         poly[1] = poly[7];
+         poly[2] = poly[4];
+         poly[3] = poly[5];
+      } else {
+         TkGetButtPoints(coordPtr+2, coordPtr, width, 0,
+            poly, poly+2);
 
-	    /*
-	     * If the last joint was beveled, then also check a
-	     * polygon comprising the last two points of the previous
-	     * polygon and the first two from this polygon;  this checks
-	     * the wedges that fill the beveled joint.
-	     */
+         /*
+         * If the last joint was beveled, then also check a
+         * polygon comprising the last two points of the previous
+         * polygon and the first two from this polygon;  this checks
+         * the wedges that fill the beveled joint.
+         */
 
-	    if ((polyPtr->joinStyle == JoinBevel) || changedMiterToBevel) {
-		poly[8] = poly[0];
-		poly[9] = poly[1];
-		if (TkPolygonToArea(poly, 5, rectPtr) != inside) {
-		    inside = 0;
-		    goto donearea;
-		}
-		changedMiterToBevel = 0;
-	    }
-	}
-	if (count == 2) {
-	    TkGetButtPoints(coordPtr, coordPtr+2, width,
-		    0, poly+4, poly+6);
-	} else if (polyPtr->joinStyle == JoinMiter) {
-	    if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
-		    width, poly+4, poly+6) == 0) {
-		changedMiterToBevel = 1;
-		TkGetButtPoints(coordPtr, coordPtr+2, width,
-			0, poly+4, poly+6);
-	    }
-	} else {
-	    TkGetButtPoints(coordPtr, coordPtr+2, width, 0,
-		    poly+4, poly+6);
-	}
-	poly[8] = poly[0];
-	poly[9] = poly[1];
-	if (TkPolygonToArea(poly, 5, rectPtr) != inside) {
-	    inside = 0;
-	    goto donearea;
-	}
-    }
+         if ((polyPtr->joinStyle == JoinBevel) || changedMiterToBevel) {
+         poly[8] = poly[0];
+         poly[9] = poly[1];
+         if (TkPolygonToArea(poly, 5, rectPtr) != inside) {
+            inside = 0;
+            goto donearea;
+         }
+         changedMiterToBevel = 0;
+         }
+      }
+      if (count == 2) {
+         TkGetButtPoints(coordPtr, coordPtr+2, width,
+            0, poly+4, poly+6);
+      } else if (polyPtr->joinStyle == JoinMiter) {
+         if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
+            width, poly+4, poly+6) == 0) {
+         changedMiterToBevel = 1;
+         TkGetButtPoints(coordPtr, coordPtr+2, width,
+            0, poly+4, poly+6);
+         }
+      } else {
+         TkGetButtPoints(coordPtr, coordPtr+2, width, 0,
+            poly+4, poly+6);
+      }
+      poly[8] = poly[0];
+      poly[9] = poly[1];
+      if (TkPolygonToArea(poly, 5, rectPtr) != inside) {
+         inside = 0;
+         goto donearea;
+      }
+   }
 
-    donearea:
-    return inside;
+   donearea:
+   return inside;
 }
 
 /*
@@ -1313,23 +1377,23 @@ static int glPolygonToArea(canvas, itemPtr, rectPtr)
  *--------------------------------------------------------------
  */
 
-static void glScalePolygon(canvas, itemPtr, originX, originY, scaleX, scaleY)
-    Tk_Canvas canvas;			/* Canvas containing polygon. */
-    Tk_Item *itemPtr;			/* Polygon to be scaled. */
-    double originX, originY;		/* Origin about which to scale rect. */
-    double scaleX;			/* Amount to scale in X direction. */
-    double scaleY;			/* Amount to scale in Y direction. */
+static void glScalePolygon(
+   Tk_Canvas canvas,      /* Canvas containing polygon. */
+   Tk_Item *itemPtr,      /* Polygon to be scaled. */
+   double originX, double originY,  /* Origin about which to scale rect. */
+   double scaleX,      /* Amount to scale in X direction. */
+   double scaleY)      /* Amount to scale in Y direction. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    double *coordPtr;
-    int i;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   double *coordPtr;
+   int i;
 
-    for (i = 0, coordPtr = polyPtr->coordPtr; i < polyPtr->numPoints;
-	    i++, coordPtr += 2) {
-	*coordPtr = originX + scaleX*(*coordPtr - originX);
-	coordPtr[1] = originY + scaleY*(coordPtr[1] - originY);
-    }
-    glComputePolygonBbox(canvas, polyPtr);
+   for (i = 0, coordPtr = polyPtr->coordPtr; i < polyPtr->numPoints;
+      i++, coordPtr += 2) {
+      *coordPtr = originX + scaleX*(*coordPtr - originX);
+      coordPtr[1] = originY + scaleY*(coordPtr[1] - originY);
+   }
+   glComputePolygonBbox(canvas, polyPtr);
 }
 
 /*
@@ -1352,78 +1416,76 @@ static void glScalePolygon(canvas, itemPtr, originX, originY, scaleX, scaleY)
  *--------------------------------------------------------------
  */
 
-static int glGetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
-    Tcl_Interp *interp;		/* Used for error reporting. */
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item for which the index is being
-				 * specified. */
-    Tcl_Obj *obj;		/* Specification of a particular coord
-				 * in itemPtr's line. */
-    int *indexPtr;		/* Where to store converted index. */
+static int glGetPolygonIndex(
+    Tcl_Interp *interp,    /* Used for error reporting. */
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item for which the index is being * specified. */
+    Tcl_Obj *obj,    /* Specification of a particular coord in * itemPtr's line. */
+    int *indexPtr)      /* Where to store converted index. */
 {
     glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
     size_t length;
     char *string = Tcl_GetStringFromObj(obj, (int *) &length);
 
-    if (string[0] == 'e') {
-	if (strncmp(string, "end", length) == 0) {
-	    *indexPtr = 2*polyPtr->numPoints;
-	} else {
-	    badIndex:
+   if (string[0] == 'e') {
+      if (strncmp(string, "end", (unsigned)length) != 0) {
+         goto badIndex;
+      }
+      *indexPtr = 2*(polyPtr->numPoints - polyPtr->autoClosed);
+   } else if (string[0] == '@') {
+      int i;
+      double x, y, bestDist, dist, *coordPtr;
+      char *end;
+      const char *p;
 
-	    /*
-	     * Some of the paths here leave messages in interp->result,
-	     * so we have to clear it out before storing our own message.
-	     */
+      p = string+1;
+      x = strtod(p, &end);
+      if ((end == p) || (*end != ',')) {
+         goto badIndex;
+      }
+      p = end+1;
+      y = strtod(p, &end);
+      if ((end == p) || (*end != 0)) {
+         goto badIndex;
+      }
+      bestDist = 1.0e36;
+      coordPtr = polyPtr->coordPtr;
+      *indexPtr = 0;
+      for (i=0; i<polyPtr->numPoints-1; i++) {
+         dist = hypot(coordPtr[0] - x, coordPtr[1] - y);
+         if (dist < bestDist) {
+         bestDist = dist;
+         *indexPtr = 2*i;
+         }
+         coordPtr += 2;
+      }
+   } else {
+      int count = 2*(polyPtr->numPoints - polyPtr->autoClosed);
 
-	    Tcl_SetResult(interp, (char *) NULL, TCL_STATIC);
-	    Tcl_AppendResult(interp, "bad index \"", string, "\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-    } else if (string[0] == '@') {
-	int i;
-	double x ,y, bestDist, dist, *coordPtr;
-	char *end, *p;
+      if (Tcl_GetIntFromObj(interp, obj, indexPtr) != TCL_OK) {
+         goto badIndex;
+      }
+      *indexPtr &= -2; /* if odd, make it even */
+      if (!count) {
+         *indexPtr = 0;
+      } else if (*indexPtr > 0) {
+         *indexPtr = ((*indexPtr - 2) % count) + 2;
+      } else {
+         *indexPtr = -((-(*indexPtr)) % count);
+      }
+   }
+   return TCL_OK;
 
-	p = string+1;
-	x = strtod(p, &end);
-	if ((end == p) || (*end != ',')) {
-	    goto badIndex;
-	}
-	p = end+1;
-	y = strtod(p, &end);
-	if ((end == p) || (*end != 0)) {
-	    goto badIndex;
-	}
-	bestDist = 1.0e36;
-	coordPtr = polyPtr->coordPtr;
-	*indexPtr = 0;
-	for(i=0; i<(polyPtr->numPoints-1); i++) {
-	    dist = hypot(coordPtr[0] - x, coordPtr[1] - y);
-	    if (dist<bestDist) {
-		bestDist = dist;
-		*indexPtr = 2*i;
-	    }
-	    coordPtr += 2;
-	}
-    } else {
-	int count = 2*polyPtr->numPoints;
-	if (Tcl_GetIntFromObj(interp, obj, indexPtr) != TCL_OK) {
-	    goto badIndex;
-	}
-	*indexPtr &= -2; /* if odd, make it even */
-	if (count) {
-	    if (*indexPtr > 0) {
-		*indexPtr = ((*indexPtr - 2) % count) + 2;
-	    } else {
-		*indexPtr = -((-(*indexPtr)) % count);
-	    }
-	} else {
-	    *indexPtr = 0;
-	}
-    }
-    return TCL_OK;
+   /*
+   * Some of the paths here leave messages in interp->result, so we have to
+   * clear it out before storing our own message.
+   */
+
+   badIndex:
+
+   Tcl_SetObjResult(interp, Tcl_ObjPrintf("bad index \"%s\"", string));
+   Tcl_SetErrorCode(interp, "TK", "CANVAS", "ITEM_INDEX", "POLY", NULL);
+   return TCL_ERROR;
 }
 
 /*
@@ -1445,22 +1507,21 @@ static int glGetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
  *--------------------------------------------------------------
  */
 
-static void glTranslatePolygon(canvas, itemPtr, deltaX, deltaY)
-    Tk_Canvas canvas;			/* Canvas containing item. */
-    Tk_Item *itemPtr;			/* Item that is being moved. */
-    double deltaX, deltaY;		/* Amount by which item is to be
-					 * moved. */
+static void glTranslatePolygon(
+    Tk_Canvas canvas,      /* Canvas containing item. */
+    Tk_Item *itemPtr,      /* Item that is being moved. */
+    double deltaX, double deltaY) /* Amount by which item is to be moved. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    double *coordPtr;
-    int i;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   double *coordPtr;
+   int i;
 
-    for (i = 0, coordPtr = polyPtr->coordPtr; i < polyPtr->numPoints;
-	    i++, coordPtr += 2) {
-	*coordPtr += deltaX;
-	coordPtr[1] += deltaY;
-    }
-    glComputePolygonBbox(canvas, polyPtr);
+   for (i = 0, coordPtr = polyPtr->coordPtr; i < polyPtr->numPoints;
+      i++, coordPtr += 2) {
+      *coordPtr += deltaX;
+      coordPtr[1] += deltaY;
+   }
+   glComputePolygonBbox(canvas, polyPtr);
 }
 
 /*
@@ -1494,132 +1555,192 @@ static int glPolygonToPostscript(interp, canvas, itemPtr, prepass)
 					 * collect font information;  0 means
 					 * final Postscript is being created. */
 {
-    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
-    char *style;
-    XColor *color;
-    XColor *fillColor;
-    Pixmap stipple;
-    T_glBitmap *fillStipple;
-    Tk_State state = itemPtr->state;
-    double width;
+   glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
+   int style;
+   XColor *color;
+   XColor *fillColor;
+   Pixmap stipple;
+   T_glBitmap *fillStipple;
+   Tk_State state = itemPtr->state;
+   double width;
+   Tcl_Obj *psObj;
+   Tcl_InterpState interpState;
 
-    if (polyPtr->numPoints<2 || polyPtr->coordPtr==NULL) {
-	return TCL_OK;
-    }
+   if (polyPtr->numPoints < 2 || polyPtr->coordPtr == NULL) {
+      return TCL_OK;
+   }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
-    width = polyPtr->outline.width;
-    color = polyPtr->outline.color;
-    fillColor = polyPtr->fillColor;
-    fillStipple = polyPtr->fillStipple;
+   if (state == TK_STATE_NULL) {
+      state = Canvas(canvas)->canvas_state;
+   }
+   width = polyPtr->outline.width;
+   color = polyPtr->outline.color;
+   stipple = None;
+   fillColor = polyPtr->fillColor;
+   fillStipple = polyPtr->fillStipple;
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
+      if (polyPtr->outline.activeWidth > width) {
+         width = polyPtr->outline.activeWidth;
+      }
+      if (polyPtr->outline.activeColor != NULL) {
+         color = polyPtr->outline.activeColor;
+      }
+      if (polyPtr->outline.activeStipple != None) {
+         stipple = polyPtr->outline.activeStipple;
+      }
+      if (polyPtr->activeFillColor != NULL) {
+         fillColor = polyPtr->activeFillColor;
+      }
+      if (polyPtr->activeFillStipple != None) {
+         fillStipple = polyPtr->activeFillStipple;
+      }
+   } else if (state == TK_STATE_DISABLED) {
+      if (polyPtr->outline.disabledWidth > 0.0) {
+         width = polyPtr->outline.disabledWidth;
+      }
+      if (polyPtr->outline.disabledColor != NULL) {
+         color = polyPtr->outline.disabledColor;
+      }
+      if (polyPtr->outline.disabledStipple != None) {
+         stipple = polyPtr->outline.disabledStipple;
+      }
+      if (polyPtr->disabledFillColor != NULL) {
+         fillColor = polyPtr->disabledFillColor;
+      }
+      if (polyPtr->disabledFillStipple != None) {
+         fillStipple = polyPtr->disabledFillStipple;
+      }
+   }
 
-    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-	if (polyPtr->outline.activeWidth>width) {
-	    width = polyPtr->outline.activeWidth;
-	}
-	if (polyPtr->outline.activeColor!=NULL) {
-	    color = polyPtr->outline.activeColor;
-	}
-	if (polyPtr->outline.activeStipple!=None) {
-	    stipple = polyPtr->outline.activeStipple;
-	}
-	if (polyPtr->activeFillColor!=NULL) {
-	    fillColor = polyPtr->activeFillColor;
-	}
-	if (polyPtr->activeStipple) {
-	    fillStipple = polyPtr->activeStipple;
-	}
-    } else if (state==TK_STATE_DISABLED) {
-	if (polyPtr->outline.disabledWidth>0.0) {
-	    width = polyPtr->outline.disabledWidth;
-	}
-	if (polyPtr->outline.disabledColor!=NULL) {
-	    color = polyPtr->outline.disabledColor;
-	}
-	if (polyPtr->outline.disabledStipple!=None) {
-	    stipple = polyPtr->outline.disabledStipple;
-	}
-	if (polyPtr->disabledFillColor!=NULL) {
-	    fillColor = polyPtr->disabledFillColor;
-	}
-	if (polyPtr->disabledStipple) {
-	    fillStipple = polyPtr->disabledStipple;
-	}
-    }
+   /*
+   * Make our working space.
+   */
 
-    if (polyPtr->numPoints==2) {
-	char string[128];
-	sprintf(string, "%.15g %.15g translate %.15g %.15g",
-		polyPtr->coordPtr[0], Tk_CanvasPsY(canvas, polyPtr->coordPtr[1]),
-		width/2.0, width/2.0);
-	Tcl_AppendResult(interp, "matrix currentmatrix\n",string,
-		" scale 1 0 moveto 0 0 1 0 360 arc\nsetmatrix\n", (char *) NULL);
-	if (Tk_CanvasPsColor(interp, canvas, color)
-		!= TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (stipple != None) {
-	    Tcl_AppendResult(interp, "clip ", (char *) NULL);
-	    if (Tk_CanvasPsStipple(interp, canvas, stipple) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "fill\n", (char *) NULL);
-	}
-	return TCL_OK;
-    }
+   psObj = Tcl_NewObj();
+   interpState = Tcl_SaveInterpState(interp, TCL_OK);
 
-    /*
-     * Fill the area of the polygon.
-     */
+   if (polyPtr->numPoints == 2) {
+      if (color == NULL) {
+         goto done;
+      }
 
-    if (fillColor != NULL && polyPtr->numPoints>2) {
-	if (!polyPtr->smooth || !polyPtr->smooth->postscriptProc) {
-	    Tk_CanvasPsPath(interp,canvas,polyPtr->coordPtr,polyPtr->numPoints);
-	} else {
-	    polyPtr->smooth->postscriptProc(interp,canvas,polyPtr->coordPtr,polyPtr->numPoints,polyPtr->splineSteps);
-	}
-	if (Tk_CanvasPsColor(interp,canvas,fillColor) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (fillStipple != None) {
-	    Tcl_AppendResult(interp, "eoclip ", (char *) NULL);
-	    if (glPostscriptStipple(interp,fillStipple)!= TCL_OK) {
-		return TCL_ERROR;
-	    }
+      /*
+      * Create a point by using a small circle. (Printer pixels are too
+      * tiny to be used directly...)
+      */
 
-	    if (color != NULL) {
-		Tcl_AppendResult(interp, "grestore gsave\n", (char *) NULL);
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "eofill\n", (char *) NULL);
-	}
-    }
+      Tcl_AppendPrintfToObj(psObj,
+         "matrix currentmatrix\n"   /* save state */
+         "%.15g %.15g translate "   /* go to drawing location */
+         "%.15g %.15g scale "    /* scale the drawing */
+         "1 0 moveto "        /* correct for origin */
+         "0 0 1 0 360 arc\n"     /* make the circle */
+         "setmatrix\n",       /* restore state */
+         polyPtr->coordPtr[0],
+         Tk_CanvasPsY(canvas, polyPtr->coordPtr[1]),
+         width/2.0, width/2.0);
 
-    /* Now draw the outline, if there is one */
+      /*
+      * Color it in.
+      */
 
-    if (color != NULL) {
+      Tcl_ResetResult(interp);
+      if (Tk_CanvasPsColor(interp, canvas, color) != TCL_OK) {
+         goto error;
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
 
-	if (!polyPtr->smooth || !polyPtr->smooth->postscriptProc) {
-	    Tk_CanvasPsPath(interp,canvas,polyPtr->coordPtr,polyPtr->numPoints);
-	} else {
-	    polyPtr->smooth->postscriptProc(interp,canvas,polyPtr->coordPtr,polyPtr->numPoints,polyPtr->splineSteps);
-	}
+      if (stipple != None) {
+         Tcl_AppendToObj(psObj, "clip ", -1);
 
-	if (polyPtr->joinStyle == JoinRound) {
-	    style = "1";
-	} else if (polyPtr->joinStyle == JoinBevel) {
-	    style = "2";
-	} else {
-	    style = "0";
-	}
-	Tcl_AppendResult(interp,style," setlinejoin 1 setlinecap\n",(char*)NULL);
+         Tcl_ResetResult(interp);
+         if (Tk_CanvasPsStipple(interp, canvas, stipple) != TCL_OK) {
+         goto error;
+         }
+         Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+      } else {
+         Tcl_AppendToObj(psObj, "fill\n", -1);
+      }
+      goto done;
+   }
 
-	if (Tk_CanvasPsOutline(canvas,itemPtr,&(polyPtr->outline))!= TCL_OK) {
-	    return TCL_ERROR;
-	}
-    }
-    return TCL_OK;
+   /*
+   * Fill the area of the polygon.
+   */
+
+   if (fillColor != NULL && polyPtr->numPoints > 3) {
+      Tcl_ResetResult(interp);
+      if (!polyPtr->smooth || !polyPtr->smooth->postscriptProc) {
+         Tk_CanvasPsPath(interp, canvas, polyPtr->coordPtr,
+            polyPtr->numPoints);
+      } else {
+         polyPtr->smooth->postscriptProc(interp, canvas, polyPtr->coordPtr,
+            polyPtr->numPoints, polyPtr->splineSteps);
+      }
+      if (Tk_CanvasPsColor(interp, canvas, fillColor) != TCL_OK) {
+         goto error;
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+
+      if (fillStipple != None) {
+         Tcl_AppendToObj(psObj, "eoclip ", -1);
+
+         Tcl_ResetResult(interp);
+         if (glPostscriptStipple(interp,psObj,fillStipple)!= TCL_OK) {
+            goto error;
+         }
+
+         if (color != NULL) {
+            Tcl_AppendToObj(psObj, "grestore gsave\n", -1);
+         }
+      } else {
+         Tcl_AppendToObj(psObj, "eofill\n", -1);
+      }
+   }
+
+   /*
+   * Now draw the outline, if there is one.
+   */
+
+   if (color != NULL) {
+      Tcl_ResetResult(interp);
+      if (!polyPtr->smooth || !polyPtr->smooth->postscriptProc) {
+         Tk_CanvasPsPath(interp, canvas, polyPtr->coordPtr,
+            polyPtr->numPoints);
+      } else {
+         polyPtr->smooth->postscriptProc(interp, canvas, polyPtr->coordPtr,
+            polyPtr->numPoints, polyPtr->splineSteps);
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+
+      if (polyPtr->joinStyle == JoinRound) {
+         style = 1;
+      } else if (polyPtr->joinStyle == JoinBevel) {
+         style = 2;
+      } else {
+         style = 0;
+      }
+      Tcl_AppendPrintfToObj(psObj, "%d setlinejoin 1 setlinecap\n", style);
+
+      Tcl_ResetResult(interp);
+      if (Tk_CanvasPsOutline(canvas, itemPtr, &polyPtr->outline) != TCL_OK){
+         goto error;
+      }
+      Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
+   }
+
+   /*
+   * Plug the accumulated postscript back into the result.
+   */
+
+   done:
+   (void) Tcl_RestoreInterpState(interp, interpState);
+   Tcl_AppendObjToObj(Tcl_GetObjResult(interp), psObj);
+   Tcl_DecrRefCount(psObj);
+   return TCL_OK;
+
+   error:
+   Tcl_DiscardInterpState(interpState);
+   Tcl_DecrRefCount(psObj);
+   return TCL_ERROR;
 }

@@ -240,7 +240,7 @@ int ColorbarCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
       }
       ColorbarBBox(Canvas,cb);
    } else {
-      sprintf(Interp->result,"ColorbarCoords: wrong # coordinates,  expected 0 or 2, got %d",Argc);
+      Tcl_AppendResult(Interp,"ViewportCoords: wrong # coordinates,  expected 0 or 2\n",(char*)NULL);
       return(TCL_ERROR);
    }
    return(TCL_OK);

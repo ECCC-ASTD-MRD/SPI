@@ -18,7 +18,7 @@ else
 	LIBS       = -L$(LIB_PATH) -lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat -lmut -ldrp -lurp
 endif
 
-LIBTCLTK   = -L$(TK_PATH)/lib -ltk$(TCLTK_BASE) -L$(TCL_PATH)/lib -ltcl$(TCLTK_BASE)
+LIBTCLTK   = -L$(TCL_PATH)/lib -ltk$(TCLTK_BASE) -ltcl$(TCLTK_BASE)
 LEXFLAGS   = -P vexpr_
 YACCFLAGS  = -p vexpr_
 OBJ = $(GRAMMAR).tab.o lex.vexpr_.o $(GRAMMAR).o gpc.o \

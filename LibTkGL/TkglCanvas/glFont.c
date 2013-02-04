@@ -28,7 +28,7 @@ void glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int De
    glPushMatrix();
 
    glTranslatef(X,Y,0.0);
-   glRotatef(Theta,0.0,0.0,1.0);
+   glRotatef(-Theta,0.0,0.0,1.0);
 
    glBegin(GL_QUADS);
       glVertex2i(-DeltaX,-DeltaY);
@@ -56,7 +56,7 @@ void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
    glPushMatrix();
 
    glTranslatef(X,Y,0.0);
-   glRotatef(Theta,0.0,0.0,1.0);
+   glRotatef(-Theta,0.0,0.0,1.0);
 
    if (!Flip)
       glScalef(1.0f,-1.0f,1.0);

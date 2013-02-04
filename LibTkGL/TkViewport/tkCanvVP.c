@@ -47,14 +47,14 @@ extern int   Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Project
 extern int   Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
 extern int   MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
 
-static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-static int    ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *const Objv[]);
+static int    ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
 static int    ViewportToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);
 static double ViewportToPoint(Tk_Canvas Canvas,Tk_Item *Item,double *CoordPtr);
 static int    ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Prepass);
 static void   ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP);
-static int    ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags);
-static int    ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]);
+static int    ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[],int Flags);
+static int    ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
 static void   ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp);
 static void   ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Drawt,int X,int Y,int Width,int Height);
 static void   ViewportScale(Tk_Canvas Canvas,Tk_Item *Item, double OriginX,double OriginY,double ScaleX,double ScaleY);
@@ -62,17 +62,17 @@ static void   ViewportTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,dou
 static int    ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item);
 static int    ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 
-static int   VP_CamParseProc  _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *VP_CamPrintProc  _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
-static int   VP_ProjParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *VP_ProjPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
-static int   VP_ArrayParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *VP_ArrayPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
+static int         VP_CamParseProc(ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,const char *value,char *widgRec,int offset);
+static const char *VP_CamPrintProc(ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr);
+static int         VP_ProjParseProc(ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,const char *value,char *widgRec,int offset);
+static const char *VP_ProjPrintProc(ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr);
+static int         VP_ArrayParseProc(ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,const char *value,char *widgRec,int offset);
+static const char *VP_ArrayPrintProc(ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr);
 
-static Tk_CustomOption CamOption   = { (Tk_OptionParseProc*)VP_CamParseProc,VP_CamPrintProc,(ClientData)NULL };
-static Tk_CustomOption ArrayOption = { (Tk_OptionParseProc*)VP_ArrayParseProc,VP_ArrayPrintProc,(ClientData)NULL };
-static Tk_CustomOption ProjOption  = { (Tk_OptionParseProc*)VP_ProjParseProc,VP_ProjPrintProc,(ClientData)NULL };
-static Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,(ClientData)NULL };
+static const Tk_CustomOption CamOption   = { VP_CamParseProc,VP_CamPrintProc,NULL };
+static const Tk_CustomOption ArrayOption = { VP_ArrayParseProc,VP_ArrayPrintProc,NULL };
+static const Tk_CustomOption ProjOption  = { VP_ProjParseProc,VP_ProjPrintProc,NULL };
+static const Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
 
 void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS);
 void ViewportSet(ViewportItem *VP,Projection *Proj);
@@ -83,74 +83,41 @@ static ViewportItem *ViewportTable[256];
 
 /*Information used for parsing configuration specs:*/
 
-static Tk_ConfigSpec configSpecs[] = {
-   { TK_CONFIG_ANCHOR, "-anchor",(char *)NULL,(char *)NULL,
-        "nw",Tk_Offset(ViewportItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_FONT, "-font",(char*)NULL,(char*)NULL,
-        "Helvetica 12",Tk_Offset(ViewportItem,tkfont),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_DOUBLE,"-x",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,x),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_DOUBLE,"-y",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,y),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-width",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,Width),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-height",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,Height),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_PIXELS,"-bd",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,BDWidth),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_COLOR,"-colorfillcoast",(char *)NULL,(char *)NULL,
-        NULL,Tk_Offset(ViewportItem,ColorFCoast),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorfilllake",(char *)NULL,(char *)NULL,
-         NULL,Tk_Offset(ViewportItem,ColorFLake),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorcoast",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorCoast),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorlake",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorLake),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorriver",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorRiver),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorpolit",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorPolit),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-coloradmin",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorAdmin),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorcity",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorCity),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorplace",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorPlace),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorroad",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorRoad),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorrail",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorRail),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorutil",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorUtil),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorcanal",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorCanal),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-colorcoord",(char *)NULL,(char *)NULL,
-        "black",Tk_Offset(ViewportItem,ColorCoord),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-fg","-foreground",(char *)NULL,
-        "black",Tk_Offset(ViewportItem,FGColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_COLOR,"-bg","-background",(char *)NULL,
-        "white",Tk_Offset(ViewportItem,BGColor),TK_CONFIG_NULL_OK },
-   { TK_CONFIG_BOOLEAN,"-update",(char *)NULL,(char *)NULL,
-        "1",Tk_Offset(ViewportItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_BOOLEAN,"-secondary",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,Secondary),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_STRING,"-command",(char*)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ViewportItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-projection",(char *)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ViewportItem,Projection),TK_CONFIG_NULL_OK,&ProjOption },
-   { TK_CONFIG_CUSTOM,"-data",(char *)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ViewportItem,DataItem),TK_CONFIG_NULL_OK,&ArrayOption },
-   { TK_CONFIG_CUSTOM,"-maskitem",(char *)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ViewportItem,MaskItem),TK_CONFIG_NULL_OK,&ArrayOption },
-   { TK_CONFIG_PIXELS,"-maskwidth",(char *)NULL,(char *)NULL,
-        "0",Tk_Offset(ViewportItem,MaskWidth),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-camera",(char *)NULL,(char *)NULL,
-        (char *)NULL,Tk_Offset(ViewportItem,Cam),TK_CONFIG_NULL_OK,&CamOption },
-   { TK_CONFIG_INT,"-frame",(char *)NULL,(char *)NULL,
-        "-1",Tk_Offset(ViewportItem,Frame),TK_CONFIG_DONT_SET_DEFAULT },
-   { TK_CONFIG_CUSTOM,"-tags",(char *)NULL,(char *)NULL,
-        (char *)NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
-   { TK_CONFIG_END,(char *)NULL,(char *)NULL,(char *)NULL,(char *)NULL,0,0 }
+static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "nw",Tk_Offset(ViewportItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_FONT, "-font", NULL, NULL, "Helvetica 12",Tk_Offset(ViewportItem,tkfont),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_DOUBLE, "-x", NULL, NULL, "0",Tk_Offset(ViewportItem,x),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_DOUBLE, "-y", NULL, NULL, "0",Tk_Offset(ViewportItem,y),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-width", NULL, NULL, "0",Tk_Offset(ViewportItem,Width),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-height", NULL, NULL, "0",Tk_Offset(ViewportItem,Height),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-bd", NULL, NULL, "0",Tk_Offset(ViewportItem,BDWidth),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_COLOR, "-colorfillcoast", NULL, NULL, NULL,Tk_Offset(ViewportItem,ColorFCoast),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorfilllake", NULL, NULL, NULL,Tk_Offset(ViewportItem,ColorFLake),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorcoast", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCoast),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorlake", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorLake),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorriver", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorRiver),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorpolit", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorPolit),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-coloradmin", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorAdmin),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorcity", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCity),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorplace", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorPlace),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorroad", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorRoad),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorrail", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorRail),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorutil", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorUtil),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorcanal", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCanal),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-colorcoord", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCoord),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-fg","-foreground", NULL, "black",Tk_Offset(ViewportItem,FGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_COLOR, "-bg","-background", NULL, "white",Tk_Offset(ViewportItem,BGColor),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_BOOLEAN, "-update", NULL, NULL, "1",Tk_Offset(ViewportItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_BOOLEAN, "-secondary", NULL, NULL, "0",Tk_Offset(ViewportItem,Secondary),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_STRING, "-command", NULL, NULL, NULL ,Tk_Offset(ViewportItem,Command),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM, "-projection", NULL, NULL, NULL,Tk_Offset(ViewportItem,Projection),TK_CONFIG_NULL_OK,&ProjOption },
+   { TK_CONFIG_CUSTOM, "-data", NULL, NULL, NULL,Tk_Offset(ViewportItem,DataItem),TK_CONFIG_NULL_OK,&ArrayOption },
+   { TK_CONFIG_CUSTOM, "-maskitem", NULL, NULL, NULL,Tk_Offset(ViewportItem,MaskItem),TK_CONFIG_NULL_OK,&ArrayOption },
+   { TK_CONFIG_PIXELS, "-maskwidth", NULL, NULL, "0",Tk_Offset(ViewportItem,MaskWidth),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM, "-camera", NULL, NULL, NULL,Tk_Offset(ViewportItem,Cam),TK_CONFIG_NULL_OK,&CamOption },
+   { TK_CONFIG_INT, "-frame", NULL, NULL, "-1",Tk_Offset(ViewportItem,Frame),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
+   { TK_CONFIG_END, NULL, NULL, NULL, NULL,0,0 }
 };
 
 /*
@@ -257,7 +224,7 @@ int Tkviewport_Init(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]){
 
    ViewportItem *vp=(ViewportItem *)Item;
    int i;
@@ -357,7 +324,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
  *
  *----------------------------------------------------------------------------
 */
-static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *const Objv[]){
 
    ViewportItem *vp=(ViewportItem *)Data;
    Projection   *proj;
@@ -372,7 +339,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    Coord         loc,loc0,loc1,co[1000];
    double        x,y,h,d,lat[2],lon[2];
 
-   static CONST char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-projectcircle","-distxy","-distpix","-distll","-bearing","-circle","-pick","-bbox",NULL };
+   static const char *sopt[] = { "-ungrid","-grid","-unproject","-project","-projectline","-projectcircle","-distxy","-distpix","-distll","-bearing","-circle","-pick","-bbox",NULL };
    enum                opt { UNGRID,GRID,UNPROJECT,PROJECT,PROJECTLINE,PROJECTCIRCLE,DISTXY,DISTPIX,DISTLL,BEARING,CIRCLE,PICK,BBOX };
 
    proj=Projection_Get(vp->Projection);
@@ -845,7 +812,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
  *
  *----------------------------------------------------------------------------
 */
-static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[]){
+static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]){
 
    ViewportItem *vp=(ViewportItem *)Item;
    char x[TCL_DOUBLE_SPACE],y[TCL_DOUBLE_SPACE];
@@ -861,7 +828,7 @@ static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
       }
       ViewportBBox(Canvas,vp);
    } else {
-      sprintf(Interp->result,"ViewportCoords: wrong # coordinates,  expected 0 or 2, got %d",Argc);
+      Tcl_AppendResult(Interp,"ViewportCoords: wrong # coordinates,  expected 0 or 2\n",(char*)NULL);
       return(TCL_ERROR);
    }
    return(TCL_OK);
@@ -889,7 +856,7 @@ static int ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
  *
  *----------------------------------------------------------------------------
 */
-static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *CONST Argv[],int Flags){
+static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[],int Flags){
 
    ViewportItem *vp =(ViewportItem *)Item;
    Projection   *proj=NULL;
@@ -899,7 +866,7 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
    height = vp->Height;
    frame  = vp->Frame;
 
-   if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),configSpecs,Argc,(CONST84 char**)Argv,(char*)vp,Flags) != TCL_OK) {
+   if (Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canvas),configSpecs,Argc,(const char**)Argv,(char*)vp,Flags) != TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -2149,7 +2116,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
  *
  *----------------------------------------------------------------------------
 */
-static int VP_CamParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int VP_CamParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
 
@@ -2188,7 +2155,7 @@ static int VP_CamParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,ch
  *
  *----------------------------------------------------------------------------
 */
-static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static const char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
 
@@ -2216,7 +2183,7 @@ static char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int O
  *
  *----------------------------------------------------------------------------
 */
-static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    ViewportItem *vp=(ViewportItem*)WidgRec;
    Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
@@ -2254,7 +2221,7 @@ static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,
  *
  *----------------------------------------------------------------------------
 */
-static char *VP_ArrayPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static const char *VP_ArrayPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
    Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
@@ -2283,7 +2250,7 @@ static char *VP_ArrayPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int
  *
  *----------------------------------------------------------------------------
 */
-static int VP_ProjParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int VP_ProjParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
 
@@ -2321,7 +2288,7 @@ static int VP_ProjParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,c
  *
  *----------------------------------------------------------------------------
 */
-static char *VP_ProjPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static const char *VP_ProjPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    ViewportItem *vp=(ViewportItem *)WidgRec;
 

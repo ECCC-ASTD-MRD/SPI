@@ -11,13 +11,13 @@ HOME_PATH=/home/afsr/005/lib/${ARCH}_${PROC}
 
 export LD_LIBRARY_PATH=${HOME_PATH}:$LD_LIBRARY_PATH
 
-TCL_VERSION=8.5.7
-THREAD=thread2.6.5
+TCL_VERSION=8.6.0
+TCL_LIB=1.14
 TKTABLE=Tktable2.10
-TLS=tls1.5
+TLS=tls1.6
 
 XML=libxml2-2.7.2
-TDOM=tDOM-0.8.2
+TDOM=tdom-master
 EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
@@ -65,15 +65,6 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
-#----- Thread
-cd ${ARCH_PATH}/${THREAD}
-./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tcl=${TCL_PATH}/lib
-make clean
-make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
-
 #----- TkTable
 cd ${ARCH_PATH}/${TKTABLE}
 ./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tcl=${TCL_PATH}/lib
@@ -83,7 +74,7 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
-#----- tls-1.5.0
+#----- tls
 cd ${ARCH_PATH}/${TLS}
 make distclean
 ./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-ssl-dir=/usr --with-tcl=${TCL_PATH}/lib

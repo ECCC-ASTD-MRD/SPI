@@ -2963,6 +2963,8 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
    TGraphAxis *axisx,*axisy,*axisz;
    GLXPbuffer  pbuf;
    int         w,h;
+   Tcl_Obj    *psObj;
+   Tcl_InterpState interpState;
 
    axisx=GraphAxis_Get(Item->XAxis);
    axisy=GraphAxis_Get(Item->YAxis);
@@ -3126,7 +3128,7 @@ void GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *
          Tk_CanvasPsColor(Interp,Graph->canvas,Item->Fill);
          if (Item->Stipple) {
             Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-            glPostscriptStipple(Interp,Item->Stipple);
+            glPostscriptStipple(Interp,NULL,Item->Stipple);
          } else {
             Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
          }
@@ -3477,7 +3479,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-                  glPostscriptStipple(Interp,Item->Stipple);
+                  glPostscriptStipple(Interp,NULL,Item->Stipple);
                } else {
                   Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
                }
@@ -3493,7 +3495,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-                  glPostscriptStipple(Interp,Item->Stipple);
+                  glPostscriptStipple(Interp,NULL,Item->Stipple);
                } else {
                   Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
                }
@@ -3507,7 +3509,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-                  glPostscriptStipple(Interp,Item->Stipple);
+                  glPostscriptStipple(Interp,NULL,Item->Stipple);
                } else {
                   Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
                }
@@ -3519,7 +3521,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-                  glPostscriptStipple(Interp,Item->Stipple);
+                  glPostscriptStipple(Interp,NULL,Item->Stipple);
                } else {
                   Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
                }
@@ -3548,7 +3550,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          if (Item->Stipple) {
             Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-            glPostscriptStipple(Interp,Item->Stipple);
+            glPostscriptStipple(Interp,NULL,Item->Stipple);
          } else {
             Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
          }
@@ -3693,7 +3695,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",(v[i][0]-((TkCanvas*)Graph->canvas)->xOrigin)-Item->Bitmap->Width/2,-(v[i][1]-dh-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,-(int)(v[i][1]-((TkCanvas*)Graph->canvas)->yOrigin)+Item->Bitmap->Height/2,Item->Bitmap->Width);
          }
          Tcl_AppendResult(Interp,buf,(char*)NULL);
-         glPostscriptBitmap(Interp,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
+         glPostscriptBitmap(Interp,NULL,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
          Tcl_AppendResult(Interp,"grestore\n",(char*)NULL);
       }
    }
@@ -3796,7 +3798,7 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
 
       if (Item->Stipple) {
          Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
-         glPostscriptStipple(Interp,Item->Stipple);
+         glPostscriptStipple(Interp,NULL,Item->Stipple);
          Tcl_AppendResult(Interp,"grestore gsave\n",(char*)NULL);
       } else {
          Tcl_AppendResult(Interp,"eofill\n",(char*)NULL);
@@ -3855,7 +3857,7 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
       Tk_CanvasPsColor(Interp,Graph->canvas,Item->Outline);
       sprintf(buf,"%.15g %.15g translate %d %d true matrix {\n",X1+10-(double)Item->Bitmap->Width/2.0,Tk_CanvasPsY(Graph->canvas,y-Item->Bitmap->Height/2),Item->Bitmap->Width,Item->Bitmap->Height);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
-      glPostscriptBitmap(Interp,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
+      glPostscriptBitmap(Interp,NULL,Item->Bitmap,Item->Bitmap->Width,Item->Bitmap->Height);
    }
 
    if (Item->ImageString) {

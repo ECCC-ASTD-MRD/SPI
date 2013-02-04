@@ -12,8 +12,8 @@ OS        = $(shell uname -s)
 PROC      = $(shell uname -m)
 ARCH      = $(OS)_$(PROC)
 LIB_VER   = 7.5.3
-TCLTK_VER = 8.5.7
-TCLTK_BASE= 8.5
+TCLTK_VER = 8.6.0
+TCLTK_BASE= 8.6
 
 X_INCLUDE   =
 PROTO       =
@@ -30,8 +30,8 @@ else
    CCOPTIONS    = -O2 -funroll-all-loops -finline-functions 
 endif
 
-LIB_PATH  = ../../eer_SPI/Lib/$(ARCH)
-INC_PATH  = ../../eer_SPI/Lib/Include
+LIB_PATH  = /users/dor/afsr/005/lib/$(ARCH)
+INC_PATH  = /users/dor/afsr/005/include
 
 # Tk Path
 TCL_SRC  = /cnfs/ops/cmoe/afsr005/Archive/tcl$(TCLTK_VER)
