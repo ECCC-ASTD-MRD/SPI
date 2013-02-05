@@ -434,7 +434,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
 
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
-   int                i,ix,iy,dx,dy;
+   int                i,j,ix,iy,dx,dy,result=TCL_ERROR;
 
    /*Calculer le depassement si il y a*/
    ix=TR->CurrentColumn*TR->TileWidthNB-X;
@@ -450,32 +450,33 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    handle=Tk_FindPhoto(Interp,Img);
 
    /*Definire les parametres du block de donnees */
-   Tk_PhotoSetSize(Interp,handle,Width,Height);
+   if (Tk_PhotoSetSize(Interp,handle,Width,Height)==TCL_OK) {
+      data.width=TR->TileWidthNB-dx;
+      data.height=TR->TileHeightNB-dy;
+      data.pixelSize=3;
+      data.pitch=data.width*data.pixelSize;
+      data.offset[0]=0;
+      data.offset[1]=1;
+      data.offset[2]=2;
+      data.offset[3]=-1;
+      data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
 
-   data.width=TR->TileWidthNB-dx;
-   data.height=TR->TileHeightNB-dy;
-   data.pitch=data.width*3;
-   data.pixelSize=3;
-   data.offset[0]=0;
-   data.offset[1]=1;
-   data.offset[2]=2;
-   data.offset[3]=0;
-   data.pixelPtr=(GLubyte*)malloc(data.width*data.height*data.pixelSize*sizeof(GLubyte));
+      /* Recuperer le buffer OpenGL en inversant en Y*/
+      if (data.pixelPtr) {
+         glReadBuffer(Buffer);
+         for(i=0;i<data.height;i++) {
+            glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+         }
 
-   /* Recuperer le buffer OpenGL en inversant en Y*/
-   if (data.pixelPtr) {
-      glReadBuffer(Buffer);
-      for(i=0;i<data.height;i++) {
-         glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*3]);
+         /* Envoyer le data dans l'image Tk */
+         result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_OVERLAY);
+         free(data.pixelPtr);
+      } else {
+         result=TCL_ERROR;
       }
-
-      /* Envoyer le data dans l'image Tk */
-      Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-      free(data.pixelPtr);
-   } else {
-      return(TCL_ERROR);
    }
-   return(TCL_OK);
+
+   return(result);
 }
 
 /*----------------------------------------------------------------------------

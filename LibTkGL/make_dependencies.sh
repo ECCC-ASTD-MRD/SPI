@@ -57,6 +57,7 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 #----- Tk
+#----- Remove visibility-hidden flag from makefile for glCanvas to work
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean
 ./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tcl=${TCL_PATH}/lib --enable-xft=no
