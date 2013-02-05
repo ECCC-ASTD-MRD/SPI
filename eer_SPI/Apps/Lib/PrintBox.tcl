@@ -71,46 +71,11 @@ namespace eval PrintBox {
    set Print(Job)            ""                                               ;#Traivail en cours
    set Print(DPI)            [expr [winfo screenwidth .]/([winfo screenmmwidth .]*0.03937008231878280600)] ;#DPI de l'ecran
    set Print(Type)           printer                                        ;#Type de sortie
-   set Print(InternalFile)   ""                                             ;#Fichier interne utilise pour generer le ps
 
    set Type(RASTER)  { {Adobe PostScript {*.ps}}
                        {Portable Network Graphics {*.png}}
-                       {Joint Photographic Experts Group {*.jpg}}
                        {CompuServe Graphics Interchange {*.gif}}
-                       {Truevision Targa {*.tga}}
-                       {Tagged Image File {*.tif}}
-                       {Portable Anymap {*.pnm}}
-                       {Portable pixmap {*.ppm}}
-                       {Portable bitmap {*.pbm}}
-                       {XWindows Bitmap {*.xbm}}
-                       {XWindows Pixmap {*.xpm}}
-                       {Microsoft Windows DIB {*.dib}}
-                       {Microsoft Windows bitmap image {*.bmp}}
-                       {ZSoft Paintbrush {*.pcx}}
-                       {Hierarchical Data Format {*.hdf}}
-                       {Hypertext Markup Language {*.html}}
-                       {Magick image {*.miff}}
-                       {MTV Raytracing {*.mtv}}
-                       {Photo CD {*.pcd}}
-                       {Portable Document Format {*.pdf}}
-                       {Portable Graymap {*.pgm}}
-                       {Apple QuickDraw {*.pict}}
-                       {Radiance {*.rad}}
-                       {Raw RGB {*.rgb}}
-                       {Alias Wavefront {*.rla}}
-                       {Utah Run Length Encoded {*.rle}}
-                       {Irix RGB {*.sgi}}
-                       {SUN Rasterfile {*.sun}}
-                       {16Bit/Pixel YUV {*.uyvy}}
-                       {Flexible Image Transport System {*.fits}}
-                       {AVS X image {*.avs}}
-                       {Raw Bytes {*.cmyk}}
-                       {Joint Bi-level Image experts Group {*.bie}}
-                       {Khoros Visualization {*.viff}}
-                       {FAX Group3 {*.fax *.g3}}
-                       {FlashPix {*.fpx}}
-                       {Raw gray {*.gray}}
-                       {CCIR 601 4:1:1 {*.yuv}} }
+                       {Portable pixmap {*.ppm}}}
 
    set Param(Format)    [lindex $Type(RASTER) 1]
    set Print(Device)    png                                            ;#Type de fichier
@@ -552,6 +517,8 @@ proc PrintBox::Image { Frame Format File { Angle portrait } } {
 proc PrintBox::Postscript { Frame File X Y Width Height { Format "" } } {
    variable Param
 
+   PrintBox::FontMap
+
    if { $Format!="" } {
 
       #----- Make sure we print everything asked by adding a 1 pixel border
@@ -621,13 +588,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    variable Txt
    global GDefs
 
-   set Print(InternalFile) "/tmp/output_[pid]_[clock seconds]"
-
    if { [file extension $Param(FullName)]==".$Print(Device)" } {
       set Param(FullName) [file rootname $Param(FullName)]
    }
-
-   PrintBox::FontMap
 
    #----- Remove control widgets
    $Frame.page.canvas itemconfigure NOPRINT -state hidden
@@ -637,36 +600,26 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
    if { $Print(Type) == "printer" } {
 
+      set tmpfile "/tmp/output_[pid]_[clock seconds]"
+
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
-      PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height $Param(Size)
+      PrintBox::Postscript $Frame $tmpfile $X $Y $Width $Height $Param(Size)
 
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Print) $GDefs(Lang)] $Param(Printer)"
       if { $Param(Printer) == "wideprnt1" || $Param(Printer) == "wideprnt2" } {
-         catch { exec convert -density 200 -colors 2 -dither -monochrome $Print(InternalFile).ps $Print(InternalFile).tiff }
-         exec lpr -s -r -P$Param(Printer) $Print(InternalFile).tiff
-         file delete $Print(InternalFile).ps
+         catch { exec convert -density 200 -colors 2 -dither -monochrome $tmpfile.ps $tmpfile.tiff }
+         exec lpr -s -r -P$Param(Printer) $tmpfile.tiff
+         file delete $tmpfile.ps
       } else {
-         exec lpr -s -r -P$Param(Printer) $Print(InternalFile).ps
+         exec lpr -s -r -P$Param(Printer) $tmpfile.ps
       }
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-         PrintBox::Save $Frame $X $Y $Width $Height $Print(InternalFile)
-
-         InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
-         if { $Print(Device)=="ppm" } {
-            file rename -force $Print(InternalFile).ppm  $Param(FullName).$Print(Device)
-         } else {
-            exec convert $Print(InternalFile).ppm $Param(FullName).$Print(Device)
-            file delete -force $Print(InternalFile).ppm
-         }
+         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName)
       } else {
-
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
-         PrintBox::Postscript $Frame $Print(InternalFile) $X $Y $Width $Height
-
-         InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)]"
-         file rename -force $Print(InternalFile).ps  $Param(FullName).$Print(Device)
+         PrintBox::Postscript $Frame $Param(FullName) $X $Y $Width $Height
       }
 
       InfoFrame::Incr .printbox.job 1
@@ -723,10 +676,11 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 #----------------------------------------------------------------------------
 
 proc PrintBox::Save { Frame X Y Width Height File } {
+   variable Print
 
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-   TMPIMG write "$File.ppm" -format PPM
+   TMPIMG write "$File.$Print(Device)" -format $Print(Device)
    image delete TMPIMG
 }
 
