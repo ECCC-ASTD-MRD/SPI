@@ -1,9 +1,9 @@
 #----- Definitions
-export ARCH=`uname -s`_`uname -m`
-#echo "(INFO) Architecture detected: $ARCH"
+export BASE_ARCH=`uname -s`_`uname -m | tr _ -`
+#echo "(INFO) Architecture detected: ${BASE_ARCH}"
 
-export TCL_VERSION=8.5
-export SPI_SHARED=${SPI_PATH}/Lib/${ARCH}
+export TCL_VERSION=8.6
+export SPI_SHARED=${SPI_PATH}/Lib/${BASE_ARCH}
 
 #----- Library locations
 export SPI_PATH
@@ -30,5 +30,5 @@ export GRIB_TEMPLATE_PATH=${SPI_PATH}/Lib/Data/templates
 export GRIB_DEFINITION_PATH=${SPI_PATH}/Lib/Data/definitions
 
 #----- EER Modeling variables
-export EER_DIRBIN=${SPI_PATH}/Bin/${ARCH}
+export EER_DIRBIN=${SPI_PATH}/Bin/${BASE_ARCH}
 export EER_DIRSCRIPT=${SPI_PATH}/Script
