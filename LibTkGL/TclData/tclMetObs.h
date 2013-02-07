@@ -68,6 +68,7 @@ typedef struct TMetModel {
 typedef struct TMetElemData {
 
    struct TMetObs *Obs;             /*Provenance de ce MetElemData quand detache*/
+   struct TMetLoc *Loc;             /*Localisation de ce MetElemData quand detache*/
    int             Nv,Nt,Ne;        /*Data dimensions*/
    int             Family;          /*Data Family descriptor*/
    int             Type,SType;      /*Data Type descriptor*/

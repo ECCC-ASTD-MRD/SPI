@@ -2077,7 +2077,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    EZUnLock_RPNField();
    FSTD_FileUnset(Interp,File);
 #endif
-
+   Tcl_DecrRefCount(obj);
    Tcl_SetObjResult(Interp,list);
    return(TCL_OK);
 }

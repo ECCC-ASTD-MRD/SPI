@@ -86,7 +86,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
       obj=ObjType;
    }
 
-   if (obj) {
+   if (obj && strlen(Tcl_GetString(obj))) {
       if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
          return(-2);
       }
@@ -293,7 +293,11 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                case LVL_MAGL  : sprintf(buf,"%.1f  m (Meter above groud level)",level); break;
                case LVL_HYBRID: sprintf(buf,"%.6f hy (Hybrid)",level); break;
                case LVL_THETA : sprintf(buf,"%.4f th (Theta)",level); break;
+               case LVL_NBR   : sprintf(buf,"%.4f nb (Number)",level); break;
                case LVL_HOUR  : sprintf(buf,"%.1f hr (Hours)",level); break;
+               case LVL_INT   : sprintf(buf,"%.1f i  (Integer)",level); break;
+               case LVL_IDX   : sprintf(buf,"%.1f x  (Index)",level); break;
+               case LVL_MPRES : sprintf(buf,"%.1f mp (Meter-Pressure)",level); break;
             }
             Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
          } else {

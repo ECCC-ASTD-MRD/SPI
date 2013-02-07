@@ -840,8 +840,9 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
-                                 /*Link the ElementData to its Obs*/
+                                 /*Link the ElementData to its Obs and location*/
                                  elem->EData[d]->Obs=obs;
+                                 elem->EData[d]->Loc=loc;
                                  Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
                               }
                            }
@@ -1682,6 +1683,7 @@ TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt) {
 
    data=(TMetElemData*)malloc(sizeof(TMetElemData));
    data->Obs=NULL;
+   data->Loc=NULL;
    data->Ne=Ne;
    data->Nv=Nv;
    data->Nt=Nt;
@@ -2687,8 +2689,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
-   enum                opt { FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
+   static CONST char *sopt[] = { "-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
+   enum                opt { CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2703,6 +2705,15 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
       }
 
       switch ((enum opt)idx) {
+         case CODETYPE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->Loc->CodeType));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&mk);
+               data->Loc->CodeType=mk;
+            }
+            break;
+
          case FAMILY:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->Family));
