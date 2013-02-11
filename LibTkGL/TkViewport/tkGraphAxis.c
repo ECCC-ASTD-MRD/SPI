@@ -1213,7 +1213,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             dy=Y1+(Y0-Y1)/2.0+Axis->UnitWidth/2.0;
          }
          dx=Axis->Pos[1]=='L'?X0-Len:X0+Len-Axis->UnitHeight;
-         th=270.0;
+         th=-270.0;
       }
 
       if (Axis->UnitItem) {
@@ -1572,7 +1572,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
          }
          /*Something wrong with vertical x positionning (-60)*/
          dx=Axis->Pos[1]=='L'?X0-Len-60:X0+Len-Axis->UnitHeight;
-         th=270.0;
+         th=-270.0;
       }
 
       if (Axis->UnitItem) {

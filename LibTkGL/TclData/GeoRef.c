@@ -1147,11 +1147,6 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
 
    int n;
 
-   if (New) {
-      if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
-      ZRef_Free(&Ref->ZRef);
-   }
-
    if (Ref->String)       free(Ref->String);       Ref->String=NULL;
    if (Ref->Transform)    free(Ref->Transform);    Ref->Transform=NULL;
    if (Ref->InvTransform) free(Ref->InvTransform); Ref->InvTransform=NULL;
@@ -1165,12 +1160,16 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
    Ref->IG1=Ref->IG2=Ref->IG3=Ref->IG4=0;
 
    if (Ref->Pos) {
-
       for(n=0;n<Ref->ZRef.LevelNb;n++) {
          if (Ref->Pos[n]) free(Ref->Pos[n]);
       }
       free(Ref->Pos);
       Ref->Pos=NULL;
+   }
+
+   if (New) {
+      if (Ref->Name)      free(Ref->Name);         Ref->Name=NULL;
+      ZRef_Free(&Ref->ZRef);
    }
 
    // Release ezscint sub-grid

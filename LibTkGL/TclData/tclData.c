@@ -258,7 +258,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
             if (Objc==4) {
                if (field0->Spec) {
-                  field0->Spec->NRef++;
+                  DataSpec_Incr(field0->Spec);
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(field0->Spec->Name,-1));
                }
             } else {
@@ -266,8 +266,8 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (field0->Spec) {
                      DataSpec_FreeHash(Interp,field0->Spec->Name);
                   }
+                  DataSpec_Incr(spec);
                   field0->Spec=spec;
-                  spec->NRef++;
                } else {
                   Tcl_AppendResult(Interp,"Data_FieldCmd: invalid configuration object",(char*)NULL);
                   return(TCL_ERROR);

@@ -179,6 +179,39 @@ int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
    return(TCL_OK);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_CopyColor>
+ * Creation : Janvier 2013 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Copier la couleur pour la configuration selon que Tk est actif ou non
+ *
+ * Parametres :
+ *  <Interp>      : Interpreteur TCL
+ *  <Color>       : Definition de la couleur
+ *
+ * Retour:
+ *  <Color>       : Copie de la couleur.
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+XColor *DataSpec_CopyColor(Tcl_Interp *Interp,XColor *Color) {
+
+   XColor *col=NULL;
+
+   if (Color) {
+      if (GLRender) {
+         col=Tk_GetColorByValue(Tk_MainWindow(Interp),Color);
+      } else {
+         col=malloc(sizeof(XColor));
+         memcpy(col,Color,sizeof(XColor));
+      }
+   }
+   return(col);
+}
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <DataSpec_Cmd>
  * Creation     : Avril 2006 J.P. Gauthier
@@ -1480,7 +1513,6 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (to->ExtrapDegree) free(to->ExtrapDegree);
 
    to->Active=from->Active;
-   to->OGRMask=from->OGRMask;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
    to->ExtrudeFactor=from->ExtrudeFactor;
@@ -1501,13 +1533,17 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
    memcpy(to->Pos,from->Pos,from->PosNb*sizeof(Vect3d));
 
+   to->InterLabels=NULL;
    if (from->InterLabels)
-      Tcl_IncrRefCount(from->InterLabels);
-   to->InterLabels=from->InterLabels;
+      to->InterLabels=Tcl_DuplicateObj(from->InterLabels);
 
+   to->InterVals=NULL;
    if (from->InterVals)
-      Tcl_IncrRefCount(from->InterVals);
-   to->InterVals=from->InterVals;
+      to->InterVals=Tcl_DuplicateObj(from->InterVals);
+
+   to->OGRMask=NULL;
+   if (from->OGRMask)
+      to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
 
    to->RangeNb=from->RangeNb;
    to->PosNb=from->PosNb;
@@ -1575,21 +1611,11 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       to->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfFont(from->Font),-1));
       Tk_GetFontMetrics(to->Font,&to->TKM);
    }
-   to->Fill=NULL;
-   if (from->Fill)
-      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->Fill),-1),&to->Fill);
 
-   to->HighFill=NULL;
-   if (from->HighFill)
-      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->HighFill),-1),&to->HighFill);
-
-   to->HighLine=NULL;
-   if (from->HighLine)
-      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->HighLine),-1),&to->HighLine);
-
-   to->Outline=NULL;
-   if (from->Outline)
-      DataSpec_GetColor(Interp,Tcl_NewStringObj(Tk_NameOfColor(from->Outline),-1),&to->Outline);
+   to->Fill=DataSpec_CopyColor(Interp,from->Fill);
+   to->HighFill=DataSpec_CopyColor(Interp,from->HighFill);
+   to->HighLine=DataSpec_CopyColor(Interp,from->HighLine);
+   to->Outline=DataSpec_CopyColor(Interp,from->Outline);
 
    to->Desc=NULL;
    if (from->Desc)
@@ -1719,6 +1745,15 @@ TDataSpec *DataSpec_New(){
    spec->WMO=0;
 
    return(spec);
+}
+
+void DataSpec_Incr(TDataSpec *Spec) {
+
+   if (Spec) {
+      Tcl_MutexLock(&MUTEX_DATASPEC);
+      Spec->NRef++;
+      Tcl_MutexUnlock(&MUTEX_DATASPEC);
+   }
 }
 
 /*----------------------------------------------------------------------------

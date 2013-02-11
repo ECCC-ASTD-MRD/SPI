@@ -486,7 +486,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
 
          code=GDAL_BandWrite(Interp,Objv[2],Tcl_GetString(Objv[3]),(char**)list);
-         Tcl_Free((char*)list);
+         if (list) Tcl_Free((char*)list);
          return(code);
          break;
 
@@ -1275,13 +1275,15 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
          snprintf(subid,1024,"%s%04i",Id,si/2);
          GDAL_FileClose(Interp,subid);
       }
-      if (file->Meta)
+      if (file->Meta) {
          GDALSetMetadata(file->Set,file->Meta,NULL);
+         Tcl_Free((char*)file->Meta);
+      }
+
       GDALClose(file->Set);
       if (file->Ref)
          GeoRef_Destroy(Interp,file->Ref->Name);
 
-      Tcl_Free((char*)file->Meta);
       free(file->Id);
       free(file->Name);
       free(file);
