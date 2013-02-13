@@ -1272,14 +1272,18 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
          }
       }
 
-      file=(OGR_File*)malloc(sizeof(OGR_File));
-      file->Mode=Mode;
-      file->Id=strdup(Id);
-      file->Name=strdup(Name);
-      file->Driver=driver;
-      file->Data=source;
-
-      OGR_FilePut(Interp,file);
+      if ((file=(OGR_File*)malloc(sizeof(OGR_File)))) {
+        file->Mode=Mode;
+        file->Id=strdup(Id);
+        file->Name=strdup(Name);
+        file->Driver=driver;
+        file->Data=source;
+     
+        OGR_FilePut(Interp,file);
+      } else {
+         Tcl_AppendResult(Interp,"   OGR_FileOpen: Unable to allocate memory",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
    /* Loop over layers */

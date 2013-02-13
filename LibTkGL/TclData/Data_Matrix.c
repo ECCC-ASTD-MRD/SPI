@@ -548,6 +548,10 @@ TDataDef* Calc_Dir(TDataDef* A) {
       x=fx=(float*)malloc(FSIZE2D(A)*sizeof(float));
       y=fy=(float*)malloc(FSIZE2D(A)*sizeof(float));
 
+      if (!spd || !x || !y) {
+         fprintf(stderr,"(ERROR) Unable to allocate temporary arrays\n");
+         return(NULL);
+      }                                                                                                                                         
       for (j=1;j<=A->NJ;j++) {
          for (i=1;i<=A->NI;i++) {
            *x=i;

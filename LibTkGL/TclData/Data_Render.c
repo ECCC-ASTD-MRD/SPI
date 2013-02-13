@@ -915,7 +915,6 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
    vbuf=VBuffer_Alloc(len*2+1);
 
-
    /*Recuperer les latlon des pixels sujets*/
    if (Field->Spec->PosNb) {
       for(n=0;n<Field->Spec->PosNb;n++) {
@@ -1226,7 +1225,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    /*Process gridpoints*/
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   pos=Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
+   pos=&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
 
    /*Resolution selon la dimension des cellules (mid-grid)*/
    dp=1;
@@ -1604,6 +1603,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             lat=(float*)malloc(mem);
             lon=(float*)malloc(mem);
 
+            if (!lat || !lon) {
+              fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+              return;
+            }
+
             /*Recuperer les latlon des pixels sujets*/
             for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
                for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
@@ -1622,6 +1626,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             x=(float*)malloc(mem);
             y=(float*)malloc(mem);
 
+            if (!x || !y) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+               return;
+            }
+  
             /*Recuperer les informations sur les vents et leurs localisations*/
             EZLock_RPNInt();
             c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
@@ -1644,6 +1653,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             lat=(float*)malloc(mem*sizeof(float));
             lon=(float*)malloc(mem*sizeof(float));
 
+            if (lat || !lon) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+               return;
+            }
+
             EZLock_RPNInt();
             c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
             EZUnLock_RPNInt();
@@ -1657,6 +1671,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
             x=(float*)malloc(n*sizeof(float));
             y=(float*)malloc(n*sizeof(float));
+
+            if (!x || !y) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+               return;
+            }
          }
 
          mem=FSIZE2D(Field->Def)*Field->Def->Level;
@@ -1664,12 +1683,12 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          EZLock_RPNInt();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
          if (Field->Spec->GridVector) {
-            c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
+              c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
          } else {
-            c_gdllvval(Field->Ref->Ids[Field->Ref->NId],x,y,&Field->Def->Data[0][mem],&Field->Def->Data[1][mem],lat,lon,n);
+              c_gdllvval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
          }
          // We have to get the speed from the modulus in case of 3 component vector
-         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,&Field->Def->Mode[mem],lat,lon,n);
+         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,(float*)&Field->Def->Mode[mem],lat,lon,n);
          EZUnLock_RPNInt();
 
          while (n--) {

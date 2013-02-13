@@ -296,7 +296,10 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
       return(TCL_ERROR);
    }
 
-   file=(Radar_File*)malloc(sizeof(Radar_File));
+   if (!(file=(Radar_File*)malloc(sizeof(Radar_File)))) {
+      Tcl_AppendResult(Interp,"   Radar_FileOpen: Unable to allocate memory",(char*)NULL);
+      return(TCL_ERROR);
+   }
    file->Mode=Mode;
    file->Name=strdup(Name);
    file->CId=strdup(Id);

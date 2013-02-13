@@ -47,6 +47,7 @@ static int Obs_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
 static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_FreeHash(Tcl_Interp *Interp,char *Name);
+static int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]);
 
 int  Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
 void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj);
@@ -347,11 +348,15 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                }
                if (j==obs->Loc->NbInfo) {
                   if (Objc==5) {
-                     obs->Loc->Head=realloc(obs->Loc->Head,(j+1)*sizeof(char*));
-                     obs->Loc->Head[j]=strdup(Tcl_GetString(Objv[i]));
+                     if ((obs->Loc->Head=realloc(obs->Loc->Head,(j+1)*sizeof(char*)))) {
+                        obs->Loc->Head[j]=strdup(Tcl_GetString(Objv[i]));
 
-                     for(k=0;k<obs->Loc->Nb;k++) {
-                        obs->Loc->Info[k]=realloc(obs->Loc->Info[k],(j+1)*sizeof(char*));
+                        for(k=0;k<obs->Loc->Nb;k++) {
+                           obs->Loc->Info[k]=realloc(obs->Loc->Info[k],(j+1)*sizeof(char*));
+                        }
+                     } else {
+                        Tcl_AppendResult(Interp,"\n Obs_Define: Unable ro realloc header",(char*)NULL);
+                        return(TCL_ERROR);
                      }
                   } else {
                      Tcl_AppendResult(Interp,"\n   Obs_Define: Unknown information tag",(char*)NULL);
@@ -436,7 +441,7 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                }
             } else {
                Tcl_AppendResult(Interp,"\n   Obs_Define: Wrong number of arguments, must be \"observation define -ID [index] [value]\"",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             break;
 
@@ -453,11 +458,14 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                Tcl_GetIntFromObj(Interp,Objv[++i],&j);
                if (j<0 || j>obs->Loc->Nb) {
                   Tcl_AppendResult(Interp,"\n   Obs_Define: Index out of range",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
                if (Objc==3) {
                   if (!obs->Loc->No) {
-                     obs->Loc->No=calloc(obs->Loc->Nb,sizeof(char*));
+                     if (!(obs->Loc->No=calloc(obs->Loc->Nb,sizeof(char*)))) {
+                        Tcl_AppendResult(Interp,"\n   Obs_Define: Unable to allocate array",(char*)NULL);
+                        return(TCL_ERROR);
+                     }
                   }
                   if (obs->Loc->No[j]) {
                      free(obs->Loc->No[j]);
@@ -468,14 +476,14 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                }
             } else {
                Tcl_AppendResult(Interp,"\n   Obs_Define: Wrong number of arguments, must be \"observation define -NO [index] [value]\"",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             break;
 
          case IDX:
             if (Objc!=2 && Objc!=3) {
                Tcl_AppendResult(Interp,"\n   Obs_Define: Wrong number of arguments, must be \"observation define -IDX [ID|NO] id\"",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             } else {
                type=1;
                if (Objc==3) {
@@ -517,7 +525,7 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                Tcl_GetIntFromObj(Interp,Objv[++i],&j);
                if (j<0 || j>obs->Loc->Nb) {
                   Tcl_AppendResult(Interp,"\n   Obs_Define: Index out of range",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                } else {
                   sub=Tcl_NewListObj(0,NULL);
                   for(k=0;k<3 && obs->Def->Data[k];k++) {
@@ -533,7 +541,7 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                Tcl_GetIntFromObj(Interp,Objv[++i],&j);
                if (j<0 || j>obs->Loc->Nb) {
                   Tcl_AppendResult(Interp,"\n   Obs_Define: Index out of range",(char*)NULL);
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
                   ((float*)obs->Def->Data[0])[j]=val;
@@ -548,7 +556,7 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                }
             } else {
                Tcl_AppendResult(Interp,"\n   Obs_Define: Wrong number of arguments, must be \"observation define -DATA [index] [value]\"",(char*)NULL);
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             break;
 
@@ -559,7 +567,10 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                Tcl_GetIntFromObj(Interp,Objv[++i],&idx);
 
                if (!obs->Loc) {
-                  obs->Loc=(TLoc*)malloc(sizeof(TLoc));
+                  if (!(obs->Loc=(TLoc*)malloc(sizeof(TLoc)))) {
+                     Tcl_AppendResult(Interp,"\n   Obs_Define: Unable to allocate array",(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                   obs->Loc->Ref=0;
                   obs->Loc->Nb=0;
                   obs->Loc->NbInfo=0;
@@ -587,10 +598,16 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                obs->Loc->Head=realloc(obs->Loc->Head,obs->Loc->Nb*sizeof(char*));
                obs->Loc->Info=realloc(obs->Loc->Info,obs->Loc->Nb*sizeof(char*));
                obs->Loc->Coord=realloc(obs->Loc->Coord,obs->Loc->Nb*sizeof(Coord));
-               for(;k<obs->Loc->Nb;k++) {
-                  obs->Loc->Id[k]=NULL;
-                  obs->Loc->Head[k]=NULL;
-                  obs->Loc->Info[k]=NULL;
+
+               if (obs->Loc->No && obs->Loc->Id && obs->Loc->Head && obs->Loc->Info && obs->Loc->Coord) {
+                  for(;k<obs->Loc->Nb;k++) {
+                     obs->Loc->Id[k]=NULL;
+                     obs->Loc->Head[k]=NULL;
+                     obs->Loc->Info[k]=NULL;
+                  }
+               } else {
+                  Tcl_AppendResult(Interp,"\n   Obs_Define: Unable to allocate array",(char*)NULL);
+                  return(TCL_ERROR);
                }
             }
             break;
@@ -1386,17 +1403,17 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    stream=fopen(File,"r");
 
    if (!stream) {
-      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII :  Could not open observation file ",File,(char*)NULL);
-      return TCL_ERROR;
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Could not open observation file ",File,(char*)NULL);
+      return(TCL_ERROR);
    }
 
    /*Read the version*/
    fgetskip(title,256,stream);
 
    if (!strstr(title,"Obs 3.1")) {
-      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII :  Wrong file version while reading ",File,(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Wrong file version while reading ",File,(char*)NULL);
       fclose(stream);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Read the title*/
@@ -1411,7 +1428,10 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    }
 
    sz=strlen(head)*4;
-   bytes=(char*)malloc(sz);
+   if (!(bytes=(char*)malloc(sz))) {
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unabel to allocate temporary array",(char*)NULL);
+      return(TCL_ERROR);
+   }
 
    Tcl_SplitList(Interp,head,&gntok,&gtok);
    free(head);
@@ -1427,16 +1447,23 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
 
    /*Is there any observation in there*/
    if (!nb) {
-      Tcl_AppendResult(Interp,"\n   Obs_LoadCMC :  No observation found ",(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  No observation found ",(char*)NULL);
       fclose(stream);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    /*Allocate positions structure*/
-   loc=(TLoc*)malloc(sizeof(TLoc));
-   loc->Id=(char**)calloc(nb,sizeof(char*));
-   loc->Coord=(Coord*)calloc(nb,sizeof(Coord));
-   loc->Info=(char***)malloc(nb*sizeof(char**));
+   if ((loc=(TLoc*)malloc(sizeof(TLoc)))) {
+      loc->Id=(char**)calloc(nb,sizeof(char*));
+      loc->Coord=(Coord*)calloc(nb,sizeof(Coord));
+      loc->Info=(char***)malloc(nb*sizeof(char**));
+   }
+
+   if (!loc || !loc->Id || !loc->Coord || !loc->Info) {
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unable to allocate arrays",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
    loc->Nb=nb;
    loc->No=NULL;
    loc->Date=NULL;
@@ -1464,14 +1491,22 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
             sscanf((char*)(strrchr(gtok[n],(int)'.'))+1,"%8d%02d%02d%02d",&obs->Date,&obs->Time,&hd,&sec);
             obs->Time=obs->Time*10000+hd*100+sec;
         } else {
-            Tcl_AppendResult(Interp,"\n   Obs_LoadCMC :  Could not create observation object link ",&gtok[n][5],(char*)NULL);
+            Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Could not create observation object link ",&gtok[n][5],(char*)NULL);
             fclose(stream);
             return TCL_ERROR;
          }
       } else if (strcmp(gtok[n],"NO")==0) {
-         loc->No=(char**)malloc(nb*sizeof(char*));
+         if (!(loc->No=(char**)malloc(nb*sizeof(char*)))) {
+            Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unable to allocate array",(char*)NULL);
+            fclose(stream);
+            return(TCL_ERROR);
+         }
       } else if (strcmp(gtok[n],"DATETIME")==0) {
-         loc->Date=(time_t*)malloc(nb*sizeof(time_t));
+         if (!(loc->Date=(time_t*)malloc(nb*sizeof(time_t)))) {
+            Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unable to allocate array",(char*)NULL);
+            fclose(stream);
+            return(TCL_ERROR);
+         }
       } else if (strcmp(gtok[n],"LAT")!=0 && strcmp(gtok[n],"LON")!=0 && strcmp(gtok[n],"ELEV")!=0 && strcmp(gtok[n],"ELEVTYPE")!=0 && strcmp(gtok[n],"ID")!=0) {
          loc->NbInfo++;
       }
@@ -1492,7 +1527,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          Tcl_SplitList(Interp,bytes,&ntok,&tok);
 
          if (ntok!=gntok) {
-            Tcl_AppendResult(Interp,"\n   Obs_LoadASCII :  Invalid number of item on following line\n",bytes,(char*)NULL);
+            Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Invalid number of item on following line\n",bytes,(char*)NULL);
             fclose(stream);
             Tcl_Free((char*)tok);
             return(TCL_ERROR);
@@ -1528,7 +1563,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                   } else if (strcmp(tok[n],"GALCHEN")==0) {
                      levtyp=8;
                   } else {
-                     Tcl_AppendResult(Interp,"\n   Obs_LoadASCII : Invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
+                     Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
                      err=TCL_ERROR;
                   }
                }
@@ -1562,7 +1597,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                      for(k=0;k<nltok;k++) {
                         if (!obs->Def->Data[k]) {
                            if (!(obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TData_Size[TD_Float32]))) {
-                              Tcl_AppendResult(Interp,"\n   Obs_LoadASCII : Unable to allocate memory for vectorial components",(char*)NULL);
+                              Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unable to allocate memory for vectorial components",(char*)NULL);
                               err=TCL_ERROR;
                               break;
                            }
@@ -1572,14 +1607,16 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                      }
                      Tcl_Free((char*)ltok);
                   } else {
-                     Tcl_AppendResult(Interp,"\n   Obs_LoadASCII : Problems while reading data components",(char*)NULL);
+                     Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Problems while reading data components",(char*)NULL);
                   }
                }
             } else {                                         /*Information*/
-               if (!loc->Head[hd])
-                  loc->Head[hd]=strdup(gtok[n]);
-               obs->Loc->Info[nb][hd]=strdup(tok[n]);
-               hd++;
+               if (loc->Head) {
+                  if (!loc->Head[hd])
+                     loc->Head[hd]=strdup(gtok[n]);
+                  obs->Loc->Info[nb][hd]=strdup(tok[n]);
+                  hd++;
+               }
             }
          }
 
@@ -2396,7 +2433,7 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    return(TCL_OK);
 }
 
-int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]) {
+static int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj;
    int      f,n=0,nc,vnb,vn0,vn1,o;
@@ -2426,7 +2463,10 @@ int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CON
          return(TCL_ERROR);
       }
 
-      vn=(Vect3d*)malloc(vnb*sizeof(Vect3d));
+      if (!(vn=(Vect3d*)malloc(vnb*sizeof(Vect3d)))) {
+         Tcl_AppendResult(Interp,"Obs_GetAreaValue: Unable to allocate temporary coordinate array",(char*)NULL);
+         return(TCL_ERROR);
+      }
       for(n=0,f=0;n<vnb;n++) {
          Tcl_ListObjIndex(Interp,Objv[0],f++,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&dlat);

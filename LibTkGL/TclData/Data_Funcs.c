@@ -297,42 +297,43 @@ double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
    }
 
    /*Copy the matrix to a type we know, this will speedup the rest of the process*/
-   vs=(float*)malloc(FSIZE2D(MA)*sizeof(float));
-   for(j=0;j<FSIZE2D(MA);j++) {
-      Def_Get(MA,0,j,vs[j]);
-   }
+   if ((vs=(float*)malloc(FSIZE2D(MA)*sizeof(float)))) {
+      for(j=0;j<FSIZE2D(MA);j++) {
+         Def_Get(MA,0,j,vs[j]);
+      }
 
-   /*Parse the matrix*/
-   for(j=0;j<MA->NJ;j++) {
-      for(i=0;i<MA->NI;i++) {
+      /*Parse the matrix*/
+      for(j=0;j<MA->NJ;j++) {
+         for(i=0;i<MA->NI;i++) {
 
-         /*Apply filter*/
-         dw=s=0.0;
+            /*Apply filter*/
+            dw=s=0.0;
 
-         for(fj=0,dj=j-dmj;fj<MB->NJ;fj++,dj++) {
-            idxf=fj*MB->NI;
-            idx=dj*MA->NI;
-            for(fi=0,di=i-dmi;fi<MB->NI;fi++,di++) {
-               Def_Get(MB,0,idxf+fi,vb);
-               if (di>=0 && di<MA->NI && dj>=0 && dj<MA->NJ) {
-                  va=vs[idx+di];
+            for(fj=0,dj=j-dmj;fj<MB->NJ;fj++,dj++) {
+               idxf=fj*MB->NI;
+               idx=dj*MA->NI;
+               for(fi=0,di=i-dmi;fi<MB->NI;fi++,di++) {
+                  Def_Get(MB,0,idxf+fi,vb);
+                  if (di>=0 && di<MA->NI && dj>=0 && dj<MA->NJ) {
+                     va=vs[idx+di];
 
-                  /*Check for nodata value*/
-                  if (va==MA->NoData) {
-                    dw+=vb;
+                     /*Check for nodata value*/
+                     if (va==MA->NoData) {
+                       dw+=vb;
+                     } else {
+                       s+=vb*va;
+                     }
                   } else {
-                    s+=vb*va;
+                    dw+=vb;
                   }
-               } else {
-                 dw+=vb;
                }
             }
+            if ((w-dw)!=0) s/=(w-dw);
+            Def_Set(Res,0,j*MA->NI+i,s);
          }
-         if ((w-dw)!=0) s/=(w-dw);
-         Def_Set(Res,0,j*MA->NI+i,s);
       }
+      free(vs);
    }
-   free(vs);
    return(0.0);
 }
 
@@ -348,39 +349,40 @@ double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
    if (fmod(vb,2)==0.0)
       vb+=1.0;
 
-   vs=(double*)malloc(vb*vb*sizeof(double));
-   dm=vb/2;
-   vc=vc<0?0:vc>1.0?1.0:vc;
+   if ((vs=(double*)malloc(vb*vb*sizeof(double)))) {
+      dm=vb/2;
+      vc=vc<0?0:vc>1.0?1.0:vc;
 
-   /*Parse the matrix*/
-   for(j=0;j<MA->NJ;j++) {
-      for(i=0;i<MA->NI;i++) {
+      /*Parse the matrix*/
+      for(j=0;j<MA->NJ;j++) {
+         for(i=0;i<MA->NI;i++) {
 
-         /*Apply filter*/
-         s=0;
+            /*Apply filter*/
+            s=0;
 
-         for(fj=0,dj=j-dm;fj<vb;fj++,dj++) {
-            idx=dj*MA->NI;
-            for(fi=0,di=i-dm;fi<vb;fi++,di++) {
-               if (di>=0 && di<MA->NI && dj>=0 && dj<MA->NJ) {
-                  Def_Get(MA,0,idx+di,va);
+            for(fj=0,dj=j-dm;fj<vb;fj++,dj++) {
+               idx=dj*MA->NI;
+               for(fi=0,di=i-dm;fi<vb;fi++,di++) {
+                  if (di>=0 && di<MA->NI && dj>=0 && dj<MA->NJ) {
+                     Def_Get(MA,0,idx+di,va);
 
-                  /*Check for nodata value*/
-                  if (va!=MA->NoData) {
-                    vs[s++]=va;
+                     /*Check for nodata value*/
+                     if (va!=MA->NoData) {
+                       vs[s++]=va;
+                     }
                   }
                }
             }
-         }
 
-         if (s==0) {
-            Def_Set(Res,0,j*MA->NI+i,MA->NoData);
-         } else {
-            Def_Set(Res,0,j*MA->NI+i,HCentile(vs,s,s*vc-1));
+            if (s==0) {
+               Def_Set(Res,0,j*MA->NI+i,MA->NoData);
+            } else {
+               Def_Set(Res,0,j*MA->NI+i,HCentile(vs,s,s*vc-1));
+            }
          }
       }
+      free(vs);
    }
-   free(vs);
    return(0.0);
 }
 

@@ -57,6 +57,7 @@ int GeoRef_Init(Tcl_Interp *Interp) {
 }
 
 void GeoRef_Incr(TGeoRef *Ref) {
+
    if (Ref) {
       Tcl_MutexLock(&MUTEX_GEOREF);
       Ref->NRef++;
@@ -1315,8 +1316,7 @@ int GeoRef_Equal(TGeoRef *Ref0,TGeoRef *Ref1,int Dim) {
 
 TGeoRef *GeoRef_Copy(TGeoRef *Ref) {
 
-   if (Ref)
-      GeoRef_Incr(Ref);
+   GeoRef_Incr(Ref);
    return(Ref);
 }
 

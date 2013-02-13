@@ -699,6 +699,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    TTraj     *traj=NULL,head;
    TDataSpec *spec=NULL;
    char       buf[512],date[16];
+   char      *r;
    int        i,j,year,month,day,hour,min=0,nb,ap,ntr=0;
 
    obj=Tcl_NewListObj(0,NULL);
@@ -709,20 +710,20 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       strcpy(head.Model,"CMC");
 
       /*Read header*/
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
       if (buf[0]!='\'' && buf[1]!='\'') break;
-      fgets(buf,512,Stream);buf[511]='\0';head.Id=strdup(buf);
+      r=fgets(buf,512,Stream);buf[511]='\0';head.Id=strdup(buf);
       i=strlen(head.Id);
       if (head.Id[i-1]=='\n') { head.Id[i-1]='\0'; }
       strtrim(head.Id,' ');
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
 
       /*Read mode and level type*/
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
       sscanf(buf,"%d,\'%c\' %s",&head.Mode,&head.Type,buf);
 
       /*Read backward token*/
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
       if (strncmp(&buf[2],"FALSE",5)==0) {
          head.Back=0;
       } else {
@@ -730,15 +731,15 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       }
 
       /*Read dates*/
-      fgets(buf,512,Stream);sscanf(buf,"%i %s",&nb,buf);
-      fgets(buf,512,Stream);sscanf(buf,"%i %s",&head.Lapse,buf);
-      fgets(buf,512,Stream);sscanf(buf,"%i",&head.NPr);
-      fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %i",&year,&month,&day,&hour,&min);
+      r=fgets(buf,512,Stream);sscanf(buf,"%i %s",&nb,buf);
+      r=fgets(buf,512,Stream);sscanf(buf,"%i %s",&head.Lapse,buf);
+      r=fgets(buf,512,Stream);sscanf(buf,"%i",&head.NPr);
+      r=fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %i",&year,&month,&day,&hour,&min);
 
       head.Date=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100,1);
 
       /*Check for AP date availability*/
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
       if (strlen(buf)<20) {
          sscanf(buf,"%i",&head.AP);
          head.AP=System_DateTime2Seconds(head.AP/100,fmod(head.AP,100)*10000,1);
@@ -778,7 +779,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
                Tcl_ListObjAppendElement(Interp,spec->InterVals,Tcl_NewIntObj(spec->Inter[0]));
                Tcl_ListObjAppendElement(Interp,obj,sub);
             } else {
-               Tcl_AppendResult(Interp,"\n   Traj_LoadCMC :  Could not create trajectory object link",(char*)NULL);
+               Tcl_AppendResult(Interp,"\n   Traj_LoadCMC:  Could not create trajectory object link",(char*)NULL);
                return(0);
             }
          }
@@ -786,17 +787,19 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          memcpy(traj,&head,sizeof(head));
          traj->Id=strdup(head.Id);
          traj->Spec=spec;
-         traj->Pr=(TParticle*)malloc(traj->NPr*sizeof(TParticle));
-
+         if (!(traj->Pr=(TParticle*)malloc(traj->NPr*sizeof(TParticle)))) {
+            Tcl_AppendResult(Interp,"\n   Traj_LoadCMC: Unable to allocate parcel array",(char*)NULL);
+            return(0);
+         }
          if (ap || i!=0)
-            fgets(buf,512,Stream);
+            r=fgets(buf,512,Stream);
 
          /*Get starting height*/
-         sscanf(buf,"%Li %lf %lf %f",&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
+         sscanf(buf,"%Li %lf %lf %f",(long long*)&traj->Pr[0].Date,&traj->Pr[0].Co.Lat,&traj->Pr[0].Co.Lon,&traj->Height);
 
          /*Loop on parcel positions*/
          for(j=0;j<traj->NPr;j++) {
-            fgets(buf,512,Stream);
+            r=fgets(buf,512,Stream);
             memset(&traj->Pr[j],0x0,sizeof(TParticle));
 
             sscanf(buf,"%s %lf %lf %f %f %lf %f %f %f",date,
@@ -854,20 +857,21 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
 
    Tcl_Obj *obj,*sub;
-   TTraj    *traj[100];
+   TTraj   *traj[100];
    char     buf[512];
+   char    *r;
    int      i,j[10],mdl,year,month,day,hour,nb,nbp,nbt,ntr=0;
    float    lat,lon,s,h;
    long     pos;
 
    /*Skip models*/
-   fgets(buf,512,Stream);sscanf(buf,"%i",&nb);
+   r=fgets(buf,512,Stream);sscanf(buf,"%i",&nb);
    for(i=0;i<nb;i++) {
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
    }
 
    /*Read backward token*/
-   fgets(buf,512,Stream);sscanf(buf,"%i%s",&nbt,buf);
+   r=fgets(buf,512,Stream);sscanf(buf,"%i%s",&nbt,buf);
    if (buf[0]=='F') {
       mdl=0;
    } else {
@@ -882,7 +886,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    /*Skip initial positions*/
    obj=Tcl_NewListObj(0,NULL);
    for (i=0;i<nbt;i++) {
-      fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %f %f %f",&year,&month,&day,&hour,&lat,&lon,&h);
+      r=fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %f %f %f",&year,&month,&day,&hour,&lat,&lon,&h);
 
       if ((traj[i]=Traj_New())) {
          Traj[ntr]=traj[i];
@@ -915,7 +919,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    }
    Tcl_SetObjResult(Interp,obj);
 
-   fgets(buf,512,Stream);sscanf(buf,"%i%s",&nb,buf);
+   r=fgets(buf,512,Stream);sscanf(buf,"%i%s",&nb,buf);
    for(i=0;i<nbt;i++)
       traj[i]->Type=buf[0];
 
@@ -923,7 +927,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    pos=ftell(Stream);
    nbp=0;
    while(!feof(Stream)) {
-      fgets(buf,512,Stream);
+      r=fgets(buf,512,Stream);
       nbp++;
    }
    nbp/=nbt;
@@ -938,7 +942,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    fseek(Stream,pos,SEEK_SET);
 
    while(!feof(Stream) && j[nbt-1]<nbp) {
-      fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %i %i %i %i %f %f %f %f %f",
+      r=fgets(buf,512,Stream);sscanf(buf,"%i %i %i %i %i %i %i %i %f %f %f %f %f",
          &nb,&mdl,&year,&month,&day,&hour,&mdl,&mdl,&s,&lat,&lon,&h,&s);
       nb--;
       year=year>50?year+1900:year+2000;

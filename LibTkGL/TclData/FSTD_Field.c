@@ -95,24 +95,25 @@ void FSTD_FieldSet(TData *Data){
    }
 
    /*Initialiser les parametres de definition du champs*/
-   head->IG1=0;
-   head->IG2=0;
-   head->IG3=0;
-   head->IG4=0;
-   head->FID=NULL;
-   head->KEY=-1;
-   head->DATEO=0;
-   head->DATEV=0;
-   head->DEET=0;
-   head->NPAS=0;
-   head->NBITS=16;
-   head->DATYP=1;
-   head->IP1=-1;
-   head->IP2=head->IP3=0;
-   head->TYPVAR[0]='\0';
-   head->NOMVAR[0]='\0';
-   head->ETIKET[0]='\0';
-
+   if (head) {
+      head->IG1=0;
+      head->IG2=0;
+      head->IG3=0;
+      head->IG4=0;
+      head->FID=NULL;
+      head->KEY=-1;
+      head->DATEO=0;
+      head->DATEV=0;
+      head->DEET=0;
+      head->NPAS=0;
+      head->NBITS=16;
+      head->DATYP=1;
+      head->IP1=-1;
+      head->IP2=head->IP3=0;
+      head->TYPVAR[0]='\0';
+      head->NOMVAR[0]='\0';
+      head->ETIKET[0]='\0';
+   }
    Data->Head=head;
    Data->Set=FSTD_FieldSet;
    Data->Free=FSTD_FieldFree;
@@ -136,28 +137,33 @@ int FSTD_FieldSubBuild(TData *Field) {
    if (!Field->SDef) {
       Field->SDef=(TDataDef**)calloc((Field->Ref->NbId+1),sizeof(TDataDef*));
    }
-   Field->SDef[0]=Field->Def;
 
-  // Loop on subgrids
-   for(i=1;i<=Field->Ref->NbId;i++) {
-      c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+   if (Field->SDef) {
+      Field->SDef[0]=Field->Def;
+  
+      // Loop on subgrids
+      for(i=1;i<=Field->Ref->NbId;i++) {
+         c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
 
-      if (Field->SDef[i])
-         DataDef_Free(Field->SDef[i]);
+         if (Field->SDef[i])
+            DataDef_Free(Field->SDef[i]);
 
-     // Allocate a container
-      if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
+         // Allocate a container
+         if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
 
-         // Point to subgrid data within global data array
-         for(c=0;c<Field->Def->NC;c++) {
-            Field->SDef[i]->Idx=dij;
-            Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
-            Field->SDef[i]->Level=Field->Def->Level;
-            Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
+            // Point to subgrid data within global data array
+            for(c=0;c<Field->Def->NC;c++) {
+               Field->SDef[i]->Idx=dij;
+               Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
+               Field->SDef[i]->Level=Field->Def->Level;
+               Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
+            }
+            // Increment after global grid
+            dij+=ni*nj;
          }
-         // Increment after global grid
-         dij+=ni*nj;
       }
+   } else {
+      fprintf(stderr,"(ERROR) FSTD_FieldBuildSub: Unable to allocate subgrid array\n");
    }
 }
 
@@ -381,6 +387,9 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (!Field->Ref->Pos)
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));
 
+   if (!Field->Ref->Pos)
+      return(NULL);
+
    if (!Field->Ref->Pos[Level]) {
       Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->Ref->Pos[Level]) {
@@ -474,21 +483,23 @@ void FSTD_DataMap(TData *Field,int Idx) {
    double v;
 
    if (Field->Map) free(Field->Map);
-   Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float));
 
-   if (Idx) {
-      if (Field->Ref->Idx) free(Field->Ref->Idx);
-      Field->Ref->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
-      Field->Ref->NIdx=0;
-   }
+   if ((Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float)))) {
 
-   for (i=0;i<FSIZE2D(Field->Def);i++) {
-      Def_Get(Field->Def,0,i,v);
-      VAL2COL(Field->Map[i],Field->Spec,v);
-      Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
+      if (Idx) {
+         if (Field->Ref->Idx) free(Field->Ref->Idx);
+         Field->Ref->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
+         Field->Ref->NIdx=0;
+      }
 
-      if (Idx && Field->Map[i]>=0) {
-         Field->Ref->Idx[Field->Ref->NIdx++]=i;
+      for (i=0;i<FSIZE2D(Field->Def);i++) {
+         Def_Get(Field->Def,0,i,v);
+         VAL2COL(Field->Map[i],Field->Spec,v);
+         Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
+
+         if (Idx && Field->Ref->Idx && Field->Map[i]>=0) {
+            Field->Ref->Idx[Field->Ref->NIdx++]=i;
+         }
       }
    }
 }

@@ -174,6 +174,7 @@ TDataSpec* DataSpec_Get(char *Name);
 int        DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]);
 int        DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From);
 void       DataSpec_Clean(TDataSpec *Spec,int Map,int Pos,int Seg);
+void       DataSpec_Clear(TDataSpec *Spec);
 int        DataSpec_Free(TDataSpec *Spec);
 int        DataSpec_FreeHash(Tcl_Interp *Interp,char *Name);
 void       DataSpec_Define(TDataSpec *Spec);

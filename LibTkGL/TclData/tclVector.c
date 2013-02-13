@@ -545,21 +545,22 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
    if (!new) {
       vec=(TVector*)Tcl_GetHashValue(entry);
       if (vec->V || vec->Cn) {
-         Tcl_AppendResult(Interp,"\n   Vector_Create:name already used: \"",Name,"\"",(char*)NULL);
+         Tcl_AppendResult(Interp,"\n   Vector_Create: Name already used: \"",Name,"\"",(char*)NULL);
          return(TCL_ERROR);
       }
    } else {
-      vec=(TVector*)malloc(sizeof(TVector));
-      vec->NoData=nan("NaN");
-      vec->Nr=vec->N=0;
-      vec->V=NULL;
-      vec->Cn=NULL;
-      vec->Cp=NULL;
-      vec->Def=NULL;
+      if ((vec=(TVector*)malloc(sizeof(TVector)))) {
+         vec->NoData=nan("NaN");
+         vec->Nr=vec->N=0;
+         vec->V=NULL;
+         vec->Cn=NULL;
+         vec->Cp=NULL;
+         vec->Def=NULL;
+      }
   }
 
    if (!vec){
-      Tcl_AppendResult(Interp,"\n   Vector_Create : Could not allocate memory",(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   Vector_Create: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -568,16 +569,20 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
       Tcl_ListObjLength(Interp,Comp,&vec->N);
       Tcl_IncrRefCount(Comp);
       vec->Cn=Comp;
-      vec->Cp=(TVector**)malloc(vec->N*sizeof(TVector*));
+      if ((vec->Cp=(TVector**)malloc(vec->N*sizeof(TVector*)))) {
 
-      for(i=0;i<vec->N;i++) {
-         Tcl_ListObjIndex(Interp,vec->Cn,i,&obj);
-         sprintf(buf,"%s.%s",Name,Tcl_GetString(obj));
-         if (Vector_Create(Interp,buf,NULL)==TCL_ERROR) {
-            return(TCL_ERROR);
-         }
-         vec->Cp[i]=Vector_Get(buf);
-         vec->Cp[i]->NoData=vec->NoData;
+         for(i=0;i<vec->N;i++) {
+            Tcl_ListObjIndex(Interp,vec->Cn,i,&obj);
+            sprintf(buf,"%s.%s",Name,Tcl_GetString(obj));
+            if (Vector_Create(Interp,buf,NULL)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
+            vec->Cp[i]=Vector_Get(buf);
+            vec->Cp[i]->NoData=vec->NoData;
+         } 
+      } else {
+         Tcl_AppendResult(Interp,"\n Vector_Create: Could not allocate memory for components",(char*)NULL);
+         return(TCL_ERROR);
       }
    }
 
@@ -627,23 +632,29 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
    if (Vec->Cp) {
       /*Copie des composantes recursivement*/
 
-      new->Cp=(TVector**)malloc(Vec->N*sizeof(TVector*));
-      new->Cn=Vec->Cn;
-      Tcl_IncrRefCount(Vec->Cn);
+      if ((new->Cp=(TVector**)malloc(Vec->N*sizeof(TVector*)))) {
+         new->Cn=Vec->Cn;
+         Tcl_IncrRefCount(Vec->Cn);
 
-      for(i=0;i<new->N;i++) {
-         Tcl_ListObjIndex(Interp,new->Cn,i,&obj);
-         sprintf(buf,"%s.%s",Name,Tcl_GetString(obj));
-         if (!Vector_Copy(Interp,Vec->Cp[i],buf)) {
-            return(NULL);
+         for(i=0;i<new->N;i++) {
+            Tcl_ListObjIndex(Interp,new->Cn,i,&obj);
+            sprintf(buf,"%s.%s",Name,Tcl_GetString(obj));
+            if (!Vector_Copy(Interp,Vec->Cp[i],buf)) {
+               return(NULL);
+            }
+            new->Cp[i]=Vector_Get(buf);
          }
-         new->Cp[i]=Vector_Get(buf);
+      } else {
+         return(NULL);
       }
    } else {
       /*Copie des donnees*/
 
-      new->V=(double*)malloc(new->N*sizeof(double));
-      memcpy(new->V,Vec->V,new->N*sizeof(double));
+      if ((new->V=(double*)malloc(new->N*sizeof(double)))) {
+         memcpy(new->V,Vec->V,new->N*sizeof(double));
+      } else {
+         return(NULL);
+      }
    }
 
    if (Vec->Def)
@@ -675,27 +686,28 @@ struct TDataDef* Vector_GetDef(TVector *Vec) {
       Vec->Def=(struct TDataDef*)malloc(sizeof(struct TDataDef));
    }
 
-   Vec->Def->NI=Vec->N;
-   Vec->Def->NJ=1;
-   Vec->Def->NK=1;
-   Vec->Def->Data[0]=NULL;
-   Vec->Def->Data[1]=NULL;
-   Vec->Def->Data[2]=NULL;
-   Vec->Def->Data[3]=NULL;
-   Vec->Def->Type=TD_Float64;
-   Vec->Def->NoData=Vec->NoData;
-
-   if (Vec->Cp) {
-      Vec->Def->NJ=Vec->Cp[0]->N;
-      Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*Vec->Def->NJ*sizeof(double));
-      for(i=0;i<Vec->N;i++) {
-         memcpy(&Vec->Def->Data[0][sizeof(double)*Vec->Def->NJ*i],Vec->Cp[i]->V,sizeof(double)*Vec->Def->NJ);
+   if (Vec->Def) {
+      Vec->Def->NI=Vec->N;
+      Vec->Def->NJ=1;
+      Vec->Def->NK=1;
+      Vec->Def->Data[0]=NULL;
+      Vec->Def->Data[1]=NULL;
+      Vec->Def->Data[2]=NULL;
+      Vec->Def->Data[3]=NULL;
+      Vec->Def->Type=TD_Float64;
+      Vec->Def->NoData=Vec->NoData;
+ 
+      if (Vec->Cp) {
+         Vec->Def->NJ=Vec->Cp[0]->N;
+         Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*Vec->Def->NJ*sizeof(double));
+         for(i=0;i<Vec->N;i++) {
+            memcpy(&Vec->Def->Data[0][sizeof(double)*Vec->Def->NJ*i],Vec->Cp[i]->V,sizeof(double)*Vec->Def->NJ);
+         }
+      } else {
+         Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*sizeof(double));
+         memcpy(Vec->Def->Data[0],Vec->V,sizeof(double)*Vec->Def->NI);
       }
-   } else {
-      Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*sizeof(double));
-      memcpy(Vec->Def->Data[0],Vec->V,sizeof(double)*Vec->Def->NI);
    }
-
    return(Vec->Def);
 }
 
@@ -1173,7 +1185,10 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
       } else {
          Vector_Free(Vec);
          Vec->Nr=Vec->N=nobj;
-         Vec->V=(double*)calloc(Vec->N,sizeof(double));
+         if (!(Vec->V=(double*)calloc(Vec->N,sizeof(double)))) {
+            Tcl_AppendResult(Interp,"Vector_SetData: Unable to allocate data array",(char*)NULL);
+            return(TCL_ERROR);
+         }
       }
 
       if (vec) {

@@ -159,21 +159,25 @@ int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
             return(TCL_ERROR);
          }
       } else {
-         *Color=(XColor*)malloc(sizeof(XColor));
-         if (strlen(Tcl_GetString(Obj))>7) {
-            if ((t=sscanf(Tcl_GetString(Obj),"#%04x%04x%04x",&r,&g,&b))!=3) {
-               Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
-               return(TCL_ERROR);
+         if ((*Color=(XColor*)malloc(sizeof(XColor)))) {
+            if (strlen(Tcl_GetString(Obj))>7) {
+               if ((t=sscanf(Tcl_GetString(Obj),"#%04x%04x%04x",&r,&g,&b))!=3) {
+                  Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            } else {
+               if ((t=sscanf(Tcl_GetString(Obj),"#%02x%02x%02x",&r,&g,&b))!=3) {
+                  Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
+                  return(TCL_ERROR);
+               }
             }
+            (*Color)->red=r;
+            (*Color)->green=g;
+            (*Color)->blue=b;
          } else {
-            if ((t=sscanf(Tcl_GetString(Obj),"#%02x%02x%02x",&r,&g,&b))!=3) {
-               Tcl_AppendResult(Interp,"DataSpec_GetColor: invalid color description, must use RGB hexadecimal (#FFFFFF)",(char*)NULL);
-               return(TCL_ERROR);
-            }
+            Tcl_AppendResult(Interp,"DataSpec_GetColor: unable to allocate color",(char*)NULL);
+            return(TCL_ERROR);
          }
-         (*Color)->red=r;
-         (*Color)->green=g;
-         (*Color)->blue=b;
       }
    }
    return(TCL_OK);
@@ -206,12 +210,15 @@ XColor *DataSpec_CopyColor(Tcl_Interp *Interp,XColor *Color) {
       if (GLRender) {
          col=Tk_GetColorByValue(Tk_MainWindow(Interp),Color);
       } else {
-         col=malloc(sizeof(XColor));
-         memcpy(col,Color,sizeof(XColor));
+         if ((col=(XColor*)malloc(sizeof(XColor)))) {
+            memcpy(col,Color,sizeof(XColor));
+         }
       }
    }
+
    return(col);
 }
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <DataSpec_Cmd>
  * Creation     : Avril 2006 J.P. Gauthier
@@ -462,7 +469,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(VECTORS[Spec->RenderVector],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,&Spec->RenderVector)!=TCL_OK) {
+                 if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,(int*)&Spec->RenderVector)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -1390,7 +1397,7 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
    if (!new) {
       Tcl_AppendResult(Interp,"\n   DataSpec_Create: Configuration object name already used: \"",Name, "\"",(char*)NULL);
       Tcl_MutexLock(&MUTEX_DATASPEC);
-     ((TDataSpec*)Tcl_GetHashValue(entry))->NRef++;
+      ((TDataSpec*)Tcl_GetHashValue(entry))->NRef++;
       Tcl_MutexUnlock(&MUTEX_DATASPEC);
       return((TDataSpec*)Tcl_GetHashValue(entry));
    }
@@ -1493,58 +1500,15 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       if (!(to=DataSpec_Create(Interp,To))) {
          return(TCL_ERROR);
       }
+   } else {
+      DataSpec_Clear(to);
    }
-
-   if (to->Topo)      free(to->Topo);
-   if (to->Extrude)   free(to->Extrude);
-   if (to->Desc)      free(to->Desc);
-   if (to->Unit)      free(to->Unit);
-   if (to->Sprite)    free(to->Sprite);
-   if (to->LabelVar)  free(to->LabelVar);
-   if (to->SizeVar)   free(to->SizeVar);
-   if (to->MapVar)    free(to->SizeVar);
-   if (to->Outline)   GLRender?Tk_FreeColor(to->Outline):free(to->Outline);
-   if (to->Fill)      GLRender?Tk_FreeColor(to->Fill):free(to->Fill);
-   if (to->HighLine)  GLRender?Tk_FreeColor(to->HighLine):free(to->HighLine);
-   if (to->HighFill)  GLRender?Tk_FreeColor(to->HighFill):free(to->HighFill);
-   if (to->Font)      GLRender?Tk_FreeFont(to->Font):free(to->Font);
-
-   if (to->InterpDegree) free(to->InterpDegree);
-   if (to->ExtrapDegree) free(to->ExtrapDegree);
 
    to->Active=from->Active;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
    to->ExtrudeFactor=from->ExtrudeFactor;
    to->Set=from->Set;
-
-   to->Map=from->Map;
-   CMap_Incr(to->Map);
-
-   to->MapFactor=from->MapFactor;
-   to->MapAll=from->MapAll;
-   to->MapAbove=from->MapAbove;
-   to->MapBellow=from->MapBellow;
-   to->Icon=from->Icon;
-   to->Mark=from->Mark;
-   to->Style=from->Style;
-   memcpy(to->Cube,from->Cube,6*sizeof(int));
-   memcpy(to->Range,from->Range,from->RangeNb*sizeof(float));
-   memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
-   memcpy(to->Pos,from->Pos,from->PosNb*sizeof(Vect3d));
-
-   to->InterLabels=NULL;
-   if (from->InterLabels)
-      to->InterLabels=Tcl_DuplicateObj(from->InterLabels);
-
-   to->InterVals=NULL;
-   if (from->InterVals)
-      to->InterVals=Tcl_DuplicateObj(from->InterVals);
-
-   to->OGRMask=NULL;
-   if (from->OGRMask)
-      to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
-
    to->RangeNb=from->RangeNb;
    to->PosNb=from->PosNb;
    to->InterNb=from->InterNb;
@@ -1587,14 +1551,34 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->GridVector=from->GridVector;
    to->WMO=from->WMO;
    to->ZType=from->ZType;
+   to->MapFactor=from->MapFactor;
+   to->MapAll=from->MapAll;
+   to->MapAbove=from->MapAbove;
+   to->MapBellow=from->MapBellow;
+   to->Icon=from->Icon;
+   to->Mark=from->Mark;
+   to->Style=from->Style;
+   memcpy(to->Cube,from->Cube,6*sizeof(int));
+   memcpy(to->Range,from->Range,from->RangeNb*sizeof(float));
+   memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
+   memcpy(to->Pos,from->Pos,from->PosNb*sizeof(Vect3d));
 
-   to->Topo=NULL;
-   if (from->Topo)
-      to->Topo=strdup(from->Topo);
+   to->Outline=DataSpec_CopyColor(Interp,from->Outline);
+   to->Fill=DataSpec_CopyColor(Interp,from->Fill);
+   to->HighLine=DataSpec_CopyColor(Interp,from->HighLine);
+   to->HighFill=DataSpec_CopyColor(Interp,from->HighFill);
 
-   to->Extrude=NULL;
-   if (from->Extrude)
-      to->Extrude=strdup(from->Extrude);
+   to->Map=from->Map;
+   CMap_Incr(to->Map);
+
+   if (from->InterLabels)
+      to->InterLabels=Tcl_DuplicateObj(from->InterLabels);
+
+   if (from->InterVals)
+      to->InterVals=Tcl_DuplicateObj(from->InterVals);
+
+   if (from->OGRMask)
+      to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
 
    to->Dash.number=0;
    if (from->Dash.number) {
@@ -1606,38 +1590,32 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->Stipple)
       glBitmapParseProc(NULL,Interp,Tk_MainWindow(Interp),from->Stipple->Name,(char*)&to->Stipple,0);
 
-   to->Font=NULL;
    if (from->Font) {
       to->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfFont(from->Font),-1));
       Tk_GetFontMetrics(to->Font,&to->TKM);
    }
 
-   to->Fill=DataSpec_CopyColor(Interp,from->Fill);
-   to->HighFill=DataSpec_CopyColor(Interp,from->HighFill);
-   to->HighLine=DataSpec_CopyColor(Interp,from->HighLine);
-   to->Outline=DataSpec_CopyColor(Interp,from->Outline);
+   if (from->Topo)
+      to->Topo=strdup(from->Topo);
 
-   to->Desc=NULL;
+   if (from->Extrude)
+      to->Extrude=strdup(from->Extrude);
+
    if (from->Desc)
       to->Desc=strdup(from->Desc);
 
-   to->Unit=NULL;
    if (from->Unit)
       to->Unit=strdup(from->Unit);
 
-   to->Sprite=NULL;
    if (from->Sprite)
       to->Sprite=strdup(from->Sprite);
 
-   to->LabelVar=NULL;
    if (from->LabelVar)
       to->LabelVar=strdup(from->LabelVar);
 
-   to->SizeVar=NULL;
    if (from->SizeVar)
       to->SizeVar=strdup(from->SizeVar);
 
-   to->MapVar=NULL;
    if (from->MapVar)
       to->MapVar=strdup(from->MapVar);
 
@@ -1661,88 +1639,89 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
 */
 TDataSpec *DataSpec_New(){
 
-   TDataSpec *spec;
+   TDataSpec *spec=NULL;
 
-   spec=(TDataSpec*)malloc(sizeof(TDataSpec));
+   if ((spec=(TDataSpec*)malloc(sizeof(TDataSpec)))) {
 
-   spec->Active=1;
-   spec->NRef=1;
-   spec->Set=0;
-   spec->Name=NULL;
-   spec->Map=NULL;
-   spec->MapAll=0;
-   spec->MapAbove=1;
-   spec->MapBellow=0;
-   spec->Outline=NULL;
-   spec->Fill=NULL;
-   spec->HighFill=NULL;
-   spec->HighLine=NULL;
-   spec->Font=NULL;
-   spec->Desc=NULL;
-   spec->Unit=NULL;
-   spec->Sprite=NULL;
-   spec->SpriteImg=NULL;
-   spec->Icon=0;
-   spec->Mark=0;
-   spec->Style=0;
-   spec->Stipple=NULL;
-   spec->RangeNb=0;
-   spec->PosNb=0;
-   spec->InterNb=0;
-   spec->InterMode=0;
-   spec->InterLabels=NULL;
-   spec->InterVals=NULL;
-   spec->InterModeParam=0.0;
-   spec->InterO=0;
-   spec->InterM=0;
-   spec->Interp=GL_NEAREST;
-   spec->TexRes=1;
-   spec->TexStep=0.0;
-   spec->TexSample=8;
-   spec->TexSize=256;
-   spec->Alpha=100;
-   spec->Light=0;
-   spec->Width=1;
-   spec->Size=10.0;
-   spec->SizeRange=2.0;
-   spec->SizeMin=spec->SizeMax=0.0;
-   spec->LabelVar=NULL;
-   spec->SizeVar=NULL;
-   spec->MapVar=NULL;
-   spec->Sample=4;
-   spec->SampleType='P';
-   spec->Step=0.25;
-   spec->Min=nan("NaN");
-   spec->Max=nan("NaN");
-   spec->MinMax=DATASPEC_NOTSET;
-   spec->ValFactor=1.0;
-   spec->ValDelta=0.0;
-   spec->MapFactor=0.0f;
-   spec->GridVector=1;
-   spec->Cube[0]=1;spec->Cube[1]=1;spec->Cube[2]=1;
-   spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
-   spec->Axis='X';
+      spec->Active=1;
+      spec->NRef=1;
+      spec->Set=0;
+      spec->Name=NULL;
+      spec->Map=NULL;
+      spec->MapAll=0;
+      spec->MapAbove=1;
+      spec->MapBellow=0;
+      spec->Outline=NULL;
+      spec->Fill=NULL;
+      spec->HighFill=NULL;
+      spec->HighLine=NULL;
+      spec->Font=NULL;
+      spec->Desc=NULL;
+      spec->Unit=NULL;
+      spec->Sprite=NULL;
+      spec->SpriteImg=NULL;
+      spec->Icon=0;
+      spec->Mark=0;
+      spec->Style=0;
+      spec->Stipple=NULL;
+      spec->RangeNb=0;
+      spec->PosNb=0;
+      spec->InterNb=0;
+      spec->InterMode=0;
+      spec->InterLabels=NULL;
+      spec->InterVals=NULL;
+      spec->InterModeParam=0.0;
+      spec->InterO=0;
+      spec->InterM=0;
+      spec->Interp=GL_NEAREST;
+      spec->TexRes=1;
+      spec->TexStep=0.0;
+      spec->TexSample=8;
+      spec->TexSize=256;
+      spec->Alpha=100;
+      spec->Light=0;
+      spec->Width=1;
+      spec->Size=10.0;
+      spec->SizeRange=2.0;
+      spec->SizeMin=spec->SizeMax=0.0;
+      spec->LabelVar=NULL; 
+      spec->SizeVar=NULL;
+      spec->MapVar=NULL;
+      spec->Sample=4;
+      spec->SampleType='P';
+      spec->Step=0.25;
+      spec->Min=nan("NaN");
+      spec->Max=nan("NaN");
+      spec->MinMax=DATASPEC_NOTSET;
+      spec->ValFactor=1.0;
+      spec->ValDelta=0.0;
+      spec->MapFactor=0.0f;
+      spec->GridVector=1;
+      spec->Cube[0]=1;spec->Cube[1]=1;spec->Cube[2]=1;
+      spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
+      spec->Axis='X';
 
-   spec->OGRMask=NULL;
-   spec->ZType=LVL_UNDEF;
-   spec->Topo=NULL;
-   spec->TopoFactor=1.0;
-   spec->Extrude=NULL;
-   spec->ExtrudeFactor=1.0;
-   spec->InterpDegree=(char*)strdup("LINEAR");
-   spec->ExtrapDegree=(char*)strdup("NEUTRAL");
-   spec->Dash.number=0;
-   spec->RenderTexture=0;
-   spec->RenderFace=1;
-   spec->RenderGrid=0;
-   spec->RenderContour=0;
-   spec->RenderCoord=0;
-   spec->RenderLabel=0;
-   spec->RenderParticle=0;
-   spec->RenderVector=VNONE;
-   spec->RenderValue=0;
-   spec->RenderVol=0;
-   spec->WMO=0;
+      spec->OGRMask=NULL;
+      spec->ZType=LVL_UNDEF;
+      spec->Topo=NULL;
+      spec->TopoFactor=1.0;
+      spec->Extrude=NULL;
+      spec->ExtrudeFactor=1.0;
+      spec->InterpDegree=(char*)strdup("LINEAR");
+      spec->ExtrapDegree=(char*)strdup("NEUTRAL");
+      spec->Dash.number=0;
+      spec->RenderTexture=0;
+      spec->RenderFace=1;
+      spec->RenderGrid=0;
+      spec->RenderContour=0;
+      spec->RenderCoord=0;
+      spec->RenderLabel=0;
+      spec->RenderParticle=0;
+      spec->RenderVector=VNONE;
+      spec->RenderValue=0;
+      spec->RenderVol=0;
+      spec->WMO=0;
+   }
 
    return(spec);
 }
@@ -1771,7 +1750,7 @@ void DataSpec_Incr(TDataSpec *Spec) {
  *
  *----------------------------------------------------------------------------
 */
-int DataSpec_Free(TDataSpec *Spec){
+int DataSpec_Free(TDataSpec *Spec) {
 
   Tcl_MutexLock(&MUTEX_DATASPEC);
   if (!Spec || --Spec->NRef) {
@@ -1780,32 +1759,40 @@ int DataSpec_Free(TDataSpec *Spec){
    }
    Tcl_MutexUnlock(&MUTEX_DATASPEC);
 
-   if (Spec->Name)        free(Spec->Name);
-   if (Spec->Topo)        free(Spec->Topo);
-   if (Spec->Extrude)     free(Spec->Extrude);
-   if (Spec->Desc)        free(Spec->Desc);
-   if (Spec->Unit)        free(Spec->Unit);
-   if (Spec->Sprite)      free(Spec->Sprite);
-   if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);
-   if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);
-   if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine);
-   if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill);
-   if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);
+   DataSpec_Clear(Spec);
+   free(Spec);
 
-   if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);
-   if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);
-   if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);
+   return(1);
+}
 
-   if (Spec->InterpDegree) free(Spec->InterpDegree);
-   if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);
-   if (Spec->LabelVar)     free(Spec->LabelVar);
-   if (Spec->SizeVar)      free(Spec->SizeVar);
-   if (Spec->MapVar)       free(Spec->MapVar);
+void DataSpec_Clear(TDataSpec *Spec) {
+
+   if (Spec->Topo)         free(Spec->Topo);                                  Spec->Topo=NULL;
+   if (Spec->Extrude)      free(Spec->Extrude);                               Spec->Extrude=NULL;
+   if (Spec->Desc)         free(Spec->Desc);                                  Spec->Desc=NULL;
+   if (Spec->Unit)         free(Spec->Unit);                                  Spec->Unit=NULL;
+   if (Spec->Sprite)       free(Spec->Sprite);                                Spec->Sprite=NULL;
+   if (Spec->LabelVar)     free(Spec->LabelVar);                              Spec->LabelVar=NULL;
+   if (Spec->SizeVar)      free(Spec->SizeVar);                               Spec->SizeVar=NULL;
+   if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
+   if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
+   if (Spec->InterpDegree) free(Spec->InterpDegree);                          Spec->InterpDegree=NULL;
+   if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);                          Spec->ExtrapDegree=NULL;
+
+
+   if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
+   if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
+   if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine); Spec->HighLine=NULL;
+   if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill); Spec->HighFill=NULL;
+   if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);          Spec->Font=NULL;
+
+   if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);   Spec->InterLabels=NULL;
+   if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
+   if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
+
+    if (Spec->Name)        free(Spec->Name);
 
    if (Spec->Map) CMap_Free(Spec->Map);
-
-   free(Spec);
-   return(1);
 }
 
 /*----------------------------------------------------------------------------
@@ -2102,7 +2089,7 @@ void Icon_Free(TIcon *Icon) {
 
 TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List) {
 
-   TIcon       *icon;
+   TIcon       *icon=NULL;
    int          i,nobj;
    Tcl_Obj     *obj;
 
@@ -2110,16 +2097,17 @@ TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List) {
 
    if (!nobj || nobj>256) {
       Tcl_AppendResult(Interp,"Icon_Parse: invalid number of coordinates must be less than 128",(char*)NULL);
-      return NULL;
+      return(NULL);
    }
 
-   icon=(TIcon*)malloc(sizeof(TIcon));
-   icon->Nb=nobj;
-   for(i=0;i<icon->Nb;i++) {
-      Tcl_ListObjIndex(Interp,List,i,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&icon->Co[i]);
+   if  ((icon=(TIcon*)malloc(sizeof(TIcon)))) {
+      icon->Nb=nobj;
+      for(i=0;i<icon->Nb;i++) {
+         Tcl_ListObjIndex(Interp,List,i,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&icon->Co[i]);
+      }
+      icon->Nb/=2;
    }
 
-   icon->Nb/=2;
    return(icon);
 }
