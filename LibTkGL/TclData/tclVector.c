@@ -579,7 +579,7 @@ int Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp) {
             }
             vec->Cp[i]=Vector_Get(buf);
             vec->Cp[i]->NoData=vec->NoData;
-         } 
+         }
       } else {
          Tcl_AppendResult(Interp,"\n Vector_Create: Could not allocate memory for components",(char*)NULL);
          return(TCL_ERROR);
@@ -696,7 +696,7 @@ struct TDataDef* Vector_GetDef(TVector *Vec) {
       Vec->Def->Data[3]=NULL;
       Vec->Def->Type=TD_Float64;
       Vec->Def->NoData=Vec->NoData;
- 
+
       if (Vec->Cp) {
          Vec->Def->NJ=Vec->Cp[0]->N;
          Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*Vec->Def->NJ*sizeof(double));

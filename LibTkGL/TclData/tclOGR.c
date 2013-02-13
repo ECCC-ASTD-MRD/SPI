@@ -1278,7 +1278,7 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
         file->Name=strdup(Name);
         file->Driver=driver;
         file->Data=source;
-     
+
         OGR_FilePut(Interp,file);
       } else {
          Tcl_AppendResult(Interp,"   OGR_FileOpen: Unable to allocate memory",(char*)NULL);

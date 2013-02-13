@@ -941,8 +941,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (Spec->InterVals) {
                   Tcl_DecrRefCount(Spec->InterVals);
                }
-               Spec->InterVals=Objv[i];
-               Tcl_IncrRefCount(Spec->InterVals);
+               Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
 
                /*Determine si ils sont nouveaux*/
                for (ii=0;ii<nobj;ii++){
@@ -1571,15 +1570,18 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Map=from->Map;
    CMap_Incr(to->Map);
 
-   if (from->InterLabels)
+   if (from->InterLabels) {
       to->InterLabels=Tcl_DuplicateObj(from->InterLabels);
-
-   if (from->InterVals)
+      Tcl_IncrRefCount(to->InterLabels);
+   }
+   if (from->InterVals) {
       to->InterVals=Tcl_DuplicateObj(from->InterVals);
-
-   if (from->OGRMask)
+      Tcl_IncrRefCount(to->InterVals);
+   }
+   if (from->OGRMask) {
       to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
-
+      Tcl_IncrRefCount(to->OGRMask);
+   }
    to->Dash.number=0;
    if (from->Dash.number) {
       DashPrint(buf,&from->Dash);
@@ -1684,7 +1686,7 @@ TDataSpec *DataSpec_New(){
       spec->Size=10.0;
       spec->SizeRange=2.0;
       spec->SizeMin=spec->SizeMax=0.0;
-      spec->LabelVar=NULL; 
+      spec->LabelVar=NULL;
       spec->SizeVar=NULL;
       spec->MapVar=NULL;
       spec->Sample=4;
@@ -1765,6 +1767,21 @@ int DataSpec_Free(TDataSpec *Spec) {
    return(1);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <DataSpec_Clear>
+ * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Liberer la memeoire d'une structure TDataSpec.
+ *
+ * Parametres :
+ *  <Spec>    : Structure a liberer
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 void DataSpec_Clear(TDataSpec *Spec) {
 
    if (Spec->Topo)         free(Spec->Topo);                                  Spec->Topo=NULL;
@@ -1779,7 +1796,6 @@ void DataSpec_Clear(TDataSpec *Spec) {
    if (Spec->InterpDegree) free(Spec->InterpDegree);                          Spec->InterpDegree=NULL;
    if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);                          Spec->ExtrapDegree=NULL;
 
-
    if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
    if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
    if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine); Spec->HighLine=NULL;
@@ -1790,7 +1806,7 @@ void DataSpec_Clear(TDataSpec *Spec) {
    if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
    if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
 
-    if (Spec->Name)        free(Spec->Name);
+   if (Spec->Name)        free(Spec->Name);
 
    if (Spec->Map) CMap_Free(Spec->Map);
 }
