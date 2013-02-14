@@ -1762,6 +1762,7 @@ int DataSpec_Free(TDataSpec *Spec) {
    Tcl_MutexUnlock(&MUTEX_DATASPEC);
 
    DataSpec_Clear(Spec);
+   if (Spec->Name) free(Spec->Name);
    free(Spec);
 
    return(1);
@@ -1806,9 +1807,7 @@ void DataSpec_Clear(TDataSpec *Spec) {
    if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
    if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
 
-   if (Spec->Name)        free(Spec->Name);
-
-   if (Spec->Map) CMap_Free(Spec->Map);
+   if (Spec->Map)         CMap_Free(Spec->Map);
 }
 
 /*----------------------------------------------------------------------------
