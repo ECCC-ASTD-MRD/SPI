@@ -1630,7 +1630,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
                return;
             }
-  
+
             /*Recuperer les informations sur les vents et leurs localisations*/
             EZLock_RPNInt();
             c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);

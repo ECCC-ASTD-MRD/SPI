@@ -140,7 +140,7 @@ int FSTD_FieldSubBuild(TData *Field) {
 
    if (Field->SDef) {
       Field->SDef[0]=Field->Def;
-  
+
       // Loop on subgrids
       for(i=1;i<=Field->Ref->NbId;i++) {
          c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
