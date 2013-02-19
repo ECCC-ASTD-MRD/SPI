@@ -389,7 +389,7 @@ proc Bulletin::ReadCurrent { } {
 
    set Bul(Courant_Name) "ash_courant_$time"
 
-   catch { exec $Param(Path)/volcanic_script_spi.sh $Param(PathTmp)/tmp/$Bul(Courant_Name) }
+   catch { exec $Param(Path)/script/volcanic_script_spi.sh $Param(PathTmp)/tmp/$Bul(Courant_Name) }
    file rename $Param(PathTmp)/tmp/$Bul(Courant_Name) $Param(PathTmp)/$Bul(Courant_Name)
 
    #----- Inserer un item courant dans la liste
