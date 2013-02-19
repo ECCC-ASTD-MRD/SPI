@@ -77,7 +77,7 @@ namespace eval MLDPn {
    set Sim(EmIsAutoNPDefault)    1                             ;#----- Flag indicating if particles are to be automatically distributed
 
    set Sim(OutputDelta)          24                            ;#----- Output file delta in hours
-   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
+   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    set Sim(OutCV) {}
    set Sim(OutAV) {}
    set Sim(BubbleId)             -1

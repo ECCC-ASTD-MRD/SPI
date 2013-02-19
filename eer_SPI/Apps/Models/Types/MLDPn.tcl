@@ -93,21 +93,17 @@ proc MLDPn::Launch { } {
       set ErrorCode [catch { exec $env(EER_DIRSCRIPT)/GenerateMetfields.tcl $Sim(Path)/tmp $metdate $metdate $Sim(Path)/tmp/data_std_pres.in >& $Sim(Path)/tmp/GenerateMetfields.out & } Message]
    }
 
-   #----- Copy needed file to run host:directory.
-   Model::ParamsCopy MLDPn
-
    if { $Model::Param(IsUsingSoumet) } {
 
-      #----- Meteo is local, launch it's processing and wait for it.
+      #----- Meteo is local, build links to it.
       if { $Model::Param(DBaseLocal) } {
-         if { ![Dialog::Default .modelnew 400 WARNING $Warning(MetLocal) "" 0 $Lbl(No) $Lbl(Yes)] } {
-            return False
+         foreach file $Sim(MeteoDataFiles) {
+            exec ln -s $file $Sim(Path)/meteo/[file tail $file]
          }
-
-         Dialog::Wait . $Msg(MetProcess)
-         exec $env(EER_DIRSCRIPT)/Model_Meteo$Sim(Model).sh $Sim(Path)/tmp $Sim(Meteo) 1 $Sim(NI)x$Sim(NJ)x$Sim(NK) low
-         Dialog::WaitDestroy
       }
+
+      #----- Copy needed file to run host:directory.
+      Model::ParamsCopy MLDPn
 
       set cpus "-cpus $Model::Param(NbMPItasks)x$Model::Param(NbOMPthreads) -mpi -smt 2"
       set mem  "20G"
@@ -174,7 +170,7 @@ proc MLDPn::CreateScriptInput { } {
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"
    puts $file "MODEL_LOCALDIR=$Sim(Path)"
    puts $file "MODEL_RUNDIR=$Sim(PathRun)"
-   puts $file "MODEL_PRE=$Model::Param(NbCPUMeteo)"
+   puts $file "MODEL_PRE=0"
    puts $file "MODEL_RUN=1"
    puts $file "MODEL_POST=1"
    puts $file "MODEL_POOL=$Model::Param(Pool)"
@@ -443,9 +439,14 @@ proc MLDPn::CreateModelInput { } {
 
    puts $file "\n#----- Meteorological parameters\n"
    puts $file [format "%-11s= %-10.4f # Bottom reflection level of particles in the atmosphere \[hybrid|eta|sigma\]" MET_BOTTOM $Sim(ReflectionLevel)]
-   puts $file "MET_FILES  =            # Meteorological input files"
-   for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
-      puts $file "meteo/[file tail [lindex $Sim(MeteoDataFiles) $i]].std"
+   puts $file "MET_FILES  =           # Meteorological input files"
+
+   if { $Model::Param(DBaseLocal) } {
+      foreach file $Sim(MeteoDataFiles) {
+         puts $file "meteo/[file tail $file]"
+      }
+   } else {
+      puts $file "[join $Sim(MeteoDataFiles) \n]"
    }
 
    close $file
@@ -1328,7 +1329,7 @@ proc MLDPn::InitNew { Type } {
 
    set Sim(OutCV)                [lindex $Sim(ListOutCV) 0]          ; #----- CV Vertical levels [m].
    set Sim(OutAV)                { }                                 ; #----- AVVertical levels [m].
-   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI CVBL FM DD WD DI DWI TTCV TCAV WI DW IT MF }
+   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    #----- Set source type according to experiment data type.
@@ -1411,7 +1412,7 @@ proc MLDPn::InitKernel { } {
          set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
          set Sim(Meteo)                glb                                 ; #----- Meteorological model.
          set Sim(Grids)               { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
-         set Sim(ListMeteoModel)      { glb reg glb100 reg24 }
+         set Sim(ListMeteoModel)      { glb reg }
          set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
          set Sim(ReflectionLevel)      0.9999                              ;#----- Reflection level [hyb|eta|sig].

@@ -185,8 +185,8 @@ namespace eval Model {
 
    set Error(Host)                { "L'hôte sélectionné ne peut être rejoint. Par conséquent, l'hôte local sera utilisé." "Selected host cannot be reached, using local host." }
    set Error(EMail)               { "L'adresse électronique est invalide. Veuillez corriger l'adresse spécifiée.\n\n\tCourriel :" "The electronic mail address is invalid. Please correct this email address.\n\n\tE-mail :" }
-   set Error(MetDBase)            { "Erreur! Les répertoires des bases de données météorologiques diagnostiques et/ou pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
-                                    "Error! The directories for diagnostic and/or prognostic meteorological databases are undefined. Please specify the path for these databases." }
+   set Error(MetDBase)            { "Les répertoires des bases de données météorologiques diagnostiques et/ou pronostiques ne sont pas définis. Veuillez spécifier les répertoires de ces bases de données." \
+                                    "The directories for diagnostic and/or prognostic meteorological databases are undefined. Please specify the path for these databases." }
    set Error(MetFiles)            { "Le nombre de fichiers disponibles dans la base de données météorologique localisée sur l'hôte sélectionné est insuffisant pour exécuter le modèle à partir de la date et du temps d'émission de l'accident. Veuillez modifier la date et/ou le temps d'émission de l'accident ou l'hôte."
                                     "The number of available files in the meteorological database located on the selected host is not enough to run the model according to accident release date-time. Please modify the accident release date-time or the host." }
    set Error(DateTimeEmission)    { "\tDate/Temps de l'émission :" "\tRelease date-time         :" }
@@ -834,24 +834,29 @@ proc Model::ParamsMetDataDir { Model } {
 
       #----- Define meteo path
       set dbops $env(CMCGRIDF)
-      set dbeer /cnfs/ops/production/cmoe/dbase
+#      set dbeer $env(EERGRIDF)
+      set dbeer /cnfs/ops/production/cmoe/afseeer/dbase
 
       if { [info exists GDefs(Host_$Param(Host))] } {
          set dbops $Param(Host):[lindex $GDefs(Host_$Param(Host)) 1]
          set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
       }
 
-      if { ($sim(Model)=="MLDP1" || $sim(DiffKernel)=="ORDER1") && $sim(Meteo)=="reg"} {
+      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
          set MetData::Param(Path) $dbeer
       } else {
          set MetData::Param(Path) $dbops
       }
 
       #----- Set met database by default.
-      MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
+      if { $sim(Model)=="MLDPn" || $sim(Model)=="TRAJECT" } {
+         MetData::Path hyb $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
+      } else {
+         MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
+      }
 
       #----- Set met database by default.
-      if { $sim(Model)=="MLDP1" || $sim(DiffKernel)=="ORDER1" } {
+      if { $sim(Model)=="MLDP1" } {
          set Param(DBaseDiag) $Param(DBaseProg)
       }
    }
@@ -1225,7 +1230,7 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.params.queue -side top -anchor w -padx 2 -fill x
    Bubble::Create $tabframe.params.queue $Bubble(Queue)
 
-   if { $sim(Model)=="MLDP0" || $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
+   if { $sim(Model)=="MLDP0" || $sim(Model)=="MLDP1" } {
 
       #----- Nb CPU meteo preprocessor.
       Option::Create $tabframe.params.cpu [lindex $Lbl(NbCPUMeteo) $GDefs(Lang)] Model::Param(NbCPUMeteo) 0 -1 $Model::Param(ListNbCPUMeteo) ""
@@ -1352,11 +1357,11 @@ proc Model::Launch { Model } {
 
    #----- Try to lauch the model
    if { [${Model}::Launch] } {
-      destroy [winfo toplevel $Param(Frame)]
       Info::Set $sim(Path)/../$sim(Model).pool [Info::Code ${Model}::Sim]
 
       Model::Check 0
       Model::ParamsClose ${Model}
+#      destroy [winfo toplevel $Param(Frame)]
    }
 
    . config -cursor left_ptr
@@ -1573,32 +1578,32 @@ proc Model::ParamsMeteoInput { Model } {
    }
 
    #----- Create ASCII file containing list of meteorological files for RSMC response.
-   if { [regexp "/gridpt/" $Param(DBaseProg)] && [regexp "/gridpt/" $Param(DBaseDiag)] } {
+   if { $Param(DBaseType)!="user" } {
 
       set files {}
 
-      if { $sim(Meteo)=="reg" } { #----- Regional NWP met model.
-         if { [info exists GDefs(Host_$Param(Host))] } {
-            regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
+      foreach file $sim(MeteoDataFiles) {
+
+         set parts [split $file "/"]
+         set file [lindex $parts end]
+         set mode [lindex $parts end-2]
+
+         switch [lindex $parts end-1] {
+            regeta  -
+            reghyb  { lappend files "$env(CMCGRIDF)/$mode/regpres/$file" }
+            regeta2 -
+            reghyb2 { lappend files "$env(CMCGRIDF)/$mode/regpres2/$file" }
+            glbeta  -
+            glbhyb  { lappend files "$env(CMCGRIDF)/$mode/glbpres/$file" }
+            glbeta2 -
+            glbhyb2 { lappend files "$env(CMCGRIDF)/$mode/glbpres2/$file" }
          }
-         regsub -all "/regeta/"    $files               "/regpres/"  files
-         regsub -all "/reghyb/"    $files               "/regpres/"  files
-         regsub -all "/regeta2/"   $files               "/regpres2/" files
-         regsub -all "/reghyb2/"   $files               "/regpres2/" files
-      } elseif { $sim(Meteo) == "glb" } { #----- Global NWP met model.
-         if { [info exists GDefs(Host_$Param(Host))] } {
-            regsub -all "[lindex $GDefs(Host_$Param(Host)) 1]" $sim(MeteoDataFiles) "$env(CMCGRIDF)" files
-         }
-         regsub -all "/glbeta/"    $files               "/glbpres/"  files
-         regsub -all "/glbhyb/"    $files               "/glbpres/"  files
-         regsub -all "/glbeta2/"   $files               "/glbpres2/" files
-         regsub -all "/glbhyb2/"   $files               "/glbpres2/" files
       }
 
       if { [llength $files] } {
-         set file [open $sim(Path)/tmp/data_std_pres.in w 0644]
-         puts $file $files
-         close $file
+         set f [open $sim(Path)/tmp/data_std_pres.in w 0644]
+         puts $f $files
+         close $f
       }
    }
 
