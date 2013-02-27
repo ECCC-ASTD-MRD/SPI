@@ -31,7 +31,7 @@
  *==============================================================================
  */
 
-#include <glStuff.h>
+#include "glStuff.h"
 
 void GLShader_InfoLog(GLhandleARB Object) {
 

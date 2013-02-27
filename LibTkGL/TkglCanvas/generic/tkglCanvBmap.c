@@ -147,6 +147,7 @@ static int glCreateBitmap(
    bmapPtr->bgColor = NULL;
    bmapPtr->activeBgColor = NULL;
    bmapPtr->disabledBgColor = NULL;
+   bmapPtr->alpha = 100;
 
    /*
    * Process the arguments to fill in the item record. Only 1 (list) or 2 (x
@@ -737,7 +738,6 @@ static int glBitmapToPostscript(interp, canvas, itemPtr, prepass)
    glBitmapItem *bmapPtr = (glBitmapItem *) itemPtr;
    double x, y;
    int width, height;
-   int curRow;
    XColor *fgColor;
    XColor *bgColor;
    T_glBitmap *bitmap;

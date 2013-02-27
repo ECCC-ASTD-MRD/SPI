@@ -10,8 +10,7 @@
  * this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-#include "tkInt.h"
-#include "tkCanvas.h"
+#include "tkglCanvas.h"
 
 /*
  * The structure below defines the record for each window item.

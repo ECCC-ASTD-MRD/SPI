@@ -1,4 +1,3 @@
-#include "tkInt.h"
 #include "tkPort.h"
 #include "default.h"
 #include "tkglCanvas.h"

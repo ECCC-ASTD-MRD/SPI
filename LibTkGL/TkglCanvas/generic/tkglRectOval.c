@@ -13,7 +13,6 @@
  * RCS: @(#) $Id: tkRectOval.c,v 1.7 2000/04/19 22:20:45 ericm Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each rectangle/oval item. */
@@ -269,7 +268,7 @@ static int glRectOvalCoords(
       Tcl_SetObjResult(interp, Tcl_ObjPrintf(
          "wrong # coordinates: expected 0 or 4, got %d", objc));
       Tcl_SetErrorCode(interp, "TK", "CANVAS", "COORDS",
-         (rectOvalPtr->header.typePtr == &tkRectangleType
+         (rectOvalPtr->header.typePtr == &tkglRectangleType
             ? "RECTANGLE" : "OVAL"), NULL);
       return TCL_ERROR;
    }
@@ -323,8 +322,6 @@ static int glConfigureRectOval(
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    Tk_Window tkwin;
    Tk_TSOffset *tsoffset;
-   XColor *color;
-   T_glBitmap *stipple;
    Tk_State state;
 
    tkwin = Tk_CanvasTkwin(canvas);
@@ -370,24 +367,6 @@ static int glConfigureRectOval(
    if (state==TK_STATE_HIDDEN) {
       glComputeRectOvalBbox(canvas, rectOvalPtr);
       return TCL_OK;
-   }
-
-   color = rectOvalPtr->fillColor;
-   stipple = rectOvalPtr->fillStipple;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
-      if (rectOvalPtr->activeFillColor!=NULL) {
-         color = rectOvalPtr->activeFillColor;
-      }
-      if (rectOvalPtr->activeFillStipple) {
-         stipple = rectOvalPtr->activeFillStipple;
-      }
-   } else if (state==TK_STATE_DISABLED) {
-      if (rectOvalPtr->disabledFillColor!=NULL) {
-         color = rectOvalPtr->disabledFillColor;
-      }
-      if (rectOvalPtr->disabledFillStipple) {
-         stipple = rectOvalPtr->disabledFillStipple;
-      }
    }
 
    tsoffset = &rectOvalPtr->tsoffset;
@@ -578,6 +557,7 @@ static void glDisplayRectOval(
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    short x1, y1, x2, y2;              /* Rectangle coordinates */
    T_glBitmap *stipple;            /* Stippling bitmap */
+   XColor *color;
    Tk_State state = itemPtr->state;   /* Current item's state */
 
     /*
@@ -598,12 +578,18 @@ static void glDisplayRectOval(
       state = ((TkCanvas *)canvas)->canvas_state;
 
    stipple = rectOvalPtr->fillStipple;   /* Get the bitmap for stippling */
+   color = rectOvalPtr->fillColor;
 
    if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
+      if (rectOvalPtr->activeFillColor!=NULL) {
+         color = rectOvalPtr->activeFillColor;
+      }
       if (rectOvalPtr->activeFillStipple)
          stipple = rectOvalPtr->activeFillStipple;
    } else if (state==TK_STATE_DISABLED) {
-
+      if (rectOvalPtr->disabledFillColor!=NULL) {
+         color = rectOvalPtr->disabledFillColor;
+      }
       if (rectOvalPtr->disabledFillStipple)
          stipple = rectOvalPtr->disabledFillStipple;
    }
@@ -622,7 +608,7 @@ static void glDisplayRectOval(
       }
 
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      glColor4us(rectOvalPtr->fillColor->red,rectOvalPtr->fillColor->green,rectOvalPtr->fillColor->blue,rectOvalPtr->alpha*655);
+      glColor4us(color->red,color->green,color->blue,rectOvalPtr->alpha*655);
 
       if (rectOvalPtr->header.typePtr == &tkglRectangleType) {
          glBegin(GL_QUADS);
@@ -1125,7 +1111,7 @@ static int glRectOvalToPostscript(
    * is the only part of the function's code that is type-specific.
    */
 
-   if (rectOvalPtr->header.typePtr == &tkRectangleType) {
+   if (rectOvalPtr->header.typePtr == &tkglRectangleType) {
       pathObj = Tcl_ObjPrintf(
          "%.15g %.15g moveto "
          "%.15g 0 rlineto "

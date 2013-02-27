@@ -47,9 +47,9 @@
 #include <malloc.h>
 #include <string.h>
 #include <time.h>
-#include <tr.h>
 #include <sys/stat.h>
 
+#include "tr.h"
 
 #ifndef M_PI
 #define M_PI        3.14159265358979323846   /*Pi*/
@@ -97,9 +97,9 @@
    }\
 }
 
-enum ExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
+enum ExtToken  { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum ProgToken { PROG_FIELD=0, PROG_FIELDTEX=1, PROG_DATATEX=2, PROG_TOPOTEX=3 };
-enum GLVendor { NVIDIA=0, ATI=1, MESA=2 };
+enum GLVendor  { NVIDIA=0, ATI=1, MESA=2 };
 
 /* Structure pour OpenGL */
 typedef struct GLParams  {
@@ -192,47 +192,41 @@ void  glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip);
 void  glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY);
 
 void       glXFontFree(T_glFont *glfont);
-void       glXFontTexture(Font font,int first,int count,int listbase,int *tex);
+void       glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex);
 int        glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin);
 void       glXShutDown();
-int        glXGetPixmap(Tk_Window TkWin,int *Width,int *Height);
-GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height);
+int        glXGetPixmap(Tk_Window TkWin,unsigned int *Width,unsigned int *Height);
+GLXPbuffer glXGetPBuffer(Tk_Window TkWin,unsigned int *Width,unsigned int *Height);
 int        glXFreePBuffer(GLXPbuffer PBuf);
 int        glXFreePixmap();
 
-int      glDefineParams();
-void     glBitmapFree(T_glBitmap *Bitmap);
-int      glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset);
-const char  *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr);
-int      glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,int Height);
-GLfloat *glFeedbackInit(unsigned long Size,int GLMode);
-int      glFeedbackProcess(Tcl_Interp *Interp,int GLMode);
-int      glPostscriptBitmap(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap,int Width,int Height);
-void     glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width);
-int      glPostscriptStipple(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap);
-void     trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height,TRcontext *TR);
-void     glPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height);
-void     glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int X2,int Y2,XColor *Color,int Fill);
-void     glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify);
-void     glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY,XColor *Color,int Clip);
-int      glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,double angle,double x,double y,Tk_Anchor anchor,Tk_Justify justify);
-void     glStencilMaskQuad(int X,int Y,int Width,int Height,int Theta,int DX,int DY);
-int      glTextureFit(int Size,float Tolerance);
-int      glFontUse(Display *Disp,Tk_Font FontId);
-GLushort glDash(Tk_Dash *Dash);
-void     glDrawArrow(GLint Mode);
-void     glDrawCircle(int Inter,GLint Mode);
-void     glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style);
+int         glDefineParams();
+void        glBitmapFree(T_glBitmap *Bitmap);
+int         glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset);
+const char *glBitmapPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr);
+int         glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,int Height);
+GLfloat    *glFeedbackInit(unsigned long Size,int GLMode);
+int         glFeedbackProcess(Tcl_Interp *Interp,int GLMode);
+int         glPostscriptBitmap(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap,int Width,int Height);
+void        glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width);
+int         glPostscriptStipple(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap);
+void        glPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height);
+void        glPostscriptRectangle(Tcl_Interp *Interp,Tk_Canvas Canvas,int X1,int Y1,int X2,int Y2,XColor *Color,int Fill);
+void        glPostscriptText(Tcl_Interp *Interp,Tk_Canvas Canvas,char* Text,int X1,int Y1,int Angle,XColor *Color,float XOff,float YOff,float Justify);
+void        glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Theta,int Width,int Height,int DeltaX,int DeltaY,XColor *Color,int Clip);
+int         glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,double angle,double x,double y,Tk_Anchor anchor,Tk_Justify justify);
+void        glStencilMaskQuad(int X,int Y,int Width,int Height,int Theta,int DX,int DY);
+int         glTextureFit(int Size,float Tolerance);
+int         glFontUse(Display *Disp,Tk_Font FontId);
+GLushort    glDash(Tk_Dash *Dash);
+void        glDrawArrow(GLint Mode);
+void        glDrawCircle(int Inter,GLint Mode);
+void        glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style);
+void        glPickInit(double WinX,double WinY,double DX,double DY);
+int         glPickProcess();
 
-void     glPickInit(double WinX,double WinY,double DX,double DY);
-int      glPickProcess();
-
-void      glTessError(GLenum Err);
-GLdouble *glTessTmpGet();
-
-int  glCrowdPush(int X0,int Y0,int X1,int Y1,int Delta);
-void glCrowdPop();
-void glCrowdClear();
+void        glTessError(GLenum Err);
+GLdouble   *glTessTmpGet();
 
 void        GLShader_InfoLog(GLhandleARB Object);
 GLint       GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name);
@@ -241,6 +235,8 @@ GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name);
 GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc);
 void        GLShader_UnInstall(GLhandleARB Prog);
 
-int      trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
-void     trRasterPos2i(int X,int Y);
+void        trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height,TRcontext *TR);
+int         trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int Height,TRcontext *TR);
+void        trRasterPos2i(int X,int Y);
+
 #endif

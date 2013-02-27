@@ -12,7 +12,6 @@
  * RCS: @(#) $Id: tkCanvArc.c,v 1.8 2000/02/01 11:41:09 hobbs Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each arc item */

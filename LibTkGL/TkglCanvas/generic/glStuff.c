@@ -39,11 +39,6 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#include "eerStruct.h"
-#include "eerUtils.h"
-
-static TList *GLCrowdList;
-
 GLParams *GLRender=NULL;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
@@ -205,7 +200,6 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    int      i;
    int      idx;
-   Tcl_Obj *obj;
 
    static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-usethreads",NULL };
    enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,USETHREADS };
@@ -434,7 +428,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
 
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
-   int                i,j,ix,iy,dx,dy,result=TCL_ERROR;
+   int                i,ix,iy,dx,dy,result=TCL_ERROR;
 
    /*Calculer le depassement si il y a*/
    ix=TR->CurrentColumn*TR->TileWidthNB-X;
@@ -447,32 +441,33 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    }
 
    /*Recuperer le handle de l'image specifie*/
-   handle=Tk_FindPhoto(Interp,Img);
+   if (handle=Tk_FindPhoto(Interp,Img)) {
 
-   /*Definire les parametres du block de donnees */
-   if (Tk_PhotoSetSize(Interp,handle,Width,Height)==TCL_OK) {
-      data.width=TR->TileWidthNB-dx;
-      data.height=TR->TileHeightNB-dy;
-      data.pixelSize=3;
-      data.pitch=data.width*data.pixelSize;
-      data.offset[0]=0;
-      data.offset[1]=1;
-      data.offset[2]=2;
-      data.offset[3]=-1;
-      data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
+      /*Definire les parametres du block de donnees */
+      if (Tk_PhotoSetSize(Interp,handle,Width,Height)==TCL_OK) {
+         data.width=TR->TileWidthNB-dx;
+         data.height=TR->TileHeightNB-dy;
+         data.pixelSize=3;
+         data.pitch=data.width*data.pixelSize;
+         data.offset[0]=0;
+         data.offset[1]=1;
+         data.offset[2]=2;
+         data.offset[3]=-1;
+         data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
 
-      /* Recuperer le buffer OpenGL en inversant en Y*/
-      if (data.pixelPtr) {
-         glReadBuffer(Buffer);
-         for(i=0;i<data.height;i++) {
-            glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+         /* Recuperer le buffer OpenGL en inversant en Y*/
+         if (data.pixelPtr) {
+            glReadBuffer(Buffer);
+            for(i=0;i<data.height;i++) {
+               glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+            }
+
+            /* Envoyer le data dans l'image Tk */
+            result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+            free(data.pixelPtr);
+         } else {
+            result=TCL_ERROR;
          }
-
-         /* Envoyer le data dans l'image Tk */
-         result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_OVERLAY);
-         free(data.pixelPtr);
-      } else {
-         result=TCL_ERROR;
       }
    }
 
@@ -507,43 +502,41 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
 
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
-   int                i;
+   int                i,result=TCL_ERROR;
 
    data.width=W;
    data.height=H;
 
    /*Recuperer le handle de l'image specifie*/
 
-   handle=Tk_FindPhoto(Interp,Img);
+   if (handle=Tk_FindPhoto(Interp,Img)) {
 
-   /*Definire les parametres du bock de donnees*/
+      /*Definire les parametres du bock de donnees*/
+      Tk_PhotoSetSize(Interp,handle,data.width,data.height);
 
-   Tk_PhotoSetSize(Interp,handle,data.width,data.height);
+      data.pixelSize=4;
+      data.pitch=data.width*data.pixelSize;
+      data.offset[0]=0;
+      data.offset[1]=1;
+      data.offset[2]=2;
+      data.offset[3]=3;
+      data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
 
-   data.pitch=data.width*4;
-   data.pixelSize=4;
-   data.offset[0]=0;
-   data.offset[1]=1;
-   data.offset[2]=2;
-   data.offset[3]=3;
-   data.pixelPtr=(GLubyte*)malloc(data.width*data.height*4*sizeof(GLubyte));
-
-   /*Recuperer le buffer OpenGL*/
-   glReadBuffer(Buffer);
-   if (data.pixelPtr) {
-      for(i=0;i<data.height;i++) {
-         glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.width*4]);
+      /*Recuperer le buffer OpenGL*/
+      glReadBuffer(Buffer);
+      if (data.pixelPtr) {
+         for(i=0;i<data.height;i++) {
+            glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+         }
+         /*Envoyer le data dans l'image Tk*/
+         result=Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+         free(data.pixelPtr);
+      } else {
+         return(TCL_ERROR);
       }
-   } else {
-      return(TCL_ERROR);
    }
 
-   /*Envoyer le data dans l'image Tk*/
-   Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-
-   free(data.pixelPtr);
-
-   return(TCL_OK);
+   return(result);
 }
 
 /*----------------------------------------------------------------------------
@@ -627,7 +620,7 @@ int glFontUse(Display *Disp,Tk_Font FontId) {
          fprintf(stderr,"(ERROR) glFontSet: Unable to allocate font display list.\n");
 
 //      glXUseXFont(def->fid,f0,f1-f0+1,base+f0);
-      glXFontTexture(def->fid,f0,f1-f0+1,glfont->list+f0,glfont->tex);
+         glXFontTexture(def->fid,f0,f1-f0+1,glfont->list+f0,glfont->tex);
 
       if (!entry)
          entry=Tcl_CreateHashEntry(&glFontIdTable,key,&new);
@@ -703,7 +696,7 @@ int glBitmapParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const c
          bitmap->Name = (char*) malloc(len);
          memcpy(bitmap->Name, Value, len);
 
-         bitmap->Data=(char*)TkGetBitmapData(Interp,NULL,++Value,&bitmap->Width,&bitmap->Height,&bitmap->HotX,&bitmap->HotY);
+         bitmap->Data=(unsigned char*)TkGetBitmapData(Interp,NULL,++Value,&bitmap->Width,&bitmap->Height,&bitmap->HotX,&bitmap->HotY);
          DataFlip(bitmap->Data,NULL,bitmap->Width,bitmap->Height,0);
 
          Tcl_SetHashValue(entry,bitmap);
@@ -1289,7 +1282,7 @@ void glPickInit(double WinX,double WinY,double DX,double DY){
 int glPickProcess(){
 
    int picks,i,j;
-   GLuint names,*pname,*ptr,*ptro,n,z=0xffffffff;
+   GLuint names,*pname=NULL,*ptr,*ptro,n=0,z=0xffffffff;
 
    ptro=ptr=GLRender->GLPick;
    picks=glRenderMode(GL_RENDER);
@@ -1368,7 +1361,7 @@ GLfloat* glFeedbackInit(unsigned long Size,int GLMode) {
 */
 int glFeedbackProcess(Tcl_Interp *Interp,int GLMode) {
 
-   int     no=0,token,d,nb,n,move=0,poly=0;
+   int     no=0,token,d=0,nb,n,move=0,poly=0;
    int     pn,pno;
    char    buf[256];
    float   px=0.0,py=0.0;
@@ -1528,7 +1521,6 @@ void glPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
       Tcl_AppendResult(Interp,"\ngrestore\n",(char*)NULL);
       free(pix);
    } else {
-      fprintf(stderr,"(ERROR) glPostscriptBuffer: Could not allocate pixel buffer\n");
       Tcl_AppendResult(Interp,"Could not allocate pixel buffer\n",(char*)NULL);
    }
 }
@@ -1588,7 +1580,6 @@ void trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,in
       Tcl_AppendResult(Interp,"\ngrestore\n",(char*)NULL);
       free(pix);
    } else {
-      fprintf(stderr,"(ERROR) glPostscriptBuffer: Could not allocate pixel buffer\n");
       Tcl_AppendResult(Interp,"Could not allocate pixel buffer\n",(char*)NULL);
    }
 }
@@ -1687,125 +1678,6 @@ void glPostscriptTextBG(Tcl_Interp *Interp,Tk_Canvas Canvas,int X,int Y,int Thet
    } else {
       Tk_CanvasPsColor(Interp,Canvas,Color);
       Tcl_AppendResult(Interp,"closepath fill\n",(char*)NULL);
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <glCrowdPush>
- * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Controle de peuplement, Verifie si l'espace est disponible et si
- *            oui, ajoute a la liste de peuplement
- *
- * Parametres :
- *  <X0>       : Coordonnee X0
- *  <Y0>       : Coordonnee Y0
- *  <X1>       : Coordonnee X1
- *  <Y1>       : Coordonnee Y1
- *  <Delta>    : Espacement
- *
- * Retour:
- *  <Exist>   : Trouve ou non
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int glCrowdPush(int X0,int Y0,int X1,int Y1,int Delta) {
-
-   int   *box,x0,x1,y0,y1;
-   TList *node;
-
-   x0=X0-Delta;
-   x1=X1+Delta;
-   y0=Y0-Delta;
-   y1=Y1+Delta;
-
-   /*Check for bbox intersection*/
-   node=GLCrowdList;
-   while(node) {
-      box=node->Data;
-      if (VOUT(x0,x1,box[0],box[2]) || VOUT(y0,y1,box[1],box[3])) {
-         /*No intersection here, continue*/
-         node=node->Next;
-      } else {
-         /*Found an intersection*/
-         return(0);
-      }
-   }
-
-   /*If no intersection found, add in node list*/
-   box=(int*)malloc(4*sizeof(int));
-   box[0]=X0; box[1]=Y0;
-   box[2]=X1; box[3]=Y1;
-
-   node=(TList*)malloc(sizeof(TList));
-   node->Next=GLCrowdList;
-   node->Prev=NULL;
-   node->Data=box;
-
-   if (GLCrowdList) {
-      GLCrowdList->Prev=node;
-   }
-   GLCrowdList=node;
-
-   return(1);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <glCrowdPop>
- * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Controle de peuplement, supprime le dernier item ajoute.
- *
- * Parametres :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void glCrowdPop() {
-
-   TList *tmp;
-
-   if (GLCrowdList) {
-      tmp=GLCrowdList;
-      GLCrowdList=GLCrowdList->Next;
-
-      if (GLCrowdList)
-         GLCrowdList->Prev=NULL;
-
-      free((int*)(tmp->Data));
-      free(tmp);
-   }
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <glCrowdClear>
- * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Reinitialiser la liste de peuplement
- *
- * Parametres :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void glCrowdClear() {
-
-   TList *tmp;
-
-   while(GLCrowdList) {
-      tmp=GLCrowdList;
-      GLCrowdList=GLCrowdList->Next;
-
-      free((int*)(tmp->Data));
-      free(tmp);
    }
 }
 
@@ -2017,7 +1889,6 @@ int glDefineParams(){
       while(ExtString[n]) {
          GLRender->Ext[n]=glCheckExtension(ExtString[n]);
 //         GLRender->Ext[n]=GL_FALSE;
-         printf("(INFO) glDefineParams: Testing for %s : %s\n",ExtString[n],GLRender->Ext[n]?"Ok":"Not found");
          n++;
       }
 
@@ -2027,10 +1898,9 @@ int glDefineParams(){
          n=0;
 
          while(ProgString[n]) {
-            printf("(INFO) glDefineParams: Initializing shader program \"%s\"\n",ProgString[n]);
             if (!(GLRender->Prog[n]=GLShader_Load(path,ProgString[n]))) {
                GLRender->ShaderAvailable=0;
-               printf("(WARNING) glDefineParams: Unable to initialize shader program \"%s\", switching to fixed functionnalities\n",ProgString[n]);
+               fprintf(stderr,"(WARNING) glDefineParams: Unable to initialize shader program \"%s\", switching to fixed functionnalities\n",ProgString[n]);
                break;
             }
             n++;
@@ -2134,7 +2004,7 @@ void glInit(Tcl_Interp *Interp) {
 */
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
-   int         glmin,glmaj,gl,n=0;
+   int         glmin,glmaj,gl;
    int        *attrTrue;
    const char *vendor;
 
@@ -2157,18 +2027,15 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
    /*Check which implementation we are using*/
    vendor=glXGetClientString(GLRender->XDisplay,GLX_VENDOR);
-   if (strcasestr(vendor,"NVIDIA")) {
+   if (strstr(vendor,"NVIDIA")) {
       GLRender->Vendor=NVIDIA;
       GLRender->Soft=0;
-      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is NVidia\n");
-   } else if (strcasestr(vendor,"ATI")) {
+   } else if (strstr(vendor,"ATI")) {
       GLRender->Vendor=ATI;
       GLRender->Soft=0;
-      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is ATI\n");
    } else {
       GLRender->Vendor=MESA;
       GLRender->Soft=1;
-      fprintf(stdout,"(INFO) glXCanvasInit: GLX Vendor is MESA\n");
    }
 
    /*Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)*/
@@ -2184,42 +2051,32 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
    /* GLX Version */
    gl=glXQueryVersion(GLRender->XDisplay,&glmaj,&glmin);
-   if (gl) {
-      fprintf(stdout,"(INFO) glXCanvasInit: GLX Version %i.%i\n",glmaj,glmin);
-   } else {
+   if (!gl) {
       fprintf(stderr,"(ERROR) glXCanvasInit: Could not find GLX extensions\n");
       return(TCL_ERROR);
    }
 
-   if (GLRender->GLCon) {
-      fprintf(stdout,"(INFO) glXCanvasInit: Context already created\n");
-   } else {
-
+   if (!GLRender->GLCon) {
       GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrTrue,&GLRender->GLConfigNb);
       if (!GLRender->GLConfigNb) {
-         fprintf(stdout,"(WARNING) glXCanvasInit: Unable to select a standard configuration, trying for minimal\n");
+         fprintf(stderr,"(WARNING) glXCanvasInit: Unable to select a standard configuration, trying for minimal\n");
          GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrMin,&GLRender->GLConfigNb);
          if (!GLRender->GLConfigNb) {
             fprintf(stderr,"(ERROR) glXCanvasInit: Unable to select a minimal configuration\n");
             return(TCL_ERROR);
          }
       }
-      fprintf(stdout,"(INFO) glXCanvasInit: Found %i available configuration\n",GLRender->GLConfigNb);
 
       GLRender->GLCon=glXCreateNewContext(GLRender->XDisplay,GLRender->GLConfig[0],GLX_RGBA_TYPE,NULL,GLRender->GLDirect);
       GLRender->GLVis=glXGetVisualFromFBConfig(GLRender->XDisplay,GLRender->GLConfig[0]);
       if (!GLRender->GLVis) {
          fprintf(stderr,"(ERROR) glXCanvasInit: Could not get a valid visual\n");
          return(TCL_ERROR);
-      } else {
-         fprintf(stdout,"(INFO) glXCanvasInit: Visual of %i bit depth selected\n",GLRender->GLVis->depth);
       }
 
       if ((GLRender->GLDirect=glXIsDirect(GLRender->XDisplay,GLRender->GLCon))) {
-         fprintf(stdout,"(INFO) glXCanvasInit: Using direct rendering context\n");
          GLRender->ShaderAvailable=1;
       } else {
-         fprintf(stdout,"(INFO) glXCanvasInit: Using nondirect rendering context\n");
          GLRender->ShaderAvailable=0;
       }
       if (GLRender->Soft) {
@@ -2227,14 +2084,12 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
          GLRender->GLDirect=False;
       }
 
-      fprintf(stdout,"(INFO) glXCanvasInit: Creating TrueColor colormap\n");
       GLRender->XColormap=XCreateColormap(GLRender->XDisplay,RootWindowOfScreen(GLRender->XScreen),GLRender->GLVis->visual,AllocNone);
 
       /*Generer les primitives de base*/
       glGenCircle(0,360);
    }
 
-   /*Test for shader capability*/
    Tk_SetWindowVisual(TkWin,GLRender->GLVis->visual,GLRender->GLVis->depth,GLRender->XColormap);
    return(TCL_OK);
 }
@@ -2257,10 +2112,10 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
  *
  *----------------------------------------------------------------------------
 */
-GLXPbuffer glXGetPBuffer(Tk_Window TkWin,int *Width,int *Height) {
+GLXPbuffer glXGetPBuffer(Tk_Window TkWin,unsigned int *Width,unsigned int *Height) {
 
    unsigned int n;
-   GLXPbuffer   pbuf;
+   GLXPbuffer   pbuf=None;
 
    int pattr[]={ GLX_PBUFFER_WIDTH,0, GLX_PBUFFER_HEIGHT,0, GLX_LARGEST_PBUFFER,True, GLX_PRESERVED_CONTENTS,True, None };
 
@@ -2339,9 +2194,9 @@ int glXFreePBuffer(GLXPbuffer PBuf) {
  *
  *----------------------------------------------------------------------------
 */
-int glXGetPixmap(Tk_Window TkWin,int *Width,int *Height) {
+int glXGetPixmap(Tk_Window TkWin,unsigned int *Width,unsigned int *Height) {
 
-   int          n=0;
+   int n=0;
    GLXFBConfig *config;
 
    int attr[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE,GLX_PIXMAP_BIT,

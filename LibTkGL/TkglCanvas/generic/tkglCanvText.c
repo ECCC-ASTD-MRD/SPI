@@ -12,7 +12,6 @@
  * RCS: @(#) $Id: tkCanvText.c,v 1.8 1999/12/21 23:55:10 hobbs Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvText.h"
 
 /* Information used for parsing configuration specs */
@@ -698,7 +697,7 @@ void glDisplayText(
 
       if ((selFirstChar >= 0) && (selFirstChar <= selLastChar)) {
          int xFirst,yFirst,hFirst;
-         int xLast,yLast, wLast;
+         int xLast,yLast, wLast=0;
 
          /* Draw a special background under the selection */
 
@@ -1332,7 +1331,8 @@ static int GetSelText(
 {
    glTextItem *textPtr = (glTextItem *) itemPtr;
    int byteCount;
-   char *text, *selStart, *selEnd;
+   char *text;
+   const char *selStart, *selEnd;
    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
    if ((textInfoPtr->selectFirst < 0) ||
@@ -1379,7 +1379,6 @@ static int GetSelText(
 int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layout,XColor *color,T_glBitmap *stipple,double angle,double x,double y,Tk_Anchor anchor,Tk_Justify justify) {
 
    int    dx,dy;
-   char   buf[64];
    char   *dj;
    TextLayout     *layoutPtr;
    Tcl_InterpState interpState;
@@ -1414,11 +1413,11 @@ int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layo
 
    if (stipple) {
       Tcl_ResetResult(Interp);
-      Tcl_AppendPrintfToObj(psObj,"/StippleText {\n    ",(char*)NULL);
+      Tcl_AppendPrintfToObj(psObj,"/StippleText {\n    ");
       if (glPostscriptStipple(Interp,psObj,stipple)!= TCL_OK) {
          return(TCL_ERROR);
       }
-      Tcl_AppendPrintfToObj(psObj,"} bind def\n",(char*)NULL);
+      Tcl_AppendPrintfToObj(psObj,"} bind def\n");
    }
 
    dx=dy=0;

@@ -13,7 +13,6 @@
  * RCS: @(#) $Id: tkCanvLine.c,v 1.7.2.1 2001/04/04 07:57:16 hobbs Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each line item */

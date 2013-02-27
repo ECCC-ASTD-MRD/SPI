@@ -12,7 +12,6 @@
  * RCS: @(#) $Id: tkCanvImg.c,v 1.4 1999/12/14 06:52:25 hobbs Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each image item */

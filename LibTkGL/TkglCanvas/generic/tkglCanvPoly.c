@@ -13,7 +13,6 @@
  * RCS: @(#) $Id: tkCanvPoly.c,v 1.5.2.1 2000/08/05 23:53:11 hobbs Exp $
  */
 
-#include "tkInt.h"
 #include "tkglCanvas.h"
 
 /* The structure below defines the record for each polygon item */
@@ -344,8 +343,6 @@ static int glConfigurePolygon(
 
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
    Tk_Window tkwin;
-   XColor *color;
-   T_glBitmap *stipple;
    Tk_State state;
 
    tkwin = Tk_CanvasTkwin(canvas);
@@ -377,24 +374,6 @@ static int glConfigurePolygon(
    if (state == TK_STATE_HIDDEN) {
       glComputePolygonBbox(canvas, polyPtr);
       return TCL_OK;
-   }
-
-   color = polyPtr->fillColor;
-   stipple = polyPtr->fillStipple;
-   if (Canvas(canvas)->currentItemPtr == itemPtr) {
-      if (polyPtr->activeFillColor != NULL) {
-         color = polyPtr->activeFillColor;
-      }
-      if (polyPtr->activeFillStipple != None) {
-         stipple = polyPtr->activeFillStipple;
-      }
-   } else if (state == TK_STATE_DISABLED) {
-      if (polyPtr->disabledFillColor != NULL) {
-         color = polyPtr->disabledFillColor;
-      }
-      if (polyPtr->disabledFillStipple != None) {
-         stipple = polyPtr->disabledFillStipple;
-      }
    }
 
    /* Keep spline parameters within reasonable limits. */
@@ -677,6 +656,7 @@ static void glDisplayPolygon(
    glPolygonItem *polyPtr = (glPolygonItem *) itemPtr;
    Tk_State state = itemPtr->state;
    T_glBitmap *stipple = polyPtr->fillStipple;
+   XColor *color = polyPtr->fillColor;;
    double polygonwidth = polyPtr->outline.width;
    int i,numPoints;
    double* coordPtr;                /* Pointer on the real coords of a polygon */
@@ -693,6 +673,9 @@ static void glDisplayPolygon(
    /* If the polygon is currently the current item */
    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 
+      if (polyPtr->activeFillColor != NULL) {
+         color = polyPtr->activeFillColor;
+      }
       if (polyPtr->outline.activeWidth>polygonwidth)
          polygonwidth = polyPtr->outline.activeWidth;
 
@@ -701,12 +684,16 @@ static void glDisplayPolygon(
 
    } else if (state==TK_STATE_DISABLED) {
 
+      if (polyPtr->disabledFillColor != NULL) {
+         color = polyPtr->disabledFillColor;
+      }
       if (polyPtr->outline.disabledWidth>0.0)
          polygonwidth = polyPtr->outline.disabledWidth;
 
       if (polyPtr->disabledFillStipple)
          stipple = polyPtr->disabledFillStipple;
    }
+
 
    /* Draw the polygon according to the number of points available. */
    if (polyPtr->SmoothPtr) {
@@ -740,7 +727,7 @@ static void glDisplayPolygon(
       }
 
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      glColor4us(polyPtr->fillColor->red,polyPtr->fillColor->green,polyPtr->fillColor->blue,polyPtr->alpha*655);
+      glColor4us(color->red,color->green,color->blue,polyPtr->alpha*655);
 
       gluTessBeginPolygon(GLRender->GLTess,NULL);
       gluTessBeginContour(GLRender->GLTess);
