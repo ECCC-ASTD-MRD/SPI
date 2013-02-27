@@ -1456,7 +1456,7 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
          if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
             CMap->Control[idx][0]=CMap->Control[idx][1]=CMap->Control[idx][2]=1;
          }
-       }
+      }
    }
 
    fclose(fp);

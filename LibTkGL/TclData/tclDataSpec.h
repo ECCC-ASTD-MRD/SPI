@@ -181,6 +181,7 @@ void       DataSpec_Define(TDataSpec *Spec);
 void       DataSpec_Wipe();
 void       DataSpec_Format(TDataSpec *Spec,double Val,char *Str);
 void       DataSpec_Intervals(TDataSpec *Spec,double Min,double Max);
+void       DataSpec_Incr(TDataSpec *Spec);
 
 TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List);
 void   Icon_Free(TIcon *Icon);

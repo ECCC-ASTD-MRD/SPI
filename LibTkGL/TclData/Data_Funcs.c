@@ -58,6 +58,8 @@ TFuncDef FuncD[] = {
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
   { "fpeel"     , fpeel     , 1 , TD_Unknown },
   { "darea"     , darea     , 1 , TD_Float32 },
+  { "dlat"      , dlat      , 1 , TD_Float32 },
+  { "dlon"      , dlon      , 1 , TD_Float32 },
   { "ddx"       , ddx       , 1 , TD_Float32 },
   { "ddy"       , ddy       , 1 , TD_Float32 },
   { "dangle"    , dangle    , 1 , TD_Float32 },
@@ -560,6 +562,64 @@ double dangle(TDataDef *Res,TDataDef *Def,int Mode) {
          d=COURSE(lat[0],lon[0],lat[1],lon[1]);
          d=RAD2DEG(d);
          Def_Set(Res,0,idx+i,d);
+      }
+   }
+   return(1.0);
+}
+
+double dlat(TDataDef *Res,TDataDef *Def,int Mode) {
+
+   unsigned long i,j,idx;
+   double        lat,lon;
+   TGeoRef      *ref=NULL;
+
+   extern TData     *GField;
+   extern GDAL_Band *GBand;
+   extern int        GMode;
+
+   switch (GMode) {
+      case T_BAND: ref=GBand->Ref; break;
+      case T_FLD : ref=GField->Ref; break;
+   }
+
+   if (!ref) {
+      return(0.0);
+   }
+
+   for(j=0;j<Def->NJ;j++) {
+      idx=j*Def->NI;
+      for(i=0;i<Def->NI;i++) {
+         ref->Project(ref,i,j,&lat,&lon,0,1);
+         Def_Set(Res,0,idx+i,lat);
+      }
+   }
+   return(1.0);
+}
+
+double dlon(TDataDef *Res,TDataDef *Def,int Mode) {
+
+   unsigned long i,j,idx;
+   double        lat,lon;
+   TGeoRef      *ref=NULL;
+
+   extern TData     *GField;
+   extern GDAL_Band *GBand;
+   extern int        GMode;
+
+   switch (GMode) {
+      case T_BAND: ref=GBand->Ref; break;
+      case T_FLD : ref=GField->Ref; break;
+   }
+
+   if (!ref) {
+      return(0.0);
+   }
+
+   for(j=0;j<Def->NJ;j++) {
+      idx=j*Def->NI;
+      for(i=0;i<Def->NI;i++) {
+         ref->Project(ref,i,j,&lat,&lon,0,1);
+         Def_Set(Res,0,idx+i,lon);
       }
    }
    return(1.0);

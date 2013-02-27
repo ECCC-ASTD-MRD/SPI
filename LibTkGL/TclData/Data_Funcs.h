@@ -69,6 +69,8 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol);
 /*Derivative functions*/
 double darea(TDataDef *Res,TDataDef *Def,int Mode);
 double dangle(TDataDef *Res,TDataDef *Def,int Mode);
+double dlat(TDataDef *Res,TDataDef *Def,int Mode);
+double dlon(TDataDef *Res,TDataDef *Def,int Mode);
 double ddx(TDataDef *Res,TDataDef *Def,int Mode);
 double ddy(TDataDef *Res,TDataDef *Def,int Mode);
 double dslopedeg(TDataDef *Res,TDataDef *Def);

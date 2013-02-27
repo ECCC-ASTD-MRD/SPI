@@ -34,7 +34,6 @@
 #ifndef _FF_H
 #define _FF_H
 
-#include "tkglCanvas.h"
 #include "Projection.h"
 #include "tclData.h"
 

@@ -942,6 +942,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_DecrRefCount(Spec->InterVals);
                }
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
+               Tcl_IncrRefCount(Spec->InterVals);
 
                /*Determine si ils sont nouveaux*/
                for (ii=0;ii<nobj;ii++){
@@ -970,6 +971,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_DecrRefCount(Spec->InterLabels);
                }
                Spec->InterLabels=Tcl_DuplicateObj(Objv[++i]);
+               Tcl_IncrRefCount(Spec->InterLabels);
             }
             break;
 
@@ -1297,6 +1299,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
                if (strlen(Tcl_GetString(Objv[++i]))) {
                   Spec->OGRMask=Tcl_DuplicateObj(Objv[i]);
+                  Tcl_IncrRefCount(Spec->OGRMask);
                }
             }
             break;
@@ -1393,9 +1396,7 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   DataSpec_Create: Configuration object name already used: \"",Name, "\"",(char*)NULL);
-      Tcl_MutexLock(&MUTEX_DATASPEC);
-      ((TDataSpec*)Tcl_GetHashValue(entry))->NRef++;
-      Tcl_MutexUnlock(&MUTEX_DATASPEC);
+      DataSpec_Incr(((TDataSpec*)Tcl_GetHashValue(entry)));
       return((TDataSpec*)Tcl_GetHashValue(entry));
    }
 
@@ -1570,12 +1571,15 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
 
    if (from->InterLabels) {
       to->InterLabels=Tcl_DuplicateObj(from->InterLabels);
+      Tcl_IncrRefCount(to->InterLabels);
    }
    if (from->InterVals) {
       to->InterVals=Tcl_DuplicateObj(from->InterVals);
+      Tcl_IncrRefCount(to->InterVals);
    }
    if (from->OGRMask) {
       to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
+      Tcl_IncrRefCount(to->OGRMask);
    }
    to->Dash.number=0;
    if (from->Dash.number) {

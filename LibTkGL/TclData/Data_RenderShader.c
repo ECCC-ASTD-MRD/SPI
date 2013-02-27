@@ -33,10 +33,10 @@
 
 #include "Data_FF.h"
 
-int   Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
-int   Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
-int   Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
-int   Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
+int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
+int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
+int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
+int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 
 static int GL_Type[]={ GL_BITMAP,GL_BITMAP,GL_UNSIGNED_BYTE,GL_BYTE,GL_UNSIGNED_SHORT,GL_SHORT,
                        GL_UNSIGNED_INT,GL_INT,GL_UNSIGNED_INT,GL_INT,GL_FLOAT,GL_FLOAT };
@@ -464,7 +464,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
+   pos=&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    Def_PointerMode(Field->Def,idxk,ptr);
 

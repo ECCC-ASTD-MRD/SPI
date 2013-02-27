@@ -627,7 +627,9 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
    /* Est-ce que le champs existe et si oui, verifier les dimensions */
    if (Def) {
-      field=Data_Valid(Interp,Name,Field->Def->NI,Field->Def->NJ,Field->Def->NK,DSIZE(Field->Def->Data),Field->Def->Type);
+      if (!(field=Data_Valid(Interp,Name,Field->Def->NI,Field->Def->NJ,Field->Def->NK,DSIZE(Field->Def->Data),Field->Def->Type))) {
+         return(NULL);
+      }
       field->Def->Container=Field->Def->Container;
       field->Def->CellDim=Field->Def->CellDim;
       field->Def->NoData=Field->Def->NoData;
@@ -641,21 +643,23 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
       field->Def->CoordLimits[1][0]=Field->Def->CoordLimits[1][0];
       field->Def->CoordLimits[1][1]=Field->Def->CoordLimits[1][1];
    } else {
-      field=Data_Valid(Interp,Name,0,0,0,0,Field->Def->Type);
+      if (!(field=Data_Valid(Interp,Name,0,0,0,0,Field->Def->Type))) {
+         return(NULL);
+      }
    }
 
-  if (!field)
-      return(NULL);
-
+   // Copy basic information
    Field->Set(field);
    Field->Copy(field->Head,Field->Head);
 
    field->Ref=GeoRef_Copy(Field->Ref);
 
    if (field->Spec && Field->Spec) {
-      field->Spec->Map=Field->Spec->Map;
 
-      if (field->Spec->Map)  CMap_Incr(field->Spec->Map);
+      if (Field->Spec->Map)  {
+         CMap_Incr(field->Spec->Map);
+         field->Spec->Map=Field->Spec->Map;
+      }
       if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
       if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
    }
@@ -1586,9 +1590,12 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                if (Field->Tag) {
                   Tcl_DecrRefCount(Field->Tag);
+                  Field->Tag=NULL;
                }
-               Field->Tag=Objv[++i];
-               Tcl_IncrRefCount(Field->Tag);
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  Field->Tag=Tcl_DuplicateObj(Objv[i]);
+                  Tcl_IncrRefCount(Field->Tag);
+               }
             }
             break;
 

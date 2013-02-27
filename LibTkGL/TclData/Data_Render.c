@@ -48,6 +48,11 @@ void  Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 int   Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
 
+extern int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
+extern int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
+extern int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
+extern int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
+
 /*----------------------------------------------------------------------------
  * Nom      : <Data_Render>
  * Creation : Janvier 2001 - J.P. Gauthier - CMC/CMOE
@@ -574,7 +579,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                dny=dx*0.5*sin(th)+dy*0.5*sin(M_PI2-th);
                th=RAD2DEG(th);
 
-               if (glCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,10)) {
+               if (ViewportCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,10)) {
 
                   p1[0]-=dnx; p1[1]-=dny;
 
