@@ -63,9 +63,18 @@ static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 */
 int Tclsystem_Init(Tcl_Interp *Interp) {
 
-   if (Tcl_PkgProvide(Interp,"TclSystem",VERSION)!=TCL_OK)
+   if (!Tcl_InitStubs(Interp, "8.6", 0)) {
       return(TCL_ERROR);
-
+   }
+   
+   if (Tcl_PkgRequire(Interp, "Tcl", "8.6", 0) == NULL) {
+      return(TCL_ERROR);
+   }
+   
+   if (Tcl_PkgProvide(Interp,PACKAGE_NAME,PACKAGE_VERSION)!=TCL_OK) {
+      return(TCL_ERROR);
+   }
+ 
    Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
    return(TCL_OK);
@@ -433,7 +442,7 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
  *
  *----------------------------------------------------------------------------
 */
-int System_LimitGet(Tcl_Interp *Interp,int Resource,int Factor) {
+void System_LimitGet(Tcl_Interp *Interp,int Resource,int Factor) {
 
    struct rlimit lim;
 
@@ -446,7 +455,7 @@ int System_LimitGet(Tcl_Interp *Interp,int Resource,int Factor) {
    }
 }
 
-int System_LimitSet(Tcl_Interp *Interp,int Resource,int Factor,Tcl_Obj *Value) {
+void System_LimitSet(Tcl_Interp *Interp,int Resource,int Factor,Tcl_Obj *Value) {
 
    struct rlimit lim;
    int           val;
@@ -477,7 +486,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
-
+ 
          case VMEM:
             if (Objc==1) {
                System_LimitGet(Interp,RLIMIT_AS,1024);
@@ -558,6 +567,12 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
             }
             break;
+	    
+         case LOCKS:
+         case MSGQUEUE:
+	 case RTPRIO:
+         case NICE:
+         case SIGPENDING:break;
       }
    }
    return(TCL_OK);
@@ -744,12 +759,11 @@ static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 */
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           i,idx,fd;
+   int           i=0,idx,fd;
    pid_t         pid;
    char          procfile[BUFSIZ];
    prpsinfo_t    prpsinfo;
 //   prusage_t    prusage;
-   prstatus_t    prstatus;
    Tcl_Obj      *obj;
    char         *procfs="/proc";
 
@@ -829,88 +843,87 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_sid)); break;
             break;
 
-/*
          case START:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_start)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_start)); break;
             break;
 
          case TIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_time)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_time)); break;
             break;
 
          case CHILDTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_ctime)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_ctime)); break;
             break;
 
          case PRIORITY:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
             break;
 
          case TTY:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(prpsinfo.pr_pri)); break;
             break;
 
          case SIZE:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_bysize)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_bysize)); break;
             break;
 
          case RSSIZE:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_byrssize)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prpsinfo.pr_byrssize)); break;
             break;
-*/
+
          /*PIOCUISAGE*/
-/*         case REALTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_rtime)); break;
+         case REALTIME:
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_rtime)); break;
             break;
 
          case USERTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_utime)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_utime)); break;
             break;
 
          case SYSTEMTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stime)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stime)); break;
             break;
 
          case SLEEPTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_slptime)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_slptime)); break;
             break;
 
          case STOPTIME:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stoptime)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(prusage.pr_stoptime)); break;
             break;
 
          case MINPAGEFAULT:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_minf)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_minf)); break;
             break;
 
          case MAJPAGEFAULT:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_majf)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_majf)); break;
             break;
 
          case SWAPPED:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_nswap)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_nswap)); break;
             break;
 
          case FILEBLOCIN:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_inblk)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_inblk)); break;
             break;
 
          case FILEBLOCOUT:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_outblk)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_outblk)); break;
             break;
 
          case SIGNAL:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sigs)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sigs)); break;
             break;
 
          case SYSCALL:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sysc)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_sysc)); break;
             break;
 
          case TTYIOCHAR:
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_ioch)); break;
+//            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_ioch)); break;
             break;
- */
+	    
          /*PIOCSTATUS*/
          }
    }
@@ -939,8 +952,8 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
 static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int   i,idx,fork=0,init=0;
-   char *file,argc;
+   int   i,idx,init=0;
+   char  argc;
    static CONST char *sopt[] = { "-step","-copy","-move","-sync","-wait","-exec",NULL };
    enum               opt { STEP,COPY,MOVE,SYNC,WAIT,EXEC };
 
