@@ -23,7 +23,7 @@ package provide OpenGL 1.2
 
 catch { SPI::Splash "Loading Canvas Package OpenGL 1.2" }
 
-load $GDefs(Dir)/Lib/$env(ARCH)/libTkglCanvas[info sharedlibextension] glCanvas
+package require TkglCanvas
 puts "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
 
 namespace eval OpenGL {

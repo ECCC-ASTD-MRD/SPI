@@ -124,10 +124,9 @@ package provide Page 5.1
 catch { SPI::Splash "Loading Canvas Package Page 5.1" }
 
 package require OpenGL
+package require TclGeoEER
 
-#----- Inclusion de la librairie de projection
-load $GDefs(Dir)/Lib/$env(ARCH)/libTkViewport[info sharedlibextension]
-load $GDefs(Dir)/Lib/$env(ARCH)/libTclSim[info sharedlibextension] TclSim
+load $GDefs(Dir)/Lib/$env(BASE_ARCH)/libTclSim[info sharedlibextension] TclSim
 
 package require PrintBox
 package require ProjCam
