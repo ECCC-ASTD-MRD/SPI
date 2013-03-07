@@ -176,15 +176,16 @@ static int glCreateRectOval(
    during the the remainder of this procedure. */
 
    Tk_CreateOutline(&(rectOvalPtr->outline));
+   rectOvalPtr->outline.gc          = None;
    rectOvalPtr->tsoffset.flags      = 0;
    rectOvalPtr->tsoffset.xoffset    = 0;
    rectOvalPtr->tsoffset.yoffset    = 0;
    rectOvalPtr->fillColor           = NULL;
    rectOvalPtr->activeFillColor     = NULL;
    rectOvalPtr->disabledFillColor   = NULL;
-   rectOvalPtr->fillStipple         = NULL;
-   rectOvalPtr->activeFillStipple       = NULL;
-   rectOvalPtr->disabledFillStipple     = NULL;
+   rectOvalPtr->fillStipple         = None;
+   rectOvalPtr->activeFillStipple       = None;
+   rectOvalPtr->disabledFillStipple     = None;
    rectOvalPtr->alpha               = 100;
 
    /* Process the arguments to fill in the item record. */
@@ -362,7 +363,7 @@ static int glConfigureRectOval(
    }
 
    if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
    }
    if (state==TK_STATE_HIDDEN) {
       glComputeRectOvalBbox(canvas, rectOvalPtr);
@@ -452,82 +453,97 @@ static void glComputeRectOvalBbox(
    Tk_Canvas canvas,            /* Canvas that contains item. */
    glRectOvalItem *rectOvalPtr)   /* Item whose bbox is to be recomputed. */
 {
-   int bloat, tmp;
-   double dtmp, width;
-   Tk_State state = rectOvalPtr->header.state;
+    int bloat, tmp;
+    double dtmp, width;
+    Tk_State state = rectOvalPtr->header.state;
 
-   if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
-   }
+    if (state == TK_STATE_NULL) {
+	state = Canvas(canvas)->canvas_state;
+    }
 
-   width = rectOvalPtr->outline.width;
-   if (state==TK_STATE_HIDDEN) {
-      rectOvalPtr->header.x1 = rectOvalPtr->header.y1 =
-      rectOvalPtr->header.x2 = rectOvalPtr->header.y2 = -1;
-      return;
-   }
-   if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
-      if (rectOvalPtr->outline.activeWidth>width) {
-         width = rectOvalPtr->outline.activeWidth;
-      }
-   } else if (state==TK_STATE_DISABLED) {
-      if (rectOvalPtr->outline.disabledWidth>0) {
-         width = rectOvalPtr->outline.disabledWidth;
-      }
-   }
+    width = rectOvalPtr->outline.width;
+    if (state == TK_STATE_HIDDEN) {
+	rectOvalPtr->header.x1 = rectOvalPtr->header.y1 =
+	rectOvalPtr->header.x2 = rectOvalPtr->header.y2 = -1;
+	return;
+    }
+    if (Canvas(canvas)->currentItemPtr == (Tk_Item *) rectOvalPtr) {
+	if (rectOvalPtr->outline.activeWidth>width) {
+	    width = rectOvalPtr->outline.activeWidth;
+	}
+    } else if (state == TK_STATE_DISABLED) {
+	if (rectOvalPtr->outline.disabledWidth>0) {
+	    width = rectOvalPtr->outline.disabledWidth;
+	}
+    }
 
-   /*
-   * Make sure that the first coordinates are the lowest ones.
-   */
+    /*
+     * Make sure that the first coordinates are the lowest ones.
+     */
 
-   if (rectOvalPtr->bbox[1] > rectOvalPtr->bbox[3]) {
-      double tmpY = rectOvalPtr->bbox[3];
+    if (rectOvalPtr->bbox[1] > rectOvalPtr->bbox[3]) {
+	double tmpY = rectOvalPtr->bbox[3];
 
-      rectOvalPtr->bbox[3] = rectOvalPtr->bbox[1];
-      rectOvalPtr->bbox[1] = tmpY;
-   }
-   if (rectOvalPtr->bbox[0] > rectOvalPtr->bbox[2]) {
-      double tmpX = rectOvalPtr->bbox[2];
+	rectOvalPtr->bbox[3] = rectOvalPtr->bbox[1];
+	rectOvalPtr->bbox[1] = tmpY;
+    }
+    if (rectOvalPtr->bbox[0] > rectOvalPtr->bbox[2]) {
+	double tmpX = rectOvalPtr->bbox[2];
 
-      rectOvalPtr->bbox[2] = rectOvalPtr->bbox[0];
-      rectOvalPtr->bbox[0] = tmpX;
-   }
+	rectOvalPtr->bbox[2] = rectOvalPtr->bbox[0];
+	rectOvalPtr->bbox[0] = tmpX;
+    }
 
-   #ifdef MAC_OSX_TK
-   /*
-   * Mac OS X CoreGraphics needs correct rounding here otherwise it will
-   * draw outside the bounding box. Probably correct on other platforms
-   * as well?
-   */
+    if (rectOvalPtr->outline.gc == None) {
+	/*
+	 * The Win32 switch was added for 8.3 to solve a problem with ovals
+	 * leaving traces on bottom and right of 1 pixel. This may not be the
+	 * correct place to solve it, but it works.
+	 */
 
-   bloat = (int) (width+1.5)/2;
+#ifdef __WIN32__
+	bloat = 1;
 #else
-   bloat = (int) (width+1)/2;
-#endif /* MAC_OSX_TK */
-   /*
-   * Special note: the rectangle is always drawn at least 1x1 in size, so
-   * round up the upper coordinates to be at least 1 unit greater than the
-   * lower ones.
-   */
+	bloat = 0;
+#endif /* __WIN32__ */
+    } else {
+#ifdef MAC_OSX_TK
+	/*
+	 * Mac OS X CoreGraphics needs correct rounding here otherwise it will
+	 * draw outside the bounding box. Probably correct on other platforms
+	 * as well?
+	 */
 
-   tmp = (int) ((rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
-      : rectOvalPtr->bbox[0] - .5);
-   rectOvalPtr->header.x1 = tmp - bloat;
-   tmp = (int) ((rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
-      : rectOvalPtr->bbox[1] - .5);
-   rectOvalPtr->header.y1 = tmp - bloat;
-   dtmp = rectOvalPtr->bbox[2];
-   if (dtmp < (rectOvalPtr->bbox[0] + 1)) {
-      dtmp = rectOvalPtr->bbox[0] + 1;
-   }
-   tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
-   rectOvalPtr->header.x2 = tmp + bloat;
-   dtmp = rectOvalPtr->bbox[3];
-   if (dtmp < (rectOvalPtr->bbox[1] + 1)) {
-      dtmp = rectOvalPtr->bbox[1] + 1;
-   }
-   tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
-   rectOvalPtr->header.y2 = tmp + bloat;
+	bloat = (int) (width+1.5)/2;
+#else
+	bloat = (int) (width+1)/2;
+#endif /* MAC_OSX_TK */
+    }
+
+    /*
+     * Special note: the rectangle is always drawn at least 1x1 in size, so
+     * round up the upper coordinates to be at least 1 unit greater than the
+     * lower ones.
+     */
+
+    tmp = (int) ((rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
+	    : rectOvalPtr->bbox[0] - .5);
+    rectOvalPtr->header.x1 = tmp - bloat;
+    tmp = (int) ((rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
+	    : rectOvalPtr->bbox[1] - .5);
+    rectOvalPtr->header.y1 = tmp - bloat;
+    dtmp = rectOvalPtr->bbox[2];
+    if (dtmp < (rectOvalPtr->bbox[0] + 1)) {
+	dtmp = rectOvalPtr->bbox[0] + 1;
+    }
+    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
+    rectOvalPtr->header.x2 = tmp + bloat;
+    dtmp = rectOvalPtr->bbox[3];
+    if (dtmp < (rectOvalPtr->bbox[1] + 1)) {
+	dtmp = rectOvalPtr->bbox[1] + 1;
+    }
+    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
+    rectOvalPtr->header.y2 = tmp + bloat;
 }
 /*
  *--------------------------------------------------------------
@@ -575,22 +591,22 @@ static void glDisplayRectOval(
       y2 = y1+1;
 
    if (state == TK_STATE_NULL)
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
 
    stipple = rectOvalPtr->fillStipple;   /* Get the bitmap for stippling */
    color = rectOvalPtr->fillColor;
 
-   if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
+   if (Canvas(canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
       if (rectOvalPtr->activeFillColor!=NULL) {
          color = rectOvalPtr->activeFillColor;
       }
-      if (rectOvalPtr->activeFillStipple)
+      if (rectOvalPtr->activeFillStipple!=None)
          stipple = rectOvalPtr->activeFillStipple;
    } else if (state==TK_STATE_DISABLED) {
       if (rectOvalPtr->disabledFillColor!=NULL) {
          color = rectOvalPtr->disabledFillColor;
       }
-      if (rectOvalPtr->disabledFillStipple)
+      if (rectOvalPtr->disabledFillStipple!=None)
          stipple = rectOvalPtr->disabledFillStipple;
    }
 
@@ -599,9 +615,9 @@ static void glDisplayRectOval(
       glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
    }
 
-   glTranslated(-((TkCanvas *)canvas)->xOrigin,-((TkCanvas *)canvas)->yOrigin,0.0);
+   glTranslated(-Canvas(canvas)->xOrigin,-Canvas(canvas)->yOrigin,0.0);
 
-   if (rectOvalPtr->fillColor) {
+   if (color) {
       if (stipple) {
          glEnable(GL_POLYGON_STIPPLE);
          glPolygonStipple(stipple->Data);
@@ -659,7 +675,7 @@ static void glDisplayRectOval(
       glDisable(GL_LINE_STIPPLE);
    }
 
-   glTranslated(((TkCanvas *)canvas)->xOrigin,((TkCanvas *)canvas)->yOrigin,0.0);
+   glTranslated(Canvas(canvas)->xOrigin,Canvas(canvas)->yOrigin,0.0);
    glDisable(GL_BLEND);
 }
 
@@ -697,11 +713,11 @@ static double glRectToPoint(
    Tk_State state = itemPtr->state;
 
    if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
    }
 
    width = rectPtr->outline.width;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
       if (rectPtr->outline.activeWidth>width) {
          width = rectPtr->outline.activeWidth;
       }
@@ -819,11 +835,11 @@ static double glOvalToPoint(
    Tk_State state = itemPtr->state;
 
    if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
    }
 
    width = (double) ovalPtr->outline.width;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
       if (ovalPtr->outline.activeWidth>width) {
          width = (double) ovalPtr->outline.activeWidth;
       }
@@ -867,11 +883,11 @@ static int glRectToArea(
    Tk_State state = itemPtr->state;
 
    if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
    }
 
    width = rectPtr->outline.width;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
       if (rectPtr->outline.activeWidth>width) {
          width = rectPtr->outline.activeWidth;
       }
@@ -937,11 +953,11 @@ static int glOvalToArea(
    Tk_State state = itemPtr->state;
 
    if(state == TK_STATE_NULL) {
-      state = ((TkCanvas *)canvas)->canvas_state;
+      state = Canvas(canvas)->canvas_state;
    }
 
    width = ovalPtr->outline.width;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
       if (ovalPtr->outline.activeWidth>width) {
          width = ovalPtr->outline.activeWidth;
       }

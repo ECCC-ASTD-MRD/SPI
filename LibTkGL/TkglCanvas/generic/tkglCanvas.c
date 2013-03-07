@@ -6010,7 +6010,7 @@ void Tk_glCanvasPsPath(Tcl_Interp *Interp,Tk_Canvas canvas,double *Coords,int Nb
     }
 }
 
-int Glcanvas_Init(Tcl_Interp* Interp) {
+int Tkglcanvas_Init(Tcl_Interp* Interp) {
 
 //   if (Tcl_InitStubs(Interp, "8.6", 0) == NULL) {
 //      return(TCL_ERROR);

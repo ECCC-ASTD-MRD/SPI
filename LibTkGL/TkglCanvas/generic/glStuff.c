@@ -39,6 +39,11 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*","ARROW" };
+CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
+CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
+CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
+
 GLParams *GLRender=NULL;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
@@ -441,7 +446,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
    }
 
    /*Recuperer le handle de l'image specifie*/
-   if (handle=Tk_FindPhoto(Interp,Img)) {
+   if ((handle=Tk_FindPhoto(Interp,Img))) {
 
       /*Definire les parametres du block de donnees */
       if (Tk_PhotoSetSize(Interp,handle,Width,Height)==TCL_OK) {
@@ -508,8 +513,7 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
    data.height=H;
 
    /*Recuperer le handle de l'image specifie*/
-
-   if (handle=Tk_FindPhoto(Interp,Img)) {
+   if ((handle=Tk_FindPhoto(Interp,Img))) {
 
       /*Definire les parametres du bock de donnees*/
       Tk_PhotoSetSize(Interp,handle,data.width,data.height);

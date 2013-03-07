@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([TkglCanvas], [8.6])
+AC_INIT([TclGeoEER], [7.6.0])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -71,22 +71,73 @@ TEA_SETUP_COMPILER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 
-TEA_ADD_SOURCES([generic/glFont.c \
-                 generic/glStuff.c \
-                 generic/tkglCanvArc.c \
-                 generic/tkglCanvImg.c \
-                 generic/tkglCanvPoly.c \
-                 generic/tkglCanvas.c \
-                 generic/glShader.c \
-                 generic/tkCanvWind.c \
-                 generic/tkglCanvBmap.c \
-                 generic/tkglCanvLine.c \
-                 generic/tkglCanvText.c \
-                 generic/tkglRectOval.c \
-                 generic/tr.c ])
-TEA_ADD_HEADERS([generic/tkglCanvas.h generic/tkglCanvText.h generic/glStuff.h generic/tr.h])
-TEA_ADD_INCLUDES([])
-TEA_ADD_LIBS([-lGL -lGLU])
+TEA_ADD_SOURCES([generic/Data_Calc.c \
+                 generic/Data_FF.c \
+                 generic/Data_Funcs.c \
+                 generic/Data_Matrix.c \
+                 generic/Data_Render.c \
+                 generic/Data_RenderShader.c \
+                 generic/FSTD_Export.c \
+                 generic/FSTD_Field.c \
+                 generic/GDAL_Band.c \
+                 generic/GRIB_Field.c \
+                 generic/GeoRef.c \
+                 generic/GeoRef_RDR.c \
+                 generic/GeoRef_RPN.c \
+                 generic/GeoRef_WKT.c \
+                 generic/GeoTex.c \
+                 generic/OGR_Geometry.c \
+                 generic/OGR_Layer.c \
+                 generic/OGR_Math.c \
+                 generic/Radar_Scan.c \
+                 generic/Vertex.c \
+                 generic/gpc.c \
+                 generic/tcl3DModel.c \
+                 generic/tcl3DModel3DS.c \
+                 generic/tcl3DModelCityGML.c \
+                 generic/tcl3DModelDAE.c \
+                 generic/tcl3DModelFLT.c \
+                 generic/tcl3DModelKML.c \
+                 generic/tcl3DModelMDL.c \
+                 generic/tclCMap.c \
+                 generic/tclData.c \
+                 generic/tclDataDef.c \
+                 generic/tclDataSpec.c \
+                 generic/tclFSTD.c \
+                 generic/tclGDAL.c \
+                 generic/tclGRIB.c \
+                 generic/tclMetDataset.c \
+                 generic/tclMetModel.c \
+                 generic/tclMetObs.c \
+                 generic/tclMetObs_ASCII.c \
+                 generic/tclMetObs_BUFR.c \
+                 generic/tclMetObs_BURP.c \
+                 generic/tclMetObs_SWOB.c \
+                 generic/tclOGR.c \
+                 generic/tclObs.c \
+                 generic/tclRADAR.c \
+                 generic/tclTraj.c \
+                 generic/tclVector.c \
+                 generic/tclXML.c \
+                 generic/GeoData.c \
+                 generic/GeoSpatialData.c \
+                 generic/ProjAzimuth.c \
+                 generic/ProjCam.c \
+                 generic/ProjCylin.c \
+                 generic/ProjGrid.c \
+                 generic/ProjOrtho.c \
+                 generic/Projection.c \
+                 generic/tkCanvColorbar.c \
+                 generic/tkCanvGraph.c \
+                 generic/tkCanvVP.c \
+                 generic/tkGraphAxis.c \
+                 generic/tkGraphItem.c \
+                 generic/tkGraphTephi.c])
+
+TEA_ADD_HEADERS([])
+TEA_ADD_INCLUDES([-Igeneric ])
+#TEA_ADD_LIBS([ -lmut -ldrp -lurp])
+TEA_ADD_LIBS([-lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat -lGL -lGLU -lgdb -lTkglCanvas -ltk8.6])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([])

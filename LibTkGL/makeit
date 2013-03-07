@@ -1,32 +1,53 @@
 #!/bin/sh
 
-ARCH=`uname -s`
 MAKE=make
+INST=/users/dor/afsr/005
+LIB=${INST}/lib/${BASE_ARCH}
+INC=${INST}/include
+
+export LDFLAGS="-L${LIB}"
+export CC=c99
 
 echo ""
-echo "----- Architecture Found : $ARCH -----"
+echo "----- Architecture Found : ${BASE_ARCH} -----"
 echo ""
 
 echo ""
 echo "----- Making System Call Library  Object -----"
 echo ""
+export CFLAGS="-D_GNU_SOURCE -DLNK_DMV -I${INC} -I${INC}/libeer -I${INC}/dmv"  
 cd TclSystem
+./configure \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib \
+
 $MAKE install
+ln -s ${LIB}/TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem.so
 
 echo ""
 echo "----- Making OpenGL Canvas Library  Object -----"
 echo ""
 cd ../TkglCanvas
+./configure \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib \
+   --with-tk=${LIB}/TclTk/lib
+
 $MAKE install
+ln -s ${LIB}/TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.so
 
 echo ""
-echo "----- Making EER Data Library Object -----"
+echo "----- Making Tcl GeoEER Library Object -----"
 echo ""
-cd ../TclData
-$MAKE install
+export CFLAGS="-D_GNU_SOURCE -DLNK_FSTD -DLNK_GRIB -DLNK_DMV -I../TkViewport/generic -I../TclData/generic -I${INC} -I${INC}/libeer -I${INC}/rmnlib -I${INC}/dmv -I${INC}/gdb -I${INC}/gdal -I${INC}/urp -I${INC}/grib_api -I${INC}/libecbufr -I${INC}/fltlib"  
+cd ../TclGeoEER
+./configure \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib \
+   --with-tk=${LIB}/TclTk/lib
 
-echo ""
-echo "----- Making Tk Viewport Library Object -----"
-echo ""
-cd ../TkViewport
 $MAKE install
+ln -s ${LIB}/TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so ${LIB}/libTclGeoEER.so

@@ -5541,7 +5541,7 @@ done
 
 
 
-    vars="generic/tkglCanvas.h generic/glStuff.h generic/tr.h"
+    vars="generic/tkglCanvas.h generic/tkglCanvText.h generic/glStuff.h generic/tr.h"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
