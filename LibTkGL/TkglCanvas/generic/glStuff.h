@@ -58,12 +58,6 @@
 #define BITSWAP(b)  (b=(b<<7)|((b<<5)&0x40)|((b<<3)&0x20)|((b<<1)&0x10) | (b>>7)|((b>>5)&0x02)|((b>>3)&0x04)|((b>>1)&0x08))
 #define BITWIDTH(w) ((w+7)/8)
 
-#define ARCSTEP   64
-
-#define CR_MAX    256    /*Nombre de colorcell a allouer en RGBA*/
-#define CI_MAX    228    /*Nombre de colorcell a allouer en COLORINDEX*/
-#define CI_BASE   40     /*Nombre de colorcell dedie au couleurs de base en COLORINDEX*/
-
 #define GL_ALL    0
 #define GL_VECTOR 1
 #define GL_RASTER 2
@@ -71,6 +65,7 @@
 
 #define GL_MAXSHADER 512
 #define GL_MAXTESS   8192
+#define GL_ARCSTEP   64
 
 #define glErrorCheck(MSG,EXIT) {\
    GLenum err;\
@@ -98,8 +93,8 @@
    }\
 }
 
-enum GLExtToken  { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
-enum GLVendor  { NVIDIA=0, ATI=1, MESA=2 };
+enum GLExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
+enum GLVendor   { NVIDIA=0, ATI=1, MESA=2 };
 
 /* Structure pour OpenGL */
 typedef struct GLParams  {

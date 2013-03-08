@@ -38,7 +38,7 @@
 
 GLParams *GLRender=NULL;  /* Structure globale des parametres OpenGL */
 
-static float glArrayCircle[2*360*ARCSTEP+2];
+static float glArrayCircle[2*360*GL_ARCSTEP+2];
 static float glArrayArrow[14] = { 0.0f,0.0f, 0.25f,-0.5f, 0.1f,-0.5f, 0.1f,-1.0f, -0.1f,-1.0f, -0.1f,-0.5f, -0.25f,-0.5f };
 static char *glExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
 
@@ -68,7 +68,7 @@ static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdoubl
 
    /*Iterate through the temporary tessselation vertices*/
    glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0;
-};
+}
 
 static void glTessVertex(GLdouble Vertex[3]) {
 
@@ -933,14 +933,14 @@ int glPostscriptStipple(Tcl_Interp *Interp,Tcl_Obj *psObj,T_glBitmap *Bitmap) {
 void glGenCircle(float Start,float Extent) {
 
    float angle;
-   float step=1.0/ARCSTEP;
+   float step=1.0/GL_ARCSTEP;
 
    for(angle=0;angle<360;angle+=step) {
-      glArrayCircle[(int)(angle*ARCSTEP*2)]   = (float)cos(angle*0.01745329251994);
-      glArrayCircle[(int)(angle*ARCSTEP*2+1)] = (float)sin(angle*0.01745329251994);
+      glArrayCircle[(int)(angle*GL_ARCSTEP*2)]   = (float)cos(angle*0.01745329251994);
+      glArrayCircle[(int)(angle*GL_ARCSTEP*2+1)] = (float)sin(angle*0.01745329251994);
    }
-   glArrayCircle[(int)(angle*ARCSTEP*2)]   = glArrayCircle[0];
-   glArrayCircle[(int)(angle*ARCSTEP*2+1)] = glArrayCircle[1];
+   glArrayCircle[(int)(angle*GL_ARCSTEP*2)]   = glArrayCircle[0];
+   glArrayCircle[(int)(angle*GL_ARCSTEP*2+1)] = glArrayCircle[1];
 }
 
 /*----------------------------------------------------------------------------
@@ -986,15 +986,15 @@ void glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style) {
 
       for(i=Start;i<(Start+Extent);i+=1.0) {
          if (i>360.0)
-            glVertex2fv(&glArrayCircle[2*((int)(i-360.0)*ARCSTEP)]);
+            glVertex2fv(&glArrayCircle[2*((int)(i-360.0)*GL_ARCSTEP)]);
          else
-            glVertex2fv(&glArrayCircle[2*((int)i*ARCSTEP)]);
+            glVertex2fv(&glArrayCircle[2*((int)i*GL_ARCSTEP)]);
       }
 
       if (Style==0)
          glVertex2f(0.0,0.0);
       if (Style==1)
-         glVertex2fv(&glArrayCircle[(int)(2*Start)*ARCSTEP]);
+         glVertex2fv(&glArrayCircle[(int)(2*Start)*GL_ARCSTEP]);
 
    glEnd();
 }
@@ -1021,7 +1021,7 @@ void glDrawCircle(int Inter,GLint Mode) {
 
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2,GL_FLOAT,Inter*sizeof(float)*2,glArrayCircle);
-   glDrawArrays(Mode,0,(360*ARCSTEP)/Inter+1);
+   glDrawArrays(Mode,0,(360*GL_ARCSTEP)/Inter+1);
    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
