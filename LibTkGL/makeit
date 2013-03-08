@@ -18,9 +18,10 @@ echo ""
 export CFLAGS="-D_GNU_SOURCE -DLNK_DMV -I${INC} -I${INC}/libeer -I${INC}/dmv"  
 cd TclSystem
 #./configure \
+#   --exec-prefix=${LIB}/TclTk/lib \
 #   --enable-threads \
 #   --enable-64bit \
-#   --with-tcl=${LIB}/TclTk/lib \
+#   --with-tcl=${LIB}/TclTk/lib
 
 $MAKE install
 ln -fs ${LIB}/TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem.so
@@ -31,6 +32,7 @@ echo ""
 export CFLAGS=""  
 cd ../TkglCanvas
 #./configure \
+#   --exec-prefix=${LIB}/TclTk/lib \
 #   --enable-threads \
 #   --enable-64bit \
 #   --with-tcl=${LIB}/TclTk/lib \
@@ -45,6 +47,7 @@ echo ""
 export CFLAGS="-D_GNU_SOURCE -DLNK_FSTD -DLNK_GRIB -DLNK_DMV -I${INC} -I${INC}/libeer -I${INC}/rmnlib -I${INC}/gdb -I${INC}/gdal -I${INC}/urp -I${INC}/grib_api -I${INC}/libecbufr -I${INC}/fltlib"  
 cd ../TclGeoEER
 #./configure \
+#   --exec-prefix=${LIB}/TclTk/lib \
 #   --enable-threads \
 #   --enable-64bit \
 #   --with-tcl=${LIB}/TclTk/lib \
