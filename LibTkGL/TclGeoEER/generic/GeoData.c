@@ -2118,8 +2118,8 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
    int            len,dx,dy,x,y;
 
    /*Translation deltas related to canvas/viewport location*/
-   x=ViewportX(Proj->VP);
-   y=Tk_Height(Tk_CanvasTkwin(Proj->VP->canvas))-(Proj->VP->header.y1-ViewportY(Proj->VP));
+   x=Proj->VP->header.x1-ViewportX(Proj->VP);
+   y=Tk_Height(Tk_CanvasTkwin(Proj->VP->canvas))-(Proj->VP->header.y1-ViewportY(Proj->VP)+Proj->VP->Height);
 
    if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->VP->tkfont || GLRender->Resolution>1)
       return;
@@ -2157,7 +2157,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             pix[0]+=Point;
             pix[1]+=Point;
 
-            /*Get length in pixel and max it to pixel buffer size (1024)*/
+            /*Get length in pixel*/
             dx=Tk_TextWidth(Proj->VP->tkfont,Txt->String,len);
 
             /*If within the viewport limits*/

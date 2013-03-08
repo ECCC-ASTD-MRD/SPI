@@ -149,11 +149,11 @@ Tk_ItemType tkViewportType = {
 };
 
 double ViewportY(ViewportItem *VP) {
-   return (((TkCanvas*)VP->canvas)->yOrigin+VP->Height);
+   return (((TkCanvas*)VP->canvas)->yOrigin);
 }
 
 double ViewportX(ViewportItem *VP) {
-   return(VP->header.x1-((TkCanvas*)VP->canvas)->xOrigin);
+   return(((TkCanvas*)VP->canvas)->xOrigin);
 }
 
 static TList *VPCrowdList;

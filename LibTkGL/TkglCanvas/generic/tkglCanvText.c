@@ -612,7 +612,7 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
          Tcl_DStringInit(&runString);
          Tcl_UtfToUniCharDString(firstByte,lastByte-firstByte,&runString);
 
-         glDrawString(x+dx,y+dy,angle,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
+         glDrawString(x+dx,y+dy,-angle,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
          Tcl_DStringFree(&runString);
       }
       firstChar-=chunkPtr->numChars;

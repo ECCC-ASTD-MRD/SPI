@@ -2668,7 +2668,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
                }
 
                /*Draw the text*/
-               glPrint(Interp,Graph->canvas,buf,p1[0],p1[1],(Interp?-th:th));
+               glPrint(Interp,Graph->canvas,buf,p1[0],p1[1],th);
                glEnable(GL_STENCIL_TEST);
                d=0;
             }

@@ -2205,7 +2205,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                               if (Obs->Model->Flat) {
                                  if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
-                                    glTranslated(loc->Pix[0],ViewportY(VP)-loc->Pix[1],0.0);
+                                    glTranslated(loc->Pix[0],ViewportY(VP)+VP->Height-loc->Pix[1],0.0);
                                  } else {
                                     glTranslated(pix[0],pix[1],0.0);
                                  }
@@ -2230,7 +2230,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  glBegin(GL_LINES);
                                     glVertex3d(0,0,0);
                                     if (Obs->Model->Flat) {
-                                       glVertex3d(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)-loc->Pix[1]),0.0);
+                                       glVertex3d(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)+VP->Height-loc->Pix[1]),0.0);
                                     } else {
                                        glVertex3d(dx,dy,0.0);
                                     }
@@ -2246,7 +2246,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
                                  glPushMatrix();
                                  if (Obs->Model->Flat)
-                                    glTranslated(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)-loc->Pix[1]),0.0);
+                                    glTranslated(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)+VP->Height-loc->Pix[1]),0.0);
                                  glScalef(v,v,1.0);
                                  glDrawCircle(64,GL_POLYGON);
                                  line=1;

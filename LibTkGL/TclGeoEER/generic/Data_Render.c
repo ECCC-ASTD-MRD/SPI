@@ -592,7 +592,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
                   /*Draw the text*/
                   glStencilMask(0x10);
-                  glPrint(Interp,VP->canvas,buf,p1[0],p1[1],(Interp?-th:th));
+                  glPrint(Interp,VP->canvas,buf,p1[0],p1[1],th);
                   d=0;
                }
             }

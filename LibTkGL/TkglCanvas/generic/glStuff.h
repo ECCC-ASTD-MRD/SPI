@@ -79,7 +79,7 @@
 
 #define glPrint(Interp,Canvas,Buf,X,Y,A) {\
    if (Interp) {\
-      glPostscriptText(Interp,Canvas,Buf,X+1,Y,-A,NULL,0,1.0,0.0);\
+      glPostscriptText(Interp,Canvas,Buf,X+1,Y,A,NULL,0,1.0,0.0);\
    } else {\
       glDrawString(X,Y,A,Buf,strlen(Buf),0,0);\
    }\
