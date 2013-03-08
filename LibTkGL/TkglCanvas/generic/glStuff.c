@@ -31,37 +31,24 @@
  *==============================================================================
  */
 
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
 #include "glStuff.h"
 
 #include <sys/resource.h>
 #include <unistd.h>
 
-CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*","ARROW" };
-CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
-CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
-CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
-
 GLParams *GLRender=NULL;  /* Structure globale des parametres OpenGL */
 
 static float glArrayCircle[2*360*ARCSTEP+2];
 static float glArrayArrow[14] = { 0.0f,0.0f, 0.25f,-0.5f, 0.1f,-0.5f, 0.1f,-1.0f, -0.1f,-1.0f, -0.1f,-0.5f, -0.25f,-0.5f };
+static char *glExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
 
 static Tcl_HashTable glFontIdTable;
 static Tcl_HashTable glBitmapTable;
 
-static char *ExtString[]={ "GL_ARB_multisample","_GL_ARB_texture_compression","GL_ARB_vertex_buffer_object",NULL };
-static char *ProgString[]={ "Field","FieldTex","DataTex","TopoTex",NULL };
-
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int  glInfo(Tcl_Interp *Interp,char *Argv);
 
-/* Tesselator functions*/
-#define GLMAXTESS 8192
-
-static GLdouble glTessTmp[GLMAXTESS][3];
+static GLdouble glTessTmp[GL_MAXTESS][3];
 static GLuint   glTessNo=0;
 
 void glTessError(GLenum Err) {
@@ -69,7 +56,7 @@ void glTessError(GLenum Err) {
 }
 
 GLdouble *glTessTmpGet() {
-   return glTessTmp[(glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0)];
+   return glTessTmp[(glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0)];
 }
 
 static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdouble *Out[3]) {
@@ -80,7 +67,7 @@ static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdoubl
    *Out=glTessTmp[glTessNo];
 
    /*Iterate through the temporary tessselation vertices*/
-   glTessNo=glTessNo<(GLMAXTESS-1)?glTessNo+1:0;
+   glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0;
 };
 
 static void glTessVertex(GLdouble Vertex[3]) {
@@ -203,11 +190,12 @@ GLboolean glCheckExtension(char *ExtName) {
 */
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   int      i;
+   int      i,n;
    int      idx;
+   Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-usethreads",NULL };
-   enum                opt { INIT,SHUTDOWN,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,USETHREADS };
+   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-usethreads",NULL };
+   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,USETHREADS };
 
    Tcl_ResetResult(Interp);
 
@@ -231,6 +219,42 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             glXShutDown();
             break;
 
+         case SHADERPATH:
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(GLRender->ShaderPath,-1));
+            } else {
+               if (GLRender->ShaderPath) {
+                  free(GLRender->ShaderPath);
+                  GLRender->ShaderPath=NULL;
+               }
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  GLRender->ShaderPath=strdup(Tcl_GetString(Objv[i]));
+               }
+            }
+            break;
+
+         case SHADERS:
+            if (Objc==2) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(n=0;n<GLRender->ShaderNb;n++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(GLRender->Shaders[n],-1));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (GLRender->Shaders) {
+                  Tcl_Free((char*)GLRender->Shaders);
+                  GLRender->Shaders=NULL;
+               }
+               if ((Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&GLRender->ShaderNb,&GLRender->Shaders)==TCL_ERROR)) {
+                  return(TCL_ERROR);
+               }
+               if (GLRender->ShaderNb>GL_MAXSHADER) {
+                  Tcl_AppendResult(Interp,"glRender_Cmd: too many shaders",(char*) NULL);
+                  return(TCL_ERROR);
+               }
+           }
+           break;
+            
          case RESOLUTION:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->Resolution));
@@ -256,6 +280,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                glDefineParams(Interp);
             }
             break;
+            
          case DITHERING:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->GLDither));
@@ -343,7 +368,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->UseThreads);
             }
             break;
-
+            
          case DEBUG:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->GLDebug));
@@ -1829,8 +1854,7 @@ void glXShutDown() {
 
 int glDefineParams(){
 
-   int n;
-   char path[1024];
+   int   n;
 
    /*Si on n'a pas de contexte actif*/
    if (!GLRender->GLCon)
@@ -1890,24 +1914,19 @@ int glDefineParams(){
    /*Parse needed extensions*/
    if (GLRender->Set) {
       n=0;
-      while(ExtString[n]) {
-         GLRender->Ext[n]=glCheckExtension(ExtString[n]);
+      while(glExtString[n]) {
+         GLRender->Ext[n]=glCheckExtension(glExtString[n]);
 //         GLRender->Ext[n]=GL_FALSE;
          n++;
       }
 
-      memset(GLRender->Prog,0x0,SHADER_MAX*sizeof(GLhandleARB));
-      if (GLRender->ShaderAvailable) {
-         sprintf(path,"%s/Lib/Shader",getenv("SPI_PATH"));
-         n=0;
-
-         while(ProgString[n]) {
-            if (!(GLRender->Prog[n]=GLShader_Load(path,ProgString[n]))) {
+      memset(GLRender->Prog,0x0,GL_MAXSHADER*sizeof(GLhandleARB));
+      if (GLRender->ShaderAvailable && GLRender->ShaderPath && GLRender->Shaders) {
+         for (n=0;n<GLRender->ShaderNb;n++){     
+            if (!(GLRender->Prog[n]=GLShader_Load(GLRender->ShaderPath,GLRender->Shaders[n]))) {
+               fprintf(stderr,"(WARNING) glDefineParams: Unable to initialize shader program \"%s\"\n",GLRender->Shaders[n]);
                GLRender->ShaderAvailable=0;
-               fprintf(stderr,"(WARNING) glDefineParams: Unable to initialize shader program \"%s\", switching to fixed functionnalities\n",ProgString[n]);
-               break;
             }
-            n++;
          }
       }
       GLRender->Set=0;
@@ -1973,6 +1992,9 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Soft            = 0;
    GLRender->UseThreads      = 1;
    GLRender->Delay           = 2000;
+   GLRender->Shaders         = NULL;
+   GLRender->ShaderPath      = NULL;
+   GLRender->ShaderNb        = 0;
 
    memset(GLRender->Ext,0x0,sizeof(GLboolean));
 

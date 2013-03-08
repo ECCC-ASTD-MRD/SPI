@@ -1,32 +1,25 @@
 #!/bin/sh
 
-ARCH=`uname -s`
 MAKE=make
 
 echo ""
-echo "----- Architecture Found : $ARCH -----"
+echo "----- Architecture Found :  ${BASE_ARCH} -----"
 echo ""
 
 echo ""
-echo "----- Cleaning System Call Library  Object -----"
+echo "----- Cleaning System Call Library Object -----"
 echo ""
 cd TclSystem
 $MAKE clean
 
 echo ""
-echo "----- Cleaning OpenGL Renderer Library  Object -----"
+echo "----- Cleaning OpenGL Renderer Library Object -----"
 echo ""
 cd ../TkglCanvas
 $MAKE clean
 
 echo ""
-echo "----- Cleaning EER Data Library Object -----"
+echo "----- Cleaning Tcl GeoEER Library Object -----"
 echo ""
-cd ../TclData
-$MAKE clean
-
-echo ""
-echo "----- MCleaning Tk Viewport Library Object -----"
-echo ""
-cd ../TkViewport
+cd ../TclGeoEER
 $MAKE clean

@@ -295,7 +295,7 @@ void ViewportCrowdClear() {
  *----------------------------------------------------------------------------
 */
 int Tkviewport_Init(Tcl_Interp *Interp) {
-   Tclgeoeer_Init(Interp);
+   return(Tclgeoeer_Init(Interp));
 }
 
 int Tclgeoeer_Init(Tcl_Interp *Interp) {
@@ -2317,7 +2317,6 @@ static const char *VP_CamPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec
 */
 static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
-   ViewportItem *vp=(ViewportItem*)WidgRec;
    Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
 
    if (array->Array) {
@@ -2355,7 +2354,6 @@ static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,
 */
 static const char *VP_ArrayPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
-   ViewportItem *vp=(ViewportItem *)WidgRec;
    Obj2Array *array=(Obj2Array*)(WidgRec+Offset);
 
    return(array->String);

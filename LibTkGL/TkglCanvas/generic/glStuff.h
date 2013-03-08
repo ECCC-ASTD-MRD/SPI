@@ -69,7 +69,8 @@
 #define GL_RASTER 2
 #define GL_MASK   4
 
-#define SHADER_MAX 32
+#define GL_MAXSHADER 512
+#define GL_MAXTESS   8192
 
 #define glErrorCheck(MSG,EXIT) {\
    GLenum err;\
@@ -97,8 +98,7 @@
    }\
 }
 
-enum ExtToken  { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
-enum ProgToken { PROG_FIELD=0, PROG_FIELDTEX=1, PROG_DATATEX=2, PROG_TOPOTEX=3 };
+enum GLExtToken  { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum GLVendor  { NVIDIA=0, ATI=1, MESA=2 };
 
 /* Structure pour OpenGL */
@@ -155,13 +155,15 @@ typedef struct GLParams  {
    GLUtesselator *GLTess;       /*Tessalation object */
    GLUquadric    *GLQuad;       /*Quadric object*/
 
-   char           Soft;             /*Type de Renderer*/
-   int            UseThreads;       /*Use threads*/
-   int            Delay;            /*Delai des frames*/
-   GLboolean      Ext[32];          /*Liste des extensions*/
-   GLboolean      Set;              /*Liste des extensions*/
-   GLhandleARB    Prog[SHADER_MAX]; /*Liste des shaders*/
-   int            Vendor;           /*Graphic driver vendor*/
+   char           Soft;               /*Type de Renderer*/
+   int            UseThreads;         /*Use threads*/
+   int            Delay;              /*Delai des frames*/
+   GLboolean      Ext[32];            /*Liste des extensions*/
+   GLboolean      Set;                /*Liste des extensions*/
+   GLhandleARB    Prog[GL_MAXSHADER]; /*Liste des shaders*/
+   char          **Shaders,*ShaderPath;
+   int            ShaderNb;
+   int            Vendor;             /*Graphic driver vendor*/
 
    double MagScale,MagX,MagY,MagD;   /*Magnifying paameters*/
 } GLParams;

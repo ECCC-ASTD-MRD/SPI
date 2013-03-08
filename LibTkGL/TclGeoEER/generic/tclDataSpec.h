@@ -81,6 +81,7 @@
 }
 
 typedef enum { VNONE,BARBULE,ARROW,STREAMLINE,STREAMLINE3D } TDataSpecVECTOR;
+enum ShaderToken { PROG_FIELD=0, PROG_FIELDTEX=1, PROG_DATATEX=2, PROG_TOPOTEX=3 };
 
 typedef struct TIcon {
    int     Type;
