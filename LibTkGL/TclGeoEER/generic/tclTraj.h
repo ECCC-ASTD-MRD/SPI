@@ -46,18 +46,19 @@ typedef struct TTraj {
    Tcl_Obj      *Tag;
    TDataSpec    *Spec;  /*Specification des donnees*/
 
-   float    Min,Max;
-   int      Lapse;
-   time_t   Date;
-   float    Height;
-   int      AP;
-   int      Back;
-   int      NPr;
-   char     Path[1024];
-   char    *Id;
-   char     Model[16];
-   int      Mode;
-   char     Type;
+   float      Min,Max;
+   int        Lapse;
+   time_t     Date;
+   float      Height;
+   int        AP;
+   int        Back;
+   int        NPr;
+   char       Path[1024];
+   char      *Id;
+   char       Model[16];
+   int        Mode;
+   char       Type;
+   char       OutDomain;
    TParticle *Pr;
 } TTraj;
 

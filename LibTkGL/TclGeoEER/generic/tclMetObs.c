@@ -1519,14 +1519,15 @@ void TMetElem_Free(TMetElem *Elem) {
       TMetElemData_Free(Elem->EData[n]);
    }
    free(Elem->EData);
+   Elem->EData=NULL;
 }
 
 void TMetElemData_Free(TMetElemData *Data) {
 
    if (Data) {
-      if (Data->Code)   free(Data->Code);
-      if (Data->Data)   free(Data->Data);
-      if (Data->Marker) free(Data->Marker);
+      if (Data->Code)   free(Data->Code);   Data->Code=NULL;
+      if (Data->Data)   free(Data->Data);   Data->Data=NULL;
+      if (Data->Marker) free(Data->Marker); Data->Marker=NULL;
    }
 }
 
@@ -1643,6 +1644,7 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
       data->Family=Fam;
       data->Type=Type;
       data->SType=SType;
+      data->Time=Time;
 
       // If the dimemsion of the packet is not the same
       if (data->Nv!=Nv || data->Nt!=Nt) {
@@ -1690,6 +1692,7 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Ty
    data->Family=Fam;
    data->Type=Type;
    data->SType=SType;
+   data->Time=Time;
 
    if (Data) {
       data->Data=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
@@ -1742,6 +1745,7 @@ TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt) {
    data->Family=0x0;
    data->Type=0x0;
    data->SType=0x0;
+   data->Time=0;
    data->Data=(float*)malloc(Ne*Nv*Nt*sizeof(float));
    data->Code=(EntryTableB**)malloc(Ne*Nv*Nt*sizeof(EntryTableB*));
    data->Marker=NULL;
@@ -2741,8 +2745,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
-   enum                opt { CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
+   static CONST char *sopt[] = { "-DATE","-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
+   enum                opt { DATE,CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2757,6 +2761,14 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
       }
 
       switch ((enum opt)idx) {
+         case DATE:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewLongObj(data->Time));
+            } else {
+               Tcl_GetLongFromObj(Interp,Objv[++i],&data->Time);
+            }
+            break;
+
          case CODETYPE:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->Loc->CodeType));

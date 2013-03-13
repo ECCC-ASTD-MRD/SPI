@@ -990,12 +990,12 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          GraphItem_DisplayTephi(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
       } else {
 
-      if (Item->Type==MINMAX)
-         GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
-      else if (Item->Type==BOXPLOT)
-         GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
-      else
-         GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
+         if (Item->Type==MINMAX)
+            GraphItem_DisplayMinMax(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
+         else if (Item->Type==BOXPLOT)
+            GraphItem_DisplayBox(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
+         else
+            GraphItem_DisplayXYZ(Interp,Graph,Item,axisx,axisy,axisz,X0,Y0,X1,Y1,GLMode);
       }
    }
 }
@@ -2881,7 +2881,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
    } else {
       glColor4us(Graph->FGColor->red,Graph->FGColor->green,Graph->FGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
-      glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1);
+      glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1,1);
    }
 
    if (Item->Icon && Item->Size>0.0) {

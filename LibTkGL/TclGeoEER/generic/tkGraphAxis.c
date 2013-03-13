@@ -1212,7 +1212,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          ((glTextItem*)Axis->UnitItem)->angle=th;
          glComputeTextBbox(Graph->canvas,Axis->UnitItem);
       } else {
-         glDisplayTextLayout(Axis->Text,th,dx,dy,0,-1);
+         glDisplayTextLayout(Axis->Text,th,dx,dy,0,-1,1);
       }
    }
 
@@ -1329,7 +1329,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glDisplayTextLayout(text,(int)Axis->Angle,(int)(x+dx),(int)(y+dy),0,-1);
+         glDisplayTextLayout(text,(int)Axis->Angle,(int)(x+dx),(int)(y+dy),0,-1,1);
          Tk_FreeTextLayout(text);
       }
    } else {
@@ -1407,7 +1407,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glDisplayTextLayout(text,(int)Axis->Angle,(int)(x+dx),(int)(y+dy),0,-1);
+         glDisplayTextLayout(text,(int)Axis->Angle,(int)(x+dx),(int)(y+dy),0,-1,1);
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
          l++;

@@ -442,7 +442,7 @@ void  GraphTehpi_DisplayIsotherm(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis 
    glEnd();
 
    if (Label) {
-      glDisplayTextLayout(Label,(int)-AxisT->Angle+1000,(int)(x0),(int)(y0),0,-1);
+      glDisplayTextLayout(Label,(int)AxisT->Angle,(int)(x0),(int)(y0),0,-1,0);
    }
 }
 
@@ -584,7 +584,7 @@ void  GraphTehpi_DisplayIsobar(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *A
    glEnd();
 
    if (Label) {
-      glDisplayTextLayout(Label,(int)-AxisP->Angle+1000,(int)(x0),(int)(y0),0,-1);
+      glDisplayTextLayout(Label,(int)AxisP->Angle,(int)(x0),(int)(y0),0,-1,0);
    }
 }
 
@@ -721,7 +721,7 @@ void GraphTehpi_DisplayDryAdiabat(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis
    glEnd();
 
    if (Label) {
-      glDisplayTextLayout(Label,(int)-AxisTH->Angle+1000,(int)(x1-Width),(int)(y1+Height),0,-1);
+      glDisplayTextLayout(Label,(int)AxisTH->Angle,(int)(x1-Width),(int)(y1+Height),0,-1,0);
    }
 }
 
@@ -897,7 +897,7 @@ void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxi
       glColor3us(color->red,color->green,color->blue);
       GraphAxis_Print(AxisT,buf,(double)t-4,0);
       text=Tk_ComputeTextLayout(font,buf,strlen(buf),0,TK_JUSTIFY_CENTER,0,&width,&height);
-      glDisplayTextLayout(text,(int)-AxisT->Angle+1000,(int)(x0-width),(int)(y0+height),0,-1);
+      glDisplayTextLayout(text,(int)AxisT->Angle,(int)(x0-width),(int)(y0+height),0,-1,0);
       Tk_FreeTextLayout(text);
       glColor3ub(245,222,179);
 
@@ -953,7 +953,7 @@ void GraphTehpi_DisplayMixRatio(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *
    GraphTephi_TP2XY(AxisTH,AxisT,AxisP,t0,p0,&x0,&y0);
 
    if (Label) {
-      glDisplayTextLayout(Label,(int)-AxisW->Angle+1000,(int)(x0),(int)(y0-Height),0,-1);
+      glDisplayTextLayout(Label,(int)AxisW->Angle,(int)(x0),(int)(y0-Height),0,-1,0);
    }
 
    glBegin(GL_LINE_STRIP);

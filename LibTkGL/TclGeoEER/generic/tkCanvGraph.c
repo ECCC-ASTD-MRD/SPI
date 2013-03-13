@@ -241,7 +241,7 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  *            pour le graph.
  *
  * Parametres :
- *  <Data>    : Pointeur sur le Viewport
+ *  <Data>    : Pointeur sur le Graph
  *  <Interp>  : Interpreter TCL
  *  <Objc>    : Nombre d'arguments
  *  <Objv>    : Liste des arguments
@@ -397,7 +397,7 @@ static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
       }
       GraphBBox(Canvas,gr);
    } else {
-      Tcl_AppendResult(Interp,"ViewportCoords: wrong # coordinates,  expected 0 or 2\n",(char*)NULL);
+      Tcl_AppendResult(Interp,"GraphCoords: wrong # coordinates,  expected 0 or 2\n",(char*)NULL);
       return TCL_ERROR;
    }
    return TCL_OK;
@@ -413,7 +413,7 @@ static int GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
  * Parametres :
  *  <Interp>  : Interpreter for error reporting
  *  <Canvas>  : Canvas containing item
- *  <Item>    : Viewport item to reconfigure
+ *  <Item>    : Grap item to reconfigure
  *  <Argc>    : Number of elements in argv
  *  <Argv>    : Arguments describing things to configure
  *  <Flags>   : Flags to pass to Tk_ConfigureWidget
@@ -1053,7 +1053,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
       } else if (gr->FGColor && gr->Font && gr->Text) {
          glColor4us(gr->FGColor->red,gr->FGColor->green,gr->FGColor->blue,gr->Alpha*655);
          glFontUse(Tk_Display(Tk_CanvasTkwin(Canvas)),gr->Font);
-         glDisplayTextLayout(gr->Text,0,x-gr->TitleWidth/2,gr->header.y1+5,0,-1);
+         glDisplayTextLayout(gr->Text,0,x-gr->TitleWidth/2,gr->header.y1+5,0,-1,1);
       }
 
       glTranslated(((TkCanvas*)Canvas)->xOrigin,((TkCanvas*)Canvas)->yOrigin,0.0);
@@ -1301,7 +1301,7 @@ static void GraphTranslate(Tk_Canvas Canvas,Tk_Item *Item,double DeltaX,double D
  * Nom      : <GraphToPostscript
  * Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Generer le code Postscript pour un item Viewport.
+ * But      : Generer le code Postscript pour un item Graph.
  *
  * Parametres :
  *  <Interp>  : Interpreteur Tcl

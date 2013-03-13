@@ -67,21 +67,22 @@ typedef struct TMetModel {
 
 typedef struct TMetElemData {
 
-   struct TMetObs *Obs;             /*Provenance de ce MetElemData quand detache*/
-   struct TMetLoc *Loc;             /*Localisation de ce MetElemData quand detache*/
-   int             Nv,Nt,Ne;        /*Data dimensions*/
-   int             Family;          /*Data Family descriptor*/
-   int             Type,SType;      /*Data Type descriptor*/
-   int            *Marker;          /*Data markers*/
-   float          *Data;            /*Donnees temporelles et spatiales*/
-   EntryTableB   **Code;            /*Codes de la donnee*/
+   struct TMetObs  *Obs;             /*Provenance (Obs) de ce MetElemData quand detache*/
+   struct TMetLoc  *Loc;             /*Localisation de ce MetElemData quand detache*/
+   time_t           Time;            /*Date de validite*/
+   int              Nv,Nt,Ne;        /*Data dimensions*/
+   int              Family;          /*Data Family descriptor*/
+   int              Type,SType;      /*Data Type descriptor*/
+   int             *Marker;          /*Data markers*/
+   float           *Data;            /*Donnees temporelles et spatiales*/
+   EntryTableB    **Code;            /*Codes de la donnee*/
 } TMetElemData;
 
 typedef struct TMetElem {
 
-   time_t        Time;      /*Date de validite*/
-   int           NData;     /*Nombre d'element pour ce temps*/
-   TMetElemData **EData;    /*Donnees des elements*/
+   time_t         Time;      /*Date de validite*/
+   int            NData;     /*Nombre d'element pour ce temps*/
+   TMetElemData **EData;     /*Donnees des elements*/
 
    struct TMetElem *Next;
 } TMetElem;

@@ -1515,7 +1515,7 @@ static void ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
       if (Interp) {
          glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,VP->header.x2/2-width/2,VP->header.y2-height-10,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
       } else {
-         glDisplayTextLayout(text,0,VP->header.x2/2-width/2,VP->header.y2-height-10,0,-1);
+         glDisplayTextLayout(text,0,VP->header.x2/2-width/2,VP->header.y2-height-10,0,-1,1);
       }
       Tk_FreeTextLayout(text);
    }
