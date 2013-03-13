@@ -507,11 +507,11 @@ DisplayImage(
    GLubyte *pixel=NULL;
 
    if(state == TK_STATE_NULL) {
-      state=((TkCanvas *)canvas)->canvas_state;
+      state=Canvas(canvas)->canvas_state;
    }
 
    imagestring=imgPtr->imageString;
-   if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
+   if (Canvas(canvas)->currentItemPtr == itemPtr) {
       if (imgPtr->activeImage != NULL) {
          imagestring=imgPtr->activeImageString;
       }
@@ -525,7 +525,7 @@ DisplayImage(
       return;
    }
 
-   handle=Tk_FindPhoto(((TkCanvas*)canvas)->interp,imgPtr->imageString);
+   handle=Tk_FindPhoto(Canvas(canvas)->interp,imgPtr->imageString);
    if (handle) {
       Tk_PhotoGetImage(handle,&data);
 
@@ -537,7 +537,7 @@ DisplayImage(
          glEnable(GL_BLEND);
          glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
          glPixelTransferf(GL_ALPHA_SCALE,imgPtr->alpha/100.0);
-         trRasterPos2i((imgPtr->header.x1-((TkCanvas *)canvas)->xOrigin),-(imgPtr->header.y1-((TkCanvas *)canvas)->yOrigin)-data.height);
+         trRasterPos2i((imgPtr->header.x1-Canvas(canvas)->xOrigin),-(imgPtr->header.y1-Canvas(canvas)->yOrigin)-data.height);
          glDrawPixels(data.width,data.height,data.pixelSize==3?GL_RGB:GL_RGBA,GL_UNSIGNED_BYTE,pixel);
          glPixelTransferf(GL_ALPHA_SCALE,1.0);
          glDisable(GL_BLEND);

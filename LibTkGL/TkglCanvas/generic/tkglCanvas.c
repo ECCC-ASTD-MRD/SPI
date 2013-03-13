@@ -2689,7 +2689,7 @@ static int MagnifyCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,
       return(TCL_ERROR);
    }
    glDefineParams();
-
+   
    w2=data.width/2.0;
    h2=data.height/2.0;
 

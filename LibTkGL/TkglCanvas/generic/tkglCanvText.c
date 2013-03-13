@@ -569,7 +569,7 @@ void glComputeTextBbox(
  *--------------------------------------------------------------
  */
 
-void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstChar,int lastChar) {
+void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstChar,int lastChar,int Flip) {
 
    TextLayout *layoutPtr;
    int i, numDisplayChars, drawX;
@@ -612,7 +612,7 @@ void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstCha
          Tcl_DStringInit(&runString);
          Tcl_UtfToUniCharDString(firstByte,lastByte-firstByte,&runString);
 
-         glDrawString(x+dx,y+dy,-angle,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,1);
+         glDrawString(x+dx,y+dy,-angle,Tcl_DStringValue(&runString),Tcl_DStringLength(&runString),1,Flip);
          Tcl_DStringFree(&runString);
       }
       firstChar-=chunkPtr->numChars;
@@ -822,11 +822,11 @@ void glDisplayText(
    }
 
    glFontUse(display,textPtr->tkfont);
-   glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,0,-1);
+   glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,0,-1,1);
 
    /* Draw the selected text*/
    if (selFirstChar >= 0) {
-      glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,selFirstChar,selLastChar + 1);
+      glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,selFirstChar,selLastChar + 1,1);
    }
 
    glDisable(GL_BLEND);

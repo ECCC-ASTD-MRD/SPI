@@ -73,7 +73,7 @@ void glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int De
 }
 
 void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
-
+   
    glPushAttrib(GL_LIST_BIT|GL_CURRENT_BIT|GL_ENABLE_BIT|GL_POLYGON_BIT|GL_TRANSFORM_BIT);
 
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
