@@ -1802,11 +1802,13 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       return(TCL_ERROR);
    }
 
+#ifdef HAVE_RMN
    if (spec->RenderParticle && !FSTD_FieldReadMesh(field[0])) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import field particles",(char*)NULL);
       free(field);
       return(TCL_ERROR);
    }
+#endif
 
    if (spec->RenderContour) {
 

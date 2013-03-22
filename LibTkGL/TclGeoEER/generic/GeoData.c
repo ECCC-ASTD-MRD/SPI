@@ -352,8 +352,10 @@ int GDB_Init(GDB_Data *GDB) {
    int    lat,lon;
    double flat,flon,clat;
 
+#ifdef HAVE_GDB
    gdb_init();
-
+#endif
+   
    /*Parametres de selection de donnees*/
    GDB->Params.Topo=GDB_NONE;
    GDB->Params.Bath=GDB_NONE;
@@ -923,6 +925,7 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
       Proj->Loading--;
       return(0);
    }
+#ifdef HAVE_GDB
 
    switch(Type) {
       case GDB_LIN:
@@ -990,6 +993,8 @@ int GDB_TileGet(void *Tile,Projection *Proj,int Type,int Data) {
 
          break;
    }
+#endif
+
    Proj->Loading--;
 
    return(1);
@@ -1803,6 +1808,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    int       x,y,res=0,ras=0;
    float     lat,lon;
 
+#ifdef HAVE_GDB
    if (GDB->Res<0) {
       return(0);
    }
@@ -1960,6 +1966,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    glDisable(GL_DEPTH_TEST);
    return(ras);
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -2218,12 +2225,14 @@ void GDB_StarRender(Tcl_Interp *Interp,Projection *Proj) {
 */
 GLuint Texture_Read(char *File) {
 
+   GLuint          id=0;
+
+#ifdef HAVE_GDAL
    GDALDatasetH    set=NULL;
    GDALRasterBandH hband;
    GDALColorTableH hTable;
    GDALColorEntry  entry;
    GDALDataType    t;
-   GLuint          id=0;
    int             w,h,s,n,nc,i;
    char           *buf=NULL;
    char           *map=NULL;
@@ -2287,7 +2296,7 @@ GLuint Texture_Read(char *File) {
    if (map) free(map);
    if (buf) free(buf);
    GDALClose(set);
-
+#endif
    return(id);
 }
 

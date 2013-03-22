@@ -14,6 +14,7 @@
 *
 *==============================================================================
 */
+#ifdef HAVE_GRIB
 
 #include "tclGRIB.h"
 #include "Projection.h"
@@ -315,7 +316,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_Free((char*)list);
                tm=tra;
                if (!GDALInvGeoTransform(tra,inv)) {
-                  fprintf(stdout,"(WARNING) FSTD_FieldDefine: Unable to generate the inverse transform matrix\n");
+                  fprintf(stdout,"(WARNING) GRIB_FieldDefine: Unable to generate the inverse transform matrix\n");
                   im=NULL;
                } else {
                   im=inv;
@@ -1148,3 +1149,5 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
 
    return(ref);
 }
+
+#endif

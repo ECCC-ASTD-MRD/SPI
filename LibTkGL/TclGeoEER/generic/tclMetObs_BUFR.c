@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
 
 #include "tclMetObs.h"
 
@@ -290,3 +291,5 @@ int MetObs_WriteBUFR(Tcl_Interp *Interp,char *File,char *Template,Tcl_Obj *List,
 
    return(TCL_OK);
 }
+
+#endif

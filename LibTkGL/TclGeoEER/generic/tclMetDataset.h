@@ -32,6 +32,8 @@
 #ifndef _tclMetDataset_h
 #define _tclMetDataset_h
 
+#ifdef HAVE_ECBUFR
+
 #include "tclData.h"
 #include "bufr_api.h"
 #include "bufr_array.h"
@@ -59,4 +61,5 @@ Tcl_Obj*       MetDataset_Code2Obj(Tcl_Interp *Interp,BufrDescriptor *BCV);
 Tcl_Obj*       MetDataset_Value2Obj(BufrValue *V);
 int            MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj);
 
+#endif
 #endif

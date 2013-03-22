@@ -146,31 +146,32 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          proj=Projection_Get(Tcl_GetString(Objv[2]));
          Tcl_GetDoubleFromObj(Interp,Objv[4],&lat);
          Tcl_GetDoubleFromObj(Interp,Objv[5],&lon);
-
+#ifdef HAVE_GDB
          if (strncmp(Tcl_GetString(Objv[3]),"-BATH",5)==0) {
             t=2;
             handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_BAT,&t);
             gdb_mapget(handle,lat,lon,(void*)&zs);
-            Tcl_SetObjResult(Interp,Tcl_NewIntObj(zs>0?0:zs));
+            zs=zs>0?0:zs;
          } else if (strncmp(Tcl_GetString(Objv[3]),"-TOPO",5)==0) {
             t=2;
             handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_DEM,&t);
             gdb_mapget(handle,lat,lon,(void*)&zs);
-            Tcl_SetObjResult(Interp,Tcl_NewIntObj(zs));
          } else if (strncmp(Tcl_GetString(Objv[3]),"-MASK",5)==0) {
             t=1;
             handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_MSK,&t);
             gdb_mapget(handle,lat,lon,(void*)&zc);
-            Tcl_SetObjResult(Interp,Tcl_NewIntObj(zc<127?0:1));
+            zs=zc<127?0:1;
          } else if (strncmp(Tcl_GetString(Objv[3]),"-TYPE",5)==0) {
             t=1;
             handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_TER,&t);
             gdb_mapget(handle,lat,lon,(void*)&zc);
-            Tcl_SetObjResult(Interp,Tcl_NewIntObj(zc));
+            zs=zc;
          } else {
             Tcl_AppendResult(Interp,"Invalid data type , must be one of -BATHYMETRY, -TOPOGRAPHY, -MASK, -TYPE",(char*)NULL);
          }
          gdb_mapclose(handle);
+#endif
+         Tcl_SetObjResult(Interp,Tcl_NewIntObj(zs));
          break;
 
       case IS:

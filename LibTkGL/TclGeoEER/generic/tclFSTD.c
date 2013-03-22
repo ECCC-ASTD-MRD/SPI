@@ -32,6 +32,8 @@
  *==============================================================================
 */
 
+#ifdef HAVE_RMN
+
 #include "tclFSTD.h"
 #include "tclObs.h"
 #include "tclOGR.h"
@@ -130,8 +132,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
-   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zgrid","zfilter","pressure",NULL };
-   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZGRID,ZFILTER,PRESSURE };
+   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zfilter","pressure",NULL };
+   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZFILTER,PRESSURE };
 
    Tcl_ResetResult(Interp);
 
@@ -155,13 +157,12 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetDoubleFromObj(Interp,Objv[4],&tmp);dd60=tmp;
          Tcl_GetDoubleFromObj(Interp,Objv[5],&tmp);dgrw=tmp;
          Tcl_GetIntFromObj(Interp,Objv[6],&n);
-#ifdef LNK_FSTD
+         
          f77name(xyfll)(&x,&y,&dlat,&dlon,&dd60,&dgrw,&n);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y));
          Tcl_SetObjResult(Interp,obj);
-#endif
          break;
 
       case LLFXY:
@@ -174,13 +175,12 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetDoubleFromObj(Interp,Objv[4],&tmp);dd60=tmp;
          Tcl_GetDoubleFromObj(Interp,Objv[5],&tmp);dgrw=tmp;
          Tcl_GetIntFromObj(Interp,Objv[6],&n);
-#ifdef LNK_FSTD
+
          f77name(llfxy)(&dlat,&dlon,&x,&y,&dd60,&dgrw,&n);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
          Tcl_SetObjResult(Interp,obj);
-#endif
          break;
 
       case MSCALE:
@@ -193,10 +193,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
          head=((FSTD_Head*)(field->Head));
-#ifdef LNK_FSTD
          f77name(cigaxg)(field->Ref->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
          f77name(mscale)((float*)field->Def->Data[0],&xg3,&xg1,&xg2,&field->Def->NI,&field->Def->NJ);
-#endif
          break;
 
       case PRESSURE:
@@ -245,7 +243,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetDoubleFromObj(Interp,Objv[5],&dxg3);
          Tcl_GetDoubleFromObj(Interp,Objv[6],&dxg4);
          xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
-#ifdef LNK_FSTD
+
          f77name(cxgaig)(Tcl_GetString(Objv[2]),&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ig1));
@@ -253,7 +251,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ig3));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ig4));
          Tcl_SetObjResult(Interp,obj);
-#endif
          break;
 
       case CIGAXG:
@@ -266,7 +263,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetIntFromObj(Interp,Objv[5],&ig3);
          Tcl_GetIntFromObj(Interp,Objv[6],&ig4);
 
-#ifdef LNK_FSTD
          f77name(cigaxg)(Tcl_GetString(Objv[2]),&xg1,&xg2,&xg3,&xg4,&ig1,&ig2,&ig3,&ig4);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(xg1));
@@ -274,7 +270,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(xg3));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(xg4));
          Tcl_SetObjResult(Interp,obj);
-#endif
          break;
 
       case CONVIP:
@@ -306,14 +301,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip));
          }
-         break;
-
-      case ZGRID:
-         if(Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"tic tac settings");
-            return(TCL_ERROR);
-         }
-         return (FSTD_ZGrid(Interp,Objv[2],Objv[3],Objv[4]));
          break;
 
       case ZFILTER:
@@ -356,7 +343,6 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    double        c0,c1,a,x;
 
    TObs        *obs;
-   TMetObs     *metobs;
    OGR_Layer   *layer;
    GDAL_Band   *band,*bandt;
    T3DModel    *model;
@@ -940,7 +926,9 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_OK);
          }
 
+#ifdef HAVE_ECBUFR
          /*Interpolate a metobs*/
+         TMetObs *metobs;
          metobs=MetObs_Get(Tcl_GetString(Objv[3]));
          if (metobs) {
             if(Objc!=10 && Objc!=11) {
@@ -981,7 +969,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             if (field0->Stat) { free(field0->Stat); field0->Stat=NULL; }
             return(TCL_OK);
          }
-
+#endif
          /* If we get here, it has to be a NOP or ACCUM*/
          if (Objc>4) {
             if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
@@ -1293,7 +1281,6 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
    EZLock_RPNFile();
    if (!File->Open) {
-#ifdef LNK_FSTD
 
       if ( File->Mode=='W') {                /*Write Mode*/
           if (rem)
@@ -1328,7 +1315,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
          return(-1);
       }
    }
-#endif
+
    File->Open++;
    EZUnLock_RPNFile();
 
@@ -1363,10 +1350,9 @@ int FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File) {
    File->Open--;
 
    if (!File->Open) {
-#ifdef LNK_FSTD
       ok=c_fstfrm(File->Id);
       ok=c_fclos(File->Id);
-#endif
+
       if (ok>=0){
          ok=1;
       } else {
@@ -1414,8 +1400,6 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    int         idx;
    static CONST char *sopt[] = { "toseconds","fromseconds","todate","fromdate","incr","diff","key",NULL };
    enum                opt { TOSECONDS,FROMSECONDS,TODATE,FROMDATE,INCR,DIFF,KEY };
-
-#ifdef LNK_FSTD
 
    extern time_t timezone;
 
@@ -1553,7 +1537,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          return(TCL_OK);
          break;
    }
-#endif
+
    return(TCL_OK);
 }
 
@@ -1588,3 +1572,5 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
 
    return(TCL_OK);
 }
+
+#endif

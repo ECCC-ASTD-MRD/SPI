@@ -738,7 +738,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
       return TCL_ERROR;
    }
 
-#ifdef LNK_FSTD
+#ifdef HAVE_RMN
    c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
    for(i=0;i<Obs->Loc->Nb;i++) {

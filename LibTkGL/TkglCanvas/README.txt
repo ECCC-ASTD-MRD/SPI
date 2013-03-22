@@ -7,6 +7,11 @@ of XWindows. You can use it as you would for a regular Tk canvas. The goal of
 this package is to be able to create canvas item using harwdare accelerated 
 OpenGL in C.
 
+This package uses the TR (Tile Rendering) library developped by Brian Paul 
+(http://www.mesa3d.org/brianp/TR.html) which is under the GNU Library General Public License.
+This library is used to render huge canvas buffer into tk images and for postscript of 
+raster data.
+
 Here are the addons from a regular canvas.
 
  * Transparency for every canvas items using -alpha [0,100]. (No postscript)
@@ -14,7 +19,7 @@ Here are the addons from a regular canvas.
  
       .canvas buffer TMPIMG c0 y0 width height
       
- * a magnify parameter which puts a magnified image into a Tk image (usefull fo lens effect).
+ * a magnify function which puts a magnified image into a Tk image (usefull fo lens effect).
  
       image create photo CANVASMAGNIFIER -width [width] -height [height]
       .canvas magnify CANVASMAGNIFIER [xmid] [ymid] [zoom]

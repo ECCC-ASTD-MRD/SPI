@@ -1558,10 +1558,10 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
          } else if (Axis->Anchor==TK_ANCHOR_S || Axis->Anchor==TK_ANCHOR_E) {
             dy=Y0;
          } else {
-            dy=Y1+(Y0-Y1)/2.0;
+            dy=Y1+(Y0-Y1)/2.0+Axis->UnitWidth/2.0;
          }
          /*Something wrong with vertical x positionning (-60)*/
-         dx=Axis->Pos[1]=='L'?X0-Len-60:X0+Len-Axis->UnitHeight;
+         dx=Axis->Pos[1]=='L'?X0-Len:X0+Len-Axis->UnitHeight;
          th=-270.0;
       }
 
@@ -1628,9 +1628,10 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             GraphAxis_Print(Axis,lbl,Axis->Inter[i],0);
             text=Tk_ComputeTextLayout(font,lbl,strlen(lbl),0,TK_JUSTIFY_CENTER,0,&width,&height);
          }
+         inter=Axis->Relative?(Axis->Inter[i]-Axis->Inter[0])/(Axis->Inter[Axis->InterNb-1]-Axis->Inter[0])*(Axis->InterNb-1):Axis->Inter[i];
 
          if (Side&HORIZONTAL) {
-            x=X0+AXISVALUE(Axis,Axis->Inter[i]); y=Y0;
+            x=X0+AXISVALUE(Axis,inter); y=Y0;
             if (x<X0-1 || x>X1+1 || (Axis->Spacing && x<xp+w))
                continue;
 
@@ -1654,7 +1655,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             }
          } else {
-            y=Y0-AXISVALUE(Axis,Axis->Inter[i]); x=X0;
+            y=Y0-AXISVALUE(Axis,inter); x=X0;
             if (y<Y1-1 || y>Y0+1 || (y-Y1<w && i!=Axis->InterNb-1))
                continue;
 
@@ -1682,7 +1683,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)Axis->Angle,x+dx,y+dy,(Axis->Angle!=0?TK_ANCHOR_SW:TK_ANCHOR_NW),TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)Axis->Angle,x+dx,y+dy,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
          Tk_FreeTextLayout(text);
       }
    } else {
@@ -1760,7 +1761,7 @@ void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,i
             }
          }
          w=GraphAxis_Layout(Axis,Side,width,height,&dx,&dy);
-         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)Axis->Angle,x+dx,y+dy,(Axis->Angle!=0?TK_ANCHOR_SW:TK_ANCHOR_NW),TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,Graph->canvas,text,color,NULL,(int)Axis->Angle,x+dx,y+dy,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
          Tk_FreeTextLayout(text);
          inter=(Axis->Incr!=0.0)?(inter+Axis->Incr):(inter==i1?i1*2:i1);
       }

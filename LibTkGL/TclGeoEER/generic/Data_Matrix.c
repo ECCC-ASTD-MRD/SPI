@@ -253,7 +253,7 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
    GDataN++;
    GData[GDataN]=DataDef_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
 
-#ifdef LNK_FSTD
+#ifdef HAVE_RMN
    if (FSIZE3D(GData[GDataN])==1) {
       Def_Get(B,0,0,v);
       Def_Set(GData[GDataN],0,0,v);

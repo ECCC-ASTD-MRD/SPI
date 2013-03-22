@@ -45,7 +45,10 @@
 extern int   Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode);
 extern int   Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj,GLuint GLMode);
 extern int   Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
+
+#ifdef HAVE_ECBUFR
 extern int   MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode);
+#endif
 
 static int    ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *const Objv[]);
 static int    ViewportCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
@@ -464,7 +467,6 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    Projection   *proj;
    TTraj        *traj;
    TObs         *obs;
-   TMetObs      *met;
    TData        *data;
    Tcl_Obj      *obj;
 
@@ -821,9 +823,11 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                if ((pick&PICK_OBS) && (obs=Obs_Get(vp->DataItem.Array[i]))) {
                   Obs_Render(NULL,obs,vp,proj,GL_SELECT);
                }
-               if ((pick&PICK_METOBS) && (met=MetObs_Get(vp->DataItem.Array[i]))) {
-                  MetObs_Render(NULL,met,vp,proj,GL_SELECT);
+#ifdef HAVE_ECBUFR
+               if (pick&PICK_METOBS) {
+                  MetObs_Render(NULL,MetObs_Get(vp->DataItem.Array[i]),vp,proj,GL_SELECT);
                }
+#endif
                if ((pick&PICK_TRAJ) && (traj=Traj_Get(vp->DataItem.Array[i]))) {
                   Traj_Render(NULL,traj,vp,proj,GL_SELECT);
                }
@@ -842,7 +846,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(vp->DataItem.Array[GLRender->GLPick[0]],-1));
 
                switch(GLRender->GLPick[1]) {
+#ifdef HAVE_ECBUFR
                   case PICK_METOBS:    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(MetObs_GetTag(MetObs_Get(vp->DataItem.Array[GLRender->GLPick[0]]),GLRender->GLPick[2]),-1)); break;
+#endif
                   case PICK_TRAJ:
                   case PICK_OBS:
                   case PICK_FSTDFIELD: Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[2])); break;
@@ -1340,7 +1346,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    TData        *fld;
    TTraj        *traj;
    TObs         *obs;
-   TMetObs      *met;
    T3DModel     *mdl;
    GDAL_Band    *band;
    OGR_Layer    *layer;
@@ -1425,9 +1430,12 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
             if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
             }
+#ifdef HAVE_ECBUFR
+            TMetObs *met;
             if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
                MetObs_Render(NULL,met,vp,proj,GL_RENDER);
             }
+#endif
             if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
                Traj_Render(NULL,traj,vp,proj,GL_RENDER);
             }
@@ -2044,7 +2052,6 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    TData     *fld;
    TTraj     *traj;
    TObs      *obs;
-   TMetObs   *met;
    T3DModel  *mdl;
    GDAL_Band *band;
    OGR_Layer *layer;
@@ -2162,9 +2169,12 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
             if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
                Obs_Render(NULL,obs,vp,proj,GL_RENDER);
             }
+#ifdef HAVE_ECBUFR
+            TMetObs *met;
             if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
                MetObs_Render(NULL,met,vp,proj,GL_RENDER);
             }
+#endif
             if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
                Traj_Render(NULL,traj,vp,proj,GL_RENDER);
             }
@@ -2193,9 +2203,12 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
          if ((obs=Obs_Get(vp->DataItem.Array[i]))) {
             Obs_Render(Interp,obs,vp,proj,GL_RENDER);
          }
+#ifdef HAVE_ECBUFR
+         TMetObs *met;
          if ((met=MetObs_Get(vp->DataItem.Array[i]))) {
             MetObs_Render(Interp,met,vp,proj,GL_RENDER);
          }
+#endif
          if ((traj=Traj_Get(vp->DataItem.Array[i]))) {
             Traj_Render(Interp,traj,vp,proj,GL_RENDER);
          }

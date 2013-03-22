@@ -55,7 +55,7 @@
 #include <pwd.h>
 #include <pthread.h>
 
-#include "tclUtils.h"
+#include "tcl.h"
 
 int Tclsystem_Init(Tcl_Interp *Interp);
 int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile);

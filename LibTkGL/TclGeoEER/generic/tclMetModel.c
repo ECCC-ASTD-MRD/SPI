@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
 
 #include "tclMetObs.h"
 
@@ -476,3 +477,5 @@ int MetModel_Free(TMetModel *Model) {
 
   return(1);
 }
+
+#endif

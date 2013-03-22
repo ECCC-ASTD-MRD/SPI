@@ -30,6 +30,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_FLT
 
 #include <malloc.h>
 
@@ -416,3 +417,5 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 
    return(1);
 }
+
+#endif

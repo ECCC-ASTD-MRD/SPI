@@ -33,7 +33,7 @@
 */
 #include "tclSystem.h"
 
-#ifdef LNK_DMV
+#ifdef HAVE_DMV
 #include "libdmv.h"
 #endif
 
@@ -957,7 +957,7 @@ static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    static CONST char *sopt[] = { "-step","-copy","-move","-sync","-wait","-exec",NULL };
    enum               opt { STEP,COPY,MOVE,SYNC,WAIT,EXEC };
 
-#ifdef LNK_DMV
+#ifdef HAVE_DMV
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {

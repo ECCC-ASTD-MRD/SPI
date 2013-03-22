@@ -1443,11 +1443,11 @@ int glPostscripTextLayout(Tcl_Interp *Interp,Tk_Canvas canvas,Tk_TextLayout layo
 
    Tk_GetFontMetrics(layoutPtr->tkfont,&fm);
 
-   Tcl_AppendPrintfToObj(psObj,"%.15g %.15g %.15g [\n",angle,x,Tk_CanvasPsY(canvas,y));
+   Tcl_AppendPrintfToObj(psObj,"gsave\n%.15g %.15g %.15g [\n",angle,x,Tk_CanvasPsY(canvas,y));
    Tcl_ResetResult(Interp);
    Tk_TextLayoutToPostscript(Interp,layout);
    Tcl_AppendObjToObj(psObj,Tcl_GetObjResult(Interp));
-   Tcl_AppendPrintfToObj(psObj,"] %d %g %g %s %s DrawText\n",fm.linespace,dx/-2.0,dy/2.0,dj,((stipple==None)?"false":"true"));
+   Tcl_AppendPrintfToObj(psObj,"] %d %g %g %s %s DrawText\ngrestore\n",fm.linespace,dx/-2.0,dy/2.0,dj,((stipple==None)?"false":"true"));
 
   done:
     (void) Tcl_RestoreInterpState(Interp, interpState);

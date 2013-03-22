@@ -46,7 +46,7 @@ void     Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void     GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
 void     GraphUnSet(GraphItem *GR);
 int      Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
-double   Graph_Expand(TData *Data,double Y);
+double   Graph_Pixel2Grid(TData *Data,double X,double Y);
 Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 
@@ -588,7 +588,7 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Graph_Expand>
+ * Nom      : <Graph_Pixel2Grid>
  * Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Apply vertical expansion factors
@@ -603,24 +603,53 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
  *
  *----------------------------------------------------------------------------
 */
-double Graph_Expand(TData *Data,double Y) {
-
-   int j;
-
+double Graph_Pixel2Grid(TData *Data,double X,double Y) {
+   
+   int x,n,inc;
+   double dx,h[2],y[2];
+   
+   // If this is an xsection
    if (Data->Ref->Grid[0]=='V') {
-      for(j=0;j<Data->Def->NJ;j++) {
-         if (Data->Ref->ZRef.Levels[0]>Data->Ref->ZRef.Levels[Data->Def->NJ-1]) {
-            if (Y>=Data->Ref->ZRef.Levels[j]) {
-               break;
-            }
-         } else {
-            if (Y<=Data->Ref->ZRef.Levels[j]) {
-               break;
+      
+      // If it is mapped in pressure or MAGL
+      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
+         inc=Data->Ref->Hgt[0]<Data->Ref->Hgt[Data->Def->NI]?1:0;
+         x=floor(X);
+         dx=X-x;
+         y[1]=inc?-1e32:1e32;
+         n=0;
+         
+         // Find correct level
+         while((inc?y[1]<=Y:y[1]>=Y)) {
+            h[0]=Data->Ref->Hgt[n*Data->Def->NI+x];
+            h[1]=Data->Ref->Hgt[n*Data->Def->NI+x+1];
+            y[1]=ILIN(h[0],h[1],dx);
+            n++;
+         }
+         
+         n-=2;
+         h[0]=Data->Ref->Hgt[n*Data->Def->NI+x];
+         h[1]=Data->Ref->Hgt[n*Data->Def->NI+x+1];
+         y[0]=ILIN(h[0],h[1],dx);
+     } else {
+        inc=Data->Ref->ZRef.Levels[0]<Data->Ref->ZRef.Levels[1]?1:0;
+        for(n=0;n<Data->Def->NJ;n++) {
+            if (inc) {
+               if (Y<=Data->Ref->ZRef.Levels[n]) {
+                  break;
+               }
+            } else {
+               if (Y>=Data->Ref->ZRef.Levels[n]) {
+                  break;
+               }
             }
          }
+         y[0]=Data->Ref->ZRef.Levels[n-1];
+         y[1]=Data->Ref->ZRef.Levels[n];
+         n--;
       }
-
-      Y=j+(Y-Data->Ref->ZRef.Levels[j-1])/(Data->Ref->ZRef.Levels[j]-Data->Ref->ZRef.Levels[j-1]);
+      // Find Y grid coordinate
+      Y=n<0?-1:n+(Y-y[0])/(y[1]-y[0]);         
    }
    return(Y);
 }
@@ -767,9 +796,14 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
 
       if (Item->Data) {
          if ((data=Data_Get(Item->Data))) {
-            y=Graph_Expand(data,y);
-            spd=VertexVal(data->Ref,data->Def,-1,x,y,0.0);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
+            if ((y=Graph_Pixel2Grid(data,x,y))>=0) {
+               if (data->Spec->InterpDegree[0]=='N') {
+                  x=ROUND(x);
+                  y=ROUND(y);
+               }
+               spd=VertexVal(data->Ref,data->Def,-1,x,y,0.0);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
+            }
          }
       }
    }

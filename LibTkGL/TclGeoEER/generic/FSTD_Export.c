@@ -31,6 +31,8 @@
  *==============================================================================
  */
 
+#ifdef HAVE_RMN
+
 #include "tclFSTD.h"
 #include "tclGDAL.h"
 
@@ -380,3 +382,5 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    fclose(fid);
    return(TCL_OK);
 }
+
+#endif

@@ -133,15 +133,6 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
-#----- sqlite-tea
-cd ${ARCH_PATH}/${SQLITE}-tea
-make distclean
-./configure --prefix=${TCL_PATH} --enable-shared --enable-threads --with-tclinclude=${TCL_PATH}/include/ --with-tcl=${TCL_PATH}/lib/
-make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
-
 #----- geos
 cd ${ARCH_PATH}/${GEOS}
 make distclean

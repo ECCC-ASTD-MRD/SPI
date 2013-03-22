@@ -19,6 +19,8 @@
 #ifndef _tclGRIB_h
 #define _tclGRIB_h
 
+#ifdef HAVE_GRIB
+
 #include "grib_api.h"
 #include "tclData.h"
 #include "tclFSTD.h"
@@ -75,6 +77,6 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle);
 
 #endif
-
+#endif
 
 

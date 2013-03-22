@@ -397,9 +397,11 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    /*Check for tographic info*/
    if (Band->Spec->Topo) {
       tband=GDAL_BandGet(Band->Spec->Topo);
+#ifdef HAVE_GDB
       if (Band->Spec->Topo[0]=='I') {
          handle=gdb_mapopen(GDB_RES,GDB_MAP_DEM,&t);
       }
+#endif
    }
 
    /*Check tile sampling resolution*/
@@ -464,7 +466,9 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                   }
                } else {
                   if (Band->Spec->Topo[0]=='I' && handle) {
+#ifdef HAVE_GDB
                      gdb_mapget(handle,tl[j][1],tl[j][0],(void*)&z);tl[j][2]=z;
+#endif
                   } else {
                      ix=dx;
                      iy=dy;
@@ -518,8 +522,10 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    Tile->Tl=tl;
    Tile->Flag|=GEOTEX_COOR;
 
+#ifdef HAVE_GDB
    if (handle)
       gdb_mapclose(handle);
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------

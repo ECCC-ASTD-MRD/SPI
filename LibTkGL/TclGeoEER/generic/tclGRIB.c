@@ -15,6 +15,8 @@
 *
 *==============================================================================
 */
+#ifdef HAVE_GRIB
+
 #include "tclGRIB.h"
 
 static int           GRIBInit=0;
@@ -368,3 +370,4 @@ int TclGRIB_Init(Tcl_Interp *Interp) {
    return(TCL_OK);
 }
 
+#endif

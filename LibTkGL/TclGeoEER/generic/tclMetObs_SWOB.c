@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
 
 #include "tclMetObs.h"
 #include "tclXML.h"
@@ -234,3 +235,5 @@ int MetObs_LoadSWOB(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    return(state?TCL_OK:TCL_ERROR);
 }
+
+#endif

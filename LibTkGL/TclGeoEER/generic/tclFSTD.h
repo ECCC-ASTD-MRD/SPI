@@ -36,8 +36,6 @@
 #define _tclFSTD_h
 
 #include "tclData.h"
-#include "EZTile.h"
-#include "ZRefInterp.h"
 
 #define FSTD_NKMAX     1024
 #define FSTD_LISTNONE   0
@@ -105,7 +103,6 @@ int    FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Re
 void   FSTD_FieldSet(TData *Data);
 int    FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType);
 
-void   FSTD_DataMap(TData *Field,int Idx);
 int    FSTD_DecodeRPNLevelParams(TData *Field);
 
 Vect3d*    FSTD_Grid(TData *Field,void *Proj,int Level);

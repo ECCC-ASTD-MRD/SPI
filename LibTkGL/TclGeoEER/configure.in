@@ -20,6 +20,27 @@ dnl	to configure the system for the local environment.
 #-----------------------------------------------------------------------
 
 AC_INIT([TclGeoEER], [7.6.0])
+AC_CONFIG_MACRO_DIR(m4)
+
+#--------------------------------------------------------------------
+# Call specific package option macros to set up initial vars.
+#--------------------------------------------------------------------
+
+dnl ---------------------------------------------------------------------------
+dnl Check for GDAL/OGR
+dnl ---------------------------------------------------------------------------
+
+# GDAL_REQ_VERSION="1.9.0"
+# LIB_GDAL($GDAL_REQ_VERSION)
+# 
+# if test "$HAVE_GDAL" = "yes"; then
+#     LIBS="$LIBS $GDAL_LDFLAGS"
+#     INCLUDES="$INCLUDES $GDAL_CFLAGS"
+#     PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDAL"
+# fi
+# 
+# AC_SUBST([HAVE_GDAL], $HAVE_GDAL)
+# AC_SUBST([GDAL_INCLUDE], $GDAL_CFLAGS)
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.

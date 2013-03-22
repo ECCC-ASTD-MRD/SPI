@@ -29,6 +29,9 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
+#ifdef HAVE_RMN
+
 #include "tclMetObs.h"
 
 TCL_DECLARE_MUTEX(MUTEX_BURPFILE)
@@ -255,3 +258,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    Tcl_MutexUnlock(&MUTEX_BURPFILE);
    return(code);
 }
+
+#endif
+#endif

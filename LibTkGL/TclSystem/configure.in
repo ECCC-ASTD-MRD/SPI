@@ -102,7 +102,6 @@ else
     # Ensure no empty else clauses
     :
     #TEA_ADD_SOURCES([unix/unixFile.c])
-    TEA_ADD_LIBS([-ldmv])
 fi
 
 #--------------------------------------------------------------------

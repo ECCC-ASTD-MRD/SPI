@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
 
 #include "tclMetObs.h"
 
@@ -245,3 +246,5 @@ int MetObs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
 
    return(TCL_OK);
 }
+
+#endif

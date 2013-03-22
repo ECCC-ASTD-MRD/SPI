@@ -47,11 +47,56 @@ void  Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 void  Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
+void  Data_MapColor(TData *Field,int Idx);
+int   Data_Grid3D(TData *Field,Projection* Proj);
 
 extern int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DataMap>
+ * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Precalcul des index dans la palette de couleur.
+ *
+ * Parametres   :
+ *  <Field>     : Champs de donnees
+ *  <Idx>       : Utiliser les index
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void Data_MapColor(TData *Field,int Idx) {
+
+   int    i;
+   double v=0.0;
+
+   if (Field->Map) free(Field->Map);
+
+   if ((Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float)))) {
+
+      if (Idx) {
+         if (Field->Ref->Idx) free(Field->Ref->Idx);
+         Field->Ref->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
+         Field->Ref->NIdx=0;
+      }
+
+      for (i=0;i<FSIZE2D(Field->Def);i++) {
+         Def_Get(Field->Def,0,i,v);
+         VAL2COL(Field->Map[i],Field->Spec,v);
+         Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
+
+         if (Idx && Field->Ref->Idx && Field->Map[i]>=0) {
+            Field->Ref->Idx[Field->Ref->NIdx++]=i;
+         }
+      }
+   }
+}
 
 /*----------------------------------------------------------------------------
  * Nom      : <Data_Render>
@@ -736,7 +781,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    }
 
    if (!Field->Map) {
-      FSTD_DataMap(Field,True);
+      Data_MapColor(Field,True);
    }
 
    /*Setup 1D Texture*/
@@ -1115,7 +1160,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    pos=Field->Ref->Pos[Field->Def->Level];
 
    if (!Field->Map)
-      FSTD_DataMap(Field,False);
+      Data_MapColor(Field,False);
 
    glLineWidth(1.0);
    if (Field->Spec->InterpDegree[0]=='L') {

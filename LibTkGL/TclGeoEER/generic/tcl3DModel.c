@@ -1099,7 +1099,9 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
          if (!(c=Model_LoadKML(Interp,mdl,Path))) {
             if (!(c=Model_LoadDAE(Interp,mdl,Path))) {
                if (!(c=Model_Load3DS(Interp,mdl,Path))) {
+#ifdef HAVE_FLT
                   c=Model_LoadFLT(Interp,mdl,Path);
+#endif
                }
             }
          }

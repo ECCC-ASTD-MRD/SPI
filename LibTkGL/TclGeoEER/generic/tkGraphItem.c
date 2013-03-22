@@ -50,29 +50,118 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 static int GraphItem_Create(Tcl_Interp *Interp,char *Name);
 static int GraphItem_Free(Tcl_Interp *Interp,char *Name);
 
-void GraphItem_Clear(TGraphItem *Item);
-void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int N);
-int  GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
-int  GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode);
-void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
-void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
-void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
-void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
-void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut);
-void GraphItem_Wipe();
-void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1);
-void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-int  GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
+void   GraphItem_Clear(TGraphItem *Item);
+int    GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
+int    GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void   GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void   GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void   GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+void   GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DGrid(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1);
+void   GraphItem_Wipe();
+void   GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1);
+void   GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
+void   GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
+void   GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
+int    GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_ColorXYZ>
+ * Creation     : Janvier 2007 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Activer une couleur indexee
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Graph>    : Item graph
+ *   <Item>     : Item de graph
+ *   <N>        : Index de la couleur a utiliser *
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static inline void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int N) {
+
+   XColor *color;
+   Tcl_Obj *col;
+
+   if (Item->Colors) {
+      Tcl_ListObjIndex(Interp,Item->Colors,N,&col);
+      if (col) {
+         color=Tk_AllocColorFromObj(Item->Interp,Tk_CanvasTkwin(Graph->canvas),col);
+         if (Interp) {
+            Tk_CanvasPsColor(Interp,Graph->canvas,color);
+         } else {
+            glColor4us(color->red,color->green,color->blue,Item->Alpha*Graph->Alpha*0.01*655);
+         }
+      }
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GraphItem_VectorPlace>
+ * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Reprojeter une coordonnee points de grille dans le referentiel du graph et selon la position des niveaux
+ *
+ * Parametres   :
+ *   <Data>     : Champs
+ *   <AxisX>    : Axe en X
+ *   <AxisY>    : Axe en Y
+ *   <AxisZ>    : Axe en Z
+ *   <X0>       : Limite inferieure gauche du graph
+ *   <Y0>       : Limite inferieure gauche du graph
+ *   <VIn>      : Vecteur en entree
+ *   <VOut>     : Vecteur reprojete
+ *
+ * Retour       :
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static inline void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut){
+
+   int    d[2];
+   double y,v[2],h[2];
+
+   d[0]=floor(VIn[0]);
+   d[1]=floor(VIn[1]);
+
+   if (Data->Ref->Grid[0]=='V') {
+      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
+         h[0]=Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]];
+         h[1]=Data->Ref->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
+         v[0]=ILIN(h[0],h[1],VIn[0]-d[0]);
+
+         h[0]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]];
+         h[1]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+(d[0]+1)];
+         v[1]=ILIN(h[0],h[1],VIn[0]-d[0]);
+      } else {
+         v[0]=Data->Ref->ZRef.Levels[d[1]];
+         v[1]=Data->Ref->ZRef.Levels[d[1]+1];
+      }
+   } else {
+      v[0]=d[1];
+      v[1]=d[1]+1;
+   }
+
+   y=ILIN(v[0],v[1],VIn[1]-d[1]);
+
+   VOut[0]=X0+AXISVALUE(AxisX,VIn[0]);
+   VOut[1]=Y0+AXISVALUE(AxisY,y);
+   VOut[2]=0.0;
+}
+ 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclGraphItem_Init>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
@@ -939,13 +1028,13 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          GraphAxis_Define(axisx,NULL,X1-X0);
          GraphAxis_Define(axisy,NULL,Y1-Y0);
 
-         if (data->Spec->RenderTexture)
+         if (data->Spec->RenderTexture) {
             if (GLRender->ShaderAvailable) {
                GraphItem_Display2DTextureShader(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
             } else {
                 GraphItem_Display2DTexture(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
             }
-
+         }
          if (data->Spec->RenderContour)
             GraphItem_Display2DContour(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
@@ -1329,42 +1418,6 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             }
          }
          glDisableClientState(GL_VERTEX_ARRAY);
-      }
-   }
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GraphItem_ColorXYZ>
- * Creation     : Janvier 2007 - J.P. Gauthier - CMC/CMOE
- *
- * But          : Activer une couleur indexee
- *
- * Parametres   :
- *   <Interp>   : Interpreteur Tcl
- *   <Graph>    : Item graph
- *   <Item>     : Item de graph
- *   <N>        : Index de la couleur a utiliser *
- *
- * Retour       :
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void GraphItem_ColorXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int N) {
-
-   XColor *color;
-   Tcl_Obj *col;
-
-   if (Item->Colors) {
-      Tcl_ListObjIndex(Interp,Item->Colors,N,&col);
-      if (col) {
-         color=Tk_AllocColorFromObj(Item->Interp,Tk_CanvasTkwin(Graph->canvas),col);
-         if (Interp) {
-            Tk_CanvasPsColor(Interp,Graph->canvas,color);
-         } else {
-            glColor4us(color->red,color->green,color->blue,Item->Alpha*Graph->Alpha*0.01*655);
-         }
       }
    }
 }
@@ -2210,61 +2263,6 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <GraphItem_VectorPlace>
- * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
- *
- * But          : Reprojeter une coordonnee points de grille dans le referentiel du graph et slon la position des niveaux
- *
- * Parametres   :
- *   <Data>     : Champs
- *   <AxisX>    : Axe en X
- *   <AxisY>    : Axe en Y
- *   <AxisZ>    : Axe en Z
- *   <X0>       : Limite inferieure gauche du graph
- *   <Y0>       : Limite inferieure gauche du graph
- *   <VIn>      : Vecteur en entree
- *   <VOut>     : Vecteur reprojete
- *
- * Retour       :
- *
- * Remarques :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,Vect3d VIn,Vect3d VOut){
-
-   int    d[2];
-   double y,v[2],h[2];
-
-   d[0]=floor(VIn[0]);
-   d[1]=floor(VIn[1]);
-
-   if (Data->Ref->Grid[0]=='V') {
-      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
-         h[0]=Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]];
-         h[1]=Data->Ref->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
-         v[0]=ILIN(h[0],h[1],VIn[0]-d[0]);
-
-         h[0]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]];
-         h[1]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+(d[0]+1)];
-         v[1]=ILIN(h[0],h[1],VIn[0]-d[0]);
-      } else {
-         v[0]=Data->Ref->ZRef.Levels[d[1]];
-         v[1]=Data->Ref->ZRef.Levels[d[1]+1];
-      }
-   } else {
-      v[0]=d[1];
-      v[1]=d[1]+1;
-   }
-
-   y=ILIN(v[0],v[1],VIn[1]-d[1]);
-
-   VOut[0]=X0+AXISVALUE(AxisX,VIn[0]);
-   VOut[1]=Y0+AXISVALUE(AxisY,y);
-   VOut[2]=0.0;
-}
-
-/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GraphItem_Display2DContour>
  * Creation     : Mai 2005 - J.P. Gauthier - CMC/CMOE
  *
@@ -2514,35 +2512,36 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
          /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
          v0=fabs(pix[0]-AXISVALUE(AxisX,i+1));
          v1=fabs(pix[1]-AXISVALUE(AxisY,j+1));
-         dt=FMAX(v0,v1);
-         step=10.0/FMAX(v0,v1);
-
+         dt=v1;
+         step=1.0/v0;
+         
          /*Get the streamline */
-         j=Graph_Expand(Data,j);
-         b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
-         f=FFStreamLine(Data->Ref,Data->Def,NULL,&vbuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
+         if ((j=Graph_Pixel2Grid(Data,i,j))>=0) {
+            b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
+            f=FFStreamLine(Data->Ref,Data->Def,NULL,&vbuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
 
-         /* If we have at least some part of it */
-         if (b+f>10) {
-            glPushMatrix();
-            /*Translate the texture to mix the zoids*/
-            glTranslatef(-Data->Spec->TexStep-(dt+=0.15),0.0,0.0);
+            /* If we have at least some part of it */
+            if (b+f>10) {
+               glPushMatrix();
+               /*Translate the texture to mix the zoids*/
+               glTranslatef(-Data->Spec->TexStep-(dt+=0.15),0.0,0.0);
 
-            /*Place streamlin within graph*/
-            for(c=len-b;c<len+f;c++) {
-               GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,vbuf[c],vbuf[c]);
+               /*Place streamlin within graph*/
+               for(c=len-b;c<len+f;c++) {
+                  GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,vbuf[c],vbuf[c]);
+               }
+               glLineWidth(Data->Spec->Width);
+               glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+               glVertexPointer(3,GL_DOUBLE,0,&vbuf[len-b]);
+
+               glDrawArrays(GL_LINE_STRIP,0,b+f);
+
+               glLineWidth(8*Data->Spec->Width);
+               glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+               glDrawArrays(GL_LINE_STRIP,0,b+f);
+
+               glPopMatrix();
             }
-            glLineWidth(Data->Spec->Width);
-            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-            glVertexPointer(3,GL_DOUBLE,0,&vbuf[len-b]);
-
-            glDrawArrays(GL_LINE_STRIP,0,b+f);
-
-            glLineWidth(8*Data->Spec->Width);
-            glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-            glDrawArrays(GL_LINE_STRIP,0,b+f);
-
-            glPopMatrix();
          }
       }
    }
@@ -2710,8 +2709,8 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    int    i,j,idx,f;
-   double u,w,len;
-   Vect3d pin,pout;
+   double u,w,len,da=0.0;
+   Vect3d pin,pout,ppout;
 
    if (!Data->Def->Data[2]) {
       return;
@@ -2748,15 +2747,24 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
                }
             }
 
+            // Position vector
             pin[0]=i;
             pin[1]=j;
             GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,pin,pout);
 
+            // Calculate topo angle when using reprojected height (pressure or magl)
+/*            if (Data->Ref->Grid[0]=='V' && Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
+               pin[0]=i-1;
+               pin[1]=j;
+               GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,pin,ppout);
+               da=i==0?0:-atan2(pout[1]-ppout[1],pout[0]-ppout[0]);
+            }
+*/          
             if (Interp) {
                glFeedbackInit(256,GL_2D);
                pout[1]=Tk_CanvasPsY(Graph->canvas,pout[1]);
             }
-            Data_RenderBarbule(Data->Spec->RenderVector,f,0.0,pout[0],pout[1],0.0,len,-RAD2DEG(atan2(u,w)),VECTORSIZE(Data->Spec,len),NULL);
+            Data_RenderBarbule(Data->Spec->RenderVector,f,0.0,pout[0],pout[1],0.0,len,-RAD2DEG(atan2(u,w)+da),VECTORSIZE(Data->Spec,len),NULL);
             if (Interp) {
                glFeedbackProcess(Interp,GL_2D);
             }

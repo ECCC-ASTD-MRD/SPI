@@ -5,7 +5,6 @@ INST=/users/dor/afsr/005
 LIB=${INST}/lib/${BASE_ARCH}
 INC=${INST}/include
 
-export LDFLAGS="-L${LIB}"
 export CC=c99
 
 echo ""
@@ -15,13 +14,14 @@ echo ""
 echo ""
 echo "----- Making System Call Library Object -----"
 echo ""
-export CFLAGS="-D_GNU_SOURCE -DLNK_DMV -I${INC} -I${INC}/libeer -I${INC}/dmv"  
+export LDFLAGS="-L${LIB} -ldmv"
+export CFLAGS="-D_GNU_SOURCE -DHAVE_DMV -I${INC} -I${INC}/dmv"  
 cd TclSystem
-#./configure \
-#   --exec-prefix=${LIB}/TclTk/lib \
-#   --enable-threads \
-#   --enable-64bit \
-#   --with-tcl=${LIB}/TclTk/lib
+./configure \
+   --exec-prefix=${LIB}/TclTk \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib
 
 $MAKE install
 ln -fs ${LIB}/TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem.so
@@ -29,14 +29,16 @@ ln -fs ${LIB}/TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem.so
 echo ""
 echo "----- Making OpenGL Canvas Library Object -----"
 echo ""
+export LDFLAGS="-L${LIB}"
 export CFLAGS=""  
 cd ../TkglCanvas
-#./configure \
-#   --exec-prefix=${LIB}/TclTk/lib \
-#   --enable-threads \
-#   --enable-64bit \
-#   --with-tcl=${LIB}/TclTk/lib \
-#   --with-tk=${LIB}/TclTk/lib
+./configure \
+   --prefix=${LIB}/TclTk/ \
+   --exec-prefix=${LIB}/TclTk/ \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib \
+   --with-tk=${LIB}/TclTk/lib
 
 $MAKE install
 ln -fs ${LIB}/TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.so
@@ -44,14 +46,15 @@ ln -fs ${LIB}/TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.s
 echo ""
 echo "----- Making Tcl GeoEER Library Object -----"
 echo ""
-export CFLAGS="-D_GNU_SOURCE -DLNK_FSTD -DLNK_GRIB -DLNK_DMV -I${INC} -I${INC}/libeer -I${INC}/rmnlib -I${INC}/gdb -I${INC}/gdal -I${INC}/urp -I${INC}/grib_api -I${INC}/libecbufr -I${INC}/fltlib"  
+export LDFLAGS="-L${LIB}"
+export CFLAGS="-D_GNU_SOURCE -DHAVE_GDB -DHAVE_RMN -DHAVE_GRIB -DHAVE_ECBUFR -DHAVE_FLT -DHAVE_GDAL -I${INC} -I${INC}/libeer -I${INC}/gdb -I${INC}/gdal -I${INC}/rmnlib -I${INC}/urp -I${INC}/grib_api -I${INC}/libecbufr -I${INC}/fltlib"  
 cd ../TclGeoEER
-#./configure \
-#   --exec-prefix=${LIB}/TclTk/lib \
-#   --enable-threads \
-#   --enable-64bit \
-#   --with-tcl=${LIB}/TclTk/lib \
-#   --with-tk=${LIB}/TclTk/lib
+./configure \
+   --exec-prefix=${LIB}/TclTk \
+   --enable-threads \
+   --enable-64bit \
+   --with-tcl=${LIB}/TclTk/lib \
+   --with-tk=${LIB}/TclTk/lib
 
 $MAKE install
 ln -fs ${LIB}/TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so ${LIB}/libTclGeoEER.so

@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
 
 #include "tclMetObs.h"
 #include "Projection.h"
@@ -1966,7 +1967,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       return(0);
    }
 
-   if (!Obs->Model) {
+   if (!Obs || !Obs->Model) {
       return(0);
    }
 
@@ -3076,3 +3077,5 @@ int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {
    }
    return(TCL_OK);
 }
+
+#endif

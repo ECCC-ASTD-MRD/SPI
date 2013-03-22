@@ -31,8 +31,12 @@
  *==============================================================================
  */
 
+#ifdef HAVE_RMN
+
 #include "tclFSTD.h"
 #include "Projection.h"
+#include "EZTile.h"
+#include "ZRefInterp.h"
 
 TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
@@ -288,7 +292,6 @@ int FSTD_FieldReadMesh(TData *Field) {
    FSTD_Head *head=(FSTD_Head*)Field->Head;
    int        key,ni,nj,nk;
 
-#ifdef LNK_FSTD
    if (!Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
       return(0);
 
@@ -351,7 +354,7 @@ int FSTD_FieldReadMesh(TData *Field) {
       }
       FSTD_FileUnset(NULL,head->FID);
    }
-#endif
+
    return(Field->Ref->Lat && Field->Ref->Lon);
 }
 
@@ -464,49 +467,6 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_DataMap>
- * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Precalcul des index dans la palette de couleur.
- *
- * Parametres   :
- *  <Field>     : Champs de donnees
- *  <Idx>       : Utiliser les index
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void FSTD_DataMap(TData *Field,int Idx) {
-
-   int    i;
-   double v=0.0;
-
-   if (Field->Map) free(Field->Map);
-
-   if ((Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float)))) {
-
-      if (Idx) {
-         if (Field->Ref->Idx) free(Field->Ref->Idx);
-         Field->Ref->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
-         Field->Ref->NIdx=0;
-      }
-
-      for (i=0;i<FSIZE2D(Field->Def);i++) {
-         Def_Get(Field->Def,0,i,v);
-         VAL2COL(Field->Map[i],Field->Spec,v);
-         Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
-
-         if (Idx && Field->Ref->Idx && Field->Map[i]>=0) {
-            Field->Ref->Idx[Field->Ref->NIdx++]=i;
-         }
-      }
-   }
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <FSTD_Grid>
  * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
  *
@@ -533,7 +493,6 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    int        i,j,idx,ni,nj,nk,ip1;
    int        idxi,idxk;
 
-#ifdef LNK_FSTD
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
    /*Verifier la validite de la grille*/
@@ -696,7 +655,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    }
 
    if (gz) free(gz);
-#endif
+
    return(Field->Ref->Pos[Level]);
 }
 
@@ -993,7 +952,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    int        ez=1,ok=-1,idx,n,i,j,k;
    void      *pf0,*pt0,*pf1,*pt1;
 
-#ifdef LNK_FSTD
    if (!FieldFrom || !FieldFrom->Ref) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Origin field not valid",(char*)NULL);
       return(TCL_ERROR);
@@ -1100,7 +1058,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          }
       }
    }
-#endif
 
    /*In case of vectorial field, we have to recalculate the module*/
    if (FieldTo->Def->NC>1) {
@@ -1138,8 +1095,6 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    TData     *field;
    FSTD_Head *head0=(FSTD_Head*)Field0->Head;
    FSTD_Head *head1=(FSTD_Head*)Field1->Head;
-
-#ifdef LNK_FSTD
 
    if (!Field0) {
       Tcl_AppendResult(Interp,"FSTD_FieldTimeInterpolate: Initial field not valid",(char*)NULL);
@@ -1201,7 +1156,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    if (field->Ref)
       GeoRef_Destroy(Interp,field->Ref->Name);
    field->Ref=GeoRef_Copy(Field0->Ref);
-#endif
+
    return(TCL_OK);
 }
 
@@ -1551,7 +1506,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Grid,-1));
             } else {
-#ifdef LNK_FSTD
                grtyp=Tcl_GetString(Objv[++i]);
 
                if (Objc==2 && (Field->Ref && grtyp[0]==Field->Ref->Grid[0])) {
@@ -1601,7 +1555,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                }
                if (ref)
                   GeoRef_Destroy(Interp,ref->Name);
-#endif
             }
             break;
 
@@ -1819,7 +1772,6 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
    char       buf[32];
 
    /*Recuperer les index de tout les champs satisfaisant*/
-#ifdef LNK_FSTD
    file=FSTD_FileGet(Interp,Id);
    if(FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
@@ -1837,7 +1789,7 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
       Tcl_AppendElement(Interp,buf);
    }
    free(idlst);
-#endif
+
    return(TCL_OK);
 }
 
@@ -1866,8 +1818,6 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
    FSTD_Head  h;
    int        ok,ni,nj,nk;
    char       buf[1024],grtyp[2];
-
-#ifdef LNK_FSTD
 
    file=FSTD_FileGet(Interp,Id);
    if(FSTD_FileSet(Interp,file)<0)
@@ -1901,7 +1851,7 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
       ni,nj,nk,h.NBITS,h.DATYP,grtyp[0],h.IG1,h.IG2,h.IG3,h.IG4,h.SWA,
       h.LNG,h.DLTF,h.UBC,h.EX1,h.EX2,h.EX3);
    Tcl_AppendResult(Interp,buf,(char*)NULL);
-#endif
+
    return(TCL_OK);
 }
 
@@ -1936,7 +1886,6 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    if (Mode==FSTD_LISTNONE) {
       return(TCL_OK);
    }
-#ifdef LNK_FSTD
 
    if((nb=FSTD_FileSet(Interp,File))<0)
       return(TCL_ERROR);
@@ -2091,7 +2040,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    }
    EZUnLock_RPNField();
    FSTD_FileUnset(Interp,File);
-#endif
+
    Tcl_DecrRefCount(obj);
    Tcl_SetObjResult(Interp,list);
    return(TCL_OK);
@@ -2135,7 +2084,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    char         nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
    double       nhour,val=0.0;
 
-#ifdef LNK_FSTD
    file=FSTD_FileGet(Interp,Id);
    if(FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
@@ -2411,7 +2359,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    field->Spec->Desc=strdup(h.NOMVAR);
    memcpy(field->Head,&h,sizeof(FSTD_Head));
 
-#endif
    FSTD_FileUnset(Interp,file);
    return(TCL_OK);
 }
@@ -2453,7 +2400,6 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    if (Field->Def->NK>1 || Field->Ref->Grid[0]=='V')
       return(1);
 
-#ifdef LNK_FSTD
    if (FSTD_FileSet(Interp,head->FID)<0)
       return(0);
 
@@ -2639,7 +2585,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    FSTD_FileUnset(Interp,head->FID);
 
    Data_GetStat(Field);
-#endif
+
    return(1);
 }
 
@@ -2672,7 +2618,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    unsigned long k,idx;
    void         *p;
 
-#ifdef LNK_FSTD
    /*Verifier l'existence du champs*/
    if (!Field) {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
@@ -2738,7 +2683,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    EZUnLock_RPNField();
 
    FSTD_FileUnset(Interp,file);
-#endif
 
    if (ok>=0){
       return(TCL_OK);
@@ -2749,15 +2693,14 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_ZGrid>
+ * Nom      : <FSTD_ZFilterTopo>
  * Creation : Septembre 2007 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Creer les tic-tac pour une grille Z.
+ * But      : Appliquer le filtre GEM
  *
  * Parametres :
  *  <Interp>  : Interpreteur TCL.
- *  <Tic>     : Nom du champs >>
- *  <Tac>     : Nom du champs ^^
+ *  <Field>   : Champ a filtrer
  *  <Set>     : Array Tcl du contenue de namelist (gem_settings.nml)
  *
  * Retour:
@@ -2767,19 +2710,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
  *
  *----------------------------------------------------------------------------
 */
-/*
-* lagrd         limited-area flag
-* grdtyp        3 options only: 'G'=PHI grid, 'U'=U grid, 'V'=V grid
-* digfil        if .true. then apply digital filter
-* dgfm          2*(dgfm-1) = maximum number of neighbour points to be used by the digital filter (dgfm >= 1)
-* lcfac         factor that controls the critical wavelength
-* mlr           minimum value of mesh-length ratio necessary to activate the digital filter (mlr >= 1.0)
-* mapfac        if .true. then consider the map-scale factor
-* norm          if .true. then use normalized coefficients for digital filter
-* tdxfil        if .true. then apply 2-delta-xy filter
-* frco          2-delta-xy filter coefficient (0.0 <= frco <= 0.5)
-*/
-
 int FSTD_ZFilterTopo(Tcl_Interp *Interp,TData *Field,Tcl_Obj *Set) {
 
    Tcl_Obj *obj;
@@ -2856,314 +2786,4 @@ int FSTD_ZFilterTopo(Tcl_Interp *Interp,TData *Field,Tcl_Obj *Set) {
    return(TCL_OK);
 }
 
-int FSTD_ZGrid(Tcl_Interp *Interp,Tcl_Obj *Tic,Tcl_Obj *Tac,Tcl_Obj *Set) {
-
-   Tcl_Obj *obj;
-   double   dval;
-   TData   *field[2];
-
-   char Grd_typ_S[2]="GU",Grd_proj_S[2]="L\0";
-   int Grd_ni=0,Grd_nj=0,Grd_nila=0,Grd_njla=0,Grd_iref=0,Grd_jref=0,Grd_roule=0,Grd_uniform_L=0;
-   float Grd_latr=0.0f,Grd_lonr=0.0f,Grd_dx=0.0f,Grd_dy=0.0f,Grd_dxmax=360.0f,Grd_dymax=180.0f,Grd_phir=22.5f,Grd_dgrw=10.0f;
-   float Grd_xlat1=0.0f,Grd_xlon1=180.0f,Grd_xlat2=0.0f,Grd_xlon2=270.0f,Grd_x0=0.0f,Grd_y0=0.0f,Grd_xl=0.0f,Grd_yl=0.0f;
-   float xg1,xg2,xg3;
-
-   float  stretch=-1.0;
-   int    debug=0;
-   char   ns[3];
-   int    i,j,ni,nila,nleft,nimax,nbelo,njmax,np,gauss=0,stag;
-   float  *xp,*yp;
-   double *x_8,*y_8;
-
-   float r1,s1,x,y,maxlat,minlat,v1,v2,v3;
-   double epsilon=1.0e-3,epsilat=90.0,dx_8,latr_8,lonr_8,phidg_8;
-
-   FSTD_Head h;
-
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_TYP_S",0x0)))     { Grd_typ_S[0]=Tcl_GetString(obj)[0];Grd_typ_S[1]=Tcl_GetString(obj)[1]; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_PROJ_S",0x0)))    { Grd_proj_S[0]=Tcl_GetString(obj)[0]; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_NI",0x0)))        { Tcl_GetIntFromObj(Interp,obj,&Grd_ni); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_NJ",0x0)))        { Tcl_GetIntFromObj(Interp,obj,&Grd_nj); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_NILA",0x0)))      { Tcl_GetIntFromObj(Interp,obj,&Grd_nila); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_NJLA",0x0)))      { Tcl_GetIntFromObj(Interp,obj,&Grd_njla); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_IREF",0x0)))      { Tcl_GetIntFromObj(Interp,obj,&Grd_iref); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_JREF",0x0)))      { Tcl_GetIntFromObj(Interp,obj,&Grd_jref); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_ROULE",0x0)))     { Tcl_GetBooleanFromObj(Interp,obj,&Grd_roule); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_UNIFORM_L",0x0))) { Tcl_GetBooleanFromObj(Interp,obj,&Grd_uniform_L); }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_LATR",0x0)))      { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_latr=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_LONR",0x0)))      { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_lonr=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_DX",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_dx=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_DY",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_dy=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_DXMAX",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_dxmax=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_DYMAX",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_dymax=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_PHIR",0x0)))      { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_phir=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_DGRW",0x0)))      { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_dgrw=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_XLAT1",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_xlat1=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_XLAT2",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_xlat2=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_XLON1",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_xlon1=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_XLON2",0x0)))     { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_xlon2=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_X0",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_x0=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_Y0",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_y0=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_XL",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_xl=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"GRD_YL",0x0)))        { Tcl_GetDoubleFromObj(Interp,obj,&dval); Grd_yl=dval; }
-
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"STRETCH",0x0)))       { Tcl_GetDoubleFromObj(Interp,obj,&dval); stretch=dval; }
-   if ((obj=Tcl_GetVar2Ex(Interp,Tcl_GetString(Set),"DEBUG",0x0)))         { Tcl_GetBooleanFromObj(Interp,obj,&debug); }
-
-   if (Grd_ni<=0 || Grd_nj<=0) {
-      Tcl_AppendResult(Interp,"FSTD_ZGrid: GRD_NI or GRD_NJ are invalid",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
-   if (Grd_proj_S[0]=='P')
-      Grd_proj_S[0]='N';
-
-   ns[1]='\0';
-   ni=Grd_ni;
-
-   if (Grd_typ_S[0]=='G') {
-      if (Grd_typ_S[1]=='U') {
-         Grd_nila=Grd_ni;
-         Grd_njla=Grd_nj;
-      } else {
-         if ((Grd_nila*Grd_njla*Grd_dx*Grd_dy)==0) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: GRD_NILA, GRD_NJLA, GRD_DX & GRD_DY are invalid",(char*)NULL);
-            return(TCL_ERROR);
-         }
-      }
-      Grd_x0=0.0;
-      Grd_xl=360.0;
-      Grd_y0=-90.0;
-      Grd_yl=90.0;
-      nila=Grd_nila;
-      ni++;
-
-      if (ni==nila+1) nila++;
-
-      Grd_proj_S[0]='L';
-   } else {
-      if ((Grd_proj_S[0]!='N') && (Grd_proj_S[0]!='S')) {
-
-         if (Grd_xlon1<0) Grd_xlon1=360.0+Grd_xlon1;
-         if (Grd_xlon2<0) Grd_xlon2=360.0+Grd_xlon2;
-/*
-         np=1;
-         EZLock_RPNInt();
-         f77name(ez_gfxyfll)(&Grd_lonr,&Grd_latr,&x,&y,&np,&Grd_xlat1,&Grd_xlon1,&Grd_xlat2,&Grd_xlon2);
-         EZUnLock_RPNInt();
-         Grd_lonr=x;
-         Grd_latr=y;
- */
-      }
-      if ((Grd_iref>Grd_ni) || (Grd_iref<1)) {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Error with GRD_IREF larger than GRD_NI",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if ((Grd_jref>Grd_nj) || (Grd_jref<1)) {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Error with GRD_IREF larger than GRD_NJ",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if ((Grd_lonr>360.0) || (Grd_lonr<0.0)) {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Error GRD_LONR must be within 0 and 360",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if ((Grd_latr>90.0) || (Grd_latr<-90.0)) {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Error GRD_LATR must be within -90 and 90",(char*)NULL);
-         return(TCL_ERROR);
-      }
-
-      if (Grd_dy<=0.0)
-         Grd_dy=Grd_dx;
-
-      if (Grd_dx<=0 || Grd_dy<=0) {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Error GRD_DX or GRD_DY are invalid",(char*)NULL);
-         return(TCL_ERROR);
-      }
-
-      Grd_nila=Grd_ni;
-      Grd_njla=Grd_nj;
-
-      if (Grd_proj_S[0]=='L') {
-         Grd_x0=Grd_lonr-(Grd_iref-1)*Grd_dx;
-         Grd_y0=Grd_latr-(Grd_jref-1)*Grd_dy;
-         Grd_xl=Grd_x0  +(Grd_ni  -1)*Grd_dx;
-         Grd_yl=Grd_y0  +(Grd_nj  -1)*Grd_dy;
-
-         if ((Grd_x0<0.0) || (Grd_y0<-90.0) || (Grd_xl>360.0) || (Grd_y0>90.0)) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Grid limits are invalid",(char*)NULL);
-            return(TCL_ERROR);
-         }
-      }
-   }
-
-   x_8=(double*)malloc((ni+2)*sizeof(double));
-   y_8=(double*)malloc((Grd_nj+2)*sizeof(double));
-
-   ns[0]='E';
-   f77name(cxgaig)(ns,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&Grd_xlat1,&Grd_xlon1,&Grd_xlat2,&Grd_xlon2);
-
-   r1=0.0;
-   s1=0.0;
-
-   if (Grd_typ_S[0]=='G') {
-      if ((Grd_typ_S[1]=='V') && (stretch>0)) {
-         free(x_8);
-         free(y_8);
-
-         x_8=(double*)malloc((10*nila)*sizeof(double));
-         y_8=(double*)malloc((10*Grd_njla)*sizeof(double));
-         ni=nila+0.1*nila;
-
-         stag=FALSE;
-         while(1) {
-            if (f77name(stretch_axis2)(x_8,&Grd_dx,&Grd_x0,&Grd_xl,&nleft,&ni,&nila,&r1,&stag,&debug,&Grd_dxmax,&nimax,&gauss)!=0) {
-               ni+=1;
-            } else {
-               break;
-            }
-            if (r1-stretch>epsilon) {
-               ni+=2;
-            } else {
-               break;
-            }
-         }
-         Grd_ni=ni;
-         Grd_nj=Grd_njla+0.1*Grd_njla;
-
-         stag=TRUE;
-         while(1) {
-            if (f77name(stretch_axis2)(y_8,&Grd_dy,&Grd_y0,&Grd_yl,&nbelo,&Grd_nj,&Grd_njla,&s1,&stag,&debug,&Grd_dymax,&njmax,&gauss)!=0) {
-               Grd_nj+=1;
-            } else {
-               break;
-            }
-
-            if (s1-stretch>epsilon) {
-               Grd_nj+=2;
-            } else {
-               break;
-            }
-         }
-      } else {
-         stag=FALSE;
-         if (f77name(stretch_axis2)(x_8,&Grd_dx,&Grd_x0,&Grd_xl,&nleft,&ni,&nila,&r1,&stag,&debug,&Grd_dxmax,&nimax,&gauss)!=0) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Stretching error",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         stag=TRUE;
-         if (f77name(stretch_axis2)(y_8,&Grd_dy,&Grd_y0,&Grd_yl,&nbelo,&Grd_nj,&Grd_njla,&s1,&stag,&debug,&Grd_dymax,&njmax,&gauss)!=0) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Stretching error",(char*)NULL);
-            return(TCL_ERROR);
-         }
-      }
-   } else {
-      dx_8  =Grd_dx;
-      latr_8=Grd_latr;
-      lonr_8=Grd_lonr;
-
-      if (Grd_proj_S[0]=='M') {
-         phidg_8=Grd_phir;
-         f77name(xpyp_m)(x_8,y_8,&Grd_iref,&Grd_jref,&latr_8,&lonr_8,&dx_8,&phidg_8,&Grd_ni,&Grd_nj);
-      } else if ((Grd_proj_S[0]=='N') || (Grd_proj_S[0]=='S')) {
-         phidg_8=Grd_dgrw;
-         ns[0]  =Grd_proj_S[0];
-         f77name(xpyp_p)(x_8,y_8,&Grd_iref,&Grd_jref,&Grd_latr,&Grd_lonr,&dx_8,&Grd_dgrw,ns,&Grd_ni,&Grd_nj);
-         xg1=0.0f;xg2=0.0f;xg3=1000.0f;
-         f77name(cxgaig)(ns,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&xg1,&xg2,&xg3,&Grd_dgrw);
-      } else if (Grd_proj_S[0]=='L') {
-         if ((Grd_dx*Grd_ni-360.0-Grd_dx)>epsilon) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Given grid resolution, it would be wiser to run a globalgrid",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         maxlat=Grd_latr+(float)(Grd_nj-Grd_jref)*Grd_dy;
-         minlat=Grd_latr+(float)(1-Grd_jref)*Grd_dy;
-         if ((maxlat>epsilat) || (minlat<-epsilat)) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: This grid extends too close or goes further than at least one of the numerical pole",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         nila=ni;
-         stag=FALSE;
-         if ((f77name(stretch_axis2)(x_8,&Grd_dx,&Grd_x0,&Grd_xl,&nleft,&ni,&nila,&r1,&stag,&debug,&Grd_dxmax,&nimax,&gauss))!=0) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Stretching error",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         if ((f77name(stretch_axis2)(y_8,&Grd_dy,&Grd_y0,&Grd_yl,&nbelo,&Grd_nj,&Grd_njla,&s1,&stag,&debug,&Grd_dymax,&njmax,&gauss))!=0) {
-            Tcl_AppendResult(Interp,"FSTD_ZGrid: Stretching error",(char*)NULL);
-            return(TCL_ERROR);
-         }
-     } else {
-         Tcl_AppendResult(Interp,"FSTD_ZGrid: Wrong projection",(char*)NULL);
-         return(TCL_ERROR);
-      }
-   }
-
-   field[0]=Data_Valid(Interp,Tcl_GetString(Tic),ni,1,1,1,TD_Float32);
-   if (!field[0]) {
-      Tcl_AppendResult(Interp,"FSTD_ZGrid: Unable to allocate >> field",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   field[1]=Data_Valid(Interp,Tcl_GetString(Tac),1,Grd_nj,1,1,TD_Float32);
-   if (!field[1]) {
-      Tcl_AppendResult(Interp,"FSTD_ZGrid: Unable to allocate ^^ field",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   xp=(float*)field[0]->Def->Data[0];
-   yp=(float*)field[1]->Def->Data[0];
-   for(i=0;i<ni;i++)     { xp[i]=x_8[i]; }
-   for(j=0;j<Grd_nj;j++) { yp[j]=y_8[j]; }
-
-   if (Grd_dx<100) {
-      v1=20.0*Grd_dx;
-   } else if (Grd_dx<10000.0) {
-      v1=0.2*Grd_dx;
-   } else {
-      v1=0.0004*Grd_dx-4.0;
-   }
-
-   if (Grd_ni<1000) {
-      v2=2.0*Grd_ni;
-   } else if (Grd_ni<10000) {
-      v2=0.2*Grd_ni;
-   } else {
-      v2=0.02*Grd_ni;
-   }
-
-   if (Grd_nj<1000) {
-      v3=2.0*Grd_nj;
-   } else if (Grd_ni<10000) {
-      v3=0.2*Grd_nj;
-   } else {
-      v3=0.02*Grd_nj;
-   }
-   v1=FMIN(2040.0,FMAX(0.0,v1));
-   v2=FMIN(2040.0,FMAX(0.0,v2));
-   v3=FMIN(2040.0,FMAX(0.0,v3));
-
-   h.IP1=(v1+v2+v3)/3.0;
-   h.IP2=((h.IG1+h.IG2+h.IG3/321.0+h.IG4/321.0)/4.0+v1+v2)/3.0;
-   h.IP3=((Grd_dxmax*5+Grd_dymax*5.0+r1*10.0+s1*10)+2.0*v1+2.0*v3)/3.0;
-   h.NPAS=0;
-   h.DATEO=0;
-   h.DEET=0;
-   h.TYPVAR[0]='X';h.TYPVAR[1]='\0';
-
-   FSTD_FieldSet(field[0]);
-   FSTD_FieldSet(field[1]);
-
-   field[0]->Spec->Desc=strdup(">>");
-   field[1]->Spec->Desc=strdup("^^");
-   strcpy(h.NOMVAR,">>");
-   strcpy(h.ETIKET,"POSX");
-   memcpy(field[0]->Head,&h,sizeof(FSTD_Head));
-   strcpy(h.NOMVAR,"^^");
-   strcpy(h.ETIKET,"POSY");
-   memcpy(field[1]->Head,&h,sizeof(FSTD_Head));
-
-   field[0]->Ref=GeoRef_RPNSetup(field[0]->Def->NI,field[0]->Def->NJ,field[0]->Def->NK,0,NULL,ns,h.IG1,h.IG2,h.IG3,h.IG4,0);
-   field[1]->Ref=GeoRef_RPNSetup(field[1]->Def->NI,field[1]->Def->NJ,field[1]->Def->NK,0,NULL,ns,h.IG1,h.IG2,h.IG3,h.IG4,0);
-
-   return(TCL_OK);
-}
+#endif

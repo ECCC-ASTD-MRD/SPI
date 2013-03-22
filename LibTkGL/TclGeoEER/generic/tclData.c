@@ -116,13 +116,25 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    if (TclDataSpec_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-#ifdef LNK_FSTD
+   /*Initialisation du package metobs*/
+   if (GeoRef_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+  /*Initialisation du package d'observations*/
+   if (TclObs_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+   /*Initialisation du package trajectoires*/
+   if (TclTraj_Init(Interp)==TCL_ERROR)
+      return(TCL_ERROR);
+
+#ifdef HAVE_RMN
    /*Initialisation du package de fichier standard*/
    if (TclFSTD_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
 
-#ifdef LNK_GRIB
+#ifdef HAVE_GRIB
    /*Initialisation du package de fichier standard*/
    if (TclGRIB_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
@@ -135,31 +147,21 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    /*Initialisation du package OGR*/
    if (TclOGR_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-
-  /*Initialisation du package d'observations*/
-   if (TclObs_Init(Interp)==TCL_ERROR)
-      return(TCL_ERROR);
-
-   /*Initialisation du package trajectoires*/
-   if (TclTraj_Init(Interp)==TCL_ERROR)
-      return(TCL_ERROR);
-
+      
    /*Initialisation du package radar*/
-#ifdef LNK_URP
+#ifdef HAVE_URP
    if (TclRadar_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
 
+#ifdef HAVE_ECBUFR
    /*Initialisation du package metobs*/
    if (TclMetObs_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-
+      
    if (TclMetModel_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-
-   /*Initialisation du package metobs*/
-   if (GeoRef_Init(Interp)==TCL_ERROR)
-      return(TCL_ERROR);
+#endif
 
    /*Initialisation de la commande de calculatrice*/
    Tcl_CreateObjCommand(Interp,"vexpr",Data_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
@@ -466,9 +468,11 @@ void Data_GetStat(TData *Field){
 
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
+#ifdef HAVE_RMN
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
-
+#endif
+      
    /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
    if (def->NC>1 && Field->Ref->Grid[0]!='Y') {
       if (!def->Mode || def->Mode==def->Data[0]) {
@@ -703,6 +707,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
    float   *fp;
 
+#ifdef HAVE_RMN
+   
    /*Recuperer la grille dans l'espace des champs de base*/
    p=1;g=0;
    for(f=0;f<NbF;f++) {
@@ -907,6 +913,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    }
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
+#endif
+   
 #endif
   return(TCL_OK);
 }
@@ -1572,9 +1580,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    ex=Field->Spec->ExtrapDegree[0]!='N'?1:0;
 
+#ifdef HAVE_RMN
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
-
+#endif
+      
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
@@ -2029,7 +2039,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
                   Data_ValSet(Field,dx,dy,val);
                } else {
-#ifdef LNK_FSTD
+#ifdef HAVE_RMN
                   c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
                   obj=Tcl_NewListObj(0,NULL);
@@ -2071,7 +2081,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
                Data_ValSet(Field,dx,dy,val);
             } else {
-#ifdef LNK_FSTD
+#ifdef HAVE_RMN
                c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
                obj=Tcl_NewListObj(0,NULL);
@@ -2449,7 +2459,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_GetDoubleFromObj(Interp,obj,&dv);
                   levels[index]=dv;
                }
+#ifdef HAVE_RMN
                ((FSTD_Head*)Field->Head)->IP1=-1;
+#endif
                Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),levels);
                free(levels);
             }
@@ -2613,7 +2625,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case TOP:
             if (Objc==1) {
                if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+#ifdef HAVE_RMN
                   FSTD_DecodeRPNLevelParams(Field);
+#endif            
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PTop));
             } else {
@@ -2625,7 +2639,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case REF:
             if (Objc==1) {
                if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+#ifdef HAVE_RMN
                   FSTD_DecodeRPNLevelParams(Field);
+#endif
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PRef));
             } else {
@@ -2637,7 +2653,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case COEF:
             if (Objc==1) {
                if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
+#ifdef HAVE_RMN
                   FSTD_DecodeRPNLevelParams(Field);
+#endif
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
             } else {

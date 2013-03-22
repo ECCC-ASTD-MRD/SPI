@@ -32,7 +32,7 @@
  *==============================================================================
 */
 
-#ifdef LNK_URP
+#ifdef HAVE_URP
 
 #include "tclRADAR.h"
 #include "Projection.h"

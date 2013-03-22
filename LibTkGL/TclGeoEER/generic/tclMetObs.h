@@ -31,6 +31,8 @@
  *=========================================================
  */
 
+#ifdef HAVE_ECBUFR
+
 #ifndef _tclMetObs_h
 #define _tclMetObs_h
 
@@ -182,4 +184,5 @@ int        MetModel_Free(TMetModel *Model);
 int        MetModel_FreeHash(Tcl_Interp *Interp,char *Name);
 void       MetModel_Wipe();
 
+#endif
 #endif

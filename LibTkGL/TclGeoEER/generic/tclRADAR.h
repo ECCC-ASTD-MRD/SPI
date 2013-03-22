@@ -32,7 +32,7 @@
  *==============================================================================
 */
 
-#ifdef LNK_URP
+#ifdef HAVE_URP
 
 #ifndef _tclRADAR_h
 #define _tclRADAR_h

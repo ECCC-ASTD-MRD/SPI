@@ -29,6 +29,8 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
+
 #include "tclMetDataset.h"
 
 static Tcl_HashTable MetDatafileTable;
@@ -1407,3 +1409,5 @@ Tcl_Obj* MetTemplate_Put(Tcl_Interp *Interp,char *Name,BUFR_Template *Tmp) {
       return(NULL);
    }
 }
+
+#endif
