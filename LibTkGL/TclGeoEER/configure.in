@@ -20,27 +20,95 @@ dnl	to configure the system for the local environment.
 #-----------------------------------------------------------------------
 
 AC_INIT([TclGeoEER], [7.6.0])
-AC_CONFIG_MACRO_DIR(m4)
 
-#--------------------------------------------------------------------
-# Call specific package option macros to set up initial vars.
-#--------------------------------------------------------------------
+PKG_CFLAGS="-D_GNU_SOURCE"
 
-dnl ---------------------------------------------------------------------------
-dnl Check for GDAL/OGR
-dnl ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Check for EER
+# ---------------------------------------- -----------------------------------
 
-# GDAL_REQ_VERSION="1.9.0"
-# LIB_GDAL($GDAL_REQ_VERSION)
-# 
-# if test "$HAVE_GDAL" = "yes"; then
-#     LIBS="$LIBS $GDAL_LDFLAGS"
-#     INCLUDES="$INCLUDES $GDAL_CFLAGS"
-#     PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDAL"
-# fi
-# 
-# AC_SUBST([HAVE_GDAL], $HAVE_GDAL)
-# AC_SUBST([GDAL_INCLUDE], $GDAL_CFLAGS)
+AX_LIB_EER()
+ 
+if test "$HAVE_EER" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for RMN
+# ---------------------------------------- -----------------------------------
+
+AX_LIB_RMN()
+ 
+if test "$HAVE_RMN" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $RMN_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_RMN $RMN_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for EC GDB
+# ---------------------------------------------------------------------------
+
+AX_LIB_GDB()
+ 
+if test "$HAVE_GDB" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $GDB_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDB $GDB_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for GRIB
+# ---------------------------------------- -----------------------------------
+
+AX_LIB_GRIB()
+ 
+if test "$HAVE_GRIB" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $GRIB_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GRIB $GRIB_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for ECBUFR
+# ---------------------------------------- -----------------------------------
+
+AX_LIB_ECBUFR()
+ 
+if test "$HAVE_ECBUFR" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $ECBUFR_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_ECBUFR $ECBUFR_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for FLT
+# ---------------------------------------------------------------------------
+
+AX_LIB_FLT()
+ 
+if test "$HAVE_FLT" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $FLT_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_FLT $FLT_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for URP
+# ---------------------------------------------------------------------------
+
+AX_LIB_URP()
+ 
+if test "$HAVE_URP" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $URP_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_URP $URP_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for GDAL/OGR
+# ---------------------------------------------------------------------------
+
+GDAL_INIT(1.9.0) 
+if test "$HAVE_GDAL" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $GDAL_LIBS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDAL $GDAL_CFLAGS"
+fi
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -156,9 +224,8 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tkGraphTephi.c])
 
 TEA_ADD_HEADERS([])
-TEA_ADD_INCLUDES([-Igeneric ])
-#TEA_ADD_LIBS([ -lmut -ldrp -lurp])
-TEA_ADD_LIBS([-lgdal -lproj -lrmn -lgrib_api -lecbufr -lflt -leerUtils -lc -lexpat -lGL -lGLU -lgdb -lTkglCanvas -ltk8.6])
+TEA_ADD_INCLUDES([-Igeneric])
+TEA_ADD_LIBS([-lc -lexpat -lGL -lGLU -ltk8.6 -L${TCL_BIN_DIR}/TkglCanvas8.6 -lTkglCanvas8.6])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([])

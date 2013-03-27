@@ -30,6 +30,7 @@ HDF5=hdf5-1.6.10
 POSTGRESQL=postgresql-8.4.1
 ODBC=unixODBC-2.3.0
 GRIB=grib_api-1.9.18
+ECBUFR=libecbufr-0.8.2rc1
 OCI=instantclient_11_2
 PROJ=proj-4.8.0
 
@@ -186,6 +187,16 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+
+#----- ECBUFR
+cd ${ARCH_PATH}/${ECBUFR}
+make distclean
+./configure --prefix=${LIB_PATH}/${ECBUFR} --enable-shared=yes
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
+
 
 #----- PostgreSQL
 cd ${ARCH_PATH}/${POSTGRESQL}

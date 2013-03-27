@@ -1,4 +1,5 @@
 #!/bin/sh
+reconf=$1
 
 MAKE=make
 INST=/users/dor/afsr/005
@@ -14,47 +15,62 @@ echo ""
 echo ""
 echo "----- Making System Call Library Object -----"
 echo ""
-export LDFLAGS="-L${LIB} -ldmv"
-export CFLAGS="-D_GNU_SOURCE -DHAVE_DMV -I${INC} -I${INC}/dmv"  
 cd TclSystem
-./configure \
-   --exec-prefix=${LIB}/TclTk \
-   --enable-threads \
-   --enable-64bit \
-   --with-tcl=${LIB}/TclTk/lib
+if [[ -n $reconf ]]; then
+   make distclean
+   ./configure \
+      --exec-prefix=${LIB}/TclTk \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB}/TclTk/lib \
+      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
+fi
 
 $MAKE install
-ln -fs ${LIB}/TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem.so
+ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem1.0.so
+ln -fs {LIB}/libTclSystem1.0.so ${LIB}/libTclSystem.so
 
 echo ""
 echo "----- Making OpenGL Canvas Library Object -----"
 echo ""
-export LDFLAGS="-L${LIB}"
-export CFLAGS=""  
 cd ../TkglCanvas
-./configure \
-   --prefix=${LIB}/TclTk/ \
-   --exec-prefix=${LIB}/TclTk/ \
-   --enable-threads \
-   --enable-64bit \
-   --with-tcl=${LIB}/TclTk/lib \
-   --with-tk=${LIB}/TclTk/lib
+if [[ -n $reconf ]]; then
+   make distclean
+   ./configure \
+      --prefix=${LIB}/TclTk/ \
+      --exec-prefix=${LIB}/TclTk/ \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB}/TclTk/lib \
+      --with-tk=${LIB}/TclTk/lib
+fi
 
 $MAKE install
-ln -fs ${LIB}/TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.so
+ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas8.6.so
+ln -fs  ${LIB}/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.so
 
 echo ""
 echo "----- Making Tcl GeoEER Library Object -----"
 echo ""
-export LDFLAGS="-L${LIB}"
-export CFLAGS="-D_GNU_SOURCE -DHAVE_GDB -DHAVE_RMN -DHAVE_GRIB -DHAVE_ECBUFR -DHAVE_FLT -DHAVE_GDAL -I${INC} -I${INC}/libeer -I${INC}/gdb -I${INC}/gdal -I${INC}/rmnlib -I${INC}/urp -I${INC}/grib_api -I${INC}/libecbufr -I${INC}/fltlib"  
 cd ../TclGeoEER
-./configure \
-   --exec-prefix=${LIB}/TclTk \
-   --enable-threads \
-   --enable-64bit \
-   --with-tcl=${LIB}/TclTk/lib \
-   --with-tk=${LIB}/TclTk/lib
+if [[ -n $reconf ]]; then
+   make distclean
+   ./configure \
+      --exec-prefix=${LIB}/TclTk \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB}/TclTk/lib \
+      --with-tk=${LIB}/TclTk/lib \
+      --with-eer=/home/afsr/005/Projects/libeerUtils \
+      --with-rmn=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/librmn-13 \
+      --with-gdb=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdb \
+      --with-gdal=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdal-1.9.2/bin/gdal-config  \
+      --with-grib=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/grib_api-1.9.18 \
+      --with-ecbufr=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/libecbufr-0.8.4 \
+      --with-flt=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/fltlib-0.5.1
+#      --with-urp=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/URP
+fi
 
 $MAKE install
-ln -fs ${LIB}/TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so ${LIB}/libTclGeoEER.so
+ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so ${LIB}/libTclGeoEER7.6.so
+ln -fs ${LIB}/libTclGeoEER7.6.so ${LIB}/libTclGeoEER.so

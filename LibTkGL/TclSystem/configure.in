@@ -19,7 +19,25 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
+# Disable configure caching ... it causes lots of hassles.
+#define([AC_CACHE_LOAD], )
+#define([AC_CACHE_SAVE], )
+
 AC_INIT([TclSystem], [1.0])
+
+PKG_CFLAGS="-D_GNU_SOURCE"
+
+# ---------------------------------------------------------------------------
+# Check for DMV
+# ---------------------------------------------------------------------------
+
+DMV_REQ_VERSION="0.1"
+AX_LIB_DMV($DMV_REQ_VERSION)
+ 
+if test "$HAVE_DMV" = "yes"; then
+    PKG_LIBS="$PKG_LIBS $DMV_LDFLAGS"
+    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_DMV $DMV_CFLAGS"
+fi
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.

@@ -120,11 +120,7 @@ TCL_SRC_DIR	= @TCL_SRC_DIR@
 # Not used, but retained for reference of what libs Tcl required
 #TCL_LIBS	= @TCL_LIBS@
 
-#
-# GDAL/OGR
-#
-HAVE_GDAL = @HAVE_GDAL@
-GDAL_INCLUDE = @GDAL_INCLUDE@
+DEP_LIBS= @DEP_LIBS@
 
 #========================================================================
 # TCLLIBPATH seeds the auto_path in Tcl's init.tcl so we can test our
@@ -356,12 +352,12 @@ dist: dist-clean
 #========================================================================
 
 clean:
+	-rm -f *.tab.c *.tab.h lex.vexpr_.c *~
 	-test -z "$(BINARIES)" || rm -f $(BINARIES)
 	-rm -f *.$(OBJEXT) core *.core
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean: clean
-	-rm -f *.tab.c *.tab.h lex.vexpr_.c *~
 	-rm -f $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log config.status
 
