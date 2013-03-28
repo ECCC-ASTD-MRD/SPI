@@ -1542,7 +1542,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
    /*Calculer la dimension generale*/
    size=VP->Ratio*Field->Spec->Size;
-
+   theta=thetad=0.0f;
+   u=v=w=len=0.0;
+   
    /*Afficher toutes les barbules*/
    glMatrixMode(GL_MODELVIEW);
    glDisable(GL_CULL_FACE);

@@ -125,7 +125,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
    register int idx,x,y,n=0;
    int          d=0,sz,dd;
-   double       x0,y0,x1,y1,v;
+   double       x0,y0,v;
 
    if (!Scan || !ToRef || !FromRef) {
       return(0);
@@ -1215,9 +1215,10 @@ void GeoRef_Qualify(TGeoRef *Ref) {
    Coord co[2];
    double d[2];
 
+   Ref->Type=GRID_NONE;
+   
    if (Ref) {
       if (Ref->Grid[0]=='X') {
-         Ref->Type=GRID_NONE;
          return;
       }
 
@@ -1233,7 +1234,7 @@ void GeoRef_Qualify(TGeoRef *Ref) {
 
       if (Ref->Grid[0]=='A' || Ref->Grid[0]=='G') {
          Ref->Type|=GRID_WRAP;
-      } else if (Ref->Grid[0]!='V') {
+      } else if (Ref->Grid[0]!='V' && Ref->X0!=Ref->X1 && Ref->Y0!=Ref->Y1) {
          /*Get size of a gridpoint*/
          Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[0].Lat,&co[0].Lon,1,1);
          Ref->Project(Ref,Ref->X0+(Ref->X1-Ref->X0)/2.0+1.0,Ref->Y0+(Ref->Y1-Ref->Y0)/2.0,&co[1].Lat,&co[1].Lon,1,1);
@@ -1405,10 +1406,10 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
          EZGrid_IdIncr(ref->Ids[i]);
    }
 
-   ref->IG1==Ref->IG1;
-   ref->IG2==Ref->IG2;
-   ref->IG3==Ref->IG3;
-   ref->IG4==Ref->IG4;
+   ref->IG1=Ref->IG1;
+   ref->IG2=Ref->IG2;
+   ref->IG3=Ref->IG3;
+   ref->IG4=Ref->IG4;
 
    ZRef_Copy(&ref->ZRef,&Ref->ZRef,-1);
 
@@ -1941,7 +1942,7 @@ int GeoRef_Valid(TGeoRef *Ref) {
 */
 int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
 
-   int d,nx,ny;
+   int d,dx,dy,nx,ny;
 
    if (!Ref) {
       return(0);
@@ -1950,16 +1951,26 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
    /* Check the dimensions */
    nx=FSIZE2D(XDef);
    ny=FSIZE2D(YDef);
+   dx=(Ref->X1-Ref->X0+1);
+   dy=(Ref->Y1-Ref->Y0+1);
 
-   if (nx!=ny || nx!=(Ref->X1-Ref->X0+1)*(Ref->Y1-Ref->Y0+1)) {
+   if (Ref->Grid[0]=='Y' || Ref->Grid[0]=='W') {
+      if (nx!=ny || nx!=dx*dy) {
+         return(0);
+      }
+   } else if (Ref->Grid[0]=='V') {
+      if (nx!=ny || nx!=dx) {
+         return(0);
+      }
+   } else if (nx!=dx || ny!=dy) {
       return(0);
    }
 
-    /*Clear arrays*/
+   /*Clear arrays*/
    if (Ref->Lat) free(Ref->Lat);
    if (Ref->Lon) free(Ref->Lon);
 
-   Ref->Lat=(float*)malloc(nx*sizeof(float));
+   Ref->Lat=(float*)malloc(ny*sizeof(float));
    Ref->Lon=(float*)malloc(nx*sizeof(float));
 
    if (!Ref->Lat || !Ref->Lon) {
@@ -1976,9 +1987,9 @@ int GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef) {
    }
 
    if (YDef->Type==TD_Float32) {
-      memcpy(Ref->Lat,YDef->Data[0],nx*sizeof(float));
+      memcpy(Ref->Lat,YDef->Data[0],ny*sizeof(float));
    } else {
-      for(d=0;d<nx;d++) {
+      for(d=0;d<ny;d++) {
          Def_Get(YDef,0,d,Ref->Lat[d]);
       }
    }

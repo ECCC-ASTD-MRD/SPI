@@ -1222,8 +1222,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Desc,-1));
            } else {
-               if (Spec->Desc) free(Spec->Desc);
-               Spec->Desc=strdup(Tcl_GetString(Objv[++i]));
+               if (Spec->Desc) free(Spec->Desc); Spec->Desc=NULL;
+               if (strlen(Tcl_GetString(Objv[++i])))
+                  Spec->Desc=strdup(Tcl_GetString(Objv[i]));
             }
             break;
 

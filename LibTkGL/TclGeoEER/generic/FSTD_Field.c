@@ -491,7 +491,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    Coord      coord;
    float     *lat=NULL,*lon=NULL,*gz=NULL,flat,flon,fele;
    int        i,j,idx,ni,nj,nk,ip1;
-   int        idxi,idxk;
+   int        idxi;
 
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
@@ -527,9 +527,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          return(NULL);
       }
 
-      if (FSTD_FileSet(NULL,head->FID)<0) {
-         return(NULL);
-      }
+      FSTD_FileSet(NULL,head->FID);
       for (j=0;j<def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
@@ -552,7 +550,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             flat=coord.Lat=Field->Ref->Lat[i];
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*def->NI+i;
-            if (gz && Field->Ref->RefFrom->Ids[0]>-1) {
+            if (gz && Field->Ref->RefFrom && Field->Ref->RefFrom->Ids[0]>-1) {
                EZLock_RPNInt();
                c_gdllsval(Field->Ref->RefFrom->Ids[0],&fele,gz,&flat,&flon,1);
                EZUnLock_RPNInt();
@@ -1347,6 +1345,8 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                strncpy(head->NOMVAR,Tcl_GetString(Objv[++i]),4);
                head->NOMVAR[4]='\0';
+               if (Field->Spec && !Field->Spec->Desc)
+                  Field->Spec->Desc=strdup(head->NOMVAR);
             }
             break;
 
@@ -1491,7 +1491,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (Field->Ref->Grid[0]=='Z' || Field->Ref->Grid[0]=='Y') {
                   head=(FSTD_Head*)fieldAX->Head;
                   EZLock_RPNInt();
-                  Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,(float*)(fieldAX->Def->Data[0]),(float*)(fieldAY->Def->Data[0]));
+                  if (!Field->Ref->Ids) 
+                     Field->Ref->Ids=(int*)malloc(1*sizeof(int));
+
+                  Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->Ref->Lon,Field->Ref->Lat);
                   EZUnLock_RPNInt();
                   EZGrid_IdIncr(Field->Ref->Ids[Field->Ref->NId]);
                }

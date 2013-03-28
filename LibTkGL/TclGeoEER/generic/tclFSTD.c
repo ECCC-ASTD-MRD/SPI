@@ -335,7 +335,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,i,compress=0;
+   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,compress=0;
    unsigned long dk;
    int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
    long          time;
@@ -348,16 +348,13 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    T3DModel    *model;
    Tcl_Obj     *obj;
    TData       *field0,*field1,*fieldt;
-   TDataSpec   *spec;
    TDataVector *uvw;
    Vect3d      *pos;
-   FSTD_File   *file;
    char        *field,imode,itype;
 
    int         idx;
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp","define",NULL };
    enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,DEFINE };
@@ -1199,7 +1196,6 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
    Tcl_HashEntry *entry;
    FSTD_File     *file;
    int            new;
-   char           buf[2048];
 
    /* Creer l'entree dans la liste table de fichiers standards */
    entry=TclY_CreateHashEntry(&FSTD_FileTable,Id,&new);
@@ -1437,7 +1433,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             Tcl_ListObjIndex(Interp,Objv[2],n,&obj);
             Tcl_GetIntFromObj(Interp,obj,&hh);
 
-            pkey=pkey1>>nkey1+(pkey2<<nkey2);
+            pkey=(pkey1>>nkey1)+(pkey2<<nkey2);
 //            pkey=pkey1>>(nkey1+2);
 //         fprintf(stderr,"----------- %i = %i %i %llu \n",hh,nkey1,nkey2,pkey);
             tkey=(pkey<<(64-hh))>>(64-hh);

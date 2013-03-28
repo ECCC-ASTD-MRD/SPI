@@ -43,7 +43,6 @@ static int ObsNo=0;
 
 static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_Create(Tcl_Interp *Interp,char* Name);
-static int Obs_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int Obs_FreeHash(Tcl_Interp *Interp,char *Name);
@@ -656,7 +655,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
 
    TObs *new;
 
-   if (new=Obs_Get(Name)) {
+   if ((new=Obs_Get(Name))) {
       if (new!=Obs) {
          Obs_FreeHash(Interp,Name);
       } else {
@@ -796,6 +795,7 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
               if (Obs->Loc->Coord[i].Elev>Ref->ZRef.Levels[k])
                   break;
             }
+            k=k<0?0:k;
             if (k==Ref->ZRef.LevelNb-1) {
                dk=Ref->ZRef.Levels[k]-Ref->ZRef.Levels[k-1];
                pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-Ref->ZRef.Levels[k])/dk);
@@ -872,8 +872,8 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
 int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
    int       nobs,nb,i,j,n,k0;
-   char     **array0,**array1,**array;
-   TObs     *obs0,*obs1;
+   char     **array0,**array1,**array=NULL;
+   TObs     *obs0=NULL,*obs1=NULL;
    TLoc     *loc=NULL;
    TDataDef *def=NULL;
    Tcl_Obj  *obj;
@@ -1014,7 +1014,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
    int       nobs,nb,i,j,n,k0,idx,k;
    char     **array0,**array;
-   TObs     *obs0;
+   TObs     *obs0=NULL;
    TLoc     *loc=NULL;
    TDataDef *def=NULL;
    Tcl_Obj  *obj;
@@ -1748,7 +1748,7 @@ int Obs_LocFree(TLoc *Loc){
 void Obs_GetStat(TObs *Obs){
 
    int i;
-   double min,max,val;
+   double min,max,val=0.0;
 
    /*Initialiser la structure*/
 
@@ -2315,8 +2315,8 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
    TObs    *obs;
    Tcl_Obj *obj;
-   int      i,idx,n,f;
-   double   val,dlat0,dlon0,dlat1,dlon1,dl;
+   int      i,idx;
+   double   val;
 
    static CONST char *sopt[] = { "-tag","-max","-min","-within","-leveltype",NULL };
    enum                opt { TAG,MAX,MIN,WITHIN,LEVELTYPE };
@@ -2436,8 +2436,8 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 static int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj;
-   int      f,n=0,nc,vnb,vn0,vn1,o;
-   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot;
+   int      f,n=0,nc,vnb=0,vn0,vn1,o;
+   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {

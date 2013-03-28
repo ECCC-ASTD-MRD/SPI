@@ -444,7 +444,6 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
          c_ezget_subgridids(id,&ref->Ids[1]);
       }
    }
-
    ref->IG1=IG1;
    ref->IG2=IG2;
    ref->IG3=IG3;
