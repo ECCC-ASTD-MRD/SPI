@@ -383,7 +383,7 @@ proc Log::Print { Type Message { Var "" } } {
          #----- Keep only last $Param(Keep) hour logs
          set err [catch { exec find $Param(Path) -name *.log -ctime +$Param(Keep) -exec rm \{\} \; } msg]
 
-         set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True].log
+         set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]-[pid].log
       } else {
          if { [file exists $Param(Out)] } {
             file rename -force $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]

@@ -125,8 +125,7 @@ catch { SPI::Splash "Loading Canvas Package Page 5.1" }
 
 package require OpenGL
 package require TclGeoEER
-
-load $GDefs(Dir)/Lib/$env(BASE_ARCH)/libTclSim[info sharedlibextension] TclSim
+package require TclSim
 
 package require PrintBox
 package require ProjCam
@@ -1155,9 +1154,10 @@ proc Page::ModeSelect { Mode { Frames {} } } {
             }
          }
          $c delete VERTEXFOLLOW
-      }
-      if { $Data(Mode)=="Mag" } {
-         CVMagnifier::Create $c
+         
+         if { $Data(Mode)=="Mag" } {
+            CVMagnifier::Create $c
+         }
       }
    }
 }

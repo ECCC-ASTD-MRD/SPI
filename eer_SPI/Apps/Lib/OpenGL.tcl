@@ -24,7 +24,6 @@ package provide OpenGL 1.2
 catch { SPI::Splash "Loading Canvas Package OpenGL 1.2" }
 
 package require TkglCanvas
-puts "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
 
 namespace eval OpenGL {
    variable Param
@@ -40,6 +39,8 @@ namespace eval OpenGL {
    set Param(FSAA)        4
    set Param(ZBuf)        0
    set Param(Info)        ""
+   set Param(Shaders)     { Field FieldTex DataTex TopoTex }
+   set Param(ShaderPath)  $GDefs(Dir)/Lib/Shader
    set Param(Infos)       "GLX_VERSION GLX_VENDOR GLX_EXTENSIONS
                            GL_VERSION GL_VENDOR GL_EXTENSIONS GL_RENDERER
                            GLU_VERSION GLU_EXTENSIONS
@@ -66,6 +67,9 @@ namespace eval OpenGL {
    set Lbl(Delay)       { "Délai" "Delay" }
    set Lbl(Damping)     { "Amortissement" "Damping" }
    set Lbl(Dynamic)     { "Dynamique" "Dynamics" }
+
+   glrender -shaderpath $Param(ShaderPath) -shaders $Param(Shaders)
+   puts "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
 }
 
 #----------------------------------------------------------------------------

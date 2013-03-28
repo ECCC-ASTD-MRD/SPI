@@ -129,6 +129,8 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
 
    if { $Active } {
       Page::ActiveWrapper Graph $Frame $gr $X0 $Y0 [expr $Width+$X0] [expr $Height+$Y0] Scatter
+   } elseif { $Full } {
+      Page::ActiveFull Graph $Frame $gr $Full
    }
    Page::Register $Frame Graph::Scatter $gr
 

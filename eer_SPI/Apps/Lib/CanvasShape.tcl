@@ -1567,7 +1567,6 @@ proc CVMagnifier::Move { Canvas X Y } {
    variable Data
    variable Param
 
-
    catch {
       $Canvas itemconf CANVASMAGNIFIER -state hidden
       $Canvas magnify CANVASMAGNIFIER $X $Y $Param(Zoom)

@@ -2568,8 +2568,9 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
    if { $OpenGL::Param(Res)==1 } {
 
       #----- If we are far enough
-
-     if { [set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>10 || $Zoom || $F || $T || $U } {
+      set isgeo [catch { set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0] }]
+      
+      if { !$isgeo && ($dp>10 || $Zoom || $F || $T || $U) } {
 
          Viewport::Resolution $Frame 2
 
