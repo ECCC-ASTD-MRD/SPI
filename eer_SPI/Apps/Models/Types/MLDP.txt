@@ -28,6 +28,7 @@ namespace eval MLDP {
    set Lbl(Result)              { "Résultats" "Results" }
    set Lbl(Continue)            { "Continuer ..." "Continue ..." }
    set Lbl(Suppress)            { "Supprimer" "Delete" }
+   set Lbl(Relaunch)            { "Relancer ..." "Relaunch ..." }
 
    set Lbl(Model)               { "Modèle" "Model" }
    set Lbl(Source)              { "Source" "Source" }

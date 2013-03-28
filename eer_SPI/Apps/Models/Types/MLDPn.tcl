@@ -1111,7 +1111,7 @@ proc MLDPn::File { Info Path Type Back } {
       set results    [glob $simpath/results/${simdate}_???]                     ;#----- Particle positions result output file.
       set restart    [glob $simpath/results/${simdate}_???.rst]                 ;#----- Particle positions result output file.
       set metfields  [glob -nocomplain $simpath/results/${simdate}_000m ]       ;#----- Meteorological fields for RSMC response.
-      set metfiles   [glob -nocomplain $simpath/meteo/*]                        ;#----- Meteorological files required for launching model.
+      set metfiles   [exec cat $simpath/tmp/data_std_eta.in]                    ;#----- Meteorological files required for launching model.
 
       switch $Type {
          "all"     { eval set files \[concat $results $metfields $files\] }

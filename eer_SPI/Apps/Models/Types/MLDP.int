@@ -435,6 +435,8 @@ proc MLDP::PopUp { X Y } {
          .mldppopup add separator
          .mldppopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
             -command { Model::ParamsWindow $MLDP::Sim(Model) CONT } -state disabled
+         .mldppopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
+            -command { Model::ParamsWindow $MLDPn::Sim(Model) RENEW } -state disabled
          .mldppopup add separator
          .mldppopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }

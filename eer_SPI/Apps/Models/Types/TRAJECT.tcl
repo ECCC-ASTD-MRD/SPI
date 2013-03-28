@@ -40,7 +40,7 @@ proc TRAJECT::InitNew { Type } {
    set Sim(Method)     [lindex [lindex $Sim(ListMethod) $GDefs(Lang)] 0]
    set Sim(Backward)   False
    set Sim(Mode)       "prog"
-   set Sim(TimeStep)   "3600.0"
+   set Sim(TimeStep)   "3600"
    set Sim(BatchStart) 0
    set Sim(Duration)   72
    set Sim(MultiLevel) False
@@ -352,6 +352,7 @@ proc TRAJECT::Launch { } {
       set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]
       simulation create $id -type Trajectory
+
       simulation param $id -title $Sim(NameExp) -timestep $Sim(TimeStep) \
          -mode $mode -unit $unit -date $Sim(AccSecs) -particles $Sim(Particles) -data $Sim(MeteoDataFiles) -output $Sim(Path)/results/traject.points \
          -tinc $Sim(BatchStart) -tlen $Sim(Duration) -split 1

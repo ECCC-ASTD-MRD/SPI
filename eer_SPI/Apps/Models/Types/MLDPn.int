@@ -1283,8 +1283,6 @@ proc MLDPn::PopUp { X Y } {
          .mldpnpopup add separator
          .mldpnpopup add command -label [lindex $Lbl(Continue) $GDefs(Lang)] \
             -command { Model::ParamsWindow $MLDPn::Sim(Model) CONT } -state disabled
-         .mldpnpopup add command -label [lindex $Lbl(Relaunch) $GDefs(Lang)] \
-            -command { Model::ParamsWindow $MLDPn::Sim(Model) RENEW } -state disabled
          .mldpnpopup add separator
          .mldpnpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }
@@ -1315,29 +1313,25 @@ proc MLDPn::PopUp { X Y } {
          .mldpnpopup entryconfigure 1 -state disabled   ;#Product
          .mldpnpopup entryconfigure 2 -state disabled   ;#Data
          .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
-         .mldpnpopup entryconfigure 5 -state disabled   ;#Relaunch
-         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 6 -state normal     ;#Suppress
       }
       0 {                                             #----- Continuable
          .mldpnpopup entryconfigure 1 -state normal     ;#Product
          .mldpnpopup entryconfigure 2 -state normal     ;#Data
          .mldpnpopup entryconfigure 4 -state normal     ;#Continue
-         .mldpnpopup entryconfigure 5 -state normal     ;#Relaunch
-         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 6 -state normal     ;#Suppress
       }
       1 {                                             #----- Etat Termine
          .mldpnpopup entryconfigure 1 -state normal     ;#Product
          .mldpnpopup entryconfigure 2 -state normal     ;#Data
          .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
-         .mldpnpopup entryconfigure 5 -state normal     ;#Relaunch
-         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 6 -state normal     ;#Suppress
       }
       2 {                                              #----- Etat d'execution
          .mldpnpopup entryconfigure 1 -state disabled   ;#Product
          .mldpnpopup entryconfigure 2 -state disabled   ;#Data
          .mldpnpopup entryconfigure 4 -state disabled   ;#Continue
-         .mldpnpopup entryconfigure 5 -state disabled   ;#Relaunch
-         .mldpnpopup entryconfigure 7 -state normal     ;#Suppress
+         .mldpnpopup entryconfigure 6 -state normal     ;#Suppress
       }
    }
 

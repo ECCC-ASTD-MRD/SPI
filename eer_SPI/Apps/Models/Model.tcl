@@ -842,7 +842,7 @@ proc Model::ParamsMetDataDir { Model } {
          set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
       }
 
-      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
+      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" || $sim(Model)=="TRAJECT" } {
          set MetData::Param(Path) $dbeer
       } else {
          set MetData::Param(Path) $dbops
