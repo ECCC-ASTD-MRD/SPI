@@ -144,7 +144,7 @@ proc Kriger::Window { } {
          set Data(GraphFrame) [SPI::PageNew $Data(Tab).res]
          set Data(Graph)      [Graph::Section::Create $Data(GraphFrame) 0 0 1 1 False True False]
 
-         Graph::Labels Section $Data(Graph) "Krig" "Grid X" "Grid Y"
+         Graph::Labels $Data(Graph) Section "Krig" "Grid X" "Grid Y"
 
       pack $Data(Tab).grid $Data(Tab).krig $Data(Tab).res -side top -fill x -padx 2 -pady 2
       pack $Data(Tab).res -side top -fill both -expand True -padx 2 -pady 2

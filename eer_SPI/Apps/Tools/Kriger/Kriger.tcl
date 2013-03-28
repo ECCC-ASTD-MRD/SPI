@@ -84,7 +84,7 @@ proc Kriger::Process { } {
 
    #----- Effectuer le krigging
 
-   $Data(GraphFrame).page.canvas itemconfigure GRAPH$Data(Graph) -item {}
+   $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item {}
 
    if { [fstdfield is KRIGGRID] } {
       if { [fstdfield define KRIGGRID -NI]>500 || [fstdfield define KRIGGRID -NJ]>500 } {
@@ -100,7 +100,7 @@ proc Kriger::Process { } {
       } else {
 
          fstdfield gridinterp KRIGGRID $Data(Obs) $Data(Mode) $Data(Nugget) $Data(Sill) $Data(Range) $Data(Out)
-#         fstdfield configure KRIGGRID -rendertexture 1 -colormap FLDMAPDefault -color black -font XFont10
+#         fstdfield configure KRIGGRID -rendertexture 1 -colormap FLDMAPDEFAULT -color black -font XFont10
 #         FSTD::Register KRIGGRID
 
          if { ![graphitem is KRIGITEM] } {
@@ -109,15 +109,15 @@ proc Kriger::Process { } {
          graphaxis configure axisx$Data(Graph) -min 0 -max [fstdfield define KRIGGRID -NI] -increment 10
          switch $Data(GridType) {
             "Vertical" { graphaxis configure axisy$Data(Graph) -min $Data(VMin) -max $Data(VMax) -intervals [fstdfield stats KRIGGRID -levels]
-                         Graph::Labels Section $Data(Graph) Krig "Grid X" [fstdfield stats KRIGGRID -leveltype]
+                         Graph::Labels $Data(Graph) Section Krig "Grid X" [fstdfield stats KRIGGRID -leveltype]
                        }
             default    { graphaxis configure axisy$Data(Graph) -min 0 -max [fstdfield define KRIGGRID -NJ] -increment 10
-                         Graph::Labels Section $Data(Graph) Krig "Grid X" "Grid Y"
+                         Graph::Labels $Data(Graph) Section Krig "Grid X" "Grid Y"
                         }
          }
          graphitem configure KRIGITEM -xaxis axisx$Data(Graph) -yaxis axisy$Data(Graph) -data KRIGGRID
 
-         $Data(GraphFrame).page.canvas itemconfigure GRAPH$Data(Graph) -item KRIGITEM
+         $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item KRIGITEM
          Viewport::UpdateData $Page::Data(Frame)
       }
    } else {
@@ -183,7 +183,7 @@ proc Kriger::Grid { Coords } {
 
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
    fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTOC
-   $Data(GraphFrame).page.canvas itemconfigure GRAPH$Data(Graph) -item {}
+   $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item {}
 
    if { [llength $Coords]>2 } {
 
@@ -208,17 +208,15 @@ proc Kriger::Grid { Coords } {
                set Data(Job) ""
                return
             }
-
             #----- Create new grid
-
             fstdfield create KRIGGRID $ni $nj 1 Float32
             fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -GRTYP V -ETIKET KRIG -IP1 12001 -IG1 $nij -IG2 $ni -IG3 $nj -IG4 0
             fstdfield stats KRIGGRID -leveltype MASL -levels $elevs -grid $coords
 
             fstdfield create KRIGTIC $ni 1 1 Float32
-            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
-            fstdfield create KRIGTAC 1 $ni 1 Float32
-            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield create KRIGTAC 1 $nj 1 Float32
+            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield create KRIGTOC $nj 1 1 Float32
             fstdfield define KRIGTOC -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield define KRIGTOC -DATA [list $elevs]
@@ -227,6 +225,7 @@ proc Kriger::Grid { Coords } {
                fstdfield stats KRIGTIC -gridvalue $i 0 [lindex $coords [expr $i*2]]
                fstdfield stats KRIGTAC -gridvalue 0 $i [lindex $coords [expr $i*2+1]]
             }
+            fstdfield define KRIGGRID -positional KRIGTIC KRIGTAC
          }
          "LatLon" {
             set dlat [set dlon [expr $Data(HResolution)/(1852.0*60.0)]]
@@ -258,7 +257,6 @@ proc Kriger::Grid { Coords } {
               set Data(Job) ""
               return
             }
-
             fstdfield create KRIGGRID $ni $nj 1 Float32
             fstdfield define KRIGGRID -NOMVAR KRIG -TYPVAR O -ETIKET KRIG -IP1 12001 -IG1 $nij -IG2 $ni -IG3 $nj -IG4 0 -GRTYP Z
 
@@ -279,7 +277,6 @@ proc Kriger::Grid { Coords } {
 
       #----- Assign for display
 
-      fstdfield configure KRIGGRID -rendertexture 1 -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
       Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID True
    }
    set Data(Job) ""
@@ -362,6 +359,10 @@ proc Kriger::VertexAdd { Frame VP X Y } {
       }
    }
    Kriger::Grid $Data(Coords)
+   
+   if { $Data(GridType)!="Vertical" } {
+      set Data(Coords) {}
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -477,7 +478,7 @@ proc Kriger::UpdateItems { Frame } {
    variable Data
 
    if { $Data(GraphFrame)!="" && [graphitem is KRIGITEM] } {
-      catch { $Data(GraphFrame).page.canvas itemconfigure GRAPH$Data(Graph) -item KRIGITEM }
+      catch { $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item KRIGITEM }
    }
 }
 

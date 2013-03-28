@@ -950,7 +950,7 @@ proc NowCaster::Obs::Read { Obs Files } {
    #----- Create the reading thread
 
    set id [thread::create {
-      package require TkViewport
+      package require TclGeoEER
 
       proc NowCasterObsReader { Obs Files { Thread 0 } } {
 
