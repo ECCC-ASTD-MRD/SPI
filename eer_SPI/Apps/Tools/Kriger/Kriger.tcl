@@ -100,8 +100,6 @@ proc Kriger::Process { } {
       } else {
 
          fstdfield gridinterp KRIGGRID $Data(Obs) $Data(Mode) $Data(Nugget) $Data(Sill) $Data(Range) $Data(Out)
-#         fstdfield configure KRIGGRID -rendertexture 1 -colormap FLDMAPDEFAULT -color black -font XFont10
-#         FSTD::Register KRIGGRID
 
          if { ![graphitem is KRIGITEM] } {
             graphitem create KRIGITEM
@@ -214,16 +212,16 @@ proc Kriger::Grid { Coords } {
             fstdfield stats KRIGGRID -leveltype MASL -levels $elevs -grid $coords
 
             fstdfield create KRIGTIC $ni 1 1 Float32
-            fstdfield define KRIGTIC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
-            fstdfield create KRIGTAC 1 $nj 1 Float32
-            fstdfield define KRIGTAC -NOMVAR >> -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield define KRIGTIC -NOMVAR >> -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
+            fstdfield create KRIGTAC 1 $ni 1 Float32
+            fstdfield define KRIGTAC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield create KRIGTOC $nj 1 1 Float32
             fstdfield define KRIGTOC -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield define KRIGTOC -DATA [list $elevs]
 
             for { set i 0 } { $i < $ni } { incr i } {
-               fstdfield stats KRIGTIC -gridvalue $i 0 [lindex $coords [expr $i*2]]
-               fstdfield stats KRIGTAC -gridvalue 0 $i [lindex $coords [expr $i*2+1]]
+               fstdfield stats KRIGTAC -gridvalue 0 $i [lindex $coords [expr $i*2]]
+               fstdfield stats KRIGTIC -gridvalue $i 0 [lindex $coords [expr $i*2+1]]
             }
             fstdfield define KRIGGRID -positional KRIGTIC KRIGTAC
          }
@@ -276,7 +274,6 @@ proc Kriger::Grid { Coords } {
       }
 
       #----- Assign for display
-
       Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID True
    }
    set Data(Job) ""
