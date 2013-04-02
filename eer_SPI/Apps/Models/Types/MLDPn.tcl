@@ -399,34 +399,31 @@ proc MLDPn::CreateModelInput { } {
       set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
    }
    set sizeLast [expr [llength [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
-   set IsComputeSV "FALSE"
+
    if { $Sim(SrcType) == "VOLCANO" && $sizeIdx != $sizeLast } {
-      set IsComputeSV "TRUE"
-   }
-   puts $file [format "%-20s= %-10s # Flag indicating if computing gravitational settling velocities" PRC_COMPUTESV $IsComputeSV]
-   puts $file [format "%-20s= %-10.3e # " PRC_DENSITY $Sim(EmDensity)]
-   puts $file [format "%-20s= %-10s # Particle diameter size boundaries \[microns\], and Fraction \[0,1\] of total number of particles for each size bin" PRC_BINS ""]
+      puts $file [format "%-20s= %-10.3e # " PRC_DENSITY $Sim(EmDensity)]
+      puts $file [format "%-20s= %-10s # Particle diameter size boundaries \[microns\], and Fraction \[0,1\] of total number of particles for each size bin" PRC_BINS ""]
 
-   switch $Sim(SrcType) {
-      "VOLCANO" {
-         #----- Number of particle diameter intervals.
-         switch $sizeIdx {
-            0 { set dist $Sim(DistSpurrSept1992) ;#----- Spurr September 1992 size distribution. }
-            1 { set dist $Sim(DistSpurrAug1992)  ;#----- Spurr August 1992 size distribution. }
-            2 { set dist $Sim(DistRedoubt1989)   ;#----- Redoubt 1989-1990 empirical size distribution. }
-            3 { set dist $Sim(DistNAME)          ;#----- Size distribution used in NAME (London VAAC, UK Met Office). }
-            4 { set dist $Sim(DistFine)          ;#----- Fine size distribution. }
-            default { set dist $Sim(DistRedoubt1989) }
+      switch $Sim(SrcType) {
+         "VOLCANO" {
+            #----- Number of particle diameter intervals.
+            switch $sizeIdx {
+               0 { set dist $Sim(DistSpurrSept1992) ;#----- Spurr September 1992 size distribution. }
+               1 { set dist $Sim(DistSpurrAug1992)  ;#----- Spurr August 1992 size distribution. }
+               2 { set dist $Sim(DistRedoubt1989)   ;#----- Redoubt 1989-1990 empirical size distribution. }
+               3 { set dist $Sim(DistNAME)          ;#----- Size distribution used in NAME (London VAAC, UK Met Office). }
+               4 { set dist $Sim(DistFine)          ;#----- Fine size distribution. }
+               default { set dist $Sim(DistRedoubt1989) }
+            }
          }
+         "ACCIDENT" -
+         "VIRUS" { set dist $Sim(DistRedoubt1989) }
       }
-      "ACCIDENT" -
-      "VIRUS" { set dist $Sim(DistRedoubt1989) }
-   }
 
-   foreach { diam frac } $dist {
-      puts $file [format "%-10.1f %-10.3f" $diam $frac]
+      foreach { diam frac } $dist {
+         puts $file [format "%-10.1f %-10.3f" $diam $frac]
+      }
    }
-
    puts $file "\n#----- Output parameters\n"
    puts $file [format "%-15s= %-10.1f # Output time step \[s\]" OUT_DT [expr $Sim(OutputTimeStepMin)*60]]
    puts $file [format "%-15s= %-4i # Output file interval \[h\]" OUT_DELTA [expr $Sim(OutputDelta)]]
