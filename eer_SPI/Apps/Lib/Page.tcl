@@ -124,7 +124,7 @@ package provide Page 5.1
 catch { SPI::Splash "Loading Canvas Package Page 5.1" }
 
 package require OpenGL
-package require TclGeoEER
+package require TkGeoEER
 package require TclSim
 
 package require PrintBox

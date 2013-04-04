@@ -137,12 +137,21 @@ proc ColorBar::Create { Frame VP X0 Y0 Width Height } {
    set Data(Border$tag)   $Param(Border)
    set Data(Width$tag)    $Param(Width)
    set Data(Side$tag)     $Param(Side)
-   set Data($VP$No)       [list $X0 $Y0 $Width $Height $tag]
+   set Data($VP$No)       [list $X0 $Y0 $Width $Height $tag $Param(Full) $Param(BG) $Param(Alpha) $Param(Split) $Param(Factor) $Param(Border) $Param(Width) $Param(Side)]
 
    set Data(Alpha$tag)   25
    set SPI::Data(ShowColorBar$Frame) 1
 
    return $tag
+}
+
+proc ColorBar::SetParams { Frame VP No Tag } {
+   variable Data
+
+   $Frame.page.canvas itemconfigure $Tag -bg $Data(BG$Tag) -transparency $Data(Alpha$Tag) -barsplit $Data(Split$Tag) -barborder $Data(Border$Tag) \
+      -barwidth $Data(Width$Tag) -barside $Data(Side$Tag) -showfactor $Data(Factor$Tag)
+
+   set Data($VP$No) [lreplace $Data($VP$No) 5 end $Data(Full$Tag) $Data(BG$Tag) $Data(Alpha$Tag) $Data(Split$Tag) $Data(Factor$Tag) $Data(Border$Tag) $Data(Width$Tag) $Data(Side$Tag)]
 }
 
 #------------------------------------------------------------------------------
@@ -201,18 +210,34 @@ proc ColorBar::Set { Frame VP No Id Field } {
          set w  90
 
          incr h
-         set Data($VP$No) [list $x $y $w $h $tag]
+         set Data($VP$No) [list $x $y $w $h $tag $Param(Full) $Param(BG) $Param(Alpha) $Param(Split) $Param(Factor) $Param(Border) $Param(Width) $Param(Side)]
       }
 
       if { ![info exists ColorBar::Data(Split$tag)] } {
-         set Data(Full$tag)   $Param(Full)
-         set Data(BG$tag)     $Param(BG)
-         set Data(Alpha$tag)  $Param(Alpha)
-         set Data(Split$tag)  $Param(Split)
-         set Data(Factor$tag) $Param(Factor)
-         set Data(Border$tag) $Param(Border)
-         set Data(Width$tag)  $Param(Width)
-         set Data(Side$tag)   $Param(Side)
+      
+         #----- Check if this is a previous version of colorbar definitions
+         if { [llength $Data($VP$No)]>5 } {
+            set Data(Full$tag)   [lindex $Data($VP$No) 5]
+            set Data(BG$tag)     [lindex $Data($VP$No) 6]
+            set Data(Alpha$tag)  [lindex $Data($VP$No) 7]
+            set Data(Split$tag)  [lindex $Data($VP$No) 8]
+            set Data(Factor$tag) [lindex $Data($VP$No) 9]
+            set Data(Border$tag) [lindex $Data($VP$No) 10]
+            set Data(Width$tag)  [lindex $Data($VP$No) 11]
+            set Data(Side$tag)   [lindex $Data($VP$No) 12]        
+         } else {
+ puts stderr .$tag.
+            set Data(Full$tag)   $Param(Full)
+            set Data(BG$tag)     $Param(BG)
+            set Data(Alpha$tag)  $Param(Alpha)
+            set Data(Split$tag)  $Param(Split)
+            set Data(Factor$tag) $Param(Factor)
+            set Data(Border$tag) $Param(Border)
+            set Data(Width$tag)  $Param(Width)
+            set Data(Side$tag)   $Param(Side)
+
+            set Data($VP$No) [list $x $y $w $h $tag $Param(Full) $Param(BG) $Param(Alpha) $Param(Split) $Param(Factor) $Param(Border) $Param(Width) $Param(Side)]
+         }
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
@@ -223,29 +248,29 @@ proc ColorBar::Set { Frame VP No Id Field } {
          -menu $Frame.bo$tag.menu
       menu $Frame.bo$tag.menu -bg $GDefs(ColorFrame)
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFrame) $GDefs(Lang)] -variable ColorBar::Data(BG$tag) -onvalue white -offvalue "" \
-            -command "$Frame.page.canvas itemconfigure $tag -bg \$ColorBar::Data(BG$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(Alpha$tag) -onvalue 50 -offvalue 100 \
-            -command "$Frame.page.canvas itemconfigure $tag -transparency \$ColorBar::Data(Alpha$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(Split$tag) -onvalue 5 -offvalue 0 \
-            -command "$Frame.page.canvas itemconfigure $tag -barsplit \$ColorBar::Data(Split$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarBorder) $GDefs(Lang)] -variable ColorBar::Data(Border$tag) -onvalue 1 -offvalue 0 \
-            -command "$Frame.page.canvas itemconfigure $tag -barborder \$ColorBar::Data(Border$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarThin) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 15 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarMedium) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 30 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarWide) $GDefs(Lang)] -variable ColorBar::Data(Width$tag) -value 50 \
-            -command "$Frame.page.canvas itemconfigure $tag -barwidth \$ColorBar::Data(Width$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarLeft) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value left \
-            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add radiobutton -label [lindex $Lbl(BarRight) $GDefs(Lang)] -variable ColorBar::Data(Side$tag) -value right \
-            -command "$Frame.page.canvas itemconfigure $tag -barside \$ColorBar::Data(Side$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFactor) $GDefs(Lang)] -variable ColorBar::Data(Factor$tag) -onvalue True -offvalue False \
-            -command "$Frame.page.canvas itemconfigure $tag -showfactor \$ColorBar::Data(Factor$tag); Page::Update $Frame"
+            -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
       Shape::BindMove  $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
@@ -351,7 +376,7 @@ proc ColorBar::Move { Canvas Tag } {
    set h [$Canvas itemcget $Tag -height]
 
    set tag [lindex [split $Tag :] end]
-   set Data($tag) [list $x $y $w $h $Tag]
+   set Data($tag) [lreplace $Data($tag) 0 3 $x $y $w $h]
    set Data(Full$Tag) False
 }
 
@@ -389,7 +414,7 @@ proc ColorBar::Full { Canvas Tag VP { Pix 0 } } {
    }
 
    set tag [lindex [split $Tag :] end]
-   set Data($tag) [list $xc $yv $wc $hv $Tag]
+   set Data($tag) [lreplace $Data($tag) 0 3 $xc $yv $wc $hv]
    $Canvas itemconfigure $Tag -x $xc -y $yv -width $wc -height $hv
 
    return [list [expr $xc+$wc] [expr $yv+$hv]]
@@ -424,7 +449,7 @@ proc ColorBar::Scale { Canvas Tag X Y } {
    if { $w>25 && $h>25 } {
       $Canvas itemconfigure $Tag -width $w -height $h
       set tag [lindex [split $Tag :] end]
-      set Data($tag) [list $x $y $w $h $Tag]
+      set Data($tag) [lreplace $Data($tag) 0 3 $x $y $w $h]
       set Data(Full$Tag) False
       return True
    } else {

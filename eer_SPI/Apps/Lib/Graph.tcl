@@ -353,8 +353,6 @@ if { [file exists $env(HOME)/.spi/Graph] } {
 proc Graph::Activate { Frame Graph Type } {
    variable Data
 
-   #----- Si le viewport actif est le courant, out
-
    if { $Frame=="" } {
       return
    }
@@ -2203,7 +2201,7 @@ proc Graph:LegendMoveInit { Frame Canvas Graph Type X Y } {
       set Data(X) $X
       set Data(Y) $Y
    } else {
-      Graph::Activate $Frame $Graph $Type;
+      Graph::Activate $Frame $Graph $Type
       Graph::TranslateInit $Frame $Type $Graph [$Canvas canvasx $X] [$Canvas canvasy $Y]
    }
    $Canvas config -cursor hand1

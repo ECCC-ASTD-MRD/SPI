@@ -59,8 +59,8 @@ namespace eval Log { } {
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
    set Param(MailTitle)   "Job Info"            ;#Mail title
 
-   set Param(Cyclope)     False                                      ;#Use Cyclope
-   set Param(CyclopePath) $env(HOME)/projets/Cyclope ;#Path to Cyclope
+   set Param(Cyclope)     False                 ;#Use Cyclope
+   set Param(CyclopePath) $env(HOME)/.Cyclope   ;#Path to Cyclope
 
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
