@@ -416,7 +416,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderTexture));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderTexture);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderTexture)==TCL_ERROR) {
+                   Tcl_GetBooleanFromObj(Interp,Objv[i],&Spec->RenderTexture);
+               }
             }
             break;
 
@@ -444,7 +446,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderContour));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderContour);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderContour)==TCL_ERROR) {
+                   Tcl_GetBooleanFromObj(Interp,Objv[i],&Spec->RenderContour);
+               }
                Spec->RenderContour=Spec->RenderContour<0?0:Spec->RenderContour>4?4:Spec->RenderContour;
             }
             break;
@@ -453,7 +457,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderLabel));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderLabel);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderLabel)==TCL_ERROR) {
+                   Tcl_GetBooleanFromObj(Interp,Objv[i],&Spec->RenderLabel);
+               }
             }
             break;
 
@@ -479,7 +485,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderValue));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderValue);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderValue)==TCL_ERROR) {
+                   Tcl_GetBooleanFromObj(Interp,Objv[i],&Spec->RenderValue);
+               }
             }
             break;
 
@@ -496,7 +504,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderVol));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&ii)==TCL_ERROR) {
+                   Tcl_GetBooleanFromObj(Interp,Objv[i],&ii);
+               }
                if (ii!=Spec->RenderVol && ii==0) {
                   cmap=cseg=1;
                }
