@@ -48,7 +48,7 @@ namespace eval Graph::Stat { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
+proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
    global GDefs
    variable Data
    variable Lbl
@@ -69,6 +69,7 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
+   set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
    set Graph::Data(Type$gr)     Stat       ;#Type de graph
 
    upvar #0 Graph::Stat::Stat${gr}::Data  data
@@ -90,8 +91,10 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Stat
-   Graph::Mode $gr Stat False
-
+   
+   if { $Graph::Data(Link$gr) } {
+      Graph::Mode $gr Stat False
+   }
    #----- Creer les fonction du mode actif
 
    if { $Active } {

@@ -76,7 +76,7 @@ namespace eval Graph::Contingency { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
+proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
    global GDefs
    variable Data
 
@@ -96,6 +96,7 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0         ;#Offset en y
    set Graph::Data(Width$gr)    $Width      ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height     ;#Hauteur du graph
+   set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
    set Graph::Data(Type$gr)     Contingency ;#Type de graph
 
    upvar #0 Graph::Contingency::Contingency${gr}::Data  data
@@ -120,9 +121,11 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full } {
    Graph::Contingency::Page $gr
 
    Graph::Activate $Frame $gr Contingency
-   Graph::Mode $gr Contingency False
-   Graph::PosAdd $gr Contingency
-
+   
+   if { $Graph::Data(Link$gr) } {
+      Graph::Mode $gr Contingency False
+      Graph::PosAdd $gr Contingency
+   }
    #----- Creer les fonction du mode actif
 
    if { $Active } {

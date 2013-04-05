@@ -61,7 +61,7 @@ namespace eval Graph::Scatter { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
+proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
    global GDefs
    variable Data
    variable Lbl
@@ -82,6 +82,7 @@ proc Graph::Scatter::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
+   set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
    set Graph::Data(Type$gr)     Scatter    ;#Type de graph
 
    upvar #0 Graph::Scatter::Scatter${gr}::Data  data

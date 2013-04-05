@@ -58,7 +58,7 @@ namespace eval Graph::Profile { } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
+proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full { Link True } } {
    global GDefs
    variable Data
    variable Lbl
@@ -79,6 +79,7 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
    set Graph::Data(Y$gr)        $Y0        ;#Offset en y
    set Graph::Data(Width$gr)    $Width     ;#Largeur du graph
    set Graph::Data(Height$gr)   $Height    ;#Hauteur du graph
+   set Graph::Data(Link$gr)     $Link      ;#Liaison des donnees a l'interface
    set Graph::Data(Type$gr)     Profile    ;#Type de graph
 
    upvar #0 Graph::Profile::Profile${gr}::Data  data
@@ -94,21 +95,6 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
        -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag $gr" -font $Graph::Font(Graph) -title $id
    $data(Canvas) raise $id
 
-   #----- Creation des unite de l'echelle
-
-   graphaxis create axisx$gr
-   graphaxis create axisy$gr
-
-   set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
-      -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
-      -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
-
-   set id [$data(Canvas) create text -100 -1000  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
-      -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
-   graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
-      -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
-
    if { $Viewport::Data(VP)!="" } {
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
@@ -119,9 +105,26 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full } {
    }
 
    Graph::Activate $Frame $gr Profile
-   Graph::Mode $gr Profile True
-   Graph::PosAdd $gr Profile
+   
+   if { $Graph::Data(Link$gr) } {
+      #----- Creation des unite de l'echelle
 
+      graphaxis create axisx$gr
+      graphaxis create axisy$gr
+
+      set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
+         -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
+      graphaxis configure axisx$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(XColor) \
+         -dash $Graph::Grid(XDash) -position LL -width 1 -unit $id
+
+      set id [$data(Canvas) create text -100 -1000  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitY) \
+         -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
+      graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
+         -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
+
+      Graph::Mode $gr Profile True
+      Graph::PosAdd $gr Profile
+   }
    #----- Creer les fonction du mode actif
 
    if { $Active } {
