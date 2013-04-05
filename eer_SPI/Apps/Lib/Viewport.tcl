@@ -2563,14 +2563,14 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
       set Up $cam(Up)
    }
 
+   #----- If we are far enough
+   set isgeo [catch { set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0] }]
+
    #----- Do only if we have the power to
+   if { $OpenGL::Param(Res)==1 && !$isgeo } {
 
-   if { $OpenGL::Param(Res)==1 } {
-
-      #----- If we are far enough
-      set isgeo [catch { set dp [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0] }]
       
-      if { !$isgeo && ($dp>10 || $Zoom || $F || $T || $U) } {
+      if { $dp>10 || $Zoom || $F || $T || $U } {
 
          Viewport::Resolution $Frame 2
 
