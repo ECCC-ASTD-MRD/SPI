@@ -86,6 +86,14 @@ TDataVector *Data_VectorTableAdd(void) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+int Tclgeoeer_Init(Tcl_Interp *Interp) {
+ 
+   if (Tcl_PkgProvide(Interp,"TclGeoEER",PACKAGE_VERSION) != TCL_OK) {
+      return(TCL_ERROR);
+   }
+   return(Tcldata_Init(Interp));
+}
+
 int Tcldata_Init(Tcl_Interp *Interp) {
 
    if (Tcl_PkgProvide(Interp,"TclData",PACKAGE_VERSION) != TCL_OK) {

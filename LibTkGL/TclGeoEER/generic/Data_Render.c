@@ -1347,8 +1347,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
                } else {
 
-                  dx=fabs(dim[0]);
-                  dy=fabs(dim[1]);
+                  dx=ABS(dim[0]);
+                  dy=ABS(dim[1]);
                   dx=MIN(dx,dy);
                   depth=ceil(LOG2(dx));
 

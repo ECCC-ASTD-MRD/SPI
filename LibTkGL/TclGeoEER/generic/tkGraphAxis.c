@@ -509,7 +509,7 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_ListObjLength(Interp,Objv[++i],&j);
                if (j) {
                   if (j==axis->InterNb) {
-                     Tcl_SplitList(Interp,Tcl_GetString(Objv[i]),&j,&axis->Label);
+                     Tcl_SplitList(Interp,Tcl_GetString(Objv[i]),&j,(const char***)&axis->Label);
                   } else {
                      Tcl_AppendResult(Interp,"\n   GraphAxis_Config: Invalid axis label length, must be the same as intervals",(char*)NULL);
                      return(TCL_ERROR);
@@ -1167,7 +1167,6 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
    } else {
       font=Graph->Font;
    }
-
    if (Axis->Color) {
       color=Axis->Color;
    } else {
@@ -1210,7 +1209,7 @@ void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int 
          ((glTextItem*)Axis->UnitItem)->x=dx;
          ((glTextItem*)Axis->UnitItem)->y=dy;
          ((glTextItem*)Axis->UnitItem)->angle=th;
-         glComputeTextBbox(Graph->canvas,Axis->UnitItem);
+         glComputeTextBbox(Graph->canvas,(glTextItem*)Axis->UnitItem);
       } else {
          glDisplayTextLayout(Axis->Text,th,dx,dy,0,-1,1);
       }

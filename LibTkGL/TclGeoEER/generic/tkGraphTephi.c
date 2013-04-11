@@ -1226,8 +1226,14 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
                y=v[1]+j;
                j=Tk_TextWidth(Item->Font,buf,strlen(buf));
                switch(Item->Anchor) {
+                  case TK_ANCHOR_N:
+                  case TK_ANCHOR_S:
                   case TK_ANCHOR_CENTER: x=v[0]-j/2; break;
+                  case TK_ANCHOR_SW:
+                  case TK_ANCHOR_NW:
                   case TK_ANCHOR_W:      x=v[0]+j/strlen(buf);     break;
+                  case TK_ANCHOR_NE:
+                  case TK_ANCHOR_SE:
                   case TK_ANCHOR_E:      x=v[0]-j-j/strlen(buf);   break;
                }
                if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {

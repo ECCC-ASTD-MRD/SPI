@@ -5506,6 +5506,7 @@ done
                  generic/tkglCanvLine.c \
                  generic/tkglCanvText.c \
                  generic/tkglRectOval.c \
+                 generic/tkTrig.c \
                  generic/tr.c "
     for i in $vars; do
 	case $i in

@@ -6026,5 +6026,9 @@ int Tkglcanvas_Init(Tcl_Interp* Interp) {
    Tcl_CreateObjCommand(Interp,"glcanvas",Tk_glCanvasObjCmd,(ClientData*)Tk_MainWindow(Interp),NULL);
    glInit(Interp);
 
+   // Create hermite smoothing method
+   extern const Tk_SmoothMethod tkHermiteSmoothMethod;
+   Tk_CreateSmoothMethod(Interp,&tkHermiteSmoothMethod);
+   
    return(TCL_OK);
 }

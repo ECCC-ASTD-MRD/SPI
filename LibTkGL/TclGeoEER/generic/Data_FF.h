@@ -84,7 +84,6 @@ float        *FFStreamMapSetup1D(double Delta);
 int           FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 int           FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode);
 double        FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error);
-float        *FFStreamMapSetup1D(double Delta);
 
 int     LUDecompose(double *Matrix,int N,int *Perm,int *d);
 void    LUBackSub(double *Matrix,int N,int *Perm,double *Vect);

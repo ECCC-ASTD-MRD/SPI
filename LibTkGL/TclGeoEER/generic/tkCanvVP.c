@@ -281,7 +281,7 @@ void ViewportCrowdClear() {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <TkViewport_Init>
+ * Nom      : <Tkgeoeer_Init>
  * Creation : Avril 1998 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Cette procedure effectue les initialisations specifiques aux divers
@@ -297,27 +297,22 @@ void ViewportCrowdClear() {
  *
  *----------------------------------------------------------------------------
 */
-int Tkviewport_Init(Tcl_Interp *Interp) {
-   return(Tclgeoeer_Init(Interp));
-}
+int Tkgeoeer_Init(Tcl_Interp *Interp) {
 
-int Tclgeoeer_Init(Tcl_Interp *Interp) {
-
-   extern int ProjCam_Init();
    extern int Tcldata_Init();
    extern int Tkcolorbar_Init();
    extern int Tkgraph_Init();
 
    Tcl_ThreadId tid;
 
-   if (Tcl_PkgProvide(Interp,PACKAGE_NAME,PACKAGE_VERSION) != TCL_OK) {
+   if (Tcl_PkgProvide(Interp,"TkGeoEER",PACKAGE_VERSION) != TCL_OK) {
       return(TCL_ERROR);
    }
 
    Tk_glCreateItemType(&tkViewportType);
 
-   /*Initialisation du package fichier standard*/
-   if (Tcldata_Init(Interp)==TCL_ERROR)
+   /*Initialisation du package tcl geo*/
+   if (Tclgeoeer_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
    /*Initialisation du package colorbar*/

@@ -86,3 +86,4 @@ typedef struct glTextItem  {
 } glTextItem;
 
 void glDisplayTextLayout(Tk_TextLayout layout,int angle,int x,int y,int firstChar,int lastChar,int flip);
+void glComputeTextBbox (Tk_Canvas canvas,glTextItem *textPtr);

@@ -1835,7 +1835,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->RenderVector)
       Obs_RenderVector(Interp,Obs,VP,Proj);
 
-   if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord))
+   if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord)) 
       Obs_RenderInfo(Interp,Obs,VP,Proj);
 
    return(1);
@@ -2168,7 +2168,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Elev=ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType);
          co.Lat=Obs->Loc->Coord[i].Lat;
          co.Lon=Obs->Loc->Coord[i].Lon;
-
+         
          /*If visible, draw text*/
          if (Projection_Pixel(Proj,VP,co,vr)) {
 

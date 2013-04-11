@@ -86,6 +86,6 @@ typedef struct GraphItem  {
    GLubyte       *Frame;             /*Frame de retention*/
 } GraphItem;
 
-double Graph_Expand(TData *Data,double Y);
+double Graph_Pixel2Grid(TData *Data,double X,double Y);
 
 #endif

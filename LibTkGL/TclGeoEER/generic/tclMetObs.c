@@ -49,8 +49,6 @@ static Tk_Font WMO_Symbol2=NULL;
 
 static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int MetObs_Create(Tcl_Interp *Interp,char* Name);
-static int MetObs_Destroy(Tcl_Interp *Interp,char *Name);
-static int MetObs_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int MetObs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 static int MetObs_FreeHash(Tcl_Interp *Interp,char *Name);
@@ -267,9 +265,9 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    EntryTableB *eb;
 
    Tcl_Obj   *obj;
-   int        i,idx,no=1,res;
+   int        i,idx,no=1,res=0;
    long       code;
-   char       table;
+   char       table='\0';
 
    static CONST char *sopt[] = { "-readcmc","-readmaster","-readlocal","-code","-desc","-unit","-insert",NULL };
    enum                opt { READCMC,READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
@@ -446,8 +444,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-FAMILYOP","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,FAMILYOP,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-STATION","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-CODETYPE","-FAMILY","-FAMILYOP","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,STATION,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,CODETYPE,FAMILY,FAMILYOP,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -575,31 +573,69 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case STATION:
          case ID:
+            obj=Tcl_NewListObj(0,NULL);
+            
             if (Objc==1) {
-               obj=Tcl_NewListObj(0,NULL);
+               // List all stations
                loc=obs->Loc;
                while(loc) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(loc->Id,-1));
                   loc=loc->Next;
                }
                Tcl_SetObjResult(Interp,obj);
-            } else if (Objc==2) {
+            } else {
+               // Add station
                search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
                loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
-               if (loc) {
-                  if (search==MET_TYPETG) {
-                     Tcl_SetObjResult(Interp,Tcl_NewStringObj(loc->Id,-1));
-                     return(TCL_OK);
+               
+               if (Objc==2) {
+                  if (loc) {
+                     if (search==MET_TYPETG) {
+                        Tcl_SetObjResult(Interp,Tcl_NewStringObj(loc->Id,-1));
+                        return(TCL_OK);
+                     } else {
+                        Tcl_AppendResult(Interp,"\n   MetObs_Define: Observation id already exist",(char*)NULL);
+                        return(TCL_ERROR);
+                     }
+                  }
+                  TMetLoc_New(obs,Tcl_GetString(Objv[i]),NULL,0.0,0.0,0.0);
+                  
+               } else if (Objc==3) {
+                  // Find stations for specified date
+                  Tcl_GetLongFromObj(Interp,Objv[++i],&time);
+                  sub=Tcl_NewObj();
+                  if (!strlen(Tcl_GetString(Objv[1]))) {
+                     loc=obs->Loc;
+                     while(loc) {
+                       if (obs->CodeType==-1 || obs->CodeType==loc->CodeType) {
+                          if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
+                              for(d=0;d<elem->NData;d++) {
+                                 data=elem->EData[d];
+                                 // Check for selected family
+                                 flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                                 if (MET_FLAG(obs,flag)) {
+                                    // Check for data bktyp matching
+                                    if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                                    // Add station if not already there
+                                       Tcl_SetStringObj(sub,loc->Id,-1);
+                                       if (TclY_ListObjFind(Interp,obj,sub)==-1) {
+                                          Tcl_ListObjAppendElement(Interp,obj,Tcl_DuplicateObj(sub));
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                        loc=loc->Next;
+                     }                    
                   } else {
-                     Tcl_AppendResult(Interp,"\n   MetObs_Define: Observation id already exist",(char*)NULL);
+                     Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -ID [id] [date]\"",(char*)NULL);
                      return(TCL_ERROR);
                   }
                }
-               TMetLoc_New(obs,Tcl_GetString(Objv[i]),NULL,0.0,0.0,0.0);
-           } else {
-               Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -ID [id]\"",(char*)NULL);
-               return(TCL_ERROR);
+               Tcl_SetObjResult(Interp,obj);
             }
             break;
 
@@ -727,7 +763,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            data=elem->EData[d];
                            /*Check for selected family*/
                            flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
-                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
+                           if (MET_FLAG(obs,flag)) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
@@ -759,8 +795,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            data=elem->EData[d];
                            /*Check for selected state*/
                            flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
-                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
-                             if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                           if (MET_FLAG(obs,flag)) {
+                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
                                     if (data->Code[e]->descriptor==eb->descriptor) {
                                        for(v=(obs->NVal<=-1?0:obs->NVal);v<(obs->NVal<=-1?data->Nv:((obs->NVal+1)>data->Nv?data->Nv:(obs->NVal+1)));v++) {
@@ -783,6 +819,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      ++i;
                      Tcl_SetObjResult(Interp,obj);
                   } else if (Objc==5) {
+                     // Add new element
+                     
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                      Tcl_ListObjLength(Interp,Objv[++i],&nv);
                      if (nv==0) {
@@ -812,6 +850,10 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         Tcl_ListObjAppendElement(Interp,obs->Elems,obj);
                      }
                      free(valf);
+                     
+                     // Adjust time limits
+                     obs->Time0=(obs->Time0<time && obs->Time0!=0)?obs->Time0:time;
+                     obs->Time1=obs->Time1>time?obs->Time1:time;
                   } else {
                      Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -ELEMENT [id] [element] [time] [value]\"",(char*)NULL);
                      return(TCL_ERROR);
@@ -829,22 +871,49 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   if (Objc==3) {
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                   }
-
-                  loc=NULL;
                   obj=Tcl_NewListObj(0,NULL);
-                  while ((loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search))) {
-                     if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
-                        for(d=0;d<elem->NData;d++) {
-                           data=elem->EData[d];
-                           /*Check for selected family*/
-                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
-                           if (!obs->Family || ((obs->FamilyOp=='O' && (obs->Family&flag)) || (obs->FamilyOp=='A' && (obs->Family==flag)))) {
-                              /*Check for data bktyp matching*/
-                              if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
-                                 /*Link the ElementData to its Obs and location*/
-                                 elem->EData[d]->Obs=obs;
-                                 elem->EData[d]->Loc=loc;
-                                 Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+ 
+                  if (!strlen(Tcl_GetString(Objv[1])) && Objc==3) {
+                     // No station specified, look for all report for all stations for this date
+                     loc=obs->Loc;
+                     while(loc) {
+                        if (obs->CodeType==-1 || obs->CodeType==loc->CodeType) {
+                           if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
+                              for(d=0;d<elem->NData;d++) {
+                                 data=elem->EData[d];
+                                 /*Check for selected family*/
+                                 flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                                 if (MET_FLAG(obs,flag)) {
+                                    /*Check for data bktyp matching*/
+                                    if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                                       /*Link the ElementData to its Obs and location*/
+                                       elem->EData[d]->Obs=obs;
+                                       elem->EData[d]->Loc=loc;
+                                       Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                        loc=loc->Next;
+                     }
+                  } else {  
+                     // Station specificed, look for all report for this stations (and date if specified
+                     loc=NULL;
+                     while ((loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search))) {
+                        if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
+                           for(d=0;d<elem->NData;d++) {
+                              data=elem->EData[d];
+                              /*Check for selected family*/
+                              flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                              if (MET_FLAG(obs,flag)) {
+                                 /*Check for data bktyp matching*/
+                                 if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
+                                    /*Link the ElementData to its Obs and location*/
+                                    elem->EData[d]->Obs=obs;
+                                    elem->EData[d]->Loc=loc;
+                                    Tcl_ListObjAppendElement(Interp,obj,MetReport_Put(Interp,NULL,elem->EData[d]));
+                                 }
                               }
                            }
                         }
@@ -1102,7 +1171,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Time0    = 0;
    obs->Time1    = 0;
    obs->Loc      = NULL;
-   obs->Time     = 0;
+   obs->Time     = -1;
    obs->Cache    = 0;
    obs->Persistance = 0;
    obs->Lag      = 0;
@@ -2003,6 +2072,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       eb=NULL;
    }
 
+   data=cdata=NULL;
+   
    /*Initialize rendering parameters per model items*/
    min[0]=min[1]=max[0]=max[1]=0;n=0;
    for(i=0;i<Obs->Model->NItem;i++) {
@@ -2040,7 +2111,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    loc=Obs->Loc;
    n=-1;
    nobs=0;
-
+   co.Lat=co.Lon=0.0;
+   
    glPushName(PICK_METOBS);
 
    while(loc) {
@@ -2711,6 +2783,9 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          break;
 
+      case STATS:
+         break;
+         
       case ALL:
          TclY_HashAll(Interp,&MetRepTable);
          break;

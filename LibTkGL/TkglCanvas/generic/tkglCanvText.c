@@ -53,7 +53,6 @@ static double glTextToPoint (Tk_Canvas canvas,Tk_Item *itemPtr, double *pointPtr
 static int    glTextToPostscript (Tcl_Interp *interp,Tk_Canvas canvas,Tk_Item *itemPtr,int prepass);
 static void   glTranslateText (Tk_Canvas canvas,Tk_Item *itemPtr,double deltaX,double deltaY);
 
-void glComputeTextBbox (Tk_Canvas canvas,glTextItem *textPtr);
 void glDisplayText (Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Drawable dst,int x,int y,int width,int height);
 
 static int    GetSelText (Tk_Canvas canvas,Tk_Item *itemPtr,int offset,char *buffer,int maxBytes);

@@ -1640,7 +1640,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
    GDALColorTableH htable;
    GDALColorEntry  centry;
    GDALDatasetH    dts,vds;
-   GDALDriverH     dr;
+   GDALDriverH     dro,drs;
    int             i,ns,nc,n,c;
    char           *str,buf[64],*csl[2];
 
@@ -1661,12 +1661,18 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       nc+=band->Def->NC;
    }
 
-   /*Create an in memory dataset*/
-   if (!(dr=GDALGetDriverByName("MEM"))) {
+   /*Create an in memory and output dataset*/
+   if (!(dro=GDALGetDriverByName(Driver))) {
+      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Invalid driver ",Driver,(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if (!(drs=GDALGetDriverByName("MEM"))) {
       Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Could not initialise VRT driver",(char*)NULL);
       return(TCL_ERROR);
    }
-   if (!(vds=GDALCreate(dr,"",band->Def->NI,band->Def->NJ,0,TD2GDAL[band->Def->Type],NULL))) {
+   
+   if (!(vds=GDALCreate(drs,"",band->Def->NI,band->Def->NJ,0,TD2GDAL[band->Def->Type],NULL))) {
       Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Could not create in memory dataset",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -1732,12 +1738,9 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       }
    }
 
-   if (!(dr=GDALGetDriverByName(Driver))) {
-      Tcl_AppendResult(Interp,"GDAL_FileCreateCopy: Invalid driver ",Driver,(char*)NULL);
-      return(TCL_ERROR);
-   }
+   dts=GDALCreateCopy(dro,Name,vds,FALSE,NULL,NULL,NULL);
 
-   dts=GDALCreateCopy(dr,Name,vds,FALSE,NULL,NULL,NULL);
+   GDALClose(vds);
 
    if (dts) {
       GDALClose(dts);
@@ -1745,7 +1748,6 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       Tcl_AppendResult(Interp,"Could not create dataset ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
-   GDALClose(vds);
 
    return(TCL_OK);
 }

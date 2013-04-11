@@ -40,10 +40,19 @@ static CONST char *GraphDataName[] = { "False","True","data","xdata","ydata","zd
 
 #define STREAMLEN 2048
 extern unsigned char StreamMap[256][4];
-extern CONST char *ICONS[];
-extern TIcon IconList[];
-extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
-extern int  FFStreamLine(TGeoRef *Ref,TDataDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+extern CONST  char *ICONS[];
+extern TIcon  IconList[];
+extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
+extern int    FFStreamLine(TGeoRef *Ref,TDataDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+extern int    FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
+extern float *FFStreamMapSetup1D(double Delta);
+
+extern void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphTehpi_DisplayDryAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphTehpi_DisplayMixRatios(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,TGraphAxis *AxisW,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphTehpi_DisplayIsotherms(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphTehpi_DisplayIsobars(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisT,TGraphAxis *AxisP,TGraphAxis *AxisTH,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 
 static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
@@ -1476,6 +1485,8 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    /* Compute graph curve points */
    db=1000.0;
    vn=0;
+   x=x0=y0=0.0;
+   val=NULL;
    for(i=0;i<n+hd;i++) {
       /* Histograms check*/
       if (i==n) {
@@ -1799,8 +1810,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             y=v[i][1]+j;
             j=Tk_TextWidth(Item->Font,buf,strlen(buf));
             switch(Item->Anchor) {
+               case TK_ANCHOR_N:
+               case TK_ANCHOR_S:
                case TK_ANCHOR_CENTER: x=v[i][0]-j/2; break;
+               case TK_ANCHOR_NW:
+               case TK_ANCHOR_SW:               
                case TK_ANCHOR_W:      x=v[i][0]+j/strlen(buf);     break;
+               case TK_ANCHOR_NE:
+               case TK_ANCHOR_SE:
                case TK_ANCHOR_E:      x=v[i][0]-j-j/strlen(buf);   break;
             }
             if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {
@@ -2060,6 +2077,9 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       VAL2COL(base,Data->Spec,Data->Spec->Inter[0]);
    }
 
+   c0=c1=c2=c3=0;
+   v0=v1=v2=v3=0.0;
+   
    /*Process gridpoints*/
    for(j=0;j<Data->Def->NJ-1;j++) {
 
@@ -2885,7 +2905,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
    if (Item->DescItem) {
       ((glTextItem*)Item->DescItem)->x=X0;
       ((glTextItem*)Item->DescItem)->y=Y0;
-      glComputeTextBbox(Graph->canvas,Item->DescItem);
+      glComputeTextBbox(Graph->canvas,(glTextItem*)Item->DescItem);
    } else {
       glColor4us(Graph->FGColor->red,Graph->FGColor->green,Graph->FGColor->blue,Item->Alpha*Graph->Alpha*0.01*655);
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font?Item->Font:Graph->Font);
@@ -2975,7 +2995,8 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
 
    axisx=GraphAxis_Get(Item->XAxis);
    axisy=GraphAxis_Get(Item->YAxis);
-
+   axisz=NULL;
+   
    if (!axisx || !axisy) return;
 
    if (Item->Data) {
@@ -3396,7 +3417,8 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    vecy=Vector_Get(Item->YData);
 
    n=vecx->N<vecy->N?vecx->N:vecy->N;
-
+   x0=y0=0.0;
+   
    /* Histograms may have on more value in the axis orientation side*/
    if (Item->Type==HISTOGRAM) {
       hd=Item->Orient[0]=='X'?(vecx->N>vecy->N):(vecx->N<vecy->N);
