@@ -789,7 +789,8 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
 
          if (Ref->Grid[0]=='V') {
             j=1;
-
+            COORD_CLEAR(c0);
+            
             /* Get the right level*/
             for(k=Ref->ZRef.LevelNb-1;k>=0;k--) {
               if (Obs->Loc->Coord[i].Elev>Ref->ZRef.Levels[k])
@@ -1398,7 +1399,6 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    char    **tok,**gtok,**ltok;
    int     err=TCL_OK;
    int    levtyp=0;
-   static CONST char *type[] = { "MASL","SIGMA","PRESSURE","UNDEFINED","MAGL","HYBRID","THETA","ETA","GALCHEN" };
 
    stream=fopen(File,"r");
 
@@ -1433,7 +1433,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
       return(TCL_ERROR);
    }
 
-   Tcl_SplitList(Interp,head,&gntok,&gtok);
+   Tcl_SplitList(Interp,head,&gntok,(const char ***)&gtok);
    free(head);
 
    /*Get the number of data*/
@@ -1524,7 +1524,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
       fgetskip(bytes,sz,stream);
 
       if (strlen(bytes)>10) {
-         Tcl_SplitList(Interp,bytes,&ntok,&tok);
+         Tcl_SplitList(Interp,bytes,&ntok,(const char ***)&tok);
 
          if (ntok!=gntok) {
             Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Invalid number of item on following line\n",bytes,(char*)NULL);
@@ -1593,7 +1593,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                   ((float*)obs->Def->Data[0])[nb]=obs->Def->NoData;
                } else {
                   /* Split the list of values in case of vectorial data*/
-                  if ((err=Tcl_SplitList(Interp,tok[n],&nltok,&ltok))==TCL_OK) {
+                  if ((err=Tcl_SplitList(Interp,tok[n],&nltok,(const char ***)&ltok))==TCL_OK) {
                      for(k=0;k<nltok;k++) {
                         if (!obs->Def->Data[k]) {
                            if (!(obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TData_Size[TD_Float32]))) {

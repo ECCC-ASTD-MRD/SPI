@@ -51,6 +51,8 @@ int GeoRef_Init(Tcl_Interp *Interp) {
    if (!GeoRefInit++) {
       Tcl_InitHashTable(&GeoRef_Table,TCL_STRING_KEYS);
       TGeoRef_TableNo=1;
+      
+      GeoScan_Init(&GScan);
    }
 
    return(TCL_OK);
@@ -82,15 +84,27 @@ void GeoRef_Incr(TGeoRef *Ref) {
 */
 void GeoScan_Clear(TGeoScan *Scan) {
 
-   if (Scan->X) free(Scan->X);
-   if (Scan->Y) free(Scan->Y);
-   if (Scan->V) free(Scan->V);
-   if (Scan->D) free(Scan->D);
+   if (Scan) {
+      if (Scan->X) free(Scan->X);
+      if (Scan->Y) free(Scan->Y);
+      if (Scan->V) free(Scan->V);
+      if (Scan->D) free(Scan->D);
 
-   Scan->X=Scan->Y=NULL;
-   Scan->V=NULL;
-   Scan->D=NULL;
-   Scan->N=Scan->S=Scan->DX=Scan->DY=0;
+      Scan->X=Scan->Y=NULL;
+      Scan->V=NULL;
+      Scan->D=NULL;
+      Scan->N=Scan->S=Scan->DX=Scan->DY=0;
+   }
+}
+
+void GeoScan_Init(TGeoScan *Scan) {
+   
+   if (Scan) {
+      Scan->X=Scan->Y=NULL;
+      Scan->V=NULL;
+      Scan->D=NULL;
+      Scan->N=Scan->S=Scan->DX=Scan->DY=0;   
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -130,7 +144,16 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
    if (!Scan || !ToRef || !FromRef) {
       return(0);
    }
-
+   
+   // Check limits
+   x=FromRef->X1-FromRef->X0;
+   y=FromRef->Y1-FromRef->Y0;
+ 
+   X0=X0<0?0:X0;
+   Y0=Y0<0?0:Y0;
+   X1=X1>x?x:X1;
+   Y1=Y1>y?y:Y1;
+   
    /*Adjust scan buffer sizes*/
    Scan->DX=X1-X0+1;
    Scan->DY=Y1-Y0+1;
@@ -138,9 +161,9 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
    sz=Scan->DX*Scan->DY;
 
    if (Scan->S<sz) {
-      if (!(Scan->X=(void*)realloc(Scan->X,dd*sizeof(double))))
+      if (!(Scan->X=(double*)realloc(Scan->X,dd*sizeof(double))))
          return(0);
-      if (!(Scan->Y=(void*)realloc(Scan->Y,dd*sizeof(double))))
+      if (!(Scan->Y=(double*)realloc(Scan->Y,dd*sizeof(double))))
          return(0);
       if (!(Scan->V=(unsigned int*)realloc(Scan->V,sz*sizeof(unsigned int))))
          return(0);
@@ -172,6 +195,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
             }
          }
       }
+
       if (FromRef->Function) {
          OCTTransform(FromRef->Function,n,Scan->X,Scan->Y,NULL);
       }
@@ -229,8 +253,8 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
 
             if (ToDef) {
-               ToRef->Value(ToRef,ToDef,Degree[0],0,Scan->X[x],Scan->Y[x],0,&v,NULL);
-               Scan->D[x]=v;
+              ToRef->Value(ToRef,ToDef,Degree?Degree[0]:'L',0,Scan->X[x],Scan->Y[x],0,&v,NULL);
+              Scan->D[x]=v;
             } else {
                /*If we're outside, set to nodata*/
                if (ToDef)

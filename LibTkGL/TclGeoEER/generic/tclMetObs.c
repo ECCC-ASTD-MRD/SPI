@@ -609,7 +609,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   if (!strlen(Tcl_GetString(Objv[1]))) {
                      loc=obs->Loc;
                      while(loc) {
-                       if (obs->CodeType==-1 || obs->CodeType==loc->CodeType) {
+                       if (!obs->CodeType || obs->CodeType==loc->CodeType) {
                           if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
                               for(d=0;d<elem->NData;d++) {
                                  data=elem->EData[d];
@@ -877,7 +877,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      // No station specified, look for all report for all stations for this date
                      loc=obs->Loc;
                      while(loc) {
-                        if (obs->CodeType==-1 || obs->CodeType==loc->CodeType) {
+                        if (!obs->CodeType || obs->CodeType==loc->CodeType) {
                            if ((elem=TMetElem_Find(loc,time,obs->Lag))) {
                               for(d=0;d<elem->NData;d++) {
                                  data=elem->EData[d];
@@ -2121,7 +2121,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       n++;
 
       /*Check for data bktyp matching*/
-      if (Obs->CodeType>0 && Obs->CodeType!=loc->CodeType) {
+      if (Obs->CodeType && Obs->CodeType!=loc->CodeType) {
          loc=loc->Next;
          continue;
       }

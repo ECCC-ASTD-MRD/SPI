@@ -1795,29 +1795,31 @@ int DataSpec_Free(TDataSpec *Spec) {
 */
 void DataSpec_Clear(TDataSpec *Spec) {
 
-   if (Spec->Topo)         free(Spec->Topo);                                  Spec->Topo=NULL;
-   if (Spec->Extrude)      free(Spec->Extrude);                               Spec->Extrude=NULL;
-   if (Spec->Desc)         free(Spec->Desc);                                  Spec->Desc=NULL;
-   if (Spec->Unit)         free(Spec->Unit);                                  Spec->Unit=NULL;
-   if (Spec->Sprite)       free(Spec->Sprite);                                Spec->Sprite=NULL;
-   if (Spec->LabelVar)     free(Spec->LabelVar);                              Spec->LabelVar=NULL;
-   if (Spec->SizeVar)      free(Spec->SizeVar);                               Spec->SizeVar=NULL;
-   if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
-   if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
-   if (Spec->InterpDegree) free(Spec->InterpDegree);                          Spec->InterpDegree=NULL;
-   if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);                          Spec->ExtrapDegree=NULL;
+   if (Spec) {
+      if (Spec->Topo)         free(Spec->Topo);                                  Spec->Topo=NULL;
+      if (Spec->Extrude)      free(Spec->Extrude);                               Spec->Extrude=NULL;
+      if (Spec->Desc)         free(Spec->Desc);                                  Spec->Desc=NULL;
+      if (Spec->Unit)         free(Spec->Unit);                                  Spec->Unit=NULL;
+      if (Spec->Sprite)       free(Spec->Sprite);                                Spec->Sprite=NULL;
+      if (Spec->LabelVar)     free(Spec->LabelVar);                              Spec->LabelVar=NULL;
+      if (Spec->SizeVar)      free(Spec->SizeVar);                               Spec->SizeVar=NULL;
+      if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
+      if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
+      if (Spec->InterpDegree) free(Spec->InterpDegree);                          Spec->InterpDegree=NULL;
+      if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);                          Spec->ExtrapDegree=NULL;
 
-   if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
-   if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
-   if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine); Spec->HighLine=NULL;
-   if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill); Spec->HighFill=NULL;
-   if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);          Spec->Font=NULL;
+      if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
+      if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
+      if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine); Spec->HighLine=NULL;
+      if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill); Spec->HighFill=NULL;
+      if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);          Spec->Font=NULL;
 
-   if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);   Spec->InterLabels=NULL;
-   if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
-   if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
+      if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);   Spec->InterLabels=NULL;
+      if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
+      if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
 
-   if (Spec->Map)         CMap_Free(Spec->Map);
+      if (Spec->Map)         CMap_Free(Spec->Map);
+   }
 }
 
 /*----------------------------------------------------------------------------

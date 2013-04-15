@@ -1150,7 +1150,8 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
    fld=ToDef->Buffer;
    nij=FSIZE2D(ToDef);
    nijk=FSIZE3D(ToDef);
-
+   val=vx=0.0;
+   
    if (Mode!=TD_NOP && Mode!=TD_ACCUM && Mode!=TD_BUFFER) {
       if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,1)) {
          return(TCL_OK);
@@ -1891,7 +1892,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    }
 
    /*Initialize linescan object*/
-   memset(&scan,0x0,sizeof(TGeoScan));
+   GeoScan_Init(&scan);
 
    /*Check if we need contouring*/
    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
@@ -2966,7 +2967,6 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->Ref=GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
-                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -3243,6 +3243,10 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
             for (n=0;n<Band->Def->NC;n++) {
                switch(Band->Def->Type) {
+                  case TD_Unknown:
+                  case TD_Binary:
+                  case TD_UInt64:
+                  case TD_Int64:  break;
                   case TD_UByte:  Band->Tex.Scale[n]=((0x1<<8)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
                                   Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<8)-1);
                                   break;

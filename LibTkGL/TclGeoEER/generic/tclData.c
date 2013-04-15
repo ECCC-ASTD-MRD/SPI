@@ -209,11 +209,10 @@ int Tcldata_Init(Tcl_Interp *Interp) {
 int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int        idx,n;
-   TData     *field0,*field1;
+   TData     *field0;
    TDataSpec *spec;
-   double     nd,val;
+   double     nd;
 
-   static CONST char *mode[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","NORMALIZED_COUNT","COUNT","NOP",NULL };
    static CONST char *sopt[] = { "copy","free","configure","stats","sort","clear","clean","wipe","is",NULL };
    enum                opt { COPY,FREE,CONFIGURE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
@@ -444,7 +443,7 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
    if (!new) {
       Tcl_AppendResult(Interp,"Data_GetShell: Field already exist",(char *)NULL);
    } else {
-      if (field=(TData*)malloc(sizeof(TData))) {
+      if ((field=(TData*)malloc(sizeof(TData)))) {
          Tcl_SetHashValue(entry,field);
       }
    }
@@ -470,7 +469,7 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
 void Data_GetStat(TData *Field){
 
    TDataDef     *def;
-   double        val,mode;
+   double        val=0.0,mode;
    int           i,j,k,d,imin=0,jmin=0,imax=0,jmax=0,kmin=0,kmax=0;
    unsigned long idxk,idx,n=0;
 
@@ -712,7 +711,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    TData *cut;
    unsigned int  n,k,f,p,g,ip1;
    unsigned long idx,idxp;
-   double  i,j,i0=-1.0,j0=-1.0,theta,zeta,vi,vj,vij,p0;
+   double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0;
    float   *fp;
 
 #ifdef HAVE_RMN
@@ -740,7 +739,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          p=0;
       }
 
-      if (Field[0]->Spec && Field[0]->Spec->ZType==LVL_MASL || Field[0]->Spec->ZType==LVL_MAGL) {
+      if (Field[0]->Spec && (Field[0]->Spec->ZType==LVL_MASL || Field[0]->Spec->ZType==LVL_MAGL)) {
          p=0;
          g=1;
       }
@@ -1083,10 +1082,10 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
 int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
 
    double   val,dir;
-   int      x,y,x0,y0,x1,y1,idx,ex,dy;
+   int      y,x0,y0,x1,y1,idx,dy;
    TGeoScan scan;
 
-   memset(&scan,0x0,sizeof(TGeoScan));
+   GeoScan_Init(&scan);
 
    if (!ToRef || !FromRef) {
       if (Interp)
@@ -1108,32 +1107,27 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
       return(TCL_OK);
    }
 
-   ex=!isnan(ToDef->NoData);
-
    /*Check if we can reproject all in one shot, otherwise, do by scanline*/
    dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
    for(y=y0;y<=y1;y+=(dy+1)) {
 
-      /*Reproject*/
-      if (!GeoScan_Get(&scan,ToRef,ToDef,FromRef,NULL,x0,y,x1,y+dy,1,NULL)) {
+     /*Reproject*/
+      if (!GeoScan_Get(&scan,FromRef,FromDef,ToRef,ToDef,x0,y,x1,y+dy,1,NULL)) {
          Tcl_AppendResult(Interp,"Data_GridInterpolate: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-
+      
       for(idx=0;idx<scan.N;idx++){
          /*Get the value of the data field at this latlon coordinate*/
-         if (FromRef->Value(FromRef,FromDef,Degree,0,scan.X[idx],scan.Y[idx],FromDef->Level,&val,&dir)) {
-            if (val!=FromDef->NoData && !isnan(val)) {
-               Def_Set(ToDef,0,scan.V[idx],val);
-            } else {
-               /*Set as nodata
-               if (ex) {
-                  Def_Set(ToDef,0,scan.V[n],ToDef->NoData);
-               }*/
-            }
+         if (scan.D[idx]!=FromDef->NoData && !isnan(scan.D[idx])) {
+            Def_Set(ToDef,0,scan.V[idx],scan.D[idx]);
+         } else {
+            /*Set as nodata*/
+            Def_Set(ToDef,0,scan.V[idx],ToDef->NoData);
          }
       }
    }
+   
    GeoScan_Clear(&scan);
 
    return(TCL_OK);
@@ -1279,7 +1273,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
       }
 
       if (Seg && Data->Def && Data->Def->Segments) {
-         TList_Clear(Data->Def->Segments,T3DArray_Free);
+         TList_Clear(Data->Def->Segments,(TList_FreeProc*)T3DArray_Free);
          Data->Def->Segments=NULL;
       }
    }
@@ -1342,9 +1336,9 @@ int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 
    for(n=0;n<nobj;n++) {
       Tcl_ListObjIndex(Interp,List,n,&obj);
-      if (fld=Data_Get(Tcl_GetString(obj))) {
+      if ((fld=Data_Get(Tcl_GetString(obj)))) {
          def[n]=fld->Def;
-      } else if (obs=Obs_Get(Tcl_GetString(obj))) {
+      } else if ((obs=Obs_Get(Tcl_GetString(obj)))) {
          def[n]=obs->Def;
       } else {
          Tcl_AppendResult(Interp,"\n   DataDef_Sort: Invalid field of observation",(char*)NULL);
@@ -1392,7 +1386,7 @@ int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 */
 int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
 
-   double incri,incrj,val;
+   double incri,incrj,val=0.0;
    int idx,cidx,x,y,i,j,nidx;
 
    Tk_PhotoImageBlock data;
@@ -1418,7 +1412,7 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
    data.offset[2]=2;
    data.offset[3]=3;
 
-   if (data.pixelPtr=(unsigned char*)calloc(data.width*data.height*4,sizeof(unsigned char))) {
+   if ((data.pixelPtr=(unsigned char*)calloc(data.width*data.height*4,sizeof(unsigned char)))) {
 
       /*Creer l'image de la palette*/
       incrj=(double)(Field->Def->NJ)/(data.height+1);
@@ -1485,7 +1479,8 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 
    ni=Field->Def->NI;
    nj=Field->Def->NJ;
-
+   zm=zmm=zn=zv=0.0;
+   
    /* ichk and jchk indicates the covering area under which the extrema is to be evaluated */
    ichk=ni/Tile;ichk=(2>=ichk?2:(2*Tile-1<=ichk?2*Tile-1:ichk));
    jchk=nj/Tile;jchk=(2>=jchk?2:(2*Tile-1<=jchk?2*Tile-1:jchk));
@@ -1568,9 +1563,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TList    *list;
    T3DArray *array;
    Vect3d   *vbuf;
-   int       x,n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
+   int       n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
    int       nb,len,nobj;
-   unsigned long npt;
+   long      npt;
    double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
    float     *levels;
    char      buf[32],mode='L';
@@ -2135,8 +2130,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                /*Loop on all streamline points*/
                for (nb=0;nb<b+f-1;nb++) {
                   /*Clip to extent limits*/
-                  if (ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
-                     Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
+                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
+                     Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1]))) {
 
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
@@ -2179,8 +2174,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                /*Loop on all streamline points*/
                for (nb=0;nb<b+f-1;nb++) {
                   /*Clip to extent limits*/
-                  if (ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
-                     Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
+                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
+                     Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1]))) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
@@ -2225,8 +2220,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   /*Loop on the contour points*/
                   for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
-                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
-                        Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1])) {
+                     if ((ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,
+                        Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1]))) {
 
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
@@ -2282,7 +2277,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                   for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
-                     if (ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1])) {
+                     if ((ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1]))) {
                         if (mode=='G' || mode=='K') {
                            if (!f) {
                               switch(mode) {
@@ -2573,6 +2568,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      sprintf(buf,"%i,%i",nj+1,ni+1);
                      Def_Get(Field->Def,0,FIDX2D(Field->Def,ni,nj),val);
                      switch(Field->Def->Type) {
+                        case TD_Unknown:
+                        case TD_Binary: break;
+                        case TD_UInt64:
+                        case TD_Int64: Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[i]),buf,Tcl_NewLongObj(val),0x0); break;
                         case TD_UByte:
                         case TD_Byte:
                         case TD_UInt16:
@@ -2848,7 +2847,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                case 3: tot=tot<v?v:tot; break;
                case 4:
                   sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(index));
+                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
                   Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                   break;
@@ -2884,6 +2883,8 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
       case TD_UInt16: ((unsigned short*)Def->Data[Comp])[Idx]=atoi(String);break;
       case TD_Int32:  ((int*)Def->Data[Comp])[Idx]=atoi(String);break;
       case TD_UInt32: ((unsigned int*)Def->Data[Comp])[Idx]=atoi(String);break;
+      case TD_Int64:  ((long*)Def->Data[Comp])[Idx]=atol(String);break;
+      case TD_UInt64: ((unsigned long*)Def->Data[Comp])[Idx]=atol(String);break;
       case TD_Float32:((float*)Def->Data[Comp])[Idx]=atof(String);break;
       case TD_Float64:((double*)Def->Data[Comp])[Idx]=atof(String);break;
    }
@@ -2910,7 +2911,7 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
 void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
 
    int      i,j;
-   double   val;
+   double   val=0.0;
    Tcl_Obj *objj,*obji;
 
    objj=Tcl_NewListObj(0,NULL);
@@ -2962,7 +2963,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
    double   value;
-   unsigned char *data;
+//   unsigned char *data;
 
    /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
    Tcl_ListObjLength(Interp,List,&nobjj);
@@ -3076,12 +3077,16 @@ Tcl_Obj* Data_Val2Obj(TDataDef *Def,double Val) {
    Tcl_Obj *obj=NULL;
 
    switch(Def->Type) {
+      case TD_Unknown:
+      case TD_Binary:break;
       case TD_UByte:
       case TD_Byte:
       case TD_UInt16:
       case TD_Int16:
       case TD_UInt32:
       case TD_Int32:   obj=Tcl_NewIntObj(Val);break;
+      case TD_UInt64:
+      case TD_Int64:   obj=Tcl_NewLongObj(Val);break;
       case TD_Float32:
       case TD_Float64: obj=Tcl_NewDoubleObj(Val);
    }
@@ -3092,7 +3097,7 @@ Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y) {
 
    Tcl_Obj *obj;
    int      i;
-   double   val;
+   double   val=0.0;
 
    obj=Tcl_NewListObj(0,NULL);
    for(i=0;i<Def->NC;i++) {
@@ -3153,7 +3158,7 @@ int Data_Within(TData *Field,float Val) {
 int Data_WithinNb(TData *Field) {
 
    int   n,t=0;
-   float val;
+   float val=0.0f;
 
    for(n=0;n<FSIZE2D(Field->Def);n++) {
       Def_GetMod(Field->Def,n,val);
