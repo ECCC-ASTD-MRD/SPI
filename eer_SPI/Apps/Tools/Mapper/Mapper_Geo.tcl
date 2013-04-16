@@ -148,6 +148,7 @@ proc Mapper::Geo::Code { Request { API Geocoder } } {
    variable Error
    variable Accuracy
    variable Param
+   variable Data
 
    #----- Cleanup location info
    set Data(Lat) 0.0
