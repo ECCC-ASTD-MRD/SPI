@@ -302,6 +302,21 @@ static int glLineCoords(
          return TCL_ERROR;
       }
    }
+
+   /* Give internal/smoothed coordinates */
+   if (objc==1 && strcasecmp(Tcl_GetString(objv[0]),"smooth")==0) {
+      Tcl_Obj *subobj, *obj = Tcl_NewObj();
+
+      if (linePtr->smooth) {
+         for (i = 0; i < 2*linePtr->numSmooth; i++) {
+            subobj = Tcl_NewDoubleObj(linePtr->SmoothPtr[i]);
+            Tcl_ListObjAppendElement(interp, obj, subobj);
+         }
+      }
+      Tcl_SetObjResult(interp, obj);
+      return TCL_OK;     
+   }
+   
    if (objc & 1) {
       Tcl_SetObjResult(interp, Tcl_ObjPrintf(
          "wrong # coordinates: expected an even number, got %d",
