@@ -1081,7 +1081,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
 */
 int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
 
-   double   val,dir;
+   double   val;
    int      y,x0,y0,x1,y1,idx,dy;
    TGeoScan scan;
 
@@ -1272,9 +1272,18 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          Data->Map=NULL;
       }
 
-      if (Seg && Data->Def && Data->Def->Segments) {
-         TList_Clear(Data->Def->Segments,(TList_FreeProc*)T3DArray_Free);
-         Data->Def->Segments=NULL;
+      if (Seg) {
+         if (Data->SDef) {
+            // Loop on subgrids (U grids)
+            for(n=1;n<=Data->Ref->NbId;n++) {
+               TList_Clear(Data->SDef[n]->Segments,(TList_FreeProc*)T3DArray_Free);
+               Data->SDef[n]->Segments=NULL;
+            }
+         }     
+         if (Data->Def) {
+            TList_Clear(Data->Def->Segments,(TList_FreeProc*)T3DArray_Free);
+            Data->Def->Segments=NULL;
+         }
       }
    }
 }
