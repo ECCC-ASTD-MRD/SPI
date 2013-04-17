@@ -305,7 +305,7 @@ static int GraphCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *con
          }
          Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[3],&y);
-         item=GraphItem_Get(Tcl_GetString(Objv[5]));
+         item=GraphItem_Get(Tcl_GetString(Objv[4]));
 
          return Graph_Project(Interp,gr,item,x,y,z,ex);
          break;
