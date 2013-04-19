@@ -97,6 +97,10 @@ int DataDef_Compat(TDataDef *DefTo,TDataDef *DefFrom) {
 
    int ch=1;
 
+   if (DefFrom->Idx) {
+      return(0);
+   }
+   
    if (DefTo->Mode && DefTo->Mode!=DefTo->Data[0]) {
       free(DefTo->Mode);
    }
@@ -177,47 +181,49 @@ int DataDef_Compat(TDataDef *DefTo,TDataDef *DefFrom) {
 TDataDef *DataDef_Copy(TDataDef *Def){
 
    int       i;
-   TDataDef *def;
+   TDataDef *def=NULL;
 
-   if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
-      def->Container=Def->Container;
-      def->CellDim=Def->CellDim;
-      def->NI=Def->NI;
-      def->NJ=Def->NJ;
-      def->NK=Def->NK;
-      def->NC=Def->NC;
-      def->NIJ=Def->NI*Def->NJ;
-      def->NoData=Def->NoData;
-      def->Type=Def->Type;
-      def->Level=Def->Level;
-      def->Idx=Def->Idx;
-      def->Buffer=NULL;
-      def->Segments=NULL;
-      def->Accum=NULL;
-      def->Mask=NULL;
-      def->Pres=NULL;
-      def->Height=NULL;
-      def->Pick=def->Poly=NULL;
-      def->Sample=Def->Sample;
+   if (!Def->Idx) {
+      if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
+         def->Container=Def->Container;
+         def->CellDim=Def->CellDim;
+         def->NI=Def->NI;
+         def->NJ=Def->NJ;
+         def->NK=Def->NK;
+         def->NC=Def->NC;
+         def->NIJ=Def->NI*Def->NJ;
+         def->NoData=Def->NoData;
+         def->Type=Def->Type;
+         def->Level=Def->Level;
+         def->Idx=Def->Idx;
+         def->Buffer=NULL;
+         def->Segments=NULL;
+         def->Accum=NULL;
+         def->Mask=NULL;
+         def->Pres=NULL;
+         def->Height=NULL;
+         def->Pick=def->Poly=NULL;
+         def->Sample=Def->Sample;
 
-      memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      def->CoordLimits[0][0]=Def->CoordLimits[0][0];
-      def->CoordLimits[0][1]=Def->CoordLimits[0][1];
-      def->CoordLimits[1][0]=Def->CoordLimits[1][0];
-      def->CoordLimits[1][1]=Def->CoordLimits[1][1];
+         memcpy(def->Limits,Def->Limits,6*sizeof(int));
+         def->CoordLimits[0][0]=Def->CoordLimits[0][0];
+         def->CoordLimits[0][1]=Def->CoordLimits[0][1];
+         def->CoordLimits[1][0]=Def->CoordLimits[1][0];
+         def->CoordLimits[1][1]=Def->CoordLimits[1][1];
 
-      for(i=0;i<4;i++) {
-         if (def->Container) {
-            def->Data[i]=Def->Data[i];
-         } else {
-            if (Def->Data[i] && (def->Data[i]=(char*)malloc(FSIZE3D(Def)*TData_Size[Def->Type]))) {
-               memcpy(def->Data[i],Def->Data[i],FSIZE3D(Def)*TData_Size[Def->Type]);
+         for(i=0;i<4;i++) {
+            if (def->Container) {
+               def->Data[i]=Def->Data[i];
             } else {
-               def->Data[i]=NULL;
+               if (Def->Data[i] && (def->Data[i]=(char*)malloc(FSIZE3D(Def)*TData_Size[Def->Type]))) {
+                  memcpy(def->Data[i],Def->Data[i],FSIZE3D(Def)*TData_Size[Def->Type]);
+               } else {
+                  def->Data[i]=NULL;
+               }
             }
          }
+         def->Mode=def->Data[0];
       }
-      def->Mode=def->Data[0];
    }
    return(def);
 }
@@ -225,45 +231,47 @@ TDataDef *DataDef_Copy(TDataDef *Def){
 TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
 
    int       i;
-   TDataDef *def;
+   TDataDef *def=NULL;
 
-   if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
-      def->Container=0;
-      def->CellDim=Def->CellDim;
-      def->NI=Def->NI;
-      def->NJ=Def->NJ;
-      def->NK=Def->NK;
-      def->NC=Def->NC;
-      def->NIJ=Def->NI*Def->NJ;
-      def->NoData=Def->NoData;
-      def->Type=Type;
-      def->Level=Def->Level;
-      def->Idx=Def->Idx;
-      def->Buffer=NULL;
-      def->Segments=NULL;
-      def->Accum=NULL;
-      def->Mask=NULL;
-      def->Pres=NULL;
-      def->Height=NULL;
-      def->Pick=def->Poly=NULL;
-      def->Sample=Def->Sample;
+   if (!Def->Idx) {
+      if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
+         def->Container=0;
+         def->CellDim=Def->CellDim;
+         def->NI=Def->NI;
+         def->NJ=Def->NJ;
+         def->NK=Def->NK;
+         def->NC=Def->NC;
+         def->NIJ=Def->NI*Def->NJ;
+         def->NoData=Def->NoData;
+         def->Type=Type;
+         def->Level=Def->Level;
+         def->Idx=Def->Idx;
+         def->Buffer=NULL;
+         def->Segments=NULL;
+         def->Accum=NULL;
+         def->Mask=NULL;
+         def->Pres=NULL;
+         def->Height=NULL;
+         def->Pick=def->Poly=NULL;
+         def->Sample=Def->Sample;
 
-      memcpy(def->Limits,Def->Limits,6*sizeof(int));
-      def->CoordLimits[0][0]=Def->CoordLimits[0][0];
-      def->CoordLimits[0][1]=Def->CoordLimits[0][1];
-      def->CoordLimits[1][0]=Def->CoordLimits[1][0];
-      def->CoordLimits[1][1]=Def->CoordLimits[1][1];
+         memcpy(def->Limits,Def->Limits,6*sizeof(int));
+         def->CoordLimits[0][0]=Def->CoordLimits[0][0];
+         def->CoordLimits[0][1]=Def->CoordLimits[0][1];
+         def->CoordLimits[1][0]=Def->CoordLimits[1][0];
+         def->CoordLimits[1][1]=Def->CoordLimits[1][1];
 
-      for(i=0;i<4;i++) {
-         if (Def->Data[i]) {
-            def->Data[i]=(char*)calloc(FSIZE3D(Def),TData_Size[def->Type]);
-         } else {
-            def->Data[i]=NULL;
+         for(i=0;i<4;i++) {
+            if (Def->Data[i]) {
+               def->Data[i]=(char*)calloc(FSIZE3D(Def),TData_Size[def->Type]);
+            } else {
+               def->Data[i]=NULL;
+            }
          }
+         def->Mode=def->Data[0];
       }
-      def->Mode=def->Data[0];
    }
-
+   
    return(def);
 }
 
@@ -285,7 +293,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
 void DataDef_Free(TDataDef *Def){
 
    if (Def) {
-      if (!Def->Container) {
+      if (!Def->Container && !Def->Idx) {
          if (Def->Mode && Def->Mode!=Def->Data[0]) free(Def->Mode);
          if (Def->Data[0])            free(Def->Data[0]);
          if (Def->Data[1])            free(Def->Data[1]);
@@ -408,7 +416,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
    if (!Def)
      return(NULL);
 
-   if (!Def->Container && (Def->NI!=NI || Def->NJ!=NJ || Def->NK!=NK)) {
+   if (!Def->Container && !Def->Idx && (Def->NI!=NI || Def->NJ!=NJ || Def->NK!=NK)) {
       Def->NI=NI;
       Def->NJ=NJ;
       Def->NK=NK;

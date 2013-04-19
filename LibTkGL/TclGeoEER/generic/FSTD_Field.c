@@ -137,38 +137,40 @@ int FSTD_FieldSubBuild(TData *Field) {
    char grtyp[2];
    int i,c;
 
-   // Allocate subgrid array ans set index 0 to supergrid
-   if (!Field->SDef) {
-      Field->SDef=(TDataDef**)calloc((Field->Ref->NbId+1),sizeof(TDataDef*));
-   }
-
-   if (Field->SDef) {
-      Field->SDef[0]=Field->Def;
-
-      // Loop on subgrids
-      for(i=1;i<=Field->Ref->NbId;i++) {
-         c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
-
-         if (Field->SDef[i])
-            DataDef_Free(Field->SDef[i]);
-
-         // Allocate a container
-         if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
-
-            // Point to subgrid data within global data array
-            for(c=0;c<Field->Def->NC;c++) {
-               Field->SDef[i]->Idx=dij;
-               Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
-               Field->SDef[i]->Level=Field->Def->Level;
-               Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
-            }
-            // Increment after global grid
-            dij+=ni*nj;
-         }
+   if (Field->Def) {
+      
+      // Allocate subgrid array ans set index 0 to supergrid
+      if (!Field->SDef) {
+         Field->SDef=(TDataDef**)calloc((Field->Ref->NbId+1),sizeof(TDataDef*));
       }
-   } else {
-      fprintf(stderr,"(ERROR) FSTD_FieldBuildSub: Unable to allocate subgrid array\n");
-      return(0);
+      if (Field->SDef) {
+         Field->SDef[0]=Field->Def;
+
+         // Loop on subgrids
+         for(i=1;i<=Field->Ref->NbId;i++) {
+            c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+
+            if (Field->SDef[i])
+               DataDef_Free(Field->SDef[i]);
+
+            // Allocate a container
+            if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
+
+               // Point to subgrid data within global data array
+               for(c=0;c<Field->Def->NC;c++) {
+                  Field->SDef[i]->Idx=dij;
+                  Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
+                  Field->SDef[i]->Level=Field->Def->Level;
+                  Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
+               }
+               // Increment after global grid
+               dij+=ni*nj;
+            }
+         }
+      } else {
+         fprintf(stderr,"(ERROR) FSTD_FieldBuildSub: Unable to allocate subgrid array\n");
+         return(0);
+      }
    }
    return(1);
 }

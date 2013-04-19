@@ -621,41 +621,45 @@ int Data_Free(TData *Field) {
 
 TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
-   TData *field;
+   TData    *field;
+   TDataDef *def;
    int    i;
 
-   if (!Field)
+   if (!Field || !Field->Def)
       return(NULL);
 
    /* Verifier que le champs n'est pas lui-meme*/
    field=Data_Get(Name);
+
    if (field==Field) {
       if (!Def && field->Def) {
-         DataDef_Free(field->Def);
+         DataDef_Free(field->SDef?field->SDef[0]:field->Def);
          field->Def=NULL;
       }
       return(field);
    }
 
-   /* Est-ce que le champs existe et si oui, verifier les dimensions */
+   def=Field->SDef?Field->SDef[0]:Field->Def;
+
+    /* Est-ce que le champs existe et si oui, verifier les dimensions */
    if (Def) {
-      if (!(field=Data_Valid(Interp,Name,Field->Def->NI,Field->Def->NJ,Field->Def->NK,DSIZE(Field->Def->Data),Field->Def->Type))) {
+      if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,DSIZE(def->Data),def->Type))) {
          return(NULL);
       }
-      field->Def->Container=Field->Def->Container;
-      field->Def->CellDim=Field->Def->CellDim;
-      field->Def->NoData=Field->Def->NoData;
-      field->Def->Type=Field->Def->Type;
-      field->Def->Level=Field->Def->Level;
-      field->Def->Sample=Field->Def->Sample;
+      field->Def->Container=def->Container;
+      field->Def->CellDim=def->CellDim;
+      field->Def->NoData=def->NoData;
+      field->Def->Type=def->Type;
+      field->Def->Level=def->Level;
+      field->Def->Sample=def->Sample;
 
-      memcpy(field->Def->Limits,Field->Def->Limits,6*sizeof(int));
-      field->Def->CoordLimits[0][0]=Field->Def->CoordLimits[0][0];
-      field->Def->CoordLimits[0][1]=Field->Def->CoordLimits[0][1];
-      field->Def->CoordLimits[1][0]=Field->Def->CoordLimits[1][0];
-      field->Def->CoordLimits[1][1]=Field->Def->CoordLimits[1][1];
+      memcpy(field->Def->Limits,def->Limits,6*sizeof(int));
+      field->Def->CoordLimits[0][0]=def->CoordLimits[0][0];
+      field->Def->CoordLimits[0][1]=def->CoordLimits[0][1];
+      field->Def->CoordLimits[1][0]=def->CoordLimits[1][0];
+      field->Def->CoordLimits[1][1]=def->CoordLimits[1][1];
    } else {
-      if (!(field=Data_Valid(Interp,Name,0,0,0,0,Field->Def->Type))) {
+      if (!(field=Data_Valid(Interp,Name,0,0,0,0,def->Type))) {
          return(NULL);
       }
    }
@@ -669,8 +673,8 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    if (field->Spec && Field->Spec) {
 
       if (Field->Spec->Map)  {
-         CMap_Incr(field->Spec->Map);
          field->Spec->Map=Field->Spec->Map;
+         CMap_Incr(field->Spec->Map);
       }
       if (Field->Spec->Desc) field->Spec->Desc=strdup(Field->Spec->Desc);
       if (Field->Spec->Topo) field->Spec->Topo=strdup(Field->Spec->Topo);
@@ -678,11 +682,16 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
 
    if (Def) {
       for(i=0;i<4;i++) {
-         if (Field->Def->Data[i]) {
-            memcpy(field->Def->Data[i],Field->Def->Data[i],FSIZE3D(field->Def)*TData_Size[field->Def->Type]);
+         if (def->Data[i]) {
+            memcpy(field->Def->Data[i],def->Data[i],FSIZE3D(def)*TData_Size[def->Type]);
          }
       }
    }
+  
+   if (field->Ref->Grid[0]=='U') {
+      FSTD_FieldSubBuild(field);
+   }
+
    return(field);
 }
 

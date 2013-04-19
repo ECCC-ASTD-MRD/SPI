@@ -109,7 +109,7 @@ EXTCHAR [A-Za-z0-9_.:#]
       GFieldP=vexpr_lval.Field;
       GField=GField?GField:vexpr_lval.Field;
       GMode=GMode==T_VAL?T_FLD:GMode;
-      if((vexpr_lval.Data=vexpr_lval.Field->Def)) {
+      if((vexpr_lval.Data=(vexpr_lval.Field->SDef?vexpr_lval.Field->SDef[0]:vexpr_lval.Field->Def))) {
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(Field) token: %s\n", yytext);
 #endif

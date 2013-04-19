@@ -113,6 +113,9 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                   GField->Stat=NULL;
                }
                GField->Def= needcopy ? DataDef_Copy(Data) : Data;
+               if (GField->Ref && GField->Ref->Grid[0]=='U') {
+                  FSTD_FieldSubBuild(GField);
+               }
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is field\n");
