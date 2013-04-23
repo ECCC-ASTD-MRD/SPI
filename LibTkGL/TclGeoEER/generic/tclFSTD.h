@@ -56,6 +56,7 @@ typedef struct FSTD_File {
    int  Open;              /*Etat du fichier*/
    unsigned int Id;        /*Numero d'unite du fichier*/
    int  No;                /*Numero interne du fichier*/
+   int  NRef;              /*Nombre de reference*/
 } FSTD_File;
 
 /*Structure d'entete de champs*/

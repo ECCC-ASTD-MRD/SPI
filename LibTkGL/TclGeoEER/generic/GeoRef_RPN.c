@@ -457,7 +457,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref->Grid[0]=GRTYP[0];
    ref->Project=GeoRef_RPNProject;
    ref->UnProject=GeoRef_RPNUnProject;
-   ref->Value=GeoRef_RPNValue;
+   ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
    ref->Distance=GeoRef_RPNDistance;
    ref->Height=NULL;
 

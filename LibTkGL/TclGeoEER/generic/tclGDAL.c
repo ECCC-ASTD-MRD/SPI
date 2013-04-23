@@ -1565,7 +1565,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       free(projdef);
    } else {
       projdef=GDALGetProjectionRef(Set);
-
+      
       /*Get the projection transform*/
       if (GCPs) {
          /*If there are Ground Control Points*/

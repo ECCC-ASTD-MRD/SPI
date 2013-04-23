@@ -350,7 +350,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->NC=abs(Dim);
    def->Container=Dim<=0;
    def->CellDim=2;
-   def->NoData=nan("NaN");
+   def->NoData=NAN;
    def->Level=0;
    def->Idx=0;
 

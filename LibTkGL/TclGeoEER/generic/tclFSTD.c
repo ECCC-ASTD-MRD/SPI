@@ -1154,18 +1154,20 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FileClose(Tcl_Interp *Interp,char *Id){
+int FSTD_FileClose(Tcl_Interp *Interp,char *Id) {
 
    FSTD_File *file;
 
    if ((file=(FSTD_File*)TclY_HashDel(&FSTD_FileTable,Id))) {
-      file->Open=file->Open>0?1:file->Open;
-      FSTD_FileUnset(Interp,file);
-      cs_fstunlockid(file->Id);
+      if (!(--file->NRef)) {
+         file->Open=file->Open>0?1:file->Open;
+         FSTD_FileUnset(Interp,file);
+         cs_fstunlockid(file->Id);
 
-      free(file->Name);
-      free(file->CId);
-      free(file);
+         free(file->Name);
+         free(file->CId);
+         free(file);
+      }
    }
    return(TCL_OK);
 }
@@ -1209,6 +1211,7 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();
    file->Open=0;
+   file->NRef=1;
    file->Name=strdup(Name);
 
    Tcl_SetHashValue(entry,file);

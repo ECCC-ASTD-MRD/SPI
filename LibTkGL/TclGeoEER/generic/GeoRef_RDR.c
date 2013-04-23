@@ -287,7 +287,7 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
 
    ref->Project=GeoRef_RDRProject;
    ref->UnProject=GeoRef_RDRUnProject;
-   ref->Value=GeoRef_RDRValue;
+   ref->Value=(TGeoRef_Value*)GeoRef_RDRValue;
    ref->Distance=GeoRef_RDRDistance;
    ref->Height=GeoRef_RDRHeight;
 

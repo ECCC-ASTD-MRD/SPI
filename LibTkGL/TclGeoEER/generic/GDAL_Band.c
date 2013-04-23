@@ -197,7 +197,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       if (GDALGetRasterColorInterpretation(hband)==GCI_PaletteIndex) {
          band->Tex.Indexed=1;
       }
-
       band->Spec->Map=CMap_New(NULL,GDALGetColorEntryCount(hTable));
       for (c=0;c<band->Spec->Map->NbPixels;c++) {
           GDALGetColorEntryAsRGB(hTable,c,&entry);
@@ -205,8 +204,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
           band->Spec->Map->Control[c][1]=entry.c2;
           band->Spec->Map->Control[c][2]=entry.c3;
           band->Spec->Map->Control[c][3]=entry.c4;
-          band->Spec->Map->Max[c]=255;
       }
+      band->Spec->Map->Max[3]=255;
    } else {
       band->Spec->Map=CMap_New(NULL,256);
       band->Spec->Map->Control[0][0]=0;

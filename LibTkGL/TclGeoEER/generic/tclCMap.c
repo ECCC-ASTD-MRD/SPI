@@ -160,6 +160,10 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
          cmap->Control[i][1] = 0;
          cmap->Control[i][2] = 0;
          cmap->Control[i][3] = 0;
+         cmap->Curve[i][0]   = 0;
+         cmap->Curve[i][1]   = 0;
+         cmap->Curve[i][2]   = 0;
+         cmap->Curve[i][3]   = 0;
          cmap->Table[i][0]   = 0;
          cmap->Table[i][1]   = 0;
          cmap->Table[i][2]   = 0;
@@ -588,6 +592,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[3],-1));
                } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[0],-1));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[1],-1));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(CMap->Type[2],-1));
@@ -691,6 +696,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
                   Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[3]));
                } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertX[2]));
@@ -746,6 +752,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
                   Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[3]));
                } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewBooleanObj(CMap->InvertY[2]));
@@ -801,6 +808,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
                   Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Min[3]));
                } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Min[2]));
@@ -855,6 +863,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                } else if (strcmp(Tcl_GetString(Objv[i]),"alpha")==0) {
                   Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Max[3]));
                } else if (strcmp(Tcl_GetString(Objv[i]),"rgba")==0) {
+                  obj=Tcl_NewListObj(0,NULL);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Max[2]));
@@ -1403,7 +1412,7 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit){
 int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    FILE *fp;
-   char buf[256];
+   char buf[256],*c;
    int  idx;
 
    if (!CMap) {
@@ -1425,9 +1434,9 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    }
 
    /*Read parameters*/
-   fgets(buf,256,fp);
+   c=fgets(buf,256,fp);
    while (buf[0]=='#') {
-      fgets(buf,256,fp);
+      c=fgets(buf,256,fp);
    }
    sscanf(buf,"%i %i %i %i %i %i %s %i %i",&CMap->RatioMin,&CMap->RatioMax,&CMap->Ratio[0],&CMap->Ratio[1],&CMap->Ratio[2],&CMap->Ratio[3],CMap->Type[0],&CMap->Interp,&CMap->InvertX[0]);
    strncpy(CMap->Type[1],CMap->Type[0],16);

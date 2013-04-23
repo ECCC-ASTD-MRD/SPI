@@ -472,7 +472,7 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
 
    Ref->Project=GeoRef_WKTProject;
    Ref->UnProject=GeoRef_WKTUnProject;
-   Ref->Value=GeoRef_WKTValue;
+   Ref->Value=(TGeoRef_Value*)GeoRef_WKTValue;
    Ref->Distance=GeoRef_WKTDistance;
    Ref->Height=NULL;
 
