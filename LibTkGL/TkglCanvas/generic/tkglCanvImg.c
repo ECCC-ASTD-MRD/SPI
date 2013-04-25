@@ -147,6 +147,7 @@ static int CreateImage(
    imgPtr->image = NULL;
    imgPtr->activeImage = NULL;
    imgPtr->disabledImage = NULL;
+   imgPtr->alpha = 100;
 
    /*
    * Process the arguments to fill in the item record. Only 1 (list) or 2 (x
@@ -504,7 +505,6 @@ DisplayImage(
    ImageItem*imgPtr=(ImageItem*)itemPtr;
    char *imagestring=NULL;
    Tk_State state=itemPtr->state;
-   GLubyte *pixel=NULL;
 
    if(state == TK_STATE_NULL) {
       state=Canvas(canvas)->canvas_state;
@@ -520,29 +520,24 @@ DisplayImage(
          imagestring=imgPtr->disabledImageString;
       }
    }
-
    if (!imagestring) {
       return;
    }
 
-   handle=Tk_FindPhoto(Canvas(canvas)->interp,imgPtr->imageString);
+   handle=Tk_FindPhoto(Canvas(canvas)->interp,imagestring);
    if (handle) {
       Tk_PhotoGetImage(handle,&data);
 
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+      glPixelTransferf(GL_ALPHA_SCALE,imgPtr->alpha/100.0);
+      trRasterPos2i((imgPtr->header.x1-Canvas(canvas)->xOrigin),-(imgPtr->header.y1-Canvas(canvas)->yOrigin));
       /*We have to flip the image data along the Y axis*/
-      if ((pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
-         memcpy(pixel,data.pixelPtr,data.width*data.height*data.pixelSize);
-         DataFlip(data.pixelPtr,pixel,data.width,data.height,data.pixelSize);
-
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glPixelTransferf(GL_ALPHA_SCALE,imgPtr->alpha/100.0);
-         trRasterPos2i((imgPtr->header.x1-Canvas(canvas)->xOrigin),-(imgPtr->header.y1-Canvas(canvas)->yOrigin)-data.height);
-         glDrawPixels(data.width,data.height,data.pixelSize==3?GL_RGB:GL_RGBA,GL_UNSIGNED_BYTE,pixel);
-         glPixelTransferf(GL_ALPHA_SCALE,1.0);
-         glDisable(GL_BLEND);
-         free(pixel);
-      }
+      glPixelZoom(1,-1);
+      glDrawPixels(data.width,data.height,data.pixelSize==3?GL_RGB:GL_RGBA,GL_UNSIGNED_BYTE,data.pixelPtr);
+      glPixelZoom(1,1);
+      glPixelTransferf(GL_ALPHA_SCALE,1.0);
+      glDisable(GL_BLEND);
    }
 }
 

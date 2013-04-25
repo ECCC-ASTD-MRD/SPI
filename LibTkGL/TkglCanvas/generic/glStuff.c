@@ -483,20 +483,24 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
          data.offset[1]=1;
          data.offset[2]=2;
          data.offset[3]=-1;
-         data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
-
-         /* Recuperer le buffer OpenGL en inversant en Y*/
-         if (data.pixelPtr) {
-            glReadBuffer(Buffer);
-            for(i=0;i<data.height;i++) {
-               glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
-            }
-
-            /* Envoyer le data dans l'image Tk */
-            result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-            free(data.pixelPtr);
+         if (!(data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char)))) {
+           Tcl_AppendResult(Interp,"trBuffer: Unable to allocate image",(char*)NULL);
+           result=TCL_ERROR;
          } else {
-            result=TCL_ERROR;
+
+            /* Recuperer le buffer OpenGL en inversant en Y*/
+            if (data.pixelPtr) {
+               glReadBuffer(Buffer);
+               for(i=0;i<data.height;i++) {
+                  glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+               }
+
+               /* Envoyer le data dans l'image Tk */
+               result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+               free(data.pixelPtr);
+            } else {
+               result=TCL_ERROR;
+            }
          }
       }
    }
@@ -549,19 +553,23 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
       data.offset[1]=1;
       data.offset[2]=2;
       data.offset[3]=3;
-      data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char));
-
-      /*Recuperer le buffer OpenGL*/
-      if (data.pixelPtr) {
-         glReadBuffer(Buffer);
-         for(i=0;i<data.height;i++) {
-            glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
-         }
-         /*Envoyer le data dans l'image Tk*/
-         result=Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-         free(data.pixelPtr);
-      } else {
+      if (!(data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char)))) {
+         Tcl_AppendResult(Interp,"glBuffer: Unable to allocate image",(char*)NULL);
          result=TCL_ERROR;
+      } else {
+
+         /*Recuperer le buffer OpenGL*/
+         if (data.pixelPtr) {
+            glReadBuffer(Buffer);
+            for(i=0;i<data.height;i++) {
+               glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
+            }
+            /*Envoyer le data dans l'image Tk*/
+            result=Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+            free(data.pixelPtr);
+         } else {
+            result=TCL_ERROR;
+         }
       }
    }
 

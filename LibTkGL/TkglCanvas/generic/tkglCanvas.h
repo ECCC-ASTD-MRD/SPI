@@ -315,7 +315,7 @@ MODULE_SCOPE Tk_ItemType tkglRectangleType, tkglTextType, tkWindowType;
  * Convenience macro.
  */
 
-#define Canvas(canvas) ((TkCanvas *) (canvas))
+#define Canvas(canvas) ((TkCanvas*)(canvas))
 
 #endif /* _TKGLCANVAS */
 
