@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require Export
 package require Logger
 

@@ -21,6 +21,7 @@ exec $SPI_PATH/wish "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 

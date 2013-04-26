@@ -23,6 +23,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -41,7 +42,6 @@ set sigma { 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.63 0.66 0.6
 fstdfield read P0 1 -1 "" -1 -1 -1  "" P0
 
 #----- Creer le champs dans lequel nous allons interpoler
-
 fstdfield create TO [fstdfield define P0 -NI] [fstdfield define P0 -NJ] [llength $sigma]
 fstdfield stats  TO -leveltype SIGMA -levels $sigma
 fstdfield configure TO -interpdegree LINEAR

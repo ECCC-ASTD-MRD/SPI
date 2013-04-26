@@ -22,6 +22,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require Logger
 
 #----- This is where it all starts
@@ -157,8 +158,7 @@ foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {
    vexpr FLD$field lut(GRID,VECT0,VECT$i)
 
    fstdfield define FLD$field -NOMVAR $Param($field) -ETIKET $field -DATEO [fstdstamp fromdate [string range $Data(ValidTime) 0 7] [string range $Data(ValidTime) 8 end]0000]
-
-   fstdfield write FLD$field FSTD -32 True
+   fstdfield write FLD$field FSTD -32 True True
    incr i
 }
 fstdfile close FSTD

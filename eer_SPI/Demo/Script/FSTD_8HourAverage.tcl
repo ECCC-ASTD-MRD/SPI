@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -64,7 +65,6 @@ for { set i 7 } { $i < [llength $fields] } { incr i } {
    #----- Totaliser les champs
 
    foreach field $range {
-
       fstdfield read FLD 1 [lindex $field 1]
       if { [fstdfield is TOT] } {
          vexpr TOT TOT+FLD

@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require Logger
 
 namespace eval RPN2FSTD { } {
@@ -31,18 +32,22 @@ namespace eval RPN2FSTD { } {
    set Param(Files)    {}
    set Param(IP1)      -1
    set Param(IP3)      -1
-   set Param(ProjFile) ""
+   set Param(Type)     ""
+   set Param(Etik)     ""
    set Param(Contours) {}
    set Param(Vars)     {}
    set Param(Out)      .
+   set Param(ProjFile) ""
 
    set Param(CommandLine) "   -version: Script version
    -var    : List of variables to process (Mandatory)
-   -contour: List of coutour to use (Default: None)
-   -fstd   : List of RPN files to process (Mandatory)
+   -typvar : TYPVAR to use (default: all)
+   -etik   : ETIKET to use (default: all)
    -ip1    : IP1 to use (default: all)
    -ip3    : IP3 to use (default: all)
+   -fstd   : List of RPN files to process (Mandatory)
    -prj    : prj georeference file to use for output file (default: WGS84 latlon)
+   -contour: List of coutour to use (Default: None)
    -out    : Output directory (default: .)
    -help   : This information"
 }
@@ -65,7 +70,7 @@ proc RPN2FSTD::Run { } {
 
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] "" $Param(IP1) -1 $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etik) $Param(IP1) -1 $Param(IP3) $Param(Type) $var] 0] {
                fstdfield read DATA$n FILEIN $field
                if { [llength $Param(Contours)] } {
                   fstdfield configure DATA$n -desc ${var} -rendercontour 1 -intervals $Param(Contours)
@@ -120,12 +125,14 @@ proc RPN2FSTD::ParseCommandLine { } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          "version"  { puts "$Param(Version)"; Log::End 0 }
          "var"      { set i [Args::Parse $gargv $gargc $i 2 RPN2FSTD::Param(Vars)] }
+         "typvar"   { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(Types)] }
+         "etik"     { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(Etik)] }
+         "ip1"      { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(IP1)] }
+         "ip3"      { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(IP3)] }
          "contour"  { set i [Args::Parse $gargv $gargc $i 2 RPN2FSTD::Param(Contours)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i 2 RPN2FSTD::Param(Files)] }
          "prj"      { set i [Args::Parse $gargv $gargc $i 2 RPN2FSTD::Param(ProjFile)] }
          "out"      { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(Out)] }
-         "ip1"      { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(IP1)] }
-         "ip3"      { set i [Args::Parse $gargv $gargc $i 1 RPN2FSTD::Param(IP3)] }
 
          "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }

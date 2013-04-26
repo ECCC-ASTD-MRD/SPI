@@ -22,8 +22,10 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require Logger
 
-Log::Start [info script] 0.1
+set env(AFSISIO) /home/binops/afsi/sio/env_linux+/afsisio
 
+Log::Start [info script] 0.1
+Log::Print INFO "Using $env(SPI_PATH)\n"
 set tests {
    {FSTD_Head.tcl DataIn/2005102612_012c}
    {FSTD_Voir.tcl DataIn/2005102612_012c}

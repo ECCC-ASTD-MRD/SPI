@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -35,14 +36,20 @@ puts "   r.date : [exec r.date $stamp]"
 puts "   date   : [clock format [fstdstamp toseconds $stamp]]"
 
 puts "\nTesting ip conversion :"
-puts "   ip 12000       : [fstdgrid convip 12000]"
-puts "   ip 176260768   : [fstdgrid convip 176260768]"
+puts "   ip 12000        : [fstdgrid convip 12000]"
+puts "   ip 176260768    : [fstdgrid convip 176260768]"
 puts ""
-puts "   1000.0 PRESSURE: [fstdgrid convip 1000.0 PRESSURE]"
-puts "   0.9    ETA     : [fstdgrid convip 0.9 ETA]"
-puts "   2500   MASL    : [fstdgrid convip 2500.0 MASL]"
-puts "   2500   MAGL    : [fstdgrid convip 2500.0 MAGL]"
-puts "   10     HOUR    : [fstdgrid convip 10.0 HOUR]"
+puts "   1000.0 PRESSURE : [fstdgrid convip 1000.0 PRESSURE] -> [fstdgrid convip [fstdgrid convip 1000.0 PRESSURE]]"
+puts "   1000.0 MASL     : [fstdgrid convip 1000.0 MASL] -> [fstdgrid convip [fstdgrid convip 1000.0 MASL]]"
+puts "   1000.0 MAGL     : [fstdgrid convip 1000.0 MAGL] -> [fstdgrid convip [fstdgrid convip 1000.0 MAGL]]"
+puts "   0.9    ETA      : [fstdgrid convip 0.9 ETA] -> [fstdgrid convip [fstdgrid convip 0.9 ETA]]"
+puts "   0.9    SIGMA    : [fstdgrid convip 0.9 SIGMA] -> [fstdgrid convip [fstdgrid convip 0.9 SIGMA]]"
+puts "   0.9    HYBRID   : [fstdgrid convip 0.9 HYBRID] -> [fstdgrid convip [fstdgrid convip 0.9 HYBRID]]"
+puts "   10.5   HOUR     : [fstdgrid convip 10.5 HOUR] -> [fstdgrid convip [fstdgrid convip 10.5 HOUR]]"
+puts "   10     COUNT    : [fstdgrid convip 10.0 COUNT] -> [fstdgrid convip [fstdgrid convip 10.0 COUNT]]"
+puts "   10     IDX      : [fstdgrid convip 10.0 IDX] -> [fstdgrid convip [fstdgrid convip 10.0 IDX]]"
+puts "   10     MPRES    : [fstdgrid convip 10.0 MPRES] -> [fstdgrid convip [fstdgrid convip 10.0 MPRES]]"
+puts "   10     UNDEFINED: [fstdgrid convip 10.0 UNDEFINED] -> [fstdgrid convip [fstdgrid convip 10.0 UNDEFINED]]"
 
 puts "\nTesting integer data"
 fstdfield create FLDINT 10 10 1 UInt32
@@ -115,8 +122,6 @@ if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
 }
 fstdfile close TRUNC
 
-puts stderr 111
-exit 0
 #----- Test l'ouverture de plus de 1000 fichiers
 puts "\nTesting multiple file open:"
 for { set i 0 } { $i<=1001 } { incr i } {

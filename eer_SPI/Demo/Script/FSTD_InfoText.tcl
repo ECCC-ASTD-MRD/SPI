@@ -22,6 +22,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require MetData
 
 puts \n[file tail [info script]]

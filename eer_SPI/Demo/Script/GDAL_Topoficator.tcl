@@ -24,6 +24,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -80,7 +81,7 @@ for { set x 0 } { $x<$w } { incr x } {
 
       #----- Inserer ce point
 
-      gdalband stats TOPOOUT -gridvalue $x $y $value
+      gdalband stats TOPOOUT -gridvalue $x $y 0 $value
    }
 }
 

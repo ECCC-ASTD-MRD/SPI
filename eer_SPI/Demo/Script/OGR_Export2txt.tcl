@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -46,7 +47,7 @@ for { set f 0 } { $f < [ogrlayer define LAYER -nb] } { incr f } {
    set geom [ogrlayer define LAYER -geometry $f]
 
    #----- Make sure we use the first ring
-   while { [ogrgeometry define $geom -type]!="Line String" } {
+   while { [ogrgeometry define $geom -type]!="3D Line String" } {
       set geom [lindex [ogrgeometry define $geom -geometry] 0]
    }
 

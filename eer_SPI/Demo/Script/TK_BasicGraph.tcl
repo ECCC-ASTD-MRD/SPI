@@ -20,7 +20,7 @@ exec $SPI_PATH/wish "$0" "$@"
 puts \n[file tail [info script]]
 
 package require TkglCanvas
-package require TkViewport
+package require TkGeoEER
 
 font create FONT1 -family arial -weight bold -size 12 -slant italic
 font create FONT2 -family courier -size 20 -slant italic
@@ -47,7 +47,7 @@ vector dim    DATA { X Y }
 graphitem create ITEM
 graphitem configure ITEM -xaxis AXISX -yaxis AXISY -xdata DATA.X -ydata DATA.Y -orient X -desc "O3" \
    -outline black -fill gray90 -iconfill red -iconoutline black -transparency 75 -width 1 -size 3 -value False -font FONT1 \
-   -type HISTOGRAM -font XFont12 -icon CIRCLE -bitmap "" -stipple "" -image ""
+   -type LINE -font FONT1 -icon CIRCLE -bitmap "" -stipple "" -image ""
 
 #----- Load observation data into graph
 set file /home/afsr/005/public_html/SPI/Script/DataIn/O3.20050302.obs
@@ -89,7 +89,7 @@ proc Pick { X Y } {
 
 update idletasks
 .glcanvas postscript -file DataOut/TK_BasicGraph.ps
-#image create photo TMPIMG -width 300 -height 300 -format window -data .glcanvas
-#TMPIMG write "DataOut/TK_glCanvas.png" -format png
-#TMPIMG write "DataOut/TK_glCanvas.ppm" -format ppm
+image create photo TMPIMG 
+.glcanvas buffer TMPIMG 1 1 1000 600
+TMPIMG write "DataOut/TK_BasicGraph.png" -format png
 

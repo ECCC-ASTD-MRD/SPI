@@ -30,6 +30,7 @@ if { !$tcl_platform(threaded) } {
 }
 
 package require TclData
+#package require TclGeoEER
 
 #----- Inclure le package de manipulation des threads
 
@@ -46,6 +47,7 @@ proc ThreadTest { } {
       #----- Chaque thread est indepandante alors inclure les extensions dans la thread courante
 
       package require TclData
+#package require TclGeoEER
 
       #----- Definir les procedures de la thread a etre executer plus tard
 

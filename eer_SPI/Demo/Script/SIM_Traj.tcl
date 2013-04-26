@@ -22,6 +22,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require TclSim
 
 #----- Use current time for release

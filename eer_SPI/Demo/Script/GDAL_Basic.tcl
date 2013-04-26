@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
@@ -35,6 +36,7 @@ puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
 #set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
 #set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]
+#set bands [gdalfile open GDAL read DataIn/SAR.tif]
 
 puts "   found: $bands"
 
@@ -50,7 +52,7 @@ puts "   Min     : [gdalband stats RASTER -min]"
 puts "   Max     : [gdalband stats RASTER -max]"
 
 puts "   Histogram  : [gdalband stats RASTER -histogram 0]"
-puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 10 90]"
+puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 0 90]"
 
 #----- converions pixel-latlon et inverse
 

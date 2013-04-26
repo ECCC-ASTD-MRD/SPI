@@ -21,6 +21,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require Export
 package require Logger
 
@@ -65,6 +66,11 @@ proc RPN2OGR::Run { } {
 
    colormap create MAP -file $Param(Map)
 
+   if { [file exists $Param(ProjFile)] } {
+#      georef create REF { PROJCS["WGS 84 / UPS North",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",90],PARAMETER["central_meridian",0],PARAMETER["scale_factor",0.994],PARAMETER["false_easting",2000000],PARAMETER["false_northing",2000000],UNIT["metre",1]] }
+      georef create REF [exec cat $Param(ProjFile)]
+   }
+   
    foreach file $Param(Files) {
       Log::Print INFO "Processign file $file"
 
@@ -106,9 +112,7 @@ proc RPN2OGR::Run { } {
 
             ogrfile open FILE write $Param(Out)_${time} $Param(Format)
 
-            if { [file exists $Param(ProjFile)] } {
-   #               georef create REF { PROJCS["WGS 84 / UPS North",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",90],PARAMETER["central_meridian",0],PARAMETER["scale_factor",0.994],PARAMETER["false_easting",2000000],PARAMETER["false_northing",2000000],UNIT["metre",1]] }
-               georef create REF [exec cat $Param(ProjFile)]
+            if { [georef is REF] } {
                ogrlayer create FILE LAYER ${time} REF
             } else {
                ogrlayer create FILE LAYER ${time}

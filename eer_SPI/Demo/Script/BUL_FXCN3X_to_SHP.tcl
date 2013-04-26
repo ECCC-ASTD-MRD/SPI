@@ -34,6 +34,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
+#package require TclGeoEER
 package require Logger
 
 namespace eval Bulletin::FXCN3X {
@@ -291,6 +292,11 @@ proc Bulletin::FXCN3X::Process { } {
          set force 0
       }
 
+      #----- Force pos-tropical if specified
+      if { $type=="POST-TROPICAL" } {
+         set tcdvlp "PT"
+      }
+      
       #----- Determine uncertainty error
       set pu 0
       set pf 0
@@ -312,8 +318,11 @@ proc Bulletin::FXCN3X::Process { } {
       if { $errct>0.0 } {
          set bearing [projection function PROJ -bearing $plat $plon $lat $lon]
          set dist    [expr $errct*1852.0]
-         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
-         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
+         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing+90.0,360)]]
+         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing-90.0,360)]]
+#----- For SPI 7.5.2 and greater
+#         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
+#         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
          set cone0  "$cone0 [lindex $ll0 1] [lindex $ll0 0]"
          set cone1  "[lindex $ll1 1] [lindex $ll1 0] $cone1"
       } else {
