@@ -428,11 +428,11 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 */
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int     i,j,idxk,idx0,idx1,ox=0,dp;
-   float   min,rng;
+   int     i,j,idxk,idx0,idx1,ox=0,dp,dn;
+   float   min,rng,fi,fj;
    Vect3d *pos;
    float  *buf;
-   char   *ptr;
+   char   *ptr,out=0;
 
    GLuint      tx[3];
    GLhandleARB prog;
@@ -536,25 +536,23 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1iARB(GLShader_UniformGet(prog,"Above"),Field->Spec->MapAbove);
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
 
-   /*Resolution selon la dimension des cellules (mid-grid)*/
-   dp=1;
-   if (Field->Ref->Grid[0]!='V') {
-      idx0=Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2;
-      dp=2.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
-      if (Field->Spec->InterNb)
-         dp>>=2;
-      dp=dp<1?1:dp;
-   }
-
    /*Grille avec loop sur la longitude*/
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
-      dp=dp>10?10:dp;
    }
 
+   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
+   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
+   
+   if (Proj->Type->Def==PROJCYLIN) {
+      dp=CLAMP(dp,1,2);
+   } else {      
+      dp=CLAMP(dp,1,20);
+   }
+   dn=dp*Field->Def->NI;
+   
    /*Process gridpoints*/
    for(j=0;j<Field->Def->NJ-dp;j+=dp) {
-
       idx0=j*Field->Def->NI;
 
       glBegin(GL_QUAD_STRIP);
@@ -564,28 +562,31 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          if (i>=Field->Def->NI) {
             if (ox) {
                /*If the grid wraps around, use the first point*/
+               fi=0;
                idx0=j*Field->Def->NI;
             } else {
                /*If not, use the last point*/
+               fi=Field->Def->NI-1;
                idx0=(j+1)*Field->Def->NI-1;
             }
-         }
-
-         if ((j+dp)>Field->Def->NJ-dp) {
-            idx1=(Field->Def->NJ-2)*Field->Def->NI+(idx0%Field->Def->NI);
          } else {
-            idx1=idx0+dp*Field->Def->NI;
+            fi=i;
          }
+         
+         idx1=idx0+dn;
 
          /*Check for mask value*/
          if (Field->Def->Mask && (!Field->Def->Mask[idx1] || !Field->Def->Mask[idx0])) {
             glEnd();
             glBegin(GL_QUAD_STRIP);
          } else {
-            glTexCoord2f((float)i+0.5,(float)j+dp+0.5);
+            fi+=0.5f;
+            fj=(float)j+0.5f;
+            
+            glTexCoord2f(fi,fj+dp);
 //            glNormal3dv(pos[idx1]);
             glVertex3dv(pos[idx1]);
-            glTexCoord2f((float)i+0.5,(float)j+0.5);
+            glTexCoord2f(fi,fj);
 //            glNormal3dv(pos[idx0]);
             glVertex3dv(pos[idx0]);
          }
@@ -593,6 +594,15 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          idx0+=dp;
       }
       glEnd();
+      
+      // If it's the last, exit loop
+      if (out) break;
+      
+      // Make sure last step goes to NJ-1
+      if (j>(Field->Def->NJ-dp-dp-1)) {
+         j=Field->Def->NJ-dp-dp-1;
+         out=1;
+      }
    }
 
    glDeleteTextures(3,tx);
