@@ -1102,7 +1102,7 @@ proc Model::FitAccTime { Model } {
       set min 0
    }
 
-   set sim(AccSecs) [expr $sec+int(double($min)/double($sim(ModelTimeStepMin))+0.5) * $sim(ModelTimeStepMin) * 60]
+   set sim(AccSecs) [expr $sec+int(double($min)/double($sim(ModelTimeStepMin))+0.5) * int($sim(ModelTimeStepMin) * 60)]
 }
 
 #----------------------------------------------------------------------------

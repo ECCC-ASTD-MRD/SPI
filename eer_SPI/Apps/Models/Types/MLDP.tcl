@@ -344,7 +344,7 @@ proc MLDP::CreateModelInput { } {
 
    #----- Model parameters.
    puts $file "\nModel parameters:"
-   puts $file "[format "%-20s" [expr $MLDP::Sim(ModelTimeStepMin)*60].0] [format "%-20s" dt_int] Internal model time step \[s\]."
+   puts $file "[format "%-20s" [expr $MLDP::Sim(ModelTimeStepMin)*60]] [format "%-20s" dt_int] Internal model time step \[s\]."
    puts $file "[format "%-20s" [expr $MLDP::Sim(OutputTimeStepMin)*60].0] [format "%-20s" dt_out] Output time step \[s\]."
    puts $file "[format "%-20s" $Sim(EmNumberParticles)] [format "%-20s" NP] Number of particles."
    puts $file "[format "%-20s" $Sim(DtOverTl)] [format "%-20s" dt_sur_tl] Ratio of diffusion time step over Lagrangian time scale \[dimensionless\]."

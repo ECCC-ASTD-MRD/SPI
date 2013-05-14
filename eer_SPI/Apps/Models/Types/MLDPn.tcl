@@ -298,7 +298,7 @@ proc MLDPn::CreateModelInput { } {
    set file [open $Sim(Path)/tmp/$Sim(Model).in w]
 
    puts $file "\n#----- Model parameters\n"
-   puts $file [format "%-21s= %-10.1f # Internal model time step \[s\]" MDL_DT_INT [expr $MLDPn::Sim(ModelTimeStepMin)*60].0]]
+   puts $file [format "%-21s= %-10.1f # Internal model time step \[s\]" MDL_DT_INT [expr $MLDPn::Sim(ModelTimeStepMin)*60]]]
    puts $file [format "%-21s= %-10.1f # Ratio of diffusion time step over Lagrangian time scale \[dimensionless\]" MDL_DT_SUR_TL $Sim(DtOverTl)]
    puts $file [format "%-21s= %-10.1f # Diffusion time step minimum value \[s\]" MDL_DT_BAS $Sim(DtMin)]
    puts $file [format "%-21s= %-10.2f # Horizontal wind velocity variance for mesoscale fluctuations \[m2/s2\]" MDL_SIG2_V $Sim(VarMesoscale)]
