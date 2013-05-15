@@ -400,6 +400,8 @@ proc SPI::Window { } {
    Bubble::Create .info.cooval $Bubble(Coords)
    Bubble::Create .info.altval $Bubble(Alt)
    Bubble::Create .info.fldval $Bubble(Val)
+   
+   bind . <KeyRelease-Escape> "SPI::ToolMode SPI Zoom"
 }
 
 #-------------------------------------------------------------------------------
