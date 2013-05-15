@@ -207,6 +207,8 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 
          for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
             switch(Band->Def->Type) {
+               case TD_Unknown:
+               case TD_Binary:
                case TD_UByte:  Band->Tex.Scale[nc]=((0x1<<8)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<8)-1);
                                break;
@@ -219,6 +221,8 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
                case TD_Int16:  Band->Tex.Scale[nc]=((0x1<<15)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<15)-1);
                                break;
+               case TD_UInt64:
+               case TD_Int64:
                case TD_UInt32:
                case TD_Int32:  Band->Tex.Scale[nc]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/(((unsigned int)0x1<<31)-1);
@@ -269,15 +273,15 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 
       /*OpenGL does not manage 64 bit (double data), so we have to use a temporery float buffer*/
       if (Band->Def->Type==TD_Float64) {
-         if (buf=(float*)malloc(Tile->Nx*Tile->Ny*sizeof(float))) {
+         if ((buf=(float*)malloc(Tile->Nx*Tile->Ny*sizeof(float)))) {
             for(nc=0;nc<Tile->Nx*Tile->Ny;nc++) {
                buf[nc]=((double*)Tile->Data)[nc];
             }
-            glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx,Tile->Ny,0,Band->Tex.Type,GL_FLOAT,(GLvoid*)buf);
+            glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx+2,Tile->Ny+2,1,Band->Tex.Type,GL_FLOAT,(GLvoid*)buf);
             free(buf);
          }
       } else {
-         glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx,Tile->Ny,0,Band->Tex.Type,Band->Tex.Dim,(GLvoid*)Tile->Data);
+         glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx+2,Tile->Ny+2,1,Band->Tex.Type,Band->Tex.Dim,(GLvoid*)Tile->Data);
       }
    }
 
@@ -350,7 +354,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    /*Projection des coins de la texture*/
    Proj->Type->Project(Proj,Tile->Box.Co,Tile->Box.Vr,-8);
-   Tile->Box.Nb=4;
+   Tile->Box.Nb=8;
 
    /*Test for overflow on raster limits*/
    Tile->Rx=(Tile->Dx+r)<=Band->Ref->X1?r:Band->Ref->X1-Tile->Dx+1;
@@ -459,7 +463,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                         Def_Get(tband->Def,0,FIDX2D(tband->Def,ix,iy),tl[j][2]);
                      } else {
                         if ((ttile=GeoTex_Pick(&tband->Tex,0,&ix,&iy))) {
-                           t=iy*ttile->Nx+ix;
+                           t=GeoTex_Index(ttile,1,ix,iy);
                            GeoTex_Val(tband->Tex.Dim,ttile->Data,0,t,tl[j][2]);
                         }
                      }
@@ -473,7 +477,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                      ix=dx;
                      iy=dy;
                      if ((ttile=GeoTex_Pick(&Band->Tex,0,&ix,&iy))) {
-                        t=(iy*ttile->Nx+ix)*Band->Def->NC;
+                        t=GeoTex_Index(ttile,Band->Def->NC,ix,iy);
                         if (Band->Spec->Topo[0]=='R' && Band->Def->NC>0) {
                            GeoTex_Val(Band->Tex.Dim,ttile->Data,0,t,tl[j][2]);
                         } else if (Band->Spec->Topo[0]=='G' && Band->Def->NC>1) {
@@ -557,6 +561,8 @@ void GeoTex_Qualify(GDAL_Band *Band) {
 
    /*Set the data type of image*/
    switch(Band->Def->Type) {
+      case TD_Unknown:
+      case TD_Binary:
       case TD_UByte:
          Band->Tex.Dim=GL_UNSIGNED_BYTE;
          Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE8_EXT:(Band->Tex.Type==GL_RGB)?GL_RGB8_EXT:GL_RGBA8_EXT;
@@ -573,10 +579,12 @@ void GeoTex_Qualify(GDAL_Band *Band) {
          Band->Tex.Dim=GL_SHORT;
          Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE16F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB16F_ARB:GL_RGBA16F_ARB;
          break;
+      case TD_UInt64:
       case TD_UInt32:
          Band->Tex.Dim=GL_UNSIGNED_INT;
          Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
          break;
+      case TD_Int64:
       case TD_Int32:
          Band->Tex.Dim=GL_INT;
          Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
@@ -615,32 +623,77 @@ void GeoTex_Qualify(GDAL_Band *Band) {
 */
 int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
 
-   int    c;
+   unsigned int c,dx,dy,rx,ry,nx,ny,idx,idxd,sz;
+   char         *data;
 
    if (!Tile || Tile->Res==0) {
       return(0);
    }
 
-   /*Allocate tile buffer if not already done*/
+   // Figure out tile size with borders
+   dx=dy=Tile->Res;
+   rx=ry=Tile->Res<<1;
+   nx=ny=2;
+   
+   // Check start index
+   if (Tile->Dx==0) {
+      dx=0;nx--;
+   }
+   if (Tile->Dy==0) {
+      dy=0;ny--;
+   }
+   
+   // Check end index
+   if (Tile->Dx+Tile->Rx>=(Band->Def->NI-2)) {
+      rx=0;nx--;
+   }
+   if (Tile->Dy+Tile->Ry>=(Band->Def->NJ-2)) {
+      ry=0;ny--;
+   }
+   
+   // Allocate tile buffer if not already done
    if (!Tile->Data) {
-      if (!(Tile->Data=(char*)malloc(Tile->Nx*Tile->Ny*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
+      if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
          return(0);
       }
+      
+      // Size might not fit texture so allocate data input buffer to be copied into texture after read
+      if (nx!=2 || ny!=2) {
+         if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
+            fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
+            free(Tile->Data);
+            Tile->Data=NULL;
+            return(0);
+         }        
+      }
    }
-
-   /*Build the image buffer*/
+   
+   // Build the image buffer
+   sz=Band->Def->NC*TData_Size[Band->Def->Type];
    for(c=0;c<Band->Def->NC;c++) {
-      if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx,Tile->Dy,Tile->Rx,Tile->Ry,Tile->Data+c*TData_Size[Band->Def->Type],
-         Tile->Nx,Tile->Ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?Band->Def->NC*TData_Size[Band->Def->Type]:0,0))==CE_Failure) {
+      
+      if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx-dx,Tile->Dy-dy,Tile->Rx+rx,Tile->Ry+ry,data+c*TData_Size[Band->Def->Type],
+         Tile->Nx+nx,Tile->Ny+ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?sz:0,0))==CE_Failure) {
 
          free(Tile->Data);
-         Tile->Data=NULL;
+         if  (data && Tile->Data!=data) free(data);
+         Tile->Data=data=NULL;
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to read tile data from band %i\n",c);
          return(0);
       }
    }
 
+   // If read tile was not proper size copy into final texture tile
+   if (data && Tile->Data!=data) {
+      dx=(dx==0);
+      dy=(dy==0);
+      for(c=0,idx=(Tile->Nx+2)*dy,idxd=0; c<(Tile->Ny+ny); c++,idx+=Tile->Nx+2,idxd+=Tile->Nx+nx) {
+         memcpy(&Tile->Data[(idx+dx)*sz],&data[idxd*sz],(Tile->Nx+nx)*sz);
+      }  
+      free(data);
+   }
+   
    Tile->Flag|=GEOTEX_DATA;
 
    return(1);
@@ -1120,7 +1173,7 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
 Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
 
    int          c,t,nc,x,y;
-   double       val;
+   double       val=0.0;
    TGeoTexTile *tile=NULL;
    Tcl_Obj     *obj;
 
@@ -1134,7 +1187,7 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
    nc=Tex->Type==GL_LUMINANCE?1:Tex->Type==GL_RGB?3:4;
 
    if (tile && tile->Ny) {
-      t=(y*tile->Nx+x)*nc;
+      t=GeoTex_Index(tile,nc,x,y);
 
       for(c=0;c<nc;c++) {
          GeoTex_Val(Tex->Dim,tile->Data,c,t,val);
@@ -1190,7 +1243,7 @@ double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double 
 
    /*Check for data availability, might not be loaded yet*/
    if (tile && tile->Ny) {
-      t=(y*tile->Nx+x)*Def->NC;
+      t=GeoTex_Index(tile,Def->NC,x,y);
       GeoTex_Val(Tex->Dim,tile->Data,C,t,cube[0][0]);
       if (px==X && py==Y) {
          /*If we are right on the pixel*/
@@ -1202,11 +1255,11 @@ double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double 
             rx=px+1; ry=py;
             tilen=GeoTex_Pick(Tex,Res,&rx,&ry);
             if (tilen && tilen->Ny) {
-               t=(ry*tilen->Nx+rx)*Def->NC;
+               t=GeoTex_Index(tile,Def->NC,rx,ry);
                GeoTex_Val(Tex->Dim,tilen->Data,C,t,cube[0][1]);
             }
          } else {
-            t=(y*tile->Nx+(x+1))*Def->NC;
+            t=GeoTex_Index(tile,Def->NC,x+1,y);
             GeoTex_Val(Tex->Dim,tile->Data,C,t,cube[0][1]);
          }
 
@@ -1214,11 +1267,11 @@ double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double 
             rx=px+1; ry=py+1;
             tilen=GeoTex_Pick(Tex,Res,&rx,&ry);
             if (tilen && tilen->Ny) {
-               t=(ry*tilen->Nx+rx)*Def->NC;
+               t=GeoTex_Index(tile,Def->NC,rx,ry);
                GeoTex_Val(Tex->Dim,tilen->Data,C,t,cube[0][2]);
             }
          } else {
-            t=((y+1)*tile->Nx+(x+1))*Def->NC;
+            t=GeoTex_Index(tile,Def->NC,x+1,y+1);
             GeoTex_Val(Tex->Dim,tile->Data,C,t,cube[0][2]);
          }
 
@@ -1226,11 +1279,11 @@ double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double 
             rx=px; ry=py+1;
             tilen=GeoTex_Pick(Tex,Res,&rx,&ry);
             if (tilen && tilen->Ny) {
-               t=(ry*tilen->Nx+rx)*Def->NC;
+               t=GeoTex_Index(tile,Def->NC,rx,ry);
                GeoTex_Val(Tex->Dim,tilen->Data,C,t,cube[0][3]);
             }
          } else {
-            t=((y+1)*tile->Nx+x)*Def->NC;
+            t=GeoTex_Index(tile,Def->NC,x,y+1);
             GeoTex_Val(Tex->Dim,tile->Data,C,t,cube[0][3]);
          }
 

@@ -1688,7 +1688,7 @@ TDataSpec *DataSpec_New(){
       spec->Interp=GL_NEAREST;
       spec->TexRes=1;
       spec->TexStep=0.0;
-      spec->TexSample=8;
+      spec->TexSample=16;
       spec->TexSize=256;
       spec->Alpha=100;
       spec->Light=0;

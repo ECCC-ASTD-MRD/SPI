@@ -35,6 +35,7 @@
 
 #include "Projection.h"
 
+#define GeoTex_Index(T,NC,X,Y) (((Y+1)*(T->Nx+2)+(X+1))*(NC))
 #define GeoTex_Val(Dim,Tile,Comp,Idx,Val) {\
 switch(Dim) {\
    case GL_UNSIGNED_BYTE:  Val=((unsigned char*)Tile)[Comp+Idx];break;\
@@ -57,17 +58,17 @@ switch(Dim) {\
 #define GEOTEX_CLRALL 0x1C
 
 typedef struct TGeoTexTile {
-   char        *Data;         /* Tile data */
-   char         Flag;         /* State flag*/
-   int          Res;          /* Tile resolution*/
-   int          Dx,Dy;        /* Pixel start */
-   int          Nx,Ny;        /* Resolution pixel size */
-   int          Rx,Ry;        /* Real pixel size */
-   GDB_Box      Box;          /* Projected coordinates (Coverage) */
-   Vect3d      *Tl;           /* Texture coordinates */
-   Vect3d      *Nr;           /* Normal coordinates */
-   int          Tlx,Tly;      /* Number of texture coordinates Tlx*Tly */
-   GLuint       Tx;           /* GL Texture number */
+   char         *Data;         /* Tile data */
+   char          Flag;         /* State flag*/
+   unsigned int  Res;          /* Tile resolution*/
+   unsigned int  Dx,Dy;        /* Pixel start */
+   unsigned int  Nx,Ny;        /* Resolution pixel size */
+   unsigned int  Rx,Ry;        /* Real pixel size */
+   GDB_Box       Box;          /* Projected coordinates (Coverage) */
+   Vect3d       *Tl;           /* Texture coordinates */
+   Vect3d       *Nr;           /* Normal coordinates */
+   unsigned int  Tlx,Tly;      /* Number of texture coordinates Tlx*Tly */
+   GLuint        Tx;           /* GL Texture number */
 
    struct TGeoTexTile *Sub[4];  /* Tree branches */
 } TGeoTexTile;

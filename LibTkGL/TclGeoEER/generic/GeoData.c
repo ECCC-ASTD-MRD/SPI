@@ -1092,6 +1092,10 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
       CYLCHECK(d,Box.Vr[4][0]);
       d=Box.Vr[5][0]-Proj->L;
       CYLCHECK(d,Box.Vr[5][0]);
+      d=Box.Vr[6][0]-Proj->L;
+      CYLCHECK(d,Box.Vr[6][0]);
+      d=Box.Vr[7][0]-Proj->L;
+      CYLCHECK(d,Box.Vr[7][0]);
    }
 
    /*Project box coordinates*/
