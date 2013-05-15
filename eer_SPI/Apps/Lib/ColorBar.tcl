@@ -226,7 +226,6 @@ proc ColorBar::Set { Frame VP No Id Field } {
             set Data(Width$tag)  [lindex $Data($VP$No) 11]
             set Data(Side$tag)   [lindex $Data($VP$No) 12]        
          } else {
- puts stderr .$tag.
             set Data(Full$tag)   $Param(Full)
             set Data(BG$tag)     $Param(BG)
             set Data(Alpha$tag)  $Param(Alpha)
@@ -477,7 +476,6 @@ proc ColorBar::Update { Frame { State -1 } } {
    variable Data
 
    set lst ""
-
    if { ![info exists Data(Active$Frame)] } {
       set Data(Active$Frame) 0
    }

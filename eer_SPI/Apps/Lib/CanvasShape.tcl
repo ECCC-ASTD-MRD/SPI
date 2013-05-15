@@ -1605,7 +1605,7 @@ proc CVMagnifier::Move { Canvas X Y } {
 
 namespace eval CVTree { }
 
-proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } } {
+proc CVTree::Render { Canvas Tree { IdCommand "" } { ParseCommand "" } { SelectCommand "" } { PopUpCommand "" } } {
    variable Data
 
    $Canvas delete CVTREE$Tree
@@ -1615,6 +1615,7 @@ proc CVTree::Render { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpC
 
    if { ![info exists ::CVTree::Data(Id$Tree)] } {
       set Data(Id$Tree)     $IdCommand
+      set Data(Parse$Tree)  $ParseCommand
       set Data(Select$Tree) $SelectCommand
       set Data(PopUp$Tree)  $PopUpCommand
    }
@@ -1654,29 +1655,45 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
 
    set dy 20
    set dx 10
+   set db 15
    set y0 $y
 
    incr x $dx
 
+   if { [$Tree keyexists $Branch box] } {
+      set db 15
+   } else {
+      set db 0
+   }
+   
    foreach branch [$Tree children $Branch]  {
       set leaf True
 
       if { [set id [$Data(Id$Tree) $Tree $branch leaf]]!="" } {
          set y0 [incr y $dy]
 
-         $Canvas create text [expr $x+$dx] $y -text $id -anchor w -tags "CVTREE$Tree $branch CVTREETEXT$branch" -font $GDefs(Font)
+         if { [$Tree keyexists $branch box] } {
+            switch [$Tree get $branch box] {
+               True  { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/Resources/Bitmap/optcheck.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+                       $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch False" }
+               False { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/Resources/Bitmap/optbox.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+                       $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch True" }
+            }
+         }
+         
+         $Canvas create text [expr $x+$dx+$db] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
          if { $leaf && [$Tree isleaf $branch] } {
             if { [expr $x-$dx]>5 } {
                $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"
             }
-            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch"
+            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch True"
          } else {
             if { [expr $x-$dx]>5 } {
                $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
             }
             if { [$Tree get $branch open] } {
                $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch False"
+               $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch False"
                set x0 $x
                set y0 $y
                set yend [CVTree::RenderBranch $Canvas $Tree $branch x y]
@@ -1685,11 +1702,11 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
                $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
             } else {
                $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <Button-1> "CVTree::Select $Canvas $Tree $branch True"
+               $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch True"
             }
          }
          if { $Data(PopUp$Tree)!="" } {
-           $Canvas bind $branch <Button-3> "CVTree::SelectBranch $Canvas $Tree $branch; $Data(PopUp$Tree) $Canvas %X %Y $branch"
+            $Canvas bind $branch <Button-3> "CVTree::Highlight $Canvas $Tree $branch; $Data(PopUp$Tree) $Canvas %X %Y $branch"
          }
       }
    }
@@ -1715,7 +1732,7 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc CVTree::SelectBranch { Canvas Tree Branch } {
+proc CVTree::Highlight { Canvas Tree Branch } {
    global GDefs
 
    if { ![llength [$Canvas find withtag CVTREESELECT$Tree]] } {
@@ -1725,18 +1742,38 @@ proc CVTree::SelectBranch { Canvas Tree Branch } {
    eval $Canvas coords CVTREESELECT$Tree [$Canvas bbox CVTREETEXT$Branch]
 }
 
-proc CVTree::Select { Canvas Tree Branch { Open False } } {
+proc CVTree::Parse { Canvas Tree Branch { Open False } } {
    global GDefs
    variable Data
 
    $Tree set $Branch open $Open
 
-   CVTree::SelectBranch $Canvas $Tree $Branch
+   CVTree::Highlight $Canvas $Tree $Branch
+
+   if { $Data(Parse$Tree)!="" } {
+      $Canvas configure -cursor watch
+      update idletasks;
+      eval $Data(Parse$Tree) $Tree $Branch $Open
+      $Canvas configure -cursor left_ptr
+   }
+
+   CVTree::Render $Canvas $Tree
+}
+
+proc CVTree::Select { Canvas Tree Branch { Open False } } {
+   global GDefs
+   variable Data
+
+   if { [$Tree keyexists $Branch box] } {
+      $Tree set $Branch box $Open
+   }
+   
+   CVTree::Highlight $Canvas $Tree $Branch
 
    if { $Data(Select$Tree)!="" } {
       $Canvas configure -cursor watch
       update idletasks;
-      eval  $Data(Select$Tree) $Tree $Branch $Open
+      eval $Data(Select$Tree) $Tree $Branch $Open
       $Canvas configure -cursor left_ptr
    }
 

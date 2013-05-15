@@ -395,7 +395,7 @@ proc Log::Print { Type Message { Var "" } } {
    }
 
    #----- Check if we need to rotate the log file
-   if { $Param(JobClass)=="DAEMON" && $Param(Rotate) && [expr [clock seconds]-$Param(SecLog)]>$Param(Rotate) } {
+   if { $Param(Rotate) && $Param(JobClass)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>$Param(Rotate) } {
       if { [file exists $Param(OutFile)] } {
          close $Param(Out)
          file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]

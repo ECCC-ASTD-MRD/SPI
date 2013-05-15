@@ -1101,13 +1101,13 @@ proc Page::ModeSelect { Mode { Frames {} } } {
    } else {
       set frames $Page::Data(Frames)
    }
-
+   
    foreach frame $frames {
 
       if { [winfo exists [set c $frame.page.canvas]] } {
 
-         bind $frame.page <ButtonPress-4>   "$frame.page.canvas yview scroll -1 units"
-         bind $frame.page <ButtonPress-5>   "$frame.page.canvas yview scroll 1 units"
+         bind $frame.page <ButtonPress-4>     "$frame.page.canvas yview scroll -1 units"
+         bind $frame.page <ButtonPress-5>     "$frame.page.canvas yview scroll 1 units"
 
          #----- Suppression des evenement globaux
 
