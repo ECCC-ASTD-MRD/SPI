@@ -1412,7 +1412,7 @@ int CMap_GetImage(Tcl_Interp *Interp,CMap_Rec *CMap,char* Img,int Limit){
 int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
    FILE *fp;
-   char buf[256],*c;
+   char buf[256],*c,*e;
    int  idx;
 
    if (!CMap) {
@@ -1448,18 +1448,18 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    /*Read control point definitions*/
    while (fgets(buf,256,fp)) {
 
-      if (buf[0]!='#' && strlen(buf)>18) {
-         idx=atoi(buf);
+      if (buf[0]!='#') {
+         idx=strtol(buf,&e,10);
          if (idx>=CR_MAX) {
             Tcl_AppendResult(Interp,"CMap_Read: Index range overflow\"",RGBAFile,(char *)NULL);
             fclose(fp);
             return(TCL_ERROR);
          }
 
-         CMap->Control[idx][0] = atoi(buf+4);
-         CMap->Control[idx][1] = atoi(buf+8);
-         CMap->Control[idx][2] = atoi(buf+12);
-         CMap->Control[idx][3] = atoi(buf+16);
+         CMap->Control[idx][0] = strtol(e,&e,10);
+         CMap->Control[idx][1] = strtol(e,&e,10);
+         CMap->Control[idx][2] = strtol(e,&e,10);
+         CMap->Control[idx][3] = strtol(e,&e,10);
 
          /* 0,0,0,0 is empty cell so mkae sure this control point is not empty */
          if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
