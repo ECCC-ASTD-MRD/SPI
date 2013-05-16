@@ -60,7 +60,7 @@ foreach file $files {
                set IP1    [lindex $field 4]
                set IP2    [lindex $field 5]
 
-               if { [expr $IP2%6]==0 && ($IP1==500 || $IP1==700 || $IP1==850 || $IP1==1000) } {
+               if { [expr $IP2%3]==0 && ($IP1==500 || $IP1==700 || $IP1==850 || $IP1==1000) } {
 
                   fstdfield read FLD 2 [lindex $field 1]
                   fstdfield gridinterp NEW FLD
