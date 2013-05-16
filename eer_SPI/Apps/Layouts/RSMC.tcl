@@ -107,13 +107,13 @@ proc RSMC::DrawScale { Frame } {
       $Frame.page.canvas create rectangle [expr $x0+5] $y0 [expr $x0+25] [expr $y0-100] \
          -fill "#[fstdfield configure $field -val2map $level]" -outline black -tags "LAYOUTRSMCSCALE LAYOUTRSMCCOLORMAP"
       $Frame.page.canvas create text [expr $x0+30] $y0 \
-         -text [format %1.1e $level] -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle -90
+         -text [format %1.1e $level] -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle 90
 
       incr y0 -105
       incr i
    }
 
-   $Frame.page.canvas create text [expr $x0+5] [expr $y0-5] -text $Data(Unit)\n$Data(Contour) -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle -90
+   $Frame.page.canvas create text [expr $x0+5] [expr $y0-5] -text $Data(Unit)\n$Data(Contour) -font XFont12 -anchor nw -fill black -tags "LAYOUTRSMCSCALE" -angle 90
 }
 
 #----------------------------------------------------------------------------
@@ -452,13 +452,13 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
    set daterelease [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
 
    #----- Convert source coordinates.
-   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] DEG]
+   set coord [Convert::FormatCoord [lindex $Sim(Lat) 0] [lindex $Sim(Lon) 0] DEG 6]
 
    #----- Search index in list of isotopes for selected current isotope.
    set indx     [lsearch -exact $Sim(ListIsoSymbol) $Data(ETICKET)]
    if { $indx != -1 } {
       set Isotope  [lindex $ListIsoSymbol $indx]
-      set Quantity [format "%.2f" [lindex $ListIsoQuant $indx]]
+      set Quantity [lindex $ListIsoQuant $indx]
    } else {
       set Isotope $Data(ETICKET)
       set Quantity 0.0
@@ -545,7 +545,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
          $canvas itemconf FT5  -text "$Data(FT5) $Sim(GridResolution) km"
          $canvas itemconf FT6  -text "$Data(FT6) $Sim(Model)"
          $canvas itemconf FT7  -text "$Sim(Event)"
-         $canvas itemconf FT8  -text "$Data(FT8) [format "%.2e" $Quantity] $Data(UnitQuant)"
+         $canvas itemconf FT8  -text "$Data(FT8) [format "%.4e" $Quantity] $Data(UnitQuant)"
          $canvas itemconf FT9  -text "$Data(FT9) $Sim(EmHeight) m"
          $canvas itemconf FT10 -text "$Data(FT10) $Sim(EmRadius) m"
          $canvas itemconf FT11 -text "$Data(FT11) $VertDist"

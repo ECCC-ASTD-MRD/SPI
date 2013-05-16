@@ -1104,8 +1104,8 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
    set name   [trajectory define $t -ID]
    set date   [clock format [trajectory define $t -DATE] -format "%Y%m%d %H%M" -gmt True]
    set type   [trajectory define $t -LEVELTYPE]
-   set coordm [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] MIN 0]
-   set coordd [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] DEG]
+   set coordm [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] MIN 1]
+   set coordd [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] DEG 6]
 
    #----- Plotter l'identification
 
