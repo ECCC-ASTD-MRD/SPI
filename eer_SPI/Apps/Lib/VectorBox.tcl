@@ -56,10 +56,11 @@ namespace eval VectorBox {
    set Lbl(Grid)      { "Grille" "Grid" }
    set Lbl(Pixel)     { "Pixel" "Pixel" }
 
-   set Bubble(Size)       { "Dimension des barbules ou largeur des lignes de courants" "Wind barbs size or streamline width" }
-   set Bubble(SizeRange)  { "Facteur d'écart de dimension des barbules entre les mimimum et maximum" "Dimension range factor between of wind barbs between minimum and maximum values" }
+   set Bubble(Size)       { "Dimension des barbules et flêches" "Wind barbs and arrow size" }
+   set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum" "Dimension range factor of wind arrows between minimum and maximum values" }
    set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
-   set Bubble(Sample)     { "Espacement des lignes de courants\npixel(2D) / grille(3D)" "Streamline sampling\npixel(2D) / gridpt(3D)" }
+   set Bubble(Sample)     { "Espacement entre les flêches, barbules et lignes de courants\npixel(2D) / grille(3D)" "Wind bars, arrows and streamline sampling distance\npixel(2D) / gridpt(3D)" }
+   set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les grilles géographiques" "Pixel or gridpoint spzcing unit for geographical grids" }
    set Bubble(GridVec)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
    set Bubble(Cube)       { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
    set Bubble(Select)     { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
@@ -96,7 +97,7 @@ proc VectorBox::Create { Parent Apply } {
    }
 
    toplevel     .vecbox
-   wm geom      .vecbox =235x270+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .vecbox =235x295+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .vecbox .
    wm resizable .vecbox 0 0
    wm title     .vecbox "VectorBox 1.0"
@@ -112,9 +113,9 @@ proc VectorBox::Create { Parent Apply } {
          pack $fr.step.sc -fill x -padx 2 -expand true
 #      pack $fr.step -side top -padx 5 -pady 5 -fill x
       labelframe $fr.plane -text [lindex $Lbl(Start) $GDefs(Lang)]
-          checkbutton $fr.plane.mode -variable Page::Data(ToolMode) -onvalue VectorBox -offvalue SPI \
+         checkbutton $fr.plane.mode -variable Page::Data(ToolMode) -onvalue VectorBox -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }       
          pack $fr.plane.mode -side right -anchor n -fill x -expand True -padx 2  -ipady 8
          frame $fr.plane.x
             label $fr.plane.x.lbl -text "X " -width 2 -anchor w
@@ -167,10 +168,11 @@ proc VectorBox::Create { Parent Apply } {
          checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
       pack $fr.size $fr.range $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $fr.size.sc   $Bubble(Size)
-   Bubble::Create $fr.range.sc  $Bubble(SizeRange)
-   Bubble::Create $fr.sample.sc $Bubble(Sample)
-   Bubble::Create $fr.geo       $Bubble(GridVec)
+   Bubble::Create $fr.size.sc     $Bubble(Size)
+   Bubble::Create $fr.range.sc    $Bubble(SizeRange)
+   Bubble::Create $fr.sample.sc   $Bubble(Sample)
+   Bubble::Create $fr.sample.type $Bubble(SampleType)
+   Bubble::Create $fr.geo         $Bubble(GridVec)
 
    #----- Commandes
 
