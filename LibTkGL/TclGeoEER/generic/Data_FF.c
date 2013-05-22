@@ -1691,13 +1691,14 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    Vect_Clear(p);
    ds=fabs(Step*0.001);
    dr=10000.0;
-
+   Z=ZDim<0?0:Z;
+   
    do {
 
       /*Store the parcel position itself.*/
       idx=Step>0?npos:MaxIter-1-npos;
 
-      if (X<Def->Limits[0][0]+1 || X>Def->Limits[0][1]-2 || Y<Def->Limits[1][0]+1 || Y>Def->Limits[1][1]-2 || (ZDim && (Z<Def->Limits[2][0]+1 || Z>Def->Limits[2][1]-2))) {
+      if (X<Def->Limits[0][0]+1 || X>Def->Limits[0][1]-2 || Y<Def->Limits[1][0]+1 || Y>Def->Limits[1][1]-2 || (ZDim>0 && (Z<Def->Limits[2][0]+1 || Z>Def->Limits[2][1]-2))) {
          break;
       } else {
          /*Keep the position if its moved enough*/
@@ -1724,7 +1725,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       }
 
       /*If in 2D mode*/
-      if (Mode==REF_PROJ && !ZDim) {
+      if (Mode==REF_PROJ && ZDim==0) {
          /* Did we ever cross this pixel before ? */
          /* Stencil buffer reads are very slow so we only check after a few steps */
          if (c>MaxIter>>5) {
@@ -1747,7 +1748,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       } else {
          v[0]=VertexVal(Ref,Def,0,X,Y,Z);
          v[1]=VertexVal(Ref,Def,1,X,Y,Z);
-         v[2]=ZDim?VertexVal(Ref,Def,2,X,Y,Z):0.0;
+         v[2]=ZDim>0?VertexVal(Ref,Def,2,X,Y,Z):0.0;
       }
       dv=Vect_Norm(v);
 
@@ -1776,7 +1777,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       } else {
          rk2[0]=VertexVal(Ref,Def,0,X+rk1[0],Y,Z);
          rk2[1]=VertexVal(Ref,Def,1,X,Y+rk1[1],Z);
-         rk2[2]=ZDim?VertexVal(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
+         rk2[2]=ZDim>0?VertexVal(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
       }
       /*Check for 0 length vector*/
       if (rk2[0]==0.0 && rk2[1]==0.0 && rk2[2]==0.0) {

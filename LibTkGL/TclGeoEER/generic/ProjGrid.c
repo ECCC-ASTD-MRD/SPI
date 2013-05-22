@@ -746,6 +746,7 @@ void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
          Proj->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
          break;
 
+      case 'X':
       case 'U':
          ref->LLExtent.MinY=1e32;
          Proj->Geographic=ref->NId?1:0;

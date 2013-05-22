@@ -87,21 +87,25 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 
    float i[2],j[2],lat[2],lon[2];
 
-   i[0]=X0+1.0;
-   j[0]=Y0+1.0;
-   i[1]=X1+1.0;
-   j[1]=Y1+1.0;
+   if (Ref->Ids) {
+      i[0]=X0+1.0;
+      j[0]=Y0+1.0;
+      i[1]=X1+1.0;
+      j[1]=Y1+1.0;
 
-   EZLock_RPNInt();
-   c_gdllfxy(Ref->Ids[Ref->NId],lat,lon,i,j,2);
-   EZUnLock_RPNInt();
+      EZLock_RPNInt();
+      c_gdllfxy(Ref->Ids[Ref->NId],lat,lon,i,j,2);
+      EZUnLock_RPNInt();
+   
+      X0=DEG2RAD(lon[0]);
+      X1=DEG2RAD(lon[1]);
+      Y0=DEG2RAD(lat[0]);
+      Y1=DEG2RAD(lat[1]);
 
-   X0=DEG2RAD(lon[0]);
-   X1=DEG2RAD(lon[1]);
-   Y0=DEG2RAD(lat[0]);
-   Y1=DEG2RAD(lat[1]);
-
-   return(DIST(0.0,Y0,X0,Y1,X1));
+      return(DIST(0.0,Y0,X0,Y1,X1));
+   } else {
+      return(hypot(X1-X0,Y1-Y0));
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -184,7 +188,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          return(valid);
       }
 
-      if (Ref->Grid[0]!='Y' && Ref->Grid[0]!='P' && Def->Data[1] && !C) {
+      if (Ref->Grid[0]!='X' && Ref->Grid[0]!='Y' && Ref->Grid[0]!='P' && Def->Data[1] && !C) {
          if (Ref && Ref->Ids) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
@@ -254,22 +258,20 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
    float i,j,lat,lon;
    int   idx;
 
-/*
-      if (Ref->Grid[0]=='P' || Ref->Grid[0]=='Y' || Ref->Grid[0]=='M') {
-      *Lon=X;
-      *Lat=Y;
-      return(1);
-   }
-*/
-   /*Verifier si la grille est valide et que l'on est dans la grille*/
-   if (!Ref->Ids || X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
-      if (!Extrap || !Ref->Ids) {
+   if (X<(Ref->X0-0.5) || Y<(Ref->Y0-0.5) || X>(Ref->X1+0.5) || Y>(Ref->Y1+0.5)) {
+      if (!Extrap) {
          *Lat=-999.0;
          *Lon=-999.0;
          return(0);
       }
    }
 
+   if (!Ref->Ids) {
+      *Lat=Y;
+      *Lon=X;
+      return(1);
+   }
+ 
    if (Ref->Type&GRID_SPARSE) {
       if (Ref->Lon && Ref->Lat) {
          idx=Y*(Ref->X1-Ref->X0)+X;
@@ -361,7 +363,11 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       }
    }
 
-   if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0 && Ref->Ids) {
+   if (!Ref->Ids) {
+      *Y=Lat;
+      *X=Lon;
+      return(1);
+   } else if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
       lon=Lon<0?Lon+360:Lon;
       lat=Lat;
@@ -419,7 +425,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP,int IG1,int IG2,int IG3,int IG4,int FID) {
 
    TGeoRef *ref;
-   int      id,i;
+   int      id;
    char     grtyp[2];
 
    ref=GeoRef_New();

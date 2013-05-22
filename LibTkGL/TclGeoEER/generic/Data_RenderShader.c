@@ -440,8 +440,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (GLRender->Resolution>2) {
       return(0);
    }
-
-   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='X' || Field->Ref->Grid[0]=='Y') {
+   
+   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
       return(0);
    }
 

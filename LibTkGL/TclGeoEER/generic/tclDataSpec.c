@@ -1710,7 +1710,7 @@ TDataSpec *DataSpec_New(){
       spec->MapFactor=0.0f;
       spec->GridVector=1;
       spec->Cube[0]=1;spec->Cube[1]=1;spec->Cube[2]=1;
-      spec->Cube[3]=10;spec->Cube[4]=1;spec->Cube[5]=1;
+      spec->Cube[3]=1;spec->Cube[4]=1;spec->Cube[5]=1;
       spec->Axis='X';
 
       spec->OGRMask=NULL;

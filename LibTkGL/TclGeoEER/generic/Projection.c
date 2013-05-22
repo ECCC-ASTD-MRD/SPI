@@ -1548,7 +1548,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    OGR_Layer *layer;
    int        ras=0,i;
 
-   // If it's a grid projection without a referential or aglobal  U grid
+   // If it's a grid projection without a referential or a global U grid
    if (Proj->Type->Def==PROJPLANE && !Proj->Ref) {
       return(0);
    }

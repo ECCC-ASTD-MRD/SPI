@@ -205,22 +205,24 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
    float d;
    int   n,di,dj;
 
-   for (n=0;n<Nb;n++) {
+   if (Proj->Ref) {
+      for (n=0;n<Nb;n++) {
 
-      if (Proj->Ref->AX) {
-         Grid[n][0]=Proj->Ref->AX[(int)Grid[n][0]]-Proj->Ref->AX[0];
-         Grid[n][1]=Proj->Ref->AY[(int)Grid[n][1]]-Proj->Ref->AY[0];
-      }
-      d=Proj->L*0.5;
+         if (Proj->Ref->AX) {
+            Grid[n][0]=Proj->Ref->AX[(int)Grid[n][0]]-Proj->Ref->AX[0];
+            Grid[n][1]=Proj->Ref->AY[(int)Grid[n][1]]-Proj->Ref->AY[0];
+         }
+         d=Proj->L*0.5;
 
-      di=dj=0;
-      //TODO: this is not general enough
-      if (Proj->Ref->NId==2) {
-         dj-=(Proj->Ref->Y1+1);
+         di=dj=0;
+         //TODO: this is not general enough
+         if (Proj->Ref->NId==2) {
+            dj-=(Proj->Ref->Y1+1);
+         }
+         Grid[n][0]=(di+Grid[n][0])/d-Proj->LI;
+         Grid[n][1]=(dj+Grid[n][1])/d-Proj->LJ;
+         Grid[n][2]=1.0+Grid[n][2]*Proj->Scale*Proj->ZFactor;
       }
-      Grid[n][0]=(di+Grid[n][0])/d-Proj->LI;
-      Grid[n][1]=(dj+Grid[n][1])/d-Proj->LJ;
-      Grid[n][2]=1.0+Grid[n][2]*Proj->Scale*Proj->ZFactor;
    }
 }
 
@@ -498,7 +500,11 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
    /*Verifier la validite de la grille*/
-   if (!Field->Ref || Field->Ref->Type==GRID_NONE)
+   if (!Field->Ref)
+      return(NULL);
+
+   /*Verifier la validite de grille non geographique*/
+   if (!Field->Ref->Ids && ((Projection*)Proj)->Type->Def!=PROJPLANE)
       return(NULL);
 
    if (Field->Ref->Pos && Field->Ref->Pos[Level])
@@ -508,7 +514,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       FSTD_FieldGetMesh(Field,Proj,Level);
       return(Field->Ref->Pos[Level]);
    }
-
+  
    /*Allocate memory for various levels*/
    if (!Field->Ref->Pos)
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));
@@ -567,7 +573,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
-      if (Field->Ref->Ids[0]>-1) {
+      if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
          /*Recuperer les coordonnees des points de grille*/
          lat=(float*)malloc(FSIZE2D(def)*sizeof(float));
          lon=(float*)malloc(FSIZE2D(def)*sizeof(float));
@@ -628,27 +634,32 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                }
             }
 
-            if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
+            if (((Projection*)Proj)->Type->Def==PROJPLANE && !Field->Ref->Ids) {
+               Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
+            } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
             } else {
-              if (Field->Ref->Ids[0]>-1) {
+              if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
                   coord.Lat=lat[idxi];
                   coord.Lon=CLAMPLON(lon[idxi]);
                } else {
-                 Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
+                  Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
                }
                Vect_Init(Field->Ref->Pos[Level][idxi],coord.Lon,coord.Lat,coord.Elev);
             }
          }
       }
-      if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
+     
+      if (((Projection*)Proj)->Type->Def==PROJPLANE && !Field->Ref->Ids) {
+         FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
+      } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
          FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
       } else {
          ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
 
       FSTD_FileUnset(NULL,head->FID);
-      if (Field->Ref->Ids[0]>-1) {
+      if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
          free(lat);
          free(lon);
       }
@@ -1883,7 +1894,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 
    FSTD_Head      head;
    Tcl_Obj       *list,*obj;
-   int            i,nb,ni,nj,nk;
+   int            nb,ni,nj,nk;
    int            yyyy,mm,dd,h,m,s,type;
    char           buf[1024],grtyp[2];
    double         nhour,lvl;

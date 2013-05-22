@@ -209,7 +209,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
          /*Verifier la presence d'une palette de couleur si elle est necessaire*/
          if (Field->Spec->Map) {
             if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
-               if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
+               if (Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
                   if (GLRender->ShaderAvailable) {
                      nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
                   } else {
@@ -224,15 +224,13 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
             glEnable(GL_DEPTH_TEST);
             if (Field->Spec->RenderVector==STREAMLINE3D) {
-               if (Field->Def->Data[2]) {
-                  if (Data_Grid3D(Field,Proj)) {
-                     nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
-                  }
+               if (Data_Grid3D(Field,Proj)) {
+                  nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
                }
             }
 
             if (Field->Spec->RenderVol) {
-               if (Field->Ref->Grid[0]!='X' && Field->Ref->Grid[0]!='V') {
+               if (Field->Ref->Grid[0]!='V') {
                   /*Recuperer les niveaux disponibles*/
                   if (Data_Grid3D(Field,Proj)) {
                      nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
@@ -705,7 +703,6 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
 
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
-
    Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def)/dp,dp,NULL,NULL);
 
    if (Interp)
@@ -883,6 +880,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
+            
             /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
             if (pi!=(int)i ||  pj!=(int)j) {
                pi=i;
@@ -932,7 +930,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[2] || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll)) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll)) {
       return(0);
    }
 
@@ -978,8 +976,8 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
          k=Field->Spec->Pos[n][2];
 
          /*Get the streamline */
-         b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
-         f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+         b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
+         f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
          /* If we have at least some part of it */
          if (b+f>2) {
             glPushMatrix();
@@ -1004,7 +1002,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             for(k=Field->Spec->Cube[2];k<=Field->Spec->Cube[5];k+=dz) {
 
                /*Get the streamline */
-               f=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,1);
+               f=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
 
                /* If we have at least some part of it */
                if (f>2) {
@@ -1246,7 +1244,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='X' || Field->Ref->Grid[0]=='Y') {
+   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
       return(0);
    }
 
@@ -1624,6 +1622,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
+      case 'X':
       case 'Y':
       case 'W':
          for(i=0;i<Field->Def->NI;i+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
@@ -1693,7 +1692,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             EZLock_RPNInt();
             c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
             EZUnLock_RPNInt();
-
+            
             mem=0;i=0;
             while (mem<n) {
                if (x[mem]<=Field->Def->NI && y[mem]<=Field->Def->NJ && x[mem]>=1 && y[mem]>=1) {
@@ -1710,12 +1709,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             mem=FSIZE2D(Field->Def);
             lat=(float*)malloc(mem*sizeof(float));
             lon=(float*)malloc(mem*sizeof(float));
-
-            if (lat || !lon) {
+            
+            if (!lat || !lon) {
                fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
                return;
             }
-
             EZLock_RPNInt();
             c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
             EZUnLock_RPNInt();
@@ -1815,6 +1813,10 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
    int i,idx,len;
    TList  *list,*end;
    T3DArray *array;
+
+   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
+      return(0);
+   }
 
    if (Field->Def->NK<=1) {
       return(0);
