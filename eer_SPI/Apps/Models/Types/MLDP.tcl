@@ -1251,7 +1251,7 @@ proc MLDP::InitNew { Type } {
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    set Sim(EmScenario)           "default"                           ; #----- Scenario name.
-   set Sim(EmMassMode)            0                                  ; #----- Total released mass mode
+   set Sim(EmMassMode)           0                                   ; #----- Total released mass mode
                                                                        #----- 0: Empirical formula of Sparks et al. (1997). For this mode, mass cannot be modified manually.
                                                                        #----- 1: Empirical formula of Mastin et al. (2009). For this mode, mass cannot be modified manually.
                                                                        #----  2: Edition. For this mode, mass can be modified manually for specific purposes.

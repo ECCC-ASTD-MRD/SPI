@@ -63,6 +63,7 @@ namespace eval MLDPn {
    set Lbl(Backward)            { "Arrière" "Backward" }
    set Lbl(IsoChain)            { "Appliquer la chaine de décompositions" "Apply isotope decay chain" }
 
+   set Lbl(SrcHeight)           { "Hauteur de la source (m) " "Source height (m)        " }
    set Lbl(Emission)            { "Émission" "Emission" }
    set Lbl(Column)              { "Colonne d'émission" "Emission column" }
    set Lbl(EmNumberParticles)   { "Nombre de particules     " "Number of particles      " }
@@ -165,6 +166,7 @@ namespace eval MLDPn {
    set Bubble(IsoAdd)                 { "Ajouter un nouvel isotope radioactif." "Add a new radioactive isotope." }
    set Bubble(IsoDelete)              { "Supprimer l'isotope radioactif sélectionné." "Delete the selected radioactive isotope." }
    set Bubble(IsoChain)               { "Suivre la chaine de décompositions des isotopes à travers les enfants instables." "Follow the isotopes decay chain through alll of the unstable childs." }
+   set Bubble(SrcHeight)              { "Hauteur de la source au dessus du sol qui correspond au bas de la colonne de relâchement." "Source height above groud level which relects the bottom of the release column." }
 
    set Bubble(Cancel)                 { "Annuler les modifications apportées." "Cancel the modifications made." }
    set Bubble(Apply)                  { "Appliquer les changements." "Apply changes." }
