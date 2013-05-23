@@ -480,8 +480,8 @@ proc FSTD::ParamFrame { Frame Apply } {
          $Data(Frame).lev.select.mode.list.nb add command -label "$i" \
             -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 2] $i"
       }
-
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ FSTD::IntervalSetMode NONE }
+      
+   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ FSTD::IntervalSetMode NONE 0 True }
 
    #------ Creation des bulles d'aide
 
@@ -507,8 +507,9 @@ proc FSTD::ParamFrame { Frame Apply } {
 # But      : Instaurer des valeurs pour les intervalles selon les divers mode
 #
 # Parametres :
-#   <Mode>   : Mode de definition des intervalles
-#   <Par>    : Parametres du mode
+#   <Mode>        : Mode de definition des intervalles
+#   <Par>         : Parametres du mode
+#   <Interactive> : Appel interactif
 #
 # Retour:
 #
@@ -516,12 +517,12 @@ proc FSTD::ParamFrame { Frame Apply } {
 #
 #----------------------------------------------------------------------------
 
-proc FSTD::IntervalSetMode { Mode { Par 0 } } {
+proc FSTD::IntervalSetMode { Mode { Par 0 } { Interactive False } } {
    variable Param
    variable Data
 
-   if { $Mode=="NONE" } {
-#      set Param(Intervals)   {}
+   if { $Mode=="NONE" && !$Interactive } {
+      set Param(Intervals)   {}
    }
    set Param(IntervalMode)   $Mode
    set Param(IntervalParam)  $Par
@@ -536,7 +537,7 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } } {
       if { $Par>-1 } {
          set Param(IntervalDef) [lindex [ComboBox::List $Data(Frame).lev.select.def] [expr int($Par)]]
       }
-  } else {
+   } else {
       set Param(IntervalDef) ""
       pack forget $Data(Frame).lev.select.def
    }
