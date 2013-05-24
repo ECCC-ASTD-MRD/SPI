@@ -951,10 +951,12 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
 */
 int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
 
-   int            n,i,j,ci,cj,i0,i1,j0,j1,len,side;
-   unsigned char *buf=NULL;
+   int            n,ci,cj;
+   unsigned int   len,i0,i1,j0,j1,i,j;
+   unsigned char  side,*buf=NULL;
    T3DArray      *array;
-
+   TList         *list;
+   
    /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
    if (Mode==REF_COOR && !Ref)
       return(0);
@@ -986,7 +988,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
       while(1) {
 
          /*When we get to the center, we're done*/
-         if (i1<i0 && j1<j0) {
+         if (i1<i0 || j1<j0) {
             break;
          }
          i1=i1<i0?i0:i1;
@@ -999,10 +1001,16 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
                if ((array=T3DArray_Alloc(Inter[n],len))) {
-                  Def->Segments=TList_Add(Def->Segments,array);
-                  VBuffer_Copy(array->Data,len);
+                  if ((list=TList_Add(Def->Segments,array))) {
+                     Def->Segments=list;
+                     VBuffer_Copy(array->Data,len);
+                  } else {
+                     fprintf(stderr,"(ERROR) FFContour: Unable to allocate memory for contour %f",Inter[n]);
+                     break;
+                  }
                } else {
-                  fprintf(stderr,"(ERROR) FFContour: Unable to alloc memory for contour %f",Inter[n]);
+                  fprintf(stderr,"(ERROR) FFContour: Unable to allocate memory for contour %f",Inter[n]);
+                  break;
                }
             }
          }
@@ -1016,10 +1024,12 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
          j+=cj;
       }
    }
+
    if (buf)
       free(buf);
 
    VBuffer_Check();
+
    return(1);
 }
 
@@ -1085,7 +1095,7 @@ static unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double 
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static unsigned long FFContour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
+static unsigned int FFContour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
 
    unsigned char m;
 
@@ -1095,51 +1105,51 @@ static unsigned long FFContour_QuadIndex(unsigned int Index,char Side,int *X,int
    Index>>=4;
    if (m&0x1) {
       if (Side&FF_BOTTOM) {
-         Index<<=4;Index|=0x8;
+         Index=(Index<<4)|0x8;
       } else if (Side&FF_LEFT) {
-         Index<<=4;Index|=0x2;
+         Index=(Index<<4)|0x2;
       } else if (Side&FF_TOP) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x8;
+         Index=(Index<<4)|0x8;
       } else if (Side&FF_RIGHT) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x2;
+         Index=(Index<<4)|0x2;
       }
    } else if (m&0x2) {
       if (Side&FF_BOTTOM) {
-         Index<<=4;Index|=0x4;
+         Index=(Index<<4)|0x4;
       } else if (Side&FF_LEFT) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x1;
+         Index=(Index<<4)|0x1;
       } else if (Side&FF_TOP) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x4;
+         Index=(Index<<4)|0x4;
       } else if (Side&FF_RIGHT) {
-         Index<<=4;Index|=0x1;
+         Index=(Index<<4)|0x1;
       }
    } else if (m&0x4) {
       if (Side&FF_BOTTOM) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x2;
+         Index=(Index<<4)|0x2;
       } else if (Side&FF_LEFT) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x8;
+         Index=(Index<<4)|0x8;
       } else if (Side&FF_TOP) {
-         Index<<=4;Index|=0x2;
+         Index=(Index<<4)|0x2;
       } else if (Side&FF_RIGHT) {
-         Index<<=4;Index|=0x8;
+         Index=(Index<<4)|0x8;
       }
    } else if (m&0x8) {
       if (Side&FF_BOTTOM) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x1;
+         Index=(Index<<4)|0x1;
       } else if (Side&FF_LEFT) {
-         Index<<=4;Index|=0x4;
+         Index=(Index<<4)|0x4;
       } else if (Side&FF_TOP) {
-         Index<<=4;Index|=0x1;
+         Index=(Index<<4)|0x1;
       } else if (Side&FF_RIGHT) {
          Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index<<=4;Index|=0x4;
+         Index=(Index<<4)|0x4;
       }
    } else {
       *N=1;
@@ -1235,10 +1245,9 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *----------------------------------------------------------------------------
  */
-int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,int Side,int Depth,int Limit) {
+unsigned int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
 
    double        vox[4],pvox[4],mid=0,x,y,d;
-   double        lat=0.0,lon=0.0;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;
    int           px,py;
    unsigned char side=0;
@@ -1251,7 +1260,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
    }
 
    dz=Z*FSIZE2D(Def);
-
+   
    while (side || next) {
 
       /*If we changed voxel*/
@@ -1280,7 +1289,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
 
             if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
-                  case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
+                  case REF_COOR : Ref->Project(Ref,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
                   case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
                   case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
@@ -1330,7 +1339,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
       if ((side=FFContour_QuadCross(d,side,vox,Inter,&x,&y))) {
          if ((vbuf=VBuffer_Alloc(n+1))) {
             switch(Mode) {
-               case REF_COOR : Ref->Project(Ref,x,y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
+               case REF_COOR : Ref->Project(Ref,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
                case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
                case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
@@ -1386,7 +1395,7 @@ int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y
             while (px || py) {
                if ((X!=x0 || Y!=y0) && (vbuf=VBuffer_Alloc(n+1))) {
                   switch(Mode) {
-                     case REF_COOR : Ref->Project(Ref,X,Y,&lat,&lon,0,1);Vect_Init(vbuf[n],lat,lon,0.0);break;
+                     case REF_COOR : Ref->Project(Ref,X,Y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
                      case REF_PROJ : Vect_Assign(vbuf[n],Ref->Pos[dz][idx]);break;
                      case REF_GRID : Vect_Init(vbuf[n],X,Y,Z);break;
                   }

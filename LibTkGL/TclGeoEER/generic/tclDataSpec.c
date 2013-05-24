@@ -446,10 +446,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderContour));
             } else {
+               n=Spec->RenderContour;
                if (Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderContour)==TCL_ERROR) {
                    Tcl_GetBooleanFromObj(Interp,Objv[i],&Spec->RenderContour);
                }
-               Spec->RenderContour=Spec->RenderContour<0?0:Spec->RenderContour>4?4:Spec->RenderContour;
+               if (n!=Spec->RenderContour) {
+                  cseg=1;
+               }
+               Spec->RenderContour=Spec->RenderContour<0?0:Spec->RenderContour>3?3:Spec->RenderContour;
             }
             break;
 

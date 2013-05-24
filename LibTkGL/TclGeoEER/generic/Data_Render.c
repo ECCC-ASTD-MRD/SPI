@@ -416,7 +416,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 
    /*Les contours sont-ils definit*/
    if (Field->Spec->InterNb && !Field->Def->Segments) {
-      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,3,0);
+      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,4-Field->Spec->RenderContour,0);
    }
 
    /* Render the contours */
@@ -436,8 +436,6 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glStencilFunc(GL_EQUAL,0x00,0xff);
       glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
-      w=Field->Spec->Width?Field->Spec->Width:Field->Spec->RenderContour;
-
       if (Interp) {
          sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",w-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
@@ -452,7 +450,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       }
 
       glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-      glLineWidth(w);
+      glLineWidth(Field->Spec->Width);
 
       list=Field->Def->Segments;
 

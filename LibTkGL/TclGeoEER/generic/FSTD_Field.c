@@ -504,7 +504,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       return(NULL);
 
    /*Verifier la validite de grille non geographique*/
-   if (!Field->Ref->Ids && ((Projection*)Proj)->Type->Def!=PROJPLANE)
+   if (Field->Ref->Grid[0]=='X' && ((Projection*)Proj)->Type->Def!=PROJPLANE)
       return(NULL);
 
    if (Field->Ref->Pos && Field->Ref->Pos[Level])
@@ -2258,6 +2258,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    /*Check for mask*/
+   /*
    ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
    if (ok>0) {
       if ((field->Def->Mask=(char*)malloc(ni*nj))) {
@@ -2274,7 +2275,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory for mask");
       }
    }
-
+*/
    /*Recuperer les type de niveaux et forcer ETA pour SIGMA*/
    lvl=ZRef_IP2Level(h.IP1,&type);
    type=type==LVL_SIGMA?LVL_ETA:type;
