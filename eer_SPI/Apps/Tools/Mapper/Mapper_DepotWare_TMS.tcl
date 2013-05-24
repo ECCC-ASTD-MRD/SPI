@@ -79,10 +79,11 @@ proc  Mapper::DepotWare::TMS::SelectLayer { Layer } {
    Mapper::UpdateData $Page::Data(Frame)
 }
 
-proc  Mapper::DepotWare::TMS::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
    variable Param
 
-   set Layer $Path
+   set Layer [$Tree get $Branch path]
+   
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
       file mkdir $Mapper::DepotWare::Data(CachePath)
    }

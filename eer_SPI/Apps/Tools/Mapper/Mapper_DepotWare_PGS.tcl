@@ -112,16 +112,23 @@ proc Mapper::DepotWare::PGS::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::PGS::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::PGS::Parse { Tree Branch } {
 
-   if { $URL=="URL" }  {
-      foreach layer [Mapper::DepotWare::PGS::ParseLayer $Path] {
-         Mapper::DepotWare::PGS::Add  $Tree $Branch $layer
-      }
-   } else {
+   set path [$Tree get $Branch path]
+
+   foreach layer [Mapper::DepotWare::PGS::ParseLayer $path] {
+      Mapper::DepotWare::PGS::Add  $Tree $Branch $layer
+   }
+}
+
+proc  Mapper::DepotWare::PGS::Select { Tree Branch { Select True } } {
+
+   if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]
       set layer [$Tree get $Branch path]
       Mapper::ReadLayer $path [list $layer]
+   } else {
+   
    }
 }
 

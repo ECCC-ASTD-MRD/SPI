@@ -76,9 +76,27 @@ proc Mapper::DepotWare::DIR::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::DIR::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::DIR::Select { Tree Branch { Select True } } {
 
-   foreach file [lsort -dictionary -increasing [glob -nocomplain $Path/*]] {
+   set path [$Tree get $Branch path]
+
+   switch -glob [set type [$Tree get $Branch type]] {
+      "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
+                  Mapper::ReadBand $path
+               }
+             }
+      "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
+                  Mapper::ReadLayer $path
+               }
+             }
+   }
+}
+
+proc  Mapper::DepotWare::DIR::Parse { Tree Branch } {
+
+   set path [$Tree get $Branch path]
+puts stderr $path
+   foreach file [lsort -dictionary -increasing [glob -nocomplain $path/*]] {
       set branch [$Tree insert $Branch end]
       if { [file isdirectory $file] } {
          $Tree set $branch open False
@@ -91,7 +109,6 @@ proc  Mapper::DepotWare::DIR::Select { Tree Branch Path URL } {
       }
    }
 }
-
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::DIR::Request>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE

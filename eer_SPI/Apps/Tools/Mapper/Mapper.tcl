@@ -588,7 +588,6 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
    }
 
    eval set bad [catch { set idxs [ogrfile open $Data(Id$File) read $File] }]
-
    if { $bad } {
       return ""
    }

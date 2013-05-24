@@ -75,40 +75,46 @@ proc Mapper::DepotWare::WCS::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::WCS::Parse { Tree Branch } {
    global GDefs
    variable Data
    variable Msg
 
-   if { $URL=="URL" }  {
-      if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
-      } else {
-         set req [http::geturl "${Path}SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
-      }
-      if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-         Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
-         return
-      }
-      set root [$doc documentElement]
-
-      #----- Check wich version this is
-      set Data(Version) [$root getAttribute version]
-
-      switch $Data(Version) {
-         1.1.0 { set layer [lindex [$root getElementsByTagName Contents] 0] }
-         1.0.0 { set layer [lindex [$root getElementsByTagName ContentMetadata] 0] }
-         default { Dialog::ErrorListing . $Msg(Version) "$msg\n[http::data $req]"; return }
-      }
-
-      foreach layer [Mapper::DepotWare::WCS::ParseLayer $Path $layer] {
-         Mapper::DepotWare::WCS::Add $Tree $Branch $layer
-      }
-
-      $doc delete
-      http::cleanup $req
+   set path [$Tree get $Branch path]
+ 
+   if { [string first "?" ${path}]==-1 } {
+      set req [http::geturl "${path}?SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
    } else {
-      set def [Mapper::DepotWare::WCS::BuildXMLDef $Path]
+      set req [http::geturl "${path}SERVICE=WCS&REQUEST=GetCapabilities&version=$Data(Version)"]
+   }
+   if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
+      Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+      return
+   }
+   set root [$doc documentElement]
+
+   #----- Check wich version this is
+   set Data(Version) [$root getAttribute version]
+
+   switch $Data(Version) {
+      1.1.0 { set layer [lindex [$root getElementsByTagName Contents] 0] }
+      1.0.0 { set layer [lindex [$root getElementsByTagName ContentMetadata] 0] }
+      default { Dialog::ErrorListing . $Msg(Version) "$msg\n[http::data $req]"; return }
+   }
+
+   foreach layer [Mapper::DepotWare::WCS::ParseLayer $path $layer] {
+      Mapper::DepotWare::WCS::Add $Tree $Branch $layer
+   }
+}
+
+proc  Mapper::DepotWare::WCS::Select { Tree Branch { Select True } } {
+   global GDefs
+   variable Data
+   variable Msg
+
+  if { $Select } {
+      set path [$Tree get $Branch path]
+      set def [Mapper::DepotWare::WCS::BuildXMLDef $path]
 
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
          set band [Mapper::ReadBand $def "" 1]
@@ -116,6 +122,8 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch Path URL } {
          #----- Decrease effective resolution (WMS-WCS-TMS)
          gdalband configure $band -texres 3
       }
+   } else {
+   
    }
 }
 

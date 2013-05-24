@@ -71,16 +71,23 @@ proc Mapper::DepotWare::WFS::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::WFS::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::WFS::Parse { Tree Branch } {
 
-   if { $URL=="URL" }  {
-      foreach layer [Mapper::DepotWare::WFS::ParseLayer $Path] {
-         Mapper::DepotWare::WFS::Add $Tree $Branch $layer
-      }
-   } else {
+   set path [$Tree get $Branch path]
+
+   foreach layer [Mapper::DepotWare::WFS::ParseLayer $path] {
+      Mapper::DepotWare::WFS::Add $Tree $Branch $layer
+   }
+}
+
+proc  Mapper::DepotWare::WFS::Select { Tree Branch { Select True } } {
+
+   if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]
       set layer [$Tree get $Branch path]
       Mapper::ReadLayer WFS:$path?VERSION=1.1.0&SERVICE=WFS [list $layer]
+   } else {
+   
    }
 }
 

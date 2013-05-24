@@ -89,7 +89,7 @@ proc Mapper::DepotWare::WMS::Params { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
+proc  Mapper::DepotWare::WMS::Parse { Tree Branch } {
    global GDefs
    variable Data
    variable Msg
@@ -97,43 +97,52 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
    set str [http::config -useragent]
    http::config -useragent "EC/CMC/CMOE SPI $GDefs(Version) (through $str)"
 
-   if { $URL=="URL" }  {
-      if { [string first "?" ${Path}]==-1 } {
-         set req [http::geturl "${Path}?SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
-      } else {
-         set req [http::geturl "${Path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
-      }
-
-      if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
-         Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
-         return
-      }
-      set root [$doc documentElement]
-
-      set Data(Version) 1.1.1
-      set Data(Format) "image/gif"
-
-      #----- If there's no map available
-      if { [set getmap [lindex [$root getElementsByTagName GetMap] 0]]=="" } {
-         Dialog::ErrorListing . $Msg(Request) [http::data $req]
-         return
-      }
-
-      #----- Parse the available image formats
-      foreach node [$getmap getElementsByTagName Format] {
-         set Data(Format) [[$node firstChild] nodeValue]
-         if { $Data(Format)=="image/png" || $Data(Format)=="image/jpeg" } {
-            break
-         }
-      }
-
-      #----- Parse the available layers
-      set layer [lindex [$root getElementsByTagName Layer] 0]
-      Mapper::DepotWare::WMS::ParseLayer $Path $layer $Tree $Branch
-      $doc delete
-      http::cleanup $req
+   set path [$Tree get $Branch path]
+   
+   if { [string first "?" ${path}]==-1 } {
+      set req [http::geturl "${path}?SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
    } else {
-      set def [Mapper::DepotWare::WMS::BuildXMLDef $Path]
+      set req [http::geturl "${path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
+   }
+
+   if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
+      Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
+      return
+   }
+   set root [$doc documentElement]
+
+   set Data(Version) 1.1.1
+   set Data(Format) "image/gif"
+
+   #----- If there's no map available
+   if { [set getmap [lindex [$root getElementsByTagName GetMap] 0]]=="" } {
+      Dialog::ErrorListing . $Msg(Request) [http::data $req]
+      return
+   }
+
+   #----- Parse the available image formats
+   foreach node [$getmap getElementsByTagName Format] {
+      set Data(Format) [[$node firstChild] nodeValue]
+      if { $Data(Format)=="image/png" || $Data(Format)=="image/jpeg" } {
+         break
+      }
+   }
+
+   #----- Parse the available layers
+   set layer [lindex [$root getElementsByTagName Layer] 0]
+   Mapper::DepotWare::WMS::ParseLayer $path $layer $Tree $Branch
+   $doc delete
+   http::cleanup $req
+}
+
+proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } } {
+   global GDefs
+   variable Data
+   variable Msg
+
+   if { $Select } {
+      set path [$Tree get $Branch path]
+      set def [Mapper::DepotWare::WMS::BuildXMLDef $path]
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
          set band [Mapper::ReadBand $def "" 3]
 
@@ -152,6 +161,8 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch Path URL } {
             }
          }
       }
+   } else {
+   
    }
 }
 
@@ -202,6 +213,7 @@ proc Mapper::DepotWare::WMS::Add { Tree Branch Layer } {
    set branch [$Tree insert $Branch end]
 
    $Tree set $branch open False
+#   $Tree set $branch box  False
    $Tree set $branch name ""
    $Tree set $branch path $Layer
    $Tree set $branch type WMS
@@ -429,21 +441,19 @@ proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
    set x1 [$Node getAttribute maxx]
    set y1 [$Node getAttribute maxy]
 
+   set epsg ""
+   
    if { [$Node hasAttribute SRS] } {
       set epsg [$Node getAttribute SRS]
-   } else {
-      set epsg ""
    }
 
    if { [$Node hasAttribute CRS] } {
-      set crs  [$Node getAttribute CRS]
-   } else {
-      set crs ""
+      set epsg  [$Node getAttribute CRS]
    }
 
    set Data(BBox)  [list $x0 $y0 $x1 $y1]
 
-   if { $epsg=="EPSG:4326" || $epsg=="EPSG:4269" || $crs=="CRS:84" } {
+   if { $epsg=="EPSG:4326" || $epsg=="EPSG:4269" || $epsg=="CRS:84" } {
       set Data(SizeX) 864000
       set Data(SizeY) 432000
    } else {
@@ -539,11 +549,17 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
 
       #----- Read the legend with gdal
       set bands [gdalfile open LGFILE read /tmp/lg[pid]]
-      gdalband read LG $bands
+      gdalband read LG $bands True
 
       #----- Extract tk image from gdal image
-      set tag WMSLEGEND[string map { % "" . "" " " "" \' " " \" " " } $Band]
-      catch { $Page::Data(Canvas) itemconfigure $tag -image "" }
+      set tag WMSLEGEND[string map { % "" . "" " " "" \' "" \" "" } $Band]
+
+      if { [llength [$Page::Data(Canvas) find withtag $tag]] } {
+         $Page::Data(Canvas) itemconfigure $tag -image ""
+      } else {
+         $Page::Data(Canvas) delete $tag
+         Shape::UnBind $Page::Data(Canvas) $tag
+      }
       image create photo $tag
 
       gdalband stat LG -image $tag
@@ -554,9 +570,13 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
       file delete -force /tmp/lg[pid]
 
       #----- Display legend with bindings
-      $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
-      Shape::BindDestroy $Page::Data(Canvas) $tag
-      Shape::BindMove $Page::Data(Canvas) $tag
+      if { [llength [$Page::Data(Canvas) find withtag $tag]] } {
+         $Page::Data(Canvas) itemconfigure $tag -image $tag
+      } else {
+         $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
+         Shape::BindDestroy $Page::Data(Canvas) $tag
+         Shape::BindMove $Page::Data(Canvas) $tag
+      }
    }
 }
 

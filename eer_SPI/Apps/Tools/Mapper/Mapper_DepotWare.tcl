@@ -498,22 +498,46 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
 
    set Data(Select) $Branch
 
+   set path [$Tree get $Branch path]
+
+   switch -glob [set type [$Tree get $Branch type]] {
+      "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
+                  Mapper::ReadBand $path
+               }
+               }
+      "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
+                  Mapper::ReadLayer $path
+               }
+               }
+      "URL*"  { }
+      default { Mapper::DepotWare::${type}::Select $Tree $Branch $Open }
+   }
+   
+   Mapper::UpdateData $Page::Data(Frame)
+   SPI::Progress 0 ""
+}
+
+proc  Mapper::DepotWare::TreeParse { Tree Branch Open } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Msg
+   variable WMS
+
+   if { ![info exist Viewport::Data(Data$Page::Data(Frame))] } {
+      return
+   }
+
+   set Data(Select) $Branch
+
    if { [$Tree isleaf $Branch] } {
 
       set Mapper::Data(Job) [lindex $Msg(Search) $GDefs(Lang)]
       set path [$Tree get $Branch path]
 
       switch -glob [set type [$Tree get $Branch type]] {
-         "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                     Mapper::ReadBand $path
-                  }
-                }
-         "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                     Mapper::ReadLayer $path
-                  }
-                }
-         "URL*"  { Mapper::DepotWare::[string range $type 3 end]::Select $Tree $Branch $path [string range $type 0 2] }
-         default { Mapper::DepotWare::${type}::Select $Tree $Branch $path [string range $type 0 2] }
+         "URL*"  { Mapper::DepotWare::[string range $type 3 end]::Parse $Tree $Branch }
+         default { Mapper::DepotWare::${type}::Parse $Tree $Branch }
       }
    }
    Mapper::UpdateData $Page::Data(Frame)
@@ -657,7 +681,11 @@ proc Mapper::DepotWare::Create { } {
       eval set path \"[lindex $depot 2]\"
       TREE set $idx path $path
    }
-   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE Mapper::DepotWare::TreeId Mapper::DepotWare::TreeSelect Mapper::DepotWare::PopUp
+   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE \
+      Mapper::DepotWare::TreeId \
+      Mapper::DepotWare::TreeParse \
+      Mapper::DepotWare::TreeSelect \
+      Mapper::DepotWare::PopUp
 }
 
 #----------------------------------------------------------------------------
