@@ -352,9 +352,10 @@ proc FSTD::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).def.r.disp.cont
             label $Data(Frame).def.r.disp.cont.lbl -text " [lindex $Lbl(Contour) $GDefs(Lang)]"
-            checkbutton $Data(Frame).def.r.disp.cont.sel -variable FSTD::Param(Contour) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
-               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/Resources/Bitmap \
+               "zeroth.xbm contour1.xbm contour2.xbm contour3.xbm" "0 1 2 3" \
+               FSTD::Param(Contour) "FSTD::ParamSet" 0 -relief groove -bd 2
+               
             pack $Data(Frame).def.r.disp.cont.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.cont.lbl -side left  -fill y
 
