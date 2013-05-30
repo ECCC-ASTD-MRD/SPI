@@ -47,7 +47,7 @@ namespace eval Info {
                         EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs SimSecs Sim0Secs Duration
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin IsoChain \
                         SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
@@ -104,6 +104,7 @@ namespace eval Info {
    set Lbl(Lon)                  { "Longitude" "Longitude" }
    set Lbl(Coords)               { "Coordonnées" "Coordinates" }
    set Lbl(Elev)                 { "Élévation" "Elevation" }
+   set Lbl(Height)               { "Altitude" "Altitude" }
    set Lbl(AccYear)              { "Année de l'accident" "Accident year" }
    set Lbl(AccMonth)             { "Mois de l'accident" "Accident month" }
    set Lbl(AccDay)               { "Jour de l'accident" "Accident day" }

@@ -782,7 +782,7 @@ proc FSTD::ParamGet { { Spec "" } } {
       }
    }
 
-   FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam)
+   FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True 
 }
 
 #----------------------------------------------------------------------------
