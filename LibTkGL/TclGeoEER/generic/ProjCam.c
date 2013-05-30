@@ -659,10 +659,13 @@ void ProjCam_CircleTo(ProjCam *Cam,double ThetaXZ,double ThetaYZ,double Delta) {
    tmp[2]=Delta*cos(ThetaYZ)*cos(ThetaXZ);
 
    /*Determiner le vecteur haut Cam->Up*/
+   if (ThetaXZ==0 && ThetaYZ==0) {
+      Vect_Init(Cam->Up,0.0,0.0,1.0);
+   } else {
    Cam->Up[0]=cos(ThetaYZ+M_PI4)*sin(ThetaXZ);
    Cam->Up[1]=sin(ThetaYZ+M_PI4);
    Cam->Up[2]=cos(ThetaYZ+M_PI4)*cos(ThetaXZ);
-
+   }
    /*Localiser dans l'espace*/
    Vect_Substract(Cam->To,Cam->From,tmp);
 }
