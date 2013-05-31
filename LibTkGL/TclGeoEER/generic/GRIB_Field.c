@@ -453,6 +453,8 @@ int GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType){
       }
    } else {
       err=grib_get_long(Head->Handle,"vertical.typeOfLevel",&lval2);
+      if (!lval2)
+         err=grib_get_long(Head->Handle,"typeOfFirstFixedSurface",&lval2);
 
       switch(lval2) {
          case   1:
