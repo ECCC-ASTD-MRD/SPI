@@ -7,9 +7,11 @@ uniform   int       Nb;
 uniform   int       Bi;
 uniform   int       Bellow;
 uniform   int       Above;
+uniform   int       IsMask;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
+uniform   sampler2DRect Mask;
 
 //varying   vec3          LightDir;
 //varying   vec3          Normal;

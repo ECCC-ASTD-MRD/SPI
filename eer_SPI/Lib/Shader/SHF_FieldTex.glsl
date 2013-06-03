@@ -7,9 +7,11 @@ uniform   int       Nb;
 uniform   int       Bi;
 uniform   int       Bellow;
 uniform   int       Above;
+uniform   int       IsMask;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
+uniform   sampler2DRect Mask;
 
 //varying   vec3          LightDir;
 //varying   vec3          Normal;
@@ -37,12 +39,16 @@ void main() {
 
    float idx;
    int   n;
-   vec4  inter,frg;
+   vec4  inter,frg,mask;
    float dd;
 
-//   vec3  cf;
-//   float intensity;
-//   vec3  normal;
+   // Check if there's a valid mask valus
+   if (IsMask==1) {
+      mask=texture2DRect(Mask,gl_TexCoord[0].st);
+      if (mask.a<=0.01) {
+         discard;
+      }
+   }
 
    // Get value, nearest or linear
    if (Bi!=0) {
