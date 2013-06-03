@@ -428,13 +428,13 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 */
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int     i,j,idxk,idx0,idx1,ox=0,dp,dn;
+   int     i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
    float   min,rng,fi,fj;
    Vect3d *pos;
-   float  *buf;
+   float  *buf=NULL;
    char   *ptr,out=0;
 
-   GLuint      tx[3];
+   GLuint      tx[4];
    GLhandleARB prog;
 
    if (GLRender->Resolution>2) {
@@ -472,7 +472,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 //   prog=GLShader_Load("/home/afsr/005/eer_Tools/LibTkGL/TclData","FieldTex");
    prog=GLRender->Prog[PROG_FIELDTEX];
    glUseProgramObjectARB(prog);
-   glGenTextures(3,tx);
+   glGenTextures(4,tx);
 
    /*Setup 1D Colormap Texture*/
    glActiveTexture(GL_TEXTURE0);
@@ -483,8 +483,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
 
    /*Setup 1D Interval Texture*/
-   glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[1]);
    glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[1]);
    if (Field->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -503,31 +503,44 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          for(i=0;i<Field->Def->NI*Field->Def->NJ;i++) {
              Def_GetMod(Field->Def,idxk+i,buf[i]);
          }
-         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,buf);
-         free(buf);
+      }
+      ptr=(char*)buf;
+   } 
+   
+   // Seems that GL_FLOAT_R32_NV is not recognized on ATI cards but GL_INTENSITY_FLOAT32_ATI is recognized on NVidia
+   glTexImage2D(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+   glGetTexLevelParameteriv(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GL_TEXTURE_WIDTH,&dp);
+   if (dp) {
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      if (buf) free(buf);
+   
+      /*Setup 2D Mask Texture*/
+      if (Field->Def->Mask) {
+         mask=1;
+         glActiveTexture(GL_TEXTURE3);
+         glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[3]);
+         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+         glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_ALPHA,Field->Def->NI,Field->Def->NJ,0,GL_ALPHA,GL_BYTE,Field->Def->Mask);         
       }
    } else {
-      // Seems that GL_FLOAT_R32_NV is not recognized on ATI cards but GL_INTENSITY_FLOAT32_ATI is recognized on NVidia
-      glTexImage2D(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
-      glGetTexLevelParameteriv(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GL_TEXTURE_WIDTH,&dp);
-      if (dp) {
-         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
-      } else {
-         fprintf(stdout,"(WARNING) Texture is too big to fit on GPU, switching to software renderer.\n");
-         glDeleteTextures(3,tx);
-         glUseProgramObjectARB(0);
-      //   GLShader_UnInstall(prog);
+      fprintf(stdout,"(WARNING) Texture is too big to fit on GPU, switching to software renderer.\n");
+      glDeleteTextures(4,tx);
+      glUseProgramObjectARB(0);
+      if (buf) free(buf);
+   //   GLShader_UnInstall(prog);
 
-         glActiveTexture(GL_TEXTURE0);
-         glEnable(GL_CULL_FACE);
-         glDisable(GL_BLEND);
-         return(Data_RenderTexture(Field,VP,Proj));
-      }
+      glActiveTexture(GL_TEXTURE0);
+      glEnable(GL_CULL_FACE);
+      glDisable(GL_BLEND);
+      return(Data_RenderTexture(Field,VP,Proj));
    }
 
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),2);
+   glUniform1iARB(GLShader_UniformGet(prog,"Mask"),3);
+   glUniform1iARB(GLShader_UniformGet(prog,"IsMask"),mask);
    glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
@@ -575,21 +588,15 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          
          idx1=idx0+dn;
 
-         /*Check for mask value*/
-         if (Field->Def->Mask && (!Field->Def->Mask[idx1] || !Field->Def->Mask[idx0])) {
-            glEnd();
-            glBegin(GL_QUAD_STRIP);
-         } else {
-            fi+=0.5f;
-            fj=(float)j+0.5f;
+         fi+=0.5f;
+         fj=(float)j+0.5f;
             
-            glTexCoord2f(fi,fj+dp);
-//            glNormal3dv(pos[idx1]);
-            glVertex3dv(pos[idx1]);
-            glTexCoord2f(fi,fj);
-//            glNormal3dv(pos[idx0]);
-            glVertex3dv(pos[idx0]);
-         }
+         glTexCoord2f(fi,fj+dp);
+//         glNormal3dv(pos[idx1]);
+         glVertex3dv(pos[idx1]);
+         glTexCoord2f(fi,fj);
+//         glNormal3dv(pos[idx0]);
+         glVertex3dv(pos[idx0]);
 
          idx0+=dp;
       }
@@ -605,7 +612,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       }
    }
 
-   glDeleteTextures(3,tx);
+   glDeleteTextures(4,tx);
    glUseProgramObjectARB(0);
 //   GLShader_UnInstall(prog);
 

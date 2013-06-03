@@ -2257,25 +2257,28 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
    }
 
-   /*Check for mask*/
-   /*
-   ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
-   if (ok>0) {
-      if ((field->Def->Mask=(char*)malloc(ni*nj))) {
-         if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
-            c_fstluk(tmp,ok,&ni,&nj,&nk);
-            for(i=0;i<ni*nj;i++) {
-               field->Def->Mask[i]=tmp[i]!=0.0;
+   /*Check for mask (TYPVAR==@@)*/
+   if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
+      ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
+      if (ok>0) {
+         if ((field->Def->Mask=(char*)malloc(ni*nj))) {
+            if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
+               c_fstluk(tmp,ok,&ni,&nj,&nk);
+               for(i=0;i<ni*nj;i++) {
+                  field->Def->Mask[i]=tmp[i]!=0.0;
+               }
+               free(tmp);
+            } else {
+               free(field->Def->Mask);
+               field->Def->Mask=NULL;
+               fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory to read mask");
             }
-            free(tmp);
-        } else {
-           fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory to read mask");
-        }
-      } else {
-         fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory for mask");
+         } else {
+            fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory for mask");
+         }
       }
    }
-*/
+
    /*Recuperer les type de niveaux et forcer ETA pour SIGMA*/
    lvl=ZRef_IP2Level(h.IP1,&type);
    type=type==LVL_SIGMA?LVL_ETA:type;

@@ -1095,7 +1095,7 @@ static unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double 
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static unsigned int FFContour_QuadIndex(unsigned int Index,char Side,int *X,int *Y,unsigned int *N) {
+static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,int *X,int *Y,unsigned int *N) {
 
    unsigned char m;
 
@@ -1239,8 +1239,8 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *       0 ----- 1
  *           1
  *
- *   Le deplacement se fait par un index d'une profondeur maximale de 4 pour que la valeur puisse
- *   etre represente dans entier (4*4 bit);
+ *   Le deplacement se fait par un index d'une profondeur maximale de 8 pour que la valeur puisse
+ *   etre represente dans entier (8*4=32 bit), cependant une profondeur de 4 est amplement suffisante;
  *   PMatrix    Permet de savoir si un voxel a deja ete visite
  *
  *----------------------------------------------------------------------------
