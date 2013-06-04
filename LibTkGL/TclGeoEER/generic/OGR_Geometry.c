@@ -66,8 +66,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    Tcl_Obj       *obj;
    TGeoRef       *ref;
 
-   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-space","-dimension","-type","-nb","-name","-points","-addpoint","-georef",NULL };
-   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NAME,POINTS,ADDPOINT,GEOREF };
+   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-space","-dimension","-type","-nb","-nbsub","-name","-points","-addpoint","-georef",NULL };
+   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NBSUB,NAME,POINTS,ADDPOINT,GEOREF };
 
    geom=OGR_GeometryGet(Name);
    if (!geom) {
@@ -310,13 +310,16 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case NB:
             if (Objc==1) {
-               if (!(n=OGR_G_GetGeometryCount(geom))) {
-                  n=OGR_G_GetPointCount(geom);
-               }
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(n));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetPointCount(geom)));
             }
             break;
 
+         case NBSUB:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetGeometryCount(geom)));
+            }
+            break;
+            
          case TYPE:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_G_GetGeometryType(geom)),-1));
