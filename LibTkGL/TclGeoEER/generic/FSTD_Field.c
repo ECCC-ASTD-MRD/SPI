@@ -573,6 +573,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
+      
       if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
          /*Recuperer les coordonnees des points de grille*/
          lat=(float*)malloc(FSIZE2D(def)*sizeof(float));
@@ -588,34 +589,32 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          EZUnLock_RPNInt();
       }
 
-      if (FSTD_FileSet(NULL,head->FID)>=0) {
+      /*Essayer de recuperer le GZ*/
+      if (Field->Spec->Topo && head->FID && FSTD_FileSet(NULL,head->FID)>=0) {
 
-         /*Essayer de recuperer le GZ*/
-         if (head->FID && Field->Spec->Topo) {
-
-            ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type);
-            EZLock_RPNField();
-            if (Field->Spec->Topo) {
-               idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
-               if (idx<0) {
-                  fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-                  idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
-               }
-               if (ni!=def->NI || nj!=def->NJ) {
-                  idx=-1;
-                  }
-            } else {
-               idx=-1;
-            }
+         ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type);
+         EZLock_RPNField();
+         if (Field->Spec->Topo) {
+            idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
-               if (gz) { free(gz); gz=NULL; };
-               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->ZRef.Levels[Level],ip1);
-            } else {
-               if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
-               if (gz)  c_fstluk(gz,idx,&ni,&nj,&nk);
+               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+               idx=c_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
             }
-            EZUnLock_RPNField();
+            if (ni!=def->NI || nj!=def->NJ) {
+               idx=-1;
+               }
+         } else {
+            idx=-1;
          }
+         if (idx<0) {
+            if (gz) { free(gz); gz=NULL; };
+            fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->ZRef.Levels[Level],ip1);
+         } else {
+            if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
+            if (gz)  c_fstluk(gz,idx,&ni,&nj,&nk);
+         }
+         EZUnLock_RPNField();
+         FSTD_FileUnset(NULL,head->FID);
       }
 
       coord.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type)*Field->Spec->TopoFactor;
@@ -658,7 +657,6 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
 
-      FSTD_FileUnset(NULL,head->FID);
       if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
          free(lat);
          free(lon);
@@ -1940,6 +1938,9 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
          if (head.DATEV==101010101) head.DATEV=0;
          switch(Mode) {
             case FSTD_LISTSPI:
+               if (head.TYPVAR[0]=='\0') {
+                  head.TYPVAR[0]='-'; head.TYPVAR[1]='\0';
+               }
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
                lvl=ZRef_IP2Level(head.IP1,&type);
                switch(type) {
@@ -2099,7 +2100,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    double       nhour,val=0.0;
 
    file=FSTD_FileGet(Interp,Id);
-   if(FSTD_FileSet(Interp,file)<0)
+   if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
 
    EZLock_RPNField();
@@ -2120,15 +2121,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");
    strcpy(h.ETIKET,"            ");
-
    ok=c_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,
          &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
          &grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
-
-   datyp=h.DATYP<=0?1:h.DATYP;
-   datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
-   dtype=FSTD_TypeCheck(datyp,h.NBITS);
 
    if (ok<0) {
       Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not get field information for ",Name," (c_fstprm failed)",(char*)NULL);
@@ -2136,6 +2132,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       FSTD_FileUnset(Interp,file);
       return(TCL_ERROR);
    }
+
+   datyp=h.DATYP<=0?1:h.DATYP;
+   datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
+   dtype=FSTD_TypeCheck(datyp,h.NBITS);
 
    /*Calculer la date de validitee du champs*/
    if (h.DATEO!=0) {
