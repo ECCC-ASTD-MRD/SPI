@@ -487,6 +487,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          code=GDAL_BandWrite(Interp,Objv[2],Tcl_GetString(Objv[3]),(char**)list);
          if (list) Tcl_Free((char*)list);
+
          return(code);
          break;
 
@@ -1046,7 +1047,24 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_WrongNumArgs(Interp,2,Objv,"filename bands driver");
             return(TCL_ERROR);
          }
-         return(GDAL_FileCreateCopy(Interp,Objv[3],Tcl_GetString(Objv[2]),Tcl_GetString(Objv[4])));
+         if ((GDAL_FileCreateCopy(Interp,Objv[3],Tcl_GetString(Objv[2]),Tcl_GetString(Objv[4])))==TCL_ERROR) {
+            return(TCL_ERROR);
+         }
+             
+         if (strstr(Tcl_GetString(Objv[2]),"/vsimem/")) {
+            vsi_l_offset length;
+            char *bytes;
+            
+            if (!(bytes=VSIGetMemFileBuffer(Tcl_GetString(Objv[2]),&length,TRUE))) {
+               Tcl_AppendResult(Interp,"invalid memory buffer",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            
+            Tcl_SetObjResult(Interp,Tcl_NewByteArrayObj(bytes,length));
+            free(bytes);     
+         }
+         return(TCL_OK);
+      
          break;
 
       case FORMAT:
