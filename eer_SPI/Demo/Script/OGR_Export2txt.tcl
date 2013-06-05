@@ -47,7 +47,7 @@ for { set f 0 } { $f < [ogrlayer define LAYER -nb] } { incr f } {
    set geom [ogrlayer define LAYER -geometry $f]
 
    #----- Make sure we use the first ring
-   while { [ogrgeometry define $geom -type]!="3D Line String" } {
+   while { [ogrgeometry define $geom -nbsub]>0 } {
       set geom [lindex [ogrgeometry define $geom -geometry] 0]
    }
 

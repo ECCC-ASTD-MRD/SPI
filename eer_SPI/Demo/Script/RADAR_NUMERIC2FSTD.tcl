@@ -40,12 +40,16 @@ set Param(CM/HR)    RSNO
 
 set Data(Table) ""
 
+set errcode 0
+
 set numeric [lindex $argv 0]
 
 Log::Print INFO "Reading NUMERIC data"
 
 #----- Read the NUMERIC file
 set f [open $numeric r]
+
+fconfigure $f -translation binary 
 
 while { ![eof $f] } {
    gets $f line
@@ -144,7 +148,8 @@ Log::Print INFO "Parsing raw data"
 binary scan $Data(Data) cu* Data(Indexes)
 
 if { [llength $Data(Indexes)] != $Data(SizeInBytes) } {
-   Log::Print WARNING "Mismatch between data length ([llength $Data(Indexes)]) and specifid size $Data(SizeInBytes)"
+   Log::Print ERROR "Mismatch between data length ([llength $Data(Indexes)]) and specified size $Data(SizeInBytes)"
+   set errcode 1
 }
 
 #----- Create index field
@@ -163,4 +168,4 @@ foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {
 }
 fstdfile close FSTD
 
-Log::End 0
+Log::End $errcode

@@ -19,8 +19,8 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 #============================================================================
 
-ppackage require TclData
-#ackage require TclGeoEER
+package require TclData
+#package require TclGeoEER
 
 puts \n[file tail [info script]]
 
