@@ -192,7 +192,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          if (Ref && Ref->Ids) {
             Def_Pointer(Def,0,mem,p0);
             Def_Pointer(Def,1,mem,p1);
-            EZLock_RPNInt();
+//EZFIX            EZLock_RPNInt();
             c_gdxywdval(Ref->Ids[Ref->NId],&valf,&valdf,p0,p1,&x,&y,1);
 
             /*If it's 3D, use the mode for speed since c_gdxywdval only uses 2D*/
@@ -200,7 +200,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                c_gdxysval(Ref->Ids[Ref->NId],&valf,(float*)&Def->Mode[mem],&x,&y,1);
             *Length=valf;
             *ThetaXY=valdf;
-            EZUnLock_RPNInt();
+//EZFIX            EZUnLock_RPNInt();
          }
       } else {
          ix=ROUND(X);
@@ -219,10 +219,10 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          } else {
             if (Ref && Ref->Ids) {
                Def_Pointer(Def,C,mem,p0);
-               EZLock_RPNInt();
+//EZFIX               EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
                *Length=valf;
-               EZUnLock_RPNInt();
+//EZFIX               EZUnLock_RPNInt();
             } else {
                *Length=VertexVal(Ref,Def,C,X,Y,Z);
             }

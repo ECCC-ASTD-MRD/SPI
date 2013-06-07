@@ -65,14 +65,23 @@ void  GDB_MapRender(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0,floa
 
 GLuint Texture_Read(char *File);
 
-typedef struct TVBuffer {
-   Vect3d      *Buffer;
-   unsigned int Size;
-   unsigned int Incr;
-   unsigned int Max;
-} TVBuffer;
-
 static Tcl_ThreadDataKey VBufferKey;
+
+unsigned int VBuffer_Init(void) {
+
+   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
+
+   vbuf->Buffer=NULL;
+   vbuf->Size=0;
+   vbuf->Incr=512;
+   vbuf->Max=524288;
+
+   return(1);
+}
+
+TVBuffer* VBuffer_Get(void) {
+   return((TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer)));
+}
 
 Vect3d* VBuffer_Copy(Vect3d *To,unsigned int Size) {
 
@@ -86,7 +95,7 @@ Vect3d* VBuffer_Copy(Vect3d *To,unsigned int Size) {
    }
 }
 
-unsigned int VBuffer_Check() {
+unsigned int VBuffer_Check(void) {
 
    TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
 
@@ -116,18 +125,6 @@ Vect3d* VBuffer_Alloc(unsigned int Size) {
       }
    }
    return(buf);
-}
-
-unsigned int VBuffer_Init() {
-
-   TVBuffer *vbuf=(TVBuffer*)Tcl_GetThreadData((&VBufferKey),sizeof(TVBuffer));
-
-   vbuf->Buffer=NULL;
-   vbuf->Size=0;
-   vbuf->Incr=512;
-   vbuf->Max=524288;
-
-   return(1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

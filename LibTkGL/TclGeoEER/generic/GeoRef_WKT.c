@@ -110,13 +110,14 @@ double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 */
 int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
-   double  x,y;
+   double  x,y,d;
    int     valid=0,mem,ix,iy;
 
   *Length=Def->NoData;
-
+   d=1.0;
+   
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<=(Ref->X1+0.5) && Y<=(Ref->Y1+0.5) && Z<=Def->NK-1) {
+   if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
       valid=1;
       X-=Ref->X0;
@@ -175,10 +176,12 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 */
 int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int Extrap,int Transform) {
 
-   double dx,dy,x,y,z=0.0;
-   int    sx,sy,d,ok;
+   double d,dx,dy,x,y,z=0.0;
+   int    sx,sy,s,ok;
+   
+   d=1.0;
 
-   if (X>=(Ref->X1+0.5) || Y>=(Ref->Y1+0.5) || X<=(Ref->X0-0.5) || Y<=(Ref->Y0-0.5)) {
+   if (X>(Ref->X1+d) || Y>(Ref->Y1+d) || X<(Ref->X0-d) || Y<(Ref->Y0-d)) {
       if (!Extrap) {
          *Lon=-999.0;
          *Lat=-999.0;
@@ -192,9 +195,9 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
          sx=floor(X);sx=CLAMP(sx,Ref->X0,Ref->X1);
          X=sx==X?Ref->Lon[sx]:ILIN(Ref->Lon[sx],Ref->Lon[sx+1],X-sx);
 
-         d=Ref->X1-Ref->X0+1;
+         s=Ref->X1-Ref->X0+1;
          sy=floor(Y);sy=CLAMP(sy,Ref->Y0,Ref->Y1);
-         Y=sy==Y?Ref->Lat[sy*d]:ILIN(Ref->Lat[sy*d],Ref->Lat[(sy+1)*d],Y-sy);
+         Y=sy==Y?Ref->Lat[sy*s]:ILIN(Ref->Lat[sy*s],Ref->Lat[(sy+1)*s],Y-sy);
       }
    } else if (Ref->Grid[1]=='X' || Ref->Grid[1]=='Y') {
       if (Ref->Lon && Ref->Lat) {
@@ -203,18 +206,18 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
          dx=X-sx;;
          dy=Y-sy;
 
-         d=sy*(Ref->X1-Ref->X0+1)+sx;
-         X=Ref->Lon[d];
-         Y=Ref->Lat[d];
+         s=sy*(Ref->X1-Ref->X0+1)+sx;
+         X=Ref->Lon[s];
+         Y=Ref->Lat[s];
 
          if (++sx<=Ref->X1) {
-            d=sy*(Ref->X1-Ref->X0+1)+sx;
-            X+=(Ref->Lon[d]-X)*dx;
+            s=sy*(Ref->X1-Ref->X0+1)+sx;
+            X+=(Ref->Lon[s]-X)*dx;
          }
 
          if (++sy<=Ref->Y1) {
-            d=sy*(Ref->X1-Ref->X0+1)+(sx-1);
-            Y+=(Ref->Lat[d]-Y)*dy;
+            s=sy*(Ref->X1-Ref->X0+1)+(sx-1);
+            Y+=(Ref->Lat[s]-Y)*dy;
          }
       }
    }
@@ -373,7 +376,8 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       }
 
       /*Check the grid limits*/
-      if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
+      d=1.0;
+      if (*X>(Ref->X1+d) || *Y>(Ref->Y1+d) || *X<(Ref->X0-d) || *Y<(Ref->Y0-d)) {
          if (!Extrap) {
             *X=-1.0;
             *Y=-1.0;
@@ -383,6 +387,7 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
    } else {
       *X=-1.0;
       *Y=-1.0;
+      return(0);
    }
    return(1);
 }

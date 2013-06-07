@@ -22,11 +22,12 @@ EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
 GEOS=geos-3.2.2
-GDAL=gdal-1.9.2
+GDAL=gdal-1.10.0
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
 HDF4=hdf-4.2.5
-HDF5=hdf5-1.6.10
+SZIP=szip-2.1
+HDF5=hdf5-1.8.11
 POSTGRESQL=postgresql-8.4.1
 ODBC=unixODBC-2.3.0
 GRIB=grib_api-1.9.18
@@ -161,10 +162,19 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
+#----- SZIP
+cd ${ARCH_PATH}/${SZIP}
+make distclean
+./configure --prefix=${LIB_PATH}/${SZIP} --enable-shared=yes 
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
+
 #----- HDF-5
 cd ${ARCH_PATH}/${HDF5}
 make distclean
-./configure --prefix=${LIB_PATH}/${HDF5} --enable-shared=yes --enable-hdf5v1_4 --disable-fortran
+./configure --prefix=${LIB_PATH}/${HDF5} --enable-shared=yes --with-szlib=${LIB_PATH}/${SZIP} --disable-fortran
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -226,12 +236,13 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
-#----- gdal
+#----- gdal (Don't forget to patch histogram for nodata and add stdio.h to frmts/msg/msgcommand.h)
 cd ${ARCH_PATH}/${GDAL}
 make distclean
 ./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes \
 --with-libz=internal \
 --with-liblzma=yes \
+--with-xml2=${LIB_PATH}/${XML}/bin \
 --with-pcidsk=internal \
 --with-pcraster=internal \
 --with-png=internal \

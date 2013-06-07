@@ -1112,7 +1112,7 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
    }
 
    /*Check for intersection limits*/
-   if (!GeoRef_Intersect(FromRef,ToRef,&x0,&y0,&x1,&y1,0)) {
+   if (!GeoRef_Intersect(FromRef,ToRef,&x0,&y0,&x1,&y1,1)) {
       return(TCL_OK);
    }
 
@@ -1121,7 +1121,7 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
    for(y=y0;y<=y1;y+=(dy+1)) {
 
      /*Reproject*/
-      if (!GeoScan_Get(&scan,FromRef,FromDef,ToRef,ToDef,x0,y,x1,y+dy,1,NULL)) {
+      if (!GeoScan_Get(&scan,FromRef,FromDef,ToRef,ToDef,x0,y,x1,y+dy,1,&Degree)) {
          Tcl_AppendResult(Interp,"Data_GridInterpolate: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }

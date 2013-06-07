@@ -68,6 +68,21 @@
 
 #define GDB_FORCE  0xFF
 
+#define VBuffer_BigEnough(V,SIZE) (V->Size>=(SIZE))
+
+typedef struct TVBuffer {
+   Vect3d      *Buffer;
+   unsigned int Size;
+   unsigned int Incr;
+   unsigned int Max;
+} TVBuffer;
+
+unsigned int VBuffer_Init(void);
+TVBuffer*    VBuffer_Get(void);
+Vect3d*      VBuffer_Copy(Vect3d *To,unsigned int Size);
+unsigned int VBuffer_Check(void);
+Vect3d*      VBuffer_Alloc(unsigned int Size);
+
 typedef enum { GDB_TYPE_MAP,GDB_TYPE_TEXT,GDB_TYPE_COAST,GDB_TYPE_LAKE,GDB_TYPE_RIVER,GDB_TYPE_POLIT,GDB_TYPE_ADMIN,GDB_TYPE_CITY,GDB_TYPE_ROAD,GDB_TYPE_RAIL,GDB_TYPE_PLACE } GDB_Type;
 
 typedef struct GDB_Params {

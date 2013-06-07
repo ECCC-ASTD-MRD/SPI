@@ -35,8 +35,6 @@
 #include "tclCMap.h"
 #include "tclData.h"
 
-TCL_DECLARE_MUTEX(MUTEX_CMAP)
-
 static Tcl_HashTable CMapTable;
 static int           CMapInit=0;
 static long          CMapNo=0;
@@ -472,27 +470,19 @@ int CMap_Free(CMap_Rec *Map) {
    if (!Map)
       return(0);
 
-   Tcl_MutexLock(&MUTEX_CMAP);
-
-   if (--Map->NRef) {
-      Tcl_MutexUnlock(&MUTEX_CMAP);
+   if (__sync_sub_and_fetch(&Map->NRef,1)) {
       return(0);
    } else {
       if (Map->Name) free(Map->Name);
       free(Map);
    }
-   Tcl_MutexUnlock(&MUTEX_CMAP);
    return(1);
 }
 
 int CMap_Incr(CMap_Rec *Map) {
 
    if (Map) {
-      Tcl_MutexLock(&MUTEX_CMAP);
-      Map->NRef++;
-      Tcl_MutexUnlock(&MUTEX_CMAP);
-
-      return(Map->NRef);
+      return(__sync_add_and_fetch(&Map->NRef,1));
    } else {
       return(0);
    }

@@ -1152,7 +1152,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
    val=vx=0.0;
    
    if (Mode!=TD_NOP && Mode!=TD_ACCUM && Mode!=TD_BUFFER) {
-      if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,1)) {
+      if (!GeoRef_Intersect(ToRef,FromRef,&x0,&y0,&x1,&y1,0)) {
          return(TCL_OK);
       }
 
@@ -1486,7 +1486,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
 
    unsigned int x,y,idx,nidx,val;
-
+   
    Tk_PhotoImageBlock data;
    Tk_PhotoHandle     handle;
 
@@ -1502,14 +1502,19 @@ int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
    if (Tk_PhotoSetSize(Interp,handle,Band->Def->NI,Band->Def->NJ)==TCL_ERROR) {
       return(TCL_ERROR);
    }
-   Tk_PhotoGetImage(handle,&data);
-
-   data.pitch=Band->Def->NI*4;
+   data.width=Band->Def->NI;
+   data.height=Band->Def->NJ;
    data.pixelSize=4;
+   data.pitch=data.width*data.pixelSize;
    data.offset[0]=0;
    data.offset[1]=1;
    data.offset[2]=2;
    data.offset[3]=3;
+
+   if (!(data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char)))) {
+      Tcl_AppendResult(Interp,"GDALBand_GetImage: Unable to allocate image",(char*)NULL);
+      return(TCL_ERROR);
+   }
 
    idx=nidx=0;
    for(y=0;y<Band->Def->NJ;y++) {
@@ -1550,8 +1555,10 @@ int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
 
    /*Envoyer le data dans l'image Tk*/
    if (Tk_PhotoPutBlock(Interp,handle,&data,0,0,Band->Def->NI,Band->Def->NJ,TK_PHOTO_COMPOSITE_SET)==TCL_ERROR) {
-      return(TCL_ERROR);
+     free(data.pixelPtr);
+     return(TCL_ERROR);
    }
+   free(data.pixelPtr);
 
    return(TCL_OK);
 }
@@ -2867,7 +2874,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      GeoRef_Destroy(Interp,band->Ref->Name);
                   band->Ref=ref;
                   GeoRef_Incr(band->Ref);
-                  GeoRef_Size(ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
+                  GeoRef_Size(ref,ref->BD,ref->BD,0,band->Def->NI-1-ref->BD,band->Def->NJ-1-ref->BD,band->Def->NK-1,ref->BD);
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
@@ -3162,7 +3169,9 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       if (!VP->Secondary) {
          if (!Band->Tex.ThreadId) {
             //Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,SYS_IOTHREAD_STACKSIZE,TCL_THREAD_NOFLAGS);
-            Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS);
+            if (Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
+               fprintf(stderr,"(ERROR) GDAL_BandRender: Unable to initialize geotexture thread\n");
+            }
          }
       }
    }

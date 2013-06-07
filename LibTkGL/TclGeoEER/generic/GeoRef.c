@@ -33,8 +33,6 @@
 
 #include "GeoRef.h"
 
-TCL_DECLARE_MUTEX(MUTEX_GEOREF)
-
 static long GeoRefNo=0;
 static int  GeoRefInit=0;
 static Tcl_HashTable GeoRef_Table;
@@ -56,15 +54,6 @@ int GeoRef_Init(Tcl_Interp *Interp) {
    }
 
    return(TCL_OK);
-}
-
-void GeoRef_Incr(TGeoRef *Ref) {
-
-   if (Ref) {
-      Tcl_MutexLock(&MUTEX_GEOREF);
-      Ref->NRef++;
-      Tcl_MutexUnlock(&MUTEX_GEOREF);
-   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -146,13 +135,10 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
    }
    
    // Check limits
-   x=FromRef->X1-FromRef->X0;
-   y=FromRef->Y1-FromRef->Y0;
- 
-   X0=X0<0?0:X0;
-   Y0=Y0<0?0:Y0;
-   X1=X1>x?x:X1;
-   Y1=Y1>y?y:Y1;
+   X0=FMAX(X0,FromRef->X0);
+   Y0=FMAX(Y0,FromRef->Y0);
+   X1=FMIN(X1,FromRef->X1);
+   Y1=FMIN(Y1,FromRef->Y1);
    
    /*Adjust scan buffer sizes*/
    Scan->DX=X1-X0+1;
@@ -250,15 +236,14 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
             y0=Scan->Y[x];
 
          }
+         if (ToDef)
+               Scan->D[x]=ToDef->NoData;
+         
          if (ToRef->UnProject(ToRef,&Scan->X[x],&Scan->Y[x],y0,x0,0,1)) {
 
             if (ToDef) {
               ToRef->Value(ToRef,ToDef,Degree?Degree[0]:'L',0,Scan->X[x],Scan->Y[x],0,&v,NULL);
               Scan->D[x]=v;
-            } else {
-               /*If we're outside, set to nodata*/
-               if (ToDef)
-                  Scan->D[x]=ToDef->NoData;
             }
          }
       }
@@ -296,13 +281,14 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
       EZLock_RPNInt();
       c_gdxyfll(ToRef->Ids[ToRef->NId],(float*)Scan->X,(float*)Scan->Y,(float*)Scan->Y,(float*)Scan->X,n);
+      EZUnLock_RPNInt();
+//EZFIX
       /*If we have the data of source, get it's values right now*/
       if (ToDef) {
          if (Degree)
             c_ezsetopt("INTERP_DEGREE",Degree);
          c_gdxysval(ToRef->Ids[ToRef->NId],Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
       }
-      EZUnLock_RPNInt();
 
       /*Cast back to double*/
       for(x=n-1;x>=0;x--) {
@@ -776,7 +762,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   char grtyp[2];
 
                   // If the subgrid index is different from thte current
-                  if (nidx!=ref->NId && nidx<=ref->NbId) {
+                  if (ref->Ids && nidx!=ref->NId && nidx<=ref->NbId) {
                      ref->NId=nidx;
 
                      // Define grid limits
@@ -791,25 +777,25 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
         case TYPE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               if (ref->Type&=GRID_REGULAR) {
+               if (ref->Type&GRID_REGULAR) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("REGULAR",-1));
                }
-               if (ref->Type&=GRID_VARIABLE) {
+               if (ref->Type&GRID_VARIABLE) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("VARIABLE",-1));
                }
-               if (ref->Type&=GRID_WRAP) {
+               if (ref->Type&GRID_WRAP) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("WRAP",-1));
                }
-               if (ref->Type&=GRID_SPARSE) {
+               if (ref->Type&GRID_SPARSE) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("SPARSE",-1));
                }
-               if (ref->Type&=GRID_TILE) {
+               if (ref->Type&GRID_TILE) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("TILE",-1));
                }
-               if (ref->Type&=GRID_VERTICAL) {
+               if (ref->Type&GRID_VERTICAL) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("VERTICAL",-1));
                }
-               if (ref->Type&=GRID_RADIAL) {
+               if (ref->Type&GRID_RADIAL) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("RADIAL",-1));
                }
                Tcl_SetObjResult(Interp,obj);
@@ -1134,22 +1120,30 @@ void GeoRef_Size(TGeoRef *Ref,int X0,int Y0,int Z0,int X1,int Y1,int Z1,int BD) 
 */
 int GeoRef_Free(TGeoRef *Ref) {
 
-   Tcl_MutexLock(&MUTEX_GEOREF);
-   if (!Ref || --Ref->NRef>0) {
-      Tcl_MutexUnlock(&MUTEX_GEOREF);
+  if (!Ref)
+      return(0);
+  
+   if (__sync_sub_and_fetch(&Ref->NRef,1)) {
       return(0);
    }
 
    if (Ref->RefFrom) {
-      Tcl_MutexUnlock(&MUTEX_GEOREF);
-      --Ref->RefFrom->NRef;
-      Tcl_MutexLock(&MUTEX_GEOREF);
+      GeoRef_Free(Ref->RefFrom);
    }
 
    GeoRef_Clear(Ref,1);
    free(Ref);
-   Tcl_MutexUnlock(&MUTEX_GEOREF);
+   
    return(1);
+}
+
+int GeoRef_Incr(TGeoRef *Ref) {
+
+   if (Ref) {
+      return(__sync_add_and_fetch(&Ref->NRef,1));
+   } else {
+      return(0);
+   }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1578,7 +1572,7 @@ TGeoRef* GeoRef_New() {
  *   <Ref0>     : Pointeur sur la reference geographique 1
  *   <Ref1>     : Pointeur sur la reference geographique 2
  *   <X0,Y0,...>: Limites dans le Ref 1 du Ref 0
- *   <Border>   : Include border
+ *   <BD>       : Include border
  *
  * Retour       :
  *   <Inter>    : Booleen indiquant l'intersection
@@ -1587,7 +1581,7 @@ TGeoRef* GeoRef_New() {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1,int Border) {
+int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1,int BD) {
 
    double lat,lon,di,dj,in=0;
    double x0,y0,x1,y1;
@@ -1642,7 +1636,7 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
 
    if (!in) {
 
-      /*Project Ref0 Border within Ref1 and get limits*/
+      /*Project Ref0 within Ref1 and get limits*/
       for(x=Ref0->X0;x<=Ref0->X1;x++) {
          Ref0->Project(Ref0,x,Ref0->Y0,&lat,&lon,0,1);
          Ref1->UnProject(Ref1,&di,&dj,lat,lon,1,1);
@@ -1688,15 +1682,12 @@ int GeoRef_Intersect(TGeoRef *Ref0,TGeoRef *Ref1,int *X0,int *Y0,int *X1,int *Y1
    }
 
    /*Clamp the coordinates*/
-   FCLAMP(Ref1,*X0,*Y0,*X1,*Y1);
-
-   if (Border) {
-      if (*X0==Ref1->X0) *X0+=Ref1->BD;
-      if (*Y0==Ref1->Y0) *Y0+=Ref1->BD;
-      if (*X1==Ref1->X1) *X1-=Ref1->BD;
-      if (*Y1==Ref1->Y1) *Y1-=Ref1->BD;
-   }
-
+   if (BD) {
+      REFCLAMP(Ref1,*X0,*Y0,*X1,*Y1);
+   } else {
+      REFCLAMPBD(Ref1,*X0,*Y0,*X1,*Y1);
+   }   
+      
    return(in);
 }
 

@@ -960,7 +960,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
                /*Determine si ils sont nouveaux*/
                for (ii=0;ii<nobj;ii++){
-                  Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
+                  Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
                   Tcl_GetDoubleFromObj(Interp,obj,&val);
                   tmp=SPEC2VAL(Spec,val);
                   if (nobj!=Spec->InterNb || tmp!=Spec->Inter[ii]) {
@@ -1742,15 +1742,6 @@ TDataSpec *DataSpec_New(){
    return(spec);
 }
 
-void DataSpec_Incr(TDataSpec *Spec) {
-
-   if (Spec) {
-      Tcl_MutexLock(&MUTEX_DATASPEC);
-      Spec->NRef++;
-      Tcl_MutexUnlock(&MUTEX_DATASPEC);
-   }
-}
-
 /*----------------------------------------------------------------------------
  * Nom      : <DataSpec_Free>
  * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE
@@ -1767,13 +1758,14 @@ void DataSpec_Incr(TDataSpec *Spec) {
  *----------------------------------------------------------------------------
 */
 int DataSpec_Free(TDataSpec *Spec) {
-
-  Tcl_MutexLock(&MUTEX_DATASPEC);
-  if (!Spec || --Spec->NRef) {
-      Tcl_MutexUnlock(&MUTEX_DATASPEC);
+   
+   if (!Spec) {
       return(0);
    }
-   Tcl_MutexUnlock(&MUTEX_DATASPEC);
+   
+   if (__sync_sub_and_fetch(&Spec->NRef,1)) {
+      return(0);
+   }
 
    DataSpec_Clear(Spec);
    if (Spec->Name) free(Spec->Name);
@@ -1781,6 +1773,16 @@ int DataSpec_Free(TDataSpec *Spec) {
 
    return(1);
 }
+
+int DataSpec_Incr(TDataSpec *Spec) {
+
+   if (Spec) {
+      return(__sync_add_and_fetch(&Spec->NRef,1));
+   } else {
+      return(0);
+   }
+}
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <DataSpec_Clear>
