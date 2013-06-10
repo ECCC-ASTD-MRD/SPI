@@ -96,7 +96,7 @@ proc Locator::WinDef { } {
       #----- Frame des items de recherches
 
       frame .locator.menu.sel -relief sunken -bd 1
-      foreach type { 0 1 2 3 4 } {
+      foreach type { 0 1 2 3 4 5 } {
          radiobutton .locator.menu.sel.type$type -image [lindex $Data(Icons) $type] -variable Locator::Data(Current) -value $type \
             -command "Locator::Get $type" -indicatoron False -selectcolor "" -relief raised -bd 1
          pack .locator.menu.sel.type$type -side left -fill y -ipadx 10
