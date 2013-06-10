@@ -195,6 +195,7 @@ image create photo ICO_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Typ
 image create photo ICO_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_BIO.gif
 image create photo ICO_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_SPILL.gif
 image create photo ICO_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_THERE.gif
+image create photo ICO_PLANE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Type_PLANE.gif
 
 image create photo BAD_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_VOLCANO.gif
 image create photo BAD_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_NUCLEAR.gif
@@ -204,6 +205,7 @@ image create photo BAD_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad
 image create photo BAD_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_BIO.gif
 image create photo BAD_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_SPILL.gif
 image create photo BAD_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_THERE.gif
+image create photo BAD_PLANE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Bad_PLANE.gif
 
 image create photo ACT_VOLC    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_VOLCANO.gif
 image create photo ACT_NUCL    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_NUCLEAR.gif
@@ -213,6 +215,7 @@ image create photo ACT_OTHE    -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Act
 image create photo ACT_BIO     -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_BIO.gif
 image create photo ACT_SPILL   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_SPILL.gif
 image create photo ACT_THERE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_THERE.gif
+image create photo ACT_PLANE   -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Active_PLANE.gif
 
 image create photo SEL_VOLC  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_VOLCANO.gif
 image create photo SEL_NUCL  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_NUCLEAR.gif
@@ -222,3 +225,4 @@ image create photo SEL_OTHE  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_O
 image create photo SEL_STAT  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_STATION.gif
 image create photo SEL_CITY  -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_CITY.gif
 image create photo SEL_THERE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_THERE.gif
+image create photo SEL_PLANE -file $GDefs(Dir)/Resources/Image/Symbol/Icon/Sel_PLANE.gif
