@@ -180,6 +180,7 @@ proc Locator::WinDef { } {
    Bubble::Create .locator.menu.sel.type2 $Bubble(CTBT)
    Bubble::Create .locator.menu.sel.type3 $Bubble(Meteo)
    Bubble::Create .locator.menu.sel.type4 $Bubble(City)
+   Bubble::Create .locator.menu.sel.type5 $Bubble(NavAid)
 
    Bubble::Create .locator.head.no   $Bubble(Sort)
    Bubble::Create .locator.head.name $Bubble(Sort)

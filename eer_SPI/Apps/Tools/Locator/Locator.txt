@@ -51,11 +51,12 @@ namespace eval Locator {
 
    #----- Differents textes pour les bulles d'aides
 
-   set Bubble(Volcanic)   { "Type de localisation volcanique" "Volcanic localisation type" }
-   set Bubble(Nuclear)    { "Type de localisation nucléaire" "Nuclear localisation type" }
+   set Bubble(Volcanic)   { "Type de localisation Volcanique" "Volcanic localisation type" }
+   set Bubble(Nuclear)    { "Type de localisation Nucléaire" "Nuclear localisation type" }
    set Bubble(CTBT)       { "Type de localisation CTBT" "CTBT localisation type" }
    set Bubble(City)       { "Type de localisation Ville" "City localisation type" }
    set Bubble(Meteo)      { "Type de localisation Stations météorologiques" "Meteorological stations localisation type" }
+   set Bubble(NavAid)     { "Type de localisation Aides à la navigation" "Navigation aids localisation type" }
 
    set Bubble(SearchNum)  { "Recherche interactive selon le numéro" "Interactive search by number" }
    set Bubble(SearchName) { "Recherche interactive selon le nom"    "Interactive search by name" }
