@@ -1,51 +1,51 @@
-AKN     :King.Salmon                   :                    :57.725   :N:156.752   :W:    95
-ANC     :Anchorage                     :                    :61.151   :N:150.207   :W:   283
-ANI     :Aniak                         :                    :61.590   :N:159.599   :W:    96
-ANN     :Annette Island                :                    :55.060   :N:131.578   :W:   174
-BET     :Bethel                        :                    :60.785   :N:161.824   :W:   105
-BGQ     :Big Lake                      :                    :61.569   :N:149.967   :W:   160
-BIG     :Big Delta                     :                    :64.004   :N:145.717   :W:  1230
-BKA     :Biorka Island                 :                    :56.859   :N:135.551   :W:   260
-BRW     :Barrow                        :                    :71.273   :N:156.788   :W:    60
+AKN     :King.Salmon                   :                    :57.725   :N:156.752   :W:    29
+ANC     :Anchorage                     :                    :61.151   :N:150.207   :W:    86
+ANI     :Aniak                         :                    :61.590   :N:159.599   :W:    29
+ANN     :Annette Island                :                    :55.060   :N:131.578   :W:    53
+BET     :Bethel                        :                    :60.785   :N:161.824   :W:    32
+BGQ     :Big Lake                      :                    :61.569   :N:149.967   :W:    49
+BIG     :Big Delta                     :                    :64.004   :N:145.717   :W:   375
+BKA     :Biorka Island                 :                    :56.859   :N:135.551   :W:    79
+BRW     :Barrow                        :                    :71.273   :N:156.788   :W:    20
 BTI     :Barter Island                 :                    :70.131   :N:143.644   :W:       
-BTT     :Bettles                       :                    :66.905   :N:151.536   :W:   637
-CDB     :Cold Bay                      :                    :55.267   :N:162.774   :W:    97
-CQR     :Chandalar Lake                :                    :67.502   :N:148.469   :W:  1875
-DLG     :Dillingham                    :                    :58.994   :N:158.552   :W:    81
-DUT     :Dutch Harbor                  :                    :53.905   :N:166.548   :W:   272
-EHM     :Cape Newenham                 :                    :58.656   :N:162.071   :W:   550
-ENA     :Kenai                         :                    :60.615   :N:151.195   :W:   114
-ENN     :Nenana                        :                    :64.590   :N:149.073   :W:  1600
-FAI     :Fairbanks                     :                    :64.800   :N:148.012   :W:  1526
-FYU     :Fort Yukon                    :                    :66.574   :N:145.277   :W:   449
-GAL     :Galena                        :                    :64.738   :N:156.777   :W:   150
-GKN     :Gulkana                       :                    :62.154   :N:145.447   :W:  1549
-HOM     :Homer                         :                    :59.709   :N:151.457   :W:  1626
-HPB     :Hooper Bay                    :                    :61.514   :N:166.134   :W:    13
-HSL     :Huslia                        :                    :65.708   :N:156.363   :W:   187
-JNU     :Juneau                        :                    :58.359   :N:134.633   :W:    45
-JOH     :Johnstone Point               :                    :60.481   :N:146.599   :W:    48
-LVD     :Level Island                  :                    :56.468   :N:133.083   :W:   100
-MCG     :McGrath                       :                    :62.951   :N:155.611   :W:   350
-MDO     :Middleton Island              :                    :59.450   :N:146.30    :W:   140
-NUD     :Adak                          :                    :51.871   :N:176.674   :W:   408
-ODK     :Kodiak                        :                    :57.775   :N:152.340   :W:   133
-OME     :Nome                          :                    :64.485   :N:165.253   :W:    92
-ORT     :Northway                      :                    :62.947   :N:141.913   :W:  1780
-OTZ     :Kotzebue                      :                    :66.880   :N:162.60    :W:    16
-PDN     :Port Heiden                   :                    :56.954   :N:158.648   :W:    56
-SCC     :Deadhorse                     :                    :70.199   :N:148.416   :W:    54
-SMA     :St Marys                      :                    :62.059   :N:163.282   :W:   343
-SPY     :Saint Paul Island             :                    :57.157   :N:170.233   :W:    31
-SQA     :Sparrevohn                    :                    :61.099   :N:155.638   :W:  2501
-SSR     :Sisters Island                :                    :58.178   :N:135.259   :W:    40
-SYA     :Shemya                        :                    :52.722   :N:174.060   :E:    60      
-TAL     :Tanana                        :                    :65.177   :N:152.178   :W:   394
-TKA     :Talkeetna                     :                    :62.299   :N:150.106   :W:   565
-ULL     :Savoonga                      :                    :63.692   :N:170.470   :W:    42
-UNK     :Unalakleet                    :                    :63.892   :N:160.684   :W:   436
-WLK     :Selawik                       :                    :66.599   :N:159.991   :W:    11
-YAK     :Yakutat                       :                    :59.511   :N:139.648   :W:    35
+BTT     :Bettles                       :                    :66.905   :N:151.536   :W:   194
+CDB     :Cold Bay                      :                    :55.267   :N:162.774   :W:    30
+CQR     :Chandalar Lake                :                    :67.502   :N:148.469   :W:   572
+DLG     :Dillingham                    :                    :58.994   :N:158.552   :W:    25
+DUT     :Dutch Harbor                  :                    :53.905   :N:166.548   :W:    83
+EHM     :Cape Newenham                 :                    :58.656   :N:162.071   :W:   168
+ENA     :Kenai                         :                    :60.615   :N:151.195   :W:    35
+ENN     :Nenana                        :                    :64.590   :N:149.073   :W:   488
+FAI     :Fairbanks                     :                    :64.800   :N:148.012   :W:   465
+FYU     :Fort Yukon                    :                    :66.574   :N:145.277   :W:   137
+GAL     :Galena                        :                    :64.738   :N:156.777   :W:    46
+GKN     :Gulkana                       :                    :62.154   :N:145.447   :W:   472
+HOM     :Homer                         :                    :59.709   :N:151.457   :W:   496
+HPB     :Hooper Bay                    :                    :61.514   :N:166.134   :W:     4
+HSL     :Huslia                        :                    :65.708   :N:156.363   :W:    57
+JNU     :Juneau                        :                    :58.359   :N:134.633   :W:    14
+JOH     :Johnstone Point               :                    :60.481   :N:146.599   :W:    15
+LVD     :Level Island                  :                    :56.468   :N:133.083   :W:    30
+MCG     :McGrath                       :                    :62.951   :N:155.611   :W:   107
+MDO     :Middleton Island              :                    :59.450   :N:146.30    :W:    43
+NUD     :Adak                          :                    :51.871   :N:176.674   :W:   124
+ODK     :Kodiak                        :                    :57.775   :N:152.340   :W:    41
+OME     :Nome                          :                    :64.485   :N:165.253   :W:    28
+ORT     :Northway                      :                    :62.947   :N:141.913   :W:   543
+OTZ     :Kotzebue                      :                    :66.880   :N:162.60    :W:     5
+PDN     :Port Heiden                   :                    :56.954   :N:158.648   :W:    17
+SCC     :Deadhorse                     :                    :70.199   :N:148.416   :W:    16
+SMA     :St Marys                      :                    :62.059   :N:163.282   :W:   105
+SPY     :Saint Paul Island             :                    :57.157   :N:170.233   :W:     9
+SQA     :Sparrevohn                    :                    :61.099   :N:155.638   :W:   762
+SSR     :Sisters Island                :                    :58.178   :N:135.259   :W:    12
+SYA     :Shemya                        :                    :52.722   :N:174.060   :E:    18      
+TAL     :Tanana                        :                    :65.177   :N:152.178   :W:   120
+TKA     :Talkeetna                     :                    :62.299   :N:150.106   :W:   172
+ULL     :Savoonga                      :                    :63.692   :N:170.470   :W:    13
+UNK     :Unalakleet                    :                    :63.892   :N:160.684   :W:   133
+WLK     :Selawik                       :                    :66.599   :N:159.991   :W:     3
+YAK     :Yakutat                       :                    :59.511   :N:139.648   :W:    11
 
 
 
