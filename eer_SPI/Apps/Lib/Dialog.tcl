@@ -364,7 +364,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Wait { Master Text { Extra "" } } {
+proc Dialog::Wait { Master Text { Extra "" } { Append True } } {
    global GDefs
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
@@ -375,8 +375,12 @@ proc Dialog::Wait { Master Text { Extra "" } } {
 
    if { [winfo exists .dlgwait]==1 } {
 
-       set oldtext [lindex [.dlgwait.fr.txt configure -text] 4]
-      .dlgwait.fr.txt configure -text "$oldtext\n\n[lindex $Text $GDefs(Lang)]$Extra"
+       if { $Append } {
+          set oldtext "[lindex [.dlgwait.fr.txt configure -text] 4]\n\n"
+       } else {
+          set oldtext ""
+       }
+      .dlgwait.fr.txt configure -text "$oldtext[lindex $Text $GDefs(Lang)]$Extra"
 
    } else {
 

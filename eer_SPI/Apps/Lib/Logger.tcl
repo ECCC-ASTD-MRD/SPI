@@ -385,7 +385,7 @@ proc Log::Print { Type Message { Var "" } } {
 
          set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]-[pid].log
       } else {
-         if { [file exists $Param(Out)] } {
+         if { $Param(Rotate) && [file exists $Param(Out)] } {
             file rename -force $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]
          }
          set Param(OutFile) $Param(Out)
