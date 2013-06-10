@@ -328,7 +328,7 @@ proc MLDPn::CreateModelInput { } {
    foreach name $Sim(Name) coords $Sim(Coords) {
       puts $file [format "%-21s= %-25s # Source name" SRC_NAME $name]
       puts $file [format "%-21s= %-25s # Source type" SRC_TYPE $Sim(SrcType)]
-      puts $file [format "%-21s= %-25.2f # Source height (MAGL)" SRC_HEIGHT $Sim(SrcHeight)]
+      puts $file [format "%-21s= %-25.2f # Source height (MAGL)" SRC_HEIGHT $Sim(Height)]
 
       if { [llength $coords]>2 } {
          puts $file [format "%-21s= %s" SRC_AREA $coords]
@@ -1322,7 +1322,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(RestartTrialDate)     0                                   ;#----- Date of the switch between trial and prog to create a restart
    set Sim(RestartDeltas)        {}
    set Sim(IsoChain)             0                                   ;#----- Apply isotope decay chain
-   set Sim(SrcHeight)            0                                   ;#----- Source height (emission bottom) (AGL)
+   set Sim(Height)               0                                   ;#----- Source height (emission bottom) (AGL)
 
    MLDPn::InitKernel
 
@@ -1832,7 +1832,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
    #----- Update emission interval's count
 
    set Sim(EmNbIntervals) $Tmp(EmNbIntervals)
-   set Sim(SrcHeight)     $Tmp(SrcHeight)
+   set Sim(Height)        $Tmp(Height)
 
    #----- Save global parameters
 
@@ -1899,7 +1899,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
       return
    }
 
-   set Tmp(SrcHeight)         $Sim(SrcHeight)
+   set Tmp(Height)            $Sim(Height)
    set Tmp(EmNbIntervals)     $Sim(EmNbIntervals)
 
    #----- Save global parameters

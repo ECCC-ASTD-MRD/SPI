@@ -651,11 +651,11 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
       #----- Source height (MAGL).
       frame $base.height
          label $base.height.lbl -relief flat -anchor w -text "[lindex $Lbl(SrcHeight) $GDefs(Lang)]"
-         entry $base.height.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(SrcHeight) -width 60
+         entry $base.height.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(Height) -width 60
          pack $base.height.lbl -side left
          pack $base.height.ent -side left -fill x -expand 1
       pack $base.height -side top -anchor w -padx 2 -fill x
-      Bubble::Create $base.height $Bubble(SrcHeight)
+      Bubble::Create $base.height $Bubble(Height)
 
       #----- Plume vertical distribution.
       Option::Create  $base.vertical [lindex $Lbl(EmVerticalDist) $GDefs(Lang)] MLDPn::Tmp(EmVerticalDist) \
