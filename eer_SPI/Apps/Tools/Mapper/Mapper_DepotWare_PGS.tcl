@@ -86,12 +86,12 @@ proc Mapper::DepotWare::PGS::Params { Frame } {
       pack $Frame.name.ent -side left -fill x -expand True
    pack $Frame.name -side top -fill x
 
-   frame $Frame.req
-      label $Frame.req.lbl -text [lindex $Lbl(Request) $GDefs(Lang)] -width 12 -anchor w
-      text $Frame.req.ent -bd 1 -bg $GDefs(ColorLight) -height 5 -width 1
-      pack $Frame.req.lbl -side top -fill x
-      pack $Frame.req.ent -side top -fill both
-   pack $Frame.req -side top -fill both
+#   frame $Frame.req
+#      label $Frame.req.lbl -text [lindex $Lbl(Request) $GDefs(Lang)] -width 12 -anchor w
+#      text $Frame.req.ent -bd 1 -bg $GDefs(ColorLight) -height 5 -width 1
+#      pack $Frame.req.lbl -side top -fill x
+#      pack $Frame.req.ent -side top -fill both
+#   pack $Frame.req -side top -fill both
 }
 
 #-------------------------------------------------------------------------------
