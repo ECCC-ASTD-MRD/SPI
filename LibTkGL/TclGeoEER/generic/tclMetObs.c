@@ -1873,7 +1873,6 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *Multi) {
 
    TMetLoc *loc=NULL;
-   time_t   time=0;
 
    /*Insert station in list if not already done*/
    if (Data->Ne && Lat!=-999.0 && Lon!=-999.0) {
@@ -1885,8 +1884,8 @@ int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float H
       if (!loc) {
          loc=TMetLoc_New(Obs,Id,NULL,Lat,Lon,Hgt);
       }
-      Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:Time;
-      Obs->Time1=Obs->Time1>time?Obs->Time1:Time;
+      Obs->Time0=(Obs->Time0<Time && Obs->Time0!=0)?Obs->Time0:Time;
+      Obs->Time1=Obs->Time1>Time?Obs->Time1:Time;
       TMetElem_InsertCopy(loc,0,Time,Data);
       return(1);
    }
