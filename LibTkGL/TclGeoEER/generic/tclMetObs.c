@@ -1513,10 +1513,6 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
 
    sprintf(loc->Tag,"|%u",MetLocNo++);
 
-   /*Patch temporaire car le postscript m'aime pas les ()*/
-   strrep(loc->Id,'(',' ');
-   strrep(loc->Id,')',' ');
-
    if (Obs) {
       loc->Next=Obs->Loc;
       Obs->Loc=loc;

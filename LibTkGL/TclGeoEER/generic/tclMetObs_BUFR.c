@@ -62,7 +62,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    DataSubset     *subset;
    BufrDescriptor *bcv;
    EntryTableB    *eb;
-   int             i,j,ne,len,strid=0;
+   int             i,j,ne,len,strid=0,t,n;
    char            stnid[256],multi=0;
    double          value,lat,lon,hgt=0.0;
    int             yyyy,mm,dd,hh,mn,ss;
@@ -107,7 +107,8 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          stnid[0]='-';stnid[1]='\0';
          lat=lon=-999.0;
          yyyy=1970;mm=1;dd=1;hh=mn=ss=0;
-
+         t=n=0;
+         
          for (j=0;j<bufr_datasubset_count_descriptor(subset);j++) {
             if (!(bcv=bufr_datasubset_get_descriptor(subset,j))) {
                fprintf(stdout,"(WARNING) MetObs_LoadBUFR: Invalid subset code");
@@ -141,12 +142,12 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                   /*Look for needed specific descriptor*/
                   switch(bcv->descriptor) {
                      /*Date related*/
-                     case 4001:  yyyy=bufr_descriptor_get_ivalue(bcv); break;
-                     case 4002:  mm=bufr_descriptor_get_ivalue(bcv);   break;
-                     case 4003:  dd=bufr_descriptor_get_ivalue(bcv);   break;
-                     case 4004:  hh=bufr_descriptor_get_ivalue(bcv);   break;
-                     case 4005:  mn=bufr_descriptor_get_ivalue(bcv);   break;
-                     case 4006:  ss=bufr_descriptor_get_ivalue(bcv);   break;
+                     case 4001:  yyyy=bufr_descriptor_get_ivalue(bcv); t++; break;
+                     case 4002:  mm=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4003:  dd=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4004:  hh=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4005:  mn=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4006:  ss=bufr_descriptor_get_ivalue(bcv);   t++; break;
                      case 5001:  lat=bufr_descriptor_get_dvalue(bcv);  break;
 
                      /*Location related*/
@@ -178,45 +179,28 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                      case 1019:  sprintf(stnid,"%s",bufr_descriptor_get_svalue(bcv,&len)); strtrim(stnid,' '); strid=1; break;
 
                      /*Time displacement*/
-                     case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                     case 4012:  mm+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                     case 4013:  dd+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                     case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                     case 4015:  mn+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                     case 4016:  ss+=bufr_descriptor_get_ivalue(bcv);
-                         if(TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
-                            data=TMetElemData_New(ne,1,1);
-                            data->Ne=0;
-                         }
-                         break;
-                 }
-
-                  /* If there are Associated Fields */
+                     case 4011:  yyyy+=bufr_descriptor_get_ivalue(bcv); t++; break;
+                     case 4012:  mm+=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4013:  dd+=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4014:  hh+=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4015:  mn+=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     case 4016:  ss+=bufr_descriptor_get_ivalue(bcv);   t++; break;
+                     
+                     default: t=0; 
+                  }
+                 
+                  // We try to split the message by time slices
+                  if (t==1) {
+                     if (n) {
+                        if (TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi)) {
+                           data=TMetElemData_New(ne,1,1);
+                           data->Ne=0;
+                        }
+                     }
+                     n++;
+                  }
+                 
+                  // If there are Associated Fields 
                   if (bcv->value->af)  {
                      BufrAF *af = bcv->value->af;
 //                     sprintf( buf, "(0x%llx:%d bits)", af->bits, af->nbits );
@@ -259,7 +243,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
          /*Insert station in list if not already done*/
          TMetElem_BUFRAdd(Obs,data,lat,lon,hgt,System_DateTime2Seconds(yyyy*10000+mm*100+dd,hh*10000+mn*100+ss,1),stnid,&multi);
-
+         n++;
       }
       bufr_free_dataset(dts);
    }
