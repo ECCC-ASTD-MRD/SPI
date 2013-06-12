@@ -2284,13 +2284,28 @@ ConfigureCanvas(
 {
 
     Tk_State old_canvas_state=canvasPtr->canvas_state;
+    int dims[2],pdims[2];
 
+    pdims[0]=canvasPtr->width;
+    pdims[1]=canvasPtr->height;
+    
     if (Tk_ConfigureWidget(interp, canvasPtr->tkwin, configSpecs,
        objc, (const char **) objv, (char *) canvasPtr,
        flags|TK_CONFIG_OBJS) != TCL_OK) {
    return TCL_ERROR;
     }
 
+   /* Check for dimensions to be lower than OpenGL<s viewport max */
+   if (GLRender->GLCon) {
+      glGetIntegerv(GL_MAX_VIEWPORT_DIMS,dims);
+      if (canvasPtr->width>dims[0] || canvasPtr->height>dims[1]) {
+         canvasPtr->width=pdims[0];
+         canvasPtr->height=pdims[1];
+         Tcl_SetObjResult(interp, Tcl_ObjPrintf("bad dimensions must be less than %i x %i", dims[0],dims[1]));
+         Tcl_SetErrorCode(interp, "TK", "CANVAS", "DIMENSION", NULL);
+         return TCL_ERROR;
+      }
+   }
     /*
      * A few options need special processing, such as setting the background
      * from a 3-D border and creating a GC for copying bits to the screen.
@@ -2470,10 +2485,10 @@ CanvasWorldChanged(
  *----------------------------------------------------------------------------
 */
 int SetupglCanvas(TkCanvas *canvasPtr,int X,int Y,int Width,int Height) {
-
+   
    /* Set the viewport */
    glViewport(0,0,Width-X,Height-Y);
-
+ 
    /* Set the projection matrix */
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();

@@ -290,7 +290,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          c_gdxysval(ToRef->Ids[ToRef->NId],Scan->D,(float*)ToDef->Mode,(float*)Scan->X,(float*)Scan->Y,n);
       }
 
-      /*Cast back to double*/
+      /*Cast back to double (Start from end since type is double, not to overlap values*/
       for(x=n-1;x>=0;x--) {
          Scan->X[x]=(double)((float*)Scan->X)[x]-1.0;
          Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;

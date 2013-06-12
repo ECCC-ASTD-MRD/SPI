@@ -45,6 +45,8 @@
 #include "ogr_srs_api.h"
 #include "cpl_string.h"
 
+#define SCALEVALUE(V0,Vn,V) (Vn>V0?(V-V0)/(Vn-V0):1-(V-Vn)/(V0-Vn))
+
 typedef struct GDAL_File {
    GDALDriverH     Driver;
    GDALDatasetH    Set;

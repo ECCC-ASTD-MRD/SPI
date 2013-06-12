@@ -429,7 +429,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int     i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
-   float   min,rng,fi,fj;
+   float   min,rng,fi,ti,fj;
    Vect3d *pos;
    float  *buf=NULL;
    char   *ptr,out=0;
@@ -496,6 +496,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 
    /*Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
    if (Field->Def->Type!=TD_Float32) {
@@ -521,6 +522,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[3]);
          glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
          glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+         glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_REPEAT);
          glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_ALPHA,Field->Def->NI,Field->Def->NJ,0,GL_ALPHA,GL_BYTE,Field->Def->Mask);         
       }
    } else {
@@ -575,7 +577,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          if (i>=Field->Def->NI) {
             if (ox) {
                /*If the grid wraps around, use the first point*/
-               fi=0;
+               fi=0;ti=Field->Def->NI;
                idx0=j*Field->Def->NI;
             } else {
                /*If not, use the last point*/
@@ -584,6 +586,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             }
          } else {
             fi=i;
+            ti=0;
          }
          
          idx1=idx0+dn;
@@ -591,10 +594,10 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          fi+=0.5f;
          fj=(float)j+0.5f;
             
-         glTexCoord2f(fi,fj+dp);
+         glTexCoord2f(fi+ti,fj+dp);
 //         glNormal3dv(pos[idx1]);
          glVertex3dv(pos[idx1]);
-         glTexCoord2f(fi,fj);
+         glTexCoord2f(fi+ti,fj);
 //         glNormal3dv(pos[idx0]);
          glVertex3dv(pos[idx0]);
 

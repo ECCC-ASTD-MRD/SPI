@@ -1356,7 +1356,6 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
  *
  *----------------------------------------------------------------------------
 */
-#define ScaleValue(V0,Vn,V) (Vn>V0?(V-V0)/(Vn-V0):1-(V-Vn)/(V0-Vn))
 
 int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale) {
 
@@ -1400,7 +1399,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
    if (Scale) {
       levels=(float*)malloc(Field->Def->NJ * sizeof(float));
       for(z=0; z<Field->Def->NJ; ++z) {
-         levels[z] = ScaleValue(Field->Ref->ZRef.Levels[0], Field->Ref->ZRef.Levels[Field->Def->NJ-1], Field->Ref->ZRef.Levels[z]);
+         levels[z] = SCALEVALUE(Field->Ref->ZRef.Levels[0], Field->Ref->ZRef.Levels[Field->Def->NJ-1], Field->Ref->ZRef.Levels[z]);
       }
    }
 
