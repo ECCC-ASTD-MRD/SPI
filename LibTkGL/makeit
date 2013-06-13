@@ -27,8 +27,6 @@ if [[ -n $reconf ]]; then
 fi
 
 $MAKE install
-ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so ${LIB}/libTclSystem1.0.so
-ln -fs {LIB}/libTclSystem1.0.so ${LIB}/libTclSystem.so
 
 echo ""
 echo "----- Making OpenGL Canvas Library Object -----"
@@ -46,8 +44,6 @@ if [[ -n $reconf ]]; then
 fi
 
 $MAKE install
-ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so ${LIB}/libTkglCanvas8.6.so
-ln -fs  ${LIB}/libTkglCanvas8.6.so ${LIB}/libTkglCanvas.so
 
 echo ""
 echo "----- Making Tcl GeoEER Library Object -----"
@@ -72,5 +68,14 @@ if [[ -n $reconf ]]; then
 fi
 
 $MAKE install
-ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so ${LIB}/libTclGeoEER7.6.so
-ln -fs ${LIB}/libTclGeoEER7.6.so ${LIB}/libTclGeoEER.so
+
+cd ${LIB}
+ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so libTclGeoEER7.6.so
+ln -fs libTclGeoEER7.6.so libTclGeoEER.so
+
+ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
+ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+
+ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so libTclSystem1.0.so
+ln -fs libTclSystem1.0.so libTclSystem.so
+
