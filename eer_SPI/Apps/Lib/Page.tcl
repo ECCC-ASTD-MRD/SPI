@@ -1588,7 +1588,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
    if { $Intrusion>=0 } {
       set Param(Intrusion) $Intrusion
    }
-
+   
    if { $Data(Width$Frame)!=$Width || $Data(Height$Frame)!=$Height } {
 
       set Data(Width)  [set Data(Width$Frame)  $Width]

@@ -89,6 +89,7 @@ proc CanvasBubble::Activate { Canvas } {
 #   <Canvas> : Identificateur du canvas
 #   <Tag>    : Nom du Tag
 #   <Text>   : Texte d'information
+#   <WrapLen>: Longeure de la bulle
 #
 # Retour:
 #
@@ -96,7 +97,7 @@ proc CanvasBubble::Activate { Canvas } {
 #
 #----------------------------------------------------------------------------
 
-proc CanvasBubble::Create { Canvas Tag Text } {
+proc CanvasBubble::Create { Canvas Tag Text { WrapLen 0 } } {
    variable Data
    variable Resources
 
@@ -124,7 +125,7 @@ proc CanvasBubble::Create { Canvas Tag Text } {
       wm state            .canvasbubble withdrawn
 
       label .canvasbubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
-         -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font)
+         -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen
       pack .canvasbubble.hlp -fill both -expand true
    }
 

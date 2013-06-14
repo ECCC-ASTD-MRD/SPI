@@ -190,12 +190,13 @@ proc Bubble::Activate { { State -1 } } {
 # Parametres  :
 #    <Widget> : Path du widget concerne
 #    <Hlp>    : Text de la bulle
+#   <WrapLen>: Longeure de la bulle
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc Bubble::Create { Widget Hlp } {
+proc Bubble::Create { Widget Hlp { WrapLen 0 } } {
    variable Param
    variable Data
    variable Resources
@@ -209,7 +210,7 @@ proc Bubble::Create { Widget Hlp } {
       wm state            .bubble withdrawn
 
       label .bubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
-         -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font)
+         -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen
       pack .bubble.hlp -fill both -expand true
    }
 

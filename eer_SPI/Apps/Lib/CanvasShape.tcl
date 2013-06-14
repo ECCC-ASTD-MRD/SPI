@@ -1682,6 +1682,11 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
          }
          
          $Canvas create text [expr $x+$dx+$db] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
+
+         if { [$Tree keyexists $branch bubble] && [set bubble [$Tree get $branch bubble]]!="" } {
+            CanvasBubble::Create $Canvas CVTREETEXT$branch $bubble 400
+         }
+         
          if { $leaf && [$Tree isleaf $branch] } {
             if { [expr $x-$dx]>5 } {
                $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"

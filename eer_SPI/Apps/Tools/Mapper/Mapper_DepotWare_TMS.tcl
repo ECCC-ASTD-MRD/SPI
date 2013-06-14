@@ -90,6 +90,30 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
 
    set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $Layer].xml
 
+   set Param(OpenStreetMapCMC) "<GDAL_WMS>
+   <Service name=\"TMS\">
+       <ServerUrl>http://geomet-dev-1.cmc.ec.gc.ca/cgi-bin/mapserv?/\${z}/\${x}/\${y}.png</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>19</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <Cache>
+      <Path>[file rootname $file]</Path>
+      <Depth>2</Depth>
+   </Cache>
+</GDAL_WMS>"
+
    set Param(OpenStreetMap) "<GDAL_WMS>
    <Service name=\"TMS\">
        <ServerUrl>http://tile.openstreetmap.org/\${z}/\${x}/\${y}.png</ServerUrl>

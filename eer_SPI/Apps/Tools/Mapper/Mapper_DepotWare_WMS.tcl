@@ -219,8 +219,10 @@ proc Mapper::DepotWare::WMS::Add { Tree Branch Layer } {
    $Tree set $branch type WMS
    $Tree set $branch width  -1
    $Tree set $branch height -1
+   $Tree set $branch bubble [lindex $Data($Layer) 2]
+   
 
-   set bbox  [lindex $Data($Layer) 3]
+   set bbox  [lindex $Data($Layer) 4]
    $Tree set $branch 00 [list [lindex $bbox 1] [lindex $bbox 0]]
    $Tree set $branch 01 [list [lindex $bbox 3] [lindex $bbox 0]]
    $Tree set $branch 10 [list [lindex $bbox 1] [lindex $bbox 2]]
@@ -262,9 +264,10 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
       set Data(Opaque) {}
       set Data(Meta)   {}
    }
-   set Data(Styles) {}
-   set Data(Times)  {}
-   set childs       {}
+   set Data(Styles)   {}
+   set Data(Abstract) ""
+   set Data(Times)    {}
+   set childs         {}
 
    foreach node [$Node childNodes] {
       switch [$node nodeName] {
@@ -277,6 +280,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
          Name                     { set Data(Identifier)  [[$node firstChild] nodeValue] }
          Title                    { set Data(Title) [[$node firstChild] nodeValue] }
+         Abstract                 { catch { set Data(Abstract) [[$node firstChild] nodeValue] }; puts .$Data(Abstract). }
          Dimension                { set Data(Cache) 0 }
          DataURL                  { }
          MetadataURL              { Mapper::DepotWare::WMS::ParseMeta $node }
@@ -287,10 +291,10 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
 
 
    if { $Data(Identifier)!="" } {
-      set Data($Data(Title)) [list $URL $Data(Title) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Styles) $Data(Times) $Data(Opaque) $Data(Cache) $Data(Meta)]
+      set Data($Data(Title)) [list $URL $Data(Title) $Data(Abstract) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Styles) $Data(Times) $Data(Opaque) $Data(Cache) $Data(Meta)]
       lappend Data(Layers) $Data(Title)
    } else {
-      set Data($Data(Title)) [list $URL $Data(Title)]
+      set Data($Data(Title)) [list $URL $Data(Title) $Data(Abstract)]
    }
 
    set branch [Mapper::DepotWare::WMS::Add $Tree $Branch $Data(Title)]
@@ -602,16 +606,16 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    variable Data
 
    set url          [lindex $Data($Layer) 0]
-   set layer        [lindex $Data($Layer) 2]
-   set geog         [lindex $Data($Layer) 4]
-   set sizex        [lindex $Data($Layer) 5]
-   set sizey        [lindex $Data($Layer) 6]
-   set format       [lindex $Data($Layer) 7]
-   set Data(Styles) [lindex $Data($Layer) 8]
-   set times        [lindex $Data($Layer) 9]
-   set opaque       [lindex $Data($Layer) 10]
-   set cache        [lindex $Data($Layer) 11]
-   set Data(Meta)   [lindex $Data($Layer) 12]
+   set layer        [lindex $Data($Layer) 3]
+   set geog         [lindex $Data($Layer) 5]
+   set sizex        [lindex $Data($Layer) 6]
+   set sizey        [lindex $Data($Layer) 7]
+   set format       [lindex $Data($Layer) 8]
+   set Data(Styles) [lindex $Data($Layer) 9]
+   set times        [lindex $Data($Layer) 10]
+   set opaque       [lindex $Data($Layer) 11]
+   set cache        [lindex $Data($Layer) 12]
+   set Data(Meta)   [lindex $Data($Layer) 13]
 
    #----- Check for transparency
    if { $opaque==0 } {
