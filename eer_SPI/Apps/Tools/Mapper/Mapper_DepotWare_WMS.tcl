@@ -280,7 +280,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
          Name                     { set Data(Identifier)  [[$node firstChild] nodeValue] }
          Title                    { set Data(Title) [[$node firstChild] nodeValue] }
-         Abstract                 { catch { set Data(Abstract) [[$node firstChild] nodeValue] }; puts .$Data(Abstract). }
+         Abstract                 { catch { set Data(Abstract) [[$node firstChild] nodeValue] } }
          Dimension                { set Data(Cache) 0 }
          DataURL                  { }
          MetadataURL              { Mapper::DepotWare::WMS::ParseMeta $node }
