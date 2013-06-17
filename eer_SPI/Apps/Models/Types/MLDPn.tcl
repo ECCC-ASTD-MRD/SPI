@@ -358,7 +358,7 @@ proc MLDPn::CreateModelInput { } {
             set radius  $Sim(EmRadius.$i)
             set np      $Sim(EmNumberParticles.$i)
 
-            if { $Sim(SrcType)=="VOLCANO" } {
+            if { $Sim(SrcType)=="VOLCANO"  || $Sim(SrcType) == "FIRE" } {
                if { $Sim(EmMassMode.$i) == 0 } {
                   set mass SPARKS
                } elseif { $Sim(EmMassMode.$i) == 1 } {
@@ -376,6 +376,7 @@ proc MLDPn::CreateModelInput { } {
 
          set rates {}
          switch $Sim(SrcType) {
+             FIRE     -
              VOLCANO  { set rates $mass }
              ACCIDENT {
                 for {set j 0} {$j < $Sim(EmNbIso)} {incr j} {
@@ -394,15 +395,16 @@ proc MLDPn::CreateModelInput { } {
       puts $file "\n"
    }
 
-   puts $file "#----- Parcel parameters\n"
+   puts $file "#----- Parcel parameters\n" 
+   puts $file [format "%-20s= %-10.3e # " PRC_DENSITY $Sim(EmDensity)]
+      
    #----- Particle size distribution (gravitational settling velocities).
    if { [set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 0] $Sim(EmSizeDist)]]==-1 } {
       set sizeIdx [lsearch -exact [lindex $MLDPn::Sim(ListEmSizeDist) 1] $Sim(EmSizeDist)]
    }
    set sizeLast [expr [llength [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)]] - 1]
 
-   if { $Sim(SrcType) == "VOLCANO" && $sizeIdx != $sizeLast } {
-      puts $file [format "%-20s= %-10.3e # " PRC_DENSITY $Sim(EmDensity)]
+   if { ($Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE") && $sizeIdx != $sizeLast } {
       puts $file [format "%-20s= %-10s # Particle diameter size boundaries \[microns\], and Fraction \[0,1\] of total number of particles for each size bin" PRC_BINS ""]
 
       switch $Sim(SrcType) {
@@ -417,6 +419,7 @@ proc MLDPn::CreateModelInput { } {
                default { set dist $Sim(DistRedoubt1989) }
             }
          }
+         "FIRE"     -
          "ACCIDENT" -
          "VIRUS" { set dist $Sim(DistRedoubt1989) }
       }
@@ -851,7 +854,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
 
    set Sim(SrcType) $Type
 
-   if { $Type == "VOLCANO" } {
+   if { $Type == "VOLCANO" || $Type == "FIRE" } {
       set Sim(EmSizeDist) [lindex $Scenario [incr ln]]
       set Sim(EmDensity)  [lindex $Scenario [incr ln]]
    }
@@ -886,6 +889,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
 
          incr Sim(EmNumberParticles) $Sim(EmNumberParticles.$i)
          switch $Type {
+            "FIRE"    -
             "VOLCANO" {
                set Sim(EmMassMode.$i) [lindex $Scenario [incr ln]]
                if { $Sim(EmMassMode.$i) } {
@@ -921,6 +925,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
          set Sim(EmHeight.$i)          0.0
          set Sim(EmRadius.$i)          0.0
          switch $Type {
+            "FIRE"    -
             "VOLCANO" {
                set Sim(EmMassMode.$i)  0
                set Sim(EmMass.$i)      0
@@ -942,7 +947,7 @@ proc MLDPn::ScenarioEncode { Type { Separator "\n" } } {
    variable Sim
    variable Tmp
 
-   if { $Type == "VOLCANO" } {
+   if { $Type == "VOLCANO" || $Type == "FIRE" } {
       append scenario $Sim(EmSizeDist)$Separator
       append scenario $Sim(EmDensity)$Separator
    }
@@ -966,6 +971,7 @@ proc MLDPn::ScenarioEncode { Type { Separator "\n" } } {
          append scenario $Sim(EmRadius.$i)$Separator
 
          switch $Sim(SrcType) {
+            "FIRE"    -
             "VOLCANO" {
                append scenario $Sim(EmMassMode.$i)$Separator
                if { $Sim(EmMassMode.$i) } {
@@ -1024,6 +1030,7 @@ proc MLDPn::ScenarioPad { } {
       set Sim(EmRadius.$i)          0.0
 
       switch $Sim(SrcType) {
+         "FIRE"    -
          "VOLCANO" {
             set Sim(EmMassMode.$i)  0
             set Sim(EmMass.$i)      0
@@ -1230,6 +1237,7 @@ proc MLDPn::DistributeParcels { } {
       set mass 0
       if { $Sim(EmIsEm.$i) } {
          switch $Sim(SrcType) {
+            "FIRE"    -
             "VOLCANO" {
                set mass $Sim(EmMass.$i)
             }
@@ -1332,13 +1340,18 @@ proc MLDPn::InitNew { Type } {
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    #----- Set source type according to experiment data type.
-   if { $Type==0 || $Type==3 } {
-      #----- Volcano (0) or fire (3) source.
+   if { $Type==0 } {
+      #----- Volcano (0) source.
       set Sim(SrcType)           VOLCANO
       set Sim(OutAV)             { 0 20000 35000 60000 85000 110000 135000 }  ; #----- AVVertical levels [m].
       set Sim(EmHeight)          10000.0
       set Sim(EmRadius)          1000.0
-   } elseif { $Type== 4 } {
+   } elseif { $Type==3 } {
+      #----- Fire (3) source.
+      set Sim(SrcType)           FIRE
+      set Sim(EmHeight)          10000.0
+      set Sim(EmRadius)          1000.0
+   } elseif { $Type==4 } {
       #----- Virus (4) source.
       set Sim(SrcType)           VIRUS
       set Sim(Duration)          48
@@ -1362,7 +1375,7 @@ proc MLDPn::InitNew { Type } {
       set Sim(EmSizeDistDefault) $NA
    }
 
-   if { $Sim(SrcType) == "VOLCANO" } {
+   if { $Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE" } {
       set Sim(EmDensityDefault)  2.500e+12 ; #----- Particle density [microgram/m3].
       set Sim(EmSizeDistDefault) [lindex [lindex $Sim(ListEmSizeDist) $GDefs(Lang)] end] ; #----- Particle size distribution.
       set Sim(EmIsoQuantity)     $NA
@@ -1503,7 +1516,7 @@ proc MLDPn::InitCont { Type } {
    set Sim(EmVerticalDistDefault)   $Sim(EmVerticalDist)
    set Sim(EmIsAutoNPDefault)       0
 
-   if { $Sim(SrcType) == "VOLCANO" } {
+   if { $Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE" } {
       set  Sim(EmSizeDistDefault)   $Sim(EmSizeDist)
       set  Sim(EmDensityDefault)    $Sim(EmDensity)
    }
@@ -1769,7 +1782,7 @@ proc MLDPn::ComputeMass { Id } {
    variable Tmp
 
    #----- Verify if source is a volcano type.
-   if { $Sim(SrcType)!="VOLCANO" } {
+   if { $Sim(SrcType)!="VOLCANO" && $Sim(SrcType)!="FIRE" } {
       return 0
    }
 
@@ -1851,6 +1864,7 @@ proc MLDPn::EmissionIntervalApply { Id } {
    set Sim(EmRadius.$Id)            $Tmp(EmRadius.$Id)
 
    switch $Sim(SrcType) {
+      "FIRE"    -
       "VOLCANO" {
          set Sim(EmMass.$Id)        $Tmp(EmMass.$Id)
          set Sim(EmMassMode.$Id)    $Tmp(EmMassMode.$Id)
@@ -1917,6 +1931,7 @@ proc MLDPn::EmissionIntervalEdit { Id } {
    set Tmp(EmRadius.$Id)            $Sim(EmRadius.$Id)
 
    switch $Sim(SrcType) {
+      "FIRE"    -
       "VOLCANO" {
          set Tmp(EmMass.$Id)        $Sim(EmMass.$Id)
          set Tmp(EmMassMode.$Id)    $Sim(EmMassMode.$Id)
@@ -1977,6 +1992,7 @@ proc MLDPn::EmissionIntervalDelete { Id } {
       set Sim(EmRadius.$i0)            $Sim(EmRadius.$i)
 
       switch $Sim(SrcType) {
+         "FIRE"    -
          "VOLCANO" {
             set Sim(EmMass.$i0)        $Sim(EmMass.$i)
             set Sim(EmMassMode.$i0)    $Sim(EmMassMode.$i)
@@ -2050,6 +2066,7 @@ proc MLDPn::EmissionIntervalAdd { } {
    }
 
    switch $Sim(SrcType) {
+      "FIRE"    -
       "VOLCANO" {
          if { $Sim(EmNbIntervals) > 0 } {
             set Tmp(EmMassMode.$id)    $Sim(EmMassMode.0)

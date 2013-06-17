@@ -74,7 +74,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
       return 0
    }
    #----- Validate density (if needed).
-   if { $Sim(SrcType) == "VOLCANO" } {
+   if { $Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE" } {
       if { ![MLDPn::ValidateDensity] } {
          focus $Sim(EmissionGlobalFrame).density.ent
          return 0
@@ -106,6 +106,7 @@ proc MLDPn::ValidateEmissionIntervalDetails { Id } {
       }
 
       switch $Sim(SrcType) {
+         "FIRE"    -
          "VOLCANO" {
             #----- Mass
             ComputeMass $Id
@@ -1136,6 +1137,7 @@ proc MLDPn::ValidateEmissionQuantity { } {
    set lst {}
 
    switch $Sim(SrcType) {
+      "FIRE"    -
       "VOLCANO" {
          return 1
       }

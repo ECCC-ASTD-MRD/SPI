@@ -41,7 +41,7 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =350x395
+   wm geom [winfo toplevel $Tab] =350x400
 
    #----- Model Tab.
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
@@ -379,6 +379,9 @@ proc MLDPn::ParamsCont { Parent } {
    #----- Start time
    Calendar::Disable $base.time.date
    Clock::Disable $base.time.date.hour
+   
+   $base.time.mode.opt.forward   configure -state disabled
+   $base.time.mode.opt.backward  configure -state disabled
 
    Option::Create  $base.time.restart "Restart" MLDPn::Sim(Restart) 0 -1 $Sim(Restarts) \
       { set MLDPn::Sim(RestartDelta) [lindex $MLDPn::Sim(RestartDeltas) [lsearch -exact $MLDPn::Sim(Restarts) $MLDPn::Sim(Restart)]]; MLDPn::GraphUpdate }
@@ -403,6 +406,10 @@ proc MLDPn::ParamsCont { Parent } {
    Option::Disable $base.others.opt.varmesoscale
    Option::Disable $base.others.opt.timescale
    Option::Disable $base.others.opt.reflect
+   Option::Disable $base.others.opt.seed 
+   Option::Disable $base.others.opt.aero 
+   Option::Disable $base.others.opt.sca
+   Option::Disable $base.others.opt.dep
 
    if { $Sim(SrcType) == "VOLCANO" } {
       Option::Disable $base.others.opt.avlevels
@@ -632,7 +639,7 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
    set Sim(EmissionGlobalFrame) $base
    labelframe .emintdetails.frm.glb -text "[lindex $Lbl(GlobalParameters) $GDefs(Lang)]"
 
-      if { $MLDPn::Sim(SrcType) == "VOLCANO" } {
+      if { $MLDPn::Sim(SrcType) == "VOLCANO" || $MLDPn::Sim(SrcType) == "FIRE" } {
          #----- Particles size distribution.
          Option::Create  $base.size [lindex $Lbl(EmSizeDist) $GDefs(Lang)] MLDPn::Tmp(EmSizeDist) \
             0 -1 [lindex $MLDPn::Sim(ListEmSizeDist) $GDefs(Lang)] ""
@@ -743,8 +750,8 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
          Bubble::Create $base.emdetails.radius $Bubble(EmRadius)
 
          #----- Total released mass [microgram].
-         if { $Sim(SrcType) == "VOLCANO" } {
-            Option::Create  $base.emdetails.mass [lindex $Lbl(EmMass) $GDefs(Lang)] [list MLDPn::Tmp(EmMass.$Id) MLDPn::Tmp(EmMassMode.$Id)] \
+         if { $Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE" } {
+            Option::Create $base.emdetails.mass [lindex $Lbl(EmMass) $GDefs(Lang)] [list MLDPn::Tmp(EmMass.$Id) MLDPn::Tmp(EmMassMode.$Id)] \
                 0 -1 [lindex $MLDPn::Sim(ListEmMassMode) $GDefs(Lang)] "MLDPn::EnableDisableMass $base.emdetails.mass $Id"
             #----- Configure background and foreground entry wigdet when disabled.
             $base.emdetails.mass.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
@@ -913,7 +920,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
          #----- Generate bubble text
          set bubtxt ""
          append bubtxt "*** [lindex $Lbl(GlobalParameters) $GDefs(Lang)] ***\n"
-         if { $Sim(SrcType) == "VOLCANO" } {
+         if { $Sim(SrcType) == "VOLCANO" || $Sim(SrcType) == "FIRE" } {
             append bubtxt "[lindex $Lbl(EmSizeDist) $GDefs(Lang)] : $Sim(EmSizeDist)\n"
             append bubtxt "[lindex $Lbl(EmDensity) $GDefs(Lang)] : $Sim(EmDensity)\n"
          }
@@ -935,6 +942,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
             append bubtxt "[lindex $Lbl(EmHeight) $GDefs(Lang)] : $Sim(EmHeight.$id)\n"
             append bubtxt "[lindex $Lbl(EmRadius) $GDefs(Lang)] : $Sim(EmRadius.$id)\n"
             switch $Sim(SrcType) {
+               "FIRE"    -
                "VOLCANO" {
                   append bubtxt "[lindex $Lbl(EmMass) $GDefs(Lang)] : [format %.7g $Sim(EmMass.$id)]\n"
                }

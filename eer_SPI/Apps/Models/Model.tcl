@@ -578,12 +578,7 @@ proc Model::ParamsCopy { Model  } {
    variable Param
 
    upvar ${Model}::Sim sim
-
-   #----- Link restart
-   if { $sim(RestartFile)!="" } {
-      exec ln -s $sim(RestartFile) $sim(Path)/tmp/[file tail $sim(RestartFile)].in
-   }
-
+  
    #----- Run will be remote, setup what's needed on remote host.
    if { $Param(Remote) } {
 
@@ -1562,6 +1557,11 @@ proc Model::ParamsMeteoInput { Model } {
    variable Param
 
    upvar ${Model}::Sim sim
+
+   #----- Link restart
+   if { $sim(RestartFile)!="" } {
+      exec ln -s $sim(RestartFile) $sim(Path)/tmp/[file tail $sim(RestartFile)].in
+   }
 
    if { $sim(ReNewMeteo)!="" } {
       #----- Copy needed info from previous sim
