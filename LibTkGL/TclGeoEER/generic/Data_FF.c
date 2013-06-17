@@ -1279,6 +1279,11 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,in
          pidx[2]=pidx[3]+1;
          Def_GetQuadMod(Def,pidx,pvox);
 
+         /*Test for value validity*/
+         if (!isnormal(pvox[0])) {
+            break;
+         }
+         
          /*If it's the first point, get it's voxel instersection to start with*/
          if (!side) {
             x=X;y=Y;
