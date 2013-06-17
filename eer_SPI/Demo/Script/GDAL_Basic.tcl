@@ -78,5 +78,13 @@ puts "    Saving copy mode (PNG)"
 
 gdalfile createcopy DataOut/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
 
+puts "    Saving copy mode in memory (PNG)"
+set bin [gdalfile createcopy /vsimem/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"]
+set f [open DataOut/GDAL_Basic_MEM.png w]
+fconfigure $f -translation binary
+puts $f $bin
+close $f
+
+
 puts "    Freeing a band "
 gdalband free NEWRASTER

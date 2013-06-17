@@ -23,6 +23,7 @@ namespace eval Macro::Flux {} {
    variable Error
    variable Lbl
 
+   set Param(In)      ""
    set Param(Info)   { "Calcul du flux traversant une coupe transversale"
                        "Calculate flux through a vertical cross section" }
 
@@ -96,8 +97,11 @@ proc Macro::Flux::Process { } {
    fstdfield copy Macro::CONC $field
    fstdfield read Macro::WIND $fid $datev "" $ip1 $ip2 $ip3 "" "UU"
 
+   fstdfield readcube Macro::CONC
+   fstdfield readcube Macro::WIND
+
    fstdfield vertical Macro::XWIND Macro::WIND $path
-   fstdfield vertical Macro::XCONC $field $path
+   fstdfield vertical Macro::XCONC Macro::CONC $path
 
    vexpr Macro::FLUX Macro::XWIND\[1\]*Macro::XCONC
    fstdfield define Macro::FLUX -NOMVAR FLUX
@@ -138,6 +142,8 @@ proc Macro::Flux::Clean { } {
    graphaxis free Macro::AXISY
    graphitem free Macro::ITEM
 }
+
+
 
 
 

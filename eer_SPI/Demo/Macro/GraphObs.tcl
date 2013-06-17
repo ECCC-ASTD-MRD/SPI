@@ -30,15 +30,15 @@ proc Macro::GraphObs::Init { } {
    SPI::PageNew True "" 800x600
 
    $Page::Data(Canvas) create graph -x 5 -y 5 -width 790 -height 590 -anchor nw -xlegend 5 -ylegend 5 -fg black -bg white -fill white -tags GRAPH -font XFont12 \
-      -title "O3 Time series"
+      -title "O3 Time series" -command toto
 
    #----- Creation des unite de l'echelle
 
    graphaxis create axisx
    graphaxis create axisy
 
-   graphaxis configure axisx -font XFont12 -color black -gridcolor "" -position LL -width 1 -angle 45
-   graphaxis configure axisy -font XFont12 -color black -gridcolor "" -position LL -width 1
+   graphaxis configure axisx -font XFont12 -color black -gridcolor "" -position LL -width 1 -angle 45 -lowoffset 10
+   graphaxis configure axisy -font XFont12 -color black -gridcolor "" -position LL -width 1 
 
    vector create DATA
    vector dim    DATA { X Y }
@@ -87,6 +87,7 @@ proc Macro::GraphObs::Execute { } {
       graphaxis configure axisy -type LINEAR -min 0 -max [vector stats DATA.Y -max] -unit Pbb -increment 10 -highoffset 10
       graphitem configure ITEM -desc $id
 
+      puts stderr "$sec,$val = [toto -project $sec $val ITEM]"
       $Page::Data(Canvas) itemconf GRAPH -item ITEM
       update idletasks
 

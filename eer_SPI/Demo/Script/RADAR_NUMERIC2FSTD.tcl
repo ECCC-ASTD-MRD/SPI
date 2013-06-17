@@ -111,7 +111,7 @@ close $f
 Log::Print INFO "Defining grid projection"
 
 #----- Process to FSTD
-set fstd /tmp/[string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km.stnd
+set fstd DataOut/[string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km.stnd
 file delete $fstd
 fstdfile open FSTD write $fstd
 
@@ -163,7 +163,7 @@ foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {
    vexpr FLD$field lut(GRID,VECT0,VECT$i)
 
    fstdfield define FLD$field -NOMVAR $Param($field) -ETIKET $field -DATEO [fstdstamp fromdate [string range $Data(ValidTime) 0 7] [string range $Data(ValidTime) 8 end]0000]
-   fstdfield write FLD$field FSTD -32 True True
+   fstdfield write FLD$field FSTD -32 True
    incr i
 }
 fstdfile close FSTD
