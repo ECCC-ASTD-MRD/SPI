@@ -3,7 +3,7 @@
 # General configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = LibTkGL
-PROJECT_NUMBER         = 3.1
+PROJECT_NUMBER         = 7.6.0
 OUTPUT_DIRECTORY       = Doc
 OUTPUT_LANGUAGE        = French
 EXTRACT_ALL            = YES
@@ -54,13 +54,9 @@ INPUT                  = .
 FILE_PATTERNS          = *.c \
                          *.h
 RECURSIVE              = YES
-EXCLUDE                = ./EZSCINT ./so ./Demo 
-EXCLUDE_PATTERNS       = lex.yy.c \
-                         mfCalc.tab.c \
-                         oldMainParser.c \
-                         enumSize.c \
-                         *.backup.* \
-                         mfCalc.tab.h
+EXCLUDE                = ./so 
+EXCLUDE_PATTERNS       = lex.vexpr_.c \
+                         y.tab.* 
 EXAMPLE_PATH           = ./Demo 
 EXAMPLE_PATTERNS       = *.tcl
 IMAGE_PATH             = 

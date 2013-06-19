@@ -4,9 +4,16 @@ PROC=`uname -m`
 
 echo "Architecture: ${ARCH}_${PROC}"
 
+#----- Location of the library source codes
 ARCH_PATH=/cnfs/ops/cmoe/afsr005/Archive
+
+#----- Where to install libraries
 LIB_PATH=/cnfs/ops/cmoe/afsr005/Lib/${ARCH}_${PROC}
+
+#----- Where to install Tcl/Tk
 TCL_PATH=/home/afsr/005/Projects/eerSPI/eer_SPI/Lib/${ARCH}_${PROC}/TclTk
+
+
 HOME_PATH=/home/afsr/005/lib/${ARCH}_${PROC}
 
 export LD_LIBRARY_PATH=${HOME_PATH}:$LD_LIBRARY_PATH
@@ -116,6 +123,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${EXPAT}/lib/*.so* ${HOME_PATH}
 
 #----- curl
 cd ${ARCH_PATH}/${CURL}
@@ -143,6 +151,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${GEOS}/lib/*.so* ${HOME_PATH}
 
 #----- jasper
 cd ${ARCH_PATH}/${JASPER}
@@ -152,6 +161,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${JASPER}/lib/*.so* ${HOME_PATH}
 
 #----- HDF-4
 cd ${ARCH_PATH}/${HDF4}
@@ -161,6 +171,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${HDF4}/lib/*.so* ${HOME_PATH}
 
 #----- SZIP
 cd ${ARCH_PATH}/${SZIP}
@@ -170,6 +181,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${SZIP}/lib/*.so* ${HOME_PATH}
 
 #----- HDF-5
 cd ${ARCH_PATH}/${HDF5}
@@ -179,6 +191,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${HDF5}/lib/*.so* ${HOME_PATH}
 
 #----- netCDF
 cd ${ARCH_PATH}/${NETCDF}
@@ -188,6 +201,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${NETCDF}/lib/*.so* ${HOME_PATH}
 
 #----- grib
 cd ${ARCH_PATH}/${GRIB}
@@ -197,6 +211,8 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${GRIB}/lib/*.so* ${HOME_PATH}
+cp -r {LIB_PATH}/${GRIB}/share/grib_api/definitions ${HOME_PATH}/../Data/grib
 
 #----- ECBUFR
 cd ${ARCH_PATH}/${ECBUFR}
@@ -206,7 +222,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-
+cp -d {LIB_PATH}/${ECBUFR}/lib/*.so* ${HOME_PATH}
 
 #----- PostgreSQL
 cd ${ARCH_PATH}/${POSTGRESQL}
@@ -216,6 +232,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${POSTGRESQL}/lib/*.so* ${HOME_PATH}
 
 #----- ODBC
 cd ${ARCH_PATH}/${ODBC}
@@ -225,7 +242,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-
+cp -d {LIB_PATH}/${ODBC}/lib/*.so* ${HOME_PATH}
 
 #----- PROJ 4
 cd ${ARCH_PATH}/${PROJ}
@@ -235,6 +252,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${PROJ}/lib/*.so* ${HOME_PATH}
 
 #----- gdal (Don't forget to patch histogram for nodata and add stdio.h to frmts/msg/msgcommand.h)
 cd ${ARCH_PATH}/${GDAL}
@@ -262,7 +280,7 @@ make distclean
 --with-pg=${LIB_PATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIB_PATH}/${ODBC} \
 --with-netcdf=${LIB_PATH}/${NETCDF} \
---with-oci-lib=${HOME_PATH} \
+--with-oci-lib=${LIB_PATH}/${OCI} \
 --with-oci-include=${LIB_PATH}/${OCI}/sdk/include \
 --with-static-proj4=${LIB_PATH}/${PROJ}
 
@@ -270,6 +288,8 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d {LIB_PATH}/${GDAL}/lib/*.so* ${HOME_PATH}
+cp -d {LIB_PATH}/${GDAL}/share/gdal/* ${HOME_PATH}/../Data/gdal
 
 #--with-kakadu=${LIB_PATH}/${KKDU}
 #--with-ecw=/cnfs/ops/cmoe/afsr005/Lib/Linux/libecwj2-3.3
