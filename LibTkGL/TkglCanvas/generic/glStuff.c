@@ -1918,6 +1918,7 @@ int glDefineParams(){
    }
 
    glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
+   glHint(GL_POLYGON_SMOOTH_HINT,GL_NICEST);
 
    /*Parse needed extensions*/
    if (GLRender->Set) {
