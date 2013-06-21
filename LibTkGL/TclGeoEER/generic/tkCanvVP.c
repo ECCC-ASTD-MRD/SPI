@@ -117,6 +117,7 @@ static const Tk_ConfigSpec configSpecs[] = {
    { TK_CONFIG_CUSTOM, "-data", NULL, NULL, NULL,Tk_Offset(ViewportItem,DataItem),TK_CONFIG_NULL_OK,&ArrayOption },
    { TK_CONFIG_CUSTOM, "-maskitem", NULL, NULL, NULL,Tk_Offset(ViewportItem,MaskItem),TK_CONFIG_NULL_OK,&ArrayOption },
    { TK_CONFIG_PIXELS, "-maskwidth", NULL, NULL, "0",Tk_Offset(ViewportItem,MaskWidth),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_PIXELS, "-crowd", NULL, NULL, "0",Tk_Offset(ViewportItem,CrowdBuffer),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM, "-camera", NULL, NULL, NULL,Tk_Offset(ViewportItem,Cam),TK_CONFIG_NULL_OK,&CamOption },
    { TK_CONFIG_INT, "-frame", NULL, NULL, "-1",Tk_Offset(ViewportItem,Frame),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
@@ -159,8 +160,6 @@ double ViewportX(ViewportItem *VP) {
    return(((TkCanvas*)VP->canvas)->xOrigin);
 }
 
-static TList *VPCrowdList;
-
 /*----------------------------------------------------------------------------
  * Nom      : <ViewportCrowdPush>
  * Creation : Janvier 2011 - J.P. Gauthier - CMC/CMOE
@@ -169,6 +168,7 @@ static TList *VPCrowdList;
  *            oui, ajoute a la liste de peuplement
  *
  * Parametres :
+ *   <VP>     : Viewport
  *  <X0>       : Coordonnee X0
  *  <Y0>       : Coordonnee Y0
  *  <X1>       : Coordonnee X1
@@ -182,44 +182,57 @@ static TList *VPCrowdList;
  *
  *----------------------------------------------------------------------------
 */
-int ViewportCrowdPush(int X0,int Y0,int X1,int Y1,int Delta) {
+int ViewportCrowdPush(ViewportItem *VP,int X0,int Y0,int X1,int Y1,int Delta) {
 
-   int   *box,x0,x1,y0,y1;
+   int   *box,x0,x1,y0,y1,d;
    TList *node;
 
-   x0=X0-Delta;
-   x1=X1+Delta;
-   y0=Y0-Delta;
-   y1=Y1+Delta;
+   d=Delta<0?VP->CrowdBuffer:Delta;
+      
+   if (X0>X1) { x0=X0;X0=X1;X1=x0; }
+   if (Y0>Y1) { y0=Y0;Y0=Y1;Y1=y0; }
+   
+   x0=X0-d;
+   x1=X1+d;
+   y0=Y0-d;
+   y1=Y1+d;
 
-   /*Check for bbox intersection*/
-   node=VPCrowdList;
-   while(node) {
-      box=node->Data;
-      if (VOUT(x0,x1,box[0],box[2]) || VOUT(y0,y1,box[1],box[3])) {
-         /*No intersection here, continue*/
-         node=node->Next;
-      } else {
-         /*Found an intersection*/
-         return(0);
+   /*If not within the viewport limits*/
+   if (!(x0>0 && y0>0 && x1<VP->Width && y1<VP->Height)) {
+      return(0);
+   }
+      
+   /*If there's a buffer to check ovrelap for */
+   if (d) {
+      /*Check for bbox intersection*/
+      node=VP->CrowdList;
+      while(node) {
+         box=node->Data;
+         if (VOUT(x0,x1,box[0],box[2]) || VOUT(y0,y1,box[1],box[3])) {
+            /*No intersection here, continue*/
+            node=node->Next;
+         } else {
+            /*Found an intersection*/
+            return(0);
+         }
       }
+
+      /*If no intersection found, add in node list*/
+      box=(int*)malloc(4*sizeof(int));
+      box[0]=X0; box[1]=Y0;
+      box[2]=X1; box[3]=Y1;
+
+      node=(TList*)malloc(sizeof(TList));
+      node->Next=VP->CrowdList;
+      node->Prev=NULL;
+      node->Data=box;
+
+      if (VP->CrowdList) {
+         VP->CrowdList->Prev=node;
+      }
+      VP->CrowdList=node;
    }
-
-   /*If no intersection found, add in node list*/
-   box=(int*)malloc(4*sizeof(int));
-   box[0]=X0; box[1]=Y0;
-   box[2]=X1; box[3]=Y1;
-
-   node=(TList*)malloc(sizeof(TList));
-   node->Next=VPCrowdList;
-   node->Prev=NULL;
-   node->Data=box;
-
-   if (VPCrowdList) {
-      VPCrowdList->Prev=node;
-   }
-   VPCrowdList=node;
-
+   
    return(1);
 }
 
@@ -230,6 +243,7 @@ int ViewportCrowdPush(int X0,int Y0,int X1,int Y1,int Delta) {
  * But      : Controle de peuplement, supprime le dernier item ajoute.
  *
  * Parametres :
+ *   <VP>     : Viewport
  *
  * Retour:
  *
@@ -237,16 +251,16 @@ int ViewportCrowdPush(int X0,int Y0,int X1,int Y1,int Delta) {
  *
  *----------------------------------------------------------------------------
 */
-void ViewportCrowdPop() {
+void ViewportCrowdPop(ViewportItem *VP) {
 
    TList *tmp;
 
-   if (VPCrowdList) {
-      tmp=VPCrowdList;
-      VPCrowdList=VPCrowdList->Next;
+   if (VP->CrowdList) {
+      tmp=VP->CrowdList;
+      VP->CrowdList=VP->CrowdList->Next;
 
-      if (VPCrowdList)
-         VPCrowdList->Prev=NULL;
+      if (VP->CrowdList)
+         VP->CrowdList->Prev=NULL;
 
       free((int*)(tmp->Data));
       free(tmp);
@@ -260,6 +274,7 @@ void ViewportCrowdPop() {
  * But      : Reinitialiser la liste de peuplement
  *
  * Parametres :
+ *   <VP>     : Viewport
  *
  * Retour:
  *
@@ -267,13 +282,13 @@ void ViewportCrowdPop() {
  *
  *----------------------------------------------------------------------------
 */
-void ViewportCrowdClear() {
+void ViewportCrowdClear(ViewportItem *VP) {
 
    TList *tmp;
 
-   while(VPCrowdList) {
-      tmp=VPCrowdList;
-      VPCrowdList=VPCrowdList->Next;
+   while(VP->CrowdList) {
+      tmp=VP->CrowdList;
+      VP->CrowdList=VP->CrowdList->Next;
 
       free((int*)(tmp->Data));
       free(tmp);
@@ -397,14 +412,18 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Frame       = 0;
    vp->Ratio       = 0;
    vp->Secondary   = 0;
-   vp->MaskWidth   = 10;
+   
+   vp->MaskWidth      = 10;
+   vp->MaskItem.Array = NULL;
+   vp->MaskItem.String= NULL;
+   vp->MaskItem.Nb    = 0;
+   
+   vp->DataItem.Array = NULL;
+   vp->DataItem.String= NULL;
+   vp->DataItem.Nb    = 0;
 
-   vp->MaskItem.Array=NULL;
-   vp->MaskItem.String=NULL;
-   vp->MaskItem.Nb=0;
-   vp->DataItem.Array=NULL;
-   vp->DataItem.String=NULL;
-   vp->DataItem.Nb=0;
+   vp->CrowdBuffer = 10;
+   vp->CrowdList   = NULL;
 
    vp->Loading     = 0;
    vp->ThreadId    = Tcl_GetCurrentThread();
@@ -803,7 +822,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             }
 
             trViewport(GLRender->TRCon,(int)vp->x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-(vp->y+vp->Height),vp->Width,vp->Height);
-            ViewportCrowdClear();
+            ViewportCrowdClear(vp);
             glPickInit(x,Tk_Height(Tk_CanvasTkwin(vp->canvas))-y,2.0,2.0);
             glGetDoublev(GL_PROJECTION_MATRIX,vp->GLPick);
             ViewportSetup(vp->canvas,vp,proj,Tk_Width(Tk_CanvasTkwin(vp->canvas)),Tk_Height(Tk_CanvasTkwin(vp->canvas)),0,0,0);
@@ -1111,6 +1130,8 @@ static void ViewportDelete(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp){
       Tcl_Free((char*)vp->MaskItem.Array);
    }
 
+   ViewportCrowdClear(vp);
+
    /*Cleanup the projection in case it used a viewport field*/
    if (vp->Projection) {
       proj=Projection_Get(vp->Projection);
@@ -1203,6 +1224,10 @@ static void ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP){
    VP->header.y1 = y ;
    VP->header.x2 = x + VP->Width;
    VP->header.y2 = y + VP->Height;
+
+   /*Translation deltas related to canvas/viewport location*/
+   VP->VX=VP->header.x1-ViewportX(VP);
+   VP->VY=Tk_Height(Tk_CanvasTkwin(VP->canvas))-(VP->header.y1-ViewportY(VP)+VP->Height);
 }
 
 /*----------------------------------------------------------------------------
@@ -1385,7 +1410,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
          Projection_Setup(vp,proj,1);
-         ViewportCrowdClear();
+         ViewportCrowdClear(vp);
 
         /*Allouer les frames de retentions si ce n'est pas deja fait*/
          if (!vp->Frames[vp->Frame]) {
@@ -2136,7 +2161,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
       }
       glStencilMask(0xFF);
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-      ViewportCrowdClear();
+      ViewportCrowdClear(vp);
 
       /*Generation des donnees raster*/
       ViewportSet(vp,proj);

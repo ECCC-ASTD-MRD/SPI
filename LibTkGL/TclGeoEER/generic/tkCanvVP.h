@@ -60,6 +60,7 @@ typedef struct ViewportItem  {
    Tk_Font tkfont;                /*Font for drawing text*/
    Tcl_TimerToken Timer;          /*Tcl refresh timer event*/
    double x,y;                    /*Coordinates of positioning point for pixmap*/
+   int VX,VY;                     /*Virtual position for point for pixmap*/
    int Width,Height;              /*Dimensions du viewport*/
    int BDWidth;                   /*Largeur de la bordure*/
    XColor *ColorFCoast;           /*Couleur des cotes (polygone)*/
@@ -85,12 +86,16 @@ typedef struct ViewportItem  {
    Obj2Array MaskItem;            /*Mask items*/
    Obj2Array DataItem;            /*Liste des donnees associees*/
    int MaskWidth;                 /*Mask width*/
+
    int Frame;                     /*Retention du rendue pour animation*/
    int Update;                    /*Indicateur de reaffichage*/
    int Realloc;                   /*Indicateur de reallocation des structures*/
    int ForcePick;                 /*Indicateur de finalisation de pick*/
    double Ratio;                  /*Ratio de hauteur/largeur/Cam aspect*/
    int Secondary;                 /*Indicateur d'importance*/
+
+   int CrowdBuffer;               /*Crowd control buffering*/
+   TList *CrowdList;              /*Crowd control list*/
 
    GLubyte *Frames[NBFRAMEMAX];   /*Liste des frames de retention*/
    GLdouble GLModS[16];           /*Matrice du modele statique*/
@@ -116,9 +121,9 @@ void   ViewportRefresh(ClientData clientData,int Delay);
 void   ViewportRefresh_Canvas(ClientData clientData);
 int    ViewportRefresh_ThreadEventProc(Tcl_Event *Event,int Mask);
 
-int  ViewportCrowdPush(int X0,int Y0,int X1,int Y1,int Delta);
-void ViewportCrowdPop();
-void ViewportCrowdClear();
+int  ViewportCrowdPush(ViewportItem *VP,int X0,int Y0,int X1,int Y1,int Delta);
+void ViewportCrowdPop(ViewportItem *VP);
+void ViewportCrowdClear(ViewportItem *VP);
 
 int Tkviewport_Init(Tcl_Interp *Interp);
 int Tclgeoeer_Init(Tcl_Interp *Interp);

@@ -406,7 +406,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  c=0,w;
+   int  c=0;
    char buf[256];
    TList *list;
    T3DArray *array;
@@ -437,7 +437,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
       if (Interp) {
-         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",w-1);
+         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->Width-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          if (Field->Spec->Outline)
             Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
@@ -599,10 +599,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             gluProject(array->Data[n][0],array->Data[n][1],array->Data[n][2],VP->GLModR,VP->GLProj,VP->GLView,&p1[0],&p1[1],&p1[2]);
 
             /* Test for insidness within viewport */
-            if (!VIN(p0[0],dx+5,Proj->VP->Width-dx-5) || !VIN(p0[1],dx+5,Proj->VP->Height-dx-5) || !VIN(p0[2],0,1)) {
-               continue;
-            }
-            if (!VIN(p1[0],dx+5,Proj->VP->Width-dx-5) || !VIN(p1[1],dx+5,Proj->VP->Height-dx-5) || !VIN(p1[2],0,1)) {
+            if (!VIN(p0[2],0,1) || !VIN(p1[2],0,1)) {
                continue;
             }
 
@@ -615,13 +612,13 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                if (th>M_PI2)  th-=M_PI;
 
                /*We have to translate along the rotation axis to center the label*/
-               dnx=dx*0.5*cos(th)-dy*0.5*cos(M_PI2-th);
-               dny=dx*0.5*sin(th)+dy*0.5*sin(M_PI2-th);
-               th=RAD2DEG(th);
+               dnx=(dx*cos(th)-dy*cos(M_PI2-th))*0.5;
+               dny=(dx*sin(th)+dy*sin(M_PI2-th))*0.5;
 
-               if (ViewportCrowdPush(p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,10)) {
+               if (ViewportCrowdPush(VP,p1[0]-dnx,p1[1]-dny,p1[0]+dnx,p1[1]+dny,-1)) {
 
                   p1[0]-=dnx; p1[1]-=dny;
+                  th=RAD2DEG(th);
 
                   /*Draw the bloc in the stencil buffer*/
                   glStencilMask(0x20);

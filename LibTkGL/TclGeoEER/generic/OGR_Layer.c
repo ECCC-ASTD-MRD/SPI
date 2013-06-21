@@ -66,8 +66,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    OGRFieldDefnH  field;
    OGRGeometryH   geom;
    int            i,idx,j,f,t;
-   unsigned int   nf;
-   double         x,y,a,min,max,val;
 
    static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
                                  "-mask","-featurehighlight","-featureselect","-fid",NULL };
@@ -271,9 +269,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
             if (Objc<4) {
                /* Force assignation of spatial reference since it seems it is no done automatically*/
-               if (geom=OGR_F_GetGeometryRef(layer->Feature[f])) {
+               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if (!t) {
-                     if (geom=OGR_G_Clone(geom)) {
+                     if ((geom=OGR_G_Clone(geom))) {
                         OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
                      }
                   }
@@ -421,7 +419,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    unsigned int  y0,y1,f,fop;
    OGR_Layer     *layer,*layerop;
    TGeoRef       *ref,*ref0;
-   Tcl_Obj       *lst,*obj;
+   Tcl_Obj       *lst;
    char          buf[32],*str;
 
    static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
@@ -1208,7 +1206,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
 
 int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
-   int          n,nb,year,month,day,hour,min,sec,tz,dt,tm;
+   int          year,month,day,hour,min,sec,tz,dt,tm;
    time_t       time;
 
    switch (OGR_Fld_GetType(Field)) {
@@ -2412,7 +2410,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 */
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask) {
 
-   int     f,idx=-1,x,y,g,id,nf;
+   int     f,idx=-1,x,y,g,nf,dx;
    int     fsize=-1,fmap=-1,flabel=-1;
    Vect3d  vr;
    char    lbl[256];
@@ -2757,12 +2755,17 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                if (Layer->Select[f]) {
                   if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
                      OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[f],flabel);
-                     vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
+                     dx=Tk_TextWidth(spec->Font,lbl,strlen(lbl));
+                     vr[0]-=(dx>>1);
                      vr[1]+=5;
-                     if (Interp) {
-                        glPostscriptText(Interp,VP->canvas,lbl,vr[0],vr[1],0,spec->Outline,0.0,0.5,0.0);
-                     } else {
-                        glDrawString(vr[0],vr[1],0,lbl,strlen(lbl),0,0);
+
+                     /*If not overlapping another label*/
+                     if (ViewportCrowdPush(VP,vr[0],vr[1],vr[0]+dx,vr[1]+Layer->Spec->TKM.ascent,-1)) {
+                        if (Interp) {
+                           glPostscriptText(Interp,VP->canvas,lbl,vr[0],vr[1],0,spec->Outline,0.0,0.5,0.0);
+                        } else {
+                           glDrawString(vr[0],vr[1],0,lbl,strlen(lbl),0,0);
+                        }
                      }
                   }
                }
@@ -2776,8 +2779,11 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             for(f=0;f<Layer->NSFeature;f++) {
                if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
                   OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[Layer->SFeature[f]],flabel);
-                  vr[0]-=Tk_TextWidth(spec->Font,lbl,strlen(lbl))/2;
+                  
+                  dx=Tk_TextWidth(spec->Font,lbl,strlen(lbl));
+                  vr[0]-=(dx>>1);
                   vr[1]+=5;
+
                   if (Interp) {
                      glPostscriptText(Interp,VP->canvas,lbl,vr[0],vr[1],0,spec->Outline,0.0,0.5,0.0);
                   } else {

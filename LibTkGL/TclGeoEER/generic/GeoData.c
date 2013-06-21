@@ -2127,11 +2127,7 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
 
    Tk_FontMetrics tkm;
    Vect3d         pos,pix;
-   int            len,dx,dy,x,y;
-
-   /*Translation deltas related to canvas/viewport location*/
-   x=Proj->VP->header.x1-ViewportX(Proj->VP);
-   y=Tk_Height(Tk_CanvasTkwin(Proj->VP->canvas))-(Proj->VP->header.y1-ViewportY(Proj->VP)+Proj->VP->Height);
+   int            len,dx,dy;
 
    if (!Color || Txt<=(GDB_Txt*)0x1 || !Proj->VP->tkfont || GLRender->Resolution>1)
       return;
@@ -2172,16 +2168,12 @@ void GDB_TxtRender(Tcl_Interp *Interp,Projection *Proj,GDB_Txt *Txt,XColor *Colo
             /*Get length in pixel*/
             dx=Tk_TextWidth(Proj->VP->tkfont,Txt->String,len);
 
-            /*If within the viewport limits*/
-            if ((pix[0]-Point+x-5)>0 && (pix[1]-Point+y-5)>0 && (pix[0]+x+dx+5)<Proj->VP->Width && (pix[1]+y+dy+5)<Proj->VP->Height) {
-
-              /*If not overlapping another label*/
-              if (ViewportCrowdPush(pix[0]+x,pix[1]+y,pix[0]+x+dx,pix[1]+y+dy,10)) {
-                  if (Point) {
-                     glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
-                  }
-                  glPrint(Interp,Proj->VP->canvas,Txt->String,pix[0],pix[1],0);
+            /*If not overlapping another label*/
+            if (ViewportCrowdPush(Proj->VP,pix[0],pix[1],pix[0]+dx,pix[1]+dy,-1)) {
+               if (Point) {
+                  glPrint(Interp,Proj->VP->canvas,"o",pix[0]-Point,pix[1]-Point,0);
                }
+               glPrint(Interp,Proj->VP->canvas,Txt->String,pix[0],pix[1],0);
             }
          }
       }

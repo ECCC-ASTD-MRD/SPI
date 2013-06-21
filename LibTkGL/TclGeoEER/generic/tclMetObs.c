@@ -2147,7 +2147,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
             }
 
-            if (loc->Grid[0]==0.0 && Obs->Model->Overspace && !ViewportCrowdPush(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+            if (loc->Grid[0]==0.0 && Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                loc=loc->Next;
                continue;
             }
@@ -2255,7 +2255,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
                                     continue;
                                  }
-                                 if (Obs->Model->Overspace && !ViewportCrowdPush(pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+                                 if (Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                                     continue;
                                  }
                               }
@@ -2493,7 +2493,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
             /*It is possible nothing was drawn so remove from crowd list if so*/
             if (Obs->Model->Overspace && skip) {
-               ViewportCrowdPop();
+               ViewportCrowdPop(VP);
             };
 
             glPopName();
