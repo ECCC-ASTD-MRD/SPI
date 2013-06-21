@@ -100,6 +100,7 @@ namespace eval Viewport {
    set Map(CoordLoc)    1            ;#Positionnement des latlon (-1=Ocean,1=Partout)
    set Map(CoordDef)    10.0         ;#Intervale entre les latlon en degres
    set Map(CoordNum)    2            ;#Numerotation des latlon
+   set Map(Crowd)       20           ;#Buffer de controle de supperposition (Crow control)
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
    set Map(Grabbed)     0            ;#Etat de la vue
@@ -168,6 +169,7 @@ namespace eval Viewport {
    set Lbl(Rail)           { "Rail"     "Rail" }
    set Lbl(Coord)          { "LatLon"   "LatLon" }
    set Lbl(Sun)            { "Soleil"   "Sun" }
+   set Lbl(Crowd)          { "Peuplement"   "Clutter" }
 
    set Lbl(None)           { "Auncun" "None" }
    set Lbl(Name)           { "Nom"    "Name" }
@@ -544,6 +546,7 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(Bath)        [projection configure $Frame -mapbath]
    set Map(Text)        [projection configure $Frame -maptext]
 
+   set Map(Crowd)       [lindex [$Frame.page.canvas itemconf $VP -crowd] 4]
    set Resources(Font)      [lindex [$Frame.page.canvas itemconf $VP -font] 4]
    set Resources(Bkg)       [lindex [$Frame.page.canvas itemconf $VP -bg] 4]
 
@@ -652,7 +655,7 @@ proc Viewport::ConfigSet { Frame } {
    set Map(Lon) [lindex $ll 1]
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -font $Resources(Font) -bg $Resources(Bkg) \
+      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
@@ -1189,7 +1192,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 
    Viewport::ConfigSet $Frame
 
-   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -fg black -font $Resources(Font) -bg $Resources(Bkg) \
+   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
@@ -1325,7 +1328,7 @@ proc Viewport::Do { Frame } {
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -bg $Resources(Bkg) \
+      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) -colorplace $Resources(Place) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorcoord $Resources(Coord)
@@ -1937,12 +1940,19 @@ proc Viewport::ParamFrame { Frame Apply } {
          scale $Data(Frame).layer.min.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(MinSize) -relief flat \
             -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 71 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.min.lbl -text [format " %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
+         label $Data(Frame).layer.min.lbl -text [format "  %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
          pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
 
-      pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
+      frame $Data(Frame).layer.crowd
+         scale $Data(Frame).layer.crowd.sc -orient horizontal -from 0 -to 100 \
+            -showvalue false -variable Viewport::Map(Crowd) -relief flat \
+            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 71 -sliderlength 8  -bd 1 -resolution 1
+         label $Data(Frame).layer.crowd.lbl -text [format "  %-10s" [lindex $Lbl(Crowd) $GDefs(Lang)]]
+         pack $Data(Frame).layer.crowd.sc $Data(Frame).layer.crowd.lbl -side left
+
+         pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
          $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.place $Data(Frame).layer.road $Data(Frame).layer.rail \
-         $Data(Frame).layer.ll $Data(Frame).layer.min -side top -anchor sw -padx 2 -fill x
+         $Data(Frame).layer.ll $Data(Frame).layer.min $Data(Frame).layer.crowd -side top -anchor sw -padx 2 -fill x
 
    #----- LatLon
 
