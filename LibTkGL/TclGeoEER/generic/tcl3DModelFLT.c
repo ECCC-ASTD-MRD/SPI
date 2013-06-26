@@ -32,7 +32,7 @@
  */
 #ifdef HAVE_FLT
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "tcl3DModel.h"
 #include "flt.h"

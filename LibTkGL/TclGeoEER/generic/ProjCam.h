@@ -34,7 +34,7 @@
 #ifndef _ProjCam_h
 #define _ProjCam_h
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <tcl.h>

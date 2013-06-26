@@ -33,8 +33,8 @@
 #ifndef _tcl3DModel3DS_h
 #define _tcl3DModel3DS_h
 
+#include <stdlib.h>
 #include <stdio.h>
-#include <malloc.h>
 
 // Primary Chunk, at the beginning of each file
 #define PRIMARY       0x4D4D

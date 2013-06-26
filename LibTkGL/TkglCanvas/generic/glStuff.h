@@ -44,7 +44,6 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <math.h>
-#include <malloc.h>
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>

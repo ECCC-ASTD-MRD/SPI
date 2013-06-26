@@ -177,8 +177,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
       y=Y+1.0;
 
       if (Ref && Ref->Grid[0]=='V') {
-         ix=ROUND(X);
-         iy=ROUND(Y);
+         ix=lrint(X);
+         iy=lrint(Y);
 
          if (Def->Data[1]) {
             Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
@@ -203,8 +203,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 //EZFIX            EZUnLock_RPNInt();
          }
       } else {
-         ix=ROUND(X);
-         iy=ROUND(Y);
+         ix=lrint(X);
+         iy=lrint(Y);
 
          if (Ref->Grid[0]=='Y' || Ref->Grid[0]=='P') {
             X=ix;

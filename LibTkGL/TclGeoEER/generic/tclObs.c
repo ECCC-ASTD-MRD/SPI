@@ -2199,9 +2199,9 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
             }
             if (Obs->Spec->RenderLabel) {
                if (Obs->Loc->No)
-                  sprintf(buf,"%s (%s)",Obs->Loc->Id[i],Obs->Loc->No[i]);
+                  snprintf(buf,128,"%s (%s)",Obs->Loc->Id[i],Obs->Loc->No[i]);
                else
-                  sprintf(buf,"%s",Obs->Loc->Id[i]);
+                  snprintf(buf,128,"%s",Obs->Loc->Id[i]);
 
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
@@ -2212,7 +2212,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
             }
 
             if (Obs->Spec->RenderCoord) {
-               sprintf(buf,"(%.4f, %.4f)",Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon);
+               snprintf(buf,128,"(%.4f, %.4f)",Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon);
                if (!sz) {
                   dx=-Tk_TextWidth(Obs->Spec->Font,buf,strlen(buf))/2;
                   dy=-Obs->Spec->TKM.linespace/2;

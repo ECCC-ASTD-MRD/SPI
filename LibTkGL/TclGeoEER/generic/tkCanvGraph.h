@@ -34,7 +34,7 @@
 #ifndef _tkCanvGraph_h
 #define _tkCanvGraph_h
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 

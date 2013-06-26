@@ -288,8 +288,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
          for (i=0;i<n;i++) {
             dx1=OGR_G_GetX(Geom,i);
             dy1=OGR_G_GetY(Geom,i);
-            x=ROUND(dx1);
-            y=ROUND(dy1);
+            x=lrint(dx1);
+            y=lrint(dy1);
             if (FIN2D(Def,x,y))
                Def_Set(Def,0,FIDX2D(Def,x,y),Value);
          }
@@ -306,8 +306,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             dx2=OGR_G_GetX(Geom,ind2);
             dy2=OGR_G_GetY(Geom,ind2);
 
-            x0=ROUND(dx1); y0=ROUND(dy1);
-            x1=ROUND(dx2); y1=ROUND(dy2);
+            x0=lrint(dx1); y0=lrint(dy1);
+            x1=lrint(dx2); y1=lrint(dy2);
             dny=y1-y0;
             dnx=x1-x0;
             if (dny<0) {
@@ -408,8 +408,8 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                            -Fill them separately-
                            They are not taken into account twice.*/
                      if (dx1>dx2) {
-                        horizontal_x1=ROUND(dx2);
-                        horizontal_x2=ROUND(dx1);
+                        horizontal_x1=lrint(dx2);
+                        horizontal_x2=lrint(dx1);
                         if ((horizontal_x1>maxx) || (horizontal_x2<minx))
                            continue;
 
@@ -426,7 +426,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
                   if ((dy<dy2) && (dy>=dy1)) {
                      intersect=(dy-dy1)*(dx2-dx1)/(dy2-dy1)+dx1;
-                     polyInts[ints++]=ROUND(intersect);
+                     polyInts[ints++]=lrint(intersect);
                   }
                }
             }
@@ -434,7 +434,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
             for (i=0;i<ints;i+=2) {
                if (polyInts[i]<=maxx && polyInts[i+1]>=minx) {
-                  for(x=polyInts[i];x<polyInts[i+1];x++)
+                  for(x=polyInts[i];x<=polyInts[i+1];x++)
                      if (FIN2D(Def,x,y))
                         Def_Set(Def,0,FIDX2D(Def,x,y),Value);
                }
@@ -475,7 +475,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z) {
 
    double        dx,dy,dp=0.0,val=0.0;
-   int           x,y,n=0,idx2,idx3;
+   int           x,y,n=0,idx2,idx3,na;
    OGRGeometryH  inter=NULL;
    OGREnvelope   envg,envp;
 
@@ -498,17 +498,19 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
    OGR_G_GetEnvelope(Geom,&envg);
 
    val=Value;
-
+   na=(Mode=='C' || Mode=='N' || Mode=='A');
+   
    /* Test for intersection */
-   if ((Area>0.0 || Mode!='C' || Mode!='N' || Mode!='A') && GPC_Intersect(Geom,Def->Pick,&envg,&envp)) {
+   if ((Area>0.0 || !na) && GPC_Intersect(Geom,Def->Poly,&envg,&envp)) {
+//   if ((Area>0.0 || !na) && OGR_G_Intersects(Geom,Def->Poly)) {
 
       /* If this is a single pixel */
       if (X0==X1 && Y0==Y1) {
 
          idx2=FIDX2D(Def,X0,Y0);
-         idx3=FIDX3D(Def,X0,Y0,Z);
+         idx3=Z?FIDX3D(Def,X0,Y0,Z):idx2;
 
-         if (Mode=='C' || Mode=='N' || Mode=='A') {
+         if (na) {
             Def_Get(Def,0,idx3,val);
             if (isnan(val) || val==Def->NoData)
                val=0.0;
@@ -1639,7 +1641,7 @@ void Murphy_ParaLine(TMurphy *M,int X,int Y,int D1) {
 
 int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
 
-   float   offset = M->Width/2.0;
+   double  offset = M->Width/2.0;
    Vect2i  pt,p0,p1;
 
    int    tmp;
@@ -1649,8 +1651,8 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
    int    tk;                 /* thickness threshold */
    double ang;                /* angle for initial point calculation */
 
-   p0[0]=ROUND(P0[0]); p0[1]=ROUND(P0[1]);
-   p1[0]=ROUND(P1[0]); p1[1]=ROUND(P1[1]);
+   p0[0]=lrint(P0[0]); p0[1]=lrint(P0[1]);
+   p1[0]=lrint(P1[0]); p1[1]=lrint(P1[1]);
 
    /* Initialisation */
    M->u = p1[0] - p0[0]; /* delta x */
@@ -1689,18 +1691,18 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
    ang = atan((double)M->v/(double)M->u);      /* calc new initial point - offset both sides of ideal */
 
    if (M->oct2 == 0) {
-      pt[0] = p0[0] + ROUND(offset * sin(ang));
+      pt[0] = p0[0] + lrint(offset * sin(ang));
       if (M->quad4 == 0) {
-         pt[1] = p0[1] - ROUND(offset * cos(ang));
+         pt[1] = p0[1] - lrint(offset * cos(ang));
       } else {
-         pt[1] = p0[1] + ROUND(offset * cos(ang));
+         pt[1] = p0[1] + lrint(offset * cos(ang));
       }
    } else {
-      pt[0] = p0[0] - ROUND(offset * cos(ang));
+      pt[0] = p0[0] - lrint(offset * cos(ang));
       if (M->quad4 == 0) {
-         pt[1] = p0[1] + ROUND(offset * sin(ang));
+         pt[1] = p0[1] + lrint(offset * sin(ang));
       } else {
-         pt[1] = p0[1] - ROUND(offset * sin(ang));
+         pt[1] = p0[1] - lrint(offset * sin(ang));
       }
    }
 

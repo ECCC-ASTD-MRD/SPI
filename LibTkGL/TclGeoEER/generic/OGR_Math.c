@@ -183,7 +183,7 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
          GPC_FromOGR(Poly,geom);
       }
    } else if (type==wkbPolygon) {
-      if (nc=OGR_G_GetGeometryCount(Geom)) {
+      if ((nc=OGR_G_GetGeometryCount(Geom))) {
          Poly->hole=(int*)realloc(Poly->hole,(Poly->num_contours+nc)*(sizeof(int)));
          Poly->contour=(gpc_vertex_list*)realloc(Poly->contour,(Poly->num_contours+nc)*(sizeof(gpc_vertex_list)));
 
@@ -312,8 +312,7 @@ OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
 int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
-   int          n0,n1,t0,t1,npt=0;
-   Vect3d       v0,v1;
+   int          n0,n1,npt=0;
    OGRGeometryH pt,geom;
    OGREnvelope  env;
 
@@ -376,9 +375,15 @@ int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelo
    if (OGR_G_GetGeometryType(Geom1)==wkbPolygon) {
       Geom1=OGR_G_GetGeometryRef(Geom1,0);
    }
+   
+//   return(GPC_PointPolyIntersect(Geom0,Geom1,1));
 
    /*Demarrer les tests selon les type de geometrie*/
-   return(GPC_PointPolyIntersect(Geom0,Geom1,1));
+   if (GPC_LinePolyIntersect(Geom0,Geom1)) {
+      return(0);
+   } else {
+      return(GPC_PointPolyIntersect(Geom0,Geom1,0));
+   }
 }
 
 int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
@@ -550,6 +555,9 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
 
+   if (!g0 || !g1)
+      return(0);
+
    for(n0=0;n0<g0;n0++) {
       Vect_Assign(v0,GPC_Geom[0][n0]);
 
@@ -577,11 +585,14 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    unsigned int n0,n1,g0,g1,n11;
-   int          c,d,i;
+   int          c,d;
    Vect3d       v0[2],v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
+
+   if (!g0 || !g1)
+      return(0);
 
    for(n0=0;n0<(g0-1);n0++) {
 
@@ -596,8 +607,7 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          Vect_Assign(v1[1],GPC_Geom[1][n11]);
 
          /*Check for segment intersection*/
-         i=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);
-         if (i==1 || i==4 || i==5) {
+         if ((GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL)==1)) {
             return(1);
          }
 
@@ -622,6 +632,9 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    g0=GPC_ToVect3d(Geom0,0);
    g1=GPC_ToVect3d(Geom1,1);
 
+   if (!g0 || !g1)
+      return(0);
+   
    for(n0=0;n0<g0-1;n0++) {
       Vect_Assign(v0[0],GPC_Geom[0][n0]);
       Vect_Assign(v0[1],GPC_Geom[0][n0+1]);
@@ -632,7 +645,7 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
          /*Check for segment intersection*/
          i=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);
-         if (i==1 || i==4 || i==5) {
+         if (i==1 || i==4 ) {
             return(1);
          }
       }

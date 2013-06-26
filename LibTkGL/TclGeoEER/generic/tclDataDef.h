@@ -35,7 +35,6 @@
 #define _tclDataDef_h
 
 #include <math.h>
-#include <malloc.h>
 #include <strings.h>
 #include <stdlib.h>
 

@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <math.h>
 
 #include "tcl3DModel.h"
@@ -1876,8 +1875,8 @@ void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,do
 
 // fprintf(stderr,"%f %f %f %f  %f %f\n",Ex[0][0],Ex[1][0],Ex[0][1],Ex[1][1],Ex[0][2],Ex[1][2]);
    for(z=0;z<NVr;z++) {
-      x=ROUND(Vr[z][0]);
-      y=ROUND(Vr[z][1]);
+      x=lrint(Vr[z][0]);
+      y=lrint(Vr[z][1]);
       if (FIN2D(Def,x,y))
          Def_Set(Def,0,FIDX2D(Def,x,y),Value);
    }

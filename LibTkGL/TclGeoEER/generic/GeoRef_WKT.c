@@ -127,8 +127,8 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
       /*Index memoire du niveau desire*/
       mem=Def->NI*Def->NJ*(int)Z;
 
-      ix=ROUND(X);
-      iy=ROUND(Y);
+      ix=lrint(X);
+      iy=lrint(Y);
 
       if (Def->Type<=9 || Mode=='N' || (X==ix && Y==iy)) {
          mem+=iy*Def->NI+ix;

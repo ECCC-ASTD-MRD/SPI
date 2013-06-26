@@ -1895,7 +1895,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_AppendResult(Interp,"Data_Stat: No positional information",(char*)NULL);
                   return(TCL_ERROR);
                }
-               index=FIDX2D(Field->Def,(int)ROUND(dx),(int)ROUND(dy));
+               index=FIDX2D(Field->Def,lrint(dx),lrint(dy));
                dlat=Field->Ref->Lat[index];
                dlon=Field->Ref->Lon[index];
             } else {
@@ -3032,9 +3032,10 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
 */
 int Data_ValSet(TData *Field,double I,double J,double Val) {
 
-   float dx0,dx1,dy0,dy1;
+   float         dx0,dx1,dy0,dy1;
    unsigned long x0,y0,idx;
-
+   int           i,j;
+   
    if (I<0 || I>Field->Def->NI-1 || J<0 || J>Field->Def->NJ-1)
       return 0;
 
@@ -3043,13 +3044,15 @@ int Data_ValSet(TData *Field,double I,double J,double Val) {
       Field->Stat=NULL;
    }
 
-   idx=FIDX3D(Field->Def,ROUND(I),ROUND(J),Field->Def->Level);
+   i=lrint(I);
+   j=lrint(J);
+   idx=FIDX3D(Field->Def,i,j,Field->Def->Level);
    Val=SPEC2VAL(Field->Spec,Val);
    Def_Set(Field->Def,0,idx,Val);
    return 1;
 
    if (Field->Spec->InterpDegree[0]=='N') {
-      Field->Def->Data[0][(int)(ROUND(J)*Field->Def->NI+ROUND(I))]=Val;
+      Field->Def->Data[0][j*Field->Def->NI+i]=Val;
    } else {
       x0=floor(I);
       y0=floor(J);
