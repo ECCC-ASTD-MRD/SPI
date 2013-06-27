@@ -356,8 +356,8 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
-                                 "timeinterp","define",NULL };
-   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,DEFINE };
+                                 "timeinterp",NULL };
+   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -367,7 +367,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,TD_RPN,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
@@ -996,20 +996,6 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          Tcl_GetIntFromObj(Interp,Objv[5],&id);
          return(FSTD_FieldTimeInterpolate(Interp,id,Tcl_GetString(Objv[2]),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4]))));
-         break;
-
-      case DEFINE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return(TCL_ERROR);
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         return(FSTD_FieldDefine(Interp,field0,Objc-3,Objv+3));
          break;
    }
 

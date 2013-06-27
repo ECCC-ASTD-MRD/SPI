@@ -80,7 +80,13 @@ typedef enum {
    TD_NOP                            = 16,
    TD_ACCUM                          = 17,
    TD_BUFFER                         = 18
-} TData_Interp;
+} TDataInterp;
+
+typedef enum {
+   TD_RPN,
+   TD_GRIB,
+   TD_RADAR
+} TDataType;
 
 typedef struct TDataStat {
    double Min,Max,Avg;      /*Minimum maximum et moyenne de l'enregistrement*/
@@ -99,28 +105,32 @@ typedef void    (TData_Free)     (struct TData *Field);
 typedef void    (TData_Copy)     (void *To, void *From);
 typedef int     (TData_ReadCube) (Tcl_Interp *Interp,struct TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List);
 typedef void    (TData_Set)      (struct TData *Field);
+typedef int     (TData_Define)   (Tcl_Interp *Interp,struct TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
 typedef struct TData {
    Tcl_Obj      *Tag;
    void         *Head;       /*Entete de l'enregistrement (metadata)*/
 
    TGeoRef      *Ref;        /*Reference geographique horizontale*/
+
    TDataDef     *Def,**SDef; /*Definition des donnees*/
    TDataSpec    *Spec;       /*Specification des donnees (pour l'affichage)*/
    TDataStat    *Stat;       /*Statistiques de l'enregistrement*/
+   TDataType    Type;        /*Type de donnee*/
 
    TData_Set      *Set;      /*Fonction d'initialisation*/
    TData_Free     *Free;     /*Fonction de liberation*/
    TData_Copy     *Copy;     /*Fonction de copie de champs*/
    TData_ReadCube *ReadCube; /*Fonction de lecture du cube de donnees (niveaux verticaux)*/
    TData_Grid     *Grid;     /*Fonction de recuperation de la grille (geo-localisation)*/
-
+   TData_Define   *Define;   /*Fonction de recuperation/definition des parametres*/
+   
    float  *Map;              /*Texture du champs*/
 } TData;
 
 #include "Vertex.h"
 
-int      Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+int      Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 void     Data_FromString(char *String,TDataDef *Def,int Comp,int Idx);
 Tcl_Obj *Data_Val2Obj(TDataDef *Def,double Val);

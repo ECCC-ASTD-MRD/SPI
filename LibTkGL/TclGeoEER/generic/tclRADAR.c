@@ -184,8 +184,8 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    TDataSpec *spec;
 
    int         idx,v,n;
-   static CONST char *sopt[] = { "read","define",NULL };
-   enum                opt { READ,DEFINE };
+   static CONST char *sopt[] = { "read",NULL };
+   enum                opt { READ };
 
    Tcl_ResetResult(Interp);
 
@@ -195,7 +195,7 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,TD_RADAR,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
@@ -207,19 +207,6 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
          Tcl_GetIntFromObj(Interp,Objv[4],&v);
          return(Radar_Read(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),v));
 
-         break;
-
-      case DEFINE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id ?option?");
-            return(TCL_ERROR);
-         }
-         rad=Data_Get(Tcl_GetString(Objv[2]));
-         if (!rad) {
-            Tcl_AppendResult(Interp,"\n   Radar_Cmd: Radar id unknown: \"",Objv[2],"\"",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         return(Radar_ScanDefine(Interp,rad,Objc-3,Objv+3));
          break;
    }
    return TCL_OK;

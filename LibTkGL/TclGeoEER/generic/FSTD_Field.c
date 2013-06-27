@@ -118,12 +118,14 @@ void FSTD_FieldSet(TData *Data){
       head->NOMVAR[0]='\0';
       head->ETIKET[0]='\0';
    }
+   Data->Type=TD_RPN;
    Data->Head=head;
    Data->Set=FSTD_FieldSet;
    Data->Free=FSTD_FieldFree;
    Data->Copy=FSTD_HeadCopy;
    Data->Grid=FSTD_Grid;
    Data->ReadCube=FSTD_FieldReadLevels;
+   Data->Define=FSTD_FieldDefine;
 }
 
 void FSTD_HeadCopy(void *To,void *From) {

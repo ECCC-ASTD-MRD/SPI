@@ -620,7 +620,11 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                   }
                   Tcl_SetObjResult(Interp,obj);
                } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time,1)));
+                  if (obs->Date) {
+                     Tcl_SetObjResult(Interp,Tcl_NewLongObj(System_DateTime2Seconds(obs->Date,obs->Time,1)));
+                  } else {
+                     Tcl_SetObjResult(Interp,Tcl_NewLongObj(0));
+                  }
                }
             } else {
                Tcl_GetLongFromObj(Interp,Objv[++i],&sec);
@@ -1480,6 +1484,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
             obs->Def=DataDef_New(nb,1,1,1,TD_Float32);
             obs->Def->NoData=-999.0;
             obs->Loc=loc;
+            obs->Date=obs->Time=0;
             loc->Ref++;
             obs->Spec->Desc=strdup(&gtok[n][5]);
             strrep(obs->Spec->Desc,'.','\0');

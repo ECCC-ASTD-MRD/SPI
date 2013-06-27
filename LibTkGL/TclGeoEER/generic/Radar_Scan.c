@@ -37,10 +37,41 @@
 #include "tclRADAR.h"
 #include "Projection.h"
 
-static int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]);
+/*----------------------------------------------------------------------------
+ * Nom      : <Radar_Set>
+ * Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Determiner la validite d'un champ de par ses dimension ou en
+ *            creer un nouveau si necessaire.
+ *
+ * Parametres     :
+ *  <TData>       : Pointeur sur la donnee
+ *
+ * Retour:
+ *  <Field>       : Champs valide pour les parametres demandees
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void Radar_Set(TData *Data){
+
+   if (Data->Head && Data->Free)
+      Data->Free(Data);
+
+   Data->Head=(Radar_Head*)malloc(sizeof(Radar_Head));
+
+   Data->Type=TD_RADAR;
+   Data->Set=Radar_Set;
+   Data->Free=Radar_Free;
+   Data->Copy=Radar_HeadCopy;
+   Data->Grid=Radar_Grid;
+   Data->ReadCube=NULL;
+   Data->Define=Radar_ScanDefine;
+}
 
 /*----------------------------------------------------------------------------
- * Nom      : <Radar_ScanDefine>
+ * Nom      : <Radar_Define>
  * Creation : Avril 2006 J.P. Gauthier
  *
  * But      : Definition des donnees'observations
@@ -58,7 +89,7 @@ static int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Ob
  *
  *----------------------------------------------------------------------------
 */
-int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
+int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
 
    Radar_Head *head=(Radar_Head*)Rad->Head;
    Tcl_Obj    *obj;
@@ -251,37 +282,6 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
       }
    }
    return TCL_OK;
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Radar_Set>
- * Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Determiner la validite d'un champ de par ses dimension ou en
- *            creer un nouveau si necessaire.
- *
- * Parametres     :
- *  <TData>       : Pointeur sur la donnee
- *
- * Retour:
- *  <Field>       : Champs valide pour les parametres demandees
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Radar_Set(TData *Data){
-
-   if (Data->Head && Data->Free)
-      Data->Free(Data);
-
-   Data->Head=(Radar_Head*)malloc(sizeof(Radar_Head));
-
-   Data->Set=Radar_Set;
-   Data->Free=Radar_Free;
-   Data->Copy=Radar_HeadCopy;
-   Data->Grid=Radar_Grid;
-   Data->ReadCube=NULL;
 }
 
 void Radar_HeadCopy(void *To,void *From) {

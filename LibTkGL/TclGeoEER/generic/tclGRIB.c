@@ -160,8 +160,8 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    long       key;
    TData     *field0,*field1;
 
-   static CONST char *sopt[] = { "read","define",NULL };
-   enum                opt { READ,DEFINE };
+   static CONST char *sopt[] = { "read",NULL };
+   enum                opt { READ };
 
    Tcl_ResetResult(Interp);
 
@@ -171,7 +171,7 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,TD_GRIB,Interp,Objc,Objv));
    }
 
    switch ((enum opt)idx) {
@@ -182,20 +182,6 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          Tcl_GetLongFromObj(Interp,Objv[4],&key);
          return(GRIB_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),key));
-         break;
-
-      case DEFINE:
-         if(Objc<3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
-            return(TCL_ERROR);
-         }
-         field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (!field0) {
-            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         return(GRIB_FieldDefine(Interp,field0,Objc-3,Objv+3));
          break;
    }
 

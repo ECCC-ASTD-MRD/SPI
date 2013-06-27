@@ -626,7 +626,6 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    unsigned int n0,n1,g0,g1;
-   int          i;
    Vect3d       v0[2],v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
@@ -644,8 +643,7 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
          Vect_Assign(v1[1],GPC_Geom[1][n1+1]);
 
          /*Check for segment intersection*/
-         i=GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL);
-         if (i==1 || i==4 ) {
+         if ((GPC_SegmentIntersect(v0[0],v0[1],v1[0],v1[1],NULL)==1)) {
             return(1);
          }
       }

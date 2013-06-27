@@ -1139,7 +1139,7 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
  *
  *----------------------------------------------------------------------------
 */
-int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TData_Interp Mode,int Final){
+int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TDataInterp Mode,int Final){
 
    double        val,vx,di[4],dj[4],*fld,di0,di1,dj0,dj1;
    int          *acc=NULL,x0,x1,y,y0,y1;

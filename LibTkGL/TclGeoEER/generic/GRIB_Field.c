@@ -54,12 +54,14 @@ void GRIB_FieldSet(TData *Data){
    head->DATEO=0;
 
    /*Initialiser les parametres de definition du champs*/
+   Data->Type=TD_GRIB;
    Data->Head=head;
    Data->Set=GRIB_FieldSet;
    Data->Free=GRIB_FieldFree;
    Data->Copy=GRIB_HeadCopy;
    Data->Grid=GRIB_Grid;
    Data->ReadCube=NULL;
+   Data->Define=GRIB_FieldDefine;
 }
 
 void GRIB_HeadCopy(void *To,void *From) {
@@ -256,10 +258,9 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->NOMVAR,-1));
             } else {
-               strncpy(head->NOMVAR,Tcl_GetString(Objv[++i]),4);
-               head->NOMVAR[4]='\0';
-               if (Field->Spec->Desc) free(Field->Spec->Desc);
-               Field->Spec->Desc=strdup(head->NOMVAR);
+               strncpy(head->NOMVAR,Tcl_GetString(Objv[++i]),GRIB_STRLEN);
+               if (Field->Spec && !Field->Spec->Desc)
+                  Field->Spec->Desc=strdup(head->NOMVAR);
             }
             break;
 
@@ -664,7 +665,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 //   len=GRIB_STRLEN;
 //   grib_get_string(head->Handle,"parameterName",sval,&len);
 //   field->Spec->Desc=strdup(sval);
-   field->Spec->Desc=strdup(head->NOMVAR);
 
    /*Create grid definition*/
    err=grib_get_long(head->Handle,"gridDefinition",&i);
@@ -720,6 +720,14 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 
    GRIB_FieldSet(field);
    memcpy(field->Head,head,sizeof(GRIB_Head));
+   if (field->Spec->Desc)
+      free(field->Spec->Desc);
+
+   len=GRIB_STRLEN;
+   grib_get_string(head->Handle,"name",sval,&len);
+
+   field->Spec->Desc=strdup(sval);
+//   field->Spec->Desc=strdup(head->NOMVAR);
 
 #ifdef DEBUG
 /*
@@ -790,7 +798,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    Tcl_Obj       *list,*obj;
    int            er,err=0,lvtyp,nb;
    size_t         len;
-   long           date,time,lval,ni=-1,nj=-1,nk=1,type;
+   long           date,time,step,unit,lval,ni=-1,nj=-1,nk=1,type;
    char           buf[1024];
    float          lvl;
 
@@ -827,8 +835,11 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          er=grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
          head.Version=lval;
 
-         er=grib_get_long(head.Handle,"date",&date);
-         er=grib_get_long(head.Handle,"time",&time);
+         er=grib_get_long(head.Handle,"dataDate",&date);
+         er=grib_get_long(head.Handle,"dataTime",&time);
+         er=grib_get_long(head.Handle,"stepUnits",&unit);
+         er=grib_get_long(head.Handle,"stepRange",&step);
+         
          er=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
          er=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
          if (ni==-1) {
@@ -860,7 +871,21 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
          /*Calculer la date de validitee du champs*/
          date=date<=1231?date+19800000:date;
-         head.DATEV=System_DateTime2Seconds(date,time*100,1);
+         
+         switch(unit) {
+            case   0: unit=60;break;
+            case   1: unit=3600;break;
+            case   2: unit=86400;break;
+            case  10: unit=10800;break;
+            case  11: unit=21600;break;
+            case  12: unit=43200;break;
+            case 254: unit=1;break;
+            default : unit=0;
+         }
+         
+         head.DATEO=System_DateTime2Seconds(date,time*100,1);
+         head.DATEV=head.DATEO+step*unit;
+         System_Seconds2DateTime(head.DATEV,&date,&time,1);
 
          switch(Mode) {
             case FSTD_LISTSPI:
@@ -882,7 +907,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
             case FSTD_LISTALL:
                snprintf(buf,1024,"%s %i {%s} {%c} %i %i %i GRIB%i %09li %09li %li %li %li",
-                  File->Id,nb,head.NOMVAR,(char)type,head.IP1,0,0,head.Version,head.DATEV,head.DATEV,ni,nj,nk);
+                  File->Id,nb,head.NOMVAR,(char)type,head.IP1,0,0,head.Version,head.DATEO,head.DATEV,ni,nj,nk);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;

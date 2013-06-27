@@ -195,6 +195,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
  *
  * Parametres     :
  *  <clientData>  : Donnees du module.
+ *  <Type>        : Type de donnee de de l'appel
  *  <Interp>      : Interpreteur TCL.
  *  <Objc>        : Nombre d'arguments
  *  <Objv>        : Liste des arguments
@@ -206,15 +207,15 @@ int Tcldata_Init(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int        idx,n;
+   int        idx,n,bool;
    TData     *field0;
    TDataSpec *spec;
    double     nd;
 
-   static CONST char *sopt[] = { "copy","free","configure","stats","sort","clear","clean","wipe","is",NULL };
-   enum                opt { COPY,FREE,CONFIGURE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "copy","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
+   enum                opt { COPY,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -292,6 +293,20 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          break;
 
+      case DEFINE:
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
+            return(TCL_ERROR);
+         }
+         field0=Data_Get(Tcl_GetString(Objv[2]));
+         if (!field0) {
+            Tcl_AppendResult(Interp,"invalid field",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         return(field0->Define(Interp,field0,Objc-3,Objv+3));
+         break;
+
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld ?option?");
@@ -346,11 +361,16 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case IS:
-         if(Objc!=3) {
+         if(Objc!=3 && Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld");
             return(TCL_ERROR);
          }
-         if (Data_Get(Tcl_GetString(Objv[2]))) {
+         bool=0;
+         if (Objc>3) {
+            Tcl_GetBooleanFromObj(Interp,Objv[3],&bool);
+         }
+         field0=Data_Get(Tcl_GetString(Objv[2]));
+         if (field0 && (bool || field0->Type==Type)) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
@@ -1054,6 +1074,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       field->Head=NULL;
       field->Free=NULL;
       field->ReadCube=NULL;
+      field->Define=NULL;
       field->Tag=NULL;
       field->Map=NULL;
 
