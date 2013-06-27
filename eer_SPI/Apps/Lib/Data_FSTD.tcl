@@ -659,7 +659,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 
    foreach field [lindex [$Canvas itemconfigure $VP -data] 4] {
 
-      if { [fstdfield is $field] && [fstdfield define $field -GRTYP]!="V" } {
+      if { [fstdfield is $field True] && ([fstdfield is $field] && [fstdfield define $field -GRTYP]!="V") } {
          if { ![projection configure $Page -geographic] } {
             set ij    [projection function $Page -gridcoord $Lat $Lon]
             set pij   $ij
@@ -904,12 +904,13 @@ proc FSTD::ParamPut { } {
    $Data(Frame).lev.select.mode.list.inter delete 0 end
 
    if { [dataspec is $Param(Spec)] } {
-      set var [dataspec configure $Param(Spec) -desc]
+      set var $Param(Spec)
 
       if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
          ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$var)
          set Param(Unit)   $MetStat::Rec(Unit$var)
          set Param(Factor) $MetStat::Rec(Factor$var)
+         set Param(Desc)   $MetStat::Rec(Desc$var)
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
@@ -942,11 +943,13 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 
    if { [dataspec is $Spec] } {
       set set [dataspec configure $Spec -set]
-      set var [dataspec configure $Spec -desc]
+      set var [fstdfield define $Field -NOMVAR]
+#      set var [dataspec configure $Spec -desc]
+      set desc [dataspec configure $Spec -desc]
+      set unit [dataspec configure $Spec -unit]
 
       if { !$set } {
          dataspec copy $Spec FLDDEFAULT
-         dataspec configure $Spec -desc $var
       }
 
       #----- Set a colormap if not done
@@ -963,7 +966,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 
       if { !$set } {
          #----- Override particle fields params
-         if { [fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH" } {
+         if { [fstdfield is $Field] && ([fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH") } {
             dataspec configure $Spec -renderparticle 2
          }
 
@@ -973,7 +976,9 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          }
 
          if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
-            dataspec configure $Spec -unit $MetStat::Rec(Unit$var) -factor $MetStat::Rec(Factor$var)
+            dataspec configure $Spec -desc $MetStat::Rec(Desc$var) -unit $MetStat::Rec(Unit$var) -factor $MetStat::Rec(Factor$var)
+         } else {
+            dataspec configure $Spec -desc $desc -unit $unit        
          }
       }
    }
@@ -1084,14 +1089,15 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    ComboBox::DelAll $Data(Frame).var.sel
 
    foreach fld $Fields {
-      fstdfield define $fld -grid $Param(GridNo)
 
-      if { [fstdfield is $fld] } {
+      if { [fstdfield is $fld True] } {
 
+          catch { fstdfield define $fld -grid $Param(GridNo) }
+          
           #----- Get the name of the configuration object
           switch $Param(Mode) {
             "FLD"   { set var $fld }
-            "VAR"   { set var [fstdfield configure $fld -desc] }
+            "VAR"   { set var [fstdfield define $fld -NOMVAR] }
             "TYP"   { set var [fstdfield define $fld -TYPVAR] }
             "IP1"   { set var [fstdfield define $fld -IP1] }
             "IP2"   { set var [fstdfield define $fld -IP2] }

@@ -730,7 +730,6 @@ proc ObsBox::Insert { No } {
          if { [string length $id] > 20 } {
             set id "[string range $id 0 16]..."
          }
-
          set sec  [lindex [observation define $obs -DATE] 0]
          set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
          set nb   [observation define $obs -NB]

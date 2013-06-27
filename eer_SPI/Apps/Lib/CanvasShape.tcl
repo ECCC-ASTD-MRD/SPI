@@ -476,13 +476,18 @@ proc CVClock::Update { Frame Data } {
       return
    }
 
+   set sec 0
+   
    if { $Data!="" } {
       if { [fstdfield is $Data] } {
-         CVClock::Time $Frame [fstdstamp toseconds [fstdfield define $Data -DATEV]] -1
-       } else {
-         CVClock::Time $Frame 0 -1
+         set sec [fstdstamp toseconds [fstdfield define $Data -DATEV]]
+      } elseif { [gribfield is $Data] } {
+         set sec [gribfield define $Data -DATEV]
+      } elseif { [observation is $Data] } {
+         set sec [observation define $Data -DATE]
       }
    }
+   CVClock::Time $Frame $sec -1
 }
 
 #----------------------------------------------------------------------------

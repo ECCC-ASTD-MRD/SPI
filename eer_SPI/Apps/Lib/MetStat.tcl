@@ -523,7 +523,7 @@ proc MetStat::GetLevelList { Field DeltaH EndH } {
 proc MetStat::Type { Field } {
    variable Data
 
-   if { [fstdfield is $Field] } {
+   if { [fstdfield is $Field True] } {
       fstdfield copy STAT_RES$Data(No) $Field
       set data STAT_RES$Data(No)
       incr Data(No)

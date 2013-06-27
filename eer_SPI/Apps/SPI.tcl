@@ -387,7 +387,7 @@ proc Page::UpdateItems { Frame } {
       if { [info exists ::SPI::Data(Layout$Frame)] } {
 
          if { $SPI::Data(ShowClock$Frame) } {
-            CVClock::Update $Frame [lindex [Viewport::Assigned $Frame $vp fstdfield] 0]
+            CVClock::Update $Frame [lindex [Viewport::Assigned $Frame $vp] 0]
          }
 
          if { $SPI::Data(ShowScale$Frame) } {
@@ -894,7 +894,7 @@ proc SPI::DrawClock { Frame } {
 
    if { $Data(ShowClock) } {
       CVClock::Create $Frame [expr [winfo width $Frame.page.canvas]-30] 30
-      CVClock::Update $Frame [lindex [Viewport::Assigned $Frame $Viewport::Data(VP) fstdfield] 0]
+      CVClock::Update $Frame [lindex [Viewport::Assigned $Frame $Viewport::Data(VP)] 0]
    } else {
       CVClock::Destroy $Frame
    }

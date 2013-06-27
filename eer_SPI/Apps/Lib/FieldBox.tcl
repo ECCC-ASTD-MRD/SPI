@@ -32,6 +32,7 @@
 #   FieldBox::Insert        { No }
 #   FieldBox::PasteClick    { No Y }
 #   FieldBox::PasteDeClick  { Y }
+#   FieldBox::PopUp         { X Y  } 
 #   FieldBox::Raise         { }
 #   FieldBox::Restrict      { No }
 #   FieldBox::RestrictClear { No }
@@ -267,7 +268,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
 
    bind $id.data.list <Double-ButtonRelease-1> "set FieldBox::Data(Current) $no ; FieldBox::Select"
    bind $id.data.list <ButtonRelease-1>        "set FieldBox::Data(Current) $no"
-   bind $id.data.list <ButtonPress-3>          "set FieldBox::Data(Current) $no ; tk_popup .fieldmenu %X %Y"
+   bind $id.data.list <ButtonPress-3>          "set FieldBox::Data(Current) $no ; FieldBox::PopUp %X %Y"
 
    bind $id <Key-Up>                           "set FieldBox::Data(Current) $no ; FieldBox::Select"
    bind $id <Key-Down>                         "set FieldBox::Data(Current) $no ; FieldBox::Select"
@@ -1407,7 +1408,7 @@ proc FieldBox::Select { } {
 
    set tofree {}
    foreach fld $FSTD::Data(List) {
-      if { [lsearch -exact $flds $fld]==-1 && [fstdfield is $fld] } {
+      if { [lsearch -exact $flds $fld]==-1 && [fstdfield is $fld True] } {
          Viewport::AssignedTo $fld fr vp
          if { [Page::Registered All Viewport $vp]!=-1 } {
             Viewport::UnAssign $fr $vp $fld -1
@@ -1442,6 +1443,43 @@ proc FieldBox::Select { } {
       $Page::Data(Canvas) config -cursor left_ptr
    }
    . config -cursor left_ptr
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FieldBox::PopUp>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Configurer le popup selon le type de donnees.
+#
+# Parametres :
+#   <X>      : Position X du popup
+#   <Y>      : Position Y du popup
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldBox::PopUp { X Y  } {
+   variable Data
+
+   if { ![llength [set idxs [.fieldbox$Data(Current).data.list curselection]]] } {
+       .fieldmenu entryconfigure 3 -state disabled
+       .fieldmenu entryconfigure 4 -state disabled
+   } else {
+      set info [.fieldbox$Data(Current).data.list get [lindex $idxs 0]]
+   
+      switch [lindex $info end] {
+         "fstdfield" { .fieldmenu entryconfigure 3 -state normal
+                     .fieldmenu entryconfigure 4 -state normal
+                     }
+         "gribfield" { .fieldmenu entryconfigure 3 -state disabled
+                     .fieldmenu entryconfigure 4 -state disabled
+                     }
+      }
+   }
+   tk_popup .fieldmenu $X $Y
 }
 
 #-------------------------------------------------------------------------------

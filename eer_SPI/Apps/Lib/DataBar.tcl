@@ -219,6 +219,11 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
          set lbl  [DataBar::IdField $data]
          set font XFont12
          set col  [fstdfield configure $data -color]
+      } elseif { [gribfield is $data] } {
+         set id   ""
+         set lbl  [DataBar::IdGrib $data]
+         set font XFont12
+         set col  [gribfield configure $data -color]
       } elseif { [observation is $data] } {
          set id   ""
          set lbl  [DataBar::IdObs $data]
@@ -302,6 +307,38 @@ proc DataBar::IdField { Field } {
    return $lbl
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <DataBar::IdGrib>
+# Creation : Juin 2013- J.P. Gauthier - CMC/CMOE -
+#
+# But     : Creer le texte de la legend pour le type de donnee "gribfield"
+#
+# Parametres :
+#   <Field>  : Identificateur de la donnee
+#
+# Retour     :
+#
+# Remarques  :
+#
+#-------------------------------------------------------------------------------
+
+proc DataBar::IdGrib { Field } {
+   global GDefs
+
+   set lbl [gribfield define $Field -NOMVAR]
+
+   if { [info exists MetStat::Rec(Desc$lbl)] } {
+      append lbl " $MetStat::Rec(Desc$lbl)"
+   }
+   append lbl " ([lrange [fstdgrid convip [gribfield define $Field -IP1]] 0 1])"
+
+   if { [set unit [fstdfield configure $Field -unit]]!="" } {
+      append lbl " ($unit)"
+   }
+   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [gribfield define $Field -DATEV] -format "%H:%M %Y%m%d" -gmt true]"
+
+   return $lbl
+}
 #------------------------------------------------------------------------------
 # Nom      : <DataBar::IdObs>
 # Creation : Octobre 20012- J.P. Gauthier - CMC/CMOE -

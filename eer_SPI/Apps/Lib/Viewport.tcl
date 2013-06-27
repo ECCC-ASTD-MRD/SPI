@@ -309,7 +309,7 @@ proc Viewport::Assign { Frame VP Ids { Force 0 } } {
          }
 
          #----- Definir les tags aux emplacements
-         if { [fstdfield is $id] } {
+         if { [fstdfield is $id True] } {
             fstdfield stats $id -tag "$Frame $VP -1"
             FSTD::Register $id
          } elseif { [observation is $id] } {
@@ -359,7 +359,7 @@ proc Viewport::AssignedTo { Id { Page "" } { VP "" } { Box "" } } {
 
    set yes 1
 
-   if { [fstdfield is $Id] } {
+   if { [fstdfield is $Id True] } {
       set tag [fstdfield stats $Id -tag]
    } elseif { [observation is $Id] } {
       set tag [observation stats $Id -tag]
@@ -405,19 +405,24 @@ proc Viewport::AssignedTo { Id { Page "" } { VP "" } { Box "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Assigned { Frame VP { Types fstdfield } } {
+proc Viewport::Assigned { Frame VP { Types { } } } {
 
    set list ""
 
    if { [info exists Viewport::Data(Active$VP)] } {
-      foreach data [lindex [$Frame.page.canvas itemconfigure $VP -data] 4] {
-         foreach type $Types {
-            eval set is \[$type is \$data\]
-            if { $is } {
-               lappend list $data
-               break
+      set datas [lindex [$Frame.page.canvas itemconfigure $VP -data] 4]
+      if { [llength $Types] } {
+         foreach data [lindex [$Frame.page.canvas itemconfigure $VP -data] 4] {
+            foreach type $Types {
+               eval set is \[$type is \$data\]
+               if { $is } {
+                  lappend list $data
+                  break
+               }
             }
          }
+      } else {
+         set list $datas
       }
    }
    return $list
@@ -450,7 +455,7 @@ proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
 
       if { $Ids=="" } {
          foreach id $Data(Data$VP) {
-            if { [fstdfield is $id] } {
+            if { [fstdfield is $id True] } {
                FSTD::UnRegister $id
             } elseif { [observation is $id] } {
                Obs::UnRegister $id
@@ -466,7 +471,7 @@ proc Viewport::UnAssign { Frame VP { Ids "" } { Force 0 } } {
          foreach id $Ids {
             if { [set idx [lsearch -exact $Data(Data$VP) $id]]!=-1 } {
                set  Data(Data$VP) [lreplace $Data(Data$VP) $idx $idx]
-               if { [fstdfield is $id] } {
+               if { [fstdfield is $id True] } {
                   FSTD::UnRegister $id
                } elseif { [observation is $id] } {
                   Obs::UnRegister $id

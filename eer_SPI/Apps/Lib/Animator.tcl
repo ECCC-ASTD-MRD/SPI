@@ -520,21 +520,35 @@ proc Animator::GetPlayListField { } {
    foreach vp $Play(VPs) {
       foreach fld $Viewport::Data(Data$vp) {
 
-         if { ![fstdfield is $fld] } {
+         if { [fstdfield is $fld] } {
+
+            set tags [fstdfield stats $fld -tag]
+            set box  [lindex $tags 2]
+
+            #----- On recupere les parametres du champs selectionne
+
+            set var     [fstdfield define $fld -NOMVAR]
+            set ip1     [fstdfield define $fld -IP1]
+            set ip2     [fstdfield define $fld -IP2]
+            set ip3     [fstdfield define $fld -IP3]
+            set etiket  [fstdfield define $fld -ETIKET]
+            set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -gmt True]
+         } elseif { [gribfield is $fld] } {
+
+            set tags [gribfield stats $fld -tag]
+            set box  [lindex $tags 2]
+
+            #----- On recupere les parametres du champs selectionne
+
+            set var     [fstdfield define $fld -NOMVAR]
+            set ip1     [fstdfield define $fld -IP1]
+            set ip2     \\d+
+            set ip3     \\d+
+            set etiket  .+
+            set date    [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -gmt True]
+         } else {
             continue
          }
-
-         set tags [fstdfield stats $fld -tag]
-         set box  [lindex $tags 2]
-
-         #----- On recupere les parametres du champs selectionne
-
-         set var     [fstdfield define $fld -NOMVAR]
-         set ip1     [fstdfield define $fld -IP1]
-         set ip2     [fstdfield define $fld -IP2]
-         set ip3     [fstdfield define $fld -IP3]
-         set etiket  [fstdfield define $fld -ETIKET]
-         set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -gmt True]
 
          if { !$Play(IP3) } {
             set ip3 \\d+
@@ -551,12 +565,13 @@ proc Animator::GetPlayListField { } {
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
-
+            set type    [lindex $field end]
+            
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
             update idletask
 
-            fstdfield read ANI$no $fid $idx
-            fstdfield stats ANI$no -tag $tags
+            eval $type read ANI$no $fid $idx
+            eval $type stats ANI$no -tag \$tags
 
             lappend FSTD::Data(ListTool) ANI$no
             FSTD::ParamUpdate ANI$no
@@ -891,7 +906,7 @@ proc Animator::Play { } {
          #----- En impression on clean apres chaque frame
 
          foreach field $Play(Data) {
-            if { [fstdfield is $field] } {
+            if { [fstdfield is $field True] } {
                fstdfield clean $field
             }
          }

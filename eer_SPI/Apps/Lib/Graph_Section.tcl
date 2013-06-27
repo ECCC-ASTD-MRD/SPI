@@ -177,7 +177,7 @@ proc Graph::Section::Coord { Frame GR X Y } {
 
             foreach item $items {
                set field [graphitem configure $item -data]
-               if { [fstdfield is $field] } {
+               if { [fstdfield is $field True] } {
                   append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
                }
             }
@@ -246,7 +246,7 @@ proc Graph::Section::Graph { GR } {
 
    #----- Extraire les limites des valeurs
    foreach item $data(Items) {
-      if { [fstdfield is GRAPHSELECT$item] } {
+      if { [fstdfield is GRAPHSELECT$item True] } {
          #----- Check for vertical coordinate selection
          switch $graph(ZType) {
             "PRESSURE" {
@@ -654,7 +654,7 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
    upvar #0 Graph::Section::Section${GR}::Graph graph
 
   if { [graphitem is $Item] } {
-      if { [fstdfield is $Data] && [llength $data(Pos$Pos)] } {
+      if { [fstdfield is $Data True] && [llength $data(Pos$Pos)] } {
          fstdfield free GRAPHSELECT$Item
 
          if { $graph(ZType)=="GRID" } {
@@ -802,7 +802,7 @@ proc Graph::Section::Data { GR Data } {
 
    set fields {}
    foreach field $Data {
-      if { [fstdfield is $field] } {
+      if { [fstdfield is $field True] } {
          set grtyp [fstdfield define $field -GRTYP]
          if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
             if { $Graph::Data(IP3) } {
@@ -852,7 +852,7 @@ proc Graph::Section::FieldShow { GR } {
          set idx [lsearch -exact $list $fld]
 
          if { $data(Proj) } {
-            if { $idx==-1 && [fstdfield is $fld] } {
+            if { $idx==-1 && [fstdfield is $fld True] } {
                lappend list $fld
                set did 1
             }

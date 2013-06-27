@@ -488,7 +488,7 @@ proc ColorBar::Update { Frame { State -1 } } {
       foreach vp [Page::Registered $Frame Viewport] {
          set i -1
          foreach field [lindex [$Frame.page.canvas itemconfigure $vp -data] 4] {
-            if { [fstdfield is $field] } {
+            if { [fstdfield is $field True] } {
                if { [fstdfield configure $field -rendertexture] || [fstdfield configure $field -mapall] || [fstdfield configure $field -rendervector]!="NONE" || [fstdfield configure $field -renderparticle] } {
                   set id [fstdfield configure $field -dataspec]
                   lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
@@ -564,7 +564,7 @@ proc ColorBar::UpdateVP { Frame VP List } {
 
    set i 0
    foreach field $List {
-      if { [fstdfield is $field] } {
+      if { [fstdfield is $field True] } {
          set spec [fstdfield configure $field -dataspec]
       } elseif { [observation is $field] } {
          set spec [observation configure $field -dataspec]

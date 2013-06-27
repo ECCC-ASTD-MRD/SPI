@@ -465,7 +465,7 @@ proc MapBox::ControlValue { Canvas X } {
 
    set idx [expr $X-$Control(X0)]
 
-   if { $idx<0 || $idx>255 || ![fstdfield is $Data(Field)] } {
+   if { $idx<0 || $idx>255 || ![fstdfield is $Data(Field) True] } {
       set val ""
    } else {
       set val [FSTD::FieldFormat $Data(Field) [fstdfield configure $Data(Field) -map2val $idx]]
