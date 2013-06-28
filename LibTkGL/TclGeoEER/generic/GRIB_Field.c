@@ -799,6 +799,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
    int            er,err=0,lvtyp,nb;
    size_t         len;
    long           date,time,step,unit,lval,ni=-1,nj=-1,nk=1,type;
+   int            idate,itime;
    char           buf[1024];
    float          lvl;
 
@@ -885,7 +886,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          
          head.DATEO=System_DateTime2Seconds(date,time*100,1);
          head.DATEV=head.DATEO+step*unit;
-         System_Seconds2DateTime(head.DATEV,&date,&time,1);
+         System_Seconds2DateTime(head.DATEV,&idate,&itime,1);
 
          switch(Mode) {
             case FSTD_LISTSPI:
@@ -900,7 +901,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
                   case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
                   case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[lvtyp]); break;
                }
-               sprintf(buf,"%s %8i %-2s %8i %-2s GRIB%-8i %08li%04li %s %i %i %i %i gribfield",buf,0,LVL_UNITS[LVL_HOUR],0,LVL_UNITS[LVL_UNDEF],head.Version,date,time/100,File->Id,nb,head.IP1,0,0);
+               sprintf(buf,"%s %8i %-2s %8i %-2s GRIB%-8i %08li%04li %s %i %i %i %i gribfield",buf,0,LVL_UNITS[LVL_HOUR],0,LVL_UNITS[LVL_UNDEF],head.Version,idate,itime/100,File->Id,nb,head.IP1,0,0);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;

@@ -46,9 +46,10 @@ void     Graph_RenderScaleLevel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void     GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int PickY);
 void     GraphUnSet(GraphItem *GR);
 int      Graph_UnProject(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
-double   Graph_Pixel2Grid(TData *Data,double X,double Y);
+int      Graph_Project(Tcl_Interp *Interp,GraphItem  *GR,TGraphItem *Item,double X,double Y,double Z,int Extrap);
 Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
 Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y,double Z);
+double   Graph_Pixel2Grid(TData *Data,double X,double Y);
 
 static int    GraphCoords(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tcl_Obj *const Argv[]);
 static int    GraphToArea(Tk_Canvas Canvas,Tk_Item *Item,double *RectPtr);

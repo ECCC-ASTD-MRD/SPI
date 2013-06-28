@@ -102,8 +102,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case WKB:
             if (Objc==1) {
-               if (n=OGR_G_WkbSize(geom)) {
-                  bytes=(char*)malloc(n);
+               if ((n=OGR_G_WkbSize(geom))) {
+                  bytes=(unsigned char*)malloc(n);
                   OGR_G_ExportToWkb(geom,wkbNDR,bytes);
                   Tcl_SetObjResult(Interp,Tcl_NewByteArrayObj(bytes,n));
                   CPLFree(bytes);
@@ -112,7 +112,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                OGR_G_Empty(geom);
 
                buf=Tcl_GetString(Objv[++i]);
-               err=OGR_G_ImportFromWkb(geom,buf,strlen(buf));
+               err=OGR_G_ImportFromWkb(geom,(unsigned char*)buf,strlen(buf));
                if (err!=OGRERR_NONE) {
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Unsupported geometry type\"",(char*)NULL);
                   return(TCL_ERROR);
@@ -122,7 +122,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case GML:
             if (Objc==1) {
-               if (buf=OGR_G_ExportToGML(geom)) {
+               if ((buf=OGR_G_ExportToGML(geom))) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
                   CPLFree(buf);
                }
@@ -140,7 +140,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case KML:
             if (Objc==1) {
-               if (buf=OGR_G_ExportToKML(geom,NULL)) {
+               if ((buf=OGR_G_ExportToKML(geom,NULL))) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
                   CPLFree(buf);
                }
@@ -153,7 +153,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
          case JSON:
             if (Objc==1) {
-               if (buf=OGR_G_ExportToJson(geom)) {
+               if ((buf=OGR_G_ExportToJson(geom))) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(buf,-1));
                   CPLFree(buf);
                }
@@ -197,7 +197,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
                for(j=0;j<n;) {
                   Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                  if (subgeom=OGR_GeometryGet(Tcl_GetString(obj))) {
+                  if ((subgeom=OGR_GeometryGet(Tcl_GetString(obj)))) {
                      if (t) {
                         err=OGR_G_AddGeometryDirectly(geom,subgeom);
                      } else {
@@ -233,7 +233,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
                for(j=0;j<n;) {
                   Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
-                  if (subgeom=OGR_GeometryGet(Tcl_GetString(obj))) {
+                  if ((subgeom=OGR_GeometryGet(Tcl_GetString(obj)))) {
                      if (t) {
                         err=OGR_G_AddGeometryDirectly(geom,subgeom);
                      } else {
@@ -926,7 +926,7 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
  *
  *----------------------------------------------------------------------------
 */
-
+/*
 void OGR_GeomNURBS(OGRGeometryH Geom) {
 
    OGRGeometryH geom;
@@ -934,7 +934,6 @@ void OGR_GeomNURBS(OGRGeometryH Geom) {
    Vect3f       temp[1000];
    Vect3d       t;
    int          i;
-   float        dp;
    unsigned int  g,nv=0,pnv;
    GLfloat      uknots[8]= { -1.570796f,-1.570796f,-1.570796f,0.000000f,0.000000f,1.570796f,1.570796f,1.570796f };
    GLfloat      vknots[12]= { 0.000000f,0.000000f,0.000000f,1.570796f,1.570796f,3.141593f,3.141593f,4.712389f,4.712389f,6.283185f,6.283185f,6.283185f };
@@ -1021,6 +1020,7 @@ void OGR_GeomNURBS(OGRGeometryH Geom) {
 
    gluDeleteNurbsRenderer(nurb);
 }
+*/
 
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
@@ -1140,8 +1140,8 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
    int           handle=0,z=2;
-   unsigned int  n,nv=0,cnv=0;
-   Vect3d        vr,*pvr,*cvr;
+   unsigned int  n,nv=0;
+   Vect3d        vr,*pvr,*cvr=NULL;
    Coord         co;
 
    extern Vect3d GDB_NMap[181][361];

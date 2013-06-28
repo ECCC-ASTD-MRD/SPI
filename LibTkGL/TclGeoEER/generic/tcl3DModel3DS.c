@@ -77,13 +77,13 @@ int Model_Load3DS(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
 int Model3DS_GetString(FILE *File,char *Buf) {
 
-   int index=0;
+   int index=0,f;
 
-   fread(Buf,1,1,File);
+   f=fread(Buf,1,1,File);
 
    // Loop until we get NULL reading in a character at a time.
    while (*(Buf+index++)) {
-      fread(Buf+index,1,1,File);
+      f=fread(Buf+index,1,1,File);
    }
    return(strlen(Buf)+1);
 }

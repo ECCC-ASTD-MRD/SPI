@@ -46,7 +46,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int        n,id,idx,type;
+   int        n,idx,type;
    GRIB_File *file=NULL;
 
    static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","DATEV","IP1" };
@@ -158,7 +158,6 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    int        idx;
    long       key;
-   TData     *field0,*field1;
 
    static CONST char *sopt[] = { "read",NULL };
    enum                opt { READ };

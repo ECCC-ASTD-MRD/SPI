@@ -224,7 +224,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
             c=codes[e];
 
-            if (eb[e]=MetObs_BUFRFindTableCode(c)) {
+            if ((eb[e]=MetObs_BUFRFindTableCode(c))) {
                Tcl_SetIntObj(obj,eb[e]->descriptor);
                if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
                   Tcl_ListObjAppendElement(Interp,Obs->Elems,Tcl_DuplicateObj(obj));

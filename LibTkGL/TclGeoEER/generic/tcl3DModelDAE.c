@@ -88,7 +88,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
    XML_Data  *data=(XML_Data*)Data;
    DAE_Data  *dae=(DAE_Data*)data->Specific;
    DAESource *src,*tmp;
-   int       i,o,nfc;
+   int       i;
 
    XML_CharReset(Data);
    XML_Check(Data,Elem,"COLLADA");
@@ -197,7 +197,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       if (strcmp(Elem,"instance_geometry")==0) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
-               if (obj=Model_ObjectFind(dae->Model,(char*)(Attr[i+1]+1))) {
+               if ((obj=Model_ObjectFind(dae->Model,(char*)(Attr[i+1]+1)))) {
                   dae->Scene->NObj++;
                   dae->Scene->Obj=(T3DObject**)realloc(dae->Scene->Obj,dae->Scene->NObj*sizeof(T3DObject*));
                   dae->Scene->Obj[dae->Scene->NObj-1]=obj;
@@ -213,7 +213,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       if (strcmp(Elem,"instance_node")==0) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"url")==0) {
-               if (child=Model_SceneFind(dae->Nodes,(char*)(Attr[i+1]+1))) {
+               if ((child=Model_SceneFind(dae->Nodes,(char*)(Attr[i+1]+1)))) {
                   scn=Model_SceneAdd(dae->Model,dae->Scene,1);
                   memcpy(scn,child,sizeof(T3DScene));
                } else {

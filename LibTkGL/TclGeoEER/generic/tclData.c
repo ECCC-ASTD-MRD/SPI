@@ -2746,7 +2746,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
       return(TCL_ERROR);
    }
-
+   
    Tcl_ListObjLength(Interp,Objv[0],&nc);
    if (nc==4) {
       // This is a latlon bounding box defined by 2 corners
@@ -2794,14 +2794,15 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
 
    switch(Mode) {
       case 0:
-      case 1: tot=0; break;
+      case 1: tot=0.0; break;
       case 2: tot=1e38; break;
       case 3: tot=-1e38; break;
       case 4:
       case 5: obj=Tcl_NewListObj(0,NULL); break;
+      default: 0;
    }
 
-   n=0;
+   vnb=n=0;
 
    if (Field->Ref->Grid[0]!='V') {
 

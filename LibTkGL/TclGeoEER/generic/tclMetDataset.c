@@ -905,7 +905,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
             if (bufr_is_missing_float(fval)) {
                obj=Tcl_NewStringObj("MSNG",-1);
             } else {
-               obj=Tcl_NewDoubleObj(lval);
+               obj=Tcl_NewDoubleObj(fval);
             }
             break;
 
@@ -914,8 +914,11 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
             if (bufr_is_missing_double(dval)) {
                obj=Tcl_NewStringObj("MSNG",-1);
             } else {
-               obj=Tcl_NewDoubleObj(lval);
+               obj=Tcl_NewDoubleObj(dval);
             }
+         case VALTYPE_UNDEFINE  :
+            obj=NULL;
+            break;
       }
    }
    return(obj);
@@ -975,6 +978,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
    Tcl_ListObjLength(Interp,Obj,&n);
    if (!n) {
       Tcl_AppendResult(Interp,"Invalid code/value pair",(char*)NULL);
+      return(TCL_ERROR);
    }
 
    if (!BCV->value)
@@ -1015,6 +1019,11 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
                   bufr_descriptor_set_fvalue(BCV,dval);
                }
             }
+            break;
+            
+         case VALTYPE_UNDEFINE  :
+            Tcl_AppendResult(Interp,"Undefined value",(char*)NULL);
+            return(TCL_ERROR);
             break;
       }
 

@@ -38,6 +38,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 
+extern int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
+
 static int GL_Type[]={ GL_BITMAP,GL_BITMAP,GL_UNSIGNED_BYTE,GL_BYTE,GL_UNSIGNED_SHORT,GL_SHORT,
                        GL_UNSIGNED_INT,GL_INT,GL_UNSIGNED_INT,GL_INT,GL_FLOAT,GL_FLOAT };
 
@@ -429,7 +431,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int     i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
-   float   min,rng,fi,ti,fj;
+   float   min,rng,fi,fj,ti=0.0;
    Vect3d *pos;
    float  *buf=NULL;
    char   *ptr,out=0;

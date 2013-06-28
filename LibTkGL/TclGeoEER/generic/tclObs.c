@@ -2442,7 +2442,8 @@ static int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_O
 
    Tcl_Obj *obj;
    int      f,n=0,nc,vnb=0,vn0,vn1,o;
-   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0;
+   double   dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0;
+   float    v;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {

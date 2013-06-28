@@ -52,7 +52,7 @@
 */
 int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   TMetLoc  *loc;
+   TMetLoc  *loc=NULL;
 
    FILE    *stream;
    char    buf[256];

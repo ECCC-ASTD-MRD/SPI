@@ -163,12 +163,11 @@ int XML_ArrayExpandVect(void *Data,char Sep,float *Array) {
 
    XML_Data *data=(XML_Data*)Data;
    char *tok,*save=NULL;
-   int   n;
+   int   n=0;
 
    if (data->Buf && data->BufLen) {
 
       // Parse all tokens
-      n=0;
       tok=strtok_r(data->Buf,&Sep,&save);
       while(tok) {
          Array[n++]=atof(tok);

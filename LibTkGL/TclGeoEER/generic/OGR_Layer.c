@@ -345,7 +345,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             } else {
 
                Tcl_ListObjLength(Interp,Objv[++i],&layer->NSFeature);
-
+               
                if (layer->SFeature) {
                   free(layer->SFeature);
                   layer->SFeature=NULL;
@@ -1174,7 +1174,7 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
       case OFTStringList:
          clist=OGR_F_GetFieldAsStringList(Feature,Index);
          while(clist) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist[n],-1));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist++,-1));
          }
          break;
 

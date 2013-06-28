@@ -70,8 +70,6 @@ switch(DEF->Type) {\
 
 #define Def_GetQuad(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_Unknown:VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
-   case TD_Binary: VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
    case TD_UByte:  VAL[0]=((unsigned char*)DEF->Data[COMP])[IDX[0]];\
                    VAL[1]=((unsigned char*)DEF->Data[COMP])[IDX[1]];\
                    VAL[2]=((unsigned char*)DEF->Data[COMP])[IDX[2]];\
@@ -122,13 +120,14 @@ switch(DEF->Type) {\
                    VAL[2]=((double*)DEF->Data[COMP])[IDX[2]];\
                    VAL[3]=((double*)DEF->Data[COMP])[IDX[3]];\
                    break;\
+   case TD_Unknown:\
+   case TD_Binary: \
+   default:        VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
    }\
 }
 
 #define Def_GetQuadMod(DEF,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_Unknown:VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
-   case TD_Binary: VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;break;\
    case TD_UByte:  VAL[0]=((unsigned char*)DEF->Mode)[IDX[0]];\
                    VAL[1]=((unsigned char*)DEF->Mode)[IDX[1]];\
                    VAL[2]=((unsigned char*)DEF->Mode)[IDX[2]];\
@@ -179,13 +178,14 @@ switch(DEF->Type) {\
                    VAL[2]=((double*)DEF->Mode)[IDX[2]];\
                    VAL[3]=((double*)DEF->Mode)[IDX[3]];\
                    break;\
+   case TD_Unknown:\
+   case TD_Binary:\
+   default:        VAL[0]=VAL[1]=VAL[2]=VAL[3]=0.0;\
    }\
 }
 
 #define Def_Get(DEF,COMP,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_Unknown:VAL=0.0;break;\
-   case TD_Binary: VAL=0.0;break;\
    case TD_UByte:  VAL=((unsigned char*)DEF->Data[COMP])[IDX];break;\
    case TD_Byte:   VAL=((char*)DEF->Data[COMP])[IDX]; break;\
    case TD_UInt16: VAL=((unsigned short*)DEF->Data[COMP])[IDX];break;\
@@ -196,13 +196,14 @@ switch(DEF->Type) {\
    case TD_Int64:  VAL=((long long*)DEF->Data[COMP])[IDX];break;\
    case TD_Float32:VAL=((float*)DEF->Data[COMP])[IDX];break;\
    case TD_Float64:VAL=((double*)DEF->Data[COMP])[IDX];break;\
+   case TD_Unknown:\
+   case TD_Binary:\
+   default        :VAL=0.0;\
    }\
 }
 
 #define Def_GetMod(DEF,IDX,VAL) {\
 switch(DEF->Type) {\
-   case TD_Unknown:VAL=0.0;break;\
-   case TD_Binary: VAL=0.0;break;\
    case TD_UByte:  VAL=((unsigned char*)DEF->Mode)[IDX];break;\
    case TD_Byte:   VAL=((char*)DEF->Mode)[IDX]; break;\
    case TD_UInt16: VAL=((unsigned short*)DEF->Mode)[IDX];break;\
@@ -213,6 +214,9 @@ switch(DEF->Type) {\
    case TD_Int64:  VAL=((long long*)DEF->Mode)[IDX];break;\
    case TD_Float32:VAL=((float*)DEF->Mode)[IDX];break;\
    case TD_Float64:VAL=((double*)DEF->Mode)[IDX];break;\
+   case TD_Unknown:\
+   case TD_Binary:\
+   default        :VAL=0.0;\
    }\
 }
 

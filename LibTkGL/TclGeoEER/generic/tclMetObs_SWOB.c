@@ -134,7 +134,6 @@ void SWOB_EndHandler(void *Data,const char *Elem) {
    BUFR_Tables *table;
    EntryTableB *eb;
    Tcl_Obj     *obj;
-   char        *buf,*c;
    Vect3f       vf;
 
    if (Elem && XML_Valid(Data)) {

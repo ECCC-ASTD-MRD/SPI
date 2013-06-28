@@ -455,7 +455,6 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    } else {
       string=strdup(REFDEFAULT);
       Ref->Spatial=OSRNewSpatialReference(string);
-      fprintf(stdout,"(WARNING) GeoRef_WKTSet: Unable to find spatial reference, assuming default (latlon)\n");
    }
 
    if (Ref->String)

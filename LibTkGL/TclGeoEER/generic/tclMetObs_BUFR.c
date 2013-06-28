@@ -202,10 +202,11 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                  
                   // If there are Associated Fields 
                   if (bcv->value->af)  {
-                     BufrAF *af = bcv->value->af;
+//                     BufrAF *af = bcv->value->af;
 //                     sprintf( buf, "(0x%llx:%d bits)", af->bits, af->nbits );
                   }
 
+                  value=-999.0;
                   switch(bcv->value->type) {
                      case VALTYPE_INT8:
                      case VALTYPE_INT32:
@@ -233,6 +234,11 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                         printf("VALUE=%s",str);
 */
                            value=-999.0;
+                        break;
+                        
+                     case VALTYPE_UNDEFINE:
+                        fprintf(stdout,"(WARNING) MetObs_LoadBUFR: Found undefined value");
+                        value=-999.0;
                         break;
                   }
                   data->Code[data->Ne]=eb;

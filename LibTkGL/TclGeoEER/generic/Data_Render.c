@@ -1283,6 +1283,10 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       dp=dp>10?10:dp;
    }
    
+   idx0=idx1=idx2=idx3=0;
+   c0=c1=c2=c3=0;
+   v0=v1=v2=v3=0.0;
+   
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);

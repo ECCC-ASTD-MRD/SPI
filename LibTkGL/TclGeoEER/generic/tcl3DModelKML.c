@@ -109,7 +109,7 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
       if (strcmp(Elem,"href")==0) {
          buf=(char*)malloc(strlen(kml->Path)+data->BufLen+1);
          strcpy(buf,kml->Path);
-         if (c=strrchr(buf,'/')) {
+         if ((c=strrchr(buf,'/'))) {
             strcpy(c+1,data->Buf);
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) ModelKML_EndHandler: Found Collada external ref %s\n",buf);

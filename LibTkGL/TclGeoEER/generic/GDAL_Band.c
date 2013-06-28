@@ -81,6 +81,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    }
 
    /*Get info on all requested bands*/
+   rx=ry=nx=ny=0;
    for(i=0;i<NIdx;i++) {
       if ((file=GDAL_FileGet(Interp,FileId[i]))) {
          /*Get the band type and promote to higher type among all*/
@@ -1028,6 +1029,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
              GDAL_Rasterize(Def,Ref,geom,value);
          } else {
 
+            area=0.0;
             if (Mode=='C' || Mode=='A' || Mode=='N') {
                switch(Type) {
                   case 'A': area=OGR_G_GetArea(geom); break;
@@ -1038,8 +1040,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
                   OGR_G_DestroyGeometry(geom);
                   continue;
                }
-            } else {
-               area=0.0;
             }
 
             /*Use enveloppe limits to initialize the initial lookup range*/
@@ -1777,7 +1777,7 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
 
 int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double Angle) {
 
-   int      n,i,j;
+   int      n,i=0,j;
    double   sina,cosa;
    double   x,y,px,py,pxi,pyi,pxj,pyj,minx,miny,maxx,maxy;
    double   node[256],poly[256],swap;
@@ -2079,6 +2079,8 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 
    Tcl_ListObjIndex(Interp,Bands,0,&obj);
    nc=0;
+   band=NULL;
+   
    for(n=0;n<ns;n++) {
       band=GDAL_BandGet(Tcl_GetString(obj));
       if (!band) {

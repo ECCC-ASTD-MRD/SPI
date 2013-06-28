@@ -227,7 +227,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
             return(TCL_ERROR);
          }
 
-         if (g0=OGR_GeometryGet(Tcl_GetString(Objv[3]))) {
+         if ((g0=OGR_GeometryGet(Tcl_GetString(Objv[3])))) {
             g1=OGR_G_Clone(g0);
             obj=OGR_GeometryPut(Interp,Tcl_GetString(Objv[2]),g1);
             if (!obj)
@@ -1225,7 +1225,7 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
    int             i;
    Tcl_Obj        *lst,*sublst;
 
-   if (file=OGR_FileGet(Interp,Id)) {
+   if ((file=OGR_FileGet(Interp,Id))) {
       if (strcmp(Name,file->Name)==0 && Mode==file->Mode) {
          source=file->Data;
       } else {

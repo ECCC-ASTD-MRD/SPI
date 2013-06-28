@@ -1819,30 +1819,25 @@ int glTextureFit(int Size,float Tolerance) {
 void glXShutDown() {
 
    if (GLRender->GLTess) {
-      printf("(INFO) glXShutDown: Freeing tesselator object\n");
       gluDeleteTess(GLRender->GLTess);
    }
 
    if (GLRender->GLQuad) {
-      printf("(INFO) glXShutDown: Freeing Quadric object\n");
       gluDeleteQuadric(GLRender->GLQuad);
    }
 
    if (GLRender->GLCon) {
-      printf("(INFO) glXShutDown: Freeing direct rendering context\n");
      glXDestroyContext(GLRender->XDisplay,GLRender->GLCon);
    }
 
   if (GLRender->GLVis) {
-      printf("(INFO) glXShutDown: Freeing visual\n");
       XFree(GLRender->GLVis);
    }
 
-   printf("(INFO) glXShutDown: Freeing renderer structure\n");
    if (GLRender->GLFeed) free(GLRender->GLFeed);
    free(GLRender);
 
-   printf("(INFO) glXShutDown: Done shutting down\n");
+   printf("(INFO) System: GLX Shut down\n");
 }
 
 /*----------------------------------------------------------------------------
@@ -2181,7 +2176,7 @@ GLXPbuffer glXGetPBuffer(Tk_Window TkWin,unsigned int *Width,unsigned int *Heigh
       return(0);
    }
    if (pattr[1]!=*Width || pattr[3]!=*Height) {
-      fprintf(stderr,"(INFO) glXGetPBuffer: Maximum size available is %i x %i instead of requested is %i x %i\n",*Width,*Height,pattr[1],pattr[3]);
+      fprintf(stderr,"(WARNING) glXGetPBuffer: Maximum size available is %i x %i instead of requested is %i x %i\n",*Width,*Height,pattr[1],pattr[3]);
    }
 
    return(pbuf);

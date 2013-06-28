@@ -624,7 +624,7 @@ void GeoTex_Qualify(GDAL_Band *Band) {
 int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
 
    unsigned int c,dx,dy,rx,ry,nx,ny,idx,idxd,sz;
-   char         *data;
+   char         *data=NULL;
 
    if (!Tile || Tile->Res==0) {
       return(0);

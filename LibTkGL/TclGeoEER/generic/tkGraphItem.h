@@ -82,4 +82,5 @@ typedef struct TGraphItem {
 int TclGraphItem_Init(Tcl_Interp *Interp);
 
 TGraphItem* GraphItem_Get(char *Name);
+
 #endif

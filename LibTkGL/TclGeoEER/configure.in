@@ -21,7 +21,7 @@ dnl	to configure the system for the local environment.
 
 AC_INIT([TclGeoEER], [7.6.0])
 
-PKG_CFLAGS="-D_GNU_SOURCE"
+PKG_CFLAGS="-D_GNU_SOURCE -D_BSD_SOURCE"
 
 # ---------------------------------------------------------------------------
 # Check for EER

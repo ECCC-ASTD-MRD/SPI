@@ -103,6 +103,7 @@ void   FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom);
 int    FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress);
 void   FSTD_FieldSet(TData *Data);
 int    FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType);
+int    FSTD_FieldSubBuild(TData *Field);
 
 int    FSTD_DecodeRPNLevelParams(TData *Field);
 

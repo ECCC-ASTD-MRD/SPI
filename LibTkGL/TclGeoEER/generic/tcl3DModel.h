@@ -131,11 +131,12 @@ int  Model_LoadDAE(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_LoadKML(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_LoadCityGML(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_Render(Projection* Proj,ViewportItem* VP,T3DModel *M);
-int  Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj);
-int  Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene);
+void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj);
+void Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene);
 void Model_NormalCompute(T3DModel *M,int Force);
 int  Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene);
 int  Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj);
+void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value);
 
 T3DScene*  Model_SceneAdd(T3DModel *Model,T3DScene* Parent,int Nb);
 void       Model_SceneFree(T3DScene *Scene);

@@ -406,6 +406,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                case 'E':id=2;break;
                case 'G':id=3;break;
                case 'L':id=4;break;
+               defaut:  id=1;
             }
 
             if (FFKrigging(band->Ref,band->Def,obs,c0,c1,a,id,n)) {
@@ -1393,7 +1394,6 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    int             i,si=0;
    char            buf[1024];
    char          **sub,*subid,*idx,*desc;
-   double          tran[6],inv[6];
 
    if (GDAL_FileGet(NULL,Id)) {
       Tcl_AppendResult(Interp,"GDAL_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
@@ -1654,7 +1654,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Driver) {
 
    Tcl_Obj        *obj;
-   GDAL_Band      *band;
+   GDAL_Band      *band=NULL;
    GDALColorTableH htable;
    GDALColorEntry  centry;
    GDALDatasetH    dts,vds;

@@ -790,7 +790,6 @@ T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
 */
 void Model_SceneFree(T3DScene *Scene) {
 
-   T3DScene *scn=NULL;
    int       n;
 
    if (Scene) {
@@ -1136,7 +1135,6 @@ void Model_Extent(T3DModel *Model) {
 
 void Model_ExtentScene(T3DModel *Model,T3DScene *Scene,Matrix4d Matrix) {
 
-   T3DObject obj;
    Matrix4d  mx,mx2;
    Vect3d    ex[2];
    int       o,s;
@@ -1654,7 +1652,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
+void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *Obj) {
 
    if (Obj && Obj->GLId && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
@@ -1712,7 +1710,7 @@ int Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject *
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene) {
+void Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *Scene) {
 
    int i;
 
@@ -1827,6 +1825,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
          Model_Rasterize(Data->Def,Data->Ref,v,n,extent,0.0);
       }
    }
+   return(1);
 }
 
    /*Calculate plane equation*/

@@ -64,6 +64,7 @@ static inline int XML_Check(void *Data,const char *Elem,char *Tag) {
          data->Bloc=XML_NIL;
       }
    }
+   return(data->Bloc);
 }
 
 static inline int XML_Valid(void *Data) {

@@ -62,7 +62,6 @@ static int GraphItem_Free(Tcl_Interp *Interp,char *Name);
 void   GraphItem_Clear(TGraphItem *Item);
 int    GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
 int    GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1);
-void   GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 void   GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 void   GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 void   GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode);

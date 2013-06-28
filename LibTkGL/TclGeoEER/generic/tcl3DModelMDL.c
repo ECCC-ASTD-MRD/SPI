@@ -52,7 +52,7 @@
 */
 int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
-   int       i,m;
+   int       i,m,f;
    T3DObject *obj;
    FILE      *file;
 
@@ -62,7 +62,7 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    /*Material list*/
    /*Number of material*/
-   fread(&M->NMt,sizeof(int),1,file);
+   f=fread(&M->NMt,sizeof(int),1,file);
    if (M->NMt>256 || M->NMt<0) {
       fclose(file);
       M->NMt=0;
@@ -87,12 +87,12 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
   } else {
       M->Mt=(TMaterial*)malloc(M->NMt*sizeof(TMaterial));
       for (i=0; i<M->NMt; i++) {
-        fread(&M->Mt[i].Amb,sizeof(float),3,file);
-        fread(&M->Mt[i].Dif,sizeof(float),3,file);
-        fread(&M->Mt[i].Emi,sizeof(float),3,file);
-        fread(&M->Mt[i].Spe,sizeof(float),3,file);
-        fread(&M->Mt[i].Shi,sizeof(float),1,file);
-        fread(&M->Mt[i].Dif[3],sizeof(float),1,file);
+        f=fread(&M->Mt[i].Amb,sizeof(float),3,file);
+        f=fread(&M->Mt[i].Dif,sizeof(float),3,file);
+        f=fread(&M->Mt[i].Emi,sizeof(float),3,file);
+        f=fread(&M->Mt[i].Spe,sizeof(float),3,file);
+        f=fread(&M->Mt[i].Shi,sizeof(float),1,file);
+        f=fread(&M->Mt[i].Dif[3],sizeof(float),1,file);
         M->Mt[i].Tex=0;
         M->Mt[i].Path[0]='\0';
       }
@@ -103,13 +103,13 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    /*Vertex list*/
    /*Number of vertex*/
-   fread(&obj->NVr,sizeof(int),1,file);
+   f=fread(&obj->NVr,sizeof(int),1,file);
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NVr=%i\n",obj->NVr);
 #endif
 
    /*Format of vertex*/
-   fread(&obj->Format,sizeof(int),1,file);
+   f=fread(&obj->Format,sizeof(int),1,file);
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Model_LoadMDL: M->Format=%i\n",obj->Format);
 #endif
@@ -127,26 +127,26 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    /*Vertex list*/
    for (i=0;i<obj->NVr;i++) {
-                              fread(&obj->Vr[i],sizeof(Vect3f),1,file);
-      if (obj->Format>=F3VN)  fread(&obj->Nr[i],sizeof(Vect3f),1,file);
-      if (obj->Format==F3VNT) fread(&obj->Tx[i],sizeof(Vect3f),1,file);
+                              f=fread(&obj->Vr[i],sizeof(Vect3f),1,file);
+      if (obj->Format>=F3VN)  f=fread(&obj->Nr[i],sizeof(Vect3f),1,file);
+      if (obj->Format==F3VNT) f=fread(&obj->Tx[i],sizeof(Vect3f),1,file);
    }
 
    /*Faces list*/
    /*Number of faces*/
-   fread(&obj->NFc,sizeof(int),1,file);
+   f=fread(&obj->NFc,sizeof(int),1,file);
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) Model_LoadMDL: M->NFc=%i\n",obj->NFc);
 #endif
 
    obj->Fc=(TFace*)malloc(obj->NFc*sizeof(TFace));
    for (i=0;i<obj->NFc;i++) {
-      fread(&m,sizeof(int),1,file);
-      fread(&obj->Fc[i].NIdx,sizeof(unsigned char),1,file);
+      f=fread(&m,sizeof(int),1,file);
+      f=fread(&obj->Fc[i].NIdx,sizeof(unsigned char),1,file);
 
       obj->Fc[i].Mt=m<0?&M->Mt[0]:&M->Mt[m];
       obj->Fc[i].Idx=(unsigned int*)malloc(obj->Fc[i].NIdx*sizeof(unsigned int));
-      fread(obj->Fc[i].Idx,sizeof(int),obj->Fc[i].NIdx,file);
+      f=fread(obj->Fc[i].Idx,sizeof(int),obj->Fc[i].NIdx,file);
    }
    fclose(file);
 

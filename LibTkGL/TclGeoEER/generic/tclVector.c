@@ -615,12 +615,14 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
    int      i;
    char     buf[256];
 
-   if (new=Vector_Get(Name))
-      if (new!=Vec)
+   if ((new=Vector_Get(Name))) {
+      if (new!=Vec) {
          Vector_Destroy(Interp,Name);
-      else
+      } else {
          return(new);
-
+      }
+   }
+        
    if (Vector_Create(Interp,Name,NULL)!=TCL_OK) {
        return(NULL);
    }
@@ -873,7 +875,7 @@ Tcl_Obj* Vector_GetData(Tcl_Interp *Interp,TVector *Vec,int Idx,int Sub) {
 */
 int Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len) {
 
-   int   i,n;
+   int   i,n=0;
 
    if (!Vec) {
       Tcl_AppendResult(Interp,"Vector_Length: Invalid vector",(char*)NULL);
@@ -1085,7 +1087,7 @@ void Vector_Clear(Tcl_Interp *Interp,TVector *Vec) {
 */
 int Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem) {
 
-   int i,n;
+   int i,n=0;
 
    if (!Vec) {
       Tcl_AppendResult(Interp,"Vector_Length: Invalid vector",(char*)NULL);
@@ -1150,7 +1152,7 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
       return(TCL_ERROR);
    }
 
-   if (vec=Vector_Get(Tcl_GetString(List))) {
+   if ((vec=Vector_Get(Tcl_GetString(List)))) {
       nobj=vec->N;
    } else {
       Tcl_ListObjLength(Interp,List,&nobj);
@@ -1234,7 +1236,7 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
       return(TCL_ERROR);
    }
 
-   if (vec=Vector_Get(Tcl_GetString(List))) {
+   if ((vec=Vector_Get(Tcl_GetString(List)))) {
       nobj=vec->N;
    } else {
       Tcl_ListObjLength(Interp,List,&nobj);
