@@ -1892,13 +1892,14 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 */
 int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 
-   FSTD_Head      head;
-   Tcl_Obj       *list,*obj;
-   int            nb,ni,nj,nk;
-   int            yyyy,mm,dd,h,m,s,type;
-   char           buf[1024],grtyp[2];
-   double         nhour,lvl;
-
+   FSTD_Head    head;
+   Tcl_Obj     *list,*obj;
+   int          nb,ni,nj,nk;
+   int          yyyy,mm,dd,h,m,s,type;
+   char         buf[1024],grtyp[2];
+   double       nhour,lvl;
+   const char **units;
+   
    if (Mode==FSTD_LISTNONE) {
       return(TCL_OK);
    }
@@ -1912,6 +1913,8 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    EZLock_RPNField();
    head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
 
+   units=ZRef_LevelUnits();
+   
    /* Boucel sur tout les enregistrements */
    while (head.KEY>=0) {
 
@@ -1946,46 +1949,46 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
                lvl=ZRef_IP2Level(head.IP1,&type);
                switch(type) {
-                  case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                  case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                  case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                  case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                  case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                  case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                  case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                  case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
+                  case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                  case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
                }
 
                if (head.IP2>32000) {
                   lvl=ZRef_IP2Level(head.IP2,&type);
                   switch(type) {
-                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,units[type]); break;
+                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
+                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
                   }
                } else {
-                  sprintf(buf,"%s %8i %-2s",buf,head.IP2,LVL_UNITS[LVL_UNDEF]);
+                  sprintf(buf,"%s %8i %-2s",buf,head.IP2,units[LVL_UNDEF]);
                }
 
                if (head.IP3>32000) {
                   lvl=ZRef_IP2Level(head.IP3,&type);
                   switch(type) {
-                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,LVL_UNITS[type]); break;
-                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,LVL_UNITS[type]); break;
+                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,units[type]); break;
+                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
+                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
+                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
+                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
                   }
                } else {
-                  sprintf(buf,"%s %8i %-2s",buf,head.IP3,LVL_UNITS[LVL_UNDEF]);
+                  sprintf(buf,"%s %8i %-2s",buf,head.IP3,units[LVL_UNDEF]);
                }
 
                System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);

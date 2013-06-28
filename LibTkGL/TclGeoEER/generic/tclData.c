@@ -1597,18 +1597,19 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 
 int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj  *obj,*sub;
-   TData    *fld;
-   TList    *list;
-   T3DArray *array;
-   Vect3d   *vbuf;
-   int       n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
-   int       nb,len,nobj;
-   long      npt;
-   double    dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
-   float     *levels;
-   char      buf[32],mode='L';
-
+   Tcl_Obj    *obj,*sub;
+   TData      *fld;
+   TList      *list;
+   T3DArray   *array;
+   Vect3d     *vbuf;
+   int         n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
+   int         nb,len,nobj;
+   long        npt;
+   double      dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
+   float      *levels;
+   char        buf[32],mode='L';
+   const char *lvls;
+   
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
@@ -2533,11 +2534,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case LEVELTYPE:
+            lvls=ZRef_LevelNames();
+            
             if (Objc==1) {
                if (Field->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(LVL_NAMES[Field->Ref->ZRef.Type],-1));
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Field->Ref->ZRef.Type],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],LVL_NAMES,"type",0,&index)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],lvls,"type",0,&index)!=TCL_OK) {
                   return(TCL_ERROR);
                }
                Field->Ref=GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,index,(Field->Ref?Field->Ref->ZRef.Levels:NULL));

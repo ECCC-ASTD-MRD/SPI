@@ -358,13 +358,14 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj  *obj,*lst;
-   CMap_Rec *map;
-   int       idx,i,ii,n,s=1,nobj,new,internew;
-   int       cminmax=0,cmap=0,cpos=0,cseg=0;
-   char      buf[64];
-   double    tmp,val,min=0.0,max=0.0;
-
+   Tcl_Obj    *obj,*lst;
+   CMap_Rec   *map;
+   int         idx,i,ii,n,s=1,nobj,new,internew;
+   int         cminmax=0,cmap=0,cpos=0,cseg=0;
+   char        buf[64];
+   double      tmp,val,min=0.0,max=0.0;
+   const char *lvls;
+   
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-transparency","-color","-fill",
@@ -573,10 +574,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             break;
 
          case ZTYPE:
+            lvls=ZRef_LevelNames();
+
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(LVL_NAMES[Spec->ZType],-1));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Spec->ZType],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],LVL_NAMES,"type",0,&Spec->ZType)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],lvls,"type",0,&Spec->ZType)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }

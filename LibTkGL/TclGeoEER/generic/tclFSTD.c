@@ -89,7 +89,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
    }
 
    if (obj && strlen(Tcl_GetString(obj))) {
-      if (Tcl_GetIndexFromObj(Interp,obj,LVL_NAMES,"type",0,&type)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,obj,ZRef_LevelNames(),"type",0,&type)!=TCL_OK) {
          return(-2);
       }
       return(ZRef_Level2IP(val,type));
