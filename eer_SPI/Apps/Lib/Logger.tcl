@@ -336,9 +336,9 @@ proc Log::End { { Status 0 } { Exit True } } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       } elseif { $Param(JobClass)=="REPORT" } {
          if { $Param(Error)>0 } { {
-            Log::Mail "Job finished (ERROR)" $Param(OutFile)
+            Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
          } elseif { $Param(Warning)>0 && ($Param(JobReport)=="ALL" || $Param(JobReport)=="WARNING") } {
-            Log::Mail "Job finished (WARNING)" $Param(OutFile)
+            Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
          } elseif { $Param(JobReport)=="ALL" }
             Log::Mail "Job finished (NORMAL)" $Param(OutFile)
          }    
