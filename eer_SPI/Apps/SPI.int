@@ -33,6 +33,8 @@
 proc SPI::Splash { { Msg "" } } {
    global GDefs
 
+   Log::Print DEBUG $Msg
+
    if { !$SPI::Param(Batch) } {
 
       set SPI::Param(Loading) $Msg

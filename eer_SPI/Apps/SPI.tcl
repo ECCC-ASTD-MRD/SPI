@@ -21,6 +21,9 @@ set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
 package require TclSystem
 package require Logger
 
+set Log::Param(JobId) SPI
+Log::Start SPI $GDefs(Version)
+
 source $GDefs(Dir)/Apps/SPI.txt
 source $GDefs(Dir)/Apps/SPI.ctes
 source $GDefs(Dir)/Apps/SPI.int
@@ -46,7 +49,6 @@ proc SPI::Setup { { Force False } } {
    if { $Force || ![file exists $env(HOME)/.spi] } {
 
       SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
-      Log::Print INFO "Setting up SPI $GDefs(Version) for the first time"
 
       file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro
 
@@ -1839,8 +1841,7 @@ proc SPI::Quit { { Code 0 } } {
       glrender -shutdown
    }
 
-   Log::Print INFO "Execution time : [expr ([clock clicks -milliseconds]-$Param(Time))/1000.0]s"
-   exit $Code
+   Log::End $Code
 }
 
 #---------------------------------------------------------------------------

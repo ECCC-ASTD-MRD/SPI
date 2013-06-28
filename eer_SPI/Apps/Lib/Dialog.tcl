@@ -105,8 +105,10 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
       "ERROR"    { set title [lindex $Lbl(ERROR)    $GDefs(Lang)]; set icon DIALOG_ERROR }
       "MESSAGE"  { set title [lindex $Lbl(MESSAGE)  $GDefs(Lang)]; set icon DIALOG_QUESTION }
       "QUESTION" { set title [lindex $Lbl(QUESTION) $GDefs(Lang)]; set icon DIALOG_QUESTION }
-      default    { set title [lindex $Type $GDefs(Lang)];          set icon DIALOG_QUESTION }
+      default    { set title [lindex $Type $GDefs(Lang)];          set icon DIALOG_QUESTION; set Type QUESTION }
    }
+
+   uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    toplevel     .dlgdef -class Dialog
    wm title     .dlgdef $title

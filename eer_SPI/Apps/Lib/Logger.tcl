@@ -71,7 +71,7 @@ namespace eval Log { } {
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
 
    set Param(Levels)     { ERROR WARNING INFO DEBUG EXTRA }
-   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
+   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 MESSAGE 2 QUESTION 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
 }
 
 #---------------------------------------------------------------------------
@@ -254,7 +254,7 @@ proc Log::Start { Job Version { Input "" } } {
    append Param(JobId) "-[clock format [clock seconds] -format "%Y%m%d_%H%M%S" -gmt True]"
 
    Log::Print MUST "-------------------------------------------------------------------------------"
-   Log::Print MUST "Script              : $Job"
+   Log::Print MUST "App/Script          : $Job"
    Log::Print MUST "Version             : $Version"
    Log::Print MUST "Hostname            : [system info -name]"
    Log::Print MUST "Architecture        : [system info -os]"
@@ -315,7 +315,11 @@ proc Log::End { { Status 0 } { Exit True } } {
 
    Log::Print MUST "\n-------------------------------------------------------------------------------"
    if { ${Status}==0 } {
-      Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
+      if { $Param(Warning)>0 } {
+          Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
+       } else {
+          Log::Print MUST "Status              : Job has terminated successfully."
+       }       
    } else {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
@@ -330,15 +334,14 @@ proc Log::End { { Status 0 } { Exit True } } {
    if { $Status==0 } {
       if { $Param(JobClass)=="INTERACTIVE" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-      }
-      if { $Param(JobClass)=="REPORT" } {
-         if { $Param(JobReport)=="WARNING" } {
-            if { $Param(Warning)>0 } {
-               Log::Mail "Job finished (WARNING)" $Param(OutFile)
-            }
-         } elseif { $Param(JobReport)!="ERROR" } {
+      } elseif { $Param(JobClass)=="REPORT" } {
+         if { $Param(Error)>0 } { {
+            Log::Mail "Job finished (ERROR)" $Param(OutFile)
+         } elseif { $Param(Warning)>0 && ($Param(JobReport)=="ALL" || $Param(JobReport)=="WARNING") } {
+            Log::Mail "Job finished (WARNING)" $Param(OutFile)
+         } elseif { $Param(JobReport)=="ALL" }
             Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-         }
+         }    
       }
    } else {
       Log::Mail "Job finished (ERROR)" $Param(OutFile)
