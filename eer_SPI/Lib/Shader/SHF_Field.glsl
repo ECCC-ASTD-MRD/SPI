@@ -22,7 +22,8 @@ void main() {
 
    dd=Fd;
    idx=-1.0;
-
+   inter.x=0.0;
+   
    if (Nb>0) {
       for(n=0;n<Nb;n++) {
          inter=texture2DRect(Interval,vec2(n,0.0));
