@@ -303,7 +303,9 @@ MODULE_SCOPE int  TkCanvPostscriptCmd(TkCanvas *canvasPtr,
 MODULE_SCOPE int  TkCanvTranslatePath(TkCanvas *canvPtr,
              int numVertex, double *coordPtr, int closed,
              XPoint *outPtr);
-/*
+MODULE_SCOPE int SetglCanvas(TkCanvas *canvasPtr);
+
+   /*
  * Standard item types provided by Tk:
  */
 
