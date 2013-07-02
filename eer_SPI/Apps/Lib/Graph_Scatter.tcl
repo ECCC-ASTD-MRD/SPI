@@ -603,6 +603,7 @@ proc Graph::Scatter::ItemDefine { GR Pos Coords { Update True } } {
    } else {
       set data(Pos$Pos)   $Coords
    }
+   set data(Coords$Pos) $data(Pos$Pos)
 
    set item ${Pos}_Item0
 

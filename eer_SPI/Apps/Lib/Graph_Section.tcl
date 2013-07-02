@@ -585,8 +585,9 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
    if { [lsearch -exact $data(Pos) $Pos]==-1 } {
       lappend data(Pos) $Pos
    }
-   set data(Items$Pos) {}
-   set data(Pos$Pos)   $Coords
+   set data(Items$Pos)  {}
+   set data(Coords$Pos) $Coords
+   set data(Pos$Pos)    [Graph::VertexSample Section $GR $Coords]
    set i -1
 
    Graph::Idle $GR Section

@@ -603,7 +603,8 @@ proc Graph::Hovmoller::ItemDefine { GR Pos Coords { Update True } } {
       lappend data(Pos) $Pos
    }
    set data(Items$Pos) {}
-   set data(Pos$Pos)   $Coords
+   set data(Coords$Pos) $Coords
+   set data(Pos$Pos)    [Graph::VertexSample Hovmoller $GR $Coords]
    set i -1
 
    Graph::Idle $GR Hovmoller

@@ -492,6 +492,7 @@ proc Graph::Compare::ItemDefine { GR Pos Coords { Update True } } {
       lset data(DescPos) $idx $Desc
    }
 
+   set data(Coords) $data(Pos)
    set data(Items$Pos) {}
 
    Graph::Idle $GR Compare

@@ -471,6 +471,7 @@ proc Graph::Contingency::ItemDefine { GR Pos Coords { Update True } } {
       set data(Pos$Pos)   $Coords
    }
 
+   set data(Coords$Pos) $data(Pos$Pos)
    set item $Pos
 
    Graph::Idle $GR Contingency

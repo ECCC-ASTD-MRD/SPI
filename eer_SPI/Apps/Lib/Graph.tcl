@@ -65,7 +65,7 @@
 #    Graph::VertexAdd          { Frame VP X Y }
 #    Graph::VertexDelete       { Frame VP }
 #    Graph::VertexFollow       { Frame VP X Y Scan }
-#    Graph::VertexSample       { Frame VP Type Graph Coord { Res 0 } }
+#    Graph::VertexSample       { Type Graph Coord { Res 0 } }
 #    Graph::VertexResolution   { Type Graph  }
 #
 #===============================================================================
@@ -1486,7 +1486,6 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
       "LINE" {
             set coords { }
             set i -1
-
             foreach { lat lon } $Marks  {
                if { [set xy [$VP -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
                   lappend coords [lindex $xy 0] [lindex $xy 1]
@@ -1670,12 +1669,12 @@ proc Graph::PosSave { Type Graph Pos } {
    if { [llength $data(Pos$Pos)] && [set name [Dialog::Get . $Lbl(Save) $Msg(PosSave)]]!="" } {
       if { [set idx [lsearch -exact -index 0 $Param($Param(SelectMode)) $name]]!=-1 } {
          if { ![Dialog::Default . 300 WARNING $Msg(PosExist) "\n\n\t$name\n" 1 $Lbl(Yes) $Lbl(No)] } {
-            lset Param($Param(SelectMode)) $idx [list $name $data(Pos$Pos)]
+            lset Param($Param(SelectMode)) $idx [list $name $data(Coords$Pos)]
          } else {
             return
          }
       } else {
-         lappend Param($Param(SelectMode)) [list $name $data(Pos$Pos)]
+         lappend Param($Param(SelectMode)) [list $name $data(Coords$Pos)]
       }
       Graph::SaveParams
       Graph::ModeSelect $Param(SelectMode)
@@ -2886,7 +2885,7 @@ proc Graph::VertexAdd { Frame VP X Y } {
       }
 
       #----- Afficher la base de la coupes et en recuperer les coordonnees lat-lon
-      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
+      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
    }
 
 #   Shape::BindMoveGeo $Frame.page.canvas GRAPHSELECT$Graph::Data(Graph) Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data(Pos$Graph::Data(Pos)) "Graph::Time::UpdateItems $data(FrameData) $Graph::Data(Graph)"
@@ -2915,7 +2914,7 @@ proc Graph::VertexDelete { Frame VP } {
    if { $VP!=-1 } {
       set data(Coords) [lreplace $data(Coords) end-1 end]
 
-      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $data(Coords)]
+      Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $data(Coords)
    }
    $data(Canvas) delete VERTEXFOLLOW
 }
@@ -2966,13 +2965,13 @@ proc Graph::VertexFollow { Frame VP X Y Scan } {
       }
 
       $Frame.page.canvas delete GRAPHSELECT$Graph::Data(Graph)
-      set smpl [Graph::VertexSample $Frame $VP $Graph::Data(Type) $Graph::Data(Graph) $coords]
+      set smpl [Graph::VertexSample $Graph::Data(Type) $Graph::Data(Graph) $coords]
       set id   [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
       set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
       Graph::ItemPos $Frame $VP $smpl "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$Graph::Data(Graph) $Param(SelectMode) $coords
 
       if { $Scan && [llength $coords]>2 } {
-         Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $smpl
+         Graph::${Graph::Data(Type)}::ItemDefine $Graph::Data(Graph) $Graph::Data(Pos) $coords
       }
    }
 }
@@ -2984,8 +2983,6 @@ proc Graph::VertexFollow { Frame VP X Y Scan } {
 # But      : Calculer le path de coupe et points intermediaire selon la resolution.
 #
 # Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
 #  <Type>    : Type de graph
 #  <Graph>   : Identificateur du graph
 #  <Coord>   : Liste des coordonnee
@@ -2997,7 +2994,7 @@ proc Graph::VertexFollow { Frame VP X Y Scan } {
 #
 #----------------------------------------------------------------------------
 
-proc Graph::VertexSample  { Frame VP Type Graph Coord { Res 0 } } {
+proc Graph::VertexSample  { Type Graph Coord { Res 0 } } {
    variable Data
 
    upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
@@ -3072,7 +3069,7 @@ proc Graph::VertexResolution { Type Graph { Update True } } {
    }
 
    if { $Update } {
-      Graph::${Type}::ItemDefine $Graph $Graph::Data(Pos) [Graph::VertexSample $data(FrameData) $data(VP) $Type $Graph $data(Coords)]
+      Graph::${Type}::ItemDefine $Graph $Graph::Data(Pos) $data(Coords)
       Graph::${Type}::Graph $Graph
    }
 }
