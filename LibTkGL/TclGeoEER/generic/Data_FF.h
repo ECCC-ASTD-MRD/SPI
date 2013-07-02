@@ -60,7 +60,7 @@
 #define RK(R,S,V)    R[0]=S*V[0];R[1]=S*V[1];R[2]=S*V[2];
 #define RKT(R,V1,V2) R[0]=0.5*(V1[0]+V2[0]);R[1]=0.5*(V1[1]+V2[1]);R[2]=0.5*(V1[2]+V2[2]);
 
-static float *FFStreamMap;
+extern float *FFStreamMap;
 
 typedef struct TKrigging {
    double *Matrix;

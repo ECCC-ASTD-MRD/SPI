@@ -81,7 +81,6 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
 void ViewportSet(ViewportItem *VP,Projection *Proj);
 void ViewportUnset(ViewportItem *VP);
 
-#define VPMAX 256
 static ViewportItem *ViewportTable[256];
 
 /*Information used for parsing configuration specs:*/
@@ -2256,7 +2255,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    ViewportUnset(vp);
    glXFreePBuffer(pbuf);
 
-   SetglCanvas(Canvas);
+   SetglCanvas(Canvas(Canvas));
    return(TCL_OK);
 }
 
@@ -2360,7 +2359,7 @@ static int VP_ArrayParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,
       array->Nb=0;
    }
    array->String=strdup(Value);
-   Tcl_SplitList(Interp,Value,&array->Nb,&array->Array);
+   Tcl_SplitList(Interp,Value,&array->Nb,(const char ***)&array->Array);
 
    return(TCL_OK);
 }

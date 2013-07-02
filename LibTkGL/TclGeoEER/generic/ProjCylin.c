@@ -187,6 +187,7 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
       PROJCHECK(Proj,vr[0])
 
+      ax[0]=ax[1]=0.0;
       switch(Proj->TAxis) {
          case 1: ax[0]=vr[0]; ax[1]=vr[1]; break;
          case 2: ax[0]=-2.0+Proj->L; ax[1]=1.0; break;
@@ -376,7 +377,7 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
    if (Mode==GL_LINES) {
       for(i=0;i<n;i+=Stride) {
          glBegin(Mode);
-            if (Col) glColor4ubv(&Col[i*4]);
+            if (Col) glColor4ubv((GLubyte*)&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
             Cylin_Vertex(Data[i],p0,Proj->L,Mode);
             i++;
@@ -386,7 +387,7 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
    } else if (Mode==GL_POINTS) {
       glBegin(Mode);
          for(i=0;i<n;i+=Stride) {
-             if (Col) glColor4ubv(&Col[i*4]);
+             if (Col) glColor4ubv((GLubyte*)&Col[i*4]);
              if (Tex) glTexCoord1f(Tex[i]);
              Cylin_Vertex(Data[i],p0,Proj->L,Mode);
          }
@@ -395,7 +396,7 @@ void Cylin_RenderArray(Projection *Proj,Vect3d *Data,char *Col,float* Tex,int Mo
       glBegin(Mode);
          Cylin_Vertex(Data[0],p0,Proj->L,Mode);
          for(i=Stride;i<n;i+=Stride) {
-            if (Col) glColor4ubv(&Col[i*4]);
+            if (Col) glColor4ubv((GLubyte*)&Col[i*4]);
             if (Tex) glTexCoord1f(Tex[i]);
             Cylin_Vertex(Data[i],Data[i-Stride],Proj->L,Mode);
          }

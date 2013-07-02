@@ -2729,7 +2729,7 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 
    int    i,j,idx,f;
    double u,w,len,da=0.0;
-   Vect3d pin,pout,ppout;
+   Vect3d pin,pout;
 
    if (!Data->Def->Data[2]) {
       return;
@@ -2773,6 +2773,7 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 
             // Calculate topo angle when using reprojected height (pressure or magl)
 /*            if (Data->Ref->Grid[0]=='V' && Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
+               Vect3d ppout;
                pin[0]=i-1;
                pin[1]=j;
                GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,pin,ppout);
@@ -3040,7 +3041,7 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
             GLRender->TRCon=NULL;
             glPopAttrib();
             glXFreePBuffer(pbuf);
-            SetglCanvas(Graph->canvas);
+            SetglCanvas(Canvas(Graph->canvas));
          }
 
          if (data->Spec->RenderContour)

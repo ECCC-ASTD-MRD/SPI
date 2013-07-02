@@ -463,7 +463,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
             Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
          }
       }
-      Proj->Type->Project(Proj,Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+      Proj->Type->Project(Proj,(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
    }
 
    if (gz)
@@ -571,7 +571,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
 
       if (Proj) {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
       FSTD_FileUnset(NULL,head->FID);
    } else {
@@ -656,7 +656,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
          FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
       } else {
-         ((Projection*)Proj)->Type->Project(((Projection*)Proj),Field->Ref->Pos[Level],NULL,FSIZE2D(def));
+         ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
 
       if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
@@ -735,7 +735,7 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
  */
 int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom) {
 
-   float       *from,*to;
+   char        *from,*to;
    int          i,ip1;
    TZRefInterp *interp;
    FSTD_Head   *headto=(FSTD_Head*)FieldTo->Head;
@@ -851,7 +851,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          Def_Pointer(FieldTo->Def,i,0,to);
 
          // Interpolate datacube
-         if (!ZRefInterp(interp,to,from,NULL,NULL,0,0)) {
+         if (!ZRefInterp(interp,(float*)to,(float*)from,NULL,NULL,0,0)) {
            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Interpolation error (ZRefInterp)",(char*)NULL);
            Tcl_MutexUnlock(&MUTEX_FSTDVI);
            return(TCL_ERROR);

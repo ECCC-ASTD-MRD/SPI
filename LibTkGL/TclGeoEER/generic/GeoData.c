@@ -39,6 +39,7 @@
 
 #include "GeoData.h"
 #include "Projection.h"
+#include "gdal.h"
 #include "stars.h"
 
 static GDB_Geo  *GeoPtr;

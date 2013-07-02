@@ -238,7 +238,7 @@ static int Obs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CO
             Tcl_WrongNumArgs(Interp,2,Objv,"obslist");
             return(TCL_ERROR);
          }
-         return DataDef_Sort(Interp,Objv[2]);
+         return Data_Sort(Interp,Objv[2]);
          break;
 
       case COPY:
@@ -1868,8 +1868,8 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
-         Proj->Type->Project(Proj,&co,&pix[1],1);
+         Proj->Type->Project(Proj,(GeoVect*)&Obs->Loc->Coord[i],(GeoVect*)&pix[0],1);
+         Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&pix[1],1);
          glVertex3dv(pix[0]);
          glVertex3dv(pix[1]);
       }
@@ -1887,7 +1887,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj,&co,&pix[1],1);
+         Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&pix[1],1);
          glVertex3dv(pix[1]);
       }
       glEnd();
@@ -1909,8 +1909,8 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
-         Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
-         Proj->Type->Project(Proj,&co,&pix[1],1);
+         Proj->Type->Project(Proj,(GeoVect*)&Obs->Loc->Coord[i],(GeoVect*)&pix[0],1);
+         Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&pix[1],1);
          glColor4ubv(Obs->Spec->Map->Color[idx]);
          glVertex3dv(pix[0]);
          glVertex3dv(pix[1]);
@@ -1927,7 +1927,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       val=((float*)Obs->Def->Data[0])[i];
       VAL2COL(idx,Obs->Spec,val);
 
-      Proj->Type->Project(Proj,&Obs->Loc->Coord[i],&pix[0],1);
+      Proj->Type->Project(Proj,(GeoVect*)&Obs->Loc->Coord[i],(GeoVect*)&pix[0],1);
       glColor4ubv(Obs->Spec->Map->Color[idx]);
       glVertex3dv(pix[0]);
    }
@@ -2533,7 +2533,7 @@ static int Obs_GetAreaValue(Tcl_Interp *Interp,int Mode,TObs *Obs,int Objc,Tcl_O
 
       // Point is inside
       if (f) {
-         v=((float*)Obs->Def->Data)[0];
+         v=((float*)Obs->Def->Data[0])[o];
          n++;
          switch(Mode) {
             case 0:

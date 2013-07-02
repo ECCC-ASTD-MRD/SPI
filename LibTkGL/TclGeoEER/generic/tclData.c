@@ -86,14 +86,6 @@ TDataVector *Data_VectorTableAdd(void) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Tclgeoeer_Init(Tcl_Interp *Interp) {
- 
-   if (Tcl_PkgProvide(Interp,"TclGeoEER",PACKAGE_VERSION) != TCL_OK) {
-      return(TCL_ERROR);
-   }
-   return(Tcldata_Init(Interp));
-}
-
 int Tcldata_Init(Tcl_Interp *Interp) {
 
    if (Tcl_PkgProvide(Interp,"TclData",PACKAGE_VERSION) != TCL_OK) {
@@ -185,6 +177,14 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    }
 
    return(TCL_OK);
+}
+
+int Tclgeoeer_Init(Tcl_Interp *Interp) {
+ 
+   if (Tcl_PkgProvide(Interp,"TclGeoEER",PACKAGE_VERSION) != TCL_OK) {
+      return(TCL_ERROR);
+   }
+   return(Tcldata_Init(Interp));
 }
 
 /*----------------------------------------------------------------------------
@@ -325,7 +325,7 @@ int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Ob
             Tcl_WrongNumArgs(Interp,2,Objv,"fldlist");
             return(TCL_ERROR);
          }
-         return(DataDef_Sort(Interp,Objv[2]));
+         return(Data_Sort(Interp,Objv[2]));
          break;
 
       case CLEAN:
@@ -1338,7 +1338,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <DataDef_Sort>
+ * Nom      : <Data_Sort>
  * Creation : Octobre 2005- J.P. Gauthier - CMC/CMOE
  *
  * But      : Trier une liste de TDataDef pour diverses stats.
@@ -1354,7 +1354,7 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
  *
  *----------------------------------------------------------------------------
 */
-int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
+int Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 
    Tcl_Obj      *obj;
    TDataDef    **def;
@@ -1365,7 +1365,7 @@ int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
    double       *v;
 
    if (!List) {
-      Tcl_AppendResult(Interp,"\n   DataDef_Sort: Empty list",(char*)NULL);
+      Tcl_AppendResult(Interp,"\n   Data_Sort: Empty list",(char*)NULL);
       return(TCL_ERROR);
    }
    Tcl_ListObjLength(Interp,List,&nobj);
@@ -1380,11 +1380,11 @@ int DataDef_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
       } else if ((obs=Obs_Get(Tcl_GetString(obj)))) {
          def[n]=obs->Def;
       } else {
-         Tcl_AppendResult(Interp,"\n   DataDef_Sort: Invalid field of observation",(char*)NULL);
+         Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid field of observation",(char*)NULL);
          return(TCL_ERROR);
       }
       if (i!=0 && i!=FSIZE2D(def[n])) {
-         Tcl_AppendResult(Interp,"\n   DataDef_Sort: Invalid dimensions",(char*)NULL);
+         Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid dimensions",(char*)NULL);
          return(TCL_ERROR);
       }
       i=FSIZE2D(def[n]);
@@ -1598,17 +1598,17 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
 int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj    *obj,*sub;
-   TData      *fld;
-   TList      *list;
-   T3DArray   *array;
-   Vect3d     *vbuf;
-   int         n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
-   int         nb,len,nobj;
-   long        npt;
-   double      dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
-   float      *levels;
-   char        buf[32],mode='L';
-   const char *lvls;
+   TData       *fld;
+   TList       *list;
+   T3DArray    *array;
+   Vect3d      *vbuf;
+   int          n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
+   int          nb,len,nobj;
+   long         npt;
+   double       dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
+   float       *levels;
+   char         buf[32],mode='L';
+   const char **lvls;
    
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
@@ -2742,7 +2742,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
 
    Tcl_Obj *obj,*sub;
    int      f,n=0,ni,nj,nc,vnb,vn0,vn1;
-   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot,i0,j0,i1,j1;
+   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {
@@ -2802,7 +2802,6 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 3: tot=-1e38; break;
       case 4:
       case 5: obj=Tcl_NewListObj(0,NULL); break;
-      default: 0;
    }
 
    vnb=n=0;

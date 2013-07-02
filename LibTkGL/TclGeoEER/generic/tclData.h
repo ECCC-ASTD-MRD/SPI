@@ -144,6 +144,7 @@ int      Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double 
 TData*   Data_Get(char *Name);
 TData*   Data_GetShell(Tcl_Interp *Interp,char *Name);
 void     Data_GetStat(TData *Field);
+int      Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List);
 Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
 TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TData_Type Type);
 Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y);
@@ -156,6 +157,7 @@ void     Data_Wipe();
 void     Data_PreInit(TData *Data);
 int      Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
 int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+int      Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
 TDataVector *Data_VectorTableCheck(char *Var,int *Idx);
 TDataVector *Data_VectorTableAdd(void);

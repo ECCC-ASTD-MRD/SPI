@@ -33,6 +33,8 @@
 
 #include "Data_FF.h"
 
+float *FFStreamMap;
+
 static unsigned char FFStreamTex[256][4] = {
    { 255, 255, 255 ,255},
    { 255, 255, 255 ,254},

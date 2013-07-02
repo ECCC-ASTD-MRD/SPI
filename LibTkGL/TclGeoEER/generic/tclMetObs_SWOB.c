@@ -89,9 +89,9 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
             if (strcmp(Attr[i],"code-type")==0) { }
             if (strcmp(Attr[i],"group")==0)     { }
             if (strcmp(Attr[i],"orig-name")==0) { }
-            if (strcmp(Attr[i],"name")==0)      qname=Attr[i+1];
-            if (strcmp(Attr[i],"uom")==0)       quom=Attr[i+1];
-            if (strcmp(Attr[i],"value")==0)     qvalue=Attr[i+1];
+            if (strcmp(Attr[i],"name")==0)      qname=(char*)Attr[i+1];
+            if (strcmp(Attr[i],"uom")==0)       quom=(char*)Attr[i+1];
+            if (strcmp(Attr[i],"value")==0)     qvalue=(char*)Attr[i+1];
          }
       } else if (strcmp(Elem,"om:result")==0) {
          if (!swob->Name) swob->Name=strdup("NIL");

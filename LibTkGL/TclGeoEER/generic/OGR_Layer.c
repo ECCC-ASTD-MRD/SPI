@@ -61,6 +61,7 @@ int QSort_OGR(const void *A,const void *B);
 int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj       *obj,*lst,*sublst;
+   Tcl_WideInt    w;
    TGeoRef       *ref;
    OGR_Layer     *layer;
    OGRFieldDefnH  field;
@@ -344,7 +345,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,lst);
             } else {
 
-               Tcl_ListObjLength(Interp,Objv[++i],&layer->NSFeature);
+               Tcl_ListObjLength(Interp,Objv[++i],&f);
+               layer->NSFeature=f;
                
                if (layer->SFeature) {
                   free(layer->SFeature);
@@ -354,7 +356,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->SFeature=(unsigned int*)malloc(layer->NSFeature*sizeof(unsigned int));
                   for(f=0;f<layer->NSFeature;f++) {
                      Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
-                     Tcl_GetIntFromObj(Interp,obj,&layer->SFeature[f]);
+                     Tcl_GetWideIntFromObj(Interp,obj,&w);
+                     layer->SFeature[f]=w;
                   }
                }
             }
@@ -417,9 +420,10 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    int           j,idx,nseg;
    double        x,y,lat,lon,tol,val,min,max,area;
    unsigned int  y0,y1,f,fop;
-   OGR_Layer     *layer,*layerop;
-   TGeoRef       *ref,*ref0;
-   Tcl_Obj       *lst;
+   OGR_Layer    *layer,*layerop;
+   TGeoRef      *ref,*ref0;
+   Tcl_Obj      *lst;
+   Tcl_WideInt   w;
    char          buf[32],*str;
 
    static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
@@ -486,9 +490,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area<0?-area:area));
                }
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[1],&f);
+               Tcl_GetWideIntFromObj(Interp,Objv[1],&w);
 
-               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (w<layer->NFeature && (geom=OGR_F_GetGeometryRef(layer->Feature[w]))) {
                   area=GPC_Centroid2D(geom,&x,&y);
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
@@ -801,8 +805,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          layer->Sort.Order=1;
 
          if (Objc==3) {
-            Tcl_GetBooleanFromObj(Interp,Objv[2],&f);
-            layer->Sort.Order=f?-1:1;
+            Tcl_GetBooleanFromObj(Interp,Objv[2],&j);
+            layer->Sort.Order=j?-1:1;
          }
 
          if (strlen(Tcl_GetString(Objv[1]))!=0) {
@@ -846,9 +850,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          y0=0;y1=0xFFFFFFF;
          if (Objc>=3) {
-            Tcl_GetIntFromObj(Interp,Objv[2],&y0);
+            Tcl_GetWideIntFromObj(Interp,Objv[2],&w);
+            y0=w;
             if (Objc==4) {
-               Tcl_GetIntFromObj(Interp,Objv[3],&y1);
+               Tcl_GetWideIntFromObj(Interp,Objv[3],&w);
+               y1=w;
             }
          }
 
@@ -1033,8 +1039,9 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
    Tcl_Obj      *st,*it,*op,*val,*fd;
+   Tcl_WideInt   w;
    int           n,i,ns,nf,fld,ni,len,err;
-   unsigned int f;
+   unsigned int  f;
    regex_t      *exp=NULL;
    char         *msg;
    OGRFieldDefnH defn=NULL;
@@ -1067,9 +1074,9 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
          Tcl_ListObjLength(Interp,val,&nf);
          for(i=0;i<nf;i++) {
             Tcl_ListObjIndex(Interp,val,i,&fd);
-            Tcl_GetIntFromObj(Interp,fd,&f);
-            if (f>=0 && f<Layer->NFeature)
-               Layer->Select[f]=1;
+            Tcl_GetWideIntFromObj(Interp,fd,&w);
+            if (w>=0 && w<Layer->NFeature)
+               Layer->Select[w]=1;
          }
          return(TCL_OK);
       }
@@ -1173,8 +1180,9 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
 
       case OFTStringList:
          clist=OGR_F_GetFieldAsStringList(Feature,Index);
-         while(clist) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist++,-1));
+         n=0;
+         while(clist[n]) {
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist[n++],-1));
          }
          break;
 
@@ -2027,6 +2035,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    OGREnvelope   env0,*env1=NULL;
    Tcl_Obj      *obji,*objj,*lst,*item=NULL;
    Tcl_Channel   chan=NULL;
+   Tcl_WideInt   w;
    Vect3d        vr;
    Coord         co;
 
@@ -2119,10 +2128,11 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          Tcl_ListObjLength(Interp,lst,&pt);
          for(p=0;p<pt;p+=2) {
             Tcl_ListObjIndex(Interp,lst,p,&item);
-            Tcl_GetIntFromObj(Interp,item,&f);
+            Tcl_GetWideIntFromObj(Interp,item,&w);
             Tcl_ListObjIndex(Interp,lst,p+1,&item);
             Tcl_GetDoubleFromObj(Interp,item,&area);
 
+            f=w;
             /*Check for nodata value*/
             if (!isnan(val1) && val1!=FromDef->NoData) {
                val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
@@ -2381,7 +2391,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       co[1].Lat=Layer->Ref->LLExtent.MaxY;
       co[1].Lon=Layer->Ref->LLExtent.MaxX;
 
-      Proj->Type->Project(Proj,co,Layer->Vr,2);
+      Proj->Type->Project(Proj,(GeoVect*)co,(GeoVect*)Layer->Vr,2);
       t=0;
       Proj->Loading=0;
       if (Delay)

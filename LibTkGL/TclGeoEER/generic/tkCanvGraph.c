@@ -1503,7 +1503,7 @@ static int GraphToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
    } else {
        glPostscripTextLayout(Interp,Canvas,gr->Text,gr->FGColor,NULL,0,x,gr->header.y1+5,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
    }
-   SetglCanvas(Canvas);
+   SetglCanvas(Canvas(Canvas));
    return TCL_OK;
 }
 
@@ -1541,7 +1541,7 @@ static int Graph_ItemParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWi
    }
 
    gr->ItemStr=strdup(Value);
-   Tcl_SplitList(Interp,Value,&gr->NItem,&gr->Item);
+   Tcl_SplitList(Interp,Value,&gr->NItem,(const char ***)&gr->Item);
    for(i=0;i<gr->NItem;i++) {
       if (!GraphItem_Get(gr->Item[i])) {
          Tcl_AppendResult(Interp,"Graph_ItemParse: Invalid Item \"",gr->Item[i],"\"",(char*)NULL);

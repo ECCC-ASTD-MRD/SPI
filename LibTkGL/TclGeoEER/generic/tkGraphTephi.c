@@ -1087,9 +1087,12 @@ void GraphItem_DisplayTephi(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item
    char           buf[32];
    int            i,vn,j,x,y,px,py,pw;
 
+   vdry=vwet=vdew=vspd=vdir=vspr=NULL;
+   vn=x=0;
+
    /*Pressure (YData)*/
    vpres=Vector_Get(Item->YData);
-
+   
    if (Item->Alpha<100) {
       glEnable(GL_BLEND);
    }

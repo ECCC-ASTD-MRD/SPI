@@ -46,8 +46,8 @@ extern TDataSpec* DataSpec_Get(char *Name);
 extern TObs*      Obs_Get(char *Name);
 extern OGR_Layer* OGR_LayerGet(char *Name);
 
-static int   Colorbar_DataParseProc _ANSI_ARGS_((ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,char *value,char *widgRec,int offset));
-static char *Colorbar_DataPrintProc _ANSI_ARGS_((ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr));
+static int         Colorbar_DataParseProc(ClientData clientData,Tcl_Interp *interp,Tk_Window tkwin,const char *value,char *widgRec,int offset);
+static const char *Colorbar_DataPrintProc(ClientData clientData,Tk_Window tkwin,char *widgRec,int offset,Tcl_FreeProc **freeProcPtr);
 
 static const Tk_CustomOption DataOption = { Colorbar_DataParseProc,Colorbar_DataPrintProc,NULL };
 static const Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
@@ -1865,7 +1865,7 @@ int ColorbarToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int P
  *
  *----------------------------------------------------------------------------
 */
-static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,char *Value,char *WidgRec,int Offset){
+static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window TkWin,const char *Value,char *WidgRec,int Offset){
 
    ColorbarItem *cb=(ColorbarItem*)WidgRec;
 
@@ -1877,7 +1877,7 @@ static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window T
    }
 
    cb->DataStr=strdup(Value);
-   Tcl_SplitList(Interp,Value,&cb->NbData,&cb->Data);
+   Tcl_SplitList(Interp,Value,&cb->NbData,(const char***)&cb->Data);
 
    return(TCL_OK);
 }
@@ -1902,7 +1902,7 @@ static int Colorbar_DataParseProc(ClientData Data,Tcl_Interp *Interp,Tk_Window T
  *
  *----------------------------------------------------------------------------
 */
-static char *Colorbar_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
+static const char *Colorbar_DataPrintProc(ClientData Data,Tk_Window TkWin,char *WidgRec,int Offset,Tcl_FreeProc **FreeProcPtr){
 
    ColorbarItem *cb=(ColorbarItem*)WidgRec;
 

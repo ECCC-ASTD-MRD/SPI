@@ -45,6 +45,7 @@
 #include "tclMetObs.h"
 
 #define NBFRAMEMAX 512
+#define VPMAX 256
 
 typedef struct Obj2Array {
    int    Nb;     /*Nombre de donnees associees*/

@@ -81,7 +81,7 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"srsName")==0) {
                gml->Model->Ref=GeoRef_New();
-               GeoRef_WKTSet(gml->Model->Ref,Attr[i+1],NULL,NULL,NULL);
+               GeoRef_WKTSet(gml->Model->Ref,(char*)Attr[i+1],NULL,NULL,NULL);
             }
          }
          data->Bloc=GML_ENVELOPE;
@@ -111,7 +111,7 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
       if (strcmp(Elem,"app:target")==0) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"uri")==0) {
-               if ((gml->Fc=Model_FaceFind(gml->Model,&Attr[i+1][1],&obj))) {
+               if ((gml->Fc=Model_FaceFind(gml->Model,(char*)&Attr[i+1][1],&obj))) {
                   gml->Object=obj;
                   gml->Fc->Mt=gml->Mt;
                }

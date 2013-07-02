@@ -248,7 +248,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                if (c[0]!='\0') {
                   Tcl_GetInt(Interp,c,&n);
                }
-               if (e) n=vec->N+(--n);
+               if (e) n=vec->N-n-1;
             }
             return(Vector_SetData(Interp,vec,Objv[3],n));
          }
@@ -281,7 +281,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                if (c[0]!='\0') {
                   Tcl_GetInt(Interp,c,&n);
                }
-               if (e) n=(vec->Cp&&vec->Cp[0])?vec->Cp[0]->N+(--n):vec->N+(--n);
+               if (e) n=((vec->Cp&&vec->Cp[0])?vec->Cp[0]->N-n:vec->N-n)-1;
             }
             obj=Vector_GetData(Interp,vec,n,0);
             if (obj) {

@@ -1036,8 +1036,8 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
             co.Lat=Traj->Pr[i].Co.Lat;
             co.Lon=Traj->Pr[i].Co.Lon;
             co.Elev=0.0;
-            Proj->Type->Project(Proj,&Traj->Pr[i].Co,&vbuf[n*2],1);
-            Proj->Type->Project(Proj,&co,&vbuf[n*2+1],1);
+            Proj->Type->Project(Proj,(GeoVect*)&Traj->Pr[i].Co,(GeoVect*)&vbuf[n*2],1);
+            Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vbuf[n*2+1],1);
             n++;
          }
 

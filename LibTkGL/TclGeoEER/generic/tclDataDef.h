@@ -252,7 +252,9 @@ typedef enum {
     TD_Float64 = 11,
 } TData_Type;
 
-static int TData_Size[]={ 0,0,1,1,2,2,4,4,8,8,4,8 };
+
+//static int TData_Size[]={ 0,0,1,1,2,2,4,4,8,8,4,8 };
+extern int TData_Size[];
 
 typedef struct TDataDef {
    double  NoData;            /*Valeur de novalue*/

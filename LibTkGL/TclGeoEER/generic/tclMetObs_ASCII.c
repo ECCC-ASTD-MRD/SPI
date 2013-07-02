@@ -93,7 +93,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    }
 
    /*Split the header tokens into list*/
-   Tcl_SplitList(Interp,bytes,&gntok,&gtok);
+   Tcl_SplitList(Interp,bytes,&gntok,(const char ***)&gtok);
 
    /*Allocate big enough buffer to read data*/
    sz=strlen(bytes)*4;
@@ -124,7 +124,7 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       fgetskip(bytes,sz,stream);
 
       if (strlen(bytes)>10) {
-         Tcl_SplitList(Interp,bytes,&ntok,&tok);
+         Tcl_SplitList(Interp,bytes,&ntok,(const char ***)&tok);
 
          if (ntok!=gntok) {
             Tcl_AppendResult(Interp,"\n   MetObs_LoadASCII :  Invalid number of item on following line\n",bytes,(char*)NULL);

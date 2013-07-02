@@ -353,7 +353,7 @@ int GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    }
 
    /*Projection des coins de la texture*/
-   Proj->Type->Project(Proj,Tile->Box.Co,Tile->Box.Vr,-8);
+   Proj->Type->Project(Proj,(GeoVect*)Tile->Box.Co,(GeoVect*)Tile->Box.Vr,-8);
    Tile->Box.Nb=8;
 
    /*Test for overflow on raster limits*/
@@ -515,7 +515,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
       }
    }
 
-   Proj->Type->Project(Proj,tl,NULL,-j);
+   Proj->Type->Project(Proj,(GeoVect*)tl,NULL,-j);
 
    /*Overwrite limits with sampling coordinates (In case there is height)*/
    Vect_Assign(Tile->Box.Vr[0],tl[0]);

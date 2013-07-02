@@ -36,7 +36,6 @@
 #define _GeoData_h_
 
 #include "tcl.h"
-#include "gdal.h"
 #include "gdb.h"
 #include "GeoRef.h"
 

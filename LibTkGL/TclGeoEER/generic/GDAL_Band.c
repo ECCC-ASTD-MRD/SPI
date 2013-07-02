@@ -82,6 +82,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
    /*Get info on all requested bands*/
    rx=ry=nx=ny=0;
+   hband=NULL;
+   
    for(i=0;i<NIdx;i++) {
       if ((file=GDAL_FileGet(Interp,FileId[i]))) {
          /*Get the band type and promote to higher type among all*/
@@ -3057,7 +3059,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
    /*Initialiser la structure*/
    if (!Band->Stat)
       Band->Stat=(TDataStat*)malloc(Band->Def->NC*sizeof(TDataStat));
-
+   
    for (c=0;c<Band->Def->NC;c++) {
 
       Band->Stat[c].MinLoc.Lat=0;
@@ -3066,6 +3068,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
       Band->Stat[c].MaxLoc.Lat=0;
       Band->Stat[c].MaxLoc.Lon=0;
       Band->Stat[c].MaxLoc.Elev=0;
+      pts[0]=pts[1]=pts[2]=pts[3]=0.0;
 
       if ((Band->Def->NC==3 || Band->Def->NC==4) && Band->Def->Type==TD_UByte) {
          Band->Stat[c].Min=0.0;

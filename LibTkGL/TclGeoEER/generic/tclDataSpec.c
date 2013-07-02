@@ -358,13 +358,13 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj    *obj,*lst;
-   CMap_Rec   *map;
-   int         idx,i,ii,n,s=1,nobj,new,internew;
-   int         cminmax=0,cmap=0,cpos=0,cseg=0;
-   char        buf[64];
-   double      tmp,val,min=0.0,max=0.0;
-   const char *lvls;
+   Tcl_Obj     *obj,*lst;
+   CMap_Rec    *map;
+   int          idx,i,ii,n,s=1,nobj,new,internew;
+   int          cminmax=0,cmap=0,cpos=0,cseg=0;
+   char         buf[64];
+   double       tmp,val,min=0.0,max=0.0;
+   const char **lvls;
    
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",

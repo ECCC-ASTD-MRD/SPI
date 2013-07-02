@@ -45,8 +45,8 @@ typedef struct KML_Data {
 
 void ModelKML_StartHandler(void *Data,const char *Elem,const char **Attr) {
 
-   XML_Data  *data=(XML_Data*)Data;
-   KML_Data  *kml=(KML_Data*)data->Specific;
+//   XML_Data  *data=(XML_Data*)Data;
+//   KML_Data  *kml=(KML_Data*)data->Specific;
 
    XML_CharReset(Data);
    XML_Check(Data,Elem,"kml");

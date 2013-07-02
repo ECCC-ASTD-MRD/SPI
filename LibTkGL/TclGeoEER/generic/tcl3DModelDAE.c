@@ -53,10 +53,10 @@ typedef struct DAE_Data {
    DAESource *VrSource,*NrSource,*TxSource;
 } DAE_Data;
 
-void       ModelDAE_SourceFree(DAESource *Source);
+int        ModelDAE_SourceFree(DAESource *Source);
 DAESource *ModelDAE_SourceFind(DAE_Data *Data,char* Id);
 
-void ModelDAE_SourceFree(DAESource *Source) {
+int ModelDAE_SourceFree(DAESource *Source) {
 
    if (Source) {
       if (Source->Id)                      free(Source->Id);    Source->Id=NULL;
@@ -64,6 +64,7 @@ void ModelDAE_SourceFree(DAESource *Source) {
 
       Source->Nb=0;
    }
+   return(1);
 }
 
 DAESource *ModelDAE_SourceFind(DAE_Data *Data,char* Id) {

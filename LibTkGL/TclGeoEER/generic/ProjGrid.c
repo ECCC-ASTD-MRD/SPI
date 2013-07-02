@@ -211,6 +211,7 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       co.Elev=Proj->ZAxis.Elev;
       Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
 
+      ax[0]=ax[1]=0.0;
       switch(Proj->TAxis) {
          case 1: ax[0]=vr[0]; ax[1]=vr[1]; break;
          case 2: ax[0]=-Proj->LI; ax[1]=Proj->LJ; break;

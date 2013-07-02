@@ -1207,7 +1207,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       }
 
       /*If everything is outside the projection*/
-      if ((Proj->Type->Project(Proj,pvr,NULL,nv))==0) {
+      if ((Proj->Type->Project(Proj,(GeoVect*)pvr,NULL,nv))==0) {
          nv=0;
       }
 

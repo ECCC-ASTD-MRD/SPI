@@ -33,6 +33,8 @@
 
 #include "tclDataDef.h"
 
+int TData_Size[]={ 0,0,1,1,2,2,4,4,8,8,4,8 };
+
 /*----------------------------------------------------------------------------
  * Nom      : <DataDef_Clear>
  * Creation : Fevrier 2003- J.P. Gauthier - CMC/CMOE

@@ -1452,7 +1452,7 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
    M->Ref->Project(M->Ref,ex[1][0],ex[1][1],&ex[1][1],&ex[1][0],1,0);
    M->Ref->Project(M->Ref,ex[2][0],ex[2][1],&ex[2][1],&ex[2][0],1,0);
    M->Ref->Project(M->Ref,ex[3][0],ex[3][1],&ex[3][1],&ex[3][0],1,0);
-   Proj->Type->Project(Proj,ex,NULL,4);
+   Proj->Type->Project(Proj,(GeoVect*)ex,NULL,4);
 
    gluProject(ex[0][0],ex[0][1],ex[0][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
    Vect_Assign(min,lim);
@@ -1583,7 +1583,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   if (M->Ref) {
                      M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
                      M->Co.Elev=obj->Vr[idx][2];
-                     Proj->Type->Project(Proj,&M->Co,&vr,1);
+                     Proj->Type->Project(Proj,(GeoVect*)&M->Co,(GeoVect*)&vr,1);
                      Vect_Assign(vrf,vr);
                      glVertex3fv(vrf);
                   } else {

@@ -196,6 +196,7 @@ int      GeoRef_Positional(TGeoRef *Ref,TDataDef *XDef,TDataDef *YDef);
 
 void GeoScan_Init(TGeoScan *Scan);
 void GeoScan_Clear(TGeoScan *Scan);
+int  GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,char *Degree);
 
 double GeoFunc_RadialPointRatio(Coord C1,Coord C2,Coord C3);
 int    GeoFunc_RadialPointOn(Coord C1,Coord C2,Coord C3,Coord *CR);
