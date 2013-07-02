@@ -59,15 +59,16 @@ namespace eval TrajBox {
 
    #----- Textes et labels
 
-   set Lbl(AllFiles)      { "Tous les fichiers" "Every files" }
-   set Lbl(Bubble)        { "Bulles d'information" "Info bubbles" }
-   set Lbl(SelectAll)     { "Selectionner tout" "Select all" }
-   set Lbl(SelectClear)   { "Annuler la selection" "Clear selection" }
-   set Lbl(Close)         { "Fermer fichier(s)" "Closefile(s)" }
-   set Lbl(NewBox)        { "Nouvelle boite" "New box" }
-   set Lbl(CloseBox)      { "Fermer cette boite" "Close box" }
-   set Lbl(NoFiles)       { "Aucun fichier" "No files" }
-   set Lbl(Open)          { "Ouvrir fichier" "Open file" }
+   set Lbl(AllFiles)       { "Tous les fichiers" "Every files" }
+   set Lbl(Bubble)         { "Bulles d'information" "Info bubbles" }
+   set Lbl(SelectAll)      { "Selectionner tout" "Select all" }
+   set Lbl(SelectClear)    { "Annuler la selection" "Clear selection" }
+   set Lbl(SelectClearAll) { "Annuler la selection (Toute les boites)" "Clear selection (All boxes)" }
+   set Lbl(Close)          { "Fermer fichier(s)" "Closefile(s)" }
+   set Lbl(NewBox)         { "Nouvelle boite" "New box" }
+   set Lbl(CloseBox)       { "Fermer cette boite" "Close box" }
+   set Lbl(NoFiles)        { "Aucun fichier" "No files" }
+   set Lbl(Open)           { "Ouvrir fichier" "Open file" }
 
    #----- Erreurs
 
@@ -97,14 +98,16 @@ namespace eval TrajBox {
 #
 #----------------------------------------------------------------------------
 
-proc TrajBox::Clear { } {
+proc TrajBox::Clear { { Var True } } {
    variable Data
 
    foreach box $Data(BoxList) {
       .trajbox$box.data.list selection clear 0 end
    }
 
-   set Trajectory::Data(List) ""
+   if { $Var } {
+      set Trajectory::Data(List) ""
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -232,6 +235,7 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
 
    bind $id <Key-Up>                           "set TrajBox::Data(Current) $no ; TrajBox::Select"
    bind $id <Key-Down>                         "set TrajBox::Data(Current) $no ; TrajBox::Select"
+   bind $id <Control-Alt-backslash>            "TrajBox::Clear False ; TrajBox::Select"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -245,9 +249,11 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
    if { ![winfo exist .trajmenu] } {
 
       menu .trajmenu
-         .trajmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] \
-            -command ".trajbox\$TrajBox::Data(Current).data.list selection clear 0 end"
-         .trajmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] \
+         .trajmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -accelerator "Ctrl-\\" \
+            -command ".trajbox\$TrajBox::Data(Current).data.list selection clear 0 end ; TrajBox::Select"
+         .trajmenu add command -label [lindex $Lbl(SelectClearAll) $GDefs(Lang)] -accelerator "Ctrl-Alt-\\" \
+            -command "TrajBox::Clear False ; TrajBox::Select" 
+         .trajmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] -accelerator "Ctrl-/" \
             -command ".trajbox\$TrajBox::Data(Current).data.list selection set 0 end"
          .trajmenu add separator
          .trajmenu add checkbutton -label [lindex $Lbl(Bubble) $GDefs(Lang)] \

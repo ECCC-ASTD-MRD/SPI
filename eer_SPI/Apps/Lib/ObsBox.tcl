@@ -61,15 +61,16 @@ namespace eval ObsBox {
 
    #----- Textes et labels
 
-   set Lbl(AllFiles)      { "Tous les fichiers" "Every files" }
-   set Lbl(Bubble)        { "Bulles d'information" "Info bubbles" }
-   set Lbl(SelectAll)     { "Selectionner tout" "Select all" }
-   set Lbl(SelectClear)   { "Annuler la selection" "Clear selection" }
-   set Lbl(Close)         { "Fermer fichier(s)" "Closefile(s)" }
-   set Lbl(NewBox)        { "Nouvelle boite" "New box" }
-   set Lbl(CloseBox)      { "Fermer cette boite" "Close box" }
-   set Lbl(NoFiles)       { "Aucun fichier" "No files" }
-   set Lbl(Open)          { "Ouvrir fichier" "Open file" }
+   set Lbl(AllFiles)       { "Tous les fichiers" "Every files" }
+   set Lbl(Bubble)         { "Bulles d'information" "Info bubbles" }
+   set Lbl(SelectAll)      { "Selectionner tout" "Select all" }
+   set Lbl(SelectClear)    { "Annuler la selection" "Clear selection" }
+   set Lbl(SelectClearAll) { "Annuler la selection (Toute les boites)" "Clear selection (All boxes)" }
+   set Lbl(Close)          { "Fermer fichier(s)" "Closefile(s)" }
+   set Lbl(NewBox)         { "Nouvelle boite" "New box" }
+   set Lbl(CloseBox)       { "Fermer cette boite" "Close box" }
+   set Lbl(NoFiles)        { "Aucun fichier" "No files" }
+   set Lbl(Open)           { "Ouvrir fichier" "Open file" }
 
    #----- Erreurs
 
@@ -99,14 +100,16 @@ namespace eval ObsBox {
 #
 #----------------------------------------------------------------------------
 
-proc ObsBox::Clear { } {
+proc ObsBox::Clear { { Var True } } {
    variable Data
 
    foreach box $Data(BoxList) {
       .obsbox$box.data.list selection clear 0 end
    }
 
-   set Obs::Data(List) ""
+   if { $Var } {
+      set Obs::Data(List) ""
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -235,6 +238,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
 
    bind $id <Key-Up>                           "set ObsBox::Data(Current) $no ; ObsBox::Select"
    bind $id <Key-Down>                         "set ObsBox::Data(Current) $no ; ObsBox::Select"
+   bind $id <Control-Alt-backslash>            "ObsBox::Clear False; ObsBox::Select"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -248,9 +252,11 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    if { ![winfo exist .obsmenu] } {
 
       menu .obsmenu
-         .obsmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] \
-            -command ".obsbox\$ObsBox::Data(Current).data.list selection clear 0 end"
-         .obsmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] \
+         .obsmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -accelerator "Ctrl-\\" \
+            -command ".obsbox\$ObsBox::Data(Current).data.list selection clear 0 end; ObsBox::Select"
+         .obsmenu add command -label [lindex $Lbl(SelectClearAll) $GDefs(Lang)] -accelerator "Ctrl-Alt-\\" \
+            -command "ObsBox::Clear False; ObsBox::Select" 
+         .obsmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] -accelerator "Ctrl-/" \
             -command ".obsbox\$ObsBox::Data(Current).data.list selection set 0 end"
          .obsmenu add separator
          .obsmenu add checkbutton -label [lindex $Lbl(Bubble) $GDefs(Lang)] \
