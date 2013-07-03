@@ -725,14 +725,14 @@ proc Mapper::ParamsGDAL { Object Tab } {
    if { [info exists ::Mapper::DepotWare::WMS::Data($wms)] } {
 
       #----- Styles management
-      foreach style [lindex $Mapper::DepotWare::WMS::Data($wms) 8] {
+      foreach style [lindex $Mapper::DepotWare::WMS::Data($wms) 9] {
          lappend Data(Styles) [lindex $style 0]
       }
       ComboBox::DelAll  $Data(Frame2).col.def.style.sel False
       ComboBox::AddList $Data(Frame2).col.def.style.sel $Data(Styles)
       pack $Data(Frame2).col.def.style -after $Data(Frame2).col.def.nodata -side top -fill x
 
-      set time [lindex $Mapper::DepotWare::WMS::Data($wms) 9]
+      set time [lindex $Mapper::DepotWare::WMS::Data($wms) 10]
       set Data(T0)    [lindex $time 0]
       set Data(T1)    [lindex $time 1]
 
