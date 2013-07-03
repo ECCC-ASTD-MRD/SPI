@@ -1238,6 +1238,8 @@ proc SPI::Clear { } {
    . config -cursor left_ptr
    update idletasks
 
+   SPI::IcoClear
+
    #----- Clear data boxes
    FieldBox::Clear      ; FieldBox::Select
    TrajBox::Clear False ; TrajBox::Select
