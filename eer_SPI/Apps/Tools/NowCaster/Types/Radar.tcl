@@ -533,6 +533,28 @@ proc NowCaster::Radar::Delete { Site } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Radar::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les observations de la liste courante.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc NowCaster::Radar::Clear { } {
+   variable Data
+   
+   foreach site $Data(Sites) {
+      NowCaster::Radar::Delete $site
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <NowCaster::Radar::Read>
 # Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
 #

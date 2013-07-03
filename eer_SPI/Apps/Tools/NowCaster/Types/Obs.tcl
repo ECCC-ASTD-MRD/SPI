@@ -1155,6 +1155,28 @@ proc NowCaster::Obs::Delete { Obs } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Obs::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les observations de la liste courante.
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc NowCaster::Obs::Clear { } {
+   variable Data
+   
+   foreach obs $Data(Obs) {
+      NowCaster::Obs::Delete $obs
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <NowCaster::Obs::PageUpdate>
 # Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
 #

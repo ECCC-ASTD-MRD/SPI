@@ -479,6 +479,31 @@ proc Macro::Reset { } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Macro::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les données.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Macro::Clear { { Frames {} } } {
+   variable Data
+   
+   #----- Check for previous macro cleanup function
+   eval set proc \[info procs ::Macro::${Data(Current)}::Clear\]
+   if { $proc!="" } {
+      catch { Macro::${Data(Current)}::Clear $Frames }
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Macro::Save>
 # Creation : Mai 2005 - J.P. Gauthier - CMC/CMOE
 #

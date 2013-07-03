@@ -60,11 +60,7 @@ proc SatData::Close { } {
    set Data(Select)  0
    set Data(Active)  0
 
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete RANGESATDATA SAT
-      SPI::IcoDel SATCENTER
-   }
-
+   SatData::Clear
    #----- Fermer la boite de champs de donnees satellitaires
 
    if { [FieldBox::Exist $Data(Box)]  } {
@@ -79,6 +75,34 @@ proc SatData::Close { } {
    destroy .satdata
 
    if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <SatData::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les données.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc SatData::Clear { { Frames {} } } {
+   variable Data
+   
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete RANGESATDATA SAT
+      SPI::IcoDel SATCENTER
+   }
+   
+   set Data(ViewGOES15) 0
+   set Data(ViewGOES13) 0
+   set Data(Coo)        ""
 }
 
 #-------------------------------------------------------------------------------

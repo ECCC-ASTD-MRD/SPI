@@ -53,9 +53,35 @@ proc NowCaster::Close { } {
    set Data(Coo)    ""
 
    after cancel NowCaster::Now
+
+   NowCaster::Clear
+
    destroy .nowcaster
 
    if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les données.
+#
+# Parametres :
+#  <Frames>   : Identificateurs de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc NowCaster::Clear { { Frames {} } } {
+   variable Data
+   
+   foreach type $Data(Types) {
+      NowCaster::${type}::Clear
+   }
 }
 
 #-------------------------------------------------------------------------------

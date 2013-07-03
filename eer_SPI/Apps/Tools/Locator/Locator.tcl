@@ -23,12 +23,6 @@ source $GDefs(Dir)/Apps/Tools/Locator/Locator.ctes
 source $GDefs(Dir)/Apps/Tools/Locator/Locator.txt
 source $GDefs(Dir)/Apps/Tools/Locator/Locator.int
 
-proc Locator::LineInsert { Info } {
-   variable Data
-
-   .locator.list.box insert end [join $Info " "]
-}
-
 #-------------------------------------------------------------------------------
 # Nom      : <Locator::RangeCheck>
 # Creation : Avril 2002 - J.P. Gauthier - CMC/CMOE
@@ -96,17 +90,40 @@ proc Locator::Close { } {
       SPI::ToolMode SPI Zoom
    }
    set Data(Active) 0
-   set Data(Coo)    ""
    set Data(Inst)  1e32
+
+   Locator::Clear
+
+   . config -cursor left_ptr
+   destroy .locator
+
+   if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Locator::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les primitives.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Locator::Clear { { Frames {} } } {
+   variable Data
+
+   set Data(Coo) ""
 
    if { [winfo exists $Data(Canvas)] } {
       $Data(Canvas) delete RANGELOCATOR
       SPI::IcoDel LOCATION
    }
-   . config -cursor left_ptr
-   destroy .locator
-
-   if { !$SPI::Param(Window) } { SPI::Quit }
 }
 
 #----------------------------------------------------------------------------
@@ -384,14 +401,12 @@ proc Locator::Load { Type } {
    update idletasks
 
    set f [open [lindex $Data(Files) $Type] r]
-#   set f2 [open [lindex $Data(Files) $Type].new w]
 
    while { [gets $f ligne] >= 0 } {
       lappend Data($Type) [split $ligne :]
-#      eval puts $f2 \[format \"%8s:%30s:%20s:%9.6f:%1s:%10.6f:%1s:%6i\" [split $ligne :]\]
    }
    close $f
-#   close $f2
+
    set Data(Job) ""
 }
 

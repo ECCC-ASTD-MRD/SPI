@@ -195,7 +195,7 @@ proc Drawing::ImageAdd { File } {
 # But      : Supprimer toutes les primitives.
 #
 # Parametres :
-#  <Frame>   : Identificateur de Page
+#  <Frame>   : Identificateurs de Page
 #
 # Retour:
 #
@@ -203,22 +203,28 @@ proc Drawing::ImageAdd { File } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::Clear { Frame } {
+proc Drawing::Clear { { Frames {} } } {
    variable Resources
    variable Data
 
-   foreach font $Resources(Font) {
-      font delete $font
+   if { ![llength $Frames] } {
+      set Frames $Page::Data(Frames)
    }
+   
+   foreach frame $Frames {
+      foreach font $Resources(Font) {
+         font delete $font
+      }
 
-   set Data(Params)     [set Data(Params$Frame) ""]
-   set Data(NoItem)     0
-   set Resources(Font)  ""
+      set Data(Params)     [set Data(Params$frame) ""]
+      set Data(NoItem)     0
+      set Resources(Font)  ""
 
-   Drawing::Insert
-   Drawing::ItemSel $Frame
+      Drawing::Insert
+      Drawing::ItemSel $frame
 
-   $Frame.page.canvas delete $Data(Tag)
+      $frame.page.canvas delete $Data(Tag)
+   }
 }
 
 #----------------------------------------------------------------------------

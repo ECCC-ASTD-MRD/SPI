@@ -47,7 +47,6 @@ proc Kriger::Close { } {
 
    set Data(Active) 0
 
-
    Graph::Destroy $Data(GraphFrame) $Data(Graph)
    Page::Destroy  $Data(GraphFrame)
 
@@ -60,6 +59,30 @@ proc Kriger::Close { } {
    destroy .kriger
 
    if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Kriger::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les primitives.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Kriger::Clear { { Frames {} } } {
+
+#   if { ![llength $Frames] } {
+#      set Frames $Page::Data(Frames)
+#   }
+   
+   Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
 }
 
 #-------------------------------------------------------------------------------
@@ -179,9 +202,9 @@ proc Kriger::Grid { Coords } {
 
    #----- Clear previous grid
 
+   $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item {}
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP) KRIGGRID
    fstdfield free KRIGGRID KRIGTIC KRIGTAC KRIGTOC
-   $Data(GraphFrame).page.canvas itemconfigure $Data(Graph) -item {}
 
    if { [llength $Coords]>2 } {
 

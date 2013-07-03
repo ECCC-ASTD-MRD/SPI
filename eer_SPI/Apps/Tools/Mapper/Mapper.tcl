@@ -53,23 +53,7 @@ proc Mapper::Close { } {
    set Mapper::DepotWare::Data(Coo)    ""
 
    #----- Cleanup des donnees actives
-
-   foreach frame $Page::Data(Frames) {
-      if { [info exist Viewport::Data(Data$frame)] && [llength $Viewport::Data(Data$frame)] } {
-
-         #----- Unassign from projection
-         set objects $Viewport::Data(Data$frame)
-
-         #----- Free data objects
-         foreach object $objects {
-            Mapper::Del $object $frame
-         }
-      }
-   }
-
-   if { [winfo exists $Data(Canvas)]} {
-      $Data(Canvas) delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR
-   }
+   Mapper::Clear
 
    if { [winfo exists .mapperparams] } {
         Mapper::ParamsClose
@@ -81,6 +65,46 @@ proc Mapper::Close { } {
    destroy .mapper
 
    if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <NowCaster::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les données.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::Clear { { Frames {} } } {
+   variable Data
+   
+   if { ![llength $Frames] } {
+      set Frames $Page::Data(Frames)
+   }
+   
+   foreach frame $Frames {
+      if { [info exist Viewport::Data(Data$frame)] && [llength $Viewport::Data(Data$frame)] } {
+
+         #----- Unassign from projection
+         set objects $Viewport::Data(Data$frame)
+
+         #----- Free data objects
+         foreach object $objects {
+            Mapper::Del $object $frame
+         }
+      }
+
+      if { [winfo exists $frame.page.canvas]} {
+         $frame.page.canvas delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR
+      }
+   }
 }
 
 #-------------------------------------------------------------------------------

@@ -104,6 +104,29 @@ proc Writer::Close { } {
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Writer::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprimer toutes les données.
+#
+# Parametres :
+#  <Frames>  : Identificateurs de Page
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Writer::Clear { { Frames {} } } {
+   variable Data
+   
+   if { [winfo exists $Data(Canvas)] } {
+      $Data(Canvas) delete FVCN
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Writer::PadClose
 # Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
