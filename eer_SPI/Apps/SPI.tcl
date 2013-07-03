@@ -1219,6 +1219,42 @@ proc SPI::Execute { Script } {
 }
 
 #---------------------------------------------------------------------------
+# Nom      : <SPI::Clear>
+# Creation : Juin 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Efface toute les donnees.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc SPI::Clear { } {
+   variable Param
+
+   . config -cursor left_ptr
+   update idletasks
+
+   #----- Clear data boxes
+   FieldBox::Clear      ; FieldBox::Select
+   TrajBox::Clear False ; TrajBox::Select
+   ObsBox::Clear  False ; ObsBox::Select
+   
+   #----- Clear tools
+   foreach tool $Param(Tools) {
+      eval set proc \[info procs ::${tool}::Clear\]
+      if { $proc!="" } {
+         eval ${tool}::Clear $Page::Data(Frame)
+      }
+   }
+
+   . config -cursor left_ptr
+}
+
+#---------------------------------------------------------------------------
 # Nom      : <SPI::IcoAdd>
 # Creation : Janvier 2001 - J.P. Gauthier - CMC/CMOE
 #
