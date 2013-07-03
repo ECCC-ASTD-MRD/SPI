@@ -109,6 +109,8 @@ proc ObsBox::Clear { { Var True } } {
 
    if { $Var } {
       set Obs::Data(List) ""
+   } else {
+      ObsBox::Select
    }
 }
 
@@ -238,7 +240,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
 
    bind $id <Key-Up>                           "set ObsBox::Data(Current) $no ; ObsBox::Select"
    bind $id <Key-Down>                         "set ObsBox::Data(Current) $no ; ObsBox::Select"
-   bind $id <Control-Alt-backslash>            "ObsBox::Clear False; ObsBox::Select"
+   bind $id <Control-Alt-backslash>            "ObsBox::Clear False"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -255,7 +257,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
          .obsmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -accelerator "Ctrl-\\" \
             -command ".obsbox\$ObsBox::Data(Current).data.list selection clear 0 end; ObsBox::Select"
          .obsmenu add command -label [lindex $Lbl(SelectClearAll) $GDefs(Lang)] -accelerator "Ctrl-Alt-\\" \
-            -command "ObsBox::Clear False; ObsBox::Select" 
+            -command "ObsBox::Clear False" 
          .obsmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] -accelerator "Ctrl-/" \
             -command ".obsbox\$ObsBox::Data(Current).data.list selection set 0 end"
          .obsmenu add separator

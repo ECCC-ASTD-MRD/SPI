@@ -1241,9 +1241,9 @@ proc SPI::Clear { } {
    SPI::IcoClear
 
    #----- Clear data boxes
-   FieldBox::Clear      ; FieldBox::Select
-   TrajBox::Clear False ; TrajBox::Select
-   ObsBox::Clear  False ; ObsBox::Select
+   FieldBox::Clear False
+   TrajBox::Clear  False
+   ObsBox::Clear   False
    
    #----- Clear tools
    foreach tool $Param(Tools) {

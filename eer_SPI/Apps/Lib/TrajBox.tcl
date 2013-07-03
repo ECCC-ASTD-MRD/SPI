@@ -107,6 +107,8 @@ proc TrajBox::Clear { { Var True } } {
 
    if { $Var } {
       set Trajectory::Data(List) ""
+   } else {
+      TrajBox::Select
    }
 }
 
@@ -235,7 +237,7 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
 
    bind $id <Key-Up>                           "set TrajBox::Data(Current) $no ; TrajBox::Select"
    bind $id <Key-Down>                         "set TrajBox::Data(Current) $no ; TrajBox::Select"
-   bind $id <Control-Alt-backslash>            "TrajBox::Clear False ; TrajBox::Select"
+   bind $id <Control-Alt-backslash>            "TrajBox::Clear False"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -252,7 +254,7 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
          .trajmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -accelerator "Ctrl-\\" \
             -command ".trajbox\$TrajBox::Data(Current).data.list selection clear 0 end ; TrajBox::Select"
          .trajmenu add command -label [lindex $Lbl(SelectClearAll) $GDefs(Lang)] -accelerator "Ctrl-Alt-\\" \
-            -command "TrajBox::Clear False ; TrajBox::Select" 
+            -command "TrajBox::Clear False" 
          .trajmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] -accelerator "Ctrl-/" \
             -command ".trajbox\$TrajBox::Data(Current).data.list selection set 0 end"
          .trajmenu add separator

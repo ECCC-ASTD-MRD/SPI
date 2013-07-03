@@ -118,6 +118,7 @@ namespace eval DataBar  {
 
    set Param(Title) "Title"           ;#Titre par defaut
    set Param(Full)  1                 ;#Pleine largeur
+   set Param(Font)  XFont12           ;#Police de caractere
 }
 
 #----- Parametres des Colorbar

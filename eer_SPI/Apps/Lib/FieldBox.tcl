@@ -123,18 +123,22 @@ namespace eval FieldBox {
 #
 #----------------------------------------------------------------------------
 
-proc FieldBox::Clear { } {
+proc FieldBox::Clear { { Var True } } {
    variable Data
 
    foreach box $Data(BoxList) {
       .fieldbox$box.data.list selection clear 0 end
    }
 
-   foreach fld $FSTD::Data(List) {
-      fstdfield free $fld
-   }
+   if { $Var } {
+      foreach fld $FSTD::Data(List) {
+         fstdfield free $fld
+      }
 
-   set FSTD::Data(List) ""
+      set FSTD::Data(List) ""
+   } else {
+      FieldBox::Select
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -273,7 +277,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
 
    bind $id <Key-Up>                           "set FieldBox::Data(Current) $no ; FieldBox::Select"
    bind $id <Key-Down>                         "set FieldBox::Data(Current) $no ; FieldBox::Select"
-   bind $id <Control-Alt-backslash>            "FieldBox::Clear; FieldBox::Select"
+   bind $id <Control-Alt-backslash>            "FieldBox::Clear False"
 
    Bubble::Create $id.info         $Bubble(Files)
    Bubble::Create $id.info.name    $Bubble(File)
@@ -290,7 +294,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
          .fieldmenu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -accelerator "Ctrl-\\" \
             -command ".fieldbox\$FieldBox::Data(Current).data.list selection clear 0 end; FieldBox::Select" 
          .fieldmenu add command -label [lindex $Lbl(SelectClearAll) $GDefs(Lang)] -accelerator "Ctrl-Alt-\\" \
-            -command "FieldBox::Clear; FieldBox::Select" 
+            -command "FieldBox::Clear False" 
          .fieldmenu add command -label [lindex $Lbl(SelectAll) $GDefs(Lang)] -accelerator "Ctrl-/" \
             -command ".fieldbox\$FieldBox::Data(Current).data.list selection set 0 end"
          .fieldmenu add separator

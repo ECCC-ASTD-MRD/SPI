@@ -42,6 +42,7 @@ namespace eval DataBar {
 
    set Param(Title) "Title"
    set Param(Full)  1
+   set Param(Font)  XFont12
 
    image create photo DATABARLOGO -file $GDefs(Dir)/Resources/Image/Symbol/Logo/Flag.gif
 }
@@ -217,37 +218,33 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
          set id   [lindex $ids $i]
          incr i
          set lbl  [DataBar::IdField $data]
-         set font XFont12
          set col  [fstdfield configure $data -color]
       } elseif { [gribfield is $data] } {
          set id   ""
          set lbl  [DataBar::IdGrib $data]
-         set font XFont12
          set col  [gribfield configure $data -color]
       } elseif { [observation is $data] } {
          set id   ""
          set lbl  [DataBar::IdObs $data]
-         set font XFont12
          set col  [observation configure $data -color]
       } elseif { [metobs is $data] } {
          set id   ""
          set lbl  [DataBar::IdMetObs $data]
-         set font XFont12
          set col  black
       } elseif { [trajectory is $data] } {
          set id   ""
          set lbl  [DataBar::IdTraj $data]
-         set font XFont12
          set col  [trajectory configure $data -color]
       }
-      set h  [font metrics $font -linespace]
+      
+      set h  [font metrics $Param(Font) -linespace]
       set y [expr $y+$h]
       if { $y>$Y1 } {
          break
       }
 
-      $Frame.page.canvas create text $x $y -text $lbl -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font $font -fill $col
-      $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font $font
+      $Frame.page.canvas create text $x $y -text $lbl -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font $Param(Font) -fill $col
+      $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font $Param(Font)
       $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -fill #CCCCCC
 
       if { ![winfo exists $Frame.page.canvas.up$n] } {
@@ -263,11 +260,11 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
 
    #----- Memo quelle est la formule ???
    if { [string trim $Viewport::Data(Operand$VP)]!="" } {
-      set h  [font metrics XFont14 -linespace]
+      set h  [font metrics $Param(Font) -linespace]
       set y [expr $y+$h]
       if { $y<=$Y1 } {
-         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font XFont14
-         $Frame.page.canvas create text [expr $X0+10] $y -text "=" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font XFont14
+         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font $Param(Font)
+         $Frame.page.canvas create text [expr $X0+10] $y -text "=" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font $Param(Font)
       }
    }
 }
