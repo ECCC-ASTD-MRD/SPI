@@ -60,7 +60,9 @@ void glDrawStringBG(int X,int Y,int Theta,int Width,int Height,int DeltaX,int De
    glPushMatrix();
 
    glTranslatef(X,Y,0.0);
-   glRotatef(Theta,0.0,0.0,1.0);
+   
+   if (Theta!=0.0)
+      glRotatef(Theta,0.0,0.0,1.0);
 
    glBegin(GL_QUADS);
       glVertex2i(-DeltaX,-DeltaY);
@@ -88,7 +90,9 @@ void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
    glPushMatrix();
 
    glTranslatef(X,Y,0.0);
-   glRotatef(Theta,0.0,0.0,1.0);
+   
+   if (Theta!=0.0)
+      glRotatef(Theta,0.0,0.0,1.0);
 
    if (!Flip)
       glScalef(1.0f,-1.0f,1.0);
@@ -249,6 +253,7 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
    dpy=glXGetCurrentDisplay();
    if (!dpy)
       return;   /* I guess glXMakeCurrent wasn't called */
+      
    win = RootWindow(dpy,DefaultScreen(dpy));
 
    fs = XQueryFont(dpy,font);
@@ -263,7 +268,7 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
 
    bm = (GLubyte*)malloc(max_bm_width*max_bm_height*sizeof(GLubyte));
    if (!bm) {
-      XFreeFontInfo(NULL, fs, 1);
+      XFreeFontInfo(NULL,fs,1);
       fprintf(stderr,"(ERROR) glXFontTexture: Couldn't allocate bitmap in glXUseXFont()");
       return;
    }
