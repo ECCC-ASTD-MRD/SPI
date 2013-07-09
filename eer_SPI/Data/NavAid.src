@@ -1,51 +1,269 @@
-AKN     :King.Salmon                   :                    :57.725   :N:156.752   :W:    29
-ANC     :Anchorage                     :                    :61.151   :N:150.207   :W:    86
-ANI     :Aniak                         :                    :61.590   :N:159.599   :W:    29
-ANN     :Annette Island                :                    :55.060   :N:131.578   :W:    53
-BET     :Bethel                        :                    :60.785   :N:161.824   :W:    32
-BGQ     :Big Lake                      :                    :61.569   :N:149.967   :W:    49
-BIG     :Big Delta                     :                    :64.004   :N:145.717   :W:   375
-BKA     :Biorka Island                 :                    :56.859   :N:135.551   :W:    79
-BRW     :Barrow                        :                    :71.273   :N:156.788   :W:    20
-BTI     :Barter Island                 :                    :70.131   :N:143.644   :W:       
-BTT     :Bettles                       :                    :66.905   :N:151.536   :W:   194
-CDB     :Cold Bay                      :                    :55.267   :N:162.774   :W:    30
-CQR     :Chandalar Lake                :                    :67.502   :N:148.469   :W:   572
-DLG     :Dillingham                    :                    :58.994   :N:158.552   :W:    25
-DUT     :Dutch Harbor                  :                    :53.905   :N:166.548   :W:    83
-EHM     :Cape Newenham                 :                    :58.656   :N:162.071   :W:   168
-ENA     :Kenai                         :                    :60.615   :N:151.195   :W:    35
-ENN     :Nenana                        :                    :64.590   :N:149.073   :W:   488
-FAI     :Fairbanks                     :                    :64.800   :N:148.012   :W:   465
-FYU     :Fort Yukon                    :                    :66.574   :N:145.277   :W:   137
-GAL     :Galena                        :                    :64.738   :N:156.777   :W:    46
-GKN     :Gulkana                       :                    :62.154   :N:145.447   :W:   472
-HOM     :Homer                         :                    :59.709   :N:151.457   :W:   496
-HPB     :Hooper Bay                    :                    :61.514   :N:166.134   :W:     4
-HSL     :Huslia                        :                    :65.708   :N:156.363   :W:    57
-JNU     :Juneau                        :                    :58.359   :N:134.633   :W:    14
-JOH     :Johnstone Point               :                    :60.481   :N:146.599   :W:    15
-LVD     :Level Island                  :                    :56.468   :N:133.083   :W:    30
-MCG     :McGrath                       :                    :62.951   :N:155.611   :W:   107
-MDO     :Middleton Island              :                    :59.450   :N:146.30    :W:    43
-NUD     :Adak                          :                    :51.871   :N:176.674   :W:   124
-ODK     :Kodiak                        :                    :57.775   :N:152.340   :W:    41
-OME     :Nome                          :                    :64.485   :N:165.253   :W:    28
-ORT     :Northway                      :                    :62.947   :N:141.913   :W:   543
-OTZ     :Kotzebue                      :                    :66.880   :N:162.60    :W:     5
-PDN     :Port Heiden                   :                    :56.954   :N:158.648   :W:    17
-SCC     :Deadhorse                     :                    :70.199   :N:148.416   :W:    16
-SMA     :St Marys                      :                    :62.059   :N:163.282   :W:   105
-SPY     :Saint Paul Island             :                    :57.157   :N:170.233   :W:     9
-SQA     :Sparrevohn                    :                    :61.099   :N:155.638   :W:   762
-SSR     :Sisters Island                :                    :58.178   :N:135.259   :W:    12
-SYA     :Shemya                        :                    :52.722   :N:174.060   :E:    18      
-TAL     :Tanana                        :                    :65.177   :N:152.178   :W:   120
-TKA     :Talkeetna                     :                    :62.299   :N:150.106   :W:   172
-ULL     :Savoonga                      :                    :63.692   :N:170.470   :W:    13
-UNK     :Unalakleet                    :                    :63.892   :N:160.684   :W:   133
-WLK     :Selawik                       :                    :66.599   :N:159.991   :W:     3
-YAK     :Yakutat                       :                    :59.511   :N:139.648   :W:    11
-
-
-
+AKN     :King.Salmon                   :AK                  :57.725   :N:156.752   :W:    29
+ANC     :Anchorage                     :AK                  :61.151   :N:150.207   :W:    86
+ANI     :Aniak                         :AK                  :61.590   :N:159.599   :W:    29
+ANN     :Annette Island                :AK                  :55.060   :N:131.578   :W:    53
+BET     :Bethel                        :AK                  :60.785   :N:161.824   :W:    32
+BGQ     :Big Lake                      :AK                  :61.569   :N:149.967   :W:    49
+BIG     :Big Delta                     :AK                  :64.004   :N:145.717   :W:   375
+BKA     :Biorka Island                 :AK                  :56.859   :N:135.551   :W:    79
+BRW     :Barrow                        :AK                  :71.273   :N:156.788   :W:    20
+BTI     :Barter Island                 :AK                  :70.131   :N:143.644   :W:       
+BTT     :Bettles                       :AK                  :66.905   :N:151.536   :W:   194
+CDB     :Cold Bay                      :AK                  :55.267   :N:162.774   :W:    30
+CQR     :Chandalar Lake                :AK                  :67.502   :N:148.469   :W:   572
+DLG     :Dillingham                    :AK                  :58.994   :N:158.552   :W:    25
+DUT     :Dutch Harbor                  :AK                  :53.905   :N:166.548   :W:    83
+EHM     :Cape Newenham                 :AK                  :58.656   :N:162.071   :W:   168
+ENA     :Kenai                         :AK                  :60.615   :N:151.195   :W:    35
+ENN     :Nenana                        :AK                  :64.590   :N:149.073   :W:   488
+FAI     :Fairbanks                     :AK                  :64.800   :N:148.012   :W:   465
+FYU     :Fort Yukon                    :AK                  :66.574   :N:145.277   :W:   137
+GAL     :Galena                        :AK                  :64.738   :N:156.777   :W:    46
+GKN     :Gulkana                       :AK                  :62.154   :N:145.447   :W:   472
+HOM     :Homer                         :AK                  :59.709   :N:151.457   :W:   496
+HPB     :Hooper Bay                    :AK                  :61.514   :N:166.134   :W:     4
+HSL     :Huslia                        :AK                  :65.708   :N:156.363   :W:    57
+JNU     :Juneau                        :AK                  :58.359   :N:134.633   :W:    14
+JOH     :Johnstone Point               :AK                  :60.481   :N:146.599   :W:    15
+LVD     :Level Island                  :AK                  :56.468   :N:133.083   :W:    30
+MCG     :McGrath                       :AK                  :62.951   :N:155.611   :W:   107
+MDO     :Middleton Island              :AK                  :59.450   :N:146.30    :W:    43
+NUD     :Adak                          :AK                  :51.871   :N:176.674   :W:   124
+ODK     :Kodiak                        :AK                  :57.775   :N:152.340   :W:    41
+OME     :Nome                          :AK                  :64.485   :N:165.253   :W:    28
+ORT     :Northway                      :AK                  :62.947   :N:141.913   :W:   543
+OTZ     :Kotzebue                      :AK                  :66.880   :N:162.60    :W:     5
+PDN     :Port Heiden                   :AK                  :56.954   :N:158.648   :W:    17
+SCC     :Deadhorse                     :AK                  :70.199   :N:148.416   :W:    16
+SMA     :St Marys                      :AK                  :62.059   :N:163.282   :W:   105
+SPY     :Saint Paul Island             :AK                  :57.157   :N:170.233   :W:     9
+SQA     :Sparrevohn                    :AK                  :61.099   :N:155.638   :W:   762
+SSR     :Sisters Island                :AK                  :58.178   :N:135.259   :W:    12
+SYA     :Shemya                        :AK                  :52.722   :N:174.060   :E:    18      
+TAL     :Tanana                        :AK                  :65.177   :N:152.178   :W:   120
+TKA     :Talkeetna                     :AK                  :62.299   :N:150.106   :W:   172
+ULL     :Savoonga                      :AK                  :63.692   :N:170.470   :W:    13
+UNK     :Unalakleet                    :AK                  :63.892   :N:160.684   :W:   133
+WLK     :Selawik                       :AK                  :66.599   :N:159.991   :W:     3
+YAK     :Yakutat                       :AK                  :59.511   :N:139.648   :W:    11
+NDB     :Abbotsford                    :BC                  :49.015444:N:122.487778:W:     0
+NDB     :Active Pass                   :BC                  :48.873861:N:123.290000:W:     0
+NDB     :Alma                          :QC                  :48.507722:N: 71.649417:W:     0
+VOR     :Ameson                        :ON                  :49.778056:N: 84.591111:W:     0
+NDB     :Argentia                      :NL                  :47.294722:N: 53.990556:W:     0
+NDB     :Ashcroft                      :BC                  :50.701833:N:121.320278:W:     0
+NDB     :Atikokan                      :ON                  :48.825194:N: 91.577611:W:     0
+VOR     :Aylmer                        :ON                  :42.706667:N: 80.887778:W:     0
+VOR     :Baie-Comeau                   :QC                  :49.134028:N: 68.222028:W:     0
+VOR     :Beauce                        :QC                  :45.925056:N: 70.846083:W:     0
+NDB     :Beaver Creek                  :YT                  :62.408778:N:140.861167:W:     0
+NDB     :Beechy                        :SK                  :50.842139:N:107.460167:W:     0
+NDB     :Bella Bella                   :BC                  :50.842139:N:107.460167:W:     0
+NDB     :Brandon                       :MB                  :49.908028:N:100.073750:W:     0
+VOR     :Brandon                       :MB                  :49.909889:N: 99.945667:W:     0
+VOR     :Broadview                     :SK                  :50.362944:N:102.540306:W:     0
+NDB     :Calgary                       :AB                  :51.080833:N:113.908889:W:     0
+VOR     :Calgary                       :AB                  :51.115028:N:113.882000:W:     0
+VOR     :Campbellford                  :ON                  :44.333083:N: 77.704583:W:     0
+NDB     :Castlegar                     :BC                  :49.447222:N:117.575000:W:     0
+NDB     :Champlain                     :QC                  :46.871139:N: 71.281417:W:     0
+NDB     :Charlevoix                    :QC                  :47.623417:N: 70.324417:W:     0
+VOR     :Charlottetown                 :PE                  :46.297639:N: 63.119694:W:     0
+NDB     :Churchill                     :MB                  :58.762528:N: 93.953778:W:     0
+VOR     :Churchill                     :MB                  :58.741750:N: 94.135306:W:     0
+NDB     :Churchill Falls               :NL                  :58.741750:N: 94.135306:W:     0
+VOR     :Coehill                       :ON                  :44.660833:N: 77.888056:W:     0
+NDB     :Comox                         :BC                  :49.753889:N:124.958056:W:     0
+NDB     :Cranbrook                     :BC                  :49.682611:N:115.783000:W:     0
+VOR     :Cranbrook                     :BC                  :49.554278:N:116.088306:W:     0
+NDB     :Cultus                        :BC                  :49.021111:N:122.049722:W:     0
+NDB     :Dafoe                         :SK                  :51.873056:N:104.569722:W:     0
+NDB     :Dauphin                       :MB                  :51.097500:N:100.060861:W:     0
+VOR     :Dauphin                       :MB                  :51.104944:N:100.052333:W:     0
+NDB     :Dawson Creek                  :BC                  :55.727778:N:120.068333:W:     0
+NDB     :Deer Lake                     :NL                  :49.180000:N: 57.457222:W:     0
+VOR     :Deer Lake                     :NL                  :49.232361:N: 57.213278:W:     0
+NDB     :Delta                         :MB                  :50.166389:N: 98.307222:W:     0
+NDB     :Dryden                        :ON                  :49.864444:N: 92.849194:W:     0
+NDB     :Earlton                       :ON                  :47.711917:N: 79.790583:W:     0
+NDB     :Edmonton                      :AB                  :53.643667:N:113.512861:W:     0
+VOR     :Edmonton                      :AB                  :53.185583:N:113.866833:W:     0
+NDB     :Elliot Lake                   :ON                  :46.372028:N: 82.628722:W:     0
+VOR     :Empress                       :AB                  :50.926472:N:109.989139:W:     0
+NDB     :Enderby                       :BC                  :50.650083:N:118.925694:W:     0
+VORTAC  :Enderby                       :BC                  :50.677861:N:118.938806:W:     0
+NDB     :Eric                          :QC                  :51.883611:N: 65.716667:W:     0
+NDB     :Flin Flon                     :MB                  :51.883611:N: 65.716667:W:     0
+NDB     :Fort Chipewyan                :AB                  :58.761556:N:111.108278:W:     0
+NDB     :Fort McMurray                 :AB                  :56.653167:N:111.336167:W:     0
+VOR     :Fort McMurray                 :AB                  :56.647222:N:111.122222:W:     0
+NDB     :Fort Nelson                   :BC                  :58.795833:N:122.722500:W:     0
+VOR     :Fort Nelson                   :BC                  :58.891917:N:123.016000:W:     0
+NDB     :Fort Resolution               :NT                  :61.154167:N:113.638611:W:     0
+NDB     :Fort St. John                 :BC                  :56.284444:N:120.844722:W:     0
+VOR     :Fort St. John                 :BC                  :56.284167:N:120.895556:W:     0
+NDB     :Fort Simpson                  :NT                  :61.785833:N:121.260556:W:     0
+VOR     :Fort Simpson                  :NT                  :61.773861:N:121.298778:W:     0
+NDB     :Fort Smith                    :NT                  :59.971250:N:111.856917:W:     0
+VOR     :Fort Smith                    :NT                  :60.020083:N:111.969361:W:     0
+NDB     :Fredericton                   :NB                  :45.917222:N: 66.599722:W:     0
+VOR     :Fredericton                   :NB                  :45.894778:N: 66.418889:W:     0
+NDB     :Gander                        :NL                  :48.964444:N: 54.668333:W:     0
+VOR     :Gander                        :NL                  :48.899583:N: 54.535000:W:     0
+NDB     :Gaspe                         :QC                  :48.768056:N: 64.385167:W:     0
+VOR     :Gaspe                         :QC                  :48.763167:N: 64.404806:W:     0
+VOR     :Geraldton                     :ON                  :49.769722:N: 86.984333:W:     0
+NDB     :Gillam                        :MB                  :56.353250:N: 94.700028:W:     0
+NDB     :Goderich                      :ON                  :43.746472:N: 81.730694:W:     0
+NDB     :Goose                         :NL                  :53.337778:N: 60.365833:W:     0
+VOR     :Goose                         :NL                  :53.319722:N: 60.294722:W:     0
+NDB     :Gore Bay                      :ON                  :45.928333:N: 82.615278:W:     0
+NDB     :Grande Prairie                :AB                  :55.137778:N:118.814167:W:     0
+VOR     :Grande Prairie                :AB                  :55.174222:N:119.030194:W:     0
+NDB     :Greenwood                     :NS                  :44.922778:N: 65.101944:W:     0
+VOR     :Grindstone                    :QC                  :47.430333:N: 61.774083:W:     0
+VOR     :Halifax                       :NS                  :44.923056:N: 63.401944:W:     0
+VOR     :Hay River                     :NT                  :60.836278:N:115.803278:W:     0
+NDB     :High Level                    :AB                  :58.553444:N:117.121000:W:     0
+VOR     :High Level                    :AB                  :58.554250:N:117.093028:W:     0
+NDB     :Hope                          :BC                  :49.386528:N:121.424167:W:     0
+VOR     :Houston                       :BC                  :54.452333:N:126.650889:W:     0
+NDB     :Kamloops                      :BC                  :50.683611:N:120.335278:W:     0
+NDB     :Kasing                        :ON                  :49.464583:N: 82.506722:W:     0
+NDB     :Kelowna                       :BC                  :50.060861:N:119.416389:W:     0
+NDB     :Kenora                        :ON                  :49.792444:N: 94.424444:W:     0
+VOR     :Killaloe                      :ON                  :45.663000:N: 77.602389:W:     0
+NDB     :Kingston                      :ON                  :44.296806:N: 76.604528:W:     0
+NDB     :Kitimat                       :BC                  :54.054111:N:128.670222:W:     0
+VOR     :Langruth                      :MB                  :50.422361:N: 98.723694:W:     0
+NDB     :La Ronge                      :SK                  :55.086000:N:105.318917:W:     0
+VOR     :La Ronge                      :SK                  :55.158278:N:105.266806:W:     0
+NDB     :La Tuque                      :QC                  :47.416139:N: 72.786500:W:     0
+VOR     :Lethbridge                    :AB                  :49.634417:N:112.667889:W:     0
+NDB     :Lloydminster                  :AB                  :53.313194:N:110.082278:W:     0
+VOR     :London                        :ON                  :43.037917:N: 81.148917:W:     0
+VORTAC  :Lumsden                       :SK                  :50.667000:N:104.889722:W:     0
+NDB     :Lynn Lake                     :MB                  :56.830833:N:101.070278:W:     0
+VOR     :Lynn Lake                     :MB                  :56.863944:N:101.075333:W:     0
+NDB     :Maniwaki                      :QC                  :46.207611:N: 75.956333:W:     0
+VORTAC  :Mans                          :ON                  :44.143111:N: 80.146222:W:     0
+VOR     :Marathon                      :ON                  :48.743417:N: 86.327583:W:     0
+NDB     :Matane                        :QC                  :48.833333:N: 67.549444:W:     0
+NDB     :Medicine Hat                  :AB                  :50.013056:N:110.799167:W:     0
+VOR     :Medicine Hat                  :AB                  :49.964583:N:110.814472:W:     0
+VOR     :Midland                       :ON                  :44.581806:N: 79.793222:W:     0
+VOR     :Mirabel                       :QC                  :45.888333:N: 74.375722:W:     0
+NDB     :Miramichi                     :NB                  :47.010000:N: 65.467500:W:     0
+NDB     :Moncton                       :NB                  :46.110556:N: 64.581944:W:     0
+VOR     :Moncton                       :NB                  :46.188833:N: 64.571278:W:     0
+NDB     :Mont-Joli                     :QC                  :48.566694:N: 68.258667:W:     0
+VOR     :Mont-Joli                     :QC                  :48.612139:N: 68.208972:W:     0
+VOR     :Montreal                      :QC                  :45.615750:N: 73.970917:W:     0
+VOR     :Moosonee                      :ON                  :51.291389:N: 80.607222:W:     0
+NDB     :Muskoka                       :ON                  :45.038028:N: 79.283389:W:     0
+NDB     :Nanaimo                       :BC                  :49.127778:N:123.871694:W:     0
+NDB     :Naramata                      :BC                  :49.597167:N:119.602639:W:     0
+NDB     :North Battleford              :SK                  :52.803750:N:108.335111:W:     0
+VOR     :North Bay                     :ON                  :46.363917:N: 79.436417:W:     0
+NDB     :Norway House                  :MB                  :53.972333:N: 97.840194:W:     0
+NDB     :Oshawa                        :ON                  :43.920833:N: 78.899972:W:     0
+VOR     :Ottawa                        :ON                  :45.441750:N: 75.896861:W:     0
+NDB     :Peace River                   :AB                  :56.200000:N:117.531944:W:     0
+VOR     :Peace River                   :AB                  :56.206917:N:117.511806:W:     0
+NDB     :Pembroke                      :ON                  :45.803194:N: 77.218222:W:     0
+NDB     :Penticton                     :BC                  :49.487722:N:119.601528:W:     0
+NDB     :Port Hardy                    :BC                  :50.699194:N:127.427000:W:     0
+VOR     :Port Hardy                    :BC                  :50.684139:N:127.365306:W:     0
+NDB     :Powell River                  :BC                  :49.836667:N:124.501389:W:     0
+NDB     :Prince Albert                 :SK                  :53.218056:N:105.795278:W:     0
+VOR     :Prince Albert                 :SK                  :53.216417:N:105.666472:W:     0
+NDB     :Prince George                 :BC                  :53.828250:N:122.654028:W:     0
+VOR     :Prince George                 :BC                  :53.894278:N:122.455528:W:     0
+NDB     :Prince Rupert                 :BC                  :54.263333:N:130.423944:W:     0
+NDB     :Princeton                     :BC                  :49.469444:N:120.516750:W:     0
+VOR     :Princeton                     :BC                  :49.381556:N:120.373778:W:     0
+NDB     :Quebec                        :QC                  :46.749833:N: 71.462556:W:     0
+VORTAC  :Quebec                        :QC                  :46.705306:N: 71.626250:W:     0
+NDB     :Quesnel                       :BC                  :52.960639:N:122.486111:W:     0
+NDB     :Red Deer                      :AB                  :52.128306:N:113.899389:W:     0
+NDB     :Red Lake                      :ON                  :51.061028:N: 93.784917:W:     0
+VOR     :Red Lake                      :ON                  :51.071500:N: 93.761944:W:     0
+NDB     :Regina                        :SK                  :50.369722:N:104.573056:W:     0
+NDB     :Rimouski                      :QC                  :48.477750:N: 68.503056:W:     0
+NDB     :Riviere-du-Loup               :QC                  :47.763639:N: 69.578111:W:     0
+VOR     :Riviere-du-Loup               :QC                  :47.757528:N: 69.589778:W:     0
+NDB     :Roberval                      :QC                  :48.544806:N: 72.294417:W:     0
+NDB     :Robinson                      :YT                  :60.439444:N:134.861389:W:     0
+VOR     :Rocky Mtn. House              :AB                  :52.502194:N:115.323556:W:     0
+NDB     :Rouyn                         :QC                  :48.172889:N: 78.938583:W:     0
+NDB     :Saint John                    :NB                  :45.391667:N: 65.818889:W:     0
+VOR     :Saint John                    :NB                  :45.407222:N: 65.870833:W:     0
+NDB     :St. Anthony                   :NL                  :51.386750:N: 56.095000:W:     0
+VOR     :St. Anthony                   :NL                  :51.393917:N: 56.083750:W:     0
+NDB     :St. Catharines                :ON                  :43.147167:N: 79.254972:W:     0
+NDB     :St-Felix-de-Valois            :QC                  :46.19225 :N: 73.419028:W:     0
+VORTAC  :St-Jean                       :QC                  :45.255806:N: 73.321278:W:     0
+VOR     :Saguenay                      :QC                  :48.017139:N: 71.269278:W:     0
+NDB     :Sandspit                      :BC                  :53.196167:N:131.777500:W:     0
+VOR     :Sandspit                      :BC                  :53.252167:N:131.807083:W:     0
+NDB     :Sarnia                        :ON                  :42.940472:N: 82.233833:W:     0
+NDB     :Saskatoon                     :SK                  :52.189750:N:106.813806:W:     0
+VORTAC  :Saskatoon                     :SK                  :52.181167:N:106.719778:W:     0
+NDB     :Sept-Iles                     :QC                  :50.203889:N: 66.151389:W:     0
+VOR     :Sept-Iles                     :QC                  :50.232139:N: 66.273861:W:     0
+VORTAC  :Sherbrooke                    :QC                  :45.316333:N: 71.788111:W:     0
+VOR     :Simcoe                        :ON                  :44.238472:N: 79.171639:W:     0
+NDB     :Sioux Lookout                 :ON                  :50.118278:N: 91.897806:W:     0
+VOR     :Sioux Narrows                 :ON                  :49.476917:N: 94.046722:W:     0
+NDB     :Skookum                       :BC                  :49.954917:N:115.792333:W:     0
+NDB     :Slave Lake                    :AB                  :55.298417:N:114.773000:W:     0
+NDB     :Smithers                      :BC                  :54.747444:N:127.107750:W:     0
+NDB     :Smiths Falls                  :ON                  :44.900417:N: 76.008694:W:     0
+NDB     :Stephenville                  :NL                  :48.543889:N: 58.754722:W:     0
+VOR     :Stephenville                  :NL                  :48.582222:N: 58.669806:W:     0
+VOR     :Sudbury                       :ON                  :46.629139:N: 80.798222:W:     0
+VOR     :Swift Current                 :SK                  :50.297056:N:107.690889:W:     0
+NDB     :Sydney                        :NS                  :46.211389:N: 59.975556:W:     0
+VOR     :Sydney                        :NS                  :46.153389:N: 60.055611:W:     0
+NDB     :Terrace                       :BC                  :54.374000:N:128.583111:W:     0
+NDB     :Teslin                        :YT                  :60.177167:N:132.735056:W:     0
+NDB     :The Pas                       :MB                  :53.978694:N:101.080944:W:     0
+VOR     :The Pas                       :MB                  :53.973472:N:101.099917:W:     0
+NDB     :Thompson                      :MB                  :55.794500:N: 97.854167:W:     0
+VOR     :Thompson                      :MB                  :55.811000:N: 97.825194:W:     0
+NDB     :Thunder Bay                   :ON                  :48.346667:N: 89.433667:W:     0
+VOR     :Thunder Bay                   :ON                  :48.253778:N: 89.437389:W:     0
+VOR     :Timmins                       :ON                  :48.571944:N: 81.370000:W:     0
+NDB     :Tofino                        :BC                  :49.046806:N:125.704111:W:     0
+VOR     :Torbay                        :NL                  :47.485361:N: 52.852194:W:     0
+VOR     :Toronto                       :ON                  :43.658222:N: 79.631528:W:     0
+NDB     :Trois-Rivieres                :QC                  :46.369194:N: 72.665111:W:     0
+VOR     :Val-d'Or                      :QC                  :48.175278:N: 77.820278:W:     0
+NDB     :Vancouver                     :BC                  :49.172861:N:123.057167:W:     0
+VOR     :Vancouver                     :BC                  :49.077333:N:123.149083:W:     0
+NDB     :Vermilion                     :AB                  :53.337944:N:110.796556:W:     0
+NDB     :Victoria                      :BC                  :48.644167:N:123.399472:W:     0
+VOR     :Victoria                      :BC                  :48.727056:N:123.484500:W:     0
+VOR     :Wabush                        :NL                  :52.960083:N: 66.853528:W:     0
+VOR     :Wainwright                    :AB                  :52.981389:N:110.833278:W:     0
+VOR     :Waterloo                      :ON                  :43.458583:N: 80.379389:W:     0
+NDB     :Watson Lake                   :YT                  :60.176667:N:128.844944:W:     0
+VOR     :Watson Lake                   :YT                  :60.086528:N:128.857583:W:     0
+VOR     :Wawa                          :ON                  :47.950667:N: 84.822806:W:     0
+NDB     :Whitecourt                    :AB                  :54.077222:N:115.497778:W:     0
+VOR     :Whitecourt                    :AB                  :54.145667:N:115.797194:W:     0
+VOR     :Whitehorse                    :YT                  :60.618889:N:135.138889:W:     0
+NDB     :White Rock                    :BC                  :49.003333:N:122.750278:W:     0
+NDB     :Wiarton                       :ON                  :44.698639:N: 81.178806:W:     0
+VOR     :Wiarton                       :ON                  :44.744833:N: 81.104972:W:     0
+NDB     :Williams Lake                 :BC                  :52.135556:N:121.973611:W:     0
+VOR     :Williams Lake                 :BC                  :52.237111:N:122.168861:W:     0
+VOR     :Windsor                       :ON                  :42.249722:N: 82.828944:W:     0
+NDB     :Winnipeg                      :MB                  :49.899167:N: 97.349167:W:     0
+VORTAC  :Winnipeg                      :MB                  :49.927722:N: 97.239306:W:     0
+NDB     :Yarmouth                      :NS                  :43.793333:N: 66.126111:W:     0
+VOR     :Yarmouth                      :NS                  :43.825000:N: 66.082500:W:     0
+NDB     :Yellowknife                   :NT                  :62.410944:N:114.434417:W:     0
+VORTAC  :Yellowknife                   :NT                  :62.464278:N:114.436639:W:     0
+NDB     :Yorkton                       :SK                  :51.216111:N:102.541944:W:     0
+VOR     :Yorkton                       :SK                  :51.264056:N:102.468722:W:     0
