@@ -167,7 +167,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    variable Param
 
    for { set no 0 } { $no < 20 } { incr no } {
-      if { [lsearch -exact $Data(BoxList) $no] == -1 } {
+      if { $no ni $Data(BoxList) } {
          lappend Data(BoxList) $no
          break
       }
@@ -499,13 +499,13 @@ proc FieldBox::FileOpen { No File } {
       }
 
       #----- Si le fichier est deja ouvert
-      if { [lsearch -exact $data(FileList) $file]!=-1 } {
+      if { $file in $data(FileList) } {
          continue
       }
 
       #----- Determiner l'index du fichier a ouvrir
       for { set fid 1 } { $fid < 10000 } { incr fid } {
-         if { [lsearch -exact $Data(FIDList) $fid]==-1 } {
+         if { $fid ni $Data(FIDList) } {
             break
          }
       }

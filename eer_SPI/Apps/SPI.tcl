@@ -1278,7 +1278,7 @@ proc SPI::Clear { } {
 proc SPI::IcoAdd { Frame Group Color Icos } {
    variable Ico
 
-   if { [lsearch -exact $Ico(Groups) $Group]==-1 } {
+   if { $Group ni $Ico(Groups) } {
       lappend Ico(Groups) $Group
       .menu.disp.menu.icons add checkbutton -label "$Group" -variable SPI::Ico(Set$Group) \
          -command "Page::UpdateItems $Page::Data(Frame)"
@@ -1502,7 +1502,7 @@ proc SPI::IcoOpen { Files } {
       regsub -all "\[^a-zA-Z0-9\]"  $group _ group
 
       #----- Si on n'as pas de couleur, on est en presence d'une image plutot que d'un gif
-      if { [lsearch -exact [image names] $group]==-1 } {
+      if { $group ni [image names] } {
          eval image create photo $group -file $icon
       }
       set icon $group

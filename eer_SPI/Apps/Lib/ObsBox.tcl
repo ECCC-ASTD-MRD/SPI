@@ -139,7 +139,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    variable Param
 
    for { set no 0 } { $no < 20 } { incr no } {
-      if { [lsearch -exact $Data(BoxList) $no] == -1 } {
+      if { $no ni $Data(BoxList) } {
          lappend Data(BoxList) $no
          break
       }
@@ -410,7 +410,7 @@ proc ObsBox::FileOpen { No File } {
 
       #----- Si le fichier est deja ouvert
 
-      if { [lsearch -exact $data(FileList) $file] != -1 } {
+      if { $file in $data(FileList) } {
          continue
       }
 
@@ -744,13 +744,13 @@ proc ObsBox::Insert { No } {
 
          #----- Garder la liste des champs de selection
 
-         if { [lsearch -exact $data(Id) $id] == -1 } {
+         if { $id ni $data(Id) } {
             lappend data(Id) $id
          }
-         if { [lsearch -exact $data(Date) $date] == -1 } {
+         if { $date ni $data(Date) } {
             lappend data(Date) $date
          }
-         if { [lsearch -exact $data(Nb) $nb] == -1 } {
+         if { $nb ni $data(Nb) } {
             lappend data(Nb) $nb
          }
 
@@ -1096,7 +1096,7 @@ proc ObsBox::Select { } {
    #----- Eliminer les observations qui ne sont plus selectionne
 
    foreach obs $Obs::Data(List) {
-      if { [lsearch -exact $lobs $obs]==-1 } {
+      if { $obs ni $lobs } {
          Viewport::AssignedTo $obs fr vp
          if { [Page::Registered All Viewport $vp]!=-1 } {
             Viewport::UnAssign $fr $vp $obs -1
