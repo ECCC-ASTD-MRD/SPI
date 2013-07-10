@@ -92,6 +92,7 @@ proc OneTimeBubble::Create { } {
 
       wm overrideredirect .onetimebubble true
       wm state            .onetimebubble withdrawn
+      wm attributes       .onetimebubble -type tooltip -alpha 0.85
 
       label .onetimebubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font)

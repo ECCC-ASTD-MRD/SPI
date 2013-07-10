@@ -416,7 +416,7 @@ proc HFManager::HostFiles { Id } {
          } elseif { [lindex $params 1]!="wget" } {
             eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) pwd\]
          } else {
-            Log::Print DEBUG "on regarde sur weatheroffice... "
+            Log::Print DEBUG "on regarde sur site web meteo ... "
             set Host(Path$Id) [lindex [lindex $params 3] 0]
          }
       }

@@ -830,7 +830,7 @@ proc VAAC::Transmit { Frame } {
                set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
                if { $ErrCatch != 0 } {
-                  Log::Print ERROR "Unable to transfert the $file.png on weatheroffice via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
+                  Log::Print ERROR "Unable to transfert the $file.png on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
                }
 
             }
@@ -846,7 +846,7 @@ proc VAAC::Transmit { Frame } {
             set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
-               Log::Print ERROR "Unable to transfert the $file.png on weatheroffice via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
+               Log::Print ERROR "Unable to transfert the $file.png on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
             }
          }
       }

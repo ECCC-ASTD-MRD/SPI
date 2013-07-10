@@ -633,12 +633,12 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          #----- Hardcode temporaire pour envoyer sur le nouveau site
 
-         if { $Print(WEBSite)=="WEATHEROFFICE_VAAC" } {
+         if { $Print(WEBSite)=="WEB_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt True]
             set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
-               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on weatheroffice via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
+               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
             }
 
          } else {

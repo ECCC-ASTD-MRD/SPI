@@ -44,6 +44,7 @@ proc SPI::Splash { { Msg "" } } {
          if { ![winfo exists .splash] } {
             toplevel     .splash
             wm overrideredirect .splash true
+            wm attributes       .splash -type splash -alpha 0.85
 
             image create photo SPLASH -file $GDefs(Dir)/Apps/SPI.gif
             label .splash.img -image SPLASH -relief raised -bd 2 -bg #FFFFFF

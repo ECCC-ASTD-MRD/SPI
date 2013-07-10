@@ -316,12 +316,12 @@ proc Writer::FVCN::SetDate { Pad { Secs 0 } } {
    variable Data
 
    if { !$Secs } {
-      set Secs [clock seconds]
+      set Data(Secs$Pad)    [clock seconds]
    }
-   set Data(Date00$Pad)  [clock format $Secs -format "%d/%H%MZ" -gmt True]
-   set Data(Date06$Pad)  [clock format [expr $Secs+3600*6] -format "%d/%H%MZ" -gmt True]
-   set Data(Date12$Pad)  [clock format [expr $Secs+3600*12] -format "%d/%H%MZ" -gmt True]
-   set Data(Date18$Pad)  [clock format [expr $Secs+3600*18] -format "%d/%H%MZ" -gmt True]
+   set Data(Date00$Pad)  [clock format $Data(Secs$Pad) -format "%d/%H%MZ" -gmt True]
+   set Data(Date06$Pad)  [clock format [expr $Data(Secs$Pad)+3600*6] -format "%d/%H%MZ" -gmt True]
+   set Data(Date12$Pad)  [clock format [expr $Data(Secs$Pad)+3600*12] -format "%d/%H%MZ" -gmt True]
+   set Data(Date18$Pad)  [clock format [expr $Data(Secs$Pad)+3600*18] -format "%d/%H%MZ" -gmt True]
 
    return 1
 }
@@ -690,6 +690,7 @@ proc Writer::FVCN::Update { Pad } {
 # Parametres :
 #   <Pad>    : Identificateur du Pad
 #   <Mode>   : Mode du message (NEW ou RETRANSMIT).
+#   <Shp>    : Sauvegarde en shapefile.
 #
 # Retour     :
 #   <File>   : Fichier temporaire
@@ -698,13 +699,13 @@ proc Writer::FVCN::Update { Pad } {
 #
 #----------------------------------------------------------------------------
 
-proc Writer::FVCN::Format { Pad Mode } {
+proc Writer::FVCN::Format { Pad Mode { Shp False } } {
    global   env
    variable Data
 
-   set file $env(HOME)/.spi/Tmp/FVCN[pid]_[clock seconds].txt
+   set file $env(HOME)/.spi/Tmp/FVCN[pid]_[clock seconds]
 
-   set f [open $file w]
+   set f [open $file.txt w]
 
    #----- Header
 
@@ -745,6 +746,49 @@ proc Writer::FVCN::Format { Pad Mode } {
 
    close $f
 
+   if { $Shp } {
+   
+      #----- Open VAG shapefile
+      ogrfile open VAGFILE write $file.shp "ESRI Shapefile"
+      ogrlayer create VAGFILE VAG "VAG"
+
+      ogrlayer define VAG -field Level String
+      ogrlayer define VAG -field Date  Date
+      
+      #----- Initialiser la geometrie
+      ogrgeometry create POLY "Polygon"
+      ogrgeometry create RING "Linear Ring"
+
+      #----- Loop on the models
+      set nb 0
+      foreach hour { 06 12 18 } h { 6 12 18 } {
+         foreach l { L0 L1 L2 } lvl { "SFC/FL200" "FL200/FL350" "FL350/FL600" } {
+         
+            ogrgeometry define RING -points {}
+
+            if { [llength $Data($l$hour$Pad)] } {
+               foreach { lat lon elev } $Data($l$hour$Pad) {
+                  ogrgeometry define RING -addpoint $lon $lat $elev 
+               }
+               #----- Close the polygon
+               ogrgeometry define RING -addpoint [lindex $Data($l$hour$Pad) 1] [lindex $Data($l$hour$Pad) 0] [lindex $Data($l$hour$Pad) 2]
+
+               ogrlayer define VAG -nb [incr nb]
+               set no [expr $nb-1]
+               ogrlayer define VAG -feature $no Date [expr $Data(Secs$Pad)+3600*$h]
+               ogrlayer define VAG -feature $no Level $lvl
+               
+               ogrgeometry define POLY -geometry False RING
+               ogrlayer define VAG -geometry $no False POLY
+            }
+         }
+      }
+
+      ogrfile close VAGFILE
+   }
+   
+   eval exec chmod 644 [glob $file.*]
+   
    return $file
 }
 
@@ -1297,7 +1341,7 @@ proc Writer::FVCN::PrintCommand { Pad } {
    set file [Writer::FVCN::Format $Pad $Data(Mode$Pad)]
    set PrintBox::Param(FullName) [string trimright $PrintBox::Param(FullName) ".$PrintBox::Print(Device)"]
 
-   PrintBox::PrintTXT $file
+   PrintBox::PrintTXT $file.txt
 
    #----- Graphical product
    if { [winfo exists $Data(Page$Pad)] } {
@@ -1640,34 +1684,34 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    #----- Sauvegarder le message
 
    set name [Writer::FVCN::Write $Pad 1]
-   set file [Writer::FVCN::Format $Pad $Data(Mode$Pad)]
-
+   set file [Writer::FVCN::Format $Pad $Data(Mode$Pad) True]
+   puts stderr $file
+    return 0         
    #----- Transmettre le message avec le script operationnel.
 
-   exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh ${file}.txt $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
       if { $ErrCatch != 0 } {
-         Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
+         Log::Print ERROR "Unable to sent the ${file}.txt via metmanager on opserv.\n\n$MsgCatch"
       }
 
    } else {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_nanproc.ksh ${file} $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_nanproc.ksh ${file}.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
-         Log::Print ERROR "Unable to sent the $file via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
+         Log::Print ERROR "Unable to sent the ${file}.txt via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
    }
 
-   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file} eer/data/vaac/FVCN_messages/$name.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.txt eer/data/vaac/FVCN_messages/$name.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
    if { $ErrCatch != 0 } {
-      Log::Print ERROR "Unable to sent the $file via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
+      Log::Print ERROR "Unable to sent the ${file}.txt via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
    }
 
    #----- Graphical product
    if { [winfo exists $Data(Page$Pad)] } {
-      PrintBox::Image $Data(Page$Pad) png $file landscape
-      exec chmod 644 $file.png
+      PrintBox::Image $Data(Page$Pad) png ${file} landscape
+      exec chmod 644 ${file}.png
       set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/FVCN_messages/$name.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file.png via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
@@ -1699,7 +1743,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    }
 
    if { !$Backup } {
-      file delete -force $file
+      eval file delete -force [glob $file.*]
    }
 }
 

@@ -123,6 +123,7 @@ proc CanvasBubble::Create { Canvas Tag Text { WrapLen 0 } } {
 
       wm overrideredirect .canvasbubble true
       wm state            .canvasbubble withdrawn
+      wm attributes       .canvasbubble -type tooltip -alpha 0.85
 
       label .canvasbubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen

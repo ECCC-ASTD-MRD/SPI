@@ -208,6 +208,7 @@ proc Bubble::Create { Widget Hlp { WrapLen 0 } } {
 
       wm overrideredirect .bubble true
       wm state            .bubble withdrawn
+      wm attributes       .bubble -type tooltip -alpha 0.85
 
       label .bubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen

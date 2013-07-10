@@ -130,6 +130,7 @@ proc ListboxBubble::Create { Widget Mode args } {
 
       wm overrideredirect .listbubble true
       wm state            .listbubble withdrawn
+      wm attributes       .listbubble -type tooltip -alpha 0.85
 
       label .listbubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font)
