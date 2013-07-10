@@ -94,11 +94,15 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 
    switch ((enum opt)idx) {
       case CREATE:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"name");
+         if (Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
             return(TCL_ERROR);
          }
-         return(Projection_Create(Interp,Tcl_GetString(Objv[2])));
+         t=Projection_Create(Interp,Tcl_GetString(Objv[2]));
+         if (t!=TCL_ERROR && Objc>3) {
+            t=Projection_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         }
+         return(t);
          break;
 
       case CONFIGURE:

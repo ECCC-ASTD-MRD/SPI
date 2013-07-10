@@ -90,7 +90,7 @@ ProjCam* ProjCam_Get(const char* Name){
 */
 static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int                idx;
+   int                idx,t;
    static CONST char *sopt[] = { "create","configure","define","stats","copy","destroy","is",NULL };
    enum                opt { CREATE,CONFIGURE,DEFINE,STATS,COPY,DESTROY,IS };
 
@@ -108,13 +108,17 @@ static int ProjCam_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    switch ((enum opt)idx) {
       case CREATE:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"name");
+         if (Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
             return(TCL_ERROR);
          }
-         return(ProjCam_Create(Interp,Tcl_GetString(Objv[2])));
+         t=ProjCam_Create(Interp,Tcl_GetString(Objv[2]));
+         if (t!=TCL_ERROR && Objc>3) {
+            t=ProjCam_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         }
+         return(t);
          break;
-
+         
       case CONFIGURE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"name ?option?");
