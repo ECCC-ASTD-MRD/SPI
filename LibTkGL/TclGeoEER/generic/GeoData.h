@@ -136,12 +136,14 @@ typedef struct GDB_Tile {
 } GDB_Tile;
 
 typedef struct GDB_Data {
+   unsigned long Maps[6];
    int         DegT,DegX,DegY,Res;
    GDB_Tile    Tile[GDB_DEGX][GDB_DEGY];
    GDB_Params  Params;
 } GDB_Data;
 
 int  GDB_Init(GDB_Data *Geo);
+void GDB_Clean(GDB_Data *Geo);
 int  GDB_GetMap(GDB_Data *Geo,double Lat,double Lon);
 void GDB_GeoFree(GDB_Geo *Geo);
 void GDB_TileFree(GDB_Tile *Tile,int Force);

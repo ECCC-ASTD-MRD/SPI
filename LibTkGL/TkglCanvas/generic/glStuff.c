@@ -245,7 +245,7 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   Tcl_Free((char*)GLRender->Shaders);
                   GLRender->Shaders=NULL;
                }
-               if ((Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&GLRender->ShaderNb,&GLRender->Shaders)==TCL_ERROR)) {
+               if ((Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&GLRender->ShaderNb,(const char***)&GLRender->Shaders)==TCL_ERROR)) {
                   return(TCL_ERROR);
                }
                if (GLRender->ShaderNb>GL_MAXSHADER) {

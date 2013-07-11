@@ -1139,7 +1139,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 */
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
-   int           handle=0,z=2;
+   int           z=2;
    unsigned int  n,nv=0;
    Vect3d        vr,*pvr,*cvr=NULL;
    Coord         co;
@@ -1165,11 +1165,8 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       }
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
 
-#ifdef HAVE_GDB
       /*If we need global topo info*/
       if (Layer && Layer->Topo==0)
-         handle=gdb_mapopen(GDB_RES,GDB_MAP_DEM,&z);
-#endif
          
       /*Project vertices*/
       for(n=0;n<nv;n++) {
@@ -1194,9 +1191,11 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
                co.Elev=Elev;
             } else if (Layer->Topo==0) {
 #ifdef HAVE_GDB
-               gdb_mapget(handle,co.Lat,co.Lon,(void*)&z);
+               if (Proj->Geo->Maps[GDB_MAP_DEM]) {
+                  gdb_mapget(Proj->Geo->Maps[GDB_MAP_DEM],co.Lat,co.Lon,(char*)&z);
+                  co.Elev=z*Layer->Spec->TopoFactor;
+               }
 #endif
-               co.Elev=z*Layer->Spec->TopoFactor;
             }
          }
 
@@ -1223,11 +1222,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
             }
          }
       }
-
-#ifdef HAVE_GDB
-      if (handle)
-         gdb_mapclose(handle);
-#endif
    }
    return(nv);
 }

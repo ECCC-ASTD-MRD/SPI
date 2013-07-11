@@ -73,7 +73,6 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
 static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int                idx,t;
-   unsigned long      handle=0;
    short              zs;
    unsigned char      zc;
    double             lat,lon;
@@ -153,27 +152,22 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 #ifdef HAVE_GDB
          if (strncmp(Tcl_GetString(Objv[3]),"-BATH",5)==0) {
             t=2;
-            handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_BAT,&t);
-            gdb_mapget(handle,lat,lon,(void*)&zs);
+            gdb_mapget(proj->Geo->Maps[GDB_MAP_BAT],lat,lon,(char*)&zs);
             zs=zs>0?0:zs;
          } else if (strncmp(Tcl_GetString(Objv[3]),"-TOPO",5)==0) {
             t=2;
-            handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_DEM,&t);
-            gdb_mapget(handle,lat,lon,(void*)&zs);
+            gdb_mapget(proj->Geo->Maps[GDB_MAP_DEM],lat,lon,(char*)&zs);
          } else if (strncmp(Tcl_GetString(Objv[3]),"-MASK",5)==0) {
             t=1;
-            handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_MSK,&t);
-            gdb_mapget(handle,lat,lon,(void*)&zc);
+            gdb_mapget(proj->Geo->Maps[GDB_MAP_MSK],lat,lon,(char*)&zc);
             zs=zc<127?0:1;
          } else if (strncmp(Tcl_GetString(Objv[3]),"-TYPE",5)==0) {
             t=1;
-            handle=gdb_mapopen(proj->Geo->Res,GDB_MAP_TER,&t);
-            gdb_mapget(handle,lat,lon,(void*)&zc);
+            gdb_mapget(proj->Geo->Maps[GDB_MAP_TER],lat,lon,(char*)&zc);
             zs=zc;
          } else {
             Tcl_AppendResult(Interp,"Invalid data type , must be one of -BATHYMETRY, -TOPOGRAPHY, -MASK, -TYPE",(char*)NULL);
          }
-         gdb_mapclose(handle);
 #endif
          Tcl_SetObjResult(Interp,Tcl_NewIntObj(zs));
          break;
@@ -1241,8 +1235,9 @@ static int Projection_Destroy(Tcl_Interp *Interp, char *Name) {
 
       if (proj->Geo) {
          Projection_Clean(Interp,proj,GDB_FORCE);
+         GDB_Clean(proj->Geo);
          free(proj->Geo);
-       }
+      }
 
       if (proj->Data) {
          Tcl_DecrRefCount(proj->Data);

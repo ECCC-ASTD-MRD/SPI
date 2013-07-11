@@ -350,10 +350,17 @@ int GDB_Init(GDB_Data *GDB) {
    int    lat,lon;
    double flat,flon,clat;
 
+   memset(GDB->Maps,0x0,6*sizeof(unsigned long));
+   
 #ifdef HAVE_GDB
    gdb_init();
-#endif
    
+   x=2; GDB->Maps[GDB_MAP_BAT]=gdb_mapopen(GDB_RES,GDB_MAP_BAT,&x);
+   x=2; GDB->Maps[GDB_MAP_DEM]=gdb_mapopen(GDB_RES,GDB_MAP_DEM,&x);
+   x=1; GDB->Maps[GDB_MAP_MSK]=gdb_mapopen(GDB_RES,GDB_MAP_MSK,&x);
+   x=1; GDB->Maps[GDB_MAP_TER]=gdb_mapopen(GDB_RES,GDB_MAP_TER,&x);
+#endif
+
    /*Parametres de selection de donnees*/
    GDB->Params.Topo=GDB_NONE;
    GDB->Params.Bath=GDB_NONE;
@@ -418,6 +425,16 @@ int GDB_Init(GDB_Data *GDB) {
       }
    }
    return 1;
+}
+
+void GDB_Clean(GDB_Data *GDB) {
+
+#ifdef HAVE_GDB
+   if (GDB->Maps[GDB_MAP_BAT]) gdb_mapclose(GDB->Maps[GDB_MAP_BAT]);
+   if (GDB->Maps[GDB_MAP_DEM]) gdb_mapclose(GDB->Maps[GDB_MAP_DEM]);
+   if (GDB->Maps[GDB_MAP_MSK]) gdb_mapclose(GDB->Maps[GDB_MAP_MSK]);
+   if (GDB->Maps[GDB_MAP_TER]) gdb_mapclose(GDB->Maps[GDB_MAP_TER]);
+#endif
 }
 
 /*----------------------------------------------------------------------------

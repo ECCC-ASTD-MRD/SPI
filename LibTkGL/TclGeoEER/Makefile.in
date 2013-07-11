@@ -34,7 +34,7 @@
 #========================================================================
 
 PKG_SOURCES	= lex.vexpr_.c y.tab.c @PKG_SOURCES@
-PKG_OBJECTS	=  /cnfs/ops/cmoe/afsr005/Archive/ezscint/c_ezscint.o lex.vexpr_.o y.tab.o @PKG_OBJECTS@
+PKG_OBJECTS	= lex.vexpr_.o y.tab.o @PKG_OBJECTS@
 
 PKG_STUB_SOURCES = @PKG_STUB_SOURCES@
 PKG_STUB_OBJECTS = @PKG_STUB_OBJECTS@
