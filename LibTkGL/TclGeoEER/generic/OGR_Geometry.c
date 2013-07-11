@@ -1139,7 +1139,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 */
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
-   int           z=2;
+   short         z=2;
    unsigned int  n,nv=0;
    Vect3d        vr,*pvr,*cvr=NULL;
    Coord         co;
@@ -1165,9 +1165,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       }
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
 
-      /*If we need global topo info*/
-      if (Layer && Layer->Topo==0)
-         
       /*Project vertices*/
       for(n=0;n<nv;n++) {
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
@@ -1192,6 +1189,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
             } else if (Layer->Topo==0) {
 #ifdef HAVE_GDB
                if (Proj->Geo->Maps[GDB_MAP_DEM]) {
+                  
                   gdb_mapget(Proj->Geo->Maps[GDB_MAP_DEM],co.Lat,co.Lon,(char*)&z);
                   co.Elev=z*Layer->Spec->TopoFactor;
                }
