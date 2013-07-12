@@ -625,13 +625,14 @@ proc Dialog::Give { Master Title Text Info } {
 #    <File>   : Fichier texte
 #    <Width>  : Largenu du widget text
 #    <Height> : Hauteur du widget text
+#    <Clear>  : Clear previous text
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Text { Id Title File Width Height } {
+proc Dialog::Text { Id Title File { Width 60 } { Height 20 } { Clear False } } {
    global GDefs
    variable Bubble
    variable Data

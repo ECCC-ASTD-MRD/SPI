@@ -878,6 +878,7 @@ proc FSTD::ParamPut { } {
    variable Data
    variable Param
 
+   IcoMenu::Set $Data(Frame).def.r.disp.cont.sel   $Param(Contour)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel   $Param(Vector)
    IcoMenu::Set $Data(Frame).def.r.disp.grid.sel   $Param(Grid)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel   $Param(Vector)
@@ -898,8 +899,6 @@ proc FSTD::ParamPut { } {
 
    #----- Recuperer les niveaux du .recrc
 
-   set inters $Param(Intervals)
-
    ComboBox::DelAll $Data(Frame).lev.desc.edit
    $Data(Frame).lev.select.mode.list.inter delete 0 end
 
@@ -918,7 +917,6 @@ proc FSTD::ParamPut { } {
          }
       }
    }
-   set Param(Intervals) $inters
 
    MapBox::Select "" $Param(Map)
 }
@@ -1124,14 +1122,16 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             FSTD::ParamInit $fld $var
          }
 
-         if { "$var"=="$current" } {
-             set Param(Spec) $current
-             set exist 1
-         }
-
          if { !$set } {
             fstdfield configure $fld -dataspec $var
          }
+         
+         if { "$var"=="$current" } {
+             set Param(Spec) $current
+             set Param(Intervals)  [dataspec configure $current -intervals]
+             set exist 1
+         }
+
          ComboBox::Add $Data(Frame).var.sel $var
       }
    }
