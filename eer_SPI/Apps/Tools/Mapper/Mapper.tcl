@@ -1111,9 +1111,11 @@ proc Mapper::Pick { VP X Y } {
    variable Msg
    variable Lbl
 
+   set mid [$Viewport::Data(VP) -unproject $X $Y]
+
    if { !$Data(PickSize) } {
       #----- Pixel pick
-      set co0 [$Viewport::Data(VP) -unproject $X $Y]
+      set co0 $mid
       set co1 $co0
       set coords [list [lindex $co0 0] [lindex $co0 1]]
    } else {
@@ -1166,7 +1168,7 @@ proc Mapper::Pick { VP X Y } {
             break
          }
       } elseif { [gdalband is $object] && [info exists ::Mapper::DepotWare::WMS::Data($object)]} {
-         Dialog::Text .mapperpick [lindex $Lbl(Pick) $GDefs(Lang)] [gdalband pick $object [lrange $co0 0 1]]
+         Dialog::Text .mapperpick [lindex $Lbl(Pick) $GDefs(Lang)] [gdalband pick $object [lrange $mid 0 1]]
       }               
    }
 }
