@@ -98,7 +98,7 @@ void glDrawString(int X,int Y,int Theta,char *String,int Len,int UTF,int Flip) {
       glScalef(1.0f,-1.0f,1.0f);
 
    if (UTF) {
-      glCallLists(Len/2,GL_UNSIGNED_SHORT,String);
+      glCallLists(Len>>1,GL_UNSIGNED_SHORT,String);
    } else {
       glCallLists(Len,GL_UNSIGNED_BYTE,String);
    }
@@ -333,10 +333,10 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
          ry=(float)height/max_bm_height;
          glTranslatef(ch->lbearing,-ch->ascent,0);
          glBegin(GL_QUADS);
-         glTexCoord2f(0.0f,0.0f);glVertex2i(0,0);
-         glTexCoord2f(0.0f,ry);glVertex2i(0,height);
-         glTexCoord2f(rx,ry);glVertex2i(width,height);
-         glTexCoord2f(rx,0.0f);glVertex2i(width,0);
+         glTexCoord2f(0.0f,0.0f);glVertex2f(0,0);
+         glTexCoord2f(0.0f,ry);glVertex2f(0,height);
+         glTexCoord2f(rx,ry);glVertex2f(width,height);
+         glTexCoord2f(rx,0.0f);glVertex2f(width,0);
          glEnd();
          glTranslatef(0,ch->ascent,0);
       }

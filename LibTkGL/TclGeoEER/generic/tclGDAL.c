@@ -97,25 +97,26 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
 
 static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   double             lat,lon,x,y,*table;
-   char               idxid[4][128],*field,imode,itype;
-   const char       **list;
-   int                width=0,height=0,space=0,full=1;
+   double         lat,lon,x,y,*table;
+   char           idxid[4][128],*field,imode,itype;
+   const char   **list;
+   int            width=0,height=0,space=0,full=1;
 
-   Tcl_Obj           *obj,*sub;
-   int                idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd;
-   double             c0,c1,a;
-   TData             *data;
-   TDataSpec         *spec;
-   OGR_Layer         *layer;
-   GDAL_Band         *band,*comb,*bandt;
-   TObs              *obs;
-   GDALDataType       type;
+   Tcl_Obj       *obj,*sub;
+   int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd;
+   double         c0,c1,a;
+   TData         *data;
+   TDataSpec     *spec;
+   OGR_Layer     *layer;
+   OGRGeometryH   geom;
+   GDAL_Band     *band,*comb,*bandt;
+   TObs          *obs;
+   GDALDataType   type;
 
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-   static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -577,6 +578,17 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_OK);
          }
 
+         break;
+
+      case PICK:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"band ");
+            return(TCL_ERROR);
+         }
+         
+         /*Recuperation de la geometrie*/
+         geom=OGR_GeometryGet(Tcl_GetString(Objv[3]));
+         return(GDAL_Pick(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),geom,Objv[3],1,0));
          break;
 
       case CONFIGURE:
