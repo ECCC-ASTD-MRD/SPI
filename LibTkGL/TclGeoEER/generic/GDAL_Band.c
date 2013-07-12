@@ -3043,10 +3043,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  * Parametres  :
  *   <Interp>   : Interpreteur Tcl
  *   <Layer>    : Couche
- *   <Geom>     : Geometrie de recherche
  *   <List>     : Liste de coordonnees latlon (si pas de Geom)
- *   <All>      : Selectionne tout ou la premiere feature satisfaisante
- *   <Mode>     : Mode de selection (INTERSECT,INSIDE,OUTSIDE,NEAREST)
  *
  * Retour       :
  *
@@ -3054,13 +3051,14 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode) {
+int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List) {
 
    Tcl_Obj      *obj;
    double        x,y,lat,lon;
    int           nobj;
    unsigned int  f;
-   char          buf[32],*str;
+   char          buf[32];
+   const char   *str;
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_Pick : Invalid Band",(char*)NULL);
@@ -3070,27 +3068,24 @@ int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,OGRGeometryH *Geom,Tcl_Obj *Lis
    Tcl_ListObjLength(Interp,List,&nobj);
 
    /*Verifie le bon nombre de coordonnees*/
-   if (Geom) {
-   } else {
-      if (nobj%2!=0 || nobj==0) {
-         Tcl_AppendResult(Interp,"GDAL_Pick : Invalid number of coordinates",(char*)NULL);
+   if (nobj%2!=0 || nobj==0) {
+      Tcl_AppendResult(Interp,"GDAL_Pick : Invalid number of coordinates",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   for(f=0;f<nobj;f+=2) {
+      Tcl_ListObjIndex(Interp,List,f,&obj);
+      if (Tcl_GetDoubleFromObj(Interp,obj,&lat)==TCL_ERROR) {
          return(TCL_ERROR);
       }
-
-      for(f=0;f<nobj;f+=2) {
-         Tcl_ListObjIndex(Interp,List,f,&obj);
-         if (Tcl_GetDoubleFromObj(Interp,obj,&lat)==TCL_ERROR) {
-            return(TCL_ERROR);
-         }
-         Tcl_ListObjIndex(Interp,List,f+1,&obj);
-         if (Tcl_GetDoubleFromObj(Interp,obj,&lon)==TCL_ERROR) {
-            return(TCL_ERROR);
-         }
-         Band->Ref->UnProject(Band->Ref,&x,&y,lat,lon,1,1);
-         snprintf(buf,32,"Pixel_%li_%li",lrint(x),lrint(y));
-         str=GDALGetMetadataItem(Band->Band[0],buf,"LocationInfo");
-         Tcl_AppendElement(Interp,str);
+      Tcl_ListObjIndex(Interp,List,f+1,&obj);
+      if (Tcl_GetDoubleFromObj(Interp,obj,&lon)==TCL_ERROR) {
+         return(TCL_ERROR);
       }
+      Band->Ref->UnProject(Band->Ref,&x,&y,lat,lon,1,1);
+      snprintf(buf,32,"Pixel_%li_%li",lrint(x),lrint(y));
+      str=GDALGetMetadataItem(Band->Band[0],buf,"LocationInfo");
+      Tcl_AppendElement(Interp,str);
    }
 
    return(TCL_OK);

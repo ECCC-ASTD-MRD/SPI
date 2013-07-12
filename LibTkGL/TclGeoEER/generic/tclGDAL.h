@@ -99,7 +99,7 @@ int        GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band);
 int        GDAL_BandRenderTile(Projection *Proj,ViewportItem *VP,GDAL_Band *Band,TGeoTexTile *Tile,int Resolution);
 int        GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options);
 int        GDAL_BandTile(GDAL_Band *Band,Projection *Proj);
-int        GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode);
+int        GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List);
 
 void       Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
 int        Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TDataInterp Mode,int Final);

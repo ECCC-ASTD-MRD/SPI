@@ -108,7 +108,6 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TData         *data;
    TDataSpec     *spec;
    OGR_Layer     *layer;
-   OGRGeometryH   geom;
    GDAL_Band     *band,*comb,*bandt;
    TObs          *obs;
    GDALDataType   type;
@@ -586,9 +585,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
          
-         /*Recuperation de la geometrie*/
-         geom=OGR_GeometryGet(Tcl_GetString(Objv[3]));
-         return(GDAL_Pick(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),geom,Objv[3],1,0));
+         return(GDAL_Pick(Interp,GDAL_BandGet(Tcl_GetString(Objv[2])),Objv[3]));
          break;
 
       case CONFIGURE:
