@@ -58,8 +58,11 @@ namespace eval Dialog { } {
    set Lbl(Running)  { "Une processus est en cours, voulez-vous continuer et tuer ce processus ou annuler ?"
                        "A process is currently running, do you wich to continue and kill it or cancel ?" }
 
-   set Bubble(Print) { "Impressiondu contenue" "Print window content" }
-   set Bubble(Save)  { "Sauvegarde du contenu" "Save window content" }
+   set Bubble(Print)     { "Impressiondu contenue" "Print window content" }
+   set Bubble(Save)      { "Sauvegarde du contenu" "Save window content" }
+   set Bubble(Search)    { "Entrez le texte à rechercher" "Enter text to search for" }
+   set Bubble(SearchFWD) { "Rechercher vers le bas" "Search toward bottom" }
+   set Bubble(SearchBWD) { "Rechercher vers le haut" "Search toward top" }
 
    if { [info exists ::tk_version] } {
       image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
@@ -625,18 +628,19 @@ proc Dialog::Give { Master Title Text Info } {
 #    <File>   : Fichier texte
 #    <Width>  : Largenu du widget text
 #    <Height> : Hauteur du widget text
-#    <Clear>  : Clear previous text
 #
 # Remarques :
 #    Aucune.
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Text { Id Title File { Width 60 } { Height 20 } { Clear False } } {
+proc Dialog::Text { Id Title File { Width 60 } { Height 20 } } {
    global GDefs
    variable Bubble
    variable Data
 
+   set Dialog::Data(SearchPos) 0.0
+   
    if { [winfo exists $Id]} {
 
       wm title $Id $Title
@@ -653,6 +657,14 @@ proc Dialog::Text { Id Title File { Width 60 } { Height 20 } { Clear False } } {
       wm title $Id $Title
       wm transient $Id .
 
+      frame $Id.search -relief sunken -bd 1
+         entry $Id.search.txt -bd 1 -relief flat -textvariable Dialog::Data(Search) -bg $GDefs(ColorLight)
+         button $Id.search.fwd -image VCRFRAMEF -relief raised -bd 1 -command "$Id.file.text tag delete CSEARCH; set Dialog::Data(SearchPos) \[Dialog::TextSearch $Id.file.text \$Dialog::Data(SearchPos) \$Dialog::Data(Search) CSEARCH\]"
+         button $Id.search.bwd -image VCRFRAMEB -relief raised -bd 1 -command ""
+         pack $Id.search.txt -side left -fill both -expand true
+         pack $Id.search.fwd -side left -fill both
+      pack $Id.search -side top -fill x
+      
       frame $Id.command
          button $Id.command.ok -text [lindex { Fermer Close } $GDefs(Lang)] -relief raised -bd 1 \
             -command "destroy $Id"
@@ -678,9 +690,13 @@ proc Dialog::Text { Id Title File { Width 60 } { Height 20 } { Clear False } } {
 
       Bubble::Create $Id.command.print $Bubble(Print)
       Bubble::Create $Id.command.save  $Bubble(Save)
+      Bubble::Create $Id.search.txt    $Bubble(Search)
+      Bubble::Create $Id.search.fwd    $Bubble(SearchFWD)
+      Bubble::Create $Id.search.bwd    $Bubble(SearchBWD)
 
+      bind $Id.search.txt <Any-KeyRelease> "$Id.file.text tag delete ISEARCH CSEARCH; set Dialog::Data(SearchPos) \[Dialog::TextSearch $Id.file.text -1 \$Dialog::Data(Search) ISEARCH -background yellow\]"
       bind $Id.file.text <Any-KeyRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
-      bind $Id.file.text <Any-Button> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
+      bind $Id.file.text <Any-ButtonRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
    }
 
    #----- Inclure le fichier texte si il existe
@@ -703,7 +719,7 @@ proc Dialog::Text { Id Title File { Width 60 } { Height 20 } { Clear False } } {
 
       set f [open $File.dir]
       while { [gets $f ligne] >= 0 } {
-         Dialog::TextSearch $Id.file.text [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
+         Dialog::TextSearch $Id.file.text -1 [lindex $ligne 0] [lindex $ligne 1] [lindex $ligne 2]
       }
       close $f
    }
@@ -732,19 +748,36 @@ proc Dialog::PrintCommand { Widget } {
    PrintBox::Destroy
 }
 
-proc Dialog::TextSearch { Widget String Tag args } {
+proc Dialog::TextSearch { Widget Pos String Tag args } {
 
    if {$String == ""} {
       return
    }
-   set cur 1.0
-   while 1 {
-      set cur [ $Widget search -count length $String $cur end]
-      if { $cur == "" } {
+   
+   if { $Pos==-1 } {
+      set cur 1.0
+   } else {
+      set cur $Pos
+   }
+   
+   while { 1 } {
+      if { [set cur [$Widget search -count length $String $cur end]]=="" } {
+         set cur 1.0
          break
       }
-   $Widget tag add $Tag $cur "$cur + $length char"
-   set cur [$Widget index "$cur + $length char"]
+      
+      $Widget tag add $Tag $cur "$cur + $length char"
+      set cur [$Widget index "$cur + $length char"]
+      if { $Pos!=-1 } {
+         break
+      }
    }
-   eval $Widget tag configure $Tag [join $args " "]
+   
+   if { [llength $args] } {
+      eval $Widget tag configure $Tag [join $args " "]
+   } else {
+      $Widget tag configure $Tag -underline True
+      $Widget see $cur
+   }
+   return $cur
 }
