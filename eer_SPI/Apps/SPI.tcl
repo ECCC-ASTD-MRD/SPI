@@ -156,7 +156,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "project"   { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "tool"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
 
-      default     { SPI::CommandLine [lindex $argv $i]; exit 1 }
+      default     { SPI::CommandLine [lindex $argv $i]; Log::End 1 }
    }
 }
 

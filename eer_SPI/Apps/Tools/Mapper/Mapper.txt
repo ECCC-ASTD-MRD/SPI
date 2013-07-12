@@ -112,6 +112,7 @@ namespace eval Mapper { } {
    set Lbl(Burn)         { "Persistance" "Persistance" }
    set Lbl(Process)      { "Reprojection" "Reprojecting" }
    set Lbl(Time)         { "Temps" "Time" }
+   set Lbl(Pick)         { "Information sur l'object" "Feature info" }
 
    set Lbl(Icon)         { "Icône" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }

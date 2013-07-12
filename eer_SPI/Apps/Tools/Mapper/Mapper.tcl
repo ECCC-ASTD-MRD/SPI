@@ -1105,7 +1105,7 @@ proc Mapper::ProjFile { Widget File } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::PickOGR { VP X Y } {
+proc Mapper::Pick { VP X Y } {
    global GDefs
    variable Data
    variable Msg
@@ -1165,7 +1165,9 @@ proc Mapper::PickOGR { VP X Y } {
             }
             break
          }
-      }
+      } elseif { [gdalband is $object] && [info exists ::Mapper::DepotWare::WMS::Data($object)]} {
+         Dialog::Text .mapperpick [lindex $Lbl(Pick) $GDefs(Lang)] [gdalband pick $object [lrange $co0 0 1]]
+      }               
    }
 }
 
@@ -1177,13 +1179,7 @@ proc Mapper::DrawInit  { Frame VP } {
    set Data(InfoId)  ""
    set Data(InfoObs) ""
 
-#----- WMS getFeatureInfo For GDAL2.0
-#   set object [lindex $Viewport::Data(Data) 0]
-#   if { [info exists ::Mapper::DepotWare::WMS::Data($object)] } {
-#      puts stderr $object
-#   }
-
-   Mapper::PickOGR $VP $Viewport::Map(X) $Viewport::Map(Y)
+   Mapper::Pick $VP $Viewport::Map(X) $Viewport::Map(Y)
 }
 
 proc Mapper::Draw     { Frame VP } {
