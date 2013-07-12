@@ -842,7 +842,7 @@ proc Graph::Contingency::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Contingency::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Contingency::ItemDefine $gr $pos $data(Coords$pos)
          }
 
          catch {

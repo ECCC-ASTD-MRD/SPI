@@ -755,7 +755,7 @@ proc Graph::Profile::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Profile::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Profile
 

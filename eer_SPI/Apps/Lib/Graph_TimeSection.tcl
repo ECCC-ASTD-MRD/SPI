@@ -800,7 +800,7 @@ proc Graph::TimeSection::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::TimeSection::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::TimeSection::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr TimeSection
 

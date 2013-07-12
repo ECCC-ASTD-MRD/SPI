@@ -756,7 +756,7 @@ proc TrajBox::Insert { No } {
             lappend data(Mode) $mode
          }
 
-         if { $level ni $data(Level) $level } {
+         if { $level ni $data(Level) } {
             lappend data(Level) $level
          }
          #----- Inserer les donnees dans la liste

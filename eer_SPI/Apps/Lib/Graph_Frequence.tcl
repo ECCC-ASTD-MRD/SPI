@@ -712,7 +712,7 @@ proc Graph::Frequence::Update { Frame { GR {} } } {
             Graph::Frequence::Data  $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) { fstdfield observation }]
          }
          foreach pos $data(Pos) {
-            Graph::Frequence::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Frequence::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Frequence
 

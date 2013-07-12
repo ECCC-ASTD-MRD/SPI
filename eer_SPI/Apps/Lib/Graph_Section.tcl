@@ -722,7 +722,7 @@ proc Graph::Section::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Section::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Section::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Section
          Graph::Section::FieldShow $gr

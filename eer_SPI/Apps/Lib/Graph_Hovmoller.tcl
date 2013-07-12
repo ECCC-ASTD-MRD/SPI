@@ -730,7 +730,7 @@ proc Graph::Hovmoller::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Hovmoller::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Hovmoller::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Hovmoller
 

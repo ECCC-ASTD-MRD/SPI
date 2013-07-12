@@ -760,7 +760,7 @@ proc Graph::Time::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Time::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Time::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Time
 

@@ -727,7 +727,7 @@ proc Graph::Scatter::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Scatter::ItemDefine $gr $pos $data(Pos$pos)
+            Graph::Scatter::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::PosSet $gr Scatter
 
