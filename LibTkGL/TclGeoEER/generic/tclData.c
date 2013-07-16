@@ -938,8 +938,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                } else {
                   Field[f]->Ref->Value(Field[f]->Ref,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
                   Def_Set(cut->Def,0,idx,vi);
-                  if (cut->Def->Data[1])
+                  if (cut->Def->Data[1]) {
                      Def_Set(cut->Def,1,idx,vj);
+                  }
                }
             }
             i0=i;
@@ -2942,6 +2943,7 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
  *  <Field>    : Pointeur sur le champs
+ *  <Component>: Composante
  *  <Flip>     : Flip x/y axis
  *
  * Retour:
@@ -2950,7 +2952,7 @@ void Data_FromString(char *String,TDataDef *Def,int Comp,int Idx) {
  *
  *----------------------------------------------------------------------------
 */
-void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
+void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
 
    int      i,j;
    double   val=0.0;
@@ -2961,7 +2963,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
       for(i=0;i<Field->Def->NI;i++){
          obji=Tcl_NewListObj(0,NULL);
          for(j=0;j<Field->Def->NJ;j++){
-            Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
+            Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
             Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
          }
          Tcl_ListObjAppendElement(Interp,objj,obji);
@@ -2970,7 +2972,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
       for(j=0;j<Field->Def->NJ;j++){
          obji=Tcl_NewListObj(0,NULL);
          for(i=0;i<Field->Def->NI;i++){
-            Def_Get(Field->Def,0,j*Field->Def->NI+i,val);
+            Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
             Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
          }
          Tcl_ListObjAppendElement(Interp,objj,obji);
@@ -2989,6 +2991,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
  * Parametres :
  *  <Interp>  : Interpreteur TCL
  *  <Data>    : Pointeur sur les donnees du champs
+ *  <Component>: Composante
  *  <List>    : Matrice de valeurs
  *
  * Retour:
@@ -3000,13 +3003,18 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Flip){
  *
  *----------------------------------------------------------------------------
 */
-int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
+int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *List){
 
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
    double   value;
 //   unsigned char *data;
 
+   if (Component>=Field->Def->NC) {
+      Tcl_AppendResult(Interp,"Data_ValPutMatrix: Invalid component index",(char*)NULL);
+      return(TCL_ERROR);
+   }      
+      
    /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
    Tcl_ListObjLength(Interp,List,&nobjj);
 
@@ -3022,7 +3030,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,Tcl_Obj *List){
             Tcl_ListObjIndex(Interp,objj,i,&obji);
             Tcl_GetDoubleFromObj(Interp,obji,&value);
             value=SPEC2VAL(Field->Spec,value);
-            Def_Set(Field->Def,0,j*nobji+i,value);
+            Def_Set(Field->Def,Component,j*nobji+i,value);
          }
       }
    } else {

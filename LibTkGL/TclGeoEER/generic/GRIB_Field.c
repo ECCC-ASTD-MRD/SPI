@@ -356,10 +356,16 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
 
          case DATA:
-            if (Objc==1) {
-               Data_ValGetMatrix(Interp,Field,0);
+            nidx=0;
+            
+            if (Objc>1) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
+            }
+            
+            if (Objc>2) {
+               return Data_ValPutMatrix(Interp,Field,nidx,Objv[++i]);
             } else {
-               return Data_ValPutMatrix(Interp,Field,Objv[++i]);
+               Data_ValGetMatrix(Interp,Field,nidx,0);
             }
             break;
        }
