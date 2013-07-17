@@ -414,7 +414,7 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    OGRSpatialReferenceH llref=NULL;
    char                *string=NULL;
 
-   if (String) {
+   if (String && String[0]!='\0') {
       string=strdup(String);
       strtrim(string,' ');
    }

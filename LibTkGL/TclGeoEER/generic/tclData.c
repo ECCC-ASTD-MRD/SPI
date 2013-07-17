@@ -2959,26 +2959,28 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
    Tcl_Obj *objj,*obji;
 
    objj=Tcl_NewListObj(0,NULL);
-   if (Flip) {
-      for(i=0;i<Field->Def->NI;i++){
-         obji=Tcl_NewListObj(0,NULL);
-         for(j=0;j<Field->Def->NJ;j++){
-            Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
-         }
-         Tcl_ListObjAppendElement(Interp,objj,obji);
-      }
-   } else {
-      for(j=0;j<Field->Def->NJ;j++){
-         obji=Tcl_NewListObj(0,NULL);
+   
+   if (Component<Field->Def->NC) {
+      if (Flip) {
          for(i=0;i<Field->Def->NI;i++){
-            Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-            Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+            obji=Tcl_NewListObj(0,NULL);
+            for(j=0;j<Field->Def->NJ;j++){
+               Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
+               Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+            }
+            Tcl_ListObjAppendElement(Interp,objj,obji);
          }
-         Tcl_ListObjAppendElement(Interp,objj,obji);
+      } else {
+         for(j=0;j<Field->Def->NJ;j++){
+            obji=Tcl_NewListObj(0,NULL);
+            for(i=0;i<Field->Def->NI;i++){
+               Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
+               Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+            }
+            Tcl_ListObjAppendElement(Interp,objj,obji);
+         }
       }
    }
-
    Tcl_SetObjResult(Interp,objj);
 }
 
