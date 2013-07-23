@@ -1464,6 +1464,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             if (Objc==1) {
                if (Field->Ref) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Name,-1));
+                  GeoRef_Incr(Field->Ref);
                }
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
@@ -2447,7 +2448,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          Tcl_ListObjIndex(Interp,List,k,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&level);
          ip1=ZRef_Level2IP(level,Field->Ref->ZRef.Type);
-         c_fstinl(head->FID->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
+         c_fstinl(head->FID->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,-1,head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
 
          if (k2==0) {
             Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find specific level ",Tcl_GetString(obj),(char*)NULL);
@@ -2460,7 +2461,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    } else {
 
       /*Recuperer les indexes de tout les niveaux*/
-      c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,idxs,&nk,FSTD_NKMAX);
+      c_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,-1,head->TYPVAR,head->NOMVAR,idxs,&nk,FSTD_NKMAX);
 
       if (nk<=1) {
          EZUnLock_RPNField();

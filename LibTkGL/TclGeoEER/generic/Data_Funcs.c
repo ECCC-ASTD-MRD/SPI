@@ -75,6 +75,7 @@ TFuncDef FuncD[] = {
   { "dtangcurve", dtangcurve, 1 , TD_Float32 },
 
   { "tcount"    , tcount    , 2 , TD_Int32 },
+  { "flipy"     , flipy     , 1 , TD_Unknown },
   { NULL        , NULL      , 0 , TD_Unknown }
 };
 
@@ -179,6 +180,30 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   }
 
   return(NULL);
+}
+
+double flipy(TDataDef *Res,TDataDef *MA) {
+
+   double        v;
+   unsigned long i,j0,j1,idx0,idx1;
+
+   v=0.0;
+
+   /*Parse matrix*/
+   for(j0=0,j1=MA->NJ-1;j0<MA->NJ>>1;j0++,j1--) {
+      idx0=j0*MA->NI;
+      idx1=j1*MA->NI;
+      
+      for(i=0;i<MA->NI;i++) {
+
+         /*Increment result table at matrix value's index*/
+         Def_Get(MA ,0,idx0+i,v);
+         Def_Set(Res,0,idx1+i,v);
+         Def_Get(MA ,0,idx1+i,v);
+         Def_Set(Res,0,idx0+i,v);
+      }
+   }
+   return(0.0);
 }
 
 double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {

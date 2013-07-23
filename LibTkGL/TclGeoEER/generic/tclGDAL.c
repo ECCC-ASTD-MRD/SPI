@@ -396,7 +396,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_GetDoubleFromObj(Interp,Objv[5],&c1);
             Tcl_GetDoubleFromObj(Interp,Objv[6],&a);
 
-            n=1;
+            n=1;id=1;
             if(Objc==9) {
                Tcl_GetBooleanFromObj(Interp,Objv[6],&n);
             }
@@ -406,7 +406,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                case 'E':id=2;break;
                case 'G':id=3;break;
                case 'L':id=4;break;
-               defaut:  id=1;
+               default:  id=1;
             }
 
             if (FFKrigging(band->Ref,band->Def,obs,c0,c1,a,id,n)) {
@@ -1063,7 +1063,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
              
          if (strstr(Tcl_GetString(Objv[2]),"/vsimem/")) {
             vsi_l_offset length;
-            char *bytes;
+            unsigned char *bytes;
             
             if (!(bytes=VSIGetMemFileBuffer(Tcl_GetString(Objv[2]),&length,TRUE))) {
                Tcl_AppendResult(Interp,"invalid memory buffer",(char*)NULL);
@@ -1106,7 +1106,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_Free((char*)file->Meta);
 
             file->Meta=NULL;
-            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[3]),&n,&file->Meta)==TCL_ERROR) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[3]),&n,(const char***)&file->Meta)==TCL_ERROR) {
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Invalid list of metadata",(char*)NULL);
                return(TCL_ERROR);
             }

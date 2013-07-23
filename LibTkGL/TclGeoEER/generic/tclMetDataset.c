@@ -863,7 +863,7 @@ Tcl_Obj* MetDataset_Put(Tcl_Interp *Interp,char *Name,BUFR_Dataset *Set) {
 Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
 
    Tcl_Obj *obj=NULL;
-   char    *str;
+   const char *str;
    float    fval;
    double   dval;
    int      ival;
@@ -973,6 +973,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
    Tcl_Obj *obj;
    int      n;
+   long int bits;
    double   dval;
 
    Tcl_ListObjLength(Interp,Obj,&n);
@@ -1030,7 +1031,8 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
       /*AF bits*/
       if (n>2 && BCV->value->af) {
          Tcl_ListObjIndex(Interp,Obj,2,&obj);
-         Tcl_GetLongFromObj(Interp,obj,&BCV->value->af->bits);
+         Tcl_GetLongFromObj(Interp,obj,&bits);
+         BCV->value->af->bits=bits;
          fprintf(stdout,"---- %li\n",BCV->value->af->bits);
      }
 
@@ -1062,9 +1064,9 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 */
 BUFR_Template* MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edition) {
 
-   BUFR_Template *tmp;
-   BufrDescValue *code;
-   EntryTableB   *e;
+   BUFR_Template *tmp=NULL;
+   BufrDescValue *code=NULL;
+   EntryTableB   *e=NULL;
    ValueType     vtype;
    int           vlen,nc,c,v;
    Tcl_Obj      *obj,*lst,*val;

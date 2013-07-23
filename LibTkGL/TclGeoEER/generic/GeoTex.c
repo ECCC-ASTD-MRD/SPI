@@ -387,7 +387,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    double        nlx,nly,dx,dy,x0,y0,x,y;
    int           j=0,tlx,tly,t=2,ix,iy,xy;
-   unsigned long handle=0;
    short         z;
    GDAL_Band    *tband=NULL;
    TGeoTexTile  *ttile=NULL;
@@ -523,11 +522,6 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
 
    Tile->Tl=tl;
    Tile->Flag|=GEOTEX_COOR;
-
-#ifdef HAVE_GDB
-//   if (handle)
-//      gdb_mapclose(handle);
-#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------

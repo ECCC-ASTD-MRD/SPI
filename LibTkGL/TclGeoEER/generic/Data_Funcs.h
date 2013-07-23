@@ -93,6 +93,7 @@ double fpeel(TDataDef *Res,TDataDef *MA);
 
 /*Table operators*/
 double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB);
+double flipy(TDataDef *Res,TDataDef *MA);
 
 /*Matrix reduction operations*/
 double stat_all(TDataDef *MA,TDataDef *MB);   /* All stats */
