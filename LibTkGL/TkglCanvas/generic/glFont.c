@@ -266,7 +266,7 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
    max_bm_width  = glTextureFit(fs->max_bounds.rbearing-fs->min_bounds.lbearing,0.0);
    max_bm_height = glTextureFit(fs->max_bounds.ascent+fs->max_bounds.descent,0.0);
 
-   bm = (GLubyte*)malloc(max_bm_width*max_bm_height*sizeof(GLubyte));
+   bm = (GLubyte*)alloca(max_bm_width*max_bm_height*sizeof(GLubyte));
    if (!bm) {
       XFreeFontInfo(NULL,fs,1);
       fprintf(stderr,"(ERROR) glXFontTexture: Couldn't allocate bitmap in glXUseXFont()");
@@ -344,7 +344,6 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
       glEndList();
    }
 
-   free(bm);
    XFreePixmap(dpy,pixmap);
    XFreeFontInfo(NULL,fs,1);
 

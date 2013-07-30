@@ -600,7 +600,7 @@ void Data_GetStat(TData *Field){
       if (Field->Ref->Hgt) {
          Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imin,jmin)];
          Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imax,jmax)];
-      }  else {
+      }  else if (Field->Ref->ZRef.Levels) {
          Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
          Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
       }

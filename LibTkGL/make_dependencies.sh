@@ -1,6 +1,6 @@
 #!/bin/sh
 ARCH=`uname -s`
-PROC=`uname -m`
+PROC=`uname -m | tr _ -`
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -67,7 +67,7 @@ fi
 
 #----- Tk
 #----- Remove visibility-hidden flag from makefile for glCanvas to work
-#----- TkPNG patch dans Encode - blockPtr->offset[3]=0;
+#----- TkImgPhoto.c patch dans ImgGetPhoto - alphaOffset=blockPtr->offset[3];
 
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean

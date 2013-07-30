@@ -482,25 +482,21 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
          data.offset[0]=0;
          data.offset[1]=1;
          data.offset[2]=2;
-         data.offset[3]=-1;
+         data.offset[3]=0;
          if (!(data.pixelPtr=(unsigned char*)malloc(data.width*data.height*data.pixelSize*sizeof(unsigned char)))) {
            Tcl_AppendResult(Interp,"trBuffer: Unable to allocate image",(char*)NULL);
            result=TCL_ERROR;
          } else {
 
             /* Recuperer le buffer OpenGL en inversant en Y*/
-            if (data.pixelPtr) {
-               glReadBuffer(Buffer);
-               for(i=0;i<data.height;i++) {
-                  glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
-               }
-
-               /* Envoyer le data dans l'image Tk */
-               result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-               free(data.pixelPtr);
-            } else {
-               result=TCL_ERROR;
+            glReadBuffer(Buffer);
+            for(i=0;i<data.height;i++) {
+               glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
             }
+
+            /* Envoyer le data dans l'image Tk */
+            result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+            free(data.pixelPtr);
          }
       }
    }
@@ -559,17 +555,13 @@ int glBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X0,int Y0,int W,int H,i
       } else {
 
          /*Recuperer le buffer OpenGL*/
-         if (data.pixelPtr) {
-            glReadBuffer(Buffer);
-            for(i=0;i<data.height;i++) {
-               glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
-            }
-            /*Envoyer le data dans l'image Tk*/
-            result=Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
-            free(data.pixelPtr);
-         } else {
-            result=TCL_ERROR;
+         glReadBuffer(Buffer);
+         for(i=0;i<data.height;i++) {
+            glReadPixels(X0,Height-(Y0+i)-1,data.width,1,GL_RGBA,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
          }
+         /*Envoyer le data dans l'image Tk*/
+         result=Tk_PhotoPutBlock(Interp,handle,&data,0,0,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+         free(data.pixelPtr);
       }
    }
 
@@ -804,14 +796,13 @@ void DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,
          memcpy(DataOut+(h0*sz),DataIn+(h1*sz),sz);
       }
    } else {
-      tmp=(unsigned char*)malloc(sz);
-
-      for (h0=0,h1=Height-1;h0<(Height>>1);h0++,h1--) {
-         memcpy(tmp,DataIn+(h0*sz),sz);
-         memcpy(DataIn+(h0*sz),DataIn+(h1*sz),sz);
-         memcpy(DataIn+(h1*sz),tmp,sz);
+      if ((tmp=(unsigned char*)alloca(sz))) {
+         for (h0=0,h1=Height-1;h0<(Height>>1);h0++,h1--) {
+            memcpy(tmp,DataIn+(h0*sz),sz);
+            memcpy(DataIn+(h0*sz),DataIn+(h1*sz),sz);
+            memcpy(DataIn+(h1*sz),tmp,sz);
+         }
       }
-      free(tmp);
    }
 }
 
@@ -1136,7 +1127,7 @@ GLushort glDash(Tk_Dash *Dash) {
    if (Dash->number<-1 || (Dash->number==-1 && Dash->pattern.array[1]!=',')) {
       nb = -Dash->number;
       p = (nb>sizeof(char *))?Dash->pattern.pt:Dash->pattern.array;
-      q = (char*)ckalloc(2*(unsigned int)nb);
+      q = (char*)alloca(2*(unsigned int)nb);
       nb = DashConvert(q,p,nb,1.0);
       array=q;
    } else if (Dash->number>=2) {
@@ -1172,9 +1163,6 @@ GLushort glDash(Tk_Dash *Dash) {
       if(++i==nb)
          i=0;
    }
-
-   if (q)
-      ckfree(q);
 
    glEnable(GL_LINE_STIPPLE);
    glLineStipple(4,pattern);
@@ -1219,10 +1207,10 @@ void glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width) {
    }
 
    if (Dash->number>10) {
-      str=(char*)malloc((unsigned int)(1+4*Dash->number));
+      str=(char*)alloca((unsigned int)(1+4*Dash->number));
    } else if (Dash->number<-5) {
-      str=(char*)malloc((unsigned int)(1-8*Dash->number));
-      lptr=(char*)malloc((unsigned int)(1-2*Dash->number));
+      str=(char*)alloca((unsigned int)(1-8*Dash->number));
+      lptr=(char*)alloca((unsigned int)(1-2*Dash->number));
    }
    ptr=(char*)((fabs(Dash->number)>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array);
    if (Dash->number>0) {
@@ -1257,12 +1245,6 @@ void glPostscriptDash(Tcl_Interp *Interp,Tk_Dash *Dash,int Width) {
    } else {
       Tcl_AppendResult(Interp,"[] 0 setdash\n",(char*)NULL);
    }
-
-   if (str!=string)
-      free(str);
-
-   if (lptr!=pattern)
-      free(lptr);
 }
 
 /*----------------------------------------------------------------------------

@@ -1094,10 +1094,9 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
          exp=(regex_t*)malloc(sizeof(regex_t));
          if ((err=regcomp(exp,Tcl_GetString(val),REG_ICASE|REG_NOSUB))!=0) {
             len=regerror(err,exp,NULL,0);
-            msg=(char*)malloc(len);
+            msg=(char*)alloca(len);
             regerror(err,exp,msg,len);
             Tcl_AppendResult(Interp,"\n   OGR_LayerSelect: Invalid regular expression ( ",msg," )",(char*)NULL);
-            free(msg);
             regfree(exp);
             return(TCL_ERROR);
          }

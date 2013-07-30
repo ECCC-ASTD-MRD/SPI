@@ -2248,7 +2248,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          for(i=0;i<FSIZE2D(field->Def);i++) {
              Def_Get(field->Def,2,i,val);
              val*=uvw->WWFactor;
-             Def_Set(field->Def,2,i,val);
+             Def_Set(field->Def,2,i,val); 
           }
       }
    } else {
@@ -2599,7 +2599,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
        Field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,levels,ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,head->FID->Id);
    }
    Field->Ref->Grid[1]=ref->Grid[1];
-   GeoRef_Destroy(Interp,ref->Name);
+   if (ref!=Field->Ref) GeoRef_Destroy(Interp,ref->Name);
    GeoRef_Qualify(Field->Ref);
 
    if (Field->Ref->NRef>1) {

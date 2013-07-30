@@ -2282,7 +2282,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      for(c=0;c<h;c++) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(histo[c]));
                      }
-                  free(histo);
+                     free(histo);
                      Tcl_SetObjResult(Interp,obj);
                   }
                }
