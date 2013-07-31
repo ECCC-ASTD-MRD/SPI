@@ -43,16 +43,18 @@ void GRIB_FieldSet(TData *Data){
 
    head=(GRIB_Head*)malloc(sizeof(GRIB_Head));
 
-   head->FID=NULL;
-   head->Handle=NULL;
-   head->Version=0;
-   head->NOMVAR[0]='\0';
-   head->CENTER[0]='\0';
-   head->KEY=0;
-   head->IP1=0;
-   head->DATEV=0;
-   head->DATEO=0;
-
+   if (head) {
+      head->FID=NULL;
+      head->Handle=NULL;
+      head->Version=0;
+      head->NOMVAR[0]='\0';
+      head->CENTER[0]='\0';
+      head->KEY=0;
+      head->IP1=0;
+      head->DATEV=0;
+      head->DATEO=0;
+   }
+   
    /*Initialiser les parametres de definition du champs*/
    Data->Type=TD_GRIB;
    Data->Head=head;
@@ -514,7 +516,9 @@ int GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor){
    double *data;
 
    len=FSIZE3D(Def);
-   data=malloc(len*sizeof(double));
+   if (!(data=(double*)malloc(len*sizeof(double))))
+      return(0);
+   
    if ((grib_get_double_array(Head->Handle,"values",data,&len))!=GRIB_SUCCESS) {
       return(0);
    }

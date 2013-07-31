@@ -539,70 +539,72 @@ void Data_GetStat(TData *Field){
    if (!Field->Stat)
       Field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
 
-   Field->Stat->Min=1e200;
-   Field->Stat->Max=-1e200;
-   Field->Stat->Avg=0.0;
+   if (Field->Stat) {
+      Field->Stat->Min=1e200;
+      Field->Stat->Max=-1e200;
+      Field->Stat->Avg=0.0;
 
-   for (k=0;k<def->NK;k++) {
-      idxk=FSIZE2D(def)*k;
+      for (k=0;k<def->NK;k++) {
+         idxk=FSIZE2D(def)*k;
 
-      /*Calculer les statistiques*/
-      for (j=0;j<def->NJ;j++) {
-         idx=idxk+j*def->NI;
-         for (i=0;i<def->NI;i++,idx++) {
+         /*Calculer les statistiques*/
+         for (j=0;j<def->NJ;j++) {
+            idx=idxk+j*def->NI;
+            for (i=0;i<def->NI;i++,idx++) {
 
-            Def_GetMod(def,idx,val);
+               Def_GetMod(def,idx,val);
 
-            if (val!=def->NoData) {
-               n++;
-               Field->Stat->Avg+=val;
+               if (val!=def->NoData) {
+                  n++;
+                  Field->Stat->Avg+=val;
 
-               if (val<Field->Stat->Min && val!=0.0) {
-                  Field->Stat->Min=val;
-                  imin=i;
-                  jmin=j;
-                  kmin=k;
-               }
-               if (val>Field->Stat->Max) {
-                  Field->Stat->Max=val;
-                  imax=i;
-                  jmax=j;
-                  kmax=k;
+                  if (val<Field->Stat->Min && val!=0.0) {
+                     Field->Stat->Min=val;
+                     imin=i;
+                     jmin=j;
+                     kmin=k;
+                  }
+                  if (val>Field->Stat->Max) {
+                     Field->Stat->Max=val;
+                     imax=i;
+                     jmax=j;
+                     kmax=k;
+                  }
                }
             }
          }
       }
-   }
 
-   if (n)
-      Field->Stat->Avg/=n;
+      if (n)
+         Field->Stat->Avg/=n;
 
-   if (Field->Stat->Min==1e200 || Field->Stat->Min==Field->Stat->Max) Field->Stat->Min=0.0;
+      if (Field->Stat->Min==1e200 || Field->Stat->Min==Field->Stat->Max) Field->Stat->Min=0.0;
 
-   /*Recuperer les coordonnees latlon des min max*/
-   Field->Stat->MinLoc.Lat=0;
-   Field->Stat->MinLoc.Lon=0;
-   Field->Stat->MinLoc.Elev=0;
-   Field->Stat->MaxLoc.Lat=0;
-   Field->Stat->MaxLoc.Lon=0;
-   Field->Stat->MaxLoc.Elev=0;
+      /*Recuperer les coordonnees latlon des min max*/
+      Field->Stat->MinLoc.Lat=0;
+      Field->Stat->MinLoc.Lon=0;
+      Field->Stat->MinLoc.Elev=0;
+      Field->Stat->MaxLoc.Lat=0;
+      Field->Stat->MaxLoc.Lon=0;
+      Field->Stat->MaxLoc.Elev=0;
 
-   if (Field->Ref && Field->Ref->Grid[0]!='V') {
-      if (Field->Ref->Lat && Field->Ref->Lon) {
-         Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(def,imin,jmin)];
-         Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(def,imin,jmin)];
-         Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(def,imax,jmax)];
-         Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(def,imax,jmax)];
-      } else if (Field->Ref->Project) {
-         Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
-         Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
-      }
-      if (Field->Ref->Hgt) {
-         Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imin,jmin)];
-         Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imax,jmax)];
-      }  else if (Field->Ref->ZRef.Levels) {
-         Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
-         Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
+      if (Field->Ref && Field->Ref->Grid[0]!='V') {
+         if (Field->Ref->Lat && Field->Ref->Lon) {
+            Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(def,imin,jmin)];
+            Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(def,imin,jmin)];
+            Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(def,imax,jmax)];
+            Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(def,imax,jmax)];
+         } else if (Field->Ref->Project) {
+            Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
+            Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
+         }
+         if (Field->Ref->Hgt) {
+            Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imin,jmin)];
+            Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imax,jmax)];
+         }  else if (Field->Ref->ZRef.Levels) {
+            Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
+            Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
+         }
       }
    }
 }
@@ -792,7 +794,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    cut->Ref->ZRef.RCoef[0]=Field[0]->Ref->ZRef.RCoef[0];
    cut->Ref->ZRef.RCoef[1]=Field[0]->Ref->ZRef.RCoef[1];
 
-   cut->Ref->ZRef.Levels=(float*)malloc(Field[0]->Ref->ZRef.LevelNb*sizeof(float));
+   if (!(cut->Ref->ZRef.Levels=(float*)malloc(Field[0]->Ref->ZRef.LevelNb*sizeof(float)))) {
+      Tcl_AppendResult(Interp,"Data_Cut:  Unable to allocate memory for levels",(char*)NULL);
+      return(TCL_ERROR);
+   }    
    memcpy(cut->Ref->ZRef.Levels,Field[0]->Ref->ZRef.Levels,Field[0]->Ref->ZRef.LevelNb*sizeof(float));
 
    if (Field[0]->Spec) {
@@ -888,13 +893,14 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
                if (g && cut->Ref->Hgt) {
                   if (!Field[f]->Def->Height) {
-                     Field[f]->Def->Height=(float*)malloc(FSIZE3D(Field[f]->Def)*sizeof(float));
-                     for(idxp=0;idxp<Field[f]->Def->NK;idxp++) {
-                         Field[f]->Def->Height[FSIZE2D(Field[f]->Def)*idxp]=-999;
+                     if ((Field[f]->Def->Height=(float*)malloc(FSIZE3D(Field[f]->Def)*sizeof(float)))) {
+                        for(idxp=0;idxp<Field[f]->Def->NK;idxp++) {
+                           Field[f]->Def->Height[FSIZE2D(Field[f]->Def)*idxp]=-999;
+                        }
                      }
                   }
                   idxp=FSIZE2D(Field[f]->Def)*k;
-                  if (Field[f]->Def->Height[idxp]==-999) {
+                  if (Field[f]->Def->Height && Field[f]->Def->Height[idxp]==-999) {
                      if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
                         ip1=((FSTD_Head*)Field[f]->Head)->IP1;
                         fp=&Field[f]->Def->Height[idxp];
@@ -1358,12 +1364,12 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 int Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
 
    Tcl_Obj      *obj;
-   TDataDef    **def;
+   TDataDef    **def=NULL;
    TData        *fld;
    TObs         *obs;
    int           n,nobj;
    unsigned long i=0;
-   double       *v;
+   double       *v=NULL;
 
    if (!List) {
       Tcl_AppendResult(Interp,"\n   Data_Sort: Empty list",(char*)NULL);
@@ -1371,38 +1377,41 @@ int Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
    }
    Tcl_ListObjLength(Interp,List,&nobj);
 
-   v=(double*)malloc(nobj*sizeof(double));
-   def=(TDataDef**)malloc(nobj*sizeof(TDataDef*));
+   v=(double*)alloca(nobj*sizeof(double));
+   def=(TDataDef**)alloca(nobj*sizeof(TDataDef*));
 
-   for(n=0;n<nobj;n++) {
-      Tcl_ListObjIndex(Interp,List,n,&obj);
-      if ((fld=Data_Get(Tcl_GetString(obj)))) {
-         def[n]=fld->Def;
-      } else if ((obs=Obs_Get(Tcl_GetString(obj)))) {
-         def[n]=obs->Def;
-      } else {
-         Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid field of observation",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if (i!=0 && i!=FSIZE2D(def[n])) {
-         Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid dimensions",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      i=FSIZE2D(def[n]);
-   }
-
-   for(i=0;i<FSIZE2D(def[0]);i++) {
+   if (v && def) {
       for(n=0;n<nobj;n++) {
-         Def_Get(def[n],0,i,v[n]);
+         Tcl_ListObjIndex(Interp,List,n,&obj);
+         if ((fld=Data_Get(Tcl_GetString(obj)))) {
+            def[n]=fld->Def;
+         } else if ((obs=Obs_Get(Tcl_GetString(obj)))) {
+            def[n]=obs->Def;
+         } else {
+            Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid field of observation",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (i!=0 && i!=FSIZE2D(def[n])) {
+            Tcl_AppendResult(Interp,"\n   Data_Sort: Invalid dimensions",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         i=FSIZE2D(def[n]);
       }
-      qsort(v,nobj,sizeof(double),QSort_Double);
-      for(n=0;n<nobj;n++) {
-         Def_Set(def[n],0,i,v[n]);
-      }
-   }
 
-   free(v);
-   free(def);
+      for(i=0;i<FSIZE2D(def[0]);i++) {
+         for(n=0;n<nobj;n++) {
+            Def_Get(def[n],0,i,v[n]);
+         }
+         qsort(v,nobj,sizeof(double),QSort_Double);
+         for(n=0;n<nobj;n++) {
+            Def_Set(def[n],0,i,v[n]);
+         }
+      }
+   } else {
+      Tcl_AppendResult(Interp,"\n   Data_Sort: Unable to allocate temporary buffer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   
    return(TCL_OK);
 }
 
@@ -1791,14 +1800,20 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Field->Ref->Lat=(float*)malloc(Field->Def->NI*sizeof(float));
                      Field->Ref->Lon=(float*)malloc(Field->Def->NI*sizeof(float));
                   }
-                  for (index=0,n=0;index<nobj;index+=2,n++) {
-                     Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
-                     Tcl_GetDoubleFromObj(Interp,obj,&dlat);
-                     Tcl_ListObjIndex(Interp,Objv[i],index+1,&obj);
-                     Tcl_GetDoubleFromObj(Interp,obj,&dlon);
-                     Field->Ref->Lat[n]=dlat;
-                     Field->Ref->Lon[n]=dlon;
-                  }
+                  
+                  if (Field->Ref->Lat && Field->Ref->Lon) {
+                     for (index=0,n=0;index<nobj;index+=2,n++) {
+                        Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
+                        Tcl_GetDoubleFromObj(Interp,obj,&dlat);
+                        Tcl_ListObjIndex(Interp,Objv[i],index+1,&obj);
+                        Tcl_GetDoubleFromObj(Interp,obj,&dlon);
+                        Field->Ref->Lat[n]=dlat;
+                        Field->Ref->Lon[n]=dlon;
+                     }
+                  } else {
+                     Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate memory for coordinate buffer",(char*)NULL);
+                     return(TCL_ERROR);
+                  }   
                }
             }
             break;
@@ -2774,7 +2789,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       i0=j0=1000000;
       i1=j1=-1000000;
 
-      vn=(Vect3d*)malloc(vnb*sizeof(Vect3d));
+      if (!(vn=(Vect3d*)malloc(vnb*sizeof(Vect3d)))) {
+         Tcl_AppendResult(Interp,"Data_GetAreaValue: Unable to allocate memory for temporary buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+         
       for(n=0,ni=0;n<vnb;n++) {
          Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&dlat);

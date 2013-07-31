@@ -267,7 +267,10 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
                }
                Tcl_ListObjLength(Interp,Objv[++i],&j);
                if (j) {
-                  mdl->Items=(TMetModelItem*)malloc(j*sizeof(TMetModelItem));
+                  if (!(mdl->Items=(TMetModelItem*)malloc(j*sizeof(TMetModelItem)))) {
+                     Tcl_AppendResult(Interp,"\n   MetModel_Define: Unable to allocate memory for model items",(char*)NULL);
+                     return(TCL_ERROR);                   
+                  }
                   mdl->NItem=0;
 
                   for(k=0;k<j;k++) {

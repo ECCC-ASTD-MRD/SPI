@@ -424,7 +424,8 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    if (Transform) {
       if (!Ref->Transform)
          Ref->Transform=(double*)calloc(6,sizeof(double));
-      memcpy(Ref->Transform,Transform,6*sizeof(double));
+      if (Ref->Transform)
+         memcpy(Ref->Transform,Transform,6*sizeof(double));
    } else {
       if (Ref->Transform) {
          free(Ref->Transform);
@@ -435,7 +436,8 @@ int GeoRef_WKTSet(TGeoRef *Ref,char *String,double *Transform,double *InvTransfo
    if (InvTransform) {
       if (!Ref->InvTransform)
          Ref->InvTransform=(double*)calloc(6,sizeof(double));
-      memcpy(Ref->InvTransform,InvTransform,6*sizeof(double));
+      if (Ref->InvTransform)
+         memcpy(Ref->InvTransform,InvTransform,6*sizeof(double));
    } else {
      if (Ref->InvTransform) {
          free(Ref->InvTransform);
@@ -505,7 +507,7 @@ TGeoRef *GeoRef_WKTSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref->ZRef.Type=Type;
    ref->ZRef.LevelNb=NK;
    ref->ZRef.Levels=(float*)calloc(ref->ZRef.LevelNb+1,sizeof(float));
-   if (Levels)
+   if (Levels && ref->ZRef.Levels)
       memcpy(ref->ZRef.Levels,Levels,ref->ZRef.LevelNb*sizeof(float));
 
    return(GeoRef_Find(ref));

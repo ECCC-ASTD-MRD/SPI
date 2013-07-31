@@ -355,7 +355,10 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                      if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
                         Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        table=(double*)malloc((nk+1)*sizeof(double));
+                        if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
+                           Tcl_AppendResult(Interp,"GDAL_BandCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                           return(TCL_ERROR);                          
+                        }
                         for(k=0;k<nk;k++) {
                            Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
                            Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
@@ -1444,8 +1447,8 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       sub=GDALGetMetadata(set,"SUBDATASETS");
 
       if (CSLCount(sub)>0) {
-         subid=(char*)malloc(strlen(Id)+8);
-        /* Loop over bands */
+         subid=(char*)alloca(strlen(Id)+8);
+         /* Loop over bands */
          for (si=0;sub[si]!=NULL;si++) {
             snprintf(subid,(strlen(Id)+8),"%s%04i",Id,si>>1);
 
@@ -1466,7 +1469,6 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
                }
             }
          }
-         free(subid);
       }
 
       for (i=0;i<GDALGetRasterCount(set);i++) {
@@ -1487,7 +1489,10 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
       }
    }
 
-   file=(GDAL_File*)malloc(sizeof(GDAL_File));
+   if (!(file=(GDAL_File*)malloc(sizeof(GDAL_File)))) {
+      Tcl_AppendResult(Interp,"GDAL_FileOpen: Unable to allocate memory for file structure",Id,(char*)NULL);
+      return(TCL_ERROR);      
+   }
    file->ColorInterp=ci;
    file->Driver=driver;
    file->Mode=Mode;
@@ -1548,7 +1553,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) GDAL_GeoRef: Found IOAPI reference\n");
 #endif
-      projdef=(char*)malloc(1024*sizeof(char));
+      projdef=(char*)alloca(1024*sizeof(char));
 
       /*Extract needed info from metadata*/
       gdname=(char*)CSLFetchNameValue(meta,"NC_GLOBAL#GDNAM");
@@ -1589,7 +1594,6 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       tran[3]=yorig;tran[4]=0.0;tran[5]=ycell;
       GDALInvGeoTransform(tran,inv);
       ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
-      free(projdef);
    } else {
       projdef=GDALGetProjectionRef(Set);
       

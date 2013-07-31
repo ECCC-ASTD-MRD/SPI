@@ -58,9 +58,11 @@ void GeoRef_Expand(TGeoRef *Ref) {
    if (Ref->Ids && !Ref->AX && Ref->Grid[0]=='Z') {
       Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
       Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
-      EZLock_RPNInt();
-      c_gdgaxes(Ref->Ids[Ref->NId],Ref->AX,Ref->AY);
-      EZUnLock_RPNInt();
+      if (Ref->AX && Ref->AY) {
+         EZLock_RPNInt();
+         c_gdgaxes(Ref->Ids[Ref->NId],Ref->AX,Ref->AY);
+         EZUnLock_RPNInt();
+      }
    }
 }
 
@@ -445,10 +447,11 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
       // Check for sub-grids (U grids can have sub grids)
       ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
 //      ref->NbId=1;
-      ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int));
-      ref->Ids[0]=id;
-      if (ref->NbId>1) {
-         c_ezget_subgridids(id,&ref->Ids[1]);
+      if ((ref->Ids=(int*)malloc((ref->NbId>1?ref->NbId+1:1)*sizeof(int)))) {
+         ref->Ids[0]=id;
+         if (ref->NbId>1) {
+            c_ezget_subgridids(id,&ref->Ids[1]);
+         }
       }
    }
    ref->IG1=IG1;
@@ -458,7 +461,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
    ref->ZRef.Type=Type;
    ref->ZRef.LevelNb=NK;
    ref->ZRef.Levels=(float*)calloc(ref->ZRef.LevelNb+1,sizeof(float));
-   if (Levels)
+   if (Levels && ref->ZRef.Levels)
       memcpy(ref->ZRef.Levels,Levels,ref->ZRef.LevelNb*sizeof(float));
 
    ref->Grid[0]=GRTYP[0];

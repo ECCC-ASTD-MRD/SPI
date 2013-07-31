@@ -124,22 +124,29 @@ int DataDef_Compat(TDataDef *DefTo,TDataDef *DefFrom) {
       }
       if (DefTo->Data[0]) {
          free(DefTo->Data[0]);
+         DefTo->Data[0]=NULL;
       }
       DefTo->NK=DefFrom->NK;
-      DefTo->Data[0]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+      if (!(DefTo->Data[0]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]))) {
+         return(0);
+      }
       ch=0;
    }
 
    /*Verifier la 2ieme composantes*/
    if (DefFrom->Data[1]) {
       if (!DefTo->Data[1]) {
-         DefTo->Data[1]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+         if (!(DefTo->Data[1]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]))) {
+            return(0);
+         }
       }
 
       /*Verifier la 3ieme composantes*/
       if (DefFrom->Data[2]) {
          if (!DefTo->Data[2]) {
-            DefTo->Data[2]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]);
+            if (!(DefTo->Data[2]=(char*)calloc(FSIZE3D(DefTo),TData_Size[DefTo->Type]))) {
+               return(0);
+            }
          }
          DefTo->NC=3;
       } else {
@@ -341,8 +348,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    int       i;
    TDataDef *def;
 
-   def=(TDataDef*)malloc(sizeof(TDataDef));
-   if (!def)
+   if (!(def=(TDataDef*)malloc(sizeof(TDataDef))))
      return(NULL);
 
    def->NI=NI;

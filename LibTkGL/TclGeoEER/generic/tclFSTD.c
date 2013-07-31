@@ -619,7 +619,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          } else {
             Tcl_Obj *obj;
             TData  **fields=NULL;
-            double  *lat,*lon;
+            double  *lat=NULL,*lon=NULL;
             int      nbc,nbf,nc,ncc;
 
             Tcl_ListObjLength(Interp,Objv[4],&nbc);
@@ -630,30 +630,35 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
             lat=(double*)malloc(nbc/2*sizeof(double));
             lon=(double*)malloc(nbc/2*sizeof(double));
-            for (nc=0,ncc=0;nc<nbc;nc+=2,ncc++){
-               Tcl_ListObjIndex(Interp,Objv[4],nc,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&lat[ncc]);
-               Tcl_ListObjIndex(Interp,Objv[4],nc+1,&obj);
-               Tcl_GetDoubleFromObj(Interp,obj,&lon[ncc]);
-            }
+            if (lat && lon) {
+               for (nc=0,ncc=0;nc<nbc;nc+=2,ncc++){
+                  Tcl_ListObjIndex(Interp,Objv[4],nc,&obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&lat[ncc]);
+                  Tcl_ListObjIndex(Interp,Objv[4],nc+1,&obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&lon[ncc]);
+               }
 
-            Tcl_ListObjLength(Interp,Objv[3],&nbf);
-            if (nbf) {
-               fields=(TData**)malloc(nbf*sizeof(TData*));
-               for (nc=0;nc<nbf;nc++){
-                  Tcl_ListObjIndex(Interp,Objv[3],nc,&obj);
-                  if (!(fields[nc]=Data_Get(Tcl_GetString(obj)))) {
-                     Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(obj),")",(char*)NULL);
-                     free(fields);
-                     return(TCL_ERROR);
+               Tcl_ListObjLength(Interp,Objv[3],&nbf);
+               if (nbf) {
+                  fields=(TData**)malloc(nbf*sizeof(TData*));
+                  for (nc=0;nc<nbf;nc++){
+                     Tcl_ListObjIndex(Interp,Objv[3],nc,&obj);
+                     if (!(fields[nc]=Data_Get(Tcl_GetString(obj)))) {
+                        Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(obj),")",(char*)NULL);
+                        free(fields);
+                        return(TCL_ERROR);
+                     }
                   }
                }
+               ok=Data_Cut(Interp,fields,Tcl_GetString(Objv[2]),lat,lon,nbf,nbc/2);
+            } else {
+               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+               return(TCL_ERROR);
             }
 
-            ok=Data_Cut(Interp,fields,Tcl_GetString(Objv[2]),lat,lon,nbf,nbc/2);
 
-            free(lat);
-            free(lon);
+            if (lat) free(lat);
+            if (lon) free(lon);
             if (fields) free(fields);
             return(ok);
          }
@@ -733,7 +738,10 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                      if (!(fieldt=Data_Get(Tcl_GetString(Objv[5])))) {
                         Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        table=(double*)malloc(nk*sizeof(double));
+                        if (!(table=(double*)malloc(nk*sizeof(double)))) {
+                           Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                           return(TCL_ERROR);                          
+                        }
                         for(k=0;k<nk;k++) {
                            Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
                            Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
@@ -801,7 +809,10 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                      if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
                         Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        table=(double*)malloc((nk+1)*sizeof(double));
+                        if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
+                           Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                           return(TCL_ERROR);                          
+                        }
                         for(k=0;k<nk;k++) {
                            Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
                            Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
@@ -1192,7 +1203,11 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
       return(TCL_ERROR);
    }
 
-   file=(FSTD_File*)malloc(sizeof(FSTD_File));
+   if (!(file=(FSTD_File*)malloc(sizeof(FSTD_File)))) {
+      Tcl_AppendResult(Interp,"FSTD_FileOpen: Unable to allocate memory for file structure",Id,(char*)NULL);
+      return(TCL_ERROR);      
+   }
+   
    file->Mode=toupper(Mode);
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();

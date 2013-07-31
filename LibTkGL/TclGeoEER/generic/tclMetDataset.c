@@ -646,7 +646,10 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             break;
 
          case SUBSETSTART:
-            sset=(BUFR_Datasubset*)malloc(sizeof(BUFR_Datasubset));
+            if (!(sset=(BUFR_Datasubset*)malloc(sizeof(BUFR_Datasubset)))) {
+               Tcl_AppendResult(Interp,"Unable to allocate memory fo subdataset",(char*)NULL);
+               return(TCL_ERROR);               
+            }
             MetDatasubset_Put(Interp,Name,sset);
 
             sset->BSeq=bufr_create_sequence(NULL);
@@ -1075,7 +1078,9 @@ BUFR_Template* MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edi
    long          lval;
 
    Tcl_ListObjLength(Interp,Obj,&nc);
-   code=(BufrDescValue*)calloc(nc,sizeof(BufrDescValue));
+   if (!(code=(BufrDescValue*)calloc(nc,sizeof(BufrDescValue)))) {
+      return(NULL);
+   }
 
    for(c=0;c<nc;c++) {
       // Extract the code
@@ -1094,39 +1099,40 @@ BUFR_Template* MetTemplate_CreateFromObj(Tcl_Interp *Interp,Tcl_Obj *Obj,int Edi
          code[c].values=NULL;
          continue;
       }
-      code[c].values=(BufrValue**)calloc(code[c].nbval,sizeof(BufrValue*));
-      for(v=0;v<code[c].nbval;v++) {
-         Tcl_ListObjIndex(Interp,obj,1,&val);
+      if ((code[c].values=(BufrValue**)calloc(code[c].nbval,sizeof(BufrValue*)))) {
+         for(v=0;v<code[c].nbval;v++) {
+            Tcl_ListObjIndex(Interp,obj,1,&val);
 
-         vtype=bufr_datatype_to_valtype(bufr_descriptor_to_datatype(MetObs_GetTables(),e,code[c].descriptor,&vlen),32,0);
+            vtype=bufr_datatype_to_valtype(bufr_descriptor_to_datatype(MetObs_GetTables(),e,code[c].descriptor,&vlen),32,0);
 
-         switch(vtype) {
-            case VALTYPE_STRING :
-               code[c].values[v]=bufr_create_value(vtype);
-               bufr_value_set_string(code[c].values[v],Tcl_GetString(val),vlen);
-               break;
-            case VALTYPE_INT64 :
-               code[c].values[v]=bufr_create_value(vtype);
-               Tcl_GetLongFromObj(Interp,val,&lval);
-               bufr_value_set_int64(code[c].values[v],lval);
-               break;
-            case VALTYPE_INT32  :
-               code[c].values[v]=bufr_create_value(vtype);
-               Tcl_GetIntFromObj(Interp,val,&ival);
-               bufr_value_set_int32(code[c].values[v],ival);
-               break;
-            case VALTYPE_FLT64  :
-            case VALTYPE_FLT32  :
-               if (strcmp(Tcl_GetString(Obj),"MSNG")!= 0) {
-                  Tcl_GetDoubleFromObj(Interp,val,&dval);
-                  if (!bufr_is_missing_float(dval)) {
-                     code[c].values[v]=bufr_create_value(vtype);
-                     bufr_value_set_float(code[c].values[v],dval);
+            switch(vtype) {
+               case VALTYPE_STRING :
+                  code[c].values[v]=bufr_create_value(vtype);
+                  bufr_value_set_string(code[c].values[v],Tcl_GetString(val),vlen);
+                  break;
+               case VALTYPE_INT64 :
+                  code[c].values[v]=bufr_create_value(vtype);
+                  Tcl_GetLongFromObj(Interp,val,&lval);
+                  bufr_value_set_int64(code[c].values[v],lval);
+                  break;
+               case VALTYPE_INT32  :
+                  code[c].values[v]=bufr_create_value(vtype);
+                  Tcl_GetIntFromObj(Interp,val,&ival);
+                  bufr_value_set_int32(code[c].values[v],ival);
+                  break;
+               case VALTYPE_FLT64  :
+               case VALTYPE_FLT32  :
+                  if (strcmp(Tcl_GetString(Obj),"MSNG")!= 0) {
+                     Tcl_GetDoubleFromObj(Interp,val,&dval);
+                     if (!bufr_is_missing_float(dval)) {
+                        code[c].values[v]=bufr_create_value(vtype);
+                        bufr_value_set_float(code[c].values[v],dval);
+                     }
                   }
-               }
-               break;
-            default :
-               break;
+                  break;
+               default :
+                  break;
+            }
          }
       }
    }

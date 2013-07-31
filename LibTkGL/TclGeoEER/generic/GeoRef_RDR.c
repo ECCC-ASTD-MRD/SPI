@@ -282,7 +282,7 @@ TGeoRef* GeoRef_RDRSetup(double Lat,double Lon,double Height,int R,double ResR,d
    ref->ZRef.Type=LVL_ANGLE;
    ref->ZRef.LevelNb=NTheta;
    ref->ZRef.Levels=(float*)calloc(ref->ZRef.LevelNb+1,sizeof(float));
-   if (Theta)
+   if (Theta && ref->ZRef.Levels)
       memcpy(ref->ZRef.Levels,Theta,ref->ZRef.LevelNb*sizeof(float));
 
    ref->Project=GeoRef_RDRProject;

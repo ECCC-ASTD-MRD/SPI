@@ -186,12 +186,22 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             elems=(int*)realloc(elems,sz1*sizeof(int));
             codes=(int*)realloc(codes,sz1*sizeof(int));
             eb=(EntryTableB**)realloc(eb,sz1*sizeof(EntryTableB*));
+            if (!elems || !codes || !eb) {
+               Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable ro allocate temporary buffers",(char*)NULL);
+               code=TCL_ERROR;
+               break;              
+            }
          }
 
          if (nelem*nval*nt>sz2) {
             sz2=nelem*nval*nt;
             tblval=(int*)realloc(tblval,sz2*sizeof(int));
             tblvalf=(float*)realloc(tblvalf,sz2*sizeof(float));
+            if (!tblval || !tblvalf) {
+               Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable ro allocate value buffers",(char*)NULL);
+               code=TCL_ERROR;
+               break;              
+            }
          }
 
          /*Extract info*/
