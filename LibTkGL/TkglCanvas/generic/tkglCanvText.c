@@ -679,11 +679,12 @@ void glDisplayText(
    }
    glPolygonMode(GL_FRONT,GL_FILL);
    glColor4ub(128,128,128,textPtr->alpha*128);
+   glTranslated(-Canvas(canvas)->xOrigin,-Canvas(canvas)->yOrigin,0.0);
 
    selFirstChar = -1;
    selLastChar  = 0;
 
-    Tk_CanvasDrawableCoords(canvas, textPtr->drawOrigin[0],
+   Tk_CanvasDrawableCoords(canvas, textPtr->drawOrigin[0],
        textPtr->drawOrigin[1], &drawableX, &drawableY);
 
    if (textInfoPtr->selItemPtr==itemPtr) {
@@ -752,12 +753,13 @@ void glDisplayText(
     */
 
     if (!textPtr->color) {
+       glTranslated(Canvas(canvas)->xOrigin,Canvas(canvas)->yOrigin,0.0);
        return;
     }
 
     glColor4us(textPtr->color->red,textPtr->color->green,textPtr->color->blue,textPtr->alpha*655);
 
-   if ((textInfoPtr->focusItemPtr == itemPtr) && (textInfoPtr->gotFocus)) {
+    if ((textInfoPtr->focusItemPtr == itemPtr) && (textInfoPtr->gotFocus)) {
       if (Tk_CharBbox(textPtr->textLayout,textPtr->insertPos,&x,&y,NULL,&height)) {
 
          int dx1, dy1, dx2, dy2;
@@ -827,7 +829,8 @@ void glDisplayText(
    if (selFirstChar >= 0) {
       glDisplayTextLayout(textPtr->textLayout,textPtr->angle,drawableX, drawableY,selFirstChar,selLastChar + 1,1);
    }
-
+   
+   glTranslated(Canvas(canvas)->xOrigin,Canvas(canvas)->yOrigin,0.0);
    glDisable(GL_BLEND);
    glDisable(GL_STENCIL_TEST);
 }

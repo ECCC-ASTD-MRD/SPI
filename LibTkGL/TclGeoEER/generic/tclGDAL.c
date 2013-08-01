@@ -1595,12 +1595,12 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       GDALInvGeoTransform(tran,inv);
       ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
    } else {
-      projdef=GDALGetProjectionRef(Set);
+      projdef=(char*)GDALGetProjectionRef(Set);
       
       /*Get the projection transform*/
       if (GCPs) {
          /*If there are Ground Control Points*/
-         projdef=GDALGetGCPProjection(Set);
+         projdef=(char*)GDALGetGCPProjection(Set);
          ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
 
 #ifdef DEBUG

@@ -981,15 +981,16 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *X0,int 
 
    if (Side&HORIZONTAL) {
       if (Axis->Pos[0]=='L') {
-         dyl= Height+5;
+         dyl=+10;
       } else {
-         dyl=-5;
+          dyl-= Height+10;
       }
       if (Axis->Angle>0) {
-         dx -= Width;
+         dx -= Width+5;
          dy -= Height*0.5;
       } else if (Axis->Angle<0) {
          dy -= Height*0.5;
+         dx += 5;
       } else {
          dx -= Width*0.5;
       }
