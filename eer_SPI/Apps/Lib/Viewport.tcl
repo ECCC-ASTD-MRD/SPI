@@ -1491,7 +1491,7 @@ proc Viewport::ForceGrid { Frame { Clean False } } {
    if { $Map(Type$Frame)=="grid" } {
       if { $Map(GeoRef)=="" } {
          if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
-            if { [set fld [lindex [Viewport::Assigned $Frame $vp fstdfield] 0]]!="" } {
+            if { [set fld [lindex [Viewport::Assigned $Frame $vp { fstdfield gribfield } ] 0]]!="" } {
                if { [set georef [fstdfield define $fld -georef]]!="" } {
                   set Map(GeoRef) $georef
                   set pref  [projection configure $Frame -georef]

@@ -503,7 +503,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
 #    <Master> : Fenetre toplevel auquel l'aide est reliee.
 #    <Title>  : Titre de la fenetre
 #    <Text>   : Texte a afficher.
-#    <Var>    : Variable
+#    <Var>    : Variable ou valeur par defaut
 #    <File>   : Boutton de selection de fichier
 #
 # Retour      :
@@ -531,10 +531,14 @@ proc Dialog::Get { Master Title Text { Var "" } { File False } } {
       pack .dlgget.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
    pack .dlgget.msg -side top  -fill x -expand True
 
-   if { $Var!="" } {
-      entry .dlgget.in -textvariable $Var  -relief flat -bd 1 -bg $GDefs(ColorLight)
-   } else {
-      entry .dlgget.in -relief flat -bd 1 -bg $GDefs(ColorLight)
+  entry .dlgget.in -relief flat -bd 1 -bg $GDefs(ColorLight)
+
+  if { $Var!="" } {
+      if { [info exists $Var] } {
+         .dlgget.in configure -textvariable $Var 
+      } else {
+         .dlgget.in insert end $Var 
+      }
    }
 
    if { $File } {
