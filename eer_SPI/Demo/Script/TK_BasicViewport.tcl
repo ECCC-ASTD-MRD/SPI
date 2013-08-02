@@ -26,11 +26,9 @@ puts \n[file tail [info script]]
 package require TkglCanvas
 package require TkGeoEER
 
-projcam create CAM
-projcam configure CAM -lens 1.0
+projcam create CAM -lens 1.0
 
-projection create PROJ
-projection configure PROJ -type orthographic -location 46.836559 -71.198 -scale 1 \
+projection create PROJ -type orthographic -location 46.836559 -71.198 -scale 1 \
       -mapcoast 1 -maplake 1 -maproad 2  -mappolit 1 -mapadmin 1 -maprail 0 \
       -maptopo 0 -maptext 0  -mapcoord 0 5 10
 

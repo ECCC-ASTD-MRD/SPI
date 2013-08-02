@@ -753,7 +753,7 @@ proc Writer::FVCN::Format { Pad Mode { Shp False } } {
       ogrlayer create VAGFILE VAG "VAG"
 
       ogrlayer define VAG -field Level String
-      ogrlayer define VAG -field Date  Date
+      ogrlayer define VAG -field Date  String
       
       #----- Initialiser la geometrie
       ogrgeometry create POLY "Polygon"
@@ -775,7 +775,7 @@ proc Writer::FVCN::Format { Pad Mode { Shp False } } {
 
                ogrlayer define VAG -nb [incr nb]
                set no [expr $nb-1]
-               ogrlayer define VAG -feature $no Date [expr $Data(Secs$Pad)+3600*$h]
+               ogrlayer define VAG -feature $no Date [clock format [expr $Data(Secs$Pad)+3600*$h] -format "%Y%m%d %H:00" -gmt True]
                ogrlayer define VAG -feature $no Level $lvl
                
                ogrgeometry define POLY -geometry False RING

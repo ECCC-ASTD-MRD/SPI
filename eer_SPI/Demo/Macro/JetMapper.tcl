@@ -53,7 +53,7 @@ namespace eval Macro::JetMapper { } {
    set Lbl(Snow)    { "Neige" "Snow" }
    set Lbl(Freeze)  { "Verglas" "Freezing rain" }
    set Lbl(Thunder) { "Orage" "Thunderstorm" }
-   set Lbl(Adress)  { "www.meteo.ec.gc.ca" "weatheroffice.ec.gc.ca" }
+   set Lbl(Adress)  { "meteo.gc.ca" "weather.gc.ca" }
    set Lbl(High)    { A H }
    set Lbl(Low)     { D L }
    set Lbl(Footer)  { "Carte du courant jet valide pour" "Jetstream map valid for" }

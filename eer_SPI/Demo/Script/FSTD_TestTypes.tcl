@@ -34,6 +34,7 @@ foreach type { UByte Byte UInt16 Int16 UInt32 Int32 Float32 Float64 } val { 2 3 
    puts "   Creating field of type $type"
 
    fstdfield create GRID 229 229 1 $type
+#   fstdfield create GRID 229 1 1 $type
    fstdfield define GRID -GRTYP N 170 356 21000.0 8.0
    fstdfield define GRID -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET "$type" -NOMVAR GRID -TYPVAR X
 
