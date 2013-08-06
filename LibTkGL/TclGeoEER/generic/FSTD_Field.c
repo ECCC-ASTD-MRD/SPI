@@ -641,7 +641,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
             } else {
               if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
-                  coord.Lat=lat[idxi];
+                  // Fix for G grids which seems to have inverted lat
+                  coord.Lat=Field->Ref->Grid[0]=='G'?-lat[idxi]:lat[idxi];
                   coord.Lon=CLAMPLON(lon[idxi]);
                } else {
                   Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);

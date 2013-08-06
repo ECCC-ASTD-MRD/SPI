@@ -856,9 +856,9 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
    if (GLRender->XExpose>0) {
       gr->Update=1;
    }
-
+   
    /*Si refresh a partir du backbuffer*/
-   if (!gr->Update && gr->Frame && !GLRender->TRCon && gr->xi>gr->xg[0] && gr->yi>gr->yg[0] && (gr->xi+gr->wi)<gr->xg[1] && (gr->yi+gr->hi)<gr->yg[1]) {
+   if (!gr->Update && gr->Frame && !GLRender->TRCon && (!gr->wi || (gr->xi>=0 && gr->yi>=0 && (gr->xi+gr->wi)<(gr->xg[1]-gr->xg[0]) && (gr->yi+gr->hi)<(gr->yg[0]-gr->yg[1])))) {
       trRasterPos2i(gr->header.x1-((TkCanvas*)Canvas)->xOrigin,-(gr->header.y2-((TkCanvas*)Canvas)->yOrigin));
       glDrawPixels(gr->Width,gr->Height,GL_RGBA,GL_UNSIGNED_BYTE,gr->Frame);
    } else {

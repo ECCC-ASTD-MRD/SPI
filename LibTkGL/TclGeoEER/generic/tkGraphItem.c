@@ -2603,7 +2603,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
    Tk_FontMetrics tkm;
    GLuint         s;
 
-   if (!Data->Spec->Font || !Data->Spec->Outline || !Data->Spec->InterNb) {
+   if (GLRender->Resolution>1 || !Data->Spec->Font || !Data->Spec->Outline || !Data->Spec->InterNb) {
       return;
    }
 
