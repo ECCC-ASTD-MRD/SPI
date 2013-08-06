@@ -923,13 +923,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      tmp=10.0;
                   }
                }
-               if (Spec->InterVals && new) {
+               if (Spec->InterVals && new<5) {
                   Tcl_DecrRefCount(Spec->InterVals);
                   Spec->InterVals=NULL;
+                  Spec->InterNb=0;
                }
 
                if (new!=Spec->InterMode || tmp!=Spec->InterModeParam) {
-                  Spec->InterNb=0;
                   Spec->InterMode=new;
                   Spec->InterModeParam=tmp;
                   cmap=cseg=1;
@@ -972,7 +972,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   }
                }
 
-               if (!Spec->InterMode && (internew || nobj!=Spec->InterNb)) {
+               if ((!Spec->InterMode || Spec->InterMode>=5) && (internew || nobj!=Spec->InterNb)) {
                   Spec->InterNb=nobj;
                   cmap=cseg=1;
                }
