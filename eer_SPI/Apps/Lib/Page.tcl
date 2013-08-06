@@ -1104,6 +1104,8 @@ proc Page::ModeSelect { Mode { Frames {} } } {
    
    foreach frame $frames {
 
+      Page::UpdateItems $frame 
+
       if { [winfo exists [set c $frame.page.canvas]] } {
 
          bind $frame.page <ButtonPress-4>     "$frame.page.canvas yview scroll -1 units"

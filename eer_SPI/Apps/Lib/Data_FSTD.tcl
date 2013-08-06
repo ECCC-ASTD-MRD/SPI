@@ -659,7 +659,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 
    foreach field [lindex [$Canvas itemconfigure $VP -data] 4] {
 
-      if { [fstdfield is $field True] && ([fstdfield is $field] && [fstdfield define $field -GRTYP]!="V") } {
+      if { [fstdfield is $field True] } {
          if { ![projection configure $Page -geographic] } {
             set ij    [projection function $Page -gridcoord $Lat $Lon]
             set pij   $ij

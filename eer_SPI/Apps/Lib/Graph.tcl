@@ -2168,7 +2168,7 @@ proc Graph::TranslateInit { Frame Type Graph X Y } {
    set Data(X0) [lindex $coords 0]
    set Data(Y0) [lindex $coords 1]
 
-   Graph::Resolution $Frame $Type $OpenGL::Param(Res)
+   Graph::Resolution $Frame $Type 2
 }
 
 #------------------------------------------------------------------------------
