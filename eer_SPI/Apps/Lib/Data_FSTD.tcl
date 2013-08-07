@@ -482,7 +482,8 @@ proc FSTD::ParamFrame { Frame Apply } {
             -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 2] $i"
       }
       
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease> {+ FSTD::IntervalSetMode NONE 0 True }
+   bind $Data(Frame).lev.desc.edit.select <KeyRelease>      {+ FSTD::IntervalSetMode NONE 0 True }
+   bind $Data(Frame).lev.desc.edit.select <ButtonRelease-2> {+ FSTD::IntervalSetMode NONE 0 True }
 
    #------ Creation des bulles d'aide
 
@@ -781,7 +782,7 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) "$inter ($label) "
       }
    }
-
+   
    FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True 
 }
 
@@ -849,7 +850,6 @@ proc FSTD::ParamSet { { Spec "" } } {
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)  -size $Param(Size) -sizerange $Param(SizeRange) \
       -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
-
 
    if { $Param(IntervalMode)!="NONE" } {
       set Param(Intervals) [dataspec configure $Spec -intervals]
@@ -1077,13 +1077,12 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    if { ![llength $Fields] } {
       set Fields [concat $Data(List) $Data(ListTool)]
    }
-
+   
    set current $Param(Spec)
    set exist 0
    set var   ""
 
    #----- Inserer les items dans la liste de configuration
-
    ComboBox::DelAll $Data(Frame).var.sel
 
    foreach fld $Fields {
@@ -1128,7 +1127,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          
          if { "$var"=="$current" } {
              set Param(Spec) $current
-             set Param(Intervals)  [dataspec configure $current -intervals]
+             set Param(Intervals) [dataspec configure $current -intervals]
              set exist 1
          }
 
