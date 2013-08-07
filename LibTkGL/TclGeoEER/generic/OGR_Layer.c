@@ -1531,6 +1531,74 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <OGR_LayerCopy>
+ * Creation     : Aout 2013 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Copier une couche
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <From>     : Nom de la couche source
+ *   <To>       : Nom de la chouche destination
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
+
+   OGR_Layer   *from=NULL,*to=NULL;
+   unsigned int f;
+
+   from=OGR_LayerGet(From);
+   if (!from) {
+      Tcl_AppendResult(Interp,"OGR_LayerCopy: Invalid layer: ",From,(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   to=OGR_LayerGet(To);
+   if (to) {
+      Tcl_AppendResult(Interp,"OGR_LayerCopy: Layer already exist: ",To,(char*)NULL);
+      return(TCL_ERROR);
+   }
+   
+   if (!(to=OGR_LayerCreate(Interp,To))) {
+      Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to create layer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+ 
+   to->Ref=GeoRef_Copy(from->Ref);
+   to->Def=OGR_L_GetLayerDefn(from->Layer);
+   OGR_FD_Reference(to->Def);
+
+   to->NFeature=from->NFeature;
+   if (to->NFeature) {
+      to->Feature=malloc(to->NFeature*sizeof(OGRFeatureH));
+      to->Select=malloc(to->NFeature*sizeof(char));
+      
+      if (!to->Feature || !to->Select) {
+         Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate feature buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      memset(to->Select,0x1,to->NFeature);
+
+      /* Parse features */
+      for(f=0;f<to->NFeature;f++) {
+         to->Feature[f]=OGR_F_Clone(from->Feature[f]);
+      }
+      
+      if (!(to->Loc=(Coord*)malloc(to->NFeature*sizeof(Coord)))) {
+         Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate location buffer",(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+  
+   return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <OGR_LayerWrite>
  * Creation     : Juillet 2006 J.P. Gauthier - CMC/CMOE
  *
@@ -2205,7 +2273,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             OGR_GridCell(ring,Layer->Ref,FromRef,i,j,Prec);
             rt=n=rw=0;
 
-            if ((area=OGR_G_GetArea(cell))>0.0) {
+            if ((area=OGR_G_Area(cell))>0.0) {
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
                if (isnan(val1) || val1==FromDef->NoData) {
                   continue;
@@ -2242,7 +2310,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                      if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
                         inter=GPC_OnOGR(GPC_INT,cell,geom);
-                        dp=OGR_G_GetArea(inter);
+                        dp=OGR_G_Area(inter);
                         r=dp/area;
                         rt+=r;
                         val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);

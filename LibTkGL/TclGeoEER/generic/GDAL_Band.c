@@ -526,9 +526,9 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
 //                  inter=OGR_G_Intersection(Geom,Def->Poly);
                   inter=GPC_OnOGR(GPC_INT,Geom,Def->Poly);
                   if (Mode=='C' || Mode=='N') {
-                     dp=OGR_G_GetArea(inter)/Area;
+                     dp=OGR_G_Area(inter)/Area;
                   } else if (Mode=='A') {
-                     dp=OGR_G_GetArea(inter);
+                     dp=OGR_G_Area(inter);
                   }
                   break;
 
@@ -768,7 +768,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                   /*Process the cell*/
                   OGR_G_Empty(cell);
                   OGR_G_AddGeometry(cell,ring);
-                  area=OGR_G_GetArea(cell);
+                  area=OGR_G_Area(cell);
 
                   if (area>0.0) {
                      Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
@@ -822,7 +822,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
                OGR_G_Empty(cell);
                OGR_G_AddGeometry(cell,ring);
-               area=OGR_G_GetArea(cell);
+               area=OGR_G_Area(cell);
 
                if (area>0.0) {
                   Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
@@ -1005,9 +1005,9 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          if (fld>=0) {
             value=OGR_F_GetFieldAsDouble(Layer->Feature[f],fld);
          } else if (fld==-2) {
-            value=OGR_G_GetArea(geom);
+            value=OGR_G_Area(geom);
          } else if (fld==-3) {
-            value=OGR_G_GetArea(utmgeom);
+            value=OGR_G_Area(utmgeom);
          } else if (fld==-4) {
             value=GPC_Length(geom);
          } else if (fld==-5) {
@@ -1034,7 +1034,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
             area=0.0;
             if (Mode=='C' || Mode=='A' || Mode=='N') {
                switch(Type) {
-                  case 'A': area=OGR_G_GetArea(geom); break;
+                  case 'A': area=OGR_G_Area(geom); break;
                   case 'L': area=GPC_Length(geom); break;
                   case 'P': area=1.0; break;
                }

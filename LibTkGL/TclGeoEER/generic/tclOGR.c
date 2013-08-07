@@ -195,11 +195,11 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -207,7 +207,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       case CREATE:
          if(Objc!=4) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry type [Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[3]));
          if (t==wkbNone) {
@@ -253,7 +253,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       case STATS:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(OGR_GeometryStat(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
@@ -261,7 +261,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       case DEFINE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          return(OGR_GeometryDefine(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3));
          break;
@@ -269,7 +269,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"geometry");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (OGR_GeometryGet(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -321,18 +321,18 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_WideInt   w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
-   static CONST char *sopt[] = { "create","free","sync","clean","clear","read","write","import","delete","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
-   enum                opt { CREATE,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
+   enum                opt { CREATE,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,COPY,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -476,10 +476,18 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          return(TCL_OK);
          break;
 
+      case COPY:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layerto layerfrom");
+            return(TCL_ERROR);
+         }
+         return(OGR_LayerCopy(Interp,Tcl_GetString(Objv[3]),Tcl_GetString(Objv[2])));         
+         break;
+         
       case CLEAR:
          if (Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer field [value]");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
          n=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[3]));
@@ -497,7 +505,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CLEAN:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          OGR_LayerClean(OGR_LayerGet(Tcl_GetString(Objv[2])));
          break;
@@ -505,7 +513,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case PROJECT:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer X Y");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          Tcl_GetDoubleFromObj(Interp,Objv[3],&x);
@@ -514,7 +522,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
          if (!layer) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid layer: ",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          } else {
             lst=Tcl_NewListObj(0,NULL);
             layer->Ref->Project(layer->Ref,x,y,&lat,&lon,1,1);
@@ -528,7 +536,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case UNPROJECT:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer lat lon");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
 
          Tcl_GetDoubleFromObj(Interp,Objv[3],&lat);
@@ -536,7 +544,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
          if (!layer) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid layer: ",(char *)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          } else {
             lst=Tcl_NewListObj(0,NULL);
             layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
@@ -550,12 +558,12 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case CONFIGURE:
          if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer ?option?");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          layer=OGR_LayerGet(Tcl_GetString(Objv[2]));
          if (!layer) {
             Tcl_AppendResult(Interp,"invalid layer",(char*)NULL);
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (strcmp(Tcl_GetString(Objv[3]),"-dataspec")==0) {
             if (Objc==4) {
@@ -637,7 +645,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       case IS:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"layer");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (OGR_LayerGet(Tcl_GetString(Objv[2]))) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
@@ -1043,11 +1051,11 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    switch ((enum opt)idx) {
@@ -1083,7 +1091,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
      case DRIVER:
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
          if (!(file=OGR_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
@@ -1187,7 +1195,7 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
 
    if (!new) {
       Tcl_AppendResult(Interp,"\n   OGR_FilePut: File already openned",(char *)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    Tcl_SetHashValue(entry,File);

@@ -440,7 +440,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case AREA:
-         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGR_G_GetArea(g0)));
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGR_G_Area(g0)));
          break;
 
       case CENTROID:
@@ -455,7 +455,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case BOUNDARY:
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_GetBoundary(g0)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Boundary(g0)));
          break;
 
       case EXTENT:
