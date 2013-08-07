@@ -923,7 +923,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      tmp=10.0;
                   }
                }
-               if (Spec->InterVals && new<5) {
+               if (Spec->InterVals && new>0 && new<5) {
                   Tcl_DecrRefCount(Spec->InterVals);
                   Spec->InterVals=NULL;
                   Spec->InterNb=0;

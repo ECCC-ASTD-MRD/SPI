@@ -47,6 +47,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <alloca.h>
 
 #include "tr.h"
 
