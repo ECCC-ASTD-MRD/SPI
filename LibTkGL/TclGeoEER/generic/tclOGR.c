@@ -790,7 +790,6 @@ int OGR_LayerDestroy(Tcl_Interp *Interp,char *Name) {
    OGR_Layer *layer=NULL;
 
    if ((layer=(OGR_Layer*)TclY_HashDel(&OGR_LayerTable,Name))) {
-      DataSpec_FreeHash(Interp,layer->Spec->Name);
       OGR_LayerFree(layer);
       free(layer);
    }
@@ -832,7 +831,6 @@ void OGR_LayerFree(OGR_Layer *Layer) {
 
    if (Layer->SQLed)      OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
-   if (Layer->Def)        OGR_FD_Release(Layer->Def);
 
    OGR_LayerClean(Layer);
 }

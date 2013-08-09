@@ -419,6 +419,37 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
  *
  *----------------------------------------------------------------------------
 */
+static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,int NFeature) {
+
+   OGR_Layer *layerres;
+   
+   if (!(layerres=OGR_LayerCreate(Interp,Name))) {
+      Tcl_AppendResult(Interp,"OGR_LayerStats: Unable to create operation layer",(char*)NULL);
+      return(NULL);
+   }
+ 
+   layerres->Ref=GeoRef_Copy(From->Ref);
+   layerres->Def=From->Def;         
+   layerres->NFeature=0;
+   layerres->Feature=malloc(NFeature*sizeof(OGRFeatureH));
+   layerres->Select=malloc(NFeature*sizeof(char));
+
+   OGR_FD_Reference(layerres->Def);
+
+   if (!layerres->Feature || !layerres->Select) {
+      Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate feature buffer",(char*)NULL);
+      return(NULL);
+   }
+   memset(layerres->Select,0x1,NFeature);
+   
+   if (!(layerres->Loc=(Coord*)malloc(NFeature*sizeof(Coord)))) {
+      Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate location buffer",(char*)NULL);
+      return(NULL);
+   }
+      
+   return(layerres);
+}
+
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    OGRCoordinateTransformationH  tr=NULL;
@@ -426,18 +457,18 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    OGRGeometryH                  geom,geomop,new,prev,uni;
    OGRSpatialReferenceH          srs=NULL;
 
-   int           j,idx,nseg;
+   int           j,idx,nseg,fld=-1;
    double        x,y,lat,lon,tol,val,min,max,area;
    unsigned int  y0,y1,f,fop;
-   OGR_Layer    *layer,*layerop;
+   OGR_Layer    *layer,*layerop,*layerres=NULL;
    TGeoRef      *ref,*ref0;
    Tcl_Obj      *lst;
    Tcl_WideInt   w;
    char          buf[32],*str;
 
    static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
-                                 "-simplify","-segmentize","-close","-flatten",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN };
+                                 "-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull",NULL };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -648,19 +679,71 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(max));
          break;
 
-      case BUFFER:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"dist nseg");
+      case DISSOLVE:
+      case BOUNDARY:
+      case CONVEXHULL:
+
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"resultlayer");
             return(TCL_ERROR);
          }
-         Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
-         Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
+         if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),1))) {
+            return(TCL_ERROR);
+         }
+         
+         prev=new=uni=NULL;
+         for(f=0;f<layer->NFeature;f++) {
+           if (layer->Select[f]) {
+               if ((geomop=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  if (!uni) {
+                     uni=geomop;
+                  } else {
+                     prev=new;
+                     new=GPC_OnOGR(GPC_UNION,uni,geomop);
+                     if (prev)
+                        OGR_G_DestroyGeometry(prev);
+                     uni=new;
+                  }
+               }
+            }
+         }
+         layerres->Feature[0]=OGR_F_Clone(layer->Feature[0]);                        
+         layerres->NFeature++;
+         
+         if ((enum opt)idx==DISSOLVE)
+            OGR_F_SetGeometryDirectly(layerres->Feature[0],new);
+         if ((enum opt)idx==BOUNDARY)
+            OGR_F_SetGeometryDirectly(layerres->Feature[0],OGR_G_Boundary(new));
+         if ((enum opt)idx==CONVEXHULL)
+            OGR_F_SetGeometryDirectly(layerres->Feature[0],OGR_G_ConvexHull(new));
+         
+         break;
 
+      case BUFFER:
+         if (Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"dist|field nseg [result]");
+            return(TCL_ERROR);
+         }
+         fld=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
+         if (fld==-1) {
+            Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
+         }
+         Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
+         
+         if (Objc==4) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[3]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+         
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
+               if (fld!=-1) x=OGR_F_GetFieldAsDouble(layer->Feature[f],fld);
+
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
-                     if (OGR_F_SetGeometryDirectly(layer->Feature[f],new)!=OGRERR_NONE) {
+                     if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new)!=OGRERR_NONE) {
                         fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
                       }
                   } else {
@@ -672,14 +755,20 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case DIFFERENCE:
-         if (Objc!=2) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"layer");
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"layer [result]");
             return(TCL_ERROR);
          }
          layerop=OGR_LayerGet(Tcl_GetString(Objv[1]));
          if (!layerop) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Layer name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
             return(TCL_ERROR);
+         }
+
+         if (Objc==3) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
          }
 
          for(f=0;f<layer->NFeature;f++) {
@@ -698,7 +787,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      }
                   }
                   if (new) {
-                     if (OGR_F_SetGeometryDirectly(layer->Feature[f],geom)!=OGRERR_NONE) {
+                     if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom)!=OGRERR_NONE) {
                         fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
                      }
                   }
@@ -708,14 +798,20 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case INTERSECTION:
-         if (Objc!=2) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"layer");
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"layer [result]");
             return(TCL_ERROR);
          }
          layerop=OGR_LayerGet(Tcl_GetString(Objv[1]));
          if (!layerop) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Layer name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
             return(TCL_ERROR);
+         }
+
+         if (Objc==3) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
          }
 
          prev=new=uni=NULL;
@@ -739,7 +835,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   new=GPC_OnOGR(GPC_INT,geom,uni);
-                  if (OGR_F_SetGeometryDirectly(layer->Feature[f],new)!=OGRERR_NONE) {
+                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                  if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new)!=OGRERR_NONE) {
                      fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
                   }
                }
@@ -748,58 +845,94 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
 
       case SIMPLIFY:
-         if (Objc!=2) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"tolerance [result]");
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&tol);
+
+         if (Objc==3) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
 
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   GPC_Simplify(tol,geom);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
                }
             }
          }
          break;
 
       case SEGMENTIZE:
-         if (Objc!=2) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"length");
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"length [result]");
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&tol);
 
+         if (Objc==3) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
-               OGR_G_Segmentize(OGR_F_GetGeometryRef(layer->Feature[f]),tol);
-
-
-//               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
-//                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
-//               }
+               if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
+                  OGR_G_Segmentize(geom,tol);
+                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
+               }
             }
          }
          break;
 
       case CLOSE:
+         if (Objc!=1 && Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"[result]");
+            return(TCL_ERROR);
+         }
+         
+         if (Objc==2) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_CloseRings(geom);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
                }
             }
          }
          break;
 
       case FLATTEN:
+         if (Objc!=1 && Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"[result]");
+            return(TCL_ERROR);
+         }
+         
+         if (Objc==2) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+         
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_FlattenTo2D(geom);
-                  OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
                }
             }
          }
@@ -1570,7 +1703,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
    }
  
    to->Ref=GeoRef_Copy(from->Ref);
-   to->Def=OGR_L_GetLayerDefn(from->Layer);
+   to->Def=from->Def;
    OGR_FD_Reference(to->Def);
 
    to->NFeature=from->NFeature;
@@ -1625,9 +1758,9 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    OGR_File  *file=NULL;
    OGR_Layer *layer=NULL;
 
-   OGRFeatureH   feature;
-   OGRFieldDefnH defn;
-   OGRLayerH     olayer;
+   OGRFeatureH     feature;
+   OGRFeatureDefnH defn;
+   OGRLayerH       olayer;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -2452,9 +2585,8 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    }
 
    t=Layer->GFeature;
-
    sec=clock();
-
+   
    /*Generate the display lists*/
    for(f=Layer->GFeature;f<Layer->NFeature;f++) {
 

@@ -473,12 +473,18 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case BUFFER:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"dist nseg");
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"dist [nseg]");
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
-         Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
+         
+         if (Objc==3) {
+            Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
+         } else {
+            nseg=10;
+         }
+         
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Buffer(g0,dist,nseg)));
          break;
 
