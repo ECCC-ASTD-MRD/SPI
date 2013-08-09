@@ -156,14 +156,18 @@ proc Mapper::Window { } {
          .mappermenu add command -image MODEZOOM -compound left -label [lindex $Lbl(Zoom) $GDefs(Lang)] -command "Mapper::Zoom"
          .mappermenu add command -image LOCATION -compound left -label [lindex $Lbl(ZoomAll) $GDefs(Lang)] -command "Mapper::Zoom True"
          .mappermenu add command -image MODEZOOM -compound left -label [lindex $Lbl(ZoomFull) $GDefs(Lang)] -command "Mapper::ZoomFull"
+         .mappermenu add command -image WORLD  -compound left -label [lindex $Lbl(GeoRef) $GDefs(Lang)] -command "Mapper::SetGeoRef"
          .mappermenu add separator
          .mappermenu add checkbutton -label [lindex $Lbl(Active) $GDefs(Lang)] -variable Mapper::Data(Active) -onvalue 1 -offvalue 0 \
             -command "Mapper::Toggle"
          .mappermenu add separator
-         .mappermenu add command -image WORLD  -compound left -label [lindex $Lbl(GeoRef) $GDefs(Lang)] -command "Mapper::SetGeoRef"
-         .mappermenu add command -image PARAMS -compound left -label [lindex $Lbl(Params) $GDefs(Lang)] -command "Mapper::Params True"
+         .mappermenu add cascade -image CALC   -compound left -label [lindex $Lbl(GeoProcess) $GDefs(Lang)] -menu .mappermenu.process
+         .mappermenu add command -image SAVE   -compound left -label "[lindex $Lbl(SaveAs) $GDefs(Lang)] ..." -command "Mapper::Write \$Mapper::Data(Object)"
+         .mappermenu add command -image PARAMS -compound left -label "[lindex $Lbl(Params) $GDefs(Lang)] ..." -command "Mapper::Params True"
          .mappermenu add separator
          .mappermenu add command -image DELETE -compound left -label [lindex $Lbl(Del) $GDefs(Lang)] -command "Mapper::Del"
+         
+      menu .mappermenu.process
    }
 
    bind $Mapper::Data(Tab1).select.list <Button-3>  { Mapper::PopUp %X %Y %y }
@@ -195,6 +199,23 @@ proc Mapper::Window { } {
    Viewport::FollowerAdd Mapper
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Mapper::PopUp>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : configure et affiche le menu contextuel selon le type de la donnee.
+#
+# Parametres:
+#   <X>     : Position X
+#   <Y>     : Position Y
+#   <y>     : Position Y locale
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Mapper::PopUp { X Y y } {
    variable Data
 
@@ -202,18 +223,145 @@ proc Mapper::PopUp { X Y y } {
    $Data(Tab1).select.list selection set [$Data(Tab1).select.list nearest $y]
    Mapper::Params
 
+   .mappermenu.process delete 0 end
+   
    set Data(Object) [$Data(Tab1).select.list get [$Data(Tab1).select.list nearest $y]]
 
    if { [ogrlayer is $Data(Object)] } {
       set Data(Active) [ogrlayer configure $Data(Object) -active]
+
+      .mappermenu entryconfigure 9 -state normal
+      foreach op $Data(ORGOps) {
+         .mappermenu.process add command -label "$op ..." -command "Mapper::GeoProcessParams $Data(Object) $op"
+      }      
+      
    } elseif { [gdalband is $Data(Object)] } {
       set Data(Active) [gdalband configure $Data(Object) -active]
+      
+     .mappermenu entryconfigure 9 -state disabled
+     foreach op $Data(GDALOps) {
+         .mappermenu.process add command -label "$op ..." -command "Mapper::GeoProcessParams $Data(Object) $op"
+      }      
    } elseif { [model is $Data(Object)] } {
       set Data(Active) [model configure $Data(Object) -active]
    } else {
       set Data(Active) 0
    }
    tk_popup .mappermenu $X $Y 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Mapper::GeoProcessParams>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fenetre de parametres du geotraitement
+#
+# Parametres:
+#   <Object>: Objet a traiter
+#   <Op>    : Operateur
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Mapper::GeoProcessParams { Object Op } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Msg
+  
+   if { ![winfo exists .mapperprocess] } {
+      toplevel .mapperprocess
+
+      wm title     .mapperprocess "[lindex $Lbl(GeoProcess) $GDefs(Lang)]"
+      wm transient .mapperprocess .
+      wm geometry  .mapperprocess 300x100+[winfo rootx .mapper]+[winfo rooty .mapper]
+
+      label .mapperprocess.info -text [lindex $Msg(GeoProcessInfo) $GDefs(Lang)] -justify center -relief raised -bd 1
+      pack .mapperprocess.info -side top -fill both -expand True
+      
+      frame .mapperprocess.params0 -relief raised -bd 1
+      frame .mapperprocess.params1 -relief raised -bd 1
+      frame .mapperprocess.params2 -relief raised -bd 1
+
+
+      set Mapper::Data(ProcessParam0)  ""
+      set Mapper::Data(ProcessParam1)  ""
+      set Mapper::Data(ProcessParam2)  ""
+    
+      switch $Op {
+         buffer       { label .mapperprocess.params0.lbl -text [lindex $Lbl(Distance) $GDefs(Lang)] -width 18 -anchor w 
+                        ComboBox::Create  .mapperprocess.params0.val Mapper::Data(ProcessParam0) editclose unsorted nodouble -1 [ogrlayer define $Object -field] 1 8 { }
+                        label .mapperprocess.params1.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)] -width 18 -anchor w 
+                        entry .mapperprocess.params1.val -textvariable Mapper::Data(ProcessParam1) -width 2 -bd 1 -relief sunken -bg $GDefs(ColorLight)
+                        pack .mapperprocess.params0.lbl -side left -fill x
+                        pack .mapperprocess.params0.val -side left -fill x -expand True
+                        pack .mapperprocess.params1.lbl -side left -fill x
+                        pack .mapperprocess.params1.val -side left -fill x -expand True
+                      }
+         difference   { label .mapperprocess.params0.lbl -text [lindex $Lbl(WithLayer) $GDefs(Lang)] -width 18 -anchor w
+                        ComboBox::Create  .mapperprocess.params0.val Mapper::Data(ProcessParam0) noedit unsorted nodouble -1 [ogrlayer all] 1 8 { }
+                        pack .mapperprocess.params0.lbl -side left -fill x
+                        pack .mapperprocess.params0.val -side left -fill x -expand True
+                     }
+         intersection { label .mapperprocess.params0.lbl -text [lindex $Lbl(WithLayer) $GDefs(Lang)] -width 18 -anchor w
+                        ComboBox::Create .mapperprocess.params0.val Mapper::Data(ProcessParam0) noedit unsorted nodouble -1 [ogrlayer all] 1 8 { }
+                        pack .mapperprocess.params0.lbl -side left -fill x
+                        pack .mapperprocess.params0.val -side left -fill x -expand True
+                     }
+         simplify     { label .mapperprocess.params0.lbl -text [lindex $Lbl(Tolerance) $GDefs(Lang)] -width 18 -anchor w
+                        entry .mapperprocess.params0.val -textvariable Mapper::Data(ProcessParam0) -width 2 -bd 1 -relief sunken -bg $GDefs(ColorLight)
+                        pack .mapperprocess.params0.lbl -side left -fill x
+                        pack .mapperprocess.params0.val -side left -fill x -expand True
+                      }
+         segmentize   { label .mapperprocess.params0.lbl -text [lindex $Lbl(SegmentLength) $GDefs(Lang)] -width 18 -anchor w 
+                        entry .mapperprocess.params0.val -textvariable Mapper::Data(ProcessParam0) -width 2 -bd 1 -relief sunken -bg $GDefs(ColorLight)
+                        pack .mapperprocess.params0.lbl -side left -fill x
+                        pack .mapperprocess.params0.val -side left -fill x -expand True
+                      }
+      }
+      
+      frame .mapperprocess.com
+         button .mapperprocess.com.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -command "Mapper::GeoProcess $Object $Op \"\$Mapper::Data(ProcessParam0) \$Mapper::Data(ProcessParam1) \$Mapper::Data(ProcessParam2)\"; destroy .mapperprocess"
+         button .mapperprocess.com.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "destroy .mapperprocess"
+         pack .mapperprocess.com.cancel .mapperprocess.com.apply -side right -fill x -expand True
+      pack .mapperprocess.params0 .mapperprocess.params1 .mapperprocess.params2 .mapperprocess.com -side top -fill x -padx 2 
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Mapper::GeoProcess>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le geotraitement
+#
+# Parametres:
+#   <Object>: Objet a traiter
+#   <Op>    : Operateur
+#   <Param> : Parametre de l'operateur
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Mapper::GeoProcess { Object Op Param } {
+
+   set new ${Object}_$Op
+
+   if { [ogrlayer is $Object] } {
+      if { [ogrlayer is $new] } {
+         ogrlayer free $new
+      }
+      eval ogrlayer stats $Object -$Op $Param $new
+
+      Mapper::DisplayLayer $Page::Data(Frame) $new
+      Mapper::UpdateData $Page::Data(Frame)
+      Mapper::Progress $new
+   }
 }
 
 proc Mapper::Toggle { } {

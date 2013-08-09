@@ -21,98 +21,106 @@ namespace eval Mapper { } {
    variable Bubble
    variable Data
 
-   set Lbl(Active)       { "Actif (Afficher)" "Active (Displayed)" }
-   set Lbl(Apply)        { "Appliquer" "Apply" }
-   set Lbl(Close)        { "Fermer" "Close" }
-   set Lbl(Clear)        { "Annuler la sélection" "Clear selection" }
-   set Lbl(Cancel)       { "Annuler" "Cancel" }
-   set Lbl(GeoRef)       { "Utiliser la projection de cette donnée" "Use this data's projection" }
-   set Lbl(Curve)        { "Courbe" "Curve" }
-   set Lbl(Style)        { "Style" "Style" }
-   set Lbl(Data)         { "Données" "Data" }
-   set Lbl(Dig)          { "Dépots de données" "Data digging" }
-   set Lbl(Display)      { "Affichage" "Display" }
-   set Lbl(Color)        { "Couleur" "Color" }
-   set Lbl(ColorRef)     { "Distribution couleur" "Color distribution" }
-   set Lbl(Width)        { "Largeur" "Width" }
-   set Lbl(Mode)         { "Mode" "Mode" }
-   set Lbl(Matrix)       { "Matrice de transformation" "Transformation matrix" }
-   set Lbl(Mask)         { "Masque" "Mask" }
-   set Lbl(Topo)         { "Topographie " "Topography  " }
-   set Lbl(Table)        { "Table" "Table" }
-   set Lbl(Extrude)      { "Extrusion   " "Extrude     " }
-   set Lbl(Field)        { "Champs" "Field" }
-   set Lbl(Max)          { "Nombre maximum de colone" "Maximum numbre of column" }
-   set Lbl(Font)         { "Police" "Font" }
-   set Lbl(Meta)         { "Méta-données" "Metadata" }
-   set Lbl(GeoLoc)       { "Géoréférencer" "Georeference" }
-   set Lbl(Calcul)       { "Calculer" "Calculate" }
-   set Lbl(Map)          { "Palette" "Colormap" }
-   set Lbl(Del)          { "Supprimer" "Delete" }
-   set Lbl(Sel)          { "Sélection" "Selection" }
-   set Lbl(Params)       { "Paramètres" "Parameters" }
-   set Lbl(GDAL)         { "Matriciel" "Raster" }
-   set Lbl(OGR)          { "Vectoriel" "Vectorial" }
-   set Lbl(Model)        { "Modèle" "Model" }
-   set Lbl(Projection)   { "Projection" "Projection" }
-   set Lbl(Translate)    { "Translation" "Translation" }
-   set Lbl(Position)     { "Position" "Position" }
-   set Lbl(Rotation)     { "Rotation" "Rotation" }
-   set Lbl(Resolution)   { "Résolution" "Resolution" }
-   set Lbl(Scale)        { "Échelle" "Scaling" }
-   set Lbl(Invert)       { "Inversion" "Invert" }
-   set Lbl(Material)     { "Matériel" "Material" }
-   set Lbl(Red)          { "Rouge" "Red" }
-   set Lbl(Green)        { "Vert" "Green" }
-   set Lbl(Blue)         { "Bleue" "Blue" }
-   set Lbl(Alpha)        { "Alpha" "Alpha" }
-   set Lbl(Ambi)         { "Ambiante" "Ambient" }
-   set Lbl(Emis)         { "Emissive" "Emissive" }
-   set Lbl(Diff)         { "Diffuse" "Diffuse" }
-   set Lbl(Spec)         { "Specular" "Specular" }
-   set Lbl(Shin)         { "Réflection" "Shininess" }
-   set Lbl(Tran)         { "Transparence" "Transparency" }
-   set Lbl(Texture)      { "Texture" "Texture" }
-   set Lbl(Light)        { "Illumination" "Illuminate" }
-   set Lbl(Locate)       { "Localiser" "Locate" }
-   set Lbl(Band)         { "Bandes" "Bands" }
-   set Lbl(Function)     { "Fonction" "Function" }
-   set Lbl(Feature)      { "Item" "Feature" }
-   set Lbl(Index)        { "Index" "Index" }
-   set Lbl(Label)        { "Annotation" "Label" }
-   set Lbl(Fill)         { "Remplissage" "Fill" }
-   set Lbl(Layer)        { "Couches / Données" "Layers / Data" }
-   set Lbl(Out)          { "Contour" "Outline" }
-   set Lbl(Trans)        { "Transformation" "Transformation" }
-   set Lbl(InvTrans)     { "Inverse" "Inverse" }
-   set Lbl(Shape)        { "Géometrie" "Geometry" }
-   set Lbl(Interval)     { "Intervals" "Intervals" }
-   set Lbl(Interp)       { "Interpolation" "Interpolation" }
-   set Lbl(Value)        { "Valeur" "Values" }
-   set Lbl(Info)         { "Information" "Information" }
-   set Lbl(Yes)          { "Oui" "Yes" }
-   set Lbl(No)           { "Non" "No" }
-   set Lbl(Zoom)         { "Zoom aux limites" "Zoom to extent" }
-   set Lbl(ZoomAll)      { "Zoom aux limites globales" "Zoom to global extent" }
-   set Lbl(ZoomFull)     { "Zoom pleine résolution" "Zoom to full resolution" }
-   set Lbl(Sample)       { "Attaches" "Sampling" }
-   set Lbl(Select)       { "Sélection" "Select" }
-   set Lbl(Cut)          { "Découper" "Crop" }
-   set Lbl(Clip)         { "Appliquer la coupe" "Clip to polygon" }
-   set Lbl(Image)        { "Image" "Raster" }
-   set Lbl(Ref)          { "Référenciel" "Referencial" }
-   set Lbl(Coord)        { "Coordonnées" "Coordinates" }
-   set Lbl(Warning)      { "Attention" "Warning" }
-   set Lbl(GCP)          { "Point" "Point" }
-   set Lbl(Forward)      { "Avant" "Forward" }
-   set Lbl(Backward)     { "Arrière" "Backward" }
-   set Lbl(Show)         { "Polygone" "Polygon" }
-   set Lbl(NoData)       { "Valeur NIL" "No data value" }
-   set Lbl(Histo)        { "Histogramme" "Histogram" }
-   set Lbl(Burn)         { "Persistance" "Persistance" }
-   set Lbl(Process)      { "Reprojection" "Reprojecting" }
-   set Lbl(Time)         { "Temps" "Time" }
-   set Lbl(Pick)         { "Information sur l'object" "Feature info" }
+   set Lbl(Active)        { "Actif (Afficher)" "Active (Displayed)" }
+   set Lbl(Apply)         { "Appliquer" "Apply" }
+   set Lbl(Close)         { "Fermer" "Close" }
+   set Lbl(Clear)         { "Annuler la sélection" "Clear selection" }
+   set Lbl(Cancel)        { "Annuler" "Cancel" }
+   set Lbl(GeoRef)        { "Utiliser la projection de cette donnée" "Use this data's projection" }
+   set Lbl(Curve)         { "Courbe" "Curve" }
+   set Lbl(Style)         { "Style" "Style" }
+   set Lbl(Data)          { "Données" "Data" }
+   set Lbl(Dig)           { "Dépots de données" "Data digging" }
+   set Lbl(Display)       { "Affichage" "Display" }
+   set Lbl(Color)         { "Couleur" "Color" }
+   set Lbl(ColorRef)      { "Distribution couleur" "Color distribution" }
+   set Lbl(Width)         { "Largeur" "Width" }
+   set Lbl(Mode)          { "Mode" "Mode" }
+   set Lbl(Matrix)        { "Matrice de transformation" "Transformation matrix" }
+   set Lbl(Mask)          { "Masque" "Mask" }
+   set Lbl(Topo)          { "Topographie " "Topography  " }
+   set Lbl(Table)         { "Table" "Table" }
+   set Lbl(Extrude)       { "Extrusion   " "Extrude     " }
+   set Lbl(Field)         { "Champs" "Field" }
+   set Lbl(Max)           { "Nombre maximum de colone" "Maximum numbre of column" }
+   set Lbl(Font)          { "Police" "Font" }
+   set Lbl(Meta)          { "Méta-données" "Metadata" }
+   set Lbl(GeoLoc)        { "Géoréférencer" "Georeference" }
+   set Lbl(Calcul)        { "Calculer" "Calculate" }
+   set Lbl(Map)           { "Palette" "Colormap" }
+   set Lbl(Del)           { "Supprimer" "Delete" }
+   set Lbl(Sel)           { "Sélection" "Selection" }
+   set Lbl(Params)        { "Paramètres" "Parameters" }
+   set Lbl(GDAL)          { "Matriciel" "Raster" }
+   set Lbl(OGR)           { "Vectoriel" "Vectorial" }
+   set Lbl(Model)         { "Modèle" "Model" }
+   set Lbl(Projection)    { "Projection" "Projection" }
+   set Lbl(Translate)     { "Translation" "Translation" }
+   set Lbl(Position)      { "Position" "Position" }
+   set Lbl(Rotation)      { "Rotation" "Rotation" }
+   set Lbl(Resolution)    { "Résolution" "Resolution" }
+   set Lbl(Scale)         { "Échelle" "Scaling" }
+   set Lbl(Invert)        { "Inversion" "Invert" }
+   set Lbl(Material)      { "Matériel" "Material" }
+   set Lbl(Red)           { "Rouge" "Red" }
+   set Lbl(Green)         { "Vert" "Green" }
+   set Lbl(Blue)          { "Bleue" "Blue" }
+   set Lbl(Alpha)         { "Alpha" "Alpha" }
+   set Lbl(Ambi)          { "Ambiante" "Ambient" }
+   set Lbl(Emis)          { "Emissive" "Emissive" }
+   set Lbl(Diff)          { "Diffuse" "Diffuse" }
+   set Lbl(Spec)          { "Specular" "Specular" }
+   set Lbl(Shin)          { "Réflection" "Shininess" }
+   set Lbl(Tran)          { "Transparence" "Transparency" }
+   set Lbl(Texture)       { "Texture" "Texture" }
+   set Lbl(Light)         { "Illumination" "Illuminate" }
+   set Lbl(Locate)        { "Localiser" "Locate" }
+   set Lbl(Band)          { "Bandes" "Bands" }
+   set Lbl(Function)      { "Fonction" "Function" }
+   set Lbl(Feature)       { "Item" "Feature" }
+   set Lbl(Index)         { "Index" "Index" }
+   set Lbl(Label)         { "Annotation" "Label" }
+   set Lbl(Fill)          { "Remplissage" "Fill" }
+   set Lbl(Layer)         { "Couches / Données" "Layers / Data" }
+   set Lbl(Out)           { "Contour" "Outline" }
+   set Lbl(Trans)         { "Transformation" "Transformation" }
+   set Lbl(InvTrans)      { "Inverse" "Inverse" }
+   set Lbl(Shape)         { "Géometrie" "Geometry" }
+   set Lbl(Interval)      { "Intervals" "Intervals" }
+   set Lbl(Interp)        { "Interpolation" "Interpolation" }
+   set Lbl(Value)         { "Valeur" "Values" }
+   set Lbl(Info)          { "Information" "Information" }
+   set Lbl(Yes)           { "Oui" "Yes" }
+   set Lbl(No)            { "Non" "No" }
+   set Lbl(Zoom)          { "Zoom aux limites" "Zoom to extent" }
+   set Lbl(ZoomAll)       { "Zoom aux limites globales" "Zoom to global extent" }
+   set Lbl(ZoomFull)      { "Zoom pleine résolution" "Zoom to full resolution" }
+   set Lbl(Sample)        { "Attaches" "Sampling" }
+   set Lbl(Select)        { "Sélection" "Select" }
+   set Lbl(Cut)           { "Découper" "Crop" }
+   set Lbl(Clip)          { "Appliquer la coupe" "Clip to polygon" }
+   set Lbl(Image)         { "Image" "Raster" }
+   set Lbl(Ref)           { "Référenciel" "Referencial" }
+   set Lbl(Coord)         { "Coordonnées" "Coordinates" }
+   set Lbl(Warning)       { "Attention" "Warning" }
+   set Lbl(GCP)           { "Point" "Point" }
+   set Lbl(Forward)       { "Avant" "Forward" }
+   set Lbl(Backward)      { "Arrière" "Backward" }
+   set Lbl(Show)          { "Polygone" "Polygon" }
+   set Lbl(NoData)        { "Valeur NIL" "No data value" }
+   set Lbl(Histo)         { "Histogramme" "Histogram" }
+   set Lbl(Burn)          { "Persistance" "Persistance" }
+   set Lbl(Time)          { "Temps" "Time" }
+   set Lbl(Pick)          { "Information sur l'object" "Feature info" }
+   set Lbl(Project)       { "Reprojection" "Reprojecting" }
+   set Lbl(GeoProcess)    { "Géotraitement" "Geoprocessing" }
+   set Lbl(Op)            { "Opérateur" "Operator" }
+   set Lbl(SaveAs)        { "Enregistrer sous" "Save as" }
+   set Lbl(Tolerance)     { "Tolérance" "Tolerance" }
+   set Lbl(SegmentLength) { "Longueur des segments" "Segment length" }
+   set Lbl(Distance)      { "Distance" "Distance" }
+   set Lbl(WithLayer)     { "Avec la couche" "With layer" }
+   set Lbl(Curve)         { "Segments de courbes" "Curvature segments" }
 
    set Lbl(Icon)         { "Icône" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }
@@ -135,16 +143,17 @@ namespace eval Mapper { } {
    set Lbl(Medium)       { "Moyen" "Medium" }
    set Lbl(Large)        { "Large" "Large" }
 
-   set Msg(NoFeature) { "La couche ne continent aucun item" "The layer contains no features" }
-   set Msg(GeoRef)    { "La géo-référence est invalide" "Invalid geo-reference" }
-   set Msg(File)      { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }
-   set Msg(Read)      { "Lecture des données ..." "Reading data ..." }
-   set Msg(Render)    { "Allocation ..." "Allocating ..." }
-   set Msg(Index)     { "Une donnée est associée a cet géometrie. Désirez-vous l'afficher ?"
-                        "Data is associated with this geometrie. Would you like to display it ?" }
-   set Msg(BadFile)   { "Impossible d'ouvrir le fichier. Type de fichier non reconnu" "Unable to open file. Unknown file type" }
-   set Msg(Deep)      { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"
-                         The directory tree contains many files, the process might take some time.\n\n\tDo you want to continue ?" }
+   set Msg(GeoProcessInfo) { "Le géotraitement ne vas utiliser\nque les items sélectionné des couches" "Geoprocessing will only use\nselected features of the layers" }
+   set Msg(NoFeature)      { "La couche ne continent aucun item" "The layer contains no features" }
+   set Msg(GeoRef)         { "La géo-référence est invalide" "Invalid geo-reference" }
+   set Msg(File)           { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }
+   set Msg(Read)           { "Lecture des données ..." "Reading data ..." }
+   set Msg(Render)         { "Allocation ..." "Allocating ..." }
+   set Msg(Index)          { "Une donnée est associée a cet géometrie. Désirez-vous l'afficher ?"
+                             "Data is associated with this geometrie. Would you like to display it ?" }
+   set Msg(BadFile)        { "Impossible d'ouvrir le fichier. Type de fichier non reconnu" "Unable to open file. Unknown file type" }
+   set Msg(Deep)           { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"
+                             "The directory tree contains many files, the process might take some time.\n\n\tDo you want to continue ?" }
 
    set Bubble(ProjLoad) { "Lire un fichier de géoréférence (WKT)" "Load a georeference file (WKT)" }
    set Bubble(ProjRef)  { "Affichage / Modification de la géoréférence (WKT)" "Display / modify georeference (WKT)" }

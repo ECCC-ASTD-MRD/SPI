@@ -430,6 +430,21 @@ proc Mapper::GetColor { } {
 #
 #-------------------------------------------------------------------------------
 
+proc Mapper::Write { Object } {
+
+   if { [ogrlayer is $Object] } {
+      Mapper::WriteLayer [FileBox::Create .mapper - Save {}] $Object
+   } else {
+   }
+}
+
+proc Mapper::WriteLayer { File Object } {
+
+   ogrfile open OGRFILETMP write $File "ESRI Shapefile"
+   ogrlayer write $Object OGRFILETMP
+   ogrfile close OGRFILETMP
+}
+
 proc Mapper::Read { Files { Full False } { Mode ANY } } {
    global   GDefs
    variable Data
@@ -642,29 +657,37 @@ proc Mapper::ReadLayer { File { Index {} } { SQL "" } } {
             ogrfile close $File
             continue
          }
-         ogrlayer configure $layer -font OGRFONT -activeoutline yellow -width 1
-
-         if { [ogrlayer define $layer -space]==2 } {
-            ogrlayer configure $layer -outline black -fill [Mapper::GetColor]
-         } else {
-            ogrlayer configure $layer -outline [Mapper::GetColor]
-         }
-
-         if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $layer]==-1 } {
-            lappend Viewport::Data(Data$Page::Data(Frame)) $layer
-         }
+         
+         Mapper::DisplayLayer $Page::Data(Frame) $layer
+         
          set Data(Id$layer) $File
-      }
-      if { ![colormap is $layer] } {
-         colormap create $layer
-         colormap copy $layer OGRMAPDEFAULT
-         ogrlayer configure $layer -colormap $layer
       }
    }
    set Data(Job) ""
    Mapper::Progress $layer
 
    return $layer
+}
+
+proc Mapper::DisplayLayer { Frame Layer } {
+
+   ogrlayer configure $Layer -font OGRFONT -activeoutline yellow -width 1
+
+   if { [ogrlayer define $Layer -space]==2 } {
+      ogrlayer configure $Layer -outline black -fill [Mapper::GetColor]
+   } else {
+      ogrlayer configure $Layer -outline [Mapper::GetColor]
+   }
+
+   if { ![colormap is $Layer] } {
+      colormap create $Layer
+      colormap copy $Layer OGRMAPDEFAULT
+      ogrlayer configure $Layer -colormap $Layer
+   }
+   
+   if { [lsearch -exact $Viewport::Data(Data$Frame) $Layer]==-1 } {
+      lappend Viewport::Data(Data$Frame) $Layer
+   }
 }
 
 proc Mapper::Progress { Object } {
@@ -677,7 +700,7 @@ proc Mapper::Progress { Object } {
 
       if { $ready!=$total } {
          set pc [expr double($ready)/$total*100.0]
-         SPI::Progress $pc "[lindex $Lbl(Process) $GDefs(Lang)] $Object [format "%.1f" ${pc}]%"
+         SPI::Progress $pc "[lindex $Lbl(Project) $GDefs(Lang)] $Object [format "%.1f" ${pc}]%"
          after 100 Mapper::Progress \"$Object\"
          return
       }
