@@ -1630,6 +1630,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer definition",(char*)NULL);
       return(TCL_ERROR);
    }
+   OGR_FD_Reference(layer->Def);
 
    layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
    if (layer->NFeature) {
@@ -1855,6 +1856,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
          Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer definition",(char*)NULL);
          return(TCL_ERROR);
       }
+      OGR_FD_Reference(layer->Def);
 
       layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
 

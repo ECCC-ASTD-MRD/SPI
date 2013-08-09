@@ -826,6 +826,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Select)     free(Layer->Select);
    if (Layer->Loc)        free(Layer->Loc);
    if (Layer->Ref)        GeoRef_Destroy(NULL,Layer->Ref->Name);
+   if (Layer->Def)        OGR_FD_Dereference(Layer->Def);
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);
 
