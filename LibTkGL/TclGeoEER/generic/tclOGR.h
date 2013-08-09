@@ -143,6 +143,7 @@ int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRField
 void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
 void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
 OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
+OGRGeometryH GPC_OnOGRLayer(gpc_op Op,OGR_Layer *Layer);
 void         GPC_New(gpc_polygon *Poly);
 int          GPC_QSortInter(const Vect3d *A,const Vect3d *B);
 int          GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);

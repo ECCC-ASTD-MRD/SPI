@@ -454,7 +454,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    OGRCoordinateTransformationH  tr=NULL;
    OGREnvelope                   env,lim;
-   OGRGeometryH                  geom,geomop,new,prev,uni;
+   OGRGeometryH                  geom,new,uni;
    OGRSpatialReferenceH          srs=NULL;
 
    int           j,idx,nseg,fld=-1;
@@ -691,22 +691,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             return(TCL_ERROR);
          }
          
-         prev=new=uni=NULL;
-         for(f=0;f<layer->NFeature;f++) {
-           if (layer->Select[f]) {
-               if ((geomop=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  if (!uni) {
-                     uni=geomop;
-                  } else {
-                     prev=new;
-                     new=GPC_OnOGR(GPC_UNION,uni,geomop);
-                     if (prev)
-                        OGR_G_DestroyGeometry(prev);
-                     uni=new;
-                  }
-               }
-            }
-         }
+         new=GPC_OnOGRLayer(GPC_UNION,layer);
+
          layerres->Feature[0]=OGR_F_Clone(layer->Feature[0]);                        
          layerres->NFeature++;
          
@@ -743,9 +729,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
                      if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                     if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new)!=OGRERR_NONE) {
-                        fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
-                      }
+                     OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new);
                   } else {
                      fprintf(stderr,"OGR_LayerStats: Bad Buffer on feature %i\n",f);
                   }
@@ -771,30 +755,24 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
 
+         uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
+         
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  prev=new=NULL;
-                  for(fop=0;fop<layerop->NFeature;fop++) {
-                     if (layerop->Select[fop]) {
-                        if ((geomop=OGR_F_GetGeometryRef(layer->Feature[fop]))) {
-                           prev=new;
-                           new=GPC_OnOGR(GPC_DIFF,geom,geomop);
-                           if (prev)
-                              OGR_G_DestroyGeometry(prev);
-                           geom=new;
-                        }
-                     }
-                  }
-                  if (new) {
-                     if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                     if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom)!=OGRERR_NONE) {
-                        fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
+                  new=GPC_OnOGR(GPC_DIFF,geom,uni);
+                  if  (new) {
+                     if (layerres && !OGR_G_IsEmpty(new)) {
+                        layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
+                     } else {
+                        OGR_F_SetGeometryDirectly(layer->Feature[f],new);                        
                      }
                   }
                }
             }
          }
+
          break;
 
       case INTERSECTION:
@@ -814,30 +792,19 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
 
-         prev=new=uni=NULL;
-         for(fop=0;fop<layerop->NFeature;fop++) {
-            if (layerop->Select[fop]) {
-               if ((geomop=OGR_F_GetGeometryRef(layerop->Feature[fop]))) {
-                  if (!uni) {
-                     uni=geomop;
-                  } else {
-                     prev=new;
-                     new=GPC_OnOGR(GPC_UNION,uni,geomop);
-                     if (prev)
-                        OGR_G_DestroyGeometry(prev);
-                     uni=new;
-                  }
-               }
-            }
-         }
+         uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
 
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   new=GPC_OnOGR(GPC_INT,geom,uni);
-                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                  if (OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new)!=OGRERR_NONE) {
-                     fprintf(stderr,"OGR_LayerStats: Unable to assign geom for feature %i\n",f);
+                  if  (new) {
+                     if (layerres && !OGR_G_IsEmpty(new)) {
+                        layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
+                     } else {
+                        OGR_F_SetGeometryDirectly(layer->Feature[f],new);                        
+                     }
                   }
                }
             }

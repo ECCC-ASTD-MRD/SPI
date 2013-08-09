@@ -310,6 +310,45 @@ OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1) {
    return(geom);
 }
 
+OGRGeometryH GPC_OnOGRLayer(gpc_op Op,OGR_Layer *Layer) {
+
+   gpc_polygon  poly0,poly1,result,*r,*p,*t;
+   OGRGeometryH geom=NULL;
+   unsigned int f;
+   
+   GPC_New(&poly0);
+   GPC_New(&poly1);
+   GPC_New(&result);
+   
+   p=&poly0;
+   r=&result;
+   t=NULL;
+  
+   for(f=0;f<Layer->NFeature;f++) {
+      if (Layer->Select[f]) {
+         if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
+
+            GPC_FromOGR((t?&poly1:&result),geom);
+            if (t) {
+               gpc_polygon_clip(Op,p,&poly1,r);
+               gpc_free_polygon(p);
+            }
+            t=p; p=r; r=t;
+            
+            gpc_free_polygon(&poly1);
+         }
+      }
+   }
+   
+   GPC_ToOGR(p,&geom);
+ 
+   gpc_free_polygon(&result);
+   gpc_free_polygon(&poly0);
+   gpc_free_polygon(&poly1);
+
+   return(geom);
+}
+
 int GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1) {
 
    int          n0,n1,npt=0;
