@@ -212,7 +212,6 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
             if (x<=X1 && y<=Y1) {
                Scan->V[Scan->N++]=idx;
             }
-
             ((float*)Scan->X)[n]=dd?x+0.5:x+1.0;
             ((float*)Scan->Y)[n]=dd?y+0.5:y+1.0;
          }

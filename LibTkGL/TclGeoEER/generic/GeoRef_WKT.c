@@ -287,8 +287,10 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       /*Longitude from 0 to 360*/
       if (Ref->InvTransform && Ref->InvTransform[0]==0) {
          x=x<0?x+360:x;
+      } else {
+         x=x>180?x-360:x;
       }
-
+      
       /* Transform from latlon */
       if (Ref->InvFunction) {
          if (!OCTTransform(Ref->InvFunction,1,&x,&y,NULL)) {
