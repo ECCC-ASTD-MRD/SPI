@@ -214,17 +214,21 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       graphitem configure PAGEOBSGRAPHITEM -xaxis PAGEOBSGRAPHAXISX -yaxis PAGEOBSGRAPHAXISY -width 1 -tag PAGEOBSGRAPHITEM
    }
 
-   #----- If we have enough elements to create a graph
    vector clear PAGEOBSGRAPHDATA
    set items [metobs define $Obs -ELEMENT $Tag $Elem]
 
-   #----- Is it a profile ?
+   #----- If we have enough elements to create a graph
    if { [llength [lindex [lindex $items 0] 1]]>1 } {
+      #----- Is it a profile ?
       if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]] } {
          set elevs [metobs define $Obs -ELEMENT $Tag $elem]
-         foreach item [lindex [lindex $items 0] 1] elev [lindex [lindex $elevs 0] 1] {
-            vector append PAGEOBSGRAPHDATA.X $item
-            vector append PAGEOBSGRAPHDATA.Y $elev
+         
+         #----- If the number of values = numner of elevs (good z axis values)
+         if { [llength [lindex [lindex $items 0] 1]] == [llength [lindex [lindex $elevs 0] 1]] } {
+            foreach item [lindex [lindex $items 0] 1] elev [lindex [lindex $elevs 0] 1] {
+               vector append PAGEOBSGRAPHDATA.X $item
+               vector append PAGEOBSGRAPHDATA.Y $elev
+            }
          }
       } else {
          set i 0
@@ -242,8 +246,8 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       graphitem configure PAGEOBSGRAPHITEM -xdata PAGEOBSGRAPHDATA.X -ydata PAGEOBSGRAPHDATA.Y \
          -desc [string range [lindex [metobs table -desc $Elem] 0] 0 20] -type LINE -orient Y -outline black -fill yellow
 
-   #----- Then it is a time serie
    } else {
+      #----- Then it is a time serie
       foreach item $items {
          vector append PAGEOBSGRAPHDATA $item
       }

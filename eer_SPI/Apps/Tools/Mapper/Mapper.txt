@@ -120,7 +120,7 @@ namespace eval Mapper { } {
    set Lbl(SegmentLength) { "Longueur des segments" "Segment length" }
    set Lbl(Distance)      { "Distance" "Distance" }
    set Lbl(WithLayer)     { "Avec la couche" "With layer" }
-   set Lbl(Curve)         { "Segments de courbes" "Curvature segments" }
+   set Lbl(SegmentCurve)  { "Segments de courbes" "Curvature segments" }
 
    set Lbl(Icon)         { "Icône" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }

@@ -2150,14 +2150,14 @@ proc Model::SourceApply { Mode Array Index Op } {
       if { $Mode } {
          if { $SPI::Src(Info)!="" } {
 
+            #----- If experiment name has not been set, use source name
+            if { $Data(Name)=="New experiment" || $Data(Name)=="" || $Data(Name)==$Data(Src) } {
+               set Data(Name) $SPI::Src(Name)
+            }
+
             set Data(Id)    "$SPI::Src(No)"
             set Data(Src)   "$SPI::Src(Name)"
             set Data(Coord) "$SPI::Src(Lat) $SPI::Src(Lon)"
-
-            #----- If experiment name has not been set, use source name
-            if { $Data(Name)=="New experiment" } {
-               set Data(Name) $Data(Src)
-            }
 
             #----- Is source selection is VOLCAN,NUCLEAR or CTBT, set experiment type
             if { $SPI::Src(Type)<3 } {

@@ -294,7 +294,7 @@ proc Mapper::GeoProcessParams { Object Op } {
       switch $Op {
          buffer       { label .mapperprocess.params0.lbl -text [lindex $Lbl(Distance) $GDefs(Lang)] -width 18 -anchor w 
                         ComboBox::Create  .mapperprocess.params0.val Mapper::Data(ProcessParam0) editclose unsorted nodouble -1 [ogrlayer define $Object -field] 1 8 { }
-                        label .mapperprocess.params1.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)] -width 18 -anchor w 
+                        label .mapperprocess.params1.lbl -text [lindex $Lbl(SegmentCurve) $GDefs(Lang)] -width 18 -anchor w 
                         entry .mapperprocess.params1.val -textvariable Mapper::Data(ProcessParam1) -width 2 -bd 1 -relief sunken -bg $GDefs(ColorLight)
                         pack .mapperprocess.params0.lbl -side left -fill x
                         pack .mapperprocess.params0.val -side left -fill x -expand True
