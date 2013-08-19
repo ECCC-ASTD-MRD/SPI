@@ -58,14 +58,14 @@ namespace eval Log { } {
    set Param(Rotate)      86400                 ;#Log rotate time
 
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
-   set Param(MailTitle)   "Job Info"            ;#Mail title
+   set Param(MailTitle)   ""                    ;#Mail title
 
    set Param(Cyclope)     False                 ;#Use Cyclope
    set Param(CyclopePath) $env(HOME)/.Cyclope   ;#Path to Cyclope
 
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
-   set Param(JobId)       "JOB"                 ;#Job unique identifier
+   set Param(JobId)       ""                    ;#Job unique identifier
    set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%MZ" -gmt True] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
@@ -251,7 +251,14 @@ proc Log::Start { Job Version { Input "" } } {
       set Param(Out) ""
    }
 
+   if { $Param(MailTitle)=="" } {
+      set Param(MailTitle) "$Param(Job) Report"
+   }
+
    #----- Job run time ID.
+   if { $Param(JobId)=="" } {
+      set Param(JobId) [string toupper $Param(Job)]
+   }
    append Param(JobId) "-[clock format [clock seconds] -format "%Y%m%d_%H%M%S" -gmt True]"
 
    Log::Print MUST "-------------------------------------------------------------------------------"

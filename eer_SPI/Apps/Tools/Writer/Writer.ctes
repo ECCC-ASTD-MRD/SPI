@@ -20,9 +20,9 @@ namespace eval Writer {
    variable Data
    variable Param
 
-   image create bitmap check -file $GDefs(Dir)/Resources/Bitmap/optcheck.xbm
-   image create bitmap box   -file $GDefs(Dir)/Resources/Bitmap/optbox.xbm
-   image create bitmap opt   -file $GDefs(Dir)/Resources/Bitmap/opt.xbm
+   image create bitmap check -file $GDefs(Dir)/share/bitmap/optcheck.xbm
+   image create bitmap box   -file $GDefs(Dir)/share/bitmap/optbox.xbm
+   image create bitmap opt   -file $GDefs(Dir)/share/bitmap/opt.xbm
 
    set Param(Title)   { "Composition de message" "Message Writer" }
    set Param(Version) 1.2

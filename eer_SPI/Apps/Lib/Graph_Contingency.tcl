@@ -893,7 +893,7 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
                set coo [observation define $data(Obs) -COORD $idx]
                if { [set pix [$data(VP) -project [lindex $coo 0] [lindex $coo 1] 0]]!="" && [lindex $pix 2]>0 } {
                   $data(FrameData).page.canvas create bitmap [expr [lindex $pix 0]-$Obs::Param(Size)] [lindex $pix 1] \
-                     -bitmap @$GDefs(Dir)/Resources/Bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
+                     -bitmap @$GDefs(Dir)/share/bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
                      -anchor e -foreground $Graph::Color(Select)
                }
             }

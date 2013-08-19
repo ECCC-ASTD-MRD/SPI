@@ -329,7 +329,7 @@ proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
 
    graphitem configure ES_INTER -type HISTOGRAM -outline black -width 1 -font XFONT12 -fill white \
       -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_INTERX -ydata ES_INTERY
-   graphitem configure ES_SIMDUR -type HISTOGRAM -outline #BAECFF -width 1 -font XFONT12 -fill #E6F8FF -stipple @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm \
+   graphitem configure ES_SIMDUR -type HISTOGRAM -outline #BAECFF -width 1 -font XFONT12 -fill #E6F8FF -stipple @$GDefs(Dir)/share/bitmap/stipple8-32.xbm \
       -xaxis ES_AXISX -yaxis ES_AXISY -xdata ES_SIMDURX -ydata ES_SIMDURY
 
    graphaxis configure ES_AXISX -format NONE -width 1 -highoffset 2 -gridcolor "#000000" -gridwidth 1 -dash . -format T+HHMM -spacing 20
@@ -576,7 +576,7 @@ proc MLDPn::IsoDetailsUpdate { Id } {
       } else {
          #----- Create the frame
          frame $base.$i
-            button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
+            button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
             button $base.$i.btn -relief flat -anchor w -text $Tmp(EmIso$i) -command "IsoBox::Create .emintdetails \"MLDPn::IsoUpdate $i\"; MLDPn::IsoDetailsUpdate $Id" -width 8
             entry $base.$i.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmRate.${Id}.$i)
             button $base.$i.unt -relief flat -text "[lindex $Lbl(ReleaseRateUnit$Tmp(EmRateMode.$Id.$i)) $GDefs(Lang)]" -command "MLDPn::EmRateModeToggle $base $Id $i" -width 7
@@ -789,7 +789,7 @@ proc MLDPn::EmissionDetails { Parent Id { Type "" } } {
 
       for { set i 0 } { $i < $Tmp(EmNbIso) } { incr i } {
          frame $base.$i
-            button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
+            button $base.$i.del -relief flat -anchor w -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -command "MLDPn::IsoDelete $i $Id; MLDPn::IsoDetailsUpdate $Id"
             button $base.$i.btn -relief flat -anchor w -text $Tmp(EmIso$i) -command "IsoBox::Create .emintdetails \"MLDPn::IsoUpdate $i\"; MLDPn::IsoDetailsUpdate $Id" -width 8
             entry  $base.$i.ent -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MLDPn::Tmp(EmRate.${Id}.$i)
             button $base.$i.unt -relief flat -text "[lindex $Lbl(ReleaseRateUnit$Tmp(EmRateMode.$Id.$i)) $GDefs(Lang)]" -command "MLDPn::EmRateModeToggle $base $Id $i" -width 7

@@ -142,7 +142,7 @@ proc Drawing::Window { } {
 
       frame .drawing.params.font
          label .drawing.params.font.lbl -text [lindex $Lbl(Font) $GDefs(Lang)] -anchor w
-         button .drawing.params.font.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico -relief groove -bd 2 \
+         button .drawing.params.font.opt -bitmap @$GDefs(Dir)/share/bitmap/font.ico -relief groove -bd 2 \
             -command "FontBox::Create .drawing \"Drawing::SetFont \$Page::Data(Frame) \$Drawing::Current(Font)\" \$Drawing::Current(Font)"
          pack .drawing.params.font.lbl -side left
          pack .drawing.params.font.opt -side right
@@ -168,37 +168,37 @@ proc Drawing::Window { } {
 
       frame .drawing.params.width
          label .drawing.params.width.lbl -text [lindex $Lbl(Width) $GDefs(Lang)] -anchor w
-         IcoMenu::Create .drawing.params.width.opt $GDefs(Dir)/Resources/Bitmap $Resources(Width) "0 1 2 3 4 5" \
+         IcoMenu::Create .drawing.params.width.opt $GDefs(Dir)/share/bitmap $Resources(Width) "0 1 2 3 4 5" \
             Drawing::Current(Width) "Drawing::SetWidth \$Page::Data(Frame) \$Drawing::Current(Width)" $Drawing::Current(Width) -relief flat -bd 1
          pack .drawing.params.width.lbl -side left
          pack .drawing.params.width.opt -side right
 
       frame .drawing.params.arrow
          label .drawing.params.arrow.lbl -text [lindex $Lbl(Arrow) $GDefs(Lang)] -anchor w
-         IcoMenu::Create .drawing.params.arrow.opt $GDefs(Dir)/Resources/Bitmap $Resources(Arrow) "none first last both" \
+         IcoMenu::Create .drawing.params.arrow.opt $GDefs(Dir)/share/bitmap $Resources(Arrow) "none first last both" \
             Drawing::Current(Arrow) "Drawing::SetArrow \$Page::Data(Frame) \$Drawing::Current(Arrow)" 0 -relief flat -bd 1
          pack .drawing.params.arrow.lbl -side left
          pack .drawing.params.arrow.opt -side right
 
       frame .drawing.params.type
          label .drawing.params.type.lbl -text [lindex $Lbl(Type) $GDefs(Lang)] -anchor w
-         IcoMenu::Create .drawing.params.type.opt $GDefs(Dir)/Resources/Bitmap $Resources(Line) "0 1" \
+         IcoMenu::Create .drawing.params.type.opt $GDefs(Dir)/share/bitmap $Resources(Line) "0 1" \
             Drawing::Current(Line) "Drawing::SetLine \$Page::Data(Frame) \$Drawing::Current(Line)" 0 -relief flat -bd 1
          pack .drawing.params.type.lbl -side left
          pack .drawing.params.type.opt -side right
 
       frame .drawing.params.pattern
          label .drawing.params.pattern.lbl -text [lindex $Lbl(Pattern) $GDefs(Lang)] -anchor w
-         IcoMenu::CreateDef .drawing.params.pattern.opt $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::CreateDef .drawing.params.pattern.opt $GDefs(Dir)/share/bitmap \
             { zeroth.xbm stipple1.xbm stipple2.xbm stipple3.xbm stipple4.xbm stipple5.xbm stipple6.xbm stipple7.xbm stipple8.xbm } \
-            { "" @$GDefs(Dir)/Resources/Bitmap/stipple1-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple2-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple3-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple4-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple5-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple7-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm } \
+            { "" @$GDefs(Dir)/share/bitmap/stipple1-32.xbm @$GDefs(Dir)/share/bitmap/stipple2-32.xbm @$GDefs(Dir)/share/bitmap/stipple3-32.xbm @$GDefs(Dir)/share/bitmap/stipple4-32.xbm @$GDefs(Dir)/share/bitmap/stipple5-32.xbm @$GDefs(Dir)/share/bitmap/stipple6-32.xbm @$GDefs(Dir)/share/bitmap/stipple7-32.xbm @$GDefs(Dir)/share/bitmap/stipple8-32.xbm } \
             Drawing::Current(Pattern) "Drawing::SetPattern \$Page::Data(Frame) \$Drawing::Current(Pattern)" $Drawing::Current(Pattern) -relief groove -bd 2
          pack .drawing.params.pattern.lbl -side left
          pack .drawing.params.pattern.opt -side right
 
       frame .drawing.params.bitmap
          labelframe .drawing.params.bitmap.lbl -text "[lindex $Lbl(Bitmap) $GDefs(Lang)]"
-         IcoMenu::Create .drawing.params.bitmap.lbl.opt $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create .drawing.params.bitmap.lbl.opt $GDefs(Dir)/share/bitmap \
             $Resources(Bitmap) "0 1 2 3 4 5 6 7 8 9 10" \
             Drawing::Current(BitIdx) "Drawing::SetBitmap \$Page::Data(Frame) \$Drawing::Current(BitIdx)" $Drawing::Current(BitIdx) -relief flat -bd 1
          pack .drawing.params.bitmap.lbl.opt -side top -fill both -expand true
@@ -212,21 +212,21 @@ proc Drawing::Window { } {
 
       frame .drawing.params.coord
          label .drawing.params.coord.lbl -text [lindex $Lbl(Coord) $GDefs(Lang)] -anchor w
-         checkbutton .drawing.params.coord.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/coord.ico -bd 1 -variable Drawing::Current(Coord) \
+         checkbutton .drawing.params.coord.opt -bitmap @$GDefs(Dir)/share/bitmap/coord.ico -bd 1 -variable Drawing::Current(Coord) \
          -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
          pack .drawing.params.coord.lbl -side left
          pack .drawing.params.coord.opt -side right
 
       frame .drawing.params.grid
          label .drawing.params.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -anchor w
-         checkbutton .drawing.params.grid.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/grid.ico -bd 1 -variable Drawing::Current(Grid) \
+         checkbutton .drawing.params.grid.opt -bitmap @$GDefs(Dir)/share/bitmap/grid.ico -bd 1 -variable Drawing::Current(Grid) \
             -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
          pack .drawing.params.grid.lbl -side left
          pack .drawing.params.grid.opt -side right
 
       frame .drawing.params.date
          label .drawing.params.date.lbl -text [lindex $Lbl(Date) $GDefs(Lang)] -anchor w
-         checkbutton .drawing.params.date.opt -bitmap @$GDefs(Dir)/Resources/Bitmap/date.ico -bd 1 -variable Drawing::Current(Date) \
+         checkbutton .drawing.params.date.opt -bitmap @$GDefs(Dir)/share/bitmap/date.ico -bd 1 -variable Drawing::Current(Date) \
             -command { Drawing::SetValu $Page::Data(Frame) } -indicatoron false -selectcolor $GDefs(ColorFrame)
          pack .drawing.params.date.lbl -side left
          pack .drawing.params.date.opt -side right
@@ -246,7 +246,7 @@ proc Drawing::Window { } {
       frame .drawing.params.nau
          label .drawing.params.nau.lbl -text [lindex $Lbl(Nautical) $GDefs(Lang)] -anchor w
          checkbutton .drawing.params.nau.opt -variable Drawing::Current(Nautic) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Drawing::SetNautic $Page::Data(Frame) }
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Drawing::SetNautic $Page::Data(Frame) }
          pack .drawing.params.nau.lbl -side left
          pack .drawing.params.nau.opt -side right
 

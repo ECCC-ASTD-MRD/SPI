@@ -92,7 +92,7 @@ namespace eval Writer::FVCN {
    set Data(WWW)    "VA GRAPHICAL PRODUCT AVAILABLE AT\nHTTP://METEO.EC.GC.CA/EER (ALL LOWER CASE)"
 
    set Data(Colors)   { blue green red black }
-   set Data(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft04.xbm @$GDefs(Dir)/Resources/Bitmap/raydiagright04.xbm @$GDefs(Dir)/Resources/Bitmap/rayver04.xbm @$GDefs(Dir)/Resources/Bitmap/rayhor04.xbm"
+   set Data(Stipples) "@$GDefs(Dir)/share/bitmap/raydiagleft04.xbm @$GDefs(Dir)/share/bitmap/raydiagright04.xbm @$GDefs(Dir)/share/bitmap/rayver04.xbm @$GDefs(Dir)/share/bitmap/rayhor04.xbm"
    set Data(Delay)    60000
    set Data(Seconds)  [clock seconds]
 }
@@ -2083,7 +2083,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
             lappend tmp $X $Y 0 [lindex $tmp 0] [lindex $tmp 1] 0
 
             Viewport::DrawArea $Frame $VP $tmp "$Page::Data(Tag)$VP FVCN VERTEXFOLLOW" VERTEXFOLLOW red red\
-               @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+               @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm 0 2
          }
       }
    }
@@ -2197,7 +2197,7 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
             lappend tmp [lindex $tmp 0] [lindex $tmp 1] 0
 
             Viewport::DrawArea $Writer::Data(Frame) $Writer::Data(VP) $tmp "$Page::Data(Tag)$VP FVCN" FVCN red red\
-               @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm 0 2
+               @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm 0 2
          }
       }
    }

@@ -234,8 +234,8 @@ namespace eval Model {
       set Resources(Acts)  "ACT_VOLC ACT_NUCL ACT_CTBT ACT_FIRE ACT_BIO ACT_SPILL ACT_OTHE"
       set Resources(Bads)  "BAD_VOLC BAD_NUCL BAD_CTBT BAD_FIRE BAD_BIO BAD_SPILL BAD_OTHE"
 
-      set Resources(Plus)  "@$GDefs(Dir)/Resources/Bitmap/plus.ico"
-      set Resources(Minus) "@$GDefs(Dir)/Resources/Bitmap/minus.ico"
+      set Resources(Plus)  "@$GDefs(Dir)/share/bitmap/plus.ico"
+      set Resources(Minus) "@$GDefs(Dir)/share/bitmap/minus.ico"
    }
 }
 

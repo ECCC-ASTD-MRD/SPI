@@ -180,7 +180,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
          ObsBox::${spc}::Data(Nb) "" 4 10 ObsBox::Restrict $no
       SelectBox::Create $id.header.date "DATE" \
          ObsBox::${spc}::Data(Date) "" 11 10 ObsBox::Restrict $no
-      button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
+      button $id.header.info -bitmap "@$GDefs(Dir)/share/bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "ObsBox::RestrictClear $no"
       pack $id.header.id $id.header.nb $id.header.date -side left -ipadx 3 -fill y
       pack $id.header.info -side left -fill both -expand true

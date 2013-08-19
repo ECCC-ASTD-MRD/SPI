@@ -35,7 +35,7 @@ namespace eval InfoFrame {
    catch {
       set Resources(Background) $GDefs(ColorLight)
       set Resources(BarColor)   yellow
-      set Resources(IcoInfo)    @$GDefs(Dir)/Resources/Bitmap/combobox_down.ico
+      set Resources(IcoInfo)    @$GDefs(Dir)/share/bitmap/combobox_down.ico
    }
 
    #----- Definitions des variables internes

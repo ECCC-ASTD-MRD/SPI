@@ -67,8 +67,8 @@ namespace eval Mapper::Geo { } {
       9  "Premise (building name, property name, shopping center, etc.) level accuracy"
    }
 
-   image create photo GEOGOOGLE -file $GDefs(Dir)/Resources/Image/Icon/Google.gif
-   image create photo GEOCODER  -file $GDefs(Dir)/Resources/Image/Icon/Geocoder.gif
+   image create photo GEOGOOGLE -file $GDefs(Dir)/share/image/Icon/Google.gif
+   image create photo GEOCODER  -file $GDefs(Dir)/share/image/Icon/Geocoder.gif
 
 #   set str [http::config -useragent]
 #   http::config -useragent "EC/CMC/CMOE SPI $GDefs(Version) (through $str)"

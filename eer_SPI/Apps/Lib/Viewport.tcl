@@ -596,14 +596,14 @@ proc Viewport::ConfigPut { Frame VP } {
    IcoMenu::Set $Data(Frame).left.ras.mask.sel $Map(Mask)
 
    set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
-   $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coast)]
-   $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Lake)]
-   $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(River)]
-   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Polit)]
-   $Data(Frame).layer.admin.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Admin)]
-   $Data(Frame).layer.road.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Road)]
-   $Data(Frame).layer.rail.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Rail)]
-   $Data(Frame).layer.ll.sz  configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $lst $Map(Coord)]
+   $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coast)]
+   $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Lake)]
+   $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(River)]
+   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Polit)]
+   $Data(Frame).layer.admin.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Admin)]
+   $Data(Frame).layer.road.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Road)]
+   $Data(Frame).layer.rail.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Rail)]
+   $Data(Frame).layer.ll.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coord)]
 
    ColorBox::ConfigNoColor $Data(Frame).layer.coast.col $Resources(Coast)
    ColorBox::ConfigNoColor $Data(Frame).layer.lake.col $Resources(Lake)
@@ -1778,27 +1778,27 @@ proc Viewport::ParamFrame { Frame Apply } {
       frame $Data(Frame).left.ras.topo
          label $Data(Frame).left.ras.topo.lbl -text " [lindex $Lbl(Topo) $GDefs(Lang)]"
          checkbutton $Data(Frame).left.ras.topo.sel -variable Viewport::Map(Topo) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          pack $Data(Frame).left.ras.topo.sel -side left -ipadx 1
          pack $Data(Frame).left.ras.topo.lbl -side left -fill y
       frame $Data(Frame).left.ras.bath
          label $Data(Frame).left.ras.bath.lbl -text " [lindex $Lbl(Bath) $GDefs(Lang)]"
          checkbutton $Data(Frame).left.ras.bath.sel -variable Viewport::Map(Bath) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          pack $Data(Frame).left.ras.bath.sel -side left -ipadx 1
          pack $Data(Frame).left.ras.bath.lbl -side left -fill y
       frame $Data(Frame).left.ras.text
          label $Data(Frame).left.ras.text.lbl -text " [lindex $Lbl(Text) $GDefs(Lang)]"
          checkbutton $Data(Frame).left.ras.text.sel -variable Viewport::Map(Text) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          pack $Data(Frame).left.ras.text.sel -side left -ipadx 1
          pack $Data(Frame).left.ras.text.lbl -side left -fill y
       frame $Data(Frame).left.ras.mask
-         IcoMenu::CreateDef $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::CreateDef $Data(Frame).left.ras.mask.sel $GDefs(Dir)/share/bitmap \
              { zeroth.xbm mask1.xbm mask2.xbm } { NONE LAND SEA } \
              Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
 
-#         IcoMenu::Create $Data(Frame).left.ras.mask.sel $GDefs(Dir)/Resources/Bitmap \
+#         IcoMenu::Create $Data(Frame).left.ras.mask.sel $GDefs(Dir)/share/bitmap \
 #            "zeroth.xbm mask1.xbm mask2.xbm" "0 1 2" Viewport::Map(Mask) "$Apply configure -state normal" $Viewport::Map(Mask) -relief groove -bd 2
          label $Data(Frame).left.ras.mask.lbl -text " [lindex $Lbl(Mask) $GDefs(Lang)]"
          pack $Data(Frame).left.ras.mask.sel -side left -ipadx 1
@@ -1807,7 +1807,7 @@ proc Viewport::ParamFrame { Frame Apply } {
 
    labelframe $Data(Frame).left.sun -text [lindex $Lbl(Sun) $GDefs(Lang)]
       checkbutton $Data(Frame).left.sun.on -variable Viewport::Map(Sun) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
-         -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
       scale $Data(Frame).left.sun.time -orient horizontal -from 0 -to 86400 \
          -showvalue false -variable Viewport::Data(Seconds) -relief flat \
          -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 60
@@ -1815,7 +1815,7 @@ proc Viewport::ParamFrame { Frame Apply } {
       pack $Data(Frame).left.sun.time -side left -fill x -expand true -padx 2 -pady 2
 
    labelframe $Data(Frame).left.axis -text "Axis"
-      IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/Resources/Bitmap \
+      IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/share/bitmap \
          "zeroth.xbm zaxis0.xbm zaxis1.xbm" "0 1 2" \
          Viewport::Map(ZAxis) "$Apply configure -state normal" $Viewport::Map(ZAxis) -relief groove -bd 2
       checkbutton $Data(Frame).left.axis.pick -variable Page::Data(ToolMode) -relief sunken -bd 1 -overrelief raised -offrelief flat \
@@ -1839,7 +1839,7 @@ proc Viewport::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
 
       frame $Data(Frame).layer.vp
-         button $Data(Frame).layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
+         button $Data(Frame).layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
             -command "FontBox::Create $Data(Frame).layer.vp.font \"$Apply configure -state normal; $Apply invoke\"  \$Viewport::Resources(Font)"
          ColorBox::CreateSel $Data(Frame).layer.vp.col Viewport::Resources(Bkg) $Apply configure -state normal
          label $Data(Frame).layer.vp.lbl -text [format "%-10s" [lindex $Lbl(Viewport) $GDefs(Lang)]]
@@ -1847,7 +1847,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.vp.lbl -side right
 
       frame $Data(Frame).layer.coast
-         IcoMenu::Create $Data(Frame).layer.coast.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.coast.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Coast) "$Apply configure -state normal" $Viewport::Map(Coast) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.coast.col Viewport::Resources(Coast) $Apply configure -state normal
@@ -1857,7 +1857,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.coast.lbl -side right
 
       frame $Data(Frame).layer.lake
-         IcoMenu::Create $Data(Frame).layer.lake.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.lake.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Lake) "$Apply configure -state normal" $Viewport::Map(Lake) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.lake.col Viewport::Resources(Lake) $Apply configure -state normal
@@ -1867,7 +1867,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.lake.lbl -side right
 
       frame $Data(Frame).layer.river
-         IcoMenu::Create $Data(Frame).layer.river.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.river.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(River) "$Apply configure -state normal" $Viewport::Map(River) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.river.col Viewport::Resources(River) $Apply configure -state normal
@@ -1876,7 +1876,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.river.lbl -side right
 
       frame $Data(Frame).layer.poli
-         IcoMenu::Create $Data(Frame).layer.poli.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.poli.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Polit) "$Apply configure -state normal" $Viewport::Map(Polit) -relief groove -bd 2
          $Data(Frame).layer.poli.sz.menu add separator
@@ -1886,7 +1886,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.poli.lbl -side right
 
       frame $Data(Frame).layer.admin
-         IcoMenu::Create $Data(Frame).layer.admin.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.admin.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Admin) "$Apply configure -state normal" $Viewport::Map(Admin) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.admin.col Viewport::Resources(Admin) $Apply configure -state normal
@@ -1896,7 +1896,7 @@ proc Viewport::ParamFrame { Frame Apply } {
 
       frame $Data(Frame).layer.city
          checkbutton $Data(Frame).layer.city.sz -variable Viewport::Map(City) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          ColorBox::CreateSel $Data(Frame).layer.city.col Viewport::Resources(City) $Apply configure -state normal
          label $Data(Frame).layer.city.lbl -text [format "%-10s" [lindex $Lbl(City) $GDefs(Lang)]]
          pack $Data(Frame).layer.city.col -side left
@@ -1905,7 +1905,7 @@ proc Viewport::ParamFrame { Frame Apply } {
 
       frame $Data(Frame).layer.place
          checkbutton $Data(Frame).layer.place.sz -variable Viewport::Map(Place) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          ColorBox::CreateSel $Data(Frame).layer.place.col Viewport::Resources(Place) $Apply configure -state normal
          label $Data(Frame).layer.place.lbl -text [format "%-10s" [lindex $Lbl(Place) $GDefs(Lang)]]
          pack $Data(Frame).layer.place.col -side left
@@ -1913,7 +1913,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.place.lbl -side right
 
       frame $Data(Frame).layer.road
-         IcoMenu::Create $Data(Frame).layer.road.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.road.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Road) "$Apply configure -state normal" $Viewport::Map(Road) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.road.col Viewport::Resources(Road) $Apply configure -state normal
@@ -1922,7 +1922,7 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.road.lbl -side right
 
       frame $Data(Frame).layer.rail
-         IcoMenu::Create $Data(Frame).layer.rail.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.rail.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Rail) "$Apply configure -state normal" $Viewport::Map(Rail) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.rail.col Viewport::Resources(Rail) $Apply configure -state normal
@@ -1931,12 +1931,12 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).layer.rail.lbl -side right
 
       frame $Data(Frame).layer.ll
-         IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Coord) "$Apply configure -state normal" $Viewport::Map(Coord) -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.ll.col Viewport::Resources(Coord) $Apply configure -state normal
          label $Data(Frame).layer.ll.lbl -text [format "%-10s" [lindex $Lbl(Coord) $GDefs(Lang)]]
-         menubutton $Data(Frame).layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/Resources/Bitmap/more.xbm \
+         menubutton $Data(Frame).layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/share/bitmap/more.xbm \
             -menu $Data(Frame).layer.ll.opt.menu
          pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.opt -side left
          pack $Data(Frame).layer.ll.lbl -side right

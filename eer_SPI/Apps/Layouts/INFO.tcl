@@ -257,7 +257,7 @@ proc INFO::PageInit { Frame } {
 
    $canvas delete HEADER
 
-   $canvas create bitmap [expr $Page(Width)/2] [expr 70+$Page(Border)] -bitmap "@$GDefs(Dir)/Resources/Bitmap/flag.xbm" \
+   $canvas create bitmap [expr $Page(Width)/2] [expr 70+$Page(Border)] -bitmap "@$GDefs(Dir)/share/bitmap/flag.xbm" \
       -foreground gray95 -tags HEADER
 
    #----- Creation de l'entete

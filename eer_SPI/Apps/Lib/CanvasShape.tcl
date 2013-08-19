@@ -100,13 +100,13 @@ package provide CanvasShape 1.4
 
 catch { SPI::Splash "Loading Canvas Package CanvasShape 1.4" }
 
-image create photo COMPASSFRAME   -file $GDefs(Dir)/Resources/Image/System/CompassFrame.gif
-image create photo COMPASSDIR     -file $GDefs(Dir)/Resources/Image/System/CompassDir.gif
-image create photo COMPASSDIST    -file $GDefs(Dir)/Resources/Image/System/CompassDist.gif
-image create photo COMPASSHEADING -file $GDefs(Dir)/Resources/Image/System/CompassHeading.gif
-image create photo CLOCKFRAME     -file $GDefs(Dir)/Resources/Image/System/ClockFrame.gif
-image create photo CLOCKTIME      -file $GDefs(Dir)/Resources/Image/System/ClockTime.gif
-image create photo CLOCKDATE      -file $GDefs(Dir)/Resources/Image/System/ClockDate.gif
+image create photo COMPASSFRAME   -file $GDefs(Dir)/share/image/System/CompassFrame.gif
+image create photo COMPASSDIR     -file $GDefs(Dir)/share/image/System/CompassDir.gif
+image create photo COMPASSDIST    -file $GDefs(Dir)/share/image/System/CompassDist.gif
+image create photo COMPASSHEADING -file $GDefs(Dir)/share/image/System/CompassHeading.gif
+image create photo CLOCKFRAME     -file $GDefs(Dir)/share/image/System/ClockFrame.gif
+image create photo CLOCKTIME      -file $GDefs(Dir)/share/image/System/ClockTime.gif
+image create photo CLOCKDATE      -file $GDefs(Dir)/share/image/System/ClockDate.gif
 
 namespace eval CVCompass { }
 
@@ -435,7 +435,7 @@ proc CVClock::Create { Frame X Y } {
    }
 
    if { ![winfo exists $canvas.cvclock] } {
-      menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
+      menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
          -relief raised -menu $canvas.cvclock.menu
       menu $canvas.cvclock.menu -tearoff 0 -bg $GDefs(ColorFrame)
       set z -1
@@ -820,7 +820,7 @@ proc CVScale::Create { Frame X Y Size } {
    }
 
    if { ![winfo exists $canvas.cvscale] } {
-      menubutton $canvas.cvscale -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
+      menubutton $canvas.cvscale -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
          -relief raised -menu $canvas.cvscale.menu
       menu $canvas.cvscale.menu -tearoff 0 -bg $GDefs(ColorFrame)
       foreach size {  10000000 1000000 500000 250000 100000 25000 24000 20000 10000 } {
@@ -1679,9 +1679,9 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
 
          if { [$Tree keyexists $branch box] } {
             switch [$Tree get $branch box] {
-               True  { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/Resources/Bitmap/optcheck.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+               True  { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optcheck.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
                        $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch False" }
-               False { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/Resources/Bitmap/optbox.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+               False { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optbox.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
                        $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch True" }
             }
          }
@@ -1702,7 +1702,7 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
                $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
             }
             if { [$Tree get $branch open] } {
-               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "CVTREE$Tree $branch"
+               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/minus.ico -tags "CVTREE$Tree $branch"
                $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch False"
                set x0 $x
                set y0 $y
@@ -1711,7 +1711,7 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
                set x $x0
                $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
             } else {
-               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "CVTREE$Tree $branch"
+               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/plus.ico -tags "CVTREE$Tree $branch"
                $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch True"
             }
          }
@@ -1826,7 +1826,7 @@ proc Shape::BindFull { Canvas Tag Var { Command "" } } {
 
    if { ![winfo exists $Canvas.bf$Tag] } {
       set box [$Canvas bbox $Tag]
-      checkbutton $Canvas.bf$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvfull.xbm -cursor hand1 -bd 1 \
+      checkbutton $Canvas.bf$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvfull.xbm -cursor hand1 -bd 1 \
          -indicatoron false -variable $Var -onvalue 1 -offvalue 0 -command "if { \$$Var } { Shape::Full $Canvas $Tag $Command }"
       $Canvas create window [expr [lindex $box 2]-11] [lindex $box 3] -window $Canvas.bf$Tag -anchor se -tags "BF$Tag NOPRINT"
    }
@@ -1855,7 +1855,7 @@ proc Shape::BindDestroy { Canvas Tag { Command "" } } {
    if { ![winfo exists $Canvas.bd$Tag] } {
      set box [$Canvas bbox $Tag]
 
-     button $Canvas.bd$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "$Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
+     button $Canvas.bd$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "$Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
 
      if { $Command!="" } {
         $Canvas.bd$Tag configure -command "$args $Frame $Tag; $Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
@@ -1920,7 +1920,7 @@ proc Shape::BindScale { Canvas Tag { Command "" } } {
 
    if { ![winfo exists $Canvas.bs$Tag] } {
       set box [$Canvas bbox $Tag]
-      label $Canvas.bs$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -bd 0 -cursor sizing -bd 1 -relief raised
+      label $Canvas.bs$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvscale.xbm -bd 0 -cursor sizing -bd 1 -relief raised
 
       $Canvas create window [lindex $box 2] [lindex $box 3] -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
    }
@@ -2631,7 +2631,7 @@ proc Shape::DrawStringTest { Canvas X Y Factor Tags Color } {
    for { set i 0 } { $i < $Factor } { incr i } {
 
       $Canvas create bitmap [expr $X + 20 + $i * 114] [expr $Y - 10 - $i * 97] \
-         -bitmap @$GDefs(Dir)/Resources/Bitmap/string_test.xbm \
+         -bitmap @$GDefs(Dir)/share/bitmap/string_test.xbm \
           -foreground $Color -tag $Tags
    }
 }

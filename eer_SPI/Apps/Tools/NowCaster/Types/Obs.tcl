@@ -628,7 +628,7 @@ proc NowCaster::Obs::Window { Frame } {
    labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
       frame $Frame.flags.codtyp
          label $Frame.flags.codtyp.lbl -text CODETYPE -width 11 -anchor w
-         menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
          entry $Frame.flags.codtyp.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Code)
          menu $Frame.flags.codtyp.sel.menu -tearoff 1
          foreach rng { "0-49" "50-99" "100-149" "150-255" } {
@@ -646,7 +646,7 @@ proc NowCaster::Obs::Window { Frame } {
          frame $Frame.flags.bfam
          label $Frame.flags.bfam.lbl -text BFAM -width 11 -anchor w
          entry $Frame.flags.bfam.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Family)
-         menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
          menu $Frame.flags.bfam.sel.menu -tearoff 1
          $Frame.flags.bfam.sel.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
             -variable NowCaster::Obs::Param(FamilyOp) -command NowCaster::Obs::Update
@@ -663,7 +663,7 @@ proc NowCaster::Obs::Window { Frame } {
 
       frame $Frame.flags.bktyp
          label $Frame.flags.bktyp.lbl -text BKTYP -width 11 -anchor w
-         menubutton $Frame.flags.bktyp.sel -menu $Frame.flags.bktyp.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menubutton $Frame.flags.bktyp.sel -menu $Frame.flags.bktyp.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
          entry $Frame.flags.bktyp.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Type)
          menu $Frame.flags.bktyp.sel.menu -tearoff 1
          foreach type $Param(Types) {
@@ -676,7 +676,7 @@ proc NowCaster::Obs::Window { Frame } {
       frame $Frame.flags.mark
          label $Frame.flags.mark.lbl -text MARKER -width 11 -anchor w
          entry $Frame.flags.mark.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Marker)
-         menubutton $Frame.flags.mark.sel -menu $Frame.flags.mark.sel.menu -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+         menubutton $Frame.flags.mark.sel -menu $Frame.flags.mark.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
          menu $Frame.flags.mark.sel.menu -tearoff 1
          $Frame.flags.mark.sel.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
             -variable NowCaster::Obs::Param(MarkerOp) -command NowCaster::Obs::Update

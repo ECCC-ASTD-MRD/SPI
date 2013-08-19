@@ -280,7 +280,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                   $FSTD::Param(Orders) 6 4 { FSTD::ParamSet }
                spinbox $Data(Frame).def.l.val.order.prec -textvariable FSTD::Param(Mantisse) -width 1 -from 0 -to 10 -wrap 1 -bd 1 \
                   -command { FSTD::ParamSet } -bg $GDefs(ColorLight)
-               button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
+               button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font FSTD::ParamSet \$FSTD::Param(Font)"
                pack $Data(Frame).def.l.val.order.lbl -side left
                pack $Data(Frame).def.l.val.order.font $Data(Frame).def.l.val.order.prec -side left -fill x -expand true
@@ -338,10 +338,10 @@ proc FSTD::ParamFrame { Frame Apply } {
          labelframe $Data(Frame).def.r.disp -text [lindex $Lbl(Display) $GDefs(Lang)]
 
          frame $Data(Frame).def.r.disp.p
-            IcoMenu::CreateDef $Data(Frame).def.r.disp.p.st $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::CreateDef $Data(Frame).def.r.disp.p.st $GDefs(Dir)/share/bitmap \
              { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                FSTD::Param(Dash) "FSTD::ParamSet" 0 -relief groove -bd 2
-            IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/share/bitmap \
                "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
                FSTD::Param(Width) "FSTD::ParamSet" 0 -relief groove -bd 2
             ColorBox::CreateSel $Data(Frame).def.r.disp.p.col FSTD::Param(Color) FSTD::ParamSet
@@ -352,7 +352,7 @@ proc FSTD::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).def.r.disp.cont
             label $Data(Frame).def.r.disp.cont.lbl -text " [lindex $Lbl(Contour) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm contour1.xbm contour2.xbm contour3.xbm" "0 1 2 3" \
                FSTD::Param(Contour) "FSTD::ParamSet" 0 -relief groove -bd 2
                
@@ -362,7 +362,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.tex
             label $Data(Frame).def.r.disp.tex.lbl -text " [lindex $Lbl(Texture) $GDefs(Lang)]"
             checkbutton $Data(Frame).def.r.disp.tex.sel -variable FSTD::Param(Texture) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+               -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
             pack $Data(Frame).def.r.disp.tex.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.tex.lbl -side left -fill y
@@ -370,28 +370,28 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.vol
             label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
             checkbutton $Data(Frame).def.r.disp.vol.sel -variable FSTD::Param(Volume) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+               -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
 
          frame $Data(Frame).def.r.disp.grid
             label $Data(Frame).def.r.disp.grid.lbl -text " [lindex $Lbl(Grid) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.grid.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.grid.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 1 2 3 4 5" \
                FSTD::Param(Grid) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.grid.sel $Data(Frame).def.r.disp.grid.lbl -side left
 
          frame $Data(Frame).def.r.disp.label
             label $Data(Frame).def.r.disp.label.lbl -text " [lindex $Lbl(Label) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.label.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.label.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm label-1.xbm label4.xbm label3.xbm label2.xbm label1.xbm" "0 -1 6 4 2 1" \
                FSTD::Param(Label) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.label.sel $Data(Frame).def.r.disp.label.lbl -side left
 
          frame $Data(Frame).def.r.disp.vect
             label $Data(Frame).def.r.disp.vect.lbl -text " [lindex $Lbl(Vector) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm wind1.xbm wind2.xbm wind3.xbm wind4.xbm" "NONE BARBULE ARROW STREAMLINE STREAMLINE3D" FSTD::Param(Vector) \
                "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vect.sel $Data(Frame).def.r.disp.vect.lbl -side left
@@ -401,14 +401,14 @@ proc FSTD::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).def.r.disp.val
             label $Data(Frame).def.r.disp.val.lbl -text " [lindex $Lbl(Value) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.val.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.val.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm valmm.xbm valhl.xbm valhls.xbm " "0 1 9 2" \
                FSTD::Param(Value) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.val.sel $Data(Frame).def.r.disp.val.lbl -side left
 
          frame $Data(Frame).def.r.disp.part
             label $Data(Frame).def.r.disp.part.lbl -text " [lindex $Lbl(Particle) $GDefs(Lang)]"
-            IcoMenu::Create $Data(Frame).def.r.disp.part.sel $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Data(Frame).def.r.disp.part.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 1 2 3 4 5" \
                FSTD::Param(Particle) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.part.sel $Data(Frame).def.r.disp.part.lbl -side left
@@ -429,9 +429,9 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
       frame $Data(Frame).lev.desc
-         checkbutton $Data(Frame).lev.desc.bellow -bitmap @$GDefs(Dir)/Resources/Bitmap/MDec.xbm -variable FSTD::Param(MapBellow) -onvalue 1 -offvalue 0 \
+         checkbutton $Data(Frame).lev.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable FSTD::Param(MapBellow) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false -selectcolor "" -width 10
-         checkbutton $Data(Frame).lev.desc.above -bitmap @$GDefs(Dir)/Resources/Bitmap/MInc.xbm -variable FSTD::Param(MapAbove) -onvalue 1 -offvalue 0 \
+         checkbutton $Data(Frame).lev.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable FSTD::Param(MapAbove) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false -selectcolor ""  -width 10
          ComboBox::Create $Data(Frame).lev.desc.edit FSTD::Param(Intervals) editclose sorted nodouble -1 \
             "" 17 6 "FSTD::IntervalSetMode NONE"

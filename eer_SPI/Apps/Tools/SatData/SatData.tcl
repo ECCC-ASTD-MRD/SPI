@@ -899,11 +899,11 @@ proc SatData::UpdateItems { Frame } {
 
       if { $Data(ViewGOES15) } {
          Viewport::DrawArea $Data(Frame) $Data(VP) $Data(CoordGOES15) "$Page::Data(Tag)$Data(VP) SAT" SATGOES15 \
-            blue blue @$GDefs(Dir)/Resources/Bitmap/raydiagright08.xbm False 1
+            blue blue @$GDefs(Dir)/share/bitmap/raydiagright08.xbm False 1
       }
       if { $Data(ViewGOES13) } {
          Viewport::DrawArea $Data(Frame) $Data(VP) $Data(CoordGOES13) "$Page::Data(Tag)$Data(VP) SAT" SATGOES13 \
-            red red @$GDefs(Dir)/Resources/Bitmap/raydiagleft08.xbm False 1
+            red red @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm False 1
       }
    }
 }

@@ -387,7 +387,7 @@ proc METF::LayoutInit { Frame } {
    #----- Afficher le drapeau
 
    $canvas create bitmap [expr $Page(Width)/2] [expr $Page(Height)/2] \
-      -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_ver_small.xbm -foreground red  -tags "FIX RED"
+      -bitmap @$GDefs(Dir)/share/bitmap/SMC_ver_small.xbm -foreground red  -tags "FIX RED"
 
    #----- Afficher la legende du bas
 

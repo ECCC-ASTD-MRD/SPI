@@ -159,10 +159,10 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
       scale $Frame.sc$tag -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
          -from [expr log10([lindex $Params(Lens) 0])/log10(2)] -to [expr log10([lindex $Params(Lens) end])/log10(2)] \
          -variable Viewport::Data(L$mini) -command "Miniport::Select $Frame $mini; set Viewport::Data(Z$mini) \[expr pow(2,\$Viewport::Data(L$mini))\];Page::Update $Frame; catch"
-      label  $Frame.bs$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
-      label  $Frame.bm$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
-      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Miniport::Destroy $Frame $mini"
-      menubutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+      label  $Frame.bs$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
+      label  $Frame.bm$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
+      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Miniport::Destroy $Frame $mini"
+      menubutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
          -menu $Frame.bf$tag.menu
 
       menu $Frame.bf$tag.menu -bg $GDefs(ColorFrame)

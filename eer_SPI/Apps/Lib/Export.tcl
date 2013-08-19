@@ -401,7 +401,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       puts $f "</Document>\n</kml>"
       close $f
       file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
       eval file delete ${file}.kml $kmz
    }
 
@@ -526,7 +526,7 @@ proc Export::Vector::Export { Path Format Fields } {
       puts $f "</Document>\n</kml>"
       close $f
       file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/Resources/Image/Symbol/Logo/Logo_SMC.png $kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
       eval file delete ${file}.kml $kmz
    }
 

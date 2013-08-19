@@ -44,7 +44,7 @@ namespace eval DataBar {
    set Param(Full)  1
    set Param(Font)  XFont12
 
-   image create photo DATABARLOGO -file $GDefs(Dir)/Resources/Image/Symbol/Logo/Flag.gif
+   image create photo DATABARLOGO -file $GDefs(Dir)/share/image/Symbol/Logo/Flag.gif
 }
 
 #------------------------------------------------------------------------------
@@ -248,8 +248,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -fill #CCCCCC
 
       if { ![winfo exists $Frame.page.canvas.up$n] } {
-         button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
-         button $Frame.page.canvas.dn$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+         button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/up.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+         button $Frame.page.canvas.dn$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
       }
       $Frame.page.canvas.up$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n-1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
       $Frame.page.canvas.dn$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n+1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"

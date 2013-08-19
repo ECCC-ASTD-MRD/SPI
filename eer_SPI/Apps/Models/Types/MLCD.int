@@ -353,7 +353,7 @@ proc MLCD::ParamsEmission { Tab { Mode NEW } } {
          pack $frame.edit.params.rough.header -side top -fill x -expand true
 
          entry $frame.edit.params.rough.ent -relief sunken -bd 1 -textvariable MLCD::Sim(ObsRough) -bg $GDefs(ColorLight) -width 12
-         menubutton $frame.edit.params.rough.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm \
+         menubutton $frame.edit.params.rough.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm \
                     -menu $frame.edit.params.rough.mnb.menu -highlightthickness 1
          pack $frame.edit.params.rough.mnb $frame.edit.params.rough.ent -side left -fill y
       pack $frame.edit.params.rough -side left
@@ -366,7 +366,7 @@ proc MLCD::ParamsEmission { Tab { Mode NEW } } {
          pack $frame.edit.params.obukhov.header -side top -fill x -expand true
 
          entry $frame.edit.params.obukhov.ent -relief sunken -bd 1 -textvariable MLCD::Sim(ObsObukhov) -bg $GDefs(ColorLight) -width 12
-         menubutton $frame.edit.params.obukhov.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm \
+         menubutton $frame.edit.params.obukhov.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm \
                     -menu $frame.edit.params.obukhov.mnb.menu -highlightthickness 1
          pack $frame.edit.params.obukhov.mnb $frame.edit.params.obukhov.ent -side left -fill y
       pack $frame.edit.params.obukhov -side left
@@ -379,7 +379,7 @@ proc MLCD::ParamsEmission { Tab { Mode NEW } } {
          pack $frame.edit.params.precip.header -side top -fill x -expand true
 
          entry $frame.edit.params.precip.ent -relief sunken -bd 1 -textvariable MLCD::Sim(ObsPrecip) -bg $GDefs(ColorLight) -width 12
-         menubutton $frame.edit.params.precip.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm \
+         menubutton $frame.edit.params.precip.mnb -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm \
                     -menu $frame.edit.params.precip.mnb.menu -highlightthickness 1
          pack $frame.edit.params.precip.mnb $frame.edit.params.precip.ent -side left -fill y
       pack $frame.edit.params.precip -side left

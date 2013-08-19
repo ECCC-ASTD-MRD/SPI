@@ -140,8 +140,8 @@ proc TOA::Layout { Frame } {
    set canvas $Frame.page.canvas
    $canvas create rectangle 5 510 795 625 -outline black
    $canvas create rectangle 5 510 350 545 -outline black
-   $canvas create bitmap  10 515 -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm  -foreground red  -anchor nw -tags "FIX RED"
-   $canvas create bitmap 260 515 -bitmap @$GDefs(Dir)/Resources/Bitmap/RSMC_hor_small.xbm -foreground red  -anchor nw -tags "FIX RED"
+   $canvas create bitmap  10 515 -bitmap @$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm  -foreground red  -anchor nw -tags "FIX RED"
+   $canvas create bitmap 260 515 -bitmap @$GDefs(Dir)/share/bitmap/RSMC_hor_small.xbm -foreground red  -anchor nw -tags "FIX RED"
 
    #----- Afficher l'identification de la source
 
@@ -425,7 +425,7 @@ proc TOA::UpdateItems { Frame } {
 
    foreach lat $Sim(Lat) lon $Sim(Lon) {
       if { [set xy [$Param(VP) -project $lat $lon 0]]!="" && [lindex $xy 2]>0 } {
-         $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap @$GDefs(Dir)/Resources/Bitmap/nucleaire.ico -foreground black -tags TOAFIX
+         $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap @$GDefs(Dir)/share/bitmap/nucleaire.ico -foreground black -tags TOAFIX
       }
    }
 }

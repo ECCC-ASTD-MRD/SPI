@@ -157,16 +157,16 @@ namespace eval Graph {
    set Graph(Identitys)   { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
    set Graph(Dashs)       { \"\" "_" "." ".._" "..._" "...__" }
 
-   set Graph(Stipples) "@$GDefs(Dir)/Resources/Bitmap/raydiagleft16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/raydiagright16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/rayhor16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/rayver16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/grey06.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/grey12.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/raydiagleft16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/raydiagright16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/rayhor16.xbm
-                        @$GDefs(Dir)/Resources/Bitmap/rayver16.xbm"
+   set Graph(Stipples) "@$GDefs(Dir)/share/bitmap/raydiagleft16.xbm
+                        @$GDefs(Dir)/share/bitmap/raydiagright16.xbm
+                        @$GDefs(Dir)/share/bitmap/rayhor16.xbm
+                        @$GDefs(Dir)/share/bitmap/rayver16.xbm
+                        @$GDefs(Dir)/share/bitmap/grey06.xbm
+                        @$GDefs(Dir)/share/bitmap/grey12.xbm
+                        @$GDefs(Dir)/share/bitmap/raydiagleft16.xbm
+                        @$GDefs(Dir)/share/bitmap/raydiagright16.xbm
+                        @$GDefs(Dir)/share/bitmap/rayhor16.xbm
+                        @$GDefs(Dir)/share/bitmap/rayver16.xbm"
 
    set Graph(Icons)    { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON }
    set Graph(Colors)   { #FF0000 #00FF00 #0000FF #FFF300 #00FFF3 #E600FF #FF8C00 #804F4F #8CFF40 #B5A36B #80F9FF #A66BFF }
@@ -1010,7 +1010,7 @@ proc Graph::ParamsAxis { Parent Graph Type Axis { Mode "" } } {
 
    if { $Graph::Graph(ParamsAxis$Axis) } {
 
-      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm
       destroy $Parent.scale${Axis}.lbl
 
       if { $Mode!="MARK" } {
@@ -1100,10 +1100,10 @@ proc Graph::ParamsAxis { Parent Graph Type Axis { Mode "" } } {
          frame $Parent.scale${Axis}.grid
             label $Parent.scale${Axis}.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)] -width 12 -anchor w
             ColorBox::CreateSel $Parent.scale${Axis}.grid.col Graph::Grid(${Axis}Color) "Graph::${Type}::Graph $Graph"
-            IcoMenu::Create $Parent.scale${Axis}.grid.sz $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::Create $Parent.scale${Axis}.grid.sz $GDefs(Dir)/share/bitmap \
                "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                Graph::Grid(${Axis}Width) { Graph::Configure } $Graph::Grid(${Axis}Width) -relief groove -bd 2
-            IcoMenu::CreateDef $Parent.scale${Axis}.grid.dash $GDefs(Dir)/Resources/Bitmap \
+            IcoMenu::CreateDef $Parent.scale${Axis}.grid.dash $GDefs(Dir)/share/bitmap \
                { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                Graph::Grid(${Axis}Dash) { Graph::Configure } $Graph::Grid(${Axis}Dash) -relief groove -bd 2
             pack $Parent.scale${Axis}.grid.lbl $Parent.scale${Axis}.grid.col $Parent.scale${Axis}.grid.sz $Parent.scale${Axis}.grid.dash -side left
@@ -1121,7 +1121,7 @@ proc Graph::ParamsAxis { Parent Graph Type Axis { Mode "" } } {
          Bubble::Create $Parent.scale${Axis}.angle $Graph::Bubble(AxisAngle)
       }
    } else {
-      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      $Parent.scale${Axis}toggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
       destroy $Parent.scale${Axis}.inter $Parent.scale${Axis}.type $Parent.scale${Axis}.format $Parent.scale${Axis}.dec $Parent.scale${Axis}.z \
          $Parent.scale${Axis}.grid $Parent.scale${Axis}.t0 $Parent.scale${Axis}.t1 $Parent.scale${Axis}.angle
       label $Parent.scale${Axis}.lbl -text "" -width 12 -anchor w
@@ -1197,7 +1197,7 @@ proc Graph::ParamsItem { Parent } {
    if { $Graph::Graph(ParamsItem) } {
 
       destroy $Parent.item.lbl
-      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm
 
       frame $Parent.item.sel
          listbox $Parent.item.sel.list -yscrollcommand [list $Parent.item.sel.scroll set] -listvariable Graph::Data(Items)\
@@ -1208,35 +1208,35 @@ proc Graph::ParamsItem { Parent } {
       frame $Parent.item.line
          label $Parent.item.line.lbl -text [lindex $Lbl(Outline) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.item.line.col Graph::Item(Outline) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
-         IcoMenu::Create $Parent.item.line.width $GDefs(Dir)/Resources/Bitmap { zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm }\
+         IcoMenu::Create $Parent.item.line.width $GDefs(Dir)/share/bitmap { zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm }\
              "0 1 2 3 4 5" Graph::Item(Width) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Width) -relief groove -bd 2
-         IcoMenu::CreateDef $Parent.item.line.dash $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::CreateDef $Parent.item.line.dash $GDefs(Dir)/share/bitmap \
             { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
              Graph::Item(Dash) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Dash) -relief groove -bd 2
          pack  $Parent.item.line.lbl $Parent.item.line.col $Parent.item.line.width $Parent.item.line.dash -side left
       frame $Parent.item.fill
          label $Parent.item.fill.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.item.fill.col Graph::Item(FillColor) Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item)
-         IcoMenu::CreateDef $Parent.item.fill.stipple $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::CreateDef $Parent.item.fill.stipple $GDefs(Dir)/share/bitmap \
             { zeroth.xbm stipple0.xbm stipple1.xbm stipple2.xbm stipple3.xbm stipple4.xbm stipple5.xbm stipple6.xbm stipple7.xbm stipple8.xbm } \
-            { -1 "" @$GDefs(Dir)/Resources/Bitmap/stipple1-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple2-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple3-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple4-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple5-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple6-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple7-32.xbm @$GDefs(Dir)/Resources/Bitmap/stipple8-32.xbm } \
+            { -1 "" @$GDefs(Dir)/share/bitmap/stipple1-32.xbm @$GDefs(Dir)/share/bitmap/stipple2-32.xbm @$GDefs(Dir)/share/bitmap/stipple3-32.xbm @$GDefs(Dir)/share/bitmap/stipple4-32.xbm @$GDefs(Dir)/share/bitmap/stipple5-32.xbm @$GDefs(Dir)/share/bitmap/stipple6-32.xbm @$GDefs(Dir)/share/bitmap/stipple7-32.xbm @$GDefs(Dir)/share/bitmap/stipple8-32.xbm } \
              Graph::Item(Stipple) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Stipple) -relief groove -bd 2
          pack  $Parent.item.fill.lbl $Parent.item.fill.col $Parent.item.fill.stipple -side left
                   frame $Parent.item.icon
          label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
-         IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/share/bitmap \
             { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm } \
             $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } \
             0 -relief groove -bd 2
-         IcoMenu::Create $Parent.item.icon.size $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Parent.item.icon.size $GDefs(Dir)/share/bitmap \
             "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 2 4 6 8 10" \
              Graph::Item(Size) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Size) -relief groove -bd 2
          pack $Parent.item.icon.lbl $Parent.item.icon.sel $Parent.item.icon.size -side left
       frame $Parent.item.value
          label $Parent.item.value.lbl -text [lindex $Lbl(Value) $GDefs(Lang)] -width 12 -anchor w
          checkbutton $Parent.item.value.sel -variable Graph::Item(Value) -relief raised -bd 1 -onvalue True -offvalue False  -selectcolor "" -relief groove -bd 1\
-            -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
-         button $Parent.item.value.font -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
+         button $Parent.item.value.font -bitmap @$GDefs(Dir)/share/bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.item.value.font { Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item) } $Graph::Item(Font)"
          pack $Parent.item.value.lbl $Parent.item.value.sel $Parent.item.value.font -side left
 
@@ -1253,7 +1253,7 @@ proc Graph::ParamsItem { Parent } {
 
       bind $Parent.item.sel.list <ButtonRelease-1>  { set Graph::Data(Item) [%W get [%W nearest %y]] ; Graph::ItemSelect $Graph::Data(Item) }
    } else {
-      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      $Parent.itemtoggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
       destroy $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value
       label $Parent.item.lbl -text "" -width 12 -anchor w
       pack $Parent.item.lbl -side left
@@ -1544,7 +1544,7 @@ proc Graph::ItemConfigure { Graph Type Item } {
       set stipple ""
    }
 
-#   set Graph::Item(Bitmap) @$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm
+#   set Graph::Item(Bitmap) @$GDefs(Dir)/share/bitmap/CLEAR.xbm
 #   set Graph::Item(Image)  MODEL
 
    graphitem configure $Item -outline $Graph::Item(Outline) -fill $fill -iconoutline $Graph::Item(Outline) -iconfill $fill -transparency $Graph::Item(Tranparency) \
@@ -1610,7 +1610,7 @@ proc Graph::ItemSelect { Item } {
    IcoMenu::Set $Data(Frame).item.icon.size $Graph::Item(Size)
    IcoMenu::Set $Data(Frame).item.icon.sel $Graph::Item(Icon)
 
-#   $Data(Frame).item.line.width configure -bitmap @$GDefs(Dir)/Resources/Bitmap/[lindex $Graph(WidthBitmap) $Graph::Item(Width)]
+#   $Data(Frame).item.line.width configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $Graph(WidthBitmap) $Graph::Item(Width)]
 }
 
 #-------------------------------------------------------------------------------
@@ -1846,27 +1846,27 @@ proc Graph::ParamsGraph { Parent } {
 
    if { $Graph::Graph(ParamsGraph) } {
 
-      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm
       destroy $Parent.graph.lbl
 
       frame $Parent.graph.info
          label $Parent.graph.info.lbl -text [lindex $Lbl(Info) $GDefs(Lang)] -width 12 -anchor w
-         button $Parent.graph.info.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
+         button $Parent.graph.info.sel -bitmap @$GDefs(Dir)/share/bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.graph.info.sel Graph::Configure $Graph::Font(Graph)"
          ColorBox::CreateSel $Parent.graph.info.col ::Graph::Color(FG) Graph::Configure
          pack $Parent.graph.info.lbl $Parent.graph.info.col $Parent.graph.info.sel -side left
       frame $Parent.graph.axis
          label $Parent.graph.axis.lbl -text [lindex $Lbl(Axis) $GDefs(Lang)] -width 12 -anchor w
-         button $Parent.graph.axis.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico  -relief groove \
+         button $Parent.graph.axis.sel -bitmap @$GDefs(Dir)/share/bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.graph.axis.sel Graph::Configure $Graph::Font(Axis)"
          ColorBox::CreateSel $Parent.graph.axis.col ::Graph::Color(Axis) Graph::Configure
          pack $Parent.graph.axis.lbl $Parent.graph.axis.col $Parent.graph.axis.sel -side left
       frame $Parent.graph.select
          label $Parent.graph.select.lbl -text [lindex $Lbl(Select) $GDefs(Lang)] -width 12 -anchor w
-         button $Parent.graph.select.sel -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico -relief groove \
+         button $Parent.graph.select.sel -bitmap @$GDefs(Dir)/share/bitmap/font.ico -relief groove \
             -command "FontBox::Create $Parent.graph.select.sel Graph::Configure $Graph::Font(Select)"
          ColorBox::CreateSel $Parent.graph.select.col Graph::Color(Select) Graph::Configure
-         checkbutton $Parent.graph.select.coord -bitmap @$GDefs(Dir)/Resources/Bitmap/coord.ico -relief groove \
+         checkbutton $Parent.graph.select.coord -bitmap @$GDefs(Dir)/share/bitmap/coord.ico -relief groove \
             -variable Graph::Data(ShowCoord) -indicatoron false -command Graph::Configure -onvalue True -offvalue False
          pack $Parent.graph.select.lbl $Parent.graph.select.col $Parent.graph.select.sel $Parent.graph.select.coord -side left
       pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select -side top
@@ -1878,7 +1878,7 @@ proc Graph::ParamsGraph { Parent } {
       frame $Parent.graph.frame
          label $Parent.graph.frame.lbl -text [lindex $Lbl(Frame) $GDefs(Lang)] -width 12 -anchor w
          ColorBox::CreateSel $Parent.graph.frame.col Graph::Color(BG) Graph::Configure
-         IcoMenu::Create $Parent.graph.frame.sz $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Parent.graph.frame.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Graph::Width(Frame) "Graph::Configure" $Graph::Width(Frame) -relief groove -bd 2
          pack $Parent.graph.frame.lbl  $Parent.graph.frame.col $Parent.graph.frame.sz -side left
@@ -1899,7 +1899,7 @@ proc Graph::ParamsGraph { Parent } {
       Bubble::Create $Parent.graph.update $Bubble(Update)
       Bubble::Create $Parent.graph.ip3    $Bubble(IP3)
    } else {
-      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
       destroy $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3
       label $Parent.graph.lbl -text "" -width 12 -anchor w
       pack $Parent.graph.lbl -side left
@@ -1937,7 +1937,7 @@ proc Graph::ParamsObs { Parent Graph Type } {
 
    if { $Graph::Graph(ParamsObs) } {
 
-      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/up.xbm
+      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm
       destroy $Parent.obs.lbl
 
          entry $Parent.obs.sel  -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Graph::${Type}::${Type}${Graph}::Data(ObsToken)
@@ -1959,7 +1959,7 @@ proc Graph::ParamsObs { Parent Graph Type } {
       bind $Parent.obs.sel <Any-KeyRelease> "Graph::ParamsObsSearch $Type $Graph"
       pack $Parent.obs -side top -fill both -expand true -pady 5 -padx 5 -anchor n
    } else {
-      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm
+      $Parent.obstoggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
       destroy $Parent.obs.sel $Parent.obs.list
       label $Parent.obs.lbl -text "" -width 12 -anchor w
       pack $Parent.obs.lbl -side left

@@ -50,10 +50,10 @@ namespace eval Calendar {
    set Data(Result) ""
 
    catch {
-      set Resources(MDec) $GDefs(Dir)/Resources/Bitmap/MDec.xbm
-      set Resources(YDec) $GDefs(Dir)/Resources/Bitmap/YDec.xbm
-      set Resources(MInc) $GDefs(Dir)/Resources/Bitmap/MInc.xbm
-      set Resources(YInc) $GDefs(Dir)/Resources/Bitmap/YInc.xbm
+      set Resources(MDec) $GDefs(Dir)/share/bitmap/MDec.xbm
+      set Resources(YDec) $GDefs(Dir)/share/bitmap/YDec.xbm
+      set Resources(MInc) $GDefs(Dir)/share/bitmap/MInc.xbm
+      set Resources(YInc) $GDefs(Dir)/share/bitmap/YInc.xbm
    }
 }
 
@@ -116,7 +116,7 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
       }
       entry $Frame.e -relief sunken -bd 1 -width $Width -textvariable Calendar::Data(Date$Frame) -bg $GDefs(ColorLight)\
          -disabledbackground $GDefs(ColorLight) -disabledforeground black
-      button $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -width 7 \
+      button $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -width 7 \
          -command "set $Var \[Calendar::Invoke $Frame \$$Var\]; $Cmd"
       pack $Frame.b -side left -fill y
 

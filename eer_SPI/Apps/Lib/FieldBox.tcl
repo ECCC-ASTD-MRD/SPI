@@ -216,7 +216,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
          FieldBox::${spc}::Data(Eticket) "" 12 10 FieldBox::Restrict $no
       SelectBox::Create $id.header.date "DATEV"  \
          FieldBox::${spc}::Data(Date) "" 10 10 FieldBox::Restrict $no
-      button $id.header.info -bitmap "@$GDefs(Dir)/Resources/Bitmap/CLEAR.xbm" -relief raised \
+      button $id.header.info -bitmap "@$GDefs(Dir)/share/bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "FieldBox::RestrictClear $no"
       pack $id.header.var $id.header.type $id.header.level $id.header.ip2 \
            $id.header.ip3 $id.header.eticket $id.header.date -side left -ipadx 3 -fill y

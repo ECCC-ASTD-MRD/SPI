@@ -45,7 +45,7 @@ namespace eval Drawing {
    set Current(Arrow)    none                                   ;#Pointe de fleches
    set Current(Angle)    0                                      ;#Angle du texte
    set Current(Image)    [lindex $Resources(Image) 0]           ;#Image courante
-   set Current(Bitmap)   @$GDefs(Dir)/Resources/Bitmap/city.ico ;#Bitmap courant
+   set Current(Bitmap)   @$GDefs(Dir)/share/bitmap/city.ico ;#Bitmap courant
    set Current(BitIdx)   10                                     ;#Bitmap courant
    set Current(Item)     ""                                     ;#Item courant
    set Current(Line)     0                                      ;#Type de ligne actuel

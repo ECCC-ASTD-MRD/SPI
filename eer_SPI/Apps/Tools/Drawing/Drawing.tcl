@@ -120,7 +120,7 @@ proc Drawing::ImageSetup { } {
    menu $path.menu
 
    set Resources(Image) {}
-   foreach group [lsort -dictionary [glob $GDefs(Dir)/Resources/Image/Symbol/*]] {
+   foreach group [lsort -dictionary [glob $GDefs(Dir)/share/image/Symbol/*]] {
 
       set menu $path.menu.[string tolower [file tail $group]]
       $path.menu add cascade -label [file tail $group] -menu $menu
@@ -2073,7 +2073,7 @@ proc Drawing::SetBitmap { Frame Bitmap } {
    variable Current
    variable Resources
 
-   set Current(Bitmap)  @$GDefs(Dir)/Resources/Bitmap/[lindex $Resources(Bitmap) $Bitmap]
+   set Current(Bitmap)  @$GDefs(Dir)/share/bitmap/[lindex $Resources(Bitmap) $Bitmap]
 
    Drawing::SetIndex $Frame 5 $Current(Bitmap)
 

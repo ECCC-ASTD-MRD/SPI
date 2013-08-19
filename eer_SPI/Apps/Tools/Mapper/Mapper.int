@@ -1373,13 +1373,13 @@ proc Mapper::ParamsOGR { Object Tab } {
                label $Data(Frame2).shape.fill.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -width 12 -anchor w
                ColorBox::CreateSel  $Data(Frame2).shape.fill.val Mapper::Data(Fill) Mapper::ParamsOGRSet \$Mapper::Data(Object)
                checkbutton $Data(Frame2).shape.fill.sel -variable Mapper::Data(FillSel) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command { Mapper::ParamsOGRSet $Mapper::Data(Object) } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame2).shape.fill.lbl $Data(Frame2).shape.fill.val $Data(Frame2).shape.fill.sel -side left -anchor w -padx 5
 
             frame $Data(Frame2).shape.icon
                label $Data(Frame2).shape.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
-               IcoMenu::CreateDef $Data(Frame2).shape.icon.sel $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::CreateDef $Data(Frame2).shape.icon.sel $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm" $Data(Icons) \
                   Mapper::Data(Icon) { Mapper::ParamsOGRSet $Mapper::Data(Object) } $Mapper::Data(Icon) -relief groove -bd 2
                scale $Data(Frame2).shape.icon.sz -bd 1 -relief flat -width 15 -sliderlength 10 -from 1 -to 25 -variable Mapper::Data(Size) -orient horizontal -showvalue False
@@ -1391,10 +1391,10 @@ proc Mapper::ParamsOGR { Object Tab } {
             frame $Data(Frame2).shape.out
                label $Data(Frame2).shape.out.lbl -text [lindex $Lbl(Out) $GDefs(Lang)] -width 12 -anchor w
                ColorBox::CreateSel $Data(Frame2).shape.out.col Mapper::Data(Color) Mapper::ParamsOGRSet \$Mapper::Data(Object)
-               IcoMenu::Create $Data(Frame2).shape.out.width $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::Create $Data(Frame2).shape.out.width $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                   Mapper::Data(Width) { Mapper::ParamsOGRSet $Mapper::Data(Object) } $Mapper::Data(Width) -relief groove -bd 2
-               IcoMenu::CreateDef $Data(Frame2).shape.out.dash $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::CreateDef $Data(Frame2).shape.out.dash $GDefs(Dir)/share/bitmap \
                 { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                 Mapper::Data(Dash) { Mapper::ParamsOGRSet $Mapper::Data(Object) } $Mapper::Data(Dash) -relief groove -bd 2
                pack $Data(Frame2).shape.out.lbl $Data(Frame2).shape.out.col $Data(Frame2).shape.out.width $Data(Frame2).shape.out.dash -side left -anchor w -padx 5
@@ -1402,14 +1402,14 @@ proc Mapper::ParamsOGR { Object Tab } {
             frame $Data(Frame2).shape.mask
                label $Data(Frame2).shape.mask.lbl -text [lindex $Lbl(Mask) $GDefs(Lang)] -width 12 -anchor w
                checkbutton $Data(Frame2).shape.mask.sel -variable Mapper::Data(Mask) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command { Mapper::ParamsOGRSet $Mapper::Data(Object) } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame2).shape.mask.lbl $Data(Frame2).shape.mask.sel -side left -anchor w -padx 5
 
             frame $Data(Frame2).shape.burn
                label $Data(Frame2).shape.burn.lbl -text [lindex $Lbl(Burn) $GDefs(Lang)] -width 12 -anchor w
                checkbutton $Data(Frame2).shape.burn.sel -variable Mapper::Data(Burn) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -onvalue -1 -offvalue 1 \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue -1 -offvalue 1 \
                   -command { Mapper::ParamsOGRSet $Mapper::Data(Object) } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame2).shape.burn.lbl $Data(Frame2).shape.burn.sel -side left -anchor w -padx 5
 
@@ -1435,7 +1435,7 @@ proc Mapper::ParamsOGR { Object Tab } {
                ComboBox::Create $Data(Frame2).inter.order.val Mapper::Data(Order) noedit unsorted nodouble -1 $FSTD::Param(Orders) 1 4 ""
                spinbox $Data(Frame2).inter.order.prec -textvariable Mapper::Data(Mantisse) -width 2 -from 0 -to 30 -wrap 1 -bd 1 \
                   -command "" -bg $GDefs(ColorLight)
-               button $Data(Frame2).inter.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
+               button $Data(Frame2).inter.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame2).inter.order.font \"Mapper::ParamsOGRSet \$Mapper::Data(Object)\" OGRFONT"
                pack $Data(Frame2).inter.order.lbl -side left -padx 5
                pack $Data(Frame2).inter.order.font $Data(Frame2).inter.order.prec -side left
@@ -2018,22 +2018,22 @@ proc Mapper::ParamsModel { Object Tab } {
             frame $Data(Frame2).mode.out
                label $Data(Frame2).mode.out.lbl -text [lindex $Lbl(Out) $GDefs(Lang)] -width 12 -anchor w
                ColorBox::CreateSel $Data(Frame2).mode.out.col Mapper::Data(Color) Mapper::ParamsModelSet \$Mapper::Data(Object)
-               IcoMenu::Create $Data(Frame2).mode.out.width $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::Create $Data(Frame2).mode.out.width $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                   Mapper::Data(Width) { Mapper::ParamsModelSet $Mapper::Data(Object) } $Mapper::Data(Width) -relief groove -bd 2
-               IcoMenu::CreateDef $Data(Frame2).mode.out.dash $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::CreateDef $Data(Frame2).mode.out.dash $GDefs(Dir)/share/bitmap \
                 { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
                 Mapper::Data(Dash) { Mapper::ParamsModelSet $Mapper::Data(Object) } $Mapper::Data(Dash) -relief groove -bd 2
                pack $Data(Frame2).mode.out.lbl $Data(Frame2).mode.out.col $Data(Frame2).mode.out.width $Data(Frame2).mode.out.dash -side left -anchor w
             frame $Data(Frame2).mode.text
                label $Data(Frame2).mode.text.lbl -text [lindex $Lbl(Texture) $GDefs(Lang)] -width 12 -anchor w
                checkbutton $Data(Frame2).mode.text.val -variable Mapper::Data(Texture) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Mapper::ParamsModelSet $Mapper::Data(Object) }
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Mapper::ParamsModelSet $Mapper::Data(Object) }
                pack $Data(Frame2).mode.text.lbl $Data(Frame2).mode.text.val -side left
             frame $Data(Frame2).mode.light
                label $Data(Frame2).mode.light.lbl -text [lindex $Lbl(Light) $GDefs(Lang)] -width 12 -anchor w
                checkbutton $Data(Frame2).mode.light.val -variable Mapper::Data(Light) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -command { Mapper::ParamsModelSet $Mapper::Data(Object) }
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Mapper::ParamsModelSet $Mapper::Data(Object) }
                pack $Data(Frame2).mode.light.lbl $Data(Frame2).mode.light.val -side left
             pack $Data(Frame2).mode.out $Data(Frame2).mode.text $Data(Frame2).mode.light -side top -anchor w -padx 5
          pack $Data(Frame2).mat $Data(Frame2).mode -side top -fill x -padx 5 -pady 5 -ipady 2

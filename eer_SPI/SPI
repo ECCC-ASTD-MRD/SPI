@@ -69,7 +69,8 @@ fi
 
 #----- Load up the fonts
 #xset fp default
-#xset fp+ ${SPI_PATH}/Resources/Font
+#xset fp+ ${SPI_PATH}/share/font
+
 #----- Let's start up the software
 if [[ $XVFB -eq 1 ]]
 then

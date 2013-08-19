@@ -42,9 +42,9 @@ namespace eval RSMC {
 
    #----- Definitions des textes des bulles d'aides
 
-   set Ico(Nuclear)      "@$GDefs(Dir)/Resources/Bitmap/nucleaire.ico"
-   set Ico(Flag)         "@$GDefs(Dir)/Resources/Bitmap/SMC_ver_small.xbm"
-   set Ico(RSMC)         "@$GDefs(Dir)/Resources/Bitmap/RSMC_ver_small.xbm"
+   set Ico(Nuclear)      "@$GDefs(Dir)/share/bitmap/nucleaire.ico"
+   set Ico(Flag)         "@$GDefs(Dir)/share/bitmap/SMC_ver_small.xbm"
+   set Ico(RSMC)         "@$GDefs(Dir)/share/bitmap/RSMC_ver_small.xbm"
 
    set Sim(Lat)          0
    set Sim(Lon)          0

@@ -86,9 +86,9 @@ namespace eval SPI {
 
    #----- Defintions des items graphiques
 
-   image create photo LOGO -file $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_SMC.gif
-   image create photo TEST -file $GDefs(Dir)/Resources/Image/Symbol/Logo/Logo_TEST.gif
+   image create photo LOGO -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_SMC.gif
+   image create photo TEST -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_TEST.gif
 
-   set Resources(IcoLOGO) "@$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm"
-   set Resources(IcoTHER) "@$GDefs(Dir)/Resources/Bitmap/there.ico"
+   set Resources(IcoLOGO) "@$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm"
+   set Resources(IcoTHER) "@$GDefs(Dir)/share/bitmap/there.ico"
 }

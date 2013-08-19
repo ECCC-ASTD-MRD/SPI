@@ -32,8 +32,8 @@ namespace eval Clock {
    variable Resources
 
    catch {
-      set Resources(Up)   $GDefs(Dir)/Resources/Bitmap/up.xbm
-      set Resources(Down) $GDefs(Dir)/Resources/Bitmap/down.xbm
+      set Resources(Up)   $GDefs(Dir)/share/bitmap/up.xbm
+      set Resources(Down) $GDefs(Dir)/share/bitmap/down.xbm
    }
 }
 

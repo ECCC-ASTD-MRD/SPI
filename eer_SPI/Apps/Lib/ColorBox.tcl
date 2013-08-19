@@ -46,7 +46,7 @@ namespace eval ColorBox {
    set Data(A)   255           ;#Alpha
 
    catch {
-      set Resources(Fill)   $GDefs(Dir)/Resources/Bitmap/fill.xbm
+      set Resources(Fill)   $GDefs(Dir)/share/bitmap/fill.xbm
       set Resources(Colors) $GDefs(Colors)
    }
 

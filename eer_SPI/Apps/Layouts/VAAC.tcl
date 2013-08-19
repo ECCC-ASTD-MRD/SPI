@@ -599,9 +599,9 @@ proc VAAC::LayoutInit { Frame } {
 
    #----- Identificateur du CMC
 
-   $canvas create bitmap [expr $Page(Width)/2] 530 -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
-   $canvas create bitmap [expr $Page(Width)/2] 760 -bitmap @$GDefs(Dir)/Resources/Bitmap/VAAC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
-   $canvas create bitmap [expr $Page(Width)/2] 280 -bitmap @$GDefs(Dir)/Resources/Bitmap/VAAC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
+   $canvas create bitmap [expr $Page(Width)/2] 530 -bitmap @$GDefs(Dir)/share/bitmap/SMC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
+   $canvas create bitmap [expr $Page(Width)/2] 760 -bitmap @$GDefs(Dir)/share/bitmap/VAAC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
+   $canvas create bitmap [expr $Page(Width)/2] 280 -bitmap @$GDefs(Dir)/share/bitmap/VAAC_ver_small.xbm -foreground red  -anchor s -tag "FIX RED"
 }
 
 #----------------------------------------------------------------------------

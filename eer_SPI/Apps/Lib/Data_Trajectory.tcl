@@ -88,8 +88,8 @@ namespace eval Trajectory {
    set Param(Spec)      ""                                                          ;#Variable a parametrer
 
    catch {
-      set Resources(LogoCMC)   @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm
-      set Resources(LogoARL)   @$GDefs(Dir)/Resources/Bitmap/ARL_hor_small.xbm
+      set Resources(LogoCMC)   @$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm
+      set Resources(LogoARL)   @$GDefs(Dir)/share/bitmap/ARL_hor_small.xbm
    }
 
    set Data(List)           ""    ;#Liste des Id de trajectoire en memoire
@@ -321,7 +321,7 @@ proc Trajectory::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).part -text "[lindex $Lbl(Particle) $GDefs(Lang)]"
       frame $Data(Frame).part.icon
          label $Data(Frame).part.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -anchor w -width 11
-         IcoMenu::Create $Data(Frame).part.icon.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).part.icon.sel $GDefs(Dir)/share/bitmap \
             { zeroth.xbm stri.xbm ssquare.xbm scircle.xbm slos.xbm shbar.xbm svbar.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } [concat NONE $Trajectory::Param(Icons)] \
             Trajectory::Param(Icon) "Trajectory::ParamSet" 0 -relief groove -bd 2
          pack $Data(Frame).part.icon.lbl $Data(Frame).part.icon.sel -side left
@@ -339,14 +339,14 @@ proc Trajectory::ParamFrame { Frame Apply } {
          pack $Data(Frame).part.size.lbl $Data(Frame).part.size.sel $Data(Frame).part.size.var -side left -fill x
 
       frame $Data(Frame).part.int
-         IcoMenu::Create $Data(Frame).part.int.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).part.int.sel $GDefs(Dir)/share/bitmap \
             "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
                Trajectory::Param(Interval) "Trajectory::ParamSet" $Trajectory::Param(Interval) -relief groove -bd 2
          label $Data(Frame).part.int.lbl -text [lindex $Lbl(Interval) $GDefs(Lang)] -anchor w -width 11
          pack $Data(Frame).part.int.lbl $Data(Frame).part.int.sel -side left -fill x
 
       frame $Data(Frame).part.mark
-         IcoMenu::Create $Data(Frame).part.mark.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).part.mark.sel $GDefs(Dir)/share/bitmap \
             "zeroth.xbm digit1.xbm digit3.xbm digit6.xbm digit12.xbm digit24.xbm" "0 1 3 6 12 24" \
                Trajectory::Param(Mark) "Trajectory::ParamSet" $Trajectory::Param(Mark) -relief groove -bd 2
          label $Data(Frame).part.mark.lbl -text [lindex $Lbl(Fill) $GDefs(Lang)] -anchor w -width 11
@@ -357,14 +357,14 @@ proc Trajectory::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).traj -text [lindex $Lbl(Traj) $GDefs(Lang)]
 
       frame $Data(Frame).traj.style
-         IcoMenu::Create $Data(Frame).traj.style.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).traj.style.sel $GDefs(Dir)/share/bitmap \
             "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
                Trajectory::Param(Style) "Trajectory::ParamSet" $Trajectory::Param(Style) -relief groove -bd 2
          label $Data(Frame).traj.style.lbl -text [lindex $Lbl(Style) $GDefs(Lang)] -anchor w -width 11
       pack $Data(Frame).traj.style.lbl $Data(Frame).traj.style.sel -side left -fill x
 
       frame $Data(Frame).traj.width
-         IcoMenu::Create $Data(Frame).traj.width.sel $GDefs(Dir)/Resources/Bitmap \
+         IcoMenu::Create $Data(Frame).traj.width.sel $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                Trajectory::Param(Width) "Trajectory::ParamSet" $Trajectory::Param(Width) -relief groove -bd 2
          label $Data(Frame).traj.width.lbl -text [lindex $Lbl(Width) $GDefs(Lang)] -anchor w -width 11

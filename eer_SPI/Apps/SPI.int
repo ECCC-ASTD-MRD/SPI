@@ -97,7 +97,7 @@ proc SPI::About { } {
    wm geometry  .about 650x450+[winfo rootx .]+[winfo rooty .]
 
    frame .about.info -relief raised -bd 1
-      label .about.info.flag -bitmap @$GDefs(Dir)/Resources/Bitmap/SMC_hor_small.xbm -fg red
+      label .about.info.flag -bitmap @$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm -fg red
       frame .about.info.list
          text .about.info.list.l -relief sunken -bd 1 -bg $GDefs(ColorLight) -height 10 -width 50 \
             -yscrollcommand [list .about.info.list.s set]

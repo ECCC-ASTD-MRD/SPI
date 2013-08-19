@@ -138,7 +138,7 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
          pack $Frame.l -side left -fill y
       }
       entry $Frame.e -relief sunken -bd 1 -width $Width -textvariable [lindex $Var 0] -bg $GDefs(ColorLight)
-      menubutton $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/down.xbm -menu $Frame.b.m
+      menubutton $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -menu $Frame.b.m
       pack $Frame.b -side left -fill y
 
    if { $Width==-1 } {

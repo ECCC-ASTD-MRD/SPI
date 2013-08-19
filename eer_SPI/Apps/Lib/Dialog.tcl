@@ -65,12 +65,12 @@ namespace eval Dialog { } {
    set Bubble(SearchBWD) { "Rechercher vers le haut" "Search toward top" }
 
    if { [info exists ::tk_version] } {
-      image create photo DIALOG_ERROR    -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Error.gif
-      image create photo DIALOG_WAIT     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Timer.gif
-      image create photo DIALOG_WARNING  -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Alert.gif
-      image create photo DIALOG_QUESTION -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Tick.gif
-      image create photo DIALOG_INFO     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Info.gif
-      image create photo DIALOG_CLIP     -file $GDefs(Dir)/Resources/Image/Icon/Dialog_Clip.gif
+      image create photo DIALOG_ERROR    -file $GDefs(Dir)/share/image/Icon/Dialog_Error.gif
+      image create photo DIALOG_WAIT     -file $GDefs(Dir)/share/image/Icon/Dialog_Timer.gif
+      image create photo DIALOG_WARNING  -file $GDefs(Dir)/share/image/Icon/Dialog_Alert.gif
+      image create photo DIALOG_QUESTION -file $GDefs(Dir)/share/image/Icon/Dialog_Tick.gif
+      image create photo DIALOG_INFO     -file $GDefs(Dir)/share/image/Icon/Dialog_Info.gif
+      image create photo DIALOG_CLIP     -file $GDefs(Dir)/share/image/Icon/Dialog_Clip.gif
    }
 }
 

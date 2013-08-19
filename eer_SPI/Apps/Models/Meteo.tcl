@@ -167,11 +167,11 @@ proc Meteo::BranchRender { Canvas X Y Id Branch Path } {
 
    if { [llength [lindex $Branch 0]] } {
       if { [lindex $info 1] } {
-         $Canvas create bitmap $X $Y -bitmap @$GDefs(Dir)/Resources/Bitmap/minus.ico -tags "METEOTREE $Id"
+         $Canvas create bitmap $X $Y -bitmap @$GDefs(Dir)/share/bitmap/minus.ico -tags "METEOTREE $Id"
          $Canvas bind $Id <Button-1> "Meteo::BranchSelect \"$Path\" \"[lindex $Branch end]\" 0"
          return 1
       } else {
-         $Canvas create bitmap $X $Y -bitmap @$GDefs(Dir)/Resources/Bitmap/plus.ico -tags "METEOTREE $Id"
+         $Canvas create bitmap $X $Y -bitmap @$GDefs(Dir)/share/bitmap/plus.ico -tags "METEOTREE $Id"
          $Canvas bind $Id <Button-1> "Meteo::BranchSelect \"$Path\" \"[lindex $Branch end]\" 1"
          return 0
       }

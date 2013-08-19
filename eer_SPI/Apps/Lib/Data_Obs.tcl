@@ -311,7 +311,7 @@ proc Obs::ParamFrame { Frame Apply } {
                   $Obs::Param(Orders) 7 4 { Obs::ParamSet }
                spinbox $Data(Frame).def.l.val.order.prec -textvariable Obs::Param(Mantisse) -width 2 -from 0 -to 30 -wrap 1 -bd 1 \
                   -command { Obs::ParamSet } -bg $GDefs(ColorLight)
-               button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/Resources/Bitmap/font.ico\
+               button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font Obs::ParamSet \$Obs::Param(Font)"
                pack $Data(Frame).def.l.val.order.lbl -side left
                pack $Data(Frame).def.l.val.order.font $Data(Frame).def.l.val.order.prec -side left -fill x -expand true
@@ -359,11 +359,11 @@ proc Obs::ParamFrame { Frame Apply } {
          labelframe $Data(Frame).def.r.disp -text [lindex $Lbl(Display) $GDefs(Lang)]
 
             frame $Data(Frame).def.r.disp.p
-               IcoMenu::CreateDef $Data(Frame).def.r.disp.p.ico $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::CreateDef $Data(Frame).def.r.disp.p.ico $GDefs(Dir)/share/bitmap \
                  { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } \
                  $Param(Icons) Obs::Param(Icon) Obs::ParamSet 0 -relief groove -bd 2
                ColorBox::CreateSel $Data(Frame).def.r.disp.p.col Obs::Param(Color) Obs::ParamSet
-               IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                   Obs::Param(Width) "Obs::ParamSet" 0 -relief groove -bd 2
                checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable Obs::Param(MapAll) -onvalue 1 -offvalue 0 \
@@ -372,7 +372,7 @@ proc Obs::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.r.disp.p.ico -side left -fill x -expand true
 
             frame $Data(Frame).def.r.disp.traj
-               IcoMenu::Create $Data(Frame).def.r.disp.traj.sel $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::Create $Data(Frame).def.r.disp.traj.sel $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm tstyle0.xbm tstyle1.xbm tstyle2.xbm tstyle3.xbm tstyle4.xbm" "0 1 2 3 4 5" \
                   Obs::Param(Style) Obs::ParamSet $Obs::Param(Style) -relief groove -bd 2
                label $Data(Frame).def.r.disp.traj.lbl -text " [lindex $Lbl(Traj) $GDefs(Lang)]" -anchor w
@@ -380,7 +380,7 @@ proc Obs::ParamFrame { Frame Apply } {
 
             frame $Data(Frame).def.r.disp.vect
                label $Data(Frame).def.r.disp.vect.lbl -text " [lindex $Lbl(Vector) $GDefs(Lang)]"
-               IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/Resources/Bitmap \
+               IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm wind1.xbm wind2.xbm" "NONE BARBULE ARROW" Obs::Param(Vector) \
                   Obs::ParamSet 0 -relief groove -bd 2
                pack $Data(Frame).def.r.disp.vect.sel $Data(Frame).def.r.disp.vect.lbl -side left
@@ -388,7 +388,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.tex
                label $Data(Frame).def.r.disp.tex.lbl -text " [lindex $Lbl(Texture) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.tex.sel -variable Obs::Param(Texture) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command Obs::ParamSet -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.tex.sel -side left
                pack $Data(Frame).def.r.disp.tex.lbl -side left
@@ -396,7 +396,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.vol
                label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.vol.sel -variable Obs::Param(Volume) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0\
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0\
                   -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.vol.sel -side left
                pack $Data(Frame).def.r.disp.vol.lbl -side left
@@ -404,7 +404,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.info
                label $Data(Frame).def.r.disp.info.lbl -text " [lindex $Lbl(Info) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.info.sel -variable Obs::Param(Label) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.info.sel -side left
                pack $Data(Frame).def.r.disp.info.lbl -side left
@@ -412,7 +412,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.coord
                label $Data(Frame).def.r.disp.coord.lbl -text " [lindex $Lbl(Coord) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.coord.sel -variable Obs::Param(Coord) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.coord.sel -side left
                pack $Data(Frame).def.r.disp.coord.lbl -side left
@@ -420,7 +420,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.value
                label $Data(Frame).def.r.disp.value.lbl -text " [lindex $Lbl(Value) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.value.sel -variable Obs::Param(Value) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/Resources/Bitmap/zeroth.xbm -indicatoron false \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
                   -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.value.sel -side left
                pack $Data(Frame).def.r.disp.value.lbl -side left

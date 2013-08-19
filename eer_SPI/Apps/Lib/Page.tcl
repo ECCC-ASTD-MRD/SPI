@@ -278,16 +278,16 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
 
    set tag $Data(Tag)$Id
 
-   label $Frame.bs$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
-   label $Frame.bm$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
+   label $Frame.bs$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
+   label $Frame.bm$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
    if { [llength $Args] } {
-      checkbutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvfull.xbm -cursor hand1 -bd 1 \
+      checkbutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvfull.xbm -cursor hand1 -bd 1 \
          -indicatoron false -variable ${Type}::Data(Full$Id) -onvalue 1 -offvalue 0 -command "Page::Activate $Frame; ${Type}::Activate $Frame $Id $Args; Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)"
-      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Page::Activate $Frame; ${Type}::Destroy $Frame $Id $Args"
+      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Page::Activate $Frame; ${Type}::Destroy $Frame $Id $Args"
    } else {
-      checkbutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvfull.xbm -cursor hand1 -bd 1 \
+      checkbutton $Frame.bf$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvfull.xbm -cursor hand1 -bd 1 \
          -indicatoron false -variable ${Type}::Data(Full$Id) -onvalue 1 -offvalue 0 -command "Page::Activate $Frame;  ${Type}::Activate $Frame $Id; Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)"
-      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Page::Activate $Frame; ${Type}::Destroy $Frame $Id"
+      button $Frame.bd$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "Page::Activate $Frame; ${Type}::Destroy $Frame $Id"
    }
 
    $Frame.page.canvas create window $X1 $Y1           -window $Frame.bs$tag -anchor se -tags "BS$tag NOPRINT"
