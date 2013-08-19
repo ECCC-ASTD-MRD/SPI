@@ -49,6 +49,7 @@ namespace eval Log { } {
    set Param(Warning)     0                     ;#Number of warnings
    set Param(Error)       0                     ;#Number of errors
    set Param(Process)     ""                    ;#Process number
+   set Param(SPI)         ""                    ;#SPI version requirement
 
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
@@ -284,6 +285,11 @@ proc Log::Start { Job Version { Input "" } } {
    }
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
+
+   if { $Param(SPI)!="" && ![package vsatisfies $env(SPI_VERSION) $Param(SPI)] } {
+      Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Param(SPI))"
+      Log::End 1 True
+   }
 
    if { $Param(JobClass)=="INTERACTIVE" } {
       Log::Mail "Job started" $Param(OutFile)

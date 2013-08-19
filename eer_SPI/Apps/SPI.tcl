@@ -15,8 +15,8 @@
 #
 #============================================================================
 
-set GDefs(Version) [lindex [split [lindex [split [file dirname [file normalize [info script]]] /] end-1] -] end]
 set GDefs(Dir)     [file normalize [file dirname [info script]]/..]
+set GDefs(Version) $env(SPI_VERSION)
 
 package require TclSystem
 package require Logger

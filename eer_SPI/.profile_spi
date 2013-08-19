@@ -3,10 +3,16 @@ export BASE_ARCH=`uname -s`_`uname -m | tr _ -`
 #echo "(INFO) Architecture detected: ${BASE_ARCH}"
 
 export TCL_VERSION=8.6
-export SPI_SHARED=${SPI_PATH}/Lib/${BASE_ARCH}
+
+export SPI_MAJOR=7
+export SPI_MINOR=6
+export SPI_PATCHLEVEL=0
+export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
+#export SPI_VERSION=BETA
 
 #----- Library locations
 export SPI_PATH
+export SPI_SHARED=${SPI_PATH}/Lib/${BASE_ARCH}
 export LD_LIBRARY_PATH=${SPI_SHARED}:${SPI_SHARED}/TclTk/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SPI_SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/Apps/Lib"
 export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
