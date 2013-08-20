@@ -53,9 +53,9 @@ namespace eval ComboBox {
    set Param(Height) 0
 
    #----- Definitions des parametres du ComboBox
-   set Resources(Up)            "@$GDefs(Dir)/Resources/Bitmap/combobox_up.ico"
-   set Resources(Down)          "@$GDefs(Dir)/Resources/Bitmap/combobox_down.ico"
-   set Resources(Scale)         "@$GDefs(Dir)/Resources/Bitmap/combobox_scale.ico"
+   set Resources(Up)            "@$GDefs(Dir)/share/bitmap/combobox_up.ico"
+   set Resources(Down)          "@$GDefs(Dir)/share/bitmap/combobox_down.ico"
+   set Resources(Scale)         "@$GDefs(Dir)/share/bitmap/combobox_scale.ico"
 }
 
 #-------------------------------------------------------------------------------

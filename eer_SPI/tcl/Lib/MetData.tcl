@@ -51,8 +51,8 @@ namespace eval MetData { } {
    #----- Lire les diverses definitions
 
    catch {
-      source $GDefs(Dir)/Data/AEGL.tcl
-      source $GDefs(Dir)/Data/ERPG.tcl
+      source $GDefs(Dir)/data/AEGL.tcl
+      source $GDefs(Dir)/data/ERPG.tcl
    }
 
    set Data(ProgMax)  240   ;# Max prog usable

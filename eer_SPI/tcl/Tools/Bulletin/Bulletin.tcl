@@ -18,9 +18,9 @@
 
 #----- Lire les sources d'execution
 
-source $GDefs(Dir)/Apps/Tools/Bulletin/Bulletin.ctes
-source $GDefs(Dir)/Apps/Tools/Bulletin/Bulletin.txt
-source $GDefs(Dir)/Apps/Tools/Bulletin/Bulletin.int
+source $GDefs(Dir)/tcl/Tools/Bulletin/Bulletin.ctes
+source $GDefs(Dir)/tcl/Tools/Bulletin/Bulletin.txt
+source $GDefs(Dir)/tcl/Tools/Bulletin/Bulletin.int
 
 #----------------------------------------------------------------------------
 # Nom      : <Bulletin::CommandToggle>

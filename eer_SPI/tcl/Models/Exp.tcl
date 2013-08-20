@@ -779,35 +779,35 @@ proc Exp::New { { Edit False } } {
 
       Log::Print INFO "Copying RSMC joint data to directory $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin"
       file mkdir $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.gif
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.ps
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.gif
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.ps
-      file copy $GDefs(Dir)/Data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.ps
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_01.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_02.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_03.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_04.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_01.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_02.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_03.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_04.gif
-      file copy $GDefs(Dir)/Data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STJCA.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.gif
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/CVRCA.ps
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.gif
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_01.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_02.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_03.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LICCA_04.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_01.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_02.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_03.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTDCA_04.ps
+      file copy $GDefs(Dir)/data/na_rsmc.ps         $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/LTJCA.ps
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_01.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_02.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_03.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/SICCA_04.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_01.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_02.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_03.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STDCA_04.gif
+      file copy $GDefs(Dir)/data/na_RSMCProduct.gif $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/STJCA.gif
 
       exec echo "Unavailable" >> $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/RUN.txt
       exec echo "Unavailable" >> $Param(Path)/${noexp}_$Data(Name)/Output/RSMCJoin/traject.points
@@ -1024,7 +1024,7 @@ proc Exp::BlankTransmit { } {
       #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
 
       if { $Exp::Data(JntStat34)==1 } {
-         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/Data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
          if { $err } {
             Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$msg"
          }
@@ -1033,7 +1033,7 @@ proc Exp::BlankTransmit { } {
       #----- imposer le lead sur tout les sites mirroirs.
 
       if { $Exp::Data(RSMCLead)!=99 } {
-         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/Data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
          if { $err } {
             Log::Print ERROR "Problem to copy the lead ( $Exp::Data(RSMCLead) ) on the mirror RSMC web pages.\n\n$msg"
          }

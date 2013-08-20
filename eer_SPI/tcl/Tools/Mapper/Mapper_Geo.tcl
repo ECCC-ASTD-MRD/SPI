@@ -291,7 +291,7 @@ proc Mapper::Geo::InverseCode { Lat Lon { API Geocoder } } {
    }
 
    if { ! [ogrlayer is $Data(tz_world_mp)]} {
-      set layer [ogrfile open OGRFILE read $GDefs(Dir)/Data/tz_world_mp.shp]
+      set layer [ogrfile open OGRFILE read $GDefs(Dir)/data/tz_world_mp.shp]
       set Data(tz_world_mp) tz_world_mp
       eval ogrlayer read $Data(tz_world_mp) OGRFILE 0
    }

@@ -29,7 +29,7 @@ namespace eval IsoBox {
    variable Lbl
    variable Param
 
-   set Param(File) $env(SPI_PATH)/Data/Nuclide.txt
+   set Param(File) $env(SPI_PATH)/data/Nuclide.txt
 
    set Lbl(Title)        { "Sélecteur d'isotopes"              "Isotope selector" }
    set Lbl(Symbol)       { "Symbole"                           "Symbol" }

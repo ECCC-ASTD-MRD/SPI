@@ -318,16 +318,16 @@ namespace eval Graph {
 
 package require MetStat
 
-source $GDefs(Dir)/Apps/Lib/Graph_Time.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Scatter.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Profile.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Contingency.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Section.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Frequence.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Compare.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_TimeSection.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Stat.tcl
-source $GDefs(Dir)/Apps/Lib/Graph_Hovmoller.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Time.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Scatter.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Profile.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Contingency.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Section.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Frequence.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Compare.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_TimeSection.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Stat.tcl
+source $GDefs(Dir)/tcl/Lib/Graph_Hovmoller.tcl
 
 if { [file exists $env(HOME)/.spi/Graph] } {
    source $env(HOME)/.spi/Graph
