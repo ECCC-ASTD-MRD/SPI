@@ -12,10 +12,10 @@ export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
 export SPI_PATH
-export SPI_SHARED=${SPI_PATH}/Lib/${BASE_ARCH}
-export LD_LIBRARY_PATH=${SPI_SHARED}:${SPI_SHARED}/TclTk/lib:$LD_LIBRARY_PATH
-export TCLLIBPATH="${SPI_SHARED} ${SPI_SHARED}/TclTk/lib ${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION} ${SPI_SHARED}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib"
-export TCL_LIBRARY="${SPI_SHARED}/TclTk/lib/tcl${TCL_VERSION}"
+export SPI_LIB=${SPI_PATH}/lib/${BASE_ARCH}
+export LD_LIBRARY_PATH=${SPI_LIB}:${SPI_LIB}/TclTk/lib:$LD_LIBRARY_PATH
+export TCLLIBPATH="${SPI_LIB} ${SPI_LIB}/TclTk/lib ${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION} ${SPI_LIB}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib"
+export TCL_LIBRARY="${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION}"
 
 #----- GDB data
 if [[ ${GDB_PATH} = "" ]] ; then
@@ -24,17 +24,21 @@ if [[ ${GDB_PATH} = "" ]] ; then
 fi
 
 #----- GDAL data
-export GDAL_DATA=${SPI_PATH}/Lib/Data/gdal
+export GDAL_DATA=${SPI_PATH}/share/gdal
 export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
-export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/Lib/Data/bufr/table_b_bufr
+export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/share/bufr/table_b_bufr
 
-#----- Force GRIB Tables
-export GRIB_TEMPLATE_PATH=${SPI_PATH}/Lib/Data/grib/templates
-export GRIB_DEFINITION_PATH=${SPI_PATH}/Lib/Data/grib/definitions
+#----- Force GRIB API Tables
+export GRIB_TEMPLATE_PATH=${SPI_PATH}/share/grib/templates
+export GRIB_DEFINITION_PATH=${SPI_PATH}/share/grib/definitions
 
-#----- EER Modeling variables
-export EER_DIRBIN=${SPI_PATH}/Bin/${BASE_ARCH}
-export EER_DIRSCRIPT=${SPI_PATH}/Script
+#----- Force unlimited limits
+ulimit -c 0 2>/dev/null
+ulimit -s unlimited 2>/dev/null
+ulimit -t unlimited 2>/dev/null
+ulimit -m unlimited 2>/dev/null
+ulimit -d unlimited 2>/dev/null
+

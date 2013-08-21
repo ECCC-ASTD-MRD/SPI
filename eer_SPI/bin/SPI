@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-export SPI_PATH=${0%SPI}
+export SPI_PATH=${0%SPI}../
 . ${SPI_PATH}/.profile_spi
 
 SOFT=0
@@ -8,13 +8,6 @@ HARD=0
 XVFB=0
 SPI_DEBUG=""
 HOST=`hostname`
-
-#----- Force unlimited limits
-ulimit -c 0 2>/dev/null
-ulimit -s unlimited 2>/dev/null
-ulimit -t unlimited 2>/dev/null
-ulimit -m unlimited 2>/dev/null
-ulimit -d unlimited 2>/dev/null
 
 #----- Parse the flags fo batch token
 for flag in $@
