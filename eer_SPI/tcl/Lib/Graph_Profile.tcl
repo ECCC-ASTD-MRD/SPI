@@ -700,7 +700,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                   }
                }
             }
-            set lst [lsort -index 0 -real -increasing $lst]
+            set lst [lsort -index 1 -real -increasing $lst]
             foreach l $lst {
                vector append $Item $l
             }
