@@ -49,7 +49,7 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin IsoChain \
-                        SrcType Aerosol OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
+                        SrcType Aerosol OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -124,6 +124,7 @@ namespace eval Info {
    set Lbl(GridAlgo)             { "Type d'algorithme" "Type of algorithm" }
    set Lbl(GridDomain)           { "Domaine (km)" "Domain (km)" }
    set Lbl(VerticalLevels)       { "Niveaux verticaux (m)" "Vertical Levels (m)" }
+   set Lbl(OutVar)               { "Variables à sauvegarder" "Variables to save" }
    set Lbl(OutCV)                { "Niveaux verticaux concentrations (m)" "Concentration vertical Levels (m)" }
    set Lbl(OutAV)                { "Niveaux verticaux aviation (ft)" "Aviations vertical Levels (ft)" }
    set Lbl(IsSigma)              { "Fluctuations des vitesses à méso-échelle" "Mesoscale velocity fluctuations" }

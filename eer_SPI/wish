@@ -4,6 +4,7 @@ export SPI_PATH=${0%wish}
 . ${SPI_PATH}/.profile_spi
 
 #----- Force  software GL, usefull for tclsh only script
-export LD_LIBRARY_PATH=${SPI_SHARED}/GL:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${SPI_LIB}/GL:$LD_LIBRARY_PATH
 
-${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "$@"
+#----- One can use SPI_DEBUG="valgrind --track-origins=yes --leak-check=full" to debug memory problems
+${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/wish${TCL_VERSION} "$@"

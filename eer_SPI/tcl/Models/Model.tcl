@@ -488,6 +488,12 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    upvar ${Model}::Sim sim
 
    if { $Mode!="NEW" } {
+   
+      #----- If the grid is an fstdfile
+      if { [file exists $sim(Grid)] } {
+         return
+      }
+      
       #----- If we're continuing a simulation, use it's previoulsy defined grid
       set sim(NI)     [lindex $sim(Grid) 0]
       set sim(NJ)     [lindex $sim(Grid) 1]
@@ -502,7 +508,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
    } else {
 
       #----- If this grid exists in the predefined grid
-      if { [lsearch -exact -index 0  $Param(Grids) [set name [lindex $sim(Scale) 0]]]!=-1 } {
+      if { [lsearch -exact -index 0 $Param(Grids) [set name [lindex $sim(Scale) 0]]]!=-1 } {
          set sim(Grid) $Param(Grid[lindex $sim(Scale) 0])
          set sim(NI)   [lindex $sim(Grid) 0]
          set sim(NJ)   [lindex $sim(Grid) 1]

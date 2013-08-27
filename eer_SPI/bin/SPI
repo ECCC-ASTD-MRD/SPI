@@ -36,7 +36,7 @@ do
 
    if [[ $flag = "-tclsh" ]]
    then
-      ${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" $@
+      ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" $@
       code=$?
       exit $code
    fi
@@ -54,10 +54,10 @@ fi
 #----- check for software mode
 if [[ $SOFT -eq 1 ]]
 then
-   export LD_LIBRARY_PATH=${SPI_SHARED}/GL:${LD_LIBRARY_PATH}
+   export LD_LIBRARY_PATH=${SPI_LIB}/GL:${LD_LIBRARY_PATH}
 
    #----- this had to be forced on early Fedoras
-#   export LD_PRELOAD=${SPI_SHARED}/GL/libGL.so
+#   export LD_PRELOAD=${SPI_LIB}/GL/libGL.so
 fi
 
 #----- Load up the fonts
@@ -67,10 +67,10 @@ fi
 #----- Let's start up the software
 if [[ $XVFB -eq 1 ]]
 then
-   xvfb-run -w 1 -a -s '-ac -screen 0 1x1x24' ${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+   xvfb-run -w 1 -a -s '-ac -screen 0 1x1x24' ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
    code=$?
 else
-   ${SPI_DEBUG} ${SPI_SHARED}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+   ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
    code=$?
 fi
 

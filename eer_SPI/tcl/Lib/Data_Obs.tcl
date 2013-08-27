@@ -54,11 +54,11 @@ namespace eval Obs {
    #----- Lecture des tables BUFR
    set code [ catch {
       if { $GDefs(Lang)==0 } {
-         metobs table -readmaster B $GDefs(Dir)/Lib/data/bufr/table_b_bufr_f
-         metobs table -readmaster D $GDefs(Dir)/Lib/data/bufr/table_d_bufr_f
+         metobs table -readmaster B $GDefs(Dir)/share/bufr/table_b_bufr_f
+         metobs table -readmaster D $GDefs(Dir)/share/bufr/table_d_bufr_f
       } else {
-         metobs table -readmaster B $GDefs(Dir)/Lib/data/bufr/table_b_bufr_e
-         metobs table -readmaster D $GDefs(Dir)/Lib/data/bufr/table_d_bufr_e
+         metobs table -readmaster B $GDefs(Dir)/share/bufr/table_b_bufr_e
+         metobs table -readmaster D $GDefs(Dir)/share/bufr/table_d_bufr_e
       }
    } error ]
 

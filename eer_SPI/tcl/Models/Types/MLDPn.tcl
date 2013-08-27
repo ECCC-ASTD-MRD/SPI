@@ -188,7 +188,7 @@ proc MLDPn::CreateScriptInput { } {
    } else {
       puts $file "MLDP_METEO=$Sim(Meteo)"
    }
-   puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
+#   puts $file "MLDP_GRIDDEF=$Sim(NI)x$Sim(NJ)x$Sim(NK)"
    puts $file "MLDP_INPUT=tmp/$Sim(Model).in"
    puts $file "MLDP_RESULT=results"
    puts $file "MLDP_KERNEL=$Sim(DiffKernel)"
@@ -452,9 +452,13 @@ proc MLDPn::CreateModelInput { } {
 
    close $file
 
-   fstdfile open GRIDFILE write $Sim(Path)/tmp/grid.in
-   fstdfield write MODELGRID GRIDFILE -16 True
-   fstdfile close GRIDFILE
+   if { [file exists $Sim(Grid)] } {
+      file link -symbolic $Sim(Path)/tmp/grid.in $Sim(Grid)
+   } else {
+      fstdfile open GRIDFILE write $Sim(Path)/tmp/grid.in
+      fstdfield write MODELGRID GRIDFILE -16 True
+      fstdfile close GRIDFILE
+   }
 }
 
 #----------------------------------------------------------------------------

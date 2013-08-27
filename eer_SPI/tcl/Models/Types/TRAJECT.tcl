@@ -359,7 +359,7 @@ proc TRAJECT::Launch { } {
       simulation define $id -tag $info -loglevel $Model::Param(LogLevel) -logfile $Sim(Path)/tmp/traject.log
 
       #----- Launch simulation within a new thread
-      eval set tid1 \[thread::create -stack 1073741824 \{ load $GDefs(Dir)/Lib/$env(BASE_ARCH)/libTclSim[info sharedlibextension] TclSim\; simulation run $id\}\]
+      eval set tid1 \[thread::create -stack 1073741824 \{ load $env(SPI_LIB)/libTclSim[info sharedlibextension] TclSim\; simulation run $id\}\]
 
       Exp::ThreadUpdate $id $Exp::Param(Path)/$Sim(NoExp)_$Sim(NameExp)/TRAJECT.pool [simulation param $id -result]
    }

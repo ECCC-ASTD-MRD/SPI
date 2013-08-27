@@ -1,6 +1,6 @@
 #----- Definitions
-export BASE_ARCH=`uname -s`_`uname -m | tr _ -`
-#echo "(INFO) Architecture detected: ${BASE_ARCH}"
+ARCH=${ORDENV_PLAT:=`uname -s`_`uname -m`}
+echo "(INFO) Architecture detected: ${ARCH}"
 
 export TCL_VERSION=8.6
 
@@ -8,11 +8,10 @@ export SPI_MAJOR=7
 export SPI_MINOR=6
 export SPI_PATCHLEVEL=0
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
-#export SPI_VERSION=BETA
 
 #----- Library locations
 export SPI_PATH
-export SPI_LIB=${SPI_PATH}/lib/${BASE_ARCH}
+export SPI_LIB=${SPI_PATH}/lib/${ARCH}
 export LD_LIBRARY_PATH=${SPI_LIB}:${SPI_LIB}/TclTk/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB} ${SPI_LIB}/TclTk/lib ${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION} ${SPI_LIB}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib"
 export TCL_LIBRARY="${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION}"
@@ -34,11 +33,3 @@ export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/share/bufr/table_b_bufr
 #----- Force GRIB API Tables
 export GRIB_TEMPLATE_PATH=${SPI_PATH}/share/grib/templates
 export GRIB_DEFINITION_PATH=${SPI_PATH}/share/grib/definitions
-
-#----- Force unlimited limits
-ulimit -c 0 2>/dev/null
-ulimit -s unlimited 2>/dev/null
-ulimit -t unlimited 2>/dev/null
-ulimit -m unlimited 2>/dev/null
-ulimit -d unlimited 2>/dev/null
-
