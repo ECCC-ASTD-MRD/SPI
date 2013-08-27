@@ -816,7 +816,7 @@ proc MLDPn::ValidateTimeSteps { } {
    #----- Verify if output time step is positive.
    set number [string is integer -strict -failindex idx $MLDPn::Sim(OutputTimeStepMin)]
    if { $number == 0 && $idx == -1 } {
-      Dialog::Error .modelnew $Error(OutputTimeStepMinOutRange)] " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
+      Dialog::Error .modelnew $Error(OutputTimeStepMinOutRange) " $Sim(OutputTimeStepMin) $Error(UnitMinutes)"
       focus $Sim(OutputTimeStepEnt)
       return 0
    } elseif { $number == 0 || ($number == 1 && $MLDPn::Sim(OutputTimeStepMin) <= 0) } {
@@ -865,9 +865,46 @@ proc MLDPn::ValidateTimeSteps { } {
       return 0
    }
 
+   #----- Validate model time step according to grid scale for very small spatial resolution modelling.
+   if { ![MLDPn::ValidateModelTimeStepGrid] } {
+      return 0
+   }
+
    #----- Update emission starting time.
    Model::FitAccTime MLDPn
 
+   return 1
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::ValidateModelTimeStepGrid>
+# Creation   : 14 February 2011 - A. Malo - CMC/CMOE
+#
+# But        : Validate model time step according to grid scale for
+#              very short scale modelling.
+#
+# Parametres :
+#
+# Retour     :
+#   <Idx>    : Flag indicating if validation has succeeded (1) or not (0).
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+
+proc MLDPn::ValidateModelTimeStepGrid { } {
+   global GDefs
+   variable Sim
+   variable Error
+   variable Lbl
+   variable Warning
+   
+   if { [string match "UFINE*" $Sim(Scale)] && $Sim(ModelTimeStepMin) > 1 } {
+      set OldModelTimeStep $Sim(ModelTimeStepMin)
+      set Sim(ModelTimeStepMin) 1
+      Dialog::Default .modelnew 500 WARNING $Warning(ModelTimeStep1) "\n\n[lindex $Warning(ModelTimeStep2) $GDefs(Lang)] $OldModelTimeStep $Error(UnitMinutes)\n[lindex $Warning(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(OK)
+   }
+   
    return 1
 }
 

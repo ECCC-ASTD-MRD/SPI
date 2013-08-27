@@ -1617,8 +1617,8 @@ proc MLDP::ValidateTimeSteps { } {
 # Nom        : <MLDP::ValidateModelTimeStepGrid>
 # Creation   : 14 February 2011 - A. Malo - CMC/CMOE
 #
-# But        : Validate model time step according to grid scale for MLDP1
-#              (very short scale modelling).
+# But        : Validate model time step according to grid scale for
+#              very short scale modelling.
 #
 # Parametres :
 #
@@ -1636,14 +1636,10 @@ proc MLDP::ValidateModelTimeStepGrid { } {
    variable Lbl
    variable Warning
 
-   if { $Sim(Model)=="MLDP1" } {
-
-      if { $Sim(Scale)=="UFINE" && $Sim(ModelTimeStepMin) > 1 } {
-         set OldModelTimeStep $Sim(ModelTimeStepMin)
-         set Sim(ModelTimeStepMin) 1
-         Dialog::Default .modelnew 500 WARNING $Warning(ModelTimeStep1) "\n\n[lindex $Warning(ModelTimeStep2) $GDefs(Lang)] $OldModelTimeStep $Error(UnitMinutes)\n[lindex $Warning(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(OK)
-      }
-
+   if { [string match "UFINE*" $Sim(Scale)] && $Sim(ModelTimeStepMin) > 1 } {
+      set OldModelTimeStep $Sim(ModelTimeStepMin)
+      set Sim(ModelTimeStepMin) 1
+      Dialog::Default .modelnew 500 WARNING $Warning(ModelTimeStep1) "\n\n[lindex $Warning(ModelTimeStep2) $GDefs(Lang)] $OldModelTimeStep $Error(UnitMinutes)\n[lindex $Warning(ModelTimeStep3) $GDefs(Lang)] $Sim(ModelTimeStepMin) $Error(UnitMinutes)" 0 $Lbl(OK)
    }
 
    return 1

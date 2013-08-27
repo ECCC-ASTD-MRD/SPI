@@ -1339,7 +1339,7 @@ proc MLDPn::InitNew { Type } {
    MLDPn::InitKernel
 
    set Sim(OutCV)                [lindex $Sim(ListOutCV) 0]          ; #----- CV Vertical levels [m].
-   set Sim(OutAV)                { }                                 ; #----- AVVertical levels [m].
+   set Sim(OutAV)                { }                                 ; #----- AV Vertical levels [m].
    set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
@@ -1347,14 +1347,14 @@ proc MLDPn::InitNew { Type } {
    if { $Type==0 } {
       #----- Volcano (0) source.
       set Sim(SrcType)           VOLCANO
-      set Sim(OutAV)             { 0 20000 35000 60000 85000 110000 135000 }  ; #----- AVVertical levels [m].
+      set Sim(OutAV)             { 0 20000 35000 60000 85000 110000 135000 }  ; #----- AV Vertical levels [m].
       set Sim(EmHeight)          10000.0
       set Sim(EmRadius)          1000.0
    } elseif { $Type==3 } {
       #----- Fire (3) source.
       set Sim(SrcType)           FIRE
-      set Sim(EmHeight)          10000.0
-      set Sim(EmRadius)          1000.0
+      set Sim(EmHeight)          250.0
+      set Sim(EmRadius)          100.0
    } elseif { $Type==4 } {
       #----- Virus (4) source.
       set Sim(SrcType)           VIRUS
@@ -1362,7 +1362,10 @@ proc MLDPn::InitNew { Type } {
       set Sim(Meteo)             reg
       set Sim(EmHeight)          100.0
       set Sim(EmRadius)          100.0
-      set Sim(Scale)             EFINE
+      set Sim(Scale)             EFINE-1
+      if { $Sim(DiffKernel) == ORDER1 } {
+         set Sim(Scale) EFINE
+      }
    } else {
       #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
       set Sim(SrcType)           ACCIDENT
@@ -1425,9 +1428,9 @@ proc MLDPn::InitKernel { } {
          set Sim(Duration)             72                                  ; #----- Simulation duration [hr].
          set Sim(OutputTimeStepMin)    60                                  ; #----- Output time step [min].
          set Sim(ModelTimeStepMin)     10                                  ; #----- Internal model time step [min].
-         set Sim(Scale)                "MESO"                              ; #----- Grid resolution string.
+         set Sim(Scale)                "MESO-1"                            ; #----- Grid resolution string.
          set Sim(Meteo)                glb                                 ; #----- Meteorological model.
-         set Sim(Grids)               { "HEMI    (50 km, 687x687)" "HEMI-1  (50 km, 334x334)" "HEMI-2  (50 km, 400x400)" "HEMI-3  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "LMESO   (33 km, 400x400)" "MESO    (33 km, 229x229)" "FINE    (15 km, 503x503)" "SFINE   (15 km, 251x251)" "VFINE   (10 km, 229x229)" "EFINE   (5 km,  457x457)" "UFINE   (2 km,  300x300)"} ; #----- List of grid resolutions [km].
+         set Sim(Grids)               { "HEMI-1  (50 km, 687x687)" "HEMI-2  (50 km, 334x334)" "HEMI-3  (50 km, 400x400)" "HEMI-4  (50 km, 477x477)" "SHEMI-1 (33 km, 505x505)" "SHEMI-2 (33 km, 606x606)" "SHEMI-3 (33 km, 722x722)" "SHEMI-4 (25 km, 667x667)" "MESO-1  (33 km, 229x229)" "MESO-2  (33 km, 400x400)" "MESO-3  (25 km, 303x303)" "MESO-4  (25 km, 528x528)" "FINE-1  (15 km, 251x251)" "FINE-2  (15 km, 503x503)" "VFINE-1 (10 km, 229x229)" "VFINE-2 (10 km, 300x300)" "VFINE-3 (10 km, 400x400)" "VFINE-4 (10 km, 500x500)" "EFINE-1 (5 km,  229x229)" "EFINE-2 (5 km,  300x300)" "EFINE-3 (5 km,  457x457)" "SFINE-1 (2 km,  300x300)" "SFINE-2 (2 km,  400x400)" "UFINE-1 (1 km,  400x400)" "UFINE-2 (0.5 km, 400x400)" "UFINE-3 (0.3 km, 400x400)" "UFINE-4 (0.1 km, 400x400)" } ; #----- List of grid resolutions [km].
          set Sim(ListMeteoModel)      { glb reg }
          set Sim(VarMesoscale)         1.00                                ;#----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          set Sim(Timescale)            10800                               ;#----- Lagrangian time scale [s].
@@ -1462,7 +1465,7 @@ proc MLDPn::InitKernel { } {
          set Sim(ModelTimeStepMin)     5                                   ; #----- Internal model time step [min].
          set Sim(Scale)                "VFINE"                             ; #----- Grid resolution string.
          set Sim(Meteo)                reg                                 ; #----- Meteorological model.
-         set Sim(Grids)                { "MESO  (33 km,  229x229)" "FINE  (15 km,  229x229)" "VFINE (5 km,   229x229)" "SFINE (2 km,   229x229)" "EFINE (1 km,   229x229)" "UFINE (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
+         set Sim(Grids)                 { "MESO-1  (33 km,  229x229)" "MESO-2  (25 km,  229x229)" "FINE-1  (15 km,  229x229)" "FINE-2  (10 km,  229x229)" "VFINE   (5 km,   229x229)" "SFINE   (2 km,   229x229)" "EFINE   (1 km,   229x229)" "UFINE-1 (0.5 km, 229x229)" "UFINE-2 (0.3 km, 229x229)" "UFINE-3 (0.1 km, 229x229)" } ; #----- List of grid resolutions [km].
          set Sim(ListMeteoModel)       { glb reg }
          set Sim(VarMesoscale)        0.10                                ; #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
          set Sim(Timescale)           2700                                ; #----- Lagrangian time scale [s].

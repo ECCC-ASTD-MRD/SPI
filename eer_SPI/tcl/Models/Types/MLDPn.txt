@@ -105,6 +105,7 @@ namespace eval MLDPn {
    set Lbl(Close)               { "Fermer" "Close" }
    set Lbl(Yes)                 { "Oui" "Yes" }
    set Lbl(No)                  { "Non" "No " }
+   set Lbl(OK)                  { "OK" "OK" }
    set Lbl(Warning)             { "Avertissement" "Warning" }
    set Lbl(Interval)            { "Intervalle" "Interval" }
 
@@ -378,6 +379,10 @@ namespace eval MLDPn {
 
    set Warning(MetLocal)          { "La météo n'est pas disponible sur l'hôte d'exécution alors elle sera interpolée localement, ceci peut prendre quelques minutes. Voulez-vous continuer ?" \
                                     "Meteorological data is not available on the running host, it will be interpolated locally, this can take a few minutes, do you want to continue ?" }
+   set Warning(ModelTimeStep1)    { "Le pas de temps interne du modèle est supérieur à 1 minute alors que la grille sélectionnée est de type ultra fine (UFINE). Pour une modélisation à très fine échelle (haute résolution) spatiale, il est nécessaire de réduire le pas de temps interne du modèle, et donc d'augmenter la résolution temporelle, afin de respecter le mécanisme d'émission par bouffée de particules dans le modèle. Le pas de temps interne du modèle sera réinitialisé à 1 minute." \
+                                    "The internal model time step is greater than 1 minute while the selected grid is ultra fine (UFINE). For very small spatial scale (high resolution) modelling, it is necessary to reduce the internal model time step, and thus to increase the time resolution, in order to respect the particle puff emission mecanism within the model. The internal model time step will be re-initialized to a 1 minute time step." }
+   set Warning(ModelTimeStep2)    { "\tAucien pas de temps du modèle  :" "\tOld model time step :" }
+   set Warning(ModelTimeStep3)    { "\tNouveau pas de temps du modèle :" "\tNew model time step :" }
    set Warning(SimDuration4)      { "La durée de simulation est supérieure à 72 hrs et le pas de temps de sortie des données est inférieur (ou égal) à 60 min. Ces paramètres d'entrée produiront des fichiers de résultats de grande taille.\n\nVoulez-vous modifier ces paramètres?" \
                                     "The simulation duration is greater than 72 hrs and the data output time step is lower than (or equal to) 60 min. These input parameters will generate large results file size.\n\nWould you like to modify these parameters?" }
    set Warning(SimDuration5)      { "\tDurée de simulation    :" "\tSimulation duration :" }
