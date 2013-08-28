@@ -222,6 +222,14 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          } else {
             if (Ref && Ref->Ids) {
                Def_Pointer(Def,C,mem,p0);
+               
+               // If either value is nodata then interpolation will be nodata as well
+               mem+=iy*Def->NI+ix;
+               if (              ((float*)p0)[mem]==Def->NoData)                         { *Length=Def->NoData; return(valid); }
+               if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { *Length=Def->NoData; return(valid); }
+               if (iy<Ref->Y1 && ((float*)p0)[mem+Def->NI]==Def->NoData)                 { *Length=Def->NoData; return(valid); }
+               if (iy<Ref->Y1 && ix<Ref->X1 && ((float*)p0)[mem+Def->NI+1]==Def->NoData) { *Length=Def->NoData; return(valid); }    
+               
 //EZFIX               EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
                *Length=valf;

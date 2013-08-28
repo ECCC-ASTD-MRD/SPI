@@ -123,7 +123,6 @@ void GeoScan_Init(TGeoScan *Scan) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
 int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,int X0,int Y0,int X1,int Y1,int Dim,char *Degree) {
 
    register int idx,x,y,n=0;

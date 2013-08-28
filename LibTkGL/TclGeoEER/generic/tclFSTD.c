@@ -132,8 +132,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    float  xg1,xg2,xg3,xg4;
    int    ig1,ig2,ig3,ig4;
 
-   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","zfilter","pressure",NULL };
-   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,ZFILTER,PRESSURE };
+   static CONST char *sopt[] = { "xyfll","llfxy","convip","cxgaig","cigaxg","mscale","pressure",NULL };
+   enum                opt { XYFLL,LLFXY,CONVIP,CXGAIG,CIGAXG,MSCALE,PRESSURE };
 
    Tcl_ResetResult(Interp);
 
@@ -302,14 +302,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_SetObjResult(Interp,Tcl_NewIntObj(ip));
          }
          break;
-
-      case ZFILTER:
-         if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"field settings");
-            return(TCL_ERROR);
-         }
-         return(FSTD_ZFilterTopo(Interp,Data_Get(Tcl_GetString(Objv[2])),Objv[3]));
-         break;
    }
    return(TCL_OK);
 }
@@ -353,7 +345,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    char        *field,imode,itype;
 
    int         idx;
-   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
+   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp",NULL };
@@ -763,6 +755,32 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                if (table)
                   free(table);
                return(key);
+            } else if (n==19) {
+               if (Objc<6) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
+                  return(TCL_ERROR);
+               }
+               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               if (ni!=field0->Def->SubSample && field0->Def->Sub) {
+                  free(field0->Def->Sub); field0->Def->Sub=NULL;
+               }
+               field0->Def->SubSample=ni;
+                return(Data_SubInterpolate(Interp,'N',field0->Ref,field0->Def,field1->Ref,field1->Def));
+            } else if (n==20) {
+               if (Objc<6) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
+                  return(TCL_ERROR);
+               }
+               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               if (ni!=field0->Def->SubSample && field0->Def->Sub) {
+                  free(field0->Def->Sub); field0->Def->Sub=NULL;
+               }
+               field0->Def->SubSample=ni;
+               return(Data_SubInterpolate(Interp,'L',field0->Ref,field0->Def,field1->Ref,field1->Def));
             } else {
                return(FSTD_FieldGridInterpolate(Interp,field0,field1,n));
             }
@@ -1301,7 +1319,6 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
       if (ok<0) {
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);
-         ok=c_fclos(File->Id);
          EZUnLock_RPNFile();
          return(-1);
       }

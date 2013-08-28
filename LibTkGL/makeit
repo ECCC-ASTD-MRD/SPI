@@ -2,14 +2,12 @@
 reconf=$1
 
 MAKE=make
-INST=/users/dor/afsr/005
-LIB=${INST}/lib/${BASE_ARCH}
-INC=${INST}/include
+TCL=/cnfs/ops/cmoe/afsr005/Lib/7.6.0/${ORDENV_PLAT}/SPI
 
 export CC=c99
 
 echo ""
-echo "----- Architecture Found : ${BASE_ARCH} -----"
+echo "----- Building platform : ${ORDENV_PLAT} -----"
 echo ""
 
 echo ""
@@ -19,11 +17,11 @@ cd TclSystem
 if [[ -n $reconf ]]; then
    make distclean
    ./configure \
-      --exec-prefix=${LIB}/TclTk \
+      --exec-prefix=${TCL}/TclTk \
       --enable-threads \
       --enable-64bit \
-      --with-tcl=${LIB}/TclTk/lib \
-      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
+      --with-tcl=${TCL}/TclTk/lib 
+#      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
 fi
 
 $MAKE install
@@ -35,12 +33,12 @@ cd ../TkglCanvas
 if [[ -n $reconf ]]; then
    make distclean
    ./configure \
-      --prefix=${LIB}/TclTk/ \
-      --exec-prefix=${LIB}/TclTk/ \
+      --prefix=${TCL}/TclTk/ \
+      --exec-prefix=${TCL}/TclTk/ \
       --enable-threads \
       --enable-64bit \
-      --with-tcl=${LIB}/TclTk/lib \
-      --with-tk=${LIB}/TclTk/lib
+      --with-tcl=${TCL}/TclTk/lib \
+      --with-tk=${TCL}/TclTk/lib
 fi
 
 $MAKE install
@@ -52,15 +50,15 @@ cd ../TclGeoEER
 if [[ -n $reconf ]]; then
    make distclean
    ./configure \
-      --exec-prefix=${LIB}/TclTk \
+      --exec-prefix=${TCL}/TclTk \
       --enable-threads \
       --enable-64bit \
-      --with-tcl=${LIB}/TclTk/lib \
-      --with-tk=${LIB}/TclTk/lib \
+      --with-tcl=${TCL}/TclTk/lib \
+      --with-tk=${TCL}/TclTk/lib \
       --with-eer=/home/afsr/005/Projects/libeerUtils \
       --with-rmn=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/librmn-13 \
       --with-gdb=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdb \
-      --with-gdal=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdal-1.9.2/bin/gdal-config  \
+      --with-gdal=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdal-1.10.0/bin/gdal-config  \
       --with-grib=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/grib_api-1.9.18 \
       --with-ecbufr=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/libecbufr-0.8.4 \
       --with-flt=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/fltlib-0.5.1
@@ -69,9 +67,9 @@ fi
 
 $MAKE install
 
-cd ${LIB}
-ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so libTclGeoEER7.6.so
-ln -fs libTclGeoEER7.6.so libTclGeoEER.so
+cd ${TCL}
+ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so libTclGeoEER7.6.0.so
+ln -fs libTclGeoEER7.6.0.so libTclGeoEER.so
 
 ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
 ln -fs libTkglCanvas8.6.so libTkglCanvas.so

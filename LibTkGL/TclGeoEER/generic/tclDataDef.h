@@ -264,6 +264,7 @@ typedef struct TDataDef {
    char   *Data[4];           /*Composantes du champs (Pointeurs sur les donnees)*/
    char   *Mode;              /*Module des champs Data is vectoriel*/
    float  *Pres,*Height;      /*Pression au sol*/
+   float  *Sub;
    OGRGeometryH *Pick,*Poly;  /*Geometry used in various interpolation method*/
 
    TData_Type Type;           /*Type de donnees du champs*/
@@ -275,7 +276,7 @@ typedef struct TDataDef {
    int     Level;             /*Niveau courant*/
    int     Limits[3][2];      /*Limits of processing in grid points*/
    double  CoordLimits[2][2]; /*Limits of processing in latlon*/
-   int     Sample;            /*Sample interval in grid points*/
+   int     Sample,SubSample;  /*Sample interval in grid points*/
    TList  *Segments;          /*Liste d'objets de rendue*/
 } TDataDef;
 

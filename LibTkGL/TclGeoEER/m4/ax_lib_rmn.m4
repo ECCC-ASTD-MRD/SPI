@@ -29,7 +29,7 @@ AC_DEFUN([AX_LIB_RMN],
         if test "$withval" = "yes"; then
             if test -d /usr/local/include/rmn.h ; then 
                 rmn_prefix=/usr/local
-            elif test -d /usr/include/rmn. ; then
+            elif test -d /usr/include/rmn.h ; then
                 rmn_prefix=/usr
             else
                 rmn_prefix=""

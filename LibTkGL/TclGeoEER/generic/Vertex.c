@@ -405,7 +405,7 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
    j=Y;Y-=j;
    k=Z;Z-=k;
 
-   /*Get gridpoint indexes*/
+   // Get gridpoint indexes
    idxk=Def->NIJ;
 
    idx[0]=idxk*k+j*Def->NI+i;
@@ -417,8 +417,13 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
    } else {
       Def_GetQuad(Def,Idx,idx,cube[0]);
    }
-
-   /*3D Interpolation case*/
+   
+   // If either value is nodata then interpolation will be nodata as well
+   if (cube[0][0]==Def->NoData || cube[0][1]==Def->NoData || cube[0][2]==Def->NoData || cube[0][3]==Def->NoData) {
+      return(Def->NoData);
+   }
+   
+   // 3D Interpolation case
    if (Z>TINY_VALUE) {
 
       idx[0]+=idxk;
@@ -429,6 +434,10 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
          Def_GetQuadMod(Def,idx,cube[1]);
       } else {
          Def_GetQuad(Def,Idx,idx,cube[1]);
+      }
+      // If either value is nodata then interpolation will be nodata as well
+      if (cube[1][0]==Def->NoData || cube[1][1]==Def->NoData || cube[1][2]==Def->NoData || cube[1][3]==Def->NoData) {
+         return(Def->NoData);
       }
 
       cube[0][0]=ILIN(cube[0][0],cube[1][0],Z);

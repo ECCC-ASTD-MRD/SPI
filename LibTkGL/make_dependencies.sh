@@ -1,6 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
+VERSION=7.6.0
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -8,27 +9,24 @@ echo "Architecture: ${ARCH}_${PROC}"
 ARCH_PATH=/cnfs/ops/cmoe/afsr005/Archive
 
 #----- Where to install libraries
-LIB_PATH=/cnfs/ops/cmoe/afsr005/Lib/${ARCH}_${PROC}
+LIB_PATH=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}
 
-#----- Where to install Tcl/Tk
-TCL_PATH=/home/afsr/005/Projects/eerSPI/eer_SPI/Lib/${ARCH}_${PROC}/TclTk
+SPI_LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}/SPI
+SPI_PATH=/users/dor/afsr/005/Projects/eerSPI/eer_SPI
 
-
-HOME_PATH=/home/afsr/005/lib/${ARCH}_${PROC}
-
-export LD_LIBRARY_PATH=${HOME_PATH}:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
 
 TCL_VERSION=8.6.0
 TCL_LIB=1.14
 TKTABLE=Tktable2.10
-TLS=tls1.6
+F90=/home/afsr/005/Projects/RMN/f90tcl
 
-XML=libxml2-2.7.2
+XML=libxml2-2.9.1
 TDOM=tdom-master
 EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
-GEOS=geos-3.2.2
+GEOS=geos-3.4.0
 GDAL=gdal-1.10.0
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
@@ -54,12 +52,15 @@ else
    x64=no
 fi
 
+mkdir -p ${LIB_PATH}
+mkdir -p ${SPI_LIB}
+
 #----- Tcl Specifics
 
 #----- Tcl
 cd ${ARCH_PATH}/tcl${TCL_VERSION}/unix
 make distclean
-./configure --prefix=${TCL_PATH} --enable-threads  --enable-64bit=${x64}
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads  --enable-64bit=${x64}
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -71,25 +72,28 @@ fi
 
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean
-./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tcl=${TCL_PATH}/lib --enable-xft=no
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+
+#----- f90 stuff (for RMN with fortran)
+cd ${F90}/
+export FC='pgf90 -Bdynamic -fPIC -byteswapio'
+s.cc -c -I${SPI_LIB}/TclTk/include f90tclsh.c f90wish.c
+./f90_call_c.sh f90tclsh f90tclsh.o -L${SPI_LIB}/TclTk/lib -ltcl8.6
+rm f90tclsh.o
+./f90_call_c.sh f90wish f90wish.o -L${SPI_LIB}/TclTk/lib -ltk8.6 -ltcl8.6
+rm f90wish.o
+ln -fs f90tclsh tclsh8.6
+ln -fs f90wish  wish8.6
+cp -d f90tclsh f90wish ${SPI_LIB}/TclTk/bin
 
 #----- TkTable
 cd ${ARCH_PATH}/${TKTABLE}
-./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tcl=${TCL_PATH}/lib
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make clean
-make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
-
-#----- tls
-cd ${ARCH_PATH}/${TLS}
-make distclean
-./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-ssl-dir=/usr --with-tcl=${TCL_PATH}/lib
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -103,11 +107,12 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d ${LIB_PATH}/${XML}/lib/*.so* ${SPI_LIB}
 
-#----- tDOM-0.8.2
+#----- tDOM
 cd ${ARCH_PATH}/${TDOM}
 make distclean
-./configure --prefix=${TCL_PATH} --enable-threads --enable-64bit=${x64} --with-tclinclude=${TCL_PATH}/include --with-tcl=${TCL_PATH}/lib
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tclinclude=${SPI_LIB}/TclTk/include --with-tcl=${SPI_LIB}/TclTk/lib
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -123,7 +128,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${EXPAT}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${EXPAT}/lib/*.so* ${SPI_LIB}
 
 #----- curl
 cd ${ARCH_PATH}/${CURL}
@@ -142,6 +147,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+cp -d ${LIB_PATH}/${SQLITE}/lib/*.so* ${SPI_LIB}
 
 #----- geos
 cd ${ARCH_PATH}/${GEOS}
@@ -151,7 +157,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${GEOS}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${GEOS}/lib/*.so* ${SPI_LIB}
 
 #----- jasper
 cd ${ARCH_PATH}/${JASPER}
@@ -161,17 +167,17 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${JASPER}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${JASPER}/lib/*.so* ${SPI_LIB}
 
 #----- HDF-4
 cd ${ARCH_PATH}/${HDF4}
 make distclean
-./configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran
+./configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran 
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${HDF4}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${HDF4}/lib/*.so* ${SPI_LIB}
 
 #----- SZIP
 cd ${ARCH_PATH}/${SZIP}
@@ -181,7 +187,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${SZIP}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${SZIP}/lib/*.so* ${SPI_LIB}
 
 #----- HDF-5
 cd ${ARCH_PATH}/${HDF5}
@@ -191,7 +197,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${HDF5}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${HDF5}/lib/*.so* ${SPI_LIB}
 
 #----- netCDF
 cd ${ARCH_PATH}/${NETCDF}
@@ -201,7 +207,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${NETCDF}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${NETCDF}/lib/*.so* ${SPI_LIB}
 
 #----- grib
 cd ${ARCH_PATH}/${GRIB}
@@ -211,8 +217,8 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${GRIB}/lib/*.so* ${HOME_PATH}
-cp -r {LIB_PATH}/${GRIB}/share/grib_api/definitions ${HOME_PATH}/../Data/grib
+cp -d ${LIB_PATH}/${GRIB}/lib/*.so* ${SPI_LIB}
+cp -r ${LIB_PATH}/${GRIB}/share/grib_api/definitions ${SPI_PATH}/share/grib
 
 #----- ECBUFR
 cd ${ARCH_PATH}/${ECBUFR}
@@ -222,17 +228,17 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${ECBUFR}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${ECBUFR}/lib/libecbufr0.8.2rc1/*.so* ${SPI_LIB}
 
 #----- PostgreSQL
-cd ${ARCH_PATH}/${POSTGRESQL}
-make distclean
-./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-libxslt
-make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
-cp -d {LIB_PATH}/${POSTGRESQL}/lib/*.so* ${HOME_PATH}
+#cd ${ARCH_PATH}/${POSTGRESQL}
+#make distclean
+#./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-libxslt
+#make install
+#if [[ $? -ne 0 ]] ; then
+#   exit 1
+#fi
+#cp -d ${LIB_PATH}/${POSTGRESQL}/lib/*.so* ${SPI_LIB}
 
 #----- ODBC
 cd ${ARCH_PATH}/${ODBC}
@@ -242,7 +248,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${ODBC}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${ODBC}/lib/*.so* ${SPI_LIB}
 
 #----- PROJ 4
 cd ${ARCH_PATH}/${PROJ}
@@ -252,12 +258,12 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${PROJ}/lib/*.so* ${HOME_PATH}
+cp -d ${LIB_PATH}/${PROJ}/lib/*.so* ${SPI_LIB}
 
 #----- gdal (Don't forget to patch histogram for nodata and add stdio.h to frmts/msg/msgcommand.h)
 cd ${ARCH_PATH}/${GDAL}
 make distclean
-./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes \
+./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes --disable-rpath \
 --with-libz=internal \
 --with-liblzma=yes \
 --with-xml2=${LIB_PATH}/${XML}/bin \
@@ -275,7 +281,6 @@ make distclean
 --with-curl=${LIB_PATH}/${CURL}/bin/curl-config \
 --with-sqlite3=${LIB_PATH}/${SQLITE} \
 --with-geos=${LIB_PATH}/${GEOS}/bin/geos-config \
---with-hdf4=${LIB_PATH}/${HDF4} \
 --with-hdf5=${LIB_PATH}/${HDF5} \
 --with-pg=${LIB_PATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIB_PATH}/${ODBC} \
@@ -288,8 +293,9 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d {LIB_PATH}/${GDAL}/lib/*.so* ${HOME_PATH}
-cp -d {LIB_PATH}/${GDAL}/share/gdal/* ${HOME_PATH}/../Data/gdal
+cp -d ${LIB_PATH}/${GDAL}/lib/*.so* ${SPI_LIB}
+cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
+#--with-hdf4=${LIB_PATH}/${HDF4} \
 #--with-kakadu=${LIB_PATH}/${KKDU}
 #--with-ecw=/cnfs/ops/cmoe/afsr005/Lib/Linux/libecwj2-3.3

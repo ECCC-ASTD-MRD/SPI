@@ -71,6 +71,10 @@ void DataDef_Clear(TDataDef *Def){
       free(Def->Mask);
       Def->Mask=NULL;
    }
+   if (Def->Sub) {
+      free(Def->Sub);
+      Def->Sub=NULL;
+   }
 
    if (Def->Segments) {
       TList_Clear(Def->Segments,T3DArray_Free);
@@ -209,10 +213,12 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          def->Segments=NULL;
          def->Accum=NULL;
          def->Mask=NULL;
+         def->Sub=NULL;
          def->Pres=NULL;
          def->Height=NULL;
          def->Pick=def->Poly=NULL;
          def->Sample=Def->Sample;
+         def->SubSample=Def->SubSample;
 
          memcpy(def->Limits,Def->Limits,6*sizeof(int));
          def->CoordLimits[0][0]=Def->CoordLimits[0][0];
@@ -259,10 +265,12 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
          def->Segments=NULL;
          def->Accum=NULL;
          def->Mask=NULL;
+         def->Sub=NULL;
          def->Pres=NULL;
          def->Height=NULL;
          def->Pick=def->Poly=NULL;
          def->Sample=Def->Sample;
+         def->SubSample=Def->SubSample;
 
          memcpy(def->Limits,Def->Limits,6*sizeof(int));
          def->CoordLimits[0][0]=Def->CoordLimits[0][0];
@@ -313,6 +321,7 @@ void DataDef_Free(TDataDef *Def){
       if (Def->Buffer)             free(Def->Buffer);
       if (Def->Accum)              free(Def->Accum);
       if (Def->Mask)               free(Def->Mask);
+      if (Def->Sub)                free(Def->Sub);
       if (Def->Pres>(float*)0x1)   free(Def->Pres);
       if (Def->Height>(float*)0x1) free(Def->Height);
       if (Def->Poly)               OGR_G_DestroyGeometry(Def->Poly);
@@ -374,7 +383,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->CoordLimits[1][0]=-90;
    def->CoordLimits[1][1]=90;
 
-   def->Sample=1;
+   def->SubSample=def->Sample=1;
 
    /* Allocate data vector */
    def->Data[0]=def->Data[1]=def->Data[2]=def->Data[3]=NULL;
@@ -383,6 +392,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Segments=NULL;
    def->Accum=NULL;
    def->Mask=NULL;
+   def->Sub=NULL;
    def->Pres=NULL;
    def->Height=NULL;
    def->Pick=def->Poly=NULL;
@@ -442,7 +452,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       Def->CoordLimits[1][0]=-90;
       Def->CoordLimits[1][1]=90;
 
-      Def->Sample=1;
+      Def->SubSample=Def->Sample=1;
 
       if (Def->Mode && Def->Mode!=Def->Data[0]) {
          free(Def->Mode);
@@ -462,6 +472,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       if (Def->Buffer)             free(Def->Buffer); Def->Buffer=NULL;
       if (Def->Accum)              free(Def->Accum);  Def->Accum=NULL;
       if (Def->Mask)               free(Def->Mask);   Def->Mask=NULL;
+      if (Def->Sub)                free(Def->Sub);    Def->Sub=NULL;
       if (Def->Pres>(float*)0x1)   free(Def->Pres);   Def->Pres=NULL;
       if (Def->Height>(float*)0x1) free(Def->Pres);   Def->Height=NULL;
    }

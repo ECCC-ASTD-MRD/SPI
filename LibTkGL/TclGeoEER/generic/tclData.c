@@ -1169,6 +1169,66 @@ int Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef 
    return(TCL_OK);
 }
 
+int Data_SubInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef) {
+   
+   int  idx,i,j,x,y,x0,x1,y0,y1,s;
+   double val,val1,di,dj,dlat,dlon,d;
+   
+   if (!ToRef || !FromRef) {
+      if (Interp)
+         Tcl_AppendResult(Interp,"Data_GridInterpolate: No georeference defined",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   if (ToDef->SubSample<=1) {
+      if (Interp)
+         Tcl_AppendResult(Interp,"Data_GridInterpolate: Sub sampling is not defined",(char*)NULL);
+      return(TCL_ERROR);
+   }
+      
+   if (!GeoRef_Intersect(FromRef,ToRef,&x0,&y0,&x1,&y1,0)) {
+      return(TCL_OK);
+   }
+   
+   // Allocate and initialize subgrid
+   s=ToDef->SubSample*ToDef->SubSample;
+   if (!ToDef->Sub) {
+      if ((ToDef->Sub=(float*)malloc(ToDef->NI*ToDef->NJ*s*sizeof(float)))) {
+         for(idx=0;idx<ToDef->NI*ToDef->NJ*s;idx++) {
+            ToDef->Sub[idx]=ToDef->NoData;
+         }
+      } else {
+         if (Interp)
+           Tcl_AppendResult(Interp,"Data_GridInterpolate: Unable ot allocate subgrid",(char*)NULL);
+         return(TCL_ERROR); 
+      }
+   }
+
+   d=1.0/(ToDef->SubSample-1.0);
+   
+   // Interpolate values on subgrid
+   for(y=y0;y<=y1;y++) {
+      for(x=x0;x<=x1;x++) {    
+         idx=(y*ToDef->NI+x)*s;
+         
+         for(j=0;j<ToDef->SubSample;j++) {
+            for(i=0;i<ToDef->SubSample;i++,idx++) {
+               di=(double)x-0.5+d*i;
+               dj=(double)y-0.5+d*j;
+               ToRef->Project(ToRef,di,dj,&dlat,&dlon,1,1);
+               if (FromRef->UnProject(FromRef,&di,&dj,dlat,dlon,0,1)) {
+                  if (FromRef->Value(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1)) {
+                     ToDef->Sub[idx]=(val==FromDef->NoData?ToDef->NoData:val);
+                  }
+               }
+            }
+         }
+      }
+   }
+   
+   return(TCL_OK);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <Data_Wipe>
  * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
