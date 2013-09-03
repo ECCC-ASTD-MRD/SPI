@@ -214,7 +214,7 @@ int TclGraphItem_Init(Tcl_Interp *Interp) {
 
 static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   int         idx,n;
+   int         idx,n,t;
    static CONST char *sopt[] = { "create","free","configure","is","wipe",NULL };
    enum               opt { CREATE,FREE,CONFIGURE,IS,WIPE };
 
@@ -231,11 +231,16 @@ static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    switch ((enum opt)idx) {
       case CREATE:
-         if(Objc!=3) {
+         if(Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"item");
-            return TCL_ERROR;
+            return(TCL_ERROR);
          }
-         return GraphItem_Create(Interp,Tcl_GetString(Objv[2]));
+         t=GraphItem_Create(Interp,Tcl_GetString(Objv[2]));
+         if (t!=TCL_ERROR && Objc>3) {
+            t=GraphItem_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         }
+         return(t);
+         break;
 
       case FREE:
          if(Objc<3) {

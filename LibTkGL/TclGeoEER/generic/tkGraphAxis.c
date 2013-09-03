@@ -92,7 +92,7 @@ int TclGraphAxis_Init(Tcl_Interp *Interp) {
 */
 static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   int         idx,n;
+   int         idx,n,t;
    static CONST char *sopt[] = { "create","free","configure","wipe","is",NULL };
    enum               opt { CREATE,FREE,CONFIGURE,WIPE,IS };
 
@@ -109,11 +109,15 @@ static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    switch ((enum opt)idx) {
       case CREATE:
-         if(Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"axis");
-            return TCL_ERROR;
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"axis ?option?");
+            return(TCL_ERROR);
          }
-         return GraphAxis_Create(Interp,Tcl_GetString(Objv[2]));
+         t=GraphAxis_Create(Interp,Tcl_GetString(Objv[2]));
+         if (t!=TCL_ERROR && Objc>3) {
+            t=GraphAxis_Config(Interp,Tcl_GetString(Objv[2]),Objc-3,Objv+3);
+         }
+         return(t);
          break;
 
       case FREE:

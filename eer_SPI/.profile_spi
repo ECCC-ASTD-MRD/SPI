@@ -1,6 +1,6 @@
 #----- Definitions
-ARCH=${ORDENV_PLAT:=`uname -s`_`uname -m`}
-echo "(INFO) Architecture detected: ${ARCH}"
+ORDENV_PLAT=${ORDENV_PLAT:=`uname -s`_`uname -m`}
+echo "(INFO) Platform detected: ${ORDENV_PLAT}"
 
 export TCL_VERSION=8.6
 
@@ -11,9 +11,9 @@ export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
 export SPI_PATH
-export SPI_LIB=${SPI_PATH}/lib/${ARCH}
+export SPI_LIB=${SPI_PATH}/lib/${ORDENV_PLAT}
 export LD_LIBRARY_PATH=${SPI_LIB}:${SPI_LIB}/TclTk/lib:$LD_LIBRARY_PATH
-export TCLLIBPATH="${SPI_LIB} ${SPI_LIB}/TclTk/lib ${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION} ${SPI_LIB}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib"
+export TCLLIBPATH="${SPI_LIB} ${SPI_LIB}/TclTk/lib ${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION} ${SPI_LIB}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
 export TCL_LIBRARY="${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION}"
 
 #----- GDB data
