@@ -55,13 +55,28 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
 */
 void GeoRef_Expand(TGeoRef *Ref) {
 
-   if (Ref->Ids && !Ref->AX && Ref->Grid[0]=='Z') {
+   double lat,lon;
+   int    i;
+   
+   if (Ref->Ids && !Ref->AX) {
       Ref->AX=(float*)calloc((int)Ref->X1+1,sizeof(float));
       Ref->AY=(float*)calloc((int)Ref->Y1+1,sizeof(float));
+
       if (Ref->AX && Ref->AY) {
-         EZLock_RPNInt();
-         c_gdgaxes(Ref->Ids[Ref->NId],Ref->AX,Ref->AY);
-         EZUnLock_RPNInt();
+         if (Ref->Grid[0]=='Z') {
+            EZLock_RPNInt();
+            c_gdgaxes(Ref->Ids[Ref->NId],Ref->AX,Ref->AY);
+            EZUnLock_RPNInt();
+         } else {
+            for(i=0;i<=Ref->X1;i++) {
+               Ref->Project(Ref,i,0,&lat,&lon,1,1);
+               Ref->AX[i]=lon;
+            }
+            for(i=0;i<=Ref->Y1;i++) {
+               Ref->Project(Ref,0,i,&lat,&lon,1,1);
+               Ref->AY[i]=lat;
+            }
+         }
       }
    }
 }
