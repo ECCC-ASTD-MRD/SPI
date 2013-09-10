@@ -21,8 +21,8 @@
 #
 # Remarques :
 #   - Ce script traite tous les fichiers de trajectoires dans le repertoire specifie
-#   - Lancement: SPI -batch -layout JetLayout -script JetMapper.tcl -args [run] [hour] [dir] [map]
-#     Exemple :  SPI -batch -layout JetLayout -script JetMapper.tcl -args  00 18 ./ WXO+PYR
+#   - Lancement: SPI -batch -layout JetLayout -macro JetMapper.tcl -args [run] [hour] [dir] [map]
+#     Exemple :  SPI -batch -layout JetLayout -macro JetMapper.tcl -args  00 18 ./ WXO+PYR
 #===============================================================================
 
 namespace eval Macro::JetMapper { } {
@@ -35,24 +35,25 @@ namespace eval Macro::JetMapper { } {
    set Param(Info)      { "Produit WXO JetMap" "WXO JetMap product" }
    set Param(InfoArgs)  { { "Run" "Heure" "Repertoire de sortie" "Produit (WXO+PYR)" } { "Run" "Hour" "Output directory" "Product (WXO+PYR)" } }
 
-   set Param(Run)   00              ;#Run to be used
-   set Param(Hour)  18              ;#Valid time of map to be generated
-   set Param(Dir)   ./              ;#Where to save the maps
-   set Param(Map)   { WXO PYR }     ;#List of maps to be produced
+   set Param(Run)   00              ;#run to be used (Default)
+   set Param(Hour)  18              ;#Valid time of map to be generated (Default)
+   set Param(Dir)   ./              ;#Where to save the maps (Default)
+   set Param(Map)   { WXO PYR }     ;#List of maps to be produced (Default)
    set Param(Path)  $env(CMCCONST)/img.SPI/jetmap
 
-   set Param(Radius)       20       ;#Radius of the Highs and Lows
-   set Param(StreamStop)   70       ;#Minimal windspeed to which stop the streamline
-   set Param(StreamStart)  110      ;#Minimal windspeed to start a streamline
-   set Param(StreamLen)    29       ;#Length of arrow sections
-   set Param(StreamCut)    4        ;#Length of arrow spacings
-   set Param(Intervals)    { -100 -40 -30 -20 -10 0 10 20 30 40 }
-   set Param(IntervalsPYR) { -100 -30 -20 -10 0 10 20 30 40 }
+   set Param(Radius)       20                                                          ;#Radius of the Highs and Lows
+   set Param(StreamLevels) { 150 175 200 225 250 275 300 350 400 450 500 550 600 650 } ;#List of levels to use for jetstream
+   set Param(StreamSpeed)  90                                                          ;#Minimal windspeed to which stop the streamline
+   set Param(StreamLen)    29                                                          ;#Length of arrow sections
+   set Param(StreamCut)    4                                                           ;#Length of arrow spacings
+   set Param(Intervals)    { -100 -40 -30 -20 -10 0 10 20 30 40 }                      ;# Temp intervals for WXO
+   set Param(IntervalsPYR) { -100 -30 -20 -10 0 10 20 30 40 }                          ;#Temp intervale for PYR
 
    set Lbl(Rain)    { "Pluie" "Rain" }
    set Lbl(Snow)    { "Neige" "Snow" }
    set Lbl(Freeze)  { "Verglas" "Freezing rain" }
    set Lbl(Thunder) { "Orage" "Thunderstorm" }
+   set Lbl(Winds)   { "Vents > 90kts" "Winds > 90kts" }
    set Lbl(Adress)  { "meteo.gc.ca" "weather.gc.ca" }
    set Lbl(High)    { A H }
    set Lbl(Low)     { D L }
@@ -70,6 +71,23 @@ namespace eval Macro::JetMapper { } {
    set Data(Thunder) 0         ;#Thunderstorm existence flag
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::PrecipGet>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Get precipitation type per pixel block.
+#
+# Parameters :
+#   <X>      : X coordinate of pixel block
+#   <Y>      : Y coordinate of pixel block
+#   <Step>   : Size of pixel block
+#
+# Return:
+#   <Type>  : Cominant percip type for the pixel block
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::PrecipGet { X Y Step } {
 
    set t(1) 0
@@ -108,6 +126,20 @@ proc Macro::JetMapper::PrecipGet { X Y Step } {
    return $max
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::PrecipPlot>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Draw the precipitation type blocks
+#
+# Parameters :
+#   <Step>   : Size of pixel block
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::PrecipPlot { Step } {
    variable Icon
    variable Data
@@ -135,18 +167,38 @@ proc Macro::JetMapper::PrecipPlot { Step } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::StreamGet>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Calculate streamline candidates for the jetstream
+#
+# Parameters :
+#
+# Return:
+#   <Streams>: List of streamlines candidate for jetstream
+#
+# Remarks :
+#   - We start streamlines from the highs of the max windspeed within a slice
+#     of the upper atmosphere
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::StreamGet { } {
    variable Param
 
    #----- Process the upper levels to figure out max winds
-   fstdfield read UU 2 -1 "" 100  -1 -1 "" "UU"
-   foreach ip1 { 150 200 250 300 400 500 600 650 } {
+   foreach ip1 $Param(StreamLevels) {
       fstdfield read UUT 2 -1 "" $ip1 -1 -1 "" "UU"
-      vexpr UU ifelse(\[UU\]<\[UUT\],UUT,UU)
+      if { [fstdfield is UU] } {
+         vexpr UU ifelse(\[UU\]<\[UUT\],UUT,UU)
+      } else {
+         fstdfield copy UU UUT
+      }
    }
-
+   
    #----- Save the computed wind for later inspection
-#   fstdfile open OUT write ./winds.fstd
+#   file delete -force $Param(Dir)/winds.fstd
+#   fstdfile open OUT write $Param(Dir)/winds.fstd
+
 #   fstdfield write UU OUT -32 True
 #   fstdfield read TIC 2 -1 "" [fstdfield define UU -IG1] [fstdfield define UU -IG2] [fstdfield define UU -IG3] "" ">>"
 #   fstdfield write TIC OUT -32 True
@@ -157,28 +209,37 @@ proc Macro::JetMapper::StreamGet { } {
    set streams {}
 
    #----- Loop on the windspeed highs
-   foreach high [lsort -real -decreasing -index 0 [fstdfield stats UU -high 20]] {
+   foreach high [lsort -real -decreasing -index 0 [fstdfield stats UU -high 10]] {
       set h [lindex $high 0]
       set i [lindex $high 1]
       set j [lindex $high 2]
 
       #----- If it's fast enough
-      if { $h>=$Param(StreamStart) } {
-         #----- If it's within the viewport
-         set ll [fstdfield stats UU -gridpoint $i $j]
-         set xy [$Viewport::Data(VP) -project [lindex $ll 0] [lindex $ll 1] 0.0 False]
-
-         if { [llength $xy] } {
-            lappend streams  [fstdfield stats UU -coordstream $i $j 1024 0.25 $Param(StreamStop) 8.0]
-         }
+      if { $h>=$Param(StreamSpeed) } {
+         lappend streams [fstdfield stats UU -coordstream $i $j 1024 0.25 $Param(StreamSpeed) 8.0]
       }
    }
    return $streams
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::StreamPlot>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Draw the jetstream segments
+#
+# Parameters :
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::StreamPlot { } {
    variable Param
    variable Data
+   
+   Macro::JetMapper::StreamGet
 
    foreach stream [Macro::JetMapper::StreamGet] {
 
@@ -193,9 +254,8 @@ proc Macro::JetMapper::StreamPlot { } {
                set n1 end
             }
 
-            catch {
-               #----- Project the segment
-               set cc [lindex [$Viewport::Data(VP) -projectline NONE [lrange $stream $n $n1]] 0]
+            #----- Project the segment
+            if { [llength [set cc [lindex [$Viewport::Data(VP) -projectline NONE [lrange $stream $n $n1]] 0]]]>2 } {
                set x0 [expr int([lindex $cc 0])]
                set y0 [expr int([lindex $cc 1])]
                set x1 [expr int([lindex $cc end-1])]
@@ -203,19 +263,41 @@ proc Macro::JetMapper::StreamPlot { } {
 
                #----- If it's long enough and does not overlap other streams
                set items [$Page::Data(Canvas) find overlapping $x0 $y0 $x1 $y1]
-
-               if { [expr hypot($x1-$x0,$y1-$y0)]>20 && [llength $items]<2 } {
+               if { [llength $items]<2  && [expr abs(hypot($x1-$x0,$y1-$y0))]>30 } {
                   $Page::Data(Canvas) create line $cc -fill red -arrow last -arrowshape { 20 20 10 } -smooth True -width 10 -transparency 100 -tags STREAM
-
-                  incr n $Param(StreamCut)
                }
+               set xx0 [expr ($x0<$x1?$x0:$x1)-10]
+               set xx1 [expr ($x0<$x1?$x1:$x0)+10]
+               set yy0 [expr ($y0<$y1?$y0:$y1)-10]
+               set yy1 [expr ($y0<$y1?$y1:$y0)+10]
+               
+               $Page::Data(Canvas) create rectangle $xx0 $yy0 $xx1 $yy1 -fill white -outline black -transparency 0 -tags STREAM
             }
+            incr n $Param(StreamCut)
          }
       }
    }
 }
 
-proc Macro::JetMapper::Legend { Field Colormap Intervals Lang Do } {
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::LegendPlot>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Draw the legend for the various map items
+#
+# Parameters :
+#   <Field>    : Temperatur field
+#   <Colormap> : Colormap to use
+#   <Intervals>: Intervals to use       
+#   <Lang>     : Language
+#   <Do>       : Plot precpip
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
+proc Macro::JetMapper::LegendPlot { Field Colormap Intervals Lang Do } {
    variable Param
    variable Data
    variable Lbl
@@ -279,7 +361,7 @@ proc Macro::JetMapper::Legend { Field Colormap Intervals Lang Do } {
 
    set x [expr $width -26]
    set y 20
-
+   
    #----- Afficher la legende dynamique
    foreach type { Rain Snow Freeze Thunder } {
       if { $Data($type) } {
@@ -289,6 +371,14 @@ proc Macro::JetMapper::Legend { Field Colormap Intervals Lang Do } {
          set x [expr $x-[font measure FONT12 [lindex $Lbl($type) $Lang]]-40]
       }
    }
+
+   #----- Afficher la legende des vents
+   incr x 10
+   $Page::Data(Canvas) create rectangle [expr $x-10] [expr $y-10] [expr $x+10] [expr $y+10] -fill #7D7D7D -transparency 20 -tag LEGEND
+   incr x -21
+   $Page::Data(Canvas) create text $x $y -text [lindex $Lbl(Winds) $Lang] -font FONT12 -fill black -tag LEGEND -anchor e
+   set x [expr $x-[font measure FONT12 [lindex $Lbl(Winds) $Lang]]-40]
+   
    $Page::Data(Canvas) create rectangle [expr $width-5] 5 [expr $x+35] 35 -fill white -outline black -transparency 70 -tag "LEGEND LOW"
 
    #----- Ordonner les items
@@ -296,6 +386,20 @@ proc Macro::JetMapper::Legend { Field Colormap Intervals Lang Do } {
    $Page::Data(Canvas) lower LOW LEGEND
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::HighLowPlot>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Draw the pressure high and lows
+#
+# Parameters :
+#   <Field>  : Pressure field
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::HighLowPlot { Field } {
    variable Param
 
@@ -324,6 +428,19 @@ proc Macro::JetMapper::HighLowPlot { Field } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::Print>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Save the products
+#
+# Parameters :
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::Print { } {
    variable Param
 
@@ -332,13 +449,13 @@ proc Macro::JetMapper::Print { } {
    if { [lsearch -exact $Param(Map) WXO]!=-1 } {
 
       #----- Francais
-      Macro::JetMapper::Legend TTI CMAPWXO $Param(Intervals) 0 True
+      Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 0 True
       PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
 
       #----- English
-      Macro::JetMapper::Legend TTI CMAPWXO $Param(Intervals) 1 True
+      Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 1 True
       PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
       exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
@@ -347,19 +464,36 @@ proc Macro::JetMapper::Print { } {
    if { [lsearch -exact $Param(Map) PYR]!=-1 } {
 
       #----- English (PYR)
-      Macro::JetMapper::Legend TTI CMAPPYR $Param(IntervalsPYR) 1 False
+      Macro::JetMapper::LegendPlot TTI CMAPPYR $Param(IntervalsPYR) 1 False
       PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
       exec convert -antialias -resize 855x713+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@media_0$Param(Hour).png
       exec convert -antialias -resize 855x713+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@media_0$Param(Hour).gif
    }
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::Execute>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Launch the macro
+#
+# Parameters :
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::Execute { } {
    variable Param
    variable Data
    global env
 
    set date [string range [lindex [lsort -dictionary -increasing [glob -directory $env(CMCGRIDF)/prog/regeta/ -tails *$Param(Run)_???]] end] 0 7]
+
+   colormap create CMAPWIND
+   colormap control CMAPWIND -add 0 125 125 125 20
+   colormap control CMAPWIND -add 2 125 125 125 20
 
    colormap create CMAPWXO
    colormap read CMAPWXO $Param(Path)/JetMap.rgba
@@ -397,6 +531,12 @@ proc Macro::JetMapper::Execute { } {
    fstdfield stats TTI -leveltype MASL -levels 0
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) { TTI }
 
+   #----- Add high speed wind volume
+   fstdfield read UU 2 -1 "" 250  -1 -1 "" "UU"
+   fstdfield readcube UU True $Param(StreamLevels)
+   fstdfield configure UU -color black -rendertexture 1 -rendervolume 1 -width 1 -colormap CMAPWIND -intervals $Param(StreamSpeed)
+   Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) { UU }
+
    Macro::JetMapper::Print
 
    fstdfile close 1
@@ -409,12 +549,38 @@ proc Macro::JetMapper::Execute { } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::Clean>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Clear macro resources
+#
+# Parameters :
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::Clean { } {
 
    fstdfield free IL NW TT PN TTI UU UUT BUF
-   colormap  free CMAPWXO CMAPPYR
+   colormap  free CMAPWIND CMAPWXO CMAPPYR
 }
 
+#----------------------------------------------------------------------------
+# Name     : <Macro::JetMapper::Args>
+# Creation : Fevrier 2004 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Process macro arguments
+#
+# Parameters :
+#
+# Return:
+#
+# Remarks :
+#
+#----------------------------------------------------------------------------
 proc Macro::JetMapper::Args { } {
    global argv argc
    variable Param
