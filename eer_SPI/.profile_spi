@@ -1,6 +1,5 @@
 #----- Definitions
-ORDENV_PLAT=${ORDENV_PLAT:=`uname -s`_`uname -m`}
-echo "(INFO) Platform detected: ${ORDENV_PLAT}"
+export ORDENV_PLAT=${ORDENV_PLAT:=`uname -s`_`uname -m`}
 
 export TCL_VERSION=8.6
 

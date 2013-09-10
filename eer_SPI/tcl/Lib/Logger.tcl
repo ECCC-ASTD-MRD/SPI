@@ -265,7 +265,7 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "App/Script          : $Job"
    Log::Print MUST "Version             : $Version"
    Log::Print MUST "Hostname            : [system info -name]"
-   Log::Print MUST "Architecture        : [system info -os]"
+   Log::Print MUST "Architecture        : $env(ORDENV_PLAT)"
    Log::Print MUST "Run ID              : $Param(JobId)"
 
    if { $Param(MailTo)!="" } {
