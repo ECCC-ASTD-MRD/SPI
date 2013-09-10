@@ -7,7 +7,7 @@
 # 2) Three-options usage (all options are required):
 #       --with-rmn=yes
 #       --with-rmn-inc - path to base directory with  headers
-#       --with-rmn-lib - linker flags for 
+#       --with-rmnib - linker flags for 
 #
 # This macro calls:
 #
@@ -29,7 +29,7 @@ AC_DEFUN([AX_LIB_RMN],
         if test "$withval" = "yes"; then
             if test -d /usr/local/include/rmn.h ; then 
                 rmn_prefix=/usr/local
-            elif test -d /usr/include/rmn.h ; then
+            elif test -d /usr/include/rmn. ; then
                 rmn_prefix=/usr
             else
                 rmn_prefix=""
@@ -82,9 +82,9 @@ AC_DEFUN([AX_LIB_RMN],
     if test -n "$rmn_prefix"; then
         rmn_include_dir="$rmn_prefix/include"
         if test "$rmn_prefix" = "/usr"; then
-            rmn_lib_flags="-lrmn"
+            rmn_lib_flags="-lrmne"
         else
-            rmn_lib_flags="-L$rmn_prefix/lib -lrmn"
+            rmn_lib_flags="-L$rmn_prefix/lib -lrmne"
         fi
         run_rmn_test="yes"
     elif test "$rmn_requested" = "yes"; then

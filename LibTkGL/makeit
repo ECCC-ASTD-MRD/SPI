@@ -1,79 +1,116 @@
 #!/bin/sh
-reconf=$1
+arg=$1
+
+NAME="SPI"
+DESC="EER Visualisation/GIS/Processing/Modeling tool"
+VERSION="7.6.0"
+MAINTAINER="Jean-Philippe Gauthier"
+
+SSM_NAME=${NAME}_${VERSION}_all
 
 MAKE=make
-TCL=/cnfs/ops/cmoe/afsr005/Lib/7.6.0/${ORDENV_PLAT}/SPI
+LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${LIB}/${ORDENV_PLAT}
+TCL=${LIB}/SPI
 
 export CC=c99
+export CFLAGS=-fopenmp
 
-echo ""
-echo "----- Building platform : ${ORDENV_PLAT} -----"
-echo ""
+if [[ $arg = "ssm" ]]; then
 
-echo ""
-echo "----- Making System Call Library Object -----"
-echo ""
-cd TclSystem
-if [[ -n $reconf ]]; then
-   make distclean
-   ./configure \
-      --exec-prefix=${TCL}/TclTk \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${TCL}/TclTk/lib 
-#      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
+   echo ""
+   echo "----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} ----- "
+   echo ""
+
+   cd ../eer_SPI
+   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME} ${SSM_DEV}/package/${SSM_NAME}.ssm 
+   mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d ${SSM_DEV}/workspace/${SSM_NAME}/lib
+   cp -r  bin    ${SSM_DEV}/workspace/${SSM_NAME}
+   for plat in `ls -1 lib`; do
+      cp -r  lib/${plat}/ ${SSM_DEV}/workspace/${SSM_NAME}/lib
+   done
+   cp -r  tcl    ${SSM_DEV}/workspace/${SSM_NAME}
+   cp -r  share  ${SSM_DEV}/workspace/${SSM_NAME}
+   cp -r  data   ${SSM_DEV}/workspace/${SSM_NAME}
+   cp .profile_spi ${SSM_DEV}/workspace/${SSM_NAME}
+   cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -exec rm -f -r {} \;
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -delete
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   cd ${SSM_DEV}/workspace/${SSM_NAME}/lib; ln -s ubuntu-10.04-amd64-64 Linux_x86_64; cd -
+   cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+else
+
+  echo ""
+  echo "----- Building platform : ${ORDENV_PLAT} -----"
+  echo ""
+
+  echo ""
+  echo "----- Making System Call Library Object -----"
+  echo ""
+  cd TclSystem
+  if [[ $arg = "reconf" ]]; then
+    make distclean
+    ./configure \
+	--exec-prefix=${TCL}/TclTk \
+	--enable-threads \
+	--enable-64bit \
+	--with-tcl=${TCL}/TclTk/lib 
+  #      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
+  fi
+
+  $MAKE install
+
+  echo ""
+  echo "----- Making OpenGL Canvas Library Object -----"
+  echo ""
+
+  cd ../TkglCanvas
+  if [[ $arg = "reconf" ]]; then
+    make distclean
+    ./configure \
+	--prefix=${TCL}/TclTk/ \
+	--exec-prefix=${TCL}/TclTk/ \
+	--enable-threads \
+	--enable-64bit \
+	--with-tcl=${TCL}/TclTk/lib \
+	--with-tk=${TCL}/TclTk/lib
+  fi
+
+  $MAKE install
+
+  echo ""
+  echo "----- Making Tcl GeoEER Library Object -----"
+  echo ""
+
+  cd ../TclGeoEER
+  if [[ $arg = "reconf" ]]; then
+    make distclean
+    ./configure \
+	--exec-prefix=${TCL}/TclTk \
+	--enable-threads \
+	--enable-64bit \
+	--with-tcl=${TCL}/TclTk/lib \
+	--with-tk=${TCL}/TclTk/lib \
+	--with-eer=/home/afsr/005/Projects/libeerUtils \
+	--with-rmn=${LIB}/librmn-14 \
+	--with-gdb=${LIB}/gdb \
+	--with-gdal=${LIB}/gdal-1.10.0/bin/gdal-config  \
+	--with-grib=${LIB}/grib_api-1.9.18 \
+	--with-ecbufr=${LIB}/libecbufr-0.8.2rc1 \
+	--with-flt=${LIB}/fltlib-0.5.1
+  #      --with-urp=${LIB}/URP
+  fi
+
+  $MAKE install
+
+  cd ${TCL}
+  ln -fs TclTk/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
+  ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
+
+  ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
+  ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+
+  ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so libTclSystem1.0.so
+  ln -fs libTclSystem1.0.so libTclSystem.so
+
 fi
-
-$MAKE install
-
-echo ""
-echo "----- Making OpenGL Canvas Library Object -----"
-echo ""
-cd ../TkglCanvas
-if [[ -n $reconf ]]; then
-   make distclean
-   ./configure \
-      --prefix=${TCL}/TclTk/ \
-      --exec-prefix=${TCL}/TclTk/ \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${TCL}/TclTk/lib \
-      --with-tk=${TCL}/TclTk/lib
-fi
-
-$MAKE install
-
-echo ""
-echo "----- Making Tcl GeoEER Library Object -----"
-echo ""
-cd ../TclGeoEER
-if [[ -n $reconf ]]; then
-   make distclean
-   ./configure \
-      --exec-prefix=${TCL}/TclTk \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${TCL}/TclTk/lib \
-      --with-tk=${TCL}/TclTk/lib \
-      --with-eer=/home/afsr/005/Projects/libeerUtils \
-      --with-rmn=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/librmn-13 \
-      --with-gdb=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdb \
-      --with-gdal=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/gdal-1.10.0/bin/gdal-config  \
-      --with-grib=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/grib_api-1.9.18 \
-      --with-ecbufr=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/libecbufr-0.8.4 \
-      --with-flt=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/fltlib-0.5.1
-#      --with-urp=/cnfs/ops/cmoe/afsr005/Lib/${BASE_ARCH}/URP
-fi
-
-$MAKE install
-
-cd ${TCL}
-ln -fs TclTk/lib/TclGeoEER7.6.0/libTclGeoEER7.6.0.so libTclGeoEER7.6.0.so
-ln -fs libTclGeoEER7.6.0.so libTclGeoEER.so
-
-ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
-ln -fs libTkglCanvas8.6.so libTkglCanvas.so
-
-ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so libTclSystem1.0.so
-ln -fs libTclSystem1.0.so libTclSystem.so
-

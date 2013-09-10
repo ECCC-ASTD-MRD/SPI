@@ -39,6 +39,7 @@ GRIB=grib_api-1.9.18
 ECBUFR=libecbufr-0.8.2rc1
 OCI=instantclient_11_2
 PROJ=proj-4.8.0
+MESA=Mesa-7.6.1
 
 #----- not recompiled yet
 NETCDF=netcdf-4.1.1
@@ -54,6 +55,15 @@ fi
 
 mkdir -p ${LIB_PATH}
 mkdir -p ${SPI_LIB}
+
+#----- Mesa
+cd ${ARCH_PATH}/${MESA}
+make distclean
+./configure --prefix=${SPI_LIB}/GL --disable-gallium --with-x --with-driver=xlib
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
 
 #----- Tcl Specifics
 
