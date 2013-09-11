@@ -21,6 +21,8 @@ if { ![info exists GDefs(Dir)] } {
    set GDefs(Dir) $env(SPI_PATH)
 }
 
+catch { package require TclSim }
+
 package require Dialog
 package require CanvasBubble
 package require Calendar

@@ -665,7 +665,8 @@ proc Exp::ThreadKill { Id } {
 
       #----- Signal simulation to finish and wait for it to do so
       simulation define $Id -state DONE
-      while { [simulation define $Id -percent]!=100 } { }
+      set t 0
+      while { [incr t]<1e6 && [simulation define $Id -percent]!=100 } { }
       simulation destroy $Id
 
       set ::Model::Param(Job) ""
