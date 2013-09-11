@@ -624,7 +624,7 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
 
    unsigned int n0,n1,g0,g1,n11;
-   int          c,d;
+   int          c;
    Vect3d       v0[2],v1[2];
 
    g0=GPC_ToVect3d(Geom0,0);
@@ -638,7 +638,6 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
       Vect_Assign(v0[0],GPC_Geom[0][n0]);
       Vect_Assign(v0[1],GPC_Geom[0][n0+1]);
       c=0;
-      d=0;
 
       for(n1=0,n11=g1-2;n1<(g1-1);n11=n1++) {
 

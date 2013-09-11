@@ -205,6 +205,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
    /*Other RPN grids*/
    } else {
+#ifdef HAVE_RMN
       for(y=Y0;y<=Y1+dd;y++) {
          idx=(y-FromRef->Y0)*FromDef->NI+(X0-FromRef->X0);
          for(x=X0;x<=X1+dd;x++,idx++,n++) {
@@ -221,6 +222,9 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
 
       d=dd?2:1;
       sz=4;
+#else
+      fprintf(stderr,"(ERROR) RMNLIB support not included.");
+#endif
    }
 
    /*Project to destination grid*/
@@ -267,6 +271,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          }
 */
    } else {
+#ifdef HAVE_RMN
       if (sz==8) {
          for(x=0;x<n;x++) {
             /*RPN functions go from 0 to 360 instead of -180 to 180*/
@@ -298,6 +303,9 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
             Scan->D[x]=ToDef->NoData;
          }
       }
+#else
+      fprintf(stderr,"(ERROR) RMNLIB support not included.");
+#endif
    }
    return(d);
 }
@@ -751,6 +759,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(ref->NId));
             } else {
+#ifdef HAVE_RMN
                Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
                if (nidx>ref->NbId) {
                   Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid subgrid index",(char*)NULL);
@@ -759,7 +768,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   int ni,nj,ig;
                   char grtyp[2];
 
-                  // If the subgrid index is different from thte current
+                  // If the subgrid index is different from the current
                   if (ref->Ids && nidx!=ref->NId && nidx<=ref->NbId) {
                      ref->NId=nidx;
 
@@ -769,6 +778,10 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      ref->X1=ni-1; ref->Y1=nj-1;
                   }
                }
+#else
+               Tcl_AppendResult(Interp,"\n   GeoRef_Define: RMNLIB support not included",(char*)NULL);
+               return(TCL_ERROR);
+#endif
             }
             break;
 

@@ -55,6 +55,7 @@ int      GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double 
 */
 void GeoRef_Expand(TGeoRef *Ref) {
 
+#ifdef HAVE_RMN
    double lat,lon;
    int    i;
    
@@ -79,6 +80,7 @@ void GeoRef_Expand(TGeoRef *Ref) {
          }
       }
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -102,6 +104,7 @@ void GeoRef_Expand(TGeoRef *Ref) {
 */
 double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1) {
 
+#ifdef HAVE_RMN
    float i[2],j[2],lat[2],lon[2];
 
    if (Ref->Ids) {
@@ -120,9 +123,9 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
       Y1=DEG2RAD(lat[1]);
 
       return(DIST(0.0,Y0,X0,Y1,X1));
-   } else {
-      return(hypot(X1-X0,Y1-Y0));
    }
+#endif
+   return(hypot(X1-X0,Y1-Y0));
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -158,6 +161,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 
    *Length=Def->NoData;
 
+#ifdef HAVE_RMN
    /*In case of triangle meshe*/
    if (Ref->Grid[0]=='M') {
       if (C<Def->NC && X>=0 && Y>=0) {
@@ -239,12 +243,12 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                Def_Pointer(Def,C,mem,p0);
                
                // If either value is nodata then interpolation will be nodata as well
-               mem+=iy*Def->NI+ix;
+               mem=iy*Def->NI+ix;
                if (              ((float*)p0)[mem]==Def->NoData)                         { *Length=Def->NoData; return(valid); }
                if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { *Length=Def->NoData; return(valid); }
                if (iy<Ref->Y1 && ((float*)p0)[mem+Def->NI]==Def->NoData)                 { *Length=Def->NoData; return(valid); }
                if (iy<Ref->Y1 && ix<Ref->X1 && ((float*)p0)[mem+Def->NI+1]==Def->NoData) { *Length=Def->NoData; return(valid); }    
-               
+              
 //EZFIX               EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
                *Length=valf;
@@ -255,6 +259,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          }
       }
    }
+#endif
    return(valid);
 }
 
@@ -351,7 +356,8 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 
    *X=-1.0;
    *Y=-1.0;
-
+   
+#ifdef HAVE_RMN
    if (Ref->Type&GRID_SPARSE) {
       if (Ref->Lon && Ref->Lat) {
          if (Ref->Grid[0]=='M') {
@@ -419,7 +425,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
      *Y=-1.0;
      return(0);
    }
-
+#endif
    return(1);
 }
 
@@ -466,7 +472,8 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
 
       // Create master gridid
       id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
-
+      
+#ifdef HAVE_RMN
       // Check for sub-grids (U grids can have sub grids)
       ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
 //      ref->NbId=1;
@@ -476,6 +483,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
             c_ezget_subgridids(id,&ref->Ids[1]);
          }
       }
+#endif
    }
    ref->IG1=IG1;
    ref->IG2=IG2;

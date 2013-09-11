@@ -943,8 +943,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 #endif
                } else {
                   Field[f]->Ref->Value(Field[f]->Ref,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
-                  Def_Set(cut->Def,0,idx,vi);
-                  if (cut->Def->Data[1]) {
+                 Def_Set(cut->Def,0,idx,vi);
+                 if (cut->Def->Data[1]) {
                      Def_Set(cut->Def,1,idx,vj);
                   }
                }

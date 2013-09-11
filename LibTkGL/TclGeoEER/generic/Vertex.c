@@ -392,7 +392,6 @@ int VertexLoc(TGeoRef *Ref,TDataDef *Def,Vect3d Vr,double X,double Y,double Z) {
 */
 float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
-   Vect3d      **pos;
    double        cube[2][4];
    unsigned long i,j,k,idx[4],idxk;
 
@@ -400,7 +399,6 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
       return(0);
    }
 
-   pos=Ref->Pos;
    i=X;X-=i;
    j=Y;Y-=j;
    k=Z;Z-=k;

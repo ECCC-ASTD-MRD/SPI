@@ -1846,10 +1846,12 @@ TMetElemData *TMetElemData_Resize(TMetElemData *Data,int Ne,int Nv,int Nt) {
 */
 int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   int res,type;
+   int res,type=31;
 
+#ifdef HAVE_RMN
    type=f77name(wkoffit)(File,strlen(File));
-
+#endif
+   
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) MetObs_Load: File type is %i\n",type);
 #endif
