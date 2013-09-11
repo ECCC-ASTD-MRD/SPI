@@ -390,7 +390,7 @@ proc MetStat::RECRCEval { Cmd } {
    #----- Creer un liste d'arguments
 
    set arg [split $Cmd ","]
-   set arg [string map { defvar "" DEFVAR "" "(" "" ")" "" "'" \" "," " " "[" "{" "]" "}" } $Cmd]
+   set arg [string map { defvar "" DEFVAR "" "(" "" ")" "" "'" \" \" \\\" "," " " "[" "{" "]" "}" } $Cmd]
 
    #----- Extraire les parametres specifiques
 
@@ -472,15 +472,17 @@ proc MetStat::RECRCLoad { File } {
 
          set cmd $line
          gets $file line
+         set line [string trim $line]
 
          while { [string first "DEFVAR" [string toupper $line]]==-1 && [string first "END" [string toupper $line]]==-1 && [string first "GRILLE" [string toupper $line]]==-1 && ![eof $file] } {
 
             #----- Concatener toutes les lignes en une commande
-            set first [string range $line 0 0]
+            set first [string index $line 0]
             if { $first!="#" && $first!="*" && $first!="C" && $first!="c" } {
                set cmd "$cmd[string trim $line]"
             }
             gets $file line
+            set line [string trim $line]
          }
 
          #----- Verifier la structure de la commande
@@ -489,6 +491,7 @@ proc MetStat::RECRCLoad { File } {
          }
       } else {
          gets $file line
+         set line [string trim $line]
       }
    }
    close $file

@@ -39,6 +39,7 @@
 #    Viewport::GoAlong        { Frame Speed Bearing Lat Lon { Damping True } }
 #    Viewport::GoARound       { Frame Speed Lat Lon { Damping True } }
 #    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
+#    Viewport::CloseUp        { Frame Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
 #    Viewport::LinkDo         { VP }
 #    Viewport::LinkSet        { }
 #    Viewport::Link           { }
@@ -2689,6 +2690,14 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
    } else {
       Viewport::Rotate $Frame $Lat $Lon $Zoom $From $To $Up
       Viewport::Resolution $Frame 1
+   }
+}
+
+proc Viewport::CloseUp { Frame Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
+   variable Data
+   
+   if { $Data(VP$Frame)!="" } {
+      ProjCam::CloseUp $Frame $Frame $Data(VP$Frame) $Lat0 $Lon0 $Lat1 $Lon1 $Off
    }
 }
 
