@@ -772,7 +772,7 @@ proc Model::ParamsMetData { Model } {
 
          if { $sim(Backward) } {
             #----- One more period needed if not exacly on date to cover backward range
-            if ($stamp<[lindex $data 0] } {
+            if { $stamp<[lindex $data 0] } {
                incr idx -1
             }
             set sim(Data) [lrange $sim(Data) $idx end]
