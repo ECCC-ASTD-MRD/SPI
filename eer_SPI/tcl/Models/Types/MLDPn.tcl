@@ -515,7 +515,7 @@ proc MLDPn::GetMetData { } {
 
    if { $MetData::Data(TA)!=-1 } {
 
-      #----- If the date of the last trial date is earlierr than the end of the simulation
+      #----- If the date of the last trial date is earlier than the end of the simulation
       set sec [fstdstamp toseconds $Sim(RunStamp)]
       if { $MetData::Data(TA)>$sec && $MetData::Data(TA)<[expr $sec+$Sim(Duration)*3600] } {
          set Sim(RestartTrialDate) $MetData::Data(TA)

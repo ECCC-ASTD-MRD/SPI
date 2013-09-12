@@ -761,6 +761,7 @@ proc Model::ParamsMetData { Model } {
             set stamp [fstdstamp fromseconds [expr $firstdate+$sim(Duration)*3600]]
          }
 
+         #----- find closest metdata to end simulation period
          set idx 0
          foreach data $sim(Data) {
             if { $stamp<=[lindex $data 0] } {
@@ -770,6 +771,10 @@ proc Model::ParamsMetData { Model } {
          }
 
          if { $sim(Backward) } {
+            #----- One more period needed if not exacly on date to cover backward range
+            if ($stamp<[lindex $data 0] } {
+               incr idx -1
+            }
             set sim(Data) [lrange $sim(Data) $idx end]
          } else {
             set sim(Data) [lrange $sim(Data) 0 $idx]
@@ -777,7 +782,7 @@ proc Model::ParamsMetData { Model } {
       }
    }
 
-   #----- checki if we have enough data
+   #----- check if we have enough data
    if { [llength $sim(Data)]<2 } {
       Dialog::Error . $Error(MetFiles)
       return False
