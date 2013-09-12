@@ -142,22 +142,23 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } } {
 
    if { $Select } {
       set path [$Tree get $Branch path]
-      set def [Mapper::DepotWare::WMS::BuildXMLDef $path]
-      if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
-         set band [Mapper::ReadBand $def "" 3]
+      if { [set def [Mapper::DepotWare::WMS::BuildXMLDef $path]]!="" } {
+         if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
+            set band [Mapper::ReadBand $def "" 3]
 
-         #----- Decrease effective resolution (WMS-TMS)
-         gdalband configure $band -texres 3
-         gdalband define $band -date $Data(Time)
+            #----- Decrease effective resolution (WMS-TMS)
+            gdalband configure $band -texres 3
+            gdalband define $band -date $Data(Time)
 
-         #----- Get legend
-         Mapper::DepotWare::WMS::GetLegend $band [lindex [lindex $Data(Styles) 0] end]
+            #----- Get legend
+            Mapper::DepotWare::WMS::GetLegend $band [lindex [lindex $Data(Styles) 0] end]
 
-         #----- Get associated metadata if any
-         if { [llength $Data(Meta)] } {
-            if { ![catch { set req [http::geturl $Data(Meta) -blocksize 1048580] }] } {
-               gdalfile metadata $Mapper::Data(Id$band) [list [http::data $req]]
-               http::cleanup $req
+            #----- Get associated metadata if any
+            if { [llength $Data(Meta)] } {
+               if { ![catch { set req [http::geturl $Data(Meta) -blocksize 1048580] }] } {
+                  gdalfile metadata $Mapper::Data(Id$band) [list [http::data $req]]
+                  http::cleanup $req
+               }
             }
          }
       }
@@ -605,6 +606,10 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
 proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    variable Data
 
+   if { [llength $Data($Layer)] < 14 } {
+      return
+   }
+   
    set url          [lindex $Data($Layer) 0]
    set layer        [lindex $Data($Layer) 3]
    set geog         [lindex $Data($Layer) 5]
