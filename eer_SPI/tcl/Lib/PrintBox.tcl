@@ -75,6 +75,10 @@ namespace eval PrintBox {
    set Type(RASTER)  { {Adobe PostScript {*.ps}}
                        {Portable Network Graphics {*.png}}
                        {CompuServe Graphics Interchange {*.gif}}
+                       {Joint Photographic Experts Group {*.jpg}}
+                       {Truevision Targa {*.tga}}
+                       {Tagged Image File {*.tif}}
+                       {Microsoft Windows bitmap image {*.bmp}}
                        {Portable pixmap {*.ppm}}}
 
    set Param(Format)    [lindex $Type(RASTER) 1]
@@ -588,6 +592,8 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    variable Txt
    global GDefs
 
+   set tmpfile "/tmp/output_[pid]_[clock seconds]"
+
    if { [file extension $Param(FullName)]==".$Print(Device)" } {
       set Param(FullName) [file rootname $Param(FullName)]
    }
@@ -599,9 +605,6 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    #      a l'orientation de la page selectionnee pour agrandir au maximum
 
    if { $Print(Type) == "printer" } {
-
-      set tmpfile "/tmp/output_[pid]_[clock seconds]"
-
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
       PrintBox::Postscript $Frame $tmpfile $X $Y $Width $Height $Param(Size)
 
@@ -616,7 +619,14 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName)
+         PrintBox::Save $Frame $X $Y $Width $Height $tmpfile
+         
+         if { $Print(Device)=="ppm" } {
+            file rename -force $tmpfile.ppm  $Param(FullName).$Print(Device)
+         } else {
+            exec convert $tmpfile.ppm $Param(FullName).$Print(Device)
+            file delete -force $tmpfile.ppm
+         }    
       } else {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
          PrintBox::Postscript $Frame $Param(FullName) $X $Y $Width $Height
@@ -680,7 +690,8 @@ proc PrintBox::Save { Frame X Y Width Height File } {
 
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-   TMPIMG write "$File.$Print(Device)" -format $Print(Device)
+#   TMPIMG write "$File.$Print(Device)" -format $Print(Device)
+   TMPIMG write "$File.ppm" -format ppm
    image delete TMPIMG
 }
 
