@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set res     [lindex $argv 0]
 set DBPath  [lindex $argv 1]
@@ -67,7 +68,7 @@ for { set n 0 } { $n<[ogrlayer define LAYER -nb] } { incr n } {
 
    #----- Setup our fields
    if { $file != "" } {
-      puts "   Found $file"
+      Log::Print INFO "Found $file"
       ogrlayer define INDEX -feature $n IDX_PATH $file
    }
 
@@ -78,3 +79,5 @@ for { set n 0 } { $n<[ogrlayer define LAYER -nb] } { incr n } {
 ogrfile close INDEXFILE LAYERFILE
 
 file copy -force $NTSPath/${res}kindex.prj $DBPath/Index/${name}.prj
+
+Log::End

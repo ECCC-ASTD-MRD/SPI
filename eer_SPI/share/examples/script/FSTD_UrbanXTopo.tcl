@@ -27,8 +27,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Arguments
 #   UrbanXTopo [concfile] [partfile] [topofile]
@@ -38,11 +39,9 @@ fstdfile open PART write [lindex $argv 1]
 gdalfile open GDAL read  [lindex $argv 2]
 
 #----- Read in topo
-
 gdalband read TOPO [list { GDAL 1 }]
 
 #----- Process concentration file
-
 fstdfield read FLD CONC -1 "" -1 -1 -1 "" "CV"
 
 fstdfield stats FLD -nodata 0.0
@@ -52,7 +51,6 @@ fstdfield define FLD -NOMVAR GZ -IP1 0 -IP2 0 -IP3 0
 fstdfield write FLD CONC 0 True
 
 #----- Process particle file
-
 foreach field [fstdfield find PART -1 "" -1 -1 -1 "" "ZH"] {
    fstdfield read FLD PART $field
    fstdfield copy FLD2 FLD
@@ -61,6 +59,7 @@ foreach field [fstdfield find PART -1 "" -1 -1 -1 "" "ZH"] {
    fstdfield write FLD PART 0 True
 }
 
-fstdfile close CONC
-fstdfile close PART
+fstdfile close CONC PART
 gdalfile close GDAL
+
+Log::End

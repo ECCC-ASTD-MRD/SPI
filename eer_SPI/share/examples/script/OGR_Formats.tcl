@@ -22,9 +22,12 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 puts "OGR Formats :\n\t[join [ogrfile format] "\n\t"]"
 puts "GDAL Formats:\n\t[join  [gdalfile format] "\n\t"]"
 
+
+Log::End

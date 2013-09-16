@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 fstdfield ip1mode NEW
 
@@ -131,3 +132,5 @@ for { set i 0 } { $i<=1001 } { incr i } {
 }
 
 fstdfield free FLDINT NIL TT GZ TIC TAC
+
+Log::End

@@ -24,6 +24,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 package require TclData
 #package require TclGeoEER
 package require TclSim
+package require Logger
+
+Log::Start [info script] 0.1
 
 #----- Use current time for release
 set date [clock seconds]
@@ -62,3 +65,5 @@ simulation run TRAJ1
 
 #----- Destroy simulation object
 simulation destroy TRAJ1
+
+Log::End

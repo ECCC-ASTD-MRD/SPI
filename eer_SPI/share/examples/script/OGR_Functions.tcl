@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Open the files
 set layers0 [ogrfile open FILE0 read DataIn/Volcano.shp]
@@ -136,3 +137,5 @@ ogrfile close RESULT
 ogrlayer free LAYER0
 ogrlayer free LAYERRESULT
 ogrfile close FILE0
+
+Log::End

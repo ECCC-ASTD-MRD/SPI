@@ -22,27 +22,24 @@ exec $SPI_PATH/wish "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Creer la palette de rendue
-
 colormap create CMAP
 colormap read CMAP DataIn/REC_Col.std1.rgba
 
 #----- Recuperer le champs
-
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" TT
 fstdfield configure FLD -colormap CMAP -intervals { -80 -70 -60 -50 }
 
 #----- Generere le preview
-
 image create photo IMG -width 229 -height 229
 fstdfield stats FLD -image IMG
 
 #----- Sauvegarder l'image du preview
-
 IMG write DataOut/FSTD_ImagePreview.gif
 
-exit
+Log::End

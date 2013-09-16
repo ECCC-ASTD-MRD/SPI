@@ -22,8 +22,9 @@ exec ${SPI_PATH}/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Open the shapefile to symplify
 set layer [ogrfile open SHPFILE read DataIn/ghy_000f06a_e.shp]
@@ -41,3 +42,5 @@ ogrlayer write SPHLAYER NEWSHPFILE
 
 #----- Close the files
 ogrfile close NEWSHPFILE SHPFILE
+
+Log::End

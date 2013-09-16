@@ -22,15 +22,16 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 set fields [fstdfile open 1 read  DataIn/2005120600_012]
 fstdfile open 2 write DataOut/FSTD_8HourAverage.fstd
 
-puts "   Found date: [fstdfile info 1 DATEV]"
+Log::Print INFO "Found date: [fstdfile info 1 DATEV]"
 
 #----- Recuperer les TICTAC
 
@@ -85,3 +86,5 @@ for { set i 7 } { $i < [llength $fields] } { incr i } {
 
 fstdfile close 1
 fstdfile close 2
+
+Log::End

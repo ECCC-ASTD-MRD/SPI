@@ -24,8 +24,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #-- Liste des especes incluses dans les fichiers d'emissions
 set Species { S2 S4 NO N2 }
@@ -56,10 +57,10 @@ for { set d 1 } { $d <= $Days } { incr d } {
 
       set ip2 [format "%i%02i" $d $t]
 
-      puts stdout "   Processing IP2 $ip2"
+      Log::Print INFO "Processing IP2 $ip2"
 
       foreach specie $Species {
-         puts stdout "      Processing specie $specie"
+         Log::Print INFO "Processing specie $specie"
 
          fstdfield read YFIELD YFILE -1 "" 12001 $ip2  -1 "" $specie
 
@@ -73,3 +74,5 @@ for { set d 1 } { $d <= $Days } { incr d } {
 }
 
 fstdfile close YFILE GRIDFILE RESULTFILE
+
+Log::End

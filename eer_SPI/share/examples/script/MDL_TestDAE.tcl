@@ -23,8 +23,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #model read DAE /users/dor/afsr/005/Data/model.dae
 set models [glob -tails -directory /cnfs/ops/cmoe/afsr005/Projects/UrbanX/Collada *]
@@ -58,3 +59,5 @@ if { 0 } {
    fstdfield write FLD FILE 0 True
    fstdfile close FILE
 }
+
+Log::End

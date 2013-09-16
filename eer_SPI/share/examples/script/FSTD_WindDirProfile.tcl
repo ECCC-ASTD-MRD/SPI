@@ -21,8 +21,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set lat 25
 set lon -100
@@ -46,3 +47,5 @@ for { set k 0 } { $k < [fstdfield define UU -NK] } { incr k } {
 puts "   $listeWD"
 
 fstdfile close FILE
+
+Log::End

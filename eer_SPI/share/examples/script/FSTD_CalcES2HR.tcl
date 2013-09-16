@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
@@ -57,3 +58,5 @@ foreach field [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
 
 fstdfile close 1
 fstdfile close 2
+
+Log::End

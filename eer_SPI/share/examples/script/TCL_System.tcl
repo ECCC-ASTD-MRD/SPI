@@ -21,6 +21,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclSystem
+package require Logger
+
+Log::Start [info script] 0.1
 
 set fs [lindex $argv 0]
 
@@ -70,3 +73,5 @@ foreach call $calls val $vals {
 
 #system fork
 #system daemonize -lock /tmp/test.pid
+
+Log::End

@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Read standard table set
 metobs table -readcmc
@@ -128,3 +129,5 @@ if { [catch { set sock [socket goodenough.cmc.ec.gc.ca 9093] }] } {
       }
    }
 }
+
+Log::End

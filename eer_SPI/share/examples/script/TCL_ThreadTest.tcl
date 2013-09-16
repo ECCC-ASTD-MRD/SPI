@@ -20,13 +20,15 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 #============================================================================
 
-puts \n[file tail [info script]]
+package require Logger
+
+Log::Start [info script] 0.1
 
 #----- On verifie si les threads son activees dans TCL
 
 if { !$tcl_platform(threaded) } {
-   puts stderr "   Thread not enabled"
-   exit 1
+   Log::Print ERROR "Thread not enabled"
+   Log::End 1
 }
 
 package require TclData
@@ -79,3 +81,4 @@ thread::join $tid2
 thread::join $tid3
 thread::join $tid4
 
+Log::End

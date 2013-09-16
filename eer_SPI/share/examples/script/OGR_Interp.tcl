@@ -22,11 +22,11 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Open the shapefile
-
 catch { eval file delete [glob DataOut/OGR_Interp2D.*] }
 
 file copy DataIn/land_bg_p.shp DataOut/OGR_Interp2D.shp
@@ -37,12 +37,10 @@ set layer [ogrfile open SHPFILE append DataOut/OGR_Interp2D.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Read the data to be summed
-
 fstdfile open DATAFILE read DataIn/2005102612_012
 fstdfield read DATAFIELD DATAFILE -1 "" -1 -1 -1 "" "P0"
 
 #----- Clear the file that will be used to sum the data
-
 ogrlayer define LAYER -field PRES Real
 ogrlayer clear LAYER PRES 0.0
 
@@ -71,7 +69,6 @@ close $f
 ogrlayer sync LAYER
 ogrfile close SHPFILE
 
-
 #----- Test Point interpolation
 
 
@@ -97,3 +94,5 @@ ogrlayer interp LAYER DATAFIELD PRES LINEAR
 
 ogrlayer sync LAYER
 ogrfile close SHPFILE
+
+Log::End

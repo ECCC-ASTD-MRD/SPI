@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set Param(ModelPath) /cnfs/ops/production/cmoe/lam_torg8g20/gridpt/dbase/prog/lam/torg8g20.model/
 set Param(ObsPath)   $env(CMCADE)/dbase/surface/metar
@@ -49,14 +50,14 @@ metobs define OBS -LAG 360
 for { set i 0 } { $i< 36 } { incr i 6 } {
    set file [clock format [expr $Param(Secs)+$i*3600] -format "%Y%m%d%H"]_
    if { [file exists $Param(ObsPath)/$file] } {
-      puts "   Reading metar data $file"
+      Log::Print INFO "Reading metar data $file"
       metobs read OBS $Param(ObsPath)/$file
    }
 }
 
 #----- Loop on models
 foreach model $Param(Models) {
-   puts "   Processing $model"
+   Log::Print INFO "Processing $model"
 
    set Data(BiasSPD$model) 0
    set Data(BiasDIR$model) 0
@@ -70,7 +71,7 @@ foreach model $Param(Models) {
    #----- Loop on files
    foreach file [glob $Param(ModelPath)/$Param(Date)??_???_${model}] {
 
-      puts "      Processing $file"
+      Log::Print INFO "   Processing $file"
       fstdfile open FSTDFILE read $file
 
       foreach fld [fstdfield find FSTDFILE -1 "" { 1.0 HYBRID } -1 -1 "" "UU"] {
@@ -82,13 +83,13 @@ foreach model $Param(Models) {
          #----- Get it's validity date in seconds
          set sec [fstdstamp toseconds [fstdfield define MODELUU -DATEV]]
          lappend Data(Secs) $sec
-         puts "         Processing $sec"
+         Log::Print INFO "      Processing $sec"
 
          #----- Loop on stations
          foreach id $Param(Stations) {
 
             if { [catch { set coo [metobs define OBS -COORD $id]}] } {
-               puts "            No data for station $id"
+               Log::Print INFO "         No data for station $id"
                continue
             }
 
@@ -178,3 +179,5 @@ foreach model $Param(Models) {
 puts $f $str
 
 close $f
+
+Log::End

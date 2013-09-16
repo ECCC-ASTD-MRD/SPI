@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree / sortie
 
@@ -54,7 +55,7 @@ vexpr DWI $dt*PDW
 
 foreach dw [lrange $dws 1 end] {
 
-   puts "   Processing step [incr n]"
+   Log::Print INFO "Processing step [incr n]"
    fstdfield read DW IN $dw
 
    vexpr DWI DWI+$dt*(DW+PDW)
@@ -66,3 +67,5 @@ foreach dw [lrange $dws 1 end] {
 
 fstdfile close IN
 fstdfile close OUT
+
+Log::End

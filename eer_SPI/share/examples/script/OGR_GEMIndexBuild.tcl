@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set ops $env(CMCGRIDF)/prog
 set par $env(CMCGRIDF)/../par/dbase/prog
@@ -47,14 +48,14 @@ ogrgeometry create RING "Linear Ring"
 set no 0
 foreach model $models name $names {
 
-   puts "Processing $model"
+   Log::Print INFO "Processing $model"
 
    #----- Pick the last file
    set file [lindex [lsort -dictionary -increasing [glob $model/??????????_???*]] end]
 
    if { ![llength $file] } {
-      puts "No data is available of model $model"
-      exit;
+      Log::Print ERROR "No data is available of model $model"
+      Log:::End 1
    }
 
    fstdfile open GEMFILE read $file
@@ -109,3 +110,5 @@ foreach model $models name $names {
 }
 
 ogrfile close INDEXFILE
+
+Log::End

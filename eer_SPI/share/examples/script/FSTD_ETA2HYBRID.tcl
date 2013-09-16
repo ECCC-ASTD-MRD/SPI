@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Arguments
 #   FSTD_ETA2HYBRID.tcl [file]
@@ -61,7 +62,7 @@ fstdfield configure OUT -interpdegree LINEAR
 
 #----- Interpolate3D fields
 foreach var $vars {
-   puts "   Interpolating $var"
+   Log::Print INFO "Interpolating $var"
    fstdfield read FLD MESO -1 "" -1 -1 -1 "" "$var"
    fstdfield readcube FLD True
    fstdfield stats FLD -leveltype ETA -top 10.0
@@ -72,3 +73,5 @@ foreach var $vars {
 
 #----- Close the files
 fstdfile close MESO MESOSTRATO
+
+Log::End

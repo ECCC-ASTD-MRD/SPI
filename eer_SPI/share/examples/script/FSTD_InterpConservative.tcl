@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 catch { file delete DataOut/FSTD_InterpConservative.fstd }
 
@@ -50,3 +51,5 @@ foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
 close $f
 
 fstdfile close 1 2 3
+
+Log::End

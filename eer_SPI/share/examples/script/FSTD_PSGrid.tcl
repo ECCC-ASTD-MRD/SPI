@@ -22,11 +22,11 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Definier les parametre de la grille
-
 set NI    340
 set NJ    240
 set nhem  1
@@ -36,7 +36,6 @@ set dd60  1.0
 set xg3   21000.0
 
 #---- Calculer les parametres xg necessaires
-
 set xg4 [expr (270.0-$dlon+360.0)/360.0]
 set xg4 [expr ($xg4-floor($xg4))*360.0]
 
@@ -46,15 +45,13 @@ set xg1 [expr ((($NI-1.0)/2.0) * $xg3 - [lindex $xy 0]) / $xg3 + 1.0]
 set xg2 [expr ((($NJ-1.0)/2.0) * $xg3 - [lindex $xy 1]) / $xg3 + 1.0]
 
 #----- Creer le champs
-
 fstdfield create GRID $NI $NJ 1
 
 #----- Lui assigner une grille PS nord
-puts "$xg1 $xg2 $xg3 $xg4"
+Log::Print DEBUG "$xg1 $xg2 $xg3 $xg4"
 fstdfield define GRID -GRTYP N $xg1 $xg2 $xg3 $xg4
 
 #----- Initialiser certains paramtres
-
 fstdfield define GRID -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET "GRID" -DATYP 2 -NOMVAR GRID -TYPVAR X
 
 #----- Sauvegrader le champs
@@ -63,3 +60,5 @@ fstdfile open 2 write DataOut/FSTD_PSGrid.fstd
 fstdfield write GRID 2 -16 True
 
 fstdfile close 2
+
+Log::End

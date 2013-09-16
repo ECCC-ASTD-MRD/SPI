@@ -23,8 +23,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set fstd   [lindex $argv 0]
 set latlon [lindex $argv 1]
@@ -45,8 +46,10 @@ while { ![eof $f] } {
    set grid [fstdfield stats FSTDFIELD -coordpoint $lat $lon]
 
    if { [lindex $grid 0]==-1 } {
-      puts "Coordinate outside ($lat,$lon)"
+      Log::Print INFO "Coordinate outside ($lat,$lon)"
    }
 }
 
 fstdfile close 1
+
+Log::End

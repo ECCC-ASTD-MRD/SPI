@@ -23,8 +23,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 
@@ -36,3 +37,5 @@ foreach field [fstdfile open 1 read $file] {
 }
 
 fstdfile close 1
+
+Log::End

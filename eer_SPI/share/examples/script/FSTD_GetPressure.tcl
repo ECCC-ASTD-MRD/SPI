@@ -22,10 +22,11 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
-puts "   Processing pressure for hybrid levels"
+Log::Print INFO "Processing pressure for hybrid levels"
 
 file delete DataOut/2006122900_000.hyb.pres DataOut/2006122900_000.eta.pres
 
@@ -54,7 +55,7 @@ fstdfield write TTHYB FILEOUT 0 True
 
 fstdfile close FILEIN FILEOUT
 
-puts "   Processing pressure for eta levels"
+Log::Print INFO "Processing pressure for eta levels"
 
 #----- Open in and out files
 fstdfile open FILEIN read DataIn/2006122900_000.eta
@@ -84,3 +85,5 @@ fstdfield write TTETA FILEOUT 0 True
 
 fstdfield free TTHYB P0 TIC TAC
 fstdfile close FILEIN FILEOUT
+
+Log::End

@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file  /cnfs/ops/production/cmoe/geo/HWSD/hwsd.bil
 set types { tgrav tsand tsilt tclay tref toc sgrav ssand ssilt sclay sref soc }
@@ -54,7 +55,7 @@ while { ![eof $f] } {
 #----- Add item for index 0 (to cover nodata value 0)
 lappend params(0) { 0 0 0 0 0 0 0 0 0 0 0 0 0 0 }
 
-puts "   Building correspondance vector"
+Log::Print INFO "Building correspondance vector"
 foreach name [lsort -integer -increasing [array names params]] {
 
    #----- Reset counts
@@ -83,12 +84,12 @@ set bandidxs [gdalfile open HWSDFILE read $file]
 
 set h [gdalfile height HWSDFILE]
 set w [gdalfile width HWSDFILE]
-puts "   Raster size: ${w}x${h}, tile will be ${wtile}x${htile}"
+Log::Print INFO "Raster size: ${w}x${h}, tile will be ${wtile}x${htile}"
 
 #----- Loop over the data by tiles since it's too big to fit in memory
 for { set y 0 } { $y<$h } { incr y $htile } {
    for { set x 0 } { $x<$w } { incr x $wtile } {
-      puts "   Processing : ${x},${y}"
+      Log::Print INFO "Processing : ${x},${y}"
 
       #----- Read tile and extract georeference
       gdalband read HWSDTILE $bandidxs $x $y [expr $x+$wtile-1] [expr $y+$htile-1]
@@ -99,14 +100,13 @@ for { set y 0 } { $y<$h } { incr y $htile } {
 
       #----- Loop on soil types
       foreach band $types {
-         puts -nonewline "      Processing $band"
+         Log::Print INFO "Processing $band"
          flush stdout
 
          #----- Convert to float for LUT to give percentages with decimals
          vexpr (Float32)$band slut(HWSDTILE,VECTOR.mu,VECTOR.$band)
          gdalband define $band -georef [gdalfile georef HWSDFILE] -transform $tr
          gdalband configure $band -desc $band
-         puts " ([lindex [lindex [gdalband stats $band -max] 0] 0])"
          if { [lindex [lindex [gdalband stats $band -max] 0] 0]==0.0 } {
             incr zero
          }
@@ -114,9 +114,9 @@ for { set y 0 } { $y<$h } { incr y $htile } {
 
       #----- Write all types to the file if there is a need to (not water only)
       if { $zero==[llength $types] } {
-         puts "      Empty tile, not saving."
+         Log::Print WARNING "Empty tile, not saving."
       } else {
-         puts "      Saving tile."
+         Log::Print INFO "Saving tile."
          gdalfile open OUTFILE write /data/goodenough/afsr005/Projects/GenPhysX/HWSD/HWSD-$x-$y.tif "GeoTIFF"
          gdalband write $types OUTFILE
          gdalfile close OUTFILE
@@ -125,3 +125,5 @@ for { set y 0 } { $y<$h } { incr y $htile } {
 }
 
 gdalfile close HWSDFILE
+
+Log::End

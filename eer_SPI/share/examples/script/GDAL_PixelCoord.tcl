@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 set x0   [lindex $argv 1]
@@ -46,3 +47,5 @@ for { set x $x0 } { $x<$x1 } { incr x } {
       puts "   $x $y $coords $val"
    }
 }
+
+Log::End

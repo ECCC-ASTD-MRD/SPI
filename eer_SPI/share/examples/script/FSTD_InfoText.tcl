@@ -24,21 +24,21 @@ exec $SPI_PATH/tclsh "$0" "$@"
 package require TclData
 #package require TclGeoEER
 package require MetData
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set String "ceci est un test\n ok la\n\tééédfg dféédààà ççç \u306F."
 
 #----- Encode
-
 fstdfile open TEXTFILE write DataOut/FSTD_InfoText.fstd
 fstdfield write [MetData::TextCode $String] TEXTFILE 0 True
 fstdfile close TEXTFILE
 
 #----- Decode
-
 fstdfile open TEXTFILE read DataOut/FSTD_InfoText.fstd
 
 fstdfield read FLD TEXTFILE -1 "UNICODE" -1 -1 -1 "" TEXT
-puts "   [MetData::TextDecode FLD]"
+Log::Print INFO "Decoded: [MetData::TextDecode FLD]"
 
+Log::End

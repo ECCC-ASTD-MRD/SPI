@@ -23,8 +23,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Remove previous results
 file delete DataOut/TRAJ_Rasterize.fstd DataOut/TRAJ_Rasterize.shp
@@ -43,7 +44,7 @@ set nb 0
 foreach file $argv {
 
    set trajs [trajectory load $file]
-   puts stdout "   Processing file $file"
+   Log::Print "Processing file $file"
 
    #----- Loop on the trajectories
    foreach traj $trajs {
@@ -112,3 +113,5 @@ fstdfield define SUM -NOMVAR TRAJ -IP1 1200
 fstdfield write SUM RESULTFILE -32 True
 
 fstdfile close GRIDFILE RESULTFILE
+
+Log::End

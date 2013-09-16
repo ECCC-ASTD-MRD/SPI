@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 proc TimeZoneCheck { Lat Lon } {
 
@@ -36,11 +37,11 @@ proc TimeZoneCheck { Lat Lon } {
 }
 
 #----- Open the TZ file
-
 set layer [ogrfile open OGRFILE read DataIn/timezone.shp]
 eval ogrlayer read TZ [lindex $layer 0]
 ogrfile close OGRFILE
 
 #----- Get the TZ for a latlon
+Log::Print INFO "TimeZone is: [TimeZoneCheck 65.10 -123.3]"
 
-puts [TimeZoneCheck 65.10 -123.3]
+Log::End

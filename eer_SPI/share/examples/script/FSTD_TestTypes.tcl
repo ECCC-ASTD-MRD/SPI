@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 catch { file delete DataOut/FSTD_TestTypes.fstd }
 
@@ -31,7 +32,7 @@ fstdfile open 1 write DataOut/FSTD_TestTypes.fstd
 
 foreach type { UByte Byte UInt16 Int16 UInt32 Int32 Float32 Float64 } val { 2 3 4 5 6 7 10 11 } {
 
-   puts "   Creating field of type $type"
+   Log::Print INFO "Creating field of type $type"
 
    fstdfield create GRID 229 229 1 $type
 #   fstdfield create GRID 229 1 1 $type
@@ -45,3 +46,5 @@ foreach type { UByte Byte UInt16 Int16 UInt32 Int32 Float32 Float64 } val { 2 3 
 }
 
 fstdfile close 1
+
+Log::End

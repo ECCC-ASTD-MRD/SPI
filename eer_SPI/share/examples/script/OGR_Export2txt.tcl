@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 
@@ -58,3 +59,5 @@ for { set f 0 } { $f < [ogrlayer define LAYER -nb] } { incr f } {
 
    puts ""
 }
+
+Log::End

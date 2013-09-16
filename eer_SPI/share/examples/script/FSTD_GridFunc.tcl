@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set ig [fstdgrid cigaxg N 1 2 3 4]
 set xg [fstdgrid cxgaig N 1 2 3 4]
@@ -42,3 +43,5 @@ set xy [fstdgrid xyfll -4.099899769 145.0610046 1 $dgrw 2]
 puts "   old  -372.3423157 -77.59349060 25000.00000 135.4000092 "
 puts "   $pi $pj $d60 $dgrw"
 puts "   ISO = [expr [lindex $xy 0]/$d60+$pi] JSO = [expr [lindex $xy 1]/$d60 + $pj]"
+
+Log::End

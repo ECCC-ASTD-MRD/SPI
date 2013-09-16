@@ -22,18 +22,17 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set f [open DataIn/2005_0823-0830_stroke_cg.txt.spi.obs]
 
 #----- Creation du fichier
-
 catch { file delete DataOut/OGR_OBS2SHP.shp }
 ogrfile open FILE write DataOut/OGR_OBS2SHP.shp "ESRI Shapefile"
 
 #----- Creation du layer et des champs
-
 ogrlayer create FILE STROKE "Stroke"
 ogrlayer define STROKE -field Ka Real
 ogrlayer define STROKE -field N1 Real
@@ -45,7 +44,6 @@ ogrgeometry create POINT "Point"
 set nb 0
 
 #----- Boucle sur les regions definie dans le fichier texte
-
 gets $f line
 gets $f line
 gets $f line
@@ -73,3 +71,5 @@ while { ![eof $f] } {
 }
 
 ogrfile close FILE
+
+Log::End

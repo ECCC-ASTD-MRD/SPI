@@ -22,20 +22,19 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 fstdfield ip1mode NEW
 
-#----- Ouvrir les fichiers d'entree (1) sortie (2)
-
 set levels { 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 }
 
+#----- Ouvrir les fichiers d'entree (1) sortie (2)
 fstdfile open 1 read  DataIn/2005102612_012
 fstdfile open 2 write DataOut/FSTD_ETA2METER.fstd
 
 #----- Get the grid dimensions
-
 fstdfield read GZ 1 -1 "" -1 -1 -1 "" "GZ"
 fstdfield create TO [fstdfield define GZ -NI] [fstdfield define GZ -NJ] [llength $levels]
 fstdfield stats TO -leveltype MAGL -levels $levels
@@ -54,3 +53,5 @@ foreach var { TT UU GZ } {
 fstdfile close 1
 fstdfile close 2
 fstdfile close 3
+
+Log::End

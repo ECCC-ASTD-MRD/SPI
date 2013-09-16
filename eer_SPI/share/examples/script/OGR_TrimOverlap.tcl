@@ -32,8 +32,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Recperer les parametres
 set File     [lindex $argv 0]
@@ -52,7 +53,7 @@ foreach file [glob ${name}.*] {
 set File ${name}_Trim.shp
 
 #----- Ouvrir les donnees vectorielles
-puts "   Reading input file"
+Log::Print INFO "Reading input file"
 set layer [lindex [ogrfile open SHAPE append $File] 0]
 eval ogrlayer read LAYER $layer
 
@@ -71,10 +72,10 @@ if { $dx!=0 && $dy!=0 } {
    set width  [expr int(ceil($dx/$Res))+1]
    set height [expr int(ceil($dy/$Res))+1]
 
-   puts "   Creating raster index"
-   puts "      Extent    : $extent"
-   puts "      Resolution: $Res metres"
-   puts "      Dimension : $width x $height"
+   Log::Print INFO "Creating raster index"
+   Log::Print INFO "   Extent    : $extent"
+   Log::Print INFO "   Resolution: $Res metres"
+   Log::Print INFO "   Dimension : $width x $height"
 
    #----- Creer la bande de rasterization
    gdalband create RASTER $width $height 1 Int32
@@ -88,9 +89,9 @@ if { $dx!=0 && $dy!=0 } {
    gdalband clear RASTERMAX
    gdalband clear RASTERID
 
-   puts "   Ordering features ([ogrlayer define LAYER -nb])"
+   Log::Print INFO "Ordering features ([ogrlayer define LAYER -nb])"
    for { set f 0 } { $f < [ogrlayer define LAYER -nb] } { incr f } {
-      puts "       $f"
+      Log::Print DEBUG "   $f"
 
       #----- Rasterisation d'une feature a la fois
       ogrlayer define LAYER -featureselect [list [list - # [list $f]]]
@@ -106,7 +107,7 @@ if { $dx!=0 && $dy!=0 } {
    }
 
    #----- Ecrire les bandes pour finaliser
-   puts "   Getting feature histogram"
+   Log::Print INFO "Getting feature histogram"
 
    set name ${File}.tif
    file delete -force $name
@@ -120,11 +121,11 @@ if { $dx!=0 && $dy!=0 } {
    set vals [gdalband stats RASTERID -histogram 0 0 [expr [ogrlayer define LAYER -nb]-1] [ogrlayer define LAYER -nb] False]
 
    #----- Si une valeur n'est pas dans l'histogramme, on s'en debarasse
-   puts "   Cleaning up features ([llength $vals])"
+   Log::Print INFO "Cleaning up features ([llength $vals])"
    set n 0
    foreach v $vals {
       if { $v==0 } {
-         puts "   Deleting $n"
+         Log::Print INFO "Deleting $n"
          ogrlayer delete LAYER $n
       }
       incr n
@@ -136,3 +137,5 @@ ogrlayer free LAYER
 
 #----- Merger everything in a single file
 #exec /cnfs/ops/cmoe/afsr005/Lib/Linux/gdal-1.7.1/bin/ogr2ogr -update -append Toronto.shp $File -nln Toronto
+
+Log::End

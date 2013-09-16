@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 
@@ -46,10 +47,10 @@ set height [expr int(ceil($dy/$res))+1]
 #----- Si le champs est 2D
 if { $dx!=0 && $dy!=0 } {
 
-   puts "   Processing: $file"
-   puts "   Extent    : $extent"
-   puts "   Resolution: $res degrees"
-   puts "   Dimension : $width x $height ($dx x $dy)"
+   Log::Print INFO "Processing: $file
+   Extent    : $extent
+   Resolution: $res degrees
+   Dimension : $width x $height ($dx x $dy)"
 
    #----- Creer le fichier de rasterization
    catch { file delete -force DataOut/[file rootname [file tail $file]].map.tif }
@@ -72,3 +73,5 @@ if { $dx!=0 && $dy!=0 } {
 }
 
 fstdfile close FILEIN
+
+Log::End

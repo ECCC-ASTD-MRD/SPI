@@ -23,13 +23,13 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 fstdfile open 1 read  DataIn/2005120600_012
 
 #----- Recuperer le champs pour la grille d'interpolation
-
 set fldlist {}
 
 puts  -nonewline "Before sort:"
@@ -46,3 +46,5 @@ puts -nonewline "\n\nAfter sort :"
 foreach field $fldlist {
    puts -nonewline " [fstdfield stats $field -gridvalue 0 0]"
 }
+
+Log::End

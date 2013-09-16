@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set levels { 10 15.0 30.0 35.0 44.0 51.0 57.2 59.0 67.6 72.4 81.0 85.6 94.4 99.0 107.6 112.4 121.0 125.6 134.4 139.0 147.6 152.4 161.0 165.6 174.4 179.0 187.6 192.4 201.0 205.6 214.4 219.0 227.6 232.4 241.0 245.6 254.4 259.0 267.6 272.4 281.0 285.6 294.6 300.2 310.4 318.8 332.2 345.8 365.6 387.0 417.0 450.8 495.0 546.2 610.8 685.4 776.8 882.6 1000}
 
@@ -52,12 +53,12 @@ fstdfield configure TO -interpdegree LINEAR
 #----- Loop on fields to interpolate
 foreach var { HU TH } {
 
-   puts "   Interpolatin $var"
+   Log::Print INFO "Interpolatin $var"
    fstdfield read FROM IN -1 "" -1 -1 -1  "" $var
    fstdfield readcube FROM
    fstdfield verticalinterp TO FROM "" GZFROM
 
-   puts "   Masking topo for $var"
+   Log::Print INFO "Masking topo for $var"
    fstdfield stats GZFROM -level 0
 
    #----- Loop on first level of GZ and reset values at levels under it
@@ -82,3 +83,5 @@ foreach var { HU TH } {
 }
 
 fstdfile close IN OUT
+
+Log::End

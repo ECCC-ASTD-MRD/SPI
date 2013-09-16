@@ -23,18 +23,17 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set f [open DataIn/FCST.txt]
 
 #----- Creation du fichier
-
 catch { file delete DataOut/OGR_FCST2SHP.shp }
 ogrfile open FILE write DataOut/OGR_FCST2SHP.shp "ESRI Shapefile"
 
 #----- Creation du layer et des champs
-
 ogrlayer create FILE FCST "Forecast"
 ogrlayer define FCST -field Id String
 ogrlayer define FCST -field Name String
@@ -66,3 +65,5 @@ while { ![eof $f] } {
 }
 
 ogrfile close FILE
+
+Log::End

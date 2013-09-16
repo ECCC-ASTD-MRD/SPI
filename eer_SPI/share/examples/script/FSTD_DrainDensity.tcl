@@ -27,8 +27,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree et de sortie
 
@@ -93,3 +94,5 @@ fstdfield define LAKEAREA -NOMVAR LARE
 fstdfield write LAKEAREA FSTDOUT -32 False
 
 fstdfile close FSTDIN FSTDOUT
+
+Log::End

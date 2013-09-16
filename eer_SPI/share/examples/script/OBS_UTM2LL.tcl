@@ -22,16 +22,15 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Create UTM referential
-
 georef create UTMREF
 georef define UTMREF -projection {PROJCS["WGS_1984_UTM_Zone_14N",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",500000.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-99.0],PARAMETER["Scale_Factor",0.9996],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]]}
 
 #----- Translation in XY
-
 set dx 633683.3125
 set dy 3923941.0
 
@@ -41,7 +40,6 @@ puts [georef project UTMREF 633756.04798 3924024.06671]
 exit
 
 #----- Open the ASCII file
-
 set in  [open DataIn/OBS_UTM2LL.txt r]
 set out [open DataOut/OBS_UTM2LL.obs w]
 
@@ -76,3 +74,5 @@ while { ![eof $in] } {
 
 close $in
 close $out
+
+Log::End

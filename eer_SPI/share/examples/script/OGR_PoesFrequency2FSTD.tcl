@@ -23,8 +23,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 file delete -force DataOut/OGR_POESFrequency2FSTD.fstd
 
@@ -36,7 +37,6 @@ ogrfile open VECFILE read DataIn/POES_edm.shp
 ogrlayer read LAYER VECFILE 0
 
 #----- Create a PS grid over north hemisphere.
-
 set NI    400
 set NJ    400
 set nhem  1
@@ -48,7 +48,6 @@ set xg3   33000.0
 fstdfield create GRID $NI $NJ 1
 
 #---- Calculer les parametres xg necessaires
-
 set xg4 [expr (270.0-$dlon+360.0)/360.0]
 set xg4 [expr ($xg4-floor($xg4))*360.0]
 
@@ -58,28 +57,23 @@ set xg1 [expr ((($NI-1.0)/2.0) * $xg3 - [lindex $xy 0]) / $xg3 + 1.0]
 set xg2 [expr ((($NJ-1.0)/2.0) * $xg3 - [lindex $xy 1]) / $xg3 + 1.0]
 
 #----- Define a PS grid.
-
 fstdfield define GRID -GRTYP N $xg1 $xg2 $xg3 $xg4
 
 #----- Initialiser certains paramtres
-
 fstdfield define GRID -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET "GRID" -NOMVAR GRID -TYPVAR X
 
 #----- Initialise la variable.
-
 vexpr POES GRID<<0
 
 #----- Redifinir le NOMVAR en consequence
-
 fstdfield define POES -NOMVAR "POES"
 
 #----- Selectionner la couverture des POES
-
 set features [ogrlayer define LAYER -featureselect { { NAME == avhrr_ch1 } }]
 
-puts "   Found Features   : $features"
-puts "   Global extent    : [ogrlayer stats LAYER -extent]"
-puts "   Selection extent : [ogrlayer stats LAYER -extent True]"
+Log::Print INFO "Found Features   : $features"
+Log::Print INFO "Global extent    : [ogrlayer stats LAYER -extent]"
+Log::Print INFO "Selection extent : [ogrlayer stats LAYER -extent True]"
 
 foreach feature $features {
 
@@ -101,3 +95,5 @@ fstdfield write POES FSTDOUT -32 True
 fstdfile close FSTDOUT
 
 ogrfile close VECFILE
+
+Log::End

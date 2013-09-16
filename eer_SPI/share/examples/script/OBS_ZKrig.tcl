@@ -22,11 +22,11 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Variables necessaires
-
 set var    O3                                   ;#Observation variable to be used
 set hres   1000                                 ;#Horizontal resolution
 set vres   1000                                 ;#Vertical resolution
@@ -36,13 +36,11 @@ set coords { 42.823 -82.333 41.947 -82.893 }    ;#Start and endpoint
 set gdesc  { 1 1 1 }                            ;#Grid descriptor, must change with each cut
 
 #----- Recuperer les observations
-
-puts "   Loading dataset"
+Log::Print INFO "Loading dataset"
 set obs [lsearch -inline -glob [observation load DataIn/OBS_ZKrig.obs] $var*]
 
 #----- Calculer les positions de grilles
-
-puts "   Calculating zgrid coordinates"
+Log::Print INFO "Calculating zgrid coordinates"
 projection create PROJ
 set coords [projection function PROJ -path $coords $hres]
 
@@ -54,17 +52,15 @@ for { set h $vmin } { $h<=$vmax } { set h [expr $h+$vres] } {
 set ni [expr [llength $coords]/2]
 set nj [llength $elevs]
 
-puts "   Creating zgrid (${ni}x${nj})"
+Log::Print INFO "Creating zgrid (${ni}x${nj})"
 
 #----- Creer la grille verticale (IP1=12001 -> MASL)
-
 fstdfield create SECTION $ni $nj 1 Float32
 fstdfield define SECTION -NOMVAR [observation configure $obs -desc] -TYPVAR O -GRTYP V -ETIKET XSECTION \
    -IP1 12001 -IG1 [lindex $gdesc 0] -IG2 [lindex $gdesc 1] -IG3 [lindex $gdesc 2] -IG4 0
 fstdfield stats SECTION -leveltype MASL -levels $elevs -grid $coords
 
 #----- Creer les descripteurs de grille
-
 fstdfield create TIC $ni 1 1 Float32
 fstdfield define TIC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
 fstdfield create TAC 1 $ni 1 Float32
@@ -79,14 +75,15 @@ for { set i 0 } { $i < $ni } { incr i } {
 }
 
 #----- Effectuer le krigging
-
-puts "   Applying krigging over dataset"
+Log::Print INFO "Applying krigging over dataset"
 fstdfield gridinterp SECTION $obs LINEAR 0.0 1.0 10
 
-puts "   Saving zgrid kriging"
+Log::Print INFO "Saving zgrid kriging"
 fstdfile open  FILE write DataOut/OBS_ZKrig.fstd
 fstdfield write SECTION FILE -32 True
 fstdfield write TIC FILE -32 True
 fstdfield write TAC FILE -32 True
 fstdfield write TZH FILE -32 True
 fstdfile close FILE
+
+Log::End

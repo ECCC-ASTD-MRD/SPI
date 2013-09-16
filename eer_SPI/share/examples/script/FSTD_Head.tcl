@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 fstdfile open FILE read [lindex $argv 0]
 
@@ -32,3 +33,5 @@ foreach field [fstdfield find FILE -1 "" { 0.0510 ETA } -1 -1 "" ""] {
 }
 
 fstdfile close FILE
+
+Log::End

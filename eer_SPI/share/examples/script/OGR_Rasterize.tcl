@@ -22,18 +22,17 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 proc OGRRasterize { File } {
 
    #----- Ouvrir les donnees vectorielles
-
    set layer [lindex [ogrfile open SHAPE read $File] 0]
    eval ogrlayer read LAYER $layer
 
    #----- Recuperer les limites qui couvre les donnees vectorielles
-
    set extent [ogrlayer stat LAYER -extent]
    set res    50.0
    set dx     [expr [lindex $extent 2]-[lindex $extent 0]]
@@ -44,11 +43,10 @@ proc OGRRasterize { File } {
       set width  [expr int(ceil($dx/$res))+1]
       set height [expr int(ceil($dy/$res))+1]
 
-      puts ""
-      puts "   Processing: $File"
-      puts "   Extent    : $extent"
-      puts "   Resolution: $res metres"
-      puts "   Dimension : $width x $height"
+      Log::Print INFO "Processing: $File"
+      Log::Print INFO "   Extent    : $extent"
+      Log::Print INFO "   Resolution: $res metres"
+      Log::Print INFO "   Dimension : $width x $height"
 
       #----- Creer le fichier de rasterization
 
@@ -79,3 +77,4 @@ foreach file [glob -nocomplain DataIn/noire*.shp] {
    OGRRasterize $file
 }
 
+Log::End

@@ -22,11 +22,11 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Read the BURP (BUFR) Table
-
 metobs table -readcmc
 puts "   Old code 4065 = [metobs table -desc 4065]"
 
@@ -37,7 +37,6 @@ metobs table -insert 69240 "New item added" "Some new added units"
 puts "   New code 69240 = [metobs table -desc 69240]"
 
 #----- Create a new obs
-
 metobs create NEWOBS
 metobs define NEWOBS -ID "Position 1"
 metobs define NEWOBS -COORD "Position 1"  35.95 -95.66 100
@@ -54,7 +53,6 @@ metobs read BURPDATA DataIn/2007021500_
 #metobs read BURPDATA /users/dor/afsr/005/Scripts/For/JeanMarc/obs/2011012000_sf
 
 #----- Output global info on the metobs
-
 puts  "   Available info   : [metobs define BURPDATA -INFO]"
 puts  "   Nb Stations      : [metobs define BURPDATA -NB]"
 puts  "   Available Dates  : [metobs define BURPDATA -DATE]"
@@ -81,7 +79,6 @@ foreach id [metobs define BURPDATA -ID] {
 }
 
 #----- Parse the metobs data by reports
-
 puts  "\n   Per report:\n"
 
 set idx 0
@@ -102,17 +99,16 @@ foreach id [metobs define BURPDATA -ID] {
 }
 
 #----- Test the krigging
-
 catch { file delete -force DataOut/OBS_BURP_Krig.fstd }
 fstdfile open 1 read  DataIn/pression.fstd
 fstdfile open 2 write DataOut/OBS_BURP_Krig.fstd
 
 #----- Recuperer le champs pour la grille d'interpolation
-
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" ""
 
 #----- Interpoler dans une grille (kriging)
-
 fstdfield gridinterp FLD BURPDATA [clock seconds] 11012 LINEAR 0.0 1.0 10
 fstdfield write FLD 2 -32 False
 fstdfile close 2
+
+Log::End

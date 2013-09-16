@@ -22,50 +22,45 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 gdalfile error QUIET
 
 #----- Ouverture d'un fichier GTIF
-
 set bands [gdalfile open FILE read DataIn/srtm_n045w074_badmedian3x3]
 gdalband read BAND $bands
 
 #----- Calcul de la pente en degree
-
 vexpr SLOPE dslopedeg(BAND)
 gdalband configure SLOPE -desc "Slope in degree"
 
 #----- Calcul de la pente en pourcentage
-
 vexpr SLOPE100 dslope100(BAND)
 gdalband configure SLOPE100 -desc "Slope in percent"
 
 #----- Calcul de la courbature du profile
-
 vexpr PCURV dprofcurve(BAND)
 gdalband configure PCURV -desc "Profile curvature"
 
 #----- Calcul de la courbarture tangentielle
-
 vexpr TCURV dtangcurve(BAND)
 gdalband configure TCURV -desc "Tangential curvature"
 
 #----- Calcul de l'aspect (angle de la pente en XY)
-
 vexpr ASPEC daspect(BAND)
 gdalband configure ASPEC -desc "Aspect in degree"
 
 #----- Calcul de la derivee partielle de deuxieme ordre dxy
-
 vexpr DXX   ddxysecond(BAND)
 gdalband configure DXX -desc "Second order partial dxy derivative"
 
 #----- Sauvegrader les resultata
-
 catch { file delete DataOut/GDAL_Slope.tif }
 gdalfile open FILEOUT write DataOut/GDAL_Slope.tif "GeoTIFF"
 gdalband write { SLOPE SLOPE100 PCURV TCURV ASPEC DXX } FILEOUT
 gdalfile metadata FILEOUT { Test1=yoyoy TEST2=yaya }
 gdalfile close FILEOUT
+
+Log::End

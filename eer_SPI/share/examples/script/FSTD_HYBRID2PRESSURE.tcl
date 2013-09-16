@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 
@@ -41,14 +42,11 @@ set levels { 1000 850 500 250 }
 #fstdfield write TIC OUT 0 True
 #fstdfield write TAC OUT 0 True
 
-
 fstdfield read P0 IN -1 "" -1 -1 -1 "" "P0"
-
 fstdfield read TT IN -1 "" -1 -1 -1 "" "TT"
 fstdfield readcube TT
 
 # Set the pressure at the top of the ETA levels, since PT is not in the files
-
 #fstdfield stats TT -top 1.0
 
 fstdfield create TTPRES [fstdfield define TT -NI] [fstdfield define TT -NJ] [llength $levels]
@@ -59,3 +57,4 @@ fstdfield verticalinterp TTPRES TT - P0
 
 fstdfield write TTPRES OUT 0 TRUE
 
+Log::End

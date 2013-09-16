@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouverture du fichier
 set bands [gdalfile open GDAL read /data/goodenough/afsr005/Projects/Rick/2008-12-31_024723DH.00400.sar.nc]
@@ -66,3 +67,4 @@ catch {
 }
 gdalfile close GDAL
 
+Log::End

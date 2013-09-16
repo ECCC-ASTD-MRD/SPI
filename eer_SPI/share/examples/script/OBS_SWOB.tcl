@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Read standard table set
 metobs table -readcmc
@@ -33,14 +34,12 @@ metobs create SWOBDATA DataIn/71216.xml
 puts [metobs define SWOBDATA -ELEMENT]
 
 #----- Output global info on the metobs
-
 puts  "   Available info   : [metobs define SWOBDATA -INFO]"
 puts  "   Nb Stations      : [metobs define SWOBDATA -NB]"
 puts  "   Available Dates  : [metobs define SWOBDATA -DATE]"
 puts  "   Available Elems  : [metobs define SWOBDATA -ELEMENT]"
 
 #----- Parse the metobs data by elements
-
 set idx 0
 foreach id [metobs define SWOBDATA -ID] {
    puts  "   Station ($idx) $id\t: [metobs define SWOBDATA -NO $id] [metobs define SWOBDATA -COORD $id]"
@@ -60,7 +59,6 @@ foreach id [metobs define SWOBDATA -ID] {
 }
 
 #----- Parse the metobs data by reports
-
 set idx 0
 foreach id [metobs define SWOBDATA -ID] {
    puts  "   Station ($idx) $id\t: [metobs define SWOBDATA -NO $id] [metobs define SWOBDATA -COORD $id]"
@@ -78,3 +76,5 @@ foreach id [metobs define SWOBDATA -ID] {
       break
    }
 }
+
+Log::End

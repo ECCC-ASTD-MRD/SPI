@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Define needed values
 set Data(Levels)    { 0.9950 0.9850 0.9733 0.9467 0.8780 0.8104 0.7272 0.6646 0.5737 0.4883 0.4091 0.3369 0.2721 0.2522 0.2149 0.1667 }
@@ -45,12 +46,12 @@ fstdfield vector { UU VV }
 set t $Data(Length)
 while { $t>=0 } {
 
-   puts "   Processing file : [set file $Data(Path)/$Data(Year)$Data(Month)$Data(Day)$Data(Hour)_[format "%03i" $t]]"
+   Log::Print INFO "Processing file : [set file $Data(Path)/$Data(Year)$Data(Month)$Data(Day)$Data(Hour)_[format "%03i" $t]]"
    fstdfile open FILE reas $file
    fstdfield read GZ0 FILE -1 "" 12000 -1 -1 "" "GZ"
 
    foreach level $Data(Levels) {
-      puts "   Processing level : $level"
+      Log::Print INFO "   Processing level : $level"
       fstdfield read WIND   FILE -1 "" "$level ETA" -1 -1 "" "UU"
       fstdfield read TEMPTT FILE -1 "" "$level ETA" -1 -1 "" "TT"
       fstdfield read TEMPTW FILE -1 "" "$level ETA" -1 -1 "" "ES"
@@ -90,7 +91,7 @@ bufrtemplate create TEMPLATE DataIn/OBS_BUFREncode.template
 bufrdataset create DATASET TEMPLATE
 
 #----- Fill in the mesage
-puts "   Processing message"
+Log::Print INFO "Processing message"
 foreach station $Data(Stations) {
 
    set lat [lindex $station 2]
@@ -130,3 +131,5 @@ bufrdataset define DATASET -BUFR_EDITION 4 -BUFR_MASTER_TABLE 0 -ORIG_CENTER 53 
 catch { file delete -force DataOut/OBS_BUFREncode.bufr DataOut/OBS_BUFREncode.txt }
 bufrdataset write DATASET DataOut/OBS_BUFREncode.bufr BUFR
 bufrdataset write DATASET DataOut/OBS_BUFREncode.txt ASCII
+
+Log::End

@@ -22,17 +22,16 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 catch { eval file delete [glob -nocomplain DataOut/GDAL_Basic.*] }
 
 #----- Afficher la liste des formats reconnus
-
 puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier GTIF
-
 set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
 #set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
 #set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]
@@ -41,11 +40,9 @@ set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
 puts "   found: $bands"
 
 #----- Affichage des mete-donnees
-
 puts "   Metadata: [gdalfile metadata GDAL]"
 
 #----- Lecture des bandes
-
 gdalband read RASTER $bands
 
 puts "   Min     : [gdalband stats RASTER -min]"
@@ -55,7 +52,6 @@ puts "   Histogram  : [gdalband stats RASTER -histogram 0]"
 puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 0 90]"
 
 #----- converions pixel-latlon et inverse
-
 set ll [gdalband project RASTER 100 100]
 set xy [gdalband unproject RASTER [lindex $ll 0] [lindex $ll 1]]
 

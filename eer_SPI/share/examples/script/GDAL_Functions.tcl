@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set bands [gdalfile open FILE1 read DataIn/MONTREAL_Building-fraction.tif]
 gdalband read BANDDEST $bands
@@ -54,3 +55,5 @@ gdalfile close FILEOUT
 
 gdalband free BANDDEST BANDESTV BANDSRC
 ogrlayer free LAYERSRC
+
+Log::End

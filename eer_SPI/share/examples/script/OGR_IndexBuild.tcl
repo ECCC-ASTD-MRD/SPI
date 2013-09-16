@@ -24,8 +24,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 gdalfile error QUIET
 
@@ -42,7 +43,7 @@ proc Parser { Path } {
 proc Indexer { File } {
    variable Data
 
-   puts "   Checking $File"
+   Log::Print INFO "Checking $File"
 
    eval set bad [catch { set bands [gdalfile open FILE read $File] }]
 
@@ -62,7 +63,7 @@ proc Indexer { File } {
 
       if { $lat<=90.0 && $lat>=-90.0 && ($lat!=0.0 && $lon!=0.0) } {
 
-         puts "      File is valid ($lat $lon)"
+         Log::Print INFO "   File is valid ($lat $lon)"
 
          #----- Creer le polygone de la couverture des donnees raster
 
@@ -135,6 +136,8 @@ Parser $Data(Path)
 
 #----- That's it
 
-puts "   Processed $Data(Nb) valid file"
+pLog::Print INFO "Processed $Data(Nb) valid file"
 
 ogrfile close INDEXFILE
+
+Log::End

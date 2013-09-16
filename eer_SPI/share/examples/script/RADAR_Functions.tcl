@@ -22,21 +22,19 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Open the radar file
-
 set scans [radarfile open RADARSITE read DataIn/200803121320~~CONVOL:URP:XFT:RADAR:IRIS]
 
 puts "   Available scans : $scans"
 
 #----- Read the first scan
-
 radarscan read SCAN1 RADARSITE 0
 
 #----- Output some information about the scan
-
 puts "   Radar type    : [radarscan define SCAN1 -TYPE]"
 puts "   Date          : [radarscan define SCAN1 -DATE]"
 puts "   Site ID       : [radarscan define SCAN1 -SITEID]"
@@ -53,7 +51,6 @@ puts "   Nyquist vel   : [radarscan define SCAN1 -NYQUIST]"
 puts "   Sweep angles  : [radarscan define SCAN1 -SWEEPANGLE]"
 
 #----- Set radar location since sometimes (most of it) it is not in the file itself
-
 radarscan define SCAN1 -LOCATION 45.0445 -76.0642 122.0
 
 puts "\n   Limits (value lat lon angle): min=[radarscan stats SCAN1 -min] max=[radarscan stats SCAN1 -max]"
@@ -73,3 +70,5 @@ puts "   UnProjected azimuth and bin (lat lon): [radarscan stats SCAN1 -gridpoin
 puts "   value (lat lon)        : [radarscan stats SCAN1 -coordvalue 45.28 -74.74]"
 puts "   value (azimuth and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.538344429]"
 puts "   height (lat lon)       : [radarscan stats SCAN1 -height 75.3750167173 107.193774955 12]"
+
+Log::End

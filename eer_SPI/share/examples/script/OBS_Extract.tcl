@@ -22,20 +22,20 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-
 fstdfile open 1 read  DataIn/pression.fstd
 set obs [lindex [observation load DataIn/O3.20050302.obs] 0]
 
 #----- Standard file field to be read
-
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" MN
 fstdfield configure FLD -interpdegree LINEAR
 
 #----- Extract field value a obs location
-
 observation extract $obs FLD
 observation write DataOut/OBS_Extract.obs [list $obs] "Extraction test"
+
+Log::End

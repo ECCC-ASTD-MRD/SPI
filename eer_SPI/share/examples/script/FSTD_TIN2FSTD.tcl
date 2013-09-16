@@ -24,8 +24,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 file delete -force DataOut/FSTD_TIN2FSTD.fstd
 fstdfile open 1 write  DataOut/FSTD_TIN2FSTD.fstd
@@ -35,8 +36,7 @@ set fele [open [lindex $argv 0].ele r]
 set fbat [open [lindex $argv 0].bat r]
 
 #----- Triangles
-
-puts "   Processing Triangle meshe"
+Log::Print INFO "Processing Triangle meshe"
 set n 0
 set i -1
 while { ![eof $fele] } {
@@ -45,7 +45,7 @@ while { ![eof $fele] } {
 }
 seek $fele 0
 
-puts "      Found $n triangles"
+Log::Print INFO "Found $n triangles"
 
 fstdfield create TR [expr $n*3] 1 1 UInt32
 fstdfield define TR -NOMVAR ## -TYPVAR X -IP1 0 -IP2 0 -IP3 0 -GRTYP X -IG1 0 -IG2 0 -IG3 0 -IG4 0
@@ -61,7 +61,7 @@ fstdfield write TR 1 -32 False
 
 #----- Vertices
 
-puts "   Processing Vertices"
+Log::Print INFO "Processing Vertices"
 
 set n 0
 while { ![eof $fnod] } {
@@ -70,7 +70,7 @@ while { ![eof $fnod] } {
 }
 seek $fnod 0
 
-puts "      Found $n vertices"
+Log::Print INFO "Found $n vertices"
 
 fstdfield create LA $n 1 1 Float32
 fstdfield define LA -NOMVAR ^^ -TYPVAR X -IP1 0 -IP2 0 -IP3 0 -GRTYP L 0 0 1.0 1.0
@@ -88,7 +88,7 @@ fstdfield write LO 1 -32 False
 
 #----- Values per vertices
 
-puts "   Processing Values per Vertices"
+Log::Print INFO "Processing Values per Vertices"
 
 fstdfield create BA $n 1 1 Float32
 fstdfield define BA -NOMVAR BA -TYPVAR S -IP1 0 -IP2 0 -IP3 0 -GRTYP M
@@ -103,3 +103,4 @@ fstdfield write BA 1 -32 False
 
 fstdfile close 1
 
+Log::End

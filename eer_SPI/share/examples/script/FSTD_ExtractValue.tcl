@@ -23,46 +23,38 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-
 fstdfile open 1 read  DataIn/2005102612_012
 
 #----- List des point de grille (i,j) qui nous interessent
-
 set ijs  { 172 216 172 217 172 218 172 219
            173 216 173 217 173 218 173 219
            174 216 174 217 174 218 174 219  }
 
 #----- Procedure d'extraction de valeur
-
 proc extract { Field File } {
    global ijs
 
    #----- Ouvrir le fichier de sortie
-
    set f [open $File w]
 
    #----- Ecrire l'entete
-
    puts $f "   #i j lat lon value"
 
    #----- Boucler sur les coordonnees qui nous interesse
-
    foreach { i j } $ijs {
 
       #----- Extraire la valeur au point de grille
-
       set val [fstdfield stats $Field -gridvalue $i $j]
 
       #----- Recuperre la coordonnee latlon du point de grille
-
       set coords [fstdfield stats $Field -gridpoint $i $j]
 
       #----- Ecrire la ligne
-
       puts $f "   $i $j [lindex $coords 0] [lindex $coords 1] $val"
    }
 
@@ -77,11 +69,11 @@ vexpr FLDUU FLD\[0\]*.5144
 extract FLDUU DataOut/UU.0.dat
 
 #----- Composante VV du vent en metre/s
-
 vexpr FLDVV FLD\[1\]*.5144
 extract FLDVV DataOut/VV.0.dat
 
-#----- Mouvement vertical en metre/s
-
+#----- Mouvement vertical en metres/s
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" "WE"
 extract FLD DataOut/FSTD_ExtractValue.txt
+
+Log::End

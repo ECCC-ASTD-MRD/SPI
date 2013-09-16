@@ -22,15 +22,16 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 fstdfile open 1 read DataIn/RT.fstd
 fstdfile open 2 write DataOut/FSTD_PrecipMedian.fstd
 
 set fldlist {}
 
-puts "   Reading fields"
+Log::Print INFO "Reading fields"
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "RT"] {
    fstdfield read FLD$fld 1 $fld
    lappend fldlist FLD$fld
@@ -38,7 +39,7 @@ foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "RT"] {
 set n [llength $fldlist]
 
 #----- Sort all the fields gridpoints
-puts "   Sorting them"
+Log::Print INFO "Sorting them"
 fstdfield sort $fldlist
 
 #----- Make buffer copies for calculations
@@ -47,7 +48,7 @@ vexpr ZEROS ZEROS<<0
 fstdfield copy MEDIAN ZEROS
 
 #----- Count number of zeros cause we dont want them to influance the median
-puts "   Calculating indexes"
+Log::Print INFO "Calculating indexes"
 foreach field $fldlist {
    vexpr ZEROS ifelse($field==0,ZEROS+1,ZEROS)
 }
@@ -55,7 +56,7 @@ foreach field $fldlist {
 vexpr IDX ceil(ZEROS+($n-ZEROS)/2)
 
 #----- Extract the median by using the field at IDX in the list
-puts "   Calculating median"
+Log::Print INFO "Calculating median"
 set i 0
 foreach field $fldlist {
    vexpr MEDIAN ifelse(IDX==$i,$field,MEDIAN)
@@ -70,3 +71,5 @@ fstdfield write TAC 2 0 True
 fstdfield write MEDIAN 2 0 Fals
 
 fstdfile close 1 2
+
+Log::End

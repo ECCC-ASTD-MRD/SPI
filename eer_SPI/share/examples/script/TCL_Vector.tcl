@@ -22,27 +22,23 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Specifier la methode de redimentionnement (x2)
-
 vector specification -alloc 2.0
 
 #----- Creer un vecteur
-
 vector create SPACETIME
 
 #----- Specifier les dimensions du vecteur
-
 vector dim SPACETIME { X Y Z T }
 
 #----- Specifier un espace memoire initial
-
 vector mem SPACETIME 10000
 
 #---- Afficher le contenu du vecteur
-
 puts "   SPACETIME=[vector get SPACETIME]"
 puts "   SPACETIME.X=[vector get SPACETIME.X]"
 
@@ -68,7 +64,6 @@ vector set SPACETIME(1) { 110 111 112 113 }
 puts "   SPACETIME(1)=[vector get SPACETIME(1)]"
 
 #----- Ajouter un gros paquet de valeur dans le vecteur
-
 set x 1
 set y 2
 set z 3
@@ -101,3 +96,4 @@ vector create MATRIX { { 1 1 1 }
 puts "   MATRIX dim=[vector dim MATRIX]"
 puts "   MATRIX=[vector get MATRIX]"
 
+Log::End

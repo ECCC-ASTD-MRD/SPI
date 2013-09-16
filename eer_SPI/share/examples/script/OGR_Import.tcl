@@ -22,18 +22,17 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #----- Lire le champs de temperature
-
 fstdfile open FSTDFILE read DataIn/2005102612_012
 fstdfield read FLDTT FSTDFILE -1 "" -1 -1 -1 "" TT
 fstdfield read FLDUU FSTDFILE -1 "" -1 -1 -1 "" UU
 fstdfield read FLDP0 FSTDFILE -1 "" -1 -1 -1 "" P0
 
 #----- Configurer le type de sortie
-
 fstdfield configure FLDTT -desc Temp -rendertexture 1
 fstdfield configure FLDUU -desc Wind -rendervector ARROW
 fstdfield configure FLDP0 -desc Pressure
@@ -45,14 +44,13 @@ georef create REF { PROJCS["WGS 84 / UPS North",GEOGCS["WGS 84",DATUM["WGS_1984"
 puts "Proj4 format : [georef export REF PROJ4]"
 
 #----- Creer la couche avec le bon referential
-
 ogrfile open OGRFILE write DataOut/OGR_Import.shp "ESRI Shapefile"
 ogrlayer create OGRFILE OGRLAYER "Data" REF
 
 #----- Importer les donnees RPN dans la couche
-
 ogrlayer import OGRLAYER [list FLDTT FLDUU FLDP0]
 
 #----- Fermer le fichier afin de sauvegarder le tout
-
 ogrfile close OGRFILE
+
+Log::End

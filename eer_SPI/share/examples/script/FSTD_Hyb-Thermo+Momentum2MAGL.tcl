@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 catch { file delete DataOut/FSTD_Hyb-Thermo+Momentum2MAGL.fstd }
 
@@ -50,7 +51,7 @@ fstdfield readcube TT False 0.8 1.0
 fstdfield read GZ IN -1 "" [fstdfield define TT -IP1] -1 -1  "" GZ
 fstdfield readcube GZ False [fstdfield stats TT -levels]
 
-puts "   Using [fstdfield define GZ -NK] thermo levels : [fstdfield stats GZ -levels] "
+Log::Print INFO "Using [fstdfield define GZ -NK] thermo levels : [fstdfield stats GZ -levels] "
 
 #----- Create output grid in vertical MASL
 fstdfield create TO [fstdfield define GZ -NI] [fstdfield define GZ -NJ] [llength $ttlevels]
@@ -69,7 +70,7 @@ fstdfield readcube UV False 0.8 1.0
 fstdfield read GZ IN -1 "" [fstdfield define UV -IP1] -1 -1  "" GZ
 fstdfield readcube GZ False [fstdfield stats UV -levels]
 
-puts "   Using [fstdfield define GZ -NK] momentum levels : [fstdfield stats GZ -levels] "
+Log::Print INFO "Using [fstdfield define GZ -NK] momentum levels : [fstdfield stats GZ -levels] "
 
 #----- Create output grid in vertical MASL
 fstdfield create TO [fstdfield define GZ -NI] [fstdfield define GZ -NJ] [llength $uvlevels]
@@ -81,3 +82,5 @@ fstdfield verticalinterp TO UV GZ GZ
 fstdfield write TO OUT 0 True
 
 fstdfile close IN OUT
+
+Log::End

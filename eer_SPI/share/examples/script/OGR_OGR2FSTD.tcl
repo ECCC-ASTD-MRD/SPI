@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 catch { file delete -force DataOut/OGR_OGR2FSTD.fstd }
 
@@ -59,3 +60,5 @@ foreach mode { FAST WITHIN INTERSECT CONSERVATIVE NORMALIZED_CONSERVATIVE ALIASE
 ogrfile close VECFILE
 
 fstdfile close FSTDIN FSTDOUT
+
+Log::End

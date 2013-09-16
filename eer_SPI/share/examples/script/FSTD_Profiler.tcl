@@ -91,4 +91,8 @@ proc Profiler::Run { } {
    fstdfield free PROFIL FIELD DIR
 }
 
+Log::Start [info script] 0.1
+
 Profiler::Run
+
+Log::End

@@ -23,14 +23,15 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 #set fields [gribfile open FILE read DataIn/CMC_reg_4LFTX_SFC_0_ps15km_2010122000_P000.grib2]
 #set fields [gribfile open FILE read DataIn/CMC_glb_ALBDO_SFC_0_latlon.6x.6_2011012000_P018.grib2]
 set fields [gribfile open FILE read DataIn/CMC_reg_ABSV_ISBL_250_ps15km_2011012100_P000.grib]
 
-puts "Found [llength $fields] field(s) $fields"
+Log::Print INFO "Found [llength $fields] field(s) $fields"
 
 foreach field $fields {
    gribfield read FIELD FILE [lindex $field 1]
@@ -48,3 +49,5 @@ foreach field $fields {
 
    gribfield free FIELD
 }
+
+Log::End

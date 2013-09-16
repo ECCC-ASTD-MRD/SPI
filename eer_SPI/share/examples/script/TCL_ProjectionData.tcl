@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set lat     39
 set lon     -150
@@ -41,3 +42,5 @@ puts "   MASK = [projection data PROJ -MASK $lat $lon]"
 
 puts "   Moving $lat $lon $dist m at $bearing degrees: [projection function PROJ -circle $lat $lon $dist $bearing]"
 puts "   Moving box $dist t m at $bearing degrees: [projection function PROJ -circle $lat $lon $dist $bearing $box]"
+
+Log::End

@@ -22,8 +22,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 proc GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
 
@@ -40,7 +41,6 @@ proc GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
    fstdfield define GRIDLLTAC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR "^^" -TYPVAR X
 
    #----- Compute tictic grid coordinates.
-
    set lon $Lon0
    for { set i 0 } { $i < $ni } { incr i } {
       fstdfield stats GRIDLLTIC -gridvalue $i 0 $lon
@@ -48,7 +48,6 @@ proc GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
    }
 
    #----- Compute tactac grid coordinates.
-
    set lat $Lat0
    for { set j 0 } { $j < $nj } { incr j } {
       fstdfield stats GRIDLLTAC -gridvalue 0 $j $lat
@@ -129,3 +128,5 @@ foreach file [glob DataIn/*IRIS*] {
 }
 
 fstdfile close FILE
+
+Log::End

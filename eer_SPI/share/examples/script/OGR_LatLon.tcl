@@ -23,18 +23,17 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Logger
 
-puts \n[file tail [info script]]
+Log::Start [info script] 0.1
 
 set Delta [lindex $argv 0]
 
 #----- Open the output shape file
-
 catch { file delete -force DataOut/OGR_LatLon.shp }
 ogrfile open FILE write DataOut/OGR_LatLon.shp "ESRI Shapefile"
 
 #----- Create the ouput layer and its field
-
 ogrlayer create FILE LATLON "LatLon"
 ogrlayer define LATLON -field Coord Real
 
@@ -67,3 +66,5 @@ for { set lat [expr -90+$Delta] } { $lat<[expr 90.0-$Delta] } { set lat [expr $l
 }
 
 ogrfile close FILE
+
+Log::End
