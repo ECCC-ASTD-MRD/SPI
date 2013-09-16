@@ -143,7 +143,7 @@ cp -d ${LIB_PATH}/${EXPAT}/lib/*.so* ${SPI_LIB}
 #----- curl
 cd ${ARCH_PATH}/${CURL}
 make distclean
-./configure --prefix=${LIB_PATH}/${CURL} --enable-shared=no
+./configure --prefix=${LIB_PATH}/${CURL} --enable-shared=no --without-libssh2 --without-ssl
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1

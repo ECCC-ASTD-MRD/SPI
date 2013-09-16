@@ -223,7 +223,43 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tkGraphItem.c \
                  generic/tkGraphTephi.c])
 
-TEA_ADD_HEADERS([])
+TEA_ADD_HEADERS([generic/Data_Calc.h
+                 generic/Data_FF.h \
+                 generic/Data_Funcs.h \
+                 generic/Data_Matrix.h \
+                 generic/GeoData.h \
+                 generic/GeoRef.h \
+                 generic/GeoSpatialData.h \
+                 generic/GeoTex.h \
+                 generic/ProjCam.h \
+                 generic/Projection.h \
+                 generic/Vertex.h \
+                 generic/gpc.h \
+                 generic/stars.h \
+                 generic/tcl3DModel.h \
+                 generic/tcl3DModel3DS.h \
+                 generic/tclCMap.h \
+                 generic/tclData.h \
+                 generic/tclDataDef.h \
+                 generic/tclDataSpec.h \
+                 generic/tclFSTD.h \
+                 generic/tclGDAL.h \
+                 generic/tclGRIB.h \
+                 generic/tclMetDataset.h \
+                 generic/tclMetObs.h \
+                 generic/tclMetTables.h \
+                 generic/tclOGR.h \
+                 generic/tclObs.h \
+                 generic/tclRADAR.h \
+                 generic/tclTraj.h \
+                 generic/tclVector.h \
+                 generic/tclXML.h \
+                 generic/tkCanvColorbar.h \
+                 generic/tkCanvGraph.h \
+                 generic/tkCanvVP.h \
+                 generic/tkGraphAxis.h \
+                 generic/tkGraphItem.h])
+
 TEA_ADD_INCLUDES([-Igeneric])
 TEA_ADD_LIBS([-lc -lexpat -lGL -lGLU -ltk8.6 -L${TCL_BIN_DIR}/TkglCanvas8.6 -lTkglCanvas8.6])
 TEA_ADD_CFLAGS([])

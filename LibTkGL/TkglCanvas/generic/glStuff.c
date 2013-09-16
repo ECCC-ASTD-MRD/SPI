@@ -493,7 +493,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
             for(i=0;i<data.height;i++) {
                glReadPixels(TR->TileBorder+dx,TR->TileHeightNB-i-1+TR->TileBorder-dy,data.width,1,GL_RGB,GL_UNSIGNED_BYTE,&data.pixelPtr[i*data.pitch]);
             }
-
+            
             /* Envoyer le data dans l'image Tk */
             result=Tk_PhotoPutBlock(Interp,handle,&data,ix<0?0:ix,iy<0?0:iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
             free(data.pixelPtr);
