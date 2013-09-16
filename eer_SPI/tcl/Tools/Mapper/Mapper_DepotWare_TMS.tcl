@@ -19,6 +19,7 @@ namespace eval Mapper::DepotWare::TMS {
    variable Param
 
    set Param(Depots) {
+      { EC-DEV-OpenStreetMap TMS EC-DEV-OpenStreetMap }
       { OpenStreetMap TMS OpenStreetMap }
       { MapQuest TMS MapQuest}
       { BlueMarble TMS BlueMarble }
@@ -90,11 +91,11 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
 
    set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $Layer].xml
 
-   set Param(OpenStreetMapCMC) "<GDAL_WMS>
+   set Param(EC-DEV-OpenStreetMap) "<GDAL_WMS>
    <Service name=\"TMS\">
-       <ServerUrl>http://geomet-dev-1.cmc.ec.gc.ca/cgi-bin/mapserv?/\${z}/\${x}/\${y}.png</ServerUrl>
+       <ServerUrl>http://geo.wxod-dev.cmc.ec.gc.ca/maps/tms/1.0.0/osm@g/\${z}/\${x}/\${y}.png</ServerUrl>
    </Service>
-   <DataWindow>
+   <DataWindow>   
       <UpperLeftX>-20037508.34</UpperLeftX>
       <UpperLeftY>20037508.34</UpperLeftY>
       <LowerRightX>20037508.34</LowerRightX>
@@ -102,7 +103,7 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
       <TileLevel>19</TileLevel>
       <TileCountX>1</TileCountX>
       <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
+      <YOrigin>bottom</YOrigin>
    </DataWindow>
    <Projection>EPSG:900913</Projection>
    <BlockSizeX>256</BlockSizeX>
