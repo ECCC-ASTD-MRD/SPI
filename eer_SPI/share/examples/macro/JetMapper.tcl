@@ -219,6 +219,10 @@ proc Macro::JetMapper::StreamGet { } {
          lappend streams [fstdfield stats UU -coordstream $i $j 1024 0.25 $Param(StreamSpeed) 8.0]
       }
    }
+
+   if { ![llength $streams] } {
+      Log::Print WARNING "Did not find any jetstream segments"
+   }
    return $streams
 }
 
