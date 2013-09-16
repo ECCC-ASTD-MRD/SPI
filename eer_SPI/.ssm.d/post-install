@@ -21,3 +21,15 @@ EOF
 cat > ${loginPath} << EOF
 setenv SPI_PATH ${packageHome}
 EOF
+
+# change Tcl's installation config path
+path=${packageHome//\//\\\/}
+
+for arch in `ls -1 ${packageHome}/lib`; do
+   tclHome=${packageHome}/lib/$arch/TclTk/lib
+   cp ${tclHome}/tclConfig.sh ${tclHome}/tclConfig.sh.build
+   cp ${tclHome}/tkConfig.sh ${tclHome}/tkConfig.sh.build
+
+   sed -e "s/\/cnfs.*${arch}.*TclTk/${path}\/lib\/${arch}\/TclTk/" ${tclHome}/tclConfig.sh.build > ${tclHome}/tclConfig.sh 
+   sed -e "s/\/cnfs.*${arch}.*TclTk/${path}\/lib\/${arch}\/TclTk/" ${tclHome}/tkConfig.sh.build > ${tclHome}/tkConfig.sh 
+done
