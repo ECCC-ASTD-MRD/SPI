@@ -1214,15 +1214,12 @@ int Data_SubInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *
          for(j=0;j<ToDef->SubSample;j++) {
             for(i=0;i<ToDef->SubSample;i++,idx++) {
                
-               // If the value has not been already set (previous tile)
-               if (ToDef->Sub[idx]==ToDef->NoData) {
-                  di=(double)x-0.5+d*i;
-                  dj=(double)y-0.5+d*j;
-                  ToRef->Project(ToRef,di,dj,&dlat,&dlon,1,1);
-                  if (FromRef->UnProject(FromRef,&di,&dj,dlat,dlon,0,1)) {
-                     if (FromRef->Value(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && val!=FromDef->NoData) {                       
-                        ToDef->Sub[idx]=val;
-                     }
+               di=(double)x-0.5+d*i;
+               dj=(double)y-0.5+d*j;
+               ToRef->Project(ToRef,di,dj,&dlat,&dlon,1,1);
+               if (FromRef->UnProject(FromRef,&di,&dj,dlat,dlon,0,1)) {
+                  if (FromRef->Value(FromRef,FromDef,Degree,0,di,dj,FromDef->Level,&val,&val1) && val!=FromDef->NoData) {                       
+                     ToDef->Sub[idx]=val;
                   }
                }
             }

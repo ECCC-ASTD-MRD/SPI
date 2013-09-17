@@ -194,14 +194,13 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
       /*Index memoire du niveau desire*/
       mem=Def->NIJ*(int)Z;
 
-      /*Pour un champs vectoriel*/
       x=X+1.0;
       y=Y+1.0;
 
-      if (Ref && Ref->Grid[0]=='V') {
-         ix=lrint(X);
-         iy=lrint(Y);
+      ix=lrint(X);
+      iy=lrint(Y);
 
+      if (Ref && Ref->Grid[0]=='V') {
          if (Def->Data[1]) {
             Def_GetMod(Def,FIDX2D(Def,ix,iy),*Length);
          } else {
@@ -225,9 +224,6 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 //EZFIX            EZUnLock_RPNInt();
          }
       } else {
-         ix=lrint(X);
-         iy=lrint(Y);
-
          if (Ref->Grid[0]=='Y' || Ref->Grid[0]=='P') {
             X=ix;
             Y=iy;
@@ -243,6 +239,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                Def_Pointer(Def,C,mem,p0);
                
                // If either value is nodata then interpolation will be nodata as well
+               ix=trunc(X);
+               iy=trunc(Y);
                mem=iy*Def->NI+ix;
                if (              ((float*)p0)[mem]==Def->NoData)                         { *Length=Def->NoData; return(valid); }
                if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { *Length=Def->NoData; return(valid); }
