@@ -511,10 +511,10 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    } 
    
    // Seems that GL_FLOAT_R32_NV is not recognized on ATI cards but GL_INTENSITY_FLOAT32_ATI is recognized on NVidia
-   glTexImage2D(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+   glTexImage2D(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
    glGetTexLevelParameteriv(GL_PROXY_TEXTURE_RECTANGLE_ARB,0,GL_TEXTURE_WIDTH,&dp);
    if (dp) {
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_Type[Field->Def->Type],ptr);
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
       if (buf) free(buf);
    
       /*Setup 2D Mask Texture*/
