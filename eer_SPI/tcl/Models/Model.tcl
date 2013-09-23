@@ -660,7 +660,7 @@ proc Model::ParamsCheck { Model { Get True } } {
    }
 
    Model::ParamsQueues
-   Model::ParamsCPUModel
+   Model::ParamsCPUModel $Model
    Model::ParamsMetDataDir $Model
 
    #----- Remember selected host for this model
@@ -889,26 +889,40 @@ proc Model::ParamsMetDataDir { Model } {
 #
 #----------------------------------------------------------------------------
 
-proc Model::ParamsCPUModel { } {
+proc Model::ParamsCPUModel { { Model default } } {
    variable Param
 
    #----- Set CPU configuration for model according to architecture.
    switch $Param(Arch) {
       "Linux"  {
-         set Param(NbCPUMeteo)        2
          set Param(ListNbCPUMeteo)    { 1 2 4 8 }
-         set Param(NbMPItasks)        1
          set Param(ListNbMPItasks)    { 1 2 4 8 }
-         set Param(NbOMPthreads)      2
          set Param(ListNbOMPthreads)  { 1 2 4 8 }
+         set Param(NbCPUMeteo)        2
+         set Param(NbMPItasks)        1
+         set Param(NbOMPthreads)      4
       }
       "AIX"    {
-         set Param(NbCPUMeteo)        16
          set Param(ListNbCPUMeteo)    { 1 2 4 8 16 }
-         set Param(NbMPItasks)        8
          set Param(ListNbMPItasks)    { 1 2 4 8 16 32 64 128 }
-         set Param(NbOMPthreads)      16
          set Param(ListNbOMPthreads)  { 4 8 16 32 64 }
+         switch $Model {
+            "MLDP1" {
+               set Param(NbCPUMeteo)        16
+               set Param(NbMPItasks)        8
+               set Param(NbOMPthreads)      16
+            }
+            "MLDPn" {
+               set Param(NbCPUMeteo)        0
+               set Param(NbMPItasks)        8
+               set Param(NbOMPthreads)      4
+            }
+            default {
+               set Param(NbCPUMeteo)        16
+               set Param(NbMPItasks)        8
+               set Param(NbOMPthreads)      16
+            }
+         }
       }
    }
 
@@ -1303,7 +1317,7 @@ proc Model::ParamsLaunch { Model Frame } {
    pack $tabframe.launch -side top -anchor w -fill x -padx 5 -pady 2 -anchor e
    Bubble::Create $tabframe.launch $Bubble(LaunchModel)
 
-   Model::ParamsCPUModel
+   Model::ParamsCPUModel $sim(Model)
    Model::ParamsQueues
 }
 
