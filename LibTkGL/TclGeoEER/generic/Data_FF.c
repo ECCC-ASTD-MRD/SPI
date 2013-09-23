@@ -1282,7 +1282,7 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,in
          Def_GetQuadMod(Def,pidx,pvox);
 
          /*Test for value validity*/
-         if (!isnormal(pvox[0])) {
+         if (!isfinite(pvox[0])) {
             break;
          }
          
