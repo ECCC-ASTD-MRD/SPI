@@ -1767,7 +1767,7 @@ proc Model::Window { { Show "" } } {
       set Param(Show) $Show
    }
 
-   if { ![winfo exists .model] } {
+   if { ![winfo exists .model] && $Param(Show) } {
 
       if { $Param(Dock) } {
          frame .model

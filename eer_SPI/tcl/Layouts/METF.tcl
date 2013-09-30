@@ -181,16 +181,13 @@ proc METF::DataInit { Frame } {
       if { [lindex $field 0]=="HR" } {
          lappend Data(Index) $field
       }
-      if { [lindex $field 0]=="OL" || [lindex $field 0]=="INFO" } {
-         set info $field
-      }
    }
 
-   if { [set info [Info::Read [lindex $info end-5]]]=="" } {
+   if { [set info [Info::Read [lindex [lindex $Data(Index) 0] end-5]]]=="" } {
       return
    }
    eval Info::Decode ::METF::Sim \$info
-
+   
    #----- Updater les informations sur la source
 
    set lat [lindex $Sim(Lat) 0]
