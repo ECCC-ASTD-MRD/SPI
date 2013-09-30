@@ -1764,14 +1764,22 @@ int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
       glMultTransposeMatrixf(Scene->Mtx);
    }*/
 
-   /*Display scene objects*/
-   for(i=0;i<scn->NObj;i++) {
-      Model_GridObject(Data,M,scn->Obj[i]);
-   }
 
-   /*Recursive on sub-scenes*/
-   for(i=0;i<scn->NScn;i++) {
-      Model_Grid(Interp,Data,M,&scn->Scn[i]);
+   if (scn) {
+      /*Process scene objects*/
+      for(i=0;i<scn->NObj;i++) {
+         Model_GridObject(Data,M,scn->Obj[i]);
+      }
+
+      /*Recursive on sub-scenes*/
+      for(i=0;i<scn->NScn;i++) {
+         Model_Grid(Interp,Data,M,&scn->Scn[i]);
+      }
+   } else {
+      /*Process model objects*/
+      for(i=0;i<M->NObj;i++) {
+         Model_GridObject(Data,M,&(M->Obj[i]));
+      }  
    }
 
    ModelSceneDepth--;
@@ -1784,6 +1792,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
    Vect3d *v,extent[2];
    Coord  co;
    int    f,p,idx,n=0;
+#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)
 
    if (Obj->Vr) {
       for (f=0;f<Obj->NFc;f++) {
@@ -1802,14 +1811,15 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
 
             /*Test for overflow, should not happend but I've seen it on some models*/
             if (idx>Obj->NVr) {
+               fprintf(stderr, "(WARNING) Wrong number of vertices (%i>%i)\n",idx,Obj->NVr);
                break;
             }
             /*Projection to georef*/
             if (M->Ref) {
                M->Ref->Project(M->Ref,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
             } else {
-               co.Lat=M->Pos[0]+RAD2DEG(M2RAD(Obj->Vr[idx][1]*M->Meter));
-               co.Lon=M->Pos[1]+RAD2DEG(M2RAD(Obj->Vr[idx][0]*M->Meter));
+               co.Lat=M->Pos[0]+M2DEG(Obj->Vr[idx][1]*M->Meter);
+               co.Lon=M->Pos[1]+M2DEG(Obj->Vr[idx][0]*M->Meter);
             }
             co.Elev=Obj->Vr[idx][2];
 
@@ -1872,24 +1882,29 @@ void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,do
    if (!Vr || !Def || NVr<3)
       return;
 
-// fprintf(stderr,"%f %f %f %f  %f %f\n",Ex[0][0],Ex[1][0],Ex[0][1],Ex[1][1],Ex[0][2],Ex[1][2]);
-   for(z=0;z<NVr;z++) {
-      x=lrint(Vr[z][0]);
-      y=lrint(Vr[z][1]);
-      if (FIN2D(Def,x,y))
-         Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-   }
-   return;
-   for(z=(Ex[0][2]<0?0:Ex[0][2]);z<=(Ex[1][2]>=Def->NK-1?Def->NK-1:Ex[1][2]);z++) {
-      for(y=(Ex[0][1]<0?0:Ex[0][1]);y<=(Ex[1][1]>=Def->NJ-1?Def->NJ-1:Ex[1][1]);y++) {
-         for(x=(Ex[0][0]<0?0:Ex[0][0]);x<=(Ex[1][0]>=Def->NI-1?Def->NI-1:Ex[1][0]);x++) {
-//            fprintf(stderr,"%i %i %i\n",x,y,z);
-            Vect_PlaneEquation(plane,Vr[0],Vr[1],Vr[2]);
-            Vect_Init(v0,x,y,z-0.5);
-            Vect_Init(v1,x,y,z+0.5);
-            if (Vect_PlaneIntersect(plane,v0,v1) && Vect_PlaneWithin(v0,Vr[0],Vr[1],Vr[2]))
-               Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-         }
+//    for(z=0;z<NVr;z++) {
+//       x=lrint(Vr[z][0]);
+//       y=lrint(Vr[z][1]);
+//       if (FIN2D(Def,x,y))
+//          Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+//    }
+
+   for(y=lrint(Ex[0][1]);y<=lrint(Ex[1][1]);y++) {
+      for(x=lrint(Ex[0][0]);x<=lrint(Ex[1][0]);x++) {
+         if (FIN2D(Def,x,y))
+            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
       }
    }
+
+//    Vect_PlaneEquation(plane,Vr[0],Vr[1],Vr[2]);
+//    for(z=(Ex[0][2]<0?0:Ex[0][2]);z<=(Ex[1][2]>=Def->NK-1?Def->NK-1:Ex[1][2]);z++) {
+//       for(y=(Ex[0][1]<0?0:Ex[0][1]);y<=(Ex[1][1]>=Def->NJ-1?Def->NJ-1:Ex[1][1]);y++) {
+//          for(x=(Ex[0][0]<0?0:Ex[0][0]);x<=(Ex[1][0]>=Def->NI-1?Def->NI-1:Ex[1][0]);x++) {
+//             Vect_Init(v0,x,y,z-0.5);
+//             Vect_Init(v1,x,y,z+0.5);
+//             if (Vect_PlaneIntersect(plane,v0,v1) && Vect_PlaneWithin(v0,Vr[0],Vr[1],Vr[2]))
+//                Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+//          }
+//       }
+//    }
 }
