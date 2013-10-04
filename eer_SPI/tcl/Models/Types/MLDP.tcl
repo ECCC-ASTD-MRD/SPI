@@ -325,7 +325,7 @@ proc MLDP::CreateModelInput { } {
    puts $file "[format "%-${len}s" [llength $Sim(MeteoDataFiles)]]     nb_metfiles       Number of meteorological input standard files."
    for { set i 0 } { $i < [llength $Sim(MeteoDataFiles)] } { incr i } {
       set filename [lindex $Sim(MeteoDataFiles) $i]
-      set metfile  "meteo/[file tail $filename].std"
+      set metfile  "meteo/[file tail $filename]"
       if { $i > 0 } {
          set string ""
       } else {
