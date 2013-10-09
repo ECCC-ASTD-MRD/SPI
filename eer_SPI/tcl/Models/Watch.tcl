@@ -654,10 +654,12 @@ proc Watch::New { { Edit False } } {
    set Sim(Coords) .*
 
    #----- Backup pool
-   file stat $Param(Path)/$Data(Project)/sim.pool attr
-   file copy -force $Param(Path)/$Data(Project)/sim.pool $Param(Path)/$Data(Project)/sim.pool.[clock format $attr(ctime) -format "%Y%m%d" -timezone :UTC]
-
-   Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim] False
+   if { [file exists $Param(Path)/$Data(Project)/sim.pool] } {
+      file stat $Param(Path)/$Data(Project)/sim.pool attr
+      file copy -force $Param(Path)/$Data(Project)/sim.pool $Param(Path)/$Data(Project)/sim.pool.[clock format $attr(ctime) -format "%Y%m%d" -timezone :UTC]
+   
+      Info::Delete $Param(Path)/$Data(Project)/sim.pool [Info::Code Watch::Sim] False
+   }
 
    #----- On ajoute l'exxperience
    set Sim(Name)   $srcs

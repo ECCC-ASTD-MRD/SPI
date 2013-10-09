@@ -535,7 +535,7 @@ proc Log::Mail { Subject File { Address { } } } {
       set address $Address
    }
 
-   if { [llength $address]  } {
+   if { [llength $address] } {
       if { ![file exists $File] || ![file readable $File] } {
          set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
       } else {
