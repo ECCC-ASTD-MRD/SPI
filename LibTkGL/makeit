@@ -2,7 +2,7 @@
 arg=$1
 
 NAME="SPI"
-DESC="EER Visualisation/GIS/Processing/Modeling tool"
+DESC="EER Visualisation, GIS, Processing and Modeling tool"
 VERSION="7.6.0"
 MAINTAINER="Jean-Philippe Gauthier"
 
