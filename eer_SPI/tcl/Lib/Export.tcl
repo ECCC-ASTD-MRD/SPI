@@ -338,12 +338,12 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       Dialog::Wait .export $Export::Msg(Export) $desc
 
       switch $Mode {
-         INDEX {  set map [fstdfield configure $field -colormap]
+         DATA  { set map [fstdfield configure $field -colormap]
             fstdfield configure $field -colormap ""
             gdalband create BAND $Param(DX) $Param(DY) 1 Float32
          }
-         RGBA { gdalband create BAND $Param(DX) $Param(DY) 4 Byte }
-         DATA { gdalband create BAND $Param(DX) $Param(DY) 1 Byte }
+         RGBA  { gdalband create BAND $Param(DX) $Param(DY) 4 Byte }
+         INDEX { gdalband create BAND $Param(DX) $Param(DY) 1 Byte }
       }
       gdalband define BAND -transform [list $Param(Lon0) $Param(DLon) 0.0 $Param(Lat1) 0.0 -$Param(DLat)]
       gdalband import BAND $field
