@@ -260,7 +260,7 @@ proc MLDP::ScenarioAccidentNew { Parent } {
          for { set j 0 } { $j < $Sim(EmMaxIso) } { incr j } {
             button .newscenario.emint.fr.box2.header.rates.iso.name$j -relief raised -width 11 -bd 1 -textvariable MLDP::Tmp(Iso$j) \
                -command "MLDP::SpeciesDelete $j"
-            label .newscenario.emint.fr.box2.header.rates.iso.kill$j -bitmap @$GDefs(Dir)/Resources/Bitmap/cvdel.xbm -bd 0
+            label .newscenario.emint.fr.box2.header.rates.iso.kill$j -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -bd 0
             pack .newscenario.emint.fr.box2.header.rates.iso.name$j -side left -ipadx 2 -fill x -expand true
             place .newscenario.emint.fr.box2.header.rates.iso.kill$j -in .newscenario.emint.fr.box2.header.rates.iso.name$j \
                -relx 1 -rely 0 -anchor ne -width 15 -height 15
