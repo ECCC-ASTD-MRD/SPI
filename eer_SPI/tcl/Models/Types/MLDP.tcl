@@ -1398,7 +1398,7 @@ proc MLDP::SpeciesFormat { Line } {
       set wetscavrate [lindex $Line 7] ; #----- Wet Scavenging Rate [s-1].
       set drydepvel   [lindex $Line 8] ; #----- Dry Deposition Velocity [m/s].
 
-      if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearch -idx 0 $Tmp(Iso) $symbol] == -1 } {
+      if { [llength $Tmp(Iso)] < $Sim(EmMaxIso) && [lsearch -index 0 $Tmp(Iso) $symbol] == -1 } {
 
          if { $halflife >= 900 } {
             #----- Verify if isotope's radioactive half-life is long enough
