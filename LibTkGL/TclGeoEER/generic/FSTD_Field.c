@@ -2107,7 +2107,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    TDataVector *uvw=NULL;
    TData_Type   dtype;
    FSTD_Head    h;
-   int          ok,ni,nj,nk,i,type,idx,datyp;
+   int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
    float        lvl,*tmp;
    char         nomvar[5],typvar[2],grtyp[2],etik[13],*proj=NULL;
    double       nhour,val=0.0;
@@ -2134,7 +2134,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");
    strcpy(h.ETIKET,"            ");
-   ok=c_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&ni,&nj,&nk,&h.NBITS,
+   ok=c_fstprm(h.KEY,&h.DATEO,&h.DEET,&h.NPAS,&mni,&mnj,&mnk,&h.NBITS,
          &h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
          &grtyp,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,
          &h.UBC,&h.EX1,&h.EX2,&h.EX3);
@@ -2166,7 +2166,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    /*Champs vectoriel ???*/
    if ((uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
-      field=Data_Valid(Interp,Name,ni,nj,nk,(uvw->WW?3:2),dtype);
+      field=Data_Valid(Interp,Name,mni,mnj,mnk,(uvw->WW?3:2),dtype);
       if (!field) {
          EZUnLock_RPNField();
          FSTD_FileUnset(Interp,file);
@@ -2189,7 +2189,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->UU);
          }
 
-         if (ok<0) {
+         if (ok<0 || ni!=mni || nj!=mnj) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find first component field ",uvw->UU," (c_fstinf failed)",(char*)NULL);
             EZUnLock_RPNField();
             FSTD_FileUnset(Interp,file);
@@ -2210,7 +2210,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->VV);
          }
 
-         if (ok<0) {
+         if (ok<0 || ni!=mni || nj!=mnj) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find second component field ",uvw->VV," (c_fstinf failed)",(char*)NULL);
             EZUnLock_RPNField();
             FSTD_FileUnset(Interp,file);
@@ -2231,7 +2231,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->WW);
          }
 
-         if (ok<0) {
+         if (ok<0 || ni!=mni || nj!=mnj) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not find third component field ",uvw->WW," (c_fstinf failed)",(char*)NULL);
             EZUnLock_RPNField();
             FSTD_FileUnset(Interp,file);
@@ -2254,7 +2254,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
    } else {
       /*Verifier si le champs existe et est valide*/
-      field=Data_Valid(Interp,Name,ni,nj,nk,1,dtype);
+      field=Data_Valid(Interp,Name,mni,mnj,mnk,1,dtype);
       if (!field) {
          EZUnLock_RPNField();
          FSTD_FileUnset(Interp,file);
@@ -2273,7 +2273,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    /*Check for mask (TYPVAR==@@)*/
    if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
       ok=c_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
-      if (ok>0) {
+      if (ok>0 && ni==mni && nj==mnj && nk==mnk) {
          if ((field->Def->Mask=(char*)malloc(ni*nj))) {
             if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
                c_fstluk(tmp,ok,&ni,&nj,&nk);
