@@ -568,7 +568,7 @@ proc FSTD::IntervalSet { { Select 0 } } {
    if { $Param(IntervalDef)!="" } {
       upvar #0  MetData::[string range $Param(IntervalMode) 0 3] inter
 
-      switch  $Param(IntervalMode) {
+      switch $Param(IntervalMode) {
          "AEGL(10min)" { set index 0 }
          "AEGL(30min)" { set index 1 }
          "AEGL(60min)" { set index 2 }
@@ -585,6 +585,7 @@ proc FSTD::IntervalSet { { Select 0 } } {
          set Param(Desc)          $Param(IntervalDef)
       }
    }
+   
    FSTD::ParamSet
 }
 
@@ -847,12 +848,17 @@ proc FSTD::ParamSet { { Spec "" } } {
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
-      -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis)  -size $Param(Size) -sizerange $Param(SizeRange) \
-      -intervals $inter -interlabels $label -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
+      -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
+      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
-   if { $Param(IntervalMode)!="NONE" } {
+   if { $Param(IntervalMode)=="NONE" } {
+      dataspec configure $Spec -intervals $inter -interlabels $label 
+   } elseif  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
+      dataspec configure $Spec -intervalmode $Param(IntervalMode) $Param(IntervalParam)
       set Param(Intervals) [dataspec configure $Spec -intervals]
+   } else {
+      dataspec configure $Spec -intervals $inter -interlabels $label -intervalmode $Param(IntervalMode) $Param(IntervalParam)
    }
 
    catch { $Data(ApplyButton) configure -state normal }
