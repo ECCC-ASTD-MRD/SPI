@@ -331,7 +331,7 @@ proc TRAJECT::Launch { } {
    }
 
    exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
-      -t 3600 -cm 1G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
+      -t 3600 -cm 2G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
    exec chmod 755 $Sim(Path)/tmp/Model_Launch.sh
 
    if { $Model::Param(IsUsingSoumet) } {
@@ -340,14 +340,14 @@ proc TRAJECT::Launch { } {
       Model::ParamsCopy TRAJECT
 
       eval set err \[catch \{ exec $Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_TRAJECT.in -mach $Model::Param(Host) \
-         -t 3600 -cm 1G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
+         -t 3600 -cm 2G -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue) 2>@1 \} msg\]
       catch { exec echo "$msg" > $Sim(Path)/tmp/Model_Launch.out }
 
       if { $err } {
-         Log::Print ERROR "Submitting the job on $Model::Param(Host) failed:\n\n\t$msg"
+         Log::Print ERROR "Submitting the job on $Model::Param(Host) with queue $Model::Param(Queue) failed:\n\n\t$msg"
          return False
       }
-      Log::Print INFO "Job has been submitted successfully on $Model::Param(Host)."
+      Log::Print INFO "Job has been submitted successfully on $Model::Param(Host) with queue $Model::Param(Queue)."
   } else {
       set info [Info::Code ::TRAJECT::Sim]
       set id [Exp::Id $info]
