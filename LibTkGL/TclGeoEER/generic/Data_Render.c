@@ -1269,13 +1269,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    pos=&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
 
-   /*Resolution selon la dimension des cellules (mid-grid)*/
-   dp=1;
-   if (Field->Ref->Grid[0]!='V') {
-      idx0=Field->Def->NJ/2*Field->Def->NI+Field->Def->NI/2;
-      dp=1.0/FFCellResolution(VP,Proj,pos[idx0],pos[idx0+Field->Def->NI+1]);
-      dp=dp<1?1:dp;
-   }
+   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
+   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
+   
+   if (Field->Spec->InterNb) 
+      dp>>=2;
+   
+   dp=dp<1?1:dp;
 
    /*Grille avec loop sur la longitude*/
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
@@ -1367,86 +1367,89 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       }
    }
 
-   if (!GLRender->GLDebug) {
-      
-      /*Render the polygons over the lines*/
+   if (GLRender->GLDebug) {
+      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+   } else {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-      for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+   }
+   
+   /*Render the polygons over the lines*/
+   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
 
-         glBegin(GL_QUADS);
+      glBegin(GL_QUADS);
 
-         for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
 
-            if (i!=0) {
-               idx1=idx0;
-               idx2=idx3;
-               v1=v0;
-               v2=v3;
-               c1=c0;
-               c2=c3;
-            }
+         if (i!=0) {
+            idx1=idx0;
+            idx2=idx3;
+            v1=v0;
+            v2=v3;
+            c1=c0;
+            c2=c3;
+         }
 
-            /*If the next index is over the size*/
-            if (i>=Field->Def->NI) {
-               if (ox) {
-                  /*If the grid wraps around, use the first point*/
-                  idx0=j*Field->Def->NI;
-               } else {
-                  /*If not, use the last point*/
-                  idx0=(j+1)*Field->Def->NI-1;
-               }
+         /*If the next index is over the size*/
+         if (i>=Field->Def->NI) {
+            if (ox) {
+               /*If the grid wraps around, use the first point*/
+               idx0=j*Field->Def->NI;
             } else {
-               idx0=j*Field->Def->NI+i;
+               /*If not, use the last point*/
+               idx0=(j+1)*Field->Def->NI-1;
             }
-            idx3=idx0+dp*Field->Def->NI;
+         } else {
+            idx0=j*Field->Def->NI+i;
+         }
+         idx3=idx0+dp*Field->Def->NI;
 
-            Def_GetMod(Field->Def,idxk+idx0,v0);
-            Def_GetMod(Field->Def,idxk+idx3,v3);
-            VAL2COL(c0,Field->Spec,v0);
-            VAL2COL(c3,Field->Spec,v3);
+         Def_GetMod(Field->Def,idxk+idx0,v0);
+         Def_GetMod(Field->Def,idxk+idx3,v3);
+         VAL2COL(c0,Field->Spec,v0);
+         VAL2COL(c3,Field->Spec,v3);
 
-            /* Is the cell valid ??? */
-            if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+         /* Is the cell valid ??? */
+         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
-               /*Check for mask value*/
-               if (Field->Def->Mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
-                  glEnd();
-                  glBegin(GL_QUADS);
-                  continue;
-               }
+            /*Check for mask value*/
+            if (Field->Def->Mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
+               glEnd();
+               glBegin(GL_QUADS);
+               continue;
+            }
 
-               Vect_Assign(g0,pos[idx0]);
-               Vect_Assign(g1,pos[idx1]);
-               Vect_Assign(g2,pos[idx2]);
-               Vect_Assign(g3,pos[idx3]);
+            Vect_Assign(g0,pos[idx0]);
+            Vect_Assign(g1,pos[idx1]);
+            Vect_Assign(g2,pos[idx2]);
+            Vect_Assign(g3,pos[idx3]);
 
-               /* Is the cell visible ??? */
-               if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
-                  if (Field->Spec->InterpDegree[0]=='N') {
-                     VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
+            /* Is the cell visible ??? */
+            if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
+               if (Field->Spec->InterpDegree[0]=='N') {
+                  VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
+               } else {
+
+                  dx=ABS(dim[0]);
+                  dy=ABS(dim[1]);
+                  dx=MIN(dx,dy);
+                  depth=ceil(LOG2(dx));
+
+                  /* Is the cell resolution enough ??? */
+                  if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
+                     VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
-
-                     dx=ABS(dim[0]);
-                     dy=ABS(dim[1]);
-                     dx=MIN(dx,dy);
-                     depth=ceil(LOG2(dx));
-
-                     /* Is the cell resolution enough ??? */
-                     if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
-                        VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
-                     } else {
-                        VR(g0,c0,base);
-                        VR(g1,c1,base);
-                        VR(g2,c2,base);
-                        VR(g3,c3,base);
-                     }
+                     VR(g0,c0,base);
+                     VR(g1,c1,base);
+                     VR(g2,c2,base);
+                     VR(g3,c3,base);
                   }
                }
             }
+         }
       }
       glEnd();
-      }
    }
+ 
    glCullFace(GL_BACK);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);

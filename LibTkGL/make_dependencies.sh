@@ -1,7 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.6.0
+VERSION=7.6.1
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -51,6 +51,11 @@ if [[ $PROC == "x86_64" ]]; then
    export CXXFLAGS=-m64
 else
    x64=no
+fi
+
+if [[ $ARCH == "AIX" ]]; then
+   export CC=xlc
+   export make=gmake
 fi
 
 mkdir -p ${LIB_PATH}
