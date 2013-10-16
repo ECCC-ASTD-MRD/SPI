@@ -208,7 +208,7 @@ proc SatData::DataGet { }  {
    foreach item [.satdata.seluser.ch.list curselection] {
       SatData::DataExtract $SatData::Data(UserPath)/[.satdata.seluser.ch.list get $item]
 
-      set err [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
+      set err [catch { exec editfst -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
       if { $err } {
          Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
       }
@@ -225,7 +225,7 @@ proc SatData::DataGet { }  {
             set file [.satdata.sel.s$sat.ch.c$c.list get $item]
             SatData::DataExtract $file
 
-            set err [catch { exec editfst+ -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
+            set err [catch { exec editfst -s $env(HOME)/.spi/Tmp/SAT_$file -d $Data(ResultFile) -i 0 } msg ]
             if { $err } {
                Log::Print ERROR "Can't editfst SAT_$file :\n\n$msg"
             }
