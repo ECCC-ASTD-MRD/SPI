@@ -959,7 +959,7 @@ proc Writer::FVCN::GetNo { Name } {
       #      depuis la transmission.
 
       set sec [clock scan "[string range $file 4 5]/[string range $file 6 7]/[string range $file 0 3]\
-                  [string range $file 8 9]:[string range $file 10 11]:00" -gmt True]
+                  [string range $file 9 10]:[string range $file 11 12]:00" -gmt True]
       set delta [expr ($Data(Seconds) - $sec)/3600]
 
       #----- On conserve la meme entete FVCNxx si :
@@ -971,7 +971,7 @@ proc Writer::FVCN::GetNo { Name } {
 
          #----- on conserve la meme entete FVCNxx.
 
-         set no [string range $file 14 19]
+         set no [string range $file 15 20]
          Log::Print INFO "Selected $no"
          return $no
 
@@ -981,8 +981,8 @@ proc Writer::FVCN::GetNo { Name } {
 
             #----- on doit exclure cette entete FVCNxx.
 
-            lappend entetes_exclues [string range ${file} 14 19]
-            Log::Print INFO "There is another message emitted within 48 hours ([string range ${file} 13 18])"
+            lappend entetes_exclues [string range ${file} 15 20]
+            Log::Print INFO "There is another message emitted within 48 hours ([string range ${file} 15 20])"
 
          } else {
 
