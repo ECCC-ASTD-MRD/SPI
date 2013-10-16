@@ -188,7 +188,10 @@ proc HFManager::FileCommand { Id Command } {
             if { [Dialog::Default .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
-                  exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser)
+                  set err [catch { exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser) } msg]
+                  if { $err } {
+                     Log::Print ERROR "Problems while calling HFdel.ksh :\n\n\t$msg"
+                  }
                } else {
                   HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f" $file
                }
@@ -422,7 +425,10 @@ proc HFManager::HostFiles { Id } {
       }
 
       if { [lindex $params 1]=="wget" } {
-         exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res
+         set err [catch { exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res } msg]
+         if { $err } {
+            Log::Print ERROR "Problems while calling HFwget.ksh :\n\n\t$msg"
+         }
 
          if { $Host(Wild$Id) != "" } {
             Log::Print DEBUG "egrep $Host(Wild$Id) /tmp/index[pid].res"
