@@ -40,7 +40,7 @@ proc TRAJECT::InitNew { Type } {
    set Sim(Method)     [lindex [lindex $Sim(ListMethod) $GDefs(Lang)] 0]
    set Sim(Backward)   False
    set Sim(Mode)       "prog"
-   set Sim(TimeStep)   "3600"
+   set Sim(TimeStep)   3600
    set Sim(BatchStart) 0
    set Sim(Duration)   72
    set Sim(MultiLevel) False
@@ -206,7 +206,7 @@ proc TRAJECT::CreateModelInput { } {
    #----- Creation du fichier de directives
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
    puts $f "\n#----- Model parameters\n"
-   puts $f [format "%-20s= %-12.1f # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
+   puts $f [format "%-20s= %-12d # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
    puts $f [format "%-20s= %-12s # Backward simulation" MDL_RETRO $Sim(Backward)]
    puts $f [format "%-20s= %-12s # Type of vertical coordinates (PRESSURE or MAGL)" MDL_ZTYPE $unit]
    puts $f [format "%-20s= %-12s # Emission date-time \[UTC\]: YearMonthDayHourMinutes" MDL_TIME [clock format $Sim(AccSecs) -format "%Y%m%d%H%M" -gmt True]]
