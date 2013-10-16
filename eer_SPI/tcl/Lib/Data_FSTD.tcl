@@ -843,6 +843,7 @@ proc FSTD::ParamSet { { Spec "" } } {
 
    set Param(GridNo) [lsearch -exact $Param(GridIds) $Param(GridId)]
 
+   #----- Set all params
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
@@ -852,6 +853,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
+   #----- Set intervals depending on interval mode
    if { $Param(IntervalMode)=="NONE" } {
       dataspec configure $Spec -intervals $inter -interlabels $label 
    } elseif  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
@@ -1122,11 +1124,12 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {
                dataspec copy $var $spec
+               fstdfield configure $fld -dataspec $var
                dataspec free $spec
             }
             FSTD::ParamInit $fld $var
          }
-
+         
          if { !$set } {
             fstdfield configure $fld -dataspec $var
          }
