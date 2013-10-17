@@ -306,11 +306,11 @@ proc Trajectory::ParamFrame { Frame Apply } {
    set Data(ApplyButton) $Apply
 
    labelframe $Data(Frame).id -text "[lindex $Lbl(Traj) $GDefs(Lang)]"
-      menubutton $Data(Frame).id.type -textvariable Trajectory::Param(Mode) -bd 0 -menu $Data(Frame).id.type.lst -width 10 -anchor w
+      menubutton $Data(Frame).id.type -textvariable Trajectory::Param(Mode) -relief groove -bd 2 -menu $Data(Frame).id.type.lst -width 10 -anchor w
       ComboBox::Create $Data(Frame).id.lvl Trajectory::Param(Spec) noedit unsorted nodouble -1 "" 8 3 { Trajectory::ParamGet; Trajectory::ParamPut }
       label $Data(Frame).id.uni -width 10
-      pack $Data(Frame).id.type -side left -fill x
-      pack $Data(Frame).id.lvl -side left -fill x -expand True -padx 2 -pady 2
+      pack $Data(Frame).id.type -side left -fill x -padx 2 -pady 1
+      pack $Data(Frame).id.lvl -side left -fill both -expand True -padx 2 -pady 2
 
    menu $Data(Frame).id.type.lst
       foreach mode $Param(Modes) {

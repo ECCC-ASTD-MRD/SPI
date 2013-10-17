@@ -255,12 +255,12 @@ proc FSTD::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).var -text [lindex $Lbl(Field) $GDefs(Lang)]
       ComboBox::Create $Data(Frame).var.sel FSTD::Param(Spec) noedit sorted nodouble -1 \
           "" 18 3 { FSTD::ParamGet; FSTD::ParamPut }
-      menubutton $Data(Frame).var.lbl -textvariable FSTD::Param(Mode) -bd 0 -menu $Data(Frame).var.lbl.lst
-      pack $Data(Frame).var.lbl -side left -fill x -padx 2 -pady 2
-      pack $Data(Frame).var.sel -side left -fill x -expand True -padx 2 -pady 2
+      menubutton $Data(Frame).var.lbl -textvariable FSTD::Param(Mode) -relief groove -bd 2 -menu $Data(Frame).var.lbl.lst
+      pack $Data(Frame).var.lbl -side left -fill x -padx 2 -pady 1
+      pack $Data(Frame).var.sel -side left -fill both -expand True -padx 2 -pady 2
 
       menu $Data(Frame).var.lbl.lst
-      foreach mode "FLD VAR TYP IP1 IP2 IP3 ETI DATEO FILE" {
+      foreach mode "FLD VAR TYPVAR IP1 IP2 IP3 ETIKET DATEO FILE" {
          $Data(Frame).var.lbl.lst add command -label $mode -command "FSTD::VarMode $mode"
       }
 
@@ -1101,15 +1101,15 @@ proc FSTD::ParamUpdate { { Fields { } } } {
           
           #----- Get the name of the configuration object
           switch $Param(Mode) {
-            "FLD"   { set var $fld }
-            "VAR"   { set var [fstdfield define $fld -NOMVAR] }
-            "TYP"   { set var [fstdfield define $fld -TYPVAR] }
-            "IP1"   { set var [fstdfield define $fld -IP1] }
-            "IP2"   { set var [fstdfield define $fld -IP2] }
-            "IP3"   { set var [fstdfield define $fld -IP3] }
-            "ETI"   { set var [fstdfield define $fld -ETIKET] }
-            "DATEO" { set var [fstdfield define $fld -DATEO] }
-            "FILE"  { set var [fstdfield define $fld -FID] }
+            "FLD"    { set var $fld }
+            "VAR"    { set var [fstdfield define $fld -NOMVAR] }
+            "TYPVAR" { set var [fstdfield define $fld -TYPVAR] }
+            "IP1"    { set var [fstdfield define $fld -IP1] }
+            "IP2"    { set var [fstdfield define $fld -IP2] }
+            "IP3"    { set var [fstdfield define $fld -IP3] }
+            "ETIKET" { set var [fstdfield define $fld -ETIKET] }
+            "DATEO"  { set var [fstdfield define $fld -DATEO] }
+            "FILE"   { set var [fstdfield define $fld -FID] }
          }
 
          if { [set var [string trim $var]]=="" } {
@@ -1165,14 +1165,14 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 # Remarques :
 #     - Il y a differente methodes:
 #
-#         FLD  : Parametres par champs
-#         VAR  : Parametres par NOMVAR
-#         TYP  : Parametres par TYPVAR
-#         IP1  : Parametres par IP1
-#         IP2  : Parametres par IP2
-#         IP3  : Parametres par IP3
-#         ETI  : Parametres par ETIKET
-#         DATEO: Parametres par DATEO
+#         FLD   : Parametres par champs
+#         VAR   : Parametres par NOMVAR
+#         TYPVAR: Parametres par TYPVAR
+#         IP1   : Parametres par IP1
+#         IP2   : Parametres par IP2
+#         IP3   : Parametres par IP3
+#         ETIKET: Parametres par ETIKET
+#         DATEO : Parametres par DATEO
 #         FILE  : Parametres par FILE
 #
 #----------------------------------------------------------------------------
