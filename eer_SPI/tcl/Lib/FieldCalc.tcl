@@ -944,7 +944,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
 
    catch { .fieldcalc.expr.param configure -state disabled }
 
-   #----- If no operand vailable, do nothing
+   #----- If no operand available, do nothing
    if { ![FieldCalc::IsOperand $VP] } {
       return $Fields
    }
@@ -958,6 +958,10 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
    set ids    { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
    set nids   0
 
+   #----- Test validity of expression
+   set valid [string map { A 1 B 1 C 1 D 1 E 1 F 1 G 1 H 1 I 1 J 1 K 1 L 1 M 1 N 1 O 1 P 1 Q 1 R 1 S 1 T 1 U 1 V 1 W 1 X 1 Y 1 Z 1 } $Viewport::Data(Operand$VP)]
+   vexpr NIL $valid
+   
    #----- Separate the fields from the rest
    foreach fld $Fields {
       if { [fstdfield is $fld] && [fstdfield define $fld -GRTYP]!="V" } {
