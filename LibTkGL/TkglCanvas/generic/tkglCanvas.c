@@ -2296,7 +2296,7 @@ ConfigureCanvas(
     }
 
    /* Check for dimensions to be lower than OpenGL<s viewport max */
-   if (GLRender->GLCon) {
+   if (GLRender->GLCon && pdims[0]!=canvasPtr->width && pdims[1]!=canvasPtr->height) {
       glGetIntegerv(GL_MAX_VIEWPORT_DIMS,dims);
       if (canvasPtr->width>dims[0] || canvasPtr->height>dims[1]) {
          canvasPtr->width=pdims[0];
