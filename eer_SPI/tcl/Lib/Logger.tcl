@@ -488,6 +488,9 @@ proc Log::Print { Type Message { Var "" } } {
          incr Param(Error)
       }
 
+      #----- Pre eval the message in case of variable to expand
+      eval set Message \"$Message\"
+      
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
