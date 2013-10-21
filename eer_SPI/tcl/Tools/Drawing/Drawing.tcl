@@ -1287,7 +1287,7 @@ proc Drawing::FileSave { File } {
             "text|head|dist|valu|vert" {
                set item [lindex $params 6]
                puts $file "font create $item -family [font actual $item -family] -weight [font actual $item -weight]\
-                  -size [font actual $item -size] -slant [font actual $item -slant] -underline [font actual $item -underline]\
+                  -size -[font actual $item -size] -slant [font actual $item -slant] -underline [font actual $item -underline]\
                   -overstrike [font actual $item -overstrike]"
                regsub -all "\n"  $params "\\n" params
                }
