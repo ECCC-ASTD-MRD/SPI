@@ -3,13 +3,13 @@ arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.6.0"
+VERSION="7.6.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_all
 
 MAKE=make
-LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${LIB}/${ORDENV_PLAT}
+LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}
 TCL=${LIB}/SPI
 
 export CC=c99
@@ -97,8 +97,8 @@ else
 	--with-gdal=${LIB}/gdal-1.10.0/bin/gdal-config  \
 	--with-grib=${LIB}/grib_api-1.9.18 \
 	--with-ecbufr=${LIB}/libecbufr-0.8.2rc1 \
-	--with-flt=${LIB}/fltlib-0.5.1
-  #      --with-urp=${LIB}/URP
+	--with-flt=${LIB}/fltlib-0.5.1 \
+        --with-urp=${LIB}/URP
   fi
 
   $MAKE install

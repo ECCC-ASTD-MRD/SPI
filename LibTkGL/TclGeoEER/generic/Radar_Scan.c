@@ -32,7 +32,7 @@
  *==============================================================================
 */
 
-#ifdef LNK_URP
+#ifdef HAVE_URP
 
 #include "tclRADAR.h"
 #include "Projection.h"
@@ -71,7 +71,7 @@ void Radar_Set(TData *Data){
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <Radar_Define>
+ * Nom      : <Radar_ScanDefine>
  * Creation : Avril 2006 J.P. Gauthier
  *
  * But      : Definition des donnees'observations
@@ -89,7 +89,7 @@ void Radar_Set(TData *Data){
  *
  *----------------------------------------------------------------------------
 */
-int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
+int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
 
    Radar_Head *head=(Radar_Head*)Rad->Head;
    Tcl_Obj    *obj;
@@ -100,8 +100,8 @@ int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
    Coord       loc;
 
    static CONST char *sopt[] = { "-TYPE","-SCAN","-AZIMUTHRESOLUTION","-BINRESOLUTION","-SITEID","-SITENAME","-LOCATION",\
-      "-SWEEPANGLE","-DATE","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-NBSWEEP","-NBAZIMUTH","-NBBIN","-GEOREF",NULL };
-   enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,NBSWEEP,NBAZIMUTH,NBBIN,GEOREF };
+      "-SWEEPANGLE","-DATE","-NOMVAR","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-NBSWEEP","-NBAZIMUTH","-NBBIN","-GEOREF",NULL };
+   enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,NOMVAR,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,NBSWEEP,NBAZIMUTH,NBBIN,GEOREF };
 
    for (i=0;i<Objc;i++) {
 
@@ -143,6 +143,7 @@ int Radar_Define(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+         case NOMVAR:
          case SCAN:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Radar_GetTypeString(head->Data->volScan[head->Scan]->dataType),-1));

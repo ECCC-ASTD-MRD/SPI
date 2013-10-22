@@ -92,6 +92,7 @@ int     Radar_Parse(TData *Rad);
 void    Radar_Free(TData *Rad);
 Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level);
 void    Radar_HeadCopy(void *To,void *From);
+int     Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[]);
 void    Radar_Set(TData *Data);
 double  Radar_Height(TData *Rad,double I,double J,double K);
 
