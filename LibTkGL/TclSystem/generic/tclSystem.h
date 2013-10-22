@@ -48,6 +48,7 @@
 #include <sys/user.h>
 #include <sys/ioctl.h>
 #include <sys/vfs.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <syslog.h>
@@ -58,4 +59,4 @@
 #include "tcl.h"
 
 int Tclsystem_Init(Tcl_Interp *Interp);
-int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile);
+int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile);

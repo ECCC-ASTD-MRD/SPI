@@ -89,6 +89,7 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
  * Parametres     :
  *  <Interp>      : Interpreteur TCL
  *  <ForkOff>     : Fork le process
+ *  <Respawn>     : Watch and respawn if dead
  *  <LockFile>    : Fidhier lock du process
  *
  * Retour:
@@ -97,32 +98,42 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
  * Remarques :
  *
  *----------------------------------------------------------------------------
-*/
-int System_Daemonize(Tcl_Interp *Interp,int ForkOff,const char *LockFile) {
-   pid_t pid,sid;
-   int   lfp=-1;
+*/    
+int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile) {
+   
+   pid_t pid,sid,child;
+   int   lfp=-1,status;
    char  buf[32];
 
-   /*Fork off the parent process*/
+  /*Fork off the parent process*/
    if (ForkOff) {
       /*already a daemon*/
       if (getppid()==1)
          return(TCL_OK);
 
-      pid=fork();
-      if (pid<0) {
-         Tcl_AppendResult(Interp,"System_Daemonize: Unable to fork off parent process",(char*)NULL);
-         return(TCL_ERROR);
+      while (Respawn) {
+         pid=fork();
+         switch (pid) {
+            case -1: // Failed fork
+                     Tcl_AppendResult(Interp,"System_Daemonize: Unable to fork off parent process",(char*)NULL);
+                     return(TCL_ERROR);
+                     break;
+                     
+            case  0: // We're the child
+                     Respawn=0;
+                     break;
+                     
+            default: // We're the parent and the child is runnning
+                     child = wait(&status);
+                     if (child==pid);
+                        Respawn=(status!=0);
+         }
       }
-      /*If we got a good PID, then we can exit the parent process*/
-      if (pid>0) {
-         exit(0);
-      }
-
+     
       /*Create a new SID for the child process*/
       sid=setsid();
       if (sid<0) {
-         Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
+        Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
          return(TCL_ERROR);
       }
    }
@@ -297,10 +308,10 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 */
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int   i,idx,fork=0;
-   char *file;
-   static CONST char *sopt[] = { "-lock","-fork",NULL };
-   enum               opt { LOCK,FORK };
+   int   i,idx,fork=0,respawn=0;
+   char *file=NULL;
+   static CONST char *sopt[] = { "-lock","-fork","-respawn",NULL };
+   enum               opt { LOCK,FORK,RESPAWN };
 
    for(i=0;i<Objc;i++) {
 
@@ -312,12 +323,15 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          case FORK:
             fork=1;
             break;
+         case RESPAWN:
+            respawn=1;
+            break;
          case LOCK:
             file=Tcl_GetString(Objv[++i]);
             break;
          }
    }
-   return(System_Daemonize(Interp,fork,file));
+   return(System_Daemonize(Interp,fork,respawn,file));
 }
 
 /*----------------------------------------------------------------------------
