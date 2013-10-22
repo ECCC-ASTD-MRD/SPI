@@ -95,7 +95,7 @@ proc  Mapper::DepotWare::DIR::Select { Tree Branch { Select True } } {
 proc  Mapper::DepotWare::DIR::Parse { Tree Branch } {
 
    set path [$Tree get $Branch path]
-puts stderr $path
+
    foreach file [lsort -dictionary -increasing [glob -nocomplain $path/*]] {
       set branch [$Tree insert $Branch end]
       if { [file isdirectory $file] } {
