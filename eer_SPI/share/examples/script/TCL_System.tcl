@@ -63,6 +63,16 @@ puts "   Stack size : [system limit -stack]"
 system limit -stack 3600
 puts "   Stack new size :[system limit -stack]"
 
+proc ManageSignal { Signal } {
+   puts "Received signal: $Signal"
+}
+
+puts "System signal (pid:[pid])"
+puts "  Current SIGUSR1 value: [system signal SIGUSR1 -trap ManageSignal]"
+puts "  Current SIGUSR1 value: [system signal SIGUSR1]"
+
+#vwait forever
+
 puts "\nSystem usage for process"
 after 5000
 set calls [list -utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch]

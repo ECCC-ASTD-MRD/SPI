@@ -148,7 +148,7 @@ proc RPN2GDAL::ParseCommandLine { } {
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          "format"   { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Format)] }
-         "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)]] }
+         "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)] }
          "map"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Map)] }
          "res"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Res)] }
          "bbox"     { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(BBox)] }
