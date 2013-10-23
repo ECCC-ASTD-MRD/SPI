@@ -179,11 +179,7 @@ static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   Tcl_Obj   *obj;
-   TData     *rad;
-   TDataSpec *spec;
-
-   int         idx,v,n;
+   int         idx,v;
    static CONST char *sopt[] = { "read",NULL };
    enum                opt { READ };
 

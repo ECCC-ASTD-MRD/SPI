@@ -37,8 +37,12 @@
 #include "libdmv.h"
 #endif
 
+static Tcl_Obj    *System_SignalTable[128];    // Tcl Command to call on each signal
+static Tcl_Interp *System_Interp[128];         // Interpreter on which to call the command
+
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -102,16 +106,16 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
 int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile) {
    
    pid_t pid,sid,child;
-   int   lfp=-1,status;
+   int   lfp=-1,status,init=1;
    char  buf[32];
 
-  /*Fork off the parent process*/
+   /*Fork off the parent process*/
    if (ForkOff) {
       /*already a daemon*/
       if (getppid()==1)
          return(TCL_OK);
 
-      while (Respawn) {
+      while (init-->0 || Respawn) {
          pid=fork();
          switch (pid) {
             case -1: // Failed fork
@@ -124,16 +128,24 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *Lock
                      break;
                      
             default: // We're the parent and the child is runnning
-                     child = wait(&status);
-                     if (child==pid);
-                        Respawn=(status!=0);
+                     if (Respawn) {
+                        // Keep master process to check for respawn
+                        child = wait(&status);
+                        if (child==pid);
+                           // If child's exit status is error, respawn process
+                           Respawn=(status!=0);
+                     } else {
+                        // No respawn check, exit master process
+                        exit(0);
+                     }
+
          }
       }
      
       /*Create a new SID for the child process*/
       sid=setsid();
       if (sid<0) {
-        Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
+         Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
          return(TCL_ERROR);
       }
    }
@@ -232,8 +244,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","info","limit","usage","process","filesystem","dmv",NULL };
-   enum               opt { DAEMONIZE,FORK,INFO,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
+   static CONST char *sopt[] = { "daemonize","fork","info","signal","limit","usage","process","filesystem","dmv",NULL };
+   enum               opt { DAEMONIZE,FORK,INFO,SIGNAL,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
 
    Tcl_ResetResult(Interp);
 
@@ -259,6 +271,10 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          pid=fork();
          Tcl_SetObjResult(Interp,Tcl_NewIntObj(pid));
          return(TCL_OK);
+         break;
+
+      case SIGNAL:
+         return(System_Signal(Interp,Objc-2,Objv+2));
          break;
 
       case USAGE:
@@ -332,6 +348,137 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          }
    }
    return(System_Daemonize(Interp,fork,respawn,file));
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_SignalProcess>
+ * Creation : Octobre 2013 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Call the Tcl commmand assigned to a signal
+ *
+ * Parametres     :
+ *  <SigNum>      : Signal number
+ *
+ * Retour:
+ *
+ * Remarques :
+ *   - the signal number is appended to the Tcl command before calling it
+ *   - Background error are returned to the interpreter
+ *----------------------------------------------------------------------------
+*/
+void System_SignalProcess(int SigNum) {
+
+   Tcl_Obj *obj;
+   
+   obj=Tcl_DuplicateObj(System_SignalTable[SigNum]);
+   Tcl_AppendObjToObj(obj,Tcl_ObjPrintf(" %i",SigNum));
+   
+   if (Tcl_EvalObjEx(System_Interp[SigNum],obj,0x0)==TCL_ERROR) {
+      Tcl_BackgroundError(System_Interp[SigNum]);  
+   }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_Signal>
+ * Creation : Octobre 2013 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres de signaux.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int              i,idx;
+   struct sigaction new,old,*pnew;
+   
+   static CONST char *sopt[] = { "-trap","-default","-ignore",NULL };
+   enum               opt { TRAP,DEFAULT,IGNORE };
+    
+   static CONST char *ssig[] = { "SIGILL","SIGSEGV","SIGBUS","SIGABRT","SIGIOT","SIGTRAP","SIGSYS","SIGTERM","SIGINT","SIGQUIT","SIGKILL", 
+      "SIGHUP","SIGALRM","SIGVTALRM","SIGPROF","SIGIO","SIGURG","SIGPOLL","SIGCHLD","SIGCLD","SIGCONT","SIGSTOP","SIGTSTP","SIGTTIN","SIGTTOU",
+      "SIGPIPE","SIGXCPU","SIGXFSZ","SIGUSR1","SIGUSR2","SIGWINCH",NULL };
+   int isig,sig[]={ SIGILL,SIGSEGV,SIGBUS,SIGABRT,SIGIOT,SIGTRAP,SIGSYS,SIGTERM,SIGINT,SIGQUIT,SIGKILL, 
+      SIGHUP,SIGALRM,SIGVTALRM,SIGPROF,SIGIO,SIGURG,SIGPOLL,SIGCHLD,SIGCLD,SIGCONT,SIGSTOP,SIGTSTP,SIGTTIN,SIGTTOU,
+      SIGPIPE,SIGXCPU,SIGXFSZ,SIGUSR1,SIGUSR2,SIGWINCH };
+
+   if (Tcl_GetIndexFromObj(Interp,Objv[0],ssig,"value",0,&isig)!=TCL_OK) {
+      return(TCL_ERROR);
+   }
+   
+   new.sa_sigaction=NULL;
+   new.sa_restorer=NULL;
+   new.sa_flags=0x0;
+   sigemptyset (&new.sa_mask);   
+   pnew=NULL;
+   
+   for(i=1;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case TRAP:
+            if (Objc==2) {
+               if (System_SignalTable[sig[isig]]) {
+                  Tcl_SetObjResult(Interp,System_SignalTable[sig[isig]]);            
+               }
+               return(TCL_OK);
+            } else {
+               System_Interp[sig[isig]]=Interp;
+               if (System_SignalTable[sig[isig]]) {
+                  Tcl_DecrRefCount(System_SignalTable[sig[isig]]);
+               }
+               System_SignalTable[sig[isig]]=Tcl_DuplicateObj(Objv[++i]);
+               Tcl_IncrRefCount(System_SignalTable[sig[isig]]);
+            }
+            pnew=&new;
+            new.sa_handler=System_SignalProcess;
+            break;
+            
+         case DEFAULT:
+            if (System_SignalTable[sig[isig]]) {
+               Tcl_DecrRefCount(System_SignalTable[sig[isig]]);
+               System_SignalTable[sig[isig]]=NULL;
+            }
+            pnew=&new;
+            new.sa_handler=SIG_DFL;            
+            break;
+            
+         case IGNORE:
+            if (System_SignalTable[sig[isig]]) {
+               Tcl_DecrRefCount(System_SignalTable[sig[isig]]);
+               System_SignalTable[sig[isig]]=NULL;
+            }
+            pnew=&new;
+            new.sa_handler=SIG_IGN;            
+            break;
+         }
+   }
+   sigaction(sig[isig],pnew,&old);
+
+   if (old.sa_handler<0) {
+      Tcl_SetObjResult(Interp,Tcl_NewStringObj("error",-1));
+   } else if (old.sa_handler==SIG_DFL) {
+      Tcl_SetObjResult(Interp,Tcl_NewStringObj("default",-1));
+   } else if  (old.sa_handler==SIG_IGN) {
+      Tcl_SetObjResult(Interp,Tcl_NewStringObj("ignore",-1));
+   } else {
+      if (System_SignalTable[sig[isig]]) {
+         Tcl_SetObjResult(Interp,System_SignalTable[sig[isig]]);
+      }
+   }
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
