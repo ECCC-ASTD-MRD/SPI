@@ -1,0 +1,25 @@
+#!/bin/ksh
+#----- This script use a respawn on sub tcl process if it dies with error code !=0
+#----- To kill whole tree, use -[parent pid] ex:
+#----- if parent pid is 51234, kill -9 -51234 
+
+export SPI_PATH=${0%/tclshd}
+. ${SPI_PATH}/.profile_spi
+
+#----- Force  software GL, usefull for tclsh only script
+export LD_LIBRARY_PATH=${SPI_LIB}/GL/lib:$LD_LIBRARY_PATH
+
+#----- Respawn process on death
+respawn=1
+
+while [[ $respawn -gt 0 ]];
+do
+   #----- One can use SPI_DEBUG="valgrind --track-origins=yes --leak-check=full" to debug memory problems
+   ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} "$@"
+   code=$?
+   
+   #----- If exit status is ok, don't respawn
+   if [[ $code -eq 0 ]]; then
+      respawn=0
+   fi
+done
