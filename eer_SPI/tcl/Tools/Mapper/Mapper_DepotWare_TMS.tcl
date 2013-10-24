@@ -17,21 +17,243 @@
 
 namespace eval Mapper::DepotWare::TMS {
    variable Param
+   variable Lbl
+   
+   set Lbl(XML) { "Description XML" "XML description" }
 
    set Param(Depots) {
-      { EC-DEV-OpenStreetMap TMS EC-DEV-OpenStreetMap }
-      { OpenStreetMap TMS OpenStreetMap }
-      { MapQuest TMS MapQuest}
-      { BlueMarble TMS BlueMarble }
-      { OneMoon TMS OneMoon }
-      { OneEarth TMS OneEarth }
-      { MSVirtualEarth TMS MSVirtualEarth }
-      { Google-Maps TMS Google-Maps }
-      { Google-Satellite TMS Google-Satellite }
-      { Google-SatelliteHybrid TMS Google-SatelliteHybrid }
-      { Google-Terrain TMS Google-Terrain }
-      { Google-TerrainHybrid TMS Google-TerrainHybrid }
-      { "ESRI-Server" TMS "ESRI-Server" }}
+      { OpenStreetMap TMS { <GDAL_WMS>
+   <Service name="TMS">
+       <ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>19</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+</GDAL_WMS>} }
+
+      { MapQuest TMS { <GDAL_WMS>
+    <Service name="TMS">
+        <ServerUrl>http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.png</ServerUrl>
+    </Service>
+    <DataWindow>
+        <UpperLeftX>-20037508.34</UpperLeftX>
+        <UpperLeftY>20037508.34</UpperLeftY>
+        <LowerRightX>20037508.34</LowerRightX>
+        <LowerRightY>-20037508.34</LowerRightY>
+        <TileLevel>19</TileLevel>
+        <TileCountX>1</TileCountX>
+        <TileCountY>1</TileCountY>
+        <YOrigin>top</YOrigin>
+    </DataWindow>
+    <Projection>EPSG:900913</Projection>
+    <BlockSizeX>256</BlockSizeX>
+    <BlockSizeY>256</BlockSizeY>
+    <BandsCount>3</BandsCount>
+</GDAL_WMS> } }
+
+      { BlueMarble TMS { <GDAL_WMS>
+   <Service name="TMS">
+      <ServerUrl>http://s3.amazonaws.com/com.modestmaps.bluemarble/${z}-r${y}-c${x}.jpg</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>9</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+</GDAL_WMS> } }
+      { MSVirtualEarth TMS { <GDAL_WMS>
+   <Service name="VirtualEarth">
+      <ServerUrl>http://a${server_num}.ortho.tiles.virtualearth.net/tiles/a${quadkey}.jpeg?g=90</ServerUrl>
+   </Service>
+   <MaxConnections>4</MaxConnections>
+</GDAL_WMS> } }
+
+      { Google-Maps TMS { <GDAL_WMS>
+   <!--
+   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
+   -->
+   <Service name="TMS">
+      <ServerUrl>http://mt.google.com/vt/lyrs=m&amp;x=${x}&amp;y=${y}&amp;z=${z}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>20</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>5</MaxConnections>
+</GDAL_WMS> } }
+
+      { Google-Satellite TMS { <GDAL_WMS>
+   <!--
+   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
+   -->
+   <Service name="TMS">
+      <ServerUrl>http://mt.google.com/vt/lyrs=s&amp;x=${x}&amp;y=${y}&amp;z=${z}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>20</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>5</MaxConnections>
+</GDAL_WMS> } }
+
+      { Google-SatelliteHybrid TMS { <GDAL_WMS>
+   <!--
+   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
+   -->
+   <Service name="TMS">
+      <ServerUrl>http://mt.google.com/vt/lyrs=y&amp;x=${x}&amp;y=${y}&amp;z=${z}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>20</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>5</MaxConnections>
+</GDAL_WMS> } }
+
+      { Google-Terrain TMS { <GDAL_WMS>
+   <!--
+   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
+   -->
+   <Service name="TMS">
+      <ServerUrl>http://mt.google.com/vt/lyrs=t&amp;x=${x}&amp;y=${y}&amp;z=${z}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>20</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>5</MaxConnections>
+</GDAL_WMS> } }
+
+      { Google-TerrainHybrid TMS { <GDAL_WMS>
+   <!--
+   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
+   -->
+   <Service name="TMS">
+      <ServerUrl>http://mt.google.com/vt/lyrs=p&amp;x=${x}&amp;y=${y}&amp;z=${z}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>20</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>5</MaxConnections>
+</GDAL_WMS> } }
+
+      { ESRI-Server TMS { <GDAL_WMS>
+   <Service name="TMS">
+   <ServerUrl>http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${x}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>17</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>10</MaxConnections>
+</GDAL_WMS> } }   
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::TMS::Default>
+# Creation : Octobre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Insere les services TMS par défaut.
+#
+# Parametres :
+#  <Frame>   : Fenetre parent
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::TMS::Default { } {
+   variable Param
+   
+   if { [lsearch -exact -index 0 $::Mapper::DepotWare::Data(Depots) [lindex [lindex $Param(Depots) 0] 0]]==-1 } {
+      foreach depot $Mapper::DepotWare::TMS::Param(Depots) {    
+         lappend ::Mapper::DepotWare::Data(Depots) $depot
+      }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -54,6 +276,36 @@ proc Mapper::DepotWare::TMS::Params { Frame } {
    variable Data
    variable Lbl
 
+   frame $Frame.xml
+      label $Frame.xml.lbl -anchor w -text [lindex $Lbl(XML) $GDefs(Lang)] -width 15
+      text $Frame.xml.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -relief sunken
+      pack $Frame.xml.lbl -side left
+      pack $Frame.xml.ent -side left  -fill x -expand True
+   pack $Frame.xml -fill x -expand True
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::TMS::Request>
+# Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Retourner la requete formatee selon le type de DB.
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche selectionnee
+#  <Path>    : Chemin du fichier
+#  <URL>     : Mode URL
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::TMS::Request { } {
+   variable Data
+
+   return [.mapperdepot.params.xml.ent get 0.0 end]
 }
 
 #-------------------------------------------------------------------------------
@@ -83,348 +335,27 @@ proc  Mapper::DepotWare::TMS::SelectLayer { Layer } {
 proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
    variable Param
 
-   set Layer [$Tree get $Branch path]
+   set name [$Tree get $Branch name]
+   set xml  [$Tree get $Branch path]
    
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
       file mkdir $Mapper::DepotWare::Data(CachePath)
    }
 
-   set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $Layer].xml
+   set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $name].xml
 
-   set Param(EC-DEV-OpenStreetMap) "<GDAL_WMS>
-   <Service name=\"TMS\">
-       <ServerUrl>http://geo.wxod-dev.cmc.ec.gc.ca/maps/tms/1.0.0/osm@g/\${z}/\${x}/\${y}.png</ServerUrl>
-   </Service>
-   <DataWindow>   
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>19</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>bottom</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-   set Param(OpenStreetMap) "<GDAL_WMS>
-   <Service name=\"TMS\">
-       <ServerUrl>http://tile.openstreetmap.org/\${z}/\${x}/\${y}.png</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>19</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-   set Param(MapQuest) "<GDAL_WMS>
-    <Service name=\"TMS\">
-        <ServerUrl>http://otile1.mqcdn.com/tiles/1.0.0/osm/\${z}/\${x}/\${y}.png</ServerUrl>
-    </Service>
-    <DataWindow>
-        <UpperLeftX>-20037508.34</UpperLeftX>
-        <UpperLeftY>20037508.34</UpperLeftY>
-        <LowerRightX>20037508.34</LowerRightX>
-        <LowerRightY>-20037508.34</LowerRightY>
-        <TileLevel>19</TileLevel>
-        <TileCountX>1</TileCountX>
-        <TileCountY>1</TileCountY>
-        <YOrigin>top</YOrigin>
-    </DataWindow>
-    <Projection>EPSG:900913</Projection>
-    <BlockSizeX>256</BlockSizeX>
-    <BlockSizeY>256</BlockSizeY>
-    <BandsCount>3</BandsCount>
-    <Cache>
-       <Path>[file rootname $file]</Path>
-       <Depth>2</Depth>
-    </Cache>
-</GDAL_WMS>"
-
-
-set Param(BlueMarble) "<GDAL_WMS>
-   <Service name=\"TMS\">
-      <ServerUrl>http://s3.amazonaws.com/com.modestmaps.bluemarble/\$\{z\}-r\$\{y\}-c\$\{x\}.jpg</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>9</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(MetaCarta) "<GDAL_WMS>
-   <Service name=\"TMS\">
-      <ServerUrl>http://labs.metacarta.com/wms-c/Basic.py</ServerUrl>
-      <Layer>basic</Layer>
-      <Format>png</Format>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-180.0</UpperLeftX>
-      <UpperLeftY>90.0</UpperLeftY>
-      <LowerRightX>180.0</LowerRightX>
-      <LowerRightY>-90.0</LowerRightY>
-      <TileLevel>19</TileLevel>
-   <TileCountX>2</TileCountX>
-   <TileCountY>1</TileCountY>
-   </DataWindow>
-   <Projection>EPSG:4326</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(OneMoon) "<GDAL_WMS>
-   <Service name=\"TiledWMS\">
-   <ServerUrl>http://onmoon.jpl.nasa.gov/wms.cgi?</ServerUrl>
-   <TiledGroupName>Clementine</TiledGroupName>
-   </Service>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(OneEarth) "<GDAL_WMS>
-   <Service name=\"TiledWMS\">
-      <ServerUrl>http://onearth.jpl.nasa.gov/wms.cgi?</ServerUrl>
-      <TiledGroupName>Daily Planet</TiledGroupName>
-      <Change key=\"\$\{time\}\">2009-10-12</Change>
-   </Service>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(OneEarthSRTM) "<GDAL_WMS>
-   <Service name=\"TiledWMS\">
-      <ServerUrl>http://onearth.jpl.nasa.gov/wms.cgi?</ServerUrl>
-      <TiledGroupName>Global SRTM Elevation</TiledGroupName>
-   </Service>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(MSVirtualEarth) "<GDAL_WMS>
-   <Service name=\"VirtualEarth\">
-      <ServerUrl>http://a\$\{server_num\}.ortho.tiles.virtualearth.net/tiles/a\$\{quadkey\}.jpeg?g=90</ServerUrl>
-   </Service>
-   <MaxConnections>4</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(Google-Terrain) "<GDAL_WMS>
-   <!--
-   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
-   -->
-   <Service name=\"TMS\">
-      <ServerUrl>http://mt.google.com/vt/lyrs=t&amp;x=\$\{x\}&amp;y=\$\{y\}&amp;z=\$\{z\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>20</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>5</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(Google-TerrainHybrid) "<GDAL_WMS>
-   <!--
-   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
-   -->
-   <Service name=\"TMS\">
-      <ServerUrl>http://mt.google.com/vt/lyrs=p&amp;x=\$\{x\}&amp;y=\$\{y\}&amp;z=\$\{z\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>20</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>5</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(Google-Maps) "<GDAL_WMS>
-   <!--
-   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
-   -->
-   <Service name=\"TMS\">
-      <ServerUrl>http://mt.google.com/vt/lyrs=m&amp;x=\$\{x\}&amp;y=\$\{y\}&amp;z=\$\{z\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>20</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>5</MaxConnections>
-    <Cache>
-       <Path>[file rootname $file]</Path>
-       <Depth>2</Depth>
-    </Cache>
-</GDAL_WMS>"
-
-set Param(Google-Satellite) "<GDAL_WMS>
-   <!--
-   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
-   -->
-   <Service name=\"TMS\">
-      <ServerUrl>http://mt.google.com/vt/lyrs=s&amp;x=\$\{x\}&amp;y=\$\{y\}&amp;z=\$\{z\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>20</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>5</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(Google-SatelliteHybrid) "<GDAL_WMS>
-   <!--
-   Data is subject to term of use detailed at http://code.google.com/intl/nl/apis/maps/terms.html and http://www.google.com/intl/en_ALL/help/terms_maps.html
-   -->
-   <Service name=\"TMS\">
-      <ServerUrl>http://mt.google.com/vt/lyrs=y&amp;x=\$\{x\}&amp;y=\$\{y\}&amp;z=\$\{z\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>20</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>5</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
-
-set Param(ESRI-Server) "<GDAL_WMS>
-   <Service name=\"TMS\">
-   <ServerUrl>http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/\$\{z\}/\$\{y\}/\$\{x\}</ServerUrl>
-   </Service>
-   <DataWindow>
-      <UpperLeftX>-20037508.34</UpperLeftX>
-      <UpperLeftY>20037508.34</UpperLeftY>
-      <LowerRightX>20037508.34</LowerRightX>
-      <LowerRightY>-20037508.34</LowerRightY>
-      <TileLevel>17</TileLevel>
-      <TileCountX>1</TileCountX>
-      <TileCountY>1</TileCountY>
-      <YOrigin>top</YOrigin>
-   </DataWindow>
-   <Projection>EPSG:900913</Projection>
-   <BlockSizeX>256</BlockSizeX>
-   <BlockSizeY>256</BlockSizeY>
-   <BandsCount>3</BandsCount>
-   <MaxConnections>10</MaxConnections>
-   <Cache>
-      <Path>[file rootname $file]</Path>
-      <Depth>2</Depth>
-   </Cache>
-</GDAL_WMS>"
 
    set f [open $file w]
-   puts $f $Param($Layer)
+
+   #----- Insert cache path
+   set index [string first "</GDAL_WMS>" $xml]
+   puts $f [string trim [string range $xml 0 [expr $index-1]]]
+   puts $f "   <Cache>
+      <Path>[file rootname $file]</Path>
+      <Depth>2</Depth>
+   </Cache>
+</GDAL_WMS>"
+   
    close $f
 
    set band [Mapper::ReadBand $file "" 3]

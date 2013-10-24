@@ -109,6 +109,7 @@ proc  Mapper::DepotWare::DIR::Parse { Tree Branch } {
       }
    }
 }
+
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::DIR::Request>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
@@ -132,6 +133,7 @@ proc Mapper::DepotWare::DIR::Request { } {
 
    return $Data(Path)
 }
+
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::DIR::AddGDAL>
 # Creation : Novembre 2007 - J.P. Gauthier - CMC/CMOE

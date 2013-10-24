@@ -27,6 +27,7 @@ namespace eval Mapper::DepotWare {
    variable Data
    variable Lbl
    variable Msg
+   variable Error
    variable Bubble
 
    set Data(CachePath) /tmp/$env(USER)/gdalwmscache                ;#Path du cache
@@ -70,6 +71,8 @@ namespace eval Mapper::DepotWare {
    set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
    set Msg(Cache)      { "Ce répertoire sera nettoyé dès que le volume de données dépassera la limite permise, êtes-vous sûr de vouloir le changer ?"
                          "This directory will be cleaned when it's size passes the limit. Are you sure you want to chenge it ?" }
+
+   set Error(Depot)    { "Aucun nom ou type spécifié pour le dépot" "No name or type has been specified for the data repository." }
 
    set Bubble(Clear)   { "Supprimer le cache" "Erase cache" }
    set Bubble(Size)    { "Taille courante du cache" "Current cache size" }
@@ -189,9 +192,22 @@ proc Mapper::DepotWare::ParamsSave { } {
    global env
    variable Data
 
-   exec echo "set Mapper::DepotWare::Data(CachePath) $Data(CachePath)\nset Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)"  > $env(HOME)/.spi/Mapper
-   exec echo "set Mapper::DepotWare::Data(Depots) { $Data(Depots) }" >> $env(HOME)/.spi/Mapper
-   exec chmod 600 $env(HOME)/.spi/Mapper
+   if { [file exists $env(HOME)/.spi/Mapper] } {
+      file rename -force $env(HOME)/.spi/Mapper $env(HOME)/.spi/Mapper.old
+   }
+   
+   set f [open $env(HOME)/.spi/Mapper w]
+   puts $f "#----- Configuration file for the Mapper tool
+set Mapper::DepotWare::Data(CachePath) $Data(CachePath)
+set Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)
+set Mapper::DepotWare::Data(Depots) {"
+
+   foreach depot $Data(Depots) {
+      puts $f "   \{ $depot \}"
+   }
+   puts $f "}"
+   
+   close $f
 }
 
 #-------------------------------------------------------------------------------
@@ -308,7 +324,6 @@ proc Mapper::DepotWare::Window { } {
    set Data(Type) ""
    set Data(Name) ""
 
-
    labelframe .mapperdepot.type -text [lindex $Lbl(Desc) $GDefs(Lang)]
       frame .mapperdepot.type.name
          label .mapperdepot.type.name.lbl -anchor w -text [lindex $Lbl(Name) $GDefs(Lang)] -width 15
@@ -326,7 +341,7 @@ proc Mapper::DepotWare::Window { } {
    pack  .mapperdepot.type -side top -fill x -padx 5 -pady 5
 
    frame .mapperdepot.cmd -relief sunken -bd 1
-      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Add) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0]; destroy .mapperdepot }
+      button .mapperdepot.cmd.ok -bd 1 -text [lindex $Lbl(Add) $GDefs(Lang)] -command  { Mapper::DepotWare::Add $Mapper::DepotWare::Data(Name) [lindex $Mapper::DepotWare::Data(Type) 0] }
       button .mapperdepot.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { destroy .mapperdepot }
       pack .mapperdepot.cmd.ok .mapperdepot.cmd.cancel -side left  -fill x -expand True
    pack .mapperdepot.cmd -side top -fill x -padx 5 -pady 5
@@ -350,11 +365,17 @@ proc Mapper::DepotWare::Window { } {
 
 proc Mapper::DepotWare::Add { Name Type } {
    variable Data
+   variable Error
 
+   if { $Name=="" || $Type=="" } {
+      Dialog::Error . $Error(Depot)
+      return 
+   }
+   
    set req [Mapper::DepotWare::${Type}::Request]
 
    set type $Type
-   if { $type!="DIR" } {
+   if { $type!="DIR" && $type!="TMS" } {
       set type "URL$type"
    }
 
@@ -376,6 +397,8 @@ proc Mapper::DepotWare::Add { Name Type } {
    TREE set $idx type $type
 
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
+
+   destroy .mapperdepot
 }
 
 #-------------------------------------------------------------------------------
@@ -645,40 +668,42 @@ proc Mapper::DepotWare::Create { } {
       source $env(HOME)/.spi/Mapper
    }
 
+ 
    foreach type $Lbl(Types) {
       set type [lindex $type 0]
+
+      #----- Add default data wharehouse if any
+      eval set proc \[info procs ::Mapper::DepotWare::${type}::Default\]
+      if { $proc!="" } {
+         eval ::Mapper::DepotWare::${type}::Default
+      }
+           
       TREE insert root end $type
+      TREE set $type name $type
+      TREE set $type type ROOT
+      TREE set $type path ""
+
       if { $type=="TMS" } {
          TREE set $type open True
       } else {
          TREE set $type open False
       }
-      TREE set $type name $type
-      TREE set $type type ROOT
-      TREE set $type path ""
-   }
-
-   #----- Add standard TMS
-   foreach depot $Mapper::DepotWare::TMS::Param(Depots) {
-      set idx [TREE insert TMS end]
-      TREE set $idx open False
-      TREE set $idx name [lindex $depot 0]
-      TREE set $idx type [lindex $depot 1]
-
-      #----- Make sure env variables are evaluated
-      eval set path \"[lindex $depot 2]\"
-      TREE set $idx path $path
    }
 
    foreach depot $Data(Depots) {
       set type [string range [lindex $depot 1] end-2 end]
-      set idx [TREE insert $type end]
+      set idx  [TREE insert $type end]
+      
       TREE set $idx open False
       TREE set $idx name [lindex $depot 0]
       TREE set $idx type [lindex $depot 1]
 
       #----- Make sure env variables are evaluated
-      eval set path \"[lindex $depot 2]\"
+      if { $type=="DIR" } {
+         eval set path \"[lindex $depot 2]\"
+      } else {
+         set path [lindex $depot 2]
+      }
       TREE set $idx path $path
    }
    CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE \
