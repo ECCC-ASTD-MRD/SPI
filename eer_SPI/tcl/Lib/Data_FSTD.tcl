@@ -89,6 +89,8 @@ namespace eval FSTD {
    set Param(IntervalModes)  { NONE INTERVAL LINEAR LOGARITHMIC RSMC }
    set Param(GridIds)        { SUPER YIN YANG }
 
+   set Param(UnTile)        [fstdfield autountile]  ;#Reconstruction automatique des grilles tuilees
+   
    set Param(Mode)          VAR            ;#Mode de selection des parametres
    set Param(Map)           FLDMAPDEFAULT  ;#Palette de couleur
    set Param(Font)          FLDFONTDEFAULT ;#Police
@@ -165,6 +167,7 @@ namespace eval FSTD {
    set Lbl(Vector)        { "Vecteur" "Vector" }
    set Lbl(Warning)       { "Attention" "Warning" }
    set Lbl(Yes)           { "Oui" "Yes" }
+   set Lbl(UnTile)        { "Dé #" "Un #" }
 
    #----- Definitions des bulles
 
@@ -192,6 +195,13 @@ namespace eval FSTD {
                            "Colormap used for values above maximum specified" }
    set Bubble(MapBellow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
                            "Colormap used for values bellow minimum specified" }
+   set Bubble(Interp)    { "Méthode d'interpolation des données (Lissage)"
+                           "Interpolation method (Smoothing)" }
+   set Bubble(Grid)      { "Sélection de sous-grilles ou grille maitre"
+                           "Sub-grid or master grid selection" }
+   set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (#) en une seule grille"
+                           "Select to rebuild tiled grids (#) into one" }
+            
 }
 
 #-------------------------------------------------------------------------------
@@ -320,8 +330,11 @@ proc FSTD::ParamFrame { Frame Apply } {
                label $Data(Frame).def.l.val.grid.lbl -text [lindex $Lbl(Grid) $GDefs(Lang)]
                ComboBox::Create $Data(Frame).def.l.val.grid.sel FSTD::Param(GridId) noedit unsorted nodouble -1 \
                   $FSTD::Param(GridIds) 7 3 "FSTD::ParamSet; FSTD::ParamUpdate; Viewport::ForceGrid \$Page::Data(Frame) True"
+               checkbutton $Data(Frame).def.l.val.grid.tile -text [lindex $Lbl(UnTile) $GDefs(Lang)] -variable FSTD::Param(UnTile) -onvalue 1 -offvalue 0 \
+                 -relief sunken -bd 2 -overrelief raised -offrelief groove -command { fstdfield autountile $FSTD::Param(UnTile) } -indicatoron false
                pack $Data(Frame).def.l.val.grid.lbl -side left
                pack $Data(Frame).def.l.val.grid.sel -side left -fill x -expand true
+               pack $Data(Frame).def.l.val.grid.tile -side left
             pack $Data(Frame).def.l.val.interp $Data(Frame).def.l.val.order $Data(Frame).def.l.val.mod $Data(Frame).def.l.val.fac \
                $Data(Frame).def.l.val.unit $Data(Frame).def.l.val.desc $Data(Frame).def.l.val.grid -side top -padx 2 -anchor n -fill x
 
@@ -487,6 +500,10 @@ proc FSTD::ParamFrame { Frame Apply } {
 
    #------ Creation des bulles d'aide
 
+   Bubble::Create $Data(Frame).def.l.val.interp.sel $Bubble(Interp)
+   Bubble::Create $Data(Frame).def.l.val.grid.sel   $Bubble(Grid)
+   Bubble::Create $Data(Frame).def.l.val.grid.tile  $Bubble(Tile)
+   
    Bubble::Create $Data(Frame).def.l.val.order.font $Bubble(Font)
    Bubble::Create $Data(Frame).def.l.val.order      $Bubble(Format)
    Bubble::Create $Data(Frame).def.l.val.unit       $Bubble(Unit)
