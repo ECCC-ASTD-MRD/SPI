@@ -42,7 +42,7 @@ TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
 /*0=binary 1=real 2=unsigned integer 3=character 4=signed integer 5=IEEE style representation 6=whatever RPN comes with*/
 static int FSTD_Type[]={ 1,10,6,2,7,10,10,3 };
-int FSTD_UNTILE=1;
+int FSTD_UNTILE=0;
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_TypeCheck>
