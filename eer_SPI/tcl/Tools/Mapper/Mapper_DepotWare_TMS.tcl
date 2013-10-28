@@ -278,10 +278,10 @@ proc Mapper::DepotWare::TMS::Params { Frame } {
 
    frame $Frame.xml
       label $Frame.xml.lbl -anchor w -text [lindex $Lbl(XML) $GDefs(Lang)] -width 15
-      text $Frame.xml.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -relief sunken
+      text $Frame.xml.ent -width 1 -height 5 -bd 1 -bg $GDefs(ColorLight) -relief sunken
       pack $Frame.xml.lbl -side left
-      pack $Frame.xml.ent -side left  -fill x -expand True
-   pack $Frame.xml -fill x -expand True
+      pack $Frame.xml.ent -side left -fill both -expand True
+   pack $Frame.xml -fill both -expand True
 }
 
 #-------------------------------------------------------------------------------

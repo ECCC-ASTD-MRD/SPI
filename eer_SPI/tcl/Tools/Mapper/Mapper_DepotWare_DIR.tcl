@@ -55,7 +55,7 @@ proc Mapper::DepotWare::DIR::Params { Frame } {
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
       pack $Frame.path.open -side left
-   pack $Frame.path -fill x -expand True
+   pack $Frame.path -fill x -expand True -anchor n
 }
 
 #-------------------------------------------------------------------------------

@@ -23,6 +23,7 @@ source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_TMS.tcl
 source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_PGS.tcl
 
 namespace eval Mapper::DepotWare {
+   global env
    variable WMS
    variable Data
    variable Lbl
@@ -232,7 +233,7 @@ proc Mapper::DepotWare::ParamsSelect { } {
    destroy .mapperdepot.params
 
    labelframe .mapperdepot.params -text [lindex $Lbl(Params) $GDefs(Lang)]
-   pack .mapperdepot.params -side top -fill x -padx 5 -after .mapperdepot.type
+   pack .mapperdepot.params -side top -fill both -expand True -padx 5 -after .mapperdepot.type
 
    Mapper::DepotWare::[lindex ${Data(Type)} 0]::Params .mapperdepot.params
 }
