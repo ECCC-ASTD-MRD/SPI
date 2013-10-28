@@ -46,6 +46,7 @@ static Tcl_HashTable FSTD_FileTable;
 static int           FSTDInit=0;
 
 extern int ZREF_IP1MODE;
+extern int FSTD_UNTILE;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -347,9 +348,9 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int         idx;
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-   static CONST char *sopt[] = { "ip1mode","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[] = { "ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp",NULL };
-   enum                opt { IP1MODE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { IP1MODE,AUTOUNTILE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -415,6 +416,14 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          break;
 
+      case AUTOUNTILE:
+         if (Objc==2) {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(FSTD_UNTILE));
+         } else {
+            Tcl_GetBooleanFromObj(Interp,Objv[2],&FSTD_UNTILE);
+         }
+         break;
+         
       case READ:
          if(Objc!=11 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld id { datev eticket ip1 ip2 ip3 typvar nomvar } | Index");

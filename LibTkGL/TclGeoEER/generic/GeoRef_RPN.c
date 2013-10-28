@@ -469,8 +469,12 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
       grtyp[1]='\0';
 
       // Create master gridid
-      id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
-      
+      if (GRTYP[1]=='#') {
+         // For tiled grids (#) we have to fudge the IG3 ang IG4 to 0 since they're used for tile limit
+         id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,0,0,FID);
+      } else {   
+         id=EZGrid_IdNew(NI,NJ,grtyp,IG1,IG2,IG3,IG4,FID);
+      }
 #ifdef HAVE_RMN
       // Check for sub-grids (U grids can have sub grids)
       ref->NbId=GRTYP[0]=='U'?c_ezget_nsubgrids(id):1;
@@ -494,6 +498,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
       memcpy(ref->ZRef.Levels,Levels,ref->ZRef.LevelNb*sizeof(float));
 
    ref->Grid[0]=GRTYP[0];
+   ref->Grid[1]=GRTYP[1];
    ref->Project=GeoRef_RPNProject;
    ref->UnProject=GeoRef_RPNUnProject;
    ref->Value=(TGeoRef_Value*)GeoRef_RPNValue;
