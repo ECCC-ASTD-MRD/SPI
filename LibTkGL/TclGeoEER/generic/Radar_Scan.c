@@ -333,7 +333,6 @@ void Radar_Free(TData *Rad) {
 int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
 
    Radar_File    *file;
-   Radar_Head    *head;
    TData         *rad;
    int            ni,nj,nk;
 
@@ -385,7 +384,7 @@ int Radar_Parse(TData *Rad) {
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
    RAY        *ray;
-   int         i,j,k,new,bin;
+   int         i,j,k,bin;
    double      val,th;
 
    vol=head->Data->volScan[head->Scan];
@@ -440,8 +439,8 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
    Coord      coord;
-   double     az,dt,th,cth,sth;
-   int        i,j,k,idxi,idxk,dk;
+   double     az,dt,th,sth;
+   int        i,j,idxi;
 
    if (Rad->Ref->Pos && Rad->Ref->Pos[Level])
       return(Rad->Ref->Pos[Level]);
@@ -470,7 +469,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
             coord.Elev=Rad->Ref->Loc.Elev+sth*dt;
             if (Proj) {
-               ((Projection*)Proj)->Type->Project(((Projection*)Proj),&coord,&Rad->Ref->Pos[Level][idxi],1);
+               ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)&coord,(GeoVect*)&Rad->Ref->Pos[Level][idxi],1);
             } else {
                Vect_Init(Rad->Ref->Pos[Level][idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
             }
@@ -494,8 +493,8 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             }
          }
       }
-      ((Projection*)Proj)->Type->Project(((Projection*)Proj),Rad->Ref->Pos[Level],NULL,FSIZE2D(Rad->Def));
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Rad->Ref->Pos[Level],NULL,FSIZE2D(Rad->Def));
    }
-   return(Rad->Ref->Pos);
+   return(Rad->Ref->Pos[Level]);
 }
 #endif
