@@ -350,7 +350,7 @@ proc Log::End { { Status 0 } { Exit True } } {
       } elseif { $Param(JobClass)=="REPORT" } {
          if { $Param(Error)>0 } {
             Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
-         } elseif { $Param(Warning)>0 && ($Param(JobReport)=="ALL" || $Param(JobReport)=="WARNING") } {
+         } elseif { $Param(Warning)>0 } {
             Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
          } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
             Log::Mail "Job finished (NORMAL)" $Param(OutFile)
@@ -487,9 +487,6 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="ERROR" } {
          incr Param(Error)
       }
-
-      #----- Pre eval the message in case of variable to expand
-      eval set Message \{$Message\}
       
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
