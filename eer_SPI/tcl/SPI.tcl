@@ -196,6 +196,7 @@ package require FieldCalc
 package require Export
 package require Animator
 package require Info
+package require MetData
 
 #----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/tcl/Tools/*]] {
