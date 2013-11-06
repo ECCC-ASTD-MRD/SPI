@@ -3075,6 +3075,9 @@ proc Viewport::UpdateData { Frame { VP { } } } {
          $Frame.page.canvas itemconf $vp -data [FieldCalc::Operand $vp $Data(Data$vp)]
       }
    }
+   
+   #----- Force parameter refresh (after viewport assign to get view dependent params)
+   FSTD::ParamGet
 
    foreach mini $Miniport::Data(Mini$Frame) {
       Miniport::UpdateData $Frame $mini $VP
