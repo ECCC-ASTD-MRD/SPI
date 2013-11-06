@@ -2111,7 +2111,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
    int          pni,pnj,ig1,ig2,ig3,ig4;
    float        lvl,*tmp;
-   char         nomvar[5],typvar[2],grtyp[2],tile,etik[13],*proj=NULL;
+   char         nomvar[5],typvar[2],grtyp[3],tile,etik[13],*proj=NULL;
    double       nhour,val=0.0;
 
    file=FSTD_FileGet(Interp,Id);
@@ -2129,6 +2129,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
    }
 
+   grtyp[0]=grtyp[1]=grtyp[2]='\0';
+   
    h.KEY=Key;
    h.FID=file;
    strcpy(h.NOMVAR,"    ");

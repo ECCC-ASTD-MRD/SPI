@@ -188,7 +188,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
    }
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
-   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<=(Ref->X1+0.5) && Y<=(Ref->Y1+0.5) && Z<=Def->NK-1) {
+   if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
       valid=1;
 
       /*Index memoire du niveau desire*/
@@ -242,10 +242,10 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                ix=trunc(X);
                iy=trunc(Y);
                mem=iy*Def->NI+ix;
-               if (              ((float*)p0)[mem]==Def->NoData)                         { *Length=Def->NoData; return(valid); }
-               if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { *Length=Def->NoData; return(valid); }
-               if (iy<Ref->Y1 && ((float*)p0)[mem+Def->NI]==Def->NoData)                 { *Length=Def->NoData; return(valid); }
-               if (iy<Ref->Y1 && ix<Ref->X1 && ((float*)p0)[mem+Def->NI+1]==Def->NoData) { *Length=Def->NoData; return(valid); }    
+               if (              ((float*)p0)[mem]==Def->NoData)                         { return(valid); }
+               if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { return(valid); }
+               if (iy<Ref->Y1 && ((float*)p0)[mem+Def->NI]==Def->NoData)                 { return(valid); }
+               if (iy<Ref->Y1 && ix<Ref->X1 && ((float*)p0)[mem+Def->NI+1]==Def->NoData) { return(valid); }    
               
 //EZFIX               EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
