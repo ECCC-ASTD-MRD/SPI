@@ -1685,10 +1685,8 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
 
    set name [Writer::FVCN::Write $Pad 1]
    set file [Writer::FVCN::Format $Pad $Data(Mode$Pad) True]
-   puts stderr $file
-    return 0         
-   #----- Transmettre le message avec le script operationnel.
 
+   #----- Transmettre le message avec le script operationnel.
 
    if { $Backup } {
       set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOP_amxmit.ksh ${file}.txt $GDefs(TransmitUser) opserv ncp1 } MsgCatch]

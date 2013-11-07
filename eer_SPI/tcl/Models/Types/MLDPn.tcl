@@ -852,7 +852,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
    variable Sim
    variable Tmp
 
-  #----- Read global parameters
+   #----- Read global parameters
    set ln -1
    set Scenario [split $Scenario $Separator]
 
@@ -865,7 +865,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
    set Sim(EmVerticalDist)    [lindex $Scenario [incr ln]]
    set Sim(EmIsAutoNP)        [lindex $Scenario [incr ln]]
    set Sim(EmNumberParticles) [lindex $Scenario [incr ln]]
-
+   
    #----- Read Isotopes
    set Sim(EmIsos)     [lindex $Scenario [incr ln]]
    set Sim(EmNbIso)    [llength $Sim(EmIsos)]
