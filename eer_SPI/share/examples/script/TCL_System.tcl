@@ -54,6 +54,7 @@ puts "   Blocks    : [system filesystem $fs -blocksize -blocks -blockfree -block
 puts "   Size      : [system filesystem $fs -size]"
 puts "   Free      : [system filesystem $fs -free]"
 puts "   Used      : [system filesystem $fs -used]"
+puts "   Files     : [system filesystem $fs -files]"
 
 puts "\nSystem limit for process"
 puts "   CPU Time   : [system limit -cpu]"

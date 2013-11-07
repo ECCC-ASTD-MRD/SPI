@@ -184,7 +184,7 @@ proc Animator::Close { } {
 #----------------------------------------------------------------------------
 
 proc Animator::Window { { Parent .} } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Play
    variable Fly
@@ -317,7 +317,7 @@ proc Animator::Window { { Parent .} } {
           -side left -fill both -expand true
 
       #----- If the web animator script is available
-      if { [file exists $GDefs(Dir)/Script/e.image_animator] && [file executable $GDefs(Dir)/Script/e.image_animator] } {
+      if { [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
          radiobutton .anim.comm.playweb -image VCRWEB -bd 1 -variable Animator::Play(Web) -indicatoron False -value 1  -selectcolor "" \
             -command { Animator::PlayWeb }
          pack .anim.comm.playweb -side left -fill both -expand true
@@ -364,7 +364,6 @@ proc Animator::Window { { Parent .} } {
 #----------------------------------------------------------------------------
 
 proc Animator::EmptyPlayList { } {
-   global GDefs
    variable Play
 
 
@@ -976,7 +975,6 @@ proc Animator::Play { } {
 #----------------------------------------------------------------------------
 
 proc Animator::PlayFile { { Filename "" } } {
-   global GDefs
    variable Play
 
    if { $Filename=="" } {
@@ -1072,7 +1070,7 @@ proc Animator::PlayWeb { } {
    #----- Generate animation files
    set Play(Label) "[lindex $Lbl(Web) $GDefs(Lang)]"
    update idletasks
-   set err [catch { exec $GDefs(Dir)/Script/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
+   set err [catch { exec $env(EER_DIRSCRIPT)/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
    if { $err } {
       Dialog::Error .anim $Error(WebAnimMake) "\n$msg"
       catch { file delete -force $base }

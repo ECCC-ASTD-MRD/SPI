@@ -38,7 +38,7 @@ package require TabFrame
 package require InfoFrame
 
 namespace eval PrintBox {
-   global  env GDefs
+   global  env
    variable Param
    variable Print
    variable Lbl
@@ -171,7 +171,6 @@ proc PrintBox::FontMap { } {
 #----------------------------------------------------------------------------
 
 proc PrintBox::PrintTXT { File } {
-   global   GDefs
    variable Print
    variable Param
 
@@ -213,7 +212,6 @@ proc PrintBox::PrintTXT { File } {
 #----------------------------------------------------------------------------
 
 proc PrintBox::PrintCommand { Frame } {
-   global GDefs
    variable Print
    variable Lbl
 
@@ -590,7 +588,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    variable Param
    variable Error
    variable Txt
-   global GDefs
+   global GDefs env
 
    set tmpfile "/tmp/output_[pid]_[clock seconds]"
 
@@ -645,7 +643,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          if { $Print(WEBSite)=="WEB_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt True]
-            set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"

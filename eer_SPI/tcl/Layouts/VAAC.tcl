@@ -821,13 +821,13 @@ proc VAAC::Transmit { Frame } {
             if { $no!="ca0281c" && $no!="ca0282c" && $no!="ca0287c" && $no!="ca0288c" } {
                SPI::Progress +0 "Sending over WAFS"
 
-               set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm 0$Data(SendWAS)$Data(SendBRA) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+               set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_ocxcarte.ksh ${no} ${file}.pbm 0$Data(SendWAS)$Data(SendBRA) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to send the $file.pbm over WAFS via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
                }
 
                #----- envoyer sur les sites web.
-               set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+               set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
                if { $ErrCatch != 0 } {
                   Log::Print ERROR "Unable to transfert the $file.png on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
@@ -837,13 +837,13 @@ proc VAAC::Transmit { Frame } {
          }
          if { $Data(SendSAT)==1 } {
             SPI::Progress +0 "Sending over SATNET"
-            set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ocxcarte.ksh ${no} ${file}.pbm $Data(SendSAT)00 $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_ocxcarte.ksh ${no} ${file}.pbm $Data(SendSAT)00 $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to send the $file.pbm over SATNET via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
             }
 
             #----- envoyer sur les sites web.
-            set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh ${file}.png eer/data/vaac/current/${prefix}_$Sim(Name)_[string tolower $Sim(Model)]_${hour}.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
                Log::Print ERROR "Unable to transfert the $file.png on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"

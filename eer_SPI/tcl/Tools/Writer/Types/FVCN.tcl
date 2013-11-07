@@ -1691,19 +1691,19 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
 
 
    if { $Backup } {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh ${file}.txt $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOP_amxmit.ksh ${file}.txt $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the ${file}.txt via metmanager on opserv.\n\n$MsgCatch"
       }
 
    } else {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_nanproc.ksh ${file}.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_nanproc.ksh ${file}.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the ${file}.txt via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
    }
 
-   set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.txt eer/data/vaac/FVCN_messages/$name.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+   set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh ${file}.txt eer/data/vaac/FVCN_messages/$name.txt $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
    if { $ErrCatch != 0 } {
       Log::Print ERROR "Unable to sent the ${file}.txt via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
    }
@@ -1712,7 +1712,7 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    if { [winfo exists $Data(Page$Pad)] } {
       PrintBox::Image $Data(Page$Pad) png ${file} landscape
       exec chmod 644 ${file}.png
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_webprods.ksh ${file}.png eer/data/vaac/FVCN_messages/$name.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh ${file}.png eer/data/vaac/FVCN_messages/$name.png $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file.png via webprods on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
@@ -1724,19 +1724,19 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
 
       #----- Transfert the real VAG.
 
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.vag VAGMTL "spx-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_ftppds_eer.ksh ${file}.vag VAGMTL "spx-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the VAG file ${file}.vag via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
       }
 
       #----- Transfert the NAVCAN VAG.
 
-      set ErrCatch [catch  { exec /usr/local/env/afsisio/programs/toimv6 ${file}.png ${file}.imv6 -mono -desc "MAPS A0289C EVENT VOLCANIC ASH 00 18H" } MsgCatch ]
+      set ErrCatch [catch  { exec toimv6 ${file}.png ${file}.imv6 -mono -desc "MAPS A0289C EVENT VOLCANIC ASH 00 18H" } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to convert the VAG file ${file}.imv6 via toimv6.\n\n$MsgCatch"
       }
 
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_ftppds_eer.ksh ${file}.imv6 VAGIMV6 "spds-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_ftppds_eer.ksh ${file}.imv6 VAGIMV6 "spds-op" $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the VAG file ${file}.imv6 via ftppds_eer on $GDefs(TransmitHost).\n\n$MsgCatch"
       }

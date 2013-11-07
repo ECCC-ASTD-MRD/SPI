@@ -441,7 +441,7 @@ proc Writer::AACN::Read { Pad File} {
 #-------------------------------------------------------------------------------
 
 proc Writer::AACN::Send { Pad { Backup 0} } {
-   global   GDefs
+   global   GDefs env
    variable Data
 
    #----- Sauvegarder le message
@@ -454,13 +454,13 @@ proc Writer::AACN::Send { Pad { Backup 0} } {
    exec chmod 644 $file
 
    if { $Backup } {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOP_amxmit.ksh $file $GDefs(TransmitUser) opserv ncp1 } MsgCatch]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file via metmanager on opserv.\n\n$MsgCatch"
       }
 
    } else {
-      set ErrCatch [catch  { exec $GDefs(Dir)/Script/CMOI_nanproc.ksh ${file} $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+      set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_nanproc.ksh ${file} $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
       if { $ErrCatch != 0 } {
          Log::Print ERROR "Unable to sent the $file via nanproc on $GDefs(TransmitHost).\n\n$MsgCatch"
       }

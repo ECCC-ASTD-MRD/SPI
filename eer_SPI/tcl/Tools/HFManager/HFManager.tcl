@@ -125,7 +125,7 @@ proc HFManager::FileDo { Prefix Post Files } {
 #-------------------------------------------------------------------------------
 
 proc HFManager::FileCommand { Id Command } {
-   global GDefs
+   global GDefs env
    variable Host
    variable Lbl
    variable Txt
@@ -188,7 +188,7 @@ proc HFManager::FileCommand { Id Command } {
             if { [Dialog::Default .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
-                  set err [catch { exec $GDefs(Dir)/Script/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser) } msg]
+                  set err [catch { exec $env(EER_DIRSCRIPT)/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser) } msg]
                   if { $err } {
                      Log::Print ERROR "Problems while calling HFdel.ksh :\n\n\t$msg"
                   }
@@ -425,7 +425,7 @@ proc HFManager::HostFiles { Id } {
       }
 
       if { [lindex $params 1]=="wget" } {
-         set err [catch { exec $GDefs(Dir)/Script/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res } msg]
+         set err [catch { exec $env(EER_DIRSCRIPT)/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res } msg]
          if { $err } {
             Log::Print ERROR "Problems while calling HFwget.ksh :\n\n\t$msg"
          }

@@ -18,8 +18,8 @@ do
    ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} "$@"
    code=$?
    
-   #----- If exit status is ok, don't respawn
-   if [[ $code -eq 0 ]]; then
+   #----- If exit status is ok (<=0), don't respawn
+   if [[ $code -le 1 ]]; then
       respawn=0
    fi
 done
