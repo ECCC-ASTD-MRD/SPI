@@ -1425,7 +1425,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
          Geo=Geo->Next;
 
          /*After some tesselation, give back control to application*/
-         if (n>10) {
+         if (!GLRender->XBatch && n>10) {
             ViewportRefresh_Canvas(Proj->VP->canvas);
             break;
          }
