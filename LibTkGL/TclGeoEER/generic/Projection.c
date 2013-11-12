@@ -641,9 +641,9 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
    double      lat,lon,ni,nj,tmp;
 
    static CONST char *sopt[] = { "-perspective","-location","-gridpoint","-gridsize","-gridextent","-mapres","-maptopo","-mapbath","-maptext","-mapcoast","-maplake","-mapriver","-mappolit",
-                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-license","-type","-georef","-geographic","-mask","-date","-late","-sun","-axiscoord","-axis","-minsize",NULL };
+                                 "-mapadmin","-mapcity","-maproad","-maprail","-mapplace","-mapcoord","-scale","-data","-license","-type","-georef","-geographic","-mask","-date","-late","-sun","-draw","-axiscoord","-axis","-minsize",NULL };
    enum                opt { PERSPECTIVE,LOCATION,GRIDPOINT,GRIDSIZE,GRIDEXTENT,MAPRES,MAPTOPO,MAPBATH,MAPTEXT,MAPCOAST,MAPLAKE,MAPRIVER,MAPPOLIT,
-                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,LICENSE,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,LATE,SUN,AXISCOORD,AXIS,MINSIZE };
+                             MAPADMIN,MAPCITY,MAPROAD,MAPRAIL,MAPPLACE,MAPCOORD,SCALE,DATA,LICENSE,TYPE,GEOREF,GEOGRAPHIC,MASK,DATE,LATE,SUN,DRAW,AXISCOORD,AXIS,MINSIZE };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -800,6 +800,14 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             }
             break;
 
+        case DRAW:
+           if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(proj->Draw));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Draw);
+            }
+            break;
+            
         case MAPTOPO:
            if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(proj->Geo->Params.Topo));
@@ -1132,6 +1140,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->Date        = 0;
    proj->Late        = 60;
    proj->Sun         = 0;
+   proj->Draw        = 1;
    proj->Loading     = 0;
    proj->MinSize     = 5;
    proj->Perspective  = 0;
@@ -1560,47 +1569,50 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
    if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
-      /*Initialiser le mask des donnees vectorielles*/
-      glEnable(GL_STENCIL_TEST);
-      glStencilFunc(GL_ALWAYS,0x01,0x01);
-      glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+      if (Proj->Draw) {
+         
+         /*Initialiser le mask des donnees vectorielles*/
+         glEnable(GL_STENCIL_TEST);
+         glStencilFunc(GL_ALWAYS,0x01,0x01);
+         glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
 
-      /*Initialiser l'impression de la geographie*/
-      if (Interp) {
-         Tcl_AppendResult(Interp,"\n% Postscript de la geographie\n",(char*)NULL);
-      }
+         /*Initialiser l'impression de la geographie*/
+         if (Interp) {
+            Tcl_AppendResult(Interp,"\n% Postscript de la geographie\n",(char*)NULL);
+         }
 
-      /*Afficher les parties dependantes de la projection*/
-      if (!Interp && Proj->Type->DrawGlobe && !Proj->Geo->Params.Bath)
-         Proj->Type->DrawGlobe(Interp,VP,Proj);
+         /*Afficher les parties dependantes de la projection*/
+         if (!Interp && Proj->Type->DrawGlobe && !Proj->Geo->Params.Bath)
+            Proj->Type->DrawGlobe(Interp,VP,Proj);
 
-      if (Proj->Geographic) {
-//      GDB_StarRender(Interp,Proj);
+         if (Proj->Geographic) {
+   //      GDB_StarRender(Interp,Proj);
 
-         if (Proj->Type->DrawFirst) {
-            glDisable(GL_LIGHTING);
-            glDisable(GL_LIGHT0);
-            Proj->Type->DrawFirst(Interp,VP,Proj);
+            if (Proj->Type->DrawFirst) {
+               glDisable(GL_LIGHTING);
+               glDisable(GL_LIGHT0);
+               Proj->Type->DrawFirst(Interp,VP,Proj);
 
-            if (Proj->Sun) {
-               glEnable(GL_LIGHTING);
-               glEnable(GL_LIGHT0);
+               if (Proj->Sun) {
+                  glEnable(GL_LIGHTING);
+                  glEnable(GL_LIGHT0);
+               }
+            }
+            if (Interp) {
+               GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK^GDB_FILL);
+            } else {
+               GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK);
             }
          }
-         if (Interp) {
-            GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK^GDB_FILL);
-         } else {
-            GDB_TileRender(Interp,Proj,Proj->Geo,GDB_ALL^GDB_RASTER^GDB_MASK);
-         }
+         glStencilFunc(GL_EQUAL,0x00,0x0f);
+         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
       }
-      glStencilFunc(GL_EQUAL,0x00,0x0f);
-      glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
 
    if (Mode==GL_ALL || Mode==GL_RASTER) {
 
       /*Display geography filling for raster background*/
-      if (Proj->Geographic) {
+      if (Proj->Draw && Proj->Geographic) {
          if (Interp) {
             if (VP->ColorFLake && VP->ColorFCoast && !Proj->Geo->Params.Bath)
                Proj->Type->DrawGlobe(NULL,Proj->VP,Proj);
@@ -1626,10 +1638,11 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
             ras+=Model_Render(Proj,VP,mdl);
          }
       }
+
       if (!GLRender->GLZBuf)
          glClear(GL_DEPTH_BUFFER_BIT);
 
-      if (Proj->Type->DrawLast) {
+      if (Proj->Draw && Proj->Type->DrawLast) {
          Proj->Type->DrawLast(Interp,VP,Proj);
       }
    }

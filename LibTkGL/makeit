@@ -1,4 +1,6 @@
 #!/bin/sh
+#----- Run autocon2.50 for a change of version int he configure.in script
+
 arg=$1
 
 NAME="SPI"
@@ -6,7 +8,7 @@ DESC="EER Visualisation, GIS, Processing and Modeling tool"
 VERSION="7.6.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
-SSM_NAME=${NAME}_${VERSION}_all
+SSM_NAME=${NAME}_${VERSION}_multi
 
 MAKE=make
 LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}
