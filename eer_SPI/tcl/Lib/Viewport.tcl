@@ -82,6 +82,7 @@ namespace eval Viewport {
    set Data(Picked)     {}           ;#Objet ous le curseur
 
    set Map(MinSize)     5            ;#Dimension minimale
+   set Map(Draw)        1            ;#Affichage de la geographie
    set Map(Sun)         0            ;#Affichage du Soleil
    set Map(Res)         0            ;#Resolution geographique (0=Auto,2,4,8,16,32,64,128)
    set Map(Mask)        0            ;#Masque (Tout=0,Terre=1,Mer=2)
@@ -539,6 +540,7 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(CoordNum)    [lindex $coo 2]
 
    set Map(MinSize)     [projection configure $Frame -minsize]
+   set Map(Draw)        [projection configure $Frame -draw]
    set Map(Sun)         [projection configure $Frame -sun]
    set Map(Res)         [projection configure $Frame -mapres]
    set Map(Mask)        [projection configure $Frame -mask]
@@ -650,7 +652,7 @@ proc Viewport::ConfigSet { Frame } {
    Viewport::ForceGrid $Frame
 
    projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
-      -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
+      -draw $Map(Draw) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
@@ -670,7 +672,7 @@ proc Viewport::ConfigSet { Frame } {
    foreach mini $Miniport::Data(Mini$Frame) {
       Miniport::Projection $Frame $mini
 
-      projection configure $mini -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      projection configure $mini -draw $Map(Draw) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
@@ -1326,7 +1328,7 @@ proc Viewport::Do { Frame } {
    set Map(GeoRef$Frame) $Map(GeoRef)
 
    projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
-      -mapres $Map(Res) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      -mapres $Map(Res) -draw $Map(Draw)  -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapplace $Map(Place) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
       -data $Data(Data$Frame) -minsize $Map(MinSize) -perspective $Map(Perspective)

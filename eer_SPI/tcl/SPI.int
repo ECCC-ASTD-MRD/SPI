@@ -781,6 +781,14 @@ proc SPI::ToolBar { Frame } {
          }
       pack $Frame.tool -side left
 
+      frame $Frame.data -relief raised -bd 1
+         button $Frame.data.clr -image WORLDRESET -relief flat -bd 0 -overrelief raised \
+            -command { SPI::Clear }
+         checkbutton $Frame.data.geo -image WORLD -selectimage RESET -variable Viewport::Map(Draw) -relief sunken -bd 1 -overrelief raised -offrelief flat \
+            -onvalue 0 -offvalue 1 -indicatoron False -command { Viewport::ConfigSet $Page::Data(Frame) }
+         pack $Frame.data.clr $Frame.data.geo -side left -padx 2
+      pack  $Frame.data -side left
+      
       frame $Frame.cam -relief raised -bd 1
          radiobutton $Frame.cam.zoom -image MODEZOOM -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
             -variable Page::Data(Mode) -value Zoom -command { SPI::ToolMode SPI Zoom } -selectcolor $GDefs(ColorLight)
@@ -790,9 +798,7 @@ proc SPI::ToolBar { Frame } {
             -variable Page::Data(Mode) -value Fly -command {  SPI::ToolMode SPI Fly } -selectcolor $GDefs(ColorLight)
          ComboBox::Create $Frame.cam.sel ProjCam::Data(Name) edit sorted nodouble -1 $ProjCam::Data(Names) 15 6 \
             "ProjCam::Select \$Page::Data(Frame) \$Page::Data(Frame) \$ProjCam::Data(Name)"
-         button $Frame.cam.data   -image RESET -relief flat -bd 0 -overrelief raised \
-            -command { SPI::Clear }
-         button $Frame.cam.clr   -image WORLDRESET -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.clr   -image FLATTEN -relief flat -bd 0 -overrelief raised \
             -command { Viewport::Reset $Page::Data(Frame) }
          button $Frame.cam.rot  -image ROTATE  -relief flat -bd 0 -overrelief raised \
             -command { ProjCam::Rotate $Page::Data(Frame) $Page::Data(Frame) 90.0; Page::Update $Page::Data(Frame) }
@@ -806,7 +812,7 @@ proc SPI::ToolBar { Frame } {
             -command "ProjCam::Save $Frame.cam.sel \[Dialog::Get . \$SPI::Bubble(CamSave) \$SPI::Msg(CamName)\]"
          button $Frame.cam.in    -image CAMDEL   -relief flat -bd 0 -overrelief raised \
             -command "ProjCam::Delete $Frame.cam.sel"
-         pack $Frame.cam.data $Frame.cam.clr $Frame.cam.rot $Frame.cam.down $Frame.cam.zclr $Frame.cam.zback $Frame.cam.zoom $Frame.cam.cam $Frame.cam.sel $Frame.cam.out $Frame.cam.in -side left -padx 2
+         pack $Frame.cam.clr $Frame.cam.rot $Frame.cam.down $Frame.cam.zclr $Frame.cam.zback $Frame.cam.zoom $Frame.cam.cam $Frame.cam.sel $Frame.cam.out $Frame.cam.in -side left -padx 2
       pack  $Frame.cam -side left
       frame $Frame.page -relief raised -bd 1
          ComboBox::Create $Frame.page.scale Page::Data(Scale) edit unsorted nodouble -1 { 1000 500 200 100 50 25 10 } 4 5
@@ -881,13 +887,15 @@ proc SPI::ToolBar { Frame } {
    Bubble::Create $Frame.cam.rot     $Bubble(Rotate)
    Bubble::Create $Frame.cam.zback   $Bubble(ZoomBack)
    Bubble::Create $Frame.cam.zclr    $Bubble(ZoomClear)
-   Bubble::Create $Frame.cam.data    $Bubble(DataClear)
    Bubble::Create $Frame.cam.clr     $Bubble(CamClear)
    Bubble::Create $Frame.cam.sel     $Bubble(CamName)
    Bubble::Create $Frame.cam.out     $Bubble(CamSave)
    Bubble::Create $Frame.cam.in      $Bubble(CamDel)
    Bubble::Create $Frame.cam.fly     $Bubble(CamFly)
    Bubble::Create $Frame.cam.down    $Bubble(CamDown)
+ 
+   Bubble::Create $Frame.data.clr     $Bubble(DataClear)
+   Bubble::Create $Frame.data.geo     $Bubble(GeoClear)
 }
 
 #-------------------------------------------------------------------------------
