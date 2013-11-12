@@ -434,14 +434,12 @@ proc Animator::GetPlayList { } {
    }
 
    #----- initialiser le processus
-
    $Play(Canvas) configure -cursor watch
    update idletasks
 
    set Play(Frames) {}
 
    #----- Recuperer les diverses donnees temporelles
-
    Animator::GetPlayListField
 
    if { $Play(Type)=="DATE" } {
@@ -450,12 +448,26 @@ proc Animator::GetPlayList { } {
    }
 
    #----- Trier les champs en ordre temporel
-
    set Play(Frames) [lsort -dictionary -increasing -unique $Play(Frames)]
    set Play(VPs)    [lsort -dictionary -increasing -unique $Play(VPs)]
    set Play(Length) [llength $Play(Frames)]
    set Play(Length) [expr $Play(Length)>0?$Play(Length)-1:0]
 
+   #----- Ajouter les données aux pas de temps intermédiaire le plus petit
+   foreach vp $Play(VPs) {
+      set pframe [lindex $Play(Frames) 0]
+      foreach frame [lrange $Play(Frames) 1 end] {
+         foreach d $Play($vp$pframe) { 
+            if { [fstdfield is $d] } {
+               if { [lsearch -glob $Play($vp$frame) "[lindex [split $d .] 0].*" ]==-1 } {
+                  lappend Play($vp$frame) $d
+               }
+            } 
+         }
+         set pframe $frame
+      }
+   }
+   
    Animator::Limits
 
    $Play(Canvas) configure -cursor left_ptr
@@ -515,7 +527,7 @@ proc Animator::GetPlayListField { } {
    variable Play
    variable Lbl
 
-   set no 0
+   set f 0
    foreach vp $Play(VPs) {
       foreach fld $Viewport::Data(Data$vp) {
 
@@ -561,7 +573,8 @@ proc Animator::GetPlayListField { } {
             "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
 
-         foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+        set no 0
+        foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
             set type    [lindex $field end]
@@ -569,18 +582,18 @@ proc Animator::GetPlayListField { } {
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
             update idletask
 
-            eval $type read ANI$no $fid $idx
-            eval $type stats ANI$no -tag \$tags
+            eval $type read ANI$f.$no $fid $idx
+            eval $type stats ANI$f.$no -tag \$tags
 
-            lappend FSTD::Data(ListTool) ANI$no
-            FSTD::ParamUpdate ANI$no
+            lappend FSTD::Data(ListTool) ANI$f.$no
+            FSTD::ParamUpdate ANI$f.$no
 
             switch $Play(Type) {
                "IP1"     { set info [lrange $field 2 3] }
                "IP2"     { set info [lrange $field 4 5] }
                "IP3"     { set info [lrange $field 6 7] }
                "ETIKET"  { set info [lindex $field 8] }
-               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI$no -DATEV]] }
+               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI$f.$no -DATEV]] }
             }
             #----- Ajouter a la liste du frame temporel correspondant
 
@@ -589,7 +602,7 @@ proc Animator::GetPlayListField { } {
                lappend Play(Frames) $info
             }
 
-            lappend Play($vp$info) ANI$no
+            lappend Play($vp$info) ANI$f.$no
             incr no
 
             #----- On verifie les demandes d'arret
@@ -602,6 +615,7 @@ proc Animator::GetPlayListField { } {
                return
             }
          }
+         incr f
       }
    }
 }
