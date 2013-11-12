@@ -1299,8 +1299,10 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
    int ok=0,rem=0;
 
-   if (!File)
+   if (!File) {
+      Tcl_AppendResult(Interp,"FSTD_FileSet: Unknown file (NULL)",(char *)NULL);
       return(-1);
+   }
 
    if (index(File->Name,':') && File->Name[0]!=':') {
       rem=1;
