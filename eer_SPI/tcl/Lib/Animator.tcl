@@ -457,12 +457,17 @@ proc Animator::GetPlayList { } {
    foreach vp $Play(VPs) {
       set pframe [lindex $Play(Frames) 0]
       foreach frame [lrange $Play(Frames) 1 end] {
+         set i 0
          foreach d $Play($vp$pframe) { 
             if { [fstdfield is $d] } {
-               if { [lsearch -glob $Play($vp$frame) "[lindex [split $d .] 0].*" ]==-1 } {
-                  lappend Play($vp$frame) $d
+               set idx [lindex [split $d .] 1]
+               
+               if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
+                  set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
                }
-            } 
+            } else {
+               incr i
+            }
          }
          set pframe $frame
       }
@@ -582,18 +587,18 @@ proc Animator::GetPlayListField { } {
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
             update idletask
 
-            eval $type read ANI$f.$no $fid $idx
-            eval $type stats ANI$f.$no -tag \$tags
+            eval $type read ANI.$f.$no $fid $idx
+            eval $type stats ANI.$f.$no -tag \$tags
 
-            lappend FSTD::Data(ListTool) ANI$f.$no
-            FSTD::ParamUpdate ANI$f.$no
+            lappend FSTD::Data(ListTool) ANI.$f.$no
+            FSTD::ParamUpdate ANI.$f.$no
 
             switch $Play(Type) {
                "IP1"     { set info [lrange $field 2 3] }
                "IP2"     { set info [lrange $field 4 5] }
                "IP3"     { set info [lrange $field 6 7] }
                "ETIKET"  { set info [lindex $field 8] }
-               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI$f.$no -DATEV]] }
+               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI.$f.$no -DATEV]] }
             }
             #----- Ajouter a la liste du frame temporel correspondant
 
@@ -602,7 +607,7 @@ proc Animator::GetPlayListField { } {
                lappend Play(Frames) $info
             }
 
-            lappend Play($vp$info) ANI$f.$no
+            lappend Play($vp$info) ANI.$f.$no
             incr no
 
             #----- On verifie les demandes d'arret
