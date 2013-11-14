@@ -206,12 +206,12 @@ proc TRAJECT::CreateModelInput { } {
    #----- Creation du fichier de directives
    set f [open  $Sim(Path)/tmp/TRAJECT.in w 0644]
    puts $f "\n#----- Model parameters\n"
-   puts $f [format "%-20s= %-12d # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
+   puts $f [format "%-20s= %-12.0f # Internal model time step \[s\]" MDL_DT_INT $Sim(TimeStep)]
    puts $f [format "%-20s= %-12s # Backward simulation" MDL_RETRO $Sim(Backward)]
    puts $f [format "%-20s= %-12s # Type of vertical coordinates (PRESSURE or MAGL)" MDL_ZTYPE $unit]
    puts $f [format "%-20s= %-12s # Emission date-time \[UTC\]: YearMonthDayHourMinutes" MDL_TIME [clock format $Sim(AccSecs) -format "%Y%m%d%H%M" -gmt True]]
-   puts $f [format "%-20s= %-12.1f # Batch mode sart time increment \[hours\]" MDL_BATCH_INC $Sim(BatchStart)]
-   puts $f [format "%-20s= %-12.1f # Batch mode trajectory duration \[hours\]" MDL_BATCH_LEN $Sim(Duration)]
+   puts $f [format "%-20s= %-12.0f # Batch mode sart time increment \[hours\]" MDL_BATCH_INC $Sim(BatchStart)]
+   puts $f [format "%-20s= %-12.0f # Batch mode trajectory duration \[hours\]" MDL_BATCH_LEN $Sim(Duration)]
 
    puts $f "\n#----- Source parameters\n"
    if { $Sim(MultiLevel) } {
