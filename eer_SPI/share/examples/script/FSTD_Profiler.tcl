@@ -56,7 +56,7 @@ proc Profiler::Run { } {
 
       #----- Loop on the time steps
       for { set t $Param(From) } { $t <= $Param(To) } { incr t 1 } {
-         Log::Print INFO "   Processing time setp $t"
+         Log::Print INFO "   Processing time step $t"
 
          fstdfile open FILE read $Param(Path)/$model/${run}_[format "%03i" $t]
 
