@@ -1421,9 +1421,11 @@ TGeoRef *GeoRef_HardCopy(TGeoRef *Ref) {
    GeoRef_Size(ref,Ref->X0,Ref->Y0,Ref->Z0,Ref->X1,Ref->Y1,Ref->Z1,Ref->BD);
 
    ref->Grid[0]=Ref->Grid[0];
+   ref->Grid[1]=Ref->Grid[1];
    ref->Project=Ref->Project;
    ref->UnProject=Ref->UnProject;
    ref->Value=Ref->Value;
+   ref->Distance=Ref->Distance;
    ref->Type=Ref->Type;
    ref->NbId=Ref->NbId;
    ref->NId=Ref->NId;

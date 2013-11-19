@@ -995,7 +995,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    /*Use ezscint*/
    if (ez) {
       EZLock_RPNInt();
-
       if (Mode==0) {
          c_ezsetopt("INTERP_DEGREE","NEAREST");
       } else if (Mode==1) {
@@ -1041,7 +1040,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
             ok=c_ezsint(pt0,pf0);
         }
-         FieldTo->Ref->ZRef.Levels[k]=FieldFrom->Ref->ZRef.Levels[k];
+        FieldTo->Ref->ZRef.Levels[k]=FieldFrom->Ref->ZRef.Levels[k];
       }
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
