@@ -1683,9 +1683,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVELINDEX,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2587,6 +2587,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case LEVEL:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels[Field->Def->Level]));
+            } else {
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
+               Field->Ref->ZRef.Levels[Field->Def->Level]=dv;
+#ifdef HAVE_RMN
+               ((FSTD_Head*)Field->Head)->IP1=-1;
+#endif
+            }
+            break;
+
+         case LEVELINDEX:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Level));
             } else {

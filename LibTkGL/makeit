@@ -37,7 +37,7 @@ if [[ $arg = "ssm" ]]; then
    cp -r  tcl    ${SSM_DEV}/workspace/${SSM_NAME}
    cp -r  share  ${SSM_DEV}/workspace/${SSM_NAME}
    cp -r  data   ${SSM_DEV}/workspace/${SSM_NAME}
-   cp .profile_spi tclsh wish ${SSM_DEV}/workspace/${SSM_NAME}
+   cp .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -exec rm -f -r {} \;
    find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -delete
