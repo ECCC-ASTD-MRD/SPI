@@ -698,7 +698,7 @@ proc NowCaster::Radar::Sweep { Site { Sweep 0 } } {
    foreach sec $Data(Secs$Site) {
       if { [radarscan is SCAN$Site$sec] } {
          set scan SCAN$Site$sec
-         radarscan stats $scan -level $Sweep
+         radarscan stats $scan -levelindex $Sweep
       }
    }
    set Data(Angle) [lindex $Data(Sweeps) $Sweep]
@@ -790,7 +790,7 @@ proc NowCaster::Radar::Select { Site Sec } {
       set Data(Sec)    $Sec
 
       set Data(Sweeps) [radarscan define SCAN$Site$Sec -SWEEPANGLE]
-      set Data(Sweep)  [radarscan stats  SCAN$Site$Sec -level]
+      set Data(Sweep)  [radarscan stats  SCAN$Site$Sec -levelindex]
       set Data(Angle)  [lindex $Data(Sweeps) $Data(Sweep)]
       $Data(Frame).param.sweep.sel configure -from 0 -to [expr [llength $Data(Sweeps)] -1]
 
