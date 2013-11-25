@@ -59,7 +59,7 @@ foreach var { HU TH } {
    fstdfield verticalinterp TO FROM "" GZFROM
 
    Log::Print INFO "Masking topo for $var"
-   fstdfield stats GZFROM -level 0
+   fstdfield stats GZFROM -levelindex 0
 
    #----- Loop on first level of GZ and reset values at levels under it
    for { set i 0 } { $i<[fstdfield define GZFROM -NI] } { incr i } {
@@ -72,7 +72,7 @@ foreach var { HU TH } {
             if { $level>$gz } {
                break;
             }
-            fstdfield stats TO -level $nolevel
+            fstdfield stats TO -levelindex $nolevel
             fstdfield stats TO -gridvalue $i $j 0
             incr nolevel
          }

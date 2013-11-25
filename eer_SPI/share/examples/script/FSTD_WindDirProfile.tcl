@@ -41,7 +41,7 @@ vexpr WD @UU@
 #----- Extraire les valeurs aux niveaux
 set listeWD {}
 for { set k 0 } { $k < [fstdfield define UU -NK] } { incr k } {
-   fstdfield stats WD -level $k
+   fstdfield stats WD -levelindex $k
    lappend listeWD [fstdfield stats WD -coordvalue $lat $lon]
 }
 puts "   $listeWD"

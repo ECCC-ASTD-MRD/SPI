@@ -43,6 +43,9 @@ fstdfile open RESULTFILE write DataOut/FSTD_Y2Z_SUM.fstd
 foreach tictac { >> ^^ } {
    fstdfield read GRID GRIDFILE -1 "" -1 -1 -1 "" "$tictac"
    fstdfield write GRID RESULTFILE 0 True
+
+   fstdfield read GRID YFILE -1 "" -1 -1 -1 "" "$tictac"
+   fstdfield write GRID RESULTFILE 0 True
 }
 
 #-- Champ de travail
@@ -72,6 +75,19 @@ for { set d 1 } { $d <= $Days } { incr d } {
       }
    }
 }
+
+Log::Print INFO "Processing point cloud"
+fstdfield gridinterp YFIELD GRID MAX True 
+fstdfield define YFIELD -NOMVAR MAX -IP1 12001 -IP2 $ip2 -DATEO [fstdfield define YFIELD -DATEO] -ETIKET [fstdfield define YFIELD -ETIKET]
+fstdfield write YFIELD RESULTFILE -32 True
+
+fstdfield gridinterp YFIELD GRID MIN True 
+fstdfield define YFIELD -NOMVAR MIN -IP1 12001 -IP2 $ip2 -DATEO [fstdfield define YFIELD -DATEO] -ETIKET [fstdfield define YFIELD -ETIKET]
+fstdfield write YFIELD RESULTFILE -32 True
+
+fstdfield gridinterp YFIELD GRID AVERAGE True 
+fstdfield define YFIELD -NOMVAR AVG -IP1 12001 -IP2 $ip2 -DATEO [fstdfield define YFIELD -DATEO] -ETIKET [fstdfield define YFIELD -ETIKET]
+fstdfield write YFIELD RESULTFILE -32 True
 
 fstdfile close YFILE GRIDFILE RESULTFILE
 

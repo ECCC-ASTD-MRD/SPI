@@ -55,7 +55,7 @@ radarscan define SCAN1 -LOCATION 45.0445 -76.0642 122.0
 
 puts "\n   Limits (value lat lon angle): min=[radarscan stats SCAN1 -min] max=[radarscan stats SCAN1 -max]"
 
-radarscan stats SCAN1 -level 0
+radarscan stats SCAN1 -levelindex 0
 puts "\n   Radar sweep angle 0"
 puts "   Projected lat lon (azimuth and bin)  : [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
 puts "   UnProjected azimuth and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.193774955]"
@@ -63,7 +63,7 @@ puts "   value (lat lon)        : [radarscan stats SCAN1 -coordvalue 45.28 -74.7
 puts "   value (azimuth and bin): [radarscan stats SCAN1 -gridvalue 75.3750167173 107.193774955]"
 puts "   height (lat lon)       : [radarscan stats SCAN1 -height 75.3750167173 107.193774955 0]"
 
-radarscan stats SCAN1 -level 12
+radarscan stats SCAN1 -levelindex 12
 puts "   \nRadar sweep angle 12"
 puts "   Projected lat lon (azimuth and bin)  : [radarscan stats SCAN1 -coordpoint 45.28 -74.74]"
 puts "   UnProjected azimuth and bin (lat lon): [radarscan stats SCAN1 -gridpoint 75.3750167173 107.538344429]"

@@ -57,10 +57,31 @@ fstdfield create FLDINT 10 10 1 UInt32
 fstdfield stats FLDINT -gridvalue 5 5 20061231
 puts "   20061231 = [fstdfield stats FLDINT -gridvalue 5 5]"
 
+puts "\tTesting link/unlink"
+fstdfile open ETA read DataIn/2006122900_000.eta
+fstdfile open HYB read DataIn/2006122900_000.hyb
+set lnk  [fstdfile link { ETA HYB }]
+set idxs [fstdfield find $lnk -1 "" -1 -1 -1 "" "TT"]
+puts "   Found [llength $idxs] fields from $lnk" 
+
+foreach idx $idxs {
+   fstdfield read FLD $lnk $idx
+   puts "     Level [fstdfield stats FLD -level] [fstdfield stats FLD -leveltype]"
+}
+fstdfile unlink { ETA HYB }
+fstdfile close ETA HYB
+
 set inter { -20 0 20 }
 puts "\nTesting contour extraction ($inter):"
 fstdfile open 1 read DataIn/2005102612_012
 fstdfield read TT 1 -1 "" 12000 -1 -1 "" "TT"
+
+puts "\nTesting levels :"
+puts "   IP1           : [fstdfield define TT -IP1]"
+puts "   levelindex    : [fstdfield stat TT -levelindex]"
+puts "   level         : [fstdfield stat TT -level]"
+puts "   leveltype     : [fstdfield stat TT -leveltype]"
+exit 0
 
 fstdfield configure TT -intervals $inter
 fstdfield stats TT -limits { 10 10 0 100 100 0 }

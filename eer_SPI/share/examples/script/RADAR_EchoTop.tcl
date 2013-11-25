@@ -107,7 +107,7 @@ foreach file [glob DataIn/*IRIS*] {
       for { set j 0 } { $j<[radarscan define TOP -NBBIN] } { incr j } {
          set k [radarscan stats TOP -gridvalue $i $j]
          if { $k>0 } {
-            radarscan stats SCAN1 -level [expr int($k)]
+            radarscan stats SCAN1 -levelindex [expr int($k)]
             set h [radarscan stats SCAN1 -height $i $j $k]
             set ll [radarscan stats SCAN1 -gridpoint $i $j]
             radarscan stats TOP -gridvalue $i $j $h
@@ -120,7 +120,7 @@ foreach file [glob DataIn/*IRIS*] {
    close $out
 
    puts "      Interpolating on RPN field"
-   radarscan stats TOP -level 0
+   radarscan stats TOP -levelindex 0
 
    fstdfield gridinterp GRIDLLMEM TOP
    fstdfield define GRIDLLMEM -IP1 12000 -DATEO [fstdstamp fromseconds $date] -NOMVAR TOP
