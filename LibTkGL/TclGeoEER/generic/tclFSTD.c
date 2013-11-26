@@ -1065,8 +1065,8 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    FSTD_File         *file=NULL;
 
    static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","TYPVAR","DATEV","IP1","IP2","IP3","ETIKET" };
-   static CONST char *sopt[] = { "is","open","close","filename","mode","info",NULL };
-   enum               opt { IS,OPEN,CLOSE,FILENAME,MODE,INFO };
+   static CONST char *sopt[] = { "is","open","close","link","unlink","filename","mode","info",NULL };
+   enum               opt { IS,OPEN,CLOSE,LINK,UNLINK,FILENAME,MODE,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -1118,6 +1118,24 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             FSTD_FileClose(Interp,Tcl_GetString(Objv[n]));
          }
          return(TCL_OK);
+         break;
+
+      case LINK:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileids");
+            return(TCL_ERROR);
+         }
+
+         return(FSTD_FileLink(Interp,Objv[2]));
+         break;
+
+      case UNLINK:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileids");
+            return(TCL_ERROR);
+         }
+
+         return(FSTD_FileUnLink(Interp,Objv[2]));
          break;
 
       case FILENAME:
@@ -1248,6 +1266,115 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FileLink>
+ * Creation : Novembre 2013 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Link multiple standard files as one.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Ids>     : Identificateur a donner au fichier
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int FSTD_FileLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
+
+   FSTD_File *file;
+   Tcl_Obj   *obj;
+   int        ier,n,nobj,*ids;
+
+   Tcl_ListObjLength(Interp,Ids,&nobj);
+
+   if (nobj) {
+      if (!(ids=(int*)malloc(nobj*sizeof(int)))) {
+         Tcl_AppendResult(Interp,"FSTD_FileLink: Unable to allocate link array",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      
+      // Build file table
+      for(n=0;n<nobj;n++) {
+         Tcl_ListObjIndex(Interp,Ids,n,&obj);
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(obj)))) {
+            return(TCL_ERROR);
+         }
+         // First file will be the file id to use
+         if (n==0) 
+            Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->CId,-1));
+         
+         FSTD_FileSet(Interp,file);
+         ids[n]=file->Id;
+      }
+      
+      ier=f77name(fstlnk)(ids,&n);
+      if (ier<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not link files (c_fstlnk failed)",(char*)NULL);
+         return(TCL_ERROR);
+      }    
+   }
+     
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FileUnLink>
+ * Creation : Novembre 2013 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Unlink multiple standard files.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Ids>     : Identificateur a donner au fichier
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int FSTD_FileUnLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
+
+   FSTD_File *file;
+   Tcl_Obj   *obj;
+   int        ier,n,nobj,*ids;
+
+   Tcl_ListObjLength(Interp,Ids,&nobj);
+
+   if (nobj) {
+      if (!(ids=(int*)malloc(nobj*sizeof(int)))) {
+         Tcl_AppendResult(Interp,"FSTD_FileLink: Unable to allocate link array",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      
+      for(n=0;n<nobj;n++) {
+         Tcl_ListObjIndex(Interp,Ids,n,&obj);
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(obj)))) {
+            return(TCL_ERROR);
+         }
+         ids[n]=file->Id;
+      }
+      
+      ier=f77name(fstunl)(ids,&n);
+      if (ier<0) {
+         Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not unlink files (c_fstunlnk failed)",(char*)NULL);
+         return(TCL_ERROR);
+      } 
+      
+      for(n=0;n<nobj;n++) {
+         Tcl_ListObjIndex(Interp,Ids,n,&obj);
+         FSTD_FileUnset(Interp,file);
+      }
+   }
+   
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FileGet>
  * Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
  *
@@ -1271,7 +1398,7 @@ FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
 
    entry=TclY_FindHashEntry(&FSTD_FileTable,Id);
    if (!entry) {
-      if (Interp) Tcl_AppendResult(Interp,"FSTD_FileGet: Unknown file",(char *)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"FSTD_FileGet: Unknown file, ",Id,(char *)NULL);
       return(NULL);
    }
 

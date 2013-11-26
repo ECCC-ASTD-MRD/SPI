@@ -954,7 +954,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
                glVertex2f(x0,y);
                glVertex2f(x1,y);
             }
-      }
+         }
       glEnd();
       glDisable(GL_BLEND);
 

@@ -116,6 +116,8 @@ int         FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int I
 FSTD_File*  FSTD_FileGet(Tcl_Interp *Interp,char *Id);
 int         FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File);
 int         FSTD_FileUnset(Tcl_Interp *Interp,FSTD_File *File);
+int         FSTD_FileLink(Tcl_Interp *Interp,Tcl_Obj *Ids);
+int         FSTD_FileUnLink(Tcl_Interp *Interp,Tcl_Obj *Ids);
 
 #endif
 

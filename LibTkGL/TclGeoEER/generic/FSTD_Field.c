@@ -1797,7 +1797,7 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
 
    /*Recuperer les index de tout les champs satisfaisant*/
    file=FSTD_FileGet(Interp,Id);
-   if(FSTD_FileSet(Interp,file)<0)
+   if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
 
    if (!(idlst=(int*)malloc(Max*sizeof(int)))) {

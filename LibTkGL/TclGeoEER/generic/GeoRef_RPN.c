@@ -399,7 +399,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       return(1);
    } else if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
-      lon=Lon<0?Lon+360:Lon;
+      lon=Lon<0?Lon+360.0:Lon;
       lat=Lat;
 
       /*Extraire la valeur du point de grille*/

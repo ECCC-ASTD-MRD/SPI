@@ -1180,122 +1180,160 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
          for(x=0;x<nijk;x++)
             ToDef->Buffer[x]=ToDef->NoData;
       }
-      n2=ToDef->NI>>1;
-
-      /*if > 2048x2048, loop by lines otherwise, do it in one shot*/
-      dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
-      for(y=y0;y<=y1;y+=(dy+1)) {
-         if (!(s=GeoScan_Get(&GScan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,NULL))) {
-            Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
-            return(TCL_ERROR);
-         }
-
-         /*Loop over source data*/
-         dx=0;
-         for(x=0,n=0;x<GScan.N;x++,n++) {
-
-            /*Check if we need to skip last x since we change row and last one is end of a cell*/
-            if (s>1 && dx==GScan.DX) {
-               n++;
-               dx=0;
+      
+      if (ToRef->Grid[0]=='Y') {
+         // Point cloud interpolations
+         for(idxt=0;idxt<nij;idxt++) {
+            if (FromRef->UnProject(FromRef,&di0,&dj0,ToRef->Lat[idxt],ToRef->Lon[idxt],0,1)) {
+               di0=floor(di0);
+               dj0=floor(dj0);
+               FromRef->Value(FromRef,FromDef,'N',0,di0,dj0,FromDef->Level,&di[0],&vx);
+               FromRef->Value(FromRef,FromDef,'N',0,di0+1.0,dj0,FromDef->Level,&di[1],&vx);
+               FromRef->Value(FromRef,FromDef,'N',0,di0,dj0+1.0,FromDef->Level,&di[2],&vx);
+               FromRef->Value(FromRef,FromDef,'N',0,di0+1.0,dj0+1.0,FromDef->Level,&di[3],&vx);
             }
-            dx++;
+            for(s=0;s<4;s++) {
+               vx=di[s];
+               if (isnan(vx) || vx==FromDef->NoData)
+                  continue;
+               
+               /*If the previous value is nodata, initialize the counter*/
+               if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                  fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+               }
+               switch(Mode) {
+                  case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx; break;
+                  case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx; break;
+                  case TD_SUM              : fld[idxt]+=vx;                  break;
+                  case TD_AVERAGE          : fld[idxt]+=vx; acc[idxt]++;     break;
+                  default:
+                     Tcl_AppendResult(Interp,"Data_GridAverage: Invalid interpolation type",(char*)NULL);
+                     return(TCL_ERROR);
+               }
+            }
+         }         
+      } else {
+         // grid based interpolations
+         n2=ToDef->NI>>1;
 
-            /*Skip if no mask*/
-            if (FromDef->Mask && !FromDef->Mask[GScan.V[x]])
-               continue;
-
-            /*Skip if no data*/
-            Def_Get(FromDef,0,GScan.V[x],vx);
-            if ((isnan(vx) || vx==FromDef->NoData) && Mode!=TD_COUNT)
-               continue;
-
-            /*Figure out ordered coverage*/
-            if (s>1) {
-               di[0]=GScan.X[n];
-               dj[0]=GScan.Y[n];
-               di[1]=GScan.X[n+1]; di0=FMIN(di[0],di[1]); di1=FMAX(di[0],di[1]);
-               dj[1]=GScan.Y[n+1]; dj0=FMIN(dj[0],dj[1]); dj1=FMAX(dj[0],dj[1]);
-
-               di[2]=GScan.X[n+GScan.DX+1]; di0=FMIN(di0,di[2]); di1=FMAX(di1,di[2]);
-               dj[2]=GScan.Y[n+GScan.DX+1]; dj0=FMIN(dj0,dj[2]); dj1=FMAX(dj1,dj[2]);
-               di[3]=GScan.X[n+GScan.DX+2]; di0=FMIN(di0,di[3]); di1=FMAX(di1,di[3]);
-               dj[3]=GScan.Y[n+GScan.DX+2]; dj0=FMIN(dj0,dj[3]); dj1=FMAX(dj1,dj[3]);
-
-               di0=ROUND(di0);dj0=ROUND(dj0);
-               di1=ROUND(di1);dj1=ROUND(dj1);
-            } else {
-               di0=di1=ROUND(GScan.X[n]);
-               dj0=dj1=ROUND(GScan.Y[n]);
+         /*if > 2048x2048, loop by lines otherwise, do it in one shot*/
+         dy=((y1-y0)*(x1-x0))>4194304?0:(y1-y0);
+         for(y=y0;y<=y1;y+=(dy+1)) {
+            if (!(s=GeoScan_Get(&GScan,ToRef,NULL,FromRef,FromDef,x0,y,x1,y+dy,FromDef->CellDim,NULL))) {
+               Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate coordinate scanning buffer",(char*)NULL);
+               return(TCL_ERROR);
             }
 
-            /*Are we within the destination field*/
-            if (di0>=ToDef->NI || dj0>=ToDef->NJ || di1<0 || dj1<0)
-               continue;
+            /*Loop over source data*/
+            dx=0;
+            for(x=0,n=0;x<GScan.N;x++,n++) {
 
-            /*Test for polar outsidness (Problem we had with yingyang grids)*/
-            if ((di0<0 && di1>ToDef->NI) || (dj0<0 && dj1>ToDef->NJ))
-               continue;
+               /*Check if we need to skip last x since we change row and last one is end of a cell*/
+               if (s>1 && dx==GScan.DX) {
+                  n++;
+                  dx=0;
+               }
+               dx++;
 
-            /*Clamp the coordinates*/
-            if (di0<0) di0=0;
-            if (dj0<0) dj0=0;
-            if (di1>ToDef->NI-1) di1=ToDef->NI-1;
-            if (dj1>ToDef->NJ-1) dj1=ToDef->NJ-1;
+               /*Skip if no mask*/
+               if (FromDef->Mask && !FromDef->Mask[GScan.V[x]])
+                  continue;
 
-            /*Are we crossing the wrap around*/
-            if (ToRef->Type&GRID_WRAP && di0<n2 && di1>n2 && (di1-di0)>n2) {
-               val=di0;
-               di0=di1;
-               di1=val+ToDef->NI;
-            }
+               /*Skip if no data*/
+               Def_Get(FromDef,0,GScan.V[x],vx);
+               if ((isnan(vx) || vx==FromDef->NoData) && Mode!=TD_COUNT)
+                  continue;
 
-            for(ndj=dj0;ndj<=dj1;ndj++) {
-               idxj=ndj*ToDef->NI;
-               for(ndi=di0;ndi<=di1;ndi++) {
-                  idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
+               /*Figure out ordered coverage*/
+               if (s>1) {
+                  di[0]=GScan.X[n];
+                  dj[0]=GScan.Y[n];
+                  di[1]=GScan.X[n+1]; di0=FMIN(di[0],di[1]); di1=FMAX(di[0],di[1]);
+                  dj[1]=GScan.Y[n+1]; dj0=FMIN(dj[0],dj[1]); dj1=FMAX(dj[0],dj[1]);
 
-                  /*Skip if no mask*/
-                  if (!ToDef->Mask || ToDef->Mask[idxt]) {
+                  di[2]=GScan.X[n+GScan.DX+1]; di0=FMIN(di0,di[2]); di1=FMAX(di1,di[2]);
+                  dj[2]=GScan.Y[n+GScan.DX+1]; dj0=FMIN(dj0,dj[2]); dj1=FMAX(dj1,dj[2]);
+                  di[3]=GScan.X[n+GScan.DX+2]; di0=FMIN(di0,di[3]); di1=FMAX(di1,di[3]);
+                  dj[3]=GScan.Y[n+GScan.DX+2]; dj0=FMIN(dj0,dj[3]); dj1=FMAX(dj1,dj[3]);
 
-                     /*If the previous value is nodata, initialize the counter*/
-                     if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                        fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
-                     }
+                  di0=ROUND(di0);dj0=ROUND(dj0);
+                  di1=ROUND(di1);dj1=ROUND(dj1);
+               } else {
+                  di0=di1=ROUND(GScan.X[n]);
+                  dj0=dj1=ROUND(GScan.Y[n]);
+               }
 
-                     switch(Mode) {
-                        case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
-                                                   break;
-                        case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
-                                                   break;
-                        case TD_SUM              : fld[idxt]+=vx;
-                                                   break;
-                        case TD_VARIANCE         : acc[idxt]++;
-                                                   Def_Get(TmpDef,0,idxt,val);
-                                                   fld[idxt]+=(vx-val)*(vx-val);
-                                                   break;
-                        case TD_SQUARE           : acc[idxt]++;
-                                                   fld[idxt]+=vx*vx;
-                                                   break;
-                        case TD_COUNT            : acc[idxt]++;
-                        case TD_AVERAGE          :
-                        case TD_NORMALIZED_COUNT : if (Table) {
-                                                      t=0;
-                                                      while(t<ToDef->NK) {
-                                                         if (vx==Table[t]) {
-                                                            if (Mode!=TD_COUNT) acc[idxt]++;
-                                                            fld[t*nij+idxt]+=1.0;
-                                                            break;
+               /*Are we within the destination field*/
+               if (di0>=ToDef->NI || dj0>=ToDef->NJ || di1<0 || dj1<0)
+                  continue;
+
+               /*Test for polar outsidness (Problem we had with yingyang grids)*/
+               if ((di0<0 && di1>ToDef->NI) || (dj0<0 && dj1>ToDef->NJ))
+                  continue;
+
+               /*Clamp the coordinates*/
+               if (di0<0) di0=0;
+               if (dj0<0) dj0=0;
+               if (di1>ToDef->NI-1) di1=ToDef->NI-1;
+               if (dj1>ToDef->NJ-1) dj1=ToDef->NJ-1;
+
+               /*Are we crossing the wrap around*/
+               if (ToRef->Type&GRID_WRAP && di0<n2 && di1>n2 && (di1-di0)>n2) {
+                  val=di0;
+                  di0=di1;
+                  di1=val+ToDef->NI;
+               }
+
+               for(ndj=dj0;ndj<=dj1;ndj++) {
+                  idxj=ndj*ToDef->NI;
+                  for(ndi=di0;ndi<=di1;ndi++) {
+                     idxt=idxj+(ndi>=ToDef->NI?ndi-ToDef->NI:ndi);
+
+                     /*Skip if no mask*/
+                     if (!ToDef->Mask || ToDef->Mask[idxt]) {
+
+                        /*If the previous value is nodata, initialize the counter*/
+                        if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
+                           fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                        }
+
+                        switch(Mode) {
+                           case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx;
+                                                      break;
+                           case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx;
+                                                      break;
+                           case TD_SUM              : fld[idxt]+=vx;
+                                                      break;
+                           case TD_VARIANCE         : acc[idxt]++;
+                                                      Def_Get(TmpDef,0,idxt,val);
+                                                      fld[idxt]+=(vx-val)*(vx-val);
+                                                      break;
+                           case TD_SQUARE           : acc[idxt]++;
+                                                      fld[idxt]+=vx*vx;
+                                                      break;
+                           case TD_COUNT            : acc[idxt]++;
+                           case TD_AVERAGE          :
+                           case TD_NORMALIZED_COUNT : if (Table) {
+                                                         t=0;
+                                                         while(t<ToDef->NK) {
+                                                            if (vx==Table[t]) {
+                                                               if (Mode!=TD_COUNT) acc[idxt]++;
+                                                               fld[t*nij+idxt]+=1.0;
+                                                               break;
+                                                            }
+                                                            t++;
                                                          }
-                                                         t++;
+                                                      } else {
+                                                         if (vx!=FromDef->NoData) {
+                                                            fld[idxt]+=vx;
+                                                            if (Mode!=TD_COUNT) acc[idxt]++;
+                                                         }
                                                       }
-                                                   } else {
-                                                      if (vx!=FromDef->NoData) {
-                                                         fld[idxt]+=vx;
-                                                         if (Mode!=TD_COUNT) acc[idxt]++;
-                                                      }
-                                                   }
-                                                   break;
+                                                      break;
+                           default:
+                              Tcl_AppendResult(Interp,"Data_GridAverage: Invalid interpolation type",(char*)NULL);
+                              return(TCL_ERROR);
+                        }
                      }
                   }
                }

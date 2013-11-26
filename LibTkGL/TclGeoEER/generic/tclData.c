@@ -2829,8 +2829,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj,*sub;
-   int      f,n=0,ni,nj,nc,vnb,vn0,vn1;
-   double   v,dl,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
+   int      f,n=0,ni,nj,nc,vnb=0,vn0,vn1;
+   double   v,dl=0.0,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {
@@ -2850,8 +2850,17 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
 
+      // Order values
+      if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
+      if (dlon0>dlon1) { v=dlon0; dlon0=dlon1; dlon1=v; };
+
       // Get ij bounding box
       GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
+
+      // Wrapover 180/-180 check
+      if (dlon0*dlon1<0 && dlon0+dlon1>0.0) {
+         dl=dlon1-dlon0;
+      }
    } else {
       vnb=nc>>1;
       if (!vnb || nc%2) {
@@ -2881,12 +2890,6 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       }
    }
 
-   if (dlon0*dlon1<0) {
-      dl=dlon1-dlon0;
-   } else {
-      dl=0;
-   }
-
    switch(Mode) {
       case 0:
       case 1: tot=0.0; break;
@@ -2896,15 +2899,18 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 5: obj=Tcl_NewListObj(0,NULL); break;
    }
 
-   vnb=n=0;
+   n=0;
 
    if (Field->Ref->Grid[0]!='V') {
 
       // Loop on ij bounding box
-      for (ni=floor(i0);ni<ceil(i1);ni++) {
-         for (nj=floor(j0);nj<ceil(j1);nj++) {
+      for (ni=floor(i0);ni<=ceil(i1);ni++) {
+         for (nj=floor(j0);nj<=ceil(j1);nj++) {
             if (nc==4) {
+               // Range case
                Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+               if (dlon1>180) dlon=dlon<0?dlon+=360.0:dlon;
+                
                f=0;
                if (dlat>=dlat0 && dlat<=dlat1) {
                   if (dl<=180) {
@@ -2916,17 +2922,21 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                         f=1;
                      }
                   }
-               }
-            } else {
-               Vect_Init(vp,ni,nj,0.0);
-
-               f=0;
-               for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
-                  /*Check for point insidness*/
-                  if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
-                     f=!f;
-                  }
-               }
+//                  if (dlon>=dlon0 && dlon<=dlon1) {
+//                     f=1;
+//                  }
+                }
+             } else {
+                // Polygon case
+                Vect_Init(vp,ni,nj,0.0);
+ 
+                f=0;
+                for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
+                   /*Check for point insidness*/
+                   if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
+                      f=!f;
+                   }
+                }
             }
 
             // Point is inside
@@ -2956,6 +2966,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       for (ni=0;ni<Field->Def->NI;ni++) {
          f=0;
          if (nc==4) {
+            //Range case
             if (Field->Ref->Lat[ni]>=dlat0 && Field->Ref->Lat[ni]<=dlat1) {
                if (dl<=180) {
                   if (Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=dlon1) {
@@ -2968,6 +2979,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                }
             }
          } else {
+            //Polygon case
          }
 
          // Point is inside
