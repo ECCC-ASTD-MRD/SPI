@@ -1714,7 +1714,7 @@ proc FieldParams::GetInfo { { Field "" } } {
       foreach param $Data(ParamsOut) {
          set Data($param) [fstdfield define $Field -$param]
       }
-      wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([lindex [fstdfield stats $Field -levels] [fstdfield stats $Field -level]] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
+      wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([fstdfield stats $Field -level] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
    } else {
       foreach param $Data(ParamsOut) {
          set Data($param) ""

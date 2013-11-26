@@ -327,7 +327,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
    foreach field $Fields {
 
       set nv      [fstdfield define $field -NOMVAR]
-      set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+      set lvl     [fstdfield stats $field -level]
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
@@ -455,7 +455,7 @@ proc Export::Vector::Export { Path Format Fields } {
    foreach field $Fields {
 
       set nv      [fstdfield define $field -NOMVAR]
-      set lvl     [lindex [fstdfield stats $field -levels] [fstdfield stats $field -level]]
+      set lvl     [fstdfield stats $field -level]
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]

@@ -81,7 +81,6 @@ puts "   IP1           : [fstdfield define TT -IP1]"
 puts "   levelindex    : [fstdfield stat TT -levelindex]"
 puts "   level         : [fstdfield stat TT -level]"
 puts "   leveltype     : [fstdfield stat TT -leveltype]"
-exit 0
 
 fstdfield configure TT -intervals $inter
 fstdfield stats TT -limits { 10 10 0 100 100 0 }
@@ -97,10 +96,27 @@ puts "      Gridpoints within range : [fstdfield stats TT -within [list 50 -150 
 puts "      Minimum within range    : [fstdfield stats TT -min [list 50 -150 60 -140]]"
 puts "      Avegage within range    : [fstdfield stats TT -avg [list 50 -150 60 -140]]"
 
-puts "   Polygon : 50 -150 50 -140 60 -140 60 -150"
-puts "      Gridpoints within polygon : [fstdfield stats TT -within [list 50 -150 50 -140 60 -140 60 -150]]"
-puts "      Minimum within polygon    : [fstdfield stats TT -min [list 50 -150 50 -140 60 -140 60 -150]]"
-puts "      Avegage within polygon    : [fstdfield stats TT -avg [list 50 -150 50 -140 60 -140 60 -150]]"
+set poly [list 50 -150 50 -140 60 -140 60 -150]
+puts "   Polygon : $poly"
+puts "      Gridpoints within polygon : [fstdfield stats TT -within $poly]"
+puts "      Minimum within polygon    : [fstdfield stats TT -min $poly]"
+puts "      Avegage within polygon    : [fstdfield stats TT -avg $poly]"
+
+projection create PROJ
+set poly [projection function PROJ -path $poly 10000]
+puts "   Polygon : $poly"
+puts "      Gridpoints within polygon : [fstdfield stats TT -within $poly]"
+puts "      Minimum within polygon    : [fstdfield stats TT -min $poly]"
+puts "      Avegage within polygon    : [fstdfield stats TT -avg $poly]"
+
+fstdfile open AVGFILE read DataIn/average_PR_2011062200_2011082400
+fstdfield read PR AVGFILE -1 "" -1 -1 -1 "" "PR"
+puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 -180 10.1 180]]]"
+puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 0.0  10.1 360.0]]]"
+puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 -180 10.1 0.0]]]"
+puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 0.01 10.1 180]]]"
+#puts "      Gridpoints within range : [fstdfield stats PR -avg [list 10.0 0 10.1 360.0]]"
+
 
 puts "\nTesting parser's slicers"
 puts "   min=[vexpr NIL smin(TT)] [fstdfield stats TT -min]"
