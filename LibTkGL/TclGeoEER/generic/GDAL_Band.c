@@ -252,7 +252,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
    int    x,y,miny,maxy,minx,maxx;
    int    ints,n,ns,np;
    int   *polyInts;
-   double dminy,dmaxy,dx1,dy1,dx2,dy2,dy,dx;
+   double dminy,dmaxy,dx1,dy1,dx2,dy2,dy;
    double intersect,tmpd;
    int    horizontal_x1,horizontal_x2;
 
@@ -272,7 +272,6 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
       if (EQUAL(OGR_G_GetGeometryName(geom),"LINEARRING")) {
          n+=ns=OGR_G_GetPointCount(geom);
          for (j=0;j<ns;j++) {
-            dx=OGR_G_GetX(geom,j);
             dy=OGR_G_GetY(geom,j);
             if (dy<dminy)
                dminy=dy;

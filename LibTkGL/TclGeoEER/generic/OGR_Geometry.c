@@ -1170,7 +1170,8 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          return(0);
       }
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
-
+      co.Lat=co.Lon=0.0;
+      
       /*Project vertices*/
       for(n=0;n<nv;n++) {
          OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);

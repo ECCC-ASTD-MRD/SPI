@@ -40,9 +40,6 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 
 extern int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 
-static int GL_Type[]={ GL_BITMAP,GL_BITMAP,GL_UNSIGNED_BYTE,GL_BYTE,GL_UNSIGNED_SHORT,GL_SHORT,
-                       GL_UNSIGNED_INT,GL_INT,GL_UNSIGNED_INT,GL_INT,GL_FLOAT,GL_FLOAT };
-
 /*----------------------------------------------------------------------------
  * Nom      : <Data_RenderShaderParticle>
  * Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE

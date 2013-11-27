@@ -1,5 +1,5 @@
 #!/bin/sh
-#----- Run autocon2.50 for a change of version int he configure.in script
+#----- Run autocon2.50 for a change of version in the configure.in script
 
 arg=$1
 
@@ -93,7 +93,7 @@ else
 	--enable-64bit \
 	--with-tcl=${TCL}/TclTk/lib \
 	--with-tk=${TCL}/TclTk/lib \
-	--with-eer=/home/afsr/005/Projects/libeerUtils \
+	--with-eer=${SSM_DEV}/workspace/eerUtils_1.7_${ORDENV_PLAT}\
 	--with-rmn=${LIB}/librmn-14 \
 	--with-gdb=${LIB}/gdb \
 	--with-gdal=${LIB}/gdal-1.10.0/bin/gdal-config  \

@@ -2830,7 +2830,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
 
    Tcl_Obj *obj,*sub;
    int      f,n=0,ni,nj,nc,vnb=0,vn0,vn1;
-   double   v,dl=0.0,dlat,dlon,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
+   double   v,dl=0.0,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {
@@ -2850,16 +2850,16 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
 
-      // Order values
+      // Order values in latitude only since longitude order gives the selection orientation
       if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
-      if (dlon0>dlon1) { v=dlon0; dlon0=dlon1; dlon1=v; };
 
       // Get ij bounding box
       GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
 
-      // Wrapover 180/-180 check
-      if (dlon0*dlon1<0 && dlon0+dlon1>0.0) {
-         dl=dlon1-dlon0;
+      // If Wrapover 180/-180, need to check all gridpoint along longitude
+      if (Field->Ref->Type&GRID_WRAP) {
+         i0=Field->Ref->X0;
+         i1=Field->Ref->X1;
       }
    } else {
       vnb=nc>>1;
@@ -2909,23 +2909,20 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
             if (nc==4) {
                // Range case
                Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
-               if (dlon1>180) dlon=dlon<0?dlon+=360.0:dlon;
+               if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+=360.0:dlon;
                 
                f=0;
-               if (dlat>=dlat0 && dlat<=dlat1) {
-                  if (dl<=180) {
+               if (dlat>=dlat0 && dlat<=dlat1) {                  
+                  if (dlon0<dlon1) {
                      if (dlon>=dlon0 && dlon<=dlon1) {
                         f=1;
                      }
                   } else {
-                     if ((dlon<=dlon0 && dlon>-180) || (dlon>=dlon1 && dlon<180)) {
+                     if ((dlon>=dlon0 && dlon<=180) || (dlon<=dlon1 && dlon>=-180)) {
                         f=1;
                      }
                   }
-//                  if (dlon>=dlon0 && dlon<=dlon1) {
-//                     f=1;
-//                  }
-                }
+               }
              } else {
                 // Polygon case
                 Vect_Init(vp,ni,nj,0.0);
@@ -2968,12 +2965,12 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          if (nc==4) {
             //Range case
             if (Field->Ref->Lat[ni]>=dlat0 && Field->Ref->Lat[ni]<=dlat1) {
-               if (dl<=180) {
+               if (dlon0<dlon1) {
                   if (Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=dlon1) {
                      f=1;
                   }
                } else {
-                  if ((Field->Ref->Lon[ni]<=dlon0 && dlon>-180) || (Field->Ref->Lon[ni]>=dlon1 && dlon<180)) {
+                  if ((Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=180) || (Field->Ref->Lon[ni]<=dlon1 && Field->Ref->Lon[ni]>=-180)) {
                      f=1;
                   }
                }
