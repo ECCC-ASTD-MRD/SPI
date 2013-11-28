@@ -658,7 +658,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    }
 
    #----- Remettre la bordure a sa valeur d'origine
-   Page::WidgetShow $Frame.page.canvas {} 0 0 True
+   Shape::Widget $Frame.page.canvas {} 0 0 True
 
    InfoFrame::Incr .printbox.job 1
 }
