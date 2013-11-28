@@ -208,6 +208,8 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
       bind $Frame.bs$tag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
       bind $Frame.bs$tag <B1-Motion>          "Page::ActiveScale Viewport $Frame $mini %X %Y 1; Miniport::Coverage $Frame $mini"
       bind $Frame.bs$tag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame $mini %X %Y 0; Miniport::Coverage $Frame $mini"
+
+      Page::WidgetBind $Frame $mini
    }
 
    $Frame.page.canvas bind $mini <Button-3> "tk_popup .mapmenu %X %Y 0"
