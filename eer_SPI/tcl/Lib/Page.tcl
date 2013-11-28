@@ -143,7 +143,7 @@ namespace eval Page {
 
    set Param(Grid)      0           ;#Grille de snap
    set Param(Snap)      5           ;#intervalle de snap
-   set Param(Widget)    True        ;#Affichage des widgets
+   set Param(Widget)    False       ;#Affichage des widgets
    set Param(Intrusion) 0           ;#Allow for viewport intrusions
    set Param(Square)    0           ;#Dimension du curseur carre
 
@@ -162,6 +162,7 @@ namespace eval Page {
    set Data(Y)          0           ;#Coordonnee de base
 
    set Data(Tag)        PAGE        ;#Tag identifiant la projection
+   set Data(Previous)   ""          ;#Previously active tag
 
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
    set Data(CoordUnit)  DEG         ;#Type d'unite des coordonnees
@@ -1827,10 +1828,10 @@ proc Page::SnapRef { Frame X Y } {
 #----------------------------------------------------------------------------
 
 proc Page::WidgetBind { Frame Tag } {
-
+   
    #----- bindings de placement des bouttons
-   $Frame.page.canvas bind $Tag <Leave> "+Page::WidgetShow %W $Tag %x %y 0"
-   $Frame.page.canvas bind $Tag <Enter> "+Page::WidgetShow %W $Tag %x %y 1"
+   $Frame.page.canvas bind $Tag <Leave> "+ Page::WidgetShow %W $Tag %x %y 0"
+   $Frame.page.canvas bind $Tag <Enter> "+ Page::WidgetShow %W $Tag %x %y 1"
 
    $Frame.page.canvas lower NOPRINT
    Page::WidgetShow $Frame.page.canvas {} 0 0 0
@@ -1858,15 +1859,23 @@ proc Page::WidgetBind { Frame Tag } {
 proc Page::WidgetShow { Canvas Tag X Y Visible } {
    variable Data
 
+   #----- If we entered a new widget, clear all options
+   if { $Visible && !$Page::Param(Widget) } {
+      $Canvas itemconfigure NOPRINT -state hidden
+   }
+   
    if { ![llength $Tag] } {
+      #----- Global settings of widgets
       if { !$Visible && !$Page::Param(Widget) } {
          $Canvas itemconfigure NOPRINT -state hidden
       } elseif { $Page::Param(Widget) } {
          $Canvas itemconfigure NOPRINT -state normal
       }
    } else {
-
+      #----- Per widget settings
+      
       if { !$Visible && !$Page::Param(Widget) } {
+         #----- Disable the options for the widget we just left
 
          set coords [$Canvas bbox $Tag]
          if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
@@ -1887,6 +1896,7 @@ proc Page::WidgetShow { Canvas Tag X Y Visible } {
             $Canvas itemconfigure UD$Tag -state hidden
          }
       } else {
+         #----- Enable options for the widget we just entered
          $Canvas itemconfigure SC$Data(Tag)$Tag -state normal
          $Canvas itemconfigure BS$Data(Tag)$Tag -state normal
          $Canvas itemconfigure BM$Data(Tag)$Tag -state normal
