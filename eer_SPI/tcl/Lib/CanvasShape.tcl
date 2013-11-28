@@ -67,12 +67,14 @@
 #    Shape::BindFull       { Canvas Tag Var { Command "" } }
 #    Shape::BindMove       { Canvas Tags { Command "" } }
 #    Shape::BindScale      { Canvas Tag { Command "" } }
+#    Shape::BindWidget     { Canvas Tag }
 #    Shape::UnBind         { Canvas Tag }
 #    Shape::Full           { Canvas Tag args }
 #    Shape::Move           { Canvas Tags X Y { Direct False } }
 #    Shape::Scale          { Canvas Tag X Y args }
 #    Shape::Set            { Canvas Tag X Y }
 #    Shape::UnSet          { Canvas Tag }
+#    Shape::Widget         { Canvas Tag X Y Visible }
 #
 #    Shape::DrawHBAR       { Canvas Pixel Tags Color Size Fill }
 #    Shape::DrawVBAR       { Canvas Pixel Tags Color Size Fill }
@@ -425,6 +427,7 @@ proc CVClock::Create { Frame X Y } {
 
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKMINUTE"
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKHOUR"
+   eval $canvas create rectangle [$canvas bbox CVCLOCK] -tag \"CVCLOCK CVCLOCKBBOX\" -width 0
 
    set Data(Sec$Frame)  0
    set Data(Zone$Frame) 0
@@ -448,9 +451,10 @@ proc CVClock::Create { Frame X Y } {
       }
    }
 
-   $canvas create window [expr $X-43] [expr $Y+50] -window $canvas.cvclock -anchor se -tags "CVCLOCK NOPRINT"
+   $canvas create window [expr $X-43] [expr $Y+50] -window $canvas.cvclock -anchor se -tags "CVCLOCK OPCVCLOCK NOPRINT"
 
    Shape::BindMove $canvas CVCLOCK
+   Shape::BindWidget $canvas CVCLOCK
 }
 
 #----------------------------------------------------------------------------
@@ -800,7 +804,7 @@ proc CVScale::Create { Frame X Y Size } {
    set x1 [expr $X+$Size/2]
    set y1 [expr $Y+10]
 
-   $canvas create rectangle -999 -999 -999 -999 -outline black -fill white -width 1 -tag "CVSBG CVSCALE"
+   $canvas create rectangle -999 -999 -999 -999 -outline black -fill "" -width 0 -tag "CVSCALEBBOX CVSCALE"
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVSCLOC CVSCALE"
    $canvas create text $x0 $Y -text "" -font XFont12 -anchor sw -tag "CVSCTXT CVSCALE"
    $canvas create text $x1 $Y -text "" -font XFont12 -anchor se -tag "CVSCUNI CVSCALE"
@@ -832,9 +836,10 @@ proc CVScale::Create { Frame X Y Size } {
             -command { CVScale::Update $Page::Data(Frame) $Page::Data(VP) }
     }
 
-   $canvas create window [expr $x0-3] [expr $y0-1] -window $canvas.cvscale -anchor se -tags "CVSCALE NOPRINT"
+   $canvas create window [expr $x1-10] [expr $y1+2] -window $canvas.cvscale -anchor ne -tags "CVSCALE OPCVSCALE NOPRINT"
 
    Shape::BindMove $canvas CVSCALE
+   Shape::BindWidget $canvas CVSCALE
 
    CVScale::Update $Frame $Page::Data(VP)
 }
@@ -1012,11 +1017,15 @@ proc CVScale::Update { Frame VP } {
       $canvas itemconfigure CVSCUNI -text "$Convert::Lbl($u)[lindex $Convert::Lbl(DistL) $GDefs(Lang)]"
    }
 
-   $canvas coords CVSBG $x0 $y0 $x0 $y0
+   $canvas coords CVSBBOX $x0 $y0 $x0 $y0
+   set bbox [$canvas bbox CVSCALE]
+   $canvas coords CVSBBOX [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-4] [expr [lindex $bbox 2]+12] [expr [lindex $bbox 3]+2] 
    if { $Data(BG) } {
-      set bbox [$canvas bbox CVSCALE]
-      $canvas coords CVSBG [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-4] [expr [lindex $bbox 2]+12] [expr [lindex $bbox 3]+2]
-   }
+      $canvas itemconfigure CVSBBOX -fill white -width 1
+   } else {
+      $canvas itemconfigure CVSBBOX -fill "" -width 0
+   }  
+   
    $canvas raise CVSCALE
 }
 
@@ -1928,6 +1937,114 @@ proc Shape::BindScale { Canvas Tag { Command "" } } {
    bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
    bind $Canvas.bs$Tag <ButtonRelease-1> "Shape::UnSet $Canvas $Tag"
    bind $Canvas.bs$Tag <B1-Motion>       "Shape::Scale $Canvas $Tag %X %Y $Command"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::BindWidget>
+# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Installation des evenements de gestion estion de
+#               l'activation/desactivation des widgets actifs
+#
+# Parametres :
+#   <Frame>  : Identificateur de canvas
+#   <Tag>    : Tag de l'objet
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::BindWidget { Canvas Tag } {
+   
+   #----- bindings de placement des bouttons
+   $Canvas bind $Tag <Leave> "+ Shape::Widget %W $Tag %x %y 0"
+   $Canvas bind $Tag <Enter> "+ Shape::Widget %W $Tag %x %y 1"
+
+   $Canvas lower NOPRINT
+   Shape::Widget $Canvas {} 0 0 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::Widget>
+# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Gestion de l'acrivation/desactivation des widgets actifs
+#
+# Parametres :
+#   <Canvas> : Identificateur de canvas
+#   <Tag>    : Tag de l'objet
+#   <X>      : Coordonnee en X du deplacement
+#   <Y>      : Coordonnee en Y du deplacement
+#   <Visible>: Visibilite ou non
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::Widget { Canvas Tag X Y Visible } {
+   variable Data
+
+   #----- If we entered a new widget, clear all options
+   if { $Visible && !$Page::Param(WidgetOpt) } {
+      $Canvas itemconfigure NOPRINT -state hidden
+   }
+   
+   if { ![llength $Tag] } {
+      #----- Global settings of widgets
+      if { !$Visible && !$Page::Param(WidgetOpt) } {
+         $Canvas itemconfigure NOPRINT -state hidden
+      } elseif { $Page::Param(WidgetOpt) } {
+         $Canvas itemconfigure NOPRINT -state normal
+      }
+   } else {
+      #----- Per widget settings
+      
+      if { !$Visible && !$Page::Param(WidgetOpt) } {
+         #----- Disable the options for the widget we just left
+
+         set coords [$Canvas bbox $Tag]
+         if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
+            $Canvas itemconfigure SCPAGE$Tag -state hidden
+            $Canvas itemconfigure BSPAGE$Tag -state hidden
+            $Canvas itemconfigure BMPAGE$Tag -state hidden
+            $Canvas itemconfigure BFPAGE$Tag -state hidden
+            $Canvas itemconfigure BDPAGE$Tag -state hidden
+            $Canvas itemconfigure BOPAGE$Tag -state hidden
+            $Canvas itemconfigure UDPAGE$Tag -state hidden
+
+            $Canvas itemconfigure SC$Tag -state hidden
+            $Canvas itemconfigure BS$Tag -state hidden
+            $Canvas itemconfigure BM$Tag -state hidden
+            $Canvas itemconfigure BF$Tag -state hidden
+            $Canvas itemconfigure BD$Tag -state hidden
+            $Canvas itemconfigure BO$Tag -state hidden
+            $Canvas itemconfigure UD$Tag -state hidden
+            $Canvas itemconfigure OP$Tag -state hidden
+         }
+      } else {
+         #----- Enable options for the widget we just entered
+         $Canvas itemconfigure SCPAGE$Tag -state normal
+         $Canvas itemconfigure BSPAGE$Tag -state normal
+         $Canvas itemconfigure BMPAGE$Tag -state normal
+         $Canvas itemconfigure BFPAGE$Tag -state normal
+         $Canvas itemconfigure BDPAGE$Tag -state normal
+         $Canvas itemconfigure BOPAGE$Tag -state normal
+         $Canvas itemconfigure UDPAGE$Tag -state normal
+
+         $Canvas itemconfigure SC$Tag -state normal
+         $Canvas itemconfigure BS$Tag -state normal
+         $Canvas itemconfigure BM$Tag -state normal
+         $Canvas itemconfigure BF$Tag -state normal
+         $Canvas itemconfigure BD$Tag -state normal
+         $Canvas itemconfigure BO$Tag -state normal
+         $Canvas itemconfigure UD$Tag -state normal
+         $Canvas itemconfigure OP$Tag -state normal
+      }
+   }
 }
 
 #----------------------------------------------------------------------------

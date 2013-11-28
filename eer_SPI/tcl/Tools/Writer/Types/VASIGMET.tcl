@@ -693,7 +693,7 @@ proc Writer::VASIGMET::VertexFollow { Frame VP X Y Scan } {
             if { [llength $tmp] } {
                lappend tmp $X $Y 0 [lindex $tmp 0] [lindex $tmp 1] 0
 
-               Viewport::DrawArea $Frame $VP $tmp "$Page::Data(Tag)$VP VASIGMET VERTEXFOLLOW" VERTEXFOLLOW red red\
+               Viewport::DrawArea $Frame $VP $tmp "PAGE$VP VASIGMET VERTEXFOLLOW" VERTEXFOLLOW red red\
                   @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm 0 2
             }
          }

@@ -495,10 +495,10 @@ proc Graph::Resize { Frame Graph X0 Y0 X1 Y1 Limit } {
    catch { $cv itemconfigure $Graph -x $X0 -y $Y0 -width $Data(Width$Graph) -height $Data(Height$Graph) }
 
    if { $Data(Active$Graph) } {
-      $Frame.page.canvas coords BS$Page::Data(Tag)$Graph $X1 $Y1
-      $Frame.page.canvas coords BM$Page::Data(Tag)$Graph [expr $X1-11] $Y1
-      $Frame.page.canvas coords BF$Page::Data(Tag)$Graph [expr $X1-22] $Y1
-      $Frame.page.canvas coords BD$Page::Data(Tag)$Graph $X1 $Y0
+      $Frame.page.canvas coords BSPAGE$Graph $X1 $Y1
+      $Frame.page.canvas coords BMPAGE$Graph [expr $X1-11] $Y1
+      $Frame.page.canvas coords BFPAGE$Graph [expr $X1-22] $Y1
+      $Frame.page.canvas coords BDPAGE$Graph $X1 $Y0
    }
 
    if { !$Limit } {
@@ -658,7 +658,7 @@ proc Graph::Destroy { Frame { Graph "" } { Type "" } } {
       upvar #0 Graph::${Type}::${Type}${Graph}::Data data
 
       #----- Supprimer les pointeurs
-      $Frame.page.canvas delete $Page::Data(Tag)$Graph
+      $Frame.page.canvas delete PAGE$Graph
       catch { $data(FrameData).page.canvas delete GRAPHSELECT$Graph }
 
       #----- Supprimer les items
@@ -728,7 +728,7 @@ proc Graph::Mode { Graph Type { Zoom False } } {
 
    upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
 
-   $data(Canvas) bind $Page::Data(Tag)$Graph    <ButtonPress-1> "Graph::Activate $data(Frame) $Graph $Type"
+   $data(Canvas) bind PAGE$Graph    <ButtonPress-1> "Graph::Activate $data(Frame) $Graph $Type"
 
    if { $Zoom } {
 
@@ -738,14 +738,14 @@ proc Graph::Mode { Graph Type { Zoom False } } {
 
       #----- Evenements de zoom
 
-      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-2>   "Graph::Activate $data(Frame) $Graph $Type;\
+      $data(Canvas) bind PAGE$Graph <ButtonPress-2>   "Graph::Activate $data(Frame) $Graph $Type;\
                                                                 Graph::ZoomInit $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind $Page::Data(Tag)$Graph <B2-Motion>       "Graph::ZoomBox  $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
-      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonRelease-2> "Graph::Zoom $Type $Graph"
-      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonRelease-3> "Graph::ZoomReset $Type $Graph"
+      $data(Canvas) bind PAGE$Graph <B2-Motion>       "Graph::ZoomBox  $data(Canvas) \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\]"
+      $data(Canvas) bind PAGE$Graph <ButtonRelease-2> "Graph::Zoom $Type $Graph"
+      $data(Canvas) bind PAGE$Graph <ButtonRelease-3> "Graph::ZoomReset $Type $Graph"
 
-      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-4>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] +0.1 True"
-      $data(Canvas) bind $Page::Data(Tag)$Graph <ButtonPress-5>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] -0.1"
+      $data(Canvas) bind PAGE$Graph <ButtonPress-4>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] +0.1 True"
+      $data(Canvas) bind PAGE$Graph <ButtonPress-5>   "Graph::ZoomScroll $Type $Graph \[$data(Canvas) canvasx %x\] \[$data(Canvas) canvasy %y\] -0.1"
 
       #----- Evenements de rotation
 
@@ -1447,9 +1447,9 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                }
 
                $Frame.page.canvas create text [expr $x+6] $y -text $Desc \
-                  -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor w
+                  -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "PAGE$VP $Tag" -anchor w
                $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Graph::Color(Select) \
-                  -tags "$Page::Data(Tag)$VP $Tag" -outline $Graph::Color(Select)
+                  -tags "PAGE$VP $Tag" -outline $Graph::Color(Select)
             }
       }
       "BOX" {
@@ -1468,7 +1468,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                      set Desc "$Desc\n[format "(%.3f,%.3f - %.3f,%.3f)" $la0 $lo0 $la1 $lo1]"
                   }
                   $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -text $Desc \
-                     -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "$Page::Data(Tag)$VP $Tag" -anchor se
+                     -fill $Graph::Color(Select) -font $Graph::Font(Select) -tags "PAGE$VP $Tag" -anchor se
                }
             }
       }
@@ -1478,7 +1478,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                lappend coords $lat $lon 0.0
             }
             lappend coords [lindex $Coords 0] [lindex $Coords 1] 0.0
-            lappend Tag $Page::Data(Tag)$VP
+            lappend Tag PAGE$VP
 
 #            Viewport::DrawArea $Frame $VP $coords $Tag $Tag $Graph::Color(Select) $Graph::Color(Select) "" False 2
             Viewport::DrawLine $Frame $VP $coords $Tag $Graph::Color(Select) 2
@@ -1494,7 +1494,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                      set id "$id\n[format "(%.3f,%.3f)" $lat $lon]"
                   }
                   $Frame.page.canvas create text [expr [lindex $xy 0]-2] [expr [lindex $xy 1]-2] -anchor se -text $id -font $Graph::Font(Select) \
-                     -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+                     -fill $Graph::Color(Select) -tags "PAGE$VP $Tag"
                }
             }
 
@@ -1505,7 +1505,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                   #----- Check close to cursor position cause it breaks in follow mode
                   if { [expr hypot($x-$Viewport::Map(X),$y-$Viewport::Map(Y))]>2 } {
                      $Frame.page.canvas create rectangle [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -width 1 -outline "" \
-                        -fill $Graph::Color(Select) -tags "$Page::Data(Tag)$VP $Tag"
+                        -fill $Graph::Color(Select) -tags "PAGE$VP $Tag"
                   }
                }
             }
@@ -2069,7 +2069,7 @@ proc Graph::RangeDraw { Type Graph Place Id Y } {
 
       if { $y<$graph(Y0) && $y>$graph(Y1) } {
          if { [$data(Canvas) find withtag RANGE$Id$Graph]=="" } {
-            $data(Canvas) create line $graph(X0) $y $graph(X1) $y -fill #FF0000 -tags "$Page::Data(Tag)$Graph RANGE$Graph RANGE$Id$Graph"
+            $data(Canvas) create line $graph(X0) $y $graph(X1) $y -fill #FF0000 -tags "PAGE$Graph RANGE$Graph RANGE$Id$Graph"
             $data(Canvas) bind RANGE$Id$Graph <Enter> "$data(Canvas) configure -cursor hand1"
             $data(Canvas) bind RANGE$Id$Graph <B1-Motion> "Graph::RangeDraw $Type $Graph 1 $Id %y"
             $data(Canvas) bind RANGE$Id$Graph <Leave> "$data(Canvas) configure -cursor left_ptr"

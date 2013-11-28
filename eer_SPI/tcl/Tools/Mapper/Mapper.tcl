@@ -1310,7 +1310,7 @@ proc Mapper::UpdateItems { Frame } {
          set tmp $Data(Mask$Data(Object))
          lappend tmp [lindex $tmp 0] [lindex $tmp 1] 0
 
-         Viewport::DrawLine $Frame $Data(VP) $tmp "$Page::Data(Tag)$Data(VP) MAPPERCUTTER" red 2
+         Viewport::DrawLine $Frame $Data(VP) $tmp "PAGE$Data(VP) MAPPERCUTTER" red 2
       }
    }
 

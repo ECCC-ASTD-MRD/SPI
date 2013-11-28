@@ -97,8 +97,6 @@
 #    Page::SnapGrid        { Frame }
 #    Page::Snap            { Frame X Y }
 #    Page::SnapRef         { Frame X Y }
-#    Page::WidgetBind      { Frame Tag }
-#    Page::WidgetShow      { Frame Tag X Y Visible }
 #
 #    VertexAdd    { Frame VP X Y }
 #    VertexDelete { Frame VP }
@@ -143,7 +141,7 @@ namespace eval Page {
 
    set Param(Grid)      0           ;#Grille de snap
    set Param(Snap)      5           ;#intervalle de snap
-   set Param(Widget)    False       ;#Affichage des widgets
+   set Param(WidgetOpt) False       ;#Affichage des widgets
    set Param(Intrusion) 0           ;#Allow for viewport intrusions
    set Param(Square)    0           ;#Dimension du curseur carre
 
@@ -161,7 +159,6 @@ namespace eval Page {
    set Data(X)          0           ;#Coordonnee de base
    set Data(Y)          0           ;#Coordonnee de base
 
-   set Data(Tag)        PAGE        ;#Tag identifiant la projection
    set Data(Previous)   ""          ;#Previously active tag
 
    set Data(Coord)      ""          ;#Coordonnees a l'interieur de la page
@@ -221,7 +218,7 @@ proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
    } else {
       ${Type}::Activate $Frame $Id
    }
-   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 50 }
+   catch { $Frame.page.canvas itemconfigure PAGE$Id -transparency 50 }
 
    Page::SnapRef $Frame $X $Y
 }
@@ -246,7 +243,7 @@ proc Page::ActiveTag { Type Frame Id X Y { Args {} } } {
 proc Page::ActiveUnTag { Type Frame Id } {
 
    glrender -xexpose 1 -resolution 1
-   catch { $Frame.page.canvas itemconfigure $Page::Data(Tag)$Id -transparency 100 }
+   catch { $Frame.page.canvas itemconfigure PAGE$Id -transparency 100 }
    eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
 }
 
@@ -276,7 +273,7 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    global GDefs
    variable Data
 
-   set tag $Data(Tag)$Id
+   set tag PAGE$Id
 
    label $Frame.bs$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvscale.xbm -cursor sizing -bd 1 -relief raised
    label $Frame.bm$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
@@ -299,7 +296,7 @@ proc Page::ActiveWrapper { Type Frame Id X0 Y0 X1 Y1 { Args { } } } {
    eval Page::ActiveFull $Type $Frame $Id \$${Type}::Data(Full$Id)
 
    #----- bindings de placement des bouttons
-   Page::WidgetBind $Frame $Id
+   Shape::BindWidget $Frame.page.canvas $Id
 
    #----- bindings de deplacement
    bind $Frame.bm$tag <ButtonPress-1>   "Page::ActiveTag   $Type $Frame $Id %X %Y $Args"
@@ -335,7 +332,7 @@ proc Page::ActiveUnWrapper { Type Frame Id } {
 
    upvar #0 ${Type}::Data(Full$Id) full
 
-   set tag $Data(Tag)$Id
+   set tag PAGE$Id
 
    destroy $Frame.bs$tag $Frame.bm$tag $Frame.bf$tag $Frame.bd$tag $Frame.sc$tag
    $Frame.page.canvas delete BS$tag BM$tag BF$tag BD$tag SC$tag
@@ -365,7 +362,7 @@ proc Page::ActiveWrap { Frame Object } {
    variable Data
 
    if { $Object!="" } {
-      set tag $Data(Tag)[string map { . "" } $Object]
+      set tag PAGE[string map { . "" } $Object]
 
       catch {
          $Frame.bs$tag configure -fg red
@@ -396,7 +393,7 @@ proc Page::ActiveUnWrap { Frame Object } {
    global   GDefs
    variable Data
 
-   set tag $Data(Tag)[string map { . "" } $Object]
+   set tag PAGE[string map { . "" } $Object]
 
    catch {
       $Frame.bs$tag configure -fg black
@@ -437,7 +434,7 @@ proc Page::ActiveMove { Type Frame Id X Y } {
       return
    }
 
-   set tag $Page::Data(Tag)$Id
+   set tag PAGE$Id
 
    set X [$Frame.page.canvas canvasx $X $Param(Snap)]
    set Y [$Frame.page.canvas canvasy $Y $Param(Snap)]
@@ -931,21 +928,21 @@ proc Page::ModeCam { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind $Data(Tag)$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de rotation
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
+   $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
 
-   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
+   $c bind PAGE$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
 
    #----- Evenements de manipulation sur l'axe X-Y
 
-   $c bind $Data(Tag)$VP <ButtonPress-2>       "$c config -cursor exchange; Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <B2-Motion>           "ProjCam::XYDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <ButtonRelease-2>     "$c config -cursor left_ptr; ProjCam::XYDone $Frame $Frame True"
+   $c bind PAGE$VP <ButtonPress-2>       "$c config -cursor exchange; Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <B2-Motion>           "ProjCam::XYDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <ButtonRelease-2>     "$c config -cursor left_ptr; ProjCam::XYDone $Frame $Frame True"
 
    $c config -cursor left_ptr
 }
@@ -971,25 +968,25 @@ proc Page::ModeFly { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind $Data(Tag)$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de manipulation sur l'axe X-Y
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>       "Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]; $c config -cursor fleur"
-   $c bind $Data(Tag)$VP <B1-Motion>           "ProjCam::ToDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-#   $c bind $Data(Tag)$VP <ButtonRelease-1>     "ProjCam::XYDone $Frame $Frame"
+   $c bind PAGE$VP <ButtonPress-1>       "Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]; $c config -cursor fleur"
+   $c bind PAGE$VP <B1-Motion>           "ProjCam::ToDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+#   $c bind PAGE$VP <ButtonRelease-1>     "ProjCam::XYDone $Frame $Frame"
 
    #----- Evenements de rotation
 
-   $c bind $Data(Tag)$VP <ButtonPress-2>       ""
-   $c bind $Data(Tag)$VP <B2-Motion>           ""
-   $c bind $Data(Tag)$VP <ButtonRelease-2>     ""
+   $c bind PAGE$VP <ButtonPress-2>       ""
+   $c bind PAGE$VP <B2-Motion>           ""
+   $c bind PAGE$VP <ButtonRelease-2>     ""
 
    #----- Evenements de manipulation sur l'axe Z
 
-   $c bind $Data(Tag)$VP <B1-B2-ButtonPress>   ""
-   $c bind $Data(Tag)$VP <B1-B2-Motion>        ""
-   $c bind $Data(Tag)$VP <B1-B2-ButtonRelease> ""
+   $c bind PAGE$VP <B1-B2-ButtonPress>   ""
+   $c bind PAGE$VP <B1-B2-Motion>        ""
+   $c bind PAGE$VP <B1-B2-ButtonRelease> ""
 
 
    bind $c <ButtonPress-4>   { set ProjCam::Param(Speed) [expr $ProjCam::Param(Speed)==0?0.00001:$ProjCam::Param(Speed)*2.0] }
@@ -1022,19 +1019,19 @@ proc Page::ModeData { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind $Data(Tag)$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de selection de region
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP"
-   $c bind $Data(Tag)$VP <B1-Motion>       "$c config -cursor sizing; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP }"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> "$c config -cursor hand1; \$Page::Data(ToolMode)::DrawDone $Frame $VP"
+   $c bind PAGE$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP"
+   $c bind PAGE$VP <B1-Motion>       "$c config -cursor sizing; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP }"
+   $c bind PAGE$VP <ButtonRelease-1> "$c config -cursor hand1; \$Page::Data(ToolMode)::DrawDone $Frame $VP"
 
    #----- Evenement de deplacement de region (A implementer chez le client)
 
-   $c bind $Data(Tag)$VP <ButtonPress-2>   "$c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
-   $c bind $Data(Tag)$VP <B2-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
-   $c bind $Data(Tag)$VP <ButtonRelease-2> "$c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
+   $c bind PAGE$VP <ButtonPress-2>   "$c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
+   $c bind PAGE$VP <B2-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
+   $c bind PAGE$VP <ButtonRelease-2> "$c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
 
    $c config -cursor hand1
 }
@@ -1060,19 +1057,19 @@ proc Page::ModeDraw { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind $Data(Tag)$VP <Motion>          "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 0 }"
+   $c bind PAGE$VP <Motion>          "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 0 }"
 
    #----- Evenements de creation de vertex
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>   "$c config -cursor pencil; Viewport::Activate $Frame $VP"
-   $c bind $Data(Tag)$VP <B1-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 1 }"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> "$c config -cursor left_ptr; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexAdd $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] }"
+   $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor pencil; Viewport::Activate $Frame $VP"
+   $c bind PAGE$VP <B1-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 1 }"
+   $c bind PAGE$VP <ButtonRelease-1> "$c config -cursor left_ptr; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexAdd $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] }"
 
    #----- Evenement de suppression de vertex
 
-   $c bind $Data(Tag)$VP <ButtonPress-2>   ""
-   $c bind $Data(Tag)$VP <B2-Motion>       ""
-   $c bind $Data(Tag)$VP <ButtonRelease-2> "\$Page::Data(DrawMode)::VertexDelete $Frame $VP"
+   $c bind PAGE$VP <ButtonPress-2>   ""
+   $c bind PAGE$VP <B2-Motion>       ""
+   $c bind PAGE$VP <ButtonRelease-2> "\$Page::Data(DrawMode)::VertexDelete $Frame $VP"
 }
 
 #----------------------------------------------------------------------------
@@ -1134,16 +1131,16 @@ proc Page::ModeSelect { Mode { Frames {} } } {
 
          foreach vp [Page::Registered $frame Viewport] {
 
-            $c bind $Data(Tag)$vp <Motion>                 ""
-            $c bind $Data(Tag)$vp <B1-Motion>              ""
-            $c bind $Data(Tag)$vp <ButtonPress-1>          ""
-            $c bind $Data(Tag)$vp <ButtonRelease-1>        ""
-            $c bind $Data(Tag)$vp <ButtonPress-2>          ""
-            $c bind $Data(Tag)$vp <ButtonRelease-2>        ""
-            $c bind $Data(Tag)$vp <B1-B2-ButtonPress>      ""
-            $c bind $Data(Tag)$vp <B1-B2-Motion>           ""
-            $c bind $Data(Tag)$vp <B1-B2-ButtonRelease>    ""
-            $c bind $Data(Tag)$vp <Double-ButtonRelease-1> ""
+            $c bind PAGE$vp <Motion>                 ""
+            $c bind PAGE$vp <B1-Motion>              ""
+            $c bind PAGE$vp <ButtonPress-1>          ""
+            $c bind PAGE$vp <ButtonRelease-1>        ""
+            $c bind PAGE$vp <ButtonPress-2>          ""
+            $c bind PAGE$vp <ButtonRelease-2>        ""
+            $c bind PAGE$vp <B1-B2-ButtonPress>      ""
+            $c bind PAGE$vp <B1-B2-Motion>           ""
+            $c bind PAGE$vp <B1-B2-ButtonRelease>    ""
+            $c bind PAGE$vp <Double-ButtonRelease-1> ""
 
             switch $Data(Mode) {
                Zoom  { Page::ModeZoom  $frame $vp }
@@ -1193,18 +1190,18 @@ proc Page::ModeNone { Frame VP } {
 
    foreach vp [Page::Registered $Frame Viewport] {
 
-      $c bind $Data(Tag)$vp <ButtonPress-1>       ""
-      $c bind $Data(Tag)$vp <B1-Motion>           ""
-      $c bind $Data(Tag)$vp <ButtonRelease-1>     ""
-      $c bind $Data(Tag)$vp <Motion>              ""
-      $c bind $Data(Tag)$vp <ButtonPress-2>       ""
-      $c bind $Data(Tag)$vp <B2-Motion>           ""
-      $c bind $Data(Tag)$vp <ButtonRelease-2>     ""
-      $c bind $Data(Tag)$vp <B1-B2-ButtonPress>   ""
-      $c bind $Data(Tag)$vp <B1-B2-Motion>        ""
-      $c bind $Data(Tag)$vp <B1-B2-ButtonRelease> ""
-      $c bind $Data(Tag)$VP <ButtonPress-4>       ""
-      $c bind $Data(Tag)$VP <ButtonPress-5>       ""
+      $c bind PAGE$vp <ButtonPress-1>       ""
+      $c bind PAGE$vp <B1-Motion>           ""
+      $c bind PAGE$vp <ButtonRelease-1>     ""
+      $c bind PAGE$vp <Motion>              ""
+      $c bind PAGE$vp <ButtonPress-2>       ""
+      $c bind PAGE$vp <B2-Motion>           ""
+      $c bind PAGE$vp <ButtonRelease-2>     ""
+      $c bind PAGE$vp <B1-B2-ButtonPress>   ""
+      $c bind PAGE$vp <B1-B2-Motion>        ""
+      $c bind PAGE$vp <B1-B2-ButtonRelease> ""
+      $c bind PAGE$VP <ButtonPress-4>       ""
+      $c bind PAGE$VP <ButtonPress-5>       ""
    }
 }
 
@@ -1229,20 +1226,20 @@ proc Page::ModeZoom { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind $Data(Tag)$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de zoom
 
-   $c bind $Data(Tag)$VP <ButtonPress-2>   "$c config -cursor crosshair; Viewport::Activate $Frame $VP; ProjCam::ZoomInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <ButtonRelease-2> " ProjCam::ZoomIn $Frame $Frame $VP; $c config -cursor left_ptr"
+   $c bind PAGE$VP <ButtonPress-2>   "$c config -cursor crosshair; Viewport::Activate $Frame $VP; ProjCam::ZoomInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <ButtonRelease-2> " ProjCam::ZoomIn $Frame $Frame $VP; $c config -cursor left_ptr"
 
    #----- Evenements de rotation
 
-   $c bind $Data(Tag)$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-   $c bind $Data(Tag)$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
+   $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
+   $c bind PAGE$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
 
-   $c bind $Data(Tag)$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) $Viewport::Map(ClickFactor)"
+   $c bind PAGE$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) $Viewport::Map(ClickFactor)"
 
    $c config -cursor left_ptr
 }
@@ -1266,7 +1263,7 @@ proc Page::ParamApply { } {
 
    Page::Size $Data(Frame) $Data(Width) $Data(Height)
    Page::MaskItem $Data(Frame)
-   Page::WidgetShow $Data(Canvas) {} 0 0 0
+   Shape::Widget $Data(Canvas) {} 0 0 0
 }
 
 #----------------------------------------------------------------------------
@@ -1314,7 +1311,7 @@ proc Page::ParamFrame { Frame Apply } {
       frame $frame.oth.def -relief sunken -bd 1
          checkbutton $frame.oth.def.intr  -text [lindex $Lbl(Intrusion) $GDefs(Lang)] -variable Page::Param(Intrusion) \
             -indicatoron false -command "$Apply configure -state normal" -onvalue 10 -offvalue 0 -bd 1
-         checkbutton $frame.oth.def.widget  -text [lindex $Lbl(Widget) $GDefs(Lang)] -variable Page::Param(Widget) \
+         checkbutton $frame.oth.def.widget  -text [lindex $Lbl(Widget) $GDefs(Lang)] -variable Page::Param(WidgetOpt) \
             -indicatoron false -command "$Apply configure -state normal" -onvalue True -offvalue False -bd 1
          pack $frame.oth.def.intr $frame.oth.def.widget -side top -fill x
       pack $frame.oth.def -side top -fill x
@@ -1675,7 +1672,7 @@ proc Page::Update { { Frame "" } { VP True } } {
             Miniport::Coverage $Frame $mini $vp
             $Frame.page.canvas itemconf $mini -update True
          }
-         $Frame.page.canvas raise $Page::Data(Tag)MINI$Frame
+         $Frame.page.canvas raise PAGEMINI$Frame
       }
    }
 
@@ -1808,110 +1805,4 @@ proc Page::SnapRef { Frame X Y } {
 
    set Data(X) [$Frame.page.canvas canvasx $X $Param(Snap)]
    set Data(Y) [$Frame.page.canvas canvasy $Y $Param(Snap)]
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Page::WidgetBind>
-# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Installation des evenements de gestion estion de
-#               l'activation/desactivation des widgets actifs
-#
-# Parametres :
-#   <Frame>  : Identificateur de canvas
-#   <Tag>    : Tag de l'objet
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Page::WidgetBind { Frame Tag } {
-   
-   #----- bindings de placement des bouttons
-   $Frame.page.canvas bind $Tag <Leave> "+ Page::WidgetShow %W $Tag %x %y 0"
-   $Frame.page.canvas bind $Tag <Enter> "+ Page::WidgetShow %W $Tag %x %y 1"
-
-   $Frame.page.canvas lower NOPRINT
-   Page::WidgetShow $Frame.page.canvas {} 0 0 0
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Page::WidgetShow>
-# Creation : Novembre 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Gestion de l'acrivation/desactivation des widgets actifs
-#
-# Parametres :
-#   <Canvas> : Identificateur de canvas
-#   <Tag>    : Tag de l'objet
-#   <X>      : Coordonnee en X du deplacement
-#   <Y>      : Coordonnee en Y du deplacement
-#   <Visible>: Visibilite ou non
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc Page::WidgetShow { Canvas Tag X Y Visible } {
-   variable Data
-
-   #----- If we entered a new widget, clear all options
-   if { $Visible && !$Page::Param(Widget) } {
-      $Canvas itemconfigure NOPRINT -state hidden
-   }
-   
-   if { ![llength $Tag] } {
-      #----- Global settings of widgets
-      if { !$Visible && !$Page::Param(Widget) } {
-         $Canvas itemconfigure NOPRINT -state hidden
-      } elseif { $Page::Param(Widget) } {
-         $Canvas itemconfigure NOPRINT -state normal
-      }
-   } else {
-      #----- Per widget settings
-      
-      if { !$Visible && !$Page::Param(Widget) } {
-         #----- Disable the options for the widget we just left
-
-         set coords [$Canvas bbox $Tag]
-         if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
-            $Canvas itemconfigure SC$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure BS$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure BM$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure BF$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure BD$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure BO$Data(Tag)$Tag -state hidden
-            $Canvas itemconfigure UD$Data(Tag)$Tag -state hidden
-
-            $Canvas itemconfigure SC$Tag -state hidden
-            $Canvas itemconfigure BS$Tag -state hidden
-            $Canvas itemconfigure BM$Tag -state hidden
-            $Canvas itemconfigure BF$Tag -state hidden
-            $Canvas itemconfigure BD$Tag -state hidden
-            $Canvas itemconfigure BO$Tag -state hidden
-            $Canvas itemconfigure UD$Tag -state hidden
-         }
-      } else {
-         #----- Enable options for the widget we just entered
-         $Canvas itemconfigure SC$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure BS$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure BM$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure BF$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure BD$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure BO$Data(Tag)$Tag -state normal
-         $Canvas itemconfigure UD$Data(Tag)$Tag -state normal
-
-         $Canvas itemconfigure SC$Tag -state normal
-         $Canvas itemconfigure BS$Tag -state normal
-         $Canvas itemconfigure BM$Tag -state normal
-         $Canvas itemconfigure BF$Tag -state normal
-         $Canvas itemconfigure BD$Tag -state normal
-         $Canvas itemconfigure BO$Tag -state normal
-         $Canvas itemconfigure UD$Tag -state normal
-      }
-   }
 }

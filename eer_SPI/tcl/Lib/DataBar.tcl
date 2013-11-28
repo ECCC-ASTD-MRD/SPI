@@ -126,12 +126,12 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
-   Shape::BindMove  $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
-   Shape::BindScale $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
-   Shape::BindFull  $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindMove   $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
+   Shape::BindScale  $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
+   Shape::BindFull   $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindWidget $Frame.page.canvas DB$VP
 
    Page::MaskItem $Frame
-   Page::WidgetBind $Frame DB$VP
 }
 
 #------------------------------------------------------------------------------
@@ -191,14 +191,14 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    $Frame.page.canvas delete DBDEL$VP
 
    if { [llength [$Frame.page.canvas find withtag $VP]] } {
-      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
+      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "PAGE DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
    } else {
-      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "$Page::Data(Tag) DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
+      $Frame.page.canvas create rectangle $X0 $Y0 $X1 $Y1 -tags "PAGE DB$VP FRDB$VP VPINTRUDE" -fill white -outline black
    }
 
-   $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -fill #CCCCCC
-   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+2] -image DATABARLOGO -anchor nw -tags "$Page::Data(Tag) DB$VP DBDEL$VP"
-   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "$Page::Data(Tag) DB$VP DBDEL$VP TXTDB$VP CVTEXT"
+   $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "PAGE DB$VP DBDEL$VP" -fill #CCCCCC
+   $Frame.page.canvas create image [expr $X0+2] [expr $Y0+2] -image DATABARLOGO -anchor nw -tags "PAGE DB$VP DBDEL$VP"
+   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "PAGE DB$VP DBDEL$VP TXTDB$VP CVTEXT"
 
    set y [expr $Y0+21]
    set x [expr $X0+25]
@@ -243,9 +243,9 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
          break
       }
 
-      $Frame.page.canvas create text $x $y -text $lbl -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font $Param(Font) -fill $col
-      $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font $Param(Font)
-      $Frame.page.canvas create line $X0 $y $X1 $y -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -fill #CCCCCC
+      $Frame.page.canvas create text $x $y -text $lbl -tags "PAGE DB$VP DBDEL$VP" -anchor sw -font $Param(Font) -fill $col
+      $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "PAGE DB$VP DBDEL$VP" -anchor s -font $Param(Font)
+      $Frame.page.canvas create line $X0 $y $X1 $y -tags "PAGE DB$VP DBDEL$VP" -fill #CCCCCC
 
       if { ![winfo exists $Frame.page.canvas.up$n] } {
          button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/up.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
@@ -253,8 +253,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       }
       $Frame.page.canvas.up$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n-1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
       $Frame.page.canvas.dn$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n+1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
-      $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP UDDB$VP NOPRINT"
-      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "$Page::Data(Tag) DB$VP DBDEL$VP UDDB$VP NOPRINT"
+      $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "PAGE DB$VP DBDEL$VP UDDB$VP NOPRINT"
+      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "PAGE DB$VP DBDEL$VP UDDB$VP NOPRINT"
       incr n
    }
 
@@ -263,8 +263,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       set h  [font metrics $Param(Font) -linespace]
       set y [expr $y+$h]
       if { $y<=$Y1 } {
-         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor sw -font $Param(Font)
-         $Frame.page.canvas create text [expr $X0+10] $y -text "=" -tags "$Page::Data(Tag) DB$VP DBDEL$VP" -anchor s -font $Param(Font)
+         $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "PAGE DB$VP DBDEL$VP" -anchor sw -font $Param(Font)
+         $Frame.page.canvas create text [expr $X0+10] $y -text "=" -tags "PAGE DB$VP DBDEL$VP" -anchor s -font $Param(Font)
       }
    }
 }

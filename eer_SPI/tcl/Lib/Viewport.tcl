@@ -742,7 +742,7 @@ proc Viewport::Follow { Frame VP X Y } {
    if { $Page::Param(Square) } {
       $Frame.page.canvas create line [expr $X-$Page::Param(Square)] [expr $Y-$Page::Param(Square)] [expr $X-$Page::Param(Square)] [expr $Y+$Page::Param(Square)] \
           [expr $X+$Page::Param(Square)] [expr $Y+$Page::Param(Square)] [expr $X+$Page::Param(Square)] [expr $Y-$Page::Param(Square)] [expr $X-$Page::Param(Square)] [expr $Y-$Page::Param(Square)] \
-          -width 2 -fill red -tags "$Page::Data(Tag)$VP SQUARECURSOR"
+          -width 2 -fill red -tags "PAGE$VP SQUARECURSOR"
    }
 
    #----- Activation du pointeur commun
@@ -754,20 +754,20 @@ proc Viewport::Follow { Frame VP X Y } {
             if { [set xy [$vp -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
                set x [lindex $xy 0]
                set y [lindex $xy 1]
-               $frame.page.canvas create line $Data(X$vp) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line [expr $Data(X$vp)+$Data(Width$vp)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x $Data(Y$vp) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x [expr $Data(Y$vp)+$Data(Height$vp)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $Data(X$vp) $y [expr $x-5] $y -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line [expr $Data(X$vp)+$Data(Width$vp)] $y [expr $x+5] $y -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line $x $Data(Y$vp) $x [expr $y-5] -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line $x [expr $Data(Y$vp)+$Data(Height$vp)] $x [expr $y+5] -width 2 -fill red -tags "PAGE$vp COORDLINK"
             }
          }
          foreach mini $Miniport::Data(Mini$frame) {
             if { [set xy [$mini -project $Map(LatCursor) $Map(LonCursor) 0.0]]!= "" && [lindex $xy 2]>0 } {
                set x [lindex $xy 0]
                set y [lindex $xy 1]
-               $frame.page.canvas create line $Data(X$mini) $y [expr $x-5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line [expr $Data(X$mini)+$Data(Width$mini)] $y [expr $x+5] $y -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x $Data(Y$mini) $x [expr $y-5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
-               $frame.page.canvas create line $x [expr $Data(Y$mini)+$Data(Height$mini)] $x [expr $y+5] -width 2 -fill red -tags "$Page::Data(Tag)$vp COORDLINK"
+               $frame.page.canvas create line $Data(X$mini) $y [expr $x-5] $y -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line [expr $Data(X$mini)+$Data(Width$mini)] $y [expr $x+5] $y -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line $x $Data(Y$mini) $x [expr $y-5] -width 2 -fill red -tags "PAGE$vp COORDLINK"
+               $frame.page.canvas create line $x [expr $Data(Y$mini)+$Data(Height$mini)] $x [expr $y+5] -width 2 -fill red -tags "PAGE$vp COORDLINK"
             }
          }
       }
@@ -1194,7 +1194,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       set Data(Link) [list $Frame $vp]
    }
 
-   set tag $Page::Data(Tag)$vp
+   set tag PAGE$vp
    set x1 [expr $Width+$X0]
    set y1 [expr $Height+$Y0]
 
@@ -1214,7 +1214,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       bind $Frame.sc$vp <ButtonPress-1> "Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]; ProjCam::Zoom $Frame $Frame \[expr pow(2,\$Page::Data(L$Frame))\] True"
       bind $Frame.sc$vp <ButtonRelease-1> "Viewport::Resolution $Frame 1"
 
-      $Frame.page.canvas create window [expr $x1-150-35] $y1  -window $Frame.sc$vp -anchor sw -tags "SC$Page::Data(Tag)$vp NOPRINT" -width 151
+      $Frame.page.canvas create window [expr $x1-150-35] $y1  -window $Frame.sc$vp -anchor sw -tags "SCPAGE$vp NOPRINT" -width 151
 
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
    }
@@ -1268,7 +1268,7 @@ proc Viewport::Destroy { Frame { VP {} } } {
          Page::ActiveUnWrapper Viewport $Frame $vp
 
          #----- Supprimer le viewport et ses items
-         set tag $Page::Data(Tag)$vp
+         set tag PAGE$vp
          $Frame.page.canvas delete $vp $tag
 
          #----- Supprimer les variables du viewport
@@ -2758,11 +2758,11 @@ proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
    $cv itemconfigure $VP -x $X0 -y $Y0 -width $Data(Width$VP) -height $Data(Height$VP)
 
    if { $Data(Active$VP) } {
-      $cv coords BS$Page::Data(Tag)$VP $X1 $Y1
-      $cv coords BM$Page::Data(Tag)$VP [expr $X1-11] $Y1
-      $cv coords BF$Page::Data(Tag)$VP [expr $X1-22] $Y1
-      $cv coords BD$Page::Data(Tag)$VP $X1 $Y0
-      $cv coords SC$Page::Data(Tag)$VP [expr $X1-150-35] $Y1
+      $cv coords BSPAGE$VP $X1 $Y1
+      $cv coords BMPAGE$VP [expr $X1-11] $Y1
+      $cv coords BFPAGE$VP [expr $X1-22] $Y1
+      $cv coords BDPAGE$VP $X1 $Y0
+      $cv coords SCPAGE$VP [expr $X1-150-35] $Y1
    }
    Viewport::ResizeDepend $Frame $VP $px $py
 

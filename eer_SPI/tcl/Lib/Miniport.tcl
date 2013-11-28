@@ -121,8 +121,8 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
    $Frame.page.canvas configure -cursor watch
    update idletasks
 
-   set tag  $Page::Data(Tag)[string map { . "" } $mini]
-   set ctag $Page::Data(Tag)$mini
+   set tag  PAGE[string map { . "" } $mini]
+   set ctag PAGE$mini
 
    #----- Initialiser les variables du viewport
    set x0 $Viewport::Data(X$mini)
@@ -199,23 +199,20 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
       $Frame.page.canvas create window $x1 $y0                        -window $Frame.bd$tag -anchor ne -tags "BD$ctag NOPRINT"
 
       #----- bindings de deplacement
-
       bind $Frame.bm$tag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
       bind $Frame.bm$tag <B1-Motion>          "Page::ActiveMove Viewport $Frame $mini %X %Y; Miniport::Coverage $Frame $mini"
 
       #----- bindings de scaling
-
       bind $Frame.bs$tag <ButtonPress-1>      "Page::SnapRef $Frame %X %Y"
       bind $Frame.bs$tag <B1-Motion>          "Page::ActiveScale Viewport $Frame $mini %X %Y 1; Miniport::Coverage $Frame $mini"
       bind $Frame.bs$tag <ButtonRelease-1>    "Page::ActiveScale Viewport $Frame $mini %X %Y 0; Miniport::Coverage $Frame $mini"
 
-      Page::WidgetBind $Frame $mini
+      Shape::BindWidget $Frame.page.canvas $mini
    }
 
    $Frame.page.canvas bind $mini <Button-3> "tk_popup .mapmenu %X %Y 0"
 
    Page::MaskItem $Frame
-   Page::WidgetBind $Frame $tag
    Page::ModeZoom $Frame $mini
    Page::Update   $Frame
 
@@ -251,7 +248,7 @@ proc Miniport::Select { Frame Mini } {
 
 proc Miniport::Projection { Frame Mini } {
 
-   set tag $Page::Data(Tag)[string map { . "" } $Mini]
+   set tag PAGE[string map { . "" } $Mini]
 
    if { $Viewport::Data(Type$Mini)=="same" } {
       projection configure $Mini -type [projection configure $Frame -type] -georef [projection configure $Frame -georef]
@@ -466,8 +463,8 @@ proc Miniport::Destroy { Frame { Mini {} } } {
       $Frame.page.canvas configure -cursor watch
       update idletasks
 
-      set tag $Page::Data(Tag)[string map { . "" } $mini]
-      set ctag $Page::Data(Tag)$mini
+      set tag PAGE[string map { . "" } $mini]
+      set ctag PAGE$mini
 
       $Frame.page.canvas delete $ctag BS$ctag BM$ctag BF$ctag BD$ctag AREA$Mini
       destroy $Frame.sc$tag $Frame.bs$tag $Frame.bm$tag $Frame.bf$tag Frame.bd$tag $Frame.bf$tag.menu

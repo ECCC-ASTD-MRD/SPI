@@ -445,7 +445,7 @@ proc Drawing::Draw3D { Frame VP Vertex Lat Lon Color Tags } {
 
    if { [set pt [$VP -project $Lat $Lon 0.0]]!="" } {
       $Frame.page.canvas create line [lindex $Vertex 0] [lindex $Vertex 1] [lindex $pt 0] [lindex $pt 1] \
-         -fill $Color -tags "$Page::Data(Tag)$VP $Data(Tag) D$Tags" -arrow none -width 1 -smooth 0
+         -fill $Color -tags "PAGE$VP $Data(Tag) D$Tags" -arrow none -width 1 -smooth 0
    }
 }
 
@@ -482,7 +482,7 @@ proc Drawing::DrawBitm { Frame VP Vertex Color Bitmap Tag } {
          if { $l != "" && [lindex $l 2] > 0 } {
 
             $Frame.page.canvas create bitmap [lindex $l 0] [lindex $l 1] -bitmap $Bitmap \
-               -foreground $Color -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+               -foreground $Color -tags "PAGE$VP $Data(Tag) $Tag"
 
             if { $Current(3D) && [lindex $Vertex 2] != 0.0 } {
                Drawing::Draw3D $Frame $VP $l [lindex $Vertex 0] [lindex $Vertex 1] $Color $Tag
@@ -492,7 +492,7 @@ proc Drawing::DrawBitm { Frame VP Vertex Color Bitmap Tag } {
    } else {
      foreach { x y } $Vertex {
         $Frame.page.canvas create bitmap $x $y -bitmap $Bitmap \
-           -foreground $Color -tags "$Page::Data(Tag) $Data(Tag) $Tag"
+           -foreground $Color -tags "PAGE $Data(Tag) $Tag"
       }
    }
 }
@@ -529,7 +529,7 @@ proc Drawing::DrawImag { Frame VP Vertex Image Tag } {
          if { $l != "" && [lindex $l 2] > 0 } {
 
             $Frame.page.canvas create image [lindex $l 0] [lindex $l 1] -image $Image \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+               -tags "PAGE$VP $Data(Tag) $Tag"
 
             if { $Current(3D) && [lindex $Vertex 2] != 0.0 } {
                Drawing::Draw3D $Frame $VP $l [lindex $Vertex 0] [lindex $Vertex 1] black $Tag
@@ -538,7 +538,7 @@ proc Drawing::DrawImag { Frame VP Vertex Image Tag } {
       }
    } else {
      foreach { x y } $Vertex {
-        $Frame.page.canvas create image $x $y -image $Image -tags "$Page::Data(Tag) $Data(Tag) $Tag"
+        $Frame.page.canvas create image $x $y -image $Image -tags "PAGE $Data(Tag) $Tag"
       }
    }
 }
@@ -585,12 +585,12 @@ proc Drawing::DrawHead { Frame VP Vertex Color Width Font Tag } {
             if { [set cdir [$VP -project [lindex $ll 0] [lindex $ll 1] $lz]]!="" && [lindex $cdir 2]>0 } {
                lappend cir [lindex $cdir 0] [lindex $cdir 1]
                $Frame.page.canvas create text [lindex $cdir 0] [lindex $cdir 1] -text $dir \
-                  -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor c
+                  -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor c
             }
          }
          lappend cir [lindex $cir 0] [lindex $cir 1]
          if { [llength $cir]==10 } {
-            eval $Frame.page.canvas create line $cir -dash . -fill \$Color -width $Width -smooth 1 -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $cir -dash . -fill \$Color -width $Width -smooth 1 -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
       } else {
          set h [expr -[$VP -bearing [lindex $cll 0] [lindex $cll 1] $la $lo]]
@@ -600,11 +600,11 @@ proc Drawing::DrawHead { Frame VP Vertex Color Width Font Tag } {
          set vr1 [lindex $vr 1]
          if { [llength $vr0]>2 } {
             $Frame.page.canvas create text [lindex $vr0 end-1] [lindex $vr0 end] -text [format " %.2f°" $h] \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor w
-            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -arrow last -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+               -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor w
+            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -arrow last -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
          if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -arrow none -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -arrow none -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
       }
    }
@@ -663,11 +663,11 @@ proc Drawing::DrawDist { Frame VP Vertex Color Width Font Mode Tag } {
 
    if { [llength $vr0]>2 } {
       $Frame.page.canvas create text [lindex $vr0 end-1] [lindex $vr0 end] -text " [Convert::FormatDist $dist 2 $Mode]" \
-         -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor w
-      eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -arrow both -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+         -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor w
+      eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -arrow both -tags \"PAGE$VP $Data(Tag) $Tag\"
    }
    if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-      eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -arrow both -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+      eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -arrow both -tags \"PAGE$VP $Data(Tag) $Tag\"
    }
 }
 
@@ -708,15 +708,15 @@ proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
          set vr1 [lindex $vr 1]
 
          if { [llength $vr0]>2 } {
-            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
 
          if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
       } else {
          if { [llength $seg]>2 } {
-            eval $Frame.page.canvas create line $seg -fill \$Color -width $Width -tags \"$Page::Data(Tag) $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $seg -fill \$Color -width $Width -tags \"PAGE $Data(Tag) $Tag\"
          }
       }
    }
@@ -762,14 +762,14 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
       set vr1 [lindex $vr 1]
 
       if { [llength $vr0]>2 } {
-         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
       if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
    } else {
       if { [llength $Vertex]>2 } {
-         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"$Page::Data(Tag) $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE $Data(Tag) $Tag\"
       }
    }
 }
@@ -838,15 +838,15 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Fill Tag Fix } {
             set y1 [expr $ly0+$dy]
 
             $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+               -tags "PAGE$VP $Data(Tag) $Tag"
 
             if { $Tag=="VERTEXFOLLOW" } {
                set dista [expr [$VP -distxy $x0 $y0 $x1 $y0]/2.0]
 
-               $Frame.page.canvas create text $lx1 $ly0 -font XFont14 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "$Page::Data(Tag) $Tag"
+               $Frame.page.canvas create text $lx1 $ly0 -font XFont14 -text "  [Convert::FormatDist $dista]" -fill $Color -anchor w -tags "PAGE $Tag"
                if { !$Fix } {
                   set distb [expr [$VP -distxy $x0 $y0 $x0 $y1]/2.0]
-                  $Frame.page.canvas create text $lx0 $ly1 -font XFont14 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "$Page::Data(Tag) $Tag"
+                  $Frame.page.canvas create text $lx0 $ly1 -font XFont14 -text "[Convert::FormatDist $distb]\n" -fill $Color -anchor s -tags "PAGE $Tag"
                }
             }
          }
@@ -874,7 +874,7 @@ proc Drawing::DrawOval { Frame VP Vertex Color Width Pattern Fill Tag Fix } {
          set y1 [expr $lo0+$dy]
 
          $Frame.page.canvas create oval $x0 $y0 $x1 $y1 -fill $Fill -outline $Color -width $Width -stipple $Pattern \
-            -tags "$Page::Data(Tag) $Data(Tag) $Tag"
+            -tags "PAGE $Data(Tag) $Tag"
       }
    }
 }
@@ -915,23 +915,23 @@ proc Drawing::DrawPoly { Frame VP Vertex Color Width Line Pattern Fill Tag } {
       set vr1 [lindex $vr 1]
 
       if { [llength $vr0]>4 } {
-         eval $Frame.page.canvas create polygon $vr0 -stipple \$Pattern -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\" \
+         eval $Frame.page.canvas create polygon $vr0 -stipple \$Pattern -tags \"PAGE$VP $Data(Tag) $Tag\" \
            -fill \$Fill -outline \$Color -smooth $Line -width $Width
       } elseif { [llength $vr0]==4 } {
-         eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
 
       if { $Viewport::Map(Type$Page::Data(Frame))!="orthographic" } {
          if { [llength $vr1]>4 } {
-            eval $Frame.page.canvas create polygon $vr1 -stipple \$Pattern -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\" \
+            eval $Frame.page.canvas create polygon $vr1 -stipple \$Pattern -tags \"PAGE$VP $Data(Tag) $Tag\" \
               -fill \$Fill -outline \$Color -smooth $Line -width $Width
          } elseif { [llength $vr1]==4 } {
-            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag \"
+            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag \"
          }
       }
    } else {
       eval $Frame.page.canvas create polygon $Vertex [lindex $Vertex 0] [lindex $Vertex 1] -fill \$Fill -outline \$Color -smooth $Line -width $Width  -stipple \$Pattern \
-         -tags \"$Page::Data(Tag) $Data(Tag) $Tag\"
+         -tags \"PAGE $Data(Tag) $Tag\"
    }
 }
 
@@ -976,7 +976,7 @@ proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Fill Tag } {
          if { $l0 != "" && $l1 != "" && ([lindex $l0 2]>0 || [lindex $l1 2]>0) } {
             $Frame.page.canvas create rectangle [lindex $l0 0] [lindex $l0 1] [lindex $l1 0] [lindex $l1 1] \
                -fill $Fill -outline $Color -width $Width -stipple $Pattern \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+               -tags "PAGE$VP $Data(Tag) $Tag"
          }
       }
    } else {
@@ -988,7 +988,7 @@ proc Drawing::DrawRect { Frame VP Vertex Color Width Pattern Fill Tag } {
 
          $Frame.page.canvas create rectangle $la0 $lo0 $la1 $lo1 \
             -fill $Fill -outline $Color -width $Width -stipple $Pattern \
-            -tags "$Page::Data(Tag) $Data(Tag) $Tag"
+            -tags "PAGE $Data(Tag) $Tag"
       }
    }
 }
@@ -1025,14 +1025,14 @@ proc Drawing::DrawText { Frame VP Vertex Color Text Font Angle Tag } {
 
             if { [lindex $l 2] > 0 } {
                $Frame.page.canvas create text [lindex $l 0] [lindex $l 1] -text "$Text" -anchor w \
-                  -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -fill $Color -font $Font -angle $Angle
+                  -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font -angle $Angle
             }
          }
       }
    } else {
       foreach { x y } $Vertex {
          $Frame.page.canvas create text $x $y -text "$Text" -anchor w \
-            -tags "$Page::Data(Tag) $Data(Tag) $Tag" -fill $Color -font $Font -angle $Angle
+            -tags "PAGE $Data(Tag) $Tag" -fill $Color -font $Font -angle $Angle
       }
    }
 }
@@ -1121,13 +1121,13 @@ proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
 
             #----- Afficher la valeur pointee
 
-            $Frame.page.canvas create text [expr $x+6] $y -text $text -fill $Color -font $Font -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -anchor w
+            $Frame.page.canvas create text [expr $x+6] $y -text $text -fill $Color -font $Font -tags "PAGE$VP $Data(Tag) $Tag" -anchor w
             $Frame.page.canvas create oval [expr $x-2] [expr $y-2] [expr $x+2] [expr $y+2] -fill $Color -outline $Color \
-               -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+               -tags "PAGE$VP $Data(Tag) $Tag"
 
             if { $Coord } {
                $Frame.page.canvas create text [expr $x-5] $y -text "([Convert::FormatCoord $la $lo DEG])" -fill $Color -font $Font \
-                  -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -anchor e
+                  -tags "PAGE$VP $Data(Tag) $Tag" -anchor e
             }
          }
       }
@@ -1172,7 +1172,7 @@ proc Drawing::DrawStream { Frame VP Vertex Color Width Step Res Tag } {
                if { [lindex $ij 0]!=-1 } {
                   set coords [fstdfield stats $field -coordstream [lindex $ij 0] [lindex $ij 1] 256 $Step 0 $Res]
                   if { [llength $coords] && [llength [set path [lindex [$VP -projectline NONE $coords] 0]]>2] } {
-                     eval $Frame.page.canvas create line $path -fill \$Color -width $Width -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\" -arrow last
+                     eval $Frame.page.canvas create line $path -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\" -arrow last
                   }
                }
             }
@@ -1215,7 +1215,7 @@ proc Drawing::DrawVert { Frame VP Vertex Color Text Font Tag } {
 
          if { [llength $vr0]>2 } {
 
-            eval $Frame.page.canvas create line $vr0 -fill \$Color -width 2 -tags \"$Page::Data(Tag)$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr0 -fill \$Color -width 2 -tags \"PAGE$VP $Data(Tag) $Tag\"
 
             #----- Afficher les elevations
 
@@ -1224,9 +1224,9 @@ proc Drawing::DrawVert { Frame VP Vertex Color Text Font Tag } {
                   set x [lindex $l 0]
                   set y [lindex $l 1]
                   $Frame.page.canvas create text $x $y -text "$elev " -anchor e \
-                     -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag" -fill $Color -font $Font
+                     -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font
                   $Frame.page.canvas create line $x $y [expr $x-5] $y \
-                     -fill $Color -width 2 -tags "$Page::Data(Tag)$VP $Data(Tag) $Tag"
+                     -fill $Color -width 2 -tags "PAGE$VP $Data(Tag) $Tag"
                }
             }
          }
@@ -2572,10 +2572,10 @@ proc Drawing::VertexFollow { Frame VP X Y Scan } {
       set tmplist     $Current(Vertex)
       lappend tmplist $x $y $Current(Elev)
       $Frame.page.canvas create line [expr $x-1] [expr $y-1] [expr $x+1] [expr $y+1] -fill $Current(Color) \
-         -tags "$Page::Data(Tag) VERTEXFOLLOW"
+         -tags "PAGE VERTEXFOLLOW"
    } else {
       $Frame.page.canvas create line [expr $X-1] [expr $Y-1] [expr $X+1] [expr $Y+1] -fill $Current(Color) \
-         -tags "$Page::Data(Tag) VERTEXFOLLOW"
+         -tags "PAGE VERTEXFOLLOW"
 
       set VP          -1
 

@@ -961,7 +961,7 @@ proc ProjCam::ZoomInit { Frame VP X Y } {
    $c create line $X [expr $Y-5] $X [expr $Y+5] -tags "TARGETX" -fill red -width 2
    $c create line [expr $X-5] $Y [expr $X+5] $Y -tags "TARGETY" -fill red -width 2
 
-   $c bind $Page::Data(Tag)$VP <B2-Motion> "ProjCam::ZoomBox $c $X $Y \[$c canvasx %x\] \[$c canvasy %y\] $Viewport::Data(Width$VP) $Viewport::Data(Height$VP)"
+   $c bind PAGE$VP <B2-Motion> "ProjCam::ZoomBox $c $X $Y \[$c canvasx %x\] \[$c canvasy %y\] $Viewport::Data(Width$VP) $Viewport::Data(Height$VP)"
 }
 
 #----------------------------------------------------------------------------

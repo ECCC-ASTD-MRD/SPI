@@ -81,7 +81,7 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full { Link Tr
    variable Data
 
    set gr [Graph::Contingency::Init $Frame]
-   set tag $Page::Data(Tag)$gr
+   set tag PAGE$gr
 
    if { $Full } {
       set X0       0
@@ -285,7 +285,7 @@ proc Graph::Contingency::Page { GR } {
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
-   set tag $Page::Data(Tag)$GR
+   set tag PAGE$GR
    $data(Canvas) delete $tag
 
    #----- Recalculer les limites du graph
@@ -893,7 +893,7 @@ proc Graph::Contingency::UpdateItems { Frame { GR { } } } {
                set coo [observation define $data(Obs) -COORD $idx]
                if { [set pix [$data(VP) -project [lindex $coo 0] [lindex $coo 1] 0]]!="" && [lindex $pix 2]>0 } {
                   $data(FrameData).page.canvas create bitmap [expr [lindex $pix 0]-$Obs::Param(Size)] [lindex $pix 1] \
-                     -bitmap @$GDefs(Dir)/share/bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
+                     -bitmap @$GDefs(Dir)/share/bitmap/arrow.ico -tags "PAGE$data(VP) GRAPHSELECT$gr" \
                      -anchor e -foreground $Graph::Color(Select)
                }
             }
@@ -982,7 +982,7 @@ proc Graph::Contingency::DrawData { GR } {
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
    $data(Canvas) delete DATA$GR
-   set tag $Page::Data(Tag)$GR
+   set tag PAGE$GR
 
    if { ![info exists data(R0,0)] } {
       return
@@ -1053,7 +1053,7 @@ proc Graph::Contingency::DrawScale { GR } {
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
    $data(Canvas) delete SCALE$GR
-   set tag $Page::Data(Tag)$GR
+   set tag PAGE$GR
 
    #----- Aficher les boites
    if { [set rx [expr [llength $graph(XInter)]-1]]>0 } {
@@ -1107,7 +1107,7 @@ proc Graph::Contingency::DrawStat { GR } {
    upvar #0 Graph::Contingency::Contingency${GR}::Data  data
    upvar #0 Graph::Contingency::Contingency${GR}::Graph graph
 
-   set tag $Page::Data(Tag)$GR
+   set tag PAGE$GR
 
    set rx [expr [llength $graph(XInter)]-1]
    set ry [expr [llength $graph(YInter)]-1]

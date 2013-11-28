@@ -2080,7 +2080,7 @@ proc Writer::FVCN::VertexFollow { Frame VP X Y Scan } {
          if { [llength $tmp] } {
             lappend tmp $X $Y 0 [lindex $tmp 0] [lindex $tmp 1] 0
 
-            Viewport::DrawArea $Frame $VP $tmp "$Page::Data(Tag)$VP FVCN VERTEXFOLLOW" VERTEXFOLLOW red red\
+            Viewport::DrawArea $Frame $VP $tmp "PAGE$VP FVCN VERTEXFOLLOW" VERTEXFOLLOW red red\
                @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm 0 2
          }
       }
@@ -2194,7 +2194,7 @@ proc Writer::FVCN::UpdateItems { Frame { VP "" } { Pad "" } } {
          if { [llength $tmp] } {
             lappend tmp [lindex $tmp 0] [lindex $tmp 1] 0
 
-            Viewport::DrawArea $Writer::Data(Frame) $Writer::Data(VP) $tmp "$Page::Data(Tag)$VP FVCN" FVCN red red\
+            Viewport::DrawArea $Writer::Data(Frame) $Writer::Data(VP) $tmp "PAGE$VP FVCN" FVCN red red\
                @$GDefs(Dir)/share/bitmap/raydiagleft08.xbm 0 2
          }
       }
@@ -2256,7 +2256,7 @@ proc Writer::FVCN::UpdateGraphItems { Pad } {
             if  { [llength $coords)]>=4 } {
                lappend coords [lindex $coords 0] [lindex $coords 1] 0
 
-               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $coords "$Page::Data(Tag)$Data(VP$h$f) FVCN$no$h FVCN$h FVCN" FVCN$no$h \
+               Viewport::DrawArea $Data(Page$Pad) $Data(VP$h$f) $coords "PAGE$Data(VP$h$f) FVCN$no$h FVCN$h FVCN" FVCN$no$h \
                   $Data(Color$lvl) $Data(Color$lvl) $Data(Stipple$lvl) False 2
                incr va
             }

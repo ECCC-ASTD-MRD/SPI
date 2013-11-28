@@ -150,7 +150,7 @@ proc Mapper::Cutter::VertexFollow { Frame VP X Y Scan } {
       set tmp $Mapper::Data(Mask$Mapper::Data(Object))
       lappend tmp $lat $lon 0 [lindex $tmp 0] [lindex $tmp 1] 0
 
-      Viewport::DrawLine $Frame $VP $tmp "$Page::Data(Tag)$VP MAPPERCUTTER VERTEXFOLLOW" red 2
+      Viewport::DrawLine $Frame $VP $tmp "PAGE$VP MAPPERCUTTER VERTEXFOLLOW" red 2
 
       if { $Mapper::Data(Cut) && $Mapper::Data(RealTime) } {
          Mapper::ParamsGDALSet $Mapper::Data(Object)

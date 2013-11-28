@@ -64,7 +64,7 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full { Link True }
    variable Lbl
 
    set gr [Graph::Profile::Init $Frame]
-   set tag $Page::Data(Tag)$gr
+   set tag PAGE$gr
 
    if { $Full } {
       set X0       0
@@ -422,7 +422,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
       vector create $Item
       vector dim    $Item { X Y }
 
-      set id [$data(Canvas) create text -100 -100 -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
+      set id [$data(Canvas) create text -100 -100 -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -xdata $Item.X -ydata $Item.Y -orient Y -desc $id

@@ -65,7 +65,7 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
    variable Lbl
 
    set gr [Graph::Section::Init $Frame]
-   set tag $Page::Data(Tag)$gr
+   set tag PAGE$gr
 
    if { $Full } {
       set X0       0
@@ -469,7 +469,7 @@ proc Graph::Section::ItemAdd { GR Item } {
    upvar #0 Graph::Section::Section${GR}::Data  data
 
    if { [lsearch -exact $data(Items) $Item]==-1 } {
-      set id [$data(Canvas) create text -100 -100  -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
+      set id [$data(Canvas) create text -100 -100  -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
       graphitem configure $Item -desc $id

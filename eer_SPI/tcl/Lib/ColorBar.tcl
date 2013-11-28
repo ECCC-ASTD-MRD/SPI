@@ -240,7 +240,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
-         -data $Field -tags "$Page::Data(Tag) CB$VP VPINTRUDE $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
+         -data $Field -tags "PAGE CB$VP VPINTRUDE $tag" -anchor nw -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
          -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag) -showfactor $Data(Factor$tag)
 
       menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
@@ -272,12 +272,12 @@ proc ColorBar::Set { Frame VP No Id Field } {
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
-      Shape::BindMove  $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
-      Shape::BindScale $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"
-      Shape::BindFull  $Frame.page.canvas $tag ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindMove   $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
+      Shape::BindScale  $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"
+      Shape::BindFull   $Frame.page.canvas $tag ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindWidget $Frame.page.canvas $tag
 
       Page::MaskItem $Frame
-      Page::WidgetBind $Frame $tag
 
       lappend Data(List$Frame) $tag
    }

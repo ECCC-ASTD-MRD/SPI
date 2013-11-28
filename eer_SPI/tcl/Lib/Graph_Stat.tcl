@@ -54,7 +54,7 @@ proc Graph::Stat::Create { Frame X0 Y0 Width Height Active Full { Link True } } 
    variable Lbl
 
    set gr [Graph::Stat::Init $Frame]
-   set tag $Page::Data(Tag)$gr
+   set tag PAGE$gr
 
    if { $Full } {
       set X0       0
@@ -171,7 +171,7 @@ proc Graph::Stat::Graph { GR { Items {} } } {
       }
 
       eval $data(Canvas) create text [expr $x+5] $y -text \$text$item -fill \[graphitem configure $item -outline\] -font $Graph::Font(Graph) \
-         -tags \"$Page::Data(Tag)$GR $GR GRAPHITEM$GR\" -anchor nw
+         -tags \"PAGE$GR $GR GRAPHITEM$GR\" -anchor nw
 
       set x [lindex [$data(Canvas) bbox GRAPHITEM$GR] 2]
    }

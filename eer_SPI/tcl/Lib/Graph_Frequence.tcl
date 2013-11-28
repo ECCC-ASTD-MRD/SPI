@@ -68,7 +68,7 @@ proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full { Link True
    variable Lbl
 
    set gr [Graph::Frequence::Init $Frame]
-   set tag $Page::Data(Tag)$gr
+   set tag PAGE$gr
 
    if { $Full } {
       set X0       0
@@ -378,7 +378,7 @@ proc Graph::Frequence::ItemAdd { GR Item } {
       vector create $Item
       vector dim    $Item { X Y }
 
-      set id [$data(Canvas) create text -100 -100  -tags "$Page::Data(Tag)$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
+      set id [$data(Canvas) create text -100 -100  -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -xdata $Item.X -ydata $Item.Y -orient X -desc $id
@@ -768,7 +768,7 @@ proc Graph::Frequence::UpdateItems { Frame { GR { } } } {
                set coo [observation define $data(Obs) -COORD $idx]
                if { [set pix [$data(VP) -project [lindex $coo 0] [lindex $coo 1] 0]]!="" && [lindex $pix 2]>0 } {
                   $data(FrameData).page.canvas create bitmap [expr [lindex $pix 0]-$Obs::Param(Size)] [lindex $pix 1] \
-                     -bitmap @$GDefs(Dir)/share/bitmap/arrow.ico -tags "$Page::Data(Tag)$data(VP) GRAPHSELECT$gr" \
+                     -bitmap @$GDefs(Dir)/share/bitmap/arrow.ico -tags "PAGE$data(VP) GRAPHSELECT$gr" \
                      -anchor e -foreground $Graph::Color(Select)
                }
             }
@@ -839,5 +839,5 @@ proc Graph::Frequence::FitData { GR } {
       lappend co [DrawX $GR $x] [DrawY $GR [expr 1.0/(sqrt(2*3.1416)*$o)*exp(-0.5*($n*$n))*$data(Y1)*$MetStat::Stat(AVGx)]]
    }
 
-   eval $data(Canvas) create line $co  -fill #AAAAAA -tags \"$Page::Data(Tag)$GR DATA$GR\" -width 2
+   eval $data(Canvas) create line $co  -fill #AAAAAA -tags \"PAGE$GR DATA$GR\" -width 2
 }
