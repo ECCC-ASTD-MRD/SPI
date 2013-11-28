@@ -388,7 +388,7 @@ proc HFManager::HostClose { Id } {
 #-------------------------------------------------------------------------------
 
 proc HFManager::HostFiles { Id } {
-   global GDefs
+   global GDefs env
    variable Host
 
    if { $Host(Name$Id)!="" } {
