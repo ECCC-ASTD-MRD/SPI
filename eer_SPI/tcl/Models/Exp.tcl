@@ -997,7 +997,7 @@ proc Exp::BlankTransmit { } {
       set rsmc_arg "${rsmc_arg}meteo "
    }
 
-   puts stderr "set ErrCatch $env(EER_DIRSCRIPT)RSMCTransferBlank.sh ... ${rsmc_arg}."
+   puts stderr "set ErrCatch $env(EER_DIRSCRIPT)/RSMCTransferBlank.sh ... ${rsmc_arg}."
 
    #----- setup le repertoire et le fichier concernant le joint statement.
    set path "$Param(Path)/$Data(No)_$Data(Name)/Output/RSMCJoin"
@@ -1008,7 +1008,7 @@ proc Exp::BlankTransmit { } {
 
       #----- effacer les produits du RSMC Montreal sur notre site web.
 
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } msg]
       if { $err } {
          Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$msg"
       }
@@ -1016,7 +1016,7 @@ proc Exp::BlankTransmit { } {
       #----- effacer les produits du RSMC Montreal sur les sites mirroirs.
 
       if { $Exp::Data(RSMC_CA)==1 } {
-         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferProducts.sh $path 3 $tokenarchiversmc 2>@1 } msg]
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferProducts.sh $path 3 $tokenarchiversmc 2>@1 } msg]
          if { $err } {
             Log::Print ERROR "Problem to delete RSMC Montreal products on the mirror RSMC web pages.\n\n$msg"
          }
@@ -1025,7 +1025,7 @@ proc Exp::BlankTransmit { } {
       #----- effacer le joint statement jntreg34.html sur les sites mirroirs.
 
       if { $Exp::Data(JntStat34)==1 } {
-         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferJoint.sh $GDefs(Dir)/data/na_jntreg34.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
          if { $err } {
             Log::Print ERROR "Problem to delete the joint statement jntreg34.html on the mirror RSMC web pages.\n\n$msg"
          }
@@ -1034,7 +1034,7 @@ proc Exp::BlankTransmit { } {
       #----- imposer le lead sur tout les sites mirroirs.
 
       if { $Exp::Data(RSMCLead)!=99 } {
-         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $GDefs(Dir)/data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
+         set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferJoint.sh $GDefs(Dir)/data/leadrsmc$Exp::Data(RSMCLead).txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
          if { $err } {
             Log::Print ERROR "Problem to copy the lead ( $Exp::Data(RSMCLead) ) on the mirror RSMC web pages.\n\n$msg"
          }
@@ -1227,7 +1227,7 @@ proc Exp::ProductRSMCJointData { } {
 
    if { $region == "3" || $region == "4" } {
       exec echo "34" > $path/leadrsmc.txt
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferJoint.sh $path/leadrsmc.txt leadrsmc.txt $path $tokenarchiversmc 2>@1 } msg]
       if { $err != 0 } {
          Log::Print ERROR "Problem sending RSMC joint statement on the mirror RSMC web pages.\n\n$msg"
       }
@@ -1245,7 +1245,7 @@ proc Exp::ProductRSMCJointData { } {
    }
    set nbip2 [lindex [exec wc -w  $path/IP2List.txt] 0]
 
-   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferProducts.sh $path $nbip2 $tokenarchiversmc 2>@1 } msg]
+   set err [catch  { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferProducts.sh $path $nbip2 $tokenarchiversmc 2>@1 } msg]
    if { $err } {
       Log::Print ERROR "Problem sending RSMC Montreal products on the mirror RSMC web pages.\n\n$msg"
    }
@@ -1294,7 +1294,7 @@ proc Exp::ProductRSMCJointStatement { File } {
    set tokenarchiversmc [clock format [clock seconds] -format "%Y%m%d.%H%M%S" -gmt true]
 
    Dialog::Wait . $Msg(SendJoint)
-   set err [catch { exec ssh $GDefs(FrontEnd) -x -l afseeer $env(EER_DIRSCRIPT)RSMCTransferJoint.sh $path/joint_statement_b.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
+   set err [catch { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferJoint.sh $path/joint_statement_b.html jntreg34.html $path $tokenarchiversmc 2>@1 } msg]
    Dialog::WaitDestroy
 
    if { $err } {
