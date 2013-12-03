@@ -653,7 +653,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
             set obj [graphitem configure $Item -desc]
             set type [fstdfield stats GRAPHPROFILE -leveltype]
             switch $type {
-               "HYBRID" { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR] [fstdfield stats GRAPHPROFILE -leveltype] (ptop=[format %.2f [fstdfield stats GRAPHPROFILE -top]] pref=[format %.2f [fstdfield stats GRAPHPROFILE -ref]] rcoef=[format %.2f [fstdfield stats GRAPHPROFILE -coef]])" }
+               "HYBRID" { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR] [fstdfield stats GRAPHPROFILE -leveltype] (ptop=[format %.2f [fstdfield stats GRAPHPROFILE -top]] pref=[format %.2f [fstdfield stats GRAPHPROFILE -ref]] rcoef=[format %.2f [lindex [fstdfield stats GRAPHPROFILE -coef] 0]],[format %.2f [lindex [fstdfield stats GRAPHPROFILE -coef] 1]])" }
                "ETA"    { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR] [fstdfield stats GRAPHPROFILE -leveltype] (ptop=[format %.2f [fstdfield stats GRAPHPROFILE -top]])" }
                default  { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR]" }
             }
