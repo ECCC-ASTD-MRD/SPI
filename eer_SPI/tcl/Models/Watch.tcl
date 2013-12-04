@@ -477,10 +477,14 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
    if { [lsearch -exact $Watch::Data(BranchSim) $tag] != -1 } {
       $Canvas itemconfigure PSIM$tag -bitmap $Model::Resources(Minus)
 
-      #----- Trouve tous les dossiers des resultats des simulations
-      foreach result [lsort [glob -nocomplain $Param(Path)/$Project/data/*_$Exp/$Model.$no.*]] {
-         set y1 [incr Y 21]
-         set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $Model "$Sim" $result $X $Y]
+      #----- Loop on met runs
+      foreach run [lsort [glob -nocomplain -type d -directory $Param(Path)/$Project/data -tails *]] {
+      
+         #----- Trouve tous les dossiers des resultats des simulations
+         foreach result [lsort [glob -nocomplain $Param(Path)/$Project/data/${run}/*_$Exp/$Model.$no.*]] {
+            set y1 [incr Y 21]
+            set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $run $Model "$Sim" $result $X $Y]
+         }
       }
 
       #----- Ligne verticale de la sous-branche
@@ -500,6 +504,7 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
 #     <Canvas>    : Le Frame dans lequel dessiner l'arbre
 #     <Project>   : Le nom du projet
 #     <Exp>       : Une liste contenant les informations de la watch
+#     <Run>       : Meteo run
 #     <Model>     : Le nom du model
 #     <Sim>       : La liste d'une simulation
 #     <Result>    : Nom complet du fichier resultat (path complet)
@@ -512,7 +517,7 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
 #
 #-------------------------------------------------------------------------------
 
-proc Watch::CreateBranchResult { Canvas Project Exp Model Sim Result X Y } {
+proc Watch::CreateBranchResult { Canvas Project Exp Run Model Sim Result X Y } {
    global GDefs
    variable Data
 
@@ -523,8 +528,8 @@ proc Watch::CreateBranchResult { Canvas Project Exp Model Sim Result X Y } {
    #----- Creation du texte de lA'ffichage sous la forme YYYY-MM-DD hh:mm
    set date [lindex $result 2]
    set time [lindex $result 3]
-   set txt "[string range $date 0 3]-[string range $date 4 5]-[string range $date 6 7] [string range $time 0 1]:[string range $time 2 3]"
-   set tag "$Project$Exp$Model$no[lindex $result 2][lindex $result 3]"
+   set txt "($Run) [string range $date 0 3]-[string range $date 4 5]-[string range $date 6 7] [string range $time 0 1]:[string range $time 2 3]"
+   set tag "$Project$Exp$Run$Model$no[lindex $result 2][lindex $result 3]"
 
    $Canvas create text [expr $X+13] $Y -text "$txt" -anchor w -tags "RESULT RESULT$tag" -font $GDefs(Font)
    $Canvas create line $X $Y [expr $X+10] $Y -tags TREE
