@@ -1704,7 +1704,7 @@ static int glPolygonToPostscript(interp, canvas, itemPtr, prepass)
    * Now draw the outline, if there is one.
    */
 
-   if (color != NULL) {
+   if (color != NULL && polyPtr->outline.width>0) {
       Tcl_ResetResult(interp);
       if (!polyPtr->smooth || !polyPtr->smooth->postscriptProc) {
          Tk_CanvasPsPath(interp, canvas, polyPtr->coordPtr,

@@ -258,7 +258,7 @@ extern int TData_Size[];
 
 typedef struct TDataDef {
    double  NoData;            /*Valeur de novalue*/
-   double *Buffer;            /*Buffer temporaire*/
+   double *Buffer,*Aux;       /*Buffer temporaire*/
    int    *Accum;             /*Accumulation Buffer temporaire*/
    char   *Mask;              /*Masque a appliquer au traitement sur le champs*/
    char   *Data[4];           /*Composantes du champs (Pointeurs sur les donnees)*/

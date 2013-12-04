@@ -112,7 +112,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TObs          *obs;
    GDALDataType   type;
 
-   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER",NULL };
+   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE,","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
@@ -343,7 +343,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   obj=Objv[7];
                }
                return(Data_GridConservative(Interp,band->Ref,band->Def,comb->Ref,comb->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=18) {
+            } else if (n>=5 && n<=19) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"bandto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);

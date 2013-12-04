@@ -1217,7 +1217,7 @@ static int glRectOvalToPostscript(
    * Now draw the outline, if there is one.
    */
 
-   if (color != NULL) {
+   if (color != NULL && rectOvalPtr->outline.width>0) {
       Tcl_AppendObjToObj(psObj, pathObj);
       Tcl_AppendToObj(psObj, "0 setlinejoin 2 setlinecap\n", -1);
 

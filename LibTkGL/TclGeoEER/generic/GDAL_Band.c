@@ -1142,7 +1142,7 @@ void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 */
 int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TDataInterp Mode,int Final){
 
-   double        val,vx,di[4],dj[4],*fld,di0,di1,dj0,dj1;
+   double        val,vx,di[4],dj[4],*fld,*aux,di0,di1,dj0,dj1;
    int          *acc=NULL,x0,x1,y,y0,y1;
    unsigned long idxt,idxk,idxj,n,nijk,nij;
    unsigned int  n2,ndi,ndj,k,t,s,x,dx,dy;
@@ -1150,6 +1150,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 
    acc=ToDef->Accum;
    fld=ToDef->Buffer;
+   aux=ToDef->Aux;
    nij=FSIZE2D(ToDef);
    nijk=FSIZE3D(ToDef);
    val=vx=0.0;
@@ -1160,7 +1161,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
       }
 
       /*In case of average, we need an accumulator*/
-      if (Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT) {
+      if (Mode==TD_AVERAGE || TD_VECTOR_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT) {
          if (!ToDef->Accum) {
             acc=ToDef->Accum=calloc(nij,sizeof(int));
             if (!ToDef->Accum) {
@@ -1177,7 +1178,15 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
             return(TCL_ERROR);
          }
          for(x=0;x<nijk;x++)
-            ToDef->Buffer[x]=ToDef->NoData;
+            fld[x]=ToDef->NoData;
+         
+         if (Mode==TD_VECTOR_AVERAGE) {
+            aux=ToDef->Aux=calloc(nijk,sizeof(double));
+            if (!ToDef->Aux) {
+               Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate buffer",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
       }
       
       if (ToRef->Grid[0]=='Y') {
@@ -1198,13 +1207,15 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                
                /*If the previous value is nodata, initialize the counter*/
                if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                  fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                  fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE|| Mode==TD_VECTOR_AVERAGE)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                  if (aux) aux[idxt]=fld[idxt];
                }
                switch(Mode) {
                   case TD_MAXIMUM          : if (vx>fld[idxt]) fld[idxt]=vx; break;
                   case TD_MINIMUM          : if (vx<fld[idxt]) fld[idxt]=vx; break;
                   case TD_SUM              : fld[idxt]+=vx;                  break;
                   case TD_AVERAGE          : fld[idxt]+=vx; acc[idxt]++;     break;
+                  case TD_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                   default:
                      Tcl_AppendResult(Interp,"Data_GridAverage: Invalid interpolation type",(char*)NULL);
                      return(TCL_ERROR);
@@ -1293,7 +1304,8 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 
                         /*If the previous value is nodata, initialize the counter*/
                         if (isnan(fld[idxt]) || fld[idxt]==ToDef->NoData) {
-                           fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);
+                           fld[idxt]=(Mode==TD_SUM || Mode==TD_AVERAGE  || Mode==TD_VECTOR_AVERAGE || Mode==TD_VARIANCE || Mode==TD_SQUARE || Mode==TD_NORMALIZED_COUNT || Mode==TD_COUNT)?0.0:(Mode==TD_MAXIMUM?-HUGE_VAL:HUGE_VAL);                         
+                           if (aux) aux[idxt]=fld[idxt];
                         }
 
                         switch(Mode) {
@@ -1329,6 +1341,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                                                          }
                                                       }
                                                       break;
+                           case TD_VECTOR_AVERAGE   : vx=DEG2RAD(vx); fld[idxt]+=cos(vx); aux[idxt]+=sin(vx); acc[idxt]++; break;
                            default:
                               Tcl_AppendResult(Interp,"Data_GridAverage: Invalid interpolation type",(char*)NULL);
                               return(TCL_ERROR);
@@ -1346,23 +1359,34 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
       idxk=0;
       for(k=0;k<ToDef->NK;k++) {
          for(x=0;x<nij;x++,idxk++) {
+            vx=ToDef->NoData;
+            
             switch(Mode) {
                case TD_ACCUM:
-                  if (acc) {
-                     Def_Set(ToDef,0,idxk,acc[x]);
-                  }
+                  if (acc) vx=acc[x];
                   break;
+                  
                case TD_BUFFER:
-                  if (fld) {
-                     Def_Set(ToDef,0,idxk,fld[idxk]);
-                  }
+                  if (fld) vx=fld[idxk];
                   break;
+                  
                default:
                   if (fld) {
-                     if (acc && acc[x]!=0) fld[idxk]/=acc[x];
-                     Def_Set(ToDef,0,idxk,fld[idxk]);
+                     if (!isnan(fld[idxk]) && fld[idxk]!=ToDef->NoData) {
+                        if (aux) {
+                           if (acc && acc[x]!=0) { 
+                              fld[idxk]/=-acc[x];
+                              aux[idxk]/=-acc[x];
+                           }
+                           vx=RAD2DEG(-atan2(aux[idxk],fld[idxk]));
+                           if (vx<0) vx+=360;
+                        } else {
+                           if (acc && acc[x]!=0) vx=fld[idxk]/acc[x];
+                        }
+                     }
                   }
             }
+            Def_Set(ToDef,0,idxk,vx);
          }
 
          /*Copy first column to last if it's repeated*/

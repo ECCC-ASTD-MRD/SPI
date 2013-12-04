@@ -63,6 +63,10 @@ void DataDef_Clear(TDataDef *Def){
       free(Def->Buffer);
       Def->Buffer=NULL;
    }
+   if (Def->Aux) {
+      free(Def->Aux);
+      Def->Aux=NULL;
+   }
    if (Def->Accum) {
       free(Def->Accum);
       Def->Accum=NULL;
@@ -210,6 +214,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          def->Level=Def->Level;
          def->Idx=Def->Idx;
          def->Buffer=NULL;
+         def->Aux=NULL;
          def->Segments=NULL;
          def->Accum=NULL;
          def->Mask=NULL;
@@ -262,6 +267,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
          def->Level=Def->Level;
          def->Idx=Def->Idx;
          def->Buffer=NULL;
+         def->Aux=NULL;
          def->Segments=NULL;
          def->Accum=NULL;
          def->Mask=NULL;
@@ -319,6 +325,7 @@ void DataDef_Free(TDataDef *Def){
       }
 
       if (Def->Buffer)             free(Def->Buffer);
+      if (Def->Aux)                free(Def->Aux);
       if (Def->Accum)              free(Def->Accum);
       if (Def->Mask)               free(Def->Mask);
       if (Def->Sub)                free(Def->Sub);
@@ -389,6 +396,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->Data[0]=def->Data[1]=def->Data[2]=def->Data[3]=NULL;
    def->Type=Type;
    def->Buffer=NULL;
+   def->Aux=NULL;
    def->Segments=NULL;
    def->Accum=NULL;
    def->Mask=NULL;
@@ -470,6 +478,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
       Def->Mode=Def->Data[0];
 
       if (Def->Buffer)             free(Def->Buffer); Def->Buffer=NULL;
+      if (Def->Aux)                free(Def->Aux);    Def->Aux=NULL;
       if (Def->Accum)              free(Def->Accum);  Def->Accum=NULL;
       if (Def->Mask)               free(Def->Mask);   Def->Mask=NULL;
       if (Def->Sub)                free(Def->Sub);    Def->Sub=NULL;

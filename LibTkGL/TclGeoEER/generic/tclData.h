@@ -77,9 +77,10 @@ typedef enum {
    TD_LENGTH_CONSERVATIVE            = 13,
    TD_LENGTH_ALIASED                 = 14,
    TD_LENGTH_NORMALIZED_CONSERVATIVE = 15,
-   TD_NOP                            = 16,
-   TD_ACCUM                          = 17,
-   TD_BUFFER                         = 18
+   TD_VECTOR_AVERAGE                 = 16,
+   TD_NOP                            = 17,
+   TD_ACCUM                          = 18,
+   TD_BUFFER                         = 19
 } TDataInterp;
 
 typedef enum {

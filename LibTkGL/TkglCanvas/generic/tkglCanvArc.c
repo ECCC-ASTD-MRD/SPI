@@ -1723,7 +1723,7 @@ static int glArcToPostscript(
 
    /* If there's an outline for the arc, draw it */
 
-   if (arcPtr->outline.color) {
+   if (arcPtr->outline.color && arcPtr->outline.width>0) {
       Tcl_AppendPrintfToObj(psObj,
          "matrix currentmatrix\n"
          "%.15g %.15g translate %.15g %.15g scale\n",

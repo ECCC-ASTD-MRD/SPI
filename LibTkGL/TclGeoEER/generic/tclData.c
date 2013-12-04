@@ -2794,10 +2794,23 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   FSTD_DecodeRPNLevelParams(Field);
 #endif
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[1]));
+               Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->ZRef.RCoef[0]=tmpd;
+               Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+               if (nobj>1) {
+                  Tcl_ListObjIndex(Interp,Objv[i],0,obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
+                  Field->Ref->ZRef.RCoef[0]=tmpd;
+                  Tcl_ListObjIndex(Interp,Objv[i],1,obj);
+                  Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
+                  Field->Ref->ZRef.RCoef[1]=tmpd;
+               } else {
+                  Tcl_GetDoubleFromObj(Interp,Objv[i],&tmpd);
+                  Field->Ref->ZRef.RCoef[0]=tmpd;  
+               }
             }
             break;
 

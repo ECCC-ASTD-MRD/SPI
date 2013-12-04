@@ -346,7 +346,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    char        *field,imode,itype;
 
    int         idx;
-   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
+   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
    static CONST char *sopt[] = { "ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                  "timeinterp",NULL };
@@ -693,7 +693,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
 
             /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
-            if (n<16 && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
+            if (n<17 && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
                if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1)) {
                   return(TCL_ERROR);
                } else {
@@ -726,7 +726,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                field0->Ref->ZRef.Type=field1->Ref->ZRef.Type;
                FSTD_FieldSetTo(field0,field1);
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=18) {
+            } else if (n>=5 && n<=19) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -764,7 +764,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                if (table)
                   free(table);
                return(key);
-            } else if (n==19) {
+            } else if (n==20) {
                if (Objc<6) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
                   return(TCL_ERROR);
@@ -777,7 +777,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                }
                field0->Def->SubSample=ni;
                 return(Data_SubInterpolate(Interp,'N',field0->Ref,field0->Def,field1->Ref,field1->Def));
-            } else if (n==20) {
+            } else if (n==21) {
                if (Objc<6) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
                   return(TCL_ERROR);
@@ -824,7 +824,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   obj=Objv[7];
                }
                return(Data_GridConservative(Interp,field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=18) {
+            } else if (n>=5 && n<=19) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);

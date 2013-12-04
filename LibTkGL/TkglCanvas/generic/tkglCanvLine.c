@@ -2143,7 +2143,7 @@ static int glLineToPostscript(interp, canvas, itemPtr, prepass)
       }
    }
 
-   if (color == NULL || linePtr->numPoints<1 || linePtr->coordPtr==NULL) {
+   if (color == NULL || linePtr->numPoints<1 || linePtr->coordPtr==NULL || linePtr->outline.width<=0) {
       return TCL_OK;
    }
 
