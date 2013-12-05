@@ -115,7 +115,12 @@ puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list
 puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 0.0  10.1 360.0]]]"
 puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 -180 10.1 0.0]]]"
 puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 0.01 10.1 180]]]"
-#puts "      Gridpoints within range : [fstdfield stats PR -avg [list 10.0 0 10.1 360.0]]"
+puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 0.1 10.1 360]]]"
+#puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 -20.0 10.1 20.0]]"
+#puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 20.0 10.1 -20.0]]"
+#puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 20.0 10.1 30.0]]"
+#puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 30.0 10.1 20.0]]"
+exit 0
 
 
 puts "\nTesting parser's slicers"

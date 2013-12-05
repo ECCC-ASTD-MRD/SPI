@@ -473,15 +473,22 @@ proc Watch::CreateBranchSim { Canvas Project Exp Model Sim X Y } {
 
    CanvasBubble::Create $Canvas SIM$tag [Info::Format $info]
 
+   #----- Check for AutoSim version
+   if { [file isdirectory $Param(Path)/../data] } {
+      set path $Param(Path)/../data/$Project
+   } else {
+      set path $Param(Path)/$Project/data
+   }
+   
    #----- On cree les branches des resultats seulement s'il faut les afficher
    if { [lsearch -exact $Watch::Data(BranchSim) $tag] != -1 } {
       $Canvas itemconfigure PSIM$tag -bitmap $Model::Resources(Minus)
 
       #----- Loop on met runs
-      foreach run [lsort [glob -nocomplain -type d -directory $Param(Path)/$Project/data -tails *]] {
+      foreach run [lsort [glob -nocomplain -type d -directory $path -tails *]] {
       
          #----- Trouve tous les dossiers des resultats des simulations
-         foreach result [lsort [glob -nocomplain $Param(Path)/$Project/data/${run}/*_$Exp/$Model.$no.*]] {
+         foreach result [lsort [glob -nocomplain $path/${run}/*_$Exp/$Model.$no.*]] {
             set y1 [incr Y 21]
             set Y [Watch::CreateBranchResult $Canvas $Project "$Exp" $run $Model "$Sim" $result $X $Y]
          }

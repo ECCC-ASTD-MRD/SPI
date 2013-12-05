@@ -851,14 +851,14 @@ proc Model::ParamsMetDataDir { Model } {
          set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
       }
 
-      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" || $sim(Model)=="TRAJECT" } {
+      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
          set MetData::Param(Path) $dbeer
       } else {
          set MetData::Param(Path) $dbops
       }
 
       #----- Set met database by default.
-      if { $sim(Model)=="MLDPn" || $sim(Model)=="TRAJECT" } {
+      if { $sim(Model)=="MLDPn" } {
          MetData::Path hyb $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
       } else {
          MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
