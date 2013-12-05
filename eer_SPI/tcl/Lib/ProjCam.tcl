@@ -155,7 +155,7 @@ proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
    }
    projcam configure $Cam -lens $lens
    projection configure $Frame -location $lat $lon
-   $Frame.page.canvas itemconf $VP -frame 0
+   $Frame.page.canvas itemconf $VP -frame 0 -update True
    update idletasks
 
    if { $OpenGL::Param(Res)!=1 } {
