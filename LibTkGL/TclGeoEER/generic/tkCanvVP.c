@@ -1372,18 +1372,26 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    clock_t       sec;
    int           n;
 
-   // When in batch mode, do not render unless this is the final output
-   if (GLRender->XBatch && !GLRender->TRCon) {
-      return;
-   }
-
-   /*Take care of automated refresh handler*/
-   load=vp->Loading;
-   Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
-   if (GLRender->Delay<2000)
-      ViewportRefresh(vp,GLRender->Delay);
-
+   // If no projeciton is defined, this is useless
    if ((proj=Projection_Get(vp->Projection))) {
+      
+      // When in batch mode, do not render but do transformations unless this is the final output
+      if (GLRender->XBatch && !GLRender->TRCon) {
+         if (vp->Update) {
+            ViewportSet(vp,proj);
+            ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
+            Projection_Setup(vp,proj,1);
+            ViewportUnset(vp);
+         }
+         return;
+      }
+
+      /*Take care of automated refresh handler*/
+      load=vp->Loading;
+      Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
+      if (GLRender->Delay<2000)
+         ViewportRefresh(vp,GLRender->Delay);
+
       load+=(proj->Loading=proj->Loading<0?0:proj->Loading);
 
       /*Force update if rendering within PBuffer*/
