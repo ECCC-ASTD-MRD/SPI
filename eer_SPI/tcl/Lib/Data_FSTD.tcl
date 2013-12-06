@@ -447,7 +447,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          checkbutton $Data(Frame).lev.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable FSTD::Param(MapAbove) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false -selectcolor ""  -width 10
          ComboBox::Create $Data(Frame).lev.desc.edit FSTD::Param(Intervals) editclose sorted nodouble -1 \
-            "" 17 6 "FSTD::IntervalSetMode NONE"
+            "" 17 6 "FSTD::IntervalSetMode NONE 0 True"
          pack $Data(Frame).lev.desc.bellow -side left -fill y
          pack $Data(Frame).lev.desc.edit -side left -fill both -expand true
          pack $Data(Frame).lev.desc.above -side left  -fill y
@@ -560,7 +560,6 @@ proc FSTD::IntervalSetMode { Mode { Par 0 } { Interactive False } } {
       set Param(IntervalDef) ""
       pack forget $Data(Frame).lev.select.def
    }
-
    FSTD::IntervalSet
 }
 
