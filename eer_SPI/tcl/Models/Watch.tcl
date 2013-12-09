@@ -1145,8 +1145,10 @@ proc Watch::SimSuppress { } {
    set no    [Info::Strip $Data(Info) NoSim]
 
    #----- Supprimer tous les resultats pour la source
-   if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_${name}/${model}.${no}*]]] } {
-      eval file delete -force $files
+   foreach run [glob -nocomplain -type d -directory $Param(Path)/$Data(Project)/data -tails *] {    
+      if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/$run/*_${name}/${model}.${no}*]]] } {
+         eval file delete -force $files
+      }
    }
 
    #----- Mise a jour de la liste des experiences
@@ -1189,8 +1191,10 @@ proc Watch::Suppress { } {
 
    #----- Supprimer tous les resultats pour la source
    if { ![Dialog::Default . 400 WARNING $Msg(SuppressData) "\n\n$Data(Exp)" 0 $Lbl(Yes) $Lbl(No)] } {
-      if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/*_$Data(Exp)]]] } {
-         eval file delete -force $files
+      foreach run [glob -nocomplain -type d -directory $Param(Path)/$Data(Project)/data -tails *] {     
+         if { [llength [set files [glob -nocomplain $Param(Path)/$Data(Project)/data/$run/*_$Data(Exp)]]] } {
+            eval file delete -force $files
+         }
       }
    }
 
