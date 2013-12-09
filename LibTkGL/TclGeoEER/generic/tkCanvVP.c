@@ -1374,7 +1374,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    // If no projeciton is defined, this is useless
    if ((proj=Projection_Get(vp->Projection))) {
-      
       // When in batch mode, do not render but do transformations unless this is the final output
       if (GLRender->XBatch && !GLRender->TRCon) {
          if (vp->Update) {

@@ -43,9 +43,10 @@ void Cylin_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Cylin_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Cylin_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
-void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode);
 void Merca_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Merca_Locate(Projection *Proj,double Lat,double Lon,int Undo);
+
+static inline void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode);
 
 /*Fonctions de transformations*/
 unsigned long Cylin_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
@@ -337,7 +338,7 @@ int Cylin_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  *----------------------------------------------------------------------------
 */
-void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode) {
+static inline void Cylin_Vertex(Vect3d Pix,Vect3d Prev,double Delta,int Mode) {
 
    double d,x;
    Vect3d in0,in1;

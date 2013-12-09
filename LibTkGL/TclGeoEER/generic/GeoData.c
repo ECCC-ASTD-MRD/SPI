@@ -1916,7 +1916,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                }
 
                if (GDB->Params.Coast && tile->Coast) {
-                  GDB_GeoRender(Interp,Proj,tile->Coast,ABS(GDB->Params.Coast),Proj->VP->ColorCoast,0);
+                 GDB_GeoRender(Interp,Proj,tile->Coast,ABS(GDB->Params.Coast),Proj->VP->ColorCoast,0);
                }
 
                if (GDB->Params.Lake && tile->Lake) {

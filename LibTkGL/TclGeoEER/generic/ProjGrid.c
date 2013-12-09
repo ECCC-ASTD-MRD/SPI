@@ -43,8 +43,9 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
-void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode);
 void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
+
+static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode);
 
 /*Fonctions de transformations*/
 unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,GeoVect *Pix,long Nb);
@@ -351,13 +352,7 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  *
  *----------------------------------------------------------------------------
 */
-void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
-
-   // Tentative test for U grid
-   if (fabs(Pix[1]-Prev[1])>0.25 || fabs(Pix[0]-Prev[0])>0.25) {
-      glEnd();
-      glBegin(Mode);
-   }
+static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
 
    if ((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=0.0 && Prev[0]>=0.0)) {
       glVertex3dv(Pix);
@@ -411,8 +406,8 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
          n=Nb*Stride;
          glBegin(Mode);
             for(i=0;i<n;i+=Stride) {
-               if (Tex) glTexCoord1f(Tex[i]);
-               Grid_Vertex(Data[i],prev,Proj->LI,Mode);
+              if (Tex) glTexCoord1f(Tex[i]);
+              Grid_Vertex(Data[i],prev,Proj->LI,Mode);
             }
          glEnd();
       } else {
