@@ -1375,10 +1375,10 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                      if (!isnan(fld[idxk]) && fld[idxk]!=ToDef->NoData) {
                         if (aux) {
                            if (acc && acc[x]!=0) { 
-                              fld[idxk]/=-acc[x];
-                              aux[idxk]/=-acc[x];
+                              fld[idxk]/=acc[x];
+                              aux[idxk]/=acc[x];
                            }
-                           vx=RAD2DEG(-atan2(aux[idxk],fld[idxk]));
+                           vx=RAD2DEG(atan2(aux[idxk],fld[idxk]));
                            if (vx<0) vx+=360;
                         } else {
                            if (acc && acc[x]!=0) vx=fld[idxk]/acc[x];

@@ -819,7 +819,7 @@ double dcore(TDataDef *Res,TDataDef *Def,int Mode) {
 
          /*Aspect*/
          if (Mode==DASPECT) {
-            asp=(dxy2==0.0?0.0:(dx==0.0?(dy>0?0.0:180.0):-RAD2DEG(atan2(dy,dx))+90.0));
+            asp=(dxy2==0.0?0.0:(dx==0.0?(dy>0?0.0:180.0):RAD2DEG(atan2(dy,dx))+90.0));
             asp=asp<0.0?asp+360.0:asp;
             Def_Set(Res,0,idx,asp);
             continue;
