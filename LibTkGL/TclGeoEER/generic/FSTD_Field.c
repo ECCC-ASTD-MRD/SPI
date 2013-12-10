@@ -67,6 +67,7 @@ TData_Type FSTD_TypeCheck(int Type,int Size) {
       case 2: Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
       case 4: Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
       case 1:
+      case 6:
       case 5: Type=Size>32?TD_Float64:TD_Float32;                    break;
    }
    return(Type);
@@ -745,7 +746,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    FSTD_Head   *headfrom=(FSTD_Head*)FieldFrom->Head;
 
    if (FieldFrom->Def->Type!=TD_Float32 || FieldTo->Def->Type!=TD_Float32) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid Field data type, must be float",(char*)NULL);
+      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid Field data type, must be Float32",(char*)NULL);
       return(TCL_ERROR);
    }
 

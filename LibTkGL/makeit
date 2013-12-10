@@ -5,7 +5,7 @@ arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.6.1"
+VERSION="7.6.2"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_multi
