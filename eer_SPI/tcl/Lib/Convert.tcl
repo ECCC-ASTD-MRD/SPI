@@ -18,8 +18,6 @@
 #    Convert::Meter2Millibar { Value }
 #    Convert::Millibar2Meter { Value }
 #    Convert::Minute2Decimal { Value { Prec 10 } }
-#    Convert::Sec2ISO8601    { Sec { T T } }
-#    Convert::ISO86012Sec    { ISO }
 #    Convert::ModuloVal      { Val Mod Sens }
 #    Convert::Set2Digit      { Nb }
 #

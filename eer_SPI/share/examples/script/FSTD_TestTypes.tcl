@@ -17,7 +17,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Retour:
 #
 # Remarques  :
-#
+#   - Int64 and Uint64 don't work in RPN
+#   - Int16 and UInt16 get converted to 32 bit so they basically don't work either
+#   - Float64 is not that well supported in RPN so use at you own risks
 #============================================================================
 
 package require TclData
@@ -30,7 +32,7 @@ catch { file delete DataOut/FSTD_TestTypes.fstd }
 
 fstdfile open 1 write DataOut/FSTD_TestTypes.fstd
 
-foreach type { UByte Byte UInt16 Int16 UInt32 Int32 Float32 Float64 } val { 2 3 4 5 6 7 10 11 } {
+foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 3 4 5 6 7 8 9 10 11 } {
 
    Log::Print INFO "Creating field of type $type"
 
@@ -41,6 +43,7 @@ foreach type { UByte Byte UInt16 Int16 UInt32 Int32 Float32 Float64 } val { 2 3 
 
    fstdfield stats GRID -nodata $val
    fstdfield clear GRID
+   fstdfield stats GRID -gridvalue 100 100 [expr $val*10]
 
    fstdfield write GRID 1 0 False
 }

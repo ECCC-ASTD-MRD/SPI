@@ -2680,7 +2680,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          case 5: datyp=133; break;
          case 1: datyp=134; break;
       }
-   if (NPack==-64 && (datyp=1 || datyp==5)) datyp=801;
+      if (NPack==-64 && (datyp=1 || datyp==5)) datyp=801;
    }
 
 
