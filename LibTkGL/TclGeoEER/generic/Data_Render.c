@@ -1286,7 +1286,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    idx0=idx1=idx2=idx3=0;
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
-   
+
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -1351,7 +1351,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                      depth=ceil(LOG2(dx));
 
                      /* Is the cell resolution enough ??? */
-                     if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
+                     if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
                         VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                      } else {
                         VR(g0,c0,base);
@@ -1435,7 +1435,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                   depth=ceil(LOG2(dx));
 
                   /* Is the cell resolution enough ??? */
-                  if (depth>=2 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
+                  if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
                      VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
                      VR(g0,c0,base);
