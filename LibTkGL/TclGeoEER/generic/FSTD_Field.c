@@ -40,8 +40,6 @@
 
 TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
-/*0=binary 1=real 2=unsigned integer 3=character 4=signed integer 5=IEEE style representation 6=whatever RPN comes with*/
-static int FSTD_Type[]={ 1,10,6,2,7,10,10,3 };
 int FSTD_UNTILE=0;
 
 /*----------------------------------------------------------------------------
@@ -57,16 +55,19 @@ int FSTD_UNTILE=0;
  * Retour:
  *
  * Remarques :
- *
+ *   0=binary 1=real 2=unsigned integer 3=character 4=signed integer 5=IEEE style representation 6=whatever RPN comes with
+ *  16 bit integer don't exist in RPN, only 32bit, 64 bit ???
  *----------------------------------------------------------------------------
 */
 TData_Type FSTD_TypeCheck(int Type,int Size) {
 
-   switch(FSTD_Type[Type]) {
-      case TD_Binary:
-      case TD_Float32: Type=Size>32?TD_Float64:TD_Float32;                    break;
-      case TD_UInt32:  Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
-      case TD_Int32:   Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
+   switch(Type) {
+      case 0: Type=TD_Binary;                                        break;  
+      case 7: Type=TD_UByte;                                         break;
+      case 2: Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
+      case 4: Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
+      case 1:
+      case 5: Type=Size>32?TD_Float64:TD_Float32;                    break;
    }
    return(Type);
 }
@@ -1734,18 +1735,20 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData
    TData_Type  type;
    int         datyp,nbit;
 
+   type=Type;
+   
    switch(Type) {
       case TD_Binary:  datyp=0;nbit=1;type=TD_Byte; break;
       case TD_UByte:
-      case TD_Byte:    datyp=3;nbit=8;type=TD_Byte;break;
-      case TD_UInt16:  datyp=2;nbit=16;type=TD_UInt32;break;
-      case TD_Int16:   datyp=4;nbit=16;type=TD_Int32;break;
-      case TD_UInt32:  datyp=2;nbit=32;type=TD_UInt32;break;
-      case TD_Int32:   datyp=4;nbit=32;type=TD_Int32;break;
-      case TD_UInt64:  datyp=2;nbit=64;type=TD_UInt64;break;
-      case TD_Int64:   datyp=4;nbit=64;type=TD_Int64;break;
-      case TD_Float32: datyp=1;nbit=32;type=TD_Float32;break;
-      case TD_Float64: datyp=1;nbit=64;type=TD_Float64;break;
+      case TD_Byte:    datyp=3;nbit=8;break;
+      case TD_UInt16:  datyp=2;nbit=16;break;
+      case TD_Int16:   datyp=4;nbit=16;break;
+      case TD_UInt32:  datyp=2;nbit=32;break;
+      case TD_Int32:   datyp=4;nbit=32;break;
+      case TD_UInt64:  datyp=2;nbit=64;break;
+      case TD_Int64:   datyp=4;nbit=64;break;
+      case TD_Float32: datyp=1;nbit=32;break;
+      case TD_Float64: datyp=5;nbit=64;break;
       case TD_Unknown:
       default: return(NULL);
    }
@@ -2157,7 +2160,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
    }
    
-   datyp=h.DATYP<=0?1:h.DATYP;
    datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
    dtype=FSTD_TypeCheck(datyp,h.NBITS);
 
@@ -2678,9 +2680,9 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          case 5: datyp=133; break;
          case 1: datyp=134; break;
       }
+   if (NPack==-64 && (datyp=1 || datyp==5)) datyp=801;
    }
 
-   if (NPack==-64) datyp=801;
 
    EZLock_RPNField();
 

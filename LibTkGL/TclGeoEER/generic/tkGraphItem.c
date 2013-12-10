@@ -3799,7 +3799,6 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
  * Parametres   :
  *   <Interp>   : Interpreteur Tcl
  *   <Graph>    : Item graph
-fprintf(stderr,"----1\n");
  *   <Item>     : Item de graph
  *   <X0>       : Limite inferieure gauche du graph
  *   <Y0>       : Limite inferieure gauche du graph

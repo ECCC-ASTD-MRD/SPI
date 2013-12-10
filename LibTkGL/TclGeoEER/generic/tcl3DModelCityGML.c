@@ -276,7 +276,6 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
    XML_ParserFree(parser);
 
    /*Parse materials
-   fprintf(stderr,"---1\n");
    for (len=0;len<M->NMt;len++) {
       gml->Mt=&M->Mt[len];
       if ((gml->Fc=Model_FaceFind(gml->Model,&gml->Mt->Target[1],NULL))) {

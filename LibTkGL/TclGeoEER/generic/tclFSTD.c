@@ -341,15 +341,18 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    T3DModel    *model;
    Tcl_Obj     *obj;
    TData       *field0,*field1,*fieldt;
+   TData_Type  type;
    TDataVector *uvw;
    Vect3d      *pos;
    char        *field,imode,itype;
 
    int         idx;
+   static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
-   static CONST char *sopt[] = { "ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
-                                 "timeinterp",NULL };
+
+   static CONST char *sopt[]   = { "ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+                                   "timeinterp",NULL };
    enum                opt { IP1MODE,AUTOUNTILE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
@@ -567,7 +570,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
       case CREATE:
          if(Objc!=6 && Objc!=7) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld ni nj nk [Binary Byte UInt16 Int16 Uint32 Int32 Float32 Float64]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld ni nj nk [type]");
             return(TCL_ERROR);
          }
          ni=nj=nk=-1;
@@ -581,33 +584,14 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
              return(TCL_ERROR);
          }
 
+         type=TD_Float32;
+         
          if (Objc==7) {
-            if (strcmp(Tcl_GetString(Objv[6]),"Binary")==0) {
-               npack=1;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"UByte")==0) {
-               npack=2;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Byte")==0) {
-               npack=3;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"UInt16")==0) {
-               npack=4;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Int16")==0) {
-               npack=5;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"UInt32")==0) {
-               npack=6;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Int32")==0) {
-               npack=7;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Float32")==0) {
-               npack=10;
-            } else if (strcmp(Tcl_GetString(Objv[6]),"Float64")==0) {
-               npack=11;
-            } else {
-               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid data type must be Binary Byte UInt16 Int16 Uint32 Int32 Float32 Float64",(char*)NULL);
+            if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",0,&type)!=TCL_OK) {
                return(TCL_ERROR);
             }
-         } else {
-            npack=10;
          }
-         if (!FSTD_FieldCreate(Interp,Tcl_GetString(Objv[2]),ni,nj,nk,npack))
+         if (!FSTD_FieldCreate(Interp,Tcl_GetString(Objv[2]),ni,nj,nk,type==TD_Unknown?TD_Float32:type))
             return(TCL_ERROR);
          else
             return(TCL_OK);

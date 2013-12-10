@@ -229,13 +229,13 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             Y=iy;
          }
 
-         if (Def->Type<=9 || Mode=='N' || (X==ix && Y==iy)) {
+         if (Def->Type<TD_Float32 || Mode=='N' || (X==ix && Y==iy)) {
             mem+=iy*Def->NI+ix;
             Def_Get(Def,C,mem,*Length);
             if (Def->Data[1] && !C)
                Def_Get(Def,1,mem,*ThetaXY);
          } else {
-            if (Ref && Ref->Ids) {
+            if (Def->Type==TD_Float32 && Ref && Ref->Ids) {
                Def_Pointer(Def,C,mem,p0);
                
                // If either value is nodata then interpolation will be nodata as well
