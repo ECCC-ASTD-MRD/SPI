@@ -513,8 +513,8 @@ proc FieldBox::FileOpen { No File } {
       #----- Ouvrir le fichier
       set index ""
       if { [fstdfile is $file] || $rem } {
-         set bad [catch { set index [fstdfile open $fid read $file SPI] }]
-         if { $bad } {
+         set bad [catch { set index [fstdfile open $fid read $file SPI] } msg]
+         if { $bad || ![llength $index] } {
             fstdfile close $fid
          } else {
             lappend data(TypeList) fstdfield
