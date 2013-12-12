@@ -521,7 +521,7 @@ proc FieldBox::FileOpen { No File } {
          }
       } elseif { [gribfile is $file] } {
          set bad [catch { set index [gribfile open $fid read $file SPI] }]
-         if { $bad } {
+         if { $bad || ![llength $index] } {
             gribfile close $fid
          } else {
             lappend data(TypeList) gribfield
