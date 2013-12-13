@@ -60,15 +60,14 @@ int FSTD_UNTILE=0;
  *----------------------------------------------------------------------------
 */
 TData_Type FSTD_TypeCheck(int Type,int Size) {
-
    switch(Type) {
-      case 0: Type=TD_Binary;                                        break;  
-      case 7: Type=TD_UByte;                                         break;
-      case 2: Type=Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt32;  break;
-      case 4: Type=Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int32;     break;
+      case 0: Type=TD_Binary;                                                          break;  
+      case 7: Type=TD_UByte;                                                           break;
+      case 2: Type=Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte;  break;
+      case 4: Type=Size>8?(Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int16):TD_Byte;      break;
       case 1:
       case 6:
-      case 5: Type=Size>32?TD_Float64:TD_Float32;                    break;
+      case 5: Type=Size>32?TD_Float64:TD_Float32;                                      break;
    }
    return(Type);
 }
@@ -1737,11 +1736,11 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData
    int         datyp,nbit;
 
    type=Type;
-   
+  
    switch(Type) {
       case TD_Binary:  datyp=0;nbit=1;type=TD_Byte; break;
-      case TD_UByte:
-      case TD_Byte:    datyp=3;nbit=8;break;
+      case TD_UByte:   datyp=2;nbit=8;break;
+      case TD_Byte:    datyp=4;nbit=8;break;
       case TD_UInt16:  datyp=2;nbit=16;break;
       case TD_Int16:   datyp=4;nbit=16;break;
       case TD_UInt32:  datyp=2;nbit=32;break;
@@ -2187,6 +2186,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
+      c_fst_data_length(TData_Size[field->Def->Type]);
       if (cs_fstlukt(field->Def->Data[idx],h.FID->Id,h.KEY,&tile,&ni,&nj,&nk)<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
@@ -2206,6 +2206,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
+            c_fst_data_length(TData_Size[field->Def->Type]);
             if (cs_fstlukt(field->Def->Data[0],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
@@ -2225,6 +2226,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
+            c_fst_data_length(TData_Size[field->Def->Type]);
             if (cs_fstlukt(field->Def->Data[1],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
@@ -2244,6 +2246,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
+            c_fst_data_length(TData_Size[field->Def->Type]);
             if (cs_fstlukt(field->Def->Data[2],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
@@ -2267,6 +2270,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
+      c_fst_data_length(TData_Size[field->Def->Type]);
       if ((ok=cs_fstlukt(field->Def->Data[0],h.FID->Id,h.KEY,&tile,&ni,&nj,&nk))<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
@@ -2550,6 +2554,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       Def_Pointer(Field->Def,0,idx,p);
 
       /*Recuperer les donnees du champs*/
+      c_fst_data_length(TData_Size[Field->Def->Type]);
       if (cs_fstlukt(p,head->FID->Id,idxs[k],&tile,&ni,&nj,&idump)<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,head->FID);
@@ -2566,11 +2571,13 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          if (uvw->VV) {
             Def_Pointer(Field->Def,1,idx,p);
             ok=cs_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
+            c_fst_data_length(TData_Size[Field->Def->Type]);
             cs_fstlukt(p,head->FID->Id,ok,&tile,&ni,&nj,&idump);
          }
          if (uvw->WW) {
             Def_Pointer(Field->Def,2,idx,p);
             ok=cs_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
+            c_fst_data_length(TData_Size[Field->Def->Type]);
             cs_fstlukt(p,head->FID->Id,ok,&tile,&ni,&nj,&idump);
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(Field->Def);i++) {
@@ -2681,22 +2688,21 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          case 5: datyp=133; break;
          case 1: datyp=134; break;
       }
-      if (NPack==-64 && (datyp=1 || datyp==5)) datyp=801;
+//      if (head->NBITS==64 && (head->DATYP=1 || head->DATYP==5)) datyp=801;
    }
-
 
    EZLock_RPNField();
 
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
 
-      //      ip1=Field->Def->NK==1?((FSTD_Head*)Field->Head)->IP1:ZRef_Level2IP(Field->Ref->ZRef.Levels[k],Field->Ref->ZRef.Type);
       /*If IP1 is set, use it otherwise, convert it from levels array*/
-      if ((ip1=((FSTD_Head*)Field->Head)->IP1)==-1 || Field->Def->NK>1) {
+      if ((ip1=head->IP1)==-1 || Field->Def->NK>1) {
          ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[k],Field->Ref->ZRef.Type);
       }
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);
+      c_fst_data_length(TData_Size[Field->Def->Type]);
       ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                   ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,head->ETIKET,
                   (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
@@ -2707,6 +2713,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
             /*Inscription du champs complementaire 2D*/
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);
+               c_fst_data_length(TData_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,
                            (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
@@ -2714,6 +2721,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
             /*Inscription du champs complementaire 3D*/
             if (Field->Def->Data[2] && uvw->WW) {
                Def_Pointer(Field->Def,2,idx,p);
+               c_fst_data_length(TData_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,
                            (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
