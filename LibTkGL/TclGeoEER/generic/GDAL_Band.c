@@ -1381,7 +1381,12 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                            vx=RAD2DEG(atan2(aux[idxk],fld[idxk]));
                            if (vx<0) vx+=360;
                         } else {
-                           if (acc && acc[x]!=0) vx=fld[idxk]/acc[x];
+                           vx=fld[idxk];
+                           if (acc && acc[x]!=0) {
+                              vx=fld[idxk]/acc[x];
+                           } else {
+                              vx=fld[idxk];
+                           }
                         }
                      }
                   }

@@ -61,7 +61,8 @@ int FSTD_UNTILE=0;
 */
 TData_Type FSTD_TypeCheck(int Type,int Size) {
    switch(Type) {
-      case 0: Type=TD_Binary;                                                          break;  
+//      case 0: Type=TD_Binary;                                                          break;  
+      case 0: Type=Size>1?(Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte):TD_Binary; break;
       case 7: Type=TD_UByte;                                                           break;
       case 2: Type=Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte;  break;
       case 4: Type=Size>8?(Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int16):TD_Byte;      break;
@@ -2161,8 +2162,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }  
    
    datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
-   
+
    // have to boost nbit to 32 for nbit=1, not sure why ????
+   if (h.NBITS==32 && datyp==0) datyp=5;
+   
    dtype=FSTD_TypeCheck(datyp,h.NBITS==1?32:h.NBITS);
 
    /*Calculer la date de validitee du champs*/

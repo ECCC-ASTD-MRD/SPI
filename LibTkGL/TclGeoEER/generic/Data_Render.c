@@ -1667,34 +1667,37 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
                   idx=j*Field->Def->NI+i;
 
-                  /*If the speed if between the defined range*/
-                  Def_GetMod(Field->Def,idx,len);
-                  if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                     if (Field->Spec->MapAll && Field->Spec->Map) {
-                        VAL2COL(idc,Field->Spec,len);
-                        if (Interp) {
-                           CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                        } else {
-                           glColor4ubv(Field->Spec->Map->Color[idc]);
+                  // Check for mask
+                  if (!Field->Def->Mask || Field->Def->Mask[idx]) {
+                     /*If the speed if between the defined range*/
+                     Def_GetMod(Field->Def,idx,len);
+                     if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                        if (Field->Spec->MapAll && Field->Spec->Map) {
+                           VAL2COL(idc,Field->Spec,len);
+                           if (Interp) {
+                              CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
+                           } else {
+                              glColor4ubv(Field->Spec->Map->Color[idc]);
+                           }
                         }
+
+                        /*Get the components*/
+                        Def_Get(Field->Def,0,idx,u);
+                        Def_Get(Field->Def,2,idx,w);
+
+                        /*If the horizontal components are not section oriented but geographicaly N-S E-W*/
+                        if (!Field->Spec->GridVector) {
+                           Def_Get(Field->Def,1,idx,v);
+                           uv=hypot(u,v);
+                           u=uv*cos(atan2(v,u)-theta);
+                        }
+
+                        /*Resize the arrow on the speed*/
+                        size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                        if (Interp) glFeedbackInit(256,GL_2D);
+                        Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],ZRef_Level2Meter(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
+                        if (Interp) glFeedbackProcess(Interp,GL_2D);
                      }
-
-                     /*Get the components*/
-                     Def_Get(Field->Def,0,idx,u);
-                     Def_Get(Field->Def,2,idx,w);
-
-                     /*If the horizontal components are not section oriented but geographicaly N-S E-W*/
-                     if (!Field->Spec->GridVector) {
-                        Def_Get(Field->Def,1,idx,v);
-                        uv=hypot(u,v);
-                        u=uv*cos(atan2(v,u)-theta);
-                     }
-
-                     /*Resize the arrow on the speed*/
-                     size=VP->Ratio*VECTORSIZE(Field->Spec,len);
-                     if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],ZRef_Level2Meter(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
-                     if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
             }
@@ -1707,24 +1710,28 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          for(i=0;i<Field->Def->NI;i+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
             for(j=0;j<Field->Def->NJ;j+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
                idx=j*Field->Def->NI+i;
-               Def_GetMod(Field->Def,idx,len);
-               Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
-               if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll && Field->Spec->Map) {
-                     VAL2COL(idc,Field->Spec,len);
-                     if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                     } else {
-                        glColor4ubv(Field->Spec->Map->Color[idc]);
+               
+               // Check for mask
+               if (!Field->Def->Mask || Field->Def->Mask[idx]) {
+                  Def_GetMod(Field->Def,idx,len);
+                  Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
+                  if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                     if (Field->Spec->MapAll && Field->Spec->Map) {
+                        VAL2COL(idc,Field->Spec,len);
+                        if (Interp) {
+                           CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
+                        } else {
+                           glColor4ubv(Field->Spec->Map->Color[idc]);
+                        }
                      }
-                  }
-                  Def_Get(Field->Def,0,idx,u);
-                  Def_Get(Field->Def,1,idx,v);
+                     Def_Get(Field->Def,0,idx,u);
+                     Def_Get(Field->Def,1,idx,v);
 
-                  size=VP->Ratio*VECTORSIZE(Field->Spec,len);
-                  if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
-                  if (Interp) glFeedbackProcess(Interp,GL_2D);
+                     size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                     if (Interp) glFeedbackInit(256,GL_2D);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
+                     if (Interp) glFeedbackProcess(Interp,GL_2D);
+                  }
                }
             }
          }

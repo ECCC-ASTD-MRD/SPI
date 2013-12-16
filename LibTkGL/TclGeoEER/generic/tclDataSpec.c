@@ -954,27 +954,29 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"DataSpec_Config: too many intervals, maximum is 256",(char*) NULL);
                   return(TCL_ERROR);
                }
+               
+               internew=1;
 
                if (Spec->InterVals) {
+                  if (strcmp(Tcl_GetString(Spec->InterVals),Tcl_GetString(Objv[i]))==0)
+                     internew=0;
                   Tcl_DecrRefCount(Spec->InterVals);
                }
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
                Tcl_IncrRefCount(Spec->InterVals);
 
                /*Determine si ils sont nouveaux*/
-               for (ii=0;ii<nobj;ii++){
-                  Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
-                  Tcl_GetDoubleFromObj(Interp,obj,&val);
-                  tmp=SPEC2VAL(Spec,val);
-                  if (nobj!=Spec->InterNb || tmp!=Spec->Inter[ii]) {
-                     internew=1;
+               if (internew) {
+                  Spec->InterNb=nobj;
+                  for (ii=0;ii<nobj;ii++){
+                     Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
+                     Tcl_GetDoubleFromObj(Interp,obj,&val);
                      Spec->Inter[ii]=val;
                   }
-               }
 
-               if ((!Spec->InterMode || Spec->InterMode>=5) && (internew || nobj!=Spec->InterNb)) {
-                  Spec->InterNb=nobj;
-                  cmap=cseg=1;
+                  if ((!Spec->InterMode || Spec->InterMode>=5)) {
+                     cmap=cseg=1;
+                  }
                }
             }
             break;
