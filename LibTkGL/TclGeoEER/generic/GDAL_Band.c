@@ -1425,7 +1425,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale) {
 
    double incri,incrj,posX,posY,dfy;
-   int    x,y,cidx,idx,z,lvl=0;
+   int    x,y,cidx,idx,fidx,z,lvl=0;
    float  *levels=NULL;
    double dir,val;
 
@@ -1487,8 +1487,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
          posX=(double)x*incri;
 
          // Get interpolated value for that point (pixel)
-         if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,posX,posY,0,&val,&dir)) {
-         } else {
+         if (!Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,posX,posY,0,&val,&dir)) {
             val=Field->Def->NoData;
          }
 

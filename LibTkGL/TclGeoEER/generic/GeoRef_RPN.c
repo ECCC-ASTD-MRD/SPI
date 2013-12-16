@@ -154,11 +154,12 @@ double GeoRef_RPNDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 
 int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY) {
 
-   Vect3d   b,v;
-   float    x,y,valf,valdf;
-   void     *p0,*p1;
-   int      valid=0,mem,ix,iy,n;
-
+   Vect3d       b,v;
+   float        x,y,valf,valdf;
+   void        *p0,*p1;
+   int          valid=0,mem,ix,iy,n;
+   unsigned int idx;
+   
    *Length=Def->NoData;
 
 #ifdef HAVE_RMN
@@ -189,7 +190,6 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
    if (C<Def->NC && X>=(Ref->X0-0.5) && Y>=(Ref->Y0-0.5) && Z>=0 && X<(Ref->X1+0.5) && Y<(Ref->Y1+0.5) && Z<=Def->NK-1) {
-      valid=1;
 
       /*Index memoire du niveau desire*/
       mem=Def->NIJ*(int)Z;
@@ -199,6 +199,14 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 
       ix=lrint(X);
       iy=lrint(Y);
+      idx=iy*Def->NI+ix;
+      
+      // Check for mask
+      if (Def->Mask && !Def->Mask[idx]) {
+         return(valid);
+      }
+      
+      valid=1;
 
       if (Ref && Ref->Grid[0]=='V') {
          if (Def->Data[1]) {
@@ -230,7 +238,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
          }
 
          if (Def->Type<TD_Float32 || Mode=='N' || (X==ix && Y==iy)) {
-            mem+=iy*Def->NI+ix;
+            mem+=idx;
             Def_Get(Def,C,mem,*Length);
             if (Def->Data[1] && !C)
                Def_Get(Def,1,mem,*ThetaXY);
@@ -241,7 +249,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
                // If either value is nodata then interpolation will be nodata as well
                ix=trunc(X);
                iy=trunc(Y);
-               mem=iy*Def->NI+ix;
+               mem=idx;
                if (              ((float*)p0)[mem]==Def->NoData)                         { return(valid); }
                if (ix<Ref->X1 && ((float*)p0)[mem+1]==Def->NoData)                       { return(valid); }
                if (iy<Ref->Y1 && ((float*)p0)[mem+Def->NI]==Def->NoData)                 { return(valid); }

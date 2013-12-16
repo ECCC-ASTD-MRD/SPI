@@ -2158,10 +2158,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       if (Key<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Projection description field does not exist (c_fstinf failed)",(char*)NULL);
       }
-   }
+   }  
    
    datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
-   dtype=FSTD_TypeCheck(datyp,h.NBITS);
+   
+   // have to boost nbit to 32 for nbit=1, not sure why ????
+   dtype=FSTD_TypeCheck(datyp,h.NBITS==1?32:h.NBITS);
 
    /*Calculer la date de validitee du champs*/
    if (h.DATEO!=0) {
@@ -2277,7 +2279,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          return(TCL_ERROR);
       }
    }
-
+   
    /*Check for mask (TYPVAR==@@)*/
    if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
       ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);

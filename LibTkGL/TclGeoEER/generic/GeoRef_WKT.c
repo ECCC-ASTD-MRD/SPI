@@ -110,8 +110,9 @@ double GeoRef_WKTDistance(TGeoRef *Ref,double X0,double Y0,double X1, double Y1)
 */
 int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y,double Z,double *Length,double *ThetaXY){
 
-   double  x,y,d;
-   int     valid=0,mem,ix,iy;
+   double       x,y,d;
+   int          valid=0,mem,ix,iy;
+   unsigned int idx;
 
   *Length=Def->NoData;
    d=1.0;
@@ -119,7 +120,6 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
    /*Si on est a l'interieur de la grille ou que l'extrapolation est activee*/
    if (C<Def->NC && X>=(Ref->X0-d) && Y>=(Ref->Y0-d) && Z>=0 && X<=(Ref->X1+d) && Y<=(Ref->Y1+d) && Z<=Def->NK-1) {
 
-      valid=1;
       X-=Ref->X0;
       Y-=Ref->Y0;
       DEFCLAMP(Def,X,Y);
@@ -129,9 +129,17 @@ int GeoRef_WKTValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
 
       ix=lrint(X);
       iy=lrint(Y);
+      idx=iy*Def->NI+ix;
 
+      // Check for mask
+      if (Def->Mask && !Def->Mask[idx]) {
+         return(valid);
+      }
+      
+      valid=1;
+     
       if (Def->Type<=9 || Mode=='N' || (X==ix && Y==iy)) {
-         mem+=iy*Def->NI+ix;
+         mem+=idx;
          Def_GetMod(Def,mem,*Length);
 
          /*Pour un champs vectoriel*/
