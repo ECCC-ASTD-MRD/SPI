@@ -729,7 +729,6 @@ proc FSTD::ParamGet { { Spec "" } } {
       return
    }
 
-
    set val  [dataspec configure $Spec -value]
    set Param(Order)     [lindex $val 0]
    set Param(Mantisse)  [lindex $val 1]
@@ -782,7 +781,8 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Y1)         [lindex $plane 4]
    set Param(Z1)         [lindex $plane 5]
 
-   if { $Param(Min)!=$Param(Max) } {
+   #----- Intervals and min-max selection are exclusive with priority to intervals
+   if { ![llength $Param(Intervals)] && $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
       if { $Param(Min)!="" } {
          append Param(Intervals) "\[$Param(Min)"
