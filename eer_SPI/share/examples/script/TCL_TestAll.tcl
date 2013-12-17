@@ -98,7 +98,8 @@ set tests {
    SIM_Traj.tcl
 }
 
-catch { file delete DataOut/TCL_TestAll.log }
+set date [clock format [clock seconds] -format "%Y%m%d"]
+catch { file delete DataOut/TCL_TestAll-$date.log }
 fconfigure stdout -buffering none
 
 set nok 0
@@ -111,7 +112,7 @@ foreach test $tests {
    puts -nonewline [format "%-35s %02i/%02i " [lindex $test 0] $n $nb]
    set s [clock seconds]
 
-   if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll.log }]  } {
+   if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll-$date.log }]  } {
       puts -nonewline "Failed"
       incr nok
    } else {

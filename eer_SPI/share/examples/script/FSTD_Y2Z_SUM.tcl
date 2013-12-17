@@ -77,6 +77,8 @@ for { set d 1 } { $d <= $Days } { incr d } {
 }
 
 Log::Print INFO "Processing point cloud"
+fstdfield read GRID GRIDFILE -1 "" -1 -1 -1 "" O3
+
 fstdfield gridinterp YFIELD GRID MAX True 
 fstdfield define YFIELD -NOMVAR MAX -IP1 12001 -IP2 $ip2 -DATEO [fstdfield define YFIELD -DATEO] -ETIKET [fstdfield define YFIELD -ETIKET]
 fstdfield write YFIELD RESULTFILE -32 True

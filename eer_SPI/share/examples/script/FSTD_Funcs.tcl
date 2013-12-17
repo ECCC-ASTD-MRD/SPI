@@ -120,8 +120,6 @@ puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 0.1
 #puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 20.0 10.1 -20.0]]"
 #puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 20.0 10.1 30.0]]"
 #puts "      Gridpoints within range : [fstdfield stats PR -within [list 10.0 30.0 10.1 20.0]]"
-exit 0
-
 
 puts "\nTesting parser's slicers"
 puts "   min=[vexpr NIL smin(TT)] [fstdfield stats TT -min]"

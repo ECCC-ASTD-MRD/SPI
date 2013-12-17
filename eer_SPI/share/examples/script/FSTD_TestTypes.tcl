@@ -18,7 +18,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Remarques  :
 #   - Int64 and Uint64 don't work in RPN
-#   - Int16 and UInt16 get converted to 32 bit so they basically don't work either
 #   - Float64 is not that well supported in RPN so use at you own risks
 #============================================================================
 
@@ -43,6 +42,7 @@ foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64
 
    fstdfield stats GRID -nodata $val
    fstdfield clear GRID
+#   fstdfield stats GRID -gridvalue 10 10 -1
    fstdfield stats GRID -gridvalue 100 100 [expr $val*10]
 
    fstdfield write GRID 1 0 False

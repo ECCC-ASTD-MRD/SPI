@@ -26,19 +26,21 @@ package require TclData
 package require MetData
 package require Logger
 
-Log::Start [info script] 0.1
+Log::Start [info script] 0.2
 
-set String "ceci est un test\n ok la\n\tééédfg dféédààà ççç \u306F."
-
-#----- Encode
+file delete DataOut/FSTD_InfoText.fstd
 fstdfile open TEXTFILE write DataOut/FSTD_InfoText.fstd
-fstdfield write [MetData::TextCode $String] TEXTFILE 0 True
+
+foreach string { "ceci est un test" "ceci est un test\n ok la\n\tééédfg dféédààà ççç \u306F." } type { ASCII UNICODE } {
+
+   #----- Encode
+   fstdfield write [MetData::TextCode $string] TEXTFILE 0 True
+
+   #----- Decode
+   fstdfield read FLD TEXTFILE -1 $type -1 -1 -1 "" TEXT
+   Log::Print INFO "Decoded ($type): [MetData::TextDecode FLD]"
+}
+
 fstdfile close TEXTFILE
-
-#----- Decode
-fstdfile open TEXTFILE read DataOut/FSTD_InfoText.fstd
-
-fstdfield read FLD TEXTFILE -1 "UNICODE" -1 -1 -1 "" TEXT
-Log::Print INFO "Decoded: [MetData::TextDecode FLD]"
 
 Log::End
