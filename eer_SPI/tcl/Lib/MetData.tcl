@@ -121,9 +121,11 @@ proc MetData::TextCode { Text } {
 proc MetData::TextDecode { Field } {
 
    set text ""
-
+   set nbit [fstdfield define $Field -NBITS]
+   
    for { set i 0 } { $i<[fstdfield define $Field -NI] } { incr i } {
-      append text [format "%c" [expr int([fstdfield stats $Field -gridvalue $i 0])]]
+      set v [fstdfield stats $Field -gridvalue $i 0]
+      append text [format "%c" [expr int(($nbit==8 && $v>127)?$v-128:$v)]]
    }
 
    return $text

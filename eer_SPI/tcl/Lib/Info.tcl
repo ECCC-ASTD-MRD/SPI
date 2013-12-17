@@ -554,8 +554,9 @@ proc Info::Read { Id } {
    #----- Extraire les donnees
 
    set info ""
+   set nbit [fstdfield define INFO -NBITS]
    foreach i [join [fstdfield define INFO -DATA]] {
-      append info [format "%c" [expr int($i)]]
+      append info [format "%c" [expr int(($nbit==8 && $i>127)?$i-128:$i)]]
    }
    fstdfield free INFO
    return $info

@@ -221,11 +221,12 @@ namespace eval FSTD {
 proc FSTD::Data { Field } {
 
    set nomvar [fstdfield define $Field -NOMVAR]
+   set nbit   [fstdfield define $Field -NBITS]
    set text   ""
 
    if { $nomvar=="INFO" || $nomvar=="OL" } {
-      foreach i [join [fstdfield define $Field -DATA]] {
-         append text [format "%c" [expr int($i)]]
+      foreach i [join [fstdfield define $Field -DATA]] {    
+         append text [format "%c" [expr int(($nbit==8 && $i>127)?$i-128:$i)]]
       }
    } else {
       foreach line [fstdfield define $Field -DATA] {
