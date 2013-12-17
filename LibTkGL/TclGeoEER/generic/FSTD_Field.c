@@ -2163,9 +2163,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    
    datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
 
-   // have to boost nbit to 32 for nbit=1, not sure why ????
+   // have to boost nbit to 32 for nbit=1, not sure why (X32) ????
    if (h.NBITS==32 && datyp==0) datyp=5;
-   
    dtype=FSTD_TypeCheck(datyp,h.NBITS==1?32:h.NBITS);
 
    /*Calculer la date de validitee du champs*/

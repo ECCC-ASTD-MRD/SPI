@@ -44,6 +44,17 @@ if [[ $arg = "ssm" ]]; then
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace/${SSM_NAME}/lib; ln -s ubuntu-10.04-amd64-64 Linux_x86_64; cd -
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+   
+   
+elif [[ $arg = "src" ]]; then
+
+   ./cleanit
+   rm -f -r ${SSM_DEV}/workspace/LibTkGL
+   cp -r ../LibTkGL ${SSM_DEV}/workspace
+   find ${SSM_DEV}/workspace/LibTkGL -name .svn -exec rm -f -r {} \;
+   find ${SSM_DEV}/workspace/LibTkGL -name *~ -delete
+   cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz LibTkGL
+   
 else
 
   echo ""
