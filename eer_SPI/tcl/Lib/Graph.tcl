@@ -2648,7 +2648,7 @@ proc Graph::DrawInit { Frame VP } {
    if { $VP!=$data(VP) } {
       set data(VP)        $VP
       set data(FrameData) $Frame
-      Graph::${Type}::Update $Frame $Graph::Data(Graph)
+      Graph::${Graph::Data(Type)}::Update $Frame $Graph::Data(Graph)
    } else {
       set coords [list $data(Lat0) $data(Lon0)]
       switch [lindex $Viewport::Data(Picked) 0] {
