@@ -268,6 +268,7 @@ proc MLDPn::ParamsCheck { Tab No } {
 
    #----- Get meteorological data according to met database, time interval between files, release accident date-time.
    if { $Sim(ReNewMeteo)=="" } {
+      Model::ParamsMetDataDir MLDPn
       if { ![MLDPn::GetMetData] } {
          return False
       }
