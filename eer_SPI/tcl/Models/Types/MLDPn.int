@@ -936,9 +936,7 @@ proc MLDPn::GraphAction { Type X Y RootX RootY } {
             append bubtxt "[format "%-.22s" [lindex $Lbl(EmInter) $GDefs(Lang)]](s) : $Sim(EmInter.$id)]\n"
          }
          if { $Sim(EmIsEm.$id) } {
-            if { !$Sim(EmIsAutoNP) || $id<$Sim(EmInterStart) } {
-               append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmNumberParticles.$id)\n"
-            }
+            append bubtxt "[lindex $Lbl(EmNumberParticles) $GDefs(Lang)] : $Sim(EmNumberParticles.$id)\n"
             append bubtxt "[lindex $Lbl(EmHeight) $GDefs(Lang)] : $Sim(EmHeight.$id)\n"
             append bubtxt "[lindex $Lbl(EmRadius) $GDefs(Lang)] : $Sim(EmRadius.$id)\n"
             switch $Sim(SrcType) {
@@ -1030,7 +1028,9 @@ proc MLDPn::GraphUpdate { } {
       update idletasks
       return
    }
-
+   
+   MLDPn::ValidateScenarioDuration
+   
    set totTime    [expr $Sim(AccSecs)-$Sim(Sim0Secs)]
    set times      $totTime
    set totNP      0

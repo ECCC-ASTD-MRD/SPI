@@ -1238,44 +1238,21 @@ proc MLDPn::DistributeParcels { } {
 
    #----- Calculate intervals and total released mass
    set totmass 0
-   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
-      set mass 0
-      if { $Sim(EmIsEm.$i) } {
-         switch $Sim(SrcType) {
-            "FIRE"    -
-            "VOLCANO" {
-               set mass $Sim(EmMass.$i)
-            }
-            "VIRUS" {
-               set mass [expr $Sim(EmRate.$i) * $Sim(EmInter.$i)]
-            }
-            "ACCIDENT" {
-               for { set j 0 } { $j < $Sim(EmNbIso) } { incr j } {
-                  set mass [expr $mass + $Sim(EmRate.$i.$j)*$Sim(EmInter.$i)]
-               }
-            }
-         }
-      }
-      lappend masslst $mass
-      set totmass [expr $totmass + $mass]
-   }
-
-   #----- Calculate particles distribution
-   set totnp 0
+   set totnp   0
+   set timef   [expr $Sim(EmEffectiveDuration)/double($Sim(EmNumberParticles))] ;#----- Per parcel time factor
    set idx -1
-   set i $Sim(EmInterStart)
-   set massp [expr $totmass/double($Sim(EmNumberParticles))] ;#----- Mass of one particle
-   foreach mass $masslst {
+   
+   for { set i $Sim(EmInterStart) } { $i < $Sim(EmNbIntervals) } { incr i } {
       if { $Sim(EmIsEm.$i) } {
-         set Sim(EmNumberParticles.$i) [expr int($mass/$massp)]
+         #----- Number of percel for this emission step
+         set Sim(EmNumberParticles.$i) [expr int($Sim(EmInter.$i)/$timef)]
          lappend nplst $Sim(EmNumberParticles.$i)
-         set totnp [expr $totnp + [lindex $nplst end]]
+         incr totnp $Sim(EmNumberParticles.$i)
          incr idx
       } else {
          lappend nplst 0
          set Sim(EmNumberParticles.$i) 0
       }
-      incr i
    }
 
    #----- Since values are rounded, this make sure we don't "forget" particles
