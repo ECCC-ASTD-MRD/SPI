@@ -678,7 +678,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
             /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
             if (n<17 && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
-               if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1)) {
+               if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1,0)) {
                   return(TCL_ERROR);
                } else {
                   return(TCL_OK);

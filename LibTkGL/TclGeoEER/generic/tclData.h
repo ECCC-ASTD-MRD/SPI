@@ -140,7 +140,7 @@ void     Data_Clean(TData *Data,int Map,int Pos,int Seg);
 void     Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
 int      Data_Free(TData *Field);
 int      Data_FreeHash(Tcl_Interp *Interp,char *Name);
-TData*   Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def);
+TData*   Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias);
 int      Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC);
 TData*   Data_Get(char *Name);
 TData*   Data_GetShell(Tcl_Interp *Interp,char *Name);

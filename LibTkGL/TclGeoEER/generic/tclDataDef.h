@@ -271,7 +271,7 @@ typedef struct TDataDef {
    int Idx;                   /*Index displacement into supergrid*/
 
    int     CellDim;           /*Defined grid point coverage, point=1 or area=2*/
-   char    Container;         /*Container pointant sur d'autres donnees*/
+   char    Alias;             /*Alias d'un autre TDataDef (Pointe sur d'autres donnees)*/
    int     Level;             /*Niveau courant*/
    int     Limits[3][2];      /*Limits of processing in grid points*/
    double  CoordLimits[2][2]; /*Limits of processing in latlon*/

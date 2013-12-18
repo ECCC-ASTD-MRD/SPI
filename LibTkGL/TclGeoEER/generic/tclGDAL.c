@@ -179,7 +179,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
 
-         if (!band->Def->Container) {
+         if (!band->Def->Alias) {
             Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : band is not a container",(char*)NULL);
             return(TCL_ERROR);
          }
@@ -278,7 +278,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             }
 
             if (field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
-               return(Data_Copy(Interp,field1,Tcl_GetString(Objv[2])));
+               return(Data_Copy(Interp,field1,Tcl_GetString(Objv[2],1,0)));
             }
 
             if (n==3 || n==4) {

@@ -231,11 +231,15 @@ int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Ob
    switch ((enum opt)idx) {
 
       case COPY:
-         if (Objc<4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom");
+         if (Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom [alias]");
             return(TCL_ERROR);
          }
-         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1)) {
+         bool=0;
+         if (Objc==5) {
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&bool);            
+         }
+         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,bool)) {
             return(TCL_ERROR);
          } else {
             return(TCL_OK);
@@ -641,11 +645,11 @@ int Data_Free(TData *Field) {
    return(TCL_OK);
 }
 
-TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
+TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 
    TData    *field;
    TDataDef *def;
-   int    i;
+   int    i,alias;
 
    if (!Field || !Field->Def)
       return(NULL);
@@ -662,13 +666,14 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    }
 
    def=Field->SDef?Field->SDef[0]:Field->Def;
+   alias=Alias?1:def->Alias;
 
     /* Est-ce que le champs existe et si oui, verifier les dimensions */
    if (Def) {
-      if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,DSIZE(def->Data),def->Type))) {
+      if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,alias?-1:DSIZE(def->Data),def->Type))) {
          return(NULL);
       }
-      field->Def->Container=def->Container;
+      field->Def->Alias=alias;
       field->Def->CellDim=def->CellDim;
       field->Def->NoData=def->NoData;
       field->Def->Type=def->Type;
@@ -705,7 +710,11 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def){
    if (Def) {
       for(i=0;i<4;i++) {
          if (def->Data[i]) {
-            memcpy(field->Def->Data[i],def->Data[i],FSIZE3D(def)*TData_Size[def->Type]);
+            if (alias) {
+               field->Def->Data[i]=def->Data[i];
+            } else {
+               memcpy(field->Def->Data[i],def->Data[i],FSIZE3D(def)*TData_Size[def->Type]);
+            }
          }
       }
    }
@@ -1002,7 +1011,7 @@ void Data_PreInit(TData *Data) {
  *  <NI>          : Dimension en I
  *  <NJ>          : Dimension en J
  *  <NK>          : Dimension en K
- *  <Dim>         : Champs vectoriel
+ *  <Dim>         : Champs vectoriel (<0 = alias field)
  *  <Type>        : Type de donnees
  *
  * Retour:
@@ -1043,11 +1052,11 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
                   }
                }
                if (i>=Dim && field->Def->Data[i]) {
-                  free(field->Def->Data[i]);
+                  if (Dim>0) free(field->Def->Data[i]);
                   field->Def->Data[i]=NULL;
                }
             }
-            field->Def->NC=Dim;
+            field->Def->NC=abs(Dim);
          }
          field->Def->Type=Type;
       }

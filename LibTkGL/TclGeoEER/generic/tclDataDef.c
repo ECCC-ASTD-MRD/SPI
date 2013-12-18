@@ -202,7 +202,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
 
    if (!Def->Idx) {
       if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
-         def->Container=Def->Container;
+         def->Alias=Def->Alias;
          def->CellDim=Def->CellDim;
          def->NI=Def->NI;
          def->NJ=Def->NJ;
@@ -232,7 +232,7 @@ TDataDef *DataDef_Copy(TDataDef *Def){
          def->CoordLimits[1][1]=Def->CoordLimits[1][1];
 
          for(i=0;i<4;i++) {
-            if (def->Container) {
+            if (def->Alias) {
                def->Data[i]=Def->Data[i];
             } else {
                if (Def->Data[i] && (def->Data[i]=(char*)malloc(FSIZE3D(Def)*TData_Size[Def->Type]))) {
@@ -255,7 +255,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
 
    if (!Def->Idx) {
       if (Def && (def=(TDataDef*)malloc(sizeof(TDataDef)))) {
-         def->Container=0;
+         def->Alias=0;
          def->CellDim=Def->CellDim;
          def->NI=Def->NI;
          def->NJ=Def->NJ;
@@ -316,7 +316,7 @@ TDataDef *DataDef_CopyPromote(TDataDef *Def,TData_Type Type){
 void DataDef_Free(TDataDef *Def){
 
    if (Def) {
-      if (!Def->Container && !Def->Idx) {
+      if (!Def->Alias && !Def->Idx) {
          if (Def->Mode && Def->Mode!=Def->Data[0]) free(Def->Mode);
          if (Def->Data[0])            free(Def->Data[0]);
          if (Def->Data[1])            free(Def->Data[1]);
@@ -372,7 +372,7 @@ TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
    def->NK=NK;
    def->NIJ=NI*NJ;
    def->NC=abs(Dim);
-   def->Container=Dim<=0;
+   def->Alias=Dim<=0;
    def->CellDim=2;
    def->NoData=nan("NaN");
    def->Level=0;
@@ -442,7 +442,7 @@ TDataDef *DataDef_Resize(TDataDef *Def,int NI,int NJ,int NK){
    if (!Def)
      return(NULL);
 
-   if (!Def->Container && !Def->Idx && (Def->NI!=NI || Def->NJ!=NJ || Def->NK!=NK)) {
+   if (!Def->Alias && !Def->Idx && (Def->NI!=NI || Def->NJ!=NJ || Def->NK!=NK)) {
       Def->NI=NI;
       Def->NJ=NJ;
       Def->NK=NK;

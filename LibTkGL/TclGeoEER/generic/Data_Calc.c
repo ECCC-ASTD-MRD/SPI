@@ -106,7 +106,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
       switch(GMode) {
          case T_FLD:
            if (!(field=Data_Get(Name)) || field->Def!=Data) {
-               GField=Data_Copy(Interp,GField,Name,0);
+               GField=Data_Copy(Interp,GField,Name,0,0);
 
                if (GField->Stat) {
                   free(GField->Stat);
