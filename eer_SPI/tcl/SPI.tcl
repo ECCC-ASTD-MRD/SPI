@@ -21,7 +21,6 @@ set GDefs(Version) $env(SPI_VERSION)$env(SPI_STATE)
 package require TclSystem
 package require Logger
 
-set Log::Param(JobId) SPI
 Log::Start SPI $GDefs(Version)
 
 source $GDefs(Dir)/tcl/SPI.txt
@@ -458,7 +457,7 @@ proc SPI::Layout { Frame } {
    variable Title
    variable Data
 
-   wm title [winfo toplevel $Frame] "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) $GDefs(StateSPI) ($env(USER) $GDefs(Host))"
+   wm title [winfo toplevel $Frame] "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) ($env(USER) $GDefs(Host))"
 
    Page::Size $Frame 0 0
    Viewport::Create $Frame 1 1 1 1 1 1
@@ -617,7 +616,7 @@ proc SPI::LayoutLoad { Frame Layout } {
    }
 
    if { $Layout!="SPI" } {
-      wm title . "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) $GDefs(StateSPI) ($Layout) ($env(USER) $GDefs(Host))"
+      wm title . "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) ($Layout) ($env(USER) $GDefs(Host))"
    } else {
       .menu.disp.menu entryconfigure end -state normal
    }
@@ -1633,7 +1632,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
 
       if { ![winfo exists $frame] } {
          toplevel     $frame
-         wm title     $frame "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) $GDefs(StateSPI) ($env(USER) $GDefs(Host))"
+         wm title     $frame "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) ($env(USER) $GDefs(Host))"
          eval wm geometry $frame $Geom
 
          label $frame.active -image MOUSE -relief raised -bd 1

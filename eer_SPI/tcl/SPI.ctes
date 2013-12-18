@@ -17,8 +17,6 @@
 
 #----- Definition des constantes generale aux experiences
 
-set GDefs(StateSPI) ""
-
 namespace eval SPI {
    global   env
    global   GDefs
