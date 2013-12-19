@@ -932,7 +932,7 @@ int GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
    double   maxd2=0.0;                 // distance squared of farthest vertex
    double   tol2=Tolerance*Tolerance;  // tolerance squared
    double  cu;                         // segment length squared
-   Vect3d  w,u,p;
+   Vect3d  w,u,su,p;
    double  b,cw,dv2;                   // dv2 = distance v[i] to S squared
 
    // test each vertex v[i] for max distance from S
@@ -952,8 +952,8 @@ int GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
          dv2=Vect_Dist2(Pt[i],Pt[K]);
       } else {
          b=cw/cu;
-         Vect_SMul(u,u,b);
-         Vect_Add(p,Pt[J],u);
+         Vect_SMul(su,u,b);
+         Vect_Add(p,Pt[J],su);
          dv2=Vect_Dist2(Pt[i],p);
       }
       // test with current max distance squared
@@ -970,6 +970,7 @@ int GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers) {
       /*split the polyline at the farthest vertex from S*/
       Markers[maxi]=1;      // mark v[maxi] for the simplified polyline
       n++;
+      
       /*Recursively simplify the two subpolylines at v[maxi]*/
       n+=GPC_SimplifyDP(Tolerance,Pt,J,maxi,Markers);  // polyline v[j] to v[maxi]
       n+=GPC_SimplifyDP(Tolerance,Pt,maxi,K,Markers);  // polyline v[maxi] to v[k]
@@ -993,10 +994,10 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
 
    /*Simplify sub-geometry*/
    for(i=0;i<OGR_G_GetGeometryCount(Geom);i++) {
-      n=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
+      m=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
    }
 
-   if ((n=OGR_G_GetPointCount(Geom))) {
+   if ((n=OGR_G_GetPointCount(Geom))>2) {
       mk=(int*)calloc(n,sizeof(int));
       pt=(Vect3d*)calloc(n,sizeof(Vect3d));
       if (!mk || !pt) {
@@ -1025,8 +1026,9 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
 
       /*STAGE 2: Douglas-Peucker polyline simplification*/
       mk[0]=mk[k-1]=1;       // mark the first and last vertices
-      m=GPC_SimplifyDP(Tolerance,pt,0,k-1,mk);
-
+      m=2;
+      if (k>2) m=GPC_SimplifyDP(Tolerance,pt,0,k-1,mk);
+    
       // copy marked vertices to the output simplified polyline
       OGR_G_Empty(Geom);
       if (m>=2) {
@@ -1037,12 +1039,9 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
             }
          }
       } else {
-            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
-            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
-            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
-            OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+         OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
+         OGR_G_AddPoint_2D(Geom,pt[k-1][0],pt[k-1][1]);
       }
-
       free(pt);
       free(mk);
    }
