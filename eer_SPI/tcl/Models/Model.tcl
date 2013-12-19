@@ -518,7 +518,7 @@ proc Model::ParamsGridDefine { Model { Mode NEW } } {
 
          fstdfield create MODELGRID $sim(NI) $sim(NJ) 1
          fstdfield define MODELGRID -NOMVAR GRID
-         fstdfield define MODELGRID -GRTYP [string index [lindex $sim(Grid) 6] 0]] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5]
+         fstdfield define MODELGRID -GRTYP [string index [lindex $sim(Grid) 6] 0] [lindex $sim(Grid) 2] [lindex $sim(Grid) 3] [lindex $sim(Grid) 4] [lindex $sim(Grid) 5]
 
          set grid [fstdfield stats MODELGRID -gridpoint [expr $sim(NI)/2+1] [expr $sim(NJ)/2+1]]
          set sim(GridLat) [lindex $grid 0]
