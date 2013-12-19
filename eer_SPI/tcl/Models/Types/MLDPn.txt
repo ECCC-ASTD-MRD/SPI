@@ -31,6 +31,7 @@ namespace eval MLDPn {
    set Lbl(Result)              { "Résultats" "Results" }
    set Lbl(Continue)            { "Continuer ..." "Continue ..." }
    set Lbl(Suppress)            { "Supprimer" "Delete" }
+   set Lbl(Parameters)          { "Paramètres" "Parameters" }
 
    set Lbl(Model)               { "Modèle" "Model" }
    set Lbl(Source)              { "Source" "Source" }
@@ -47,11 +48,8 @@ namespace eval MLDPn {
    set Lbl(ModelTimeStepMin)    { "Pas de temps du modèle (min)" "Model time step     (min)" }
    set Lbl(OtherParameters)     { "Autres paramètres" "Other Parameters" }
    set Lbl(Virus)               { "Virus       "     "Virus type " }
-   set Lbl(Scale)               { "Grille      "     "Grid       " }
-   set Lbl(Meteo)               { "Météorologie"     "Meteorology" }
    set Lbl(MeteoDelta)          { " Dt (h)"          " Dt (h)" }
-   set Lbl(OutCV)               { "Niveaux CV  (m)"     "Levels CV  (m)" }
-   set Lbl(OutAV)               { "Niveaux AV (ft)"     "Levels AV (ft)" }
+   set Lbl(Meteo)               { "Météorologie     " "Meteorology     " }
    set Lbl(VarMesoscale)        { "Variance  (m²/s²)" "Variance (m²/s²)" }
    set Lbl(Timescale)           { "Échelle temps (s)" "Time scale   (s)" }
    set Lbl(ReflectionLevel)     { "Réflexion   (hyb)" "Reflection (hyb)" }
@@ -62,6 +60,13 @@ namespace eval MLDPn {
    set Lbl(Forward)             { "Avant" "Forward" }
    set Lbl(Backward)            { "Arrière" "Backward" }
    set Lbl(IsoChain)            { "Appliquer la chaine de décompositions" "Apply isotope decay chain" }
+
+   set Lbl(Output)              { "Sortie" "Output" }
+   set Lbl(OutGrid)             { "Grille            " "Grid          " }
+   set Lbl(OutDT)               { "Delta fichiers (h)" "File delta (h)" }
+   set Lbl(OutVAR)              { "Variables         " "Variables     " }
+   set Lbl(OutCV)               { "Niveaux CV     (m)" "Levels CV  (m)" }
+   set Lbl(OutAV)               { "Niveaux AV    (ft)" "Levels AV (ft)" }
 
    set Lbl(SrcHeight)           { "Hauteur de la source (m) " "Source height (m)        " }
    set Lbl(Emission)            { "Émission" "Emission" }
@@ -117,7 +122,7 @@ namespace eval MLDPn {
 
    set Lbl(AxisX)               { "Durée (h) depuis" "Duration (h) since" }
    set Lbl(AxisY)               { "Hauteur max (m)" "Max height (m)" }
-
+   
    #----- Definitions des bulles d'aides
 
    set Bubble(Source)                 { "Nom de la source." "Name of the source." }
@@ -132,19 +137,22 @@ namespace eval MLDPn {
 
    set Bubble(OtherParameters)        { "Autres paramètres." "Other parameters." }
    set Bubble(Virus)                  { "Sélection du type de virus." "Select the virus type." }
-   set Bubble(Scale)                  { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
    set Bubble(Meteo)                  { "Type de modèle météorologique." "Type of meteorological model." }
    set Bubble(MeteoDelta)             { "Interval de temps entre les fichiers\ndes données météorologiques (hr)." "Time interval between meteorological\ndata files (hr)." }
    set Bubble(MoveGrid1)              { "Permettre de centrer automatiquement la grille\nsur la source sélectionnée sur la sphère terrestre." "Allow to center the the grid over the\nselected source on the earth's sphere." }
    set Bubble(MoveGrid2)              { "Permettre de modifier l'emplacement de\nla grille sur la sphère terrestre." "Allow to modify the location of\nthe grid on the earth's sphere." }
    set Bubble(ModifyPath)             { "Permettre de modifier les répertoires\ndes modèles météorologiques." "Allow to modify the meteorological\nmodels directories." }
-   set Bubble(OutCV)                  { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
-   set Bubble(OutAV)                  { "Liste des niveaux verticaux aviations servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical aviation levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
    set Bubble(VarMesoscale)           { "Variance (m²/s²) des vitesses horizontales des vents\nservant à modéliser les fluctuations à méso-échelle." "Horizontal wind velocity variance (m²/s²) used\nin the modelling of mesoscale fluctuations." }
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
    set Bubble(Seed)                   { "Valeur d'initialisation du générateur de nombre aléatoire." "Random number generator initialisation value." }
    set Bubble(Aerosol)                { "Type d'aerosol, permet d'activer le shéma de lessivage et dépot a 4 mode." "Aerosol type, allows the activation of the 4 mode scavenging and deposition scheme." }
+ 
+   set Bubble(OutGrid)                { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
+   set Bubble(OutDT)                  { "Nombre d'heures de résultats par fichier de sortie.\nLa valeur 0 signifie un seul fichier pour toutes les sorties". "Number ou hours of results per outpur file. A value of 0 means all of the results within a single file." }
+   set Bubble(OutVAR)                 { "Liste des variables à produire en sortie." "List of output variables." }
+   set Bubble(OutCV)                  { "Liste des niveaux verticaux servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
+   set Bubble(OutAV)                  { "Liste des niveaux verticaux aviations servant à définir les couches\ndans l'atmosphère utilisées pour calculer les\nconcentrations volumiques.\n\nNote: Les concentrations sont calculées à chaque point\nde grille pour chaque couche spécifiée de l'atmosphère." "List of vertical aviation levels which define the layers\nin the atmosphere used to calculate the volumic\nconcentrations.\n\nNote: The concentrations are calculated at each grid\npoint for each specified layer of the atmosphere." }
 
    set Bubble(EmissionGlobal)         { "Paramètres globaux d'émission." "Global emission parameters" }
    set Bubble(EmSizeDist)             { "Sélectionner le type de distribution de la taille des particules\npour modéliser l'effet de la vitesse de sédimentation et pour MLDP0, l'effet du dépôt gravitationnel selon la loi de Stokes et ." "Select the type of particle size distribution\nto model the effect of particle settling velocity and for MLDP0, the effect of gravitational settling according to Stokes' law." }

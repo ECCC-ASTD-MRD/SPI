@@ -41,7 +41,8 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
    variable Lbl
    variable Bubble
 
-   wm geom [winfo toplevel $Tab] =350x400
+   wm geom [winfo toplevel $Tab] =400x425
+   wm resizable .modelnew 1 1
 
    #----- Model Tab.
    set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Model) $GDefs(Lang)]" False]
@@ -78,137 +79,177 @@ proc MLDPn::ParamsNew { Tab { Auto False } } {
 
    #----- Model Integration (data output time step and model time step).
    labelframe $tabframe.integ -text "[lindex $Lbl(Integration) $GDefs(Lang)]"
-      frame $tabframe.integ.opt
 
       #----- Noyeau de diffusion.
-      Option::Create $tabframe.integ.opt.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) "MLDPn::InitKernel"
-      pack $tabframe.integ.opt.kernel -side top -fill x
-      Bubble::Create $tabframe.integ.opt.kernel $Bubble(DiffKernel)
+      Option::Create $tabframe.integ.kernel [lindex $Lbl(DiffKernel) $GDefs(Lang)] MLDPn::Sim(DiffKernel) 1 -1 $MLDPn::Sim(ListDiffKernel) "MLDPn::InitKernel"
+      pack $tabframe.integ.kernel -side top -fill x -padx 2
+      Bubble::Create $tabframe.integ.kernel $Bubble(DiffKernel)
 
       #----- Simulation duration [hr].
-      Option::Create $tabframe.integ.opt.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDPn::Sim(Duration) 1 -1 $MLDPn::Sim(ListSimDuration) "MLDPn::CheckFileSize"
-      pack $tabframe.integ.opt.dur -side top -fill x
-      Bubble::Create $tabframe.integ.opt.dur $Bubble(SimDuration)
-      set MLDPn::Sim(SimDurationEnt) $tabframe.integ.opt.dur.e
+      Option::Create $tabframe.integ.dur [lindex $Lbl(SimDuration) $GDefs(Lang)] MLDPn::Sim(Duration) 1 -1 $MLDPn::Sim(ListSimDuration) "MLDPn::CheckFileSize"
+      pack $tabframe.integ.dur -side top -fill x -padx 2
+      Bubble::Create $tabframe.integ.dur $Bubble(SimDuration)
+      set MLDPn::Sim(SimDurationEnt) $tabframe.integ.dur.e
 
       #----- Data output time step [min].
-      Option::Create $tabframe.integ.opt.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDPn::Sim(OutputTimeStepMin) 1 -1 $MLDPn::Sim(ListOutputTimeStep) "MLDPn::CheckFileSize"
-      pack $tabframe.integ.opt.ots -side top -fill x
-      Bubble::Create $tabframe.integ.opt.ots $Bubble(OutputTimeStepMin)
-      set MLDPn::Sim(OutputTimeStepEnt) $tabframe.integ.opt.ots.e
+      Option::Create $tabframe.integ.ots [lindex $Lbl(OutputTimeStepMin) $GDefs(Lang)] MLDPn::Sim(OutputTimeStepMin) 1 -1 $MLDPn::Sim(ListOutputTimeStep) "MLDPn::CheckFileSize"
+      pack $tabframe.integ.ots -side top -fill x -padx 2
+      Bubble::Create $tabframe.integ.ots $Bubble(OutputTimeStepMin)
+      set MLDPn::Sim(OutputTimeStepEnt) $tabframe.integ.ots.e
 
       #----- Model time step [min].
-      Option::Create $tabframe.integ.opt.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDPn::Sim(ModelTimeStepMin) 1 -1 $MLDPn::Sim(ListModelTimeStep) ""
-      pack $tabframe.integ.opt.mts -side top -fill x
-      Bubble::Create $tabframe.integ.opt.mts $Bubble(ModelTimeStepMin)
-      set MLDPn::Sim(ModelTimeStepEnt) $tabframe.integ.opt.mts.e
+      Option::Create $tabframe.integ.mts [lindex $Lbl(ModelTimeStepMin) $GDefs(Lang)] MLDPn::Sim(ModelTimeStepMin) 1 -1 $MLDPn::Sim(ListModelTimeStep) ""
+      pack $tabframe.integ.mts -side top -fill x -padx 2
+      Bubble::Create $tabframe.integ.mts $Bubble(ModelTimeStepMin)
+      set MLDPn::Sim(ModelTimeStepEnt) $tabframe.integ.mts.e
 
-      pack $tabframe.integ.opt -side top -fill x -padx 2
    pack $tabframe.integ -side top -padx 5 -fill x
    Bubble::Create $tabframe.integ $Bubble(SimIntegration)
 
    #----- Other parameters.
    labelframe $tabframe.others -text "[lindex $Lbl(OtherParameters) $GDefs(Lang)]"
-      frame $tabframe.others.opt
 
-         #----- Virus Source Type.
-         if { $Sim(SrcType) == "VIRUS" } {
-            Option::Create $tabframe.others.opt.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(VirusName) MLDPn::Sim(VirusSymbol) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "" $Sim(ListVirusSymbol)
-            pack $tabframe.others.opt.virus -side top -ipady 1 -fill x
-            Bubble::Create $tabframe.others.opt.virus $Bubble(Virus)
-         }
+      #----- Virus Source Type.
+      if { $Sim(SrcType) == "VIRUS" } {
+         Option::Create $tabframe.others.virus [lindex $Lbl(Virus) $GDefs(Lang)] { MLDPn::Sim(VirusName) MLDPn::Sim(VirusSymbol) } 0 -1 [lindex $MLDPn::Sim(ListVirusName) $GDefs(Lang)] "" $Sim(ListVirusSymbol)
+         pack $tabframe.others.virus -side top -ipady 1 -fill x -padx 2
+         Bubble::Create $tabframe.others.virus $Bubble(Virus)
+      }
 
-         #----- Grid Resolution.
-         frame $tabframe.others.opt.grid
-         Option::Create $tabframe.others.opt.grid.res [lindex $Lbl(Scale) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(Grids) "Model::ParamsGridDefine MLDPn ; MLDPn::ValidateModelTimeStepGrid"
-         Option::Create $tabframe.others.opt.grid.src "" MLDPn::Sim(GridSrc) 0 -1 $Sim(Pos) \
-            "set MLDPn::Sim(GridLat) \[lindex \$MLDPn::Sim(GridSrc) 1\];
-             set MLDPn::Sim(GridLon) \[lindex \$MLDPn::Sim(GridSrc) 2\];
-             Model::ParamsGridDefine MLDPn"
+      #----- Meteorological Model.
+      frame $tabframe.others.met
+      Option::Create $tabframe.others.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDPn::Sim(Meteo) 0 -1 $MLDPn::Sim(ListMeteoModel) ""
+      Option::Create $tabframe.others.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDPn::Sim(Delta) 0 6 $MLDPn::Sim(ListMeteoDelta) "MLDPn::CheckFileSize"
+      button $tabframe.others.met.path -image OPEN -relief flat -bd 0 -overrelief raised -command "Model::ParamsMetPath"
+      pack $tabframe.others.met.model -side left -ipady 1 -fill x -expand True
+      pack $tabframe.others.met.delta -side left -ipady 1
+      pack $tabframe.others.met.path  -side left
+      pack $tabframe.others.met       -side top -fill x -padx 2
 
-         checkbutton $tabframe.others.opt.grid.sel -variable Page::Data(ToolMode) -onvalue MLDPn -offvalue SPI \
-            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat \
-            -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor $GDefs(ColorFrame)
-         pack $tabframe.others.opt.grid.res -side left -ipady 1
-         pack $tabframe.others.opt.grid.src -side left -ipady 1 -fill x -expand True
-         pack $tabframe.others.opt.grid.sel -side left
-         pack $tabframe.others.opt.grid     -side top -fill x
+      #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
+      Option::Create $tabframe.others.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDPn::Sim(VarMesoscale) 1 -1 $MLDPn::Sim(ListVarMesoscale) ""
+      set MLDPn::Sim(VarMesoscaleEnt) $tabframe.others.varmesoscale.e
+      pack $tabframe.others.varmesoscale -side top -ipady 1 -fill x -padx 2
 
-         #----- Meteorological Model.
-         frame $tabframe.others.opt.met
-         Option::Create $tabframe.others.opt.met.model [lindex $Lbl(Meteo) $GDefs(Lang)] MLDPn::Sim(Meteo) 0 7 $MLDPn::Sim(ListMeteoModel) ""
-         Option::Create $tabframe.others.opt.met.delta [lindex $Lbl(MeteoDelta) $GDefs(Lang)] MLDPn::Sim(Delta) 0 6 $MLDPn::Sim(ListMeteoDelta) "MLDPn::CheckFileSize"
-         button $tabframe.others.opt.met.path -image OPEN -relief flat -bd 0 -overrelief raised \
-                -command "Model::ParamsMetPath"
-         pack $tabframe.others.opt.met.model -side left -ipady 1
-         pack $tabframe.others.opt.met.delta -side left -ipady 1
-         pack $tabframe.others.opt.met.path  -side left
-         pack $tabframe.others.opt.met       -side top -fill x
+      #----- Lagrangian time scale for mesoscale fluctuations [s].
+      Option::Create $tabframe.others.timescale [lindex $Lbl(Timescale) $GDefs(Lang)] MLDPn::Sim(Timescale) 1 -1 $MLDPn::Sim(ListTimescale) ""
+      set MLDPn::Sim(TimescaleEnt) $tabframe.others.timescale.e
+      pack $tabframe.others.timescale -side top -ipady 1 -fill x -padx 2
 
-         #----- Vertical levels CV [m].
-         Option::Create $tabframe.others.opt.cvlevels [lindex $Lbl(OutCV) $GDefs(Lang)] MLDPn::Sim(OutCV) 1 -1 $MLDPn::Sim(ListOutCV) "MLDPn::UpdateListVerticalLevels"
-         set MLDPn::Sim(OutCVFrm) $tabframe.others.opt.cvlevels
-         set MLDPn::Sim(OutCVsEnt) $tabframe.others.opt.cvlevels.e
-         pack $tabframe.others.opt.cvlevels -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.cvlevels.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.cvlevels.e <Button-1> "MLDPn::UpdateListVerticalLevels"
+      #----- Reflection level [hyb|eta|sig].
+      Option::Create $tabframe.others.reflect [lindex $Lbl(ReflectionLevel) $GDefs(Lang)] MLDPn::Sim(ReflectionLevel) 1 -1 $MLDPn::Sim(ListReflectionLevel) "MLDPn::UpdateListVerticalLevels"
+      set MLDPn::Sim(ReflectionLevelEnt) $tabframe.others.reflect.e
+      pack $tabframe.others.reflect -side top -ipady 1 -fill x -padx 2
+      bind $tabframe.others.reflect.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
+      bind $tabframe.others.reflect.e <Button-1> "MLDPn::UpdateListVerticalLevels"
 
-         if { $Sim(SrcType)=="VOLCANO" } {
-            #----- Vertical levels AV [m].
-            Option::Create $tabframe.others.opt.avlevels [lindex $Lbl(OutAV) $GDefs(Lang)] MLDPn::Sim(OutAV) 1 -1 {} ""
-            pack $tabframe.others.opt.avlevels -side top -ipady 1 -fill x
-        }
+      #----- Seed.
+      Option::Create $tabframe.others.seed [lindex $Lbl(Seed) $GDefs(Lang)] MLDPn::Sim(Seed) 1 -1 $MLDPn::Sim(ListSeed) ""
+      pack $tabframe.others.seed -side top -ipady 1 -fill x -padx 2
 
-         #----- Horizontal wind velocity variance for mesoscale fluctuations [m2/s2].
-         Option::Create $tabframe.others.opt.varmesoscale [lindex $Lbl(VarMesoscale) $GDefs(Lang)] MLDPn::Sim(VarMesoscale) 1 -1 $MLDPn::Sim(ListVarMesoscale) ""
-         set MLDPn::Sim(VarMesoscaleEnt) $tabframe.others.opt.varmesoscale.e
-         pack $tabframe.others.opt.varmesoscale -side top -ipady 1 -fill x
+      #----- Aerosol.
+      Option::Create $tabframe.others.aero [lindex $Lbl(Aerosol) $GDefs(Lang)] MLDPn::Sim(Aerosol) 1 -1 $MLDPn::Sim(ListAerosol) ""
+      pack $tabframe.others.aero -side top -ipady 1 -fill x -padx 2
 
-         #----- Lagrangian time scale for mesoscale fluctuations [s].
-         Option::Create $tabframe.others.opt.timescale [lindex $Lbl(Timescale) $GDefs(Lang)] MLDPn::Sim(Timescale) 1 -1 $MLDPn::Sim(ListTimescale) ""
-         set MLDPn::Sim(TimescaleEnt) $tabframe.others.opt.timescale.e
-         pack $tabframe.others.opt.timescale -side top -ipady 1 -fill x
+      #----- Wet scavenging.
+      Option::Create $tabframe.others.sca [lindex $Lbl(WetSca) $GDefs(Lang)] MLDPn::Sim(WetScaMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
+      pack $tabframe.others.sca -side top -ipady 1 -fill x -padx 2
 
-         #----- Reflection level [hyb|eta|sig].
-         Option::Create $tabframe.others.opt.reflect [lindex $Lbl(ReflectionLevel) $GDefs(Lang)] MLDPn::Sim(ReflectionLevel) 1 -1 $MLDPn::Sim(ListReflectionLevel) "MLDPn::UpdateListVerticalLevels"
-         set MLDPn::Sim(ReflectionLevelEnt) $tabframe.others.opt.reflect.e
-         pack $tabframe.others.opt.reflect -side top -ipady 1 -fill x
-         bind $tabframe.others.opt.reflect.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
-         bind $tabframe.others.opt.reflect.e <Button-1> "MLDPn::UpdateListVerticalLevels"
+      #----- Dry deposition.
+      Option::Create $tabframe.others.dep [lindex $Lbl(DryDep) $GDefs(Lang)] MLDPn::Sim(DryDepMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
+      pack $tabframe.others.dep -side top -ipady 1 -fill x -padx 2
 
-         #----- Seed.
-         Option::Create $tabframe.others.opt.seed [lindex $Lbl(Seed) $GDefs(Lang)] MLDPn::Sim(Seed) 1 -1 $MLDPn::Sim(ListSeed) ""
-         pack $tabframe.others.opt.seed -side top -ipady 1 -fill x
-
-         #----- Aerosol.
-         Option::Create $tabframe.others.opt.aero [lindex $Lbl(Aerosol) $GDefs(Lang)] MLDPn::Sim(Aerosol) 1 -1 $MLDPn::Sim(ListAerosol) ""
-         pack $tabframe.others.opt.aero -side top -ipady 1 -fill x
-
-         #----- Wet scavenging.
-         Option::Create $tabframe.others.opt.sca [lindex $Lbl(WetSca) $GDefs(Lang)] MLDPn::Sim(WetScaMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
-         pack $tabframe.others.opt.sca -side top -ipady 1 -fill x
-
-         #----- Dry deposition.
-         Option::Create $tabframe.others.opt.dep [lindex $Lbl(DryDep) $GDefs(Lang)] MLDPn::Sim(DryDepMode) 1 -1 $MLDPn::Sim(ListJianMode) ""
-         pack $tabframe.others.opt.dep -side top -ipady 1 -fill x
-
-      pack $tabframe.others.opt -side top -fill x -padx 2
    pack $tabframe.others -side top -padx 5 -pady 5 -fill x
 
-   Bubble::Create $tabframe.others                   $Bubble(OtherParameters)
-   Bubble::Create $tabframe.others.opt.grid.res      $Bubble(Scale)
-   Bubble::Create $tabframe.others.opt.grid.src      $Bubble(MoveGrid1)
-   Bubble::Create $tabframe.others.opt.grid.sel      $Bubble(MoveGrid2)
-   Bubble::Create $tabframe.others.opt.met.model     $Bubble(Meteo)
-   Bubble::Create $tabframe.others.opt.met.delta     $Bubble(MeteoDelta)
-   Bubble::Create $tabframe.others.opt.met.path      $Bubble(ModifyPath)
-   Bubble::Create $tabframe.others.opt.cvlevels      $Bubble(OutCV)
-   Bubble::Create $tabframe.others.opt.avlevels      $Bubble(OutAV)
-   Bubble::Create $tabframe.others.opt.varmesoscale  $Bubble(VarMesoscale)
-   Bubble::Create $tabframe.others.opt.timescale     $Bubble(Timescale)
-   Bubble::Create $tabframe.others.opt.reflect       $Bubble(ReflectionLevel)
-   Bubble::Create $tabframe.others.opt.seed          $Bubble(Seed)
-   Bubble::Create $tabframe.others.opt.aero          $Bubble(Aerosol)
+   Bubble::Create $tabframe.others               $Bubble(OtherParameters)
+   Bubble::Create $tabframe.others.grid.src      $Bubble(MoveGrid1)
+   Bubble::Create $tabframe.others.grid.sel      $Bubble(MoveGrid2)
+   Bubble::Create $tabframe.others.met.model     $Bubble(Meteo)
+   Bubble::Create $tabframe.others.met.delta     $Bubble(MeteoDelta)
+   Bubble::Create $tabframe.others.met.path      $Bubble(ModifyPath)
+   Bubble::Create $tabframe.others.varmesoscale  $Bubble(VarMesoscale)
+   Bubble::Create $tabframe.others.timescale     $Bubble(Timescale)
+   Bubble::Create $tabframe.others.reflect       $Bubble(ReflectionLevel)
+   Bubble::Create $tabframe.others.seed          $Bubble(Seed)
+   Bubble::Create $tabframe.others.aero          $Bubble(Aerosol)
+   
+   set tabframe [TabFrame::Add $Tab 1 "[lindex $Lbl(Output) $GDefs(Lang)]" False]
+   set Sim(TabframeOut) $tabframe
+
+   #----- Output parameters.
+   labelframe $tabframe.out -text "[lindex $Lbl(Parameters) $GDefs(Lang)]"
+
+      #----- Grid Resolution.
+      frame $tabframe.out.grid
+      Option::Create $tabframe.out.grid.res [lindex $Lbl(OutGrid) $GDefs(Lang)] MLDPn::Sim(Scale) 0 7 $MLDPn::Sim(Grids) "Model::ParamsGridDefine MLDPn ; MLDPn::ValidateModelTimeStepGrid"
+      Option::Create $tabframe.out.grid.src "" MLDPn::Sim(GridSrc) 0 -1 $Sim(Pos) \
+         "set MLDPn::Sim(GridLat) \[lindex \$MLDPn::Sim(GridSrc) 1\];
+            set MLDPn::Sim(GridLon) \[lindex \$MLDPn::Sim(GridSrc) 2\];
+            Model::ParamsGridDefine MLDPn"
+
+      checkbutton $tabframe.out.grid.sel -variable Page::Data(ToolMode) -onvalue MLDPn -offvalue SPI \
+         -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat \
+         -command { SPI::ToolMode $Page::Data(ToolMode) Data True } -selectcolor $GDefs(ColorFrame)
+      pack $tabframe.out.grid.res -side left -ipady 1
+      pack $tabframe.out.grid.src -side left -ipady 1 -fill x -expand True
+      pack $tabframe.out.grid.sel -side left
+      pack $tabframe.out.grid     -side top -fill x -padx 2
+
+      #----- Output delta [hr].
+      Option::Create $tabframe.out.dt [lindex $Lbl(OutDT) $GDefs(Lang)] MLDPn::Sim(OutDT) 1 -1 $MLDPn::Sim(OutDTs) MLDPn::ParamsLevels
+      pack $tabframe.out.dt -side top -fill x -padx 2
+
+      #----- Output var.
+      Option::Create $tabframe.out.var [lindex $Lbl(OutVAR) $GDefs(Lang)] MLDPn::Sim(OutVar) -1 -1 $MLDPn::Sim(OutVars) MLDPn::ParamsLevels
+      pack $tabframe.out.var -side top -fill x -padx 2
+ 
+      #----- Vertical levels CV [m].
+      Option::Create $tabframe.out.cvlevels [lindex $Lbl(OutCV) $GDefs(Lang)] MLDPn::Sim(OutCV) 1 -1 $MLDPn::Sim(OutCVs) MLDPn::UpdateListVerticalLevels
+      pack $tabframe.out.cvlevels -side top -ipady 1 -fill x -padx 2
+      bind $tabframe.out.cvlevels.e <Key-Tab>  "MLDPn::UpdateListVerticalLevels"
+      bind $tabframe.out.cvlevels.e <Button-1> "MLDPn::UpdateListVerticalLevels"
+
+      #----- Vertical levels AV [m].
+      Option::Create $tabframe.out.avlevels [lindex $Lbl(OutAV) $GDefs(Lang)] MLDPn::Sim(OutAV) 1 -1  $MLDPn::Sim(OutAVs) ""
+      pack $tabframe.out.avlevels -side top -ipady 1 -fill x -padx 2
+
+      Bubble::Create $tabframe.out.grid.res $Bubble(OutGrid)
+      Bubble::Create $tabframe.out.dt       $Bubble(OutDT)
+      Bubble::Create $tabframe.out.var      $Bubble(OutVAR)
+      Bubble::Create $tabframe.out.cvlevels $Bubble(OutCV)
+      Bubble::Create $tabframe.out.avlevels $Bubble(OutAV)
+
+   MLDPn::ParamsLevels
+   pack $tabframe.out -side top -padx 5 -pady 5 -fill x
+}
+
+#----------------------------------------------------------------------------
+# Nom        : <MLDPn::ParamsLevels>
+# Creation   : Decembre 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But        : Activer/Desactiver la liste des niveaux selon l'activation des variables.
+#
+# Parametres :
+#
+# Retour     :
+#
+# Remarques  :
+#
+#----------------------------------------------------------------------------
+proc MLDPn::ParamsLevels { } {
+   variable Sim
+   
+   if { [lsearch -exact $Sim(OutVar) CV]==-1 } {
+      Option::Disable $Sim(TabframeOut).out.cvlevels
+   } else {
+      Option::Enable $Sim(TabframeOut).out.cvlevels   
+   }
+   
+   if { [lsearch -exact $Sim(OutVar) AV]==-1 } {
+      Option::Disable $Sim(TabframeOut).out.avlevels
+   } else {
+      Option::Enable $Sim(TabframeOut).out.avlevels
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -233,9 +274,6 @@ proc MLDPn::ParamsEmission { Tab { Mode NEW } } {
    variable Msg
    variable Lbl
    variable Bubble
-
-   wm geom [winfo toplevel $Tab] =320x435
-   wm resizable .modelnew 1 1
 
    #----- Get the list of available scenarios.
    if { [MLDPn::ScenarioList] } {
@@ -374,46 +412,44 @@ proc MLDPn::ParamsCont { Parent } {
 
    #----- Disable params that shouldn't be modified
 
-   set base $Sim(TabframeModel)
-
    #----- Start time
-   Calendar::Disable $base.time.date
-   Clock::Disable $base.time.date.hour
+   Calendar::Disable $Sim(TabframeModel).time.date
+   Clock::Disable $Sim(TabframeModel).time.date.hour
    
-   $base.time.mode.opt.forward   configure -state disabled
-   $base.time.mode.opt.backward  configure -state disabled
+   $Sim(TabframeModel).time.mode.opt.forward   configure -state disabled
+   $Sim(TabframeModel).time.mode.opt.backward  configure -state disabled
 
-   Option::Create  $base.time.restart "Restart" MLDPn::Sim(Restart) 0 -1 $Sim(Restarts) \
+   Option::Create  $Sim(TabframeModel).time.restart "Restart" MLDPn::Sim(Restart) 0 -1 $Sim(Restarts) \
       { set MLDPn::Sim(RestartDelta) [lindex $MLDPn::Sim(RestartDeltas) [lsearch -exact $MLDPn::Sim(Restarts) $MLDPn::Sim(Restart)]]; MLDPn::GraphUpdate }
-   pack  $base.time.restart -side bottom -fill x -padx 2
+   pack  $Sim(TabframeModel).time.restart -side bottom -fill x -padx 2
 
    #----- Integration
-   Option::Disable $base.integ.opt.ots
-   Option::Disable $base.integ.opt.mts
+   Option::Disable $Sim(TabframeModel).integ.ots
+   Option::Disable $Sim(TabframeModel).integ.mts
 
    #----- Other
    if { $Sim(SrcType) == "VIRUS" } {
-      Option::Disable $base.others.opt.virus
+      Option::Disable $Sim(TabframeModel).others.virus
    }
 
-   Option::Disable $base.others.opt.grid.res
-   Option::Disable $base.others.opt.grid.src
-   $base.others.opt.grid.sel configure -state disabled
-#   Option::Disable $base.others.opt.met.model
-#   Option::Disable $base.others.opt.met.delta
-#   $base.others.opt.met.path configure -state disabled
-   Option::Disable $base.others.opt.cvlevels
-   Option::Disable $base.others.opt.varmesoscale
-   Option::Disable $base.others.opt.timescale
-   Option::Disable $base.others.opt.reflect
-   Option::Disable $base.others.opt.seed 
-   Option::Disable $base.others.opt.aero 
-   Option::Disable $base.others.opt.sca
-   Option::Disable $base.others.opt.dep
+#   Option::Disable $Sim(TabframeModel).others.met.model
+#   Option::Disable $Sim(TabframeModel).others.met.delta
+#   $Sim(TabframeModel).others.met.path configure -state disabled
+   Option::Disable $Sim(TabframeModel).others.varmesoscale
+   Option::Disable $Sim(TabframeModel).others.timescale
+   Option::Disable $Sim(TabframeModel).others.reflect
+   Option::Disable $Sim(TabframeModel).others.seed 
+   Option::Disable $Sim(TabframeModel).others.aero 
+   Option::Disable $Sim(TabframeModel).others.sca
+   Option::Disable $Sim(TabframeModel).others.dep
 
-   if { $Sim(SrcType) == "VOLCANO" } {
-      Option::Disable $base.others.opt.avlevels
-   }
+   $Sim(TabframeOut).out.grid.sel configure -state disabled
+   Option::Disable $Sim(TabframeOut).out.grid.res
+   Option::Disable $Sim(TabframeOut).out.grid.src
+   Option::Disable $Sim(TabframeOut).out.dt
+   Option::Disable $Sim(TabframeOut).out.var
+   Option::Disable $Sim(TabframeOut).out.cvlevels
+   Option::Disable $Sim(TabframeOut).out.avlevels
 }
 
 #----------------------------------------------------------------------------

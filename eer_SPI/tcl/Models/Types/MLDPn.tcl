@@ -431,7 +431,7 @@ proc MLDPn::CreateModelInput { } {
    }
    puts $file "\n#----- Output parameters\n"
    puts $file [format "%-15s= %-10.1f # Output time step \[s\]" OUT_DT [expr $Sim(OutputTimeStepMin)*60]]
-   puts $file [format "%-15s= %-4i # Output file interval \[h\]" OUT_DELTA [expr $Sim(OutputDelta)]]
+   puts $file [format "%-15s= %-4i # Output file interval \[h\]" OUT_DELTA [expr $Sim(OutDT)]]
    puts $file [format "%-15s= %s # Output grid definition" OUT_GRID tmp/grid.in]
    puts $file [format "%-15s= %s # Concentration vertical levels \[m\]" OUT_CVLEVELS $Sim(OutCV)]
    if { $Sim(SrcType) == "VOLCANO" } {
@@ -888,7 +888,7 @@ proc MLDPn::ScenarioDecode { Type Scenario { Separator "\n" } } {
       incr Sim(EmTotalDuration) $Sim(EmInter.$i)
 
       if { $Sim(EmIsEm.$i) } {
-         set Sim(EmNumberParticles.$i) [lindex $Scenario [incr ln]]
+         set Sim(EmNumberParticles.$i) [expr int([lindex $Scenario [incr ln]])]
          set Sim(EmHeight.$i)          [lindex $Scenario [incr ln]]
          set Sim(EmRadius.$i)          [lindex $Scenario [incr ln]]
 
@@ -1292,7 +1292,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(Mode)                 prog                                ;#----- Type of meteorological data.
    set Sim(Backward)             False                               ;#----- Inverse mode.
    set Sim(DiffKernel)           ORDER0                              ;#----- Diffusion kernel.
-   set Sim(OutputDelta)          24                                  ;#----- Output file delta in hours
+   set Sim(OutDT)                24                                  ;#----- Output file delta in hours
    set Sim(Delta)                1                                   ;#----- Time interval for meteorological data files [hr].
    set Sim(IsResFileSizeChecked) 0                                   ;#----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ;#----- Flag indicating if met data file size has been checked (1) or not (0).
@@ -1316,23 +1316,23 @@ proc MLDPn::InitNew { Type } {
 
    MLDPn::InitKernel
 
-   set Sim(OutCV)                [lindex $Sim(ListOutCV) 0]          ; #----- CV Vertical levels [m].
-   set Sim(OutAV)                { }                                 ; #----- AV Vertical levels [m].
-   set Sim(OutVar)               { ZH AV CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
+   set Sim(OutCV)                [lindex $Sim(OutCVs) 0]             ; #----- CV Vertical levels [m].
+   set Sim(OutAV)                [lindex $Sim(OutAVs) 0]             ; #----- AV Vertical levels [m].
    set Sim(PrevReflectionLevel)  $Sim(ReflectionLevel)               ; #----- Previous reflection level [hyb|eta|sig].
 
    #----- Set source type according to experiment data type.
    if { $Type==0 } {
       #----- Volcano (0) source.
       set Sim(SrcType)           VOLCANO
-      set Sim(OutAV)             { 0 20000 35000 60000 85000 110000 135000 }  ; #----- AV Vertical levels [m].
       set Sim(EmHeight)          10000.0
       set Sim(EmRadius)          1000.0
+      set Sim(OutVar)            { ZH AV CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    } elseif { $Type==3 } {
       #----- Fire (3) source.
       set Sim(SrcType)           FIRE
       set Sim(EmHeight)          250.0
       set Sim(EmRadius)          100.0
+      set Sim(OutVar)            { ZH CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    } elseif { $Type==4 } {
       #----- Virus (4) source.
       set Sim(SrcType)           VIRUS
@@ -1344,12 +1344,14 @@ proc MLDPn::InitNew { Type } {
       if { $Sim(DiffKernel) == ORDER1 } {
          set Sim(Scale) EFINE
       }
+      set Sim(OutVar)            { ZH CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    } else {
       #----- Nuclear accident (1), CTBT (2), pollutant spill (5), or other (6) sources.
       set Sim(SrcType)           ACCIDENT
       set Sim(OutputTimeStepMin) 180
       set Sim(EmHeight)          500.0
       set Sim(EmRadius)          100.0
+      set Sim(OutVar)            { ZH CV AG HCL CVNF CVI FM DD WD DI DWI TTCV TCAV WI DW IT MF }
    }
 
    set NA [lindex $Sim(NotAvailable) $GDefs(Lang)]
@@ -1400,6 +1402,8 @@ proc MLDPn::InitKernel { } {
    global   GDefs
    variable Sim
 
+   set Sim(OutAVs)             { { 0 20000 35000 60000 85000 110000 135000 } } ; #----- AV Vertical levels [m].
+
    switch $Sim(DiffKernel) {
       VARIABLE -
       ORDER0 {
@@ -1416,7 +1420,7 @@ proc MLDPn::InitKernel { } {
          set Sim(DtOverTl)             1.0
          set Sim(DtMin)                1.0
          set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 1.0000 }
-         set Sim(ListOutCV)           { { 1 200 400 600 2000 4000 }  \
+         set Sim(OutCVs)                { { 1 200 400 600 2000 4000 }  \
                                         { 1 500 1000 1500 2000 3000 4000 5000 } \
                                         { 1 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
                                         { 1 500 1000 } \
@@ -1451,7 +1455,7 @@ proc MLDPn::InitKernel { } {
          set Sim(DtOverTl)            0.1
          set Sim(DtMin)               0.1
          set Sim(ListReflectionLevel) { 0.9990 0.9995 0.9996 0.9997 0.9998 0.9999 }
-         set Sim(ListOutCV)           { { 0 200 400 600 800 1000 } \
+         set Sim(OutCVs)              { { 0 200 400 600 800 1000 } \
                                         { 0 500 1000 1500 2000 3000 4000 5000 } \
                                         { 0 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 } \
                                         { 0 500 1000 } \
@@ -1497,7 +1501,7 @@ proc MLDPn::InitCont { Type } {
    set Sim(NoPrev)                  $Sim(NoSim)                      ;#----- Previous simulation number
    set Sim(ListReflectionLevel)     $Sim(ReflectionLevel)            ;#----- Lock Relection level to previous sim value
    set Sim(PrevReflectionLevel)     $Sim(ReflectionLevel)            ;#----- Lock Relection level to previous sim value
-   set Sim(ListOutCV)               $Sim(OutCV)                      ;#----- Lock CV Levels to previous sim value
+   set Sim(OutCVs)                  $Sim(OutCV)                      ;#----- Lock CV Levels to previous sim value
    set Sim(EmVerticalDistDefault)   $Sim(EmVerticalDist)
    set Sim(EmIsAutoNPDefault)       0
 
@@ -1735,12 +1739,13 @@ proc MLDPn::UpdateListVerticalLevels { } {
 
    #----- List of vertical levels.
    set newoutcv {}
-   foreach list $Sim(ListOutCV) {
+   foreach list $Sim(OutCVs) {
       lappend newoutcv [lreplace $list 0 0 $firstlevel]
    }
 
-   set Sim(ListOutCV)  $newoutcv                              ; #----- Update list of vertical levels.
-   Option::Set $Sim(OutCVFrm) $Sim(ListOutCV)
+   set Sim(OutCVs) $newoutcv                              ; #----- Update list of vertical levels.
+   Option::Set $Sim(TabframeOut).out.cvlevels $Sim(OutCVs)
+   
    set Sim(OutCV)      [lreplace $Sim(OutCV) 0 0 $firstlevel] ; #----- Update vertical levels.
    set Sim(PrevReflectionLevel) $Sim(ReflectionLevel)         ; #----- Reset previous reflection level.
 }
