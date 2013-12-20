@@ -1648,7 +1648,7 @@ float *FFStreamMapSetup1D(double Delta) {
    }
    if (FFStreamMap) {
       for(len=0;len<FFSTREAMLEN;len++) {
-         FFStreamMap[len]=(float)len/(FFSTREAMLEN*Delta);
+         FFStreamMap[len]=1.0-(float)len/(FFSTREAMLEN*Delta);
       }
    }
    return(FFStreamMap);

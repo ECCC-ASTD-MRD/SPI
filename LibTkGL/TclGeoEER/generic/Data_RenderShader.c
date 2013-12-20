@@ -336,7 +336,7 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    glMatrixMode(GL_TEXTURE);
-   if (GLRender->Delay<2000) {
+   if (GLRender->Delay<GL_STOP) {
       Field->Spec->TexStep+=0.01;
       Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
   }

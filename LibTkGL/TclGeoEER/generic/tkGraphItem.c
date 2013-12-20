@@ -2500,7 +2500,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    }
 
    glMatrixMode(GL_TEXTURE);
-   if (GLRender->Delay<2000) {
+   if (GLRender->Delay<GL_STOP) {
       Data->Spec->TexStep+=0.01;
       Data->Spec->TexStep=Data->Spec->TexStep>1.0?0.0:Data->Spec->TexStep;
   }
@@ -2548,7 +2548,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
             if (b+f>10) {
                glPushMatrix();
                /*Translate the texture to mix the zoids*/
-               glTranslatef(-Data->Spec->TexStep-(dt+=0.15),0.0,0.0);
+               glTranslatef(Data->Spec->TexStep-(dt+=0.15),0.0,0.0);
 
                /*Place streamlin within graph*/
                for(c=len-b;c<len+f;c++) {

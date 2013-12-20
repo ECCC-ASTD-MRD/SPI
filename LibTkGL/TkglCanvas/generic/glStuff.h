@@ -66,6 +66,7 @@
 #define GL_MAXSHADER 512
 #define GL_MAXTESS   8192
 #define GL_ARCSTEP   64
+#define GL_STOP      1000
 
 #define glErrorCheck(MSG,EXIT) {\
    GLenum err;\

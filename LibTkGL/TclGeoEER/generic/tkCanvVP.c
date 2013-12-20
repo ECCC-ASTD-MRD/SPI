@@ -1294,6 +1294,11 @@ void ViewportRefresh(ClientData clientData,int Delay) {
 
    int i,d=0;
 
+   /*Install timed refresh*/
+   if (Delay<GL_STOP && !vp->Timer && vp->canvas) {
+       vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
+   }
+    
    /*If viewport is not already being updated*/
    if (!vp->Update) {
 
@@ -1308,13 +1313,7 @@ void ViewportRefresh(ClientData clientData,int Delay) {
 
       if (d && vp->canvas) {
          vp->Update=1;
-         if (Delay<2000) {
-            if (!vp->Timer) {
-               vp->Timer=Tcl_CreateTimerHandler(Delay,ViewportRefresh_Canvas,vp->canvas);
-            }
-         } else {
-            ViewportRefresh_Canvas(vp->canvas);
-         }
+         ViewportRefresh_Canvas(vp->canvas);
       }
    }
 }
@@ -1388,7 +1387,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       /*Take care of automated refresh handler*/
       load=vp->Loading;
       Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
-      if (GLRender->Delay<2000)
+      if (GLRender->Delay<GL_STOP)
          ViewportRefresh(vp,GLRender->Delay);
 
       load+=(proj->Loading=proj->Loading<0?0:proj->Loading);

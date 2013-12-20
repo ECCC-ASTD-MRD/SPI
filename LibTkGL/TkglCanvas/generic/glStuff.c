@@ -1977,7 +1977,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Set             = 1;
    GLRender->Soft            = 0;
    GLRender->UseThreads      = 1;
-   GLRender->Delay           = 2000;
+   GLRender->Delay           = GL_STOP;
    GLRender->Shaders         = NULL;
    GLRender->ShaderPath      = NULL;
    GLRender->ShaderNb        = 0;

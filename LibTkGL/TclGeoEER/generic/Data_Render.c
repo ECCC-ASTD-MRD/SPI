@@ -449,7 +449,12 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
          glDash(&Field->Spec->Dash);
       }
 
-      glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+      /*Do we need transparency*/
+      if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
+         glEnable(GL_BLEND);
+      }
+      
+      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
       glLineWidth(Field->Spec->Width);
 
       list=Field->Def->Segments;
@@ -842,7 +847,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    map=FFStreamMapSetup1D(0.025);
 
    glMatrixMode(GL_TEXTURE);
-   if (GLRender->Delay<2000) {
+   if (GLRender->Delay<GL_STOP) {
       Field->Spec->TexStep+=0.01;
       Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
   }
@@ -888,7 +893,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
             /* If we have at least some part of it */
             glPushMatrix();
-            glTranslatef(-Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
+            glTranslatef(Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
@@ -985,7 +990,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                glScalef((float)(len)/(b+f),1.0,1.0);
                Field->Spec->TexStep+=0.000025;
                Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
-               glTranslatef(-Field->Spec->TexStep,0.0,0.0);
+               glTranslatef(Field->Spec->TexStep,0.0,0.0);
             }
             Proj->Type->Render(Proj,0,&vbuf[(len>>1)-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
             glPopMatrix();
@@ -1009,10 +1014,11 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                      }
                   } else {
                      glScalef((float)(len)/f,1.0,1.0);
-                     if (GLRender->Delay<2000) {
+                     glScalef((float)1.0/Field->Spec->Step,1.0,1.0);
+                     if (GLRender->Delay<GL_STOP) {
                         Field->Spec->TexStep+=0.000025;
                         Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
-                        glTranslatef(-Field->Spec->TexStep,0.0,0.0);
+                        glTranslatef(Field->Spec->TexStep,0.0,0.0);
                      }
                   }
                   Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,0,NULL,NULL);
