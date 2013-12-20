@@ -406,9 +406,9 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  c=0;
-   char buf[256];
-   TList *list;
+   int      c=0;
+   char     buf[256];
+   TList   *list;
    T3DArray *array;
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
@@ -450,7 +450,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       }
 
       /*Do we need transparency*/
-      if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
+      if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
          glEnable(GL_BLEND);
       }
       
@@ -485,6 +485,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisable(GL_LINE_STIPPLE);
       glDisable(GL_LINE_SMOOTH);
+      glDisable(GL_BLEND);
 
       if (GLRender->GLZBuf) {
          glStencilMask(0x10);
@@ -559,6 +560,11 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
    glDepthMask(GL_FALSE);
 
+   /*Do we need transparency*/
+   if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
    if (Field->Def->Segments) {
 
       if (Interp) {
@@ -568,7 +574,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
          Tcl_AppendResult(Interp,"clippath\n",(char*)NULL);
       } else {
          if (Field->Spec->Outline)
-            glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+            glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
          glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
       }
@@ -652,6 +658,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
       }
    }
 
+   glDisable(GL_BLEND);
    glDepthMask(GL_TRUE);
    glMatrixMode(GL_PROJECTION);
    glPopMatrix();
@@ -687,6 +694,11 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline)
       return;
 
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+   
    if (Interp) {
       glFeedbackInit(FSIZE2D(Field->Def)*3,GL_2D);
       sprintf(buf,"%% Postscript de la grille\n%.2f setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->RenderGrid-0.5);
@@ -694,12 +706,13 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    } else {
       glPointSize(Field->Spec->RenderGrid+0.1);
-      glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
    }
 
    /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
    dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
    dp=CLAMP(dp,1,20);
+
 
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
@@ -714,6 +727,8 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
    }
    glDisableClientState(GL_VERTEX_ARRAY);
+   glDisable(GL_BLEND);
+
 }
 
 /*----------------------------------------------------------------------------
@@ -794,7 +809,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    glEnable(GL_TEXTURE_1D);
 
    /*Do we need transparency*/
-   if (Field->Spec->Map->Alpha) {
+   if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
 
@@ -859,8 +874,12 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
    glReadBuffer(GL_STENCIL);
    glEnableClientState(GL_VERTEX_ARRAY);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-   glEnable(GL_BLEND);
+
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    pi=pj=-1;
    dz=Field->Spec->Sample*10;
@@ -915,6 +934,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
    glDisable(GL_TEXTURE_1D);
    glDisableClientState(GL_VERTEX_ARRAY);
+   glDisable(GL_BLEND);
 
    return(1);
 }
@@ -950,16 +970,16 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       map=FFStreamMapSetup1D(1.0);
    }
 
+   /*Do we need transparency*/
+   if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
    glEnable(GL_TEXTURE_1D);
    glEnableClientState(GL_VERTEX_ARRAY);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-
-   /*Do we need transparency*/
-   if (Field->Spec->MapAll && Field->Spec->Map->Alpha) {
-      glEnable(GL_BLEND);
-   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    len=FFSTREAMLEN;
    dz=Field->Spec->Sample;
@@ -1509,10 +1529,14 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
    glLoadIdentity();
-
-   glDisable(GL_STENCIL_TEST);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+   
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
+   glDisable(GL_STENCIL_TEST);
 
    posa=Field->Ref->Pos[Field->Def->Level];
    zm=zmm=zn=zv=0.0;
@@ -1591,6 +1615,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    }
    Projection_Clip(Proj);
 
+   glDisable(GL_BLEND);
    glPopMatrix();
    glMatrixMode(GL_PROJECTION);
    glPopMatrix();
@@ -1633,16 +1658,17 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    theta=thetad=0.0f;
    u=v=w=len=0.0;
    
+   /*Do we need transparency*/
+   if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
    /*Afficher toutes les barbules*/
    glMatrixMode(GL_MODELVIEW);
    glDisable(GL_CULL_FACE);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glLineWidth(Field->Spec->Width);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
-
-   if (Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) {
-      glEnable(GL_BLEND);
-   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    if (Interp) {
       sprintf(buf,"%i\n",Field->Spec->Width-1);
@@ -2058,7 +2084,13 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    glDisable(GL_STENCIL_TEST);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glLineWidth(2.0);
-   glColor3us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue);
+
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    /*Affichage des labels*/
    if (Field->Spec->Font) {
@@ -2114,6 +2146,7 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    glEnable(GL_CULL_FACE);
+   glDisable(GL_BLEND);
    glDisable(GL_STENCIL_TEST);
    return(1);
 }

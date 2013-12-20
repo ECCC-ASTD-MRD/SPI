@@ -319,6 +319,12 @@ int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+
    /*Setup 1D Texture*/
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,256,0,GL_RGBA,GL_UNSIGNED_BYTE,FFStreamMap);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -460,7 +466,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
-   glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
