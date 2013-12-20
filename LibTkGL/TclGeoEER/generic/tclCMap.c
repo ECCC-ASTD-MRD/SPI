@@ -1440,20 +1440,24 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
 
       if (buf[0]!='#') {
          idx=strtol(buf,&e,10);
-         if (idx>=CR_MAX) {
-            Tcl_AppendResult(Interp,"CMap_Read: Index range overflow\"",RGBAFile,(char *)NULL);
-            fclose(fp);
-            return(TCL_ERROR);
-         }
+         
+         //If an index is found (line not empty)
+         if (buf!=e) { 
+            if (idx>=CR_MAX) {
+               Tcl_AppendResult(Interp,"CMap_Read: Index range overflow\"",RGBAFile,(char *)NULL);
+               fclose(fp);
+               return(TCL_ERROR);
+            }
 
-         CMap->Control[idx][0] = strtol(e,&e,10);
-         CMap->Control[idx][1] = strtol(e,&e,10);
-         CMap->Control[idx][2] = strtol(e,&e,10);
-         CMap->Control[idx][3] = strtol(e,&e,10);
+            CMap->Control[idx][0] = strtol(e,&e,10);
+            CMap->Control[idx][1] = strtol(e,&e,10);
+            CMap->Control[idx][2] = strtol(e,&e,10);
+            CMap->Control[idx][3] = strtol(e,&e,10);
 
-         /* 0,0,0,0 is empty cell so mkae sure this control point is not empty */
-         if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
-            CMap->Control[idx][0]=CMap->Control[idx][1]=CMap->Control[idx][2]=1;
+            /* 0,0,0,0 is empty cell so make sure this control point is not empty */
+            if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
+               CMap->Control[idx][0]=CMap->Control[idx][1]=CMap->Control[idx][2]=1;
+            }
          }
       }
    }
