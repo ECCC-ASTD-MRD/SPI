@@ -406,7 +406,7 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
    // Get gridpoint indexes
    idxk=Def->NIJ;
 
-   idx[0]=idxk*k+j*Def->NI+i;
+   idx[0]=(k?idxk*k:0)+j*Def->NI+i;
    idx[1]=idx[0]+1;
    idx[3]=(j==Def->NJ-1)?idx[0]:idx[0]+Def->NI;
    idx[2]=idx[3]+1;

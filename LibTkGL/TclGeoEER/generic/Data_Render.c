@@ -224,7 +224,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
             glEnable(GL_DEPTH_TEST);
             if (Field->Spec->RenderVector==STREAMLINE3D) {
-               if (Data_Grid3D(Field,Proj)) {
+               if (!Field->Def->Data[2] || Data_Grid3D(Field,Proj)) {
                   nras+=Data_RenderStream3D(Field,VP,(Projection*)Proj);
                }
             }
@@ -877,17 +877,17 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
    glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
+   // Animation step
+   if (GLRender->Delay<GL_STOP) {
+      Field->Spec->TexStep+=0.02;
+   }
+
    pi=pj=-1;
    dz=Field->Spec->Sample*10;
    dt=0.0;
    len=512;
    step=0.0;
    
-   // Animation step
-   if (GLRender->Delay<GL_STOP) {
-      Field->Spec->TexStep+=0.02;
-   }
-
    vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
@@ -959,7 +959,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    /*Setup 1D Texture*/
-   if (Field->Spec->MapAll) {
+   if (Field->Spec->MapAll && Field->Spec->Map) {
       if (Field->Spec->Map->Alpha) {
          glEnable(GL_BLEND);
       }
@@ -972,19 +972,14 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    } else {
       map=FFStreamMapSetup1D(1.0);
+      
+      /*Do we need transparency*/
+      if (Field->Spec->Alpha<100) {
+         glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+         glEnable(GL_BLEND);
+      }
+      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
    }
-
-   /*Do we need transparency*/
-   if (Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) {
-      glEnable(GL_BLEND);
-   }
-   
-   /*Do we need transparency*/
-   if (Field->Spec->Alpha<100) {
-      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-      glEnable(GL_BLEND);
-   }
-   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
@@ -996,7 +991,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    glLineWidth((float)Field->Spec->Width);
    glMatrixMode(GL_TEXTURE);
 
-   vbuf=VBuffer_Alloc(len*2+1);
+    vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
    if (Field->Spec->PosNb) {
@@ -1018,9 +1013,11 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                }
             } else {
                glScalef((float)(len)/(b+f),1.0,1.0);
-               Field->Spec->TexStep+=0.000025;
-               Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
-               glTranslatef(Field->Spec->TexStep,0.0,0.0);
+               // Animation step
+               if (GLRender->Delay<GL_STOP) {
+                  Field->Spec->TexStep+=0.000025;
+                  glTranslatef(Field->Spec->TexStep,0.0,0.0);
+               }
             }
             Proj->Type->Render(Proj,0,&vbuf[(len>>1)-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
             glPopMatrix();
@@ -1043,11 +1040,10 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                         map[c]=idx/(float)Field->Spec->Map->NbPixels;
                      }
                   } else {
-                     glScalef((float)(len)/f,1.0,1.0);
-                     glScalef((float)1.0/Field->Spec->Step,1.0,1.0);
+                     glScalef(100*1.0/Field->Spec->Size+1,1.0,1.0);
+                     // Animation step
                      if (GLRender->Delay<GL_STOP) {
                         Field->Spec->TexStep+=0.000025;
-                        Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
                         glTranslatef(Field->Spec->TexStep,0.0,0.0);
                      }
                   }
