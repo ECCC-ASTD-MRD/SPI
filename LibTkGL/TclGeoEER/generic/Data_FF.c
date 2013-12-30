@@ -1699,7 +1699,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    Vect3d v,p;
    Vect3d rk1,rk2;     /*Keep track of Runge Kutta steps (1 to 2)*/
    Vect3d d;
-   double step,t,ds,dr,dn,dv=0.0;/*Minimum delta step accepted*/
+   double s2,step,t,ds,dr,dn,dv=0.0;/*Minimum delta step accepted*/
 
    Vect3d pix;
    GLuint s;
@@ -1708,6 +1708,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    ds=fabs(Step*0.001);
    dr=10000.0;
    Z=ZDim<0?0:Z;
+   s2=Step*0.5;
    
    do {
 
@@ -1780,8 +1781,8 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
       /*Figure out step from direction gradient*/
       t=Vect_Weight(p,v);
       step=(1.0-t)*Step;
-      step=step>0.25?0.25:step;
-      step=step<Step*0.5?Step*0.5:step;
+      if (step>0.25) step=0.25;
+      if (step<s2) step=s2;
       Vect_Assign(p,v);
 
       /*Use Runge Kutta method (2nd order) to find the next particle position*/

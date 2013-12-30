@@ -862,11 +862,6 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    map=FFStreamMapSetup1D(0.025);
 
    glMatrixMode(GL_TEXTURE);
-   if (GLRender->Delay<GL_STOP) {
-      Field->Spec->TexStep+=0.01;
-      Field->Spec->TexStep=Field->Spec->TexStep>1.0?0.0:Field->Spec->TexStep;
-  }
-
    glEnable(GL_STENCIL_TEST);
    glStencilMask(0x20);
    glStencilFunc(GL_NOTEQUAL,0x20,0x20);
@@ -877,6 +872,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
    /*Do we need transparency*/
    if (Field->Spec->Alpha<100) {
+      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
       glEnable(GL_BLEND);
    }
    glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
@@ -886,6 +882,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    dt=0.0;
    len=512;
    step=0.0;
+   
+   // Animation step
+   if (GLRender->Delay<GL_STOP) {
+      Field->Spec->TexStep+=0.02;
+   }
 
    vbuf=VBuffer_Alloc(len*2+1);
 
@@ -907,20 +908,23 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
                step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi+1,pj+1)]);
             }
             /*Get the streamline */
-            b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,0);
-            f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,0);
+            b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
+            f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
 
             /* If we have at least some part of it */
             glPushMatrix();
-            glTranslatef(Field->Spec->TexStep-(dt+=0.15),0.0,0.0);
+            glScalef(10.0/Field->Spec->Size,1.0,1.0);
+            glTranslatef(Field->Spec->TexStep-(dt+=0.015),0.0,0.0);
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
                Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
 
-               glLineWidth(8*Field->Spec->Width);
-               glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
+               if (Field->Spec->SizeRange>1.0) {
+                  glLineWidth(Field->Spec->SizeRange*2*Field->Spec->Width);
+                  glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+                  Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
+               }
             }
             glPopMatrix();
          }
@@ -971,15 +975,21 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    /*Do we need transparency*/
-   if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
+   if (Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) {
       glEnable(GL_BLEND);
    }
+   
+   /*Do we need transparency*/
+   if (Field->Spec->Alpha<100) {
+      glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+      glEnable(GL_BLEND);
+   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
    glEnable(GL_TEXTURE_1D);
    glEnableClientState(GL_VERTEX_ARRAY);
-   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
    len=FFSTREAMLEN;
    dz=Field->Spec->Sample;
