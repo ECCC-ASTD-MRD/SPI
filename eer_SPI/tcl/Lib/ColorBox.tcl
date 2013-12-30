@@ -110,6 +110,13 @@ proc ColorBox::CreateSel { Widget Var args } {
 
    label $Widget -relief groove -bd 2 -bitmap @$Resources(Fill)
 
+   if { [llength $Var]==2 } {
+      set alpha [lindex $Var 1]
+      set Var   [lindex $Var 0]
+   } else {
+      set alpha ""
+   }
+   
    eval set fg \$$Var
    if { $fg!="" } {
       $Widget configure -fg $fg
@@ -117,8 +124,7 @@ proc ColorBox::CreateSel { Widget Var args } {
       $Widget configure -fg $GDefs(ColorFrame)
    }
 
-
-   bind $Widget <ButtonRelease-1> "set $Var \[ColorBox::Create $Widget \$$Var\] ; if { \$$Var!=\"\" } { catch { $Widget config -fg \$$Var } } else { $Widget configure -fg $GDefs(ColorFrame) } ;eval $args"
+   bind $Widget <ButtonRelease-1> "ColorBox::Create $Widget $Var $alpha; if { \$$Var!=\"\" } { catch { $Widget config -fg \$$Var } } else { $Widget configure -fg $GDefs(ColorFrame) } ;eval $args"
 }
 
 #------------------------------------------------------------------------------
@@ -129,7 +135,8 @@ proc ColorBox::CreateSel { Widget Var args } {
 #
 # Parametres :
 #   <Parent> : Path du parent
-#   <Color>  : Couleur initiale
+#   <Color>  : Variable Couleur initiale
+#   <Alpha>  : Variable Alpha
 #
 # Retour:
 #
@@ -138,7 +145,7 @@ proc ColorBox::CreateSel { Widget Var args } {
 #
 #-------------------------------------------------------------------------------
 
-proc ColorBox::Create { Parent { Color "" } } {
+proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
    global   GDefs
    variable Data
    variable Lbl
@@ -151,19 +158,19 @@ proc ColorBox::Create { Parent { Color "" } } {
    }
 
    #----- Couleur initiale
-
-   set Data(Current) ""
-
+   set Data(Current) [set color #FFFFFF]
+   
    if { $Color!="" } {
-      set Data(Current) [string toupper [string range $Color 0 6]]
-      if { [string length $Color]>7 } {
+      eval set color \$$Color
+      set Data(Current) [string toupper [string range $color 0 6]]
+      if { [string length $color]>7 || $Alpha!="" } {
          set Data(Alpha) True
       } else {
          set Data(Alpha) False
       }
    }
 
-   set Data(State)   0
+   set Data(State)  0
    set Data(Result) $Data(Current)
 
    #----- Creer une fenetre sans frame en bas a gauche du parent
@@ -308,7 +315,11 @@ proc ColorBox::Create { Parent { Color "" } } {
 
       update
       set Data(State) 1
-      scan "$Color" "%1s%02x%02x%02x%02x" b Data(R) Data(G) Data(B) Data(A)
+      scan $color "%1s%02x%02x%02x%02x" b Data(R) Data(G) Data(B) Data(A)
+
+      if { $Alpha!="" } {
+         eval scan \$$Alpha %02x Data(A)
+      }
       ColorBox::UpdateHSV
    }
 
@@ -321,7 +332,19 @@ proc ColorBox::Create { Parent { Color "" } } {
    if { $pgrab!="" } {
       grab $pgrab
    }
-   return $ColorBox::Data(Result)
+   
+   if { $Color!="" } {
+      set $Color $ColorBox::Data(Result)
+   }
+   if { $Alpha!="" } {
+      set $Alpha [string toupper [format "%02x" $ColorBox::Data(A)]]
+   }
+   
+   if { $color!=$ColorBox::Data(Result) } {
+      return True
+   } else {
+      return False
+   }
 }
 
 #------------------------------------------------------------------------------
@@ -481,7 +504,7 @@ proc ColorBox::UpdateHSV { args } {
    set Data(B) [expr int($Data(B))]
 
    if { [expr $Data(R)+$Data(G)+$Data(B)+$Data(H)+$Data(S)+$Data(V)]==0 } {
-      set Data(Current) ""
+#      set Data(Current) ""
      .colbox.opt.sel.hex configure -bg $GDefs(ColorFrame)
    } else {
       set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]

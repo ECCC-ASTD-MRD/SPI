@@ -181,7 +181,7 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
          -onvalue True -offvalue False -command "Viewport::UpdateData $Frame $mini"
       $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(Location) $GDefs(Lang)] -variable Viewport::Data(Location$mini) \
          -onvalue True -offvalue False -command "Miniport::Coverage $Frame $mini"
-      $Frame.bf$tag.menu add command -label [lindex $Lbl(Color) $GDefs(Lang)] -command "set Viewport::Data(Color$mini) \[ColorBox::Create . \$Viewport::Data(Color$mini)\]"
+      $Frame.bf$tag.menu add command -label [lindex $Lbl(Color) $GDefs(Lang)] -command "ColorBox::Create . Viewport::Data(Color$mini)"
       $Frame.bf$tag.menu add separator
       $Frame.bf$tag.menu add checkbutton -label [lindex $Lbl(Cursor) $GDefs(Lang)] -variable Viewport::Data(Cursor$mini) \
          -onvalue True -offvalue False

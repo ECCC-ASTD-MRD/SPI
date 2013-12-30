@@ -32,7 +32,7 @@ namespace eval OpenGL {
 
    #----- Parametres OpenGL
 
-   set Param(Delay)       2000
+   set Param(Delay)       1000
    set Param(Res)         0
    set Param(Debug)       0
    set Param(Alias)       0
@@ -162,7 +162,7 @@ proc OpenGL::ParamFrame { Frame Apply } {
          pack $frame.move.damp.sc -side left -fill x -expand True
       frame $frame.move.delay
          label $frame.move.delay.lbl -text [lindex $Lbl(Delay) $GDefs(Lang)] -width 15 -anchor w
-         scale $frame.move.delay.sc -orient horizontal -from 0 -to 2000 -showvalue False -variable OpenGL::Param(Delay) -relief flat \
+         scale $frame.move.delay.sc -orient horizontal -from 0 -to 1000 -showvalue False -variable OpenGL::Param(Delay) -relief flat \
             -sliderlength 8  -bd 1 -resolution 10 -command "glrender -delay \$OpenGL::Param(Delay); $Apply configure -state normal; catch"
          pack $frame.move.delay.lbl -side left
          pack $frame.move.delay.sc -side left -fill x -expand True

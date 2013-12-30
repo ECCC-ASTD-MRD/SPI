@@ -2123,9 +2123,11 @@ proc Viewport::Resolution { Frame Res } {
 
    if { $Res!=[glrender -resolution] } {
 
-      glrender -resolution $Res
+      glrender -resolution $Res -delay 1000
 
       if { $Res==1 } {
+         glrender -delay $OpenGL::Param(Delay)
+         
          foreach vp [Page::Registered $Frame Viewport] {
             if { [winfo exists $Frame.page.canvas] } {
                $Frame.page.canvas itemconf $vp -update True
@@ -2586,8 +2588,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
    #----- Do only if we have the power to
    if { $OpenGL::Param(Res)==1 && !$isgeo } {
-
-      
+    
       if { $dp>10 || $Zoom || $F || $T || $U } {
 
          Viewport::Resolution $Frame 2

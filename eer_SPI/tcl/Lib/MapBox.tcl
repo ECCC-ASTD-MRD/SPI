@@ -261,12 +261,12 @@ proc MapBox::ControlColor { Canvas Id } {
 
    set idx  $Control($Id)
    set col  [colormap configure $Data(Map) -index $idx]
-   set cin  [format "%02x%02x%02x" [lindex $col 0] [lindex $col 1] [lindex $col 2]]
-   set alp  [format "%02x" [lindex $col 3]]
-   set cout [ColorBox::Create .mapbox #$cin$alp]
+   set Data(ColorIn) [format "#%02x%02x%02x" [lindex $col 0] [lindex $col 1] [lindex $col 2]]
+   set Data(AlphaIn) [format "%02x" [lindex $col 3]]
+   set cout [ColorBox::Create .mapbox MapBox::Data(ColorIn) MapBox::Data(AlphaIn)]
 
-   if { $cin!=$cout } {
-      $Canvas itemconfigure CTRL$Id -fill $cout -outline $cout
+   if { $cout } {
+      $Canvas itemconfigure CTRL$Id -fill $Data(ColorIn) -outline $Data(ColorIn)
       colormap control $Data(Map) -add $Control($Id) $ColorBox::Data(R) $ColorBox::Data(G) $ColorBox::Data(B) $ColorBox::Data(A)
       MapBox::Update
    }

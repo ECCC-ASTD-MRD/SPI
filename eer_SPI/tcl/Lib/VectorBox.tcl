@@ -55,6 +55,9 @@ namespace eval VectorBox {
    set Lbl(Stream)    { "Ligne de courant" "Streamline" }
    set Lbl(Grid)      { "Grille" "Grid" }
    set Lbl(Pixel)     { "Pixel" "Pixel" }
+   set Lbl(Animate)   { "Animer" "Animate" }
+   set Lbl(Speed)     { "Stop Lent              Rapide"
+                        "Stop Slow              Fast" }
 
    set Bubble(Size)       { "Dimension des barbules et flêches" "Wind barbs and arrow size" }
    set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum" "Dimension range factor of wind arrows between minimum and maximum values" }
@@ -107,11 +110,6 @@ proc VectorBox::Create { Parent Apply } {
 
    set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Stream) $GDefs(Lang)] False ""]
 
-      labelframe $fr.step -text [lindex $Lbl(Step) $GDefs(Lang)]
-         scale $fr.step.sc -from 0.001 -to 1.0 -resolution 0.01 -width 14 -sliderlength 8 -variable FSTD::Param(Step) -length 150 -relief flat -bd 1 -orient horizontal \
-            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
-         pack $fr.step.sc -fill x -padx 2 -expand true
-#      pack $fr.step -side top -padx 5 -pady 5 -fill x
       labelframe $fr.plane -text [lindex $Lbl(Start) $GDefs(Lang)]
          checkbutton $fr.plane.mode -variable Page::Data(ToolMode) -onvalue VectorBox -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
@@ -142,6 +140,17 @@ proc VectorBox::Create { Parent Apply } {
             pack  $fr.plane.z.lbl $fr.plane.z.z0 $fr.plane.z.z1 $fr.plane.z.lock -side left -fill y
          pack  $fr.plane.z -side top -fill x -expand True
       pack $fr.plane -side top -padx 5 -pady 5 -fill x
+      labelframe $fr.step -text [lindex $Lbl(Step) $GDefs(Lang)]
+         scale $fr.step.sc -from 0.001 -to 1.0 -resolution 0.01 -width 14 -sliderlength 8 -variable FSTD::Param(Step) -length 150 -relief flat -bd 1 -orient horizontal \
+            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
+         pack $fr.step.sc -fill x -padx 2 -expand true
+#      pack $fr.step -side top -padx 5 -pady 5 -fill x
+      labelframe $fr.speed -text [lindex $Lbl(Animate) $GDefs(Lang)]
+         label $fr.speed.lbl -text [lindex $Lbl(Speed) $GDefs(Lang)]
+         scale $fr.speed.sc -from 1000 -to 0 -resolution 10 -width 14 -sliderlength 8  -variable OpenGL::Param(Delay) -length 150 -relief flat -bd 1 -orient horizontal -showvalue False \
+            -command "glrender -delay \$OpenGL::Param(Delay);  catch"
+         pack $fr.speed.lbl $fr.speed.sc -side top -fill x -padx 2 -expand true
+      pack $fr.speed -side top -padx 5 -pady 5 -fill x
 
    Bubble::Create $fr.plane      $Bubble(Cube)
    Bubble::Create $fr.plane.mode $Bubble(Select)

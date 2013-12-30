@@ -62,7 +62,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbellow False -mapabove True
+      -intervals {} -mapbellow False -mapabove True -transparency 100
 
    fstdfield vector { UU VV }
    fstdfield vector { UP VP }
@@ -121,6 +121,7 @@ namespace eval FSTD {
    set Param(Width)         1              ;#Largeur des segments
    set Param(GridNo)        0              ;#Grid to display no (grid/subgrid)
    set Param(GridId)        SUPER          ;#Grid to display name (grid/subgrid)
+   set Param(Alpha)         FF             ;#Global transparency
 
    set Param(Inters)        {}
    set Param(Labels)        {}
@@ -145,6 +146,7 @@ namespace eval FSTD {
    #----- Definitions des labels
 
    set Lbl(Params)        { "Paramètres..." "Parameters..." }
+   set Lbl(Alpha)         { "Transparence" "Transparency" }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(Contour)       { "Contour" "Contour" }
    set Lbl(Data)          { "Données" "Data" }
@@ -358,7 +360,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/share/bitmap \
                "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
                FSTD::Param(Width) "FSTD::ParamSet" 0 -relief groove -bd 2
-            ColorBox::CreateSel $Data(Frame).def.r.disp.p.col FSTD::Param(Color) FSTD::ParamSet
+            ColorBox::CreateSel $Data(Frame).def.r.disp.p.col { FSTD::Param(Color) FSTD::Param(Alpha) } FSTD::ParamSet
             checkbutton $Data(Frame).def.r.disp.p.map -image COLORMAP -variable FSTD::Param(MapAll) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false
             pack $Data(Frame).def.r.disp.p.map $Data(Frame).def.r.disp.p.col $Data(Frame).def.r.disp.p.width -side left
@@ -430,7 +432,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             $Data(Frame).def.r.disp.grid $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.part $Data(Frame).def.r.disp.label \
             $Data(Frame).def.r.disp.val -side top -anchor w -padx 2 -fill x -expand true
 
-          pack $Data(Frame).def.r.disp -side top -fill x
+         pack $Data(Frame).def.r.disp -side top -fill x
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
 
    labelframe $Data(Frame).lev -text [lindex $Lbl(Intervals) $GDefs(Lang)]
@@ -750,6 +752,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Size)       [dataspec configure $Spec -size]
    set Param(SizeRange)  [dataspec configure $Spec -sizerange]
    set Param(Color)      [dataspec configure $Spec -color]
+   set Param(Alpha)      [dataspec configure $Spec -transparency]
    set Param(Dash)       [dataspec configure $Spec -dash]
    set Param(Width)      [dataspec configure $Spec -width]
    set Param(Contour)    [dataspec configure $Spec -rendercontour]
@@ -782,6 +785,8 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Y1)         [lindex $plane 4]
    set Param(Z1)         [lindex $plane 5]
 
+   set Param(Alpha)      [format %02x [expr int($Param(Alpha)/100.0*255.0)]]
+   
    #----- Intervals and min-max selection are exclusive with priority to intervals
    if { ![llength $Param(Intervals)] && $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
@@ -857,8 +862,9 @@ proc FSTD::ParamSet { { Spec "" } } {
          }
       }
    }
-
+   
    set Param(GridNo) [lsearch -exact $Param(GridIds) $Param(GridId)]
+   set alpha [expr int(0x$Param(Alpha)/255.0*100.0)]
 
    #----- Set all params
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
@@ -867,7 +873,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
+      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) -transparency $alpha \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
    #----- Set intervals depending on interval mode

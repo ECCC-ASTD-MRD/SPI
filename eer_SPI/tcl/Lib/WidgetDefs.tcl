@@ -115,7 +115,7 @@ proc EntryMenu::Create { W Edit Label Side Width Color AColor Var List Cmd } {
 #    <Frame>  : Identificateur du frame global.
 #    <Label>  : Label descriptif
 #    <Var>    : Variable(s) associee(s) { Var ou { Var1 Var2 } }
-#    <Edit>   : Edition possible (True ou False)
+#    <Edit>   : Edition possible (0,1 ou -1=checkbutton list)
 #    <Width>  : Longueur de l'entry (-1 = fill x)
 #    <List>   : Liste des valeurs associees
 #    <Cmd>    : Commande a executer en post-traitement
@@ -129,8 +129,9 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
    global GDefs
    variable Data
 
-   set Data(Var$Frame) $Var
-   set Data(Cmd$Frame) $Cmd
+   set Data(Var$Frame)   $Var
+   set Data(Cmd$Frame)   $Cmd
+   set Data(Check$Frame) [expr $Edit==-1?1:0]
 
    frame $Frame
       if { $Label!="" } {
@@ -147,15 +148,18 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
       pack $Frame.e -side left -fill y
    }
 
-   if { !$Edit } {
+   if { $Edit<=0 } {
       $Frame.e configure -state disabled -disabledbackground $GDefs(ColorLight) -disabledforeground black
    }
 
    #----- Insertion des valeurs dans le menu
-
-   menu $Frame.b.m
+   menu $Frame.b.m -tearoff $Data(Check$Frame)
 
    Option::Set $Frame $List [lindex $args 0]
+   
+   if { $Data(Check$Frame) } {
+      eval Option::SetList $Frame \$$Var \$$Var 
+   }
 }
 
 proc Option::Disable { Frame } {
@@ -191,13 +195,30 @@ proc Option::Enable { Frame { Edit True } } {
 #
 #-------------------------------------------------------------------------------
 
+proc Option::SetList { Frame List { ListVal {} } } {
+   variable Data
+
+   set $Data(Var$Frame) {}
+
+   foreach item $List val $ListVal {
+
+      if { $val!="" } {
+         set Data(List$Frame$item) 1
+      }
+      
+      if { $Data(List$Frame$item) } {
+         lappend $Data(Var$Frame) $item
+      }
+   }
+}
+
 proc Option::Set { Frame List { ListVal {} } } {
    variable Data
 
    $Frame.b.m delete 0 end
 
    set noitem 0
-
+   
    foreach item $List val $ListVal {
 
       if { [expr $noitem % 10] == 0 } {
@@ -206,17 +227,23 @@ proc Option::Set { Frame List { ListVal {} } } {
          set columnbreak 0
       }
 
-      if { [llength $Data(Var$Frame)] > 1 } {
-         if { $ListVal!="" } {
-            $Frame.b.m add command -label $item -columnbreak $columnbreak \
-               -command "set [lindex $Data(Var$Frame) 0] {$item} ; set [lindex $Data(Var$Frame) 1]  $val ; $Data(Cmd$Frame)"
+      if { $Data(Check$Frame) } {
+        set Data(List$Frame$item) 0
+        $Frame.b.m add checkbutton -label $item -columnbreak $columnbreak -variable Option::Data(List$Frame$item) \
+            -command "Option::SetList $Frame \"$List\"; $Data(Cmd$Frame)"
+      } else {
+         if { [llength $Data(Var$Frame)] > 1 } {
+            if { $ListVal!="" } {
+               $Frame.b.m add command -label $item -columnbreak $columnbreak \
+                  -command "set [lindex $Data(Var$Frame) 0] {$item} ; set [lindex $Data(Var$Frame) 1]  $val ; $Data(Cmd$Frame)"
+            } else {
+               $Frame.b.m add command -label $item -columnbreak $columnbreak \
+                  -command "set [lindex $Data(Var$Frame) 0] {$item}; set [lindex $Data(Var$Frame) 1] {$noitem}; $Data(Cmd$Frame)"
+            }
          } else {
             $Frame.b.m add command -label $item -columnbreak $columnbreak \
-               -command "set [lindex $Data(Var$Frame) 0] {$item}; set [lindex $Data(Var$Frame) 1] {$noitem}; $Data(Cmd$Frame)"
+               -command "set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
          }
-      } else {
-         $Frame.b.m add command -label $item -columnbreak $columnbreak \
-            -command "set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
       }
       incr noitem
    }
