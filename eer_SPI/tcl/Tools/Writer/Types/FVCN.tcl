@@ -958,8 +958,7 @@ proc Writer::FVCN::GetNo { Name } {
       #----- on determine le nombre d'heures qui s'est ecoule
       #      depuis la transmission.
 
-      set sec [clock scan "[string range $file 4 5]/[string range $file 6 7]/[string range $file 0 3]\
-                  [string range $file 9 10]:[string range $file 11 12]:00" -gmt True]
+      set sec [clock scan "[string range $file 4 5]/[string range $file 6 7]/[string range $file 0 3] [string range $file 9 10]:[string range $file 11 12]:00" -gmt True]
       set delta [expr ($Data(Seconds) - $sec)/3600]
 
       #----- On conserve la meme entete FVCNxx si :
@@ -1745,6 +1744,53 @@ proc Writer::FVCN::Send { Pad { Backup 0 } } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <Writer::FVCN::SendSigmet>
+# Creation : Decembre 2013 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Transmettre les coordonées des régions pour les SIGMETs.
+#
+# Parametres :
+#   <Pad>    : Identificateur du Pad
+#
+# Remarques :
+#   Aucune.
+#
+#-------------------------------------------------------------------------------
+
+proc Writer::FVCN::SendSigmet { Pad } {
+   global   GDefs
+   global   env
+   variable Data
+
+   if { [Dialog::Default .writer 300 WARNING $Writer::Msg(Send) "\n\n\tVASIGMET coordinates" 0 $Writer::Lbl(Send) $Writer::Lbl(Cancel)] } {
+      return
+   }
+   
+   #----- Sauvegarder le message
+   set file $env(HOME)/.spi/Tmp/VASIGMET[pid]_[clock seconds].txt
+
+   set f [open $file w]
+   
+   puts $f [Writer::BlocFormat $Data(Obs$Pad) [Writer::TextExtract char 256 "" $Pad.ash00]]\n
+   puts $f [Writer::BlocFormat $Data(FCST06)  [Writer::TextExtract char 256 "" $Pad.ash06]]\n
+   puts $f [Writer::BlocFormat $Data(FCST12)  [Writer::TextExtract char 256 "" $Pad.ash12]]\n
+   puts $f [Writer::BlocFormat $Data(FCST18)  [Writer::TextExtract char 256 "" $Pad.ash18]]\n
+
+   close $f
+   
+   #----- Transmettre le message 
+   exec chmod 644 $file
+
+   set err [catch { exec cat ${file} | mail -s "VA SIGMET List of coordinates" -c $Writer::VASIGMET::Param(CCMail) $Writer::VASIGMET::Param(Mail) } msg]
+   if { $err } {
+      Log::Print ERROR "Unable to send $file via mail.\n\n$msg"
+   }
+   file delete -force $file
+
+   Dialog::Info .writer $Writer::Msg(Sent)
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Writer::FVCN::Source>
 # Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
@@ -1799,21 +1845,24 @@ proc Writer::FVCN::ToolBar { Pad } {
       -command "Writer::Send"
    button $Pad.head.send2 -image ENVELOPE2 -bd 0 -relief flat -overrelief raised \
       -command "Writer::Send 1"
+   button $Pad.head.sendsig -image ENVELOPECA -bd 0 -relief flat -overrelief raised \
+      -command "Writer::FVCN::SendSigmet $Pad"
    checkbutton $Pad.head.test -variable Writer::FVCN::Data(Test$Pad) -onvalue True -offvalue False \
       -text [lindex $Writer::Lbl(Test) $GDefs(Lang)] -indicatoron 0 -relief groove -bd 2 -overrelief flat -offrelief groove  \
       -command "Writer::FVCN::Test $Pad"
    button $Pad.head.close -image DELETE -bd 0 -relief flat -overrelief raised \
       -command "Writer::PadClose $Pad 1"
-   pack $Pad.head.mode $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 -side left -padx 2
+   pack $Pad.head.mode $Pad.head.save $Pad.head.print $Pad.head.send $Pad.head.send2 $Pad.head.sendsig -side left -padx 2
    pack $Pad.head.test -side left -ipadx 2 -padx 2 -fill y
    pack $Pad.head.close -side right -padx 2
 
-   Bubble::Create $Pad.head.mode  $Writer::Bubble(Select)
-   Bubble::Create $Pad.head.save  $Writer::Bubble(Save)
-   Bubble::Create $Pad.head.print $Writer::Bubble(Print)
-   Bubble::Create $Pad.head.send  $Writer::Bubble(Send)
-   Bubble::Create $Pad.head.send2 $Writer::Bubble(SendBackup)
-   Bubble::Create $Pad.head.close $Writer::Bubble(Close)
+   Bubble::Create $Pad.head.mode    $Writer::Bubble(Select)
+   Bubble::Create $Pad.head.save    $Writer::Bubble(Save)
+   Bubble::Create $Pad.head.print   $Writer::Bubble(Print)
+   Bubble::Create $Pad.head.send    $Writer::Bubble(Send)
+   Bubble::Create $Pad.head.send2   $Writer::Bubble(SendBackup)
+   Bubble::Create $Pad.head.sendsig $Writer::Bubble(SendSigmet)
+   Bubble::Create $Pad.head.close   $Writer::Bubble(Close)
 }
 
 #----------------------------------------------------------------------------

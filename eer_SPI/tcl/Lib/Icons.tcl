@@ -172,6 +172,7 @@ image create photo LOCATION    -file $GDefs(Dir)/share/image/Icon/Location.gif
 image create photo FINGER      -file $GDefs(Dir)/share/image/Icon/FingerDown.gif
 image create photo ENVELOPE    -file $GDefs(Dir)/share/image/Icon/Envelope.gif
 image create photo ENVELOPE2   -file $GDefs(Dir)/share/image/Icon/NewEnvelope.gif
+image create photo ENVELOPECA  -file $GDefs(Dir)/share/image/Icon/EnvelopeCA.gif
 image create photo ADDRESS     -file $GDefs(Dir)/share/image/Icon/BCard.gif
 
 image create photo VCRPLAYB    -file $GDefs(Dir)/share/image/Icon/VCRPlayBackward.gif

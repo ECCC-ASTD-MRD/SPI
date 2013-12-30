@@ -336,12 +336,10 @@ proc Writer::VASIGMET::Send { Pad { Backup 0 } } {
    variable Param
 
    #----- Sauvegarder le message
-
    set name [Writer::VASIGMET::Write $Pad 1]
    set file [Writer::VASIGMET::Format $Pad]
 
-   #----- Transmettre le message avec le script operationnel.
-
+   #----- Transmettre le message 
    exec chmod 644 $file
 
    set err [catch { exec cat ${file} | mail -s "VA SIGMET List of coordinates" -c $Param(CCMail) $Param(Mail) } msg]

@@ -61,6 +61,7 @@ namespace eval Writer {
    set Bubble(Print)      { "Imprimer le message" "Print the message" }
    set Bubble(Send)       { "Transmettre le message" "Transmit the message" }
    set Bubble(SendBackup) { "Transmettre le message\npar METMANAGER (Backup)" "Transmit the message\nthrough METMANAGER (Backup)" }
+   set Bubble(SendSigmet) { "Transmettre les coordonées SIGMET" "Transmit SIGMET coordinates" }
    set Bubble(Close)      { "Fermer le message" "Close the message" }
 
 }
