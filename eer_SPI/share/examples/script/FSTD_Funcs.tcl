@@ -57,7 +57,15 @@ fstdfield create FLDINT 10 10 1 UInt32
 fstdfield stats FLDINT -gridvalue 5 5 20061231
 puts "   20061231 = [fstdfield stats FLDINT -gridvalue 5 5]"
 
-puts "\tTesting link/unlink"
+puts "\nTesting alias"
+fstdfield copy FLDALIAS FLDINT True
+puts "   Alias good = [fstdfield stats FLDALIAS -gridvalue 5 5]"
+fstdfield free FLDINT 
+fstdfield create FLDNEWINT 10 10 1 UInt32
+puts "   Alias freed = [fstdfield stats FLDALIAS -gridvalue 5 5]"
+fstdfield free FLDALIAS
+
+puts "\nTesting link/unlink"
 fstdfile open ETA read DataIn/2006122900_000.eta
 fstdfile open HYB read DataIn/2006122900_000.hyb
 set lnk  [fstdfile link { ETA HYB }]
