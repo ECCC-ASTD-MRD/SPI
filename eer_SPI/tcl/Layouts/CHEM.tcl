@@ -154,15 +154,14 @@ proc CHEM::LayoutUpdate { Frame } {
 [lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
 [lindex $Lbl(Mode) $GDefs(Lang)] $Sim(Mode)"
               }
-      MLCD    { append text "Simulation Duration              : $Sim(DurMin) min
-[lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmDurationMin) Min(s)
+      MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min(s)
+[lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmDurationMin) min(s)
 [lindex $Lbl(Total) $GDefs(Lang)] [format "%.3e" $Sim(EmMass)] unit
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmTop) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $Sim(EmRadius) m
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
-[lindex $Lbl(Mode) $GDefs(Lang)]"
+[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)"
               }
-      TRAJECT {  append text "Simulation Duration              : $Sim(Duration) Hr(s)
+      TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
 [lindex $Lbl(Duration) $GDefs(Lang)] NIL
 [lindex $Lbl(Total) $GDefs(Lang)] NIL
 [lindex $Lbl(Height) $GDefs(Lang)] NIL

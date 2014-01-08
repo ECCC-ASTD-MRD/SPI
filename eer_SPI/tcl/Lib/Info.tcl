@@ -559,7 +559,7 @@ proc Info::Read { Id } {
       append info [format "%c" [expr int(($nbit==8 && $i>127)?$i-128:$i)]]
    }
    fstdfield free INFO
-   return $info
+   return [string trimright $info \n]
 }
 
 #----------------------------------------------------------------------------
