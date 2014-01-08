@@ -713,7 +713,6 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
    dp=CLAMP(dp,1,20);
 
-
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
    Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def)/dp,dp,NULL,NULL);
@@ -844,7 +843,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
    double i,j,dt;
-   int    b,f,len,pi,pj,dz;
+   int    b,f,len,dz;
    float  step,*map;
    Vect3d pix,*vbuf;
    Coord  coo;
@@ -882,12 +881,13 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       Field->Spec->TexStep+=0.02;
    }
 
-   pi=pj=-1;
    dz=Field->Spec->Sample*10;
    dt=0.0;
    len=512;
-   step=0.0;
    
+   /*Get the cell resolution, to use as step size for a constant spacing*/
+   step=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
+
    vbuf=VBuffer_Alloc(len*2+1);
 
    /*Recuperer les latlon des pixels sujets*/
@@ -901,12 +901,6 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
          if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
             
-            /*Get the cell resolution, if not the same, to use as step size for a constant spacing*/
-            if (pi!=(int)i ||  pj!=(int)j) {
-               pi=i;
-               pj=j;
-               step=5.0/FFCellResolution(VP,Proj,Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi,pj)],Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,pi+1,pj+1)]);
-            }
             /*Get the streamline */
             b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
             f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
@@ -1015,7 +1009,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                glScalef((float)(len)/(b+f),1.0,1.0);
                // Animation step
                if (GLRender->Delay<GL_STOP) {
-                  Field->Spec->TexStep+=0.000025;
+                  Field->Spec->TexStep+=0.00001;
                   glTranslatef(Field->Spec->TexStep,0.0,0.0);
                }
             }
@@ -1043,7 +1037,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                      glScalef(100*1.0/Field->Spec->Size+1,1.0,1.0);
                      // Animation step
                      if (GLRender->Delay<GL_STOP) {
-                        Field->Spec->TexStep+=0.000025;
+                        Field->Spec->TexStep+=0.00001;
                         glTranslatef(Field->Spec->TexStep,0.0,0.0);
                      }
                   }

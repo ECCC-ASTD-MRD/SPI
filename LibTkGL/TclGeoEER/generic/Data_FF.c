@@ -1694,7 +1694,7 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
 
    int npos=0;         /*Number of position in a particular streamline/fieldline*/
    int iter=0;         /*Keep track of the number of iteration of a numerical method*/
-   int c=0;            /*Keep track of the number of iteration before a check in stencil buffer*/
+   int back,c=0;            /*Keep track of the number of iteration before a check in stencil buffer*/
    int idx,n;          /*Current stream index*/
    Vect3d v,p;
    Vect3d rk1,rk2;     /*Keep track of Runge Kutta steps (1 to 2)*/
@@ -1705,20 +1705,30 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    GLuint s;
 
    Vect_Clear(p);
-   ds=fabs(Step*0.001);
+   
+   // Check Step direction
+   back=0;
+   if (Step<0) {
+      back=1;
+      Step=-Step;
+   }
+   
+   // Define limits
+   if (Step>1.0) Step=1.0;
+   ds=Step*0.001;
    dr=10000.0;
    Z=ZDim<0?0:Z;
    s2=Step*0.5;
    
    do {
 
-      /*Store the parcel position itself.*/
-      idx=Step>0?npos:MaxIter-1-npos;
+      // Store the parcel position itself
+      idx=back?MaxIter-1-npos:npos;
 
       if (X<Def->Limits[0][0]+1 || X>Def->Limits[0][1]-2 || Y<Def->Limits[1][0]+1 || Y>Def->Limits[1][1]-2 || (ZDim>0 && (Z<Def->Limits[2][0]+1 || Z>Def->Limits[2][1]-2))) {
          break;
       } else {
-         /*Keep the position if its moved enough*/
+         // Keep the position if its moved enough
          if (dr>=Res) {
             if (Map)
                Map[idx]=dv;
@@ -1741,10 +1751,10 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
          }
       }
 
-      /*If in 2D mode*/
+      // If in 2D mode
       if (Mode==REF_PROJ && ZDim==0) {
-         /* Did we ever cross this pixel before ? */
-         /* Stencil buffer reads are very slow so we only check after a few steps */
+         // Did we ever cross this pixel before ? 
+         // Stencil buffer reads are very slow so we only check after a few steps 
          if (c>MaxIter>>5) {
             if (VP)
                gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
@@ -1757,57 +1767,58 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
          c++;
       }
 
-      /*Next vector*/
+      // Next vector
       if (Ref->Grid[0]=='V') {
          v[0]=VertexVal(Ref,Def,0,X,Y,Z);
          v[1]=VertexVal(Ref,Def,2,X,Y,Z);
          v[2]=0.0;
       } else {
-         v[0]=VertexVal(Ref,Def,0,X,Y,Z);
-         v[1]=VertexVal(Ref,Def,1,X,Y,Z);
-         v[2]=ZDim>0?VertexVal(Ref,Def,2,X,Y,Z):0.0;
+         VertexValV(Ref,Def,X,Y,Z,v);
       }
+      // Get vector norm
       dv=Vect_Norm(v);
 
-      /*If we break the minimum barrier*/
+      // If we break the minimum barrier
       if (Min!=0.0 && dv<=Min) {
          break;
       }
 
-      /*Normalize the velocity vector*/
+      // Normalize the velocity vector
       t=1.0/dv;
       Vect_SMul(v,v,t);
 
-      /*Figure out step from direction gradient*/
+      // Figure out step from direction gradient
       t=Vect_Weight(p,v);
       step=(1.0-t)*Step;
-      if (step>0.25) step=0.25;
-      if (step<s2) step=s2;
+      if (back) step=-step;
       Vect_Assign(p,v);
 
-      /*Use Runge Kutta method (2nd order) to find the next particle position*/
+      // Use Runge Kutta method (2nd order) to find the next particle position
       RK(rk1,step,v)
+      d[0]=X+rk1[0];d[1]=Y+rk1[1];d[2]=Z+rk1[2];
       if (Ref->Grid[0]=='V') {
-         rk2[0]=VertexVal(Ref,Def,0,X+rk1[0],Y,Z);
-         rk2[1]=VertexVal(Ref,Def,2,X,Y+rk1[1],Z);
+         rk2[0]=VertexVal(Ref,Def,0,d[0],d[1],Z);
+         rk2[1]=VertexVal(Ref,Def,2,d[0],d[1],Z);
          rk2[2]=0.0;
       } else {
-         rk2[0]=VertexVal(Ref,Def,0,X+rk1[0],Y,Z);
-         rk2[1]=VertexVal(Ref,Def,1,X,Y+rk1[1],Z);
-         rk2[2]=ZDim>0?VertexVal(Ref,Def,2,X,Y,Z+rk1[2]):0.0;
+         VertexValV(Ref,Def,d[0],d[1],d[2],rk2);
       }
-      /*Check for 0 length vector*/
-      if (rk2[0]==0.0 && rk2[1]==0.0 && rk2[2]==0.0) {
+      
+      // Check for 0 length vector
+      dv=Vect_Norm(rk2);
+      if (dv==0.0)
          break;
-      }
-      Vect_Normalize(rk2);
+      
+      // Normalize the velocity vector
+      t=1.0/dv;
+      Vect_SMul(rk2,rk2,t);
 
       RK(rk2,step,rk2)
       RKT(d,rk1,rk2)
 
       dn=Vect_Norm(d);
 
-      /*Check if the particle has moved enough*/
+      // Check if the particle has moved enough
       if (dn<ds) {
          break;
       }
@@ -1820,91 +1831,6 @@ int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,floa
    } while (iter<MaxIter-1);
 
    return(npos);
-}
-
-int FFStreamPatch(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float I,float J,float K,int MaxIter,float Step) {
-
-   int npos=0;           /* Number of position in a particular streamline/fieldline */
-   int iter=0;           /* Keep track of the number of iteration of a numerical method */
-   int idx;              /* Current stream index */
-   float u,v;            /* Decomposed vector speed of a particle (in u,v) */
-   float uk1,uk2;        /* Keep track of Runge Kutta steps (1 to 2) */
-   float vk1,vk2;        /* "" */
-   float oi=0,oj=0;          /* Previous positions */
-   float ds,di=0,dj=0;   /* Minimum delta step accepted*/
-
-   float r=1.0,mi=1.0,mj=1.0;
-
-   ds=Step*0.001;
-
-   do {
-
-      /* Did we ever cross this pixel before ? */
-      /* Stencil buffer reads are very slow so we only check after a few steps
-      if (c>MaxIter>>5) {
-         gluProject(Stream[idx][0],Stream[idx][1],Stream[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pix[0],&pix[1],&pix[2]);
-         glReadPixels(pix[0],pix[1],1,1,GL_STENCIL_INDEX,GL_UNSIGNED_INT,&s);
-         if (s>0x8) break;
-         c=0;
-      }
-      c++;
-*/
-      /* Next vector */
-      u=VertexVal(Ref,Def,0,I,J,0);
-      v=VertexVal(Ref,Def,1,I,J,0);
-      NORMALIZE(u,v);
-
-      /* Use Runge Kutta method (2nd order) to find the next particle position */
-      uk1=Step*u;
-      vk1=Step*v;
-      uk2=VertexVal(Ref,Def,0,I+uk1,J,0);
-      vk2=VertexVal(Ref,Def,1,I,J+vk1,0);
-      NORMALIZE(uk2,vk2);
-      uk2*=Step;
-      vk2*=Step;
-
-      di=0.5*(uk1+uk2);
-      dj=0.5*(vk1+vk2);
-      I+=di;
-      J+=dj;
-
-      /* Check if the particle has moved enough */
-      if (fabs(I-oi)<ds && fabs(J-oj)<ds) {
-         break;
-      }
-
-      if (Step>0) { di=-di;dj=-dj;}
-      if (mj!=0.0 && dj!=0.0) {
-         r=fabs((mi/mj)-(di/dj));
-         r=r>1.0?1.0:1.0-r;
-         if (GLRender->GLDebug)
-            fprintf(stderr,"(DEBUG) %f %f %f %f %f\n",r,(mi/mj),(di/dj),di,dj);
-      }
-      mi=di;
-      mj=dj;
-      dj*=8.0*r;
-      di*=8.0*r;
-
-      oi=I;
-      oj=J;
-
-      /* Store the parcel position itself */
-      idx=Step>0?npos:MaxIter*2-1-npos;
-      if (VertexLoc(Ref,Def,Stream[idx],I+dj,J-di,0)) {
-         npos++;
-      } else {
-         break;
-      }
-
-      idx=Step>0?npos:MaxIter*2-1-npos;
-      if (VertexLoc(Ref,Def,Stream[idx],I-dj,J+di,0)) {
-         npos++;
-      } else {
-         break;
-      }
-   } while (++iter<MaxIter-1);
-
-   return npos;
 }
 
 /*----------------------------------------------------------------------------
