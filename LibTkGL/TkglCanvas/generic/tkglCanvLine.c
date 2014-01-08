@@ -796,7 +796,7 @@ static void glDisplayLine(Tk_Canvas canvas,Tk_Item *itemPtr,Display *display,Dra
    glTranslated(-((TkCanvas *)canvas)->xOrigin,-((TkCanvas *)canvas)->yOrigin,0.0);
    glEnableClientState(GL_VERTEX_ARRAY);
 
-  if (linePtr->numPoints>1) {
+   if (linePtr->numPoints>1) {
       if (linePtr->numSmooth) {
          glVertexPointer(2,GL_DOUBLE,0,linePtr->SmoothPtr);
          glDrawArrays(GL_LINE_STRIP,0,linePtr->numSmooth);

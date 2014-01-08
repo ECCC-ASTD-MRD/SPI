@@ -457,3 +457,93 @@ float VertexVal(TGeoRef *Ref,TDataDef *Def,int Idx,double X,double Y,double Z) {
 
    return(cube[0][0]);
 }
+
+double VertexValV(TGeoRef *Ref,TDataDef *Def,double X,double Y,double Z,Vect3d V) {
+
+   double        cube[3][2][4];
+   unsigned long i,j,k,idx[4],idxk;
+
+   if (X>Def->NI-1 || Y>Def->NJ-1 || Z>Def->NK-1 || X<0 || Y<0 || Z<0) {
+      return(0);
+   }
+
+   i=X;X-=i;
+   j=Y;Y-=j;
+   k=Z;Z-=k;
+
+   // Get gridpoint indexes
+   idxk=Def->NIJ;
+
+   idx[0]=(k?idxk*k:0)+j*Def->NI+i;
+   idx[1]=idx[0]+1;
+   idx[3]=(j==Def->NJ-1)?idx[0]:idx[0]+Def->NI;
+   idx[2]=idx[3]+1;
+   
+   Def_GetQuad(Def,0,idx,cube[0][0]);
+   Def_GetQuad(Def,1,idx,cube[1][0]);
+   if (Def->Data[2]) Def_GetQuad(Def,2,idx,cube[2][0]);
+   
+   // If either value is nodata then interpolation will be nodata as well
+   if (cube[0][0][0]==Def->NoData || cube[0][0][1]==Def->NoData || cube[0][0][2]==Def->NoData || cube[0][0][3]==Def->NoData) {
+      return(Def->NoData);
+   }
+   
+   // 3D Interpolation case
+   if (Z>TINY_VALUE) {
+
+      idx[0]+=idxk;
+      idx[1]+=idxk;
+      idx[3]+=idxk;
+      idx[2]+=idxk;
+      Def_GetQuad(Def,0,idx,cube[0][1]);
+      Def_GetQuad(Def,1,idx,cube[1][1]);
+      if (Def->Data[2]) Def_GetQuad(Def,2,idx,cube[2][1]);
+      
+      // If either value is nodata then interpolation will be nodata as well
+      if (cube[0][1][0]==Def->NoData || cube[0][1][1]==Def->NoData || cube[0][1][2]==Def->NoData || cube[0][1][3]==Def->NoData) {
+         return(Def->NoData);
+      }
+
+      cube[0][0][0]=ILIN(cube[0][0][0],cube[0][1][0],Z);
+      cube[0][0][1]=ILIN(cube[0][0][1],cube[0][1][1],Z);
+      cube[0][0][2]=ILIN(cube[0][0][2],cube[0][1][2],Z);
+      cube[0][0][3]=ILIN(cube[0][0][3],cube[0][1][3],Z);
+      cube[1][0][0]=ILIN(cube[1][0][0],cube[1][1][0],Z);
+      cube[1][0][1]=ILIN(cube[1][0][1],cube[1][1][1],Z);
+      cube[1][0][2]=ILIN(cube[1][0][2],cube[1][1][2],Z);
+      cube[1][0][3]=ILIN(cube[1][0][3],cube[1][1][3],Z);
+      if (Def->Data[2]) {
+         cube[2][0][0]=ILIN(cube[2][0][0],cube[2][1][0],Z);
+         cube[2][0][1]=ILIN(cube[2][0][1],cube[2][1][1],Z);
+         cube[2][0][2]=ILIN(cube[2][0][2],cube[2][1][2],Z);
+         cube[2][0][3]=ILIN(cube[2][0][3],cube[2][1][3],Z);
+      }
+   }
+   
+   V[0]=cube[0][0][0];
+   V[1]=cube[1][0][0];
+   V[2]=Def->Data[2]?cube[2][0][0]:0.0;
+   
+   /*Interpolate over X*/
+   if (X>TINY_VALUE) {
+      V[0]=cube[0][0][0]=ILIN(cube[0][0][0],cube[0][0][1],X);
+           cube[0][0][3]=ILIN(cube[0][0][3],cube[0][0][2],X);
+      V[1]=cube[1][0][0]=ILIN(cube[1][0][0],cube[1][0][1],X);
+           cube[1][0][3]=ILIN(cube[1][0][3],cube[1][0][2],X);
+      if (Def->Data[2]) {
+         V[2]=cube[2][0][0]=ILIN(cube[2][0][0],cube[2][0][1],X);
+              cube[2][0][3]=ILIN(cube[2][0][3],cube[2][0][2],X);
+      }
+   }
+
+   /*Interpolate over Y*/
+   if (Y>TINY_VALUE) {
+      V[0]=ILIN(cube[0][0][0],cube[0][0][3],Y);
+      V[1]=ILIN(cube[1][0][0],cube[1][0][3],Y);
+      if (Def->Data[2]) {
+         V[2]=ILIN(cube[2][0][0],cube[2][0][3],Y);
+      }
+   }
+   
+   return(0);
+}

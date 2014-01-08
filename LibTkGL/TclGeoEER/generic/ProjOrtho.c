@@ -610,8 +610,10 @@ Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
    if (f) {
       LiangBarsky_PolygonClip2D(pixf,f,pixc,&c,0,0,VP->Width,VP->Height);
       for (i=0;i<c;i++){
-         Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][0]+VP->x));
-         Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][1]+VP->y));
+         if (!i || (pixc[i][0]!=pixc[i-1][0] && pixc[i][1]!=pixc[i-1][1])) {
+            Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][0]+VP->x));
+            Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][1]+VP->y));
+         }
       }
    }
 
@@ -619,8 +621,10 @@ Tcl_Obj* Ortho_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,
    if (b) {
       LiangBarsky_PolygonClip2D(pixb,b,pixc,&c,0,0,VP->Width,VP->Height);
       for (i=0;i<c;i++){
-         Tcl_ListObjAppendElement(Interp,objb,Tcl_NewDoubleObj(pixc[i][0]+VP->x));
-         Tcl_ListObjAppendElement(Interp,objb,Tcl_NewDoubleObj(pixc[i][1]+VP->y));
+         if (!i || (pixc[i][0]!=pixc[i-1][0] && pixc[i][1]!=pixc[i-1][1])) {
+            Tcl_ListObjAppendElement(Interp,objb,Tcl_NewDoubleObj(pixc[i][0]+VP->x));
+            Tcl_ListObjAppendElement(Interp,objb,Tcl_NewDoubleObj(pixc[i][1]+VP->y));
+         }
       }
    }
 
