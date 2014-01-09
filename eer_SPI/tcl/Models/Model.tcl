@@ -842,31 +842,26 @@ proc Model::ParamsMetDataDir { Model } {
    if { $Param(DBaseType)!="user" } {
 
       #----- Define meteo path
-      set dbops $env(CMCGRIDF)
-#      set dbeer $env(EERGRIDF)
-      set dbeer /cnfs/ops/production/cmoe/afseeer/dbase
-
       if { [info exists GDefs(Host_$Param(Host))] } {
          set dbops $Param(Host):[lindex $GDefs(Host_$Param(Host)) 1]
          set dbeer $Param(Host):[lindex $GDefs(Host_$Param(Host)) 2]
-      }
-
-      if { $sim(Model)=="MLDP1" || $sim(Model)=="MLDPn" } {
-         set MetData::Param(Path) $dbeer
       } else {
-         set MetData::Param(Path) $dbops
+         set dbops $env(CMCGRIDF)
+         set dbeer $env(EER_GRIDF)     
       }
 
-      #----- Set met database by default.
-      if { $sim(Model)=="MLDPn" } {
-         MetData::Path hyb $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
-      } else {
-         MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
+      switch $sim(Model) {
+         MLDPn   -
+         MLDP1   { set MetData::Param(Path) $dbeer }
+         default { set MetData::Param(Path) $dbops }
       }
-
+      
       #----- Set met database by default.
+      MetData::Path $Param(DBaseType) $sim(Meteo) Model::Param(DBaseDiag) Model::Param(DBaseProg)
+
+      #----- MLDP1 only runs on progs
       if { $sim(Model)=="MLDP1" } {
-         set Param(DBaseDiag) $Param(DBaseProg)
+         set Param(DBaseDiag) [set Param(DBaseProg) $Param(DBaseProg)_1]
       }
    }
 
