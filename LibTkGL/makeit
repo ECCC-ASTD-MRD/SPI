@@ -1,11 +1,16 @@
 #!/bin/sh
-#----- Run autocon2.50 for a change of version in the configure.in script
+#----- On version change:
+#-----    Update version in .profile_spi
+#-----    Change version in TclGeoEER/configure.in
+#-----    Change version in TclTk/lib/lib/tclConfig.sh and tkConfig.sh for all platform
+#-----    Change version in gdal.../bin/gdal-config for all platform
+#-----    Run autocon2.50 in TclSystem TkglCanvas and TclGeoEER
 
 arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.6.2"
+VERSION="7.6.3"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_multi
