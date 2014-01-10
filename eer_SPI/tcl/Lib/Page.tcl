@@ -754,8 +754,10 @@ proc Page::Create { Frame Width Height { Active True } } {
          bind $Frame <Configure> "if { \$Page::Data(Full$Frame) } { Page::ScaleSet $Frame }"
       }
    pack $Frame -side top -fill both -expand true
-   bind $Frame.page.canvas <Button> "Page::Activate $Frame"
-
+   
+   bind $Frame.page.canvas      <Button> "Page::Activate $Frame"   
+   bind [winfo toplevel $Frame] <Visibility> { if { "%s"!="VisibilityUnobscured" } { glrender -xexpose -1 } else { glrender -xexpose 1 } }
+   
    Viewport::Setup $Frame
    CVText::Init $Frame.page.canvas
 

@@ -2005,9 +2005,10 @@ proc Shape::Widget { Canvas Tag X Y Visible } {
       
       if { !$Visible && !$Page::Param(WidgetOpt) } {
          #----- Disable the options for the widget we just left
-
          set coords [$Canvas bbox $Tag]
          if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
+            glrender -xexpose -1
+            
             $Canvas itemconfigure SCPAGE$Tag -state hidden
             $Canvas itemconfigure BSPAGE$Tag -state hidden
             $Canvas itemconfigure BMPAGE$Tag -state hidden
@@ -2024,6 +2025,8 @@ proc Shape::Widget { Canvas Tag X Y Visible } {
             $Canvas itemconfigure BO$Tag -state hidden
             $Canvas itemconfigure UD$Tag -state hidden
             $Canvas itemconfigure OP$Tag -state hidden
+
+            glrender -xexpose 1
          }
       } else {
          #----- Enable options for the widget we just entered
