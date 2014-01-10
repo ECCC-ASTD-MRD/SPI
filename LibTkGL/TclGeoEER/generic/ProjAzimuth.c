@@ -375,7 +375,7 @@ Tcl_Obj* Azimuth_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *Pro
    if (n) {
       LiangBarsky_PolygonClip2D(pixs,n,pixc,&c,0,0,VP->Width,VP->Height);
       for (i=0;i<c;i++){
-         if (!i || (pixc[i][0]!=pixc[i-1][0] && pixc[i][1]!=pixc[i-1][1])) {
+         if (!i || (pixc[i][0]!=pixc[i-1][0] || pixc[i][1]!=pixc[i-1][1])) {
             Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][0]+VP->x));
             Tcl_ListObjAppendElement(Interp,objf,Tcl_NewDoubleObj(pixc[i][1]+VP->y));
          }

@@ -2715,7 +2715,7 @@ static int MagnifyCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X,
    glScaled(Scale,Scale,1.0);
    glMatrixMode(GL_MODELVIEW);
 
-   /*Force rendering ob back-buffered items*/
+   /*Force rendering of back-buffered items*/
    xp=GLRender->XExpose;
    GLRender->XExpose=2;
    GLRender->MagScale=Scale;
