@@ -804,7 +804,7 @@ proc CVScale::Create { Frame X Y Size } {
    set x1 [expr $X+$Size/2]
    set y1 [expr $Y+10]
 
-   $canvas create rectangle -999 -999 -999 -999 -outline black -fill "" -width 0 -tag "CVSCALEBBOX CVSCALE"
+   $canvas create rectangle -999 -999 -999 -999 -outline black -fill "" -width 0 -tag "CVSBBOX CVSCALE"
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVSCLOC CVSCALE"
    $canvas create text $x0 $Y -text "" -font XFont12 -anchor sw -tag "CVSCTXT CVSCALE"
    $canvas create text $x1 $Y -text "" -font XFont12 -anchor se -tag "CVSCUNI CVSCALE"
