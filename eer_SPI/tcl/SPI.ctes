@@ -29,6 +29,7 @@ namespace eval SPI {
 
    #----- Definitions des variables parametres
 
+   set Param(FullScreen)     0            ;#Fullscreen mode
    set Param(Geom)           1024x768     ;#Geometrie de l'interface
    set Param(Pages)          { "Page 1" } ;#Liste des pages
    set Param(PaneSide)       right        ;#Position des secondary pane

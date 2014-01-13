@@ -409,7 +409,38 @@ proc SPI::Window { } {
    Bubble::Create .info.altval $Bubble(Alt)
    Bubble::Create .info.fldval $Bubble(Val)
    
-   bind . <KeyRelease-Escape> "SPI::ToolMode SPI Zoom"
+   bind . <KeyRelease-Escape> { SPI::ToolMode SPI Zoom }
+   bind . <F11>               { set SPI::Param(FullScreen) [expr !$SPI::Param(FullScreen)]; SPI::FullScreen }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <SPI::FullScreen>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser le mode plein ecran
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc SPI::FullScreen { } {
+   variable Param
+   
+   wm attributes . -fullscreen $Param(FullScreen)
+   
+   if { $Param(FullScreen) } {
+      pack forget .menu .bar .info
+      bind . <Motion>  { if { %Y<45 } { pack .menu .bar -before .pan -side top -fill x } else { pack forget .menu .bar .info } }
+      
+   } else {
+      bind . <Motion>  { }
+      pack .menu .bar -before .pan -side top -fill x 
+      pack .info -after .pan -side top -fill x 
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -646,6 +677,9 @@ proc SPI::WindowMenu { } {
          -command "Miniport::Create \$Page::Data(Frame)"
       .menu.disp.menu add command -label [lindex $Lbl(Viewport) $GDefs(Lang)]  -accelerator "Ctrl-P" \
          -command "SPI::ObjectAdd Viewport; Page::ModeSelect $Page::Data(Mode) $Page::Data(Frame)"
+      .menu.disp.menu add separator
+      .menu.disp.menu add checkbutton -label [lindex $Lbl(FullScreen) $GDefs(Lang)] -variable SPI::Param(FullScreen) \
+         -command { SPI::FullScreen } -onvalue 1 -offvalue 0 -accelerator "F11"
 
    menu .menu.disp.menu.graph -tearoff 1
       foreach graph $Graph::Data(Types) {
@@ -684,9 +718,9 @@ proc SPI::WindowMenu { } {
       }
       .menu.tools.menu add separator
 
-   bind . <Alt-a> ".menu.tools.menu invoke 0"
-   bind . <Alt-c> ".menu.tools.menu invoke 1"
-   bind . <Alt-m> ".menu.tools.menu invoke 2"
+   bind . <Alt-a>     ".menu.tools.menu invoke 0"
+   bind . <Alt-c>     ".menu.tools.menu invoke 1"
+   bind . <Alt-m>     ".menu.tools.menu invoke 2"
    bind . <Control-l> ".menu.disp.menu invoke 8"
    bind . <Control-c> ".menu.disp.menu invoke 9"
    bind . <Control-m> ".menu.disp.menu invoke 16"
