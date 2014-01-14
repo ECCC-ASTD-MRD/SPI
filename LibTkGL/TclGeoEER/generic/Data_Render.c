@@ -866,7 +866,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glStencilFunc(GL_NOTEQUAL,0x20,0x20);
    glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
-   glReadBuffer(GL_STENCIL);
+   glReadBuffer(GL_BACK);
    glEnableClientState(GL_VERTEX_ARRAY);
 
    /*Do we need transparency*/

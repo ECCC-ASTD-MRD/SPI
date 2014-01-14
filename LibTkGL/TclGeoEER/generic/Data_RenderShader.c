@@ -584,7 +584,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          if (i>=Field->Def->NI) {
             if (ox) {
                // If the grid wraps around, use the first point
-               fi=0;ti=Field->Def->NI;
+               fi=0;
+               ti=Field->Def->NI;
                idx0=j*Field->Def->NI;
             } else {
                // If not, use the last point
