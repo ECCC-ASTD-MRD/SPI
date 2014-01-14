@@ -1766,7 +1766,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       } else {
          if (Proj->Perspective) {
             dl*=0.35;
-            glFrustum(-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,1.0,z);
+            glFrustum(-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,1.0,z);
          } else {
             glOrtho(-VP->Cam->Aspect*dl,VP->Cam->Aspect*dl,-VP->Cam->Aspect*as*dl,VP->Cam->Aspect*as*dl,-VP->Cam->Aspect,z);
          }

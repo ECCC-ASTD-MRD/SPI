@@ -437,7 +437,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    float   min,rng,fi,fj,ti=0.0;
    Vect3d *pos;
    float  *buf=NULL;
-   char   *ptr,out=0;
+   char   *ptr;
 
    GLuint      tx[4];
    GLhandleARB prog;
@@ -462,7 +462,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    }
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-   /*Do we need transparency*/
+   // Do we need transparency
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
@@ -486,7 +486,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
 
-   /*Setup 1D Interval Texture*/
+   // Setup 1D Interval Texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[1]);
    if (Field->Spec->InterNb) {
@@ -495,14 +495,14 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Field->Spec->Inter);
    }
 
-   /*Setup 2D Data Texture*/
+   // Setup 2D Data Texture
    glActiveTexture(GL_TEXTURE2);
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 
-   /*Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix*/
+   // Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix
    if (Field->Def->Type!=TD_Float32) {
       if ((buf=(float*)malloc(Field->Def->NI*Field->Def->NJ*sizeof(float)))) {
          for(i=0;i<Field->Def->NI*Field->Def->NJ;i++) {
@@ -519,7 +519,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GLRender->Vendor==ATI?GL_INTENSITY_FLOAT32_ATI:GL_FLOAT_R32_NV,Field->Def->NI,Field->Def->NJ,0,GL_LUMINANCE,GL_FLOAT,ptr);
       if (buf) free(buf);
    
-      /*Setup 2D Mask Texture*/
+      // Setup 2D Mask Texture
       if (Field->Def->Mask) {
          mask=1;
          glActiveTexture(GL_TEXTURE3);
@@ -555,12 +555,12 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1iARB(GLShader_UniformGet(prog,"Above"),Field->Spec->MapAbove);
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
 
-   /*Grille avec loop sur la longitude*/
+   // Grille avec loop sur la longitude
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
    }
 
-   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
+   // Resolution selon la dimension des cellules (mid-grid) et la vue
    dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
    
    if (Proj->Type->Def==PROJCYLIN) {
@@ -570,21 +570,24 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    }
    dn=dp*Field->Def->NI;
    
-   /*Process gridpoints*/
-   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+   // Process gridpoints
+   for(j=0;j<Field->Def->NJ;j+=dp) {
       idx0=j*Field->Def->NI;
+      
+      // If next iteration goes over, use the last j
+      if (j>=Field->Def->NJ-dp) dn=(Field->Def->NJ-j-1)*Field->Def->NI;
 
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<(Field->Def->NI+dp);i+=dp) {
 
-         /*If the next index is over the size*/
+         // If the next index is over the size
          if (i>=Field->Def->NI) {
             if (ox) {
-               /*If the grid wraps around, use the first point*/
+               // If the grid wraps around, use the first point
                fi=0;ti=Field->Def->NI;
                idx0=j*Field->Def->NI;
             } else {
-               /*If not, use the last point*/
+               // If not, use the last point
                fi=Field->Def->NI-1;
                idx0=(j+1)*Field->Def->NI-1;
             }
@@ -594,7 +597,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
          
          idx1=idx0+dn;
-
+         
          fi+=0.5f;
          fj=(float)j+0.5f;
             
@@ -608,15 +611,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          idx0+=dp;
       }
       glEnd();
-      
-      // If it's the last, exit loop
-      if (out) break;
-      
-      // Make sure last step goes to NJ-1
-      if (j>(Field->Def->NJ-dp-dp-1)) {
-         j=Field->Def->NJ-dp-dp-1;
-         out=1;
-      }
    }
 
    glDeleteTextures(4,tx);
