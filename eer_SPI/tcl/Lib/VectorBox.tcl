@@ -46,7 +46,7 @@ namespace eval VectorBox {
    set Lbl(GridVec)   { "Orienté grille" "Grid oriented" }
    set Lbl(Params)    { "Parametres" "Parameters" }
    set Lbl(Size)      { "Dimension" "Dimension" }
-   set Lbl(SizeRange) { "Dimension écart" "Dimension range" }
+   set Lbl(SizeRange) { "Écart" "Range" }
    set Lbl(Sample)    { "Echantillonage" "Sampling" }
    set Lbl(Step)      { "Pas" "Step" }
    set Lbl(Start)     { "Départ" "Start" }
@@ -59,8 +59,8 @@ namespace eval VectorBox {
    set Lbl(Speed)     { "Stop Lent              Rapide"
                         "Stop Slow              Fast" }
 
-   set Bubble(Size)       { "Dimension des barbules et flêches" "Wind barbs and arrow size" }
-   set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum" "Dimension range factor of wind arrows between minimum and maximum values" }
+   set Bubble(Size)       { "Dimension des barbules et flêches / Longueur des lignes de courants" "Wind barbs and arrow size / Streamline length" }
+   set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum\nÉcart entre les lignes de courants" "Dimension range factor of wind arrows between minimum and maximum values\nSpacing between streamlines" }
    set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
    set Bubble(Sample)     { "Espacement entre les flêches, barbules et lignes de courants\npixel(2D) / grille(3D)" "Wind bars, arrows and streamline sampling distance\npixel(2D) / gridpt(3D)" }
    set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les grilles géographiques" "Pixel or gridpoint spzcing unit for geographical grids" }
@@ -70,6 +70,7 @@ namespace eval VectorBox {
    set Bubble(Real)       { "Applique les paramêtres interactivement" "Apply parameters interactively" }
    set Bubble(Apply)      { "Appliquer les paramêtres" "Apply the parameters" }
    set Bubble(Close)      { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
+   set Bubble(Animate)    { "Animation des lignes de courants"  "Animate streamlines" }
 }
 
 #----------------------------------------------------------------------------
@@ -154,6 +155,7 @@ proc VectorBox::Create { Parent Apply } {
 
    Bubble::Create $fr.plane      $Bubble(Cube)
    Bubble::Create $fr.plane.mode $Bubble(Select)
+   Bubble::Create $fr.speed      $Bubble(Animate)
 
    set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
 
