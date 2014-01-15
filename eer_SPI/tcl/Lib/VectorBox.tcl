@@ -26,9 +26,9 @@
 #
 #===============================================================================
 
-package provide VectorBox 1.0
+package provide VectorBox 1.1
 
-catch { SPI::Splash "Loading Widget Package VectorBox 1.0" }
+catch { SPI::Splash "Loading Widget Package VectorBox 1.1" }
 
 namespace eval VectorBox {
    variable Lbl

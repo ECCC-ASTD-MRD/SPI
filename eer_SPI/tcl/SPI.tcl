@@ -208,11 +208,11 @@ Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 if { !$SPI::Param(Batch) } {
 
    #----- Liste des layouts
-   foreach layout [glob -nocomplain $GDefs(Dir)/tcl/Layouts/*.tcl] {
-      lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
+   foreach layout [lsort -nocase [glob -nocomplain -nocomplain -tails -directory $GDefs(Dir)/tcl/Layouts *.tcl]] {
+      lappend SPI::Param(Layouts) [file rootname $layout]
    }
-   foreach layout [glob -nocomplain $env(HOME)/.spi/Layout/*.tcl] {
-      lappend SPI::Param(Layouts) [file tail [file rootname $layout]]
+   foreach layout [lsort -nocase [glob -nocomplain -nocomplain -tails -directory $env(HOME)/.spi/Layout *.tcl]] {
+      lappend SPI::Param(Layouts) [file rootname $layout]
    }
    Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
 
@@ -247,12 +247,10 @@ proc Page::Activate { Frame { Force 0 } } {
 
    #----- Configurer le frame
    if { [winfo exists $Page::Data(Frame)] } {
-      $Page::Data(Frame) configure -background black
       catch { place forget [winfo toplevel $Page::Data(Frame)].active }
       place forget .active
       Page::Update $Page::Data(Frame)
    }
-   $Frame configure -background $GDefs(ColorHighLight)
 
    #----- Dans le cas de fenetres externes
    set top [winfo toplevel $Frame]

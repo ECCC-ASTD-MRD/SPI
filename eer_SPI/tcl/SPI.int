@@ -865,7 +865,7 @@ proc SPI::ToolBar { Frame } {
          pack $Frame.page.out $Frame.page.scale $Frame.page.in $Frame.page.full -side left -padx 2
 #      pack  $Frame.page -side left
       frame $Frame.layout -relief raised -bd 1
-         ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit sorted nodouble -1 $SPI::Param(Layouts) 15 5 \
+         ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit unsorted nodouble -1 $SPI::Param(Layouts) 15 5 \
             { SPI::LayoutLoad $Page::Data(Frame) $SPI::Param(Layout) }
          button $Frame.layout.save -image PAGESAVE -relief flat -bd 0 -overrelief raised \
             -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::Get . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }

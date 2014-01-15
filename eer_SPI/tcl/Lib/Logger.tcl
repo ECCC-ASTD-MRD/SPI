@@ -593,7 +593,7 @@ proc Log::CyclopeStart { } {
 
       #----- Setup process info
       file mkdir $path
-      set f [open $path/info.txt w 00666]
+      set f [open $path/info.txt w 00644]
       puts $f  "Class     : $Param(JobClass)\nJob       : $Param(Job) $Param(JobVersion)"
 
       if { [info exists env(SelfJobResubmit)] } {
@@ -606,7 +606,7 @@ proc Log::CyclopeStart { } {
       puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
 
       close $f
-      file attributes $path/info.txt  -permissions 00666
+      file attributes $path/info.txt  -permissions 00644
    }
 }
 

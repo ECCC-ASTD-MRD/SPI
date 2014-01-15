@@ -47,6 +47,7 @@ namespace eval Log {
 #----- Parametres de SPI
 namespace eval SPI {
    set Param(Threads)        True         ;#Use threads
+   set Param(FullScreen)     0            ;#Fullscreen mode
    set Param(Geom)           1024x768     ;#Geometrie de ;'interface
    set Param(Pages)          { "Page 1" } ;#Liste des pages
    set Param(Panes)          {}           ;#Liste des dimensions de sidepane (ex:200x200)
