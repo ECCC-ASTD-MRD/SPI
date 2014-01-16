@@ -2485,14 +2485,14 @@ CanvasWorldChanged(
  *----------------------------------------------------------------------------
 */
 int SetupglCanvas(TkCanvas *canvasPtr,int X,int Y,int Width,int Height) {
-   
+
    /* Set the viewport */
-   glViewport(0,0,Width-X,Height-Y);
+   glViewport(X,Y,Width,Height);
  
    /* Set the projection matrix */
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   gluOrtho2D(X,X+Width-1,Y+Height-1,Y);
+   gluOrtho2D(X,X+Width,Y+Height,Y);
 
    /* Set the modelview matrix */
    glMatrixMode(GL_MODELVIEW);

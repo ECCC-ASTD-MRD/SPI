@@ -384,7 +384,7 @@ void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
    CB->header.x1 = x ;
    CB->header.y1 = y ;
    CB->header.x2 = x + CB->Width;
-   CB->header.y2 = y + CB->Height+1;
+   CB->header.y2 = y + CB->Height;
 }
 
 /*----------------------------------------------------------------------------
@@ -443,11 +443,11 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    for (i=0;i<cb->NbData;i++) {
 
       if (cb->Width<cb->Height) {
-         y2=y1+inc-1;
+         y2=y1+inc;
          y2=y2>cb->header.y2?cb->header.y2:y2;
          x2=cb->header.x2;
       } else {
-         x2=x1+inc-1;
+         x2=x1+inc;
          x2=x2>cb->header.x2?cb->header.x2:x2;
          y2=cb->header.y2;
       }

@@ -1486,13 +1486,11 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glPolygonMode(GL_FRONT,GL_LINE);
       glColor3us(vp->FGColor->red,vp->FGColor->green,vp->FGColor->blue);
 
-      /*There's a 1 pixel offset on X0 when saving image in GPU mode, can't find why*/
-      n=(GLRender->TRCon && !GLRender->Soft)?1:0;
       glBegin(GL_QUADS);
-         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y1-n-((TkCanvas*)Canvas)->yOrigin);
-         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
-         glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
-         glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin+n,vp->header.y1-n-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
+         glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
       glEnd();
    }
 
