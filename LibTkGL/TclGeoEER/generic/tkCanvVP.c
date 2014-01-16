@@ -1546,9 +1546,9 @@ static void ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj
       text=Tk_ComputeTextLayout(VP->tkfont,Proj->License,Tcl_NumUtfChars(Proj->License,strlen(Proj->License)),0,TK_JUSTIFY_CENTER,0,&width,&height);
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
       if (Interp) {
-         glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,VP->header.x2/2-width/2,VP->header.y2-height-10,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,VP->header.x2/2-width/2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-height-10-((TkCanvas*)VP->canvas)->yOrigin,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
       } else {
-         glDisplayTextLayout(text,0,VP->header.x2/2-width/2,VP->header.y2-height-10,0,-1,1);
+         glDisplayTextLayout(text,0,VP->header.x2/2-width/2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-height-10-((TkCanvas*)VP->canvas)->yOrigin,0,-1,1);
       }
       Tk_FreeTextLayout(text);
    }
