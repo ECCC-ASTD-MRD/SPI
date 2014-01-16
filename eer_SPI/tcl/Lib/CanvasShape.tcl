@@ -1032,6 +1032,58 @@ proc CVScale::Update { Frame VP } {
 namespace eval CVText { }
 
 #----------------------------------------------------------------------------
+# Nom      : <CVText::Create>
+# Creation : Janvier 1014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Create a CVTEXT textbox in a canvas
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <X0>      : Coordonee X0
+#  <Y0>      : Coordonee Y0
+#  <X1>      : Coordonee X1
+#  <Y1>      : Coordonee Y1
+#  <Tags>    : Tags
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc CVText::Create { Canvas X0 Y0 X1 Y1 Tag } {
+   global GDefs
+   variable Data
+   
+   set Lbl(Update) { "Mise-à-jour automatique" "Auto update" }
+   
+   set tag CVTEXT$Tag
+   set Data(Update$tag) 1
+   
+   $Canvas create rectangle $X0 $Y0 $X1 $Y1 -width 1 -tags "$tag"
+   $Canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font XFont12 -tags "$Tag $tag CVTEXT" -text "                        "
+   
+   menubutton $Canvas.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+      -menu $Canvas.bo$tag.menu
+   menu $Canvas.bo$tag.menu -bg $GDefs(ColorFrame)
+      $Canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0 \
+         -command ""
+         
+   $Canvas create window [expr $X1] [expr $Y1] -window $Canvas.bo$tag -anchor se -tags "BO$tag $tag NOPRINT"
+   Shape::BindWidget $Canvas $tag
+}
+
+proc CVText::Update { Canvas Tag Text } {
+   variable Data
+
+   set tag CVTEXT$Tag
+
+   if { $Data(Update$tag) } {
+      $Canvas itemconfigure $Tag -text $Text
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <CVText::Init>
 # Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
 #
@@ -1957,7 +2009,7 @@ proc Shape::BindScale { Canvas Tag { Command "" } } {
 #----------------------------------------------------------------------------
 
 proc Shape::BindWidget { Canvas Tag } {
-   
+
    #----- bindings de placement des bouttons
    $Canvas bind $Tag <Leave> "+ Shape::Widget %W $Tag %x %y 0"
    $Canvas bind $Tag <Enter> "+ Shape::Widget %W $Tag %x %y 1"

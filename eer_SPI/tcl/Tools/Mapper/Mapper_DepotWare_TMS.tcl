@@ -343,8 +343,6 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
    }
 
    set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $name].xml
-
-
    set f [open $file w]
 
    #----- Insert cache path
@@ -362,4 +360,55 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
 
    #----- Decrease effective resolution (WMS-TMS)
    gdalband configure $band -texres 3
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::TMS::Load>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonction usager pour afficher des donnees TMS.
+#
+# Parametres :
+#  <Name>    : Nom de la donnes TMS
+#  <Res>     : Facteur de resolution (Default:3)
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc  Mapper::DepotWare::TMS::Load { Name { Res 3 } } {
+   variable Param
+
+   if { [set idx [lsearch -exact -index 0 $Param(Depots) $Name]]!=-1 } {
+      set xml [lindex [lindex $Param(Depots) $idx] 2]
+   } else {
+      return
+   }
+   
+   if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
+      file mkdir $Mapper::DepotWare::Data(CachePath)
+   }
+
+   set file $Mapper::DepotWare::Data(CachePath)/[string map { / "" ? "" " " "" : "" } $Name].xml
+   set f [open $file w]
+
+   #----- Insert cache path
+   set index [string first "</GDAL_WMS>" $xml]
+   puts $f [string trim [string range $xml 0 [expr $index-1]]]
+   puts $f "   <Cache>
+      <Path>[file rootname $file]</Path>
+      <Depth>2</Depth>
+   </Cache>
+</GDAL_WMS>"
+   
+   close $f
+
+   set band [Mapper::ReadBand $file "" 3]
+
+   #----- Decrease effective resolution (WMS-TMS)
+   gdalband configure $band -texres $Res
+
+   Mapper::UpdateData $Page::Data(Frame)
 }

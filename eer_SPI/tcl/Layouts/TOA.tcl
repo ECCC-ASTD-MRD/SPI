@@ -247,9 +247,8 @@ proc TOA::Process { Field } {
 
    fstdfield configure TOAFIELD -rendertexture 1 -rendercontour 0 -mapall False -value INTEGER 0 -color #000000 -dash "" \
       -desc "Time of Arrival" -unit "Hour" -interpdegree NEAREST -factor [expr 1.0/3600.0] -renderlabel 0 -font XFont12 \
-      -intervals $inter -color black -colormap TOAMAPDEFAULT
+      -intervals $inter -colormap TOAMAPDEFAULT
 
-   SPI::Progress 0 ""
    Viewport::Assign $Page::Data(Frame) $Viewport::Data(VP) TOAFIELD
 }
 

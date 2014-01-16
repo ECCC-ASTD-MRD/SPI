@@ -9,7 +9,7 @@
 # Creation : Aout 2001
 #
 # Description:
-#    Information sur l'experiences
+#    Layout pour les incidents chimiques
 #
 #===============================================================================
 
@@ -50,7 +50,6 @@ proc CHEM::Layout { Frame } {
    set Data(VP) [Viewport::Create $Frame 5 5 760 560 1 0]
 
    $Page::Data(Canvas) create rectangle 5 5 475 40 -width 1 -fill white -transparency 75
-#   $Page::Data(Canvas) create rectangle 5 520 265 565 -width 1 -fill white -transparency 75
 
    #----- Positionnement des ColorBars
    set ColorBar::Data(Active$Frame) 1
@@ -68,8 +67,8 @@ proc CHEM::Layout { Frame } {
    CVClock::Create $Frame  565  715
    set SPI::Data(ShowClock$Frame) 1
 
-   $Page::Data(Canvas) create rectangle 5 570 670 795 -width 1
-   $Page::Data(Canvas) create text 10 575 -anchor nw -font XFont12 -tags "CHEMTEXT CVTEXT" -text ""
+   #----- Affichage de la boite de texte
+   CVText::Create $Page::Data(Canvas) 5 570 670 795 CHEMTEXT
 
    Page::UpdateItems $Frame
 }
@@ -171,7 +170,7 @@ proc CHEM::LayoutUpdate { Frame } {
               }
    }
 
-   $Frame.page.canvas itemconfigure CHEMTEXT -text $text
+   CVText::Update $Frame.page.canvas CHEMTEXT $text
 
    SPI::LayoutUpdate $Frame
 }
