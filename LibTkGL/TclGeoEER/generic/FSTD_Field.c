@@ -299,7 +299,7 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force)
 int FSTD_FieldReadMesh(TData *Field) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
-   int        key,ni,nj,nk;
+   int        key,ni,nj,nk,nijk=0;
 
    if (!Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
       return(0);
@@ -312,7 +312,7 @@ int FSTD_FieldReadMesh(TData *Field) {
       switch(Field->Ref->Grid[0]) {
          case 'M':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
+            if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
 
             /* Lire le champs d'indexes*/
             if (!Field->Ref->Idx) {
@@ -334,12 +334,12 @@ int FSTD_FieldReadMesh(TData *Field) {
          case 'W':
             if (Field->Ref->Grid[1]=='X' || Field->Ref->Grid[1]=='Y' || Field->Ref->Grid[1]=='Z') {
                if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
-               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
+               if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
             }
 
             if (Field->Ref->Grid[1]=='Y') {
                if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0,0);
-               if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
+               if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
                if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0,0);
             }
             break;
@@ -347,14 +347,14 @@ int FSTD_FieldReadMesh(TData *Field) {
          case 'Y':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"LA",0,0);
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
+            if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,"LO",0,0);
+            if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
             if (!Field->Ref->Hgt) FSTD_FieldReadComp(head,&Field->Ref->Hgt,"ZH",0,0);
             break;
 
          case 'V':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
-            if (!Field->Ref->Lon) FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
+            if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
             if (Field->Ref->ZRef.Levels)
                free(Field->Ref->ZRef.Levels);
             Field->Ref->ZRef.Levels=NULL;
@@ -364,6 +364,11 @@ int FSTD_FieldReadMesh(TData *Field) {
       FSTD_FileUnset(NULL,head->FID);
    }
 
+   // Make sure longitude go from -180 - 180
+   for(ni=0;ni<nijk;ni++) {
+      if (Field->Ref->Lon[ni]>180) Field->Ref->Lon[ni]-=360.0;
+   }
+   
    return(Field->Ref->Lat && Field->Ref->Lon);
 }
 
@@ -520,7 +525,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       FSTD_FieldGetMesh(Field,Proj,Level);
       return(Field->Ref->Pos[Level]);
    }
-  
+   
    /*Allocate memory for various levels*/
    if (!Field->Ref->Pos)
       Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));

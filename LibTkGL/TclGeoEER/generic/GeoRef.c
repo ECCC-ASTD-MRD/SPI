@@ -1733,14 +1733,14 @@ int GeoRef_Limits(TGeoRef *Ref,double *Lat0,double *Lon0,double *Lat1,double *Lo
    *Lat1=*Lon1=-1e32;
 
    /*Source grid Y*/
-   if (Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y') {
+   if (Ref->Grid[0]=='Y' || Ref->Grid[1]=='Y' || Ref->Grid[0]=='X' || Ref->Grid[1]=='X') {
       for(x=0;x<((Ref->X1-Ref->X0)+1)*((Ref->Y1-Ref->Y0)+1);x++) {
          *Lat0=FMIN(*Lat0,Ref->Lat[x]); *Lon0=FMIN(*Lon0,Ref->Lon[x]);
-         *Lat1=FMAX(*Lat1,Ref->Lat[x]);  *Lon1=FMAX(*Lon1,Ref->Lon[x]);
+         *Lat1=FMAX(*Lat1,Ref->Lat[x]); *Lon1=FMAX(*Lon1,Ref->Lon[x]);
       }
       return(1);
    }
-
+   
    /*If destination is global*/
    if (Ref->Type&GRID_WRAP) {
       *Lat0=-90.0;  *Lat1=90.0;

@@ -1050,7 +1050,10 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   Projection_Clean(Interp,proj,GDB_FORCE);
                }
                if (strcmp(proj->Type->Name,"grid")==0) {
-                  Grid_Setup(Interp,proj);
+                  if (!Grid_Setup(Interp,proj)) {
+                     Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
+                     return(TCL_ERROR);                   
+                  }
                }
             }
             break;
@@ -1061,7 +1064,10 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Geographic);
                if (strcmp(proj->Type->Name,"grid")==0) {
-                  Grid_Setup(Interp,proj);
+                  if (!Grid_Setup(Interp,proj)) {
+                     Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
+                     return(TCL_ERROR);                   
+                  }
                }
                ViewportClean(proj->VP,1,1);
                Projection_Clean(Interp,proj,GDB_FORCE);
@@ -1082,7 +1088,10 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      proj->L=proj->LI=proj->LJ=1.0;
                      proj->Geographic=1;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
-                        Grid_Setup(Interp,proj);
+                        if (!Grid_Setup(Interp,proj)) {
+                           Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
+                           return(TCL_ERROR);                   
+                        }
                      }
                      ViewportClean(proj->VP,1,1);
                      Projection_Clean(Interp,proj,GDB_FORCE);

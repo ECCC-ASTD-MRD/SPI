@@ -237,6 +237,22 @@ switch(DEF->Type) {\
    }\
 }
 
+/*
+typedef union {
+   
+    uint8_t  *ubyte;
+    int8_t   *byte;
+    uint16_t *uint16;
+    int16_t  *int16;
+    uint32_t *uint32;
+    int32_t  *int32;
+    uint64_t *uint64;
+    int64_t  *int64;
+    float    *float32;
+    double   *float64;
+} TDef;
+*/
+
 typedef enum {
     TD_Unknown = 0,
     TD_Binary  = 1,

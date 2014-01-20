@@ -357,7 +357,7 @@ int GeoRef_RPNProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
    float  i,j,lat,lon,d=1e32,dx=1.0;
-   int    n,di,dj,idx;
+   int    n,di,dj,idx,ni,nj;
    Vect3d b;
 
    *X=-1.0;
@@ -378,11 +378,15 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
             }
             return(0);
          } else {
-            for(dj=0;dj<=(Ref->Y1-Ref->Y0);dj++) {
-               for(di=0;di<=(Ref->X1-Ref->X0);di++) {
+            ni=Ref->X1-Ref->X0;
+            nj=Ref->Y1-Ref->Y0;
+            idx=0;
+            
+            for(dj=0;dj<=nj;dj++) {
+               for(di=0;di<=ni;di++) {
 
-                  idx=dj*(Ref->X1-Ref->X0)+di;
-                  dx=hypot(fabs(Lon-Ref->Lon[idx]),fabs(Lat-Ref->Lat[idx]));
+                  dx=hypot(Lon-Ref->Lon[idx],Lat-Ref->Lat[idx]);
+                  idx++;
 
                   if (dx<0.1 && dx<d) {
                      *X=di;*Y=dj;d=dx;

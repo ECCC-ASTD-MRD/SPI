@@ -285,20 +285,19 @@ int GeoRef_WKTProject(TGeoRef *Ref,double X,double Y,double *Lat,double *Lon,int
 int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,int Extrap,int Transform) {
 
    double x,y,z=0.0,d=1e32,sd;
-   int    s,dx,dy,ok,idx;
+   int    s,dx,dy,ok,idx,ni,nj;
+   double lx[4],ly[4],lon;
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
+      /*Longitude from 0 to 360*/
+      Lon=Lon>180?Lon-360:Lon;
+
       x=Lon;
       y=Lat;
-
-      /*Longitude from 0 to 360*/
-      if (Ref->InvTransform && Ref->InvTransform[0]==0) {
-         x=x<0?x+360:x;
-      } else {
-         x=x>180?x-360:x;
-      }
-      
+      ni=Ref->X1-Ref->X0+1;
+      nj=Ref->Y1-Ref->Y0+1;
+            
       /* Transform from latlon */
       if (Ref->InvFunction) {
          if (!OCTTransform(Ref->InvFunction,1,&x,&y,NULL)) {
@@ -346,45 +345,116 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                *X=Ref->X0+(*X-Ref->Lon[0])/(Ref->Lon[1]-Ref->Lon[0]);
             }
 
-            s=Ref->Y0;dx=Ref->X1-Ref->X0+1;
+            s=Ref->Y0;dx=ni;
             /*Check if vector is increasing*/
-            if (Ref->Lat[s*dx]<Ref->Lat[(s+1)*dx]) {
-               while(s<=Ref->Y1 && *Y>Ref->Lat[s*dx]) s++;
+            if (Ref->Lat[s*ni]<Ref->Lat[(s+1)*ni]) {
+               while(s<=Ref->Y1 && *Y>Ref->Lat[s*ni]) s++;
             } else {
-               while(s<=Ref->Y1 && *Y<Ref->Lat[s*dx]) s++;
+               while(s<=Ref->Y1 && *Y<Ref->Lat[s*ni]) s++;
             }
             if (s>Ref->Y0) {
                /*We're in so interpolate postion*/
                if (s<=Ref->Y1) {
-                  *Y=(*Y-Ref->Lat[(s-1)*dx])/(Ref->Lat[s*dx]-Ref->Lat[(s-1)*dx])+s-1;
+                  *Y=(*Y-Ref->Lat[(s-1)*ni])/(Ref->Lat[s*ni]-Ref->Lat[(s-1)*ni])+s-1;
                } else {
-                  *Y=(*Y-Ref->Lat[Ref->Y1*dx])/(Ref->Lat[Ref->Y1*dx]-Ref->Lat[(Ref->Y1-1)*dx])+s-1;
+                  *Y=(*Y-Ref->Lat[Ref->Y1*ni])/(Ref->Lat[Ref->Y1*ni]-Ref->Lat[(Ref->Y1-1)*ni])+s-1;
                }
             } else {
                /*We're out so extrapolate position*/
-               *Y=Ref->Y0+(*Y-Ref->Lat[0])/(Ref->Lat[dx]-Ref->Lat[0]);
+               *Y=Ref->Y0+(*Y-Ref->Lat[0])/(Ref->Lat[ni]-Ref->Lat[0]);
             }
          }
       }
 
       if (Ref->Grid[1]=='X' || Ref->Grid[1]=='Y') {
          if (Ref->Lon && Ref->Lat) {
-            for(dy=0;dy<=(Ref->Y1-Ref->Y0);dy++) {
-               for(dx=0;dx<=(Ref->X1-Ref->X0);dx++) {
-
-                  idx=dy*(Ref->X1-Ref->X0+1)+dx;
-                  sd=fabs(*X-Ref->Lon[idx])+fabs(*Y-Ref->Lat[idx]);
-
+            idx=0;
+            lx[0]=DEG2RAD(*X); ly[0]=DEG2RAD(*Y);
+            for(dy=0;dy<nj;dy++) {
+               for(dx=0;dx<ni;dx++) {
+                  lx[1]=DEG2RAD(Ref->Lon[idx]); ly[1]=DEG2RAD(Ref->Lat[idx]);                 
+                  sd=DIST(0,ly[0],lx[0],ly[1],lx[1]);
+                  
                   if (sd<d) {
-                     x=dx;y=dy;d=sd;
+                     x=dx;y=dy;d=sd;ok=idx;
                   }
+                  idx++;
                }
             }
+           
+            // For X grids, figure out location within grid cell
+            if (Ref->Grid[1]=='X') {
+               lx[0]=(x==0)   ?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok-1]+Ref->Lon[ok-ni]+Ref->Lon[ok-ni-1])/4.0; 
+               ly[0]=(y==0)   ?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok-1]+Ref->Lat[ok-ni]+Ref->Lat[ok-ni-1])/4.0;
+               lx[1]=(x==ni-1)?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok+1]+Ref->Lon[ok-ni]+Ref->Lon[ok-ni+1])/4.0; 
+               ly[1]=(y==0)   ?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok+1]+Ref->Lat[ok-ni]+Ref->Lat[ok-ni+1])/4.0;
+               lx[2]=(x==ni-1)?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok+1]+Ref->Lon[ok+ni]+Ref->Lon[ok+ni+1])/4.0; 
+               ly[2]=(y==nj-1)?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok+1]+Ref->Lat[ok+ni]+Ref->Lat[ok+ni+1])/4.0;
+               lx[3]=(x==0)   ?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok-1]+Ref->Lon[ok+ni]+Ref->Lon[ok+ni-1])/4.0; 
+               ly[3]=(y==nj-1)?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok-1]+Ref->Lat[ok+ni]+Ref->Lat[ok+ni-1])/4.0;
+               Vertex_Map(lx,ly,X,Y,Lon,Lat);
+               x+=*X-0.5;
+               y+=*Y-0.5;
+            }
+            
             *X=x;
             *Y=y;
          }
       }
 
+      if (Ref->Grid[1]=='H') {
+         int x0,y0,x1,y1;
+         
+         if (Ref->Lon && Ref->Lat) {
+            x0=0;y0=0;
+            x1=ni-1;y1=nj-1;
+            dx=x1;dy=y1;
+            
+                fprintf(stderr,"\n");
+            while (dx || dy) {
+               
+               idx=y0*ni+x0;
+               lx[0]=(x0==0)   ?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx-1]+Ref->Lon[idx-ni]+Ref->Lon[idx-ni-1])/4.0;
+               ly[0]=(y0==0)   ?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx-1]+Ref->Lat[idx-ni]+Ref->Lat[idx-ni-1])/4.0;
+                            
+               idx=y0*ni+x1;
+               lx[1]=(x1==ni-1)?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx+1]+Ref->Lon[idx-ni]+Ref->Lon[idx-ni+1])/4.0;
+               ly[1]=(y0==0)   ?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx+1]+Ref->Lat[idx-ni]+Ref->Lat[idx-ni+1])/4.0;
+               
+               idx=y1*ni+x1;
+               lx[2]=(x1==ni-1)?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx+1]+Ref->Lon[idx+ni]+Ref->Lon[idx+ni+1])/4.0;
+               ly[2]=(y1==nj-1)?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx+1]+Ref->Lat[idx+ni]+Ref->Lat[idx+ni+1])/4.0;
+               
+               idx=y1*ni+x0;
+               lx[3]=(x0==0)   ?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx-1]+Ref->Lon[idx+ni]+Ref->Lon[idx+ni-1])/4.0; 
+               ly[3]=(y1==nj-1)?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx-1]+Ref->Lat[idx+ni]+Ref->Lat[idx+ni-1])/4.0;               
+
+               Vertex_Map(lx,ly,X,Y,Lon,Lat);
+               fprintf(stderr,"----- %.2f %.2f      %i %i - %i %i (%i %i)\n",*X,*Y,x0,y0,x1,y1,dx,dy);
+              
+               dx=(x1-x0)>>1;
+               dy=(y1-y0)>>1;
+               
+               if (*X<0.5) {
+                  x1-=dx;
+               } else {
+                  x0+=dx;
+               }
+               
+               if (*Y<0.5) {
+                  y1-=dy;
+               } else {
+                  y0+=dy;
+               }               
+            }
+            
+            x+=*X-0.5;
+            y+=*Y-0.5;
+            
+            *X=x;
+            *Y=y;
+         }
+      }
       /*Check the grid limits*/
       d=1.0;
       if (*X>(Ref->X1+d) || *Y>(Ref->Y1+d) || *X<(Ref->X0-d) || *Y<(Ref->Y0-d)) {

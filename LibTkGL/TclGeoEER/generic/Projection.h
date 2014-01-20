@@ -116,7 +116,6 @@ int  Projection_Transform(Tcl_Interp *Interp,char* Name,ViewportItem *VP,int arg
 int  Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List);
 Tcl_Obj* Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist);
 Tcl_Obj* Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist);
-void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 int Projection_CreateType(Tcl_Interp *Interp,
           char                        *Name

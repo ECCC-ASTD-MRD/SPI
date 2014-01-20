@@ -43,7 +43,7 @@ void Grid_DrawLast(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj);
 int  Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo);
 void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
-void Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
+int  Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode);
 
@@ -730,41 +730,49 @@ int Grid_SegLine(ViewportItem *VP,Projection *Proj,Coord Pt1,Coord Pt2,Vect3d Pi
  *
  *----------------------------------------------------------------------------
 */
-void Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
+int Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
 
    TGeoRef *ref;
    double   i,j;
+   int      valid=0;
+   
+   if ((ref=Proj->Ref)) {
 
-   if (!(ref=Proj->Ref))
-      return;
+      /* Recuperer les parametres de deformations */
+      switch(ref->Grid[0]) {
+         case 'Z':
+            GeoRef_Expand(ref);
+            Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
+            Proj->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
+            valid=1;
+            break;
 
-   /* Recuperer les parametres de deformations */
-   switch(ref->Grid[0]) {
-      case 'Z':
-         GeoRef_Expand(ref);
-         Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
-         Proj->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
-         break;
+         case 'X':
+         case 'Y':
+            valid=0;
+            break;
+            
+         case 'U':
+            ref->LLExtent.MinY=1e32;
+            Proj->Geographic=ref->NId?1:0;
 
-      case 'X':
-      case 'U':
-         ref->LLExtent.MinY=1e32;
-         Proj->Geographic=ref->NId?1:0;
+         default:
+            Proj->LI=ref->X1-ref->X0;
+            Proj->LJ=ref->Y1-ref->Y0;
+            valid=1;
+     }
 
-      default:
-         Proj->LI=ref->X1-ref->X0;
-         Proj->LJ=ref->Y1-ref->Y0;
-   }
+      if (Proj->Geographic) {
+         ref->UnProject(ref,&i,&j,Proj->Lat,Proj->Lon,1,1);
+         Proj->I=i;
+         Proj->J=j;
+      }
 
-   if (Proj->Geographic) {
-      ref->UnProject(ref,&i,&j,Proj->Lat,Proj->Lon,1,1);
-      Proj->I=i;
-      Proj->J=j;
-   }
-
-   Proj->L=Proj->LI>Proj->LJ?Proj->LI:Proj->LJ;
-   Proj->LI/=Proj->L;
-   Proj->LJ/=Proj->L;
+      Proj->L=Proj->LI>Proj->LJ?Proj->LI:Proj->LJ;
+      Proj->LI/=Proj->L;
+      Proj->LJ/=Proj->L;
+   }   
+   return(valid);
 }
 
 /*----------------------------------------------------------------------------

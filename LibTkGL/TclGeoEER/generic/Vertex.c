@@ -59,6 +59,78 @@ int Bary_Interp(Vect3d B,Vect3d P,Vect3d P0,Vect3d P1,Vect3d P2) {
    return(1);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Vertex_Map>
+ * Creation     : Janvier 2014 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Arbitrary quadrilateral location interpolation
+ *
+ * Parametres    :
+ *   <X>         : Cell longitude coordinate vector
+ *   <Y>         : Cell latitude coordinate vector
+ *   <LX>        : Output X grid coordinate 
+ *   <LY>        : Output Y grid coordinate 
+ *   <WX>        : Longitude
+ *   <WY>        : Latitude
+ *
+ * Retour       : Inside (1 si a l'interieur du domaine).
+ *
+ * Remarques   :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void Vertex_Map(double X[4] ,double Y[4],double *LX,double *LY,double WX,double WY) {
+
+   double a,b,c,d,u,v;
+   
+   // Quadratic equation coeffs
+   c = (Y[0]-WY) * (X[3]-WX) - (X[0]-WX) * (Y[3]-WY);
+   b = (Y[0]-WY) * (X[2]-X[3]) + (Y[1]-Y[0]) * (X[3]-WX) - (X[0]-WX) * (Y[2]-Y[3]) - (X[1]-X[0]) * (Y[3]-WY);
+   a = (Y[1]-Y[0]) * (X[2]-X[3]) - (X[1]-X[0]) * (Y[2]-Y[3]);
+
+   // Compute u = (-b+sqrt(b^2-4ac))/(2a)
+   d = b*b-4*a*c;
+   u = (-b-sqrt(d))/(2*a);
+
+   // Compute v
+   a = X[0]+(X[1]-X[0])*u;
+   b = X[3]+(X[2]-X[3])*u;
+   v = (WX-a)/(b-a);
+                        
+   *LX=u;
+   *LY=v;
+}
+
+void Vertex_Map2(double X[4] ,double Y[4],double *LX,double *LY,double WX,double WY) {
+
+   double M[4][4]={{1.0,-1.0,-1.0,1.0},{0.0,1.0,0.0,-1.0},{0.0,0.0,0.0,1.0},{0.0,0.0,1.0,-1.0}};
+   double aa,bb,cc,m,l,a[4],b[4];
+   
+   a[0]=M[0][0]*X[0]+M[1][0]*X[1]+M[2][0]*X[2]+M[3][0]*X[3];
+   a[1]=M[0][1]*X[0]+M[1][1]*X[1]+M[2][1]*X[2]+M[3][1]*X[3];
+   a[2]=M[0][2]*X[0]+M[1][2]*X[1]+M[2][2]*X[2]+M[3][2]*X[3];
+   a[3]=M[0][3]*X[0]+M[1][3]*X[1]+M[2][3]*X[2]+M[3][3]*X[3];
+   
+   b[0]=M[0][0]*Y[0]+M[1][0]*Y[1]+M[2][0]*Y[2]+M[3][0]*Y[3];
+   b[1]=M[0][1]*Y[0]+M[1][1]*Y[1]+M[2][1]*Y[2]+M[3][1]*Y[3];
+   b[2]=M[0][2]*Y[0]+M[1][2]*Y[1]+M[2][2]*Y[2]+M[3][2]*Y[3];
+   b[3]=M[0][3]*Y[0]+M[1][3]*Y[1]+M[2][3]*Y[2]+M[3][3]*Y[3];
+
+   //quadratic equation coeffs, aa*mm^2+bb*m+cc=0
+    aa = a[3]*b[2] - a[2]*b[3];
+    bb = a[3]*b[0] -a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + WX*b[3] - WY*a[3];
+    cc = a[1]*b[0] -a[0]*b[1] + WX*b[1] - WY*a[1];
+ 
+    //compute m = (-b+sqrt(b^2-4ac))/(2a)
+    m = (-bb+sqrt(bb*bb - 4*aa*cc))/(2*aa);
+ 
+    //compute l
+    l = (WX-a[0]-a[2]*m)/(a[1]+a[3]*m);
+
+   *LX=l;
+   *LY=m;
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <VertexGradient>
  * Creation : Septembre 2001 - J.P. Gauthier - CMC/CMOE
