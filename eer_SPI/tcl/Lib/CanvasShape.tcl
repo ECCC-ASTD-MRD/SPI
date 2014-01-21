@@ -434,7 +434,7 @@ proc CVClock::Create { Frame X Y } {
 
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKMINUTE"
    $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKHOUR"
-   eval $canvas create rectangle [$canvas bbox CVCLOCK] -tag \"CVCLOCK CVCLOCKBBOX\" -width 0
+   eval $canvas create rectangle [$canvas bbox CVCLOCK] -tag \"CVCLOCK CVCLOCKBBOX VPINTRUDE\" -width 0
 
    set Data(Sec$Frame)  0
    set Data(Zone$Frame) 0
@@ -811,7 +811,7 @@ proc CVScale::Create { Frame X Y Size } {
    set x1 [expr $X+$Size/2]
    set y1 [expr $Y+10]
 
-   $canvas create rectangle -999 -999 -999 -999 -outline black -fill "" -width 0 -tag "CVSBBOX CVSCALE"
+   $canvas create rectangle 0 0 0 0 -width 0 -tag "CVSBBOX CVSCALE VPINTRUDE"
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVSCLOC CVSCALE"
    $canvas create text $x0 $Y -text "" -font XFont12 -anchor sw -tag "CVSCTXT CVSCALE"
    $canvas create text $x1 $Y -text "" -font XFont12 -anchor se -tag "CVSCUNI CVSCALE"
@@ -1028,9 +1028,9 @@ proc CVScale::Update { Frame VP } {
    set bbox [$canvas bbox CVSCALE]
    $canvas coords CVSBBOX [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-4] [expr [lindex $bbox 2]+12] [expr [lindex $bbox 3]+2] 
    if { $Data(BG) } {
-      $canvas itemconfigure CVSBBOX -fill white -width 1
+      $canvas itemconfigure CVSBBOX -fill white -outline black -width 1
    } else {
-      $canvas itemconfigure CVSBBOX -fill "" -width 0
+      $canvas itemconfigure CVSBBOX -fill "" -outline "" -width 0
    }  
    
    $canvas raise CVSCALE
@@ -1044,6 +1044,7 @@ namespace eval CVText { } {
    set Param(Width)   500
    set Param(Height)  200
    set Param(BG)      white
+   set Param(FG)      black
    set Param(Justify) left
    
    set Data(TagNo)   0
@@ -1052,6 +1053,8 @@ namespace eval CVText { } {
    set Lbl(JustifyLeft)   { "Justification à gauche" "Justify left" }
    set Lbl(JustifyCenter) { "Justification au centre" "Justify center" }
    set Lbl(JustifyRight)  { "Justification à droitre" "Justify right" }
+   set Lbl(BG)            { "Couleur de fond ..." "Background color ..." }
+   set Lbl(FG)            { "Couleur de la police ..." "Font color ..." }
 }
 
 #----------------------------------------------------------------------------
@@ -1103,10 +1106,12 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
   
    set Data(Update$tag)  1
    set Data(Justify$tag) $Param(Justify)
+   set Data(BG$tag)      $Param(BG)
+   set Data(FG$tag)      $Param(FG)
    
-   $canvas create rectangle $X0 $Y0 $x1 $y1 -width 1 -tags "$tag CVTEXTBOX$tag CVTEXTBOX" -fill $Param(BG)
+   $canvas create rectangle $X0 $Y0 $x1 $y1 -width 1 -tags "$tag CVTEXTBOX$tag CVTEXTBOX VPINTRUDE" -fill $Param(BG)
    $canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font XFont12 -tags "$tag CVTEXTEDIT$tag CVTEXT" \
-      -text $Text -width [expr $x1-$X0-10] -justify $Data(Justify$tag)
+      -text $Text -width [expr $x1-$X0-10] -justify $Data(Justify$tag) -fill $Param(FG)
    $canvas icursor CVTEXTEDIT$tag 0
    
    $canvas bind CVTEXTBOX$tag <Enter> "%W configure -cursor xterm ; focus $canvas; $canvas focus CVTEXTEDIT$tag"
@@ -1127,6 +1132,9 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
             -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
          $canvas.bo$tag.menu add radiobutton -label [lindex $Lbl(JustifyRight) $GDefs(Lang)] -variable CVText::Data(Justify$tag) -value right \
             -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
+         $canvas.bo$tag.menu add separator
+         $canvas.bo$tag.menu add command -label [lindex $Lbl(BG) $GDefs(Lang)] -command "ColorBox::Create . CVText::Data(BG$tag); $canvas itemconfigure CVTEXTBOX$tag -fill \$CVText::Data(BG$tag)"
+         $canvas.bo$tag.menu add command -label [lindex $Lbl(FG) $GDefs(Lang)] -command "ColorBox::Create . CVText::Data(FG$tag); $canvas itemconfigure CVTEXTEDIT$tag -fill \$CVText::Data(FG$tag)"
          $canvas.bo$tag.menu add separator
          $canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0
    }      
@@ -1197,6 +1205,8 @@ proc CVText::Write { Frame File } {
          set t [$Frame.page.canvas itemcget CVTEXTEDIT$tag -text]
          
          puts $File "   set CVText::Param(Justify) $Data(Justify$tag)"
+         puts $File "   set CVText::Param(BG)      $Data(BG$tag)"
+         puts $File "   set CVText::Param(FG)      $Data(FG$tag)"
          puts $File "   CVText::Create $Frame [lindex $c 0] [lindex $c 1] [expr [lindex $c 2]-[lindex $c 0]] [expr [lindex $c 3]-[lindex $c 1]] \"$t\""
       }
    }
