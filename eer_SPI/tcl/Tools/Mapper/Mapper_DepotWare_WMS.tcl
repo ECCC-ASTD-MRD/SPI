@@ -580,7 +580,7 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
       } else {
          $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
          Shape::BindDestroy $Page::Data(Canvas) $tag
-         Shape::BindMove $Page::Data(Canvas) $tag
+         Shape::BindAllMove $Page::Data(Canvas) $tag
       }
    }
 }

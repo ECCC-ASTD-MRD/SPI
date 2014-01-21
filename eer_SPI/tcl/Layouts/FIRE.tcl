@@ -23,20 +23,18 @@ namespace eval FIRE {
    }
    
    set Data(Field)      ""
-   set Data(Fields)     { ZH CV FM MF DD DI WD WI IT }
-   set Data(Units)      { "" "/m³" "/m³" "*s/m³" "/m²" "/m²" "/m²" "/m²" "/m²" }
-   set Data(Desc)       { { "Position des particules" "Concentrations par couches" "Concentration moyenne de la surface à 500 m" "Concentration intégrée temporellement de la surfame à 500" \
-                          "Déposition sèche sur 6 heures" "Déposition sèche totale" "Déposition humide sur 6 heures" "Déposition humide totale" "Déposition totale" }
-                          { "Particle positions" "Layer concentrations" "Surface to 500 m mean concentration" "Time integrated surface to 500 m layer concentrations" \
-                          "6 hours dry deposition" "Total dry deposition" "6 hours wet deposition" "Total wet deposition" "Total deposition" } }
         
    set Data(Locales) { fr_ca en_us }
-   set Data(Labels)  [list [list "Très bas" "Bas" "Moyen" "Élevé" "Très élevé"] [list "Very low" "Low" "Medium" "High" "Very High"]]
    
-   set Lbl(Unit)     { "Unité" "Unit" }
+   set Lbl(BlaBla) { "NOTE AUX USAGERS:\n\nLes teintes plus foncées indiquent une densité relative importante de fumée modélisée à partir d'un scénario d'émission hypothétique basé sur des informations disponibles pour cet événement. Aucunes unités de concentration ne sont assignées à ces intervalles de teinte. Les utilisateurs autorisés peuvent demander de l'aide dans l'interprétation en communiquant avec la section de la réponse aux urgences environnementales (SRUE) du Centre météorologique canadien (CMC)."
+                     "NOTICE TO USERS:\n\nDarker shades indicate higher relative density of modelled smoke from a hypothetical emission scenario based on available information for this event. No concentration units are assigned to these shading intervals. Authorized users may request assistance in interpretation by contacting the environmental emergency response section (EERS) at the Canadian Meteorological Centre (CMC)." }
+
+   set Lbl(Less)     { "Moins" "Less" }
+   set Lbl(More)     { "Plus"  "More" }
+   set Lbl(Unit)     { "unité" "unit" }
    set Lbl(Unknown)  { "Inconnu" "Unknown" }
    set Lbl(Model)    { "Modèle de dispersion         :" "Dispersion Model             :" }
-   set Lbl(Meteo)    { "Modèle PNT météorologique    :" "NWP Meteorological Model     :" }
+   set Lbl(Meteo)    { "Modèle météorologique PNT    :" "NWP Meteorological Model     :" }
    set Lbl(Name)     { "Nom de la source             :" "Source Name                  :" }
    set Lbl(Location) { "Localisation de la source    :" "Source location              :" }
    set Lbl(Start)    { "Date du début du relâchement :" "Release Starting Date-Time   :" }
@@ -48,9 +46,11 @@ namespace eval FIRE {
 }
 
 proc FIRE::Layout { Frame } {
+   global GDefs
    variable Data
+   variable Lbl
 
-   Page::Size $Frame 970 825
+   Page::Size $Frame 970 830
 
    set Viewport::Map(Draw) 0 ;#Do not draw built-in geo
    
@@ -73,11 +73,12 @@ proc FIRE::Layout { Frame } {
    set SPI::Data(ShowScale$Frame) 1
 
    #----- Affichage de l'horloge
-   CVClock::Create $Frame  860  740
+   CVClock::Create $Frame  860 485
    set SPI::Data(ShowClock$Frame) 1
 
    #----- Affichage de la boite de texte
-   CVText::Create $Page::Data(Canvas) 5 650 965 820 FIRETEXT
+   set Data(TextSim)  [CVText::Create $Frame 5   650 475 175]
+   set Data(TextWarn) [CVText::Create $Frame 485 650 480 175 [lindex $Lbl(BlaBla) $GDefs(Lang)]]
    
    Mapper::DepotWare::TMS::Load OpenStreetMap 2
 
@@ -119,16 +120,9 @@ proc FIRE::LayoutUpdate { Frame } {
          lappend inters 1e$log
          incr log -1
       }
-   
-      #----- Define description
-      if { [set idx [lsearch -exact $Data(Fields) $nv]]!=-1 } {
-         set desc [lindex [lindex $Data(Desc) $GDefs(Lang)] $idx]
-      } else {
-         set desc [lindex $Lbl(Unknown) $GDefs(Lang)]
-      }
-      
-      fstdfield configure $field -rendertexture 1 -rendercontour 1 -mapall False -color #000000 -dash "" -desc $desc \
-         -font XFont12 -min [lindex $mm 0] -max [lindex $mm 1] -intervals [lreverse $inters] -interlabels [lindex $Data(Labels) $GDefs(Lang)] -colormap FIREMAPDEFAULT    
+         
+      fstdfield configure $field -rendertexture 1 -rendercontour 1 -mapall False -color #000000 -dash "" -desc " " \
+         -font XFont12 -min [lindex $mm 0] -max [lindex $mm 1] -intervals [lreverse $inters] -colormap FIREMAPDEFAULT    
    
       #----- Get the simulation info
       if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
@@ -160,7 +154,7 @@ proc FIRE::LayoutUpdate { Frame } {
          } else {
                set q $Sim(EmIsoQuantity)
          }
-         append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
+         append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmTotalDuration) s
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmHeight) m
@@ -173,23 +167,30 @@ proc FIRE::LayoutUpdate { Frame } {
          } else {
             set q NIL
          }
-         append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
+         append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] $MLDPn::Sim(EmTotalDuration) s
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $MLDPn::Sim(EmHeight.0) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $MLDPn::Sim(EmRadius.0) m"
                }
-         MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min(s)
+         MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min
 [lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmDurationMin) min(s)
 [lindex $Lbl(Total) $GDefs(Lang)] [format "%.3e" $Sim(EmMass)] unit
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmTop) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $Sim(EmRadius) m"
                }
-         TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)"
+         TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h"
                }
       }
-      CVText::Update $Frame.page.canvas FIRETEXT $text
+      CVText::Update $Frame $Data(TextSim) $text
    }
 
+   #----- Define labels
+   set lbls [lrepeat [llength [fstdfield configure $field -intervals]] ""]
+   lset lbls 0   [lindex $Lbl(Less) $GDefs(Lang)]
+   lset lbls end [lindex $Lbl(More) $GDefs(Lang)]
+   
+   fstdfield configure $field -interlabels $lbls
+         
    SPI::LayoutUpdate $Frame
 }

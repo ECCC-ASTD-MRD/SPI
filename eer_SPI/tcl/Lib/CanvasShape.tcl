@@ -36,6 +36,12 @@
 #    CVGeoLegend::Update   { Frame List }
 #    CVGeoLegend::Write    { Frame File }
 #
+#    CVText::Create        { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text "" } }
+#    CVText::Update        { Frame Tag Text }
+#    CVText::Destroy       { Frame Tag }
+#    CVText::Write         { Frame File }
+#    CVText::Move          { Canvas Tag }
+#    CVText::Scale         { Canvas Tag X Y }
 #    CVText::Init          { Canvas }
 #    CVText::Focus         { Canvas X Y }
 #    CVText::Copy          { Canvas }
@@ -45,8 +51,8 @@
 #    CVText::Erase         { Canvas }
 #    CVText::Hit           { Canvas X Y { select 1 } }
 #    CVText::Insert        { Canvas Char }
-#    CVText::Move          { Canvas Incr }
-#    CVText::MoveEnd       { Canvas Pos }
+#    CVText::Go            { Canvas Incr }
+#    CVText::GoEnd         { Canvas Pos }
 #    CVText::Paste         { Canvas { X {} } { Y {} } }
 #    CVText::Select        { Canvas }
 #
@@ -63,8 +69,9 @@
 #    CVTree::Select        { Canvas Tree Branch { Open False } }
 #    CVTree::SelectClear   { Canvas Tree }
 #
-#    Shape::BindDestroy    { Canvas Tag { Command "" } } {
+#    Shape::BindDestroy    { Canvas Tag { Command "" } }
 #    Shape::BindFull       { Canvas Tag Var { Command "" } }
+#    Shape::BindAllMove    { Canvas Tags { Command "" } }
 #    Shape::BindMove       { Canvas Tags { Command "" } }
 #    Shape::BindScale      { Canvas Tag { Command "" } }
 #    Shape::BindWidget     { Canvas Tag }
@@ -98,9 +105,9 @@
 #
 #===============================================================================
 
-package provide CanvasShape 1.4
+package provide CanvasShape 1.5
 
-catch { SPI::Splash "Loading Canvas Package CanvasShape 1.4" }
+catch { SPI::Splash "Loading Canvas Package CanvasShape 1.5" }
 
 image create photo COMPASSFRAME   -file $GDefs(Dir)/share/image/System/CompassFrame.gif
 image create photo COMPASSDIR     -file $GDefs(Dir)/share/image/System/CompassDir.gif
@@ -161,7 +168,7 @@ proc CVCompass::Create { Frame X Y } {
    $canvas create text [expr $X-25] $Y -text [lindex { O W } $GDefs(Lang)] -tags "CVCOMPWT" -font XFont12
    $canvas create text [expr $X+25] $Y -text E -tags "CVCOMPET" -font XFont12
 
-   Shape::BindMove $canvas { CVCOMP CVCOMPHT CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET }
+   Shape::BindAllMove $canvas { CVCOMP CVCOMPHT CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET }
 
    #----- Binding de rotation
 
@@ -453,8 +460,8 @@ proc CVClock::Create { Frame X Y } {
 
    $canvas create window [expr $X-43] [expr $Y+50] -window $canvas.cvclock -anchor se -tags "CVCLOCK OPCVCLOCK NOPRINT"
 
-   Shape::BindMove $canvas CVCLOCK
-   Shape::BindWidget $canvas CVCLOCK
+   Shape::BindAllMove $canvas CVCLOCK
+   Shape::BindWidget  $canvas CVCLOCK
 }
 
 #----------------------------------------------------------------------------
@@ -690,7 +697,7 @@ proc CVGeoLegend::Create { Frame X Y List } {
       -outline black -fill white -width 1 -tag "CVLEGEND CVLEGENDFRAME"
    $canvas lower CVLEGENDFRAME CVLEGENDDESC
 
-   Shape::BindMove $canvas CVLEGEND
+   Shape::BindAllMove $canvas CVLEGEND
 }
 
 #----------------------------------------------------------------------------
@@ -838,8 +845,8 @@ proc CVScale::Create { Frame X Y Size } {
 
    $canvas create window [expr $x0+10] [expr $y0-1] -window $canvas.cvscale -anchor ne -tags "CVSCALE OPCVSCALE NOPRINT"
 
-   Shape::BindMove $canvas CVSCALE
-   Shape::BindWidget $canvas CVSCALE
+   Shape::BindAllMove $canvas CVSCALE
+   Shape::BindWidget  $canvas CVSCALE
 
    CVScale::Update $Frame $Page::Data(VP)
 }
@@ -1029,7 +1036,23 @@ proc CVScale::Update { Frame VP } {
    $canvas raise CVSCALE
 }
 
-namespace eval CVText { }
+namespace eval CVText { } {
+   variable Lbl
+   variable Param
+   variable Data
+
+   set Param(Width)   500
+   set Param(Height)  200
+   set Param(BG)      white
+   set Param(Justify) left
+   
+   set Data(TagNo)   0
+   
+   set Lbl(Update)        { "Mise-à-jour automatique" "Auto update" }
+   set Lbl(JustifyLeft)   { "Justification à gauche" "Justify left" }
+   set Lbl(JustifyCenter) { "Justification au centre" "Justify center" }
+   set Lbl(JustifyRight)  { "Justification à droitre" "Justify right" }
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <CVText::Create>
@@ -1038,12 +1061,12 @@ namespace eval CVText { }
 # But      : Create a CVTEXT textbox in a canvas
 #
 # Parametres :
-#  <Canvas>  : Identificateur du canvas
+#  <Frame>   : Identificateur de page
 #  <X0>      : Coordonee X0
 #  <Y0>      : Coordonee Y0
 #  <X1>      : Coordonee X1
 #  <Y1>      : Coordonee Y1
-#  <Tags>    : Tags
+#  <Text>    : Initial text
 #
 # Retour:
 #
@@ -1051,35 +1074,190 @@ namespace eval CVText { }
 #
 #----------------------------------------------------------------------------
 
-proc CVText::Create { Canvas X0 Y0 X1 Y1 Tag } {
+proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text "" } } {
    global GDefs
+   variable Param
    variable Data
+   variable Lbl   
    
-   set Lbl(Update) { "Mise-à-jour automatique" "Auto update" }
+   set canvas $Frame.page.canvas
+   set tag    CVTEXT$Data(TagNo)
+   set x1     [expr $X0+$Width]
+   set y1     [expr $Y0+$Height]
+    
+   #----- Set default parameters based on last CVTEXTBOX
+   if { $Width==0 } {
+      set cvt [$canvas coords [lindex [$canvas find withtag CVTEXTBOX] end]]
+      if { [llength $cvt] } {
+         set X0 [expr [lindex $cvt 0]+10]
+         set Y0 [expr [lindex $cvt 1]+10]
+         set x1 [expr [lindex $cvt 2]+10]
+         set y1 [expr [lindex $cvt 3]+10]
+      } else {
+         set X0 0
+         set Y0 0
+         set x1 [expr 0+$Param(Width)]
+         set y1 [expr 0+$Param(Height)]
+      }
+   }
+  
+   set Data(Update$tag)  1
+   set Data(Justify$tag) $Param(Justify)
    
-   set tag CVTEXT$Tag
-   set Data(Update$tag) 1
+   $canvas create rectangle $X0 $Y0 $x1 $y1 -width 1 -tags "$tag CVTEXTBOX$tag CVTEXTBOX" -fill $Param(BG)
+   $canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font XFont12 -tags "$tag CVTEXTEDIT$tag CVTEXT" \
+      -text $Text -width [expr $x1-$X0-10] -justify $Data(Justify$tag)
+   $canvas icursor CVTEXTEDIT$tag 0
    
-   $Canvas create rectangle $X0 $Y0 $X1 $Y1 -width 1 -tags "$tag"
-   $Canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font XFont12 -tags "$Tag $tag CVTEXT" -text "                        "
+   $canvas bind CVTEXTBOX$tag <Enter> "%W configure -cursor xterm ; focus $canvas; $canvas focus CVTEXTEDIT$tag"
+   $canvas bind CVTEXTBOX$tag <Leave> "%W configure -cursor left_ptr"
+  
+   Shape::BindScale   $canvas $tag "CVText::Scale $canvas $tag"
+   Shape::BindMove    $canvas $tag "CVText::Move $canvas $tag"
+   Shape::BindDestroy $canvas $tag "CVText::Destroy $Frame"
+   Shape::BindWidget  $canvas $tag
+
+   catch {
+      menubutton $canvas.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+         -menu $canvas.bo$tag.menu
+      menu $canvas.bo$tag.menu -bg $GDefs(ColorFrame)
+         $canvas.bo$tag.menu add radiobutton -label [lindex $Lbl(JustifyLeft) $GDefs(Lang)] -variable CVText::Data(Justify$tag) -value left \
+            -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
+         $canvas.bo$tag.menu add radiobutton -label [lindex $Lbl(JustifyCenter) $GDefs(Lang)] -variable CVText::Data(Justify$tag) -value center \
+            -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
+         $canvas.bo$tag.menu add radiobutton -label [lindex $Lbl(JustifyRight) $GDefs(Lang)] -variable CVText::Data(Justify$tag) -value right \
+            -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
+         $canvas.bo$tag.menu add separator
+         $canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0
+   }      
+   $canvas create window [expr $x1-22] $y1 -window $canvas.bo$tag -anchor se -tags "BO$tag NOPRINT"
+  
+   incr Data(TagNo)
    
-   menubutton $Canvas.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
-      -menu $Canvas.bo$tag.menu
-   menu $Canvas.bo$tag.menu -bg $GDefs(ColorFrame)
-      $Canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0 \
-         -command ""
-         
-   $Canvas create window [expr $X1] [expr $Y1] -window $Canvas.bo$tag -anchor se -tags "BO$tag $tag NOPRINT"
-   Shape::BindWidget $Canvas $tag
+   return $tag
 }
 
-proc CVText::Update { Canvas Tag Text } {
+proc CVText::Update { Frame Tag Text } {
    variable Data
 
-   set tag CVTEXT$Tag
+   set tag CVTEXTEDIT$Tag
 
-   if { $Data(Update$tag) } {
-      $Canvas itemconfigure $Tag -text $Text
+   if { $Data(Update$Tag) } {
+       $Frame.page.canvas itemconfigure $tag -text $Text
+   }
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <CVText::Destroy>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Supprimer un Colorbar
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#   <No>     : Numero de champs
+#
+# Retour     :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CVText::Destroy { Frame Tag } {
+   variable Data
+
+   Shape::UnBind $Frame.page.canvas $Tag
+   $Frame.page.canvas delete $Tag
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <CVText::Write>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Engeristrer les parametres des CVText dans un fichier Layout
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <File>   : Identificateur de Fichier
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CVText::Write { Frame File } {
+   variable Data
+
+   for { set n 0 } { $n < $Data(TagNo) } { incr n } {
+      set tag CVTEXT$n
+      set cvt [$Frame.page.canvas find withtag CVTEXTBOX$tag]
+      
+      if { $cvt!="" } {
+         set c [$Frame.page.canvas coords CVTEXTBOX$tag]
+         set t [$Frame.page.canvas itemcget CVTEXTEDIT$tag -text]
+         
+         puts $File "   set CVText::Param(Justify) $Data(Justify$tag)"
+         puts $File "   CVText::Create $Frame [lindex $c 0] [lindex $c 1] [expr [lindex $c 2]-[lindex $c 0]] [expr [lindex $c 3]-[lindex $c 1]] \"$t\""
+      }
+   }
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <CVText::Move>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Enregistrer le changement de position de la colorbar
+#
+# Parametres :
+#   <Canvas> : Path du canvas
+#   <Tag>    : Identificateur de la colorbar
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CVText::Move { Canvas Tag } {
+   variable Data
+
+   set Data(Full$Tag) False
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <CVText::Scale>
+# Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Changement de dimension de la colorbar
+#
+# Parametres :
+#   <Canvas> : Path du canvas
+#   <Tag>    : Identificateur de la colorbar
+#   <X>      : Dimension en X
+#   <Y>      : Dimension en Y
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc CVText::Scale { Canvas Tag X Y } {
+   variable Data
+
+   set c [$Canvas coords CVTEXTBOX$Tag]
+   set x [lindex $c 0]
+   set y [lindex $c 1]
+   set w [expr $X-$x]
+   set h [expr $Y-$y]
+
+   if { $w>25 && $h>25 } {
+      $Canvas coords CVTEXTBOX$Tag $x $y $X $Y
+      $Canvas itemconfigure CVTEXTEDIT$Tag -width [expr $X-$x-10]
+      set Data(Full$Tag) False
+      return True
+   } else {
+      return False
    }
 }
 
@@ -1115,13 +1293,13 @@ proc CVText::Init { Canvas } {
    $Canvas bind CVTEXT <Control-h>        { CVText::BackSpace %W }
    $Canvas bind CVTEXT <BackSpace>        { CVText::BackSpace %W }
    $Canvas bind CVTEXT <Control-Delete>   { CVText::Erase     %W }
-   $Canvas bind CVTEXT <Key-Right>        { CVText::Move      %W 1 }
-   $Canvas bind CVTEXT <Control-f>        { CVText::Move      %W 1 }
-   $Canvas bind CVTEXT <Key-Left>         { CVText::Move      %W -1 }
-   $Canvas bind CVTEXT <Control-b>        { CVText::Move      %W -1 }
-   $Canvas bind CVTEXT <Key-Home>         { CVText::MoveEnd   %W 0 }
-   $Canvas bind CVTEXT <Key-End>          { CVText::MoveEnd   %W end }
-   $Canvas bind CVTEXT <Any-Key>          { CVText::Insert    %W %A ;}
+   $Canvas bind CVTEXT <Key-Right>        { CVText::Go        %W 1 }
+   $Canvas bind CVTEXT <Control-f>        { CVText::Go        %W 1 }
+   $Canvas bind CVTEXT <Key-Left>         { CVText::Go        %W -1 }
+   $Canvas bind CVTEXT <Control-b>        { CVText::Go        %W -1 }
+   $Canvas bind CVTEXT <Key-Home>         { CVText::GoEnd     %W 0 }
+   $Canvas bind CVTEXT <Key-End>          { CVText::GoEnd     %W end }
+   $Canvas bind CVTEXT <Any-Key>          { CVText::Insert    %W %A %K }
 }
 
 #----------------------------------------------------------------------------
@@ -1323,12 +1501,17 @@ proc CVText::Hit { Canvas X Y { select 1 } } {
 #
 #----------------------------------------------------------------------------
 
-proc CVText::Insert { Canvas Char } {
-   $Canvas insert [$Canvas focus] insert $Char
+proc CVText::Insert { Canvas Char KeySim } {
+
+   switch $KeySim {
+      "Return" { set Char \n }
+      "Tab"    { set Char \t }
+   }
+   $Canvas insert [$Canvas focus] insert "$Char"
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <CVText::Move>
+# Nom      : <CVText::Go>
 # Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Deplacement dans le texte
@@ -1343,14 +1526,14 @@ proc CVText::Insert { Canvas Char } {
 #
 #----------------------------------------------------------------------------
 
-proc CVText::Move { Canvas Incr } {
+proc CVText::Go { Canvas Incr } {
 
    set focus [$Canvas focus]
    $Canvas icursor $focus [expr [$Canvas index $focus insert]+$Incr]
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <CVText::MoveEnd>
+# Nom      : <CVText::GoEnd>
 # Creation : Novembre 2002 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Deplacement aux extremite du texte
@@ -1365,7 +1548,7 @@ proc CVText::Move { Canvas Incr } {
 #
 #----------------------------------------------------------------------------
 
-proc CVText::MoveEnd { Canvas Pos } {
+proc CVText::GoEnd { Canvas Pos } {
 
    set focus [$Canvas focus]
    $Canvas icursor $focus $Pos
@@ -1919,10 +2102,43 @@ proc Shape::BindDestroy { Canvas Tag { Command "" } } {
      button $Canvas.bd$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvdel.xbm -cursor pirate -bd 1 -relief raised -command "$Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
 
      if { $Command!="" } {
-        $Canvas.bd$Tag configure -command "$args $Frame $Tag; $Canvas delete $Tag BD$Tag; destroy $Canvas.bd$Tag"
+        eval $Canvas.bd$Tag configure -command \"$Command $Tag\; $Canvas delete $Tag BD$Tag\; destroy $Canvas.bd$Tag\"
      }
 
      $Canvas create window [lindex $box 2] [lindex $box 1] -window $Canvas.bd$Tag -anchor ne -tags "BD$Tag NOPRINT"
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Shape::BindAllMove>
+# Creation : Decembre 2000 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les "bindings" de deplacement d'items
+#
+# Parametres :
+#  <Canvas>  : Identificateur du canvas
+#  <Tags>    : Tag des objets
+#  <Command> : Commande a executer
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Shape::BindAllMove { Canvas Tags { Command "" } } {
+
+   set tag [lindex $Tags 0]
+
+   $Canvas bind $tag <Enter>           "$Canvas configure -cursor fleur"
+   $Canvas bind $tag <Leave>           "$Canvas configure -cursor left_ptr"
+   $Canvas bind $tag <ButtonPress-1>   "Shape::Set $Canvas $tag %X %Y"
+   $Canvas bind $tag <ButtonRelease-1> "Shape::UnSet $Canvas $tag"
+
+   if { $Command!="" } {
+      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y ; $Command"
+   } else {
+      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y"
    }
 }
 
@@ -1943,19 +2159,23 @@ proc Shape::BindDestroy { Canvas Tag { Command "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Shape::BindMove { Canvas Tags { Command "" } } {
+proc Shape::BindMove { Canvas Tag { Command "" } } {
+   global GDefs
 
-   set tag [lindex $Tags 0]
+   if { ![winfo exists $Canvas.bm$Tag] } {
+      set box [$Canvas bbox $Tag]
+      label $Canvas.bm$Tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmove.xbm -cursor fleur -bd 1 -relief raised
 
-   $Canvas bind $tag <Enter>           "$Canvas configure -cursor fleur"
-   $Canvas bind $tag <Leave>           "$Canvas configure -cursor left_ptr"
-   $Canvas bind $tag <ButtonPress-1>   "Shape::Set $Canvas $tag %X %Y"
-   $Canvas bind $tag <ButtonRelease-1> "Shape::UnSet $Canvas $tag"
+      $Canvas create window [expr [lindex $box 2]-11] [lindex $box 3] -window $Canvas.bm$Tag -anchor se -tags "BM$Tag NOPRINT"
+   }
+
+   bind $Canvas.bm$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
+   bind $Canvas.bm$Tag <ButtonRelease-1> "Shape::UnSet $Canvas $Tag"
 
    if { $Command!="" } {
-      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y ; $Command"
+      bind $Canvas.bm$Tag <B1-Motion>    "Shape::Move $Canvas $Tag %X %Y; $Command"
    } else {
-      $Canvas bind $tag <B1-Motion>    "Shape::Move $Canvas \"$Tags\" %X %Y"
+      bind $Canvas.bm$Tag <B1-Motion>    "Shape::Move $Canvas $Tag %X %Y"
    }
 }
 
@@ -2128,6 +2348,7 @@ proc Shape::Full { Canvas Tag args } {
       $Canvas coords BS$Tag $X $Y
       $Canvas coords BF$Tag [expr $X-11] $Y
       $Canvas coords BO$Tag [expr $X-22] $Y
+      $Canvas coords BD$Tag $X [lindex [$Canvas coords $Tag] 1]
    }
 }
 
@@ -2173,6 +2394,7 @@ proc Shape::Move { Canvas Tags X Y { Direct False } } {
       $Canvas move BF$tag $dx $dy
       $Canvas move BO$tag $dx $dy
       $Canvas move BD$tag $dx $dy
+      $Canvas move BM$tag $dx $dy
    }
 
 }
@@ -2212,7 +2434,9 @@ proc Shape::Scale { Canvas Tag X Y args } {
    if { [eval $args $X $Y] } {
       $Canvas coords BS$Tag $X $Y
       $Canvas coords BF$Tag [expr $X-11] $Y
+      $Canvas coords BM$Tag [expr $X-11] $Y
       $Canvas coords BO$Tag [expr $X-22] $Y
+      $Canvas coords BD$Tag $X [lindex [$Canvas coords $Tag] 1]
    }
 }
 
@@ -2298,10 +2522,11 @@ proc Shape::UnSet { Canvas Tag } {
 
 proc Shape::UnBind { Canvas Tag } {
 
-   $Canvas delete BS$Tag BF$Tag BD$Tag
+   $Canvas delete BS$Tag BF$Tag BD$Tag BO$Tag
    catch { destroy $Canvas.bs$Tag }
    catch { destroy $Canvas.bf$Tag }
    catch { destroy $Canvas.bd$Tag }
+   catch { destroy $Canvas.bo$Tag $Canvas.bo$Tag.menu }
 }
 
 #----------------------------------------------------------------------------

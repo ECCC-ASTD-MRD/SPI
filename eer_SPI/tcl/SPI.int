@@ -673,10 +673,12 @@ proc SPI::WindowMenu { } {
       .menu.disp.menu add cascade -label [lindex $Lbl(Areas) $GDefs(Lang)] -menu .menu.disp.menu.areas
       .menu.disp.menu add cascade -label [lindex $Lbl(Icons) $GDefs(Lang)] -menu .menu.disp.menu.icons
       .menu.disp.menu add separator
-      .menu.disp.menu add command -label [lindex $Lbl(Miniport) $GDefs(Lang)] -accelerator "Ctrl-M" \
-         -command "Miniport::Create \$Page::Data(Frame)"
       .menu.disp.menu add command -label [lindex $Lbl(Viewport) $GDefs(Lang)]  -accelerator "Ctrl-P" \
          -command "SPI::ObjectAdd Viewport; Page::ModeSelect $Page::Data(Mode) $Page::Data(Frame)"
+      .menu.disp.menu add command -label [lindex $Lbl(Miniport) $GDefs(Lang)] -accelerator "Ctrl-M" \
+         -command "Miniport::Create \$Page::Data(Frame)"
+      .menu.disp.menu add command -label [lindex $Lbl(TextBox) $GDefs(Lang)]  -accelerator "Ctrl-T" \
+         -command "CVText::Create \$Page::Data(Frame)"
       .menu.disp.menu add separator
       .menu.disp.menu add checkbutton -label [lindex $Lbl(FullScreen) $GDefs(Lang)] -variable SPI::Param(FullScreen) \
          -command { SPI::FullScreen } -onvalue 1 -offvalue 0 -accelerator "F11"
@@ -723,8 +725,9 @@ proc SPI::WindowMenu { } {
    bind . <Alt-m>     ".menu.tools.menu invoke 2"
    bind . <Control-l> ".menu.disp.menu invoke 8"
    bind . <Control-c> ".menu.disp.menu invoke 9"
-   bind . <Control-m> ".menu.disp.menu invoke 16"
-   bind . <Control-p> ".menu.disp.menu invoke 17"
+   bind . <Control-m> ".menu.disp.menu invoke 17"
+   bind . <Control-p> ".menu.disp.menu invoke 16"
+   bind . <Control-t> ".menu.disp.menu invoke 18"
 
    Areas::CreateWidget .menu.disp.menu
 

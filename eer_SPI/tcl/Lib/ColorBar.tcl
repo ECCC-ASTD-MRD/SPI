@@ -272,10 +272,10 @@ proc ColorBar::Set { Frame VP No Id Field } {
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
 
-      Shape::BindMove   $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
-      Shape::BindScale  $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"
-      Shape::BindFull   $Frame.page.canvas $tag ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
-      Shape::BindWidget $Frame.page.canvas $tag
+      Shape::BindAllMove $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
+      Shape::BindScale   $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"
+      Shape::BindFull    $Frame.page.canvas $tag ColorBar::Data(Full$tag) "ColorBar::Full $Frame.page.canvas $tag $VP"
+      Shape::BindWidget  $Frame.page.canvas $tag
 
       Page::MaskItem $Frame
 
@@ -311,8 +311,7 @@ proc ColorBar::Destroy { Frame VP No } {
 
       if { $idx!=-1 } {
          Shape::UnBind $Frame.page.canvas $id
-         $Frame.page.canvas delete $id BF$id BO$id
-         destroy $Frame.bo$id $Frame.bo$id.menu
+         $Frame.page.canvas delete $id
          unset Data(Active$Frame)
 
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
@@ -344,7 +343,6 @@ proc ColorBar::DestroyAll { Frame { VP "" } } {
          set cb [lindex $Data(List$Frame) $idx]
          Shape::UnBind $Frame.page.canvas $cb
          $Frame.page.canvas delete $cb
-         destroy $Frame.bo$cb $Frame.bo$cb.menu
          set Data(List$Frame) [lreplace $Data(List$Frame) $idx $idx]
       }
    }

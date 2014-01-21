@@ -415,7 +415,7 @@ proc Drawing::Draw { Frame Params } {
    }
 
    if { $vp==-1 } {
-      Shape::BindMove $Frame.page.canvas $Data(Tag)$no "Drawing::VertexSet $Frame $Data(Tag)$no $no"
+      Shape::BindAllMove $Frame.page.canvas $Data(Tag)$no "Drawing::VertexSet $Frame $Data(Tag)$no $no"
    }
 }
 

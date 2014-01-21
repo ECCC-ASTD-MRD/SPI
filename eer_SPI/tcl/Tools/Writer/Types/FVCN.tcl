@@ -1892,7 +1892,7 @@ proc Writer::FVCN::Test { Pad } {
             incr x -128
             incr y 128
          }
-         Shape::BindMove $Data(Page$Pad).page.canvas TEST
+         Shape::BindAllMove $Data(Page$Pad).page.canvas TEST
       } else {
          $Data(Page$Pad).page.canvas delete TEST
       }

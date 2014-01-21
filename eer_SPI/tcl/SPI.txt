@@ -95,6 +95,7 @@ namespace eval SPI {
    set Lbl(TrajLegend)     { "Légende de trajectoire" "Trajectory legend" }
    set Lbl(User)           { "Autres" "User defined" }
    set Lbl(Viewport)       { "Ajouter une vue" "Add Viewport" }
+   set Lbl(TextBox)        { "Ajouter une boite de texte" "Add a text box" }
    set Lbl(Warning)        { "Attention" "Warning" }
    set Lbl(Window)         { "Fenêtre" "Window" }
    set Lbl(WindowLayout)   { "Arrangement des fenêtres" "Window layout" }

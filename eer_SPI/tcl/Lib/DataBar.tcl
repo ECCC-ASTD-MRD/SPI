@@ -126,10 +126,10 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
-   Shape::BindMove   $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
-   Shape::BindScale  $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
-   Shape::BindFull   $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
-   Shape::BindWidget $Frame.page.canvas DB$VP
+   Shape::BindAllMove $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
+   Shape::BindScale   $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
+   Shape::BindFull    $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindWidget  $Frame.page.canvas DB$VP
 
    Page::MaskItem $Frame
 }

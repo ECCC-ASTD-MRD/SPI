@@ -37,8 +37,8 @@ namespace eval CHEM {
    set Lbl(Total)    { "Quantité totale relâchée     :" "Total Release Quantity       :" }
    set Lbl(Height)   { "Hauteur initiale maximale    :" "Initial Maximum Plume Height :" }
    set Lbl(Radius)   { "Rayon de dispersion initial  :" "Initial Dispersion Radius    :" }
-   set Lbl(Meteo)    { "Modèle PNT météorologique    :" "NWP Meteorological Model     :" }
-   set Lbl(Mode)     { "Données PNT météorologiques  :" "NWP Meteorological Data      :" }
+   set Lbl(Meteo)    { "Modèle météorologique PNT    :" "NWP Meteorological Model     :" }
+   set Lbl(Mode)     { "Données météorologiques PNT  :" "NWP Meteorological Data      :" }
 }
 
 proc CHEM::Layout { Frame } {
@@ -68,7 +68,7 @@ proc CHEM::Layout { Frame } {
    set SPI::Data(ShowClock$Frame) 1
 
    #----- Affichage de la boite de texte
-   CVText::Create $Page::Data(Canvas) 5 570 670 795 CHEMTEXT
+   set Data(TextSim)  [CVText::Create $Frame 5 570 665 225]
 
    Page::UpdateItems $Frame
 }
@@ -130,7 +130,7 @@ proc CHEM::LayoutUpdate { Frame } {
         } else {
             set q $Sim(EmIsoQuantity)
         }
-        append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
+        append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmTotalDuration) s
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmHeight) m
@@ -145,7 +145,7 @@ proc CHEM::LayoutUpdate { Frame } {
         } else {
            set q NIL
         }
-        append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
+        append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] $MLDPn::Sim(EmTotalDuration) s
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $MLDPn::Sim(EmHeight.0) m
@@ -153,14 +153,14 @@ proc CHEM::LayoutUpdate { Frame } {
 [lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
 [lindex $Lbl(Mode) $GDefs(Lang)] $Sim(Mode)"
               }
-      MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min(s)
+      MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min
 [lindex $Lbl(Duration) $GDefs(Lang)] $Sim(EmDurationMin) min(s)
 [lindex $Lbl(Total) $GDefs(Lang)] [format "%.3e" $Sim(EmMass)] unit
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmTop) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $Sim(EmRadius) m
 [lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)"
               }
-      TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) Hr(s)
+      TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] NIL
 [lindex $Lbl(Total) $GDefs(Lang)] NIL
 [lindex $Lbl(Height) $GDefs(Lang)] NIL
@@ -170,7 +170,7 @@ proc CHEM::LayoutUpdate { Frame } {
               }
    }
 
-   CVText::Update $Frame.page.canvas CHEMTEXT $text
+   CVText::Update $Frame $Data(TextSim) $text
 
    SPI::LayoutUpdate $Frame
 }

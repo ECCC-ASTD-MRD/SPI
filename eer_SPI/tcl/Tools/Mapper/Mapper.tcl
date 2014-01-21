@@ -1263,12 +1263,12 @@ proc Mapper::UpdateData { Frame args } {
    set license ""
    foreach data $Viewport::Data(Data$Frame) {
       if { [info exists Mapper::License($data)] } {
-         append license "$License($data)\n"
+         lappend license "$License($data)"
       }
    }
 
    if { [projection is $Frame ] } {
-      projection configure $Frame -data $Viewport::Data(Data) -license $license
+      projection configure $Frame -data $Viewport::Data(Data) -license [join $license \n]
       Page::Update $Frame
    }
 
