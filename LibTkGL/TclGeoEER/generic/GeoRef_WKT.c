@@ -286,11 +286,11 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
 
    double x,y,z=0.0,d=1e32,sd;
    int    s,dx,dy,ok,idx,ni,nj;
-   double lx[4],ly[4],lon;
+   double lx[4],ly[4];
 
    if (Lat<=90.0 && Lat>=-90.0 && Lon!=-999.0) {
 
-      /*Longitude from 0 to 360*/
+      /*Longitude from -180 to 180*/
       Lon=Lon>180?Lon-360:Lon;
 
       x=Lon;
@@ -364,11 +364,11 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                *Y=Ref->Y0+(*Y-Ref->Lat[0])/(Ref->Lat[ni]-Ref->Lat[0]);
             }
          }
-      }
-
-      if (Ref->Grid[1]=='X' || Ref->Grid[1]=='Y') {
+      } else if (Ref->Grid[1]=='Y') {
          if (Ref->Lon && Ref->Lat) {
             idx=0;
+            
+            // Loop on all point to find the closest
             lx[0]=DEG2RAD(*X); ly[0]=DEG2RAD(*Y);
             for(dy=0;dy<nj;dy++) {
                for(dx=0;dx<ni;dx++) {
@@ -381,28 +381,11 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                   idx++;
                }
             }
-           
-            // For X grids, figure out location within grid cell
-            if (Ref->Grid[1]=='X') {
-               lx[0]=(x==0)   ?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok-1]+Ref->Lon[ok-ni]+Ref->Lon[ok-ni-1])/4.0; 
-               ly[0]=(y==0)   ?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok-1]+Ref->Lat[ok-ni]+Ref->Lat[ok-ni-1])/4.0;
-               lx[1]=(x==ni-1)?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok+1]+Ref->Lon[ok-ni]+Ref->Lon[ok-ni+1])/4.0; 
-               ly[1]=(y==0)   ?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok+1]+Ref->Lat[ok-ni]+Ref->Lat[ok-ni+1])/4.0;
-               lx[2]=(x==ni-1)?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok+1]+Ref->Lon[ok+ni]+Ref->Lon[ok+ni+1])/4.0; 
-               ly[2]=(y==nj-1)?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok+1]+Ref->Lat[ok+ni]+Ref->Lat[ok+ni+1])/4.0;
-               lx[3]=(x==0)   ?Ref->Lon[ok]:(Ref->Lon[ok]+Ref->Lon[ok-1]+Ref->Lon[ok+ni]+Ref->Lon[ok+ni-1])/4.0; 
-               ly[3]=(y==nj-1)?Ref->Lat[ok]:(Ref->Lat[ok]+Ref->Lat[ok-1]+Ref->Lat[ok+ni]+Ref->Lat[ok+ni-1])/4.0;
-               Vertex_Map(lx,ly,X,Y,Lon,Lat);
-               x+=*X-0.5;
-               y+=*Y-0.5;
-            }
-            
+                       
             *X=x;
             *Y=y;
          }
-      }
-
-      if (Ref->Grid[1]=='H') {
+      } else if (Ref->Grid[1]=='X') {
          int x0,y0,x1,y1;
          
          if (Ref->Lon && Ref->Lat) {
@@ -410,31 +393,27 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
             x1=ni-1;y1=nj-1;
             dx=x1;dy=y1;
             
-                fprintf(stderr,"\n");
+            // Parse as a quadtree to find enclosing cell
             while (dx || dy) {
                
-               idx=y0*ni+x0;
-               lx[0]=(x0==0)   ?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx-1]+Ref->Lon[idx-ni]+Ref->Lon[idx-ni-1])/4.0;
-               ly[0]=(y0==0)   ?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx-1]+Ref->Lat[idx-ni]+Ref->Lat[idx-ni-1])/4.0;
-                            
-               idx=y0*ni+x1;
-               lx[1]=(x1==ni-1)?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx+1]+Ref->Lon[idx-ni]+Ref->Lon[idx-ni+1])/4.0;
-               ly[1]=(y0==0)   ?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx+1]+Ref->Lat[idx-ni]+Ref->Lat[idx-ni+1])/4.0;
+               idx=y0*ni+x0; lx[0]=Ref->Lon[idx]; ly[0]=Ref->Lat[idx];                         
+               idx=y0*ni+x1; lx[1]=Ref->Lon[idx]; ly[1]=Ref->Lat[idx];
+               idx=y1*ni+x1; lx[2]=Ref->Lon[idx]; ly[2]=Ref->Lat[idx];
+               idx=y1*ni+x0; lx[3]=Ref->Lon[idx]; ly[3]=Ref->Lat[idx];     
                
-               idx=y1*ni+x1;
-               lx[2]=(x1==ni-1)?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx+1]+Ref->Lon[idx+ni]+Ref->Lon[idx+ni+1])/4.0;
-               ly[2]=(y1==nj-1)?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx+1]+Ref->Lat[idx+ni]+Ref->Lat[idx+ni+1])/4.0;
-               
-               idx=y1*ni+x0;
-               lx[3]=(x0==0)   ?Ref->Lon[idx]:(Ref->Lon[idx]+Ref->Lon[idx-1]+Ref->Lon[idx+ni]+Ref->Lon[idx+ni-1])/4.0; 
-               ly[3]=(y1==nj-1)?Ref->Lat[idx]:(Ref->Lat[idx]+Ref->Lat[idx-1]+Ref->Lat[idx+ni]+Ref->Lat[idx+ni-1])/4.0;               
-
                Vertex_Map(lx,ly,X,Y,Lon,Lat);
-               fprintf(stderr,"----- %.2f %.2f      %i %i - %i %i (%i %i)\n",*X,*Y,x0,y0,x1,y1,dx,dy);
-              
+
+               // If not within [0,1] then we're outside
+               if (*X<-0.5 || *Y<-0.5 || *X>1.5 || *Y>1.5) {
+                  *X=-1.0;
+                  *Y=-1.0;
+                  break;
+               }
+  
+               // Calculate new sub-division
                dx=(x1-x0)>>1;
                dy=(y1-y0)>>1;
-               
+
                if (*X<0.5) {
                   x1-=dx;
                } else {
@@ -448,13 +427,13 @@ int GeoRef_WKTUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
                }               
             }
             
-            x+=*X-0.5;
-            y+=*Y-0.5;
-            
-            *X=x;
-            *Y=y;
+            if (*X!=-1) {
+               *X=x0+*X;
+               *Y=y0+*Y;          
+            }
          }
       }
+      
       /*Check the grid limits*/
       d=1.0;
       if (*X>(Ref->X1+d) || *Y>(Ref->Y1+d) || *X<(Ref->X0-d) || *Y<(Ref->Y0-d)) {
