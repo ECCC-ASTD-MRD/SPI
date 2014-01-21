@@ -1367,7 +1367,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    T3DModel     *mdl;
    GDAL_Band    *band;
    OGR_Layer    *layer;
-   int           i,load;
+   int           i,load=0;
    clock_t       sec;
    int           n;
 
@@ -1582,7 +1582,7 @@ static void ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item)
    int           i,j,n,nbclips,c0,c1;
 
    /*Mask inslusions*/
-   if (vp->MaskItem.Array) {
+   if (vp->MaskWidth && vp->MaskItem.Array) {
 
       obj=Tcl_NewObj();
       for(i=0;i<vp->MaskItem.Nb;i++) {
