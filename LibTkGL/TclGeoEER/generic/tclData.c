@@ -717,6 +717,10 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
             }
          }
       }
+      if (def->Mask) {
+         field->Def->Mask=(char*)malloc(field->Def->NIJ);
+         memcpy(field->Def->Mask,def->Mask,field->Def->NIJ);
+      }
    }
   
    if (field->Ref->Grid[0]=='U') {
@@ -2852,7 +2856,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
 
    Tcl_Obj *obj,*sub;
    int      f,n=0,ni,nj,nc,vnb=0,vn0,vn1;
-   double   v,dl=0.0,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
+   double   v,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
 
    if (Objc!=1) {

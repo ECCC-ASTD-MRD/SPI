@@ -1430,7 +1430,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
 int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale) {
 
    double incri,incrj,posX,posY,dfy;
-   int    x,y,cidx,idx,fidx,z,lvl=0;
+   int    x,y,cidx,idx,z,lvl=0;
    float  *levels=NULL;
    double dir,val;
 
