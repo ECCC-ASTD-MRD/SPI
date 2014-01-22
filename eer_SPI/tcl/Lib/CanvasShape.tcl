@@ -144,17 +144,17 @@ proc CVCompass::Create { Frame X Y } {
    set canvas $Frame.page.canvas
 
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVCOMP CVCOMPLOC"
+   $canvas create rectangle $X $Y $X $Y -tag "CVCOMP CVCOMPBBOX VPINTRUDE" -width 0
 
    $canvas create image $X $Y -image COMPASSFRAME -tags "CVCOMP"
 
    $canvas create image $X [expr $Y+50] -image CLOCKTIME -tags "CVCOMP"
+   $canvas create image $X [expr $Y+72] -image COMPASSDIST -tags "CVCOMP CVCOMPSPD"
    $canvas create image $X [expr $Y+72] -image COMPASSDIST -tags "CVCOMP"
 
    $canvas create text $X [expr $Y+50] -tags "CVCOMP CVCOMPANGLE" -font XFont12 -fill black
+   $canvas create text $X [expr $Y+72] -tags "CVCOMP CVCOMPSPD CVCOMPSPDT" -font XFont12 -fill black
    $canvas create text $X [expr $Y+72] -tags "CVCOMP CVCOMPDIST" -font XFont12 -fill black
-
-   $canvas create image -999 -999 -image COMPASSDIST -tags "CVCOMP CVCOMPSPD"
-   $canvas create text -999 -999 -tags "CVCOMP CVCOMPSPD CVCOMPSPDT" -font XFont12 -fill black
 
    $canvas create image $X $Y -image COMPASSHEADING -tags "CVCOMP CVCOMPH"
    $canvas create image $X [expr $Y-25] -image COMPASSDIR -tags "CVCOMP CVCOMPN"
@@ -167,6 +167,7 @@ proc CVCompass::Create { Frame X Y } {
    $canvas create text $X [expr $Y+25] -text S -tags "CVCOMPST" -font XFont12
    $canvas create text [expr $X-25] $Y -text [lindex { O W } $GDefs(Lang)] -tags "CVCOMPWT" -font XFont12
    $canvas create text [expr $X+25] $Y -text E -tags "CVCOMPET" -font XFont12
+   eval $canvas coords CVCOMPBBOX [$canvas bbox CVCOMP]
 
    Shape::BindAllMove $canvas { CVCOMP CVCOMPHT CVCOMPNT CVCOMPST CVCOMPWT CVCOMPET }
 
@@ -184,6 +185,8 @@ proc CVCompass::Create { Frame X Y } {
    $canvas bind CVCOMPHT <Leave>     "$canvas configure -cursor left_ptr"
    $canvas bind CVCOMPHT <B1-Motion>       "CVCompass::TranslateDo $Frame %x %y"
    $canvas bind CVCOMPHT <ButtonRelease-1> "CVCompass::TranslateDone $Frame "
+
+   Page::MaskItem $Frame
 }
 
 proc CVCompass::TranslateDo { Frame X Y  } {
@@ -320,13 +323,15 @@ proc CVCompass::Update { Frame Bearing Angle Distance { Speed 0 } } {
    }
    $canvas itemconfigure CVCOMPHT -text [format "%03.0f" $Bearing]
 
+   #----- If spinning, show speed
    if { $Speed!=0.0 } {
       $canvas coords CVCOMPSPD $x0 [expr $y0+94]
       $canvas coords CVCOMPSPDT $x0 [expr $y0+94]
       $canvas itemconfigure CVCOMPSPDT -text [format "%.0f m/s" [expr abs($Speed*1000)]]
    } else {
-      $canvas coords CVCOMPSPD -999 -999
-      $canvas coords CVCOMPSPDT -999 -999
+      $canvas coords CVCOMPSPD $x0 [expr $y0+72]
+      $canvas coords CVCOMPSPDT $x0 [expr $y0+72]
+      $canvas itemconfigure CVCOMPSPDT -text ""
    }
 
    set co [$canvas coords CVFLYBASE]
@@ -462,6 +467,8 @@ proc CVClock::Create { Frame X Y } {
 
    Shape::BindAllMove $canvas CVCLOCK
    Shape::BindWidget  $canvas CVCLOCK
+   
+   Page::MaskItem $Frame
 }
 
 #----------------------------------------------------------------------------
@@ -848,6 +855,8 @@ proc CVScale::Create { Frame X Y Size } {
    Shape::BindAllMove $canvas CVSCALE
    Shape::BindWidget  $canvas CVSCALE
 
+   Page::MaskItem $Frame
+
    CVScale::Update $Frame $Page::Data(VP)
 }
 
@@ -1141,6 +1150,8 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
    $canvas create window [expr $x1-22] $y1 -window $canvas.bo$tag -anchor se -tags "BO$tag NOPRINT"
   
    incr Data(TagNo)
+   
+   Page::MaskItem $Frame
    
    return $tag
 }
