@@ -788,7 +788,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Alpha)      [format %02x [expr int($Param(Alpha)/100.0*255.0)]]
    
    #----- Intervals and min-max selection are exclusive with priority to intervals
-   if { ![llength $Param(Intervals)] && $Param(Min)!=$Param(Max) } {
+   if { (![llength $Param(Intervals)] || $Param(IntervalMode)!="") && $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
       if { $Param(Min)!="" } {
          append Param(Intervals) "\[$Param(Min)"
@@ -873,7 +873,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -min $min -max $max -intervalmode $Param(IntervalMode) $Param(IntervalParam) -transparency $alpha \
+      -intervalmode $Param(IntervalMode) $Param(IntervalParam) -transparency $alpha  -min $min -max $max \
       -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
    #----- Set intervals depending on interval mode
@@ -1148,7 +1148,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {
                dataspec copy $var $spec
-               fstdfield configure $fld -dataspec $var
+#               fstdfield configure $fld -dataspec $var
                dataspec free $spec
             }
             FSTD::ParamInit $fld $var
