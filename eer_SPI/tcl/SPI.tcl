@@ -101,29 +101,30 @@ proc SPI::CommandLine { { Args {} }} {
    global GDefs
 
    Log::Print ERROR "Wrong arguments $Args, must be:\n
-      \[-tclsh ...\]                    : Launch a tcl script through SPI's environment (No Tk)
-      \[-soft\]                         : Force software OpenGL mode
-      \[-hard\]                         : Force hardware OpenGL mode
-      \[-nothreads\]                    : Don't use multithreading
-      \[-batch\]                        : Launch in batch mode (No screen rendering)
-      \[-setup\]                        : Force initial setup (~/.spi)
-      \[-default ... ...\]              : Use the file specified as the default parameter definition
-      \[-lang 0|1\]                     : Select language (0 Francais, 1 English)
-      \[-model\]                        : Open the model tab upon startup
-      \[-nowindow\]                     : Does no open the main window (Use to only launch a tool)
-      \[-field ... ...\]                : Open the specified standard files
-      \[-traj ... ...\]                 : Open the specified trajectory files
-      \[-obs ...\]                      : Open the specified observation files
-      \[-metobs ...\]                   : Open the specified BURP or BUFR observation files
-      \[-icon ... ...\]                 : Open the specified icon files
-      \[-macro ... ...\]                : Run the specified macro script
-      \[-args ... ...\]                 : Arguments to be used by the previously specified script
-      \[-layout ...\]                   : Use the specified layout
-      \[-project ...\]                  : Use the specified spi project file
-      \[-tool ... ...\]                 : Start a specific tool
-      \[-pane WxH ...\]                 : Dimensions of the secondary panes
-      \[-side left|right|top|bottom \]  : Side on wich to put the secondary panes
-      \[-geom WxH+X+Y\]                 : Global window size"
+      \[-tclsh ...\]                        : Launch a tcl script through SPI's environment (No Tk)
+      \[-soft\]                             : Force software OpenGL mode
+      \[-hard\]                             : Force hardware OpenGL mode
+      \[-nothreads\]                        : Don't use multithreading
+      \[-batch\]                            : Launch in batch mode (No screen rendering)
+      \[-setup\]                            : Force initial setup (~/.spi)
+      \[-default ... ...\]                  : Use the file specified as the default parameter definition
+      \[-lang 0|1\]                         : Select language (0 Francais, 1 English)
+      \[-model\]                            : Open the model tab upon startup
+      \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
+      \[-field ... ...\]                    : Open the specified standard files
+      \[-traj ... ...\]                     : Open the specified trajectory files
+      \[-obs ...\]                          : Open the specified observation files
+      \[-metobs ...\]                       : Open the specified BURP or BUFR observation files
+      \[-icon ... ...\]                     : Open the specified icon files
+      \[-macro ... ...\]                    : Run the specified macro script
+      \[-args ... ...\]                     : Arguments to be used by the previously specified script
+      \[-layout ...\]                       : Use the specified layout
+      \[-project ...\]                      : Use the specified spi project file
+      \[-tool ... ...\]                     : Start a specific tool
+      \[-pane WxH ...\]                     : Dimensions of the secondary panes
+      \[-side left|right|top|bottom\]       : Side on wich to put the secondary panes
+      \[-geom WxH+X+Y\]                     : Global window size
+      \[-verbose ERROR,WARNING,INFO,DEBUG\] : Verbose level"
 }
 
 #----- Parcourir la liste des parametres pre-launch
@@ -133,6 +134,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "valgrind"  { }
       "soft"      { }
       "hard"      { }
+      "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
       "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
       "nothreads" { set SPI::Param(Threads) False }
       "batch"     { set SPI::Param(Batch) True }
@@ -2339,6 +2341,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "soft"      { }
       "hard"      { }
       "nothreads" { }
+      "verbose"   { }
       "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
