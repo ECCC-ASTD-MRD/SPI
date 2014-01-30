@@ -503,11 +503,15 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case CLEAN:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer");
+         if (Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer [feature]");
             return(TCL_ERROR);
          }
-         OGR_LayerClean(OGR_LayerGet(Tcl_GetString(Objv[2])));
+         n=-1;
+         if (Objc==4) {
+            Tcl_GetIntFromObj(Interp,Objv[4],&n);
+         }
+         OGR_LayerClean(OGR_LayerGet(Tcl_GetString(Objv[2])),n);
          break;
 
       case PROJECT:
@@ -698,6 +702,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    /*Initialisation de la structure layer*/
    layer->Update       = 0;
    layer->Mask         = 0;
+   layer->CFeature     = -1;
    layer->Topo         = -1;
    layer->Extrude      = -1;
    layer->Loc          = NULL;
@@ -833,7 +838,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->SQLed)      OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
 
-   OGR_LayerClean(Layer);
+   OGR_LayerClean(Layer,-1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -851,12 +856,16 @@ void OGR_LayerFree(OGR_Layer *Layer) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void OGR_LayerClean(OGR_Layer *Layer) {
+void OGR_LayerClean(OGR_Layer *Layer,int Index) {
 
    if (Layer && Layer->LFeature) {
-      glDeleteLists(Layer->LFeature,Layer->NFeature);
-      Layer->LFeature=0;
-      Layer->GFeature=0;
+      if (Index>-1) {
+         Layer->CFeature=Index;
+      } else {
+         glDeleteLists(Layer->LFeature,Layer->NFeature);
+         Layer->LFeature=0;
+         Layer->GFeature=0;
+      }
    }
 }
 
@@ -890,7 +899,7 @@ void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
       layer=Tcl_GetHashValue(entry);
 
       if (layer && layer->Spec && layer->Spec==Spec) {
-         OGR_LayerClean(layer);
+         OGR_LayerClean(layer,-1);
       }
       entry=Tcl_NextHashEntry(&ptr);
    }

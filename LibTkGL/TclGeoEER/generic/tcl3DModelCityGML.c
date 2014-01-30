@@ -45,7 +45,7 @@ typedef struct GML_Data {
    int        NFc,NVr,VrDim;
 } GML_Data;
 
-void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
+void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
 
    XML_Data  *data=(XML_Data*)Data;
    GML_Data  *gml=(GML_Data*)data->Specific;
@@ -106,7 +106,24 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
                gml->VrDim=atoi(Attr[i+1]);
             }
          }
-      } else
+      }
+   }
+}
+
+void ModelCityGML_StartHandler1(void *Data,const char *Elem,const char **Attr) {
+
+   XML_Data  *data=(XML_Data*)Data;
+   GML_Data  *gml=(GML_Data*)data->Specific;
+   T3DObject *obj=NULL;
+   int        i;
+
+   XML_CharReset(Data);
+   XML_Check(Data,Elem,"CityModel");
+
+   if (Elem && XML_Valid(Data)) {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) ModelCityGML_StartHandler: Token %s\n",Elem);
+#endif
 
       if (strcmp(Elem,"app:target")==0) {
          for (i=0;Attr[i];i+=2) {
@@ -125,7 +142,7 @@ void ModelCityGML_StartHandler(void *Data,const char *Elem,const char **Attr) {
    }
 }
 
-void ModelCityGML_EndHandler(void *Data,const char *Elem) {
+void ModelCityGML_EndHandler0(void *Data,const char *Elem) {
 
    XML_Data  *data=(XML_Data*)Data;
    GML_Data  *gml=(GML_Data*)data->Specific;
@@ -155,7 +172,21 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
          for(n=0;n<gml->Fc->NIdx;n++) {
             gml->Fc->Idx[n]=gml->Object->NVr-gml->Fc->NIdx+n;
          }
-      } else
+      }
+   }
+}
+
+void ModelCityGML_EndHandler1(void *Data,const char *Elem) {
+
+   XML_Data  *data=(XML_Data*)Data;
+   GML_Data  *gml=(GML_Data*)data->Specific;
+   T3DObject *obj=NULL;
+   int        n,i;
+
+   if (Elem && XML_Valid(Data)) {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) ModelCityGML_EndHandler: Token %s\n",Elem);
+#endif
 
       if (strcmp(Elem,"app:diffuseColor")==0) {
          if (gml->Mt) {
@@ -220,13 +251,6 @@ void ModelCityGML_EndHandler(void *Data,const char *Elem) {
                }
             }
          }
-      } else
-
-      if (strcmp(Elem,"app:target")==0 && strlen(data->Buf)>1) {
-         if ((gml->Fc=Model_FaceFind(gml->Model,&data->Buf[1],&obj))) {
-            gml->Object=obj;
-            gml->Fc->Mt=gml->Mt;
-         }
       }
    }
 }
@@ -269,10 +293,15 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
    gml->Mt=NULL;
 
    /*Initialise expat XML parser*/
-   XML_SetElementHandler(parser,ModelCityGML_StartHandler,ModelCityGML_EndHandler);
+   XML_SetElementHandler(parser,ModelCityGML_StartHandler0,ModelCityGML_EndHandler0);
 
    /*Parse the XML*/
    state=XML_ParseFile(Interp,parser,gml,Path);
+
+//   parser=XML_ParserCreate(NULL);
+//   XML_SetElementHandler(parser,ModelCityGML_StartHandler1,ModelCityGML_EndHandler1);
+//   state=XML_ParseFile(Interp,parser,gml,Path);
+
    XML_ParserFree(parser);
 
    /*Parse materials

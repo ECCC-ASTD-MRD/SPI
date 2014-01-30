@@ -838,6 +838,38 @@ int GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD
    }
 }
 
+double GPC_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point) {
+
+   double dx = SegB[0] - SegA[0];
+   double dy = SegB[1] - SegA[1];
+   
+   // Line segment is a point
+   if ((dx==0.0) && (dy==0.0)) {
+      dx = Point[0] - SegA[0];
+      dy = Point[1] - SegA[1];
+      return(hypot(dx,dy));
+   }
+
+   double t = ((Point[0]-SegA[0])*dx+(Point[1]-SegA[1])*dy)/(dx*dx+dy*dy);
+
+   if (t<0) {
+      // Point is nearest to the first point
+      dx = Point[0] - SegA[0];
+      dy = Point[1] - SegA[1];
+   } else if (t>1) {
+      // Point is nearest to the end point
+      dx = Point[0] - SegB[0];
+      dy = Point[1] - SegB[1];
+   } else {
+      // Perpendicular line intersect the line segment.
+      dx = Point[0] - (SegA[0] + t * dx);
+      dy = Point[1] - (SegA[1] + t * dy);
+   }
+
+   //returning shortest distance
+   return(hypot(dx,dy));
+}
+
 double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
 
    Vect3d pt[2];

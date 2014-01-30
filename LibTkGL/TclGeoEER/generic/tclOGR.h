@@ -85,6 +85,7 @@ typedef struct OGR_Layer {
    unsigned int  *SFeature;
    unsigned int   NSFeature;
 
+   int            CFeature;
    int            Topo,Extrude;
    double         Min,Max;
    Coord         *Loc;          /* Position simple */
@@ -101,7 +102,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
 OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name);
 OGRLayerH        OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
-void             OGR_LayerClean(OGR_Layer *Layer);
+void             OGR_LayerClean(OGR_Layer *Layer,int Index);
 void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
 void             OGR_LayerUpdate(OGR_Layer *Layer);
 int              OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
@@ -156,6 +157,7 @@ int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
 int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
 double       GPC_Length(OGRGeometryH Geom);
 double       GPC_SegmentLength(OGRGeometryH Geom);
+double       GPC_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point);
 double       GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode);
 OGRGeometryH GPC_Clip(OGRGeometryH Line,OGRGeometryH Poly);
 int          GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);

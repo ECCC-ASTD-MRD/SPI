@@ -411,8 +411,8 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
             }
          glEnd();
       } else {
-         /*Traiter les tableau en Array , c'est plus efficace*/
-         glVertexPointer(3,GL_DOUBLE,Stride*sizeof(float)*3,Data);
+         /*Traiter les tableau en Array, c'est plus efficace*/
+         glVertexPointer(3,GL_DOUBLE,Stride*sizeof(double)*3,Data);
 
          /*Activer les couleurs par "vertex"*/
          if (Col) {

@@ -709,7 +709,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    }
 
    /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
-   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
+   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*4;
    dp=CLAMP(dp,1,20);
 
    /*Afficher les points*/

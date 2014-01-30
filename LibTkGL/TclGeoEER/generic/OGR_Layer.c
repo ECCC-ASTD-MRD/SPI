@@ -107,7 +107,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   GeoRef_Destroy(Interp,layer->Ref->Name);
                   layer->Ref=ref;
                   GeoRef_Incr(layer->Ref);
-                  OGR_LayerClean(layer);
+                  OGR_LayerClean(layer,-1);
                }
             }
             break;
@@ -122,7 +122,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                } else {
                   GeoRef_Destroy(Interp,layer->Ref->Name);
                   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
-                  OGR_LayerClean(layer);
+                  OGR_LayerClean(layer,-1);
                }
             }
             break;
@@ -2539,15 +2539,34 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
  *---------------------------------------------------------------------------------------------------------------
 */
 
+int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
+   
+   Vect3d        vr;
+   double        elev=0.0,extr=0.0;
+   OGRGeometryH  geom;
+
+   glNewList(Layer->LFeature+Index,GL_COMPILE);
+   if ((geom=OGR_F_GetGeometryRef(Layer->Feature[Index]))) {
+      if (Layer->Topo>0)
+         elev=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Topo-1);
+
+      if (Layer->Extrude!=-1)
+         extr=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Extrude);
+
+      OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
+      GPC_Centroid2D(geom,&vr[0],&vr[1]);
+      Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
+      Layer->Loc[Index].Elev=0.0;
+   }
+   glEndList();
+}
+
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
    Coord        co[2];
-   Vect3d        vr;
-   int           t;
-   unsigned int  f;
-   double        elev=0.0,extr=0.0;
-   OGRGeometryH  geom;
-   clock_t       sec;
+   int          t;
+   unsigned int f;
+   clock_t      sec;
 
    if (Layer->GFeature==Layer->NFeature) {
       return(0);
@@ -2559,21 +2578,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
    /*Generate the display lists*/
    for(f=Layer->GFeature;f<Layer->NFeature;f++) {
 
-      glNewList(Layer->LFeature+f,GL_COMPILE);
-      if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
-         if (Layer->Topo>0)
-            elev=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Topo-1);
-
-         if (Layer->Extrude!=-1)
-            extr=OGR_F_GetFieldAsDouble(Layer->Feature[f],Layer->Extrude);
-
-         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
-         GPC_Centroid2D(geom,&vr[0],&vr[1]);
-         Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[f].Lat,&Layer->Loc[f].Lon,1,1);
-         Layer->Loc[f].Elev=0.0;
-      }
-      glEndList();
-
+      OGR_LayerParseBuild(Layer,Proj,f);      
       Layer->GFeature++;
 
       /*Refrech viewport if it's been too long*/
@@ -2684,6 +2689,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    /*Read in data in another thread*/
    g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->XBatch || GLRender->TRCon)?0:1);
 
+   // A featur might need refresh
+   if (Layer->CFeature!=-1 && Layer->CFeature<Layer->GFeature) {
+      OGR_LayerParseBuild(Layer,Proj,Layer->CFeature);
+      Layer->CFeature=-1;
+   }
+   
    glDash(&spec->Dash);
    glEnable(GL_STENCIL_TEST);
    if (!Mask)

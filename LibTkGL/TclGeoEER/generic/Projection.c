@@ -603,7 +603,7 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
 
       layer=OGR_LayerGet(Tcl_GetString(obj));
       if (layer) {
-         OGR_LayerClean(layer);
+         OGR_LayerClean(layer,-1);
       }
 
       mdl=Model_Get(Tcl_GetString(obj));
@@ -1050,10 +1050,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   Projection_Clean(Interp,proj,GDB_FORCE);
                }
                if (strcmp(proj->Type->Name,"grid")==0) {
-                  if (!Grid_Setup(Interp,proj)) {
-                     Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
-                     return(TCL_ERROR);                   
-                  }
+                  Grid_Setup(Interp,proj);
                }
             }
             break;
@@ -1064,10 +1061,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&proj->Geographic);
                if (strcmp(proj->Type->Name,"grid")==0) {
-                  if (!Grid_Setup(Interp,proj)) {
-                     Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
-                     return(TCL_ERROR);                   
-                  }
+                  Grid_Setup(Interp,proj);
                }
                ViewportClean(proj->VP,1,1);
                Projection_Clean(Interp,proj,GDB_FORCE);
@@ -1088,11 +1082,8 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      proj->L=proj->LI=proj->LJ=1.0;
                      proj->Geographic=1;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
-                        if (!Grid_Setup(Interp,proj)) {
-                           Tcl_AppendResult(Interp,"\n   Projection_Config: Projection not supported (GRTYP=X or GRTYP=Y)",(char*)NULL);
-                           return(TCL_ERROR);                   
-                        }
-                     }
+                        Grid_Setup(Interp,proj);
+                      }
                      ViewportClean(proj->VP,1,1);
                      Projection_Clean(Interp,proj,GDB_FORCE);
                   }
@@ -1563,6 +1554,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    T3DModel  *mdl;
    GDAL_Band *band;
    OGR_Layer *layer;
+   OGRGeometryH *geom;
    int        ras=0,i;
 
    // If it's a grid projection without a referential or a global U grid
@@ -1636,6 +1628,10 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
       for (i=0;i<Proj->NbData;i++) {
          Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
+
+         if ((geom=OGR_GeometryGet(Tcl_GetString(obj)))) {
+            OGR_GeometryRender1(NULL,Proj,VP,geom,NULL);
+         }
 
          if ((layer=OGR_LayerGet(Tcl_GetString(obj)))) {
             ras+=OGR_LayerRender(NULL,Proj,VP,layer,0);

@@ -300,7 +300,7 @@ int GeoScan_Get(TGeoScan *Scan,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,T
          Scan->Y[x]=(double)((float*)Scan->Y)[x]-1.0;
 
          /*If we're outside, set to nodata*/
-         if (ToDef && (!FIN2D(ToDef,Scan->X[x],Scan->Y[x]) || (ToDef->Mask && !ToDef->Mask[FIDX2D(ToDef,(int)Scan->X[x],(int)Scan->Y[x])]))) {
+         if (ToDef && (!FIN2D(ToDef,Scan->X[x],Scan->Y[x]) || (ToDef->Mask && !ToDef->Mask[FIDX2D(ToDef,lrint(Scan->X[x]),lrint(Scan->Y[x]))]))) {
             Scan->D[x]=ToDef->NoData;
          }
       }

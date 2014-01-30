@@ -1660,8 +1660,6 @@ void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject 
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          if (M->Spec->RenderTexture) {
             glEnable(GL_TEXTURE_2D);
-         } else {
-            glDisable(GL_TEXTURE_2D);
          }
 
          if (M->Spec->Outline && M->Spec->Width) {
@@ -1689,6 +1687,7 @@ void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject 
          glCallList(Obj->GLId);
          glEnable(GL_LIGHTING);
       }
+      glDisable(GL_TEXTURE_2D);
    }
 }
 
