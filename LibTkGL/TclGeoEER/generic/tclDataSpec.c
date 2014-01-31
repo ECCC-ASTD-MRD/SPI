@@ -671,10 +671,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ValFactor));
             } else {
-               Spec->ValFactor=1.0;
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Spec->ValFactor);
-               if (Spec->ValFactor==0.0)
-                  Spec->ValFactor=1.0;
+               val=1.0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+               if (val==0.0) val=1.0;
+               if (val!=Spec->ValFactor) {
+                  Spec->ValFactor=val;
+                  internew=1;
+               }
             }
             break;
 
@@ -682,8 +685,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ValDelta));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Spec->ValDelta);
-            }
+               val=0.0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+               if (val!=Spec->ValDelta) {
+                  Spec->ValDelta=val;
+                  internew=1;
+               }
+             }
             break;
 
          case SPRITE:
@@ -955,29 +963,18 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   return(TCL_ERROR);
                }
                
+               /*Determine si ils sont nouveaux*/
                internew=1;
+               Spec->InterNb=nobj;
 
                if (Spec->InterVals) {
-                  if (strcmp(Tcl_GetString(Spec->InterVals),Tcl_GetString(Objv[i]))==0)
+                  if (strcmp(Tcl_GetString(Spec->InterVals),Tcl_GetString(Objv[i]))==0) {
                      internew=0;
+                  }
                   Tcl_DecrRefCount(Spec->InterVals);
                }
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
                Tcl_IncrRefCount(Spec->InterVals);
-
-               /*Determine si ils sont nouveaux*/
-               if (internew) {
-                  Spec->InterNb=nobj;
-                  for (ii=0;ii<nobj;ii++){
-                     Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
-                     Tcl_GetDoubleFromObj(Interp,obj,&val);
-                     Spec->Inter[ii]=val;
-                  }
-
-                  if ((!Spec->InterMode || Spec->InterMode>=5)) {
-                     cmap=cseg=1;
-                  }
-               }
             }
             break;
 
@@ -1329,7 +1326,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    /*Appliquer les facteurs et delta aux nouveaux intervals*/
    if (internew) {
       for (ii=0;ii<Spec->InterNb;ii++){
-         Spec->Inter[ii]=SPEC2VAL(Spec,Spec->Inter[ii]);
+         Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&val);
+         Spec->Inter[ii]=SPEC2VAL(Spec,val);
+      }
+
+      if ((!Spec->InterMode || Spec->InterMode>=5)) {
+         cmap=cseg=1;
       }
    }
 
@@ -1346,10 +1349,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       DataSpec_Clean(Spec,cmap,cpos,cseg);
    }
 
-   if (s)
+   if (s) {
       Spec->Set=1;
-
-   DataSpec_Define(Spec);
+   } else {
+      DataSpec_Define(Spec);
+   }
    return(TCL_OK);
 }
 
