@@ -85,7 +85,7 @@ proc  Mapper::DepotWare::WFS::Select { Tree Branch { Select True } } {
    if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]
       set layer [$Tree get $Branch path]
-      Mapper::ReadLayer WFS:$path?VERSION=1.1.0&SERVICE=WFS [list $layer]
+      Mapper::OGR::Read WFS:$path?VERSION=1.1.0&SERVICE=WFS [list $layer]
    } else {
    
    }

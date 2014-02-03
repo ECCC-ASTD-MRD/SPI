@@ -126,7 +126,7 @@ proc  Mapper::DepotWare::PGS::Select { Tree Branch { Select True } } {
    if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]
       set layer [$Tree get $Branch path]
-      Mapper::ReadLayer $path [list $layer]
+      Mapper::OGE::Read $path [list $layer]
    } else {
    
    }

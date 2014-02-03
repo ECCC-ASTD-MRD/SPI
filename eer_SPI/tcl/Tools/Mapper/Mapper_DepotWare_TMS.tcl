@@ -356,7 +356,7 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
    
    close $f
 
-   set band [Mapper::ReadBand $file "" 3]
+   set band [Mapper::GDAL::Read $file "" 3]
 
    #----- Decrease effective resolution (WMS-TMS)
    gdalband configure $band -texres 3
@@ -405,7 +405,7 @@ proc  Mapper::DepotWare::TMS::Load { Name { Res 3 } } {
    
    close $f
 
-   set band [Mapper::ReadBand $file "" 3]
+   set band [Mapper::GDAL::Read $file "" 3]
 
    #----- Decrease effective resolution (WMS-TMS)
    gdalband configure $band -texres $Res

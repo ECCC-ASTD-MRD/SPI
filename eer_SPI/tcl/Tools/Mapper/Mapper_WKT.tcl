@@ -63,7 +63,6 @@ proc Mapper::WKT::Param { Proj } {
    }
 
    #----- Charger les listes des valeur possibles des différents combobox
-
    if { ![info exists Mapper::WKT::Data(Proj)] } {
       Mapper::WKT::List Data(CoordRefList)   Data(CoordRefs)   1
       Mapper::WKT::List Data(DatumList)      Data(Datums)      1

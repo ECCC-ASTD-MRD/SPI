@@ -117,7 +117,7 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch { Select True } } {
       set def [Mapper::DepotWare::WCS::BuildXMLDef $path]
 
       if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
-         set band [Mapper::ReadBand $def "" 1]
+         set band [Mapper::GDAL::Read $def "" 1]
 
          #----- Decrease effective resolution (WMS-WCS-TMS)
          gdalband configure $band -texres 3

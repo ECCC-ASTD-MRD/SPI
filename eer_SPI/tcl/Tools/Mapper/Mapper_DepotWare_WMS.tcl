@@ -144,7 +144,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } } {
       set path [$Tree get $Branch path]
       if { [set def [Mapper::DepotWare::WMS::BuildXMLDef $path]]!="" } {
          if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $def]==-1 } {
-            set band [Mapper::ReadBand $def "" 3]
+            set band [Mapper::GDAL::Read $def "" 3]
 
             #----- Decrease effective resolution (WMS-TMS)
             gdalband configure $band -texres 3
@@ -502,7 +502,7 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
    gdalfile close $Mapper::Data(Id$Layer)
    unset Mapper::Data(Id$Layer)
 
-   set band [Mapper::ReadBand $def "" 3]
+   set band [Mapper::GDAL::Read $def "" 3]
 
    #----- Force configuration parameters
    set Mapper::Data(Red)   $Mapper::Data(Band0$band)

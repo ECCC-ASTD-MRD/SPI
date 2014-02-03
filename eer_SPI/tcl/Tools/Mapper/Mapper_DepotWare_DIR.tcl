@@ -82,11 +82,11 @@ proc  Mapper::DepotWare::DIR::Select { Tree Branch { Select True } } {
 
    switch -glob [set type [$Tree get $Branch type]] {
       "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                  Mapper::ReadBand $path
+                  Mapper::GDAL::Read $path
                }
              }
       "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                  Mapper::ReadLayer $path
+                  Mapper::OGR::Read $path
                }
              }
    }

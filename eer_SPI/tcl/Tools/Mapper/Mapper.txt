@@ -142,6 +142,10 @@ namespace eval Mapper { } {
    set Lbl(Small)        { "Petit" "Small" }
    set Lbl(Medium)       { "Moyen" "Medium" }
    set Lbl(Large)        { "Large" "Large" }
+   set Lbl(AddRing)      { "Ajouter un contour" "Add ring" }
+   set Lbl(AddGeom)      { "Ajouter une geometrie" "Add geometry" }
+   set Lbl(DelRing)      { "Supprimer un contour" "Delete ring" }
+   set Lbl(DelGeom)      { "Supprimer une geometrie" "Delete geometry" }
 
    set Msg(GeoProcessInfo) { "Le géotraitement ne vas utiliser\nque les items sélectionné des couches" "Geoprocessing will only use\nselected features of the layers" }
    set Msg(NoFeature)      { "La couche ne continent aucun item" "The layer contains no features" }
@@ -170,6 +174,10 @@ namespace eval Mapper { } {
    set Bubble(Op)       { "Opérateur de sélection:\n\n~= Expression régulière\n== Égal à\n!= Différent de\n<  Plus petit que\n<= Plus petit ou égal\n>  Plus grand\n>= Plus grand ou égal\n<> Entre\n\[\] Parmi"
                           "Selection operator:\n\n~= Regular expression\n== Equal to\n!= Different from\n<  Smaller than\n<= Smaller or equal to\n>  Greather than\n>= Greather or equal to\n<> From - to\n\[\] Within" }
    set Bubble(Histo)    { "Extraire l'histogramme de la bande sélectionnée" "Extract selected band histogram" }
+   set Bubble(OGRAdd)   { "Ajouter un objet" "Add a feature" }
+   set Bubble(OGRDel)   { "Supprimet un objet" "Delete a feature" }
+   set Bubble(OGREdit)  { "Edition des vertices\n\nBouton Gauche      : Déplacer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : Insérer un point"
+                          "Vertices edition\nLeft Button      : Move vertices\nMiddle Button    : Delete vertices\nShift-Left Button: Add vertices\nCtrl-Left Button : Insert vertices" }
 
    set Bubble(Projection)    { "Description du système de coordonnées géographiques (WKT)" "Geographical coordinate system description (WKT)" }
    set Bubble(Transform)     { "Matrice de transformation avant et inverse (dx sx rx dy ry sy)" "Transform matrix and inverse (dx sx rx dy ry sy)" }

@@ -34,17 +34,8 @@ namespace eval Mapper { } {
    set License(Google-TerrainHybrid)   "Data, imagery and map information provided by Google"
    set License(ESRI-Server)            "Data, imagery and map information provided by ESRI"
 
-   catch {
-      image create photo OGRMAPImg  -width 256 -height 15
-      image create photo GDALMAPImg -width 250 -height 15
-      font create OGRFONT -family courier -size -10 -weight bold
-
-      colormap create OGRMAPDEFAULT
-      colormap read OGRMAPDEFAULT $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
-   }
-
    set Param(Title)     { "Données Geographiques" "Geographical data" }
-   set Param(Version)   2.0
+   set Param(Version)   2.1
    set Param(Icon)      BINOCULAR                                   ;#Icone
    set Param(Geom)      { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)      1                                           ;#Flag d'activation de l'outils
@@ -68,18 +59,6 @@ namespace eval Mapper { } {
    set Data(Frame5) ""
    set Data(RefVP)  ""
 
-   set Data(Icons)        { NONE TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
-   set Data(Intervals)     ""
-   set Data(Styles)       {}
-   set Data(Style)        ""
-   set Data(Colors)       { RED GREEN BLUE ALPHA }
-   set Data(Topos)        { NONE INTERNAL }
-   set Data(Curves)       { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
-   set Data(Interps)      { NEAREST LINEAR }
-   set Data(Interp)       NEAREST
-   set Data(Curve)        LINEAR
-   set Data(Mask)         False
-   set Data(GCPs)         {}
    set Data(LonD)         0
    set Data(LatD)         0
    set Data(Lat0)        -90.0
@@ -89,103 +68,13 @@ namespace eval Mapper { } {
    set Data(Coo)         ""
    set Data(Time)        0
    set Data(Object)      ""
-   set Data(TableObject) ""
-   set Data(TableSel)    ""
-   set Data(TableSort)   ""
    set Data(GeoRef)      ""
-   set Data(GeomOut)     "TEXT"
-   set Data(GeomGet)     False
    set Data(RealTime)    False
-   set Data(Crop)        False
-   set Data(Fill)        ""
-   set Data(Resolution)  1
-   set Data(Color)       black
-   set Data(Width)       0
-   set Data(Burn)        1
-   set Data(Dash)        ""
    set Data(Proj)        ""
-   set Data(Light)       0
-   set Data(Lock)        False
    set Data(Cut)         False
    set Data(CutShow)     False
-   set Data(HistoShow)   False
-   set Data(Value)       0
-   set Data(ValueMin)    0
-   set Data(ValueMax)    0
-   set Data(NoData)      ""
    set Data(PickSize)    2
    set Data(PickAll)     False
-   set Data(ORGOps)      { dissolve boundary convexhull buffer difference intersection simplify segmentize close flatten }
-   set Data(GDALOps)     { }
-
-   set Data(GDALFormats) {
-      {Arc/Info Binary Grid {*.adf}}
-      {ADRG/ARC Digitized Raster Graphics {*.gen *.thf}}
-      {Spot CEOS {*.ces}}
-      {Spot DIMAP {*.dim}}
-      {USGS DOQ 1 & 2 {*.doq}}
-      {USGS SDTS DEM {*.catd *.ddf}}
-      {USGS ASCII DEM {*.dem}}
-      {Maptech/NOAA BSB Nautical Chart Format {*.kap}}
-      {Military Elevation Data {*.dt0 *.dt1}}
-      {GeoTIFF {*.tif}}
-      {Golden Software ASCII and binary Grid File Format {*.gsag *.gsbg *.gs7bg}}
-      {Grid eXchange File {*.gxf}}
-      {Image Display and Analysis {*.ida}}
-      {Virtual Raster {*.vrt}}
-      {National Imagery Transmission Format {*.nitf}}
-      {Network Common Data Format {*.cdf}}
-      {Erdas Imagine Images {*.img}}
-      {Erdas 7.x {*.lan *.gis}}
-      {ERMapper Compressed Wavelets {*.ecw *.ers}}
-      {MS Windows Device Independent Bitmap {*.bmp}}
-      {Magellan BLX Topo {*.blx *.xlb}}
-      {NLAPS Data Format {*.ndf}}
-      {PCIDSK Database File {*.pci}}
-      {HDF 4-5 Dataset {*.hdf}}
-      {ENVI .hdr Labelled {*.hdr}}
-      {Envisat Image Product {*.n1}}
-      {FITS {*.fits}}
-      {Graphics Interchange Format {*.gif}}
-      {JPEG and JPEG2000 {*.jpg *.jp2 *.j2k}}
-      {Atlantis MFF and MFF2 Raster {*.mff}}
-      {ILWIS Raster Map {*.mpr}}
-      {Japanese DEM {*.mem}}
-      {NLAPS Data Format {*.h1 *.h2 *.hd}}
-      {PCI Raw Format {*.aux}}
-      {Raster Matrix Format {*.rsw *.mtw}}
-      {Raster Product Format/RPF {*.toc}}
-      {RadarSat2 XML {*.xml}}
-      {Swedish Grid {*.rik}}
-      {SRTM HGT Format {*.hgt}}
-      {Terragen Heightfield {*.ter}}
-      {Sandia National Laboratories GSAT File Format {*.gff}}
-      {Portable Network Graphics {*.png}}
-      {Netpbm {*.pgm *.ppm}}
-      {VTP Binary Terrain Format {*.bt}}
-      {WMO GRIB1/GRIB2 {*.grb}}
-      {X11 Pixmap {*.xpm}}}
-
-   set Data(OGRFormats) {
-      {Arc/Info Binary Coverage {*.bin}}
-      {ESRI Shapefile {*.shp}}
-      {ESRI ArcSDE {*.sde}}
-      {Géoconcept Export {*.gxt}}
-      {Geography Markup Language {*.gml}}
-      {GMT ASCII Vectors {*.gmt}}
-      {GPS Exchange Format {*.gpx}}
-      {GRASS 6+ {*}}
-      {INTERLIS 1 {*.itf *.xml *.ili}}
-      {Keyhole Markup Language {*.kml}}
-      {MapInfo TAB and MIF/MID {*.mid *.mif *.tab *.dat *.map *.id *.ind}}
-      {Microstation {*.dgn}}
-      {SDTS {*.ddf}}
-      {SQLite RDBMS {*.sql}}
-      {UK National Transfer Format {*.ntf}}
-      {U.S. Census TIGER/Line {*.rt*}}
-      {Spatial and Attribute Indexing {*.sbn *.sbx}}
-      {Virtual Datasource {*.vrt}}
-      {X-Plane/Flightgear aeronautical data {*.dat}}}
         
    set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }

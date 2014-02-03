@@ -641,9 +641,9 @@ proc SPI::WindowMenu { } {
       .menu.file.menu.type add command -label "[lindex $Lbl(Radar) $GDefs(Lang)] ..." \
          -command { NowCaster::Window Radar; NowCaster::Radar::Add [FileBox::Create . "" Load ""] } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(GeoOGR) $GDefs(Lang)] ..." \
-         -command { Mapper::Window; Mapper::Read [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(OGRFormats)]] False OGR } -underline 0
+         -command { Mapper::Window; Mapper::Read [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::OGR::Data(Formats)]] False OGR } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(GeoGDAL) $GDefs(Lang)] ..." \
-         -command { Mapper::Window; Mapper::Read [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(GDALFormats)]] False GDAL } -underline 0
+         -command { Mapper::Window; Mapper::Read [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::GDAL::Data(Formats)]] False GDAL } -underline 0
       .menu.file.menu.type add separator
       .menu.file.menu.type add command -label "[lindex $Lbl(Icons) $GDefs(Lang)] ..." \
          -command { SPI::IcoOpen [FileBox::Create . "" Load [list $FileBox::Type(ICO)]] }  -underline 0
