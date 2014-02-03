@@ -1056,14 +1056,17 @@ namespace eval CVText { } {
    set Param(FG)      black
    set Param(Justify) left
    
+   font create CVTEXTFONT -family courier -weight bold -size -12
+
    set Data(TagNo)   0
    
    set Lbl(Update)        { "Mise-à-jour automatique" "Auto update" }
    set Lbl(JustifyLeft)   { "Justification à gauche" "Justify left" }
    set Lbl(JustifyCenter) { "Justification au centre" "Justify center" }
    set Lbl(JustifyRight)  { "Justification à droitre" "Justify right" }
-   set Lbl(BG)            { "Couleur de fond ..." "Background color ..." }
+   set Lbl(Font)          { "Police ..." "Font ..." }
    set Lbl(FG)            { "Couleur de la police ..." "Font color ..." }
+   set Lbl(BG)            { "Couleur de fond ..." "Background color ..." }
 }
 
 #----------------------------------------------------------------------------
@@ -1119,7 +1122,7 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
    set Data(FG$tag)      $Param(FG)
    
    $canvas create rectangle $X0 $Y0 $x1 $y1 -width 1 -tags "$tag CVTEXTBOX$tag CVTEXTBOX VPINTRUDE" -fill $Param(BG)
-   $canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font XFont12 -tags "$tag CVTEXTEDIT$tag CVTEXT" \
+   $canvas create text [expr $X0+5] [expr $Y0+5] -anchor nw -font CVTEXTFONT -tags "$tag CVTEXTEDIT$tag CVTEXT" \
       -text $Text -width [expr $x1-$X0-10] -justify $Data(Justify$tag) -fill $Param(FG)
    $canvas icursor CVTEXTEDIT$tag 0
    
@@ -1142,8 +1145,9 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
          $canvas.bo$tag.menu add radiobutton -label [lindex $Lbl(JustifyRight) $GDefs(Lang)] -variable CVText::Data(Justify$tag) -value right \
             -command "$canvas itemconfigure CVTEXTEDIT$tag -justify \$CVText::Data(Justify$tag)"
          $canvas.bo$tag.menu add separator
-         $canvas.bo$tag.menu add command -label [lindex $Lbl(BG) $GDefs(Lang)] -command "ColorBox::Create . CVText::Data(BG$tag); $canvas itemconfigure CVTEXTBOX$tag -fill \$CVText::Data(BG$tag)"
+         $canvas.bo$tag.menu add command -label [lindex $Lbl(Font) $GDefs(Lang)] -command "FontBox::Create . {} CVTEXTFONT"
          $canvas.bo$tag.menu add command -label [lindex $Lbl(FG) $GDefs(Lang)] -command "ColorBox::Create . CVText::Data(FG$tag); $canvas itemconfigure CVTEXTEDIT$tag -fill \$CVText::Data(FG$tag)"
+         $canvas.bo$tag.menu add command -label [lindex $Lbl(BG) $GDefs(Lang)] -command "ColorBox::Create . CVText::Data(BG$tag); $canvas itemconfigure CVTEXTBOX$tag -fill \$CVText::Data(BG$tag)"
          $canvas.bo$tag.menu add separator
          $canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0
    }      
@@ -1215,6 +1219,10 @@ proc CVText::Write { Frame File } {
          set c [$Frame.page.canvas coords CVTEXTBOX$tag]
          set t [$Frame.page.canvas itemcget CVTEXTEDIT$tag -text]
          
+         puts $File "\n   catch { font create CVTEXTFONT }"
+         puts $File "   font configure CVTEXTFONT -family [font configure CVTEXTFONT -family] -weight [font configure CVTEXTFONT -weight] -size [font configure CVTEXTFONT -size]\
+                  -slant [font configure CVTEXTFONT -slant] -underline [font configure CVTEXTFONT -underline] -overstrike [font configure CVTEXTFONT -overstrike]"
+                  
          puts $File "   set CVText::Param(Justify) $Data(Justify$tag)"
          puts $File "   set CVText::Param(BG)      $Data(BG$tag)"
          puts $File "   set CVText::Param(FG)      $Data(FG$tag)"
