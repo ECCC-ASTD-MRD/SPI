@@ -66,8 +66,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    Tcl_Obj       *obj;
    TGeoRef       *ref;
 
-   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-space","-dimension","-type","-nb","-nbsub","-sub","-name","-points","-addpoint","-setpoint","-inspoint","-delpoint","-pointdist","-segmentdist","-georef",NULL };
-   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,SPACE,DIMENSION,TYPE,NB,NBSUB,SUB,NAME,POINTS,ADDPOINT,SETPOINT,INSPOINT,DELPOINT,POINTDIST,SEGMENTDIST,GEOREF };
+   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-delgeometry","-space","-dimension","-type","-nb","-nbsub","-sub","-name","-points","-addpoint","-setpoint","-inspoint","-delpoint","-pointdist","-segmentdist","-georef",NULL };
+   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,DELGEOMETRY,SPACE,DIMENSION,TYPE,NB,NBSUB,SUB,NAME,POINTS,ADDPOINT,SETPOINT,INSPOINT,DELPOINT,POINTDIST,SEGMENTDIST,GEOREF };
 
    geom=OGR_GeometryGet(Name);
    if (!geom) {
@@ -247,6 +247,18 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                      Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid sub geometry\"",(char*)NULL);
                      return(TCL_ERROR);
                   }
+               }
+            }
+            break;
+
+         case DELGEOMETRY:
+            if (Objc-dobj==1) {
+               Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid geometry index\"",(char*)NULL);
+               return(TCL_ERROR);
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&n);
+               if (n>=0 && n<OGR_G_GetGeometryCount(geom)) {
+                  OGR_G_RemoveGeometry(geom,n,TRUE);
                }
             }
             break;

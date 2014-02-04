@@ -1325,8 +1325,11 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
 
 int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
-   int          year,month,day,hour,min,sec,tz,dt,tm;
-   time_t       time;
+   int      year,month,day,hour,min,sec,tz,dt,tm,n,nobj,*ival;
+   double   *dval;
+   time_t   time;
+   Tcl_Obj *obj;
+   char   **list;
 
    switch (OGR_Fld_GetType(Field)) {
       case OFTInteger:
@@ -1334,6 +1337,16 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
          break;
 
       case OFTIntegerList:
+         Tcl_ListObjLength(Interp,Obj,&nobj);
+         if (!(ival=(int*)calloc(nobj,sizeof(int)))) {
+            Tcl_AppendResult(Interp,"\n   OGR_SetTypeObj: Unable to allocate list array",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         for(n=0;n<nobj;n++) {
+            Tcl_ListObjIndex(Interp,Obj,n,&obj);
+            Tcl_GetIntFromObj(Interp,obj,&ival[n]);
+         }
+         OGR_F_SetFieldIntegerList(Feature,Index,n,ival);
          break;
 
       case OFTReal:
@@ -1341,6 +1354,16 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
          break;
 
       case OFTRealList:
+         Tcl_ListObjLength(Interp,Obj,&nobj);
+         if (!(dval=(double*)calloc(nobj,sizeof(double)))) {
+            Tcl_AppendResult(Interp,"\n   OGR_SetTypeObj: Unable to allocate list array",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         for(n=0;n<nobj;n++) {
+            Tcl_ListObjIndex(Interp,Obj,n,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&dval[n]);
+         }
+         OGR_F_SetFieldDoubleList(Feature,Index,n,dval);
          break;
 
       case OFTString:
@@ -1348,6 +1371,11 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
          break;
 
       case OFTStringList:
+         if (Tcl_SplitList(Interp,Tcl_GetString(Obj),&nobj,(const char***)&list)==TCL_ERROR) {
+            return TCL_ERROR;
+         }
+         OGR_F_SetFieldStringList(Feature,Index,list);                       
+         Tcl_Free((char*)list);
          break;
 
       case OFTTime:
@@ -2559,6 +2587,8 @@ int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
       Layer->Loc[Index].Elev=0.0;
    }
    glEndList();
+   
+   return(1);
 }
 
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
