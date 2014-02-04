@@ -107,11 +107,11 @@ proc Graph::TimeSection::Create { Frame X0 Y0 Width Height Active Full { Link Tr
 
    Graph::Activate $Frame $gr TimeSection
    
+    graphaxis create axisx$gr
+    graphaxis create axisy$gr
+
    if { $Graph::Data(Link$gr) } {
       #----- Creation des unite de l'echelle
-
-      graphaxis create axisx$gr
-      graphaxis create axisy$gr
 
       set id [$data(Canvas) create text -100 -100  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text $graph(UnitX) \
          -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]

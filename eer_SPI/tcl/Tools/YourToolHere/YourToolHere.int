@@ -70,8 +70,8 @@ proc YourToolHere::Window { } {
       pack $Data(Tab).head -side top -fill x
 
       frame .yourtoolhere.dock -relief raised -bd 1
-         button .yourtoolhere.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool YourToolHere }
-         button .yourtoolhere.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command YourToolHere::Close
+         button .yourtoolhere.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool YourToolHere }
+         button .yourtoolhere.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command YourToolHere::Close
          entry .yourtoolhere.dock.coo -textvariable YourToolHere::Data(Coo) -bg $GDefs(ColorLight) -width 20 -bd 1
          pack .yourtoolhere.dock.sel .yourtoolhere.dock.del -side left
          pack .yourtoolhere.dock.coo -side left -fill both -expand true

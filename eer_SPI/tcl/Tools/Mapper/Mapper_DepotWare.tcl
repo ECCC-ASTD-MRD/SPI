@@ -275,7 +275,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
    labelframe .mapperdepotparams.cache -text [lindex $Lbl(Cache) $GDefs(Lang)]
       frame .mapperdepotparams.cache.path
          label .mapperdepotparams.cache.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
-         button .mapperdepotparams.cache.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
+         button .mapperdepotparams.cache.path.open -image OPEN -bd 1 -relief flat -overrelief raised \
             -command  { Mapper::DepotWare::CacheSet [FileBox::Create . $Mapper::DepotWare::Data(CachePath) LoadPath {}] }
          entry .mapperdepotparams.cache.path.ent -width 30 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::Data(CachePath)
          pack .mapperdepotparams.cache.path.lbl -side left
@@ -286,7 +286,7 @@ proc Mapper::DepotWare::Params { { Save 1 } } {
          spinbox .mapperdepotparams.cache.sz.inc -bd 1 -bg $GDefs(ColorLight) -increment 10 -from 0 -to 4096 \
             -textvariable Mapper::DepotWare::Data(CacheMax)
          label .mapperdepotparams.cache.sz.cur -anchor w -textvariable Mapper::DepotWare::Data(CacheSize)
-         button .mapperdepotparams.cache.sz.clear -image DELETE -bd 0 -relief flat -overrelief raised -relief raised \
+         button .mapperdepotparams.cache.sz.clear -image DELETE -bd 1 -relief flat -overrelief raised \
             -command  { Mapper::DepotWare::CacheClear }
          pack .mapperdepotparams.cache.sz.lbl -side left
          pack .mapperdepotparams.cache.sz.inc -side left  -fill x -expand True

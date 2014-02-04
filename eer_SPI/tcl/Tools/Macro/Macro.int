@@ -62,20 +62,20 @@ proc Macro::Window { } {
       pack .macro.tab -side top -fill both -expand true
 
       frame .macro.dock -relief raised -bd 1
-         button .macro.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Macro }
-         button .macro.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Macro::Close
+         button .macro.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Macro }
+         button .macro.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Macro::Close
          label .macro.dock.info -textvariable Macro::Data(Job) -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
          pack .macro.dock.sel .macro.dock.del -side left
          pack .macro.dock.info -side left -fill x -expand true
       pack .macro.dock -side bottom -fill x
 
       frame $Data(Tab).head
-         button $Data(Tab).head.start -image DOCRUN -bd 0 -relief flat -overrelief raised -command { if { [llength [$Macro::Data(Tab).desc.data.list curselection]] } { Macro::Execute [Macro::Current] } }
-         button $Data(Tab).head.new -image DOCNEW -bd 0 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $env(HOME)/.spi/Macro Save [list $FileBox::Type(TCL)]]}
-         button $Data(Tab).head.load -image DOCLOAD -bd 0 -relief flat -overrelief raised -command { Macro::Load [FileBox::Create .macro "" Load [list $FileBox::Type(TCL)]]}
-         button $Data(Tab).head.save -image DOCSAVE -bd 0 -relief flat -overrelief raised -command { Macro::Save [Macro::Current] } -state disabled
-         button $Data(Tab).head.del -image DOCDEL -bd 0 -relief flat -overrelief raised -command { Macro::Delete [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
-         button $Data(Tab).head.reset -image WORLDRESET -bd 0 -relief flat -overrelief raised -command { Macro::Reset }
+         button $Data(Tab).head.start -image DOCRUN -bd 1 -relief flat -overrelief raised -command { if { [llength [$Macro::Data(Tab).desc.data.list curselection]] } { Macro::Execute [Macro::Current] } }
+         button $Data(Tab).head.new -image DOCNEW -bd 1 -relief flat -overrelief raised -command { Macro::New [FileBox::Create .macro $env(HOME)/.spi/Macro Save [list $FileBox::Type(TCL)]]}
+         button $Data(Tab).head.load -image DOCLOAD -bd 1 -relief flat -overrelief raised -command { Macro::Load [FileBox::Create .macro "" Load [list $FileBox::Type(TCL)]]}
+         button $Data(Tab).head.save -image DOCSAVE -bd 1 -relief flat -overrelief raised -command { Macro::Save [Macro::Current] } -state disabled
+         button $Data(Tab).head.del -image DOCDEL -bd 1 -relief flat -overrelief raised -command { Macro::Delete [Macro::Current] ; update idletasks; Macro::Select [Macro::Current]}
+         button $Data(Tab).head.reset -image WORLDRESET -bd 1 -relief flat -overrelief raised -command { Macro::Reset }
          pack $Data(Tab).head.start $Data(Tab).head.reset $Data(Tab).head.new $Data(Tab).head.load $Data(Tab).head.save $Data(Tab).head.del -side left -padx 2
       pack $Data(Tab).head -side top -fill x
 

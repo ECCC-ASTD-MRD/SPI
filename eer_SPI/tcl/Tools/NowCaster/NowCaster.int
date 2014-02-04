@@ -56,8 +56,8 @@ proc NowCaster::Window { { Type "" } } {
       }
 
       frame .nowcaster.dock -relief raised -bd 1
-         button .nowcaster.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool NowCaster }
-         button .nowcaster.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command NowCaster::Close
+         button .nowcaster.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool NowCaster }
+         button .nowcaster.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command NowCaster::Close
          label .nowcaster.dock.info -textvariable NowCaster::Data(Job) -relief sunken -bd 1 -anchor w -width 28 -bg $GDefs(ColorLight)
          pack .nowcaster.dock.sel .nowcaster.dock.del -side left
          pack .nowcaster.dock.info -side left -fill x -expand true

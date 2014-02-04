@@ -253,19 +253,19 @@ proc Exp::Create { Frame } {
       $Frame.info add $Frame.info.proc -minsize 10
 
    frame $Frame.opt
-      button $Frame.opt.open -image PLUS -relief flat -bd 0 -overrelief raised -command "Exp::AllOpen"
-      button $Frame.opt.close -image MINUS -relief flat -bd 0 -overrelief raised -command "Exp::AllClose"
+      button $Frame.opt.open -image PLUS -relief flat -bd 1 -overrelief raised -command "Exp::AllOpen"
+      button $Frame.opt.close -image MINUS -relief flat -bd 1 -overrelief raised -command "Exp::AllClose"
       checkbutton $Frame.opt.bubble -image INFO -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False  -selectcolor $GDefs(ColorLight) \
          -onvalue 1 -offvalue 0 -variable CanvasBubble::Data(State$Frame.info.exp.canvas) -command "CanvasBubble::Activate $Frame.info.exp.canvas"
-      button $Frame.opt.writer -image DOCWRITE -relief flat -bd 0 -overrelief raised -command "Writer::Window"
-      button $Frame.opt.bulletin -image CAUTION -relief flat -bd 0 -overrelief raised -command "Bulletin::Window"
-      button $Frame.opt.new -compound left -image BOMB -text [lindex $Lbl(New) $GDefs(Lang)] -relief flat -bd 0 -overrelief raised \
+      button $Frame.opt.writer -image DOCWRITE -relief flat -bd 1 -overrelief raised -command "Writer::Window"
+      button $Frame.opt.bulletin -image CAUTION -relief flat -bd 1 -overrelief raised -command "Bulletin::Window"
+      button $Frame.opt.new -compound left -image BOMB -text [lindex $Lbl(New) $GDefs(Lang)] -relief flat -bd 1 -overrelief raised \
          -command "Model::New $Frame Exp::New"
       pack $Frame.opt.open $Frame.opt.close $Frame.opt.bubble $Frame.opt.new  -side left -padx 2
       pack $Frame.opt.writer $Frame.opt.bulletin -side right -padx 2
 
    frame $Frame.path
-      button $Frame.path.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+      button $Frame.path.sel -image OPEN -relief flat -bd 1 -overrelief raised \
          -command { Exp::ReadPath [FileBox::Create . "" LoadPath "" ] }
       ComboBox::Create $Frame.path.list Exp::Param(Path) noedit unsorted \
          nodouble -1 $Exp::Param(Paths) 21 5 "Exp::Read; Model::TypeSelect none 1"

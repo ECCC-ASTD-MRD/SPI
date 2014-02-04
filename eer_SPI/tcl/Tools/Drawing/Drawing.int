@@ -67,12 +67,12 @@ proc Drawing::Window { } {
       pack .drawing.tab -side top -fill both -expand true
 
       frame .drawing.dock -relief raised -bd 1
-         button .drawing.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Drawing }
-         button .drawing.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Drawing::Close
+         button .drawing.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Drawing }
+         button .drawing.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Drawing::Close
          entry .drawing.dock.lat -textvariable Viewport::Map(LatCursor) -bg $GDefs(ColorLight) -width 9 -bd 1
          entry .drawing.dock.lon -textvariable Viewport::Map(LonCursor) -bg $GDefs(ColorLight) -width 10 -bd 1
          entry .drawing.dock.ele -textvariable Drawing::Current(Elev) -bg $GDefs(ColorLight) -width 6 -bd 1
-         button .drawing.dock.add -image SCHECK -relief flat -bd 0 -overrelief raised \
+         button .drawing.dock.add -image SCHECK -relief flat -bd 1 -overrelief raised \
             -command { Drawing::VertexAdd $Page::Data(Frame) $Viewport::Data(VP) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor) 0 }
          pack .drawing.dock.sel .drawing.dock.del -side left
          pack .drawing.dock.lat .drawing.dock.lon -side left -fill y
@@ -97,12 +97,12 @@ proc Drawing::Window { } {
             -command { Drawing::UpdateItems $Page::Data(Frame) }
 
          frame $Data(Tab).head.idx
-            button $Data(Tab).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) -1 }
-            button $Data(Tab).head.idx.up -image DOWN -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) 1 }
+            button $Data(Tab).head.idx.down -image UP -bd 1 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) -1 }
+            button $Data(Tab).head.idx.up -image DOWN -bd 1 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) 1 }
             pack $Data(Tab).head.idx.down $Data(Tab).head.idx.up -side top -fill y -expand true -ipadx 3
-         button $Data(Tab).head.front -image FRONT -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) F }
-         button $Data(Tab).head.back -image BACK -bd 0 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) B }
-         button $Data(Tab).head.del -image DELETE -bd 0 -relief flat -overrelief raised \
+         button $Data(Tab).head.front -image FRONT -bd 1 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) F }
+         button $Data(Tab).head.back -image BACK -bd 1 -relief flat -overrelief raised -command { Drawing::ItemIndex $Page::Data(Frame) B }
+         button $Data(Tab).head.del -image DELETE -bd 1 -relief flat -overrelief raised \
             -command { Drawing::ItemDel $Page::Data(Frame) }
          pack $Data(Tab).head.mode $Data(Tab).head.file $Data(Tab).head.georef $Data(Tab).head.grid $Data(Tab).head.mark -side left -fill x -anchor w -padx 2
          pack $Data(Tab).head.del $Data(Tab).head.idx $Data(Tab).head.back $Data(Tab).head.front -side right -padx 2

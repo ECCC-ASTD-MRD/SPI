@@ -142,6 +142,7 @@ namespace eval Mapper { } {
    set Lbl(Small)        { "Petit" "Small" }
    set Lbl(Medium)       { "Moyen" "Medium" }
    set Lbl(Large)        { "Large" "Large" }
+   set Lbl(NewLayer)     { "Nouvelle couche vectorielle ..." "New vectorial layer ..." }
    set Lbl(AddRing)      { "Ajouter un contour" "Add ring" }
    set Lbl(AddGeom)      { "Ajouter une geometrie" "Add geometry" }
    set Lbl(DelRing)      { "Supprimer un contour" "Delete ring" }

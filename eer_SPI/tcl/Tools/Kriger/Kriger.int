@@ -66,13 +66,10 @@ proc Kriger::Window { } {
          checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue Kriger -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Draw True }
-         button $Data(Tab).head.krig -image GRIDTO -bd 0 -relief flat -overrelief raised \
-            -command { Kriger::Process }
-         button $Data(Tab).head.save -image GRIDSAVE -bd 0 -relief flat -overrelief raised \
-            -command { Kriger::Save [FileBox::Create . "" Save [list $FileBox::Type(FSTD)]] }
-         button $Data(Tab).head.del -image GRIDDEL -bd 0 -relief flat -overrelief raised \
-            -command { Kriger::Grid [set Kriger::Data(Coords) {}] }
-#         button $Data(Tab).head.redraw -text Redraw -bd 0 -relief flat -overrelief raised \
+         button $Data(Tab).head.krig -image GRIDTO -bd 1 -relief flat -overrelief raised -command { Kriger::Process }
+         button $Data(Tab).head.save -image GRIDSAVE -bd 1 -relief flat -overrelief raised -command { Kriger::Save [FileBox::Create . "" Save [list $FileBox::Type(FSTD)]] }
+         button $Data(Tab).head.del -image GRIDDEL -bd 1 -relief flat -overrelief raised -command { Kriger::Grid [set Kriger::Data(Coords) {}] }
+#         button $Data(Tab).head.redraw -text Redraw -bd 1 -relief flat -overrelief raised \
 #            -command { $Macro::FlightKrig::Data(Canvas) itemconfigure GRAPH -item Macro::ITEM }
          pack $Data(Tab).head.mode $Data(Tab).head.krig $Data(Tab).head.save $Data(Tab).head.del -side left -padx 2
       pack $Data(Tab).head -side top -fill x
@@ -150,8 +147,8 @@ proc Kriger::Window { } {
       pack $Data(Tab).res -side top -fill both -expand True -padx 2 -pady 2
 
       frame .kriger.dock -relief raised -bd 1
-         button .kriger.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Kriger }
-         button .kriger.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Kriger::Close
+         button .kriger.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Kriger }
+         button .kriger.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Kriger::Close
          entry .kriger.dock.coo -textvariable Kriger::Data(Job) -bg $GDefs(ColorLight) -width 40 -bd 1
          pack .kriger.dock.sel .kriger.dock.del -side left
          pack .kriger.dock.coo -side left -fill both -expand true

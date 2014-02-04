@@ -84,8 +84,8 @@ proc Console::Window { } {
          pack $Data(Tab).text -side top -fill both -expand true
 
       frame .console.dock -relief raised -bd 1
-         button .console.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Console }
-         button .console.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Console::Close
+         button .console.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Console }
+         button .console.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Console::Close
          label .console.dock.info -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
          pack .console.dock.sel .console.dock.del -side left
          pack .console.dock.info -side left -fill x -expand true

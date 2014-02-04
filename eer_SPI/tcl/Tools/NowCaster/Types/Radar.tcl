@@ -108,14 +108,14 @@ proc NowCaster::Radar::Window { Frame } {
       checkbutton $Frame.head.mode -variable Page::Data(ToolMode) -onvalue NowCaster::Radar -offvalue SPI \
          -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
          -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-      button $Frame.head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 1 }
+      button $Frame.head.params -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params ;  TabFrame::Select .params.tab 1 }
       checkbutton $Frame.head.areas -image CIRCLE -relief sunken -bd 1 -overrelief raised -offrelief flat -anchor w  -selectcolor $GDefs(ColorLight)\
             -command { NowCaster::Radar::Areas } -variable Areas::Data(AllRADAR) -onvalue True -offvalue False -indicatoron False
       checkbutton $Frame.head.ranges -image RANGE -relief sunken -bd 1 -overrelief raised -offrelief flat -width 30 -anchor w  -selectcolor $GDefs(ColorLight)\
             -command { NowCaster::Radar::Range } -variable NowCaster::Radar::Data(RangeActive) -onvalue True -offvalue False -indicatoron False
       menubutton $Frame.head.ranges.down -image OPTIONS -relief flat -bd 0 -menu $Frame.head.ranges.down.menu
       place $Frame.head.ranges.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
-      menubutton $Frame.head.add -image PLUS -bd 0 -relief flat -menu $Frame.head.add.list
+      menubutton $Frame.head.add -image PLUS -bd 1 -relief flat -menu $Frame.head.add.list
       button $Frame.head.del -image DELETE -bd 1 -relief flat -overrelief raised \
          -command "catch { NowCaster::Radar::Delete \[$Frame.select.list get \[$Frame.select.list curselection\]\] }"
       pack $Frame.head.mode $Frame.head.areas $Frame.head.params -side left

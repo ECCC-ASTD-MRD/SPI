@@ -1777,8 +1777,8 @@ proc Model::Window { { Show "" } } {
       }
 
       frame .model.dock -relief raised -bd 1
-         button .model.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command Model::Dock
-         button .model.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command { set Model::Param(Show) False; Model::Destroy }
+         button .model.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command Model::Dock
+         button .model.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command { set Model::Param(Show) False; Model::Destroy }
          label .model.dock.info -textvariable Model::Param(Job) -relief sunken -bd 1 -anchor w -width 21 -bg $GDefs(ColorLight)
          pack .model.dock.sel .model.dock.del -side left
          pack .model.dock.info -side left -fill x -expand true

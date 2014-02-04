@@ -796,11 +796,11 @@ proc SPI::ToolBar { Frame } {
 
    frame $Frame
       frame $Frame.opt -relief raised -bd 1
-         button $Frame.opt.params -image PARAMS -relief flat -bd 0 -overrelief raised \
+         button $Frame.opt.params -image PARAMS -relief flat -bd 1 -overrelief raised \
             -command "SPI::Params"
-         button $Frame.opt.print  -image PRINT  -relief flat -bd 0 -overrelief raised \
+         button $Frame.opt.print  -image PRINT  -relief flat -bd 1 -overrelief raised \
             -command { PrintBox::Create $Page::Data(Frame) PRINT $SPI::Param(Layout) }
-         button $Frame.opt.save  -image SAVE  -relief flat -bd 0 -overrelief raised \
+         button $Frame.opt.save  -image SAVE  -relief flat -bd 1 -overrelief raised \
             -command { PrintBox::Create $Page::Data(Frame) SAVE $SPI::Param(Layout) }
          pack $Frame.opt.save $Frame.opt.print $Frame.opt.params -side left -padx 2
 
@@ -821,10 +821,10 @@ proc SPI::ToolBar { Frame } {
                -onvalue True -offvalue False -command "Model::Window"  -selectcolor $GDefs(ColorLight)
             pack $Frame.tool.model -before $Frame.tool.graph -side left -padx 2
          }
-      pack $Frame.tool -side left
+      pack $Frame.tool -side left -fill y
 
       frame $Frame.data -relief raised -bd 1
-         button $Frame.data.clr -image WORLDRESET -relief flat -bd 0 -overrelief raised \
+         button $Frame.data.clr -image WORLDRESET -relief flat -bd 1 -overrelief raised \
             -command { SPI::Clear }
          checkbutton $Frame.data.geo -image WORLD -selectimage RESET -variable Viewport::Map(Draw) -relief sunken -bd 1 -overrelief raised -offrelief flat \
             -onvalue 0 -offvalue 1 -indicatoron False -command { Viewport::ConfigSet $Page::Data(Frame) }
@@ -840,28 +840,28 @@ proc SPI::ToolBar { Frame } {
             -variable Page::Data(Mode) -value Fly -command {  SPI::ToolMode SPI Fly } -selectcolor $GDefs(ColorLight)
          ComboBox::Create $Frame.cam.sel ProjCam::Data(Name) edit sorted nodouble -1 $ProjCam::Data(Names) 15 6 \
             "ProjCam::Select \$Page::Data(Frame) \$Page::Data(Frame) \$ProjCam::Data(Name)"
-         button $Frame.cam.clr   -image FLATTEN -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.clr   -image FLATTEN -relief flat -bd 1 -overrelief raised \
             -command { Viewport::Reset $Page::Data(Frame) }
-         button $Frame.cam.rot  -image ROTATE  -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.rot  -image ROTATE  -relief flat -bd 1 -overrelief raised \
             -command { ProjCam::Rotate $Page::Data(Frame) $Page::Data(Frame) 90.0; Page::Update $Page::Data(Frame) }
-         button $Frame.cam.down  -image CAMDOWN  -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.down  -image CAMDOWN  -relief flat -bd 1 -overrelief raised \
             -command { ProjCam::Reset $Page::Data(Frame) False ; Page::Update $Page::Data(Frame) }
-         button $Frame.cam.zclr  -image ZOOMCLR  -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.zclr  -image ZOOMCLR  -relief flat -bd 1 -overrelief raised \
             -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) True True }
-         button $Frame.cam.zback -image ZOOMBACK -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.zback -image ZOOMBACK -relief flat -bd 1 -overrelief raised \
             -command { ProjCam::ZoomOut $Page::Data(Frame) $Page::Data(Frame) $Viewport::Data(VP) False True }
-         button $Frame.cam.out   -image CAMSAVE  -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.out   -image CAMSAVE  -relief flat -bd 1 -overrelief raised \
             -command "ProjCam::Save $Frame.cam.sel \[Dialog::Get . \$SPI::Bubble(CamSave) \$SPI::Msg(CamName)\]"
-         button $Frame.cam.in    -image CAMDEL   -relief flat -bd 0 -overrelief raised \
+         button $Frame.cam.in    -image CAMDEL   -relief flat -bd 1 -overrelief raised \
             -command "ProjCam::Delete $Frame.cam.sel"
          pack $Frame.cam.clr $Frame.cam.rot $Frame.cam.down $Frame.cam.zclr $Frame.cam.zback $Frame.cam.zoom $Frame.cam.cam $Frame.cam.sel $Frame.cam.out $Frame.cam.in -side left -padx 2
       pack  $Frame.cam -side left
       frame $Frame.page -relief raised -bd 1
          ComboBox::Create $Frame.page.scale Page::Data(Scale) edit unsorted nodouble -1 { 1000 500 200 100 50 25 10 } 4 5
 #            { set Page::Data(Full$Page::Data(Frame)) False ; Page::Scale $Page::Data(Frame) }
-         button $Frame.page.out -image DOCOUT -relief flat -bd 0 -overrelief raised -state disabled \
+         button $Frame.page.out -image DOCOUT -relief flat -bd 1 -overrelief raised -state disabled \
             -command { set Page::Data(Full$Page::Data(Frame)) False ; Page::Scale $Page::Data(Frame) -10 }
-         button $Frame.page.in  -image DOCIN -relief flat -bd 0 -overrelief raised -state disabled \
+         button $Frame.page.in  -image DOCIN -relief flat -bd 1 -overrelief raised -state disabled \
             -command { set Page::Data(Full$Page::Data(Frame)) False ; Page::Scale $Page::Data(Frame) 10 }
          checkbutton $Frame.page.full -image DOC -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -selectcolor $GDefs(ColorLight) -state disabled \
             -variable Page::Data(Full) -onvalue True -offvalue False -command { set Page::Data(Full$Page::Data(Frame)) $Page::Data(Full) ; Page::ScaleSet $Page::Data(Frame) }
@@ -870,11 +870,11 @@ proc SPI::ToolBar { Frame } {
       frame $Frame.layout -relief raised -bd 1
          ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit unsorted nodouble -1 $SPI::Param(Layouts) 15 5 \
             { SPI::LayoutLoad $Page::Data(Frame) $SPI::Param(Layout) }
-         button $Frame.layout.save -image PAGESAVE -relief flat -bd 0 -overrelief raised \
+         button $Frame.layout.save -image PAGESAVE -relief flat -bd 1 -overrelief raised \
             -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::Get . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }
-         button $Frame.layout.del -image PAGEDEL -relief flat -bd 0 -overrelief raised \
+         button $Frame.layout.del -image PAGEDEL -relief flat -bd 1 -overrelief raised \
             -command { SPI::LayoutDelete }
-         button $Frame.layout.run -image DOCRUN -relief flat -bd 0 -overrelief raised \
+         button $Frame.layout.run -image DOCRUN -relief flat -bd 1 -overrelief raised \
             -command { SPI::Execute [FileBox::Create . "" Load [list $FileBox::Type(TCL)]] }
          checkbutton $Frame.layout.mag  -image MODEMAG -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
             -variable Page::Data(Mode) -onvalue Mag -offvalue Zoom -command { SPI::ToolMode SPI $Page::Data(Mode) } -selectcolor $GDefs(ColorLight) -width 28 -anchor w
@@ -894,17 +894,17 @@ proc SPI::ToolBar { Frame } {
       pack $Frame.layout -side left -fill x
 
       frame $Frame.win -relief raised -bd 1
-         button $Frame.win.new -image FRAMEEXT -relief flat -bd 0 -overrelief raised \
+         button $Frame.win.new -image FRAMEEXT -relief flat -bd 1 -overrelief raised \
             -command { SPI::PageNew True }
-         button $Frame.win.add -image FRAMEADD -relief flat -bd 0 -overrelief raised \
+         button $Frame.win.add -image FRAMEADD -relief flat -bd 1 -overrelief raised \
             -command { SPI::PageNew False }
-         button $Frame.win.del -image FRAMEDEL -relief flat -bd 0 -overrelief raised \
+         button $Frame.win.del -image FRAMEDEL -relief flat -bd 1 -overrelief raised \
             -command { SPI::PageDel }
          pack $Frame.win.new $Frame.win.add $Frame.win.del -side left -padx 2
       pack $Frame.win -side left -fill x
    pack $Frame -side top -fill x
 
-   pack [Mapper::Geo::Widget $Frame] -side left -fill x -expand true
+   pack [Mapper::Geo::Widget $Frame] -side left -fill both -expand true
 
    Bubble::Create $Frame.win.new     $Bubble(WinNew)
    Bubble::Create $Frame.win.add     $Bubble(WinAdd)

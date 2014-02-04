@@ -111,7 +111,7 @@ proc Mapper::Geo::Widget { Frame } {
 
       entry $Frame.geo.address -textvariable Mapper::Geo::Data(Address) -relief sunken -bd 1 -bg $GDefs(ColorLight)
       pack $Frame.geo.icode -side left -padx 2
-      pack $Frame.geo.address -side left -fill both -expand True
+      pack $Frame.geo.address -side left -fill both -expand True -pady 2 -padx 2
    pack $Frame.geo -side left -fill x -expand true
 
    bind $Frame.geo.address <Return> { Mapper::Geo::Code $Mapper::Geo::Data(Address) $Mapper::Geo::Param(API) }

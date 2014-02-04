@@ -56,8 +56,8 @@ proc Mapper::Window { } {
       }
 
       frame .mapper.dock -relief raised -bd 1
-         button .mapper.dock.sel -image DOCK -anchor w -relief flat -bd 0 -overrelief raised -command { SPI::DockTool Mapper }
-         button .mapper.dock.del -image DOCKDELETE -anchor w -relief flat -bd 0 -overrelief raised -command Mapper::Close
+         button .mapper.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Mapper }
+         button .mapper.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Mapper::Close
          label .mapper.dock.info -textvariable Mapper::Data(Job) -relief sunken -bd 1 -anchor w -width 31 -bg $GDefs(ColorLight)
          pack .mapper.dock.sel .mapper.dock.del -side left
          pack .mapper.dock.info -side left -fill x -expand true
@@ -75,9 +75,9 @@ proc Mapper::Window { } {
          checkbutton $Data(Tab2).head.mode -variable Page::Data(ToolMode) -onvalue Mapper::DepotWare -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command  { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab2).head.reset -image RESET -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DepotWare::Reset True"
-         button $Data(Tab2).head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command "Mapper::DepotWare::Params"
-         button $Data(Tab2).head.add -image PLUS -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::DepotWare::Window"
+         button $Data(Tab2).head.reset -image RESET -bd 1 -relief flat -overrelief raised -command "Mapper::DepotWare::Reset True"
+         button $Data(Tab2).head.params -image PARAMS -bd 1 -relief flat -overrelief raised -command "Mapper::DepotWare::Params"
+         button $Data(Tab2).head.add -image PLUS -bd 1 -relief flat -overrelief raised -command "Mapper::DepotWare::Window"
          button $Data(Tab2).head.del -image DELETE -bd 1 -relief flat -overrelief raised -command "Mapper::DepotWare::Del \$Mapper::DepotWare::Data(Select)"
          pack $Data(Tab2).head.mode $Data(Tab2).head.reset $Data(Tab2).head.params -side left -padx 2
          pack $Data(Tab2).head.del $Data(Tab2).head.add -side right -padx 2
@@ -119,20 +119,25 @@ proc Mapper::Window { } {
 #         $Data(Tab1).head.mode.down.menu add separator
 #         $Data(Tab1).head.mode.down.menu add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -variable Mapper::Data(PickAll) -onvalue True -offvalue False
 
-         button $Data(Tab1).head.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::GDAL::Data(Formats) \$Mapper::OGR::Data(Formats)\]\]"
-         button $Data(Tab1).head.params -image PARAMS -bd 0 -relief flat -overrelief raised -command "Mapper::Params True"
-         button $Data(Tab1).head.loc -image FINGER -bd 0 -relief flat -overrelief raised -command "Mapper::Locate"
-         button $Data(Tab1).head.zoom -image MODEZOOM -bd 0 -relief flat -overrelief raised -command "Mapper::Zoom"
+         button $Data(Tab1).head.open -image OPEN -bd 1 -relief flat -width 28 -anchor w -overrelief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::GDAL::Data(Formats) \$Mapper::OGR::Data(Formats)\]\]"
+         menubutton $Data(Tab1).head.open.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab1).head.open.down.menu
+         place $Data(Tab1).head.open.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
+         menu $Data(Tab1).head.open.down.menu
+         $Data(Tab1).head.open.down.menu add command -label [lindex $Lbl(NewLayer) $GDefs(Lang)] -command { Mapper::OGR::New }
+
+         button $Data(Tab1).head.params -image PARAMS -bd 1 -relief flat -overrelief raised -command "Mapper::Params True"
+         button $Data(Tab1).head.loc -image FINGER -bd 1 -relief flat -overrelief raised -command "Mapper::Locate"
+         button $Data(Tab1).head.zoom -image MODEZOOM -bd 1 -relief flat -overrelief raised -command "Mapper::Zoom"
          checkbutton $Data(Tab1).head.ref -variable Mapper::Data(GeoRef) -offvalue "" -command "Mapper::SetGeoRef" \
             -image RESET -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
          pack $Data(Tab1).head.mode $Data(Tab1).head.open $Data(Tab1).head.params $Data(Tab1).head.loc $Data(Tab1).head.zoom -side left -padx 2
 
          frame $Data(Tab1).head.idx
-            button $Data(Tab1).head.idx.down -image UP -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll -1"
-            button $Data(Tab1).head.idx.up -image DOWN -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll 1"
+            button $Data(Tab1).head.idx.down -image UP -bd 1 -width 12 -relief flat -overrelief raised -command "Mapper::Scroll -1"
+            button $Data(Tab1).head.idx.up -image DOWN -bd 1 -width 12 -relief flat -overrelief raised -command "Mapper::Scroll 1"
             pack $Data(Tab1).head.idx.down $Data(Tab1).head.idx.up -side top -fill y -expand true -ipadx 3
-         button $Data(Tab1).head.front -image FRONT -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll F"
-         button $Data(Tab1).head.back -image BACK -bd 0 -relief flat -overrelief raised -command "Mapper::Scroll B"
+         button $Data(Tab1).head.front -image FRONT -bd 1 -relief flat -overrelief raised -command "Mapper::Scroll F"
+         button $Data(Tab1).head.back -image BACK -bd 1 -relief flat -overrelief raised -command "Mapper::Scroll B"
          button $Data(Tab1).head.del -image DELETE -bd 1 -relief flat -overrelief raised -command "Mapper::Del"
          pack $Data(Tab1).head.del $Data(Tab1).head.idx $Data(Tab1).head.back $Data(Tab1).head.front -side right -padx 2
       pack $Data(Tab1).head -side top -fill x
