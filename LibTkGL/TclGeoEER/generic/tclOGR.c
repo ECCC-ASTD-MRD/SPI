@@ -321,8 +321,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_WideInt   w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
-   static CONST char *sopt[] = { "create","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
-   enum                opt { CREATE,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,COPY,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","new","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
+   enum                opt { CREATE,NEW,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,COPY,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -338,9 +338,10 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    switch ((enum opt)idx) {
       case CREATE:
          if (Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"file Id layer [georef]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"File Id layer [georef]");
             return(TCL_ERROR);
          }
+         
          if (Objc==6) {
             ref=GeoRef_Get(Tcl_GetString(Objv[5]));
             if (!ref) {
@@ -354,6 +355,33 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
+         break;
+
+      case NEW:
+         if (Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"Id layer geom [georef]");
+            return(TCL_ERROR);
+         }
+         
+         if (Objc==6) {
+            ref=GeoRef_Get(Tcl_GetString(Objv[5]));
+            if (!ref) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid georeference object",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
+         }
+         
+         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])))) {
+            Tcl_AppendResult(Interp,"OGR_LayerCmd: Unable to create layer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         layer->SQLed=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[4]),NULL);
+         layer->Layer=OGR_DS_CreateLayer(layer->SQLed,Tcl_GetString(Objv[4]),ref->Spatial,wkbUnknown,NULL);
+         layer->Def=OGR_FD_Create(Tcl_GetString(Objv[4]));             
+         OGR_FD_Reference(layer->Def);
+                
          break;
 
       case READ:
@@ -690,7 +718,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
 
    OGR_Layer *layer;
 
-   if (!(layer=(OGR_Layer*)TclY_HashPut(Interp,&OGR_LayerTable,Name,sizeof(OGR_Layer)))) {
+   if (!Name || !strlen(Name) || !(layer=(OGR_Layer*)TclY_HashPut(Interp,&OGR_LayerTable,Name,sizeof(OGR_Layer)))) {
       return(NULL);
    }
 

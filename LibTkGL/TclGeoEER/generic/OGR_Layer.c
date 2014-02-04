@@ -89,7 +89,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case FID:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->File->Id,-1));
+               if (layer->File) Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->File->Id,-1));
             }
             break;
 
@@ -129,7 +129,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case TYPE:
             if (Objc==1) {
-               if ((geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
+               if (layer->Feature && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_G_GetGeometryType(geom)),-1));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(wkbUnknown),-1));
@@ -140,7 +140,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case SPACE:
             if (Objc==1) {
-               if ((geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
+               if (layer->Feature && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
                   Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetDimension(geom)));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewIntObj(-1));
@@ -201,7 +201,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   i++;
                }
                if (!OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),t)) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to create field",(char*)NULL);
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to create field ",Tcl_GetString(Objv[1]),(char*)NULL);
                   return(TCL_ERROR);
                }
                i++;
@@ -214,7 +214,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-            if (f<0 || f>layer->NFeature) {
+            if (f<0 || f>=layer->NFeature) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -257,7 +257,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-            if (f<0 || f>layer->NFeature) {
+            if (f<0 || f>=layer->NFeature) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -302,7 +302,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(layer->NFeature));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-               if (f>layer->NFeature) {
+               if (f>=layer->NFeature) {
                   layer->Feature=realloc(layer->Feature,f*sizeof(OGRFeatureH));
                   layer->Select=realloc(layer->Select,f*sizeof(char));
                   if (layer->Feature && layer->Select) {
@@ -424,7 +424,7 @@ static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,
    OGR_Layer *layerres;
    
    if (!(layerres=OGR_LayerCreate(Interp,Name))) {
-      Tcl_AppendResult(Interp,"OGR_LayerStats: Unable to create operation layer",(char*)NULL);
+      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to create operation layer",(char*)NULL);
       return(NULL);
    }
  
@@ -437,13 +437,13 @@ static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,
    OGR_FD_Reference(layerres->Def);
 
    if (!layerres->Feature || !layerres->Select) {
-      Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate feature buffer",(char*)NULL);
+      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate feature buffer",(char*)NULL);
       return(NULL);
    }
    memset(layerres->Select,0x1,NFeature);
    
    if (!(layerres->Loc=(Coord*)malloc(NFeature*sizeof(Coord)))) {
-      Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to allocate location buffer",(char*)NULL);
+      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate location buffer",(char*)NULL);
       return(NULL);
    }
       
@@ -1491,38 +1491,40 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
    char           name[11];
    unsigned int   f;
 
-   strncpy(name,Field,10);name[10]='\0';
+   if (Field && strlen(Field)) {
+      strncpy(name,Field,10);name[10]='\0';
 
-   if (strcmp(Type,"Integer")==0) {
-      field=OGR_Fld_Create(name,OFTInteger);
-   } else if (strcmp(Type,"Real")==0) {
-      field=OGR_Fld_Create(name,OFTReal);
-      if (Width) OGR_Fld_SetPrecision(field,Width);
-   } else if (strcmp(Type,"String")==0) {
-      field=OGR_Fld_Create(name,OFTString);
-      if (Width) OGR_Fld_SetWidth(field,Width);
-   } else if (strcmp(Type,"WideString")==0) {
-      field=OGR_Fld_Create(name,OFTWideString);
-      if (Width) OGR_Fld_SetWidth(field,Width);
-   } else if (strcmp(Type,"IntegerList")==0) {
-      field=OGR_Fld_Create(name,OFTIntegerList);
-   } else if (strcmp(Type,"RealList")==0) {
-      field=OGR_Fld_Create(name,OFTRealList);
-      if (Width) OGR_Fld_SetPrecision(field,Width);
-   } else if (strcmp(Type,"StringList")==0) {
-      field=OGR_Fld_Create(name,OFTStringList);
-      if (Width) OGR_Fld_SetWidth(field,Width);
-   } else if (strcmp(Type,"WideStringList")==0) {
-      field=OGR_Fld_Create(name,OFTWideStringList);
-      if (Width) OGR_Fld_SetWidth(field,Width);
-   } else if (strcmp(Type,"Time")==0) {
-      field=OGR_Fld_Create(name,OFTTime);
-   } else if (strcmp(Type,"Date")==0) {
-      field=OGR_Fld_Create(name,OFTDate);
-   } else if (strcmp(Type,"DateTime")==0) {
-      field=OGR_Fld_Create(name,OFTDateTime);
-   } else if (strcmp(Type,"Binary")==0) {
-      field=OGR_Fld_Create(name,OFTBinary);
+      if (strcmp(Type,"Integer")==0) {
+         field=OGR_Fld_Create(name,OFTInteger);
+      } else if (strcmp(Type,"Real")==0) {
+         field=OGR_Fld_Create(name,OFTReal);
+         if (Width) OGR_Fld_SetPrecision(field,Width);
+      } else if (strcmp(Type,"String")==0) {
+         field=OGR_Fld_Create(name,OFTString);
+         if (Width) OGR_Fld_SetWidth(field,Width);
+      } else if (strcmp(Type,"WideString")==0) {
+         field=OGR_Fld_Create(name,OFTWideString);
+         if (Width) OGR_Fld_SetWidth(field,Width);
+      } else if (strcmp(Type,"IntegerList")==0) {
+         field=OGR_Fld_Create(name,OFTIntegerList);
+      } else if (strcmp(Type,"RealList")==0) {
+         field=OGR_Fld_Create(name,OFTRealList);
+         if (Width) OGR_Fld_SetPrecision(field,Width);
+      } else if (strcmp(Type,"StringList")==0) {
+         field=OGR_Fld_Create(name,OFTStringList);
+         if (Width) OGR_Fld_SetWidth(field,Width);
+      } else if (strcmp(Type,"WideStringList")==0) {
+         field=OGR_Fld_Create(name,OFTWideStringList);
+         if (Width) OGR_Fld_SetWidth(field,Width);
+      } else if (strcmp(Type,"Time")==0) {
+         field=OGR_Fld_Create(name,OFTTime);
+      } else if (strcmp(Type,"Date")==0) {
+         field=OGR_Fld_Create(name,OFTDate);
+      } else if (strcmp(Type,"DateTime")==0) {
+         field=OGR_Fld_Create(name,OFTDateTime);
+      } else if (strcmp(Type,"Binary")==0) {
+         field=OGR_Fld_Create(name,OFTBinary);
+      }
    }
 
    if (field) {
@@ -1546,7 +1548,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
       Layer->Update=1;
 //      OGR_Fld_Destroy(field);
    }
-   return(field);
+    return(field);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
