@@ -206,15 +206,15 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
       case CREATE:
          if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"geometry type [Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"geometry type");
             return(TCL_ERROR);
          }
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[3]));
-         if (t==wkbNone) {
-            Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring\"",(char*)NULL);
+         if (t==wkbNone || !(g0=OGR_G_CreateGeometry(t))) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
          }
-         g0=OGR_G_CreateGeometry(t);
+         
          obj=OGR_GeometryPut(Interp,Tcl_GetString(Objv[2]),g0);
          if (!obj)
             return(TCL_ERROR);
@@ -306,19 +306,20 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
 static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   double        x,y,lat,lon;
-   int           idx,idxfi,all,n;
-   char          mode;
-   unsigned int  f;
-   GDAL_Band    *band;
-   TData        *field;
-   OGR_Layer    *layer;
-   OGRGeometryH  geom;
-   TGeoRef      *ref=NULL;
-   TDataDef     *def=NULL;
-   TDataSpec    *spec=NULL;
-   Tcl_Obj      *lst,*obj;
-   Tcl_WideInt   w;
+   double             x,y,lat,lon;
+   int                idx,idxfi,all,n;
+   char               mode;
+   unsigned int       f;
+   GDAL_Band         *band;
+   TData             *field;
+   OGR_Layer         *layer;
+   OGRGeometryH       geom;
+   OGRwkbGeometryType t;
+   TGeoRef           *ref=NULL;
+   TDataDef          *def=NULL;
+   TDataSpec         *spec=NULL;
+   Tcl_Obj           *lst,*obj;
+   Tcl_WideInt        w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
    static CONST char *sopt[] = { "create","new","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
@@ -372,14 +373,19 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          } else {
             ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
          }
-         
-         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])))) {
-            Tcl_AppendResult(Interp,"OGR_LayerCmd: Unable to create layer",(char*)NULL);
+         t=OGR_GeometryNameToType(Tcl_GetString(Objv[4]));
+         if (t==wkbNone) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
          }
-         layer->SQLed=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[4]),NULL);
-         layer->Layer=OGR_DS_CreateLayer(layer->SQLed,Tcl_GetString(Objv[4]),ref->Spatial,wkbUnknown,NULL);
-         layer->Def=OGR_FD_Create(Tcl_GetString(Objv[4]));             
+         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])))) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         layer->SQLed=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
+         layer->Layer=OGR_DS_CreateLayer(layer->SQLed,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
+         layer->Def=OGR_FD_Create(Tcl_GetString(Objv[3]));             
+         layer->Ref=ref;             
          OGR_FD_Reference(layer->Def);
                 
          break;

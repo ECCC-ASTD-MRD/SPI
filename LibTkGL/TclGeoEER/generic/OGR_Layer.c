@@ -129,11 +129,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case TYPE:
             if (Objc==1) {
-               if (layer->Feature && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_G_GetGeometryType(geom)),-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(wkbUnknown),-1));
-               }
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_L_GetGeomType(layer->Layer)),-1));
             } else {
             }
             break;
@@ -304,8 +300,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_GetIntFromObj(Interp,Objv[++i],&f);
                if (f>=layer->NFeature) {
                   layer->Feature=realloc(layer->Feature,f*sizeof(OGRFeatureH));
+                  layer->Loc=realloc(layer->Loc,f*sizeof(Coord));
                   layer->Select=realloc(layer->Select,f*sizeof(char));
-                  if (layer->Feature && layer->Select) {
+                  if (layer->Feature && layer->Select && layer->Loc) {
                      memset(layer->Select,0x1,layer->NFeature);
                      for(idx=layer->NFeature;idx<f;idx++) {
                         layer->Feature[idx]=OGR_F_Create(layer->Def);
@@ -2717,11 +2714,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          Layer->Extrude=OGR_FD_GetFieldIndex(Layer->Def,spec->Extrude);
       }
    }
-
    /*Read in data in another thread*/
    g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->XBatch || GLRender->TRCon)?0:1);
 
-   // A featur might need refresh
+   // A feature might need refresh
    if (Layer->CFeature!=-1 && Layer->CFeature<Layer->GFeature) {
       OGR_LayerParseBuild(Layer,Proj,Layer->CFeature);
       Layer->CFeature=-1;
