@@ -38,7 +38,12 @@ namespace eval Mapper::OGR { } {
    set Data(Extr)        ""
    set Data(ExtrFactor)  1.0
    set Data(Dash)        ""
+   set Data(Snap)        10
    set Data(Edit)        False
+   set Data(3D)          False       
+   set Data(GeomType)    "Point"
+   set Data(GeomTypes)   { "Point" "Line String" "Polygon" "Multi Point" "Multi Line String" "Multi Polygon" "Geometry Collection" }
+   set Data(FieldTypes)  { Integer IntegerList Real RealList String StringList WideString WideStringList Time Date DateTime Binary }
 
    set Data(Formats) {
       {Arc/Info Binary Coverage {*.bin}}      
@@ -130,7 +135,7 @@ proc Mapper::OGR::Params { Object Tab } {
       set pos 500x425
    }
    set Mapper::Data(Mode) ogrlayer
-
+   
    if { ![winfo exists .mapperparams] } {
       toplevel .mapperparams
 
@@ -287,6 +292,10 @@ proc Mapper::OGR::Params { Object Tab } {
             $Data(Frame3).sel.mode.opt.menu add separator
             $Data(Frame3).sel.mode.opt.menu add command -label [lindex $Mapper::Lbl(DelRing) $GDefs(Lang)] -command { Mapper::OGR::VertexDelItem $Mapper::OGR::Data(Geom) }
             $Data(Frame3).sel.mode.opt.menu add command -label [lindex $Mapper::Lbl(DelGeom) $GDefs(Lang)] -command { Mapper::OGR::VertexDelItem $Mapper::OGR::Data(Geom) }
+            $Data(Frame3).sel.mode.opt.menu add separator
+            $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(SnapOff) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 0
+            $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(Snap10) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 10
+            $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(Snap20) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 20
 
             button $Data(Frame3).sel.add -image PLUS -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureAdd $Mapper::Data(Object) }
             button $Data(Frame3).sel.del -image DELETE -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureDel $Mapper::Data(Object) } -state disabled
@@ -298,14 +307,14 @@ proc Mapper::OGR::Params { Object Tab } {
             pack $Data(Frame3).sel.mode  $Data(Frame3).sel.add $Data(Frame3).sel.del -side left
          labelframe $Data(Frame3).fields -text [lindex $Mapper::Lbl(Field) $GDefs(Lang)]
             scrollbar $Data(Frame3).fields.scrolly -relief sunken -command "$Data(Frame3).fields.table yview" -bd 1 -width 10
-            table $Data(Frame3).fields.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -height 1 -variable Mapper::OGR::TableField \
+            table $Data(Frame3).fields.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -height 1 -variable Mapper::OGR::TableField\
                -highlightbackground $GDefs(ColorHighLight) -rows 0 -cols 0 -colwidth 13 -colstretchmode last -multiline False -drawmode fast \
                -yscrollcommand "$Data(Frame3).fields.scrolly set" -resizeborders none -selectmode single -ellipsis ... -anchor w \
                -validate 1 -vcmd { Mapper::OGR::FeatureField $Mapper::Data(Object) $Mapper::OGR::Data(Index) %r %S }
             pack $Data(Frame3).fields.scrolly -side left -fill y
             pack $Data(Frame3).fields.table -side left -fill both -expand true -before $Data(Frame3).fields.scrolly
             
-         frame $Data(Frame3).geomtype
+        frame $Data(Frame3).geomtype
             checkbutton $Data(Frame3).geomtype.lbl -text "[lindex $Mapper::Lbl(Shape) $GDefs(Lang)]:" -anchor w -variable Mapper::OGR::Data(GeomGet) -onvalue True -offvalue False \
                -command { Mapper::OGR::Feature $Mapper::Data(Object) $Mapper::OGR::Data(Index) }
             menubutton $Data(Frame3).geomtype.type -textvariable Mapper::OGR::Data(GeomOut) -menu $Data(Frame3).geomtype.type.menu -relief groove -bd 2
@@ -353,6 +362,7 @@ proc Mapper::OGR::Params { Object Tab } {
             pack $Data(Frame5).meta.table -side left -fill both -expand true -before $Data(Frame5).meta.scrolly
          pack $Data(Frame5).meta -side top -fill both -expand true -padx 5 -pady 5
 
+      bind $Data(Frame5).meta.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).meta.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).meta.table <Home>          { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).meta.table <End>           { Mapper::OGR::Table $Mapper::Data(Object) }
@@ -388,7 +398,16 @@ proc Mapper::OGR::Params { Object Tab } {
    ColorBox::ConfigNoColor $Data(Frame2).shape.out.col $Data(Color)
    ColorBox::ConfigNoColor $Data(Frame2).shape.fill.val $Data(Fill)
 
-   $Data(Frame3).sel.val configure -to [expr [ogrlayer define $Mapper::Data(Object) -nb]-1]
+   if { [set nb [ogrlayer define $Mapper::Data(Object) -nb]] } {
+      if { $Data(Index)>$nb } {
+         set Data(Index) 0
+      }
+      $Data(Frame3).sel.val configure  -state normal -to [expr $nb-1]
+      $Data(Frame3).sel.mode configure -state normal
+   } else {
+      $Data(Frame3).sel.val configure -state disabled
+      $Data(Frame3).sel.mode configure -state disabled
+   }
 
    ComboBox::DelAll $Data(Frame2).shape.icon.fld False
    ComboBox::Add $Data(Frame2).shape.icon.fld {}
@@ -417,7 +436,199 @@ proc Mapper::OGR::Params { Object Tab } {
 
    Mapper::OGR::Select $Object
    Mapper::OGR::Feature $Object $Data(Index)
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object $Data(Index)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::New>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Interface de création de nouvelles couches OGR
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::New { } {
+   global GDefs
+   variable Data
+   
+   toplevel .mappernew
+
+   wm title     .mappernew "[lindex $Mapper::Lbl(NewLayer) $GDefs(Lang)]"
+   wm transient .mappernew .mapper
+   wm geometry  .mappernew =400x500
+   wm protocol  .mappernew WM_DELETE_WINDOW { destroy .mappernew }
+
+   frame .mappernew.opt -relief raised -bd 1
+   
+      labelframe .mappernew.opt.layer -text [lindex $Mapper::Lbl(Layer) $GDefs(Lang)]
+         frame .mappernew.opt.layer.name
+            label .mappernew.opt.layer.name.lbl -text [lindex $Mapper::Lbl(Name) $GDefs(Lang)] -width 10 -anchor nw
+            entry .mappernew.opt.layer.name.sel -textvariable Mapper::OGR::Data(Name) -relief sunken -bg $GDefs(ColorLight)
+            pack  .mappernew.opt.layer.name.lbl -side left 
+            pack  .mappernew.opt.layer.name.sel -side left -fill both -expand true 
+         pack .mappernew.opt.layer.name -side top -fill x -padx 2
+      
+      labelframe .mappernew.opt.geom -text [lindex $Mapper::Lbl(Shape) $GDefs(Lang)]
+         frame .mappernew.opt.geom.type
+            label .mappernew.opt.geom.type.lbl -text [lindex $Mapper::Lbl(Type) $GDefs(Lang)] -width 10 -anchor nw
+            ComboBox::Create .mappernew.opt.geom.type.sel Mapper::OGR::Data(GeomType) noedit unsorted nodouble -1 $Mapper::OGR::Data(GeomTypes) 1 8 ""
+            pack  .mappernew.opt.geom.type.lbl -side left 
+            pack  .mappernew.opt.geom.type.sel -side left -fill both -expand true
+         frame .mappernew.opt.geom.dim
+            label .mappernew.opt.geom.dim.lbl -text [lindex $Mapper::Lbl(Dim) $GDefs(Lang)] -width 10 -anchor nw
+            radiobutton .mappernew.opt.geom.dim.sel2 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Mapper::OGR::Data(3D) -value False -text 2D
+            radiobutton .mappernew.opt.geom.dim.sel3 -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Mapper::OGR::Data(3D) -value True -text 3D
+            pack  .mappernew.opt.geom.dim.lbl -side left 
+            pack  .mappernew.opt.geom.dim.sel2 .mappernew.opt.geom.dim.sel3 -side left -fill both -expand true
+         pack .mappernew.opt.geom.type .mappernew.opt.geom.dim -side top -fill x -padx 2
+         
+      labelframe .mappernew.opt.att -text [lindex $Mapper::Lbl(Attribute) $GDefs(Lang)]
+         frame .mappernew.opt.att.fields -relief sunken -bd 1 -bg $GDefs(ColorLight)
+            frame .mappernew.opt.att.fields.head
+               button .mappernew.opt.att.fields.head.add -text + -relief raised -bd 1 -command Mapper::OGR::NewField 
+               label .mappernew.opt.att.fields.head.name -relief raised -bd 1 -text [lindex $Mapper::Lbl(Name) $GDefs(Lang)] -width 1
+               label .mappernew.opt.att.fields.head.type -relief raised -bd 1 -text [lindex $Mapper::Lbl(Type) $GDefs(Lang)] -width 15
+               label .mappernew.opt.att.fields.head.width -relief raised -bd 1 -text [lindex $Mapper::Lbl(Width) $GDefs(Lang)] -width 10
+               pack .mappernew.opt.att.fields.head.add -side left 
+               pack .mappernew.opt.att.fields.head.name -side left -fill both -expand True
+               pack .mappernew.opt.att.fields.head.type .mappernew.opt.att.fields.head.width -side left -fill y
+            pack .mappernew.opt.att.fields.head -side top -fill x
+         pack .mappernew.opt.att.fields -side top -fill both -expand True -padx 2 -pady 2
+      pack .mappernew.opt.layer -side top -fill x -padx 5 -pady 5
+      pack .mappernew.opt.geom -side top -fill x -padx 5
+      pack .mappernew.opt.att -side top -fill both -expand True -pady 5 -padx 5
+      
+      frame .mappernew.opt.cmd -relief sunken -bd 1
+         button .mappernew.opt.cmd.cancel -relief raised -bd 1 -text [lindex $Mapper::Lbl(Cancel) $GDefs(Lang)] -command { destroy .mappernew }
+         button .mappernew.opt.cmd.apply -relief raised -bd 1 -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -command { Mapper::OGR::Create }
+         pack .mappernew.opt.cmd.cancel .mappernew.opt.cmd.apply -side left -fill x -expand True
+      pack .mappernew.opt.cmd -side top -fill x -padx 5 -pady 5
+      
+   pack .mappernew.opt -side top -fill both -expand True
+   
+   set Data(FieldNo) -1
+   
+   grab .mappernew
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::NewField>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajouter les widgets de définition pour un nouveau champs dans l'interface
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::NewField { } {
+   global GDefs
+   variable Data
+   
+   incr Data(FieldNo)
+   
+   frame .mappernew.opt.att.fields.f$Data(FieldNo)
+      button .mappernew.opt.att.fields.f$Data(FieldNo).add -text - -relief raised -bd 1 -command "destroy .mappernew.opt.att.fields.f$Data(FieldNo)"
+      entry .mappernew.opt.att.fields.f$Data(FieldNo).name -relief raised -bd 1  -width 1 -bg $GDefs(ColorLight)
+      menubutton .mappernew.opt.att.fields.f$Data(FieldNo).type -relief raised -bd 1  -width 14 -bg $GDefs(ColorLight) -textvariable Mapper::OGR::Data(FieldType$Data(FieldNo)) \
+         -menu .mappernew.opt.att.fields.f$Data(FieldNo).type.menu
+      menu .mappernew.opt.att.fields.f$Data(FieldNo).type.menu
+      foreach type $Data(FieldTypes) {
+         .mappernew.opt.att.fields.f$Data(FieldNo).type.menu add radiobutton -label $type -indicatoron false -variable Mapper::OGR::Data(FieldType$Data(FieldNo)) -value $type
+      }
+      entry .mappernew.opt.att.fields.f$Data(FieldNo).width -relief raised -bd 1  -width 10 -bg $GDefs(ColorLight)
+      pack .mappernew.opt.att.fields.f$Data(FieldNo).add -side left
+      pack .mappernew.opt.att.fields.f$Data(FieldNo).name -side left -fill both -expand True
+      pack .mappernew.opt.att.fields.f$Data(FieldNo).type .mappernew.opt.att.fields.f$Data(FieldNo).width -fill y -side left
+   pack .mappernew.opt.att.fields.f$Data(FieldNo) -side top -fill x
+
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::Create>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Création de la nouvelle couche OGR
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::Create { } {
+   variable Data
+
+   if { [set layer $Data(Name)]=="" } {
+      Dialog::Error .mappernew $Mapper::Msg(LayerName)
+      return
+   }
+   
+   ogrlayer new $layer $Data(Name) $Data(GeomType)
+
+   for { set n 0 } { $n <= $Data(FieldNo) } { incr n }  {
+      if { [winfo exists .mappernew.opt.att.fields.f$n] } {
+         set width [.mappernew.opt.att.fields.f$n.width get]
+         if { $width=="" } {
+            set width 0
+         }
+         ogrlayer define $layer -field [.mappernew.opt.att.fields.f$n.name get] $Data(FieldType$n) $width
+      }
+   }
+   
+   destroy .mappernew
+   
+   Mapper::OGR::Config $Page::Data(Frame) $layer
+   Mapper::UpdateData $Page::Data(Frame)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::Config>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Configuration de base pour l'affichage d'une couche
+#
+# Parametres :
+#   <Frame>  : Page 
+#   <Object  : Couche
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::Config { Frame Object } {
+
+   ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1
+
+   if { [ogrlayer define $Object -space]==2 } {
+      ogrlayer configure $Object -outline black -fill [Mapper::GetColor]
+   } else {
+      ogrlayer configure $Object -outline [Mapper::GetColor]
+   }
+
+   if { ![colormap is $Object] } {
+      colormap create $Object
+      colormap copy $Object OGRMAPDEFAULT
+      ogrlayer configure $Object -colormap $Object
+   }
+   
+   if { [lsearch -exact $Viewport::Data(Data$Frame) $Object]==-1 } {
+      lappend Viewport::Data(Data$Frame) $Object
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -525,7 +736,6 @@ proc Mapper::OGR::ParamsSet { Object } {
    if { $Mapper::Data(Init) } {
       return
    }
-
    Mapper::Cursor watch
 
    #----- Verifier pour un range plutot que des niveaux
@@ -726,6 +936,10 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
    global   GDefs
    variable Data
 
+   $Data(Frame3).fields.table configure -rows 0 -cols 0
+   $Data(Frame3).fields.table set 0,0 "" 
+   $Data(Frame3).geom.text delete 0.0 end
+
    if { $Index=="" } {
       return
    }
@@ -737,22 +951,21 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
       }
    }
 
-   if { [winfo exists $Data(Frame4).meta.table] && $Data(TableSel)!=$Index } {
+   if { [winfo exists $Data(Frame5).meta.table] && $Data(TableSel)!=$Index } {
       $Data(Frame5).meta.table yview $Index
    }
-#   $Data(Frame3).fields.text delete 0.0 end
-   $Data(Frame3).fields.table configure -rows 0 -cols 0
-   $Data(Frame3).geom.text delete 0.0 end
 
    if { ![catch { set infos [ogrlayer define $Object -feature $Index] }] } {
 
-      set i 0
-      $Data(Frame3).fields.table configure -rows [llength $infos] -cols 2
-      
-      foreach info $infos {
-         $Data(Frame3).fields.table set $i,0 [lindex $info 0] 
-         $Data(Frame3).fields.table set $i,1 [lindex $info 1]        
-         incr i
+      if { [llength [ogrlayer define $Object -field]] } {
+         set i 0
+         $Data(Frame3).fields.table configure -rows [llength $infos] -cols 2
+
+         foreach info $infos {
+            $Data(Frame3).fields.table set $i,0 [lindex $info 0] 
+            $Data(Frame3).fields.table set $i,1 [lindex $info 1]        
+            incr i
+         }
       }
 
       if { $Data(GeomGet) } {
@@ -763,8 +976,6 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
             GML  { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -gml] }
             JSON { $Data(Frame3).geom.text insert end [ogrgeometry define [ogrlayer define $Object -geometry $Index True] -json] }
          }
-      } else {
-         $Data(Frame3).geom.text delete 0.0 end
       }
 
       ogrlayer define $Object -featurehighlight $Index
@@ -775,7 +986,7 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
       }
 
       if { $Index!=$Data(Index) } {
-         set Data(Index)    $Index
+         set Data(Index) $Index
       }
       set Data(TableSel) $Index
 
@@ -793,7 +1004,7 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::OGR::TFeatureField>
+# Nom      : <Mapper::OGR::FeatureField>
 # Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Update a feature field
@@ -887,8 +1098,9 @@ proc Mapper::OGR::FeatureAdd { Object } {
    set nb [ogrlayer define $Object -nb]
    ogrlayer define $Object -nb [expr $nb+1]
 
-   $Data(Frame3).sel.val configure -to $nb
-      
+   $Data(Frame3).sel.val configure -state normal -to $nb
+   $Data(Frame3).sel.mode configure -state normal
+     
    Mapper::OGR::Feature $Object $nb
 }
 
@@ -920,6 +1132,7 @@ proc Mapper::OGR::FeatureDel { Object } {
 #
 # Parametres :
 #   <Object> : Layer object
+#   <Scroll> : Index to scroll to
 #
 # Retour    :
 #
@@ -959,11 +1172,19 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    #----- Define table size
    set col [expr [llength [ogrlayer define $Object -field]]+1]
    set row [expr [ogrlayer define $Object -nb]+1]
-   $Data(Frame5).meta.table configure -rows $row -cols $col
 
+   if { $col==1 || $row==1 } {
+      #----- If no fields are defined, an infinite call loop occurs unless we forget the table variable
+      $Data(Frame5).meta.table configure -variable ""
+   } else {
+      $Data(Frame5).meta.table configure -variable Mapper::OGR::Table
+   }
+   
+   $Data(Frame5).meta.table configure -rows $row -cols $col
+      
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
-
+   
    #----- Create header buttons (Sorter)
    for { set c 0 } { $c<$col } { incr c } {
       if {![winfo exists $Data(Frame5).meta.table.c$c] } {
@@ -1089,6 +1310,7 @@ proc Mapper::OGR::VertexStart { Frame Object Feature } {
    variable Data
    
    #----- Get geometry object and reproject to latlon for vertices manipulation
+   set Data(Edit)    True
    set Data(Feature) $Feature
    set Data(Geom)    [ogrlayer define $Object -geometry $Feature False]
    
@@ -1118,8 +1340,9 @@ proc Mapper::OGR::VertexStop { Frame Object } {
 
    Mapper::OGR::VertexUpdate $Frame $Object
    
-   set Data(Geom) ""
-   set Data(GeomIdx)   ""    
+   set Data(Edit)    False
+   set Data(Geom)    ""
+   set Data(GeomIdx) ""    
 }
 
 proc Mapper::OGR::VertexUpdate { Frame Object } {
@@ -1334,10 +1557,33 @@ proc Mapper::OGR::VertexLine { Frame VP { Id "" } } {
    }
 }
 
+proc Mapper::OGR::VertexSnap { Object VP X Y } {
+   variable Data
+   
+   if { $Data(Snap) } {
+   
+      #----- Rectangle pick
+      set co0 [$VP -unproject [expr $X-$Data(Snap)] [expr $Y-$Data(Snap)]]
+      set co1 [$VP -unproject [expr $X+$Data(Snap)] [expr $Y-$Data(Snap)]]
+      set co2 [$VP -unproject [expr $X+$Data(Snap)] [expr $Y+$Data(Snap)]]
+      set co3 [$VP -unproject [expr $X-$Data(Snap)] [expr $Y+$Data(Snap)]]
+      set coords [list [lindex $co0 0] [lindex $co0 1] [lindex $co1 0] [lindex $co1 1] [lindex $co2 0] [lindex $co2 1] [lindex $co3 0] [lindex $co3 1] [lindex $co0 0] [lindex $co0 1]]
+      
+      if { [llength [set lxy [ogrlayer pick $Object $coords VERTEX]]] } {
+         set ll [ogrlayer stats $Object -project [lindex $lxy 0] [lindex $lxy 1]]
+      } else {
+         set ll [$VP -unproject $X $Y]       
+      }
+   } else {
+      set ll [$VP -unproject $X $Y] 
+   }
+   return $ll 
+}
+
 proc Mapper::OGR::VertexAdd { Frame VP X Y } {
    variable Data
 
-   set ll [$VP -unproject $X $Y]
+   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
       
    ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -addpoint [lindex $ll 1] [lindex $ll 0]
    
@@ -1349,7 +1595,7 @@ proc Mapper::OGR::VertexAdd { Frame VP X Y } {
 proc Mapper::OGR::VertexInsert { Frame VP X Y } {
    variable Data
 
-   set ll [$VP -unproject $X $Y]
+   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
    
    #----- Get distance vectors
    set segdist [ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -segmentdist [lindex $ll 1] [lindex $ll 0]]
@@ -1406,12 +1652,13 @@ proc Mapper::OGR::VertexMove { Frame VP Id X Y } {
       }
    }
    
-   set ids      [split $Id .]
-   set vidx     [lindex $ids end]
+   set ids           [split $Id .]
+   set vidx          [lindex $ids end]
    set Data(GeomIdx) [lrange $ids 0 end-1]
    
-  #----- Get latlon coordinate and update geometry object
-   set ll [$VP -unproject $X $Y]  
+   #----- Get latlon coordinate and update geometry object
+   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
+
    ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -setpoint $vidx [lindex $ll 1] [lindex $ll 0]
    
    Mapper::OGR::VertexLine $Frame $VP
@@ -1474,7 +1721,7 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
             continue
          }
          
-         Mapper::DisplayLayer $Page::Data(Frame) $layer
+         Mapper::OGR::Config $Page::Data(Frame) $layer
          
          set Data(Id$layer) $File
       }
@@ -1484,6 +1731,23 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
 
    return $layer
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::Write>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ecriture d'une donnee geographique OGR.
+#
+# Parametres :
+#   <File>   : Fichiers a écrire
+#   <Format> : Format d'enregistrement
+#   <Object> : Couche à écrire
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc Mapper::OGR::Write { File Format Object } {
 

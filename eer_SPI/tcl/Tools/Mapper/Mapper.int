@@ -68,7 +68,7 @@ proc Mapper::Window { } {
 
       TabFrame::Create .mapper.data.tab1 1 ""
       TabFrame::Create .mapper.data.tab2 1 ""
-      set Data(Tab1) [TabFrame::Add .mapper.data.tab1 1 [lindex $Lbl(Layer) $GDefs(Lang)] True]
+      set Data(Tab1) [TabFrame::Add .mapper.data.tab1 1 [lindex $Lbl(Layers) $GDefs(Lang)] True]
       set Data(Tab2) [TabFrame::Add .mapper.data.tab2 1 [lindex $Lbl(Dig) $GDefs(Lang)] True]
 
       frame $Data(Tab2).head
@@ -368,8 +368,7 @@ proc Mapper::GeoProcess { Object Op Param } {
       }
       eval ogrlayer stats $Object -$Op $Param $new
 
-      Mapper::DisplayLayer $Page::Data(Frame) $new
-      Mapper::UpdateData $Page::Data(Frame)
+      Mapper::Mapper::OGR::Config $Page::Data(Frame) $new
       Mapper::Progress $new
    }
 }
@@ -490,6 +489,10 @@ proc Mapper::Params { { Display False } { Object "" } } {
          set Object [$Data(Tab1).select.list get $Object]
       }
       if { $Object!=$Data(Object) || ![winfo exists .mapperparams] } {
+         if { $Mapper::OGR::Data(Edit) } {
+            Mapper::OGR::VertexStop $Page::Data(Frame) $Data(Object)
+         }
+      
          set Data(Object) $Object
 
          if { [gdalband is $Data(Object)] } {

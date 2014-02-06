@@ -35,6 +35,7 @@ namespace eval Mapper { } {
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(ColorRef)      { "Distribution couleur" "Color distribution" }
    set Lbl(Width)         { "Largeur" "Width" }
+   set Lbl(Precision)     { "Precision" "Precision" }
    set Lbl(Mode)          { "Mode" "Mode" }
    set Lbl(Matrix)        { "Matrice de transformation" "Transformation matrix" }
    set Lbl(Mask)          { "Masque" "Mask" }
@@ -81,7 +82,8 @@ namespace eval Mapper { } {
    set Lbl(Index)         { "Index" "Index" }
    set Lbl(Label)         { "Annotation" "Label" }
    set Lbl(Fill)          { "Remplissage" "Fill" }
-   set Lbl(Layer)         { "Couches / Données" "Layers / Data" }
+   set Lbl(Layers)        { "Couches / Données" "Layers / Data" }
+   set Lbl(Layer)         { "Couche" "Layer" }
    set Lbl(Out)           { "Contour" "Outline" }
    set Lbl(Trans)         { "Transformation" "Transformation" }
    set Lbl(InvTrans)      { "Inverse" "Inverse" }
@@ -137,6 +139,12 @@ namespace eval Mapper { } {
    set Lbl(Proj)         { "Nom de la projection" "Projection's name" }
    set Lbl(Spheroid)     { "Nom du sphéroïde" "Spheroid's name" }
 
+   set Lbl(SnapOff)      { "Snap désactivé" "Snap deactivated" }
+   set Lbl(Snap10)       { "Snap 10 pixel" "Snap 10 pixel" }
+   set Lbl(Snap20)       { "Snap 20 pixel" "Snap 20 pixel" }
+   set Lbl(Type)         { "Type" "Type" }
+   set Lbl(Dim)          { "Dimension" "Dimension" }
+   set Lbl(Attribute)    { "Attribut" "Attribute" }
    set Lbl(All)          { "Tous" "All" }
    set Lbl(Pixel)        { "Point" "Pixel" }
    set Lbl(Small)        { "Petit" "Small" }
@@ -159,6 +167,7 @@ namespace eval Mapper { } {
    set Msg(BadFile)        { "Impossible d'ouvrir le fichier. Type de fichier non reconnu" "Unable to open file. Unknown file type" }
    set Msg(Deep)           { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"
                              "The directory tree contains many files, the process might take some time.\n\n\tDo you want to continue ?" }
+   set Msg(LayerName)      { "Le nom de la couche est invalide." "Invalid layer name" }
 
    set Bubble(ProjLoad) { "Lire un fichier de géoréférence (WKT)" "Load a georeference file (WKT)" }
    set Bubble(ProjRef)  { "Affichage / Modification de la géoréférence (WKT)" "Display / modify georeference (WKT)" }

@@ -472,27 +472,6 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
    Mapper::Cursor left_ptr
 }
 
-proc Mapper::DisplayLayer { Frame Layer } {
-
-   ogrlayer configure $Layer -font OGRFONT -activeoutline yellow -width 1
-
-   if { [ogrlayer define $Layer -space]==2 } {
-      ogrlayer configure $Layer -outline black -fill [Mapper::GetColor]
-   } else {
-      ogrlayer configure $Layer -outline [Mapper::GetColor]
-   }
-
-   if { ![colormap is $Layer] } {
-      colormap create $Layer
-      colormap copy $Layer OGRMAPDEFAULT
-      ogrlayer configure $Layer -colormap $Layer
-   }
-   
-   if { [lsearch -exact $Viewport::Data(Data$Frame) $Layer]==-1 } {
-      lappend Viewport::Data(Data$Frame) $Layer
-   }
-}
-
 proc Mapper::Progress { Object } {
    global GDefs
    variable Lbl
@@ -585,13 +564,17 @@ proc Mapper::Pick { VP X Y } {
    if { [lindex $co0 0]==-999.0 || [lindex $co1 0]==-999.0 } {
       return
    }
+   
    for { set i [expr [llength $Viewport::Data(Data)]-1] } { $i>=0 } { incr i -1 } {
       set object [lindex $Viewport::Data(Data) $i]
       if { [ogrlayer is $object] } {
          if { [set idx [lindex [ogrlayer pick $object $coords $Data(PickAll)] 0]]!="" } {
 
-            set Mapper::OGR::Data(Index) $idx
+            $Data(Tab1).select.list selection clear 0 end
+            $Data(Tab1).select.list selection set [lsearch -exact $Viewport::Data(Data) $object]
             set Data(Object) $object
+            set Mapper::OGR::Data(Index) $idx
+            
             Mapper::OGR::ParamsGet $Data(Object)
             Mapper::OGR::Params $Data(Object) 2
             Mapper::OGR::Table  $Data(Object) $idx
