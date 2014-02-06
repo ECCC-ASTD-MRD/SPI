@@ -108,6 +108,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->Ref=ref;
                   GeoRef_Incr(layer->Ref);
                   OGR_LayerClean(layer,-1);
+                  layer->Changed=1;
                }
             }
             break;
@@ -123,6 +124,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   GeoRef_Destroy(Interp,layer->Ref->Name);
                   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   OGR_LayerClean(layer,-1);
+                  layer->Changed=1;
                }
             }
             break;
@@ -242,6 +244,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                } else {
                   field=OGR_FD_GetFieldDefn(layer->Def,j);
                   layer->Update=1;
+                  layer->Changed=1;
                   return(OGR_SetTypeObj(Interp,Objv[++i],layer->Layer,field,layer->Feature[f],j));
                }
             }
@@ -290,6 +293,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   return(TCL_ERROR);
                }
                OGR_L_CreateFeature(layer->Layer,layer->Feature[f]);
+               layer->Changed=1;
             }
             break;
 
@@ -303,11 +307,12 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   layer->Loc=realloc(layer->Loc,f*sizeof(Coord));
                   layer->Select=realloc(layer->Select,f*sizeof(char));
                   if (layer->Feature && layer->Select && layer->Loc) {
-                     memset(layer->Select,0x1,layer->NFeature);
+                     memset(layer->Select,0x1,f);
                      for(idx=layer->NFeature;idx<f;idx++) {
                         layer->Feature[idx]=OGR_F_Create(layer->Def);
                      }
                      layer->NFeature=f;
+                     layer->Changed=1;
                   } else {
                      Tcl_AppendResult(Interp,"OGR_LayerDefine: Unable to allocate feature buffer",(char*)NULL);
                      return(TCL_ERROR);                   
@@ -428,6 +433,7 @@ static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,
    layerres->Ref=GeoRef_Copy(From->Ref);
    layerres->Def=From->Def;         
    layerres->NFeature=0;
+   layerres->Changed=1;
    layerres->Feature=malloc(NFeature*sizeof(OGRFeatureH));
    layerres->Select=malloc(NFeature*sizeof(char));
 
@@ -576,6 +582,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
             layer->Ref=ref;
             layer->Ref->NRef++;
+            layer->Changed=1;
             OCTDestroyCoordinateTransformation(tr);
          }
          break;
@@ -725,8 +732,13 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
-                     if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                     OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],new);
+                     if (layerres) {
+                        layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]); 
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
+                     } else {
+                        OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                        layer->Changed=1; 
+                     }
                   } else {
                      fprintf(stderr,"OGR_LayerStats: Bad Buffer on feature %i\n",f);
                   }
@@ -764,6 +776,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
                      } else {
                         OGR_F_SetGeometryDirectly(layer->Feature[f],new);                        
+                        layer->Changed=1; 
                      }
                   }
                }
@@ -801,6 +814,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
                      } else {
                         OGR_F_SetGeometryDirectly(layer->Feature[f],new);                        
+                        layer->Changed=1; 
                      }
                   }
                }
@@ -825,8 +839,13 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   GPC_Simplify(tol,geom);
-                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
+                  if (layerres) {
+                     layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geom);
+                  } else {
+                     OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                     layer->Changed=1;   
+                  }
                }
             }
          }
@@ -849,8 +868,13 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_Segmentize(geom,tol);
-                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
+                  if (layerres) {
+                     layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geom);
+                  } else {
+                     OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                     layer->Changed=1;   
+                  }
                }
             }
          }
@@ -872,8 +896,13 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_CloseRings(geom);
-                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
+                  if (layerres) {
+                     layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geom);
+                  } else {
+                     OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                     layer->Changed=1;   
+                  }
                }
             }
          }
@@ -895,8 +924,13 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (layer->Select[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_FlattenTo2D(geom);
-                  if (layerres) layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
-                  OGR_F_SetGeometryDirectly(layerres?layerres->Feature[layerres->NFeature++]:layer->Feature[f],geom);
+                  if (layerres) {
+                     layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                     OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geom);
+                  } else {
+                     OGR_F_SetGeometryDirectly(layer->Feature[f],geom);
+                     layer->Changed=1;   
+                  }
                }
             }
          }
@@ -1543,6 +1577,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
       }
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
       Layer->Update=1;
+      Layer->Changed=1;
 //      OGR_Fld_Destroy(field);
    }
     return(field);
@@ -1552,7 +1587,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
  * Nom          : <OGR_LayerUpdate>
  * Creation     : Septembre 2010 J.P. Gauthier - CMC/CMOE
  *
- * But          : Mettre a jour les donnees de la couche
+ * But          : Mettre a jour les donnees de la couche (OGR side)
  *
  * Parametres   :
  *  <Layer>     : Couche
@@ -1699,6 +1734,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
  
    to->Ref=GeoRef_Copy(from->Ref);
    to->Def=from->Def;
+   to->Changed=1;
    OGR_FD_Reference(to->Def);
 
    to->NFeature=from->NFeature;
@@ -1787,6 +1823,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 
    layer->File=file;
    layer->Update=0;
+   layer->Changed=0;
    return(TCL_OK);
 }
 
@@ -2037,6 +2074,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       return(TCL_ERROR);
    }
 #endif
+   Layer->Changed=1;
 
    if (spec->RenderContour) {
 
@@ -2044,7 +2082,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
       Layer->NFeature=spec->InterNb;
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
-
+      
       for(n=0;n<spec->InterNb;n++) {
          Layer->Feature[n]=OGR_F_Create(Layer->Def);
          OGR_F_SetFieldDouble(Layer->Feature[n],0,VAL2SPEC(spec,spec->Inter[n]));
@@ -2193,7 +2231,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       }
       free(mask);
    }
-
+   
    return(TCL_OK);
 }
 
@@ -2232,6 +2270,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
       if (Layer->Select[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
          Layer->Update=1;
+         Layer->Changed=1;
       }
    }
    return(TCL_OK);
@@ -2516,6 +2555,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       free(accum);
 
    Layer->Update=1;
+   Layer->Changed=1;
 
    return(TCL_OK);
 }
@@ -3090,7 +3130,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    double        x,y,lat,lon,d=1e32;
    int           nobj,n=0,nd=0;
    unsigned int  f;
-   char          buf[32];
+   Vect3d        vr;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_Pick : Invalid layer",(char*)NULL);
@@ -3099,7 +3139,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    Tcl_ListObjLength(Interp,List,&nobj);
 
-   /*Verifie le bon nombre de coordonnees*/
+   // Verifie le bon nombre de coordonnees
    if (Geom) {
       pick=Geom;
    } else {
@@ -3128,7 +3168,9 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    }
    OGR_G_GetEnvelope(pick,&envp);
 
-   /*Trouve la feature en intersection*/
+   obj=Tcl_NewListObj(0,NULL);
+
+   // Trouve la feature en intersection
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
@@ -3145,26 +3187,43 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
                        }
                        break;
             }
-            /*Si on a trouve, ajouter a la liste de retour*/
+            // Si on a trouve, ajouter a la liste de retour
             if (n) {
-               snprintf(buf,32,"%u",f);
-               Tcl_AppendElement(Interp,buf);
-               if (!All)
+               nd=f;
+               if (All!=-1) 
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(nd));
+               if (All!=1)
                   break;
             }
          }
       }
    }
 
-   /*Dans le cas NEAREST, retourner le plus proche*/
-   if (Mode==3) {
-      snprintf(buf,32,"%u",nd);
-      Tcl_AppendElement(Interp,buf);
+   // Dans le cas d'un vertex, trouver le plus proche
+   if (All==-1) {
+      if (GPC_PointInside(geom,pick,vr)!=-1) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[0]));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[1]));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[2]));         
+      }
+           
+//      GPC_Closest(geom,pick,vr);
+//      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[0]));
+//      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[1]));
+//      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[2]));
+      
+   } else {  
+      // Dans le cas NEAREST, retourner le plus proche
+      if (Mode==3) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(nd));
+      }
    }
 
    if (!Geom) {
       OGR_G_DestroyGeometry(pick);
    }
+   
+   Tcl_SetObjResult(Interp,obj);
    return(TCL_OK);
 }
 

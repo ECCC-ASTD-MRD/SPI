@@ -322,8 +322,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    Tcl_WideInt        w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
-   static CONST char *sopt[] = { "create","new","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","all","wipe",NULL };
-   enum                opt { CREATE,NEW,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,COPY,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ALL,WIPE };
+   static CONST char *sopt[] = { "create","new","free","sync","clean","clear","read","write","import","delete","copy","interp","configure","stats","define","project","unproject","pick","sqlselect","is","ischanged","all","wipe",NULL };
+   enum                opt { CREATE,NEW,FREE,SYNC,CLEAN,CLEAR,READ,WRITE,IMPORT,DELETE,COPY,INTERP,CONFIGURE,STATS,DEFINE,PROJECT,UNPROJECT,PICK,SQLSELECT,IS,ISCHANGED,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -386,6 +386,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          layer->Layer=OGR_DS_CreateLayer(layer->SQLed,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
          layer->Def=OGR_FD_Create(Tcl_GetString(Objv[3]));             
          layer->Ref=ref;             
+         layer->Changed=1;
          OGR_FD_Reference(layer->Def);
                 
          break;
@@ -654,7 +655,11 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          all=0;n=0;
          if (Objc>4) {
-            Tcl_GetBooleanFromObj(Interp,Objv[4],&all);
+            if (Tcl_GetString(Objv[4])[0]=='V') {
+               all=-1;
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[4],&all);
+            }
             if (Objc>5) {
                if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",0,&n)!=TCL_OK) {
                   return(TCL_ERROR);
@@ -692,6 +697,18 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          break;
 
+      case ISCHANGED:
+         if (Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer");
+            return(TCL_ERROR);
+         }
+         if (!(layer=OGR_LayerGet(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid layer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(layer->Changed));
+         break;
+         
       case ALL:
          TclY_HashAll(Interp,&OGR_LayerTable);
          break;
@@ -734,6 +751,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Spec->RenderTexture=1;
 
    /*Initialisation de la structure layer*/
+   layer->Changed      = 0;
    layer->Update       = 0;
    layer->Mask         = 0;
    layer->CFeature     = -1;
@@ -1051,6 +1069,7 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
          Def_Get(Def,0,f,val);
          OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
       }
+      Layer->Changed=1;
       Layer->Update=1;
       return(Layer);
    } else {

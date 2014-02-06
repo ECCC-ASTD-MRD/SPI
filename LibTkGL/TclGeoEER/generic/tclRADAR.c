@@ -58,6 +58,7 @@ CONST char* Radar_GetTypeString(DATA_TYPE Type) {
       case     RHOHV           : return(RadarDataType[8]); break;
       case     SNR             : return(RadarDataType[9]); break;
    }
+   return(NULL);
 }
 
 /*----------------------------------------------------------------------------

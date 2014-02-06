@@ -65,6 +65,7 @@ typedef struct OGR_File {
 
 typedef struct OGR_Layer {
    Tcl_Obj         *Tag;
+   char             Changed;
    OGR_File        *File;
 
    OGRLayerH        Layer;
@@ -160,6 +161,8 @@ int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect
 double       GPC_Length(OGRGeometryH Geom);
 double       GPC_SegmentLength(OGRGeometryH Geom);
 double       GPC_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point);
+double       GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
+int          GPC_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
 double       GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode);
 OGRGeometryH GPC_Clip(OGRGeometryH Line,OGRGeometryH Poly);
 int          GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);

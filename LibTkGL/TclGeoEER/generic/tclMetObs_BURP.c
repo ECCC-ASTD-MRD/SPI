@@ -63,7 +63,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    Tcl_Obj      *obj;
    TMetLoc      *loc;
-   TMetElemData *data;
 
    int      e,sz1=0,sz2=0,c;
 
@@ -248,7 +247,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          /*if the elements where ok, add the dataset*/
-         if (c) data=TMetElem_Insert(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
+         if (c) TMetElem_Insert(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
       }
    }
 

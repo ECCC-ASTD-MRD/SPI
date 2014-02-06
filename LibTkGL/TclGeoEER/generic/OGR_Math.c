@@ -506,6 +506,7 @@ int GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnv
       OGR_G_GetPoint(Geom1,n1-1,&v1[0],&v1[1],&v1[2]);
       if (Vect_Equal(v0,v1)) t1=2;
    }
+   
    /*Demarrer les tests selon les type de geometrie*/
    if (n0 && n1) {
       if (t0==0) {
@@ -759,6 +760,64 @@ double GPC_SegmentLength(OGRGeometryH Geom) {
       length+=Vect_Norm(v0);
    }
    return(length);
+}
+
+double GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
+
+   Vect3d vr0,vr1;
+   double d,dist=1e32;
+   int    n,g;
+
+   /*Boucle recursive sur les sous geometrie*/
+   for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+      d=GPC_PointClosest(OGR_G_GetGeometryRef(Geom,g),Pick,vr0);
+      if (d<dist) {
+         dist=d; 
+         Vect_Assign(Vr,vr0);
+      }
+   }
+   
+      
+   for(g=0;g<OGR_G_GetPointCount(Geom);g++) {
+      OGR_G_GetPoint(Geom,n,&vr1[0],&vr1[1],&vr1[2]);
+      
+      for(n=0;n<OGR_G_GetPointCount(Pick);n++) {
+         OGR_G_GetPoint(Pick,n,&vr0[0],&vr0[1],&vr0[2]);
+         d=hypot(vr1[0]-vr0[0],vr1[1]-vr0[1]);
+         if (d<dist) {
+            dist=d;
+            Vect_Assign(Vr,vr1);
+         }
+      }
+   }
+
+   return(dist);
+}
+
+int GPC_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
+   
+   OGRGeometryH pt;
+   Vect3d       vr;
+   int          n,g;
+      
+   pt=OGR_G_CreateGeometry(wkbPoint);
+   for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
+      OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
+      OGR_G_SetPoint(pt,0,vr[0],vr[1],vr[2]);
+      if (GPC_Intersect(pt,Pick,NULL,NULL)) {
+         Vect_Assign(Vr,vr);
+         return(n);
+      }
+   }
+   OGR_G_DestroyGeometry(pt);
+
+   /*Boucle recursive sur les sous geometrie*/
+   for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+      n=GPC_PointInside(OGR_G_GetGeometryRef(Geom,g),Pick,Vr);
+      return(n);
+   }
+   
+   return(-1);
 }
 
 /* 0----Intersection doesn't exists                                          */
