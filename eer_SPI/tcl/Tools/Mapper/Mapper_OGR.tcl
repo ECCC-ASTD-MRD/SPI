@@ -1557,7 +1557,7 @@ proc Mapper::OGR::VertexLine { Frame VP { Id "" } } {
    }
 }
 
-proc Mapper::OGR::VertexSnap { Object VP X Y } {
+proc Mapper::OGR::VertexSnap { Frame VP Object Id X Y } {
    variable Data
    
    if { $Data(Snap) } {
@@ -1571,6 +1571,11 @@ proc Mapper::OGR::VertexSnap { Object VP X Y } {
       
       if { [llength [set lxy [ogrlayer pick $Object $coords VERTEX]]] } {
          set ll [ogrlayer stats $Object -project [lindex $lxy 0] [lindex $lxy 1]]
+         
+         if { $Id!="" } {
+            set xy [$VP -project [lindex $ll 0] [lindex $ll 1] 0] 
+            $Frame.page.canvas coords MAPPERVERTEX$Id [lindex $xy 0] [lindex $xy 1]         
+         }
       } else {
          set ll [$VP -unproject $X $Y]       
       }
@@ -1583,7 +1588,7 @@ proc Mapper::OGR::VertexSnap { Object VP X Y } {
 proc Mapper::OGR::VertexAdd { Frame VP X Y } {
    variable Data
 
-   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
+   set ll [Mapper::OGR::VertexSnap $Frame $VP $Mapper::Data(Object) "" $X $Y]
       
    ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -addpoint [lindex $ll 1] [lindex $ll 0]
    
@@ -1595,7 +1600,7 @@ proc Mapper::OGR::VertexAdd { Frame VP X Y } {
 proc Mapper::OGR::VertexInsert { Frame VP X Y } {
    variable Data
 
-   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
+   set ll [Mapper::OGR::VertexSnap $Frame $VP $Mapper::Data(Object) "" $X $Y]
    
    #----- Get distance vectors
    set segdist [ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -segmentdist [lindex $ll 1] [lindex $ll 0]]
@@ -1643,7 +1648,7 @@ proc Mapper::OGR::VertexMove { Frame VP Id X Y } {
    $Frame.page.canvas coords MAPPERVERTEX$Id $X $Y
 
    #----- Check if close enough to another point for snapping / closing ring
-   foreach item [$Frame.page.canvas find overlapping [expr $X-3] [expr $Y-3] [expr $X+3] [expr $Y+3]] {
+   foreach item [$Frame.page.canvas find overlapping [expr $X-$Data(Snap)] [expr $Y-$Data(Snap)] [expr $X+$Data(Snap)] [expr $Y+$Data(Snap)]] {
       if { [lsearch [$Frame.page.canvas gettags $item] MAPPERVERTEX]!=-1 } {
          set coords [$Frame.page.canvas coords $item]
          $Frame.page.canvas coords MAPPERVERTEX$Id $coords 
@@ -1657,7 +1662,7 @@ proc Mapper::OGR::VertexMove { Frame VP Id X Y } {
    set Data(GeomIdx) [lrange $ids 0 end-1]
    
    #----- Get latlon coordinate and update geometry object
-   set ll [Mapper::OGR::VertexSnap $Mapper::Data(Object) $VP $X $Y]
+   set ll [Mapper::OGR::VertexSnap $Frame $VP $Mapper::Data(Object) $Id $X $Y]
 
    ogrgeometry define $Data(Geom) -sub $Data(GeomIdx) -setpoint $vidx [lindex $ll 1] [lindex $ll 0]
    
