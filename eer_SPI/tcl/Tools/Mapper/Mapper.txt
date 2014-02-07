@@ -161,6 +161,7 @@ namespace eval Mapper { } {
    set Msg(GeoRef)         { "La géo-référence est invalide" "Invalid geo-reference" }
    set Msg(File)           { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }
    set Msg(Read)           { "Lecture des données ..." "Reading data ..." }
+   set Msg(Save)           { "Cette couche à été modifiée, voulez-vous la sauvegarder ?" "This layer has benn modified, do you want to save it ?" }
    set Msg(Render)         { "Allocation ..." "Allocating ..." }
    set Msg(Index)          { "Une donnée est associée a cet géometrie. Désirez-vous l'afficher ?"
                              "Data is associated with this geometrie. Would you like to display it ?" }

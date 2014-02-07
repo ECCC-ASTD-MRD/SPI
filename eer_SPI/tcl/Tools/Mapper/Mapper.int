@@ -392,21 +392,35 @@ proc Mapper::Toggler { Var1 Var2 Op } {
 
    set i      0
    set active 0
+   set changed 0
+
+   #----- Force listbox refreshsince the trace happens before it
+   catch { $Data(Tab1).select.list configure -listvar Viewport::Data(Data) }
 
    foreach obj $Viewport::Data(Data) {
       if { [ogrlayer is $obj] } {
-         set active [ogrlayer configure $obj -active]
+         set changed [ogrlayer ischanged $obj]
+         set active  [ogrlayer configure $obj -active]
       } elseif { [gdalband is $obj] } {
          set active [gdalband configure $obj -active]
       } elseif { [model is $obj] } {
          set active [model configure $obj -active]
       }
-
-      if { $active } {
-         catch { $Data(Tab1).select.list itemconfigure $i -foreground black -selectforeground black }
+      
+      if { $changed } {
+         if { $active } {
+            catch { $Data(Tab1).select.list itemconfigure $i -foreground red -selectforeground red }
+         } else {
+            catch { $Data(Tab1).select.list itemconfigure $i -foreground pink -selectforeground pink }
+         }
       } else {
-         catch { $Data(Tab1).select.list itemconfigure $i -foreground gray75 -selectforeground gray75 }
+         if { $active } {
+            catch { $Data(Tab1).select.list itemconfigure $i -foreground black -selectforeground black }
+         } else {
+            catch { $Data(Tab1).select.list itemconfigure $i -foreground gray75 -selectforeground gray75 }
+         }
       }
+      
       incr i
    }
 }

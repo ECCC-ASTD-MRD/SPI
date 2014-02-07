@@ -212,6 +212,8 @@ proc Mapper::Scroll { Side } {
 #-------------------------------------------------------------------------------
 
 proc Mapper::Del { { Object "" } { Frame "" } } {
+   variable Msg
+   variable Lbl
    variable Data
 
    set idx 0
@@ -226,6 +228,14 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
    }
 
    if { $Object!="" } {
+
+      #----- If any data has been changed
+      if { [ogrlayer is $Object] && [ogrlayer ischanged $Object] } {
+         if { [Dialog::Default .mapper 300 WARNING $Msg(Save) "\n\n\t$Object" 0 $Lbl(No) $Lbl(Yes)] } {
+            Mapper::Write $Objectr
+         }      
+      }
+   
       set Viewport::Data(Data$Frame) [lreplace $Viewport::Data(Data$Frame) $idx $idx]
       Mapper::UpdateData $Frame
 
