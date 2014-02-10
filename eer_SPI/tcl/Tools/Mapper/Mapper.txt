@@ -24,7 +24,6 @@ namespace eval Mapper { } {
    set Lbl(Active)        { "Actif (Afficher)" "Active (Displayed)" }
    set Lbl(Apply)         { "Appliquer" "Apply" }
    set Lbl(Close)         { "Fermer" "Close" }
-   set Lbl(Clear)         { "Annuler la sélection" "Clear selection" }
    set Lbl(Cancel)        { "Annuler" "Cancel" }
    set Lbl(GeoRef)        { "Utiliser la projection de cette donnée" "Use this data's projection" }
    set Lbl(Curve)         { "Courbe" "Curve" }
@@ -50,7 +49,6 @@ namespace eval Mapper { } {
    set Lbl(Calcul)        { "Calculer" "Calculate" }
    set Lbl(Map)           { "Palette" "Colormap" }
    set Lbl(Del)           { "Supprimer" "Delete" }
-   set Lbl(Sel)           { "Sélection" "Selection" }
    set Lbl(Params)        { "Paramètres" "Parameters" }
    set Lbl(GDAL)          { "Matriciel" "Raster" }
    set Lbl(OGR)           { "Vectoriel" "Vectorial" }
@@ -85,6 +83,7 @@ namespace eval Mapper { } {
    set Lbl(Layers)        { "Couches / Données" "Layers / Data" }
    set Lbl(Layer)         { "Couche" "Layer" }
    set Lbl(Out)           { "Contour" "Outline" }
+   set Lbl(Identify)      { "Identifier" "Identify" }
    set Lbl(Trans)         { "Transformation" "Transformation" }
    set Lbl(InvTrans)      { "Inverse" "Inverse" }
    set Lbl(Shape)         { "Géometrie" "Geometry" }
@@ -99,6 +98,7 @@ namespace eval Mapper { } {
    set Lbl(ZoomFull)      { "Zoom pleine résolution" "Zoom to full resolution" }
    set Lbl(Sample)        { "Attaches" "Sampling" }
    set Lbl(Select)        { "Sélection" "Select" }
+   set Lbl(SelectClear)   { "Annuler la sélection" "Clear selection" }
    set Lbl(Cut)           { "Découper" "Crop" }
    set Lbl(Clip)          { "Appliquer la coupe" "Clip to polygon" }
    set Lbl(Image)         { "Image" "Raster" }

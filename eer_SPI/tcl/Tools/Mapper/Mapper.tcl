@@ -577,8 +577,8 @@ proc Mapper::Pick { VP X Y } {
    
    for { set i [expr [llength $Viewport::Data(Data)]-1] } { $i>=0 } { incr i -1 } {
       set object [lindex $Viewport::Data(Data) $i]
-      if { [ogrlayer is $object] } {
-         if { [set idx [lindex [ogrlayer pick $object $coords $Data(PickAll)] 0]]!="" } {
+      if { [ogrlayer is $object] && [ogrlayer configure $object -active] } {
+         if { [set idx [ogrlayer pick $object $coords False]]!="" } {
 
             $Data(Tab1).select.list selection clear 0 end
             $Data(Tab1).select.list selection set [lsearch -exact $Viewport::Data(Data) $object]
@@ -620,6 +620,14 @@ proc Mapper::Pick { VP X Y } {
    }
 }
 
+proc Mapper::DrawClear  { Frame VP } {
+   variable Data
+
+   set Data(Lat0) $Data(Lat1)
+   set Data(Lon0) $Data(Lon1)
+   set Data(Coo) ""
+}
+
 proc Mapper::DrawInit  { Frame VP } {
    global GDefs
    variable Data
@@ -627,14 +635,77 @@ proc Mapper::DrawInit  { Frame VP } {
 
    set Data(InfoId)  ""
    set Data(InfoObs) ""
+   set Data(Lat0) $Viewport::Map(LatCursor)
+   set Data(Lon0) $Viewport::Map(LonCursor)
 
-   Mapper::Pick $VP $Viewport::Map(X) $Viewport::Map(Y)
+   if { $Data(PickSize)>=0 } {
+      Mapper::Pick $VP $Viewport::Map(X) $Viewport::Map(Y)
+   }
 }
 
 proc Mapper::Draw     { Frame VP } {
+   variable Data
+   
+   if { $Data(PickSize)>=0 } {
+      return
+   }
+   
+   if { [winfo exists $Data(Canvas)] } {
+      $Data(Canvas) delete MAPPERRANGE
+   }
+   set Data(Lat1)   $Viewport::Map(LatCursor)
+   set Data(Lon1)   $Viewport::Map(LonCursor)
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+
+   Viewport::DrawRange $Frame $VP $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) MAPPERRANGE red
 }
 
 proc Mapper::DrawDone { Frame VP } {
+   variable Data
+   
+   if { $Data(PickSize)>=0 } {
+      return
+   }
+
+   if { $Data(Lat0)>$Data(Lat1) } {
+      set tmp $Data(Lat1)
+      set Data(Lat1) $Data(Lat0)
+      set Data(Lat0) $tmp
+   }
+
+   if { $Data(Lon0)>$Data(Lon1) } {
+      set tmp $Data(Lon1)
+      set Data(Lon1) $Data(Lon0)
+      set Data(Lon0) $tmp
+   }
+
+   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
+      set Data(Coo) ""
+   } else {
+      set Data(Coo) "$Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1)"
+   }
+
+   set coords [list $Data(Lat0) $Data(Lon0) $Data(Lat0) $Data(Lon1) $Data(Lat1) $Data(Lon1) $Data(Lat1) $Data(Lon0) $Data(Lat0) $Data(Lon0)]
+  
+   for { set i [expr [llength $Viewport::Data(Data)]-1] } { $i>=0 } { incr i -1 } {
+      set object [lindex $Viewport::Data(Data) $i]
+      if { [ogrlayer is $object] && [ogrlayer configure $object -active] } {
+         ogrlayer define $object -featureselect {}
+         if { [set idx [ogrlayer pick $object $coords True]]!="" } {
+            set Data(Object) $object
+
+            ogrlayer define $object -featureselect [list [list - # $idx]]
+            ogrlayer define $object -featurehighlight {}
+
+            Mapper::OGR::ParamsGet $object
+            Mapper::OGR::Params $object 4
+            Mapper::OGR::Table  $object
+            break
+         }
+      }
+   }
 }
 
 proc Mapper::MoveInit { Frame VP } {
@@ -645,9 +716,44 @@ proc Mapper::MoveInit { Frame VP } {
 }
 
 proc Mapper::Move { Frame VP } {
+   variable Data
+
+   if { $Data(PickSize)>=0 } {
+     return
+   }
+   
+   #----- Effectuer la translation
+
+   set lat0 [expr $Data(Lat0) + $Viewport::Map(LatCursor) - $Data(LatD)]
+   set lat1 [expr $Data(Lat1) + $Viewport::Map(LatCursor) - $Data(LatD)]
+
+   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
+
+      set Data(Lat0) $lat0
+      set Data(Lat1) $lat1
+      eval set Data(Lon0) [Viewport::CheckCoord [expr $Data(Lon0) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+      eval set Data(Lon1) [Viewport::CheckCoord [expr $Data(Lon1) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+   }
+
+   #----- Reaffecter le point de reference de translation
+
+   if { [winfo exists $Data(Canvas)] } {
+      $Data(Canvas) delete MAPPERRANGE
+   }
+
+   set Data(LonD)   $Viewport::Map(LonCursor)
+   set Data(LatD)   $Viewport::Map(LatCursor)
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+
+   Viewport::DrawRange $Frame $VP $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) MAPPERRANGE red
 }
 
 proc Mapper::MoveDone { Frame VP } {
+   variable Data
+
+   Mapper::DrawDone $Frame $VP
 }
 
 #----------------------------------------------------------------------------
@@ -729,7 +835,13 @@ proc Mapper::UpdateItems { { Frame "" } } {
    if { $Frame==$Data(Frame) && $Data(VP)!="" } {
 
       #----- Canvas might not exist anymore so catch this call
-      catch { $Data(Canvas) delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR }
+      catch { $Data(Canvas) delete MAPPERSEARCH MAPPERCUTTER MAPPERGEOLOCATOR MAPPERRANGE }
+      
+      if { $Data(Coo)!="" && $Frame==$Data(Frame) && $Data(VP)!="" } {
+         Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) MAPPERRANGE red
+      }
+      
+      
       if { $Mapper::DepotWare::Data(Coo)!="" } {
          Viewport::DrawRange $Frame $Data(VP) $Mapper::DepotWare::Data(Lat0) $Mapper::DepotWare::Data(Lon0) $Mapper::DepotWare::Data(Lat1) $Mapper::DepotWare::Data(Lon1) MAPPERSEARCH red
       }

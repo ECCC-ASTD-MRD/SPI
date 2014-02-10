@@ -46,11 +46,11 @@ namespace eval Mapper { } {
    set Data(Frame)  ""                    ;#Frame actif
    set Data(VP)     ""                    ;#Viewport actif
 
-   set Data(Init)  False                  ;#Flag d'initialisation de l'interface
-   set Data(Job)   ""
-   set Data(Sel)   ""
-   set Data(Mode)  ""
-   set Data(IdNo)  0                      ;#Flag d'activation de l'outils
+   set Data(Init)      False                  ;#Flag d'initialisation de l'interface
+   set Data(Job)       ""
+   set Data(Sel)       ""
+   set Data(Mode)      ""
+   set Data(IdNo)      0                      ;#Flag d'activation de l'outils
 
    set Data(Frame1) ""
    set Data(Frame2) ""
@@ -74,7 +74,6 @@ namespace eval Mapper { } {
    set Data(Cut)         False
    set Data(CutShow)     False
    set Data(PickSize)    2
-   set Data(PickAll)     False
         
    set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }

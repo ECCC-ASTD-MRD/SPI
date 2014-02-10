@@ -112,10 +112,13 @@ proc Mapper::Window { } {
          menubutton $Data(Tab1).head.mode.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab1).head.mode.down.menu
          place $Data(Tab1).head.mode.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab1).head.mode.down.menu
-         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Pixel) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 0 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
-         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Small) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 2 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
-         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Medium) $GDefs(Lang)] -variable Mapper::Data(PickSize) -value 5 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
-         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Large) $GDefs(Lang)]  -variable Mapper::Data(PickSize) -value 10 -command  { SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label [lindex $Lbl(Select) $GDefs(Lang)] -variable Mapper::Data(PickSize) -value -1 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True }
+         $Data(Tab1).head.mode.down.menu add command -label [lindex $Lbl(SelectClear) $GDefs(Lang)] -command  { Mapper::OGR::SelectClear $Mapper::Data(Object) }
+         $Data(Tab1).head.mode.down.menu add separator
+         $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Pixel) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 0 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Small) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 2 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Medium) $GDefs(Lang)])" -variable Mapper::Data(PickSize) -value 5 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
+         $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Large) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 10 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
 #         $Data(Tab1).head.mode.down.menu add separator
 #         $Data(Tab1).head.mode.down.menu add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -variable Mapper::Data(PickAll) -onvalue True -offvalue False
 

@@ -29,6 +29,7 @@ namespace eval Mapper::OGR { } {
    set Data(Mask)        False
    set Data(TableSel)    ""
    set Data(TableSort)   ""
+   set Data(TableUpdate) 0
    set Data(GeomOut)     "TEXT"
    set Data(GeomGet)     False
    set Data(Fill)        ""
@@ -346,40 +347,52 @@ proc Mapper::OGR::Params { Object Tab } {
             pack $Data(Frame4).meta.text -side left -fill both -expand true
             pack $Data(Frame4).meta.scroll -side left -fill y
          pack $Data(Frame4).meta -side top -fill both -expand true -padx 5 -pady 5
-         button $Data(Frame4).reset -text [lindex $Mapper::Lbl(Clear) $GDefs(Lang)] -relief groove -bd 2 -command { Mapper::OGR::SelectClear $Mapper::Data(Object) }
+         button $Data(Frame4).reset -text [lindex $Mapper::Lbl(SelectClear) $GDefs(Lang)] -relief groove -bd 2 -command { Mapper::OGR::SelectClear $Mapper::Data(Object) }
          pack $Data(Frame4).reset -side top -fill x -padx 5 -pady 5
 
       set Data(Frame5) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Table) $GDefs(Lang)] False ""]
-         frame $Data(Frame5).meta -relief sunken -bd 1
-            scrollbar $Data(Frame5).meta.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
-            scrollbar $Data(Frame5).meta.scrollx -relief sunken -command "$Data(Frame5).meta.table xview" -bd 1 -width 10 -orient horizontal
-            table $Data(Frame5).meta.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::OGR::Table \
+         panedwindow $Data(Frame5).pan -orient vertical -showhandle False -opaqueresize False -relief raised -bd 1 -sashrelief sunken
+     
+         frame $Data(Frame5).pan.meta -relief sunken -bd 1
+            scrollbar $Data(Frame5).pan.meta.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
+            scrollbar $Data(Frame5).pan.meta.scrollx -relief sunken -command "Mapper::OGR::TableXScroll" -bd 1 -width 10 -orient horizontal
+            table $Data(Frame5).pan.meta.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::OGR::Table \
             -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -multiline False -drawmode fast \
-            -yscrollcommand "$Data(Frame5).meta.scrolly set" -xscrollcommand "$Data(Frame5).meta.scrollx set" -width 1 -height 1 -selectmode extended \
+            -yscrollcommand "$Data(Frame5).pan.meta.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.scrollx set" -width 1 -height 1 -selectmode extended \
             -validate 1 -vcmd { Mapper::OGR::FeatureFieldTable $Mapper::Data(Object) %r %c %S }
-            pack $Data(Frame5).meta.scrollx -side bottom -fill x
-            pack $Data(Frame5).meta.scrolly -side left -fill y
-            pack $Data(Frame5).meta.table -side left -fill both -expand true -before $Data(Frame5).meta.scrolly
-         pack $Data(Frame5).meta -side top -fill both -expand true -padx 5 -pady 5
+            pack $Data(Frame5).pan.meta.scrollx -side bottom -fill x
+            pack $Data(Frame5).pan.meta.scrolly -side left -fill y
+            pack $Data(Frame5).pan.meta.table -side left -fill both -expand true -before $Data(Frame5).pan.meta.scrolly
+         frame $Data(Frame5).pan.stat -relief sunken -bd 1 
+            scrollbar $Data(Frame5).pan.stat.scrolly -relief sunken -command "$Data(Frame5).pan.stat.table yview " -bd 1 -width 10
+            table $Data(Frame5).pan.stat.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -variable Mapper::OGR::Stats \
+            -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -multiline False -drawmode fast \
+            -yscrollcommand "$Data(Frame5).pan.stat.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.scrollx set" -width 1 -height 1 -selectmode extended 
+            pack $Data(Frame5).pan.stat.scrolly -side left -fill y
+            pack $Data(Frame5).pan.stat.table -side left -fill both -expand true -before $Data(Frame5).pan.stat.scrolly
+         pack $Data(Frame5).pan -side top -fill both -expand true -padx 5 -pady 5
 
-      bind $Data(Frame5).meta.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Home>          { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <End>           { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Control-Home>       { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Control-End>        { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Control-Home> { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Control-End>  { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Up>            { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Down>          { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <B1-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <B2-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).meta.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).meta.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).meta.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) }
+         $Data(Frame5).pan add $Data(Frame5).pan.meta -height 100 -stretch first
+         $Data(Frame5).pan add $Data(Frame5).pan.stat 
+      
+      bind $Data(Frame5).pan.meta.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Home>          { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <End>           { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Control-Home>       { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Control-End>        { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Control-Home> { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Control-End>  { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Up>            { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Down>          { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <B1-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <B2-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).meta.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).meta.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) }
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
@@ -387,10 +400,10 @@ proc Mapper::OGR::Params { Object Tab } {
          pack .mapperparams.com.cancel .mapperparams.com.apply -side right
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
-      TabFrame::Select .mapperparams.tab $Tab
-
       bind $Data(Frame3).sel.val <Return> { Mapper::OGR::Feature $Mapper::Data(Object) $Mapper::OGR::Data(Index) True }
    }
+
+   TabFrame::Select .mapperparams.tab $Tab
 
    $Data(Frame1).proj.val delete 0.0 end
    $Data(Frame1).proj.val insert end $Data(Proj)
@@ -872,6 +885,7 @@ proc Mapper::OGR::Select { Object } {
 proc Mapper::OGR::SelectApply { Object } {
    variable Select
 
+   set Mapper::Data(Coo) ""
    set select {}
    foreach field [ogrlayer define $Object -field] {
       if { $Select(Op$Object$field)!="" && $Select(Val$Object$field)!="" } {
@@ -905,6 +919,8 @@ proc Mapper::OGR::SelectApply { Object } {
 proc Mapper::OGR::SelectClear { Object } {
    variable Select
 
+   set Mapper::Data(Coo) ""
+   
    foreach field [ogrlayer define $Object -field] {
       set Select(Op$Object$field) ""
       set Select(Val$Object$field) ""
@@ -951,8 +967,8 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
       }
    }
 
-   if { [winfo exists $Data(Frame5).meta.table] && $Data(TableSel)!=$Index } {
-      $Data(Frame5).meta.table yview $Index
+   if { [winfo exists $Data(Frame5).pan.meta.table] && $Data(TableSel)!=$Index } {
+      $Data(Frame5).pan.meta.table yview $Index
    }
 
    if { ![catch { set infos [ogrlayer define $Object -feature $Index] }] } {
@@ -1032,7 +1048,7 @@ proc Mapper::OGR::FeatureField { Object Index Field Value } {
 proc Mapper::OGR::FeatureFieldTable { Object Row Column Value } {
    variable Data
    
-   ogrlayer define $Object -feature [$Data(Frame5).meta.table get $Row,0] [$Data(Frame5).meta.table get 0,$Column] $Value
+   ogrlayer define $Object -feature [$Data(Frame5).pan.meta.table get $Row,0] [$Data(Frame5).pan.meta.table get 0,$Column] $Value
    
    return True
 }
@@ -1145,11 +1161,14 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    variable Data
    variable Table
 
-   if { ![winfo exists $Data(Frame5).meta.table] } {
+   #----- Some bindings make for concurrent update
+   if { $Data(TableUpdate) || ![winfo exists $Data(Frame5).pan.meta.table] } {
       return
    }
 
-   $Data(Frame5).meta.table configure -cursor watch
+   set Data(TableUpdate) 1
+   
+   $Data(Frame5).pan.meta.table configure -cursor watch
    update idletasks
 
    #----- Check if sort field is valid for the layer
@@ -1159,59 +1178,103 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
 
    #----- Scroll to specific index
    if { $Index>-1 } {
-      $Data(Frame5).meta.table yview [expr $Index-1]
+      $Data(Frame5).pan.meta.table yview [expr $Index-1]
    }
 
    #----- Get current view limits
-   set rs [lindex [$Data(Frame5).meta.table configure -rows] 4]
-   set cs [lindex [$Data(Frame5).meta.table configure -cols] 4]
-   set ys [$Data(Frame5).meta.table yview]
+   set rs [lindex [$Data(Frame5).pan.meta.table configure -rows] 4]
+   set cs [lindex [$Data(Frame5).pan.meta.table configure -cols] 4]
+   set ys [$Data(Frame5).pan.meta.table yview]
    set y0 [expr int(floor([lindex $ys 0]*$rs))]
    set y1 [expr int(ceil([lindex $ys 1]*$rs))-1]
 
    #----- Define table size
    set col [expr [llength [ogrlayer define $Object -field]]+1]
-   set row [expr [ogrlayer define $Object -nb]+1]
+   set row [expr [llength [ogrlayer define $Object -featureselect]]+1]
 
    if { $col==1 || $row==1 } {
       #----- If no fields are defined, an infinite call loop occurs unless we forget the table variable
-      $Data(Frame5).meta.table configure -variable ""
+      $Data(Frame5).pan.meta.table configure -variable ""
    } else {
-      $Data(Frame5).meta.table configure -variable Mapper::OGR::Table
+      $Data(Frame5).pan.meta.table configure -variable Mapper::OGR::Table
    }
    
-   $Data(Frame5).meta.table configure -rows $row -cols $col
+   $Data(Frame5).pan.meta.table configure -rows $row -cols $col
       
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    
    #----- Create header buttons (Sorter)
    for { set c 0 } { $c<$col } { incr c } {
-      if {![winfo exists $Data(Frame5).meta.table.c$c] } {
-         radiobutton $Data(Frame5).meta.table.c$c -variable Mapper::OGR::Data(TableSort) -indicatoron False -bd 1 \
+      if {![winfo exists $Data(Frame5).pan.meta.table.c$c] } {
+         radiobutton $Data(Frame5).pan.meta.table.c$c -variable Mapper::OGR::Data(TableSort) -indicatoron False -bd 1 \
             -command { Mapper::OGR::TableSelectColumn $Mapper::Data(Object) }
       }
-      $Data(Frame5).meta.table window configure 0,$c -window $Data(Frame5).meta.table.c$c -sticky nsew
+      $Data(Frame5).pan.meta.table window configure 0,$c -window $Data(Frame5).pan.meta.table.c$c -sticky nsew
       if { $c==0 } {
-         $Data(Frame5).meta.table.c$c configure -text "" -value ""
+         $Data(Frame5).pan.meta.table.c$c configure -text "" -value ""
       } else {
-         $Data(Frame5).meta.table.c$c configure -text $Mapper::OGR::Table(0,$c) -value $Mapper::OGR::Table(0,$c)
+         $Data(Frame5).pan.meta.table.c$c configure -text $Mapper::OGR::Table(0,$c) -value $Mapper::OGR::Table(0,$c)
       }
    }
+   
    for { set c $c } { $c<$cs } { incr c } {
-      destroy radiobutton $Data(Frame5).meta.table.c$c
+      destroy radiobutton $Data(Frame5).pan.meta.table.c$c
    }
 
-   #----- Create side buttons (Selecter)
    for { set r [expr $y0<1?1:$y0] } { $r<=$y1 } { incr r } {
-      if {![winfo exists $Data(Frame5).meta.table.r$r] } {
-         radiobutton $Data(Frame5).meta.table.r$r -variable Mapper::OGR::Data(TableSel) -indicatoron False -bd 1 \
+      if {![winfo exists $Data(Frame5).pan.meta.table.r$r] } {
+         radiobutton $Data(Frame5).pan.meta.table.r$r -variable Mapper::OGR::Data(TableSel) -indicatoron False -bd 1 \
             -command "Mapper::OGR::TableSelectRow \$Mapper::Data(Object) $r $col"
       }
-      $Data(Frame5).meta.table window configure $r,0 -window $Data(Frame5).meta.table.r$r -sticky nsew
-      catch { $Data(Frame5).meta.table.r$r configure -text $Mapper::OGR::Table($r,0) -value $Mapper::OGR::Table($r,0) }
+      $Data(Frame5).pan.meta.table window configure $r,0 -window $Data(Frame5).pan.meta.table.r$r -sticky nsew
+      catch { $Data(Frame5).pan.meta.table.r$r configure -text $Mapper::OGR::Table($r,0) -value $Mapper::OGR::Table($r,0) }
    }
-   $Data(Frame5).meta.table configure -cursor left_ptr
+
+   $Data(Frame5).pan.meta.table configure -cursor left_ptr
+   set Data(TableUpdate) 0
+   
+   Mapper::OGR::TableStat $Object
+}
+
+proc Mapper::OGR::TableStat { Object } {
+   variable Data
+   
+   #----- Define table size
+   set fields [ogrlayer define $Object -field]
+   $Data(Frame5).pan.stat.table configure -rows 8 -cols [expr [llength $fields]+1]
+   
+   set c 1
+   foreach field $fields {
+      if { [catch { $Data(Frame5).pan.stat.table set 0,$c [vexpr NIL ssumx($Object.$field)] }] } {
+          $Data(Frame5).pan.stat.table set 0,$c ""
+          $Data(Frame5).pan.stat.table set 1,$c ""
+          $Data(Frame5).pan.stat.table set 2,$c ""
+          $Data(Frame5).pan.stat.table set 3,$c ""
+          $Data(Frame5).pan.stat.table set 4,$c ""
+          $Data(Frame5).pan.stat.table set 5,$c ""
+          $Data(Frame5).pan.stat.table set 6,$c ""
+          $Data(Frame5).pan.stat.table set 7,$c ""
+      } else {
+         catch { $Data(Frame5).pan.stat.table set 1,$c [vexpr NIL sminx()] }          
+         catch { $Data(Frame5).pan.stat.table set 2,$c [vexpr NIL smaxx()] }    
+         catch { $Data(Frame5).pan.stat.table set 3,$c [vexpr NIL smaxx()-sminx()] }
+         catch { $Data(Frame5).pan.stat.table set 4,$c [vexpr NIL savgx()] }
+         catch { $Data(Frame5).pan.stat.table set 5,$c [vexpr NIL ssdev()] }         
+         catch { $Data(Frame5).pan.stat.table set 6,$c [vexpr NIL smed($Object.$field)] }
+         catch { $Data(Frame5).pan.stat.table set 7,$c [vexpr NIL suniq($Object.$field)] }
+      }
+      incr c
+   }
+   
+   $Data(Frame5).pan.stat.table set 0,0 Sum       
+   $Data(Frame5).pan.stat.table set 1,0 Min       
+   $Data(Frame5).pan.stat.table set 2,0 Max 
+   $Data(Frame5).pan.stat.table set 3,0 Range 
+   $Data(Frame5).pan.stat.table set 4,0 Mean       
+   $Data(Frame5).pan.stat.table set 5,0 StdDev       
+   $Data(Frame5).pan.stat.table set 6,0 Median
+   $Data(Frame5).pan.stat.table set 7,0 Unique
 }
 
 #-------------------------------------------------------------------------------
@@ -1232,10 +1295,16 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
 proc Mapper::OGR::TableYScroll { Object args } {
    variable Data
 
-   eval $Data(Frame5).meta.table yview $args
+   eval $Data(Frame5).pan.meta.table yview $args
    Mapper::OGR::Table $Object
 }
 
+proc Mapper::OGR::TableXScroll { args } {
+   variable Data
+   
+   eval $Data(Frame5).pan.meta.table xview $args
+   eval $Data(Frame5).pan.stat.table xview $args
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::OGR::TableSelectColumn>
@@ -1277,8 +1346,8 @@ proc Mapper::OGR::TableSelectColumn { Object } {
 proc Mapper::OGR::TableSelectRow { Object Row Col } {
    variable Data
 
-   $Data(Frame5).meta.table selection clear all;
-   $Data(Frame5).meta.table selection set $Row,1 $Row,$Col;
+   $Data(Frame5).pan.meta.table selection clear all;
+   $Data(Frame5).pan.meta.table selection set $Row,1 $Row,$Col;
    Mapper::OGR::Feature $Object $Mapper::OGR::Table($Row,0) True
 }
 
