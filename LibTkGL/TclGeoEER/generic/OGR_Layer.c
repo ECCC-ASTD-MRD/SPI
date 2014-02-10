@@ -982,7 +982,6 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_SetVar2Ex(Interp,str,"0,0",Tcl_NewStringObj("",-1),0x0);
 
          if (layer->Sort.Field!=-1) {
-
             y0=y0<0?0:y0;
             y1=y1>layer->Sort.Nb-1?layer->Sort.Nb-1:y1;
 
@@ -1007,7 +1006,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                y1=layer->NFeature;
             } else {
                y0=y0<0?0:y0;
-               y1=(j!=(y1>layer->NFeature?layer->NFeature:y1));
+               y1=(y1>layer->NFeature?layer->NFeature:y1);
             }
 
             for(f=y0,fop=y0;f<y1;f++) {
@@ -3265,6 +3264,22 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    return(TCL_OK);
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <QSort_OGR>
+ * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Fonction de comparaison pour le tri
+ *
+ * Parametres  :
+ *   <A>       : Feature index A
+ *   <B>       : Feature index B
+ *
+ * Retour       :
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 int QSort_OGR(const void *A,const void *B){
 
    int         fai,fbi;

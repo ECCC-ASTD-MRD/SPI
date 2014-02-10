@@ -128,10 +128,13 @@ double stat_maxre(TDataDef *MA,TDataDef *MB); /* Maximum relative error*/
 double stat_mre(TDataDef *MA,TDataDef *MB);   /* Mean Relative error*/
 double stat_nb(TDataDef *M);                  /* Number of sample */
 double stat_median(TDataDef *MA);             /* Median */
+double stat_unique(TDataDef *MA);             /* Number of unique values */
 double stat_sum(TDataDef *M);                 /* Sum */
 double stat_min(TDataDef *M);                 /* Minimum */
 double stat_max(TDataDef *M);                 /* Maximum */
 double stat_avg(TDataDef *M);                 /* Average */
+double stat_sumx(TDataDef *M);                /* Sum X*/
+double stat_sumy(TDataDef *M);                /* Sum Y*/
 double stat_avgx(TDataDef *M);                /* Average X*/
 double stat_avgy(TDataDef *M);                /* Average Y*/
 double stat_minx(TDataDef *M);                /* Minimum X*/

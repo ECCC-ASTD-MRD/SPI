@@ -1011,7 +1011,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 
    TDataDef  *def=NULL;
    TData_Type type=TD_Unknown;
-   int        i,f;
+   int        i,f,n=0;
    double     val;
 
    /*Get the field index*/
@@ -1031,9 +1031,13 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
          def=DataDef_New(Layer->NFeature,1,1,1,type);
 
          for(f=0;f<Layer->NFeature;f++) {
-            val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
-            Def_Set(def,0,f,val);
+            if (Layer->Select[f]) {
+               val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
+               Def_Set(def,0,n,val);
+               n++;
+            }
          }
+         def->NI=def->NIJ=n;
       }
    }
    return(def);
@@ -1058,7 +1062,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 */
 OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
 
-   int    i,f;
+   int    i,f,n=0;
    double val;
 
    /*Get the field index*/
@@ -1066,8 +1070,11 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
 
       /*Put the results in*/
       for(f=0;f<Layer->NFeature;f++) {
-         Def_Get(Def,0,f,val);
-         OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
+         if (Layer->Select[f]) {
+            Def_Get(Def,n,f,val);
+            OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
+            n++;
+         }
       }
       Layer->Changed=1;
       Layer->Update=1;

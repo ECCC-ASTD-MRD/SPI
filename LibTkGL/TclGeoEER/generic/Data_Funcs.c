@@ -45,7 +45,7 @@
  * @see init_record
  */
 
-double Vnb,Vminx,Vmaxx,Vavgx,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
+double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna;
 
@@ -84,14 +84,17 @@ TFuncDef FuncF[] = {
   { "sall"  , stat_all    , 2 , TD_Float64 },
   { "snb"   , stat_nb     , 1 , TD_Float64 },
   { "smed"  , stat_median , 1 , TD_Float64 },
+  { "suniq" , stat_unique , 1 , TD_Int32 },
   { "ssum"  , stat_sum    , 1 , TD_Float64 },
   { "smin"  , stat_min    , 1 , TD_Float64 },
   { "smax"  , stat_max    , 1 , TD_Float64 },
   { "savg"  , stat_avg    , 1 , TD_Float64 },
   { "savgx" , stat_avgx   , 1 , TD_Float64 },
   { "savgy" , stat_avgy   , 1 , TD_Float64 },
+  { "ssumx" , stat_sumx   , 1 , TD_Float64 },
   { "sminx" , stat_minx   , 1 , TD_Float64 },
   { "smaxx" , stat_maxx   , 1 , TD_Float64 },
+  { "ssumy" , stat_sumy   , 1 , TD_Float64 },
   { "sminy" , stat_miny   , 1 , TD_Float64 },
   { "smaxy" , stat_maxy   , 1 , TD_Float64 },
   { "svar"  , stat_varx   , 1 , TD_Float64 },
@@ -871,7 +874,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    double ratio,sum,dif,adif;
    unsigned long i,n;
 
-   Vcorr=Vnb=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
+   Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
    Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
@@ -902,7 +905,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       Vminy=vb<Vminy?vb:Vminy;
       Vmaxy=vb>Vmaxy?vb:Vmaxy;
 
-      Vavgx+=va;
+      Vsumx+=va;
       Vssx+=va*va;
 
       if (MB) {
@@ -910,7 +913,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          dif=vb-va;
          adif=fabs(dif);
 
-         Vavgy+=vb;
+         Vsumy+=vb;
          Vssy+=vb*vb;
          Vssxy+=va*vb;
          Vrmse+=dif*dif;
@@ -946,23 +949,23 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vrna=Vnb/n;
 
    if (Vnb==0) {
-      Vcorr=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse;
+      Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse;
       return;
    }
 
-   if (Vavgx!=0.0f) {
-      Vnmb=Vmb/Vavgx*100.0f;
-      Vnme=Vme/Vavgx*100.0f;
+   if (Vsumx!=0.0f) {
+      Vnmb=Vmb/Vsumx*100.0f;
+      Vnme=Vme/Vsumx*100.0f;
    } else {
       Vnmb=0.0f;
       Vnme=0.0f;
    }
 
-   Vssx  -= (Vavgx*Vavgx)/Vnb;
-   Vssy  -= (Vavgy*Vavgy)/Vnb;
-   Vssxy -= (Vavgx*Vavgy)/Vnb;
-   Vavgx /= Vnb;
-   Vavgy /= Vnb;
+   Vssx  -= (Vsumx*Vsumx)/Vnb;
+   Vssy  -= (Vsumy*Vsumy)/Vnb;
+   Vssxy -= (Vsumx*Vsumy)/Vnb;
+   Vavgx = Vsumx/Vnb;
+   Vavgy = Vsumy/Vnb;
    Vs     = sqrt((Vssy-(Vssxy*Vssxy)/Vssx)/(Vnb-2.0));
 
    for(i=0;i<n;i++) {
@@ -1137,6 +1140,18 @@ double stat_vary(TDataDef *MA) {
    return(Vvary);
 }
 
+double stat_sumx(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vsumx);
+}
+
+double stat_sumy(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vsumy);
+}
+
 double stat_avgx(TDataDef *MA) {
    if (MA)
       stat_core(MA,NULL);
@@ -1242,6 +1257,30 @@ double stat_median(TDataDef *M) {
    }
 
    return(med);
+}
+
+double stat_unique(TDataDef *M) {
+
+   int     n,nb,uniq=0;
+   double *v;
+
+   nb=FSIZE3D(M);
+   if ((v=(double*)malloc(nb*sizeof(double)))) {
+      for(n=0;n<nb;n++) {
+         Def_Get(M,0,n,v[n]);
+      }
+
+      qsort(v,nb,sizeof(double),QSort_Double);
+      
+      for(n=0;n<nb;n++) {
+          if (!bsearch(&v[n],&v[n+1],nb-n-1,sizeof(double),QSort_Double))
+            uniq++;
+      }
+
+      free(v);
+   }
+
+   return(uniq);
 }
 
 double stat_sum(TDataDef *M) {
