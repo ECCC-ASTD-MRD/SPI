@@ -117,6 +117,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field);
 OGR_Layer*       OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def);
 int              OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom);
 int              OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
+int              OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer);
 int              OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
 int              OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
 int              OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);

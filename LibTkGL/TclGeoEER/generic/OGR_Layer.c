@@ -378,12 +378,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             t=TCL_OK;
             if (Objc>1) {
                t=OGR_LayerSelect(Interp,layer,Objv[++i]);
-
+               
                /*If there is a sort applied, refresh it*/
-               if (layer->Sort.Field>-1) {
-                  QSort_Layer=layer;
-                  qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);
-               }
+               OGR_LayerSort(Interp,layer);
             }
             if (t!=TCL_ERROR) {
                lst=Tcl_NewListObj(0,NULL);
@@ -959,27 +956,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
             layer->Sort.Field=f;
             layer->Sort.Type=OGR_Fld_GetType(OGR_FD_GetFieldDefn(layer->Def,layer->Sort.Field));
-            layer->Sort.Nb=0;
-
-            if (!layer->Sort.Table) {
-               if (!(layer->Sort.Table=malloc(layer->NFeature*sizeof(unsigned int)))) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerStats: Unable to allocate temporary sort table",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-            for(f=0,fop=0;f<layer->NFeature;f++) {
-               if (layer->Select[f])
-                  layer->Sort.Table[layer->Sort.Nb++]=f;
-            }
-
-            QSort_Layer=layer;
-            qsort(layer->Sort.Table,layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);
-         } else {
-            if (layer->Sort.Table) {
-               free(layer->Sort.Table);
-               layer->Sort.Table=NULL;
-            }
          }
+         return(OGR_LayerSort(Interp,layer));
          break;
 
       case TABLE:
@@ -1020,8 +998,17 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
 
          } else {
-            y0=y0<0?0:y0;
-            y1=y1>layer->NFeature?layer->NFeature:y1;
+            j=0;
+            for(f=0;f<layer->NFeature;f++) {
+               if (layer->Select[f]) j++;
+            }
+            if (j!=layer->NFeature) {
+               y0=0;
+               y1=layer->NFeature;
+            } else {
+               y0=y0<0?0:y0;
+               y1=(j!=(y1>layer->NFeature?layer->NFeature:y1));
+            }
 
             for(f=y0,fop=y0;f<y1;f++) {
                if (layer->Select[f]) {
@@ -1046,6 +1033,56 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
    }
 
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <OGR_LayerSort>
+ * Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Trie des feature selon in champ.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <Field>   : Champs a tester
+ *  <Value>   : Valeur a verifier
+ *  <Op>      : Test a effecuter
+ *  <Exp>     : Expression reguliere a utiliser
+ *
+ * Retour:
+ *  <Valid>   : Resultat du test (0,1)
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer) {
+   
+   int f;
+ 
+   Layer->Sort.Nb=0;
+   
+   if (Layer->Sort.Field!=-1 && Layer->Sort.Type) {
+      if (!Layer->Sort.Table) {
+         if (!(Layer->Sort.Table=malloc(Layer->NFeature*sizeof(unsigned int)))) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerSort: Unable to allocate temporary sort table",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+      for(f=0;f<Layer->NFeature;f++) {
+         if (Layer->Select[f])
+            Layer->Sort.Table[Layer->Sort.Nb++]=f;
+      }
+
+      QSort_Layer=Layer;
+      qsort(Layer->Sort.Table,Layer->Sort.Nb,sizeof(unsigned int),QSort_OGR);
+   } else {
+      if (Layer->Sort.Table) {
+         free(Layer->Sort.Table);
+         Layer->Sort.Table=NULL;
+      }
+   }
+  
    return(TCL_OK);
 }
 
@@ -3169,7 +3206,8 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    OGR_G_GetEnvelope(pick,&envp);
 
    obj=Tcl_NewListObj(0,NULL);
-
+   geom=NULL;
+   
    // Trouve la feature en intersection
    for(f=0;f<Layer->NFeature;f++) {
       if (Layer->Select[f]) {
@@ -3201,7 +3239,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    // Dans le cas d'un vertex, trouver le plus proche
    if (All==-1) {
-      if (GPC_PointInside(geom,pick,vr)!=-1) {
+      if (geom && GPC_PointInside(geom,pick,vr)!=-1) {
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[0]));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[1]));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[2]));         
