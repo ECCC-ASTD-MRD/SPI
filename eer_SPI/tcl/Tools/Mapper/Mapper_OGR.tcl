@@ -391,8 +391,8 @@ proc Mapper::OGR::Params { Object Tab } {
       bind $Data(Frame5).pan.meta.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).pan.meta.table <B1-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).pan.meta.table <B2-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).meta.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).meta.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).pan.meta.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).pan.meta.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) }
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
@@ -925,6 +925,7 @@ proc Mapper::OGR::SelectClear { Object } {
       set Select(Op$Object$field) ""
       set Select(Val$Object$field) ""
    }
+   ogrlayer define $Object -featureselect {}
    ogrlayer define $Object -featurehighlight {}
 
    Mapper::OGR::Table $Object
@@ -1198,9 +1199,14 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    } else {
       $Data(Frame5).pan.meta.table configure -variable Mapper::OGR::Table
    }
-   
+
    $Data(Frame5).pan.meta.table configure -rows $row -cols $col
-      
+   
+   #----- Have to cleanup the widgets since the table does not clean them on resize
+   for { set r [expr $y1+1] } { $r<[ogrlayer define $Object -nb] } { incr r } {
+      destroy $Data(Frame5).pan.meta.table.r$r
+   }
+   
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    
@@ -1223,7 +1229,7 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    }
 
    for { set r [expr $y0<1?1:$y0] } { $r<=$y1 } { incr r } {
-      if {![winfo exists $Data(Frame5).pan.meta.table.r$r] } {
+      if { ![winfo exists $Data(Frame5).pan.meta.table.r$r] } {
          radiobutton $Data(Frame5).pan.meta.table.r$r -variable Mapper::OGR::Data(TableSel) -indicatoron False -bd 1 \
             -command "Mapper::OGR::TableSelectRow \$Mapper::Data(Object) $r $col"
       }
@@ -1236,6 +1242,21 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    
    Mapper::OGR::TableStat $Object
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::TableStat>
+# Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fill in the table statistics
+#
+# Parametres :
+#   <Object> : Layer object
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
 
 proc Mapper::OGR::TableStat { Object } {
    variable Data

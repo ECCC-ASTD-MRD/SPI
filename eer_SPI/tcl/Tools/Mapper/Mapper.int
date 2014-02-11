@@ -119,8 +119,6 @@ proc Mapper::Window { } {
          $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Small) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 2 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
          $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Medium) $GDefs(Lang)])" -variable Mapper::Data(PickSize) -value 5 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
          $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Large) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 10 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
-#         $Data(Tab1).head.mode.down.menu add separator
-#         $Data(Tab1).head.mode.down.menu add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -variable Mapper::Data(PickAll) -onvalue True -offvalue False
 
          button $Data(Tab1).head.open -image OPEN -bd 1 -relief flat -width 28 -anchor w -overrelief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::GDAL::Data(Formats) \$Mapper::OGR::Data(Formats)\]\]"
          menubutton $Data(Tab1).head.open.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab1).head.open.down.menu
