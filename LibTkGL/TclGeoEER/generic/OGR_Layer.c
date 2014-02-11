@@ -981,15 +981,14 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          Tcl_SetVar2Ex(Interp,str,"0,0",Tcl_NewStringObj("",-1),0x0);
 
-         if (layer->Sort.Field!=-1) {
+         if (layer->Sort.Field!=-1 && layer->Sort.Table) {
             y0=y0<0?0:y0;
             y1=y1>layer->Sort.Nb-1?layer->Sort.Nb-1:y1;
-
             for(f=y0;f<=y1;f++) {
                sprintf(buf,"%i,0",f+1);
                Tcl_SetVar2Ex(Interp,str,buf,Tcl_NewIntObj(layer->Sort.Table[f]),0x0);
 
-               for(j=0;j<OGR_FD_GetFieldCount(layer->Def);j++) {
+              for(j=0;j<OGR_FD_GetFieldCount(layer->Def);j++) {
                   sprintf(buf,"%i,%i",f+1,j+1);
                   Tcl_SetVar2Ex(Interp,str,buf,OGR_GetTypeObj(Interp,OGR_FD_GetFieldDefn(layer->Def,j),layer->Feature[layer->Sort.Table[f]],j),0x0);
                }
@@ -1060,8 +1059,8 @@ int OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer) {
    int f;
  
    Layer->Sort.Nb=0;
-   
-   if (Layer->Sort.Field!=-1 && Layer->Sort.Type) {
+ 
+   if (Layer->Sort.Field!=-1) {
       if (!Layer->Sort.Table) {
          if (!(Layer->Sort.Table=malloc(Layer->NFeature*sizeof(unsigned int)))) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerSort: Unable to allocate temporary sort table",(char*)NULL);
