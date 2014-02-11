@@ -44,7 +44,7 @@ namespace eval Mapper::OGR { } {
    set Data(3D)          False       
    set Data(GeomType)    "Point"
    set Data(GeomTypes)   { "Point" "Line String" "Polygon" "Multi Point" "Multi Line String" "Multi Polygon" "Geometry Collection" }
-   set Data(FieldTypes)  { Integer IntegerList Real RealList String StringList WideString WideStringList Time Date DateTime Binary }
+   set Data(FieldTypes)  { Integer IntegerList Real RealList String StringList Time Date DateTime Binary }
 
    set Data(Formats) {
       {Arc/Info Binary Coverage {*.bin}}      
@@ -396,7 +396,7 @@ proc Mapper::OGR::Params { Object Tab } {
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
-         button .mapperparams.com.cancel -text [lindex $Mapper::Lbl(Close) $GDefs(Lang)] -bd 1 -command { destroy .mapperparams }
+         button .mapperparams.com.cancel -text [lindex $Mapper::Lbl(Close) $GDefs(Lang)] -bd 1 -command { Mapper::ParamsClose }
          pack .mapperparams.com.cancel .mapperparams.com.apply -side right
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
@@ -589,6 +589,7 @@ proc Mapper::OGR::Create { } {
       return
    }
    
+   ogrlayer free $layer
    ogrlayer new $layer $Data(Name) $Data(GeomType)
 
    for { set n 0 } { $n <= $Data(FieldNo) } { incr n }  {
@@ -1206,7 +1207,7 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    for { set r [expr $y1+1] } { $r<[ogrlayer define $Object -nb] } { incr r } {
       destroy $Data(Frame5).pan.meta.table.r$r
    }
-   
+
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    
@@ -1430,7 +1431,6 @@ proc Mapper::OGR::VertexStop { Frame Object } {
 
    Mapper::OGR::VertexUpdate $Frame $Object
    
-   set Data(Edit)    False
    set Data(Geom)    ""
    set Data(GeomIdx) ""    
 }

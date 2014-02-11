@@ -338,7 +338,7 @@ proc Mapper::GeoProcessParams { Object Op } {
          button .mapperprocess.com.apply  -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -command "Mapper::GeoProcess $Object $Op \"\$Mapper::Data(ProcessParam0) \$Mapper::Data(ProcessParam1) \$Mapper::Data(ProcessParam2)\"; destroy .mapperprocess"
          button .mapperprocess.com.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -command "destroy .mapperprocess"
          pack .mapperprocess.com.cancel .mapperprocess.com.apply -side right -fill x -expand True
-      pack .mapperprocess.params0 .mapperprocess.params1 .mapperprocess.params2 .mapperprocess.com -side top -fill x -padx 2 
+      pack .mapperprocess.params0 .mapperprocess.params1 .mapperprocess.params2 .mapperprocess.com -side top -fill x
    }
 }
 
@@ -369,7 +369,8 @@ proc Mapper::GeoProcess { Object Op Param } {
       }
       eval ogrlayer stats $Object -$Op $Param $new
 
-      Mapper::Mapper::OGR::Config $Page::Data(Frame) $new
+      Mapper::OGR::Config $Page::Data(Frame) $new
+      Mapper::UpdateData $Page::Data(Frame)
       Mapper::Progress $new
    }
 }
@@ -443,7 +444,12 @@ proc Mapper::ParamsClose { } {
       SPI::ToolMode SPI Zoom
     }
 
-    catch { [Page::Canvas $Data(Frame)] delete MAPPERGEOLOCATOR MAPPERVERTEX }
+    if { $Mapper::OGR::Data(Edit) } {
+       set Mapper::OGR::Data(Edit) False
+       Mapper::OGR::VertexStop $Page::Data(Frame) $Data(Object)
+    }
+    
+    catch { [Page::Canvas $Data(Frame)] delete MAPPERGEOLOCATOR MAPPERVERTEX MAPPERRANGE }
     Viewport::FollowerRemove Mapper::GeoLocator
     Page::Destroy $Data(Frame4).georef.hfrm.map
     Page::Update  $Data(Frame)
@@ -505,6 +511,7 @@ proc Mapper::Params { { Display False } { Object "" } } {
       }
       if { $Object!=$Data(Object) || ![winfo exists .mapperparams] } {
          if { $Mapper::OGR::Data(Edit) } {
+            set Mapper::OGR::Data(Edit) False
             Mapper::OGR::VertexStop $Page::Data(Frame) $Data(Object)
          }
       

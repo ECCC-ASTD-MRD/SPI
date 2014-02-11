@@ -232,7 +232,7 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
       #----- If any data has been changed
       if { [ogrlayer is $Object] && [ogrlayer ischanged $Object] } {
          if { [Dialog::Default .mapper 300 WARNING $Msg(Save) "\n\n\t$Object" 0 $Lbl(No) $Lbl(Yes)] } {
-            Mapper::Write $Objectr
+            Mapper::Write $Object
          }      
       }
    
