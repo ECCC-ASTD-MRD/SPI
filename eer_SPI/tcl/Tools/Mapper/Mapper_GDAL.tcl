@@ -623,7 +623,7 @@ proc Mapper::GDAL::ParamsGet { Object } {
       set Data(Cut) True
    }
 
-   set Data(Meta)     [join [gdalfile metadata $Data(Id$Object)] \n]
+   set Data(Meta)     [join [gdalfile metadata $Mapper::Data(Id$Object)] \n]
 
    set Data(Red)   $Data(Band0$Object)
    set Data(Green) $Data(Band1$Object)
@@ -1068,37 +1068,40 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    variable Data
 
    #---- If an id is passed, use it
-   if  { [info exists Data(Id$File)] } {
-      set id $File
+   if  { [info exists Mapper::Data(Id$File)] } {
+      set obj $File
    } else {
-      set id [file tail [file rootname $File]]
+      set obj [file tail [file rootname $File]]
       set no 1
-      while { [gdalband is $id] } {
-         set id $id$no
+      while { [gdalband is $obj] } {
+         set obj $obj$no
          incr no
       }
 
-      if  { ![info exists Data(Id$id)] } {
-         set Data(Id$id) GDAL[incr Data(IdNo)]
+      if  { ![info exists Mapper::Data(Id$obj)] } {
+         set id GDAL[incr Data(IdNo)]
+         set Mapper::Data(Id$obj) $id
+      } else {
+         set id $Mapper::Data(Id$obj)
       }
 
-      gdalfile close $Data(Id$id)
+      gdalfile close $id
       set bands {}
-      eval set bad [catch { set bands [gdalfile open $Data(Id$id) read $File] }]
+      eval set bad [catch { set bands [gdalfile open $id read $File] }]
 
       if { $bad || ![llength $bands] } {
          return ""
       }
-      set Data(Band$id) $bands
-      set Data(BandX$id) ""
-      set Data(BandY$id) ""
+      set Data(Band$obj)  $bands
+      set Data(BandX$obj) ""
+      set Data(BandY$obj) ""
    }
 
    set Mapper::Data(Job) [lindex $Mapper::Msg(Read) $GDefs(Lang)]
    update idletasks;
 
    if { ![llength $Bands] } {
-      set interp [gdalfile colorinterp $Data(Id$id)]
+      set interp [gdalfile colorinterp $id]
       if { $interp=="Red"  } {
          set Bands [lrange $bands 0 $Nb]
          set Data(Interp) LINEAR
@@ -1112,62 +1115,62 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    for { set i 0 } { $i<[llength $Bands] } { incr i } {
       if { [lindex [lindex $Bands $i] 0]=="" } {
          if { [llength [lindex $Bands $i]] } {
-            lset Bands $i 0 $Data(Id$id)
+            lset Bands $i 0 $id
          }
       }
    }
 
-   set Data(Band0$id) ""
-   set Data(Band1$id) ""
-   set Data(Band2$id) ""
-   set Data(Band3$id) ""
-   set Data(Bands$id) {}
+   set Data(Band0$obj) ""
+   set Data(Band1$obj) ""
+   set Data(Band2$obj) ""
+   set Data(Band3$obj) ""
+   set Data(Bands$obj) {}
 
    if  { [llength $Bands]>=1 } {
-      set Data(Band0$id) [lindex $Bands 0]
-      lappend Data(Bands$id) red
+      set Data(Band0$obj) [lindex $Bands 0]
+      lappend Data(Bands$obj) red
    }
    if  { [llength $Bands]>=2 } {
-      set Data(Band1$id) [lindex $Bands 1]
-      lappend Data(Bands$id) green
+      set Data(Band1$obj) [lindex $Bands 1]
+      lappend Data(Bands$obj) green
    }
    if  { [llength $Bands]>=3 } {
-      set Data(Band2$id) [lindex $Bands 2]
-      lappend Data(Bands$id) blue
+      set Data(Band2$obj) [lindex $Bands 2]
+      lappend Data(Bands$obj) blue
    }
    if  { [llength $Bands]>=4 } {
-      set Data(Band3$id) [lindex $Bands 3]
-      lappend Data(Bands$id) alpha
+      set Data(Band3$obj) [lindex $Bands 3]
+      lappend Data(Bands$obj) alpha
    }
 
-   set er [catch { gdalband read $id $Bands $Full } errmsg]
+   set er [catch { gdalband read $obj $Bands $Full } errmsg]
 
    if { $er } {
       error $errmsg $errorInfo
    }
 
    #----- Reassign positionnal if any
-   if  { [gdalband is BandX$id] && [gdalband is BandY$id] } {
-      gdalband define $id -positional BandX$id BandY$id
+   if  { [gdalband is BandX$obj] && [gdalband is BandY$obj] } {
+      gdalband define $obj -positional BandX$obj BandY$obj
    }
 
-   set map [gdalband configure $id -colormap]
-   gdalband configure $id -interpolation $Data(Interp)
+   set map [gdalband configure $obj -colormap]
+   gdalband configure $obj -interpolation $Data(Interp)
 
-   foreach min [gdalband stats $id -min] band $Data(Bands$id) {
+   foreach min [gdalband stats $obj -min] band $Data(Bands$obj) {
       colormap configure $map -min $band [lindex $min 0]
    }
-   foreach max [gdalband stats $id -max] band $Data(Bands$id) {
+   foreach max [gdalband stats $obj -max] band $Data(Bands$obj) {
       colormap configure $map -max $band [lindex $max 0]
   }
 
    set Mapper::Data(Job) ""
 
-   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $id]==-1 } {
-      lappend Viewport::Data(Data$Page::Data(Frame)) $id
+   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $obj]==-1 } {
+      lappend Viewport::Data(Data$Page::Data(Frame)) $obj
    }
-
-   return $id
+   
+   return $obj
 }
 
 proc Mapper::GDAL::ReadPos { Id BandX BandY } {

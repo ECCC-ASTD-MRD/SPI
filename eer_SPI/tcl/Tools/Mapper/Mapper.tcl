@@ -257,7 +257,8 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
             model free $Object
          }
       }
-
+      unset Data(Id$Object)
+      
       if { [colormap is $Object] } {
          colormap free $Object
       }
@@ -594,7 +595,7 @@ proc Mapper::Pick { VP X Y } {
                if { $files!="" } {
                   if { ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
                      foreach file $files {
-                        set path [file dirname $Data(Id$object)]
+                        set path [file dirname [ogrfile filename $Data(Id$object)]]
                         set file $path/../$file
                         set band [Mapper::GDAL::Read $file]
                         ogrgeometry copy MASK$band [ogrlayer define $object -geometry $idx]

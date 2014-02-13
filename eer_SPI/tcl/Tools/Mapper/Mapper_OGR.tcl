@@ -1780,12 +1780,11 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    global GDefs
    variable Data
 
-   if  { ![info exists Data(Id$File)] } {
-      set Data(Id$File) OGR[incr Data(IdNo)]
-   }
-
-   eval set bad [catch { set idxs [ogrfile open $Data(Id$File) read $File] }]
+   set id OGR[incr Data(IdNo)]
+  
+   eval set bad [catch { set idxs [ogrfile open $id read $File] } msg]
    if { $bad } {
+      Log::Pring ERROR $msg
       return ""
    }
 
@@ -1796,35 +1795,35 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    if { [llength $Index] } {
       set idxs {}
       foreach idx $Index {
-         lappend idxs [list $Data(Id$File) [lindex $idx 0] [lindex $idx 1]]
+         lappend idxs [list $id [lindex $idx 0] [lindex $idx 1]]
       }
    }
 
    foreach idx $idxs {
-      set layer [lindex $idx 2]
-      if { ![ogrlayer is $layer] } {
+      set obj [lindex $idx 2]
+
+      if { ![ogrlayer is $obj] } {
          if { $SQL!="" } {
-            ogrlayer sqlselect $layer $File $SQL
+            ogrlayer sqlselect $objr $File $SQL
          } else {
-            eval ogrlayer read \$layer $idx
+            eval ogrlayer read \$obj $idx
          }
 
-         if { [ogrlayer define $layer -nb]==0 } {
-            Dialog::Error . $Mapper::Msg(NoFeature) $layer
-            ogrlayer free $layer
+         if { [ogrlayer define $obj -nb]==0 } {
+            Dialog::Error . $Mapper::Msg(NoFeature) $obj
+            ogrlayer free $obj
             ogrfile close $File
             continue
          }
+         Mapper::OGR::Config $Page::Data(Frame) $obj
          
-         Mapper::OGR::Config $Page::Data(Frame) $layer
-         
-         set Data(Id$layer) $File
+         set Mapper::Data(Id$obj) $id
       }
    }
    set Mapper::Data(Job) ""
-   Mapper::Progress $layer
+   Mapper::Progress $obj
 
-   return $layer
+   return $obj
 }
 
 #-------------------------------------------------------------------------------
