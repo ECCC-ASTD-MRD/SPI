@@ -466,9 +466,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_WideInt   w;
    char          buf[32],*str;
 
-   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
+   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-invalid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
                                  "-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -537,6 +537,24 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area));
+               }
+            }
+            Tcl_SetObjResult(Interp,lst);
+            break;
+
+         case INVALID:
+            if (Objc!=1) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"");
+               return(TCL_ERROR);
+            }
+
+            lst=Tcl_NewListObj(0,NULL);
+
+            for(f=0;f<layer->NFeature;f++) {
+               if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  if (!OGR_G_IsValid(geom)) {
+                     Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(f));
+                  }
                }
             }
             Tcl_SetObjResult(Interp,lst);

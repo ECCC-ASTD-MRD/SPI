@@ -1446,7 +1446,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       }
 
       ok=c_fstouv(File->Id,"RND");
-      if (ok<=-1) {
+      if (ok<0) {
          // We should close the fid but c_fstouv keeps something opened and fstfrm blows up.
          // ok=c_fclos(File->Id);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv)",(char *)NULL);
