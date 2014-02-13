@@ -297,6 +297,9 @@ proc Mapper::OGR::Params { Object Tab } {
             $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(SnapOff) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 0
             $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(Snap10) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 10
             $Data(Frame3).sel.mode.opt.menu add radiobutton -label [lindex $Mapper::Lbl(Snap20) $GDefs(Lang)] -variable Mapper::OGR::Data(Snap) -value 20
+            $Data(Frame3).sel.mode.opt.menu add separator
+            $Data(Frame3).sel.mode.opt.menu add command -label [lindex $Mapper::Lbl(Invalid) $GDefs(Lang)] \
+               -command { ogrlayer define $Mapper::Data(Object) -featurehighlight [ogrlayer stats $Mapper::Data(Object) -invalid]; Page::Update $Page::Data(Frame) }
 
             button $Data(Frame3).sel.add -image PLUS -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureAdd $Mapper::Data(Object) }
             button $Data(Frame3).sel.del -image DELETE -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureDel $Mapper::Data(Object) } -state disabled

@@ -256,8 +256,8 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
          } elseif { [model is $Object] } {
             model free $Object
          }
+         unset Data(Id$Object)
       }
-      unset Data(Id$Object)
       
       if { [colormap is $Object] } {
          colormap free $Object
