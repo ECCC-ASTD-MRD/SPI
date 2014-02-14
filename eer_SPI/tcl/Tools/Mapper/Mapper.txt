@@ -41,7 +41,8 @@ namespace eval Mapper { } {
    set Lbl(Topo)          { "Topographie " "Topography  " }
    set Lbl(Table)         { "Table" "Table" }
    set Lbl(Extrude)       { "Extrusion   " "Extrude     " }
-   set Lbl(Field)         { "Champs" "Field" }
+   set Lbl(Field)         { "Champ" "Field" }
+   set Lbl(FieldExpr)     { "Champ résultant" "Result field" }
    set Lbl(Max)           { "Nombre maximum de colone" "Maximum numbre of column" }
    set Lbl(Font)          { "Police" "Font" }
    set Lbl(Meta)          { "Méta-données" "Metadata" }
@@ -156,6 +157,8 @@ namespace eval Mapper { } {
    set Lbl(AddGeom)      { "Ajouter une geometrie" "Add geometry" }
    set Lbl(DelRing)      { "Supprimer un contour" "Delete ring" }
    set Lbl(DelGeom)      { "Supprimer une geometrie" "Delete geometry" }
+   set Lbl(ColAdd)       { "Ajouter une colonne" "Add column" }
+   set Lbl(Expr)         { "Expression" "Expression" }
 
    set Msg(GeoProcessInfo) { "Le géotraitement ne vas utiliser\nque les items sélectionné des couches" "Geoprocessing will only use\nselected features of the layers" }
    set Msg(NoFeature)      { "La couche ne continent aucun item" "The layer contains no features" }
@@ -170,26 +173,30 @@ namespace eval Mapper { } {
    set Msg(Deep)           { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"
                              "The directory tree contains many files, the process might take some time.\n\n\tDo you want to continue ?" }
    set Msg(LayerName)      { "Le nom de la couche est invalide." "Invalid layer name" }
+   set Msg(FieldDel)       { "Voulez vous vraiment supprimer le champs/colonne suivant de la couche ?" "Do you really want to delete the folowing field/column from the layer ?" }
 
-   set Bubble(ProjLoad) { "Lire un fichier de géoréférence (WKT)" "Load a georeference file (WKT)" }
-   set Bubble(ProjRef)  { "Affichage / Modification de la géoréférence (WKT)" "Display / modify georeference (WKT)" }
-   set Bubble(Mode)     { "Activer le mode de sélection des objets" "Activate feature selection mode" }
-   set Bubble(Params)   { "Activer la boite de paramètres"  "Activate the parameter interface" }
-   set Bubble(Locate)   { "Centrer la projection sur la donnée"  "Center projection on the data" }
-   set Bubble(Zoom)     { "Zoom sur les limites de la donnée"  "Zoom on data extent" }
-   set Bubble(Front)    { "Monte la donnée sélectionnée à l'avant plan de la liste d'affichage" "Bring the selected data to the front of the display list" }
-   set Bubble(Back)     { "Recule la donnée sélectionnée à l'arrière plan de la liste d'affichage" "Bring the selected data to the back of the display list" }
-   set Bubble(Up)       { "Monte la donnée sélectionnée dans la liste d'affichage" "Bring the selected data up in the display list" }
-   set Bubble(Down)     { "Descend la donnée sélectionnée dans la liste d'affichage" "Bring the selected data down in the display list" }
-   set Bubble(Del)      { "Supprime la donnée selectionnée de la liste d'affichage" "Delete the selected data from the display list" }
-   set Bubble(File)     { "Ouvrir un fichier de données géographiques" "Open a file of geographic data" }
-   set Bubble(Op)       { "Opérateur de sélection:\n\n~= Expression régulière\n== Égal à\n!= Différent de\n<  Plus petit que\n<= Plus petit ou égal\n>  Plus grand\n>= Plus grand ou égal\n<> Entre\n\[\] Parmi"
-                          "Selection operator:\n\n~= Regular expression\n== Equal to\n!= Different from\n<  Smaller than\n<= Smaller or equal to\n>  Greather than\n>= Greather or equal to\n<> From - to\n\[\] Within" }
-   set Bubble(Histo)    { "Extraire l'histogramme de la bande sélectionnée" "Extract selected band histogram" }
-   set Bubble(OGRAdd)   { "Ajouter un objet" "Add a feature" }
-   set Bubble(OGRDel)   { "Supprimet un objet" "Delete a feature" }
-   set Bubble(OGREdit)  { "Edition des vertices\n\nBouton Gauche      : Déplacer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : Insérer un point"
-                          "Vertices edition\nLeft Button      : Move vertices\nMiddle Button    : Delete vertices\nShift-Left Button: Add vertices\nCtrl-Left Button : Insert vertices" }
+   set Bubble(ProjLoad)  { "Lire un fichier de géoréférence (WKT)" "Load a georeference file (WKT)" }
+   set Bubble(ProjRef)   { "Affichage / Modification de la géoréférence (WKT)" "Display / modify georeference (WKT)" }
+   set Bubble(Mode)      { "Activer le mode de sélection des objets" "Activate feature selection mode" }
+   set Bubble(Params)    { "Activer la boite de paramètres"  "Activate the parameter interface" }
+   set Bubble(Locate)    { "Centrer la projection sur la donnée"  "Center projection on the data" }
+   set Bubble(Zoom)      { "Zoom sur les limites de la donnée"  "Zoom on data extent" }
+   set Bubble(Front)     { "Monte la donnée sélectionnée à l'avant plan de la liste d'affichage" "Bring the selected data to the front of the display list" }
+   set Bubble(Back)      { "Recule la donnée sélectionnée à l'arrière plan de la liste d'affichage" "Bring the selected data to the back of the display list" }
+   set Bubble(Up)        { "Monte la donnée sélectionnée dans la liste d'affichage" "Bring the selected data up in the display list" }
+   set Bubble(Down)      { "Descend la donnée sélectionnée dans la liste d'affichage" "Bring the selected data down in the display list" }
+   set Bubble(Del)       { "Supprime la donnée selectionnée de la liste d'affichage" "Delete the selected data from the display list" }
+   set Bubble(File)      { "Ouvrir un fichier de données géographiques" "Open a file of geographic data" }
+   set Bubble(Op)        { "Opérateur de sélection:\n\n~= Expression régulière\n== Égal à\n!= Différent de\n<  Plus petit que\n<= Plus petit ou égal\n>  Plus grand\n>= Plus grand ou égal\n<> Entre\n\[\] Parmi"
+                           "Selection operator:\n\n~= Regular expression\n== Equal to\n!= Different from\n<  Smaller than\n<= Smaller or equal to\n>  Greather than\n>= Greather or equal to\n<> From - to\n\[\] Within" }
+   set Bubble(Histo)     { "Extraire l'histogramme de la bande sélectionnée" "Extract selected band histogram" }
+   set Bubble(ColAdd)    { "Ajouter une colonne" "Add column" }
+   set Bubble(ColDel)    { "Supprimer la colonne active" "Delete active column" }
+   set Bubble(ColCalc)   { "Effectuer un calcul sur les champs/colonne" "Perform a calculus on the fields/columns" }
+   set Bubble(OGRAdd)    { "Ajouter un objet" "Add a feature" }
+   set Bubble(OGRDel)    { "Supprimet un objet" "Delete a feature" }
+   set Bubble(OGREdit)   { "Edition des vertices\n\nBouton Gauche      : Déplacer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : Insérer un point"
+                           "Vertices edition\nLeft Button      : Move vertices\nMiddle Button    : Delete vertices\nShift-Left Button: Add vertices\nCtrl-Left Button : Insert vertices" }
 
    set Bubble(Projection)    { "Description du système de coordonnées géographiques (WKT)" "Geographical coordinate system description (WKT)" }
    set Bubble(Transform)     { "Matrice de transformation avant et inverse (dx sx rx dy ry sy)" "Transform matrix and inverse (dx sx rx dy ry sy)" }

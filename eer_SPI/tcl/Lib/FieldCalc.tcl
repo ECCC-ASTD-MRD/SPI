@@ -136,7 +136,9 @@ namespace eval FieldCalc {
    set Bubble(StatSMIN)   { "smin(A)\nMinimum de la matrice A" "smin(A)\nMinimum of the matrix A" }
    set Bubble(StatSMAX)   { "smax(A)\nMaximum de la matrice A" "smax(A)\nMaximum of the matrix A" }
    set Bubble(StatSAVG)   { "savg(A)\nMoyenne de la matrice A" "savg(A)\nAverage of the matrix A" }
-   set Bubble(StatSNB)    { "snbg(A)\nNombre d'item de la matrice A" "snbg(A)\nNumber of item of the matrix A" }
+   set Bubble(StatSMED)   { "smed(A)\nValeur medianne de la matrice A" "savg(A)\nMedian value of the matrix A" }
+   set Bubble(StatSUNIQ)  { "suniq(A)\nNombre de valeur distincte de la matrice A" "savg(A)\nNumber of unique value of the matrix A" }
+   set Bubble(StatSNB)    { "snb(A)\nNombre d'item de la matrice A" "snbg(A)\nNumber of item of the matrix A" }
    set Bubble(StatSVAR)   { "svar(A)\nVariance de la matrice A" "svar(A)\nVariance of the matrix A" }
    set Bubble(StatSCOR)   { "scor(A,B)\nCorrelation entre la matrice A et B" "scor(A,B)\nCorrelation between matrix A and B" }
    set Bubble(StatSCOV)   { "scov(A,B)\nCovariance entre la matrice A et B" "scov(A,B)\nCovariance between matrix A and B" }
@@ -156,6 +158,7 @@ namespace eval FieldCalc {
    set Bubble(StatSLMNB)  { "slmnb(A,B)\nBiais moyen normalise logarithmique entre la matrice A et B" "slmnb(A,B)\nLogarithmic mean normalized bias between matrix A and B" }
    set Bubble(StatSMFB)   { "smfb(A,B)\nBiais moyen fractionnaire entre la matrice A et B" "smfb(A,B)\nMean fractional bias between matrix A and B" }
    set Bubble(StatSMFE)   { "smfe(A,B)\nErreur moyenne fractionnaire entre la matrice A et B" "smfe(A,B)\nMean fractional error  between matrix A and B" }
+   set Bubble(StatSRMSE)  { "srmse(A,B)\nRMS entre la matrice A et B" "snrmse(A,B)\nRoot mean square error between matrix A and B" }
    set Bubble(StatSNRMSE) { "snrmse(A,B)\nRMS normalise entre la matrice A et B" "snrmse(A,B)\nNormalized Root mean square error between matrix A and B" }
 
    set Bubble(TrigoARC)   { "Applique la fonction inverse" "Appy inverse function" }
@@ -1436,24 +1439,29 @@ proc FieldCalc::WidgetStat { Frame } {
          button $Frame.sunk.l2.svar -text "svar" -command "FieldCalc::InsertFunc svar 1 0" -bd 1
          pack $Frame.sunk.l2.snb $Frame.sunk.l2.ssum $Frame.sunk.l2.svar -side top
       frame $Frame.sunk.l3
-         button $Frame.sunk.l3.scor  -text "scor " -command "FieldCalc::InsertFunc scor  2 0" -bd 1
-         button $Frame.sunk.l3.scov  -text "scov " -command "FieldCalc::InsertFunc scov  2 0" -bd 1
-         button $Frame.sunk.l3.srms  -text "srmse" -command "FieldCalc::InsertFunc srmse 2 0" -bd 1
-         pack $Frame.sunk.l3.scor $Frame.sunk.l3.scov $Frame.sunk.l3.srms -side top
+         button $Frame.sunk.l3.snb  -text "smed  " -command "FieldCalc::InsertFunc smed  1 0" -bd 1
+         button $Frame.sunk.l3.ssum -text "suniq " -command "FieldCalc::InsertFunc suniq 1 0" -bd 1
+         button $Frame.sunk.l3.svar -text "snrmse" -command "FieldCalc::InsertFunc snrmse 2 0" -bd 1
+         pack $Frame.sunk.l3.snb $Frame.sunk.l3.ssum $Frame.sunk.l3.svar -side top
       frame $Frame.sunk.l4
-         button $Frame.sunk.l4.smb  -text "smb "  -command "FieldCalc::InsertFunc smb 2 0" -bd 1
-         button $Frame.sunk.l4.snmb -text "snmb"  -command "FieldCalc::InsertFunc snmb 2 0" -bd 1
-         button $Frame.sunk.l4.smnb -text "smnb"  -command "FieldCalc::InsertFunc smnb 2 0" -bd 1
-         pack $Frame.sunk.l4.smb $Frame.sunk.l4.snmb $Frame.sunk.l4.smnb -side top
+         button $Frame.sunk.l4.scor  -text "scor " -command "FieldCalc::InsertFunc scor  2 0" -bd 1
+         button $Frame.sunk.l4.scov  -text "scov " -command "FieldCalc::InsertFunc scov  2 0" -bd 1
+         button $Frame.sunk.l4.srms  -text "srmse" -command "FieldCalc::InsertFunc srmse 2 0" -bd 1
+         pack $Frame.sunk.l4.scor $Frame.sunk.l4.scov $Frame.sunk.l4.srms -side top
       frame $Frame.sunk.l5
-         button $Frame.sunk.l5.sme  -text "sme "  -command "FieldCalc::InsertFunc sme 2 0" -bd 1
-         button $Frame.sunk.l5.snme -text "snme"  -command "FieldCalc::InsertFunc snme 2 0" -bd 1
-         button $Frame.sunk.l5.smne -text "smne"  -command "FieldCalc::InsertFunc smne 2 0" -bd 1
-         pack $Frame.sunk.l5.sme $Frame.sunk.l5.snme $Frame.sunk.l5.smne -side top
+         button $Frame.sunk.l5.smb  -text "smb "  -command "FieldCalc::InsertFunc smb 2 0" -bd 1
+         button $Frame.sunk.l5.snmb -text "snmb"  -command "FieldCalc::InsertFunc snmb 2 0" -bd 1
+         button $Frame.sunk.l5.smnb -text "smnb"  -command "FieldCalc::InsertFunc smnb 2 0" -bd 1
+         pack $Frame.sunk.l5.smb $Frame.sunk.l5.snmb $Frame.sunk.l5.smnb -side top
       frame $Frame.sunk.l6
-         button $Frame.sunk.l6.srega -text "srega"  -command "FieldCalc::InsertFunc srega 2 0" -bd 1
-         button $Frame.sunk.l6.sregb -text "sregb"  -command "FieldCalc::InsertFunc sregb 2 0" -bd 1
-         pack $Frame.sunk.l6.srega $Frame.sunk.l6.sregb -side top
+         button $Frame.sunk.l6.sme  -text "sme "  -command "FieldCalc::InsertFunc sme 2 0" -bd 1
+         button $Frame.sunk.l6.snme -text "snme"  -command "FieldCalc::InsertFunc snme 2 0" -bd 1
+         button $Frame.sunk.l6.smne -text "smne"  -command "FieldCalc::InsertFunc smne 2 0" -bd 1
+         pack $Frame.sunk.l6.sme $Frame.sunk.l6.snme $Frame.sunk.l6.smne -side top
+      frame $Frame.sunk.l7
+         button $Frame.sunk.l7.srega -text "srega"  -command "FieldCalc::InsertFunc srega 2 0" -bd 1
+         button $Frame.sunk.l7.sregb -text "sregb"  -command "FieldCalc::InsertFunc sregb 2 0" -bd 1
+         pack $Frame.sunk.l7.srega $Frame.sunk.l7.sregb -side top
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 $Frame.sunk.l5 $Frame.sunk.l6 -side left  -fill y
    pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
 
@@ -1463,17 +1471,20 @@ proc FieldCalc::WidgetStat { Frame } {
    Bubble::Create $Frame.sunk.l2.ssum  $Bubble(StatSSUM)
    Bubble::Create $Frame.sunk.l2.snb   $Bubble(StatSNB)
    Bubble::Create $Frame.sunk.l2.svar  $Bubble(StatSVAR)
-   Bubble::Create $Frame.sunk.l3.scor  $Bubble(StatSCOR)
-   Bubble::Create $Frame.sunk.l3.scov  $Bubble(StatSCOV)
-   Bubble::Create $Frame.sunk.l3.srms  $Bubble(StatSRMSE)
-   Bubble::Create $Frame.sunk.l4.smb   $Bubble(StatSMB)
-   Bubble::Create $Frame.sunk.l4.snmb  $Bubble(StatSNMB)
-   Bubble::Create $Frame.sunk.l4.smnb  $Bubble(StatSMNB)
-   Bubble::Create $Frame.sunk.l5.sme   $Bubble(StatSME)
-   Bubble::Create $Frame.sunk.l5.snme  $Bubble(StatSNME)
-   Bubble::Create $Frame.sunk.l5.smne  $Bubble(StatSMNE)
-   Bubble::Create $Frame.sunk.l6.srega $Bubble(StatSREGA)
-   Bubble::Create $Frame.sunk.l6.sregb $Bubble(StatSREGB)
+   Bubble::Create $Frame.sunk.l3.ssum  $Bubble(StatSMED)
+   Bubble::Create $Frame.sunk.l3.snb   $Bubble(StatSUNIQ)
+   Bubble::Create $Frame.sunk.l3.svar  $Bubble(StatSNRMSE)
+   Bubble::Create $Frame.sunk.l4.scor  $Bubble(StatSCOR)
+   Bubble::Create $Frame.sunk.l4.scov  $Bubble(StatSCOV)
+   Bubble::Create $Frame.sunk.l4.srms  $Bubble(StatSRMSE)
+   Bubble::Create $Frame.sunk.l5.smb   $Bubble(StatSMB)
+   Bubble::Create $Frame.sunk.l5.snmb  $Bubble(StatSNMB)
+   Bubble::Create $Frame.sunk.l5.smnb  $Bubble(StatSMNB)
+   Bubble::Create $Frame.sunk.l6.sme   $Bubble(StatSME)
+   Bubble::Create $Frame.sunk.l6.snme  $Bubble(StatSNME)
+   Bubble::Create $Frame.sunk.l6.smne  $Bubble(StatSMNE)
+   Bubble::Create $Frame.sunk.l7.srega $Bubble(StatSREGA)
+   Bubble::Create $Frame.sunk.l7.sregb $Bubble(StatSREGB)
 }
 
 #----------------------------------------------------------------------------

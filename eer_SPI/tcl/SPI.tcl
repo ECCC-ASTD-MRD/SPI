@@ -1802,7 +1802,7 @@ proc SPI::ToolMode { Tool Mode { Off False } { Square 0 } } {
    }
    set Page::Data(DrawMode) $Tool
    set Page::Data(ToolMode) $Tool
-   set Page::Param(Square)  $Square
+   set Page::Param(Square)  [expr $Square<0?0:$Square]
 }
 
 #---------------------------------------------------------------------------

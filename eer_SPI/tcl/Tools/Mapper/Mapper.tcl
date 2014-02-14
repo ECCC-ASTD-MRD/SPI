@@ -587,7 +587,7 @@ proc Mapper::Pick { VP X Y } {
             set Mapper::OGR::Data(Index) $idx
             
             Mapper::OGR::ParamsGet $Data(Object)
-            Mapper::OGR::Params $Data(Object) 2
+            Mapper::OGR::Params $Data(Object) { 2 4 }
             Mapper::OGR::Table  $Data(Object) $idx
 
             #----- Check if this is an index to some other data

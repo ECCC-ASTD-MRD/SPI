@@ -138,6 +138,8 @@ image create photo SHEET       -file $GDefs(Dir)/share/image/Icon/Sheet.gif
 image create photo BOOK        -file $GDefs(Dir)/share/image/Icon/Book.gif
 image create photo BOOKSAVE    -file $GDefs(Dir)/share/image/Icon/BookSave.gif
 image create photo GRID        -file $GDefs(Dir)/share/image/Icon/Grid.gif
+image create photo GRIDADD     -file $GDefs(Dir)/share/image/Icon/GridAdd.gif
+image create photo GRIDREM     -file $GDefs(Dir)/share/image/Icon/GridRemove.gif
 image create photo GRIDTO      -file $GDefs(Dir)/share/image/Icon/GridTo.gif
 image create photo GRIDSAVE    -file $GDefs(Dir)/share/image/Icon/GridSave.gif
 image create photo GRIDDEL     -file $GDefs(Dir)/share/image/Icon/GridDelete.gif
