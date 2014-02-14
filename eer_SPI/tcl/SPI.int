@@ -400,7 +400,7 @@ proc SPI::Window { } {
 
    panedwindow .pan -orient horizontal -showhandle False -opaqueresize False -bd 1
    panedwindow .pan.side -orient vertical -showhandle False -opaqueresize False -relief raised -bd 1 -sashrelief sunken
-   pack .pan  -after .bar -side top -fill both -expand true
+   pack .pan -after .bar -side top -fill both -expand true
    .pan add .mdi
    raise .mdi
 
@@ -434,11 +434,13 @@ proc SPI::FullScreen { } {
    
    if { $Param(FullScreen) } {
       pack forget .menu .bar .info
-      bind . <Motion>  { if { %Y<45 } { pack .menu .bar -before .pan -side top -fill x } else { pack forget .menu .bar .info } }
+      bind .mdi <Leave>  { if { %Y<10 } { pack .menu .bar -before .pan -side top -fill x } }
+      bind .mdi <Enter>  { pack forget .menu .bar .info }
       
    } else {
-      bind . <Motion>  { }
-      pack .menu .bar -before .pan -side top -fill x 
+      bind .mdi <Leave>  { }
+      bind .mdi <Enter>  { }
+      pack .menu .bar -before [lindex [pack slaves .] 0] -side top -fill x -anchor n
       pack .info -after .pan -side top -fill x 
    }
 }
