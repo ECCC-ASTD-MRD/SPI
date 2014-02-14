@@ -368,14 +368,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
-                                 "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-transparency","-color","-fill",
+                                 "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-activewidth","-transparency","-color","-fill",
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
-                     INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,TRANSPARENCY,COLOR,FILL,
+                     INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
@@ -813,6 +813,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Width));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Width);
+            }
+            break;
+
+         case ACTWIDTH:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->HighWidth));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->HighWidth);
             }
             break;
 
@@ -1546,6 +1554,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Alpha=from->Alpha;
    to->Light=from->Light;
    to->Width=from->Width;
+   to->HighWidth=from->HighWidth;
    to->Size=from->Size;
    to->SizeRange=from->SizeRange;
    to->SizeMin=from->SizeMin;
@@ -1706,6 +1715,7 @@ TDataSpec *DataSpec_New(){
       spec->Alpha=100;
       spec->Light=0;
       spec->Width=1;
+      spec->HighWidth=0;
       spec->Size=10.0;
       spec->SizeRange=2.0;
       spec->SizeMin=spec->SizeMax=0.0;

@@ -250,10 +250,6 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
    fprintf(stdout,"(DEBUG) Called Calc_MatrixTo(A:%p,B:%p,Degree:%i)\n",(void*)A,(void*)B,Degree);
 #endif
 
-   if (GField->Ref->Type&GRID_VERTICAL || GFieldP->Ref->Type&GRID_VERTICAL) {
-      return(NULL);
-   }
-
    GDataN++;
    GData[GDataN]=DataDef_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
 
@@ -270,6 +266,10 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
          n++;
       }
    } else {
+      if (!GField || !GFieldP || GField->Ref->Type&GRID_VERTICAL || GFieldP->Ref->Type&GRID_VERTICAL) {
+         return(NULL);
+      }
+
       if (GField->Ref->Ids[GField->Ref->NId]<=-1 || GFieldP->Ref->Ids[GFieldP->Ref->NId]<=-1) {
          Data_GridInterpolate(NULL,'L',GField->Ref,GData[GDataN],GFieldP->Ref,B);
       } else {

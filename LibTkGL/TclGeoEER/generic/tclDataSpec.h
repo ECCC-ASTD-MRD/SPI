@@ -128,7 +128,7 @@ typedef struct TDataSpec {
    int             TexSample,TexSize,TexRes; /*Parametres des textures*/
    double          TexStep;
    double          Step;                /*Step de calcul*/
-   int             Width;               /*Largeur*/
+   int             Width,HighWidth;     /*Largeur*/
    int             Icon;                /*Icone*/
    int             Mark;                /*Marquage*/
    int             Style;               /*Style*/

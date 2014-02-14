@@ -68,9 +68,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    OGRGeometryH   geom;
    int            i,idx,j,f,t;
 
-   static CONST char *sopt[] = { "-type","-space","-field","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
-                                 "-mask","-featurehighlight","-featureselect","-fid",NULL };
-   enum                opt { TYPE,SPACE,FIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
+   static CONST char *sopt[] = { "-type","-space","-field","-delfield","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
+                                  "-mask","-featurehighlight","-featureselect","-fid",NULL };
+   enum                opt { TYPE,SPACE,FIELD,DELFIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
                              MASK,FEATUREHIGHLIGHT,FEATURESELECT,FID };
 
    layer=OGR_LayerGet(Name);
@@ -177,10 +177,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                Tcl_SetObjResult(Interp,lst);
                i++;
             } else {
-               if (layer->NFeature!=0) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Must create the fields before allocating the features",(char*)NULL);
-//                  return(TCL_ERROR);
-               }
                if (strlen(Tcl_GetString(Objv[1]))>10) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field name too long (max 10 char)",(char*)NULL);
                   return(TCL_ERROR);
@@ -206,6 +202,35 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             }
             break;
 
+         case DELFIELD:
+            if (Objc!=2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"Field");
+               return TCL_ERROR;
+            }
+            j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[++i]));
+            if (j==-1) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid field",(char*)NULL);
+                return(TCL_ERROR);
+            }
+            
+            /*Update the current structure if we need to*/
+            OGR_LayerUpdate(layer);
+
+            for(f=0;f<layer->NFeature;f++) {
+               OGR_F_Destroy(layer->Feature[f]);
+            }
+            OGR_FD_DeleteFieldDefn(layer->Def,j);
+      
+            /*Reload the features to be in sync*/
+            OGR_L_ResetReading(layer->Layer);
+            for(f=0;f<layer->NFeature;f++) {
+               layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer);
+            }
+            layer->Update=1;
+            layer->Changed=1;
+           
+            break;
+            
          case FEATURE:
             if (Objc<2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index ?Field? ?Value?");
@@ -1614,21 +1639,24 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
    if (field) {
 //   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
 
-      /*Update the curretn structure if we need to*/
+      /*Update the current structure if we need to*/
       OGR_LayerUpdate(Layer);
 
-      /*Add the field to the structure*/
-      if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
-         return(NULL);
+      for(f=0;f<Layer->NFeature;f++) {
+         OGR_F_Destroy(Layer->Feature[f]);
       }
-
+      /*Add the field to the structure*/
+ //     if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
+ //        return(NULL);
+ //     }
+      OGR_FD_AddFieldDefn(Layer->Def,field);
+ 
       /*Reload the features to be in sync*/
       OGR_L_ResetReading(Layer->Layer);
       for(f=0;f<Layer->NFeature;f++) {
-         OGR_F_Destroy(Layer->Feature[f]);
          Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer);
       }
-      Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+//      Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
       Layer->Update=1;
       Layer->Changed=1;
 //      OGR_Fld_Destroy(field);
@@ -1644,6 +1672,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
  *
  * Parametres   :
  *  <Layer>     : Couche
+ *  <Reload>    : Reload or not
  *
  * Retour       :
  *
@@ -2748,7 +2777,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 */
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask) {
 
-   int     f,idx=-1,x,y,g,nf,dx;
+   int     f,idx=-1,x,y,g,nf,dx,w;
    int     fsize=-1,fmap=-1,flabel=-1;
    Vect3d  vr;
    char    lbl[256];
@@ -3034,7 +3063,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Render the selected features*/
    if (Layer->SFeature) {
-
+      w=spec->HighWidth?spec->HighWidth:spec->Width;
+      
       for(f=0;f<Layer->NSFeature;f++) {
 
          /*If it's already been projected*/
@@ -3046,19 +3076,19 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
                Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
             }
-
-            if (spec->HighLine && spec->Width) {
+            
+            if (spec->HighLine && w) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {
                   glPushAttrib(GL_STENCIL_BUFFER_BIT);
                   glStencilFunc(GL_ALWAYS,0x1,0x1);
                   glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
                }
-               glLineWidth(ABS(spec->Width));
-               glPointSize(ABS(spec->Width));
+               glLineWidth(ABS(w));
+               glPointSize(ABS(w));
                glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
                Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
-               if (spec->Width<0) {
+               if (w<0) {
                   glPopAttrib();
                }
             }
