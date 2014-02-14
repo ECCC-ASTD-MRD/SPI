@@ -1064,14 +1064,14 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
 
    int    i,f,n=0;
    double val;
-
+   
    /*Get the field index*/
    if ((i=OGR_FD_GetFieldIndex(Layer->Def,Field))>-1) {
 
       /*Put the results in*/
       for(f=0;f<Layer->NFeature;f++) {
          if (Layer->Select[f]) {
-            Def_Get(Def,n,f,val);
+            Def_Get(Def,0,n,val);
             OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
             n++;
          }
