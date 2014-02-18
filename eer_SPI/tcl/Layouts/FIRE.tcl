@@ -109,7 +109,7 @@ proc FIRE::LayoutUpdate { Frame } {
    set ip3 [string trim [fstdfield define $field -IP3]]
    set tv  [string trim [fstdfield define $field -TYPVAR]]
 
-   #----- If the field is changed, updtae level list
+   #----- If the field is changed, update level list
    if { $Data(Field)!="$nv $tv $iso $ip1 $ip3" } {
       set Data(Field) "$nv $tv $iso $ip1 $ip3"
       

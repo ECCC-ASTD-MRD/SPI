@@ -113,6 +113,10 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
 
    uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
+   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+      return True
+   }
+   
    toplevel     .dlgdef -class Dialog
    wm title     .dlgdef $title
    wm resizable .dlgdef 0 0

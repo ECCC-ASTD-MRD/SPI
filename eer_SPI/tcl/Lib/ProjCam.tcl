@@ -122,7 +122,7 @@ namespace eval ProjCam {
 #
 #----------------------------------------------------------------------------
 
-proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 Off } {
+proc ProjCam::CloseUp { Cam Frame VP Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
    variable Data
 
    upvar #0 ProjCam::Data${Cam}::Cam cam

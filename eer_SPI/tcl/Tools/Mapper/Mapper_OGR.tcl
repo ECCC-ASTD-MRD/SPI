@@ -302,7 +302,7 @@ proc Mapper::OGR::Params { Object Tabs } {
                -command { ogrlayer define $Mapper::Data(Object) -featurehighlight [ogrlayer stats $Mapper::Data(Object) -invalid]; Page::Update $Page::Data(Frame) }
 
             button $Data(Frame3).sel.add -image PLUS -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureAdd $Mapper::Data(Object) }
-            button $Data(Frame3).sel.del -image DELETE -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureDel $Mapper::Data(Object) } -state disabled
+            button $Data(Frame3).sel.del -image DELETE -relief flat -bd 1 -overrelief raised -command { Mapper::OGR::FeatureDel $Mapper::Data(Object) $Mapper::OGR::Data(Index) }
             label $Data(Frame3).sel.lbl -text [lindex $Mapper::Lbl(Index) $GDefs(Lang)] -width 7 -anchor w
             spinbox $Data(Frame3).sel.val -textvariable Mapper::OGR::Data(Index) -width 20 -from 0 -to 0 -wrap True -bd 1 \
                -command { after 1 "Mapper::OGR::Feature $Mapper::Data(Object) %s True" } -bg $GDefs(ColorLight)
@@ -1241,9 +1241,15 @@ proc Mapper::OGR::FeatureAdd { Object } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::OGR::FeatureDel { Object } {
+proc Mapper::OGR::FeatureDel { Object Index } {
+   variable Data
 
-
+   ogrlayer define $Object -delfeature $Index
+ 
+   set nb [ogrlayer define $Object -nb]
+   $Data(Frame3).sel.val configure -to [expr $nb-1]
+   
+   Mapper::OGR::Feature $Object [expr $Index==0?0:$Index-1]
 }
 
 #-------------------------------------------------------------------------------
