@@ -68,9 +68,9 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    OGRGeometryH   geom;
    int            i,idx,j,f,t;
 
-   static CONST char *sopt[] = { "-type","-space","-field","-delfield","-name","-feature","-nb","-nbready","-geometry","-projection","-georef",
+   static CONST char *sopt[] = { "-type","-space","-field","-delfield","-name","-feature","-delfeature","-nb","-nbready","-geometry","-projection","-georef",
                                   "-mask","-featurehighlight","-featureselect","-fid",NULL };
-   enum                opt { TYPE,SPACE,FIELD,DELFIELD,NAME,FEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
+   enum                opt { TYPE,SPACE,FIELD,DELFIELD,NAME,FEATURE,DELFEATURE,NB,NBREADY,GEOMETRY,PROJECTION,GEOREF,
                              MASK,FEATUREHIGHLIGHT,FEATURESELECT,FID };
 
    layer=OGR_LayerGet(Name);
@@ -215,20 +215,19 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             
             /*Update the current structure if we need to*/
             OGR_LayerUpdate(layer);
-
+            
             for(f=0;f<layer->NFeature;f++) {
                OGR_F_Destroy(layer->Feature[f]);
             }
-            OGR_FD_DeleteFieldDefn(layer->Def,j);
+            OGR_L_DeleteField(layer->Layer,j);
       
             /*Reload the features to be in sync*/
-            OGR_L_ResetReading(layer->Layer);
-            for(f=0;f<layer->NFeature;f++) {
-               layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer);
+            if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
+               return(TCL_ERROR);
             }
             layer->Update=1;
             layer->Changed=1;
-           
+            
             break;
             
          case FEATURE:
@@ -275,6 +274,91 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             }
             break;
 
+         case DELFEATURE:
+            if (Objc<2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"index");
+               return(TCL_ERROR);
+            }
+            Tcl_GetIntFromObj(Interp,Objv[++i],&f);
+            if (f<0 || f>=layer->NFeature) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            
+            /*Update the current structure if we need to*/
+            OGR_LayerClean(layer,-1);
+            OGR_LayerUpdate(layer);
+
+            if (OGR_L_DeleteFeature(layer->Layer,f)==OGRERR_UNSUPPORTED_OPERATION) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to delete feature, operation not supported",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            
+            for(f=0;f<layer->NFeature;f++) {
+               OGR_F_Destroy(layer->Feature[f]);
+            }
+            if ((layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1))) {
+               /*Reload the features to be in sync*/
+               if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+            }
+            layer->Update=1;
+            layer->Changed=1;
+            
+            break;
+            
+         case FEATUREHIGHLIGHT:
+            if (Objc==1) {
+               lst=Tcl_NewListObj(0,NULL);
+               for(f=0;f<layer->NSFeature;f++) {
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(layer->SFeature[f]));
+               }
+               Tcl_SetObjResult(Interp,lst);
+            } else {
+
+               Tcl_ListObjLength(Interp,Objv[++i],&f);
+               layer->NSFeature=f;
+               
+               if (layer->SFeature) {
+                  free(layer->SFeature);
+                  layer->SFeature=NULL;
+               }
+               if (layer->NSFeature) {
+                  if ((layer->SFeature=(unsigned int*)malloc(layer->NSFeature*sizeof(unsigned int)))) {
+                     for(f=0;f<layer->NSFeature;f++) {
+                        Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
+                        Tcl_GetWideIntFromObj(Interp,obj,&w);
+                        layer->SFeature[f]=w;
+                     }
+                  } else {
+                     Tcl_AppendResult(Interp,"OGR_LayerDefine: Unable to allocate feature select buffer",(char*)NULL);
+                     return(TCL_ERROR);                   
+                  }
+               }
+            }
+            break;
+
+         case FEATURESELECT:
+            t=TCL_OK;
+            if (Objc>1) {
+               t=OGR_LayerSelect(Interp,layer,Objv[++i]);
+               
+               /*If there is a sort applied, refresh it*/
+               OGR_LayerSort(Interp,layer);
+            }
+            if (t!=TCL_ERROR) {
+               lst=Tcl_NewListObj(0,NULL);
+               for(f=0;f<layer->NFeature;f++) {
+                  if (layer->Select[f]) {
+                     Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(f));
+                  }
+               }
+               Tcl_SetObjResult(Interp,lst);
+            }
+            return(t);
+            break;
+            
          case GEOMETRY:
             if (Objc<2 || Objc>4) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index ?direct? ?geometry?");
@@ -366,57 +450,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             } else {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&layer->Mask);
             }
-            break;
-
-         case FEATUREHIGHLIGHT:
-            if (Objc==1) {
-               lst=Tcl_NewListObj(0,NULL);
-               for(f=0;f<layer->NSFeature;f++) {
-                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(layer->SFeature[f]));
-               }
-               Tcl_SetObjResult(Interp,lst);
-            } else {
-
-               Tcl_ListObjLength(Interp,Objv[++i],&f);
-               layer->NSFeature=f;
-               
-               if (layer->SFeature) {
-                  free(layer->SFeature);
-                  layer->SFeature=NULL;
-               }
-               if (layer->NSFeature) {
-                  if ((layer->SFeature=(unsigned int*)malloc(layer->NSFeature*sizeof(unsigned int)))) {
-                     for(f=0;f<layer->NSFeature;f++) {
-                        Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
-                        Tcl_GetWideIntFromObj(Interp,obj,&w);
-                        layer->SFeature[f]=w;
-                     }
-                  } else {
-                     Tcl_AppendResult(Interp,"OGR_LayerDefine: Unable to allocate feature select buffer",(char*)NULL);
-                     return(TCL_ERROR);                   
-                  }
-               }
-            }
-            break;
-
-         case FEATURESELECT:
-            t=TCL_OK;
-            if (Objc>1) {
-               t=OGR_LayerSelect(Interp,layer,Objv[++i]);
-               
-               /*If there is a sort applied, refresh it*/
-               OGR_LayerSort(Interp,layer);
-            }
-            if (t!=TCL_ERROR) {
-               lst=Tcl_NewListObj(0,NULL);
-               for(f=0;f<layer->NFeature;f++) {
-                  if (layer->Select[f]) {
-                     Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(f));
-                  }
-               }
-               Tcl_SetObjResult(Interp,lst);
-            }
-            return(t);
             break;
       }
    }
@@ -1598,7 +1631,6 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
-   unsigned int   f;
 
    if (Field && strlen(Field)) {
       strncpy(name,Field,10);name[10]='\0';
@@ -1642,24 +1674,12 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
       /*Update the current structure if we need to*/
       OGR_LayerUpdate(Layer);
 
-      for(f=0;f<Layer->NFeature;f++) {
-         OGR_F_Destroy(Layer->Feature[f]);
-      }
       /*Add the field to the structure*/
- //     if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
- //        return(NULL);
- //     }
-      OGR_FD_AddFieldDefn(Layer->Def,field);
- 
-      /*Reload the features to be in sync*/
-      OGR_L_ResetReading(Layer->Layer);
-      for(f=0;f<Layer->NFeature;f++) {
-         Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer);
-      }
-//      Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
+     if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
+        return(NULL);
+     }
       Layer->Update=1;
       Layer->Changed=1;
-//      OGR_Fld_Destroy(field);
    }
     return(field);
 }
@@ -1710,13 +1730,26 @@ void OGR_LayerUpdate(OGR_Layer *Layer) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
+int OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer) {
+   
+   unsigned int f;
+
+   OGR_L_ResetReading(Layer->Layer);
+   for(f=0;f<Layer->NFeature;f++) {
+      if (!(Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer))) {
+         Tcl_AppendResult(Interp,"OGR_LayerReadFeature: Unable to read features",(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+   return(TCL_OK);   
+}
+
 int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 
    OGR_File    *file=NULL;
    OGR_Layer   *layer=NULL;
    OGREnvelope  env;
-   unsigned int f;
-
+   
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
    }
@@ -1730,8 +1763,11 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       return(TCL_ERROR);
    }
 
-   layer->Layer=OGR_DS_GetLayer(file->Data,Idx);
-
+   // Copy layer in memory using Memory driver to be able to do whatever we want with it
+   layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
+   layer->Layer=OGR_DS_CopyLayer(layer->Data,OGR_DS_GetLayer(file->Data,Idx),Name,NULL);   
+   
+//   layer->Layer=OGR_DS_GetLayer(file->Data,Idx);
    if (!layer->Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer",(char*)NULL);
       return(TCL_ERROR);
@@ -1755,12 +1791,8 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       memset(layer->Select,0x1,layer->NFeature);
 
       /* Parse features */
-      OGR_L_ResetReading(layer->Layer);
-      for(f=0;f<layer->NFeature;f++) {
-         if (!(layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer))) {
-            Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read features",(char*)NULL);
-            return(TCL_ERROR);
-         }
+      if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
+         return(TCL_ERROR);
       }
       
       if (!(layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord)))) {
@@ -1768,6 +1800,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
          return(TCL_ERROR);
       }
    }
+   
    layer->File=file;
    layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
    OGR_L_GetExtent(layer->Layer,&env,1);
@@ -1906,6 +1939,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    layer->File=file;
    layer->Update=0;
    layer->Changed=0;
+
    return(TCL_OK);
 }
 
@@ -1931,10 +1965,9 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 
    OGR_File     *file=NULL;
    OGR_Layer    *layer;
+   OGRLayerH     srcl;
    OGRGeometryH  geom;
    OGREnvelope   env;
-
-   unsigned int  f;
 
    if (!(file=OGR_FileGet(Interp,FileId))) {
       return(TCL_ERROR);
@@ -1959,11 +1992,15 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
    }
 
-   layer->Layer=OGR_DS_ExecuteSQL(file->Data,Statement,geom,NULL);
+   srcl=OGR_DS_ExecuteSQL(file->Data,Statement,geom,NULL);
+   
+   // Copy layer in memory using Memory driver to be able to do whatever we want with it
+   layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
+   layer->Layer=OGR_DS_CopyLayer(layer->Data,srcl,Name,NULL);   
 
+   OGR_DS_ReleaseResultSet(file->Data,srcl);
+   
    if (layer->Layer) {
-      layer->SQLed=file->Data;
-
       layer->Def=OGR_L_GetLayerDefn(layer->Layer);
       if (!layer->Def) {
          Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer definition",(char*)NULL);
@@ -1984,9 +2021,8 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
          memset(layer->Select,0x1,layer->NFeature);
 
          /* Parse features */
-         OGR_L_ResetReading(layer->Layer);
-         for(f=0;f<layer->NFeature;f++) {
-            layer->Feature[f]=OGR_L_GetNextFeature(layer->Layer);
+         if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
+            return(TCL_ERROR);
          }
          
          if (!(layer->Loc=(Coord*)malloc(layer->NFeature*sizeof(Coord)))) {

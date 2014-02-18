@@ -382,8 +382,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
-         layer->SQLed=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
-         layer->Layer=OGR_DS_CreateLayer(layer->SQLed,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
+         layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
+         layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
          layer->Def=OGR_FD_Create(Tcl_GetString(Objv[3]));             
          layer->Ref=ref;             
          layer->Changed=1;
@@ -758,7 +758,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Topo         = -1;
    layer->Extrude      = -1;
    layer->Loc          = NULL;
-   layer->SQLed        = NULL;
+   layer->Data         = NULL;
    layer->Min          = 0.0;
    layer->Max          = 0.0;
 
@@ -887,7 +887,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);
 
-   if (Layer->SQLed)      OGR_DS_ReleaseResultSet(Layer->SQLed,Layer->Layer);
+   if (Layer->Data)       OGR_DS_ReleaseResultSet(Layer->Data,Layer->Layer);
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
 
    OGR_LayerClean(Layer,-1);
@@ -1338,12 +1338,12 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
             return(TCL_ERROR);
          }
       } else if (Mode=='a' ||  Mode=='A') {    /*Append Mode*/
-         if (!(source=OGROpen(Name,1,&driver))) {
+         if (!(source=OGROpen(Name,TRUE,&driver))) {
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file ",Name,(char*)NULL);
             return(TCL_ERROR);
          }
       } else {                                 /*ReadOnly Mode*/
-         if (!(source=OGROpen(Name,0,&driver))) {;
+         if (!(source=OGROpen(Name,FALSE,&driver))) {;
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file ",Name,(char*)NULL);
             return(TCL_ERROR);
          }

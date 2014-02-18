@@ -72,7 +72,7 @@ typedef struct OGR_Layer {
    OGRFeatureH     *Feature;
    OGRFeatureDefnH  Def;
 
-   OGRDataSourceH   SQLed;
+   OGRDataSourceH   Data;
    OGR_Sort         Sort;
    char            *Select;
 
@@ -119,6 +119,7 @@ int              OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,c
 int              OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
 int              OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer);
 int              OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
+int              OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer);
 int              OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
 int              OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);
 int              OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);

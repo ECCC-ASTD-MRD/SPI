@@ -1323,7 +1323,7 @@ int FSTD_FileLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
 */
 int FSTD_FileUnLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
 
-   FSTD_File *file;
+   FSTD_File *file=NULL;
    Tcl_Obj   *obj;
    int        ier,n,nobj,*ids;
 
