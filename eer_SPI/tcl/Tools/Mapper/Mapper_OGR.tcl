@@ -367,7 +367,7 @@ proc Mapper::OGR::Params { Object Tabs } {
                scrollbar $Data(Frame5).pan.meta.sub.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
                scrollbar $Data(Frame5).pan.meta.sub.scrollx -relief sunken -command "Mapper::OGR::TableXScroll" -bd 1 -width 10 -orient horizontal
                table $Data(Frame5).pan.meta.sub.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::OGR::Table \
-                  -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -multiline False -drawmode fast \
+                  -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
                   -yscrollcommand "$Data(Frame5).pan.meta.sub.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.sub.scrollx set" -width 1 -height 1 -selectmode extended \
                   -validate 1 -vcmd { Mapper::OGR::FeatureFieldTable $Mapper::Data(Object) %r %c %S }
                pack $Data(Frame5).pan.meta.sub.scrollx -side bottom -fill x
@@ -379,7 +379,7 @@ proc Mapper::OGR::Params { Object Tabs } {
          frame $Data(Frame5).pan.stat -relief sunken -bd 1 
             scrollbar $Data(Frame5).pan.stat.scrolly -relief sunken -command "$Data(Frame5).pan.stat.table yview " -bd 1 -width 10
             table $Data(Frame5).pan.stat.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -variable Mapper::OGR::Stats \
-            -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -multiline False -drawmode fast \
+            -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
             -yscrollcommand "$Data(Frame5).pan.stat.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.sub.scrollx set" -width 1 -height 1 -selectmode extended 
             pack $Data(Frame5).pan.stat.scrolly -side left -fill y
             pack $Data(Frame5).pan.stat.table -side left -fill both -expand true -before $Data(Frame5).pan.stat.scrolly
@@ -1332,7 +1332,7 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    for { set c 0 } { $c<$col } { incr c } {
       if {![winfo exists $Data(Frame5).pan.meta.sub.table.c$c] } {
          radiobutton $Data(Frame5).pan.meta.sub.table.c$c -variable Mapper::OGR::Data(TableSort) -indicatoron False -bd 1 \
-            -command { Mapper::OGR::TableColumnSelect $Mapper::Data(Object) }
+            -command "Mapper::OGR::TableColumnSelect \$Mapper::Data(Object) $row $c"
       }
       $Data(Frame5).pan.meta.sub.table window configure 0,$c -window $Data(Frame5).pan.meta.sub.table.c$c -sticky nsew
       if { $c==0 } {
@@ -1460,10 +1460,26 @@ proc Mapper::OGR::TableXScroll { args } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::OGR::TableColumnSelect { Object } {
+proc Mapper::OGR::TableColumnSelect { Object Row Column } {
    variable Data
 
-   ogrlayer stats $Object -sort $Data(TableSort)
+   set reverse False
+   
+   for { set c 1 } { $c<=[llength [ogrlayer define $Object -field]] } { incr c } { 
+      if { $c!=$Column } {
+         $Data(Frame5).pan.meta.sub.table.c$c configure -image ""  -compound none
+      }
+   }
+   
+   if { $Data(TableSort)!="" } {
+      switch [lindex [$Data(Frame5).pan.meta.sub.table.c$Column configure -image] end] {
+         DOWN    { set img UP; set reverse True }
+         default { set img DOWN }
+      }
+      $Data(Frame5).pan.meta.sub.table.c$Column configure -image $img -compound right
+   }
+  
+   ogrlayer stats $Object -sort $Data(TableSort) $reverse
    Mapper::OGR::Table $Object
 }
 
