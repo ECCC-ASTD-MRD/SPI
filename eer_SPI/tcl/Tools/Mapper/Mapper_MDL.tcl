@@ -40,7 +40,7 @@ namespace eval Mapper::MDL { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::MDL::Params { Object Tab } {
+proc Mapper::MDL::Params { Object { Tabs {} } } {
    global   GDefs
    variable Data
 
@@ -171,7 +171,13 @@ proc Mapper::MDL::Params { Object Tab } {
             pack $Data(Frame1).matrix.loc $Data(Frame1).matrix.rot $Data(Frame1).matrix.sca -side top -fill x -padx 5
          pack $Data(Frame1).matrix -side top -fill x -padx 5 -pady 5 -ipady 2 -anchor nw
 
-      TabFrame::Select .mapperparams.tab $Tab
+      if { ![llength $Tabs] } {
+         set Tabs 0
+      }
+   }
+
+   if { [llength $Tabs] && [lsearch -exact $Tabs [TabFrame::Current .mapperparams.tab]]==-1 } {
+      TabFrame::Select .mapperparams.tab [lindex $Tabs 0]
    }
 
    $Data(Frame1).proj.val delete 0.0 end

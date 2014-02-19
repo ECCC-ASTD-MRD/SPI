@@ -154,7 +154,7 @@ namespace eval Mapper::GDAL { } {
 #
 # Parametres :
 #   <Object> : Donnee geographique a parametrer
-#   <Tab>    : Onglet par defaut
+#   <Tabs>   : Onglet par defaut
 #
 # Retour    :
 #
@@ -162,7 +162,7 @@ namespace eval Mapper::GDAL { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::GDAL::Params { Object Tab } {
+proc Mapper::GDAL::Params { Object { Tabs {} } } {
    global   GDefs
    variable Data
 
@@ -507,9 +507,15 @@ proc Mapper::GDAL::Params { Object Tab } {
          pack .mapperparams.com.cancel .mapperparams.com.apply .mapperparams.com.real -side right
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
-      TabFrame::Select .mapperparams.tab $Tab
+      if { ![llength $Tabs] } {
+         set Tabs 0
+      }
    }
 
+   if { [llength $Tabs] && [lsearch -exact $Tabs [TabFrame::Current .mapperparams.tab]]==-1 } {
+      TabFrame::Select .mapperparams.tab [lindex $Tabs 0]
+   }
+   
    #----- WMS specifics
    set wms $Mapper::Data(Object)
    set Data(Styles) {}

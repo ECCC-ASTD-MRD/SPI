@@ -124,7 +124,7 @@ namespace eval Mapper::OGR { } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::OGR::Params { Object Tabs } {
+proc Mapper::OGR::Params { Object { Tabs {} } } {
    global   GDefs
    variable Data
 
@@ -418,9 +418,13 @@ proc Mapper::OGR::Params { Object Tabs } {
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
       bind $Data(Frame3).sel.val <Return> { Mapper::OGR::Feature $Mapper::Data(Object) $Mapper::OGR::Data(Index) True }
+
+      if { ![llength $Tabs] } {
+         set Tabs 0
+      }
    }
 
-   if { [lsearch -exact $Tabs [TabFrame::Current .mapperparams.tab]]==-1 } {
+   if { [llength $Tabs] && [lsearch -exact $Tabs [TabFrame::Current .mapperparams.tab]]==-1 } {
       TabFrame::Select .mapperparams.tab [lindex $Tabs 0]
    }
 
@@ -668,6 +672,9 @@ proc Mapper::OGR::FieldCalc { } {
       pack .mappernew.opt.cmd -side top -fill x -pady 5 -padx 5
    pack .mappernew.opt -side top -fill x
     
+   Bubble::Create .mappernew.opt.expr  $Mapper::Bubble(Calc)
+   Bubble::Create .mappernew.opt.field $Mapper::Bubble(CalcRes)
+
    grab .mappernew
 }
 
@@ -1464,10 +1471,10 @@ proc Mapper::OGR::TableColumnSelect { Object Row Column } {
    variable Data
 
    set reverse False
-   
+
    for { set c 1 } { $c<=[llength [ogrlayer define $Object -field]] } { incr c } { 
       if { $c!=$Column } {
-         $Data(Frame5).pan.meta.sub.table.c$c configure -image ""  -compound none
+         $Data(Frame5).pan.meta.sub.table.c$c configure -image "" 
       }
    }
    

@@ -193,6 +193,9 @@ namespace eval Mapper { } {
    set Bubble(ColAdd)    { "Ajouter une colonne" "Add column" }
    set Bubble(ColDel)    { "Supprimer la colonne active" "Delete active column" }
    set Bubble(ColCalc)   { "Effectuer un calcul sur les champs/colonne" "Perform a calculus on the fields/columns" }
+   set Bubble(Calc)      { "Entrez une expression utilisant les noms de champs/colonnes et les fonctions de la calculatrice" "Enter an expresion using the fields/columns name and the claculator functions" }
+   set Bubble(CalcRes)   { "Champ/colonne ou seront inscrit les résultats de l'expression. Si le champs/colonne existe,\nses valeurs seront changées, sinon un nouveau champ/colonne sera créée" 
+                           "Field/column where to save the result. If the field/column exists\nit's values will be overwritten, otherwise a new field/column will be created" }
    set Bubble(OGRAdd)    { "Ajouter un objet" "Add a feature" }
    set Bubble(OGRDel)    { "Supprimet un objet" "Delete a feature" }
    set Bubble(OGREdit)   { "Edition des vertices\n\nBouton Gauche      : Déplacer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : Insérer un point"

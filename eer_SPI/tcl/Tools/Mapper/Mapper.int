@@ -519,13 +519,13 @@ proc Mapper::Params { { Display False } { Object "" } } {
 
          if { [gdalband is $Data(Object)] } {
             Mapper::GDAL::ParamsGet $Data(Object)
-            Mapper::GDAL::Params $Data(Object) 0
+            Mapper::GDAL::Params $Data(Object)
          } elseif { [ogrlayer is $Data(Object)] } {
             Mapper::OGR::ParamsGet $Data(Object)
-            Mapper::OGR::Params $Data(Object) 0
+            Mapper::OGR::Params $Data(Object)
          } elseif { [model is $Data(Object)] } {
             Mapper::MDL::ParamsGet $Data(Object)
-            Mapper::MDL::Params $Data(Object) 0
+            Mapper::MDL::Params $Data(Object)
          }
       }
    } else {
