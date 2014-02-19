@@ -382,9 +382,10 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
+
          layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
          layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
-         layer->Def=OGR_FD_Create(Tcl_GetString(Objv[3]));             
+         layer->Def=OGR_L_GetLayerDefn(layer->Layer);             
          layer->Ref=ref;             
          layer->Changed=1;
          OGR_FD_Reference(layer->Def);
