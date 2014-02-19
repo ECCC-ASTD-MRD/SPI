@@ -873,7 +873,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    int n;
 
    for(n=0;n<Layer->NFeature;n++) {
-      OGR_F_Destroy(Layer->Feature[n]);
+      if (Layer->Feature[n]) OGR_F_Destroy(Layer->Feature[n]);
    }
 
    Layer->Def=NULL;
@@ -1031,7 +1031,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
          def=DataDef_New(Layer->NFeature,1,1,1,type);
 
          for(f=0;f<Layer->NFeature;f++) {
-            if (Layer->Select[f]) {
+            if (Layer->Select[f] && Layer->Feature[f]) {
                val=OGR_F_GetFieldAsDouble(Layer->Feature[f],i);
                Def_Set(def,0,n,val);
                n++;
@@ -1070,7 +1070,7 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
 
       /*Put the results in*/
       for(f=0;f<Layer->NFeature;f++) {
-         if (Layer->Select[f]) {
+         if (Layer->Select[f] && Layer->Feature[f]) {
             Def_Get(Def,0,n,val);
             OGR_F_SetFieldDouble(Layer->Feature[f],i,val);
             n++;

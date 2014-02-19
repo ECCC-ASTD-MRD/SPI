@@ -325,7 +325,7 @@ OGRGeometryH GPC_OnOGRLayer(gpc_op Op,OGR_Layer *Layer) {
    t=NULL;
   
    for(f=0;f<Layer->NFeature;f++) {
-      if (Layer->Select[f]) {
+      if (Layer->Select[f] && Layer->Feature[f]) {
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
 
             GPC_FromOGR((t?&poly1:&result),geom);
@@ -779,7 +779,7 @@ double GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
    
       
    for(g=0;g<OGR_G_GetPointCount(Geom);g++) {
-      OGR_G_GetPoint(Geom,n,&vr1[0],&vr1[1],&vr1[2]);
+      OGR_G_GetPoint(Geom,g,&vr1[0],&vr1[1],&vr1[2]);
       
       for(n=0;n<OGR_G_GetPointCount(Pick);n++) {
          OGR_G_GetPoint(Pick,n,&vr0[0],&vr0[1],&vr0[2]);

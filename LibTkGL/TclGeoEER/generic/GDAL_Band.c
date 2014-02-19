@@ -968,7 +968,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    /*Trouve la feature en intersection*/
    for(f=0;f<Layer->NFeature;f++) {
 
-      if (Layer->Select[f]) {
+      if (Layer->Select[f] && Layer->Feature[f]) {
 
          /*Copie de la geometrie pour transformation*/
          if (!(geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f])))) {

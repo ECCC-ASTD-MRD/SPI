@@ -138,7 +138,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case SPACE:
             if (Objc==1) {
-               if (layer->Feature && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
+               if (layer->Feature && layer->Feature[0] && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
                   Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetDimension(geom)));
                } else {
                   Tcl_SetObjResult(Interp,Tcl_NewIntObj(-1));
@@ -217,7 +217,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             OGR_LayerUpdate(layer);
             
             for(f=0;f<layer->NFeature;f++) {
-               OGR_F_Destroy(layer->Feature[f]);
+               if (layer->Feature[f]) OGR_F_Destroy(layer->Feature[f]);
             }
             OGR_L_DeleteField(layer->Layer,j);
       
@@ -236,7 +236,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-            if (f<0 || f>=layer->NFeature) {
+            if (f<0 || f>=layer->NFeature || !layer->Feature[f]) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -280,29 +280,20 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-            if (f<0 || f>=layer->NFeature) {
+            if (f<0 || f>=layer->NFeature || !layer->Feature[f]) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
             
-            /*Update the current structure if we need to*/
-            OGR_LayerClean(layer,-1);
-            OGR_LayerUpdate(layer);
-
             if (OGR_L_DeleteFeature(layer->Layer,f)==OGRERR_UNSUPPORTED_OPERATION) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to delete feature, operation not supported",(char*)NULL);
                return(TCL_ERROR);
             }
             
-            for(f=0;f<layer->NFeature;f++) {
-               OGR_F_Destroy(layer->Feature[f]);
-            }
-            if ((layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1))) {
-               /*Reload the features to be in sync*/
-               if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
-                  return(TCL_ERROR);
-               }
-            }
+            OGR_LayerClean(layer,f);
+            OGR_F_Destroy(layer->Feature[f]);
+            layer->Feature[f]=NULL;
+            
             layer->Update=1;
             layer->Changed=1;
             
@@ -365,7 +356,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                return(TCL_ERROR);
             }
             Tcl_GetIntFromObj(Interp,Objv[++i],&f);
-            if (f<0 || f>=layer->NFeature) {
+            if (f<0 || f>=layer->NFeature || !layer->Feature[f]) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Invalid feature index",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -565,7 +556,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
             if (Objc==1) {
                for(f=0;f<layer->NFeature;f++) {
-                  if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                      area+=GPC_Centroid2DProcess(geom,&x,&y);
 
                      if (area!=0.0) {
@@ -590,7 +581,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_GetWideIntFromObj(Interp,Objv[1],&w);
 
-               if (w<layer->NFeature && (geom=OGR_F_GetGeometryRef(layer->Feature[w]))) {
+               if (w<layer->NFeature && layer->Feature[w] && (geom=OGR_F_GetGeometryRef(layer->Feature[w]))) {
                   area=GPC_Centroid2D(geom,&x,&y);
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
@@ -609,7 +600,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             lst=Tcl_NewListObj(0,NULL);
 
             for(f=0;f<layer->NFeature;f++) {
-               if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if (!OGR_G_IsValid(geom)) {
                      Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(f));
                   }
@@ -649,7 +640,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             return(TCL_ERROR);
          } else {
             for(f=0;f<layer->NFeature;f++) {
-               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   OGR_G_Transform(geom,tr);
                }
             }
@@ -687,7 +678,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             env.MaxX=env.MaxY=-1e32;
 
             for(f=0;f<layer->NFeature;f++) {
-               if (layer->Select[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   OGR_G_GetEnvelope(geom,&lim);
                   env.MinX=lim.MinX<env.MinX?lim.MinX:env.MinX;
                   env.MinY=lim.MinY<env.MinY?lim.MinY:env.MinY;
@@ -728,7 +719,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          min=1e32;
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
                min=min<val?min:val;
             }
@@ -748,7 +739,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          max=-1e32;
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                val=OGR_F_GetFieldAsDouble(layer->Feature[f],j);
                max=max>val?max:val;
             }
@@ -800,7 +791,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if (fld!=-1) x=OGR_F_GetFieldAsDouble(layer->Feature[f],fld);
 
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
@@ -840,7 +831,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
          
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   new=GPC_OnOGR(GPC_DIFF,geom,uni);
                   if  (new) {
@@ -878,7 +869,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
 
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   new=GPC_OnOGR(GPC_INT,geom,uni);
                   if  (new) {
@@ -909,7 +900,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
 
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   GPC_Simplify(tol,geom);
                   if (layerres) {
@@ -938,7 +929,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
 
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_Segmentize(geom,tol);
                   if (layerres) {
@@ -966,7 +957,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
 
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_CloseRings(geom);
                   if (layerres) {
@@ -994,7 +985,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          
          for(f=0;f<layer->NFeature;f++) {
-            if (layer->Select[f]) {
+            if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
                   OGR_G_FlattenTo2D(geom);
                   if (layerres) {
@@ -1144,7 +1135,7 @@ int OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer) {
          }
       }
       for(f=0;f<Layer->NFeature;f++) {
-         if (Layer->Select[f])
+         if (Layer->Select[f] && Layer->Feature[f])
             Layer->Sort.Table[Layer->Sort.Nb++]=f;
       }
 
@@ -1358,14 +1349,15 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
       /*Parse every feature*/
       for(f=0;f<Layer->NFeature;f++) {
+         if (Layer->Feature[f]) {
+            fd=OGR_GetTypeObj(Interp,defn,Layer->Feature[f],fld);
 
-         fd=OGR_GetTypeObj(Interp,defn,Layer->Feature[f],fld);
-
-         /*Test for validity*/
-         if (!OGR_LayerSelectTest(Interp,fd,val,op,exp)) {
-            Layer->Select[f]=0;
+            /*Test for validity*/
+            if (!OGR_LayerSelectTest(Interp,fd,val,op,exp)) {
+               Layer->Select[f]=0;
+            }
+            Tcl_DecrRefCount(fd);
          }
-         Tcl_DecrRefCount(fd);
       }
       if (exp) {
          regfree(exp);
@@ -1404,63 +1396,65 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
 
    obj=Tcl_NewObj();
 
-   switch (OGR_Fld_GetType(Field)) {
-      case OFTInteger:
-         Tcl_SetIntObj(obj,OGR_F_GetFieldAsInteger(Feature,Index));
+   if (Feature) {
+      switch (OGR_Fld_GetType(Field)) {
+         case OFTInteger:
+            Tcl_SetIntObj(obj,OGR_F_GetFieldAsInteger(Feature,Index));
+            break;
+
+         case OFTIntegerList:
+            ilist=OGR_F_GetFieldAsIntegerList(Feature,Index,&nb);
+            for(n=0;n<nb;n++) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ilist[n]));
+            }
+            break;
+
+         case OFTReal:
+            Tcl_SetDoubleObj(obj,OGR_F_GetFieldAsDouble(Feature,Index));
+            break;
+
+         case OFTRealList:
+            dlist=OGR_F_GetFieldAsDoubleList(Feature,Index,&nb);
+            for(n=0;n<nb;n++) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlist[n]));
+            }
+            break;
+
+         case OFTString:
+            Tcl_SetStringObj(obj,OGR_F_GetFieldAsString(Feature,Index),-1);
+            break;
+
+         case OFTStringList:
+            clist=OGR_F_GetFieldAsStringList(Feature,Index);
+            n=0;
+            while(clist[n]) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist[n++],-1));
+            }
+            break;
+
+         case OFTTime:
+            OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
+            time=hour*3600+min*60+sec;
+            Tcl_SetLongObj(obj,time);
+            break;
+
+         case OFTDate:
+            OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
+            time=System_DateTime2Seconds(year*10000+month*100+day,0,tz==100?1:0);
+            Tcl_SetLongObj(obj,time);
          break;
 
-      case OFTIntegerList:
-         ilist=OGR_F_GetFieldAsIntegerList(Feature,Index,&nb);
-         for(n=0;n<nb;n++) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ilist[n]));
-         }
-         break;
+         case OFTDateTime:
+            OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
+            time=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100+sec,tz==100?1:0);
+            Tcl_SetLongObj(obj,time);
+            break;
 
-      case OFTReal:
-         Tcl_SetDoubleObj(obj,OGR_F_GetFieldAsDouble(Feature,Index));
-         break;
-
-      case OFTRealList:
-         dlist=OGR_F_GetFieldAsDoubleList(Feature,Index,&nb);
-         for(n=0;n<nb;n++) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlist[n]));
-         }
-         break;
-
-      case OFTString:
-         Tcl_SetStringObj(obj,OGR_F_GetFieldAsString(Feature,Index),-1);
-         break;
-
-      case OFTStringList:
-         clist=OGR_F_GetFieldAsStringList(Feature,Index);
-         n=0;
-         while(clist[n]) {
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(clist[n++],-1));
-         }
-         break;
-
-      case OFTTime:
-         OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
-         time=hour*3600+min*60+sec;
-         Tcl_SetLongObj(obj,time);
-         break;
-
-      case OFTDate:
-         OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
-         time=System_DateTime2Seconds(year*10000+month*100+day,0,tz==100?1:0);
-         Tcl_SetLongObj(obj,time);
-        break;
-
-      case OFTDateTime:
-         OGR_F_GetFieldAsDateTime(Feature,Index,&year,&month,&day,&hour,&min,&sec,&tz);
-         time=System_DateTime2Seconds(year*10000+month*100+day,hour*10000+min*100+sec,tz==100?1:0);
-         Tcl_SetLongObj(obj,time);
-         break;
-
-      case OFTWideString:
-      case OFTWideStringList:
-      case OFTBinary:
-         break;
+         case OFTWideString:
+         case OFTWideStringList:
+         case OFTBinary:
+            break;
+      }
    }
    return(obj);
 }
@@ -1706,7 +1700,8 @@ void OGR_LayerUpdate(OGR_Layer *Layer) {
 
    if (Layer->Update) {
       for(f=0;f<Layer->NFeature;f++) {
-         OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+         if (Layer->Feature[f])
+            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
       }
       Layer->Update=0;
    }
@@ -1781,7 +1776,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 
    layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
    if (layer->NFeature) {
-      layer->Feature=malloc(layer->NFeature*sizeof(OGRFeatureH));
+      layer->Feature=calloc(layer->NFeature,sizeof(OGRFeatureH));
       layer->Select=malloc(layer->NFeature*sizeof(char));
       
       if (!layer->Feature || !layer->Select) {
@@ -1854,7 +1849,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
 
    to->NFeature=from->NFeature;
    if (to->NFeature) {
-      to->Feature=malloc(to->NFeature*sizeof(OGRFeatureH));
+      to->Feature=calloc(to->NFeature,sizeof(OGRFeatureH));
       to->Select=malloc(to->NFeature*sizeof(char));
       
       if (!to->Feature || !to->Select) {
@@ -1865,7 +1860,8 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
 
       /* Parse features */
       for(f=0;f<to->NFeature;f++) {
-         to->Feature[f]=OGR_F_Clone(from->Feature[f]);
+         if (from->Feature[f])
+            to->Feature[f]=OGR_F_Clone(from->Feature[f]);
       }
       
       if (!(to->Loc=(Coord*)malloc(to->NFeature*sizeof(Coord)))) {
@@ -1931,9 +1927,11 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    }
 
    for(f=0;f<layer->NFeature;f++) {
-      feature=OGR_F_Create(defn);
-      OGR_F_SetFrom(feature,layer->Feature[f],True);
-      OGR_L_CreateFeature(olayer,feature);
+      if (layer->Feature[f]) {
+         feature=OGR_F_Create(defn);
+         OGR_F_SetFrom(feature,layer->Feature[f],True);
+         OGR_L_CreateFeature(olayer,feature);
+      }
    }
 
    layer->File=file;
@@ -2011,7 +2009,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       layer->NFeature=OGR_L_GetFeatureCount(layer->Layer,1);
 
       if (layer->NFeature) {
-         layer->Feature=malloc(layer->NFeature*sizeof(OGRFeatureH));
+         layer->Feature=calloc(layer->NFeature,sizeof(OGRFeatureH));
          layer->Select=malloc(layer->NFeature*sizeof(char));
          
          if (!layer->Feature || !layer->Select) {
@@ -2385,7 +2383,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
    }
 
    for(f=0;f<Layer->NFeature;f++) {
-      if (Layer->Select[f]) {
+      if (Layer->Select[f] && Layer->Feature[f]) {
          OGR_F_SetFieldDouble(Layer->Feature[f],Field,Value);
          Layer->Update=1;
          Layer->Changed=1;
@@ -2520,7 +2518,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
             f=w;
             /*Check for nodata value*/
-            if (!isnan(val1) && val1!=FromDef->NoData) {
+            if (!isnan(val1) && val1!=FromDef->NoData && Layer->Feature[f]) {
                val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
 
                switch(Mode) {
@@ -2572,64 +2570,66 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
                /*Check which feature intersects with the cell*/
                for(f=0;f<Layer->NFeature;f++) {
-                  geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
-                  r=0.0;
+                  if (Layer->Feature[f]) {
+                     geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
+                     r=0.0;
 
-                  /* If it's a point, do simple interpolation */
-                  if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
-                     if (Mode!='N' && Mode!='L') {
-                        Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
-                        return(TCL_ERROR);
-                     }
-
-                     OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
-                     Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
-                     FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
-                     FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
-                     OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-                     rw++;
-                  } else {
-
-                     /*If layer envelope is not yet calculated*/
-                     if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
-                        OGR_G_GetEnvelope(geom,&env1[f]);
-
-                     if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
-                        inter=GPC_OnOGR(GPC_INT,cell,geom);
-                        dp=OGR_G_Area(inter);
-                        r=dp/area;
-                        rt+=r;
-                        val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-                        switch(Mode) {
-                           case 'N': accum[f]+=r;
-                           case 'C': val0+=val1*r;
-                                     break;
-                           case 'W': if (r>0.999) {
-                                        val0+=val1;
-                                     } else {
-                                        r=0.0;
-                                     }
-                                     break;
-                           case 'A': accum[f]+=1.0;
-                           case 'I': val0+=val1;
-                                     break;
-                           default:
-                              Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
-                              return(TCL_ERROR);
+                     /* If it's a point, do simple interpolation */
+                     if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
+                        if (Mode!='N' && Mode!='L') {
+                           Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
+                           return(TCL_ERROR);
                         }
+
+                        OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
+                        Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+                        FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+                        FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
                         OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-                     }
+                        rw++;
+                     } else {
 
-                     /*Append intersection info to the list*/
-                     if ((List || chan) && r>0.0) {
-                        n++;
-                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
-                        Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
-                     }
+                        /*If layer envelope is not yet calculated*/
+                        if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
+                           OGR_G_GetEnvelope(geom,&env1[f]);
 
-                     /*If its full, select next cell*/
-                     if (rt>0.999) {
-                        break;
+                        if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
+                           inter=GPC_OnOGR(GPC_INT,cell,geom);
+                           dp=OGR_G_Area(inter);
+                           r=dp/area;
+                           rt+=r;
+                           val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+                           switch(Mode) {
+                              case 'N': accum[f]+=r;
+                              case 'C': val0+=val1*r;
+                                       break;
+                              case 'W': if (r>0.999) {
+                                          val0+=val1;
+                                       } else {
+                                          r=0.0;
+                                       }
+                                       break;
+                              case 'A': accum[f]+=1.0;
+                              case 'I': val0+=val1;
+                                       break;
+                              default:
+                                 Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
+                                 return(TCL_ERROR);
+                           }
+                           OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+                        }
+
+                        /*Append intersection info to the list*/
+                        if ((List || chan) && r>0.0) {
+                           n++;
+                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
+                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
+                        }
+
+                        /*If its full, select next cell*/
+                        if (rt>0.999) {
+                           break;
+                        }
                      }
                   }
                }
@@ -2659,10 +2659,12 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    /*Finalize and reassign*/
    if (Final && (Mode=='N' || Mode=='A')) {
       for(f=0;f<Layer->NFeature;f++) {
-         val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-         if (accum[f]!=0.0) {
-            val0/=accum[f];
-            OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+         if (Layer->Feature[f]) {
+            val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+            if (accum[f]!=0.0) {
+               val0/=accum[f];
+               OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
+            }
          }
       }
    }
@@ -2731,17 +2733,19 @@ int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
    OGRGeometryH  geom;
 
    glNewList(Layer->LFeature+Index,GL_COMPILE);
-   if ((geom=OGR_F_GetGeometryRef(Layer->Feature[Index]))) {
-      if (Layer->Topo>0)
-         elev=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Topo-1);
+   if (Layer->Feature[Index]) {
+      if ((geom=OGR_F_GetGeometryRef(Layer->Feature[Index]))) {
+         if (Layer->Topo>0)
+            elev=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Topo-1);
 
-      if (Layer->Extrude!=-1)
-         extr=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Extrude);
+         if (Layer->Extrude!=-1)
+            extr=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Extrude);
 
-      OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
-      GPC_Centroid2D(geom,&vr[0],&vr[1]);
-      Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
-      Layer->Loc[Index].Elev=0.0;
+         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
+         GPC_Centroid2D(geom,&vr[0],&vr[1]);
+         Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
+         Layer->Loc[Index].Elev=0.0;
+      }
    }
    glEndList();
    
@@ -2901,9 +2905,11 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             spec->SizeMax=-1e32;
 
             for(nf=0;nf<Layer->NFeature;nf++) {
-               val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fsize);
-               spec->SizeMin=FMIN(spec->SizeMin,val);
-               spec->SizeMax=FMAX(spec->SizeMax,val);
+               if (Layer->Feature[nf]) {
+                  val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fsize);
+                  spec->SizeMin=FMIN(spec->SizeMin,val);
+                  spec->SizeMax=FMAX(spec->SizeMax,val);
+               }
             }
          }
       }
@@ -2921,9 +2927,11 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          Layer->Max=-1e32;
 
          for(nf=0;nf<Layer->NFeature;nf++) {
-            val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fmap);
-            Layer->Min=FMIN(Layer->Min,val);
-            Layer->Max=FMAX(Layer->Max,val);
+            if (Layer->Feature[nf]) {
+               val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fmap);
+               Layer->Min=FMIN(Layer->Min,val);
+               Layer->Max=FMAX(Layer->Max,val);
+            }
          }
       }
    }
@@ -2982,7 +2990,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Render the features*/
    for(f=g;f<Layer->GFeature;f++) {
-      if (Layer->Select[f]) {
+      if (Layer->Select[f] && Layer->Feature[f]) {
          if (fmap!=-1 && spec->Map) {
             val=OGR_F_GetFieldAsDouble(Layer->Feature[f],fmap);
             VAL2COL(idx,spec,val);
@@ -3292,7 +3300,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    
    // Trouve la feature en intersection
    for(f=0;f<Layer->NFeature;f++) {
-      if (Layer->Select[f]) {
+      if (Layer->Select[f] && Layer->Feature[f]) {
          if ((geom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
             OGR_G_GetEnvelope(geom,&envg);
             /*Test delon le mode*/
