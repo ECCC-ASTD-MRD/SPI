@@ -144,7 +144,7 @@ proc Mapper::Window { } {
       pack $Data(Tab1).head -side top -fill x
 
       frame $Data(Tab1).select
-         listbox $Data(Tab1).select.list -relief sunken -bd 1 -selectmode single -width 1 -height 1 -background white \
+         listbox $Data(Tab1).select.list -relief sunken -bd 1 -exportselection false -selectmode single -width 1 -height 1 -background white \
             -yscrollcommand "$Data(Tab1).select.scrolly set" -xscrollcommand "$Data(Tab1).select.scrollx set" \
             -listvar Viewport::Data(Data) -selectbackground $GDefs(ColorHighLight) -selectforeground black
          scrollbar $Data(Tab1).select.scrolly -relief sunken -command "$Data(Tab1).select.list yview" -bd 1 -width 10

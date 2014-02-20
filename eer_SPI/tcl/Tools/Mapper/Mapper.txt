@@ -180,7 +180,9 @@ namespace eval Mapper { } {
    set Bubble(Mode)      { "Activer le mode de sélection des objets" "Activate feature selection mode" }
    set Bubble(Params)    { "Activer la boite de paramètres"  "Activate the parameter interface" }
    set Bubble(Locate)    { "Centrer la projection sur la donnée"  "Center projection on the data" }
+   set Bubble(LocateSel) { "Centrer la projection sur la sélection"  "Center projection on the selection" }
    set Bubble(Zoom)      { "Zoom sur les limites de la donnée"  "Zoom on data extent" }
+   set Bubble(ZoomSel)   { "Zoom sur les limites de la sélection"  "Zoom on selection extent" }
    set Bubble(Front)     { "Monte la donnée sélectionnée à l'avant plan de la liste d'affichage" "Bring the selected data to the front of the display list" }
    set Bubble(Back)      { "Recule la donnée sélectionnée à l'arrière plan de la liste d'affichage" "Bring the selected data to the back of the display list" }
    set Bubble(Up)        { "Monte la donnée sélectionnée dans la liste d'affichage" "Bring the selected data up in the display list" }

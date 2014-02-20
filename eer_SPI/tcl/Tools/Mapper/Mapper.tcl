@@ -318,12 +318,13 @@ proc Mapper::SetGeoRef { } {
 # But      : Centrer la projection sur l'objet selectionne
 #
 # Parametres :
+#   <Idx>    : Locate on object's item list
 #
 # Remarque :
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Locate { } {
+proc Mapper::Locate { { Idx {} }} {
    variable Data
 
    if { [set idx [$Data(Tab1).select.list curselection]]!="" } {
@@ -332,7 +333,7 @@ proc Mapper::Locate { } {
       if { [gdalband is $object] } {
          set coords [gdalband project $object [expr [gdalband define $object -width]/2.0] [expr [gdalband define $object -height]/2.0]]
       } elseif { [ogrlayer is $object] } {
-         set coords [ogrlayer stats $object -centroid 0]
+         set coords [ogrlayer stats $object -centroid $Idx]
          if { [llength $coords] } {
             set coords [ogrlayer project $object [lindex $coords 0] [lindex $coords 1]]
          }
@@ -356,12 +357,14 @@ proc Mapper::Locate { } {
 # But      : Zoomer la camera sur les limites de la donnee
 #
 # Parametres :
+#   <All>    : Zoom on all objects
+#   <Idx>    : Zoom on object's item list
 #
 # Remarque :
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::Zoom { { All False } } {
+proc Mapper::Zoom { { All False } { Idx {} } } {
    variable Data
 
    set objects {}
@@ -385,7 +388,7 @@ proc Mapper::Zoom { { All False } } {
       if { [gdalband is $object] } {
          set coords [gdalband stats $object -llextent]
       } elseif { [ogrlayer is $object] } {
-         set coords [ogrlayer stats $object -llextent]
+         set coords [ogrlayer stats $object -llextent $Idx]
       } elseif { [model is $object] } {
          set coords [model stats $object -llextent]
       }

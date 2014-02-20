@@ -40,6 +40,7 @@ namespace eval Mapper::OGR { } {
    set Data(ExtrFactor)  1.0
    set Data(Dash)        ""
    set Data(Snap)        10
+   set Data(SelMode)     Locate
    set Data(Edit)        False
    set Data(3D)          False       
    set Data(GeomType)    "Point"
@@ -282,6 +283,8 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       set Data(Frame3) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Feature) $GDefs(Lang)] False ""]
 
          frame $Data(Frame3).sel
+            checkbutton $Data(Frame3).sel.zoom -variable Mapper::OGR::Data(SelMode) -onvalue Zoom -offvalue None -image MODEZOOM -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
+            checkbutton $Data(Frame3).sel.move -variable Mapper::OGR::Data(SelMode) -onvalue Locate -offvalue None -image FINGER -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
             checkbutton $Data(Frame3).sel.mode -variable Mapper::OGR::Data(Edit) -onvalue True -offvalue False -width 30 -anchor w \
                -image ARROWPOLY -indicatoron 0 -relief sunken -bd 1 -relief flat -overrelief raised -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
                -command { Mapper::OGR::VertexInit $Page::Data(Frame) $Mapper::Data(Object) $Mapper::OGR::Data(Index) }
@@ -308,7 +311,7 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
                -command { after 1 "Mapper::OGR::Feature $Mapper::Data(Object) %s True" } -bg $GDefs(ColorLight)
             pack $Data(Frame3).sel.lbl -side left
             pack $Data(Frame3).sel.val -side left -fill x -padx 5 -expand True
-            pack $Data(Frame3).sel.mode  $Data(Frame3).sel.add $Data(Frame3).sel.del -side left
+            pack $Data(Frame3).sel.add $Data(Frame3).sel.del $Data(Frame3).sel.mode $Data(Frame3).sel.move $Data(Frame3).sel.zoom -side left
          labelframe $Data(Frame3).fields -text [lindex $Mapper::Lbl(Field) $GDefs(Lang)]
             scrollbar $Data(Frame3).fields.scrolly -relief sunken -command "$Data(Frame3).fields.table yview" -bd 1 -width 10
             table $Data(Frame3).fields.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -height 1 -variable Mapper::OGR::TableField\
@@ -342,6 +345,8 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
          Bubble::Create $Data(Frame3).sel.mode $Mapper::Bubble(OGREdit)
          Bubble::Create $Data(Frame3).sel.add  $Mapper::Bubble(OGRAdd)
          Bubble::Create $Data(Frame3).sel.del  $Mapper::Bubble(OGRDel)
+         Bubble::Create $Data(Frame3).sel.move $Mapper::Bubble(LocateSel)
+         Bubble::Create $Data(Frame3).sel.zoom $Mapper::Bubble(ZoomSel)
 
          set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Select) $GDefs(Lang)] False ""]
          frame $Data(Frame4).meta
@@ -361,7 +366,9 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
                button $Data(Frame5).pan.meta.func.add -image GRIDADD -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldAdd }
                button $Data(Frame5).pan.meta.func.del -image GRIDREM -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::TableColumnDel $Mapper::Data(Object) $Mapper::OGR::Data(TableSort) }
                button $Data(Frame5).pan.meta.func.calc -image CALC -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldCalc }
-               pack $Data(Frame5).pan.meta.func.add $Data(Frame5).pan.meta.func.del $Data(Frame5).pan.meta.func.calc -side left
+               checkbutton $Data(Frame5).pan.meta.func.zoom -variable Mapper::OGR::Data(SelMode) -onvalue Zoom -offvalue None -image MODEZOOM -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
+               checkbutton $Data(Frame5).pan.meta.func.move -variable Mapper::OGR::Data(SelMode) -onvalue Locate -offvalue None -image FINGER -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
+               pack $Data(Frame5).pan.meta.func.add $Data(Frame5).pan.meta.func.del $Data(Frame5).pan.meta.func.calc $Data(Frame5).pan.meta.func.move $Data(Frame5).pan.meta.func.zoom -side left
                
             frame $Data(Frame5).pan.meta.sub -relief sunken -bd 1
                scrollbar $Data(Frame5).pan.meta.sub.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
@@ -391,6 +398,8 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       Bubble::Create $Data(Frame5).pan.meta.func.add $Mapper::Bubble(ColAdd)
       Bubble::Create $Data(Frame5).pan.meta.func.del $Mapper::Bubble(ColDel)
       Bubble::Create $Data(Frame5).pan.meta.func.calc $Mapper::Bubble(ColCalc)
+      Bubble::Create $Data(Frame5).pan.meta.func.move $Mapper::Bubble(LocateSel)
+      Bubble::Create $Data(Frame5).pan.meta.func.zoom $Mapper::Bubble(ZoomSel)
 
       bind $Data(Frame5).pan.meta.sub.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) }
       bind $Data(Frame5).pan.meta.sub.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) }
@@ -1045,6 +1054,30 @@ proc Mapper::OGR::SelectClear { Object } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::FeatureGoTo>
+# Creation : Fevrier 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Zoom or move to deature location
+#
+# Parametres :
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::FeatureGoTo { Index } { 
+   variable Data
+ 
+   switch $Data(SelMode) {
+      "Locate"  { Mapper::Locate $Index }
+      "Zoom"    { Mapper::Zoom False $Index }
+      default { Page::Update $Page::Data(Frame) }
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <Mapper::OGR::Feature>
 # Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
 #
@@ -1125,7 +1158,8 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
       }
       
       if { $Locate && [llength $coords] } {
-         SPI::Locate [lindex $coords 0] [lindex $coords 1]
+ 
+         Mapper::OGR::FeatureGoTo $Index
       } else {
          Page::Update $Page::Data(Frame)
       }
