@@ -106,7 +106,7 @@ namespace eval Viewport {
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
    set Map(Grabbed)     0            ;#Etat de la vue
-   set Map(Delay)       800.0        ;#Temps de deplacement en millisecondes
+   set Map(Delay)       500.0        ;#Temps de deplacement en millisecondes
    set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
    set Map(Perspective) False        ;#Affichage en perspective
