@@ -496,7 +496,7 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
 
    set def  [Mapper::DepotWare::WMS::BuildXMLDef $Layer $Style $Time]
 
-   Mapper::ParamsGDALGet $Layer
+   Mapper::GDAL::ParamsGet $Layer
 
    gdalband free $Layer
    gdalfile close $Mapper::Data(Id$Layer)
@@ -505,20 +505,20 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
    set band [Mapper::GDAL::Read $def "" 3]
 
    #----- Force configuration parameters
-   set Mapper::Data(Red)   $Mapper::Data(Band0$band)
-   set Mapper::Data(Green) $Mapper::Data(Band1$band)
-   set Mapper::Data(Blue)  $Mapper::Data(Band2$band)
-   set Mapper::Data(Alpha) $Mapper::Data(Band3$band)
-   set Mapper::Data(BandX) $Mapper::Data(BandX$band)
-   set Mapper::Data(BandY) $Mapper::Data(BandY$band)
-   set Mapper::Data(Style) $Style
+   set Mapper::GDAL::Data(Red)   $Mapper::GDAL::Data(Band0$band)
+   set Mapper::GDAL::Data(Green) $Mapper::GDAL::Data(Band1$band)
+   set Mapper::GDAL::Data(Blue)  $Mapper::GDAL::Data(Band2$band)
+   set Mapper::GDAL::Data(Alpha) $Mapper::GDAL::Data(Band3$band)
+   set Mapper::GDAL::Data(BandX) $Mapper::GDAL::Data(BandX$band)
+   set Mapper::GDAL::Data(BandY) $Mapper::GDAL::Data(BandY$band)
+   set Mapper::GDAL::Data(Style) $Style
 
-   Mapper::ParamsGDALSet $band False
+   Mapper::GDAL::ParamsSet $band False
 
    #----- Decrease effective resolution (WMS-TMS)
    gdalband define $band -date $Data(Time)
 
-   Mapper::ParamsGDAL $band 0
+   Mapper::GDAL::Params $band 0
 
    #----- Get legend
    if { [set idx [lsearch -index 0 $Data(Styles) $Style]]!=-1 } {
@@ -581,6 +581,7 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
          $Page::Data(Canvas) create image 5 5 -image $tag -anchor nw -tags $tag
          Shape::BindDestroy $Page::Data(Canvas) $tag
          Shape::BindAllMove $Page::Data(Canvas) $tag
+         Shape::BindWidget  $Page::Data(Canvas) $tag
       }
    }
 }

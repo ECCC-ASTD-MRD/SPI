@@ -1072,7 +1072,7 @@ proc Mapper::GDAL::Curve { Canvas Object Bands } {
 proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    global GDefs errorInfo
    variable Data
-
+   
    #---- If an id is passed, use it
    if  { [info exists Mapper::Data(Id$File)] } {
       set obj $File
@@ -1125,7 +1125,7 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
          }
       }
    }
-
+    
    set Data(Band0$obj) ""
    set Data(Band1$obj) ""
    set Data(Band2$obj) ""
@@ -1175,7 +1175,7 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $obj]==-1 } {
       lappend Viewport::Data(Data$Page::Data(Frame)) $obj
    }
-   
+  
    return $obj
 }
 

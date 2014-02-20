@@ -1042,14 +1042,16 @@ proc Mapper::OGR::SelectClear { Object } {
 
    set Mapper::Data(Coo) ""
    
-   foreach field [ogrlayer define $Object -field] {
-      set Select(Op$Object$field) ""
-      set Select(Val$Object$field) ""
-   }
-   ogrlayer define $Object -featureselect {}
-   ogrlayer define $Object -featurehighlight {}
+   if { [ogrlayer is $Object] } {
+      foreach field [ogrlayer define $Object -field] {
+         set Select(Op$Object$field) ""
+         set Select(Val$Object$field) ""
+      }
+      ogrlayer define $Object -featureselect {}
+      ogrlayer define $Object -featurehighlight {}
 
-   Mapper::OGR::Table $Object
+      Mapper::OGR::Table $Object
+   }
    Page::Update $Page::Data(Frame)
 }
 
