@@ -98,6 +98,7 @@ typedef struct TDataSpec {
    CMap_Rec       *Map;                 /*Palette Associee*/
    XColor         *Outline,*HighLine;   /*Couleur des segments*/
    XColor         *Fill,*HighFill;      /*Couleur de remplissage*/
+   int             Alpha,NoSelectAlpha; /*Transparence globale*/
    Tk_Font         Font;                /*Font for drawing text*/
    Tk_FontMetrics  TKM;                 /*Font Metrics*/
    Tk_Dash         Dash;                /*Pointille*/
@@ -121,7 +122,6 @@ typedef struct TDataSpec {
    double          InterModeParam;      /*Parameter du mode de calcul des intervalles de contours*/
    int             InterO;              /*Ordre de grandeur du max des intervalles*/
    int             InterM;              /*Ordre de grandeur de la mantisse*/
-   int             Alpha;               /*Transparence globale*/
    int             Light;               /*Illumination*/
    int             Sample;              /*Distance de sampling des valeurs*/
    char            SampleType;          /*Type de sampling des valeurs*/

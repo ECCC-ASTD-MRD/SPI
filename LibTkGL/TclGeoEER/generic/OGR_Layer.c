@@ -2918,7 +2918,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    int     fsize=-1,fmap=-1,flabel=-1;
    Vect3d  vr;
    char    lbl[256];
-   double  val,sz,szon=0;
+   double  val,sz,szon=0,alpha;
 
    OGRFieldDefnH field;
    TDataSpec     *spec=Layer->Spec;
@@ -2983,13 +2983,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    }
    
    glDash(&spec->Dash);
+   glEnable(GL_BLEND);
    glEnable(GL_STENCIL_TEST);
    if (!Mask)
       glStencilMask(0xff);
-
-   if (spec->Alpha<100 || (spec->Map && spec->Map->Alpha)) {
-      glEnable(GL_BLEND);
-   }
 
    if (spec->Icon) {
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -3087,7 +3084,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Render the features*/
    for(f=g;f<Layer->GFeature;f++) {
-      if (Layer->Select[f] && Layer->Feature[f]) {
+      
+      if ((spec->NoSelectAlpha || Layer->Select[f]) && Layer->Feature[f]) {
+         alpha=Layer->Select[f]?spec->Alpha:spec->NoSelectAlpha;
+         
          if (fmap!=-1 && spec->Map) {
             val=OGR_F_GetFieldAsDouble(Layer->Feature[f],fmap);
             VAL2COL(idx,spec,val);
@@ -3105,9 +3105,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glLineWidth(ABS(spec->Width));
                glPointSize(ABS(spec->Width));
                if (idx>=0 && !spec->Fill) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
                } else {
-                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*655.35);
                }
                Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
                if (spec->Width<0) {
@@ -3127,9 +3127,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glPointSize(0.0001);
 
             if (idx>=0) {
-               glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+               glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
             } else {
-               glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
+               glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,alpha*655.35);
             }
             Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
 
@@ -3149,9 +3149,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                glLineWidth(ABS(spec->Width));
                glPointSize(ABS(spec->Width));
                if (idx>=0 && !spec->Fill) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
                } else {
-                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*655.35);
                }
                Proj->Type->Render(Proj,Layer->LFeature+f,NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
                if (spec->Width<0) {
@@ -3177,9 +3177,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (spec->Outline && spec->Width) {
                glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                if (idx>=0 && !spec->Fill) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
                } else {
-                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
+                  glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*655.35);
                }
                glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
             }
@@ -3187,9 +3187,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (spec->Fill) {
                glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
                if (idx>=0) {
-                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*spec->Alpha*0.01);
+                  glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
                } else {
-                  glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,spec->Alpha*655.35);
+                  glColor4us(spec->Fill->red,spec->Fill->green,spec->Fill->blue,alpha*655.35);
                }
                glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
             }
@@ -3260,13 +3260,14 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
 
          glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),spec->Font);
+         glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
 
          if (spec->Outline) {
-            glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
             field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
 
             for(f=0;f<Layer->GFeature;f++) {
-               if (Layer->Select[f]) {
+               
+               if (Layer->Select[f]) {               
                   if (Projection_Pixel(Proj,VP,Layer->Loc[f],vr)) {
                      OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[f],flabel);
                      dx=Tk_TextWidth(spec->Font,lbl,strlen(lbl));
@@ -3291,7 +3292,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
             field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
             for(f=0;f<Layer->NSFeature;f++) {
-               if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
+                if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
                   OGR_SingleTypeString(lbl,Layer->Spec,field,Layer->Feature[Layer->SFeature[f]],flabel);
                   
                   dx=Tk_TextWidth(spec->Font,lbl,strlen(lbl));
