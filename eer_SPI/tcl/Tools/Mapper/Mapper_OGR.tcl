@@ -348,46 +348,48 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
          Bubble::Create $Data(Frame3).sel.move $Mapper::Bubble(LocateSel)
          Bubble::Create $Data(Frame3).sel.zoom $Mapper::Bubble(ZoomSel)
 
-         set Data(Frame4) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Select) $GDefs(Lang)] False ""]
-         frame $Data(Frame4).meta
-            text $Data(Frame4).meta.text -relief sunken -bd 1 -wrap none -bg $GDefs(ColorLight) -yscrollcommand "$Data(Frame4).meta.scroll set" -width 0 -height 0
-            scrollbar $Data(Frame4).meta.scroll -relief sunken -command "$Data(Frame4).meta.text yview" -bd 1 -width 10
-            pack $Data(Frame4).meta.text -side left -fill both -expand true
-            pack $Data(Frame4).meta.scroll -side left -fill y
-         pack $Data(Frame4).meta -side top -fill both -expand true -padx 5 -pady 5
-         button $Data(Frame4).reset -text [lindex $Mapper::Lbl(SelectClear) $GDefs(Lang)] -relief groove -bd 2 -command { Mapper::OGR::SelectClear $Mapper::Data(Object) }
-         pack $Data(Frame4).reset -side top -fill x -padx 5 -pady 5
-
       set Data(Frame5) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Table) $GDefs(Lang)] False ""]
+
+         frame $Data(Frame5).func
+            button $Data(Frame5).func.add -image GRIDADD -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldAdd }
+            button $Data(Frame5).func.del -image GRIDREM -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::TableColumnDel $Mapper::Data(Object) $Mapper::OGR::Data(TableSort) }
+            button $Data(Frame5).func.calc -image CALC -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldCalc }
+            checkbutton $Data(Frame5).func.zoom -variable Mapper::OGR::Data(SelMode) -onvalue Zoom -offvalue None -image MODEZOOM -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
+            checkbutton $Data(Frame5).func.move -variable Mapper::OGR::Data(SelMode) -onvalue Locate -offvalue None -image FINGER -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
+            pack $Data(Frame5).func.add $Data(Frame5).func.del $Data(Frame5).func.calc $Data(Frame5).func.move $Data(Frame5).func.zoom -side left
+         pack $Data(Frame5).func -side top -fill x -padx 5 -pady 5
+
+         frame $Data(Frame5).search -relief sunken -bd 1 
+            table $Data(Frame5).search.table -relief sunken -bd 1 -bg $GDefs(ColorLight) \
+            -resizeborders none -anchor w -highlightbackground $GDefs(ColorHighLight) -titlecols 1 -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
+            -xscrollcommand "$Data(Frame5).pan.stat.scrollx set" -width 1 -height 1 -selectmode extended 
+            pack $Data(Frame5).search.table -side left -fill both -expand true
+         pack $Data(Frame5).search -side top -fill x -padx 5 
+         
+         button $Data(Frame5).search.table.clear -text [lindex $Mapper::Lbl(Select) $GDefs(Lang)]  -relief raised -bd 1 -command { Mapper::OGR::SelectClear $Mapper::Data(Object) }
+         $Data(Frame5).search.table window configure 0,0 -window $Data(Frame5).search.table.clear -sticky nsew
+        
          panedwindow $Data(Frame5).pan -orient vertical -showhandle False -opaqueresize False -relief flat -bd 0 -sashrelief sunken
      
          frame $Data(Frame5).pan.meta 
-            frame $Data(Frame5).pan.meta.func
-               button $Data(Frame5).pan.meta.func.add -image GRIDADD -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldAdd }
-               button $Data(Frame5).pan.meta.func.del -image GRIDREM -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::TableColumnDel $Mapper::Data(Object) $Mapper::OGR::Data(TableSort) }
-               button $Data(Frame5).pan.meta.func.calc -image CALC -bd 1 -relief flat -overrelief raised -command { Mapper::OGR::FieldCalc }
-               checkbutton $Data(Frame5).pan.meta.func.zoom -variable Mapper::OGR::Data(SelMode) -onvalue Zoom -offvalue None -image MODEZOOM -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
-               checkbutton $Data(Frame5).pan.meta.func.move -variable Mapper::OGR::Data(SelMode) -onvalue Locate -offvalue None -image FINGER -indicatoron 0 -relief sunken -bd 1 -anchor w -overrelief raised -offrelief flat -command { Mapper::OGR::FeatureGoTo $Mapper::OGR::Data(Index) }
-               pack $Data(Frame5).pan.meta.func.add $Data(Frame5).pan.meta.func.del $Data(Frame5).pan.meta.func.calc $Data(Frame5).pan.meta.func.move $Data(Frame5).pan.meta.func.zoom -side left
                
             frame $Data(Frame5).pan.meta.sub -relief sunken -bd 1
                scrollbar $Data(Frame5).pan.meta.sub.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
-               scrollbar $Data(Frame5).pan.meta.sub.scrollx -relief sunken -command "Mapper::OGR::TableXScroll" -bd 1 -width 10 -orient horizontal
                table $Data(Frame5).pan.meta.sub.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::OGR::Table \
                   -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
-                  -yscrollcommand "$Data(Frame5).pan.meta.sub.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.sub.scrollx set" -width 1 -height 1 -selectmode extended \
+                  -yscrollcommand "$Data(Frame5).pan.meta.sub.scrolly set" -xscrollcommand "$Data(Frame5).pan.stat.scrollx set" -width 1 -height 1 -selectmode extended \
                   -validate 1 -vcmd { Mapper::OGR::FeatureFieldTable $Mapper::Data(Object) %r %c %S }
-               pack $Data(Frame5).pan.meta.sub.scrollx -side bottom -fill x
                pack $Data(Frame5).pan.meta.sub.scrolly -side left -fill y
                pack $Data(Frame5).pan.meta.sub.table -side left -fill both -expand true -before $Data(Frame5).pan.meta.sub.scrolly
-            pack $Data(Frame5).pan.meta.func -side top -fill x
             pack $Data(Frame5).pan.meta.sub -side top -fill both -expand True
             
          frame $Data(Frame5).pan.stat -relief sunken -bd 1 
             scrollbar $Data(Frame5).pan.stat.scrolly -relief sunken -command "$Data(Frame5).pan.stat.table yview " -bd 1 -width 10
+            scrollbar $Data(Frame5).pan.stat.scrollx -relief sunken -command "Mapper::OGR::TableXScroll" -bd 1 -width 10 -orient horizontal
             table $Data(Frame5).pan.stat.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -variable Mapper::OGR::Stats \
-            -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
-            -yscrollcommand "$Data(Frame5).pan.stat.scrolly set" -xscrollcommand "$Data(Frame5).pan.meta.sub.scrollx set" -width 1 -height 1 -selectmode extended 
+            -resizeborders none -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
+            -yscrollcommand "$Data(Frame5).pan.stat.scrolly set" -xscrollcommand "$Data(Frame5).pan.stat.scrollx set" -width 1 -height 1 -selectmode extended 
+            pack $Data(Frame5).pan.stat.scrollx -side bottom -fill x
             pack $Data(Frame5).pan.stat.scrolly -side left -fill y
             pack $Data(Frame5).pan.stat.table -side left -fill both -expand true -before $Data(Frame5).pan.stat.scrolly
          pack $Data(Frame5).pan -side top -fill both -expand true -padx 5 -pady 5
@@ -395,30 +397,31 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
          $Data(Frame5).pan add $Data(Frame5).pan.meta -height 100 -stretch first
          $Data(Frame5).pan add $Data(Frame5).pan.stat 
       
-      Bubble::Create $Data(Frame5).pan.meta.func.add $Mapper::Bubble(ColAdd)
-      Bubble::Create $Data(Frame5).pan.meta.func.del $Mapper::Bubble(ColDel)
-      Bubble::Create $Data(Frame5).pan.meta.func.calc $Mapper::Bubble(ColCalc)
-      Bubble::Create $Data(Frame5).pan.meta.func.move $Mapper::Bubble(LocateSel)
-      Bubble::Create $Data(Frame5).pan.meta.func.zoom $Mapper::Bubble(ZoomSel)
+      Bubble::Create $Data(Frame5).search.table.clear $Mapper::Lbl(SelectClear)
+      Bubble::Create $Data(Frame5).func.add $Mapper::Bubble(ColAdd)
+      Bubble::Create $Data(Frame5).func.del $Mapper::Bubble(ColDel)
+      Bubble::Create $Data(Frame5).func.calc $Mapper::Bubble(ColCalc)
+      Bubble::Create $Data(Frame5).func.move $Mapper::Bubble(LocateSel)
+      Bubble::Create $Data(Frame5).func.zoom $Mapper::Bubble(ZoomSel)
 
-      bind $Data(Frame5).pan.meta.sub.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Home>          { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <End>           { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Control-Home>       { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Control-End>        { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Control-Home> { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Control-End>  { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Up>            { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Down>          { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <B1-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <B2-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).pan.meta.sub.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) }
-      bind $Data(Frame5).pan.meta.sub.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).pan.meta.sub.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) }
+      bind $Data(Frame5).pan.meta.sub.table <Expose>        { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Configure>     { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Home>          { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <End>           { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Control-Home>       { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Control-End>        { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Control-Home> { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Control-End>  { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Up>            { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Down>          { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Up>      { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <Shift-Down>    { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <B1-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <B2-Motion>     { Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <ButtonPress-4> { $Mapper::OGR::Data(Frame5).pan.meta.sub.table yview scroll -1 units; Mapper::OGR::Table $Mapper::Data(Object) False }
+      bind $Data(Frame5).pan.meta.sub.table <ButtonPress-5> { $Mapper::OGR::Data(Frame5).pan.meta.sub.table yview scroll 1 units; Mapper::OGR::Table $Mapper::Data(Object) False }
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
@@ -479,9 +482,8 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
    set Data(ColorMap) [ogrlayer configure $Object -colormap]
    catch { colormap image $Data(ColorMap) OGRMAPImg }
 
-   Mapper::OGR::Select $Object
    Mapper::OGR::Feature $Object $Data(Index)
-   Mapper::OGR::Table $Object $Data(Index)
+   Mapper::OGR::Table $Object True $Data(Index) 
 }
 
 #-------------------------------------------------------------------------------
@@ -746,7 +748,7 @@ proc Mapper::OGR::Create { } {
 
 proc Mapper::OGR::Config { Frame Object } {
 
-   ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1 
+   ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1 -noselecttransparency 10
 
    if { [ogrlayer define $Object -space]==2 } {
       ogrlayer configure $Object -outline black -fill [Mapper::GetColor]
@@ -929,66 +931,6 @@ proc Mapper::OGR::ParamsSet { Object } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <Mapper::OGR::Select>
-# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Interface de selection des features de donnees OGR
-#
-# Parametres :
-#   <Object> : Donnee geographique a parametrer
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc Mapper::OGR::Select { Object } {
-   global GDefs
-   variable Data
-
-   set w 0
-   foreach field [ogrlayer define $Object -field] {
-      if { [string length $field]>$w } {
-         set w [string length $field]
-      }
-   }
-   incr w
-
-   set n 0
-   $Data(Frame4).meta.text delete 0.0 end
-
-   foreach field [ogrlayer define $Object -field] {
-      destroy $Data(Frame4).fr$n $Data(Frame4).op$n.menu
-
-      frame $Data(Frame4).fr$n -relief sunken -bd 1
-         label $Data(Frame4).fr$n.lbl -text $field -bd 1 -anchor w -justify left -relief raised -bd 1 -width $w
-         entry $Data(Frame4).fr$n.sel -textvariable Mapper::OGR::Select(Val$Object$field) -bg $GDefs(ColorLight) -width 30 -relief flat
-         menubutton $Data(Frame4).fr$n.op -textvariable Mapper::OGR::Select(Op$Object$field) -menu $Data(Frame4).fr$n.op.menu \
-            -relief raised -width 2 -bd 1
-         pack $Data(Frame4).fr$n.lbl $Data(Frame4).fr$n.op $Data(Frame4).fr$n.sel -side left -fill y
-
-         Bubble::Create $Data(Frame4).fr$n.op $Mapper::Bubble(Op)
-
-      menu $Data(Frame4).fr$n.op.menu
-         $Data(Frame4).fr$n.op.menu add command -label ""   -command "set Mapper::OGR::Select(Op$Object$field) \"\""
-         $Data(Frame4).fr$n.op.menu add command -label "~=" -command "set Mapper::OGR::Select(Op$Object$field) ~="
-         $Data(Frame4).fr$n.op.menu add command -label "==" -command "set Mapper::OGR::Select(Op$Object$field) =="
-         $Data(Frame4).fr$n.op.menu add command -label "!=" -command "set Mapper::OGR::Select(Op$Object$field) !="
-         $Data(Frame4).fr$n.op.menu add command -label "<"  -command "set Mapper::OGR::Select(Op$Object$field) <"
-         $Data(Frame4).fr$n.op.menu add command -label "<=" -command "set Mapper::OGR::Select(Op$Object$field) <="
-         $Data(Frame4).fr$n.op.menu add command -label ">"  -command "set Mapper::OGR::Select(Op$Object$field) >"
-         $Data(Frame4).fr$n.op.menu add command -label ">=" -command "set Mapper::OGR::Select(Op$Object$field) >="
-         $Data(Frame4).fr$n.op.menu add command -label "<>" -command "set Mapper::OGR::Select(Op$Object$field) <>"
-         $Data(Frame4).fr$n.op.menu add command -label "\[\]" -command "set Mapper::OGR::Select(Op$Object$field) \\\[\\\]"
-
-      $Data(Frame4).meta.text window create end -window $Data(Frame4).fr$n
-      $Data(Frame4).meta.text insert end "\n"
-      incr n
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <Mapper::OGR::SelectApply>
 # Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
 #
@@ -1018,7 +960,7 @@ proc Mapper::OGR::SelectApply { Object } {
       set Select(String$Object) $select
       ogrlayer define $Object -featureselect $select
       ogrlayer define $Object -featurehighlight {}
-      Mapper::OGR::Table $Object
+      Mapper::OGR::Table $Object True
    }
 }
 
@@ -1050,7 +992,7 @@ proc Mapper::OGR::SelectClear { Object } {
       ogrlayer define $Object -featureselect {}
       ogrlayer define $Object -featurehighlight {}
 
-      Mapper::OGR::Table $Object
+      Mapper::OGR::Table $Object True
    }
    Page::Update $Page::Data(Frame)
 }
@@ -1106,13 +1048,6 @@ proc Mapper::OGR::Feature { Object Index { Locate False } } {
 
    if { $Index=="" } {
       return
-   }
-
-   set w 0
-   foreach field [ogrlayer define $Object -field] {
-      if { [string length $field]>$w } {
-         set w [string length $field]
-      }
    }
 
    if { [winfo exists $Data(Frame5).pan.meta.sub.table] && $Data(TableSel)!=$Index } {
@@ -1303,6 +1238,7 @@ proc Mapper::OGR::FeatureDel { Object Index } {
 #
 # Parametres :
 #   <Object> : Layer object
+#   <Update> : Layer object
 #   <Scroll> : Index to scroll to
 #
 # Retour    :
@@ -1311,7 +1247,7 @@ proc Mapper::OGR::FeatureDel { Object Index } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::OGR::Table { Object { Index -1 } } {
+proc Mapper::OGR::Table { Object Update { Index -1 } } {
    global GDefs
    variable Data
    variable Table
@@ -1326,6 +1262,12 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    $Data(Frame5).pan.meta.sub.table configure -cursor watch
    update idletasks
 
+   #----- Resize stats column to fit with tabel column
+   foreach col [$Data(Frame5).pan.meta.sub.table width] {
+      eval $Data(Frame5).pan.stat.table width $col
+      eval $Data(Frame5).search.table width $col
+   }
+   
    #----- Check if sort field is valid for the layer
    if { [catch { ogrlayer define $Object -feature 0 $Data(TableSort) }] } {
       set Data(TableSort) ""
@@ -1333,16 +1275,11 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
 
    #----- If no column selected, deactivate delete button
    if { $Data(TableSort)=="" } {
-      $Data(Frame5).pan.meta.func.del configure -state disabled
+      $Data(Frame5).func.del configure -state disabled
    } else {
-      $Data(Frame5).pan.meta.func.del configure -state normal
+      $Data(Frame5).func.del configure -state normal
    }
    
-   #----- Scroll to specific index
-   if { $Index>-1 } {
-      $Data(Frame5).pan.meta.sub.table yview [expr $Index-1]
-   }
-
    #----- Get current view limits
    set rs [lindex [$Data(Frame5).pan.meta.sub.table configure -rows] 4]
    set cs [lindex [$Data(Frame5).pan.meta.sub.table configure -cols] 4]
@@ -1363,6 +1300,18 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
 
    $Data(Frame5).pan.meta.sub.table configure -rows $row -cols $col
    
+    #----- Scroll to specific index
+   if { $Index>-1 } {
+      for { set r 1 } { $r<[expr $row-1] } { incr r } {
+         catch {
+         if { $Mapper::OGR::Table($r,0)==$Index } {
+            $Data(Frame5).pan.meta.sub.table yview [expr $r-1]
+            break
+         }
+         }
+      }
+   }
+
    #----- Have to cleanup the widgets since the table does not clean them on resize
    for { set r [expr $y1+1] } { $r<[ogrlayer define $Object -nb] } { incr r } {
       destroy $Data(Frame5).pan.meta.sub.table.r$r
@@ -1399,9 +1348,74 @@ proc Mapper::OGR::Table { Object { Index -1 } } {
    }
 
    $Data(Frame5).pan.meta.sub.table configure -cursor left_ptr
-   set Data(TableUpdate) 0
+ 
+   if { $Update } {
+      Mapper::OGR::TableStat $Object
+      Mapper::OGR::TableSelect  $Object
+   }
    
-   Mapper::OGR::TableStat $Object
+   set Data(TableUpdate) 0
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::TTableSelect>
+# Creation : Juillet 2010 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fill in the selection table
+#
+# Parametres :
+#   <Object> : Layer object
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::TableSelect { Object } {
+   global GDefs
+   variable Data
+
+   set ns     [lindex [$Data(Frame5).search.table configure -cols] 4]
+   set fields [ogrlayer define $Object -field]
+   
+   #----- Cleanup widgets
+   for { set n 1 } { $n<$ns } { incr n } {
+      destroy $Data(Frame5).search.table.fr$n
+      $Data(Frame5).search.table window configure 0,$n -window ""
+   }   
+   $Data(Frame5).search.table configure -rows 1 -cols [expr [llength $fields]+1]
+
+   set n 1
+  
+   #----- Build widgets
+   foreach field $fields {
+      
+      frame $Data(Frame5).search.table.fr$n -relief raised -bd 1
+         entry $Data(Frame5).search.table.fr$n.sel -textvariable Mapper::OGR::Select(Val$Object$field) -bg $GDefs(ColorLight) -width 0 -relief sunken -bd 1
+         menubutton $Data(Frame5).search.table.fr$n.op -textvariable Mapper::OGR::Select(Op$Object$field) -menu $Data(Frame5).search.table.fr$n.op.menu \
+            -relief sunken -width 2 -bd 1
+         pack $Data(Frame5).search.table.fr$n.op -side left -fill y
+         pack $Data(Frame5).search.table.fr$n.sel -side left -fill both -expand True
+
+         Bubble::Create $Data(Frame5).search.table.fr$n.op $Mapper::Bubble(Op)
+
+      menu $Data(Frame5).search.table.fr$n.op.menu
+         $Data(Frame5).search.table.fr$n.op.menu add command -label ""   -command "set Mapper::OGR::Select(Op$Object$field) \"\""
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "~=" -command "set Mapper::OGR::Select(Op$Object$field) ~="
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "==" -command "set Mapper::OGR::Select(Op$Object$field) =="
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "!=" -command "set Mapper::OGR::Select(Op$Object$field) !="
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "<"  -command "set Mapper::OGR::Select(Op$Object$field) <"
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "<=" -command "set Mapper::OGR::Select(Op$Object$field) <="
+         $Data(Frame5).search.table.fr$n.op.menu add command -label ">"  -command "set Mapper::OGR::Select(Op$Object$field) >"
+         $Data(Frame5).search.table.fr$n.op.menu add command -label ">=" -command "set Mapper::OGR::Select(Op$Object$field) >="
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "<>" -command "set Mapper::OGR::Select(Op$Object$field) <>"
+         $Data(Frame5).search.table.fr$n.op.menu add command -label "\[\]" -command "set Mapper::OGR::Select(Op$Object$field) \\\[\\\]"
+
+         $Data(Frame5).search.table window configure 0,$n -window $Data(Frame5).search.table.fr$n -sticky nsew
+         
+      incr n
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -1478,7 +1492,7 @@ proc Mapper::OGR::TableYScroll { Object args } {
    variable Data
 
    eval $Data(Frame5).pan.meta.sub.table yview $args
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object False
 }
 
 proc Mapper::OGR::TableXScroll { args } {
@@ -1486,6 +1500,7 @@ proc Mapper::OGR::TableXScroll { args } {
    
    eval $Data(Frame5).pan.meta.sub.table xview $args
    eval $Data(Frame5).pan.stat.table xview $args
+   eval $Data(Frame5).search.table xview $args
 }
 
 #-------------------------------------------------------------------------------
@@ -1523,7 +1538,7 @@ proc Mapper::OGR::TableColumnSelect { Object Row Column } {
    }
   
    ogrlayer stats $Object -sort $Data(TableSort) $reverse
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object False
 }
 
 proc Mapper::OGR::TableColumnAdd { Object Field Type Len } {
@@ -1531,7 +1546,7 @@ proc Mapper::OGR::TableColumnAdd { Object Field Type Len } {
    ogrlayer define $Object -field $Field $Type $Len
 
    destroy .mappernew
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object True
 }
 
 proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
@@ -1559,7 +1574,7 @@ proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
    vexpr $Object.$Field $calc
 
    destroy .mappernew 
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object True
 }
 
 proc Mapper::OGR::TableColumnDel { Object Field } {
@@ -1572,7 +1587,7 @@ proc Mapper::OGR::TableColumnDel { Object Field } {
    }
    set Data(TableSort) ""
 
-   Mapper::OGR::Table $Object
+   Mapper::OGR::Table $Object True
 }
 
 #-------------------------------------------------------------------------------

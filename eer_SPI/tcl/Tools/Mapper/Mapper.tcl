@@ -590,8 +590,8 @@ proc Mapper::Pick { VP X Y } {
             set Mapper::OGR::Data(Index) $idx
             
             Mapper::OGR::ParamsGet $Data(Object)
-            Mapper::OGR::Params $Data(Object) { 2 4 }
-            Mapper::OGR::Table  $Data(Object) $idx
+            Mapper::OGR::Params $Data(Object) { 2 3 }
+            Mapper::OGR::Table  $Data(Object) False $idx
 
             #----- Check if this is an index to some other data
             if { ![catch { set files [ogrlayer define $object -feature $idx IDX_PATH]}] } {
@@ -641,6 +641,8 @@ proc Mapper::DrawInit  { Frame VP } {
    set Data(InfoObs) ""
    set Data(Lat0) $Viewport::Map(LatCursor)
    set Data(Lon0) $Viewport::Map(LonCursor)
+   set Data(Lat1) $Viewport::Map(LatCursor)
+   set Data(Lon1) $Viewport::Map(LonCursor)
 
    if { $Data(PickSize)>=0 } {
       Mapper::Pick $VP $Viewport::Map(X) $Viewport::Map(Y)
@@ -699,13 +701,13 @@ proc Mapper::DrawDone { Frame VP } {
          ogrlayer define $object -featureselect {}
          if { [set idx [ogrlayer pick $object $coords True]]!="" } {
             set Data(Object) $object
-
+            
             ogrlayer define $object -featureselect [list [list - # $idx]]
-            ogrlayer define $object -featurehighlight {}
 
             Mapper::OGR::ParamsGet $object
             Mapper::OGR::Params $object 4
-            Mapper::OGR::Table  $object
+            Mapper::OGR::Table  $object True
+            
             break
          }
       }
