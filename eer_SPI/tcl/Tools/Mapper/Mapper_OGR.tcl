@@ -748,7 +748,7 @@ proc Mapper::OGR::Create { } {
 
 proc Mapper::OGR::Config { Frame Object } {
 
-   ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1 -noselecttransparency 10
+   ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1 -noselecttransparency 0
 
    if { [ogrlayer define $Object -space]==2 } {
       ogrlayer configure $Object -outline black -fill [Mapper::GetColor]
@@ -1256,7 +1256,6 @@ proc Mapper::OGR::Table { Object Update { Index -1 } } {
    if { $Data(TableUpdate) || ![winfo exists $Data(Frame5).pan.meta.sub.table] } {
       return
    }
-
    set Data(TableUpdate) 1
    
    $Data(Frame5).pan.meta.sub.table configure -cursor watch
@@ -1312,11 +1311,6 @@ proc Mapper::OGR::Table { Object Update { Index -1 } } {
       }
    }
 
-   #----- Have to cleanup the widgets since the table does not clean them on resize
-   for { set r [expr $y1+1] } { $r<[ogrlayer define $Object -nb] } { incr r } {
-      destroy $Data(Frame5).pan.meta.sub.table.r$r
-   }
-
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    
@@ -1348,7 +1342,8 @@ proc Mapper::OGR::Table { Object Update { Index -1 } } {
    }
 
    $Data(Frame5).pan.meta.sub.table configure -cursor left_ptr
- 
+   update idletasks 
+   
    if { $Update } {
       Mapper::OGR::TableStat $Object
       Mapper::OGR::TableSelect  $Object
