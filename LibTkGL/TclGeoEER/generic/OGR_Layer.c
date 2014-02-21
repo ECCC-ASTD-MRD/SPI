@@ -3088,7 +3088,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       if ((spec->NoSelectAlpha || Layer->Select[f]) && Layer->Feature[f]) {
          alpha=Layer->Select[f]?spec->Alpha:spec->NoSelectAlpha;
          
-         if (fmap!=-1 && spec->Map) {
+         if (fmap!=-1 && spec->Map && Layer->Select[f]) {
             val=OGR_F_GetFieldAsDouble(Layer->Feature[f],fmap);
             VAL2COL(idx,spec,val);
             if (idx<0) continue;
