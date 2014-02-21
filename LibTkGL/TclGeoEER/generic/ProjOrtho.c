@@ -722,7 +722,7 @@ unsigned long Ortho_Project(const Projection* restrict const Proj,GeoVect *Loc,G
          coslat=rd*cos(loc.Lat);
 
          out[n].V[0]=coslat*sin(loc.Lon);
-         out[n].V[1]=(loc.Elev==0.0)?sin(loc.Lat):rd*sin(loc.Lat);
+         out[n].V[1]=rd*sin(loc.Lat);
          out[n].V[2]=coslat*cos(loc.Lon);
          e++;
       }

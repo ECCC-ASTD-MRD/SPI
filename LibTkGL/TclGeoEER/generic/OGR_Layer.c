@@ -501,7 +501,6 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    OGRCoordinateTransformationH  tr=NULL;
    OGREnvelope                   env,lim;
    OGRGeometryH                  geom,new,uni;
-   OGRSpatialReferenceH          srs=NULL;
 
    int           j,idx,n,nseg,fld=-1;
    double        x,y,lat,lon,tol,val,min,max,area;
@@ -643,7 +642,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             for(j=0;j<n;j++) {
                Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
                Tcl_GetWideIntFromObj(Interp,Objv[1],&f);
-               if (f>0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (f>=0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   area=GPC_Centroid2D(geom,&x,&y);
                   if (n>1) OGR_G_AddPoint_2D(new,x,y);
                }
@@ -662,18 +661,17 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          OGR_G_DestroyGeometry(new);
          
          // Check wrap-around
-         if (!(srs=OGR_L_GetSpatialRef(layer->Layer)) || OSRIsGeographic(srs)) {
-            OGR_L_GetExtent(layer->Layer,&env,1);
-            if (-180.0<=env.MinX && 180.0>=env.MaxX && (env.MaxX-env.MinX)>180.0) {
-               x-=180.0;
-            }
-         }
+//         if (!(srs=OGR_L_GetSpatialRef(layer->Layer)) || OSRIsGeographic(srs)) {
+//            OGR_L_GetExtent(layer->Layer,&env,1);
+//            if (-180.0<=env.MinX && 180.0>=env.MaxX && (env.MaxX-env.MinX)>180.0) {
+//               x-=180.0;
+//            }
+//         }
          
-         if (area) {
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area<0?-area:area));
-         }
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area<0?-area:area));
+      
          Tcl_SetObjResult(Interp,lst);
          break;
 
@@ -697,7 +695,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             for(j=0;j<n;j++) {
                Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
                Tcl_GetWideIntFromObj(Interp,obj,&f);
-               if (f>0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (f>=0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   OGR_G_GetEnvelope(geom,&lim);
                   env.MinX=lim.MinX<env.MinX?lim.MinX:env.MinX;
                   env.MinY=lim.MinY<env.MinY?lim.MinY:env.MinY;
@@ -756,7 +754,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             for(j=0;j<n;j++) {
                Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
                Tcl_GetWideIntFromObj(Interp,obj,&f);
-               if (f>0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+               if (f>=0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   OGR_G_GetEnvelope(geom,&lim);
                   env.MinX=lim.MinX<env.MinX?lim.MinX:env.MinX;
                   env.MinY=lim.MinY<env.MinY?lim.MinY:env.MinY;

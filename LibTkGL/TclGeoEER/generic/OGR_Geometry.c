@@ -1405,54 +1405,6 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
    return(nv);
 }
 
-int OGR_GeometryRender1(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGRGeometryH *Geom,OGRCoordinateTransformationH Func) {
-
-   OGRSpatialReferenceH         spatial,llref;
-   OGRCoordinateTransformationH func=NULL;
-   int    n,nv,mode;
-   Vect3d vr;
-   
-   if (!Func) {
-      spatial=OGR_G_GetSpatialReference(Geom);
-      llref=OSRCloneGeogCS(spatial);
-
-      if (llref) {
-         func=OCTNewCoordinateTransformation(spatial,llref);
-         OSRDestroySpatialReference(llref);
-      }
-   } else {
-      func=Func;
-   }
-      
-   if ((nv=OGR_G_GetPointCount(Geom))) {
-      /*switch on the object dimension to figure draw mode depending on extrusion*/
-      switch(OGR_G_GetDimension(Geom)) {
-         case 0: mode=GL_POINTS; break;
-         case 1: mode=GL_LINE_STRIP; break;
-         case 2: mode=GL_LINE_STRIP; break;
-         default: fprintf(stderr,"(ERROR) OGR_GeometryRender: Unable to render shape\n"); return(0); break;
-      }
-
-      glBegin(mode);
-      for(n=0;n<nv;n++) {
-         OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-         OCTTransform(func,1,&vr[0],&vr[1],&vr[2]);
-         if ((Proj->Type->Project(Proj,(GeoVect*)vr,NULL,1))) {
-            glVertex3dv(vr);
-         }
-      }
-      glEnd();
-   }
-   
-   nv=OGR_G_GetGeometryCount(Geom);
-   for(n=0;n<nv;n++) {
-      OGR_GeometryRender1(Interp,Proj,VP,OGR_G_GetGeometryRef(Geom,n),func); 
-   }
-   if (!Func && func) OCTDestroyCoordinateTransformation(func);
-   
-   return(1);
-}
-
 /*----------------------------------------------------------------------------
  * Nom      : <OGR_GeometryRender>
  * Creation : Juillet 2006 - J.P. Gauthier - CMC/CMOE

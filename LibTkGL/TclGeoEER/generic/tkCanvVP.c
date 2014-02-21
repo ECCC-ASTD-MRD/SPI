@@ -1369,7 +1369,6 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
    OGR_Layer    *layer;
    int           i,load=0;
    clock_t       sec;
-   int           n;
 
    // If no projeciton is defined, this is useless
    if ((proj=Projection_Get(vp->Projection))) {

@@ -224,8 +224,8 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
    Coord       loc0,loc1,loct;
    double      x,y,d;
 
-   static CONST char *sopt[] = { "-path","-dist","-bearing","-circle","-coordgrid","-gridcoord",NULL };
-   enum                opt { PATH,DIST,BEARING,CIRCLE,COORDGRID,GRIDCOORD };
+   static CONST char *sopt[] = { "-path","-dist","-area","-bearing","-circle","-coordgrid","-gridcoord",NULL };
+   enum                opt { PATH,DIST,AREA,BEARING,CIRCLE,COORDGRID,GRIDCOORD };
 
    proj=Projection_Get(Name);
    if (!proj) {
@@ -378,6 +378,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
             Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
             Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
             Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
+            
             while (n<nobj) {
                Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
                Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
@@ -394,6 +395,51 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          break;
 
+     case AREA:
+         if (Objc!=2 && Objc!=3){
+            Tcl_WrongNumArgs(Interp,0,Objv,"{ coords } elev");
+            return(TCL_ERROR);
+         }
+         if (!proj->Geographic) {
+            Tcl_AppendResult(Interp,"Projection is not geographic",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         if (Objc==3) {
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
+         } else {
+            x=0;
+         }
+
+         Tcl_ListObjLength(Interp,Objv[1],&nobj);
+
+         n=0;d=0;
+         if (nobj<4 || nobj%2!=0) {
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(0.0));
+         } else {
+            Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
+            Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
+            loct=loc0;
+            while (n<nobj) {
+               Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
+               Tcl_ListObjIndex(Interp,Objv[1],n++,&obj);
+               Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lon);
+
+               d+=DEG2RAD(loc1.Lon-loc0.Lon)*(2+sin(DEG2RAD(loc0.Lat))+sin(DEG2RAD(loc1.Lat)));
+               loc0=loc1;
+            }
+            // Check for polygon closing
+            if (loc0.Lat!=loct.Lat && loc0.Lon!=loct.Lon) {
+               d+=DEG2RAD(loc0.Lon-loct.Lon)*(2+sin(DEG2RAD(loct.Lat))+sin(DEG2RAD(loc0.Lat)));
+            }
+            d*=(EARTHRADIUS+x)*(EARTHRADIUS+x)/2.0;
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(fabs(d)));
+         }
+         break;
+                
      case BEARING:
          if (Objc!=5){
             Tcl_WrongNumArgs(Interp,0,Objv,"lat0 lon0 lat1 lon1");
@@ -1554,7 +1600,6 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
    T3DModel  *mdl;
    GDAL_Band *band;
    OGR_Layer *layer;
-   OGRGeometryH *geom;
    int        ras=0,i;
 
    // If it's a grid projection without a referential or a global U grid
@@ -1628,10 +1673,6 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
 
       for (i=0;i<Proj->NbData;i++) {
          Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
-
-         if ((geom=OGR_GeometryGet(Tcl_GetString(obj)))) {
-            OGR_GeometryRender1(NULL,Proj,VP,geom,NULL);
-         }
 
          if ((layer=OGR_LayerGet(Tcl_GetString(obj)))) {
             ras+=OGR_LayerRender(NULL,Proj,VP,layer,0);
