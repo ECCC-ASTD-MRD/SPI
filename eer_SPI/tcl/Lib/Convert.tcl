@@ -219,6 +219,40 @@ proc Convert::FormatDist { Dist { Prec 2 } { Nautical False } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Convert::FormatDist>
+# Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Formatter une distance en metres
+#
+# Parametres :
+#  <Area>    : Surface en metres
+#  <Prec>    : Precision decimale
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Convert::FormatArea { Area { Prec 2 } } {
+   variable Unit
+
+   #----- Calcul du plus proche gradient
+
+   if { $Area>100000 } {
+      set f 1e6
+      set u 1e3
+   } else {
+      set u 1e0
+      set f 1e0
+   }
+
+   eval set dist \[format \"%.${Prec}f\" [expr $Area/$f]\]
+
+   return "$dist $Unit($u)m²"
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Convert::FormatGrid>
 # Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
 #

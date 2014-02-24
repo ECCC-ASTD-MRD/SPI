@@ -49,6 +49,7 @@ namespace eval Drawing {
    set Current(BitIdx)   10                                     ;#Bitmap courant
    set Current(Item)     ""                                     ;#Item courant
    set Current(Line)     0                                      ;#Type de ligne actuel
+   set Current(Info)     False                                  ;#Affichage de l'info
    set Current(Fill)     #FFFFFF                                ;#Couleur actuelle de remplissage
    set Current(Color)    #000000                                ;#Couleur actuelle de contourage3
    set Current(Pattern)  ""                                     ;#Remplissage actuel
@@ -76,7 +77,7 @@ namespace eval Drawing {
    #Rectangle { "rect" no VP vertex color width spline pattern out }
    #Ovale     { "oval" no VP vertex color width spline pattern out }
    #Circle    { "circ" no VP vertex color width spline pattern out }
-   #Polygone  { "poly" no VP vertex color width spline pattern out }
+   #Polygone  { "poly" no VP vertex color width spline pattern info out }
    #Distance  { "dist" no VP vertex color width font }
    #Valeur    { "valu" no VP vertex color date  font grid coord }
    #Stream    { "strm" no VP vertex color width step res coord }

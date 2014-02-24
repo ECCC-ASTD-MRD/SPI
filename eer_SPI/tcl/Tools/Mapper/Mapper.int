@@ -392,14 +392,15 @@ proc Mapper::Toggle { } {
 proc Mapper::Toggler { Var1 Var2 Op } {
    variable Data
 
-   set i      0
-   set active 0
-   set changed 0
-
    #----- Force listbox refreshsince the trace happens before it
    catch { $Data(Tab1).select.list configure -listvar Viewport::Data(Data) }
 
+   set i 0
+   
    foreach obj $Viewport::Data(Data) {
+      set active  0
+      set changed 0
+      
       if { [ogrlayer is $obj] } {
          set changed [ogrlayer ischanged $obj]
          set active  [ogrlayer configure $obj -active]

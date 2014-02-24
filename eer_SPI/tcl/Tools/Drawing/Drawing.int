@@ -250,6 +250,13 @@ proc Drawing::Window { } {
          pack .drawing.params.nau.lbl -side left
          pack .drawing.params.nau.opt -side right
 
+      frame .drawing.params.info
+         label .drawing.params.info.lbl -text [lindex $Lbl(Info) $GDefs(Lang)] -anchor w
+         checkbutton .drawing.params.info.opt -variable Drawing::Current(Info) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Drawing::SetInfo $Page::Data(Frame) }
+         pack .drawing.params.info.lbl -side left
+         pack .drawing.params.info.opt -side right
+         
       #----- Definir les "bindings"
 
       bind $Data(Tab).items.list.box    <ButtonRelease-1> { Drawing::ItemSel $Page::Data(Frame) }

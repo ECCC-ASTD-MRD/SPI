@@ -44,6 +44,7 @@ namespace eval Drawing {
    set Lbl(Grid)     { " Grille  " " Grid    " }
    set Lbl(Date)     { " Date    " " Date    " }
    set Lbl(Pattern)  { " Motif   " " Pattern " }
+   set Lbl(Info)     { " Dimension " " Dimension " }
    set Lbl(Text)     { "Texte" "Text" }
    set Lbl(Bitmap)   { "Bitmap" "Bitmap" }
    set Lbl(Image)    { "Image" "Image" }
