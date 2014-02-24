@@ -146,7 +146,7 @@ namespace eval MLDPn {
    set Bubble(Timescale)              { "Échelle de temps lagrangienne (s) servant\nà modéliser les fluctuations à méso-échelle." "Lagrangian time scale (s) used in the\nmodelling of mesoscale fluctuations." }
    set Bubble(ReflectionLevel)        { "Niveau (hyb|eta|sig) inférieur de réflexion\ndes particules dans l'atmopshère." "Bottom reflection level (hyb|eta|sig) of\nparticles in the atmosphere." }
    set Bubble(Seed)                   { "Valeur d'initialisation du générateur de nombre aléatoire." "Random number generator initialisation value." }
-   set Bubble(Aerosol)                { "Type d'aerosol, permet d'activer le shéma de lessivage et dépot a 4 mode." "Aerosol type, allows the activation of the 4 mode scavenging and deposition scheme." }
+   set Bubble(Aerosol)                { "Type d'aerosol, pour le shéma de lessivage et dépot a 4 mode." "Aerosol type, for the 4 mode scavenging and deposition scheme." }
  
    set Bubble(OutGrid)                { "Résolution (km) de la grille\npolaire stéréographique." "Resolution (km) of the polar stereographic grid." }
    set Bubble(OutDT)                  { "Nombre d'heures de résultats par fichier de sortie.\nLa valeur 0 signifie un seul fichier pour toutes les sorties" "Number ou hours of results per outpur file. A value of 0 means all of the results within a single file." }

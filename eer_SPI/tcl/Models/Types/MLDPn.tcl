@@ -1296,7 +1296,7 @@ proc MLDPn::InitNew { Type } {
    set Sim(Delta)                1                                   ;#----- Time interval for meteorological data files [hr].
    set Sim(IsResFileSizeChecked) 0                                   ;#----- Flag indicating if results file size has been checked (1) or not (0).
    set Sim(IsMetFileSizeChecked) 0                                   ;#----- Flag indicating if met data file size has been checked (1) or not (0).
-   set Sim(Aerosol)              DEFAULT                             ;#----- Aerosol type to activat Jian's 4mode scheme.
+   set Sim(Aerosol)              URBAN                               ;#----- Aerosol type to activat Jian's 4mode scheme.
    set Sim(WetScaMode)           DEFAULT                             ;#----- Jian's 4mode scheme wet scavenging.
    set Sim(DryDepMode)           DEFAULT                             ;#----- Jian's 4mode scheme dry deposition.
    set Sim(EmScenario)           "default"                           ;#----- Scenario name.
