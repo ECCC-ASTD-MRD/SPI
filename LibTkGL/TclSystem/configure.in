@@ -23,9 +23,20 @@ dnl	to configure the system for the local environment.
 #define([AC_CACHE_LOAD], )
 #define([AC_CACHE_SAVE], )
 
-AC_INIT([TclSystem], [1.0])
+AC_INIT([TclSystem], [1.1])
 
 PKG_CFLAGS="-D_GNU_SOURCE"
+
+# ---------------------------------------------------------------------------
+# Check for EER
+# ---------------------------------------- -----------------------------------
+
+AX_LIB_EER()
+ 
+if test "$HAVE_EER" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
+fi
 
 # ---------------------------------------------------------------------------
 # Check for DMV

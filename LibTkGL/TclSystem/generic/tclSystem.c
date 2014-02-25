@@ -48,6 +48,7 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -244,8 +245,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid;
 
-   static CONST char *sopt[] = { "daemonize","fork","info","signal","limit","usage","process","filesystem","dmv",NULL };
-   enum               opt { DAEMONIZE,FORK,INFO,SIGNAL,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
+   static CONST char *sopt[] = { "daemonize","fork","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
+   enum               opt { DAEMONIZE,FORK,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
 
    Tcl_ResetResult(Interp);
 
@@ -277,6 +278,10 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          return(System_Signal(Interp,Objc-2,Objv+2));
          break;
 
+      case SOCKET:
+         return(System_Socket(Interp,Objc-2,Objv+2));
+         break;
+         
       case USAGE:
          return(System_Usage(Interp,Objc-2,Objv+2));
          break;
@@ -478,6 +483,68 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_SetObjResult(Interp,System_SignalTable[sig[isig]]);
       }
    }
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_Socket>
+ * Creation : Octobre 2014 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la configuration des parametres des socket.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   int      i,idx,in,out;
+   Tcl_Obj *obj;
+   
+   static CONST char *sopt[] = { "-timeout",NULL };
+   enum               opt { TIMEOUT };
+    
+   for(i=1;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case TIMEOUT:
+            if (Objc!=2 && Objc!=4) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"?in out?");
+               return TCL_ERROR;
+            }
+            if (Objc==2) {
+               in=out=0;
+               if (TclY_SocketTimeOut(Interp,Objv[0],&in,&out)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(in));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(out));
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+                Tcl_GetIntFromObj(Interp,Objv[++i],&in);
+                Tcl_GetIntFromObj(Interp,Objv[++i],&out);
+              
+                if (TclY_SocketTimeOut(Interp,Objv[0],&in,&out)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+           }
+           break;
+      }
+   }
+   
    return(TCL_OK);
 }
 
