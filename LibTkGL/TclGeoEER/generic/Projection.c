@@ -395,7 +395,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          break;
 
-     case AREA:
+      case AREA:
          if (Objc!=2 && Objc!=3){
             Tcl_WrongNumArgs(Interp,0,Objv,"{ coords } elev");
             return(TCL_ERROR);
@@ -440,7 +440,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          }
          break;
                 
-     case BEARING:
+      case BEARING:
          if (Objc!=5){
             Tcl_WrongNumArgs(Interp,0,Objv,"lat0 lon0 lat1 lon1");
             return(TCL_ERROR);

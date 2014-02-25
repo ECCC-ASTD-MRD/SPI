@@ -1952,7 +1952,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
       if (!Var || strcmp(Var,head.NOMVAR)==0) {
 
          /*Calculer la date de validitee du champs*/
-         nhour=(head.NPAS*head.DEET)/3600.0;
+         nhour=((double)head.NPAS*head.DEET)/3600.0;
          if (head.DATEO==0) {
             head.DATEV=0;
          } else {
@@ -2175,7 +2175,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    /*Calculer la date de validitee du champs*/
    if (h.DATEO!=0) {
-      nhour=(h.NPAS*h.DEET)/3600.0;
+      nhour=((double)h.NPAS*h.DEET)/3600.0;
       f77name(incdatr)(&h.DATEV,&h.DATEO,&nhour);
       if (h.DATEV==101010101) h.DATEV=0;
    } else {

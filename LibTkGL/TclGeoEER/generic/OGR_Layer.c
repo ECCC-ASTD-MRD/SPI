@@ -205,7 +205,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
          case DELFIELD:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"Field");
-               return TCL_ERROR;
+               return(TCL_ERROR);
             }
             j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[++i]));
             if (j==-1) {
@@ -2839,7 +2839,7 @@ int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
          OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
          GPC_Centroid2D(geom,&vr[0],&vr[1]);
          Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
-         Layer->Loc[Index].Elev=0.0;
+         Layer->Loc[Index].Elev=extr*Layer->Spec->ExtrudeFactor;
       }
    }
    glEndList();
@@ -3195,7 +3195,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
       }
    }
-
+   
    glDisable(GL_POLYGON_OFFSET_FILL);
    glDisable(GL_DEPTH_TEST);
    glDepthFunc(GL_LEQUAL);

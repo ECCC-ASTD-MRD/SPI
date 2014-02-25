@@ -21,6 +21,7 @@ TCL=${LIB}/SPI
 
 export CC=c99
 export CFLAGS=-fopenmp
+#export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
 
 echo ""
 echo "----- Building platform : ${ORDENV_PLAT} -----"
@@ -73,7 +74,8 @@ else
 	--exec-prefix=${TCL}/TclTk \
 	--enable-threads \
 	--enable-64bit \
-	--with-tcl=${TCL}/TclTk/lib 
+	--with-tcl=${TCL}/TclTk/lib \
+	--with-eer=${SSM_DEV}/workspace/eerUtils_1.7.1_${ORDENV_PLAT}
   #      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
   fi
 
@@ -112,7 +114,7 @@ else
 	--enable-64bit \
 	--with-tcl=${TCL}/TclTk/lib \
 	--with-tk=${TCL}/TclTk/lib \
-	--with-eer=${SSM_DEV}/workspace/eerUtils_1.7_${ORDENV_PLAT}\
+	--with-eer=${SSM_DEV}/workspace/eerUtils_1.7.1_${ORDENV_PLAT}\
 	--with-rmn=${LIB}/librmn-14 \
 	--with-gdb=${LIB}/gdb \
 	--with-gdal=${LIB}/gdal-1.10.0/bin/gdal-config  \
@@ -131,7 +133,7 @@ else
   ln -fs TclTk/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
   ln -fs libTkglCanvas8.6.so libTkglCanvas.so
 
-  ln -fs TclTk/lib/TclSystem1.0/libTclSystem1.0.so libTclSystem1.0.so
-  ln -fs libTclSystem1.0.so libTclSystem.so
+  ln -fs TclTk/lib/TclSystem1.1/libTclSystem1.0.so libTclSystem1.1.so
+  ln -fs libTclSystem1.1.so libTclSystem.so
 
 fi
