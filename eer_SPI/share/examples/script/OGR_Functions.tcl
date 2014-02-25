@@ -56,6 +56,8 @@ ogrlayer stats LAYER0 -simplify  3
 #----- transform a whole layer
 ogrlayer stats LAYER0 -transform LLREF $ref0
 
+puts "   Invalid items       : [ogrlayer stats LAYER0 -invalid]"
+
 #----- Get some geometry
 set geom0 [ogrlayer define LAYER0 -geometry 0]
 set geom1 [ogrlayer define LAYER0 -geometry 1]

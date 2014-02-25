@@ -115,7 +115,7 @@ bufrdataset free DATASET_LAM
 #----- Test socket communication
 ##################################
 
-if { [catch { set sock [socket goodenough.cmc.ec.gc.ca 9093] }] } {
+if { [catch { set sock [socket pedro.cmc.ec.gc.ca 9091] }] } {
    puts "   Could not connect to server"
 } else {
    fconfigure $sock -translation binary

@@ -94,6 +94,8 @@ button .canvas.test   -text "  Tk  " -highlightthickness 0 -bd 1
 
 proc draw { Canvas Act } {
 
+   $Canvas create line 1 1 200 1 -fill blue -width 2
+   $Canvas create line 1 1 1 200 -fill blue -width 2 
    $Canvas create line 10 10 60 60  100 30 200 200 100 200 250 120 300 300 -fill blue -width 2 -splinestep 10 -smooth True -tag A -arrow both -dash ","
    $Canvas create line 300 0 0 300 -fill blue -width 2 -tag B -arrow both
 

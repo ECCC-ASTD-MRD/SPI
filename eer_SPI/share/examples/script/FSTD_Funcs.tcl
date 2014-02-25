@@ -69,7 +69,9 @@ puts "\nTesting link/unlink"
 fstdfile open ETA read DataIn/2006122900_000.eta
 fstdfile open HYB read DataIn/2006122900_000.hyb
 set lnk  [fstdfile link { ETA HYB }]
-set idxs [fstdfield find $lnk -1 "" -1 -1 -1 "" "TT"]
+
+fstdfield ip1mode OLD
+set idxs [fstdfield find $lnk -1 "" { 1.0 SIGMA } -1 -1 "" "TT"]
 puts "   Found [llength $idxs] fields from $lnk" 
 
 foreach idx $idxs {

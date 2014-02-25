@@ -48,4 +48,3 @@ update idletasks
 image create photo TMPIMG 
 .map buffer TMPIMG 1 1 400 400
 TMPIMG write "DataOut/TK_BasicViewport.png" -format png
-  
