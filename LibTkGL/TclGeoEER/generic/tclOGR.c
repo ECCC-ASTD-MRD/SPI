@@ -187,6 +187,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
    OGRwkbGeometryType   t;
    int                  idx,n;
    Tcl_Obj             *obj;
+   TGeoRef             *ref=NULL;
 
    static CONST char *sopt[] = { "create","copy","free","stats","define","is","all",NULL };
    enum                opt { CREATE,COPY,FREE,STATS,DEFINE,IS,ALL };
@@ -205,14 +206,25 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
    switch ((enum opt)idx) {
 
       case CREATE:
-         if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"geometry type");
+         if(Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"geometry type [georef]");
             return(TCL_ERROR);
+         }
+         if (Objc==5) {
+            ref=GeoRef_Get(Tcl_GetString(Objv[4]));
+            if (!ref) {
+               Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: invalid georeference object",(char*)NULL);
+               return(TCL_ERROR);
+            }
          }
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[3]));
          if (t==wkbNone || !(g0=OGR_G_CreateGeometry(t))) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
+         }
+         
+         if (ref) {
+            OGR_G_AssignSpatialReference(g0,ref->Spatial);
          }
          
          obj=OGR_GeometryPut(Interp,Tcl_GetString(Objv[2]),g0);

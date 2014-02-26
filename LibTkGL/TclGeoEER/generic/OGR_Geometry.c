@@ -234,6 +234,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                for(j=0;j<n;) {
                   Tcl_ListObjIndex(Interp,Objv[i],j++,&obj);
                   if ((subgeom=OGR_GeometryGet(Tcl_GetString(obj)))) {
+
                      if (t) {
                         err=OGR_G_AddGeometryDirectly(geom,subgeom);
                      } else {
@@ -599,6 +600,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             }
          }
          OGR_G_TransformTo(g0,ref->Spatial);
+         OGR_G_AssignSpatialReference(g0,ref->Spatial);
          break;
 
       case DISTANCE:
