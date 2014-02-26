@@ -1771,16 +1771,16 @@ proc Mapper::OGR::VertexAddItem { Geom { New False } } {
       "Linear Ring"            { }
       
       "Polygon"                -
-      "3D Polygon"             { ogrgeometry create OGRTMP1 "Linear Ring" ; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
+      "3D Polygon"             { ogrgeometry create OGRTMP1 "Linear Ring" LLREF; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
       
-      "Multi Point"            { ogrgeometry create OGRTMP1 "Point" ; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
-      "3D Multi Point"         { ogrgeometry create OGRTMP1 "Point3D" ; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
+      "Multi Point"            { ogrgeometry create OGRTMP1 "Point" LLREF; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
+      "3D Multi Point"         { ogrgeometry create OGRTMP1 "Point3D" LLREF; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
       
-      "Multi Line String"      { ogrgeometry create OGRTMP1 "Line String" ; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
-      "3D Multi Line String"   { ogrgeometry create OGRTMP1 "3D Line String" ; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
+      "Multi Line String"      { ogrgeometry create OGRTMP1 "Line String" LLREF; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
+      "3D Multi Line String"   { ogrgeometry create OGRTMP1 "3D Line String" LLREF; ogrgeometry define $Geom -addgeometry False OGRTMP1 }
       
-      "Multi Polygon"          { ogrgeometry create OGRTMP2 "Polygon" ; ogrgeometry create OGRTMP1 "Linear Ring" ; ogrgeometry define OGRTMP2 -addgeometry False OGRTMP1; ogrgeometry define $Geom -addgeometry False OGRTMP2 }
-      "3D Multi Polygon"       { ogrgeometry create OGRTMP2 "3D Polygon" ; ogrgeometry create OGRTMP1 "Linear Ring" ; ogrgeometry define OGRTMP2 -addgeometry False OGRTMP1; ogrgeometry define $Geom -addgeometry False OGRTMP2 }
+      "Multi Polygon"          { ogrgeometry create OGRTMP2 "Polygon" LLREF; ogrgeometry create OGRTMP1 "Linear Ring" LLREF; ogrgeometry define OGRTMP2 -addgeometry False OGRTMP1; ogrgeometry define $Geom -addgeometry False OGRTMP2 }
+      "3D Multi Polygon"       { ogrgeometry create OGRTMP2 "3D Polygon" LLREF; ogrgeometry create OGRTMP1 "Linear Ring" LLREF; ogrgeometry define OGRTMP2 -addgeometry False OGRTMP1; ogrgeometry define $Geom -addgeometry False OGRTMP2 }
    
       "Geometry Collection"    -
       "3D Geometry Collection" { }     
