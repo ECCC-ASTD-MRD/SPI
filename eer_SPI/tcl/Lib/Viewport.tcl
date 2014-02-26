@@ -727,8 +727,8 @@ proc Viewport::Follow { Frame VP X Y } {
       set Map(GridICursor)   [lindex $ij 0]
       set Map(GridJCursor)   [lindex $ij 1]
    }
-
-   if { ![projection configure $Frame -geographic] } {
+   
+   if { $Page::Data(CoordUnit)=="REF" || ![projection configure $Frame -geographic] } {
       catch { set Page::Data(Coord) [format "%.$Page::Data(CoordPrec)f %.$Page::Data(CoordPrec)f" $Map(GridICursor) $Map(GridJCursor)] }
    } else {
       catch { set Page::Data(Coord) [Convert::FormatCoord $Map(LatCursor) $Map(LonCursor) $Page::Data(CoordUnit) $Page::Data(CoordPrec)] }

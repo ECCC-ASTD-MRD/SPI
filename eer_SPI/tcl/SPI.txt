@@ -115,6 +115,7 @@ namespace eval SPI {
    set Lbl(ModeTool)       { "Outils courant" "Current Tool" }
    set Lbl(ModeMag)        { "Loupe" "Magnifier" }
    set Lbl(FullScreen)     { "Mode plein écran" "Fullscreen mode" }
+   set Lbl(Referential)    { "Référentiel" "Referential" }
 
    set Lbl(Frame0)         { "0 page secondaire" "0 secondary page" }
    set Lbl(Frame1)         { "1 page secondaire" "1 secondary page" }

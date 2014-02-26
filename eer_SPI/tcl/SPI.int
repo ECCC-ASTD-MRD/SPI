@@ -393,6 +393,8 @@ proc SPI::Window { } {
          -command  "set Page::Data(CoordPrec) 10"
       .info.opt.menu add radiobutton -label [lindex $Lbl(Min) $GDefs(Lang)] -variable Page::Data(CoordUnit) -value MIN \
          -command  "set Page::Data(CoordPrec) 5"
+      .info.opt.menu add radiobutton -label [lindex $Lbl(Referential) $GDefs(Lang)] -variable Page::Data(CoordUnit) -value REF \
+         -command  "set Page::Data(CoordPrec) 5"
       .info.opt.menu add separator
       .info.opt.menu add checkbutton -label [lindex $Lbl(Link) $GDefs(Lang)] -variable Page::Data(CoordLink)
       .info.opt.menu add separator
