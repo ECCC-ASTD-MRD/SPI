@@ -627,15 +627,16 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             return(TCL_ERROR);
          }
 
+         n=0;
+         x=y=area=0.0;
+         lst=Tcl_NewListObj(0,NULL);
+         new=OGR_G_CreateGeometry(wkbLinearRing);
+
          // A list a feature has been passed
          if (Objc>1) {           
             Tcl_ListObjLength(Interp,Objv[1],&n);
          }
-         
-         x=y=area=0.0;
-         lst=Tcl_NewListObj(0,NULL);
-         new=OGR_G_CreateGeometry(wkbLinearRing);
-         
+        
          // A list a feature has been passed
          if (n) {   
             
@@ -651,6 +652,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             
          } else {
             for(f=0;f<layer->NFeature;f++) {
+               fprintf(stderr,"--- %li\n",f);
                if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   area+=GPC_Centroid2D(geom,&x,&y);
                   OGR_G_AddPoint_2D(new,x,y);
@@ -1826,7 +1828,7 @@ int OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer) {
 
    OGR_L_ResetReading(Layer->Layer);
    for(f=0;f<Layer->NFeature;f++) {
-      if (!(Layer->Feature[f]=OGR_L_GetFeature(Layer->Layer,f))) {
+      if (!(Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer))) {
          Tcl_AppendResult(Interp,"OGR_LayerReadFeature: Unable to read features",(char*)NULL);
          return(TCL_ERROR);
       }
