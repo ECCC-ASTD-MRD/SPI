@@ -907,7 +907,7 @@ proc FSTD::ParamSet { { Spec "" } } {
 #
 #-------------------------------------------------------------------------------
 
-proc FSTD::ParamPut { } {
+proc FSTD::ParamPut { { Update False } } {
    variable Data
    variable Param
 
@@ -930,8 +930,10 @@ proc FSTD::ParamPut { } {
       FLDMAPImg blank
    }
 
-   #----- Recuperer les niveaux du .recrc
+   #----- Intervals will be reset due to widget bindings
+   set inters $Param(Intervals)
 
+   #----- Recuperer les niveaux du .recrc
    ComboBox::DelAll $Data(Frame).lev.desc.edit
    $Data(Frame).lev.select.mode.list.inter delete 0 end
 
@@ -940,9 +942,11 @@ proc FSTD::ParamPut { } {
 
       if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
          ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$var)
-         set Param(Unit)   $MetStat::Rec(Unit$var)
-         set Param(Factor) $MetStat::Rec(Factor$var)
-         set Param(Desc)   $MetStat::Rec(Desc$var)
+         if { $Update } { 
+            set Param(Unit)   $MetStat::Rec(Unit$var)
+            set Param(Factor) $MetStat::Rec(Factor$var)
+            set Param(Desc)   $MetStat::Rec(Desc$var)
+         }
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
@@ -950,6 +954,8 @@ proc FSTD::ParamPut { } {
          }
       }
    }
+   #----- Set intervals to right values
+   set Param(Intervals) $inters
 
    MapBox::Select "" $Param(Map)
 }
@@ -1173,7 +1179,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    if { !$exist && $var!="" } {
       set Param(Spec) $var
       FSTD::ParamGet
-      FSTD::ParamPut
+      FSTD::ParamPut True
    }
 }
 
