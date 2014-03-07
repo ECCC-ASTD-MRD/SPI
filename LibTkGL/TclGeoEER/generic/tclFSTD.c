@@ -344,16 +344,16 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TData_Type  type;
    TDataVector *uvw;
    Vect3d      *pos;
-   char        *field,imode,itype;
+   char        *field,imode,itype,rmn[128];
 
    int         idx;
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 
-   static CONST char *sopt[]   = { "ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
-   enum                opt { IP1MODE,AUTOUNTILE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -367,6 +367,14 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    }
 
    switch ((enum opt)idx) {
+      
+      case VERSION:
+         n=1;
+         f77name(rmnlib_version)(rmn,&n,127);
+         rmn[89]='\0';
+         Tcl_AppendResult(Interp,rmn,(char*)NULL);
+         return(TCL_OK);
+      
       case VECTOR:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
