@@ -53,6 +53,7 @@ static const Tk_ConfigSpec configSpecs[] = {
    { TK_CONFIG_STRING, "-image", NULL, NULL, NULL, Tk_Offset(ImageItem, imageString), TK_CONFIG_NULL_OK, NULL },
    { TK_CONFIG_CUSTOM, "-state", NULL, NULL, NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK, &stateOption },
    { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL, 0, TK_CONFIG_NULL_OK, &tagsOption },
+   { TK_CONFIG_INT, "-transparency", NULL, NULL, "100", Tk_Offset(ImageItem, alpha), TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_END, NULL, NULL, NULL, NULL, 0, 0, NULL }
 };
 
