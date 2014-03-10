@@ -662,7 +662,7 @@ proc SPI::WindowMenu { } {
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Scale) $GDefs(Lang)] -variable SPI::Data(ShowScale) \
          -command "SPI::DrawScale \$Page::Data(Frame)"
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Test) $GDefs(Lang)] -variable SPI::Data(ShowTEST) \
-         -command "SPI::DrawImage \$Page::Data(Frame) TEST \[winfo width \$Page::Data(Canvas)\] 5 ne 5 -128 128" \
+         -command "SPI::DrawImage \$Page::Data(Frame) TEST \[winfo width \$Page::Data(Canvas)\] 5 ne 8 -128 128 25" \
          -onvalue 1 -offvalue 0
       .menu.disp.menu add checkbutton -label [lindex $Lbl(GeoLegend) $GDefs(Lang)] -variable SPI::Data(ShowGeoLegend) \
          -command "SPI::DrawGeoLegend \$Page::Data(Frame)"

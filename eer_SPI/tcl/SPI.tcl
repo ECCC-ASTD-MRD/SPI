@@ -970,7 +970,7 @@ proc SPI::DrawBitmap { Frame Bitmap X Y Anchor Color N DX DY } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::DrawImage { Frame Image X Y Anchor N DX DY } {
+proc SPI::DrawImage { Frame Image X Y Anchor N DX DY { Transparency 100 } } {
    variable Data
    variable Resources
 
@@ -978,7 +978,7 @@ proc SPI::DrawImage { Frame Image X Y Anchor N DX DY } {
 
    if { $Data(Show$Image) } {
       for { set i 0 } { $i < $N } { incr i } {
-         $Frame.page.canvas create image $X $Y -image $Image -tags "TOP $Image" -anchor $Anchor
+         eval $Frame.page.canvas create image $X $Y -image $Image -tags \"TOP $Image\" -anchor $Anchor -transparency $Transparency
          incr X $DX
          incr Y $DY
       }
