@@ -19,7 +19,7 @@
 #   FieldCalc::Window         { Parent }
 #   FieldCalc::FormulaLoad    { }
 #   FieldCalc::FormulaSave    { Name }
-#   FieldCalc::FormulaSet     { { Formula False } }
+#   FieldCalc::FormulaSet     { { Formula VP }
 #   FieldCalc::InsertDigit    { Digit }
 #   FieldCalc::InsertFunc     { Func Argc Trigo }
 #   FieldCalc::InsertOperator { Op }
@@ -578,7 +578,7 @@ proc FieldCalc::Window { { Parent .} } {
       entry .fieldcalc.expr.op -textvariable FieldCalc::Data(Operand) -bd 1 -bg $GDefs(ColorLight)
       button .fieldcalc.expr.param -image INFOLOG -relief flat -state disabled -overrelief raised -bd 1 \
          -command { if { [fstdfield is CALC$Page::Data(VP)] } { FieldParams::Window CALC$Page::Data(VP) } }
-      ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet True }
+      ComboBox::Create .fieldcalc.expr.sel FieldCalc::Data(Formula) edit unsorted nodouble -1 $FieldCalc::Data(Formulas) 15 3 { FieldCalc::FormulaSet $FieldCalc::Data(Formula) }
       button .fieldcalc.expr.fsave -image CALCSAVE -relief flat -overrelief raised -bd 1 -command { FieldCalc::FormulaSave [Dialog::Get . $FieldCalc::Bubble(Save) $FieldCalc::Msg(Name)]}
       button .fieldcalc.expr.fdel  -image CALCDEL -relief flat -overrelief raised -bd 1 -command FieldCalc::FormulaDel
       pack .fieldcalc.expr.op -side left -fill both -expand true
@@ -606,7 +606,7 @@ proc FieldCalc::Window { { Parent .} } {
    FieldCalc::WidgetCond   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Cond)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetOps    .fieldcalc
 
-   bind .fieldcalc.expr.op <KeyRelease> { set FieldCalc::Data(Formula) ""; FieldCalc::FormulaSet }
+   bind .fieldcalc.expr.op <KeyRelease> { FieldCalc::FormulaSet "" }
    bind .fieldcalc.expr.op <Return>     { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
 
    wm resizable .fieldcalc True False
@@ -772,6 +772,8 @@ proc FieldCalc::FormulaSave { Name } {
 # But      : Instaurer la formule macro.
 #
 # Parametres :
+#   <Formula>: Formule
+#   <VP>     : Vue a assigner
 #
 # Retour:
 #
@@ -779,16 +781,20 @@ proc FieldCalc::FormulaSave { Name } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::FormulaSet { { Formula False } } {
+proc FieldCalc::FormulaSet { Formula { VP "" } } {
    variable Data
 
    catch {
-      if { $Formula } {
-         set Data(Operand) $Data(Formula$Data(Formula))
+      set Data(Formula) $Formula
+      if { $Formula!="" } {
+         set Data(Operand) $Data(Formula$Formula)
       }
 
-      set Viewport::Data(Operand$Page::Data(VP)) $Data(Operand)
-      set Viewport::Data(Formula$Page::Data(VP)) $Data(Formula)
+      if { $VP=="" } {
+         set VP $Page::Data(VP)
+      }
+      set Viewport::Data(Operand$VP) $Data(Operand)
+      set Viewport::Data(Formula$VP) $Data(Formula)
    }
 }
 #----------------------------------------------------------------------------
@@ -1395,7 +1401,7 @@ proc FieldCalc::WidgetOps { Frame } {
 
    frame $Frame.cmd
       button $Frame.cmd.equal -text "   =  "  -bd 1 -command { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) ""; set FieldCalc::Data(Formula) "";  FieldCalc::FormulaSet; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { FieldCalc::FormulaSet ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1
