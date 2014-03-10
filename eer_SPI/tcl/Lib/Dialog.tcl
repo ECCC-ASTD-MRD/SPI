@@ -113,7 +113,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
 
    uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return True
    }
    
@@ -188,7 +188,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
    }
 
@@ -250,7 +250,7 @@ proc Dialog::ErrorListing { Master Text List } {
 
    uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
    }
 
@@ -320,7 +320,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
    }
 
@@ -378,7 +378,7 @@ proc Dialog::Wait { Master Text { Extra "" } { Append True } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
    }
 
@@ -429,7 +429,7 @@ proc Dialog::Wait { Master Text { Extra "" } { Append True } } {
 proc Dialog::WaitDestroy { { Ask False } } {
    variable Lbl
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return True
    }
 
@@ -467,7 +467,7 @@ proc Dialog::Message { Master Text { Extra "" } } {
 
    uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
-   if { ![info exists ::tk_version] || $SPI::Param(Batch) } {
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
    }
 

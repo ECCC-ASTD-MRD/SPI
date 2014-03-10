@@ -439,7 +439,7 @@ proc Mapper::DepotWare::Del { Branch } {
          }
          TREE delete $Branch
 
-         CVTree::SelectClear $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
+         CVTree::SelectionClear $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
          CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE
       }
    }
@@ -707,11 +707,16 @@ proc Mapper::DepotWare::Create { } {
       }
       TREE set $idx path $path
    }
-   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE \
-      Mapper::DepotWare::TreeId \
-      Mapper::DepotWare::TreeParse \
-      Mapper::DepotWare::TreeSelect \
-      Mapper::DepotWare::PopUp
+#   CVTree::Render $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE \
+#      Mapper::DepotWare::TreeId \
+#      Mapper::DepotWare::TreeParse \
+#      Mapper::DepotWare::TreeSelect \
+#      Mapper::DepotWare::PopUp
+   CVTree::Create $Mapper::Data(Tab2).list.canvas Mapper::DepotWare::TREE \
+      IdCmd Mapper::DepotWare::TreeId \
+      ParseCmd Mapper::DepotWare::TreeParse \
+      SelectCmd Mapper::DepotWare::TreeSelect \
+      PopUpCmd Mapper::DepotWare::PopUp
 }
 
 #----------------------------------------------------------------------------

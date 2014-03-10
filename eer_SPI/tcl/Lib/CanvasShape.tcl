@@ -64,11 +64,19 @@
 #    CVMagnifier::Increase   { Canvas X Y }
 #    CVMagnifier::Move       { Canvas X Y }
 #
-#    CVTree::Render        { Canvas Tree { IdCommand "" } { SelectCommand "" } { PopUpCommand "" } }
-#    CVTRee::RenderBranch  { Canvas Tree Branch X Y }
-#    CVTree::Select        { Canvas Tree Branch { Open False } }
-#    CVTree::SelectClear   { Canvas Tree }
-#
+#    CVTree::Create         { Canvas Tree args }
+#    CVTree::ExecCallback   { Callback Canvas Tree Branch Open }
+#    CVTree::Highlight      { Canvas Tree {Branch ""} }
+#    CVTree::OnBoxClick     { Canvas Tree Branch Open }
+#    CVTree::OnClick        { Canvas Tree Branch Open IsLeaf {Ctrl False} {Shift False} }
+#    CVTree::OnDblClick     { Canvas Tree Branch Open IsLeaf }
+#    CVTree::Render         { Canvas Tree }
+#    CVTree::RenderBranch   { Canvas Tree Branch X Y }
+#    CVTree::SelectBranch   { Canvas Tree Branch }
+#    CVTree::SelectSetState { Selected Canvas Tree Branch {IsLeaf False} {Persistent False} }
+#    CVTree::SelectionClear { Canvas Tree }
+#    CVTree::SelectionGet   { Canvas Tree }
+
 #    Shape::BindDestroy    { Canvas Tag { Command "" } }
 #    Shape::BindFull       { Canvas Tag Var { Command "" } }
 #    Shape::BindAllMove    { Canvas Tags { Command "" } }
@@ -105,9 +113,9 @@
 #
 #===============================================================================
 
-package provide CanvasShape 1.5
+package provide CanvasShape 1.6
 
-catch { SPI::Splash "Loading Canvas Package CanvasShape 1.5" }
+catch { SPI::Splash "Loading Canvas Package CanvasShape 1.6" }
 
 image create photo COMPASSFRAME   -file $GDefs(Dir)/share/image/System/CompassFrame.gif
 image create photo COMPASSDIR     -file $GDefs(Dir)/share/image/System/CompassDir.gif
@@ -1860,19 +1868,57 @@ proc CVMagnifier::Move { Canvas X Y } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <CVTree::Render>
-# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+# Nom      : <CVTree::Create>
+# Creation : Juin 2014 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Afficher un arbre dans un canvas.
 #
 # Parametres :
 #  <Canvas>      : Canvas ou afficher l'arbre
 #  <Tree>        : Arbre a afficher
-#  <Tag>         : Tag de l'arbre
-#  <X>           : Coordonnee en X
-#  <Y>           : Coordonnee en Y
-# <IdCommand>    : Command pour recuperer l'identification de la branche
-# <SelectCommand>: Command a effectuer lors de la selection d'une branche
+#  <args>        : Tous les autres arguments qui seront lu en paire {Param Value}
+#
+#                  Les params peuvent être :
+#
+#                  <IdCmd> <Fct> Fct est la fonction identitaire appelee lors du
+#                       rendering de l'arbre
+#                  <ParseCmd> <Fct> Fonction appellée lors de l'ouverture d'une
+#                       branche parent)
+#                  <PopUpCmd> <Fct> Fonction appellée lors d'un click droit sur
+#                       l'arbre)
+#                  <SelectCmd> <Fct> Fonction appellée lors de la sélection d'une
+#                       branche de l'arbre
+#                  <SingleSelectCmd> <Fct> Fonction appellée lors de la sélection d'une
+#                       et une seule feuille de l'arbre --> même chose que SelectCmd en
+#                       SingleSelectMode.
+#                  <AllowMultSelect> <True|False> Option permettant la selection
+#                       multiple de branches dans l'arbre. (Defaut : False) Cette
+#                       option est incompatible avec l'option "DblClickSelect".
+#                  <DblClickSelect> <True|False> Option déterminant si la sélection
+#                       se fait en un simple ou un double click de la souris.
+#                       (Défaut : True). Sera forcé à false si l'option
+#                       "AllowMultSelect" est à "True".
+#                  <AllowParentSelect> <True|False> Option déterminant si la
+#                       sélection d'une branche ayant des enfants est possible.
+#                       (Défaut : False). Sera forcé à false si l'option
+#                       "AllowMultSelect" est à False
+#                  <BorderColor> <Color> Détermine la couleur de la bordure du
+#                       rectangle de sélection. (Défaut : "black")
+#                  <HighlightFullWidth> <True|False> Détermine si le retangle de
+#                       sélection couvrira ou non la pleine largeure du canvas.
+#                       (Défaut : False) Attention : si la taille du canvas change,
+#                       le rectangle de sélection ne se mettra à jour qu'au prochain
+#                       rafraîchissement de la sélection.
+#
+#                  Notes:
+#                   - Seul le paramètre IdCmd est obligatoire.
+#                   - Les callbacks autre que PopUpCmd recevront les paramètres <Tree>,
+#                     <Branch> et <Open> lors de leur appel. (Tree étant le nom de l'arbre
+#                     de données, Branch étant la branche faisant l'objet du callback
+#                     et Open étant un indicateur de l'état d'ouverture de la branche.)
+#                     Le callback PopUpCmd recevra <Canvas> <X> <Y> <Branch> oû
+#                     X et Y sont les coordonnées relativement à la fenêtre root
+#                     (root window).
 #
 # Retour    :
 #
@@ -1881,26 +1927,418 @@ proc CVMagnifier::Move { Canvas X Y } {
 #
 #-------------------------------------------------------------------------------
 
-namespace eval CVTree { }
+namespace eval CVTree {
+    variable Param
 
-proc CVTree::Render { Canvas Tree { IdCommand "" } { ParseCommand "" } { SelectCommand "" } { PopUpCommand "" } } {
-   variable Data
+    set Param(AllowMultSelect)      False
+    set Param(DblClickSelect)       True
+    set Param(AllowParentSelect)    False
+    set Param(BorderColor)          black
+    set Param(HighlightFullWidth)   False
+}
 
-   $Canvas delete CVTREE$Tree
+proc CVTree::Create { Canvas Tree args } {
+    variable Data
+    variable Param
 
-   set X 0
-   set Y 0
+    #----- Default command callbacks
 
-   if { ![info exists ::CVTree::Data(Id$Tree)] } {
-      set Data(Id$Tree)     $IdCommand
-      set Data(Parse$Tree)  $ParseCommand
-      set Data(Select$Tree) $SelectCommand
-      set Data(PopUp$Tree)  $PopUpCommand
-   }
+    set Data(IdCmd$Tree)            ""
+    set Data(ParseCmd$Tree)         ""
+    set Data(PopUpCmd$Tree)         ""
+    set Data(SelectCmd$Tree)        ""
+    set Data(SingleSelectCmd$Tree)  ""
 
-   CVTree::RenderBranch $Canvas $Tree root X Y
+    #----- Default params values
 
-   catch { $Canvas configure -scrollregion "0 0 [lrange [$Canvas bbox CVTREE$Tree] 2 end]" }
+    set Data(AllowMultSelect$Tree)      $Param(AllowMultSelect)
+    set Data(DblClickSelect$Tree)       $Param(DblClickSelect)
+    set Data(AllowParentSelect$Tree)    $Param(AllowParentSelect)
+    set Data(BorderColor$Tree)          $Param(BorderColor)
+    set Data(HighlightFullWidth$Tree)   $Param(HighlightFullWidth)
+
+    #----- Parse args
+
+    foreach {opt val} $args {
+        set Data($opt$Tree) $val
+    }
+
+    #----- Unmodifiable params
+
+    set Data(SelectFrom$Tree)   ""
+    set Data(Selection$Tree)    ""
+
+    #----- Incompatibilities
+
+    if { $Data(AllowMultSelect$Tree) } {
+        set Data(DblClickSelect$Tree) False
+    } else {
+        set Data(AllowParentSelect$Tree) False
+    }
+
+    $Tree set [$Tree rootname] open True
+    CVTree::Render $Canvas $Tree
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::ExecCallback>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Exécute le callback enregistré si ce dernier a été fourni.
+#
+# Parametres :
+#  <Callback>    : La fonction à exécuter
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche qui fait l'objet du callback
+#  <Open>        : Statut d'ouverture de la branche
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::ExecCallback { Callback Canvas Tree Branch Open } {
+    if { $Callback!="" } {
+        $Canvas configure -cursor watch
+        update idletasks;
+        eval $Callback $Tree $Branch $Open
+        $Canvas configure -cursor left_ptr
+    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::Highlight>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Illumine les donnéessélectionnées
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche à illuminer (Utilisé en SingleSelectMode seulement)
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::Highlight { Canvas Tree {Branch ""} } {
+    global GDefs
+    variable Data
+
+    if { !$Data(AllowMultSelect$Tree) } {
+        #----- Normal mode (Single select)
+
+        lassign [$Canvas bbox CVTREETEXT$Branch] x1 y1 x2 y2
+        if { $Data(HighlightFullWidth$Tree) } {
+            set x1 0
+            set x2 [expr {[winfo width $Canvas]-1}]
+        }
+
+        #----- Move the highlight box if it exists or create it if it doesn't
+
+        if { ![llength [$Canvas find withtag CVTREESELECT$Tree]] } {
+            eval $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $GDefs(ColorHighLight) -outline $Data(BorderColor$Tree) -width 1 -tags CVTREESELECT$Tree
+            $Canvas lower CVTREESELECT$Tree
+        } else {
+            eval $Canvas coords CVTREESELECT$Tree [list $x1 $y1 $x2 $y2]
+        }
+    } else {
+        #----- Multiselect mode
+
+        $Canvas delete CVTREESELECT$Tree
+
+        #----- Go through the whole tree and create a different BBox for each of the continous groups encountered
+
+        set nodes {}
+        $Tree walk [$Tree rootname] -type dfs -order pre node {lappend nodes $node; if { ![$Tree get $node open] } { struct::tree::prune }}
+
+        set inHlGroup False
+        foreach node $nodes {
+            if { [$Tree keyexists $node selected] && [$Tree get $node selected] } {
+                if { $inHlGroup } {
+                    #----- We are already in a group; add this one to the global BBox
+
+                    lassign [$Canvas bbox CVTREETEXT$node] nx1 ny1 nx2 ny2
+
+                    set x1 [expr min($x1, $nx1)]
+                    set y1 [expr min($y1, $ny1)]
+                    set x2 [expr max($x2, $nx2)]
+                    set y2 [expr max($y2, $ny2)]
+                } else {
+                    #----- Start the BBox
+
+                    lassign [$Canvas bbox CVTREETEXT$node] x1 y1 x2 y2
+                    set inHlGroup True
+                }
+            } elseif { $inHlGroup } {
+                #----- A BBox is now complete, show it
+
+                set inHlGroup False
+
+                if { $Data(HighlightFullWidth$Tree) } {
+                    set x1 0
+                    set x2 [expr {[winfo width $Canvas]-1}]
+                }
+
+                $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $GDefs(ColorHighLight) -outline $Data(BorderColor$Tree) -width 1 -tags CVTREESELECT$Tree
+                $Canvas lower CVTREESELECT$Tree
+            }
+        }
+    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::OnBoxClick>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Callback pour une action effectuée sur les checkbox
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche qui fait l'objet du callback
+#  <Open>        : Statut d'ouverture de la branche
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::OnBoxClick { Canvas Tree Branch Open } {
+    $Tree set $Branch box $Open
+
+    #----- Transmit the parent box status to the children
+
+    if { [$Tree keyexists $Branch box] } {
+        set box [$Tree get $Branch box]
+        foreach child [$Tree children $Branch] {
+            if { [$Tree keyexists $child box] } {
+                $Tree set $child box $box
+            }
+        } 
+    }
+
+    CVTree::Render $Canvas $Tree
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::OnClick>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Callback lors d'un click sur une branche
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche qui fait l'objet du click
+#  <Open>        : Statut d'ouverture de la branche
+#  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
+#  <Ctrl>        : Si la touche "Control" était enfoncée au moment du click
+#  <Shift>       : Si la touche "Shift" était enfoncée au moment du click
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::OnClick { Canvas Tree Branch Open IsLeaf {Ctrl False} {Shift False} } {
+    variable Data
+
+    if { !$Data(AllowMultSelect$Tree) } {
+        #----- Normal mode
+
+        if { !$IsLeaf } {
+            #----- We have a parent
+
+            $Tree set $Branch open $Open
+            
+            set Data(Selection$Tree) ""
+            CVTree::Highlight $Canvas $Tree $Branch
+            CVTree::ExecCallback $Data(ParseCmd$Tree) $Canvas $Tree $Branch $Open
+
+            #----- Transmit the parent box status to the children
+
+            if { [$Tree keyexists $Branch box] } {
+                set box [$Tree get $Branch box]
+                foreach child [$Tree children $Branch] {
+                    if { [$Tree keyexists $child box] } {
+                        $Tree set $child box $box
+                    }
+                } 
+            }
+
+            CVTree::Render $Canvas $Tree
+        } elseif { !$Data(DblClickSelect$Tree) } {
+            #----- We have a leaf that can be selected with a single click
+
+            if { [$Tree keyexists $Branch box] } {
+                $Tree set $Branch box $Open
+            }
+
+            set Data(Selection$Tree) $Branch
+            CVTree::Highlight $Canvas $Tree $Branch
+            CVTree::ExecCallback $Data(SelectCmd$Tree) $Canvas $Tree $Branch $Open
+            CVTree::ExecCallback $Data(SingleSelectCmd$Tree) $Canvas $Tree $Branch $Open
+            CVTree::Render $Canvas $Tree
+        }
+    } elseif { !$IsLeaf && (
+        !$Data(AllowParentSelect$Tree)
+        || $Data(SelectFrom$Tree)==""
+        || $Data(SelectFrom$Tree)!="" && ![$Tree exists $Data(SelectFrom$Tree)]
+        || !$Shift && !$Ctrl
+    ) } {
+        #----- Multiple Select mode on parent (non-leaf) node, but as simple selection
+
+        $Tree set $Branch open $Open
+
+        if { $Data(AllowParentSelect$Tree) } {
+            CVTree::SelectionClear $Canvas $Tree
+        }
+        CVTree::SelectSetState True $Canvas $Tree $Branch $IsLeaf True
+        CVTree::Highlight $Canvas $Tree
+        CVTree::ExecCallback $Data(ParseCmd$Tree) $Canvas $Tree $Branch $Open
+        CVTree::Render $Canvas $Tree
+        CVTree::Highlight $Canvas $Tree
+    } else {
+        #----- Multiple Select mode on leaf node or on parent node in a case of multiple selection
+
+        if { $Ctrl && !$Shift } {
+            #----- Add or remove current branch to selection
+
+            if { [catch {set s [$Tree get $Branch selected]}] } {
+                set s False
+            }
+            if { $s } {
+                CVTree::SelectSetState False $Canvas $Tree $Branch $IsLeaf False
+            } else {
+                CVTree::SelectSetState True $Canvas $Tree $Branch $IsLeaf True
+            }
+        } elseif { $Shift && $Data(SelectFrom$Tree)!="" && [$Tree exists $Data(SelectFrom$Tree)] } {
+            if { !$Ctrl } {
+                #----- Unselect the previously selected branches
+
+                CVTree::SelectionClear $Canvas $Tree
+            }
+
+            set b1 $Data(SelectFrom$Tree)
+            set b2 $Branch
+
+            #----- Find the common parent (Not necessary but should be faster than walking the whole tree)
+
+            foreach p1 [lreverse [$Tree ancestors $b1]] p2 [lreverse [$Tree ancestors $b2]] {
+                if { $p1 == $p2 } {
+                    set btop $p1
+                } else {
+                    break
+                }
+            }
+
+            #----- Walk through the tree from that parent (We could start from root, but this should be faster than walking the whole tree)
+
+            set nodes {}
+            $Tree walk $btop -type dfs -order pre node {lappend nodes $node}
+
+            #------ Get the branches index of our seleted nodes and only keep the subset that interest us
+
+            set idx1 [lsearch -exact $nodes $b1]
+            set idx2 [lsearch -exact $nodes $b2]
+            if { $Ctrl } {
+                set Data(SelectFrom$Tree) [lindex $nodes $idx2]
+            }
+            set nodes [lrange $nodes [expr min($idx1, $idx2)] [expr max($idx1, $idx2)]]
+
+            #------ We now have the right subset, mark all the nodes appropriatly
+
+            foreach node $nodes {
+                CVTree::SelectSetState True $Canvas $Tree $node [$Tree get $node isLeaf] False
+            }
+        } else {
+            #----- Unselect the previously selected branches
+
+            CVTree::SelectionClear $Canvas $Tree
+
+            #----- Select the current one
+
+            CVTree::SelectSetState True $Canvas $Tree $Branch $IsLeaf True
+            CVTree::ExecCallback $Data(SingleSelectCmd$Tree) $Canvas $Tree $Branch $Open
+        }
+
+        CVTree::Highlight $Canvas $Tree
+        CVTree::Render $Canvas $Tree
+        CVTree::Highlight $Canvas $Tree
+    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::OnDblClick>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Callback pour les double-click.
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche qui fait l'objet du double-click
+#  <Open>        : Statut d'ouverture de la branche
+#  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::OnDblClick { Canvas Tree Branch Open IsLeaf } {
+    variable Data
+
+    if { $IsLeaf && $Data(DblClickSelect$Tree) } {
+        #----- Mark the box according to the Open state
+
+        if { [$Tree keyexists $Branch box] } {
+            $Tree set $Branch box $Open
+        }
+
+        set Data(Selection$Tree) $Branch
+        CVTree::Highlight $Canvas $Tree $Branch
+        CVTree::ExecCallback $Data(SelectCmd$Tree) $Canvas $Tree $Branch $Open
+        CVTree::ExecCallback $Data(SingleSelectCmd$Tree) $Canvas $Tree $Branch $Open
+    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::Render>
+# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+# Modifie  : Fevrier 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Afficher un arbre dans un canvas.
+#
+# Parametres :
+#  <Canvas>      : Canvas ou afficher l'arbre
+#  <Tree>        : Arbre a afficher
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::Render { Canvas Tree } {
+    variable Data
+
+    $Canvas delete CVTREE$Tree
+
+    set X 0
+    set Y 0
+
+    CVTree::RenderBranch $Canvas $Tree [$Tree rootname] X Y
+
+    catch { $Canvas configure -scrollregion "0 0 [lrange [$Canvas bbox CVTREE$Tree] 2 end]" }
 }
 
 #-------------------------------------------------------------------------------
@@ -1913,7 +2351,6 @@ proc CVTree::Render { Canvas Tree { IdCommand "" } { ParseCommand "" } { SelectC
 #  <Canvas>      : Canvas ou afficher l'arbre
 #  <Tree>        : Arbre a afficher
 #  <Branch>      : Branche a afficher
-#  <Tag>         : Tag de l'arbre
 #  <X>           : Coordonnee en X
 #  <Y>           : Coordonnee en Y
 #
@@ -1925,88 +2362,115 @@ proc CVTree::Render { Canvas Tree { IdCommand "" } { ParseCommand "" } { SelectC
 #-------------------------------------------------------------------------------
 
 proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
-   variable Data
-   global GDefs
+    variable Data
+    global GDefs
 
-   upvar $X x
-   upvar $Y y
+    upvar $X x
+    upvar $Y y
 
-   set dy 20
-   set dx 10
-   set db 15
-   set y0 $y
+    set dy 20
+    set dx 10
+    set db 0
+    set y0 $y
 
-   incr x $dx
+    incr x $dx
 
-   if { [$Tree keyexists $Branch box] } {
-      set db 15
-   } else {
-      set db 0
-   }
-   
-   foreach branch [$Tree children $Branch]  {
-      set leaf True
+    #if { [$Tree keyexists $Branch box] } {
+    #    set db 15
+    #} else {
+    #    set db 0
+    #}
 
-      if { [set id [$Data(Id$Tree) $Tree $branch leaf]]!="" } {
-         set y0 [incr y $dy]
+    foreach branch [$Tree children $Branch]  {
+        set leaf True
 
-         if { [$Tree keyexists $branch box] } {
-            switch [$Tree get $branch box] {
-               True  { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optcheck.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
-                       $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch False" }
-               False { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optbox.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
-                       $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::Select $Canvas $Tree $branch True" }
+        if { [set id [$Data(IdCmd$Tree) $Tree $branch leaf]]!="" } {
+            set y0 [incr y $dy]
+
+            #if { !$Data(AllowMultSelect$Tree) && [$Tree keyexists $branch box] } {
+            #    switch [$Tree get $branch box] {
+            #        True  { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optcheck.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+            #                $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::OnBoxClick $Canvas $Tree $branch False" }
+            #        False { $Canvas create bitmap [expr $x+$dx+5] $y -bitmap @$GDefs(Dir)/share/bitmap/optbox.xbm -tags "CVTREE$Tree CVTREEBOX$Tree$branch"
+            #                $Canvas bind CVTREEBOX$Tree$branch <Button-1> "CVTree::OnBoxClick $Canvas $Tree $branch True" }
+            #    }
+            #}
+
+            $Canvas create text [expr $x+$dx+$db] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
+
+            if { [$Tree keyexists $branch bubble] && [set bubble [$Tree get $branch bubble]]!="" } {
+                CanvasBubble::Create $Canvas CVTREETEXT$branch $bubble 400
             }
-         }
-         
-         $Canvas create text [expr $x+$dx+$db] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
 
-         if { [$Tree keyexists $branch bubble] && [set bubble [$Tree get $branch bubble]]!="" } {
-            CanvasBubble::Create $Canvas CVTREETEXT$branch $bubble 400
-         }
-         
-         if { $leaf && [$Tree isleaf $branch] } {
-            if { [expr $x-$dx]>5 } {
-               $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"
-            }
-            $Canvas bind CVTREETEXT$branch <Double-ButtonRelease-1> "CVTree::Select $Canvas $Tree $branch True"
-         } else {
-            if { [expr $x-$dx]>5 } {
-               $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
-            }
-            if { [$Tree get $branch open] } {
-               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/minus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch False"
-               set x0 $x
-               set y0 $y
-               set yend [CVTree::RenderBranch $Canvas $Tree $branch x y]
+            set isLeaf  ""
+            set open    ""
+            set bindTag ""
+            if { $leaf && [$Tree isleaf $branch] } {
+                if { [expr $x-$dx]>5 } {
+                    $Canvas create line [expr $x-$dx] $y [expr $x+$dx-5] $y -width 1 -fill black -tags "CVTREE$Tree"
+                }
 
-               set x $x0
-               $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
+                set bindTag CVTREETEXT$branch
+                set isLeaf  True
+                set open    True
             } else {
-               $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/plus.ico -tags "CVTREE$Tree $branch"
-               $Canvas bind $branch <ButtonRelease-1> "CVTree::Parse $Canvas $Tree $branch True"
+                if { [expr $x-$dx]>5 } {
+                    $Canvas create line [expr $x-$dx] $y [expr $x-4] $y -width 1 -fill black -tags "CVTREE$Tree"
+                }
+                set bindTag $branch
+                set isLeaf False
+                if { [$Tree get $branch open] } {
+                    set open False
+                    $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/minus.ico -tags "CVTREE$Tree $branch"
+                    set x0 $x
+                    set y0 $y
+                    set yend [CVTree::RenderBranch $Canvas $Tree $branch x y]
+
+                    set x $x0
+                    $Canvas create line $x $yend $x [expr $y0+5] -width 1 -fill black -tags "CVTREE$Tree"
+                } else {
+                    set open True
+                    $Canvas create bitmap $x $y -bitmap @$GDefs(Dir)/share/bitmap/plus.ico -tags "CVTREE$Tree $branch"
+                }
             }
-         }
-         if { $Data(PopUp$Tree)!="" } {
-            $Canvas bind $branch <Button-3> "CVTree::Highlight $Canvas $Tree $branch; $Data(PopUp$Tree) $Canvas %X %Y $branch"
-         }
-      }
-   }
-   return $y0
+
+            $Tree set $branch isLeaf $isLeaf
+
+            if { $Data(AllowMultSelect$Tree) } {
+                $Canvas bind $bindTag   <ButtonRelease-1>               "CVTree::OnClick    $Canvas $Tree $branch $open $isLeaf False False"
+                $Canvas bind $bindTag   <Control-ButtonRelease-1>       "CVTree::OnClick    $Canvas $Tree $branch $open $isLeaf True  False"
+                $Canvas bind $bindTag   <Shift-ButtonRelease-1>         "CVTree::OnClick    $Canvas $Tree $branch $open $isLeaf False True"
+                $Canvas bind $bindTag   <Control-Shift-ButtonRelease-1> "CVTree::OnClick    $Canvas $Tree $branch $open $isLeaf True  True"
+            } else {
+                $Canvas bind $bindTag   <ButtonRelease-1>               "CVTree::OnClick    $Canvas $Tree $branch $open $isLeaf False False"
+            }
+
+            if { $Data(DblClickSelect$Tree) } {
+                $Canvas bind $bindTag   <Double-ButtonRelease-1>        "CVTree::OnDblClick $Canvas $Tree $branch $open $isLeaf"
+            }
+
+            if { $Data(PopUpCmd$Tree)!="" } {
+                if { $Data(AllowMultSelect$Tree) } {
+                    $Canvas bind $branch <Button-3> "$Data(PopUpCmd$Tree) $Canvas %X %Y $branch"
+                } else {
+                    $Canvas bind $branch <Button-3> "CVTree::Highlight $Canvas $Tree $branch; $Data(PopUpCmd$Tree) $Canvas %X %Y $branch"
+                }
+            }
+        }
+    }
+    return $y0
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <CVTree::Select>
-# Creation : Juin 2008 - J.P. Gauthier - CMC/CMOE
+# Nom      : <CVTree::SelectBranch>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Effecuter les commandes associe a la selection d'une branche.
+# But      : Ouvre et sélectionne un noeud (simule un click utilisateur)
 #
 # Parametres :
-#  <Canvas>      : Canvas ou afficher l'arbre
-#  <Tree>        : Arbre a afficher
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
 #  <Branch>      : Branche a afficher
-#  <Tag>         : Tag de l'arbre
 #
 # Retour    :
 #
@@ -2014,58 +2478,122 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
 #   -Ceci est une extension au package ::struct::tree
 #
 #-------------------------------------------------------------------------------
+proc CVTree::SelectBranch { Canvas Tree Branch } {
+    variable Data
 
-proc CVTree::Highlight { Canvas Tree Branch } {
-   global GDefs
-
-   if { ![llength [$Canvas find withtag CVTREESELECT$Tree]] } {
-      eval $Canvas create rectangle [$Canvas bbox CVTREETEXT$Branch] -fill $GDefs(ColorHighLight) -outline black -width 1 -tags CVTREESELECT$Tree
-      $Canvas lower CVTREESELECT$Tree
-   }
-   eval $Canvas coords CVTREESELECT$Tree [$Canvas bbox CVTREETEXT$Branch]
+    if { $Data(DblClickSelect$Tree) } {
+        CVTree::OnDblClick $Canvas $Tree $Branch True [$Tree get $Branch isLeaf]
+    } else {
+        CVTree::OnClick $Canvas $Tree $Branch True [$Tree get $Branch isLeaf]
+    }
 }
 
-proc CVTree::Parse { Canvas Tree Branch { Open False } } {
-   global GDefs
-   variable Data
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::SelectSetState>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Change le statut de sélection d'un branche en mode "multiselect"
+#
+# Parametres :
+#  <Selected>    : Si la branche doit être marquée comme sélectionnée (True) ou non (False)
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche a afficher
+#  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
+#  <Persistent>  : Si la branche sélectionnée doit être marquée comme la dernière activée
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::SelectSetState { Selected Canvas Tree Branch {IsLeaf False} {Persistent False} } {
+    variable Data
 
-   $Tree set $Branch open $Open
+    if { $Selected } {
+        if { $Data(AllowParentSelect$Tree) || $IsLeaf } {
+            $Tree set $Branch selected      True
 
-   CVTree::Highlight $Canvas $Tree $Branch
+            CVTree::ExecCallback $Data(SelectCmd$Tree) $Canvas $Tree $Branch [$Tree get $Branch open]
 
-   if { $Data(Parse$Tree)!="" } {
-      $Canvas configure -cursor watch
-      update idletasks;
-      eval $Data(Parse$Tree) $Tree $Branch $Open
-      $Canvas configure -cursor left_ptr
-   }
+            if { $Persistent } {
+                set Data(SelectFrom$Tree) $Branch
+            }
+        } else {
+            $Tree set $Branch selected      False
+        }
 
-   CVTree::Render $Canvas $Tree
+        if { [$Tree keyexists $Branch box] } {
+            $Tree set $Branch box [$Tree get $Branch open]
+        }
+    } else {
+        $Tree set $Branch selected      False
+
+        if {[$Tree keyexists $Branch box] } {
+            $Tree set $Branch box [$Tree get $Branch open]
+        }
+
+        if { $Persistent } {
+            set Data(SelectFrom$Tree) ""
+        }
+    }
 }
 
-proc CVTree::Select { Canvas Tree Branch { Open False } } {
-   global GDefs
-   variable Data
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::SelectionClear>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Désélectionne toutes les branches sélectionnées.
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::SelectionClear { Canvas Tree } {
+    variable Data
 
-   if { [$Tree keyexists $Branch box] } {
-      $Tree set $Branch box $Open
-   }
-   
-   CVTree::Highlight $Canvas $Tree $Branch
-
-   if { $Data(Select$Tree)!="" } {
-      $Canvas configure -cursor watch
-      update idletasks;
-      eval $Data(Select$Tree) $Tree $Branch $Open
-      $Canvas configure -cursor left_ptr
-   }
-
-   CVTree::Render $Canvas $Tree
+    if { !$Data(AllowMultSelect$Tree) } {
+        $Canvas delete CVTREESELECT$Tree
+        set Data(Selection$Tree) ""
+    } else {
+        foreach b [dict keys [dict filter [$Tree attr selected] value True]] {
+            CVTree::SelectSetState False $Canvas $Tree $b
+        }
+    }
 }
 
-proc CVTree::SelectClear { Canvas Tree } {
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::SelectionGet>
+# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Retourne une liste de toutes les branches sélectionnés. Ne
+#            fonctionne qu'en mode sélection multiple (AllowMultSelect=True)
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::SelectionGet { Canvas Tree } {
+    variable Data
 
-   $Canvas delete CVTREESELECT$Tree
+    if { $Data(AllowMultSelect$Tree) } {
+        return [dict keys [dict filter [$Tree attr selected] value True]]
+    } else {
+        return $Data(Selection$Tree)
+    }
 }
 
 namespace eval Shape {
