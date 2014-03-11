@@ -516,7 +516,8 @@ proc Export::Vector::Export { Path Format Fields } {
          }
       }
 
-      ogrlayer create FILE LAYER $name
+      
+      ogrlayer create FILE LAYER [file tail $name]
       ogrlayer import LAYER $field
       ogrfile close FILE
       ogrlayer free LAYER
