@@ -2319,7 +2319,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
 
             geom=OGR_G_CreateGeometry(wkbLineString);
             for(k=0;k<array->Size;k++) {
-               Layer->Ref->UnProject(Layer->Ref,&x,&y,array->Data[k][0],CLAMPLON(array->Data[k][1]),1,1);
+               Layer->Ref->UnProject(Layer->Ref,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
                OGR_G_AddPoint_2D(geom,x,y);
             }
             OGR_G_AddGeometryDirectly(cont,geom);
