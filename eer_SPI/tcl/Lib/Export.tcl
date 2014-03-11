@@ -341,6 +341,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
          DATA  { set map [fstdfield configure $field -colormap]
             fstdfield configure $field -colormap ""
             gdalband create BAND $Param(DX) $Param(DY) 1 Float32
+            gdalband clear BAND [fstdfield stats $field -nodata]
          }
          RGBA  { gdalband create BAND $Param(DX) $Param(DY) 4 Byte }
          INDEX { gdalband create BAND $Param(DX) $Param(DY) 1 Byte }
@@ -782,7 +783,7 @@ proc Export::Window { } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Raster::Init { Res { Lat0 -999 } { Lon0 -999 }  { Lat1 -999 } { Lon1 -999 } } {
+proc Export::Raster::Init { Res { Lat0 -90 } { Lon0 -180 }  { Lat1 90 } { Lon1 180 } } {
    variable Param
 
    set Param(Res) $Res
@@ -798,13 +799,13 @@ proc Export::Raster::Init { Res { Lat0 -999 } { Lon0 -999 }  { Lat1 -999 } { Lon
       set Param(Lat1) [expr double($Lat0<$Lat1?$Lat1:$Lat0)]
       set Param(Lon1) [expr double($Lon0<$Lon1?$Lon1:$Lon0)]
    }
-      set dlon [expr $Param(Lon1)-$Param(Lon0)]
-      if { $dlon>180 && $dlon<358 } {
-         set l $Param(Lon0)
-         set Param(Lon0) [expr ($Param(Lon0)<0 && $Param(Lon1)>0 && ($dlon>180))?$Param(Lon0)-(360-$dlon):$Param(Lon1)]
-         set $Param(Lon1) $l
-      }
-
+   
+   set dlon [expr $Param(Lon1)-$Param(Lon0)]
+   if { $dlon>180 && $dlon<358 } {
+      set l $Param(Lon0)
+      set Param(Lon0) [expr ($Param(Lon0)<0 && $Param(Lon1)>0 && ($dlon>180))?$Param(Lon0)-(360-$dlon):$Param(Lon1)]
+      set $Param(Lon1) $l
+   }
 
    if { ![string is double $Res] } {
       return True
