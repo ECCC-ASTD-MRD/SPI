@@ -42,6 +42,7 @@ namespace eval RPN2GDAL { } {
    set Param(Map)       "$env(HOME)/.spi/Colormap/REC_Col.std1.rgba"
    set Param(Vars)      {}
    set Param(Factors)   {}
+   set Param(NoData)    0.0
    set Param(Out)       ./out
    set Param(Mode)      RGBA
    set Param(Res)       0.1
@@ -53,6 +54,7 @@ namespace eval RPN2GDAL { } {
 
    set Param(CommandLine) "   Command line otions are:\n
       -format : Output format (Default: \"$Param(Format)\")
+      -nodata : No data value when out of domain (Default: \"$Param(NoData)\")
       -mode   : Image data ($Export::Raster::Param(Modes)) (Default: \"$Param(Mode)\")
       -map    : Colormap (Default: $Param(Map))
       -bbox   : Bounding box (Default: $Param(BBox))
@@ -113,6 +115,7 @@ proc RPN2GDAL::Run { } {
                }
 
                fstdfield configure DATA$n -desc ${var} -rendertexture 1 -colormap MAP -min $Param(Min) -max $Param(Max) -intervals $Param(Intervals)
+               fstdfield stats DATA$n -nodata $Param(NoData)
                
                if { [llength $Param(Factors)] } {
                   fstdfield configure DATA$n -factor [lindex $Param(Factors) $v]
@@ -125,12 +128,17 @@ proc RPN2GDAL::Run { } {
          }
       }
    }
-   Log::Print INFO "   Exporting [llength $fields] field(s)"
+   
+   if { [llength $fields]>0 } {
+      Log::Print INFO "Exporting [llength $fields] field(s)"
 
-   Export::Raster::Init $Param(Res) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)
-   Export::Raster::Export $Param(Out) $Param(Format) $Param(Mode) $fields
+      Export::Raster::Init $Param(Res) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)
+      Export::Raster::Export $Param(Out) $Param(Format) $Param(Mode) $fields
 
-   eval fstdfield free $fields
+      eval fstdfield free $fields
+   } else {
+      Log::Print ERROR "No field(s) found"
+   }   
 }
 
 proc RPN2GDAL::ParseCommandLine { } {
@@ -148,6 +156,7 @@ proc RPN2GDAL::ParseCommandLine { } {
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          "format"   { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Format)] }
+         "nodata"   { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(NoData)] }
          "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)] }
          "map"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Map)] }
          "res"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Res)] }
