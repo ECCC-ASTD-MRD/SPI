@@ -55,6 +55,7 @@ TDataDef     *GData[1024];
 int           GDataN;
 int           GMode;
 char         *curPos;
+char         *curTok;
 int           GError;
 int           stopGuard;
 int           GExcept;
@@ -209,7 +210,7 @@ int Calc_Validate(Tcl_Interp* Interp) {
 int vexpr_error(char *Error){
 
    GError=TCL_ERROR;
-   Tcl_AppendResult(GInterp,"(Bison) Parser error: ",Error,(char*)NULL);
+   Tcl_AppendResult(GInterp,"Parser error, ",Error,": ",curTok,(char*)NULL);
 
    return 0;
 }

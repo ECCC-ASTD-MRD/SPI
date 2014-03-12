@@ -16,6 +16,7 @@
 int vexpr_lex(void);
 
 extern char      *curPos;
+extern char      *curTok;
 extern int        stopGuard;
 extern TData     *GField,*GFieldP;
 extern GDAL_Band *GBand;
@@ -53,6 +54,7 @@ EXTCHAR [A-Za-z0-9_.:#]
 %option noyywrap
 
 %%
+   curTok=yytext;
 
 "field" {
    return T_FIELD_FUNC;
@@ -173,7 +175,7 @@ EXTCHAR [A-Za-z0-9_.:#]
    }
 #ifdef DEBUG
       fprintf(stdout, "(DEBUG) Found an error: %s\n", yytext);
-#endif
+#endif   
    return T_ERROR;
 }
 

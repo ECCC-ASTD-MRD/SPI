@@ -134,7 +134,7 @@ exp:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Component Indexing\n");
 #endif
-      if (!$1 || !$1->Data[(int)$3]) {
+      if (!$1 || $3>=$1->NC || !$1->Data[(int)$3]) {
          vexpr_error("Invalid component index");
          YYERROR;
       } else {
