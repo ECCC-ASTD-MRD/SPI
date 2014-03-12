@@ -660,7 +660,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
          }        
       }
    }
-   
+
    // Build the image buffer
    sz=Band->Def->NC*TData_Size[Band->Def->Type];
    for(c=0;c<Band->Def->NC;c++) {

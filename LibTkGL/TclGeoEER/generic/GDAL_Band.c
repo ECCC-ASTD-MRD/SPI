@@ -74,7 +74,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALDataType    type=GDT_Unknown;
    int             c;
    int             i,nx,ny,rx,ry;
-
+   double          dval;
+   
    if (!NIdx) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: No valid band specified",(char*)NULL);
       return(TCL_ERROR);
@@ -137,8 +138,8 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       ny=Y1-Y0+1;
 
       rx=ry=1;
-  }
-
+   }
+   
    if (!(band->Def=DataDef_New(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
@@ -155,10 +156,10 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GeoRef_Qualify(band->Ref);
 
    /*Get the No Data Value*/
-   GDALGetRasterNoDataValue(hband,&i);
+   dval=GDALGetRasterNoDataValue(hband,&i);
 
    if (i)
-      band->Def->NoData=GDALGetRasterNoDataValue(hband,&i);
+      band->Def->NoData=dval;
 
    for(i=0;i<NIdx;i++) {
       file=GDAL_FileGet(NULL,FileId[i]);

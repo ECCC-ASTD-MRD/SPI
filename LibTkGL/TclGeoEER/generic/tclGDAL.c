@@ -1542,7 +1542,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
    TGeoRef *ref;
    char    **meta,*projdef,*gdname;
    int      gdtype;
-   double   alpha,beta,gamma,xcent,ycent,xcell,ycell,xorig,yorig;
+   double   alpha,beta,gamma,xcent,ycent,xcell,ycell,xorig,yorig,ny;
    double   tran[6],inv[6];
 
    /*Get the metadata pointer*/
@@ -1568,30 +1568,40 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       yorig=atof(CSLFetchNameValue(meta,"NC_GLOBAL#YORIG"));
       xcell=atof(CSLFetchNameValue(meta,"NC_GLOBAL#XCELL"));
       ycell=atof(CSLFetchNameValue(meta,"NC_GLOBAL#YCELL"));
+      ny=atof(CSLFetchNameValue(meta,"NC_GLOBAL#NROWS"));
 
       switch (gdtype) {
+         case 1: /*LatLon*/
+         case 3: /*Tangent mercator*/
+         case 4: /*Tangent stereographic*/
+         case 7: /*Equatorial secant mercator*/
+         case 8: /*Transverse secant mercator*/
+                 break;
+                 
          case 2: /*Lambert*/
             if (abs(beta)==90) {
                beta+=(beta<0)?(0.000001):(-0.000001);
             }
             sprintf(projdef,
-                  "PROJCS[\"(%s) NAD83 / IOAPI Lambert Conformal Conic\",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic_2SP\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",%f],PARAMETER[\"Standard_Parallel_1\",%f],PARAMETER[\"Standard_Parallel_2\",%f],PARAMETER[\"Latitude_Of_Origin\",%f],UNIT[\"Meter\",1.0]]",
+                  "PROJCS[\"(%s) NAD83 / IOAPI Lambert Conformal Conic\",GEOGCS[\"Unknown datum based upon ellipsoid 7035\",DATUM[\"Not_specified_based_on_ellipsoid_7035\",SPHEROID[\"Sphere\",6370000,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic_2SP\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",%f],PARAMETER[\"Standard_Parallel_1\",%f],PARAMETER[\"Standard_Parallel_2\",%f],PARAMETER[\"Latitude_Of_Origin\",%f],UNIT[\"Meter\",1.0]]",
                   gdname,xcent,alpha,beta,ycent);
             break;
+            
          case 5: /*UTM*/
             sprintf(projdef,
-                  "PROJCS[\"(%s) NAD83 / IOAPI UTM zone %.0f \",GEOGCS[\"NAD83\",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"latitude_of_origin\",0],PARAMETER[\"central_meridian\",%f],PARAMETER[\"scale_factor\",0.9996],PARAMETER[\"false_easting\",500000],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1]]",
+                  "PROJCS[\"(%s) NAD83 / IOAPI UTM zone %.0f \",GEOGCS[\"Unknown datum based upon ellipsoid 7035\",DATUM[\"Not_specified_based_on_ellipsoid_7035\",SPHEROID[\"Sphere\",6370000,0]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"Latitude_Of_Origin\",0],PARAMETER[\"Central_Meridian\",%f],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"False_Easting\",500000],PARAMETER[\"False_Northing\",0],UNIT[\"Meter\",1]]",
                   gdname,alpha,(6*alpha+3));
             break;
          case 6:  /*Polar Stereograhic*/
             sprintf(projdef,
-                  "PROJCS[\"(%s) WGS 84 / IOAPI Polar Stereographic\",GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_true_scale\",%f],PARAMETER[\"latitude_of_origin\",%f],PARAMETER[\"central_meridian\",%f],PARAMETER[\"scale_factor\",0.9341],PARAMETER[\"false_easting\",0.0],PARAMETER[\"false_northing\",0.0],UNIT[\"metre\",1]]",
+                  "PROJCS[\"(%s) WGS 84 / IOAPI Polar Stereographic\",GEOGCS[\"Unknown datum based upon ellipsoid 7035\",DATUM[\"Not_specified_based_on_ellipsoid_7035\",SPHEROID[\"Sphere\",6370000,0]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"Latitude_True_Scale\",%f],PARAMETER[\"Latitude_Of_Origin\",%f],PARAMETER[\"Central_Meridian\",%f],PARAMETER[\"Scale_Factor\",0.9341],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],UNIT[\"Meter\",1]]",
                   gdname,beta,ycent,gamma);
             break;
       }
 
+      // Y axis is inverted so build the transform accordingly
       tran[0]=xorig;tran[1]=xcell;tran[2]=0.0;
-      tran[3]=yorig;tran[4]=0.0;tran[5]=ycell;
+      tran[3]=ny*ycell+yorig;tran[4]=0.0;tran[5]=-ycell;
       GDALInvGeoTransform(tran,inv);
       ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
    } else {
