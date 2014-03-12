@@ -720,7 +720,7 @@ proc Mapper::OGR::Create { } {
          if { $width=="" } {
             set width 0
          }
-         ogrlayer define $layer -field [string toupper [.mappernew.opt.att.fields.f$n.name get]] $Data(FieldType$n) $width
+         ogrlayer define $layer -field [.mappernew.opt.att.fields.f$n.name get] $Data(FieldType$n) $width
       }
    }
    
@@ -1547,25 +1547,13 @@ proc Mapper::OGR::TableColumnAdd { Object Field Type Len } {
 proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
 
    #----- Check if field exist, otherwise create it
-   set Field [string toupper $Field]
    if { [lsearch -exact [ogrlayer define $Object -field] $Field]==-1 } {
       ogrlayer define $Object -field $Field Real 32   
    }
    
    #----- Parcel expresion to add layer
-   set n 0
-   for { set c 0 } { $c<[string length $Expr] } { incr c } {
-      set char [string index $Expr $c]
-      if { [string is upper $char] } {
-         if { !$n } {
-            append calc $Object.
-            set n 1
-         } 
-      } else {
-         set n 0
-      }   
-      append calc $char
-   }
+   regsub -all {\.([A-Za-z])+} $Expr $Object& calc
+
    vexpr $Object.$Field $calc
 
    destroy .mappernew 
