@@ -102,7 +102,6 @@ int        GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **
 int        GDAL_BandTile(GDAL_Band *Band,Projection *Proj);
 int        GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List);
 
-void       Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
 int        Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TDataInterp Mode,int Final);
 int        Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);
 int        Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,char Mode,char Type,int Final,char *Field,double Value);

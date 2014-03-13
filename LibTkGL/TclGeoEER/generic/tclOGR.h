@@ -49,6 +49,7 @@
 #define OGR_PointInside(V,V0,V1)           (((V0[1]<=V[1] && V[1]<V1[1]) || (V1[1]<=V[1] && V[1]<V0[1])) && (V[0]<((V1[0]-V0[0])*(V[1]-V0[1])/(V1[1]-V0[1])+V0[0])))
 
 #define OGR_GEOMTYPES "Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring"
+#define OGR_BUFFER    4096
 
 typedef struct OGR_Sort {
    int           Field,Type,Order;
@@ -146,6 +147,7 @@ int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
+void         GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
 void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
 void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
 OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);

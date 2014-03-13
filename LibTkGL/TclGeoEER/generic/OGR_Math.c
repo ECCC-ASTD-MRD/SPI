@@ -37,11 +37,11 @@ static unsigned int GPC_GeomNb=0;
 
 static int GPC_ToVect3d(OGRGeometryH Geom,int No) {
 
-   unsigned int i,n;
+   unsigned int n;
 
    n=OGR_G_GetPointCount(Geom);
    if (n>GPC_GeomNb) {
-      GPC_GeomNb=n;
+      GPC_GeomNb=n<OGR_BUFFER?OGR_BUFFER:n;
       GPC_Geom[0]=(Vect3d*)realloc(GPC_Geom[0],GPC_GeomNb*sizeof(Vect3d));
       GPC_Geom[1]=(Vect3d*)realloc(GPC_Geom[1],GPC_GeomNb*sizeof(Vect3d));
 
@@ -50,9 +50,8 @@ static int GPC_ToVect3d(OGRGeometryH Geom,int No) {
          return(0);
       }
    }
-   for(i=0;i<n;i++) {
-      OGR_G_GetPoint(Geom,i,&GPC_Geom[No][i][0],&GPC_Geom[No][i][1],&GPC_Geom[No][i][2]);
-   }
+   OGR_G_GetPoints(Geom,&GPC_Geom[No][0][0],sizeof(Vect3d),&GPC_Geom[No][0][1],sizeof(Vect3d),&GPC_Geom[No][0][2],sizeof(Vect3d));
+
    return(n);
 }
 
@@ -64,6 +63,44 @@ int GPC_QSortInter(const Vect3d *A,const Vect3d *B){
       return(1);
    } else {
       return(0);
+   }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <GPC_OGRProject>
+ * Creation     : Novembre 2005 J.P. Gauthier - CMC/CMOE
+ *
+ * But          : Transforme les coordonnees d'un object vectoriel OGR dans une autre referentiel
+ *
+ * Parametres   :
+ *   <Geom>     : Object geometrique OGR
+ *   <FromRef>  : Reference source
+ *   <ToRef>    : Reference destination
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
+
+   OGRGeometryH geom;
+   Vect3d       *vr;
+   Coord        co;
+   int          n;
+
+   if (FromRef!=ToRef) {
+      for(n=0;n<OGR_G_GetGeometryCount(Geom);n++) {
+         geom=OGR_G_GetGeometryRef(Geom,n);
+         GPC_OGRProject(geom,FromRef,ToRef);
+      }
+
+      for(n=0;n<GPC_ToVect3d(Geom,0);n++) {
+         FromRef->Project(FromRef,GPC_Geom[0][n][0],GPC_Geom[0][n][1],&co.Lat,&co.Lon,1,1);
+         ToRef->UnProject(ToRef,&GPC_Geom[0][n][0],&GPC_Geom[0][n][1],co.Lat,co.Lon,1,1);
+         OGR_G_SetPoint(Geom,n,GPC_Geom[0][n][0],GPC_Geom[0][n][1],GPC_Geom[0][n][2]);
+      }
    }
 }
 
@@ -172,8 +209,7 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
    OGRGeometryH       geom;
    OGRwkbGeometryType type;
    gpc_vertex_list   *gpc;
-   unsigned int       n,nb,g,nc;
-   double             tmpd;
+   unsigned int       nb,g,nc;
 
    type=wkbFlatten(OGR_G_GetGeometryType(Geom));
 
@@ -194,10 +230,8 @@ void GPC_FromOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
             gpc=&Poly->contour[Poly->num_contours+g];
             gpc->num_vertices=nb;
             gpc->vertex=(nb?(gpc_vertex*)malloc(nb*sizeof(gpc_vertex)):NULL);
-
-            for (n=0;n<nb;n++) {
-               OGR_G_GetPoint(geom,n,&gpc->vertex[n].x,&gpc->vertex[n].y,&tmpd);
-            }
+            
+            OGR_G_GetPoints(geom,&(gpc->vertex[0].x),sizeof(gpc_vertex),&(gpc->vertex[0].y),sizeof(gpc_vertex),NULL,0);
          }
          Poly->num_contours+=nc;
       }
@@ -227,6 +261,7 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
       if (!Poly->hole[g]) {
          gpc=&Poly->contour[g];
          ring=OGR_G_CreateGeometry(wkbLinearRing);
+//       OGR_G_SetPoints(ring,gpc->num_vertices,&gpc->vertex[0].x,sizeof(gpc_vertex),&gpc->vertex[0].y,sizeof(gpc_vertex),NULL,0);
          for (n=0;n<gpc->num_vertices;n++) {
             OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
          }
@@ -250,6 +285,7 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
          if (Poly->hole[g]) {
             gpc=&Poly->contour[g];
             ring=OGR_G_CreateGeometry(wkbLinearRing);
+   //       OGR_G_SetPoints(ring,gpc->num_vertices,&gpc->vertex[0].x,sizeof(gpc_vertex),&gpc->vertex[0].y,sizeof(gpc_vertex),NULL,0);
             for (n=0;n<gpc->num_vertices;n++) {
                OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
             }
@@ -694,7 +730,6 @@ double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
 
    register unsigned int n=0;
    int                   g=0;
-   Vect3d                v;
    double                val=0,valg;
 
    if (Coord>=0 && Coord<=2) {
@@ -719,14 +754,13 @@ double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
          }
       }
 
-      for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
-         OGR_G_GetPoint(Geom,n,&v[0],&v[1],&v[2]);
+      for(n=0;n<GPC_ToVect3d(Geom,0);n++) {
          if (Mode==0) {
-            val=v[Coord]<val?v[Coord]:val;
+            val=GPC_Geom[0][n][Coord]<val?GPC_Geom[0][n][Coord]:val;
          } else if (Mode==1) {
-            val=v[Coord]>val?v[Coord]:val;
+            val=GPC_Geom[0][n][Coord]>val?GPC_Geom[0][n][Coord]:val;
          } else {
-            val+=v[Coord];
+            val+=GPC_Geom[0][n][Coord];
          }
       }
    }
@@ -750,43 +784,35 @@ double GPC_SegmentLength(OGRGeometryH Geom) {
 
    register int n;
    double       length=0;
-   Vect3d       v0,v1;
 
-   for(n=0;n<OGR_G_GetPointCount(Geom)-1;n++) {
-      OGR_G_GetPoint(Geom,n,&v0[0],&v0[1],&v0[2]);
-      OGR_G_GetPoint(Geom,n+1,&v1[0],&v1[1],&v1[2]);
-
-      Vect_Substract(v0,v1,v0);
-      length+=Vect_Norm(v0);
+   for(n=0;n<GPC_ToVect3d(Geom,0)-1;n++) {
+      Vect_Substract(GPC_Geom[0][n],GPC_Geom[0][n+1],GPC_Geom[0][n]);
+      length+=Vect_Norm(GPC_Geom[0][n]);
    }
    return(length);
 }
 
 double GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
 
-   Vect3d vr0,vr1;
+   Vect3d vr;
    double d,dist=1e32;
    int    n,g;
 
    /*Boucle recursive sur les sous geometrie*/
    for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
-      d=GPC_PointClosest(OGR_G_GetGeometryRef(Geom,g),Pick,vr0);
+      d=GPC_PointClosest(OGR_G_GetGeometryRef(Geom,g),Pick,vr);
       if (d<dist) {
          dist=d; 
-         Vect_Assign(Vr,vr0);
+         Vect_Assign(Vr,vr);
       }
    }
-   
-      
-   for(g=0;g<OGR_G_GetPointCount(Geom);g++) {
-      OGR_G_GetPoint(Geom,g,&vr1[0],&vr1[1],&vr1[2]);
-      
-      for(n=0;n<OGR_G_GetPointCount(Pick);n++) {
-         OGR_G_GetPoint(Pick,n,&vr0[0],&vr0[1],&vr0[2]);
-         d=hypot(vr1[0]-vr0[0],vr1[1]-vr0[1]);
+       
+   for(g=0;g<GPC_ToVect3d(Geom,1);g++) {    
+      for(n=0;n<GPC_ToVect3d(Pick,0);n++) {
+         d=hypot(GPC_Geom[1][g][0]-GPC_Geom[0][n][0],GPC_Geom[1][g][1]-GPC_Geom[0][n][1]);
          if (d<dist) {
             dist=d;
-            Vect_Assign(Vr,vr1);
+            Vect_Assign(Vr,GPC_Geom[1][g]);
          }
       }
    }
@@ -931,41 +957,39 @@ double GPC_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point) {
 
 double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
 
-   Vect3d pt[2];
-   int    i,j,n;
+   int    i,g,n,i1;
    double area=0,mid;
 
    /* Process current geometry */
-   n=OGR_G_GetPointCount(Geom);
+   n=GPC_ToVect3d(Geom,0);
 
    if (n==1) {
       /* Proccess point */
-      OGR_G_GetPoint(Geom,0,X,Y,&pt[0][2]);
+      *X=GPC_Geom[0][0][0];
+      *Y=GPC_Geom[0][0][1];
       return(0.0);
    } else if (n==2) {
       /* Process line */
-      OGR_G_GetPoint(Geom,0,X,Y,&pt[0][2]);
-      OGR_G_GetPoint(Geom,1,&pt[1][0],&pt[1][1],&pt[1][2]);
-      *X+=(pt[1][0]-*X)/2.0;
-      *Y+=(pt[1][1]-*Y)/2.0;
+      *X=GPC_Geom[0][0][0];
+      *Y=GPC_Geom[0][0][1];
+      *X+=(GPC_Geom[0][1][0]-*X)/2.0;
+      *Y+=(GPC_Geom[0][1][1]-*Y)/2.0;
       return(0.0);
    }
 
    /* Process polygon/polyline */
    for(i=0;i<n;i++) {
-      OGR_G_GetPoint(Geom,i,&pt[0][0],&pt[0][1],&pt[0][2]);
-      OGR_G_GetPoint(Geom,(i+1)%n,&pt[1][0],&pt[1][1],&pt[1][2]);
-
-      mid=pt[0][0]*pt[1][1]-pt[0][1]*pt[1][0];
-      area+=mid;
-      *X+=(pt[0][0]+pt[1][0])*mid;
-      *Y+=(pt[0][1]+pt[1][1])*mid;
+      i1=(i+1)%n;
+      
+      area+=mid=GPC_Geom[0][i][0]*GPC_Geom[0][i1][1]-GPC_Geom[0][i][1]*GPC_Geom[0][i+1][0];
+      *X+=(GPC_Geom[0][i][0]+GPC_Geom[0][i1][0])*mid;
+      *Y+=(GPC_Geom[0][i][1]+GPC_Geom[0][i1][1])*mid;
    }
    area*=0.5;
 
    /* Process sub geometry */
-   for(j=0;j<OGR_G_GetGeometryCount(Geom);j++) {
-      area+=GPC_Centroid2DProcess(OGR_G_GetGeometryRef(Geom,j),X,Y);
+   for(g=0;g<OGR_G_GetGeometryCount(Geom);g++) {
+      area+=GPC_Centroid2DProcess(OGR_G_GetGeometryRef(Geom,g),X,Y);
    }
 
    return(area);
@@ -1080,7 +1104,6 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
 
    int    i,k,pv,n=-1,m=0;         // Misc counters
    double tol2=Tolerance*Tolerance;  // Tolerance squared
-   Vect3d *pt,pt0,pt1;               // Vertex buffer
    int    *mk;                       // Marker buffer
 
    /*Simplify sub-geometry*/
@@ -1088,52 +1111,47 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
       m=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
    }
 
-   if ((n=OGR_G_GetPointCount(Geom))>2) {
+   if ((n=GPC_ToVect3d(Geom,0))>2) {
       mk=(int*)calloc(n,sizeof(int));
-      pt=(Vect3d*)calloc(n,sizeof(Vect3d));
-      if (!mk || !pt) {
+      if (!mk) {
          fprintf(stderr,"(ERROR) GPC_Simplify: Unable to allocate buffers\n");
          return(0);
       }
 
       /*STAGE 1: Vertex Reduction within tolerance of prior vertex cluster*/
       for(i=k=1,pv=0;i<n;i++) {
-         OGR_G_GetPoint(Geom,i,&pt0[0],&pt0[1],&pt0[2]);
-         OGR_G_GetPoint(Geom,pv,&pt1[0],&pt1[1],&pt1[2]);
-
-         if (Vect_Dist2(pt0,pt1)<tol2)
+         if (Vect_Dist2(GPC_Geom[0][i],GPC_Geom[0][pv])<tol2)
             continue;
-         Vect_Assign(pt[k],pt0);
+         Vect_Assign(GPC_Geom[1][k],GPC_Geom[0][i]);
          k++;
          pv=i;
       }
 
       /*Start at beginning and finish at the end*/
-      OGR_G_GetPoint(Geom,0,&pt[0][0],&pt[0][1],&pt[0][2]);
+      OGR_G_GetPoint(Geom,0,&GPC_Geom[1][0][0],&GPC_Geom[1][0][1],&GPC_Geom[1][0][2]);
       if (pv<n-1) {
-         OGR_G_GetPoint(Geom,n-1,&pt[k][0],&pt[k][1],&pt[k][2]);
+         OGR_G_GetPoint(Geom,n-1,&GPC_Geom[1][k][0],&GPC_Geom[1][k][1],&GPC_Geom[1][k][2]);
          k++;
       }
 
       /*STAGE 2: Douglas-Peucker polyline simplification*/
       mk[0]=mk[k-1]=1;       // mark the first and last vertices
       m=2;
-      if (k>2) m=GPC_SimplifyDP(Tolerance,pt,0,k-1,mk);
+      if (k>2) m=GPC_SimplifyDP(Tolerance,GPC_Geom[1],0,k-1,mk);
     
       // copy marked vertices to the output simplified polyline
       OGR_G_Empty(Geom);
       if (m>=2) {
          for (i=m=0;i<k;i++) {
             if (mk[i]) {
-               OGR_G_AddPoint_2D(Geom,pt[i][0],pt[i][1]);
+               OGR_G_AddPoint_2D(Geom,GPC_Geom[1][i][0],GPC_Geom[1][i][1]);
                m++;
             }
          }
       } else {
-         OGR_G_AddPoint_2D(Geom,pt[0][0],pt[0][1]);
-         OGR_G_AddPoint_2D(Geom,pt[k-1][0],pt[k-1][1]);
+         OGR_G_AddPoint_2D(Geom,GPC_Geom[1][0][0],GPC_Geom[1][0][1]);
+         OGR_G_AddPoint_2D(Geom,GPC_Geom[1][k-1][0],GPC_Geom[1][k-1][1]);
       }
-      free(pt);
       free(mk);
    }
    return(m); // m vertices in simplified polyline

@@ -1333,15 +1333,15 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       /*Check the global vertex arrray size*/
       if (OGR_ArraySize<(nv+Size)) {
          OGR_ArrayNr=(Vect3d**)realloc(OGR_ArrayNr,(nv+Size)*sizeof(Vect3d*));
-         OGR_ArrayVr=(Vect3d*)realloc(OGR_ArrayVr,(nv+Size)*sizeof(Vect3d));
-         OGR_ArrayEx=(Vect3d*)realloc(OGR_ArrayEx,(nv+Size)*sizeof(Vect3d));
+         OGR_ArrayVr=(Vect3d*)realloc(OGR_ArrayVr,(nv+Size)*2*sizeof(Vect3d));
+         OGR_ArrayEx=&OGR_ArrayVr[nv+Size];
          OGR_ArraySize=(nv+Size);
 
 #ifdef DEBUG
          fprintf(stderr,"(DEBUG) Increasing size to %i\n",OGR_ArraySize);
 #endif
       }
-      if (!OGR_ArrayVr || !OGR_ArrayEx || !OGR_ArrayNr) {
+      if (!OGR_ArrayVr || !OGR_ArrayNr) {
          fprintf(stderr,"(ERROR) OGR_GeometryProject: Unable to allocate temporary vertex buffer\n");
          return(0);
       }
@@ -1349,10 +1349,10 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       co.Lat=co.Lon=0.0;
       
       /*Project vertices*/
+      OGR_G_GetPoints(Geom,&pvr[0][0],sizeof(Vect3d),&pvr[0][1],sizeof(Vect3d),&pvr[0][2],sizeof(Vect3d));
+      
       for(n=0;n<nv;n++) {
-         OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-
-         Ref->Project(Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+         Ref->Project(Ref,pvr[n][0],pvr[n][1],&co.Lat,&co.Lon,1,0);
          co.Lat=CLAMPLAT(co.Lat);
          co.Lon=CLAMPLON(co.Lon);
          co.Lon=CLAMP(co.Lon,-180.0,180.0);

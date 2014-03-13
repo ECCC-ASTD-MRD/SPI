@@ -194,11 +194,30 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_GetIntFromObj(Interp,Objv[3],&t);
                   i++;
                }
+               
+               // pdate the current structure if we need to
+               OGR_LayerUpdate(layer);
+
+               for(f=0;f<layer->NFeature;f++) {
+                  if (layer->Feature[f]) OGR_F_Destroy(layer->Feature[f]);
+               }
+
                if (!OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),t)) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to create field ",Tcl_GetString(Objv[1]),(char*)NULL);
                   return(TCL_ERROR);
                }
                i++;
+               
+               // Reload the features to be in sync
+               if (OGR_LayerReadFeature(Interp,layer)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               
+               // Clear the new fiels
+               j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
+               for(f=0;f<layer->NFeature;f++) {
+                  if (layer->Feature[f]) OGR_F_UnsetField(layer->Feature[f],j);
+               }
             }
             break;
 
@@ -1723,7 +1742,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
-
+   
    if (Field && strlen(Field)) {
       strncpy(name,Field,10);name[10]='\0';
 
@@ -1761,15 +1780,12 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
    }
 
    if (field) {
-//   OGR_Fld_SetJustify (OGRFieldDefnH, OGRJustification)
-
-      /*Update the current structure if we need to*/
-      OGR_LayerUpdate(Layer);
 
       /*Add the field to the structure*/
       if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
          return(NULL);
       }
+
       Layer->Changed=1;
    }
     return(field);
