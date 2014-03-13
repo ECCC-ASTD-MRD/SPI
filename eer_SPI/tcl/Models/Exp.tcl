@@ -1008,7 +1008,7 @@ proc Exp::BlankTransmit { } {
 
       #----- effacer les produits du RSMC Montreal sur notre site web.
 
-      set err [catch { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferBlank.sh $GDefs(Dir)/Data ${path} ${rsmc_arg} 2>@1 } msg]
+      set err [catch { exec ssh $GDefs(FrontEnd) -x -l $GDefs(FrontEndUser) $env(EER_DIRSCRIPT)/RSMCTransferBlank.sh $GDefs(Dir)/data ${path} ${rsmc_arg} 2>@1 } msg]
       if { $err } {
          Log::Print ERROR "Problem to copy the blank products for ( $rsmc_arg ) on the RSMC commun web page.\n\n$msg"
       }
