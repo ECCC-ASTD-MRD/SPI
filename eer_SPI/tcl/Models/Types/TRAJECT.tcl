@@ -73,6 +73,7 @@ proc TRAJECT::InitNew { Type } {
 # But      : Affiche la trajectoire sur la projection.
 #
 # Parametres :
+#    <Type>  : Type de fichier (standard ou post)
 #
 # Retour:
 #
@@ -80,7 +81,7 @@ proc TRAJECT::InitNew { Type } {
 #
 #----------------------------------------------------------------------------
 
-proc TRAJECT::Result { } {
+proc TRAJECT::Result { Type } {
    variable Sim
 
    #----- Extraire le nom du fichier de la trajectoire.

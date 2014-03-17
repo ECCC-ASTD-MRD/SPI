@@ -482,10 +482,17 @@ proc MLCD::PopUp { X Y } {
       menu .mlcdpopup -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mlcdpopup add command -label "MLCD"  -command "" -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
+         .mlcdpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .mlcdpopup.product
          .mlcdpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { MLCD::Result }
          .mlcdpopup add separator
          .mlcdpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }
+             
+      menu .mlcdpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
+          .mlcdpopup.product add command -label "CHEM" -command { Model::Product $Page::Data(Frame) MLCD result CHEM True } 
+          .mlcdpopup.product add command -label "FIRE" -command { Model::Product $Page::Data(Frame) MLCD result FIRE }
+          .mlcdpopup.product add separator
+          .mlcdpopup.product add command -label "SPI" -command { Model::Product $Page::Data(Frame) MLCD "" SPI }
    }
    tk_popup .mlcdpopup $X $Y 0
 }

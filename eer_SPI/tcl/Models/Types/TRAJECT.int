@@ -151,42 +151,6 @@ proc TRAJECT::LevelPack { Frame Val } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <TRAJECT::Product>
-# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lire les donnees et initialiser le produit
-#
-# Parametres  :
-#    <Frame>  : Page
-#    <Type>   : Type de donnees
-#    <Layout> : Layout (produit)
-#
-# Retour :
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc TRAJECT::CallProduct { Frame Type Layout } {
-
-   foreach box [FieldBox::Get] {
-      FieldBox::Close $box
-   }
-   foreach box [TrajBox::Get] {
-      TrajBox::Close $box
-   }
-
-   if { $Type!="" } {
-      TRAJECT::Result
-   }
-   SPI::IcoClear
-   SPI::LayoutLoad $Frame $Layout
-
-   Model::TypeSelect none 1 $Exp::Data(No)_$Exp::Data(Name)
-   SPI::Locate $Exp::Data(Lat) $Exp::Data(Lon)
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <TRAJECT::PopUp>
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -212,15 +176,15 @@ proc TRAJECT::PopUp { X Y } {
          .trajectpopup add command -label "TRAJECT"  -command "" -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
          .trajectpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .trajectpopup.product
-         .trajectpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { TRAJECT::Result }
+         .trajectpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { TRAJECT::Result result }
          .trajectpopup add separator
          .trajectpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .trajectpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-          .trajectpopup.product add command -label "TRAJ" -command {  TRAJECT::CallProduct $Page::Data(Frame) All TRAJ }
+          .trajectpopup.product add command -label "TRAJ" -command { Model::Product $Page::Data(Frame) TRAJECT result TRAJ True }
           .trajectpopup.product add separator
-          .trajectpopup.product add command -label "SPI" -command { TRAJECT::CallProduct $Page::Data(Frame) "" SPI }
+          .trajectpopup.product add command -label "SPI" -command { Model::Product $Page::Data(Frame) TRAJECT "" SPI }
    }
 
    tk_popup .trajectpopup $X $Y 0

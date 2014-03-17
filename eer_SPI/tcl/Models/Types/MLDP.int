@@ -366,38 +366,6 @@ proc MLDP::EnableDisableMass { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <MLDP::Product>
-# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lire les donnees et initialiser le produit
-#
-# Parametres  :
-#    <Frame>  : Page
-#    <Type>   : Type de donnees
-#    <Layout> : Layout (produit)
-#
-# Retour :
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc MLDP::CallProduct { Frame Type Layout } {
-
-   foreach box [FieldBox::Get] {
-      FieldBox::Close $box
-   }
-   foreach box [TrajBox::Get] {
-      TrajBox::Close $box
-   }
-   if { $Type !="" } {
-      MLDP::Result $Type
-   }
-   SPI::IcoClear
-   SPI::LayoutLoad $Frame $Layout
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDP::PopUp>
 # Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -442,13 +410,14 @@ proc MLDP::PopUp { X Y } {
              -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .mldppopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-          .mldppopup.product add command -label "VAAC" -command { MLDP::CallProduct $Page::Data(Frame) result VAAC }
-          .mldppopup.product add command -label "RSMC" -command { MLDP::CallProduct $Page::Data(Frame) result RSMC }
-          .mldppopup.product add command -label "CHEM" -command { MLDP::CallProduct $Page::Data(Frame) result CHEM }
-          .mldppopup.product add command -label "INFO" -command { MLDP::CallProduct $Page::Data(Frame) result INFO }
-          .mldppopup.product add command -label "METF" -command { MLDP::CallProduct $Page::Data(Frame) metf   METF }
+          .mldppopup.product add command -label "VAAC" -command { Model::Product $Page::Data(Frame) MLDP result VAAC }
+          .mldppopup.product add command -label "RSMC" -command { Model::Product $Page::Data(Frame) MLDP result RSMC True }
+          .mldppopup.product add command -label "CHEM" -command { Model::Product $Page::Data(Frame) MLDP result CHEM True }
+          .mldppopup.product add command -label "FIRE" -command { Model::Product $Page::Data(Frame) MLDP result FIRE True }
+          .mldppopup.product add command -label "INFO" -command { Model::Product $Page::Data(Frame) MLDP result INFO }
+          .mldppopup.product add command -label "METF" -command { Model::Product $Page::Data(Frame) MLDP metf   METF }
           .mldppopup.product add separator
-          .mldppopup.product add command -label "SPI" -command { MLDP::CallProduct $Page::Data(Frame) "" SPI }
+          .mldppopup.product add command -label "SPI" -command { Model::Product $Page::Data(Frame) MLDP "" SPI }
 
       menu .mldppopup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mldppopup.res add command -label "All" -command "MLDP::Result all"

@@ -24,6 +24,7 @@ namespace eval MLCD {
 
    #----- Labels definitions
 
+   set Lbl(Product)        { "Produits"  "Products" }
    set Lbl(Params)         { "Paramètres" "Parameters" }
    set Lbl(Em)             { "Émission" "Emission" }
    set Lbl(Src)            { "Source" "Source" }

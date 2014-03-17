@@ -737,6 +737,7 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
 # But      : Recupere les donnees de simulations.
 #
 # Parametres :
+#    <Type>  : Type de fichier (standard ou post)
 #
 # Retour:
 #
@@ -744,7 +745,7 @@ proc MLCD::ObukhovFunc { Sc Z0 } {
 #
 #----------------------------------------------------------------------------
 
-proc MLCD::Result { } {
+proc MLCD::Result { Type } {
    variable Sim
 
    set path [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]

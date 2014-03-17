@@ -1881,6 +1881,46 @@ proc Model::Check { MS { Force False } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Model::Product>
+# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire les donnees et initialiser le produit
+#
+# Parametres  :
+#    <Frame>  : Page
+#    <Model>  : Model
+#    <Type>   : Type de donnees
+#    <Layout> : Layout (produit)
+#    <Locate> : Center on source
+#
+# Retour :
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Model::Product { Frame Model Type Layout { Locate False } } {
+
+   foreach box [FieldBox::Get] {
+      FieldBox::Close $box
+   }
+   foreach box [TrajBox::Get] {
+      TrajBox::Close $box
+   }
+   if { $Type !="" } {
+      eval ${Model}::Result $Type
+   }
+
+   SPI::IcoClear
+   SPI::LayoutLoad $Frame $Layout
+   
+   if { $Locate } {
+      Model::TypeSelect none 1 $Exp::Data(No)_$Exp::Data(Name)
+      SPI::Locate $Exp::Data(Lat) $Exp::Data(Lon)
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Model::Destroy>
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #

@@ -1271,39 +1271,6 @@ proc MLDPn::UpdateIntervalPickerList { Varname Itemname Op } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <MLDPn::Product>
-# Creation : Septembre 2005 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lire les donnees et initialiser le produit
-#
-# Parametres  :
-#    <Frame>  : Page
-#    <Type>   : Type de donnees
-#    <Layout> : Layout (produit)
-#
-# Retour :
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc MLDPn::CallProduct { Frame Type Layout } {
-
-   foreach box [FieldBox::Get] {
-      FieldBox::Close $box
-   }
-   foreach box [TrajBox::Get] {
-      TrajBox::Close $box
-   }
-   if { $Type !="" } {
-      MLDPn::Result $Type
-   }
-
-   SPI::IcoClear
-   SPI::LayoutLoad $Frame $Layout
-}
-
-#----------------------------------------------------------------------------
 # Nom        : <MLDPn::PopUp>
 # Creation   : Aout 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -1341,13 +1308,14 @@ proc MLDPn::PopUp { X Y } {
              -command { Model::Delete $Exp::Data(SelectSim) }
 
       menu .mldpnpopup.product -tearoff 0 -bd 1 -type normal -activeborderwidth 1
-          .mldpnpopup.product add command -label "VAAC" -command { MLDPn::CallProduct $Page::Data(Frame) result VAAC }
-          .mldpnpopup.product add command -label "RSMC" -command { MLDPn::CallProduct $Page::Data(Frame) result RSMC }
-          .mldpnpopup.product add command -label "CHEM" -command { MLDPn::CallProduct $Page::Data(Frame) result CHEM }
-          .mldpnpopup.product add command -label "INFO" -command { MLDPn::CallProduct $Page::Data(Frame) result INFO }
-          .mldpnpopup.product add command -label "METF" -command { MLDPn::CallProduct $Page::Data(Frame) metf   METF }
+          .mldpnpopup.product add command -label "VAAC" -command { Model::Product $Page::Data(Frame) MLDPn result VAAC }
+          .mldpnpopup.product add command -label "RSMC" -command { Model::Product $Page::Data(Frame) MLDPn result RSMC True }
+          .mldpnpopup.product add command -label "CHEM" -command { Model::Product $Page::Data(Frame) MLDPn result CHEM True }
+          .mldpnpopup.product add command -label "FIRE" -command { Model::Product $Page::Data(Frame) MLDPn result FIRE True }
+          .mldpnpopup.product add command -label "INFO" -command { Model::Product $Page::Data(Frame) MLDPn result INFO }
+          .mldpnpopup.product add command -label "METF" -command { Model::Product $Page::Data(Frame) MLDPn metf   METF }
           .mldpnpopup.product add separator
-          .mldpnpopup.product add command -label "SPI" -command { MLDPn::CallProduct $Page::Data(Frame) "" SPI }
+          .mldpnpopup.product add command -label "SPI" -command { Model::Product $Page::Data(Frame) MLDPn "" SPI }
 
       menu .mldpnpopup.res -tearoff 0 -bd 1 -type normal -activeborderwidth 1
          .mldpnpopup.res add command -label "All" -command "MLDPn::Result all"
