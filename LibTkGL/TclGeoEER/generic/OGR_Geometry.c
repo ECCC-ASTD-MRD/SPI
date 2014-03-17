@@ -35,7 +35,6 @@
 static Vect3d  **OGR_ArrayNr=NULL;
 static Vect3d  *OGR_ArrayVr=NULL;
 static Vect3d  *OGR_ArrayEx=NULL;
-static int      OGR_ArraySize=0;
 
 /*----------------------------------------------------------------------------
  * Nom      : <OGR_GeometryDefine>
@@ -1330,21 +1329,14 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
 
    if ((nv=OGR_G_GetPointCount(Geom))) {
 
-      /*Check the global vertex arrray size*/
-      if (OGR_ArraySize<(nv+Size)) {
-         OGR_ArrayNr=(Vect3d**)realloc(OGR_ArrayNr,(nv+Size)*sizeof(Vect3d*));
-         OGR_ArrayVr=(Vect3d*)realloc(OGR_ArrayVr,(nv+Size)*2*sizeof(Vect3d));
-         OGR_ArrayEx=&OGR_ArrayVr[nv+Size];
-         OGR_ArraySize=(nv+Size);
+      OGR_ArrayVr=GPC_GetVect3d(nv+Size,GPC_ARRAY0);
+      OGR_ArrayEx=GPC_GetVect3d(nv+Size,GPC_ARRAY1);
+      OGR_ArrayNr=(Vect3d**)GPC_GetVect3d(nv+Size,GPC_ARRAYPTR);
 
-#ifdef DEBUG
-         fprintf(stderr,"(DEBUG) Increasing size to %i\n",OGR_ArraySize);
-#endif
-      }
-      if (!OGR_ArrayVr || !OGR_ArrayNr) {
-         fprintf(stderr,"(ERROR) OGR_GeometryProject: Unable to allocate temporary vertex buffer\n");
+      if (!OGR_ArrayVr || !OGR_ArrayNr || !OGR_ArrayEx) {
          return(0);
       }
+      
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
       co.Lat=co.Lon=0.0;
       

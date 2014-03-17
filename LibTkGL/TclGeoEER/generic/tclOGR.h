@@ -147,6 +147,11 @@ int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
+#define GPC_ARRAY0   0
+#define GPC_ARRAY1   1
+#define GPC_ARRAYPTR 2
+
+Vect3d*      GPC_GetVect3d(unsigned int Size,unsigned int No);
 void         GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
 void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
 void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);

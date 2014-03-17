@@ -32,27 +32,39 @@
 
 #include "tclOGR.h"
 
-static Vect3d* GPC_Geom[2];
+static Vect3d*  GPC_Geom[2];
+static Vect3d** GPC_Ptr;
 static unsigned int GPC_GeomNb=0;
 
-static int GPC_ToVect3d(OGRGeometryH Geom,int No) {
+Vect3d* GPC_GetVect3d(unsigned int Size,unsigned int No) {
+   
+   if (Size>GPC_GeomNb) {
+      GPC_GeomNb=Size<OGR_BUFFER?OGR_BUFFER:Size;
+      GPC_Geom[0]=(Vect3d*)realloc(GPC_Geom[0],GPC_GeomNb*2*sizeof(Vect3d));
+      GPC_Geom[1]=&GPC_Geom[0][GPC_GeomNb];
+      GPC_Ptr=(Vect3d**)realloc(GPC_Ptr,GPC_GeomNb*sizeof(Vect3d*));
+
+      if (!GPC_Geom[0] || !GPC_Geom[1] || !GPC_Ptr) {
+         fprintf(stderr,"(ERROR) Could not allocate GPC buffers\n");
+         return(NULL);
+      }
+#ifdef DEBUG
+         fprintf(stderr,"(DEBUG) GPC_GetVect3d: Increasing size to %i\n",GPC_GeomNb);
+#endif
+   }
+   return(No==2?(Vect3d*)GPC_Ptr:GPC_Geom[No]);
+}
+
+static inline int GPC_ToVect3d(OGRGeometryH Geom,unsigned int No) {
 
    unsigned int n;
 
    n=OGR_G_GetPointCount(Geom);
-   if (n>GPC_GeomNb) {
-      GPC_GeomNb=n<OGR_BUFFER?OGR_BUFFER:n;
-      GPC_Geom[0]=(Vect3d*)realloc(GPC_Geom[0],GPC_GeomNb*sizeof(Vect3d));
-      GPC_Geom[1]=(Vect3d*)realloc(GPC_Geom[1],GPC_GeomNb*sizeof(Vect3d));
-
-      if (!GPC_Geom[0] || !GPC_Geom[1]) {
-         fprintf(stderr,"(ERROR) Could not allocate GPC_Geom buffer\n");
-         return(0);
-      }
+   if (GPC_GetVect3d(n,No))  {
+      OGR_G_GetPoints(Geom,&GPC_Geom[No][0][0],sizeof(Vect3d),&GPC_Geom[No][0][1],sizeof(Vect3d),&GPC_Geom[No][0][2],sizeof(Vect3d));
+      return(n);
    }
-   OGR_G_GetPoints(Geom,&GPC_Geom[No][0][0],sizeof(Vect3d),&GPC_Geom[No][0][1],sizeof(Vect3d),&GPC_Geom[No][0][2],sizeof(Vect3d));
-
-   return(n);
+   return(0);
 }
 
 int GPC_QSortInter(const Vect3d *A,const Vect3d *B){
@@ -86,7 +98,6 @@ int GPC_QSortInter(const Vect3d *A,const Vect3d *B){
 void GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 
    OGRGeometryH geom;
-   Vect3d       *vr;
    Coord        co;
    int          n;
 
@@ -96,7 +107,7 @@ void GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
          GPC_OGRProject(geom,FromRef,ToRef);
       }
 
-      for(n=0;n<GPC_ToVect3d(Geom,0);n++) {
+      for(n=0;n<GPC_ToVect3d(Geom,GPC_ARRAY0);n++) {
          FromRef->Project(FromRef,GPC_Geom[0][n][0],GPC_Geom[0][n][1],&co.Lat,&co.Lon,1,1);
          ToRef->UnProject(ToRef,&GPC_Geom[0][n][0],&GPC_Geom[0][n][1],co.Lat,co.Lon,1,1);
          OGR_G_SetPoint(Geom,n,GPC_Geom[0][n][0],GPC_Geom[0][n][1],GPC_Geom[0][n][2]);
@@ -581,8 +592,8 @@ int GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
 
    unsigned int n0,n1,g0,g1,t=0;
 
-   g0=GPC_ToVect3d(Geom0,0);
-   g1=GPC_ToVect3d(Geom1,1);
+   g0=GPC_ToVect3d(Geom0,GPC_ARRAY0);
+   g1=GPC_ToVect3d(Geom1,GPC_ARRAY1);
 
    for(n0=0;n0<g0;n0++) {
       for(n1=0;n1<g1;n1++) {
@@ -601,8 +612,8 @@ int GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    unsigned int n0,n1,g0,g1,t=0,i;
    Vect3d       v0,v1[2];
 
-   g0=GPC_ToVect3d(Geom0,0);
-   g1=GPC_ToVect3d(Geom1,1);
+   g0=GPC_ToVect3d(Geom0,GPC_ARRAY0);
+   g1=GPC_ToVect3d(Geom1,GPC_ARRAY1);
 
    for(n0=0;n0<g0;n0++) {
       Vect_Assign(v0,GPC_Geom[0][n0]);
@@ -628,8 +639,8 @@ int GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All) {
    int          c=0;
    Vect3d       v0,v1[2];
 
-   g0=GPC_ToVect3d(Geom0,0);
-   g1=GPC_ToVect3d(Geom1,1);
+   g0=GPC_ToVect3d(Geom0,GPC_ARRAY0);
+   g1=GPC_ToVect3d(Geom1,GPC_ARRAY1);
 
    if (!g0 || !g1)
       return(0);
@@ -664,8 +675,8 @@ int GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    int          c;
    Vect3d       v0[2],v1[2];
 
-   g0=GPC_ToVect3d(Geom0,0);
-   g1=GPC_ToVect3d(Geom1,1);
+   g0=GPC_ToVect3d(Geom0,GPC_ARRAY0);
+   g1=GPC_ToVect3d(Geom1,GPC_ARRAY1);
 
    if (!g0 || !g1)
       return(0);
@@ -703,8 +714,8 @@ int GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1) {
    unsigned int n0,n1,g0,g1;
    Vect3d       v0[2],v1[2];
 
-   g0=GPC_ToVect3d(Geom0,0);
-   g1=GPC_ToVect3d(Geom1,1);
+   g0=GPC_ToVect3d(Geom0,GPC_ARRAY0);
+   g1=GPC_ToVect3d(Geom1,GPC_ARRAY1);
 
    if (!g0 || !g1)
       return(0);
@@ -754,7 +765,7 @@ double GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode) {
          }
       }
 
-      for(n=0;n<GPC_ToVect3d(Geom,0);n++) {
+      for(n=0;n<GPC_ToVect3d(Geom,GPC_ARRAY0);n++) {
          if (Mode==0) {
             val=GPC_Geom[0][n][Coord]<val?GPC_Geom[0][n][Coord]:val;
          } else if (Mode==1) {
@@ -785,7 +796,7 @@ double GPC_SegmentLength(OGRGeometryH Geom) {
    register int n;
    double       length=0;
 
-   for(n=0;n<GPC_ToVect3d(Geom,0)-1;n++) {
+   for(n=0;n<GPC_ToVect3d(Geom,GPC_ARRAY0)-1;n++) {
       Vect_Substract(GPC_Geom[0][n],GPC_Geom[0][n+1],GPC_Geom[0][n]);
       length+=Vect_Norm(GPC_Geom[0][n]);
    }
@@ -807,8 +818,8 @@ double GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr) {
       }
    }
        
-   for(g=0;g<GPC_ToVect3d(Geom,1);g++) {    
-      for(n=0;n<GPC_ToVect3d(Pick,0);n++) {
+   for(g=0;g<GPC_ToVect3d(Geom,GPC_ARRAY1);g++) {    
+      for(n=0;n<GPC_ToVect3d(Pick,GPC_ARRAY0);n++) {
          d=hypot(GPC_Geom[1][g][0]-GPC_Geom[0][n][0],GPC_Geom[1][g][1]-GPC_Geom[0][n][1]);
          if (d<dist) {
             dist=d;
@@ -961,7 +972,7 @@ double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
    double area=0,mid;
 
    /* Process current geometry */
-   n=GPC_ToVect3d(Geom,0);
+   n=GPC_ToVect3d(Geom,GPC_ARRAY0);
 
    if (n==1) {
       /* Proccess point */
@@ -1111,7 +1122,7 @@ int GPC_Simplify(double Tolerance,OGRGeometryH Geom) {
       m=GPC_Simplify(Tolerance,OGR_G_GetGeometryRef(Geom,i));
    }
 
-   if ((n=GPC_ToVect3d(Geom,0))>2) {
+   if ((n=GPC_ToVect3d(Geom,GPC_ARRAY0))>2) {
       mk=(int*)calloc(n,sizeof(int));
       if (!mk) {
          fprintf(stderr,"(ERROR) GPC_Simplify: Unable to allocate buffers\n");
