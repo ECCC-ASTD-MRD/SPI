@@ -19,10 +19,10 @@ set GDefs(FrontEnd)     $GDefs(Host)
 set GDefs(FrontEndUser) afsr005
 set GDefs(TransmitUser) afsiops
 
-set GDefs(FrontEnds)    { alef dorval-ib }
-set GDefs(BackEnds)     { saiph zeta }
-set GDefs(BackEndsaiph) { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
-set GDefs(BackEndzeta)  { { development } /home/binops/afse/eer /fs/ops/eer/afsr005 }
+set GDefs(FrontEnds)      { pollux castor }
+set GDefs(BackEnds)       { spica hadar }
+set GDefs(Host_spica)     { { development } /fs/ops/cmo/gridpt/dbase /fs/ops/cmo/eer/dbase /fs/ops/eer/afsrxxx }
+set GDefs(Host_hadar)     { { development } /fs/ops/cmo/gridpt/dbase /fs/ops/cmo/eer/dbase /fs/ops/eer/afsrxxx }
 
 #----- If we're running Tk
 if { [info exists ::tk_version] } {
