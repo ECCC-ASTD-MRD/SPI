@@ -1116,7 +1116,7 @@ proc Model::FitAccTime { Model } {
 
    set sec [expr int($sim(AccSecs)/3600)*3600]
 
-   set min [string trimleft [clock format $sim(AccSecs) -format "%M"] 0]
+   set min [string trimleft [clock format $sim(AccSecs) -format "%M" -gmt True] 0]
    if { $min == "" } {
       set min 0
    }
