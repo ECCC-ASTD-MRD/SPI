@@ -122,7 +122,7 @@ proc FIRE::LayoutUpdate { Frame } {
       }
          
       fstdfield configure $field -rendertexture 1 -rendercontour 1 -mapall False -color #000000 -dash "" -desc " " \
-         -font XFont12 -min [lindex $mm 0] -max [lindex $mm 1] -intervals [lreverse $inters] -colormap FIREMAPDEFAULT    
+         -font XFont12 -intervals [lreverse $inters] -colormap FIREMAPDEFAULT
    
       #----- Get the simulation info
       if { [set info [Info::Read [fstdfield define $field -FID]]]=="" } {
@@ -139,12 +139,18 @@ proc FIRE::LayoutUpdate { Frame } {
          set coords [format "%.4f %.4f" $Sim(Lat) $Sim(Lon)]
       }
       
+      switch $Sim(Meteo) {
+         "glb"   { set nwp [lindex [list "SGPD" "GDPS"] $GDefs(Lang)] }
+         "reg"   { set nwp [lindex [list "SRPD" "RDPS"] $GDefs(Lang)] }
+         default { set nwp $Sim(Meteo) }
+      }
+
       set date [DateStuff::StringDateFromSeconds [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)"] $GDefs(Lang)]
       set text "[lindex $Lbl(Model) $GDefs(Lang)] $Sim(Model)
 [lindex $Lbl(Name) $GDefs(Lang)] $Sim(Name)
 [lindex $Lbl(Location) $GDefs(Lang)] $coords
 [lindex $Lbl(Start) $GDefs(Lang)] $date
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)\n"
+[lindex $Lbl(Meteo) $GDefs(Lang)] $nwp\n"
 
       switch $Sim(Model) {
          MLDP0   -
@@ -191,6 +197,6 @@ proc FIRE::LayoutUpdate { Frame } {
    lset lbls end [lindex $Lbl(More) $GDefs(Lang)]
    
    fstdfield configure $field -interlabels $lbls
-         
-   SPI::LayoutUpdate $Frame
+   
+   Page::Update $Frame
 }

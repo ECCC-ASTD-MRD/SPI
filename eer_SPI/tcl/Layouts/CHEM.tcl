@@ -115,6 +115,12 @@ proc CHEM::LayoutUpdate { Frame } {
       set coords [format "%.4f %.4f" $Sim(Lat) $Sim(Lon)]
    }
    
+   switch $Sim(Meteo) {
+      "glb"   { set nwp [lindex [list "SGPD" "GDPS"] $GDefs(Lang)] }
+      "reg"   { set nwp [lindex [list "SRPD" "RDPS"] $GDefs(Lang)] }
+      default { set nwp $Sim(Meteo) }
+   }
+   
    set date [DateStuff::StringDateFromSeconds [clock scan "$Sim(AccYear)$Sim(AccMonth)$Sim(AccDay) $Sim(AccHour):$Sim(AccMin)"] $GDefs(Lang)]
    set text "$desc\n\n[lindex $Lbl(Release) $GDefs(Lang)]:\n
 [lindex $Lbl(Model) $GDefs(Lang)] $Sim(Model)
@@ -135,7 +141,7 @@ proc CHEM::LayoutUpdate { Frame } {
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmHeight) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $Sim(EmRadius) m
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
+[lindex $Lbl(Meteo) $GDefs(Lang)] $nwp
 [lindex $Lbl(Mode) $GDefs(Lang)] $Sim(Mode)"
               }
       MLDPn  {
@@ -150,7 +156,7 @@ proc CHEM::LayoutUpdate { Frame } {
 [lindex $Lbl(Total) $GDefs(Lang)] $q
 [lindex $Lbl(Height) $GDefs(Lang)] $MLDPn::Sim(EmHeight.0) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $MLDPn::Sim(EmRadius.0) m
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
+[lindex $Lbl(Meteo) $GDefs(Lang)] $nwp
 [lindex $Lbl(Mode) $GDefs(Lang)] $Sim(Mode)"
               }
       MLCD    { append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(DurMin) min
@@ -158,19 +164,17 @@ proc CHEM::LayoutUpdate { Frame } {
 [lindex $Lbl(Total) $GDefs(Lang)] [format "%.3e" $Sim(EmMass)] unit
 [lindex $Lbl(Height) $GDefs(Lang)] $Sim(EmTop) m
 [lindex $Lbl(Radius) $GDefs(Lang)] $Sim(EmRadius) m
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)"
+[lindex $Lbl(Meteo) $GDefs(Lang)] $nwp"
               }
       TRAJECT {  append text "[lindex $Lbl(SimDur) $GDefs(Lang)] $Sim(Duration) h
 [lindex $Lbl(Duration) $GDefs(Lang)] NIL
 [lindex $Lbl(Total) $GDefs(Lang)] NIL
 [lindex $Lbl(Height) $GDefs(Lang)] NIL
 [lindex $Lbl(Radius) $GDefs(Lang)] NIL
-[lindex $Lbl(Meteo) $GDefs(Lang)] $Sim(Meteo)
+[lindex $Lbl(Meteo) $GDefs(Lang)] $nwp
 [lindex $Lbl(Mode) $GDefs(Lang)] $Sim(Mode)"
               }
    }
 
    CVText::Update $Frame $Data(TextSim) $text
-
-   SPI::LayoutUpdate $Frame
 }

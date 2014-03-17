@@ -423,10 +423,10 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
          }
 
          #----- NWP Model.
-         set NWPModel $Sim(Meteo)
          switch $Sim(Meteo) {
-            "glb" { set NWPModel "GEM Global" }
-            "reg" { set NWPModel "GEM Regional" }
+            "glb"   { set nwp "GDPS" }
+            "reg"   { set nwp "RDPS" }
+            default { set nwp $Sim(Meteo) }
          }
 
          #----- Get the grid resolution ( km ) for RSMC mapping.
@@ -541,7 +541,7 @@ proc RSMC::LayoutUpdate { Frame { Field "" } } {
          $canvas itemconf FT1  -text "$Data(FT1) $Isotope"
          $canvas itemconf FT2  -text "$Data(FT2) $ReleaseDuration h"
          $canvas itemconf FT3  -text "$Data(FT3) [format "%.2f" $Sim(VarMesoscale)] m²/s²"
-         $canvas itemconf FT4  -text "$Data(FT4) $NWPModel"
+         $canvas itemconf FT4  -text "$Data(FT4) $nwp"
          $canvas itemconf FT5  -text "$Data(FT5) $Sim(GridResolution) km"
          $canvas itemconf FT6  -text "$Data(FT6) $Sim(Model)"
          $canvas itemconf FT7  -text "$Sim(Event)"
