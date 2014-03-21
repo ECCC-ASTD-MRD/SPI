@@ -440,6 +440,14 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       TabFrame::Select .mapperparams.tab [lindex $Tabs 0]
    }
 
+   Mapper::OGR::ParamsUpdate $Object
+   Mapper::OGR::Feature $Object $Data(Index)
+   Mapper::OGR::Table $Object True $Data(Index) 
+}
+
+proc Mapper::OGR::ParamsUpdate { Object } {
+   variable Data
+   
    $Data(Frame1).proj.val delete 0.0 end
    $Data(Frame1).proj.val insert end $Data(Proj)
 
@@ -459,31 +467,28 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
 
    ComboBox::DelAll $Data(Frame2).shape.icon.fld False
    ComboBox::Add $Data(Frame2).shape.icon.fld {}
-   ComboBox::AddList $Data(Frame2).shape.icon.fld $Mapper::OGR::Data(Fields)
+   ComboBox::AddList $Data(Frame2).shape.icon.fld $Data(Fields)
 
    ComboBox::DelAll $Data(Frame2).shape.label.val False
    ComboBox::Add $Data(Frame2).shape.label.val {}
-   ComboBox::AddList $Data(Frame2).shape.label.val $Mapper::OGR::Data(Fields)
+   ComboBox::AddList $Data(Frame2).shape.label.val $Data(Fields)
 
    ComboBox::DelAll $Data(Frame2).inter.fld.val False
    ComboBox::Add $Data(Frame2).inter.fld.val {}
-   ComboBox::AddList $Data(Frame2).inter.fld.val $Mapper::OGR::Data(Fields)
+   ComboBox::AddList $Data(Frame2).inter.fld.val $Data(Fields)
 
    ComboBox::DelAll  $Data(Frame2).pos.extr.sel False
    ComboBox::Add  $Data(Frame2).pos.extr.sel {}
-   ComboBox::AddList  $Data(Frame2).pos.extr.sel $Mapper::OGR::Data(Fields)
+   ComboBox::AddList  $Data(Frame2).pos.extr.sel $Data(Fields)
 
    ComboBox::DelAll  $Data(Frame2).pos.topo.sel False
-   ComboBox::AddList  $Data(Frame2).pos.topo.sel [concat $Mapper::OGR::Data(Topos) $Mapper::OGR::Data(Fields)]
+   ComboBox::AddList  $Data(Frame2).pos.topo.sel [concat $Data(Topos) $Data(Fields)]
 
    IcoMenu::Set $Data(Frame2).shape.out.width $Data(Width)
    catch { IcoMenu::Set $Data(Frame2).shape.out.dash  $Data(Dash) }
 
    set Data(ColorMap) [ogrlayer configure $Object -colormap]
    catch { colormap image $Data(ColorMap) OGRMAPImg }
-
-   Mapper::OGR::Feature $Object $Data(Index)
-   Mapper::OGR::Table $Object True $Data(Index) 
 }
 
 #-------------------------------------------------------------------------------
@@ -1537,10 +1542,17 @@ proc Mapper::OGR::TableColumnSelect { Object Row Column } {
 }
 
 proc Mapper::OGR::TableColumnAdd { Object Field Type Len } {
-
+   variable Data
+   
    ogrlayer define $Object -field $Field $Type $Len
 
+   #----- Update fields list
+   set Data(Fields)   [ogrlayer define $Object -field]
+
    destroy .mappernew
+
+   #----- Update Interface
+   Mapper::OGR::ParamsUpdate $Object
    Mapper::OGR::Table $Object True
 }
 
