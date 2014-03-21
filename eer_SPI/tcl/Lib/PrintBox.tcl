@@ -121,6 +121,7 @@ namespace eval PrintBox {
 
    set Error(Convert)  { "Il semble y avoir un problème avec le fichier postscript ou la conversion de celui-ci"
                          "There seems to be an error within the postscript file or while converting the file" }
+   set Error(Path)     { "Ce répertoire n'est pas accessible" "This directory is not accessible" }
 }
 
 #----------------------------------------------------------------------------
@@ -226,8 +227,9 @@ proc PrintBox::PrintCommand { Frame } {
 
    #----- Lancement de l'impression
 
-   PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame]
-   PrintBox::Destroy
+   if { [PrintBox::Print $Frame 0 0 [Page::CanvasWidth $Frame] [Page::CanvasHeight $Frame]] } {
+      PrintBox::Destroy
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -493,6 +495,7 @@ proc PrintBox::Image { Frame Format File { Angle portrait } } {
    set PrintBox::Print(Type)     file
    set PrintBox::Print(Device)   $Format
    set PrintBox::Param(FullName) $File
+   set PrintBox::Param(Path)     [file dirname $File]
    set PrintBox::Param(Angle)    $Angle
 
    PrintBox::Do $Frame
@@ -590,6 +593,11 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    variable Txt
    global GDefs env
 
+   if { ![file isdirectory $Param(Path)] || ![file writable $Param(Path)] } {
+      Dialog::Error . $Error(Path) \n\n\t$Param(Path) 
+      return 0
+   }
+   
    set tmpfile "/tmp/output_[pid]_[clock seconds]"
 
    if { [file extension $Param(FullName)]==".$Print(Device)" } {
@@ -661,6 +669,8 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    Shape::Widget $Frame.page.canvas {} 0 0 True
 
    InfoFrame::Incr .printbox.job 1
+   
+   return 1
 }
 
 #----------------------------------------------------------------------------
