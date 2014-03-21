@@ -114,7 +114,8 @@ proc MLDP::Launch { } {
       } else {
          set cpus "-cpus 16"
       }
-      set mem 32G
+      set mem [expr 4.0*$Model::Param(NbMPItasks)]
+      set mem [expr int($mem/($Model::Param(NbMPItasks)*$Model::Param(NbOMPthreads))*1024)]M
 
       exec echo "#!/bin/sh\n\n$Model::Param(Submit) $env(EER_DIRSCRIPT)/Model.sh -args $Sim(PathRun)/tmp/Model_MLDP.in -mach $Model::Param(Host) \
          -t $Model::Param(WallClock) -cm $mem -waste $cpus -listing $Model::Param(Listings) $Model::Param(Op) -queue $Model::Param(Queue)" >$Sim(Path)/tmp/Model_Launch.sh
