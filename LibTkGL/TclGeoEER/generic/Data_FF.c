@@ -965,8 +965,8 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
 
    for (n=0;n<NbInter;n++) {
 
-      /*If the interval is not within the value limits, skip*/
-      if (Stat && (Inter[n]>=Stat->Max || Inter[n]<=Stat->Min))
+     /*If the interval is not within the value limits, skip*/
+      if (Stat && (Inter[n]>=Stat->Max || Inter[n]<Stat->Min))
          continue;
 
       /*Create/Reset gridcell parsing flags*/
