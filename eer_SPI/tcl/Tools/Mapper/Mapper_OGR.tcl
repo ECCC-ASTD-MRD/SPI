@@ -1557,10 +1557,14 @@ proc Mapper::OGR::TableColumnAdd { Object Field Type Len } {
 }
 
 proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
+   variable Data
 
    #----- Check if field exist, otherwise create it
    if { [lsearch -exact [ogrlayer define $Object -field] $Field]==-1 } {
       ogrlayer define $Object -field $Field Real 32   
+
+      #----- Update fields list
+      set Data(Fields)   [ogrlayer define $Object -field]
    }
    
    #----- Parcel expresion to add layer
@@ -1569,6 +1573,9 @@ proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
    vexpr $Object.$Field $calc
 
    destroy .mappernew 
+
+   #----- Update Interface
+   Mapper::OGR::ParamsUpdate $Object
    Mapper::OGR::Table $Object True
 }
 
