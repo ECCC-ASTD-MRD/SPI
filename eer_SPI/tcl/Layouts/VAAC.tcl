@@ -686,6 +686,7 @@ proc VAAC::LayoutUpdate { Frame } {
    set ReleaseDuration [expr double($Sim(EmTotalDuration))/3600.0] ;#----- Convert total release duration from [s] to [h].
    set mg   [expr $Sim(EmMass)==0?0:int(log10($Sim(EmMass)))]      ;#----- Total release mass [micrograms/m3].
    set time "C"                                                    ;#----- Release time function. C: Constant.
+   set vert "-"
 
    #----- Initial vertical distribution.
    if { [regexp Uniform $Sim(EmVerticalDist)] } {
@@ -698,8 +699,6 @@ proc VAAC::LayoutUpdate { Frame } {
       set vert "Co"
    } elseif { $Sim(EmVerticalDist) == "Champignon" || $Sim(EmVerticalDist) == "Umbrella" } {
       set vert "Um"
-   } else {
-      set vert "-"
    }
 
    #----- Format release duration.

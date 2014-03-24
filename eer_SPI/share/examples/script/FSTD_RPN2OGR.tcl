@@ -151,17 +151,17 @@ proc RPN2OGR::ParseCommandLine { } {
    #----- Parse arguments
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
-         "format"   { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Format)] }
-         "var"      { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Vars)] }
-         "factor"   { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Factors)] }
-         "map"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Map)] }
-         "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Mode) $Export::Vector::Param(Modes)] }
-         "inter"    { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Intervals)] }
-         "fstd"     { set i [Args::Parse $gargv $gargc $i 2 RPN2OGR::Param(Files)] }
-         "prj"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(ProjFile)] }
-         "out"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(Out)] }
-         "ip1"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(IP1)] }
-         "ip3"      { set i [Args::Parse $gargv $gargc $i 1 RPN2OGR::Param(IP3)] }
+         "format"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Format)] }
+         "var"      { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Vars)] }
+         "factor"   { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Factors)] }
+         "map"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Map)] }
+         "mode"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Mode) $Export::Vector::Param(Modes)] }
+         "inter"    { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Intervals)] }
+         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Files)] }
+         "prj"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(ProjFile)] }
+         "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
+         "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }
+         "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }
 
          "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }

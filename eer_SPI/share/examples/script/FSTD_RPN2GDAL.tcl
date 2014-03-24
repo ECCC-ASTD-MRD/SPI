@@ -155,21 +155,21 @@ proc RPN2GDAL::ParseCommandLine { } {
    #----- Parse arguments
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
-         "format"   { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Format)] }
-         "nodata"   { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(NoData)] }
-         "mode"     { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)] }
-         "map"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Map)] }
-         "res"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Res)] }
-         "bbox"     { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(BBox)] }
-         "var"      { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(Vars)] }
-         "factor"   { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(Factors)] }
-         "inter"    { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(Intervals)] }
-         "min"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Min)] }
-         "max"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Max)] }
-         "fstd"     { set i [Args::Parse $gargv $gargc $i 2 RPN2GDAL::Param(Files)] }
-         "out"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(Out)] }
-         "ip1"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(IP1)] }
-         "ip3"      { set i [Args::Parse $gargv $gargc $i 1 RPN2GDAL::Param(IP3)] }
+         "format"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Format)] }
+         "nodata"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(NoData)] }
+         "mode"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)] }
+         "map"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Map)] }
+         "res"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Res)] }
+         "bbox"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(BBox)] }
+         "var"      { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Vars)] }
+         "factor"   { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Factors)] }
+         "inter"    { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Intervals)] }
+         "min"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Min)] }
+         "max"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Max)] }
+         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Files)] }
+         "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Out)] }
+         "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP1)] }
+         "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
 
          "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }

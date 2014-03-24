@@ -108,11 +108,11 @@ if { [llength $argv]==0 } {
 #----- Parcourir la liste des parametres post-launch
 for { set i 0 } { $i < $argc } { incr i } {
    switch -exact [string trimleft [lindex $argv $i] "-"] {
-      run        { set i [Args::Parse $argv $argc $i 1 Met::Param(Run)]}
-      lat        { set i [Args::Parse $argv $argc $i 1 Met::Param(Lat)] }
-      lon        { set i [Args::Parse $argv $argc $i 1 Met::Param(Lon)] }
-      hours      { set i [Args::Parse $argv $argc $i 1 Met::Param(Hours)] }
-      out        { set i [Args::Parse $argv $argc $i 1 Met::Param(Out)] }
+      run        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Run)] }
+      lat        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lat)] }
+      lon        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lon)] }
+      hours      { set i [Args::Parse $argv $argc $i VALUE Met::Param(Hours)] }
+      out        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Out)] }
       help       { puts $Met::Param(CommandLine); Log::End 0 }
       default    { Log::Print INFO "Invalid argument [lindex $argv $i]:\n\n$Met::Param(CommandLine)"; Log::End 1 }
    }
