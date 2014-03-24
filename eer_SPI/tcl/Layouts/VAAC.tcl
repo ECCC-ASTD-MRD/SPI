@@ -698,6 +698,8 @@ proc VAAC::LayoutUpdate { Frame } {
       set vert "Co"
    } elseif { $Sim(EmVerticalDist) == "Champignon" || $Sim(EmVerticalDist) == "Umbrella" } {
       set vert "Um"
+   } else {
+      set vert "-"
    }
 
    #----- Format release duration.

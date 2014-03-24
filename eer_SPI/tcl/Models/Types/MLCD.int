@@ -483,7 +483,7 @@ proc MLCD::PopUp { X Y } {
          .mlcdpopup add command -label "MLCD"  -command "" -background $GDefs(ColorHighLight) \
             -activebackground $GDefs(ColorHighLight)
          .mlcdpopup add cascade -label [lindex $Lbl(Product) $GDefs(Lang)] -menu .mlcdpopup.product
-         .mlcdpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { MLCD::Result }
+         .mlcdpopup add command -label [lindex $Lbl(Result) $GDefs(Lang)]  -command { MLCD::Result result }
          .mlcdpopup add separator
          .mlcdpopup add command -label [lindex $Lbl(Suppress) $GDefs(Lang)] \
              -command { Model::Delete $Exp::Data(SelectSim) }
