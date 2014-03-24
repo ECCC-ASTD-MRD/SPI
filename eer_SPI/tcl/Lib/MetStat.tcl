@@ -474,7 +474,7 @@ proc MetStat::RECRCLoad { File } {
          gets $file line
          set line [string trim $line]
 
-         while { [string first "DEFVAR" [string toupper $line]]==-1 && [string first "END" [string toupper $line]]==-1 && [string first "GRILLE" [string toupper $line]]==-1 && ![eof $file] } {
+         while { [string first "DEFVAR" [string toupper $line]]==-1 && [string first "VECTEUR" [string toupper $line]]==-1 && [string first "END" [string toupper $line]]==-1 && [string first "GRILLE" [string toupper $line]]==-1 && ![eof $file] } {
 
             #----- Concatener toutes les lignes en une commande
             set first [string index $line 0]

@@ -191,14 +191,15 @@ proc FieldFunc::TimeOfArrival { Since Fields { Treshold 0 } } {
             }
          }
       }
+      fstdfield define TOAFIELD -IP1 $ip1 -IP3 $ip3 -ETIKET $etiket
    }
 
    #----- Make sure we can show from T0 by setting notime data to -1
    vexpr (Int32)TOAFIELD ifelse(TOAFIELD==0.0,-1,TOAFIELD)
 
-   fstdfield define TOAFIELD -NOMVAR TOA -IP1 $ip1 -IP2 0 -IP3 $ip3 -ETIKET $etiket
+   fstdfield define TOAFIELD -NOMVAR TOA -IP2 0
    fstdfield free TOAMAX TOATMP TOACHG
 
-   SPI::Progress 0
+   catch { SPI::Progress 0 }
    return TOAFIELD
 }
