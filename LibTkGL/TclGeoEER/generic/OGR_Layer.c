@@ -1763,6 +1763,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
       } else if (strcmp(Type,"RealList")==0) {
          field=OGR_Fld_Create(name,OFTRealList);
          if (Width) OGR_Fld_SetPrecision(field,Width);
+         if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"StringList")==0) {
          field=OGR_Fld_Create(name,OFTStringList);
          if (Width) OGR_Fld_SetWidth(field,Width);
