@@ -89,7 +89,7 @@ int TclVector_Init(Tcl_Interp *Interp) {
 
 static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   Tcl_Obj     *obj;
+   Tcl_Obj     *obj,*lst;
    TVector     *vec;
    int          idx,n,nobj,ns,e=0;
    char        *c,*cv;
@@ -115,21 +115,21 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             return TCL_ERROR;
          }
 
+         lst=NULL;
          /*Test for composant on data specification*/
-         obj=NULL;
          if (Objc==4) {
             Tcl_ListObjLength(Interp,Objv[3],&nobj);
             Tcl_ListObjIndex(Interp,Objv[3],0,&obj);
             Tcl_ListObjLength(Interp,obj,&ns);
-            if (ns) {
-               obj=Tcl_NewListObj(0,NULL);
+            if (ns>1) {
+               lst=Tcl_NewListObj(0,NULL);
                for(n=0;n<nobj;n++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(n));
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(n));
                }
             }
          }
 
-         if (Vector_Create(Interp,Tcl_GetString(Objv[2]),obj)==TCL_ERROR) {
+         if (Vector_Create(Interp,Tcl_GetString(Objv[2]),lst)==TCL_ERROR) {
             return(TCL_ERROR);
          }
          if (Objc==4) {
@@ -651,7 +651,6 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
       }
    } else {
       /*Copie des donnees*/
-
       if ((new->V=(double*)malloc(new->N*sizeof(double)))) {
          memcpy(new->V,Vec->V,new->N*sizeof(double));
       } else {

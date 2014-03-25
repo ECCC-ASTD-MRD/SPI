@@ -85,6 +85,7 @@ double dprofcurve(TDataDef *Res,TDataDef *Def);
 double dtangcurve(TDataDef *Res,TDataDef *Def);
 double dcore(TDataDef *Res,TDataDef *Def,int Mode);
 double in(TDataDef *Res,TDataDef *MA,TDataDef *MB);
+double win(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 double lut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 double slut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC);
 double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB);
@@ -93,6 +94,7 @@ double fpeel(TDataDef *Res,TDataDef *MA);
 
 /*Table operators*/
 double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB);
+double tbin(TDataDef *Res,TDataDef *Table,TDataDef *MB);
 double flipy(TDataDef *Res,TDataDef *MA);
 
 /*Matrix reduction operations*/

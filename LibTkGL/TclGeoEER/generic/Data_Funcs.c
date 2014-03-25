@@ -52,6 +52,7 @@ double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,V
 /*Matrix Derivative Functions*/
 TFuncDef FuncD[] = {
   { "in"        , in        , 2 , TD_UByte },
+  { "win"       , win       , 3 , TD_Int32 },
   { "lut"       , lut       , 3 , TD_Unknown },
   { "slut"      , slut      , 3 , TD_Unknown },
   { "fkernel"   , fkernel   , 2 , TD_Unknown },
@@ -84,6 +85,7 @@ TFuncDef FuncF[] = {
   { "sall"  , stat_all    , 2 , TD_Float64 },
   { "snb"   , stat_nb     , 1 , TD_Float64 },
   { "smed"  , stat_median , 1 , TD_Float64 },
+  { "suniq" , stat_unique , 1 , TD_Int32 },
   { "suniq" , stat_unique , 1 , TD_Int32 },
   { "ssum"  , stat_sum    , 1 , TD_Float64 },
   { "smin"  , stat_min    , 1 , TD_Float64 },
@@ -240,6 +242,40 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
             }
          }
       }
+   }
+   return(0.0);
+}
+
+double tbin(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
+
+   double        v0,v1,vb;
+   unsigned long i,n,v,vn;
+
+   v0=v1=vb=0.0;
+
+   /*Initialise to input table*/
+   vn=FSIZE2D(Table);
+   for(n=0;n<vn;n++) {
+      v=0;
+      
+      Def_Get(Table,0,n,v0);
+      if (n==vn-1) {
+         v1=HUGE_VAL;
+      } else {
+         Def_Get(Table,0,n+1,v1);
+      }
+      
+      /*Parse matrix*/
+      for(i=0;i<FSIZE2D(MB);i++) {
+
+         Def_Get(MB,0,i,vb);
+
+         /*Increment result table count*/
+         if (vb!=MB->NoData && vb>=v0 && vb<v1) {
+            v++;
+         }
+      }
+      Def_Set(Res,0,n,v);
    }
    return(0.0);
 }
@@ -442,6 +478,28 @@ double in(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
          }
       }
       Def_Set(Res,0,i,vr);
+   }
+   return(0.0);
+}
+
+double win(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+
+   double        va,vb,vc;
+   unsigned long i,j,n;
+
+   va=vb=vc=0.0;
+   
+   for(i=0;i<FSIZE2D(MA);i++) {
+      Def_Get(MA,0,i,va);
+      Def_Get(MB,0,i,vb);
+      n=0.0;
+      for(j=0;j<FSIZE2D(MC);j++) {
+         Def_Get(MC,0,j,vc);
+         if (vc>=va && vc<vb) {
+            n++;
+         }
+      }
+      Def_Set(Res,0,i,n);
    }
    return(0.0);
 }
