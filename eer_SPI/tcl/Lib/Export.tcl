@@ -783,7 +783,7 @@ proc Export::Window { } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Raster::Init { Res { Lat0 -90 } { Lon0 -180 }  { Lat1 90 } { Lon1 180 } } {
+proc Export::Raster::Init { Res { Lat0 -999 } { Lon0 -999 }  { Lat1 -999 } { Lon1 -999 } } {
    variable Param
 
    set Param(Res) $Res
@@ -1035,7 +1035,7 @@ proc Export::Raster::DrawDone { Frame VP } {
    } else {
       set Param(Coo) "$Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)"
    }
-   Export::Raster::Init $Export::Raster::Param(Res) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1)
+   Export::Raster::Init $Export::Raster::Param(Res)
 }
 
 proc Export::Raster::MoveInit { Frame VP } {
