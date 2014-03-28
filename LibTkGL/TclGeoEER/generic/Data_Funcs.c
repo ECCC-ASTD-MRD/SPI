@@ -86,7 +86,6 @@ TFuncDef FuncF[] = {
   { "snb"   , stat_nb     , 1 , TD_Float64 },
   { "smed"  , stat_median , 1 , TD_Float64 },
   { "suniq" , stat_unique , 1 , TD_Int32 },
-  { "suniq" , stat_unique , 1 , TD_Int32 },
   { "ssum"  , stat_sum    , 1 , TD_Float64 },
   { "smin"  , stat_min    , 1 , TD_Float64 },
   { "smax"  , stat_max    , 1 , TD_Float64 },
@@ -242,40 +241,6 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
             }
          }
       }
-   }
-   return(0.0);
-}
-
-double tbin(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
-
-   double        v0,v1,vb;
-   unsigned long i,n,v,vn;
-
-   v0=v1=vb=0.0;
-
-   /*Initialise to input table*/
-   vn=FSIZE2D(Table);
-   for(n=0;n<vn;n++) {
-      v=0;
-      
-      Def_Get(Table,0,n,v0);
-      if (n==vn-1) {
-         v1=HUGE_VAL;
-      } else {
-         Def_Get(Table,0,n+1,v1);
-      }
-      
-      /*Parse matrix*/
-      for(i=0;i<FSIZE2D(MB);i++) {
-
-         Def_Get(MB,0,i,vb);
-
-         /*Increment result table count*/
-         if (vb!=MB->NoData && vb>=v0 && vb<v1) {
-            v++;
-         }
-      }
-      Def_Set(Res,0,n,v);
    }
    return(0.0);
 }

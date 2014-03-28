@@ -40,13 +40,16 @@ namespace eval Met {
    set Param(Lon)   -100
    set Param(Hours) 24
    set Param(Run)   r112
-   set Param(Vars)  { { UU 93423264 95318840 } { TT 93423264 } { NT -1 } }
+   set Param(Vars)  { UU }
+   set Param(IP1s)  { 93423264 }
 
    set Param(CommandLine) "Arguments must be:
 \t-run    : Model run
 \t-hours  : Nb hours from start of model run
 \t-lat    : Latitude
 \t-lon    : Longitude
+\t-vars   : Variables
+\t-ip1s   : IP1s
 \t-out    : Output file"
 }
 
@@ -56,7 +59,18 @@ proc Met::Process { } {
 
    set f [open $Param(Out) w]
    
-   puts $f "Date (UTC),Wind dir (deg) at 10 meters,Windspeed (km/h) at 10 meters,Wind dir (deg) at 50 meters,Windspeed (km/h) at 50 meters, Temp (C), Cloud cover (%)"
+   set head "Date (UTC),Hour (UTC),"
+   foreach var $Param(Vars) {
+      foreach ip1 $Param(IP1s) {
+         set lvl [fstdgrid convip $ip1]
+         if { $var=="UU" } {
+            append head "Wind dir (deg) at $lvl ,Windspeed (km/h) at $lvl"
+         } else {
+            append head "$var at $lvl"
+         }
+      }
+   }
+   puts $f "$head"
    
    set run [string range [exec r.date $Param(Run)] 0 9]
    switch [string index $Param(Run) 0] {
@@ -73,8 +87,8 @@ proc Met::Process { } {
       fstdfile open METFILE read $file
       foreach var $Param(Vars) {
          
-         foreach lvl [lrange $var 1 end] {
-            fstdfield read FLD METFILE -1 "" $lvl -1 -1 "" "[lindex $var 0]"
+         foreach ip1 $Param(IP1s) {
+            fstdfield read FLD METFILE -1 "" $ip1 -1 -1 "" "$var"
             set val [fstdfield stats FLD -coordvalue $Param(Lat) $Param(Lon)]
             if { [llength $val]>1 } {
                lappend vals [format "%.3f" [lindex $val 1]]
@@ -83,7 +97,7 @@ proc Met::Process { } {
                lappend vals [format "%.3f" [lindex $val 0]]
             }
          }
-         set date [clock format [fstdstamp toseconds [fstdfield define FLD -DATEV]] -format "%Y%m%d %H:%M"]
+         set date [clock format [fstdstamp toseconds [fstdfield define FLD -DATEV]] -format "%Y%m%d,%H:%M"]
       }
       puts $f "$date,[join $vals ,]"   
       
@@ -112,6 +126,8 @@ for { set i 0 } { $i < $argc } { incr i } {
       lat        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lat)] }
       lon        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lon)] }
       hours      { set i [Args::Parse $argv $argc $i VALUE Met::Param(Hours)] }
+      ip1s       { set i [Args::Parse $argv $argc $i VALUE Met::Param(IP1s)] }
+      vars       { set i [Args::Parse $argv $argc $i VALUE Met::Param(Vars)] }
       out        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Out)] }
       help       { puts $Met::Param(CommandLine); Log::End 0 }
       default    { Log::Print INFO "Invalid argument [lindex $argv $i]:\n\n$Met::Param(CommandLine)"; Log::End 1 }

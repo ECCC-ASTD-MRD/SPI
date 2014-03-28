@@ -138,6 +138,15 @@ puts "   min((10,20),(10,20))=[vexpr NIL smin(TT((10,20),(10,20)))]"
 vexpr NIL TT((10,20),(10,20))
 puts "   data=[join [fstdfield define NIL -DATA] \n]"
 
+puts "\nTesting parser's bins"
+set n [vexpr - win(-20,-10,TT)]
+puts "   single bin: $n"
+
+vector create BIN0 { -20 -10 0 10 20 }
+vector create BIN1 { -10 0 10 20 30 }
+set n [vexpr COUNT win(BIN0,BIN1,TT)]
+puts "   multi bin: [vector get COUNT]"
+
 puts "\nTesting vertical profile of wind"
 fstdfield read UU 1 -1 "" -1 -1 -1 "" "UU"
 fstdfield readcube UU
