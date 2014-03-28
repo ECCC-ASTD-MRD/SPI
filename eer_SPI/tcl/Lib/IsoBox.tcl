@@ -14,7 +14,6 @@
 #
 # Fonctions:
 #    IsoBox::Create { Parent { Command "" } }
-#    IsoBox::Get    { Iso }
 #    IsoBox::Insert { }
 #
 #
@@ -29,7 +28,8 @@ namespace eval IsoBox {
    variable Lbl
    variable Param
 
-   set Param(File) $env(SPI_PATH)/data/Nuclide.txt
+   set Param(File) ""
+   catch { set Param(File) $env(EER_DATA)/Nuclide.txt }
 
    set Lbl(Title)        { "Sélecteur d'isotopes"              "Isotope selector" }
    set Lbl(Symbol)       { "Symbole"                           "Symbol" }
@@ -138,36 +138,6 @@ proc IsoBox::Create { Parent { Command "" } } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <IsoBox::Get>
-# Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Recuperer les informations d'une espece sans demarrer l'interface.
-#
-# Parametres :
-#  <Iso>     : Isotope
-#
-# Retour:
-#   <Info>   : Liste des informations de l'isotopes ou ""
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc IsoBox::Get { Iso }  {
-   variable Param
-
-   set ligne {}
-
-   set ligne [exec egrep -i $Iso $Param(File)]
-
-   if { [llength $ligne] } {
-      return [list [lindex $ligne 0] [lindex $ligne 10] [lindex $ligne 1] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 14]]
-   } else {
-      return ""
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <IsoBox::Insert>
 # Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
 #
@@ -186,14 +156,13 @@ proc IsoBox::Insert { } {
    variable Param
 
    set f [open $Param(File)]
-puts stderr $Param(File)
-   set idxname [expr 18 + $GDefs(Lang)]
+   set idxname [expr 16 + $GDefs(Lang)]
 
    while { [gets $f ligne]>=0 } {
       if {[string index $ligne 0]!= "c" && [string length $ligne]>90} {
          .isobox.bas.box insert end [format "%-8s %-13s %5s %8s %9s %12s %11s %11s %10s %15s %17s"  \
-            [lindex $ligne 0] [lindex $ligne $idxname] [lindex $ligne 15] [lindex $ligne 17] [lindex $ligne 16] [lindex $ligne 1] \
-            [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 13] [lindex $ligne 8] [lindex $ligne 9]]
+            [lindex $ligne 0] [lindex $ligne $idxname] [lindex $ligne 13] [lindex $ligne 15] [lindex $ligne 14] [lindex $ligne 1] \
+            [lindex $ligne 10] [lindex $ligne 11] [lindex $ligne 12] [lindex $ligne 8] [lindex $ligne 9]]
       }
    }
    close $f
