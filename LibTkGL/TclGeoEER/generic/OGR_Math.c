@@ -992,7 +992,7 @@ double GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y) {
    for(i=0;i<n;i++) {
       i1=(i+1)%n;
       
-      area+=mid=GPC_Geom[0][i][0]*GPC_Geom[0][i1][1]-GPC_Geom[0][i][1]*GPC_Geom[0][i+1][0];
+      area+=mid=GPC_Geom[0][i][0]*GPC_Geom[0][i1][1]-GPC_Geom[0][i][1]*GPC_Geom[0][i1][0];
       *X+=(GPC_Geom[0][i][0]+GPC_Geom[0][i1][0])*mid;
       *Y+=(GPC_Geom[0][i][1]+GPC_Geom[0][i1][1])*mid;
    }
