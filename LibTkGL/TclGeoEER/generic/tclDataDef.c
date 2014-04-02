@@ -359,7 +359,7 @@ void DataDef_Free(TDataDef *Def){
  *
  *----------------------------------------------------------------------------
 */
-TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type){
+TDataDef *DataDef_New(int NI,int NJ,int NK,int Dim,TData_Type Type) {
 
    int       i;
    TDataDef *def;

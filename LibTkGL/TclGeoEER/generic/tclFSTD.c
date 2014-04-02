@@ -452,13 +452,13 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                return(TCL_ERROR);
             }
 
-           /*Get the bogus date*/
+            /*Get the bogus date*/
             TclY_Get0IntFromObj(Interp,Objv[4],&datev);
 
-            return FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),-1,datev,Tcl_GetString(Objv[5]),ip1,ip2,ip3,Tcl_GetString(Objv[9]),Tcl_GetString(Objv[10]));
+            return(FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),-1,datev,Tcl_GetString(Objv[5]),ip1,ip2,ip3,Tcl_GetString(Objv[9]),Tcl_GetString(Objv[10])));
          } else {
             Tcl_GetIntFromObj(Interp,Objv[4],&key);
-            return FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),key,-1,NULL,-1,-1,-1,NULL,NULL);
+            return(FSTD_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),key,-1,NULL,-1,-1,-1,NULL,NULL));
          }
          break;
 
@@ -595,7 +595,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          type=TD_Float32;
          
          if (Objc==7) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",0,&type)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",0,(int*)&type)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
@@ -1431,9 +1431,9 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    if (!File->Open) {
 
       if ( File->Mode=='W') {                /*Write Mode*/
-          if (rem)
+         if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
-          else
+         else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W",0);
       } else if (File->Mode=='A') {         /*Append Mode*/
          if (rem)
@@ -1441,9 +1441,9 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
          else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+OLD+R/W",0);
       } else {                                                  /*ReadOnly Mode*/
-         if (rem) {
+         if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O+REMOTE",0);
-         } else
+         else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O",0);
       }
 

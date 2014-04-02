@@ -697,6 +697,7 @@ struct TDataDef* Vector_GetDef(TVector *Vec) {
       Vec->Def->Data[3]=NULL;
       Vec->Def->Type=TD_Float64;
       Vec->Def->NoData=Vec->NoData;
+      Vec->Def->Idx=0;
 
       if (Vec->Cp) {
          Vec->Def->NJ=Vec->Cp[0]->N;
