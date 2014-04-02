@@ -129,7 +129,7 @@ proc ColorBar::Create { Frame VP X0 Y0 Width Height } {
    set tag [ColorBar::Tag $VP $Id]:$VP$No
 
    set Data(Active$Frame) 1
-   set Data(Full$tag)     0
+   set Data(Full$tag)     $Param(Full)
    set Data(BG$tag)       $Param(BG)
    set Data(Alpha$tag)    $Param(Alpha)
    set Data(Split$tag)    $Param(Split)
