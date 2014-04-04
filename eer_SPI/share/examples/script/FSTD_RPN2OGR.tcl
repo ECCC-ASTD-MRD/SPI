@@ -34,6 +34,7 @@ namespace eval RPN2OGR { } {
    set Param(Files)     {}
    set Param(Mode)      CELL
    set Param(Map)       "$env(HOME)/.spi/Colormap/REC_Col.std1.rgba"
+   set Param(Etiket)    ""
    set Param(IP1)       -1
    set Param(IP3)       -1
    set Param(ProjFile)  ""
@@ -52,6 +53,7 @@ namespace eval RPN2OGR { } {
       -fstd   : List of RPN files to process (Mandatory)
       -ip1    : IP1 to use (Default: $Param(IP1))
       -ip3    : IP3 to use (Default: $Param(IP3))
+      -etiket : Etiket to use (Default: $Param(Etiket))
       -prj    : prj georeference file to use for output file (default: WGS84 latlon)
       -out    : Output directory (Default: $Param(Out))
       -help   : This information
@@ -85,7 +87,7 @@ proc RPN2OGR::Run { } {
          set v 0
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] "" $Param(IP1) -1 $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
@@ -162,6 +164,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }
+         "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Etiket)] }
 
          "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }

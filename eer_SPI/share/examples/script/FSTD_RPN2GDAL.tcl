@@ -35,6 +35,7 @@ namespace eval RPN2GDAL { } {
    set Param(Files)     {}
    set Param(IP1)       -1
    set Param(IP3)       -1
+   set Param(Etiket)    ""
    set Param(ProjFile)  ""
    set Param(Intervals) {}
    set Param(Min)       0
@@ -67,6 +68,7 @@ namespace eval RPN2GDAL { } {
       -fstd   : List of RPN files to process (Mandatory)
       -ip1    : IP1 to use (Default: $Param(IP1))
       -ip3    : IP3 to use (Default: $Param(IP3))
+      -etiket : Etiket to use (Default: $Param(Etiket))
       -out    : Output directory (Default: $Param(Out))
       -help   : This information
       
@@ -103,7 +105,7 @@ proc RPN2GDAL::Run { } {
 
             Log::Print DEBUG "   Checking for variable $var"
 
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] "" $Param(IP1) -1 $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                if { [llength $Param(BBox)]!=4 } {
@@ -170,6 +172,7 @@ proc RPN2GDAL::ParseCommandLine { } {
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP1)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
+         "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 
          "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
