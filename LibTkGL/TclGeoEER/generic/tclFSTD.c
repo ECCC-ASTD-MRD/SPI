@@ -1429,8 +1429,8 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
    EZLock_RPNFile();
    if (!File->Open) {
-
-      if ( File->Mode=='W') {                /*Write Mode*/
+      
+      if (File->Mode=='W') {                /*Write Mode*/
          if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
          else
@@ -1441,10 +1441,18 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
          else
             ok=c_fnom(&File->Id,File->Name,"STD+RND+OLD+R/W",0);
       } else {                                                  /*ReadOnly Mode*/
-         if (rem)
+         if (rem) {
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O+REMOTE",0);
-         else
+         } else {
+            // Make sure the file is an RPN one, otherwise we get fnom/fstouv problems later
+            ok=f77name(wkoffit)(File->Name,strlen(File->Name));
+            if (ok!=1 && ok!=2 && ok!=3 && ok!=33 && ok!=34) {
+               if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: File is not RPN, ",File->Name,(char*)NULL);
+               EZUnLock_RPNFile();
+               return(-1);
+            }
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O",0);
+         }
       }
 
       if (ok<0) {
