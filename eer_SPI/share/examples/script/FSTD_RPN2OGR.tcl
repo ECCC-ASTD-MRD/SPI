@@ -58,7 +58,7 @@ namespace eval RPN2OGR { } {
       -out    : Output directory (Default: $Param(Out))
       -help   : This information
       
-      Available formats: \n\t[ogrfile format]"
+      Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
 }
 
 proc RPN2OGR::Run { } {

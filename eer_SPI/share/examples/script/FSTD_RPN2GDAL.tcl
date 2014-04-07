@@ -72,7 +72,7 @@ namespace eval RPN2GDAL { } {
       -out    : Output directory (Default: $Param(Out))
       -help   : This information
       
-      Available formats: \n\tKMZ [gdalfile format]"
+      Available formats: \n\t[lmap f $Export::Raster::Param(Formats) {lindex $f end-1}]"
 }
 
 proc RPN2GDAL::Run { } {
