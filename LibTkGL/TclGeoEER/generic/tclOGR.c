@@ -390,7 +390,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
          }
-         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])))) {
+         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[2])))) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
@@ -401,6 +401,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          layer->Ref=ref;             
          layer->Changed=1;
          OGR_FD_Reference(layer->Def);
+         GeoRef_Incr(ref);
                 
          break;
 

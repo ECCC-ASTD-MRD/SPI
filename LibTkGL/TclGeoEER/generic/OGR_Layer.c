@@ -906,10 +906,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             }
          }
-         
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f] && layer->Feature[f]) {
-               if (fld!=-1) x=OGR_F_GetFieldAsDouble(layer->Feature[f],fld);
+              if (fld!=-1) x=OGR_F_GetFieldAsDouble(layer->Feature[f],fld);
 
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if ((new=OGR_G_Buffer(geom,x,nseg))) {
@@ -2462,6 +2461,19 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       free(mask);
    }
    
+   Layer->Changed=1;
+
+   if (!(Layer->Select=malloc(Layer->NFeature*sizeof(char)))) {
+      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate feature buffer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   memset(Layer->Select,0x1,Layer->NFeature);
+   
+   if (!(Layer->Loc=(Coord*)malloc(Layer->NFeature*sizeof(Coord)))) {
+      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate location buffer",(char*)NULL);
+      return(TCL_ERROR);
+   }
+      
    return(TCL_OK);
 }
 
