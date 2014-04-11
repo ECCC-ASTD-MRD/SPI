@@ -118,7 +118,7 @@ else
 	--with-rmn=${LIB}/librmn-14 \
 	--with-gdb=${LIB}/gdb \
 	--with-gdal=${LIB}/gdal-1.10.0/bin/gdal-config  \
-	--with-grib=${LIB}/grib_api-1.9.18 \
+	--with-grib=${LIB}/grib_api-1.12.0 \
 	--with-ecbufr=${LIB}/libecbufr-0.8.2rc1 \
 	--with-flt=${LIB}/fltlib-0.5.1 \
         --with-urp=${LIB}/URP

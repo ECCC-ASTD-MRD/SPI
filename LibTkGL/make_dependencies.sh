@@ -1,7 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.6.1
+VERSION=7.7.0
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -35,7 +35,7 @@ SZIP=szip-2.1
 HDF5=hdf5-1.8.11
 POSTGRESQL=postgresql-8.4.1
 ODBC=unixODBC-2.3.0
-GRIB=grib_api-1.9.18
+GRIB=grib_api-1.12.0
 ECBUFR=libecbufr-0.8.2rc1
 OCI=instantclient_11_2
 PROJ=proj-4.8.0

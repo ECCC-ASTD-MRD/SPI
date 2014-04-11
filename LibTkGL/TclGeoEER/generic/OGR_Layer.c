@@ -2291,7 +2291,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
       }
       Data_PreInit(field[f]);
    }
-
    spec=field[0]->Spec;
 
    if (spec->RenderContour && nf>1) {
@@ -2409,7 +2408,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                if (spec->RenderParticle) {
                   if (cidx>-1) {
                      sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderParticle);
-                  } else {
+                  } else if (spec->Outline) {
                      sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderParticle);
                   }
                   OGR_F_SetStyleString(Layer->Feature[n],style);
@@ -2442,9 +2441,9 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields) {
                   OGR_G_AddPoint_2D(poly,x,y);
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
-                  if (spec->MapAll && cidx>-1) {
+                  if (spec->Map && spec->MapAll && cidx>-1) {
                      sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderGrid);
-                  } else {
+                  } else if (spec->Outline) {
                      sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderGrid);
                   }
                   OGR_F_SetStyleString(Layer->Feature[n],style);
