@@ -1315,7 +1315,7 @@ proc Mapper::OGR::Table { Object Update { Index -1 } } {
          }
       }
    }
-
+puts "$Object  $y0 $y1"
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    
@@ -1861,8 +1861,8 @@ proc Mapper::OGR::VertexShow { Frame VP Geom { Id {} } } {
          set tag [join $tid .]
          $Frame.page.canvas create bitmap [lindex $xy 0] [lindex $xy 1] -bitmap @$GDefs(Dir)/share/bitmap/cvscale.xbm -foreground yellow -tags "MAPPERVERTEX MAPPERVERTEX$tag" 
          
-         $Frame.page.canvas bind MAPPERVERTEX$tag <ButtonPress-1>   "Mapper::OGR::VertexLine $Frame $VP $Id; Mapper::OGR::VertexType $Geom"
-         $Frame.page.canvas bind MAPPERVERTEX$tag <ButtonPress-2>   "Mapper::OGR::VertexLine $Frame $VP $Id; Mapper::OGR::VertexType $Geom"
+         $Frame.page.canvas bind MAPPERVERTEX$tag <ButtonPress-1>   "Mapper::OGR::VertexLine $Frame $VP \"$Id\"; Mapper::OGR::VertexType $Geom"
+         $Frame.page.canvas bind MAPPERVERTEX$tag <ButtonPress-2>   "Mapper::OGR::VertexLine $Frame $VP \"$Id\"; Mapper::OGR::VertexType $Geom"
          $Frame.page.canvas bind MAPPERVERTEX$tag <B1-Motion>       "Mapper::OGR::VertexMove $Frame $VP $tag \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\]"
          $Frame.page.canvas bind MAPPERVERTEX$tag <ButtonRelease-2> "Mapper::OGR::VertexDel  $Frame $VP $tag"
       }
@@ -2032,7 +2032,7 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
   
    eval set bad [catch { set idxs [ogrfile open $id read $File] } msg]
    if { $bad } {
-      Log::Pring ERROR $msg
+      Log::Print ERROR $msg
       return ""
    }
 
