@@ -43,6 +43,8 @@ namespace eval RPN2OGR { } {
    set Param(Factors)   {}
    set Param(Out)       ./out
 
+   set Param(CommandInfo) "Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
+   
    set Param(CommandLine) "   Command line otions are:\n
       -format : Output format (Default: \"$Param(Format)\")
       -var    : List of variables to process (Mandatory)
@@ -146,7 +148,7 @@ proc RPN2OGR::ParseCommandLine { } {
    upvar argv gargv
 
    if { !$gargc } {
-      Log::Print MUST "$Param(CommandLine)"
+      Log::Print MUST "$Param(CommandInfo)\n\n$$Param(CommandLine)"
       Log::End 0
    }
 
@@ -166,7 +168,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Etiket)] }
 
-         "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
+         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }

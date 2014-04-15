@@ -174,6 +174,9 @@ fstdfield write TIC 3 -32 True
 fstdfield write TAC 3 -32 True
 fstdfile close 1 2 3
 
+#catch { fstdfile open BAD read DataOut/2012022412_TOT_ES.txt }
+#fstdfile open OK read DataOut/2006122900_000.eta.mask
+
 #----- Test un fichier trunque
 puts "\nTesting truncated file:"
 fstdfile open TRUNC read DataIn/truncated

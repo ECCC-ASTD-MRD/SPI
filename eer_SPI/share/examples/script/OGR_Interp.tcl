@@ -29,11 +29,11 @@ Log::Start [info script] 0.1
 #----- Open the shapefile
 catch { eval file delete [glob DataOut/OGR_Interp2D.*] }
 
-file copy DataIn/land_bg_p.shp DataOut/OGR_Interp2D.shp
-file copy DataIn/land_bg_p.dbf DataOut/OGR_Interp2D.dbf
-file copy DataIn/land_bg_p.shx DataOut/OGR_Interp2D.shx
+#file copy DataIn/land_bg_p.shp DataOut/OGR_Interp2D.shp
+#file copy DataIn/land_bg_p.dbf DataOut/OGR_Interp2D.dbf
+#file copy DataIn/land_bg_p.shx DataOut/OGR_Interp2D.shx
 
-set layer [ogrfile open SHPFILE append DataOut/OGR_Interp2D.shp]
+set layer [ogrfile open SHPFILE read DataIn/land_bg_p.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Read the data to be summed
@@ -47,8 +47,8 @@ ogrlayer clear LAYER PRES 0.0
 #----- Open a file to save the index for future reuse for faster processing
 #      if the file is empty, it will be filled with the index
 #      otherwise, it will be used as an index
-set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
-#set f [open DataOut/OGR_InterpIdx.txt r]
+#set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
+set f [open DataOut/OGR_InterpIdx.txt r]
 #
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
 puts "   Interpolating field values into polygon layer"
@@ -58,16 +58,21 @@ ogrlayer interp LAYER DATAFIELD PRES AVERAGE 1 True $f
 puts "   Minimum: [ogrlayer stats LAYER -min PRES]"
 puts "   Maximum: [ogrlayer stats LAYER -max PRES]"
 
-#puts "   Applying calculus log(LAYER.PRES+100)"
-#vexpr LAYER.ZONE log(LAYER.PRES+100)
+puts "   Applying calculus log(LAYER.PRES+100)"
+vexpr LAYER.ZONE log(LAYER.PRES+100)
 
-puts "   Minimum: [ogrlayer stats LAYER -min PRES]"
-puts "   Maximum: [ogrlayer stats LAYER -max PRES]"
+#puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
+#puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
 close $f
 
-ogrlayer sync LAYER
+ogrfile open SHPFILE2 write DataOut/OGR_Interp2D.shp "ESRI Shapefile"
+ogrlayer write LAYER SHPFILE2
+ogrfile close SHPFILE2
+
+#ogrlayer sync LAYER
 ogrfile close SHPFILE
+
 
 #----- Test Point interpolation
 

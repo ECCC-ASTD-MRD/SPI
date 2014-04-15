@@ -53,6 +53,8 @@ namespace eval RPN2GDAL { } {
    set Param(Lat1)      -999
    set Param(Lon1)      -999
 
+   set Param(CommandInfo) "Export RPN fields into GDAL raster files as values, rgb colors or index colors."
+   
    set Param(CommandLine) "   Command line otions are:\n
       -format : Output format (Default: \"$Param(Format)\")
       -nodata : No data value when out of domain (Default: \"$Param(NoData)\")
@@ -150,7 +152,7 @@ proc RPN2GDAL::ParseCommandLine { } {
    upvar argv gargv
 
    if { !$gargc } {
-      Log::Print MUST "$Param(CommandLine)"
+      Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"
       Log::End 0
    }
 
@@ -174,7 +176,7 @@ proc RPN2GDAL::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 
-         "help"      { Log::Print MUST "$Param(CommandLine)"; Log::End 0 }
+         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }
