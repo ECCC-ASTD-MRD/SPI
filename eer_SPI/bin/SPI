@@ -1,6 +1,5 @@
 #!/bin/ksh
-
-export SPI_PATH=${0%SPI}../
+export SPI_PATH=$(readlink -f $(dirname $(readlink -f $0))/..)
 . ${SPI_PATH}/.profile_spi
 
 SOFT=0
