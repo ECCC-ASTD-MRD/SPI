@@ -80,6 +80,9 @@ proc Met::Process { } {
       }
    }
    
+   set path prog/glbhyb
+   set run 2014040912
+
    foreach file [lrange [lsort -increasing [glob $env(CMCGRIDF)/$path/${run}_???]] 0 $Param(Hours)] {
 
       Log::Print INFO "Processing $file"

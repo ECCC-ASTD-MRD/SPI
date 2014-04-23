@@ -793,7 +793,7 @@ proc SPI::WindowMenu { } {
 #-------------------------------------------------------------------------------
 
 proc SPI::ToolBar { Frame } {
-   global GDefs
+   global env GDefs
    variable Lbl
    variable Msg
    variable Bubble
@@ -820,7 +820,7 @@ proc SPI::ToolBar { Frame } {
             $Frame.tool.graph.down.menu add command -label $lbl -command "set Graph::Data(Show) True; SPI::ObjectAdd Graph ::$graph; Graph::Params"
          }
          pack $Frame.tool.graph -side left -padx 2
-         if { [string first "ec.gc.ca" [info hostname]] && [info exists ::Model::Param(Show)] } {
+         if { [info exists env(EER_TOOL)] } {
             checkbutton $Frame.tool.model -image MODEL -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -variable Model::Param(Show) \
                -onvalue True -offvalue False -command "Model::Window"  -selectcolor $GDefs(ColorLight)
             pack $Frame.tool.model -before $Frame.tool.graph -side left -padx 2

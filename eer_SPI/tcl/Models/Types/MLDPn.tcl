@@ -165,7 +165,6 @@ proc MLDPn::CreateScriptInput { } {
    }
 
    puts $file "\n#----- Job general parameters\n"
-   puts $file "MODEL_SOFTWARE=SPI"
    puts $file "MODEL_NAME=MLDPn"
    puts $file "MODEL_USER=$GDefs(FrontEndUser)"
    puts $file "MODEL_LOCALHOST=$GDefs(Host)"

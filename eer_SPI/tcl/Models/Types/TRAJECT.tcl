@@ -274,7 +274,6 @@ proc TRAJECT::CreateScriptInput { } {
    }
 
    puts $file "\n#----- Job general parameters\n"
-   puts $file "MODEL_SOFTWARE=SPI"
    puts $file "MODEL_NAME=$Sim(Model)"
    puts $file "MODEL_TYPE=\"\""
    puts $file "MODEL_USER=$GDefs(FrontEndUser)"

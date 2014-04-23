@@ -190,6 +190,7 @@ package require TrajBox
 package require Dialog
 package require FileBox
 package require CanvasShape
+package require CanvasBubble
 package require Areas
 package require TabFrame
 package require InfoFrame
@@ -199,6 +200,30 @@ package require Animator
 package require Info
 package require MetData
 
+if { !$SPI::Param(Batch) } {
+
+   #----- EER Modeling layouts and tools
+   if { [info exists env(EER_TOOL)] } {
+      foreach tool [lsort [glob -nocomplain $env(EER_TOOL)/tcl/Tools/*]] {
+         set name [file tail [file rootname $tool]]
+         uplevel #0 source $tool/$name.tcl
+         lappend SPI::Param(Tools) $name
+      }
+      foreach layout [lsort -nocase [glob -nocomplain -tails -directory $env(EER_TOOL)/tcl/Layouts *.tcl]] {
+         lappend SPI::Param(Layouts) [file rootname $layout]
+      }
+      lappend SPI::Param(Layouts) ""
+      
+      source $env(EER_TOOL)/tcl/Models/Model.tcl
+   }
+
+   #----- Liste des layouts
+   foreach layout [lsort -nocase [glob -nocomplain -tails -directory $env(HOME)/.spi/Layout *.tcl]] {
+      lappend SPI::Param(Layouts) [file rootname $layout]
+   }
+   Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
+}
+
 #----- Liste des outils
 foreach tool [lsort [glob $GDefs(Dir)/tcl/Tools/*]] {
    set name [file tail [file rootname $tool]]
@@ -206,22 +231,6 @@ foreach tool [lsort [glob $GDefs(Dir)/tcl/Tools/*]] {
    lappend SPI::Param(Tools) $name
 }
 Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
-
-if { !$SPI::Param(Batch) } {
-
-   #----- Liste des layouts
-   foreach layout [lsort -nocase [glob -nocomplain -nocomplain -tails -directory $GDefs(Dir)/tcl/Layouts *.tcl]] {
-      lappend SPI::Param(Layouts) [file rootname $layout]
-   }
-   lappend SPI::Param(Layouts) ""
-   foreach layout [lsort -nocase [glob -nocomplain -nocomplain -tails -directory $env(HOME)/.spi/Layout *.tcl]] {
-      lappend SPI::Param(Layouts) [file rootname $layout]
-   }
-   Log::Print INFO "System: Available Layouts\n   $SPI::Param(Layouts)"
-
-   #----- Fichiers complementaires
-   source $GDefs(Dir)/tcl/Models/Model.tcl
-}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Page::Activate>
@@ -575,8 +584,8 @@ proc SPI::LayoutLoad { Frame Layout } {
    } elseif { [file exists $Layout.tcl] && ![file isdirectory $Layout.tcl] } {
       uplevel #0 source $Layout.tcl
       set Layout [file rootname [file tail $Layout]]
-   } elseif { [file exists $GDefs(Dir)/tcl/Layouts/$Layout.tcl] } {
-      uplevel #0 source \$GDefs(Dir)/tcl/Layouts/$Layout.tcl
+   } elseif { [info exists env(EER_TOOL)] && [file exists $env(EER_TOOL)/tcl/Layouts/$Layout.tcl] } {
+      uplevel #0 source \$env(EER_TOOL)/tcl/Layouts/$Layout.tcl
    } elseif { [file exists $env(HOME)/.spi/Layout/$Layout.tcl] } {
       uplevel #0 source \$env(HOME)/.spi/Layout/$Layout.tcl
    } elseif { [namespace exists ::$Layout] && [llength [info procs ::${Layout}::Layout]] } {

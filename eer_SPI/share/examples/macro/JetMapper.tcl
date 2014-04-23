@@ -11,7 +11,7 @@
 # Creation : Fevrier 2004 - J.P.Gauthier - CMC/CMOE
 #
 # Description:
-#    Creer une carte/produit de jetStream ave les types de precip pour WXO et PYR.
+#    Creer une carte/produit de jetStream ave les types de precip pour WXO.
 #
 # Arguments :
 #   <Run>   : Run to be used
@@ -21,8 +21,8 @@
 #
 # Remarques :
 #   - Ce script traite tous les fichiers de trajectoires dans le repertoire specifie
-#   - Lancement: SPI -batch -layout JetLayout -macro JetMapper.tcl -args [run] [hour] [dir] [map]
-#     Exemple :  SPI -batch -layout JetLayout -macro JetMapper.tcl -args  00 18 ./ WXO+PYR
+#   - Lancement: SPI -batch -layout JetLayout -macro JetMapper.tcl -args [run] [hour] [dir]
+#     Exemple :  SPI -batch -layout JetLayout -macro JetMapper.tcl -args  00 18 ./ WXO
 #===============================================================================
 
 namespace eval Macro::JetMapper { } {
@@ -33,12 +33,11 @@ namespace eval Macro::JetMapper { } {
    variable Lbl
 
    set Param(Info)      { "Produit WXO JetMap" "WXO JetMap product" }
-   set Param(InfoArgs)  { { "Run" "Heure" "Repertoire de sortie" "Produit (WXO+PYR)" } { "Run" "Hour" "Output directory" "Product (WXO+PYR)" } }
+   set Param(InfoArgs)  { { "Run" "Heure" "Repertoire de sortie" } { "Run" "Hour" "Output directory" } }
 
    set Param(Run)   00              ;#run to be used (Default)
    set Param(Hour)  18              ;#Valid time of map to be generated (Default)
    set Param(Dir)   ./              ;#Where to save the maps (Default)
-   set Param(Map)   { WXO PYR }     ;#List of maps to be produced (Default)
    set Param(Path)  $env(CMCCONST)/img.SPI/jetmap
 
    set Param(Radius)       20                                                          ;#Radius of the Highs and Lows
@@ -47,7 +46,6 @@ namespace eval Macro::JetMapper { } {
    set Param(StreamLen)    29                                                          ;#Length of arrow sections
    set Param(StreamCut)    4                                                           ;#Length of arrow spacings
    set Param(Intervals)    { -100 -40 -30 -20 -10 0 10 20 30 40 }                      ;# Temp intervals for WXO
-   set Param(IntervalsPYR) { -100 -30 -20 -10 0 10 20 30 40 }                          ;#Temp intervale for PYR
 
    set Lbl(Rain)    { "Pluie" "Rain" }
    set Lbl(Snow)    { "Neige" "Snow" }
@@ -450,29 +448,17 @@ proc Macro::JetMapper::Print { } {
 
    set file R1_north@america_I_SPI@JETSTREAM
 
-   if { [lsearch -exact $Param(Map) WXO]!=-1 } {
+   #----- Francais
+   Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 0 True
+   PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
+   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
 
-      #----- Francais
-      Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 0 True
-      PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-      exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
-      exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
-
-      #----- English
-      Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 1 True
-      PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-      exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
-      exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
-   }
-
-   if { [lsearch -exact $Param(Map) PYR]!=-1 } {
-
-      #----- English (PYR)
-      Macro::JetMapper::LegendPlot TTI CMAPPYR $Param(IntervalsPYR) 1 False
-      PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-      exec convert -antialias -resize 855x713+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@media_0$Param(Hour).png
-      exec convert -antialias -resize 855x713+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@media_0$Param(Hour).gif
-   }
+   #----- English
+   Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 1 True
+   PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
+   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
 }
 
 #----------------------------------------------------------------------------
@@ -501,9 +487,6 @@ proc Macro::JetMapper::Execute { } {
 
    colormap create CMAPWXO
    colormap read CMAPWXO $Param(Path)/JetMap.rgba
-
-   colormap create CMAPPYR
-   colormap read CMAPPYR $Param(Path)/JetMapPYR.rgba
 
    catch {
       font create FONT16  -family Arial -weight bold -size -18
@@ -569,7 +552,7 @@ proc Macro::JetMapper::Execute { } {
 proc Macro::JetMapper::Clean { } {
 
    fstdfield free IL NW TT PN TTI UU UUT BUF
-   colormap  free CMAPWIND CMAPWXO CMAPPYR
+   colormap  free CMAPWIND CMAPWXO
 }
 
 #----------------------------------------------------------------------------
@@ -593,6 +576,5 @@ proc Macro::JetMapper::Args { } {
       set Param(Run)   [lindex $argv 0]
       set Param(Hour)  [lindex $argv 1]
       set Param(Dir)   [lindex $argv 2]
-      set Param(Map)   [split [lindex $argv 3] +]
    }
 }

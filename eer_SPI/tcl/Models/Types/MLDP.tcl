@@ -176,7 +176,6 @@ proc MLDP::CreateScriptInput { } {
 
    puts $file ""
    puts $file "#----- Job general parameters"
-   puts $file "MODEL_SOFTWARE=SPI"
    puts $file "MODEL_NAME=MLDP"
    puts $file "MODEL_TYPE=[string index $Sim(Model) end]"
    puts $file "MODEL_USER=$GDefs(FrontEndUser)"

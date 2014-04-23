@@ -1315,7 +1315,7 @@ proc Mapper::OGR::Table { Object Update { Index -1 } } {
          }
       }
    }
-puts "$Object  $y0 $y1"
+
    #----- Get data for the view limits
    ogrlayer stats $Object -table Mapper::OGR::Table $y0 $y1
    

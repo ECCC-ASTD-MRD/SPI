@@ -131,7 +131,7 @@ namespace eval Export::Raster {
                        {SGI Image Format "SGI" {*.sgi}}
                        {USGS ASCII DEM / CDED "USGSDEM" {*.dem}}
                        {ASCII Gridded XYZ "XYZ" {*.xyz}}
-                       {ZMap Plus Grid"ZMap" {*.zmap}}
+                       {ZMap Plus Grid "ZMap" {*.zmap}}
                        {VTP .bt (Binary Terrain) 1.3 Format "BT" {*.bt}}}
 
    set Lbl(Area)     { "Région" "Area" }

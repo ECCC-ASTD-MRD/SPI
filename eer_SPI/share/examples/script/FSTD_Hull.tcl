@@ -65,8 +65,8 @@ proc FSTD_Hull::Run { } {
    fstdfile open FILEIN read $Param(File)
  
    fstdfield read FLD FILEIN -1 $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $Param(Vars)
-   
-#   fstdfield read FLD FILEIN $field
+
+   #   fstdfield read FLD FILEIN $field
 
    #----- Configure range of value and export type
    if { $Param(Min)!="" } {
@@ -80,6 +80,12 @@ proc FSTD_Hull::Run { } {
    #----- Creer la couche avec le bon referential
    ogrlayer new OGRLAYER "Data" "Polygon"
 
+   #----- Si c'est vide, on retourne
+   if { ![ogrlayer define OGRLAYER -nb] } {
+      Log::Print WARNING "No data within value range"
+      return
+   }
+
    #----- Importer les donnees RPN dans la couche
    ogrlayer import OGRLAYER FLD
 
@@ -91,13 +97,21 @@ proc FSTD_Hull::Run { } {
          
    #----- Iterate to merge touching hull
    set n 4
-   set geom [ogrlayer define BUFFERED -geometry 0]
+   set geom    [ogrlayer define BUFFERED -geometry 0]
+   set newgeom ""
    
    while { [incr n -1] } {
      
+      #----- Get the sub geoms
+      set hulls [ogrgeometry define $geom -geometry]
+      
+      #----- If we're inside a polygon, break
+      if { [ogrgeometry define [lindex $hulls 0] -type]=="Line String" } {
+         break
+      }
+      
       #----- Loop on each convex hull and do a geographic union
       set newgeom {}
-      set hulls [ogrgeometry define $geom -geometry]
       foreach hull $hulls {
       
          #----- Check hull distances for merge
@@ -118,6 +132,9 @@ proc FSTD_Hull::Run { } {
    }
 
    #----- Keep resulting hulls
+   if { ![ogrgeometry is $newgeom] } {
+      set newgeom [ogrgeometry stat $geom -convexhull]
+   }
    ogrlayer define BUFFERED -geometry 0 False $newgeom
    
    #----- Save it all

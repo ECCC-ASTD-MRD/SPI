@@ -7,8 +7,10 @@ proc VerifQPF24::Layout { Frame } {
 
    #----- Definition de la camera
 
-   set ProjCam::Data(Params[namespace current]) "{ 0.0 0.0 1.0 } { 0.0 0.0 2.0 } { 0.0 1.0 0.0 } 2.42073170732 0 0 1 0 0 0 52.7077885208 -101.716113732"
-   ProjCam::Select $Frame $Frame [namespace current]
+   ProjCam::Set VerifQPF24      { 0.0 0.0 1.0 } { 0.0 0.0 2.0 } { 0.0 1.0 0.0 } 2.42073170732 0 0 1 0 0 0 51.8451999041 -101.92600494
+   ProjCam::Set VerifQPF24_WEST { 0.0 0.0 1.0 } { 0.0 0.0 2.0 } { 0.0 1.0 0.0 } 5.44317492889 0 0 1 0 0 0 49.3270542318 -118.581223592
+   ProjCam::Set VerifQPF24_EAST { 0.0 0.0 1.0 } { 0.0 0.0 2.0 } { 0.0 1.0 0.0 } 6.72997751255 0 0 1 0 0 0 46.8057544504 -71.9475470875
+   ProjCam::Select $Frame $Frame VerifQPF24
 
    #----- Affichage des Viewports
 

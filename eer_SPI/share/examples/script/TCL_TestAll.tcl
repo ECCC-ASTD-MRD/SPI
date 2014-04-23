@@ -22,8 +22,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require Logger
 
-#set env(AFSISIO) /home/binops/afsi/sio/env_linux+/afsisio
-
 Log::Start [info script] 0.1
 Log::Print INFO "Using $env(SPI_PATH)\n"
 set tests {
