@@ -143,6 +143,26 @@ double stat_minx(TDataDef *M);                /* Minimum X*/
 double stat_miny(TDataDef *M);                /* Minimum Y*/
 double stat_maxx(TDataDef *M);                /* Maximum X*/
 double stat_maxy(TDataDef *M);                /* Maximum Y*/
+double stat_nmse(TDataDef *MA,TDataDef *MB);  /* Normalized mean square error */
+double stat_gmb(TDataDef *MA,TDataDef *MB);   /* Geometric mean bias */
+double stat_gmv(TDataDef *MA,TDataDef *MB);   /* Geometric mean variance */
+double stat_foex(TDataDef *MA,TDataDef *MB);  /* Factor of excedance */
+double stat_fa2(TDataDef *MA,TDataDef *MB);   /* Factor of 2 */
+double stat_fa5(TDataDef *MA,TDataDef *MB);   /* Factor of 5 */
+double stat_fa10(TDataDef *MA,TDataDef *MB);  /* Factor of 10 */
+double stat_fb(TDataDef *MA,TDataDef *MB);    /* Fractionnal bias */
+double stat_nad(TDataDef *MA,TDataDef *MB);   /* Normalized absolute difference */
+double stat_fms(TDataDef *MA,TDataDef *MB);   /* Figure of merit in space */
+double stat_osf(TDataDef *MA,TDataDef *MB);   /* Objective scoring function */
+double stat_pcc(TDataDef *MA,TDataDef *MB);   /* Pearson's correlation coefficient */
+double stat_ksp(TDataDef *MA,TDataDef *MB);   /* Kolmogorov-Smirnov parameter */
+double stat_rank(TDataDef *MA,TDataDef *MB);  /* Rank calculated with a combination of fb, fms, fa2, foex, ksp and nad. ranges from 0 to 7 (the higher the better) */
+double stat_nbeq(TDataDef *MA,TDataDef *MB);  /* Nb of equal values */
+double stat_nbgt(TDataDef *MA,TDataDef *MB);  /* Nb of values of MB greater than MA */
+double stat_nblt(TDataDef *MA,TDataDef *MB);  /* Nb of values of MB smaller than MA */
+double stat_nbfa(TDataDef *MA,TDataDef *MB);  /* Nb of false alarms (MA=0, MB!=0)*/
+double stat_nbmi(TDataDef *MA,TDataDef *MB);  /* Nb of misses (MA!=0, MB=0) */
+double stat_nbnp(TDataDef *MA,TDataDef *MB);  /* Nb of null pairs (MA=0, MB=0) */
 
 /*Base operators*/
 double add(double a,double b);

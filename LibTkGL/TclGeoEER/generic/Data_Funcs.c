@@ -47,7 +47,8 @@
 
 double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,
-       Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna;
+       Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,
+       Vfb,Vnad,Vfms,Vosf,Vpcc,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp;
 
 /*Matrix Derivative Functions*/
 TFuncDef FuncD[] = {
@@ -128,6 +129,26 @@ TFuncDef FuncF[] = {
   { "snrmse", stat_nrmse  , 2 , TD_Float64 },
   { "sna"   , stat_na     , 2 , TD_Float64 },
   { "srna"  , stat_rna    , 2 , TD_Float64 },
+  { "snmse" , stat_nmse   , 2 , TD_Float64 },
+  { "sgmb"  , stat_gmb    , 2 , TD_Float64 },
+  { "sgmv"  , stat_gmv    , 2 , TD_Float64 },
+  { "sfoex" , stat_foex   , 2 , TD_Float64 },
+  { "sfa2"  , stat_fa2    , 2 , TD_Float64 },
+  { "sfa5"  , stat_fa5    , 2 , TD_Float64 },
+  { "sfa10" , stat_fa10   , 2 , TD_Float64 },
+  { "sfb"   , stat_fb     , 2 , TD_Float64 },
+  { "snad"  , stat_nad    , 2 , TD_Float64 },
+  { "sfms"  , stat_fms    , 2 , TD_Float64 },
+  { "sosf"  , stat_osf    , 2 , TD_Float64 },
+  { "spcc"  , stat_pcc    , 2 , TD_Float64 },
+  { "sksp"  , stat_ksp    , 2 , TD_Float64 },
+  { "srank" , stat_rank   , 2 , TD_Float64 },
+  { "snbeq" , stat_nbeq   , 2 , TD_Float64 },
+  { "snbgt" , stat_nbgt   , 2 , TD_Float64 },
+  { "snblt" , stat_nblt   , 2 , TD_Float64 },
+  { "snbfa" , stat_nbfa   , 2 , TD_Float64 },
+  { "snbmi" , stat_nbmi   , 2 , TD_Float64 },
+  { "snbnp" , stat_nbnp   , 2 , TD_Float64 },
   { NULL    , NULL        , 0 , TD_Unknown }
 };
 
@@ -891,13 +912,46 @@ double dcore(TDataDef *Res,TDataDef *Def,int Mode) {
    return(0.0);
 }
 
+// For the given value, return the assiciated probability in the Empiricaly-calculated Cumulative Distribution Function
+inline double ecdf(double val, double* vals, unsigned int* cums, unsigned long n) {
+    unsigned long i, min=0, max=n;
+
+    // Limit cases
+
+    if (n<=0 || val<vals[0]) return 0.0;
+    if (val>=vals[n-1]) return 1.0;
+
+    // Normal binary search
+
+    while (min<=max) {
+        i = (max+min)/2;
+
+        if (vals[i]==val) {
+            return (double)cums[i]/(double)cums[n-1];
+        }
+
+        if (val>vals[i]) {
+            min = i + 1;
+        } else {
+            max = i - 1;
+        }
+    }
+
+    // If we get to this point, the exact number doesn't exist and we need to round to the closest inferior point
+
+    return (double)cums[max]/(double)cums[n-1];
+}
+
 void stat_core(TDataDef *MA,TDataDef *MB) {
 
    double va,vb,t;
    double ratio,sum,dif,adif;
-   unsigned long i,n;
+   unsigned long i,n,nx=0,ny=0;
+   double *vx,*vy;
+   unsigned int *cx,*cy;
 
    Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
+   Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vosf=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
    Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
@@ -906,11 +960,31 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       return;
    }
 
+   if (MA && MB) {
+       vx = malloc(n*sizeof(double));
+       vy = malloc(n*sizeof(double));
+       cx = malloc(n*sizeof(unsigned int));
+       cy = malloc(n*sizeof(unsigned int));
+
+       if (!vx || !vy || !cx || !cy) {
+           fprintf(stderr,  "[stat_core] : Could not allocate memory\n");
+           if( vx ) free(vx);
+           if( vy ) free(vy);
+           if( cx ) free(cx);
+           if( cy ) free(cy);
+           return;
+       }
+   } else {
+       vx=vy=NULL;
+       cx=cy=NULL;
+   }
+
    for(i=0;i<n;i++) {
       if (MA) {
          Def_Get(MA,0,i,va);
          if (va==MA->NoData) {
             Vna++;
+            vx[i]=vy[i]=HUGE_VAL;
             continue;
          }
       }
@@ -919,23 +993,25 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          Def_Get(MB,0,i,vb);
          if (vb==MB->NoData) {
             Vna++;
+            vx[i]=vy[i]=HUGE_VAL;
             continue;
          }
       }
 
       Vminx=va<Vminx?va:Vminx;
       Vmaxx=va>Vmaxx?va:Vmaxx;
-      Vminy=vb<Vminy?vb:Vminy;
-      Vmaxy=vb>Vmaxy?vb:Vmaxy;
 
       Vsumx+=va;
       Vssx+=va*va;
 
       if (MB) {
+         //printf("%.17G\t%.17G\n", va, vb);
          sum=vb+va;
          dif=vb-va;
          adif=fabs(dif);
 
+         Vminy=vb<Vminy?vb:Vminy;
+         Vmaxy=vb>Vmaxy?vb:Vmaxy;
          Vsumy+=vb;
          Vssy+=vb*vb;
          Vssxy+=va*vb;
@@ -944,6 +1020,16 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          Vme+=adif;
          Vmaxb=dif>Vmaxb?dif:Vmaxb;
          Vmaxe=adif>Vmaxe?adif:Vmaxe;
+         Vnad+=fabs(va-vb);
+         Vfms+=sum;
+         Vosf+=va<=vb?va:vb;
+
+         vx[i]=va;
+         vy[i]=vb;
+
+         if (va==vb) Vnbeq++;
+         else if (vb>va) Vnbgt++;
+         else Vnblt++;
 
          if (va!=0.0f) {
             t=1.0/va;
@@ -959,6 +1045,29 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
             t=fabs(1.0-vb/va);
             Vmre+=t;
             Vmaxre=t>Vmaxre?t:Vmaxre;
+
+            t=vb/va;
+            if (0.5f<=t && t<=2.0f) Vfa2++;
+            if (0.2f<=t && t<=5.0f) Vfa5++;
+            if (0.1f<=t && t<=10.0f) Vfa10++;
+            if (t>0.0f) {
+                t = log(t);
+                Vgmb+=t;
+                Vgmv+=t*t;
+            }
+
+            if (vb==0.0f) {
+                Vnbmi++;
+            }
+         } else {
+             if (vb==0.0f) {
+                 Vfa2++;
+                 Vfa5++;
+                 Vfa10++;
+                 Vnbnp++;
+             } else {
+                 Vnbfa++;
+             }
          }
 
          if (sum!=0.0f) {
@@ -973,6 +1082,13 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
 
    if (Vnb==0) {
       Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse;
+      Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vosf=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=0.0;
+
+      if( vx ) free(vx);
+      if( vy ) free(vy);
+      if( cx ) free(cx);
+      if( cy ) free(cy);
+
       return;
    }
 
@@ -991,6 +1107,39 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vavgy = Vsumy/Vnb;
    Vs     = sqrt((Vssy-(Vssxy*Vssxy)/Vssx)/(Vnb-2.0));
 
+   if (MA && MB) {
+       // Calculate the Empirical Cumulative Distribution Function for x and y
+
+       qsort(vx, n, sizeof(double), QSort_Double);
+       qsort(vy, n, sizeof(double), QSort_Double);
+
+       // Eliminate duplicate values, but keep the number of occurrences in the c[xy] array
+       for(nx=0,ny=0,i=1;i<n;++i) {
+           if (vx[i]!=vx[nx]) {
+               cx[nx]=i;
+               if (++nx<i) {
+                   vx[nx]=vx[i];
+               }
+           }
+
+           if (vy[i]!=vy[ny]) {
+               cy[ny]=i;
+               if (++ny<i) {
+                   vy[ny]=vy[i];
+               }
+           }
+       }
+       if (vx[nx] != HUGE_VAL) { cx[nx++]=n; }
+       if (vy[ny] != HUGE_VAL) { cy[ny++]=n; }
+
+       // Calculate KSP = Max|D(Xk) - D(Yk)|
+
+       for(i=0;i<nx;++i)
+           Vksp = fmax(Vksp, fabs((double)cx[i]/(double)cx[nx-1] - ecdf(vx[i],vy,cy,ny)));
+       for(i=0;i<ny;++i)
+           Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
+   }
+
    for(i=0;i<n;i++) {
       Def_Get(MA,0,i,va);
       if (MB)
@@ -1004,10 +1153,13 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          Vcovar+=(va-Vavgx)*(vb-Vavgy);
    }
 
+
+   Vpcc=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx)*sqrt(Vvary));
    Vvarx/=Vnb;
    Vvary/=Vnb;
    Vcovar/=Vnb;
    Vcorr=(Vssy==0 ||Vssx==0)?0:Vssxy/sqrt(Vssx*Vssy);
+   Vnmse=Vrmse/(Vnb*Vavgx*Vavgy);
    Vrmse=sqrt(Vrmse/Vnb);
    Vnrmse=Vrmse/Vavgx;
    Vregb=Vssxy/Vssx;
@@ -1023,12 +1175,154 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vmfe=2.0*Vmfe/Vnb*100;
    Vlmnb=Vlmnb/Vnb-1;
    Vlmne=Vlmne/Vnb-1;
+   Vgmb=exp(Vgmb/(Vnb-Vnbfa-Vnbmi));
+   Vgmv=exp(Vgmv/(Vnb-Vnbfa-Vnbmi));
+   Vfoex=((Vnbgt+Vnbeq/2.0f)/Vnb-0.5f)*100.0f;
+   Vfa2=(Vfa2/Vnb)*100.0f;
+   Vfa5=(Vfa5/Vnb)*100.0f;
+   Vfa10=(Vfa10/Vnb)*100.0f;
+   Vfb=(Vavgy==0 || Vavgx==0)?0:2.0f*(Vavgy-Vavgx)/(Vavgy+Vavgx);
+   Vnad=Vfms==0?0:Vnad/Vfms;
+   Vfms=(1.0f-Vnad)/(1.0f+Vnad)*100.0f;
+   Vosf=(Vsumx==0 || Vsumy==0)?0:sqrt(pow(1-Vosf/Vsumx,2.0)+pow(1-Vosf/Vsumy,2.0));
+   Vksp*=100.0;
+   //Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-fabs(Vfoex/50.0))+(1-Vksp/100.0)+(1-Vnad);
+   Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-Vksp/100.0)+(1-Vnad);
+   //printf("pcc\tvarx\tvary\tavgx\tavgy\tnb\tcovar\tcorr\tnmse\tgmb\tgmv\tfoex\tfa2\tfa5\tfa10\tfb\tnad\tfms\tosf\tksp\trank\tnbeq\tnbgt\tnblt\tnbfa\tnbmi\tnbnp\n");
+   //printf("%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\n", 
+   //        Vpcc, Vvarx, Vvary, Vavgx, Vavgy, Vnb, Vcovar, Vcorr, Vnmse, Vgmb, Vgmv, Vfoex, Vfa2, Vfa5, Vfa10, Vfb, Vnad, Vfms, Vosf, Vksp, Vrank, Vnbeq, Vnbgt, Vnblt, Vnbfa, Vnbmi, Vnbnp);
+   //fflush(stdout);
+
+   if( vx ) free(vx);
+   if( vy ) free(vy);
+   if( cx ) free(cx);
+   if( cy ) free(cy);
 }
 
 double stat_all(TDataDef *MA,TDataDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vnb);
+}
+
+double stat_nmse(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnmse);
+}
+
+double stat_gmb(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vgmb);
+}
+
+double stat_gmv(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vgmv);
+}
+
+double stat_foex(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfoex);
+}
+
+double stat_fa2(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfa2);
+}
+
+double stat_fa5(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfa5);
+}
+
+double stat_fa10(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfa10);
+}
+
+double stat_fb(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfb);
+}
+
+double stat_nad(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnad);
+}
+
+double stat_fms(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vfms);
+}
+
+double stat_osf(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vosf);
+}
+
+double stat_pcc(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vpcc);
+}
+
+double stat_ksp(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vksp);
+}
+
+double stat_rank(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vrank);
+}
+
+double stat_nbeq(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnbeq);
+}
+
+double stat_nbgt(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnbgt);
+}
+
+double stat_nblt(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnblt);
+}
+
+double stat_nbfa(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnbfa);
+}
+
+double stat_nbmi(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnbmi);
+}
+
+double stat_nbnp(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+   return(Vnbnp);
 }
 
 double stat_na(TDataDef *MA,TDataDef *MB) {
