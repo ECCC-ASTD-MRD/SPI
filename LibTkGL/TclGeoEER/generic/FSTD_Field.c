@@ -1673,7 +1673,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
 
          case DATA:
-            nidx=0;
+            nidx=-1;
             
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);

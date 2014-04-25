@@ -557,10 +557,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
                                  "-convexhull","-intersection","-union,","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
-                                 "-simplify","-segmentize","-close","-flatten","-isempty","-isvalid","-issimple","-isring",NULL };
+                                 "-simplify","-segmentize","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
-                             OVERLAP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
+                             OVERLAP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
    if (!g0) {
@@ -663,6 +663,26 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Buffer(g0,dist,nseg)));
          break;
 
+      case TOPOINT: 
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiPoint(g0)));
+         break;
+         
+      case TOLINE:         
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToLineString(g0)));
+         break;
+         
+      case TOMULTILINE:         
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiLineString(g0)));         
+         break;
+         
+      case TOPOLYGON:         
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToPolygon(g0)));
+         break;
+         
+      case TOMULTIPOLYGON:         
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiPolygon(g0)));         
+         break;
+         
       case CONVEXHULL:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ConvexHull(g0)));
          break;

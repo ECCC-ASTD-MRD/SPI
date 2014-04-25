@@ -869,7 +869,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
       case CONVEXHULL:
 
          if (Objc!=2) {
-            Tcl_WrongNumArgs(Interp,0,Objv,"resultlayer");
+            Tcl_WrongNumArgs(Interp,0,Objv,"result");
             return(TCL_ERROR);
          }
          if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),1))) {

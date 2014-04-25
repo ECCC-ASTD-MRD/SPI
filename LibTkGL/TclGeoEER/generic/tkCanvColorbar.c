@@ -646,14 +646,18 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
 int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1) {
 
    char    buf[512];
-   int     y;
+   int     y=0;
 
+   buf[0]='\0';
+   
    if (CB->Id && CB->UFont && CB->UColor) {
-      y=CB->tkm.linespace;
-      if (Interp) {
-         glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
-      } else {
-         Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Desc,Spec);
+      if (Spec->Desc && Spec->Desc[0]!='\0') {
+         y=CB->tkm.linespace;
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
+         } else {
+            Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Desc,Spec);
+         }
       }
 
       if (CB->ShowFactor) {
@@ -718,31 +722,39 @@ int Colorbar_HRenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int X
 
    char buf[512];
 
-   if (CB->Id && CB->UFont && CB->UColor) {
-      sprintf(buf,"%s",Spec->Desc);
+   buf[0]='\0';
 
+   if (CB->Id && CB->UFont && CB->UColor) {
+      if (Spec->Desc && Spec->Desc[0]!='\0') {
+         sprintf(buf,"%s ",Spec->Desc);
+      }
+      
       if (CB->ShowFactor) {
          if (Spec->ValDelta!=0.0) {
             if (Spec->ValFactor!=1.0) {
-               sprintf(buf,"%s [+ %1.2e x %1.2e]",buf,Spec->ValDelta,Spec->ValFactor);
+               sprintf(buf,"%s[+ %1.2e x %1.2e] ",buf,Spec->ValDelta,Spec->ValFactor);
             } else {
-               sprintf(buf,"%s [+ %1.2e]",buf,Spec->ValDelta);
+               sprintf(buf,"%s[+ %1.2e] ",buf,Spec->ValDelta);
             }
          } else if (Spec->ValFactor!=1.0) {
-            sprintf(buf,"%s [x %1.2e]",buf,Spec->ValFactor);
+            sprintf(buf,"%s[x %1.2e] ",buf,Spec->ValFactor);
          }
       }
 
       if (Spec->Unit && Spec->Unit[0]!='\0') {
-         sprintf(buf,"%s (%s)",buf,Spec->Unit);
+         sprintf(buf,"%s(%s)",buf,Spec->Unit);
       }
 
-      if (Interp) {
-         glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,CB->header.y1+CB->tkm.linespace),0,CB->UColor,0.0,1.0,0.0);
+      if (strlen(buf)) {
+         if (Interp) {
+            glPostscriptText(Interp,CB->canvas,buf,X1+5,Tk_CanvasPsY(CB->canvas,CB->header.y1+CB->tkm.linespace),0,CB->UColor,0.0,1.0,0.0);
+         } else {
+            Colorbar_RenderText(CB,X1+5,CB->header.y1+CB->tkm.linespace,TK_JUSTIFY_LEFT,buf,Spec);
+         }
+         return(CB->tkm.linespace+5);
       } else {
-         Colorbar_RenderText(CB,X1+5,CB->header.y1+CB->tkm.linespace,TK_JUSTIFY_LEFT,buf,Spec);
+         return(0);  
       }
-      return(CB->tkm.linespace+5);
    } else {
       return(0);
    }

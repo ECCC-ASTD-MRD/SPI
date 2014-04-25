@@ -3086,6 +3086,8 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
 
    objj=Tcl_NewListObj(0,NULL);
    
+   if (Component<0) Component=0;
+   
    if (Component<Field->Def->NC) {
       if (Flip) {
          for(i=0;i<Field->Def->NI;i++){
@@ -3136,34 +3138,36 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Lis
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
    double   value;
-//   unsigned char *data;
+   unsigned char *data;
 
    if (Component>=Field->Def->NC) {
       Tcl_AppendResult(Interp,"Data_ValPutMatrix: Invalid component index",(char*)NULL);
       return(TCL_ERROR);
    }      
       
-   /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
-   Tcl_ListObjLength(Interp,List,&nobjj);
+   if (Component<0) {
+     data=Tcl_GetByteArrayFromObj(List,&nobjj);
+     memcpy(Field->Def->Data[0],data,nobjj);  
+   } else {
+      /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
+      Tcl_ListObjLength(Interp,List,&nobjj);
 
-   if (nobjj>1) {
-      for (j=0;j<nobjj;j++){
+      if (nobjj>1) {
+         for (j=0;j<nobjj;j++){
 
-         /*Extraire les ni points de la nj ieme ligne*/
-         Tcl_ListObjIndex(Interp,List,j,&objj);
-         Tcl_ListObjLength(Interp,objj,&nobji);
+            /*Extraire les ni points de la nj ieme ligne*/
+            Tcl_ListObjIndex(Interp,List,j,&objj);
+            Tcl_ListObjLength(Interp,objj,&nobji);
 
-         /*Assigner les valeurs ni de la nj ieme ligne*/
-         for (i=0;i<nobji;i++){
-            Tcl_ListObjIndex(Interp,objj,i,&obji);
-            Tcl_GetDoubleFromObj(Interp,obji,&value);
-            value=SPEC2VAL(Field->Spec,value);
-            Def_Set(Field->Def,Component,j*nobji+i,value);
+            /*Assigner les valeurs ni de la nj ieme ligne*/
+            for (i=0;i<nobji;i++){
+               Tcl_ListObjIndex(Interp,objj,i,&obji);
+               Tcl_GetDoubleFromObj(Interp,obji,&value);
+               value=SPEC2VAL(Field->Spec,value);
+               Def_Set(Field->Def,Component,j*nobji+i,value);
+            }
          }
       }
-   } else {
-//      data=Tcl_GetByteArrayFromObj(List,&nobjj);
-//      memcpy(Field->Def->Data[0],data,nobjj);
    }
 
    return(TCL_OK);
