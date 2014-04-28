@@ -1902,13 +1902,29 @@ proc CVMagnifier::Move { Canvas X Y } {
 #                       sélection d'une branche ayant des enfants est possible.
 #                       (Défaut : False). Sera forcé à false si l'option
 #                       "AllowMultSelect" est à False
-#                  <BorderColor> <Color> Détermine la couleur de la bordure du
+#                  <ColorBorder> <Color> Détermine la couleur de la bordure du
 #                       rectangle de sélection. (Défaut : "black")
 #                  <HighlightFullWidth> <True|False> Détermine si le retangle de
 #                       sélection couvrira ou non la pleine largeure du canvas.
 #                       (Défaut : False) Attention : si la taille du canvas change,
 #                       le rectangle de sélection ne se mettra à jour qu'au prochain
 #                       rafraîchissement de la sélection.
+#                  <VariableTextColor> <True|False> Détermine s'il y aura des couleurs
+#                       différentes pour chaque noeud. Si mis à True, le paramètre 
+#                       "color" doit aussi être présent lors de l'appel à IdCmd.
+#                       (Défaut : False)
+#                  <VariableIcon> <True|False> Détermine s'il y aura des icones
+#                       différentes pour chaque noeud. Si mis à True, le paramètre 
+#                       "icon" doit aussi être présent lors de l'appel à IdCmd. Si
+#                       l'option "VariableTextColor" est aussi mis à True, alors
+#                       le paramètre "icon" apparaîtra après le paramètre color.
+#                       L'appel ressemblera alors à "IdCmd Tree Branch IsLeaf Color Icon"
+#                       (Défaut : False)
+#                  <AllowHiddenBranch> <True|False> Détermine s'il peut y avoir des
+#                       branches cachées. Si mis à True, le paramètre "hidden" doit aussi
+#                       être présent lors de l'appel à IdCmd. Le paramètre "hidden"
+#                       apparaîtra après les paramètre VariableColor et VariableIcon, le
+#                       cas échéant.
 #
 #                  Notes:
 #                   - Seul le paramètre IdCmd est obligatoire.
@@ -1928,13 +1944,18 @@ proc CVMagnifier::Move { Canvas X Y } {
 #-------------------------------------------------------------------------------
 
 namespace eval CVTree {
+    global GDefs
     variable Param
 
     set Param(AllowMultSelect)      False
     set Param(DblClickSelect)       True
     set Param(AllowParentSelect)    False
-    set Param(BorderColor)          black
+    set Param(ColorBorder)          black
+    set Param(ColorHighLight)       $GDefs(ColorHighLight)
     set Param(HighlightFullWidth)   False
+    set Param(VariableTextColor)    False
+    set Param(VariableIcon)         False
+    set Param(AllowHiddenBranch)    False
 }
 
 proc CVTree::Create { Canvas Tree args } {
@@ -1951,11 +1972,9 @@ proc CVTree::Create { Canvas Tree args } {
 
     #----- Default params values
 
-    set Data(AllowMultSelect$Tree)      $Param(AllowMultSelect)
-    set Data(DblClickSelect$Tree)       $Param(DblClickSelect)
-    set Data(AllowParentSelect$Tree)    $Param(AllowParentSelect)
-    set Data(BorderColor$Tree)          $Param(BorderColor)
-    set Data(HighlightFullWidth$Tree)   $Param(HighlightFullWidth)
+    foreach {opt val} [array get Param] {
+        set Data($opt$Tree) $val
+    }
 
     #----- Parse args
 
@@ -2012,7 +2031,7 @@ proc CVTree::ExecCallback { Callback Canvas Tree Branch Open } {
 # Nom      : <CVTree::Highlight>
 # Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Illumine les donnéessélectionnées
+# But      : Illumine les données sélectionnées
 #
 # Parametres :
 #  <Canvas>      : Canvas où est affiché l'arbre
@@ -2026,7 +2045,6 @@ proc CVTree::ExecCallback { Callback Canvas Tree Branch Open } {
 #
 #-------------------------------------------------------------------------------
 proc CVTree::Highlight { Canvas Tree {Branch ""} } {
-    global GDefs
     variable Data
 
     if { !$Data(AllowMultSelect$Tree) } {
@@ -2041,7 +2059,7 @@ proc CVTree::Highlight { Canvas Tree {Branch ""} } {
         #----- Move the highlight box if it exists or create it if it doesn't
 
         if { ![llength [$Canvas find withtag CVTREESELECT$Tree]] } {
-            eval $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $GDefs(ColorHighLight) -outline $Data(BorderColor$Tree) -width 1 -tags CVTREESELECT$Tree
+            eval $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $Data(ColorHighLight$Tree) -outline $Data(ColorBorder$Tree) -width 1 -tags CVTREESELECT$Tree
             $Canvas lower CVTREESELECT$Tree
         } else {
             eval $Canvas coords CVTREESELECT$Tree [list $x1 $y1 $x2 $y2]
@@ -2084,7 +2102,7 @@ proc CVTree::Highlight { Canvas Tree {Branch ""} } {
                     set x2 [expr {[winfo width $Canvas]-1}]
                 }
 
-                $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $GDefs(ColorHighLight) -outline $Data(BorderColor$Tree) -width 1 -tags CVTREESELECT$Tree
+                $Canvas create rectangle [list $x1 $y1 $x2 $y2] -fill $Data(ColorHighLight$Tree) -outline $Data(ColorBorder$Tree) -width 1 -tags CVTREESELECT$Tree
                 $Canvas lower CVTREESELECT$Tree
             }
         }
@@ -2371,20 +2389,36 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
     set dy 20
     set dx 10
     set db 0
+    set di 0
     set y0 $y
 
     incr x $dx
 
+    if { $Data(VariableIcon$Tree) } {
+        set di 20
+    }
     #if { [$Tree keyexists $Branch box] } {
-    #    set db 15
-    #} else {
-    #    set db 0
+    #    incr db 15
     #}
 
     foreach branch [$Tree children $Branch]  {
         set leaf True
 
-        if { [set id [$Data(IdCmd$Tree) $Tree $branch leaf]]!="" } {
+        set addArgs leaf
+        if { $Data(VariableTextColor$Tree) } {
+            lappend addArgs color
+        }
+        if { $Data(VariableIcon$Tree) } {
+            lappend addArgs icon
+        }
+        if { $Data(AllowHiddenBranch$Tree) } {
+            lappend addArgs hidden
+        }
+
+        if { [set id [$Data(IdCmd$Tree) $Tree $branch {*}$addArgs]]!="" } {
+            if { $Data(AllowHiddenBranch$Tree) && $hidden } {
+                continue
+            }
             set y0 [incr y $dy]
 
             #if { !$Data(AllowMultSelect$Tree) && [$Tree keyexists $branch box] } {
@@ -2396,7 +2430,15 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
             #    }
             #}
 
-            $Canvas create text [expr $x+$dx+$db] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
+            if { $Data(VariableIcon$Tree) } {
+                $Canvas create image [expr $x+$dx+$db+8] $y -image $icon -tags "CVTREE$Tree CVTREETEXT$branch $branch"
+            }
+
+            if { $Data(VariableTextColor$Tree) } {
+                $Canvas create text [expr $x+$dx+$db+$di] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font) -fill $color
+            } else {
+                $Canvas create text [expr $x+$dx+$db+$di] $y -text $id -anchor w -tags "CVTREE$Tree CVTREETEXT$branch $branch" -font $GDefs(Font)
+            }
 
             if { [$Tree keyexists $branch bubble] && [set bubble [$Tree get $branch bubble]]!="" } {
                 CanvasBubble::Create $Canvas CVTREETEXT$branch $bubble 400
