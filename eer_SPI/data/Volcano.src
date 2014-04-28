@@ -30,6 +30,7 @@
 213011  : KARACA DAG                   :Turkey              :37.666667:N: 39.833333:E:  1957
 213020  : NEMRUT DAGI                  :Turkey              :38.650000:N: 42.233333:E:  2948
 213021  : SUPHAN DAGI                  :Turkey              :38.916667:N: 42.816667:E:  4158
+213022  : GIREKOL TEPE                 :Turkey              :39.192500:N: 43.216944:E:  2778
 213030  : TENDUREK DAGI                :Turkey              :39.366667:N: 43.866667:E:  3584
 213040  : ARARAT                       :Turkey              :39.700000:N: 44.300000:E:  5165
 213050  : KARS PLATEAU                 :Turkey              :40.750000:N: 43.250000:E:  3000
@@ -79,6 +80,7 @@
 221124  : GUFA                         :Eritrea-Djibouti    :12.550000:N: 42.533333:E:   600
 221125  : ASSAB VOLCANIC FIELD         :Eritrea             :12.950000:N: 42.433333:E:   987
 221126  : ARDOUKOBA                    :Djibouti            :11.583333:N: 42.466667:E:   298
+221127  : MANDA GARGORI                :Ethiopia            :11.750000:N: 41.483333:E:     0
 221141  : DAMA ALI                     :Ethiopia            :11.283333:N: 41.633333:E:  1068
 221150  : GABILLEMA                    :Ethiopia            :11.083333:N: 41.266667:E:  1459
 221151  : YANGUDI                      :Ethiopia            :10.583333:N: 41.041667:E:  1383
@@ -136,6 +138,8 @@
 222130  : CHYULU HILLS                 :Kenya               : 2.683333:S: 37.883333:E:  2188
 222150  : KILIMANJARO                  :Tanzania            : 3.066667:S: 37.350000:E:  5895
 222160  : MERU                         :Tanzania            : 3.250000:S: 36.750000:E:  4565
+222161  : IGWISI HILLS                 :Tanzania            : 4.890556:S: 31.930278:E:  1145
+222162  : UNNAMED                      :Tanzania            : 8.624167:S: 33.583333:E:  1690
 222163  : SW USANGU BASIN              :Tanzania            : 8.750000:S: 33.800000:E:  2179
 222164  : NGOZI                        :Tanzania            : 8.966667:S: 33.566667:E:  2622
 222165  : IZUMBWE-MPOLI                :Tanzania            : 8.933333:S: 33.400000:E:  1568
@@ -162,7 +166,11 @@
 224011  : TOMBEL GRABEN                :Cameroon            : 4.750000:N:  9.666667:E:   500
 224020  : MANENGOUBA                   :Cameroon            : 5.033333:N:  9.833333:E:  2411
 224030  : OKU VOLCANIC FIELD           :Cameroon            : 6.250000:N: 10.500000:E:  3011
+224040  : NGAOUNDERE PLATEAU           :Cameroon            : 7.250000:N: 13.666667:E:     0
+224050  : BIU PLATEAU                  :Nigeria             :10.750000:N: 12.000000:E:     0
 225001  : TODRA VOLCANIC FIELD         :Niger               :17.683333:N:  8.500000:E:  1780
+225002  : TIN ZAOUATENE VOLCANIC FIELD :Mali                :19.833333:N:  2.833333:E:     0
+225003  : IN EZZANE VOLCANIC FIELD     :Algeria-Niger       :23.000000:N: 10.833333:E:     0
 225004  : TAHALRA VOLCANIC FIELD       :Algeria             :22.666667:N:  5.000000:E:  1467
 225005  : ATAKOR VOLCANIC FIELD        :Algeria             :23.333333:N:  5.833333:E:  2918
 225006  : MANZAZ VOLCANIC FIELD        :Algeria             :23.916667:N:  5.833333:E:  1672
@@ -173,16 +181,19 @@
 225020  : TARSO VOON                   :Chad                :20.916667:N: 17.283333:E:  3100
 225021  : EMI KOUSSI                   :Chad                :19.800000:N: 18.533333:E:  3415
 225030  : JEBEL MARRA                  :Sudan               :12.950000:N: 24.266667:E:  3042
+225040  : KUTUM VOLCANIC FIELD         :Sudan               :14.566667:N: 25.850000:E:     0
 225050  : MEIDOB VOLCANIC FIELD        :Sudan               :15.316667:N: 26.466667:E:  2000
 225060  : BAYUDA VOLCANIC FIELD        :Sudan               :18.333333:N: 32.750000:E:   670
+225070  : JEBEL UMM ARAFIEB            :Sudan               :18.166667:N: 33.833333:E:     0
 230010  : SHARAT KOVAKAB               :Syria               :36.533333:N: 40.850000:E:   534
+230020  : UNNAMED                      :Syria               :36.666667:N: 37.000000:E:     0
 230030  : GOLAN HEIGHTS                :Syria               :33.100000:N: 35.966667:E:  1197
 230040  : UNNAMED                      :Syria               :33.000000:N: 36.633333:E:  1050
 230050  : ES SAFA                      :Syria               :33.250000:N: 37.066667:E:   979
 230060  : JABAL AD DRUZE               :Syria               :32.658333:N: 36.425000:E:  1803
 231001  : AL HARRAH                    :Saudi Arabia        :31.083333:N: 38.416667:E:  1100
 231010  : HARRAT AR RAHAH              :Saudi Arabia        :27.800000:N: 36.166667:E:  1950
-231020  : HARRAT UWAYRID               :Saudi Arabia        :27.083333:N: 37.250000:E:  1920
+231020  : UWAYRID HARRAT               :Saudi Arabia        :27.083333:N: 37.250000:E:  1920
 231040  : HARRAT LUNAYYIR              :Saudi Arabia        :25.166667:N: 37.750000:E:  1370
 231050  : HARRAT ITHNAYN               :Saudi Arabia        :26.583333:N: 40.200000:E:  1625
 231060  : HARRAT KHAYBAR               :Saudi Arabia        :25.000000:N: 39.916667:E:  2093
@@ -194,12 +205,17 @@
 231100  : JABAL EL- MARHA              :Yemen               :15.245000:N: 44.236389:E:  2506
 231110  : JABAL HAYLAN                 :Yemen               :15.433333:N: 44.783333:E:  1550
 231120  : HARRAS OF DHAMAR             :Yemen               :14.566667:N: 44.666667:E:  3500
+231150  : UNNAMED                      :Yemen               :12.250000:N: 45.000000:E:     0
 231160  : HARRA ES- SAWAD              :Yemen               :13.583333:N: 46.116667:E:  1737
 231170  : HARRA OF BAL HAF             :Yemen               :14.050000:N: 48.333333:E:   233
+231180  : BIR BORHUT                   :Yemen               :15.550000:N: 50.633333:E:     0
+232000  : UNNAMED                      :Iran-Azerbaijan     :39.250000:N: 45.166667:E:     0
 232001  : SAHAND                       :Iran                :37.750000:N: 46.433333:E:  3707
 232002  : SABALAN                      :Iran                :38.250000:N: 47.916667:E:  4811
 232010  : DAMAVAND                     :Iran                :35.951389:N: 52.109444:E:  5670
+232020  : QALEH HASAN ALI              :Iran                :29.400000:N: 57.566667:E:     0
 232030  : BAZMAN                       :Iran                :28.066667:N: 60.000000:E:  3490
+232040  : UNNAMED                      :Iran                :28.166667:N: 60.666667:E:     0
 232050  : TAFTAN                       :Iran                :28.600000:N: 61.133333:E:  3940
 232060  : DACHT-I-NAVAR GROUP          :Afghanistan         :33.950000:N: 67.916667:E:  3800
 232070  : VAKAK GROUP                  :Afghanistan         :34.250000:N: 67.966667:E:  3190
@@ -212,7 +228,7 @@
 233013  : ANKAIZINA FIELD              :Madagascar          :14.300000:S: 48.666667:E:  2878
 233014  : ITASY VOLCANIC FIELD         :Madagascar          :19.000000:S: 46.766667:E:  1800
 233015  : ANKARATRA FIELD              :Madagascar          :19.400000:S: 47.200000:E:  2644
-233020  : PITON DE LA FOURNAISE        :France              :21.230833:S: 55.712500:E:  2632
+233020  : PITON DE LA FOURNAISE        :France              :21.243056:S: 55.707500:E:  2632
 234000  : BOOMERANG SEAMOUNT           :France              :37.720833:S: 77.825000:E:  -650
 234001  : AMSTERDAM ISLAND             :France              :37.833333:S: 77.516667:E:   881
 234002  : ST. PAUL                     :France              :38.716667:S: 77.533333:E:   268
@@ -224,25 +240,26 @@
 234050  : ILE AUX COCHONS              :France              :46.100000:S: 50.233333:E:   775
 234060  : PRINCE EDWARD ISLAND         :South Africa        :46.633333:S: 37.950000:E:   672
 234070  : MARION ISLAND                :South Africa        :46.900000:S: 37.750000:E:  1230
+235010  : UNNAMED                      :India               :11.750000:N: 80.750000:E:     0
 241010  : KAIKOHE-BAY OF ISLANDS       :New Zealand         :35.300000:S:173.900000:E:   388
 241011  : WHANGAREI                    :New Zealand         :35.750000:S:174.266667:E:   397
 241020  : AUCKLAND FIELD               :New Zealand         :36.900000:S:174.866667:E:   260
 241021  : MAYOR ISLAND                 :New Zealand         :37.283333:S:176.250000:E:   355
-241030  : TARANAKI [EGMONT]            :New Zealand         :39.300000:S:174.066667:E:  2518
+241030  : TARANAKI (EGMONT)            :New Zealand         :39.300000:S:174.066667:E:  2518
 241040  : WHITE ISLAND                 :New Zealand         :37.516667:S:177.183333:E:   321
 241050  : OKATAINA                     :New Zealand         :38.116667:S:176.500000:E:  1111
 241060  : REPOROA                      :New Zealand         :38.416667:S:176.333333:E:   592
-241061  : MAROA                        :New Zealand         :38.416667:S:176.083333:E:  1156
+241061  : MAROA                        :New Zealand         :38.416667:S:176.083333:E:   897
 241070  : TAUPO                        :New Zealand         :38.816667:S:176.000000:E:   760
-241080  : TONGARIRO                    :New Zealand         :39.133333:S:175.641667:E:  1978
+241080  : TONGARIRO / NGAURUHOE        :New Zealand         :39.156667:S:175.632500:E:  1978
 241100  : RUAPEHU                      :New Zealand         :39.283333:S:175.566667:E:  2797
 241101  : CLARK                        :New Zealand         :36.446389:S:177.838889:E:  -860
-241102  : TANGAROA                     :New Zealand         :36.320833:S:178.028333:E:   600
-241110  : RUMBLE V                     :New Zealand         :36.141667:S:178.195833:E:   400
-241120  : RUMBLE IV                    :New Zealand         :36.133333:S:178.050000:E:   500
+241102  : TANGAROA                     :New Zealand         :36.320833:S:178.028333:E:  -600
+241110  : RUMBLE V                     :New Zealand         :36.141667:S:178.195833:E:  -400
+241120  : RUMBLE IV                    :New Zealand         :36.133333:S:178.050000:E:  -500
 241130  : RUMBLE III                   :New Zealand         :35.745000:S:178.478333:E:  -220
-241131  : RUMBLE II WEST               :New Zealand         :35.353333:S:178.526667:E:  1200
-241140  : HEALY                        :New Zealand         :35.003611:S:178.972500:E:   980
+241131  : RUMBLE II WEST               :New Zealand         :35.353333:S:178.526667:E: -1200
+241140  : HEALY                        :New Zealand         :35.003611:S:178.972500:E:  -980
 241150  : BROTHERS                     :New Zealand         :34.874722:S:179.075278:E: -1350
 242001  : VOLCANO W                    :New Zealand         :31.850000:S:179.183333:W:  -900
 242005  : HAVRE SEAMOUNT               :New Zealand         :31.110000:S:179.040000:E:  -720
@@ -267,8 +284,11 @@
 243101  : TAFAHI                       :Tonga               :15.850000:S:173.716667:W:   560
 243102  : CURACOA                      :Tonga               :15.616667:S:173.666667:W:   -33
 243110  : NIUAFOOU                     :Tonga               :15.600000:S:175.633333:W:   260
+243111  : DUGONG                       :Tonga               :15.430833:S:175.725278:W: -1170
+243112  : LOBSTER                      :Tonga               :15.333333:S:176.283333:W: -1500
 243120  : TAFU-MAKA                    :Tonga               :15.366667:S:174.233333:W: -1400
 243130  : WEST MATA                    :Tonga               :15.100000:S:173.750000:W: -1174
+243140  : NIUA TAHI                    :Tonga               :15.420000:S:174.020000:W: -1270
 244000  : VAILULUU                     :United States       :14.215000:S:169.058333:W:  -592
 244001  : TAU                          :United States       :14.233333:S:169.454167:W:   931
 244010  : OFU-OLOSEGA                  :United States       :14.175000:S:169.618333:W:   639
@@ -289,10 +309,12 @@
 251020  : MANAM                        :Papua New Guinea    : 4.080000:S:145.037222:E:  1807
 251030  : KARKAR                       :Papua New Guinea    : 4.648611:S:145.963889:E:  1839
 251040  : UNNAMED                      :Papua New Guinea    : 4.311111:S:146.255556:E: -2000
+251041  : YOMBA                        :Papua New Guinea    : 4.900000:S:146.750000:E:     0
 251050  : LONG ISLAND                  :Papua New Guinea    : 5.358333:S:147.116667:E:  1280
 251060  : UMBOI                        :Papua New Guinea    : 5.588889:S:147.875000:E:  1548
 251070  : RITTER ISLAND                :Papua New Guinea    : 5.516667:S:148.120833:E:   140
 251080  : SAKAR                        :Papua New Guinea    : 5.413889:S:148.094444:E:   992
+252001  : UNNAMED                      :Papua New Guinea    : 5.200000:S:148.566667:E:     0
 252010  : LANGILA                      :Papua New Guinea    : 5.525000:S:148.416667:E:  1330
 252021  : MUNDUA                       :Papua New Guinea    : 4.633333:S:149.350000:E:   179
 252030  : GAROVE                       :Papua New Guinea    : 4.691667:S:149.500000:E:   368
@@ -307,6 +329,7 @@
 252110  : BAMUS                        :Papua New Guinea    : 5.200000:S:151.233333:E:  2248
 252120  : ULAWUN                       :Papua New Guinea    : 5.050000:S:151.333333:E:  2334
 252130  : LOLOBAU                      :Papua New Guinea    : 4.916667:S:151.158333:E:   858
+252131  : UNNAMED                      :Papua New Guinea    : 4.750000:S:150.850000:E:     0
 252140  : RABAUL                       :Papua New Guinea    : 4.270833:S:152.202778:E:   688
 252150  : TAVUI                        :Papua New Guinea    : 4.116667:S:152.200000:E:   200
 253000  : DOMA PEAKS                   :Papua New Guinea    : 5.900000:S:143.150000:E:  3568
@@ -334,6 +357,7 @@
 255030  : LOLORU                       :Papua New Guinea    : 6.516667:S:155.616667:E:  1887
 255050  : SIMBO                        :Solomon Islands     : 8.291667:S:156.516667:E:   335
 255052  : KANA KEOKI                   :Solomon Islands     : 8.750000:S:157.033333:E:  -700
+255053  : COLEMAN SEAMOUNT             :Solomon Islands     : 8.833333:S:157.166667:E:     0
 255060  : KAVACHI                      :Solomon Islands     : 9.016667:S:157.950000:E:   -20
 255061  : UNNAMED                      :Solomon Islands     : 8.916667:S:158.033333:E:  -240
 255062  : GALLEGO                      :Solomon Islands     : 9.350000:S:159.733333:E:  1000
@@ -372,6 +396,7 @@
 261120  : SORIKMARAPI                  :Indonesia           : 0.685833:N: 99.539444:E:  2145
 261121  : MALINTANG                    :Indonesia           : 0.466667:N: 99.666667:E:  1983
 261130  : TALAKMAU                     :Indonesia           : 0.079167:N: 99.983333:E:  2919
+261131  : SARIK-GAJAH                  :Indonesia           : 0.083333:N:100.200000:E:     0
 261140  : MARAPI                       :Indonesia           : 0.380556:S:100.473333:E:  2891
 261150  : TANDIKAT                     :Indonesia           : 0.432778:S:100.317222:E:  2438
 261160  : TALANG                       :Indonesia           : 0.978333:S:100.679444:E:  2597
@@ -379,6 +404,7 @@
 261171  : KUNYIT                       :Indonesia           : 2.274167:S:101.482500:E:  2151
 261172  : HUTAPANJANG                  :Indonesia           : 2.333333:S:101.600000:E:  2021
 261180  : SUMBING                      :Indonesia           : 2.414167:S:101.727500:E:  2507
+261191  : PENDAN                       :Indonesia           : 2.816667:S:102.016667:E:     0
 261200  : BELIRANG-BERITI              :Indonesia           : 2.816667:S:102.183333:E:  1958
 261210  : BUKIT DAUN                   :Indonesia           : 3.383333:S:102.366667:E:  2467
 261220  : KABA                         :Indonesia           : 3.516667:S:102.616667:E:  1952
@@ -470,7 +496,7 @@
 265070  : SERUA                        :Indonesia           : 6.300000:S:130.000000:E:   641
 265080  : MANUK                        :Indonesia           : 5.533333:S:130.291667:E:   282
 265090  : BANDA API                    :Indonesia           : 4.525000:S:129.871389:E:   640
-266010  : COLO [UNA UNA]               :Indonesia           : 0.166667:S:121.608333:E:   507
+266010  : COLO (UNA UNA)               :Indonesia           : 0.166667:S:121.608333:E:   507
 266020  : AMBANG                       :Indonesia           : 0.750000:N:124.416667:E:  1795
 266030  : SOPUTAN                      :Indonesia           : 1.108333:N:124.733333:E:  1784
 266040  : SEMPU                        :Indonesia           : 1.133333:N:124.758333:E:  1549
@@ -480,7 +506,7 @@
 266120  : KLABAT                       :Indonesia           : 1.466667:N:125.033333:E:  1995
 266130  : TONGKOKO                     :Indonesia           : 1.516667:N:125.200000:E:  1149
 267010  : RUANG                        :Indonesia           : 2.300000:N:125.366667:E:   725
-267020  : KARANGETANG [API SIAU]       :Indonesia           : 2.783333:N:125.400000:E:  1784
+267020  : KARANGETANG (API SIAU)       :Indonesia           : 2.783333:N:125.400000:E:  1784
 267030  : BANUA WUHU                   :Indonesia           : 3.137778:N:125.490556:E:    -5
 267040  : AWU                          :Indonesia           : 3.666667:N:125.500000:E:  1320
 267050  : UNNAMED                      :Indonesia           : 3.966667:N:124.166667:E: -5000
@@ -548,12 +574,14 @@
 274030  : BABUYAN CLARO                :Philippines         :19.523333:N:121.940000:E:  1080
 274050  : UNNAMED                      :Philippines         :20.333333:N:121.750000:E:   -24
 274060  : IRAYA                        :Philippines         :20.468611:N:122.009722:E:  1009
+275001  : HAINAN DAO                   :China               :19.700000:N:110.100000:E:     0
 275010  : LEIZHOU BANDAO               :China               :20.783333:N:110.166667:E:   259
 275020  : CU-LAO RE GROUP              :Vietnam             :15.383333:N:109.116667:E:   181
 275030  : TOROENG PRONG                :Vietnam             :14.933333:N:108.000000:E:   800
 275040  : HAUT DONG NAI                :Vietnam             :11.600000:N:108.200000:E:  1000
 275050  : BAS DONG NAI                 :Vietnam             :10.800000:N:107.200000:E:   392
 275060  : ILE DES CENDRES              :Vietnam             :10.157500:N:109.013889:E:   -20
+275070  : VETERAN                      :Vietnam             : 9.833333:N:109.050000:E:     0
 275080  : POPA                         :Burma (Myanmar)     :20.916667:N: 95.250000:E:  1518
 275090  : LOWER CHINDWIN               :Burma (Myanmar)     :22.283333:N: 95.100000:E:   385
 275100  : SINGU PLATEAU                :Burma (Myanmar)     :22.700000:N: 95.983333:E:   507
@@ -561,6 +589,7 @@
 281010  : UNNAMED                      :Taiwan              :20.933333:N:134.750000:E: -6000
 281011  : UNNAMED                      :Taiwan              :19.166667:N:132.250000:E:   -10
 281020  : UNNAMED                      :Taiwan              :21.833333:N:121.183333:E:  -115
+281030  : UNNAMED                      :Taiwan              :24.000000:N:121.833333:E:     0
 281031  : KUEISHANTAO                  :Taiwan              :24.850000:N:121.916667:E:   401
 281032  : TATUN GROUP                  :Taiwan              :25.166667:N:121.516667:E:  1120
 281040  : UNNAMED                      :Taiwan              :25.400000:N:122.200000:E:  -100
@@ -569,96 +598,100 @@
 282020  : IO-TORISHIMA                 :Japan               :27.881111:N:128.222500:E:   212
 282021  : YOKOATE-JIMA                 :Japan               :28.796944:N:128.996944:E:   495
 282022  : AKUSEKI-JIMA                 :Japan               :29.461389:N:129.596944:E:   584
-282030  : SUWANOSEJIMA                 :Japan               :29.471667:N:129.713889:E:   796
-282040  : NAKANOSHIMA                  :Japan               :29.855556:N:129.859167:E:   979
+282030  : SUWANOSEJIMA                 :Japan               :29.638333:N:129.713889:E:   796
+282040  : NAKANOSHIMA                  :Japan               :29.859167:N:129.856944:E:   979
 282041  : KOGAJA-JIMA                  :Japan               :29.878889:N:129.624722:E:   301
+282043  : KUCHINOSHIMA                 :Japan               :29.968056:N:129.925556:E:   628
 282050  : KUCHINOERABUJIMA             :Japan               :30.443333:N:130.217222:E:   657
-282060  : KIKAI                        :Japan               :30.789444:N:130.307500:E:   704
-282070  : IBUSUKI VOLCANIC FIELD       :Japan               :31.216667:N:130.566667:E:   922
+282060  : SATSUMA-IOJIMA               :Japan               :30.789444:N:130.307500:E:   704
+282070  : KAIMONDAKE                   :Japan               :31.216667:N:130.566667:E:   924
 282080  : SAKURAJIMA                   :Japan               :31.592500:N:130.656667:E:  1117
-282081  : SUMIYOSHI-IKE                :Japan               :31.768333:N:130.594167:E:    15
+282081  : SUMIYOSHIIKE                 :Japan               :31.771389:N:130.591944:E:    40
 282090  : KIRISHIMAYAMA                :Japan               :31.934167:N:130.861667:E:  1700
 282091  : FUKUE VOLCANOES              :Japan               :32.656667:N:128.848889:E:   315
 282100  : UNZENDAKE                    :Japan               :32.761389:N:130.298889:E:  1483
 282110  : ASOSAN                       :Japan               :32.884444:N:131.103889:E:  1592
 282120  : KUJUSAN                      :Japan               :33.085833:N:131.248889:E:  1791
-282130  : TSURUMI                      :Japan               :33.283333:N:131.432222:E:  1584
-283001  : ABU                          :Japan               :34.500000:N:131.600000:E:   641
-283002  : SANBE                        :Japan               :35.140556:N:132.621667:E:  1126
+282130  : YUFUDAKE                     :Japan               :33.281667:N:131.390278:E:  1584
+283001  : ABU VOLCANOES                :Japan               :34.500000:N:131.600000:E:   641
+283002  : SANBESAN                     :Japan               :35.139167:N:132.621111:E:  1126
 283003  : OKI-DOGO                     :Japan               :36.176389:N:133.334167:E:   151
 283010  : IZU-TOBU VOLCANOES           :Japan               :34.899722:N:139.097778:E:  1406
-283020  : HAKONE                       :Japan               :35.230000:N:139.023889:E:  1438
-283030  : FUJI                         :Japan               :35.357500:N:138.730556:E:  3776
-283031  : KITA YATSUGA-TAKE            :Japan               :36.100000:N:138.300000:E:  2530
-283040  : ON-TAKE                      :Japan               :35.889722:N:137.483333:E:  3063
-283050  : HAKU-SAN                     :Japan               :36.151944:N:136.774444:E:  2702
-283060  : NORIKURA                     :Japan               :36.103333:N:137.556667:E:  3026
-283070  : YAKE-DAKE                    :Japan               :36.223611:N:137.590000:E:  2455
+283020  : HAKONEYAMA                   :Japan               :35.233333:N:139.020833:E:  1438
+283030  : FUJISAN                      :Japan               :35.360833:N:138.727500:E:  3776
+283031  : YOKODAKE                     :Japan               :36.087222:N:138.320278:E:  2480
+283040  : ONTAKESAN                    :Japan               :35.892778:N:137.480278:E:  3067
+283050  : HAKUSAN                      :Japan               :36.155000:N:136.771389:E:  2702
+283060  : NORIKURADAKE                 :Japan               :36.106389:N:137.553611:E:  3026
+283069  : AKANDANAYAMA                 :Japan               :36.200278:N:137.572778:E:  2109
+283070  : YAKEDAKE                     :Japan               :36.226944:N:137.586944:E:  2455
 283071  : WASHIBA-KUMONOTAIRA          :Japan               :36.408056:N:137.594167:E:  2924
-283080  : TATE-YAMA                    :Japan               :36.568056:N:137.592778:E:  2621
-283090  : NIIGATA-YAKE-YAMA            :Japan               :36.917778:N:138.039167:E:  2400
-283100  : MYOKO                        :Japan               :36.888333:N:138.116667:E:  2446
-283110  : ASAMA                        :Japan               :36.403333:N:138.526111:E:  2568
-283120  : KUSATSU-SHIRANE              :Japan               :36.619722:N:138.535000:E:  2171
+283080  : MIDAGAHARA                   :Japan               :36.571111:N:137.589722:E:  2621
+283090  : NIIGATA-YAKEYAMA             :Japan               :36.920833:N:138.035833:E:  2400
+283100  : MYOKOSAN                     :Japan               :36.891389:N:138.113611:E:  2454
+283110  : ASAMAYAMA                    :Japan               :36.406389:N:138.523056:E:  2568
+283120  : KUSATSU-SHIRANESAN           :Japan               :36.618333:N:138.527778:E:  2165
 283121  : SHIGA                        :Japan               :36.687500:N:138.519167:E:  2041
-283122  : HARUNA                       :Japan               :36.473889:N:138.881389:E:  1449
-283130  : AKAGI                        :Japan               :36.557222:N:139.196389:E:  1828
-283131  : HIUCHI                       :Japan               :36.951944:N:139.288611:E:  2356
-283140  : NIKKO-SHIRANE                :Japan               :36.795556:N:139.379167:E:  2578
+283122  : HARUNASAN                    :Japan               :36.477222:N:138.850833:E:  1449
+283130  : AKAGISAN                     :Japan               :36.560278:N:139.193333:E:  1828
+283131  : HIUCHIGATAKE                 :Japan               :36.955000:N:139.285278:E:  2356
+283140  : NIKKO-SHIRANESAN             :Japan               :36.798611:N:139.375833:E:  2578
 283141  : NANTAI                       :Japan               :36.761944:N:139.494167:E:  2486
 283142  : OMANAGO GROUP                :Japan               :36.792222:N:139.510278:E:  2367
-283143  : TAKAHARA                     :Japan               :36.896944:N:139.780000:E:  1795
-283150  : NASU                         :Japan               :37.121667:N:139.966111:E:  1915
-283151  : NUMAZAWA                     :Japan               :37.450278:N:139.578889:E:  1100
-283160  : BANDAI                       :Japan               :37.598056:N:140.075556:E:  1819
-283170  : ADATARA                      :Japan               :37.644167:N:140.286111:E:  1718
-283180  : AZUMA                        :Japan               :37.732222:N:140.247778:E:  2035
-283190  : ZAO                          :Japan               :38.140556:N:140.442778:E:  1841
-283191  : HIJIORI                      :Japan               :38.605833:N:140.178333:E:   516
-283200  : NARUGO                       :Japan               :38.733056:N:140.731667:E:   470
-283210  : KURIKOMA                     :Japan               :38.958056:N:140.791944:E:  1628
-283220  : CHOKAI                       :Japan               :39.096389:N:140.052222:E:  2233
-283230  : AKITA-KOMAGA-TAKE            :Japan               :39.758333:N:140.802778:E:  1637
-283240  : IWATE                        :Japan               :39.849722:N:141.004444:E:  2041
-283250  : HACHIMANTAI                  :Japan               :39.955000:N:140.857500:E:  1614
-283260  : AKITA-YAKE-YAMA              :Japan               :39.961111:N:140.760556:E:  1366
+283143  : TAKAHARAYAMA                 :Japan               :36.900000:N:139.776667:E:  1795
+283150  : NASUDAKE                     :Japan               :37.124722:N:139.962778:E:  1915
+283151  : NUMAZAWA                     :Japan               :37.444444:N:139.566111:E:   835
+283160  : BANDAISAN                    :Japan               :37.601111:N:140.072222:E:  1816
+283170  : ADATARAYAMA                  :Japan               :37.647222:N:140.280833:E:  1728
+283180  : AZUMAYAMA                    :Japan               :37.735278:N:140.244444:E:  1949
+283190  : ZAOZAN                       :Japan               :38.143611:N:140.440000:E:  1841
+283191  : HIJIORI                      :Japan               :38.599167:N:140.161667:E:   552
+283200  : NARUKO                       :Japan               :38.728889:N:140.734444:E:   470
+283210  : KURIKOMAYAMA                 :Japan               :38.960833:N:140.788333:E:  1627
+283220  : CHOKAISAN                    :Japan               :39.099167:N:140.048889:E:  2236
+283230  : AKITA-KOMAGATAKE             :Japan               :39.761111:N:140.799444:E:  1637
+283240  : IWATESAN                     :Japan               :39.852500:N:141.001111:E:  2038
+283250  : HACHIMANTAI                  :Japan               :39.957778:N:140.854167:E:  1613
+283260  : AKITA-YAKEYAMA               :Japan               :39.963889:N:140.756944:E:  1366
 283262  : MEGATA                       :Japan               :39.950000:N:139.733333:E:   291
-283270  : IWAKI                        :Japan               :40.653333:N:140.306667:E:  1625
-283271  : TOWADA                       :Japan               :40.466667:N:140.916667:E:  1159
-283280  : HAKKODA GROUP                :Japan               :40.656111:N:140.880833:E:  1585
-283290  : OSORE-YAMA                   :Japan               :41.275833:N:141.123611:E:   879
-284010  : OSHIMA                       :Japan               :34.721389:N:139.397778:E:   764
-284011  : TO-SHIMA                     :Japan               :34.516944:N:139.282500:E:   508
-284020  : NII-JIMA                     :Japan               :34.393333:N:139.273333:E:   432
-284030  : KOZU-SHIMA                   :Japan               :34.216111:N:139.156389:E:   572
-284040  : MIYAKE-JIMA                  :Japan               :34.078611:N:139.529444:E:   815
-284041  : MIKURA-JIMA                  :Japan               :33.871111:N:139.605000:E:   851
+283270  : IWAKISAN                     :Japan               :40.655833:N:140.303056:E:  1625
+283271  : TOWADA                       :Japan               :40.510278:N:140.880000:E:  1011
+283280  : HAKKODASAN                   :Japan               :40.658889:N:140.877222:E:  1585
+283290  : OSOREZAN                     :Japan               :41.275833:N:141.123611:E:   878
+284010  : IZU-OSHIMA                   :Japan               :34.724444:N:139.394444:E:   758
+284011  : TOSHIMA                      :Japan               :34.520278:N:139.279167:E:   508
+284020  : NIIJIMA                      :Japan               :34.396944:N:139.270278:E:   432
+284030  : KOZUSHIMA                    :Japan               :34.219444:N:139.153056:E:   572
+284040  : MIYAKEJIMA                   :Japan               :34.093611:N:139.526111:E:   775
+284041  : MIKURAJIMA                   :Japan               :33.874444:N:139.601944:E:   851
 284042  : KUROSE HOLE                  :Japan               :33.400000:N:139.683333:E:  -107
-284050  : HACHIJO-JIMA                 :Japan               :33.133333:N:139.769167:E:   854
-284060  : AOGA-SHIMA                   :Japan               :32.454167:N:139.762222:E:   423
-284061  : MYOJIN KNOLL                 :Japan               :32.100000:N:139.850000:E:   360
-284070  : BAYONNAISE ROCKS             :Japan               :31.883333:N:139.916667:E:    11
-284080  : SMITH ROCK                   :Japan               :31.435833:N:140.053611:E:   136
-284090  : TORI-SHIMA                   :Japan               :30.480000:N:140.306111:E:   394
-284091  : SOFUGAN                      :Japan               :29.789444:N:140.345278:E:    99
+284050  : HACHIJOJIMA                  :Japan               :33.136944:N:139.766111:E:   854
+284060  : AOGASHIMA                    :Japan               :32.458333:N:139.759167:E:   423
+284061  : KITA-BAYONNAISE MYOJIN KNOLL :Japan               :32.100000:N:139.850000:E:  -360
+284070  : MYOJINSHO AND BEYONESU ROCKS :Japan               :31.888056:N:139.917778:E:    11
+284080  : SUMISOJIMA                   :Japan               :31.439722:N:140.050556:E:   136
+284090  : IZU-TORISHIMA                :Japan               :30.483889:N:140.303056:E:   394
+284091  : SOFUGAN                      :Japan               :29.794167:N:140.341944:E:    99
 284093  : SUIYO SEAMOUNT               :Japan               :28.600000:N:140.633333:E: -1418
 284094  : MOKUYO SEAMOUNT              :Japan               :28.316667:N:140.566667:E:  -920
 284095  : DOYO SEAMOUNT                :Japan               :27.683333:N:140.800000:E:  -860
-284096  : NISHINO-SHIMA                :Japan               :27.274167:N:140.882222:E:    38
-284097  : KAIKATA SEAMOUNT             :Japan               :26.666667:N:141.000000:E:  -162
-284100  : KAITOKU SEAMOUNT             :Japan               :26.121667:N:141.101667:E:  -103
+284096  : NISHINOSHIMA                 :Japan               :27.246944:N:140.874444:E:    25
+284097  : KAIKATA SEAMOUNT             :Japan               :26.666667:N:140.929167:E:  -165
+284100  : KAITOKU SEAMOUNT             :Japan               :29.126944:N:141.101944:E:   -95
 284101  : UNNAMED                      :Japan               :26.133333:N:144.483333:E: -3200
-284110  : KITA-IWO-JIMA                :Japan               :25.423611:N:141.283889:E:   792
-284120  : IOTO [IWO-JIMA]              :Japan               :24.753611:N:141.290278:E:   161
-284121  : KITA-FUKUTOKUTAI             :Japan               :24.413889:N:141.418611:E:   -73
-284130  : FUKUTOKU-OKANOBA             :Japan               :24.283333:N:141.485000:E:   -14
-284131  : MINAMI-HIYOSHI               :Japan               :23.496667:N:141.940000:E:   -30
-284132  : NIKKO                        :Japan               :23.075000:N:142.308333:E:  -391
+284110  : FUNKA ASANE (KITA-IOTO)      :Japan               :25.423611:N:141.283889:E:   792
+284120  : IOTO                         :Japan               :24.750556:N:141.289167:E:   169
+284121  : KITA-FUKUTOKUTAI             :Japan               :24.416667:N:141.416667:E:   -73
+284130  : FUKUTOKU-OKA-NO-BA           :Japan               :24.284722:N:141.481111:E:   -29
+284131  : MINAMI-HIYOSHI               :Japan               :23.500000:N:141.935000:E:  -107
+284132  : NIKKO                        :Japan               :23.078333:N:142.325556:E:  -392
 284133  : FUKUJIN                      :Japan               :21.933333:N:143.466667:E:  -217
 284134  : KASUGA                       :Japan               :21.765000:N:143.710000:E:  -598
 284135  : MINAMI KASUGA                :Japan               :21.600000:N:143.636667:E:  -274
 284136  : NW EIFUKU                    :Japan               :21.484722:N:144.043056:E: -1535
 284137  : DAIKOKU                      :Japan               :21.323611:N:144.194444:E:  -323
+284138  : UNNAMED                      :United States       :21.000000:N:142.900000:E:     0
+284139  : UNNAMED                      :United States       :20.300000:N:143.200000:E:     0
 284140  : FARALLON DE PAJAROS          :United States       :20.538056:N:144.895833:E:   360
 284141  : AHYI                         :United States       :20.416667:N:145.033333:E:  -137
 284142  : SUPPLY REEF                  :United States       :20.133333:N:145.100000:E:    -8
@@ -676,41 +709,43 @@
 284202  : RUBY                         :United States       :15.616667:N:145.566667:E:  -230
 284210  : ESMERALDA BANK               :United States       :15.000000:N:145.250000:E:   -43
 284211  : NW ROTA-1                    :United States       :14.601111:N:144.775278:E:  -517
+284220  : FORECAST SEAMOUNT            :United States       :13.400000:N:143.916667:E:     0
 284230  : SEAMOUNT X                   :United States       :13.250000:N:144.016667:E: -1230
-285010  : OSHIMA-OSHIMA                :Japan               :41.506944:N:139.371111:E:   737
-285011  : E-SAN                        :Japan               :41.802222:N:141.169722:E:   618
-285020  : KOMAGA-TAKE                  :Japan               :42.060833:N:140.680833:E:  1131
-285030  : USU                          :Japan               :42.541389:N:140.842778:E:   737
-285031  : NISEKO                       :Japan               :42.883333:N:140.633333:E:  1154
-285032  : YOTEI                        :Japan               :42.829722:N:140.815000:E:  1898
-285034  : KUTTARA                      :Japan               :42.488889:N:141.163333:E:   581
-285040  : SHIKOTSU                     :Japan               :42.688056:N:141.380278:E:  1320
-285041  : RISHIRI                      :Japan               :45.183333:N:141.250000:E:  1721
-285050  : TOKACHI                      :Japan               :43.415556:N:142.690278:E:  2077
-285060  : DAISETSU                     :Japan               :43.661111:N:142.858056:E:  2290
-285061  : NIPESOTSU-MARUYAMA           :Japan               :43.453333:N:143.036111:E:  2013
+285010  : OSHIMA-OSHIMA                :Japan               :41.510000:N:139.367222:E:   732
+285011  : ESAN                         :Japan               :41.804722:N:141.166111:E:   618
+285020  : HOKKAIDO-KOMAGATAKE          :Japan               :42.063333:N:140.677222:E:  1131
+285030  : USUZAN (TOYA CALDERA)        :Japan               :42.543889:N:140.839167:E:   733
+285031  : NISEKO                       :Japan               :42.883333:N:140.633333:E:  1308
+285032  : YOTEIZAN                     :Japan               :42.826667:N:140.811389:E:  1898
+285034  : KUTTARA                      :Japan               :42.491389:N:141.159722:E:   549
+285040  : TARUMAESAN                   :Japan               :42.688056:N:141.380278:E:  1320
+285041  : RISHIRIZAN                   :Japan               :45.178611:N:141.241944:E:  1721
+285050  : TOKACHIDAKE                  :Japan               :43.417778:N:142.686389:E:  2077
+285060  : TAISETSUZAN                  :Japan               :43.663611:N:142.854167:E:  2291
+285061  : MARUYAMA                     :Japan               :43.453333:N:143.036111:E:  2013
 285062  : SHIKARIBETSU GROUP           :Japan               :43.312222:N:143.095556:E:  1401
-285070  : AKAN                         :Japan               :43.384167:N:144.012778:E:  1499
-285080  : KUTCHARO                     :Japan               :43.607778:N:144.442500:E:   999
-285081  : MASHU                        :Japan               :43.569722:N:144.565278:E:   855
-285082  : RAUSU                        :Japan               :44.073333:N:145.126389:E:  1660
-285090  : SHIRETOKO-IWO-ZAN            :Japan               :44.130833:N:145.165278:E:  1563
-290010  : TOMARIYAMA GOLOVNIN          :Japan, admin Russia :43.843889:N:145.504444:E:   535
-290020  : RAUSUSAN MENDELEEV           :Japan, admin Russia :43.978889:N:145.732500:E:   882
-290021  : RURUIDAKE SMIRNOV            :Japan, admin Russia :44.454444:N:146.139444:E:  1486
-290030  : CHACHADAKE TIATIA            :Japan, admin Russia :44.353333:N:146.252222:E:  1822
-290040  : BERUTARUBESAN BERUTARUBE     :Japan, admin Russia :44.461667:N:146.931944:E:  1221
-290041  : MOEKESHIWAN LVINAYA PAST     :Japan, admin Russia :44.608333:N:146.993889:E:   528
-290050  : ETOROFU-ATSONUPURI ATSONUPURI:Japan, admin Russia :44.807500:N:147.130833:E:  1206
-290060  : NISHIHITOKAPPUYAMA BOGATYR   :Japan, admin Russia :44.833056:N:147.341944:E:  1634
-290061  : UNNAMED                      :Japan, admin Russia :45.033333:N:147.208333:E:  -930
-290070  : ETOROFU-YAKEYAMA GROZNY      :Japan, admin Russia :45.011944:N:147.871111:E:  1158
-290072  : ODAMOISAN TEBENKOV           :Japan, admin Russia :45.026111:N:147.921944:E:  1208
-290080  : SASHIUSUDAKE BARANSKY        :Japan, admin Russia :45.099722:N:148.019444:E:  1125
-290090  : CHIRPPUSAN CHIRIP            :Japan, admin Russia :45.337500:N:147.920278:E:  1587
-290091  : RUCHARUYAMA GOLETS-TORNYI    :Japan, admin Russia :45.250000:N:148.350000:E:   442
-290100  : MOYORODAKE MEDVEZHIA         :Japan, admin Russia :45.388889:N:148.837500:E:  1124
-290110  : RAKKIBETSUDAKE DEMON         :Japan, admin Russia :45.500000:N:148.850000:E:  1205
+285070  : MEAKANDAKE                   :Japan               :43.384167:N:144.012778:E:  1499
+285080  : ATOSANOPURI                  :Japan               :43.607778:N:144.442500:E:   574
+285081  : MASHU                        :Japan               :43.572222:N:144.560833:E:   857
+285082  : RAUSU                        :Japan               :44.075833:N:145.122222:E:  1660
+285083  : TENCHOZAN                    :Japan               :44.044444:N:145.085833:E:  1046
+285090  : SHIRETOKO-IOZAN              :Japan               :44.133333:N:145.161389:E:  1562
+290010  : TOMARIYAMA (GOLOVNIN)        :Japan               :43.843889:N:145.504444:E:   535
+290020  : RAUSUSAN (MENDELEEV)         :Japan               :43.978889:N:145.732500:E:   882
+290021  : RURUIDAKE (SMIRNOV)          :Japan               :44.454444:N:146.139444:E:  1486
+290030  : CHACHADAKE (TIATIA)          :Japan               :44.353333:N:146.252222:E:  1822
+290040  : BERUTARUBESAN (BERUTARUBE)   :Japan               :44.461667:N:146.931944:E:  1221
+290041  : MOEKESHIWAN (LVINAYA PAST)   :Japan               :44.608333:N:146.993889:E:   528
+290050  : ETOROFU-ATOSANUPURI          :Japan               :44.807500:N:147.130833:E:  1206
+290060  : NISHIHITOKAPPUYAMA           :Japan               :44.833056:N:147.341944:E:  1634
+290061  : UNNAMED                      :Japan               :45.033333:N:147.208333:E:  -930
+290070  : ETOROFU-YAKEYAMA             :Japan               :45.011944:N:147.871111:E:  1158
+290072  : ODAMOISAN (TEBENKOV)         :Japan               :45.026111:N:147.921944:E:  1208
+290080  : SASHIUSUDAKE (BARANSKY)      :Japan               :45.099722:N:148.019444:E:  1125
+290090  : CHIRPPUSAN (CHIRIP)          :Japan               :45.337500:N:147.920278:E:  1587
+290091  : RUCHARUYAMA                  :Japan               :45.250000:N:148.350000:E:   442
+290100  : MOYORODAKE (MEDVEZHIA)       :Japan               :45.388889:N:148.837500:E:  1124
+290110  : RAKKIBETSUDAKE (DEMON)       :Japan               :45.500000:N:148.850000:E:  1205
 290111  : IVAO GROUP                   :Russia              :45.766667:N:149.683333:E:  1426
 290112  : RUDAKOV                      :Russia              :45.883333:N:149.833333:E:   542
 290113  : TRI SESTRY                   :Russia              :45.933333:N:149.916667:E:   998
@@ -796,6 +831,7 @@
 300220  : KOMAROV                      :Russia              :55.031667:N:160.720000:E:  2070
 300221  : VYSOKY                       :Russia              :55.066667:N:160.766667:E:  2161
 300230  : KIZIMEN                      :Russia              :55.130000:N:160.316667:E:  2376
+300232  : UNNAMED                      :Russia              :55.916667:N:161.750000:E:     0
 300240  : TOLBACHIK                    :Russia              :55.830000:N:160.330000:E:  3682
 300241  : UDINA                        :Russia              :55.755000:N:160.526667:E:  2923
 300242  : ZIMINA                       :Russia              :55.861667:N:160.603333:E:  3081
@@ -857,6 +893,7 @@
 300700  : SEVERNY                      :Russia              :58.283333:N:160.866667:E:  1936
 300710  : IETTUNUP                     :Russia              :58.400000:N:161.083333:E:  1340
 300720  : VOYAMPOLSKY                  :Russia              :58.366667:N:160.616667:E:  1225
+302010  : SIKHOTE-ALIN                 :Russia              :47.000000:N:137.500000:E:     0
 302030  : UDOKAN PLATEAU               :Russia              :56.283333:N:117.766667:E:  2180
 302040  : VITIM PLATEAU                :Russia              :53.700000:N:113.300000:E:  1250
 302050  : TUNKIN DEPRESSION            :Russia              :51.500000:N:102.500000:E:  1200
@@ -867,14 +904,18 @@
 303030  : BUS-OBO                      :Mongolia            :47.116667:N:109.083333:E:  1162
 303040  : DARIGANGA VOLCANIC FIELD     :Mongolia            :45.333333:N:114.000000:E:  1778
 303050  : MIDDLE GOBI                  :Mongolia            :45.283333:N:106.700000:E:  1120
+304010  : TURFAN                       :China               :42.900000:N: 89.250000:E:     0
+304020  : TIANSHAN VOLCANIC GROUP      :China               :42.500000:N: 82.500000:E:     0
 304030  : KUNLUN VOLCANIC GROUP        :China               :35.516667:N: 80.200000:E:  5808
 304040  : UNNAMED                      :China               :35.850000:N: 91.700000:E:  5400
 305010  : HONGGEERTU                   :China               :41.466667:N:113.000000:E:  1700
+305011  : ARSHAN                       :China               :47.500000:N:120.700000:E:     0
 305020  : KELUO GROUP                  :China               :49.366667:N:125.916667:E:   670
 305030  : WUDALIANCHI                  :China               :48.716667:N:126.116667:E:   597
 305040  : JINGBO                       :China               :44.083333:N:128.833333:E:  1000
 305050  : LONGGANG GROUP               :China               :42.333333:N:126.500000:E:  1000
 305060  : CHANGBAISHAN                 :China-North Korea   :41.983333:N:128.083333:E:  2744
+306010  : XIANJINDAO                   :North Korea         :41.333333:N:128.000000:E:     0
 306020  : CHUGA-RYONG                  :North Korea         :38.333333:N:127.333333:E:   452
 306030  : ULREUNG                      :South Korea         :37.500000:N:130.866667:E:   984
 306040  : HALLA                        :South Korea         :33.366667:N:126.533333:E:  1950
@@ -991,6 +1032,7 @@
 320180  : MEAGER                       :Canada              :50.633333:N:123.500000:W:  2680
 320190  : GARIBALDI LAKE               :Canada              :49.916667:N:123.033333:W:  2316
 320200  : GARIBALDI                    :Canada              :49.850000:N:123.000000:W:  2678
+320811  : CAYLEY VOLCANIC FIELD        :Canada              :50.116667:N:123.283333:W:  2375
 321010  : BAKER                        :United States       :48.776667:N:121.813056:W:  3285
 321020  : GLACIER PEAK                 :United States       :48.111667:N:121.112778:W:  3213
 321030  : RAINIER                      :United States       :46.852778:N:121.760278:W:  4392
@@ -1003,26 +1045,19 @@
 322030  : BLUE LAKE CRATER             :United States       :44.411389:N:121.773889:W:  1230
 322040  : SAND MOUNTAIN FIELD          :United States       :44.383333:N:121.933333:W:  1664
 322060  : BELKNAP                      :United States       :44.285278:N:121.841111:W:  2095
-322070  : NORTH SISTER FIELD           :United States       :44.166667:N:121.766667:W:  3074
-322080  : SOUTH SISTER                 :United States       :44.102778:N:121.768333:W:  3157
+322070  : THREE SISTERS                :United States       :44.166667:N:121.766667:W:  3074
 322090  : BACHELOR                     :United States       :43.979444:N:121.687500:W:  2763
 322100  : DAVIS LAKE                   :United States       :43.566667:N:121.816667:W:  2163
 322110  : NEWBERRY                     :United States       :43.722222:N:121.228889:W:  2434
 322120  : DEVILS GARDEN                :United States       :43.511667:N:120.861389:W:  1698
-322130  : SQUAW RIDGE LAVA FIELD       :United States       :43.472222:N:120.753611:W:  1711
-322140  : FOUR CRATERS LAVA FIELD      :United States       :43.361111:N:120.669444:W:  1501
 322150  : CINNAMON BUTTE               :United States       :43.241111:N:122.108333:W:  1956
 322160  : CRATER LAKE                  :United States       :42.933333:N:122.116667:W:  2487
 322170  : DIAMOND CRATERS              :United States       :43.100000:N:118.750000:W:  1435
 322190  : JORDAN CRATERS               :United States       :43.147222:N:117.459722:W:  1473
 323010  : SHASTA                       :United States       :41.408889:N:122.193333:W:  4317
 323020  : MEDICINE LAKE                :United States       :41.611111:N:121.553611:W:  2412
-323030  : BRUSHY BUTTE                 :United States       :41.177778:N:121.443333:W:  1174
-323040  : TWIN BUTTES                  :United States       :40.777500:N:121.590556:W:  1631
 323050  : SILVER LAKE                  :United States       :40.730556:N:121.840833:W:  1535
-323060  : TUMBLE BUTTES                :United States       :40.683333:N:121.550000:W:  2191
 323080  : LASSEN VOLCANIC CENTER       :United States       :40.491667:N:121.508333:W:  3187
-323090  : EAGLE LAKE FIELD             :United States       :40.633333:N:120.833333:W:  1652
 323100  : CLEAR LAKE                   :United States       :38.966667:N:122.766667:W:  1439
 323110  : MONO LAKE VOLCANIC FIELD     :United States       :38.000000:N:119.033333:W:  2121
 323120  : MONO CRATERS                 :United States       :37.883333:N:119.000000:W:  2796
@@ -1039,15 +1074,13 @@
 324040  : HELLS HALF ACRE              :United States       :43.500000:N:112.450000:W:  1631
 325010  : YELLOWSTONE                  :United States       :44.433333:N:110.666667:W:  2805
 326010  : SODA LAKES                   :United States       :39.533333:N:118.866667:W:  1251
-327010  : SANTA CLARA                  :United States       :37.256944:N:113.625000:W:  1465
-327030  : BALD KNOLL                   :United States       :37.327778:N:112.407778:W:  2135
 327040  : MARKAGUNT PLATEAU            :United States       :37.583333:N:112.666667:W:  2840
 327050  : BLACK ROCK DESERT            :United States       :38.966667:N:112.500000:W:  1800
 327110  : CARRIZOZO                    :United States       :33.783333:N:105.933333:W:  1731
 327120  : ZUNI-BANDERA                 :United States       :34.800000:N:108.000000:W:  2550
 328010  : DOTSERO                      :United States       :39.660556:N:107.035000:W:  2230
 329010  : UINKARET FIELD               :United States       :36.383333:N:113.133333:W:  1555
-329020  : SUNSET CRATER                :United States       :35.366667:N:111.500000:W:  2447
+329020  : SAN FRANCISCO VOLCANIC FIELD :United States       :35.346667:N:111.678056:W:  3850
 331010  : ENDEAVOUR RIDGE              :Undersea Features   :47.950000:N:129.100000:W: -2050
 331011  : COBB SEGMENT                 :Undersea Features   :46.883333:N:129.333333:W: -2100
 331020  : COAXIAL SEGMENT              :Undersea Features   :46.516667:N:129.583333:W: -2400
@@ -1072,6 +1105,7 @@
 333060  : MACDONALD                    :Undersea Features   :28.983333:S:140.250000:W:   -39
 334020  : NORTHERN EPR-SEGMENT RO2     :Undersea Features   :16.550000:N:105.316667:W: -2700
 334021  : NORTHERN EPR-SEGMENT RO3     :Undersea Features   :15.833333:N:105.433333:W: -2300
+334040  : UNNAMED                      :Undersea Features   :10.733333:N:103.583333:W:     0
 334050  : UNNAMED                      :Undersea Features   : 9.833333:N:104.300000:W: -2500
 334070  : GALAPAGOS RIFT               :Undersea Features   : 0.791667:N: 86.150000:W: -2430
 334100  : UNNAMED                      :Undersea Features   : 8.266667:S:107.950000:W: -2800
@@ -1080,6 +1114,7 @@
 334140  : SOUTHERN EPR-SEGMENT I       :Undersea Features   :18.533333:S:113.416667:W: -2600
 335010  : ANTIPODES ISLAND             :New Zealand         :49.683333:S:178.766667:E:   402
 335020  : UNNAMED                      :Undersea Features   :53.900000:S:140.300000:W: -1000
+335030  : UNNAMED                      :Undersea Features   :55.966667:S:143.166667:W:     0
 341000  : CERRO PRIETO                 :Mexico              :32.418333:N:115.305000:W:   223
 341001  : PINACATE                     :Mexico              :31.772500:N:113.498333:W:  1200
 341002  : SAN QUINTIN VOLCANIC FIELD   :Mexico              :30.467778:N:115.996389:W:   260
@@ -1088,6 +1123,7 @@
 341005  : CORONADO                     :Mexico              :29.083333:N:113.513333:W:   440
 341006  : GUADALUPE                    :Mexico              :29.066667:N:118.283333:W:  1100
 341007  : SAN BORJA VOLCANIC FIELD     :Mexico              :28.500000:N:113.750000:W:  1360
+341008  : UNNAMED                      :Mexico              :28.000000:N:115.000000:W:     0
 341010  : TRES VIRGENES                :Mexico              :27.469722:N:112.591111:W:  1940
 341011  : ISLA TORTUGA                 :Mexico              :27.433333:N:111.883333:W:   210
 341012  : COMONDU-LA PURISIMA          :Mexico              :26.000000:N:111.916667:W:   780
@@ -1136,7 +1172,7 @@
 342141  : TAHUAL                       :Guatemala           :14.433333:N: 89.900000:W:  1716
 342150  : CERRO SANTIAGO               :Guatemala           :14.333333:N: 89.866667:W:  1192
 342160  : SUCHITAN                     :Guatemala           :14.400000:N: 89.783333:W:  2042
-342170  : CHINGO                       :Guatemala ElSalvador:14.116667:N: 89.733333:W:  1775
+342170  : CHINGO                       :Guatemala-ElSalvador:14.116667:N: 89.733333:W:  1775
 342180  : IXTEPEQUE                    :Guatemala           :14.416667:N: 89.683333:W:  1292
 342190  : IPALA                        :Guatemala           :14.550000:N: 89.633333:W:  1650
 342200  : CHIQUIMULA VOLCANIC FIELD    :Guatemala           :14.833333:N: 89.550000:W:  1192
@@ -1295,37 +1331,39 @@
 355106  : EL NEGRILLAR                 :Chile               :24.183333:S: 68.250000:W:  3500
 355107  : PULAR                        :Chile               :24.187500:S: 68.054167:W:  6233
 355108  : LA NEGRILLAR                 :Chile               :24.283333:S: 68.600000:W:  4109
-355109  : SOCOMPA                      :Chile-Argentina     :24.400000:S: 68.250000:W:  6051
+355109  : SOCOMPA                      :Chile-Argentina     :24.395556:S: 68.245833:W:  6031
 355110  : LLULLAILLACO                 :Chile-Argentina     :24.716667:S: 68.533333:W:  6739
-355112  : CERRO ESCORIAL               :Chile-Argentina     :25.083333:S: 68.366667:W:  5447
-355120  : LASTARRIA                    :Chile-Argentina     :25.166667:S: 68.500000:W:  5697
-355121  : CORDON DEL AZUFRE            :Chile-Argentina     :25.333333:S: 68.516667:W:  5463
-355122  : CERRO BAYO                   :Chile-Argentina     :25.416667:S: 68.583333:W:  5401
-355123  : SIERRA NEVADA                :Chile-Argentina     :26.483333:S: 68.583333:W:  6127
-355124  : FALSO AZUFRE                 :Chile-Argentina     :26.800000:S: 68.366667:W:  5890
-355125  : NEVADO DE INCAHUASI          :Chile-Argentina     :27.041667:S: 68.283333:W:  6621
-355130  : NEVADOS OJOS DEL SALADO      :Chile-Argentina     :27.116667:S: 68.550000:W:  6887
-355131  : EL SOLO                      :Chile-Argentina     :27.108333:S: 68.716667:W:  6190
+355112  : ESCORIAL                     :Chile-Argentina     :25.082500:S: 68.366667:W:  5451
+355120  : LASTARRIA (AZUFRE)           :Chile-Argentina     :25.168333:S: 68.506667:W:  5706
+355121  : CORDON DEL AZUFRE            :Chile-Argentina     :25.335833:S: 68.521111:W:  5481
+355122  : CERRO BAYO GORBEA            :Chile-Argentina     :25.414167:S: 68.587778:W:  5413
+355123  : SIERRA NEVADA                :Chile-Argentina     :26.483333:S: 68.583333:W:  6173
+355124  : FALSO AZUFRE                 :Chile-Argentina     :26.800000:S: 68.366667:W:  5906
+355125  : NEVADO DE INCAHUASI          :Chile-Argentina     :27.033333:S: 68.296111:W:  6638
+355130  : NEVADOS OJOS DEL SALADO      :Chile-Argentina     :27.109444:S: 68.540833:W:  6879
+355131  : EL SOLO                      :Chile-Argentina     :27.104722:S: 68.713333:W:  6205
 355140  : COPIAPO                      :Chile               :27.300000:S: 69.133333:W:  6052
-355150  : CERRO TUZGLE                 :Argentina           :24.050000:S: 66.483333:W:  5500
-355160  : ARACAR                       :Argentina           :24.250000:S: 67.766667:W:  6082
-355180  : ANTOFAGASTA DE LA SIERRA     :Argentina           :26.083333:S: 67.500000:W:  4000
-355190  : CERRO EL CONDOR              :Argentina           :26.616667:S: 68.350000:W:  6532
-355200  : PEINADO                      :Argentina           :26.616667:S: 68.150000:W:  5740
-355210  : ROBLEDO                      :Argentina           :26.766667:S: 67.716667:W:  4400
-355220  : TIPAS                        :Argentina           :27.200000:S: 68.550000:W:  6660
+355150  : TUZGLE                       :Argentina           :24.050000:S: 66.483333:W:  5486
+355160  : ARACAR                       :Argentina           :24.290000:S: 67.783333:W:  6095
+355161  : UNNAMED                      :Argentina           :25.100000:S: 68.266667:W:     0
+355180  : ANTOFAGASTA                  :Argentina           :26.116667:S: 67.783333:W:  3495
+355190  : EL CONDOR                    :Argentina           :26.631667:S: 68.360556:W:  6373
+355200  : PEINADO                      :Argentina           :26.623333:S: 68.115556:W:  5741
+355210  : CERRO BLANCO                 :Argentina           :26.789167:S: 67.765278:W:  4670
+355220  : TIPAS                        :Argentina           :27.196111:S: 68.560833:W:  6658
 356010  : SAN FELIX                    :Chile               :26.283333:S: 80.116667:W:   193
 356011  : EASTER ISLAND                :Chile               :27.150000:S:109.383333:W:   511
 356020  : ROBINSON CRUSOE              :Chile               :33.658333:S: 78.850000:W:   922
 356040  : UNNAMED                      :Chile               :33.616667:S: 76.833333:W:  -642
-357010  : TUPUNGATITO                  :Chile-Argentina     :33.400000:S: 69.800000:W:  6000
-357020  : SAN JOSE                     :Chile-Argentina     :33.781667:S: 69.897222:W:  5856
-357021  : MAIPO                        :Chile-Argentina     :34.160556:S: 69.832778:W:  5264
+357010  : TUPUNGATITO                  :Chile-Argentina     :33.425000:S: 69.796944:W:  5660
+357020  : SAN JOSE                     :Chile-Argentina     :33.789167:S: 69.895278:W:  6070
+357021  : MAIPO                        :Chile-Argentina     :34.164167:S: 69.831944:W:  5323
 357022  : PALOMO                       :Chile               :34.607778:S: 70.295000:W:  4860
-357023  : CALDERA DEL ATUEL            :Argentina           :34.650000:S: 70.050000:W:  5189
-357024  : RISCO PLATEADO               :Argentina           :34.933333:S: 70.000000:W:  4999
+357023  : SOSNEADO (CALDERA DEL ATUEL) :Argentina           :34.650000:S: 70.050000:W:  5189
+357024  : RISCO PLATEADO               :Argentina           :34.917222:S: 69.980833:W:  4999
 357030  : TINGUIRIRICA                 :Chile               :34.813611:S: 70.351944:W:  4280
-357040  : PLANCHON-PETEROA             :Chile               :35.240000:S: 70.570000:W:  4107
+357040  : PLANCHON-PETEROA             :Chile               :35.223333:S: 70.567778:W:  4107
+357041  : INFIERNILLO                  :Argentina           :35.141667:S: 69.833333:W:     0
 357042  : CALABOZOS                    :Chile               :35.558333:S: 70.496389:W:  3508
 357050  : DESCABEZADO GRANDE           :Chile               :35.583333:S: 70.750000:W:  3953
 357060  : CERRO AZUL                   :Chile               :35.653333:S: 70.760833:W:  3788
@@ -1334,73 +1372,76 @@
 357063  : NEVADO DE LONGAVI            :Chile               :36.193056:S: 71.160833:W:  3242
 357064  : LOMAS BLANCAS                :Chile               :36.285833:S: 71.009444:W:  2268
 357065  : RESAGO                       :Chile               :36.450000:S: 70.916667:W:  1890
-357066  : PAYUN MATRU                  :Argentina           :36.416667:S: 69.200000:W:  3680
-357067  : DOMUYO                       :Argentina           :36.583333:S: 70.416667:W:  4709
+357066  : PAYUN MATRU                  :Argentina           :36.416667:S: 69.200000:W:  3715
+357067  : DOMUYO                       :Argentina           :36.637778:S: 70.431944:W:  4702
 357070  : NEVADOS DE CHILLAN           :Chile               :36.863333:S: 71.376667:W:  3212
-357071  : COCHIQUITO VOLCANIC GROUP    :Argentina           :36.766667:S: 69.816667:W:  1435
-357072  : TROMEN                       :Argentina           :37.141667:S: 70.033333:W:  3978
-357073  : PUESTO CORTADERAS            :Argentina           :37.566667:S: 69.616667:W:   970
+357071  : COCHIQUITO VOLCANIC GROUP    :Argentina           :36.738889:S: 69.833889:W:  1435
+357072  : TROMEN                       :Argentina           :37.144167:S: 70.032778:W:  4114
+357073  : PUESTO CORTADERAS            :Argentina           :37.521944:S: 69.560000:W:  1332
 357080  : ANTUCO                       :Chile               :37.405833:S: 71.349167:W:  2979
-357081  : TROCON                       :Argentina           :37.733333:S: 70.900000:W:  2500
-357090  : COPAHUE                      :Chile-Argentina     :37.850000:S: 71.166667:W:  2997
+357081  : TROLON                       :Argentina           :37.738333:S: 70.905833:W:  2505
+357090  : COPAHUE                      :Chile-Argentina     :37.856389:S: 71.183333:W:  2953
 357091  : CALLAQUI                     :Chile               :37.916667:S: 71.450000:W:  3164
 357092  : LAGUNA MARINAQUI             :Chile               :38.266667:S: 71.100000:W:  2143
 357093  : TOLGUACA                     :Chile               :38.310000:S: 71.645000:W:  2806
 357100  : LONQUIMAY                    :Chile               :38.376667:S: 71.583333:W:  2865
+357101  : TRALIHUE                     :Argentina           :38.516667:S: 70.900000:W:     0
 357102  : LAGUNA BLANCA                :Argentina           :39.016667:S: 70.366667:W:  1700
 357110  : LLAIMA                       :Chile               :38.691667:S: 71.728611:W:  3125
 357111  : SOLLIPULLI                   :Chile               :38.966667:S: 71.516667:W:  2282
 357112  : CABURGUA-HUELEMOLLE          :Chile               :39.250000:S: 71.700000:W:  1496
 357120  : VILLARRICA                   :Chile               :39.416667:S: 71.933333:W:  2847
 357121  : QUETRUPILLAN                 :Chile               :39.500000:S: 71.700000:W:  2360
-357122  : LANIN                        :Chile-Argentina     :39.632778:S: 71.499722:W:  3747
-357123  : HUANQUIHUE GROUP             :Argentina           :39.883333:S: 71.583333:W:  2139
+357122  : LANIN                        :Chile-Argentina     :39.637222:S: 71.502500:W:  3776
+357123  : HUANQUIHUE GROUP             :Argentina           :39.886667:S: 71.580278:W:  2189
 357130  : MOCHO-CHOSHUENCO             :Chile               :39.927500:S: 72.026944:W:  2422
 357140  : CARRAN-LOS VENADOS           :Chile               :40.350000:S: 72.066667:W:  1114
 357150  : PUYEHUE-CORDON CAULLE        :Chile               :40.590278:S: 72.117222:W:  2236
-357152  : CERRO PANTOJA                :Chile-Argentina     :40.766667:S: 71.950000:W:  2024
+357152  : CERRO PANTOJO                :Chile-Argentina     :40.768056:S: 71.943333:W:  1897
 357153  : ANTILLANCA GROUP             :Chile               :40.770833:S: 72.153333:W:  1990
 357160  : PUNTIAGUDO-CORDON CENIZOS    :Chile               :40.969444:S: 72.263889:W:  2493
 358010  : OSORNO                       :Chile               :41.100000:S: 72.493056:W:  2652
-358011  : TRONADOR                     :Chile-Argentina     :41.156944:S: 71.884722:W:  3491
+358011  : TRONADOR                     :Chile-Argentina     :41.156944:S: 71.884722:W:  3478
 358012  : CAYUTUE-LA VIGUERIA          :Chile               :41.250000:S: 72.266667:W:   506
 358020  : CALBUCO                      :Chile               :41.326111:S: 72.614444:W:  2003
 358021  : CUERNOS DEL DIABLO           :Chile               :41.400000:S: 72.000000:W:  1862
 358022  : YATE                         :Chile               :41.754722:S: 72.396389:W:  2187
 358023  : HORNOPIREN                   :Chile               :41.874444:S: 72.431389:W:  1572
 358024  : APAGADO                      :Chile               :41.883333:S: 72.583333:W:  1210
-358025  : CRATER BASALT VOLCANIC FIELD :Argentina           :42.016667:S: 70.183333:W:  1359
+358025  : CERRO NEGRO                  :Argentina           :42.018333:S: 70.193889:W:  1344
 358030  : HUEQUI                       :Chile               :42.376667:S: 72.578056:W:  1318
 358040  : MINCHINMAVIDA                :Chile               :42.793056:S: 72.438611:W:  2404
 358041  : CHAITEN                      :Chile               :42.832778:S: 72.645833:W:  1122
 358049  : YANTELES                     :Chile               :43.500000:S: 72.800000:W:  2042
 358050  : CORCOVADO                    :Chile               :43.183333:S: 72.800000:W:  2300
+358051  : PALENA VOLCANIC GROUP        :Chile               :43.783333:S: 72.466667:W:  2991
 358052  : MELIMOYU                     :Chile               :44.083333:S: 72.883333:W:  2400
 358053  : PUYUHUAPI                    :Chile               :44.300000:S: 72.533333:W:   524
 358054  : MENTOLAT                     :Chile               :44.700000:S: 73.083333:W:  1660
 358055  : CAY                          :Chile               :45.059167:S: 72.984167:W:  2090
 358056  : MACA                         :Chile               :45.100000:S: 73.166667:W:  2960
 358057  : CERRO HUDSON                 :Chile               :45.900000:S: 72.966667:W:  1905
+358058  : RIO MURTA                    :Chile               :46.166667:S: 72.666667:W:     0
 358059  : ARENALES                     :Chile               :47.200000:S: 73.483333:W:  3437
 358060  : LAUTARO                      :Chile               :49.016667:S: 73.550000:W:  3607
 358061  : VIEDMA                       :Argentina           :49.358333:S: 73.283333:W:  1500
 358062  : AGUILERA                     :Chile               :50.333333:S: 73.750000:W:  2546
 358063  : RECLUS                       :Chile               :50.963889:S: 73.584722:W:  1000
 358070  : MONTE BURNEY                 :Chile               :52.333333:S: 73.400000:W:  1758
-358080  : PALEI-AIKE VOLCANIC FIELD    :Chile-Argentina     :52.000000:S: 70.000000:W:   282
+358080  : PALI-AIKE VOLCANIC FIELD     :Chile-Argentina     :52.081667:S: 69.697500:W:   282
 358090  : FUEGUINO                     :Chile               :54.950000:S: 70.250000:W:   150
 360010  : SABA                         :Netherlands         :17.633333:N: 63.233333:W:   887
 360020  : THE QUILL                    :Netherlands         :17.477778:N: 62.959722:W:   601
 360030  : LIAMUIGA                     :Saint Kitts Nevis   :17.366667:N: 62.800000:W:  1156
 360040  : NEVIS PEAK                   :Saint Kitts Nevis   :17.150000:N: 62.583333:W:   985
 360050  : SOUFRIERE HILLS              :United Kingdom      :16.716667:N: 62.183333:W:   915
-360060  : SOUFRIERE GUADELOUPE         :France              :16.050000:N: 61.666667:W:  1467
+360060  : SOUFRIERE GUADELOUPE         :France              :16.043889:N: 61.663611:W:  1467
 360080  : MORNE AUX DIABLES            :Dominica            :15.612500:N: 61.433333:W:   861
 360090  : MORNE DIABLOTINS             :Dominica            :15.503333:N: 61.397222:W:  1430
 360100  : MORNE TROIS PITONS           :Dominica            :15.366667:N: 61.333333:W:  1387
 360101  : MORNE WATT                   :Dominica            :15.306667:N: 61.305000:W:  1224
 360110  : MORNE PLAT PAYS              :Dominica            :15.255000:N: 61.340833:W:   940
-360120  : PELEE                        :France              :14.816667:N: 61.166667:W:  1397
+360120  : PELEE                        :France              :14.809167:N: 61.165278:W:  1394
 360140  : QUALIBOU                     :Saint Lucia         :13.833333:N: 61.050000:W:   777
 360150  : SOUFRIERE ST. VINCENT        :Saint Vincent Grenad:13.333333:N: 61.183333:W:  1220
 360160  : KICK EM JENNY                :Grenada             :12.300278:N: 61.640000:W:  -185
@@ -1431,6 +1472,7 @@
 373070  : FREMRINAMUR                  :Iceland             :65.433333:N: 16.650000:W:   939
 373080  : KRAFLA                       :Iceland             :65.733333:N: 16.783333:W:   818
 373090  : THEISTAREYKJARBUNGA          :Iceland             :65.883333:N: 16.833333:W:   564
+373100  : TJORNES FRACTURE ZONE        :Iceland             :66.300000:N: 17.100000:W:     0
 374010  : ORAEFAJOKULL                 :Iceland             :64.000000:N: 16.650000:W:  2119
 374020  : ESJUFJOLL                    :Iceland             :64.266667:N: 16.650000:W:  1760
 375010  : KOLBEINSEY RIDGE             :Iceland             :66.666667:N: 18.500000:W:     5
@@ -1469,9 +1511,11 @@
 385040  : UNNAMED                      :Undersea Features   : 3.500000:S: 24.500000:W: -5300
 385050  : ASCENSION                    :United Kingdom      : 7.950000:S: 14.366667:W:   858
 385051  : TRINDADE                     :Brazil              :20.514444:S: 29.330556:W:   600
+385052  : UNNAMED                      :Undersea Features   :32.958333:S:  5.216667:W:     0
 386010  : TRISTAN DA CUNHA             :United Kingdom      :37.091667:S: 12.283333:W:  2060
 386011  : NIGHTINGALE ISLAND           :United Kingdom      :37.416667:S: 12.483333:W:   365
 386020  : BOUVET                       :Norway              :54.416667:S:  3.350000:E:   780
+386030  : THOMPSON ISLAND              :Norway              :53.933333:S:  5.500000:E:     0
 390010  : BUCKLE ISLAND                :Antarctica          :66.783333:S:163.250000:E:  1239
 390011  : YOUNG ISLAND                 :Antarctica          :66.416667:S:162.466667:E:  1340
 390012  : STURGE ISLAND                :Antarctica          :67.400000:S:164.833333:E:  1167
@@ -1490,17 +1534,17 @@
 390027  : TAKAHE                       :Antarctica          :76.283333:S:112.083333:W:  3460
 390028  : HUDSON MOUNTAINS             :Antarctica          :74.333333:S: 99.416667:W:   749
 390029  : PETER I ISLAND               :Antarctica          :68.850000:S: 90.583333:W:  1640
-390030  : DECEPTION ISLAND             :Antarctica          :62.966667:S: 60.650000:W:   576
+390030  : DECEPTION ISLAND             :Antarctica          :63.001389:S: 60.651944:W:   602
 390031  : PENGUIN ISLAND               :Antarctica          :62.100000:S: 57.933333:W:   180
-390040  : BRIDGEMAN ISLAND             :Antarctica          :62.050000:S: 56.750000:W:   240
-390041  : PAULET                       :Antarctica          :63.583333:S: 55.766667:W:   353
+390040  : BRIDGEMAN ISLAND             :Antarctica          :62.061111:S: 56.717222:W:   240
+390041  : PAULET                       :Antarctica          :63.579444:S: 55.779444:W:   353
 390050  : SEAL NUNATAKS GROUP          :Antarctica          :65.033333:S: 60.050000:W:   368
-390070  : THULE ISLANDS                :United Kingdom      :59.450000:S: 27.366667:W:  1075
-390080  : BRISTOL ISLAND               :United Kingdom      :59.033333:S: 26.583333:W:  1100
+390070  : THULE ISLANDS                :United Kingdom      :59.457778:S: 27.186389:W:  1075
+390080  : BRISTOL ISLAND               :United Kingdom      :59.063333:S: 26.586944:W:  1100
 390081  : MONTAGU ISLAND               :United Kingdom      :58.416667:S: 26.333333:W:  1370
-390090  : MICHAEL                      :United Kingdom      :57.783333:S: 26.450000:W:   990
+390090  : MICHAEL                      :United Kingdom      :57.787500:S: 26.460000:W:   990
 390100  : CANDLEMAS ISLAND             :United Kingdom      :57.083333:S: 26.666667:W:   550
-390110  : HODSON                       :United Kingdom      :56.700000:S: 27.150000:W:  1005
-390120  : LESKOV ISLAND                :United Kingdom      :56.666667:S: 28.133333:W:   190
+390110  : HODSON                       :United Kingdom      :56.712222:S: 27.176389:W:   835
+390120  : LESKOV ISLAND                :United Kingdom      :56.655833:S: 28.139722:W:   190
 390130  : ZAVODOVSKI                   :United Kingdom      :56.300000:S: 27.566667:W:   551
-390140  : PROTECTOR SHOAL              :United Kingdom      :55.916667:S: 28.083333:W:   -27
+390140  : PROTECTOR SHOAL              :United Kingdom      :56.014167:S: 28.245556:W:   -27
