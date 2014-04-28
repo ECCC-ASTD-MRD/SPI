@@ -1818,8 +1818,6 @@ void glXShutDown() {
 
    if (GLRender->GLFeed) free(GLRender->GLFeed);
    free(GLRender);
-
-   printf("(INFO) System: GLX Shut down\n");
 }
 
 /*----------------------------------------------------------------------------
