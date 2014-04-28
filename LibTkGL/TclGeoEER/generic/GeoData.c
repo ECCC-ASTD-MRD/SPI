@@ -1878,9 +1878,9 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
                   if (GDB->Params.Mask==GDB_LAND) {
 //                     GDB_TileClear(Proj,tile,NULL,0x2);
                      GDB_FillRender(NULL,Proj,tile->FCoast,NULL,0x0,0);
-                     GDB_FillRender(NULL,Proj,tile->FLake,NULL,0x2,0);
-                     GDB_FillRender(NULL,Proj,tile->FCoastIn,NULL,0x0,0);
-                     GDB_FillRender(NULL,Proj,tile->FLakeIn,NULL,0x2,0);
+                     GDB_FillRender(NULL,Proj,tile->FLake,NULL,0x2,1);
+                     GDB_FillRender(NULL,Proj,tile->FCoastIn,NULL,0x0,1);
+                     GDB_FillRender(NULL,Proj,tile->FLakeIn,NULL,0x2,1);
                   }
                   if (GDB->Params.Mask==GDB_SEA){
                      GDB_FillRender(NULL,Proj,tile->FCoast,NULL,0x2,1);
