@@ -2350,7 +2350,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "soft"      { }
       "hard"      { }
       "nothreads" { }
-      "verbose"   { }
+      "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
       "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }

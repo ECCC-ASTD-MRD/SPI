@@ -37,7 +37,7 @@ set GDefs(Lang) 1
 namespace eval Log { } {
    global env
    variable Param
-
+   
    set Param(Out)         stdout                ;#Output file/channel
    set Param(OutFile)     ""                    ;#Output filename
    set Param(Level)       INFO                  ;#Log level

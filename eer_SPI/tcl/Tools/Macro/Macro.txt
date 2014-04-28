@@ -29,6 +29,7 @@ namespace eval Macro { } {
    set Error(Execute)    { "La fonction \"Execute\" n'est pas définie" "The \"Execute\" function is not defined" }
    set Error(Info)       { "La description (Info) de la macro n'est pas définie" "The macro description (Info) is no defined" }
    set Error(Fault)      { "Macro fautive" "Faulty macro" }
+   set Error(Args)       { "Nombre d'arguments invalide, ils doivent être:" "Invalid number of arguments, must be:" }
 
    set Bubble(Start)     { "Exécution de la macro sélectionnée" "Exectute selected macro" }
    set Bubble(New)       { "Créer une nouvelle macro" "Create a new macro" }
