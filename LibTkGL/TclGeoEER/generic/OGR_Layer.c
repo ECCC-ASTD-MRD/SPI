@@ -3234,35 +3234,36 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    /*Render the selected features*/
    if (Layer->SFeature) {
       w=spec->HighWidth?spec->HighWidth:spec->Width;
-      
-      for(f=0;f<Layer->NSFeature;f++) {
-
-         /*If it's already been projected*/
-         if (f<Layer->GFeature) {
-            if (spec->HighFill) {
-               glDisable(GL_CULL_FACE);
-               glLineWidth(0.0);
-               glPointSize(0.0);
-               glColor4us(spec->HighFill->red,spec->HighFill->green,spec->HighFill->blue,spec->Alpha*655.35);
+      glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
+     
+      if (spec->HighFill) {
+         glDisable(GL_CULL_FACE);
+         glLineWidth(0.0);
+         glPointSize(0.0);
+         
+         for(f=0;f<Layer->NSFeature;f++) {
+            /*If it's already been projected*/
+            if (f<Layer->GFeature) {
                Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
-            }
-            
-            if (spec->HighLine && w) {
-               glEnable(GL_CULL_FACE);
-               if (spec->Width<0) {
-                  glPushAttrib(GL_STENCIL_BUFFER_BIT);
-                  glStencilFunc(GL_ALWAYS,0x1,0x1);
-                  glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
-               }
-               glLineWidth(ABS(w));
-               glPointSize(ABS(w));
-               glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
-               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);
-               if (w<0) {
-                  glPopAttrib();
-               }
             }
          }
+      }
+      
+      if (spec->HighLine && w) {
+         glEnable(GL_CULL_FACE);
+         glPushAttrib(GL_STENCIL_BUFFER_BIT);
+         glStencilFunc(GL_ALWAYS,0x1,0x1);
+         glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);        
+         glLineWidth(ABS(w));
+         glPointSize(ABS(w));
+         
+         for(f=0;f<Layer->NSFeature;f++) {
+            /*If it's already been projected*/
+            if (f<Layer->GFeature) {            
+               Proj->Type->Render(Proj,Layer->LFeature+Layer->SFeature[f],NULL,NULL,NULL,NULL,0,0,0,Layer->Vr[0],Layer->Vr[1]);              
+            }
+         }
+         glPopAttrib();
       }
    }
 
@@ -3319,6 +3320,10 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          /*Render the selected feature's labels*/
          if (Layer->SFeature && spec->HighLine) {
             glColor4us(spec->HighLine->red,spec->HighLine->green,spec->HighLine->blue,spec->Alpha*655.35);
+            glPushAttrib(GL_STENCIL_BUFFER_BIT);
+            glStencilFunc(GL_ALWAYS,0x1,0x1);
+            glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+            
             field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
             for(f=0;f<Layer->NSFeature;f++) {
                 if (Projection_Pixel(Proj,VP,Layer->Loc[Layer->SFeature[f]],vr)) {
@@ -3335,6 +3340,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                   }
                }
             }
+            glPopAttrib();
          }
          glPopMatrix();
          glMatrixMode(GL_MODELVIEW);

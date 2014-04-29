@@ -1,7 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.7.0
+VERSION=7.7.1
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -27,7 +27,7 @@ EXPAT=expat-2.0.1
 CURL=curl-7.21.3
 SQLITE=sqlite-3.6.23
 GEOS=geos-3.4.0
-GDAL=gdal-1.10.0
+GDAL=gdal-1.11.0
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
 HDF4=hdf-4.2.5
@@ -38,6 +38,7 @@ ODBC=unixODBC-2.3.0
 GRIB=grib_api-1.12.0
 ECBUFR=libecbufr-0.8.2rc1
 OCI=instantclient_11_2
+FGDB=FileGDB_API
 PROJ=proj-4.8.0
 MESA=Mesa-7.6.1
 
@@ -94,16 +95,16 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 #----- f90 stuff (for RMN with fortran)
-cd ${F90}/
-export FC='pgf90 -Bdynamic -fPIC -byteswapio'
-s.cc -c -I${SPI_LIB}/TclTk/include f90tclsh.c f90wish.c
-./f90_call_c.sh f90tclsh f90tclsh.o -L${SPI_LIB}/TclTk/lib -ltcl8.6
-rm f90tclsh.o
-./f90_call_c.sh f90wish f90wish.o -L${SPI_LIB}/TclTk/lib -ltk8.6 -ltcl8.6
-rm f90wish.o
-ln -fs f90tclsh tclsh8.6
-ln -fs f90wish  wish8.6
-cp -d f90tclsh f90wish ${SPI_LIB}/TclTk/bin
+#cd ${F90}/
+#export FC='pgf90 -Bdynamic -fPIC -byteswapio'
+#s.cc -c -I${SPI_LIB}/TclTk/include f90tclsh.c f90wish.c
+#./f90_call_c.sh f90tclsh f90tclsh.o -L${SPI_LIB}/TclTk/lib -ltcl8.6
+#rm f90tclsh.o
+#./f90_call_c.sh f90wish f90wish.o -L${SPI_LIB}/TclTk/lib -ltk8.6 -ltcl8.6
+#rm f90wish.o
+#ln -fs f90tclsh tclsh8.6
+#ln -fs f90wish  wish8.6
+#cp -d f90tclsh f90wish ${SPI_LIB}/TclTk/bin
 
 #----- TkTable
 cd ${ARCH_PATH}/${TKTABLE}
@@ -275,7 +276,7 @@ if [[ $? -ne 0 ]] ; then
 fi
 cp -d ${LIB_PATH}/${PROJ}/lib/*.so* ${SPI_LIB}
 
-#----- gdal (Don't forget to patch histogram for nodata and add stdio.h to frmts/msg/msgcommand.h)
+#----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
 cd ${ARCH_PATH}/${GDAL}
 make distclean
 ./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes --disable-rpath \
@@ -302,6 +303,7 @@ make distclean
 --with-netcdf=${LIB_PATH}/${NETCDF} \
 --with-oci-lib=${LIB_PATH}/${OCI} \
 --with-oci-include=${LIB_PATH}/${OCI}/sdk/include \
+--with-fgdb=${LIB_PATH}/${FGDB} \
 --with-static-proj4=${LIB_PATH}/${PROJ}
 
 make install

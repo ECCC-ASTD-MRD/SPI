@@ -392,13 +392,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   }
                   ppt[t][0]=pt[0]; ppt[t][1]=pt[1]; ppt[t][2]=pt[2];
                   
-                  // GDAL 1.10
-                  OGR_G_Empty(geom);
-                  for(v=0;v<n+1;v++) {
-                     OGR_G_SetPoint(geom,v,ppt[v][0],ppt[v][1],ppt[v][2]);                   
-                  }
                   // GDAL 1.11
-                  //OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
+                  OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
                   
                   if (d==2) OGR_G_FlattenTo2D(geom);
 
@@ -428,13 +423,8 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                         }
                      }
                      
-                     // GDAL 1.10
-                     OGR_G_Empty(geom);
-                     for(v=0;v<n-1;v++) {
-                        OGR_G_SetPoint(geom,v,ppt[v][0],ppt[v][1],ppt[v][2]);
-                     }
                      // GDAL 1.11
-                     //OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
+                     OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
                      if (d==2) OGR_G_FlattenTo2D(geom);
                      
                      free(ppt);
