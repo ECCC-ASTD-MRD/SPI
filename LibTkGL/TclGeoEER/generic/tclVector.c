@@ -1019,13 +1019,15 @@ int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique) {
                for(cn=0;cn<Vec->N;cn++) {
                   memcpy(&Vec->Cp[cn]->V[n+1],&Vec->Cp[cn]->V[n+2],(Vec->Cp[cn]->N-(n+1))*sizeof(double));
                   Vec->Cp[cn]->N--;
-            }
+               }
+               n--;
             }
          }
       } else {
          for(n=0;n<Vec->N-1;n++) {
             if (Vec->V[n]==Vec->V[n+1]) {
                memcpy(&Vec->V[n+1],&Vec->V[n+2],(Vec->N-(n+1))*sizeof(double));
+               n--;
             }
             Vec->N--;
          }
