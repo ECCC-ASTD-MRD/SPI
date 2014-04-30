@@ -158,7 +158,7 @@ proc Writer::PadClose { Pad { Save True } } {
       #----- Sauvegarde
       if { $upd!="" && $Save } {
          if { [Dialog::Default .writer 300 WARNING $Msg(Save) "($Data(Type$Pad))" 0 $Lbl(No) $Lbl(Yes)] } {
-            Writer::${Data(Type$Pad)}::Write $Pad 0
+            Writer::$Data(Type$Pad)::Write $Pad 0
          }
       }
 
