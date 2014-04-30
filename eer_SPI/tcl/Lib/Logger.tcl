@@ -11,10 +11,11 @@
 # Description: Definitions de diverses fonctions pour la gestion standardisee des logs.
 #
 # Fonctions:
-#   Log::Start { Job Version { Input "" } }
-#   Log::End   { { Status 0 } }
-#   Log::Print { Type Message { Var "" } }
-#   Log::Mail  { Subject File { Address { } } }
+#   Log::Start    { Job Version { Input "" } }
+#   Log::End      { { Status 0 } }
+#   Log::Print    { Type Message { Var "" } }
+#   Log::Mail     { Subject File { Address { } } }
+#   Log::CheckSPI { Version }
 #
 #   Log::CyclopeStart    { }
 #   Log::CyclopeEnd      { }
@@ -221,6 +222,15 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
    return $No
 }
 
+proc Log::CheckSPI { Version } {
+   global env
+   
+   if { $Version!="" && ![package vsatisfies $env(SPI_VERSION) $Version] } {
+      Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Version)"
+      Log::End 1 True
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Log::Start>
 # Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
@@ -293,10 +303,7 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   if { $Param(SPI)!="" && ![package vsatisfies $env(SPI_VERSION) $Param(SPI)] } {
-      Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Param(SPI))"
-      Log::End 1 True
-   }
+   Log::CheckSPI $Param(SPI)
 
    if { $Param(JobClass)=="INTERACTIVE" } {
       Log::Mail "Job started" $Param(OutFile)
