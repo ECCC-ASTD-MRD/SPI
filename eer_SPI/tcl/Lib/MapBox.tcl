@@ -58,16 +58,14 @@ namespace eval MapBox {
    set Data(Curve)    LINEAR   ;#Courbe d'etendue des couleurs
    set Data(Interp)   ""       ;#Interpolation des couleurs
    set Data(Invert)   0        ;#Inverse de la courbe de distribution
-   set Data(List)     ""       ;#Liste des noms de palettes
-
-   set Data(Map)      ""                            ;#Colormap a editer
-   set Data(Command)  ""                            ;#Command d'application
+   set Data(Maps)     ""       ;#Liste des noms de palettes
+   set Data(Map)      ""       ;#Colormap a editer
+   
+   set Data(Command)  ""       ;#Command d'application
    set Data(RealTime) [expr $OpenGL::Param(Res)<=1] ;#Reaffichage interactif
 
    set Control(X0) 5
    set Control(Y0) 30
-
-   catch { set Data(Dir) $env(HOME)/.spi/Colormap }
 
    #----- Definitions des labels
 
@@ -675,19 +673,18 @@ proc MapBox::Create { Parent Apply Map args } {
 #-------------------------------------------------------------------------------
 
 proc MapBox::Delete { Widget } {
-   global GDefs
    variable Data
    variable Lbl
    variable Msg
 
-   set idx [lsearch -exact $Data(List) $Data(Name)]
+   set idx [lsearch -index 0 -exact $Data(Maps) $Data(Name)]
 
    if { $idx!=-1 } {
       if { [Dialog::Default .mapbox 200 WARNING $Msg(Delete) "" 0 $Lbl(Yes) $Lbl(No)] } {
          return
       }
 
-      file delete -force $Data(Dir)/$Data(Name).rgba
+      file delete -force [lindex [lindex $Data(Maps) $idx] 1]
       MapBox::List $Widget
    }
 }
@@ -708,20 +705,33 @@ proc MapBox::Delete { Widget } {
 #-------------------------------------------------------------------------------
 
 proc MapBox::List { Widget } {
-   global GDefs
+   global env
    variable Data
 
-   set Data(List) ""
-
-   #----- Lire toutes les definitions et inserer les noms dans la liste
-   foreach file [glob $Data(Dir)/*] {
-      regsub ".rgba" [file tail $file] "" pal
-      lappend Data(List) $pal
+   set Data(Maps) {}
+   set maps       {}
+   
+   foreach file [glob $env(HOME)/.spi/Colormap/*.rgba] {
+      regsub ".rgba" [file tail $file] "" name
+      lappend Data(Maps) [list $name $file]
+      lappend maps $name
    }
-   set  Data(List) [lsort $Data(List)]
 
+   if { [info exists env(SPI_TOOL)] } {
+      foreach path [split $env(SPI_TOOL) :] {
+         foreach file [glob -nocomplain $path/Colormaps/*.rgba] {
+            regsub ".rgba" [file tail $file] "" name
+            if { [lsearch -index 0 $Data(Maps) $name]==-1 } {
+               lappend Data(Maps) [list $name $file]
+               lappend maps $name
+            }
+         }
+      }
+   }
+   set Data(Maps) [lsort -index 1 $Data(Maps)]
+   
    ComboBox::DelAll  $Widget False
-   ComboBox::AddList $Widget $Data(List)
+   ComboBox::AddList $Widget [lsort $maps]
 }
 
 #-------------------------------------------------------------------------------
@@ -740,7 +750,6 @@ proc MapBox::List { Widget } {
 #-------------------------------------------------------------------------------
 
 proc MapBox::ListImg { Widget } {
-   global GDefs
    variable Data
 
    #---- Create Window
@@ -778,9 +787,10 @@ proc MapBox::ListImg { Widget } {
    set no 0
 
    #----- Create button for each colormap
-   foreach map $Data(List) {
+   foreach file $Data(Maps) {
+      set map [lindex $file 0]
       if { [lsearch -exact [image names] MAPBOXIMG$map]==-1 } {
-         colormap read CMAPTMP $Data(Dir)/$map.rgba
+         colormap read CMAPTMP [lindex $file 1]
          image create photo MAPBOXIMG$map -width 128 -height 15
          colormap image CMAPTMP MAPBOXIMG$map
 
@@ -822,22 +832,19 @@ proc MapBox::ListImg { Widget } {
 #-------------------------------------------------------------------------------
 
 proc MapBox::Save { Widget } {
-   global GDefs
+   global env
    variable Data
    variable Lbl
    variable Msg
    variable Bubble
 
-
    if { [set name [Dialog::Get .mapbox $Bubble(Save) $Msg(Save)]]!="" } {
-      set idx [lsearch -exact $Data(List) $name]
-
-      if { $idx!=-1 } {
+      if { [set idx [lsearch -index 0 -exact $Data(Maps) $name]]!=-1 } {
          if { [Dialog::Default .mapbox 200 WARNING $Msg(Exist) "" 0 $Lbl(Yes) $Lbl(No)] } {
             return
          }
       }
-      colormap write $Data(Map) $Data(Dir)/$name.rgba
+      colormap write $Data(Map) $env(HOME)/.spi/Colormap/$name.rgba
       set Data(Name) $name
 
       MapBox::List $Widget
@@ -862,16 +869,15 @@ proc MapBox::Save { Widget } {
 #-------------------------------------------------------------------------------
 
 proc MapBox::Select { Name { Map "" } } {
-   global GDefs
    variable Data
    variable Control
 
    if { [winfo exists .mapbox] } {
 
       if { $Name!="" } {
-         set Data(Name) $Name
-         if { [file exists $Data(Dir)/$Data(Name).rgba] } {
-            colormap read $Data(Map) $Data(Dir)/$Data(Name).rgba
+         if { [set idx [lsearch -index 0 -exact $Data(Maps) $Name]]!=-1 } {
+            set Data(Name) $Name
+            colormap read $Data(Map) [lindex [lindex $Data(Maps) $idx] 1]
          }
          MapBox::ControlInit .mapbox.fr.edit.map
       } else {
