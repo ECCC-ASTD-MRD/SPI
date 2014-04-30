@@ -35,12 +35,14 @@ namespace eval SPI {
    set Param(PaneSide)       right        ;#Position des secondary pane
    set Param(Panes)          {}           ;#Liste des dimensions des secondary pane
    set Param(Exp)            False        ;#Affichage des experiences
+   set Param(EER)            False        ;#Mode EER
    set Param(Window)         True         ;#Affichage de la fenetre principale
    set Param(Args)           ""           ;#Parametres pour le script en cours d'execution
    set Param(Default)        $env(HOME)/.spi/SPI
    set Param(Script)         ""           ;#Script en cours d'execution
    set Param(Layout)         SPI          ;#Layout courant
    set Param(Tool)           ""           ;#Outils courant
+   set Param(ToolPath)       ""           ;#Path des outils
    set Param(ToolMode)       Draw         ;#Mode de l'outils courant
    set Param(Tools)          ""           ;#Liste des outils disponibles
    set Param(Layouts)        { SPI }      ;#Liste des layouts

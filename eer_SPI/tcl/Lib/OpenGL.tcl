@@ -69,7 +69,7 @@ namespace eval OpenGL {
    set Lbl(Dynamic)     { "Dynamique" "Dynamics" }
 
    glrender -shaderpath $Param(ShaderPath) -shaders $Param(Shaders)
-   puts "(INFO) System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
+   Log::Print INFO "System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
 }
 
 #----------------------------------------------------------------------------

@@ -109,7 +109,6 @@ proc SPI::CommandLine { { Args {} }} {
       \[-setup\]                            : Force initial setup (~/.spi)
       \[-default ... ...\]                  : Use the file specified as the default parameter definition
       \[-lang 0|1\]                         : Select language (0 Francais, 1 English)
-      \[-model\]                            : Open the model tab upon startup
       \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
       \[-field ... ...\]                    : Open the specified standard files
       \[-traj ... ...\]                     : Open the specified trajectory files
@@ -202,21 +201,31 @@ package require MetData
 
 if { !$SPI::Param(Batch) } {
 
-   #----- EER Modeling layouts and tools
-   if { [info exists env(EER_TOOL)] } {
-      foreach tool [lsort [glob -nocomplain $env(EER_TOOL)/tcl/Tools/*]] {
-         set name [file tail [file rootname $tool]]
-         uplevel #0 source $tool/$name.tcl
-         lappend SPI::Param(Tools) $name
+   #----- User defined layouts and tools
+   if { [info exists env(SPI_TOOL)] } {
+   
+      foreach path [split $env(SPI_TOOL) :] {
+         foreach SPI::Param(ToolPath) [lsort [glob -nocomplain $path/Tools/*]] {
+            set name [file tail [file rootname $SPI::Param(ToolPath)]]
+            if { [catch { uplevel #0 source $SPI::Param(ToolPath)/$name.tcl } msg] } {
+               Dialog::Error . $SPI::Error(Source) "\n\n\t$name: $SPI::Param(ToolPath)/$name.tcl\n\n$msg"
+            } else {
+               lappend SPI::Param(Tools) $name
+            }
+         }
+         foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layouts *.tcl]] {
+            lappend SPI::Param(Layouts) [file rootname $layout]
+         }
+         lappend SPI::Param(Layouts) ""        
       }
-      foreach layout [lsort -nocase [glob -nocomplain -tails -directory $env(EER_TOOL)/tcl/Layouts *.tcl]] {
-         lappend SPI::Param(Layouts) [file rootname $layout]
-      }
-      lappend SPI::Param(Layouts) ""
-      
-      source $env(EER_TOOL)/tcl/Models/Model.tcl
    }
 
+   #----- EER Modeling tools
+   if { [info exists env(EER_TOOL)] && [file readable $env(EER_TOOL)/Models/Model.tcl] } {
+      set SPI::Param(EER) True
+      source $env(EER_TOOL)/Models/Model.tcl
+   }
+   
    #----- Liste des layouts
    foreach layout [lsort -nocase [glob -nocomplain -tails -directory $env(HOME)/.spi/Layout *.tcl]] {
       lappend SPI::Param(Layouts) [file rootname $layout]
@@ -230,6 +239,7 @@ foreach tool [lsort [glob $GDefs(Dir)/tcl/Tools/*]] {
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name
 }
+
 Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
 
 #-------------------------------------------------------------------------------
@@ -536,6 +546,18 @@ proc SPI::LayoutUnLock { Frame } {
    set Page::Data(Lock$Frame) False
 }
 
+proc SPI::LayoutUser { Layout } {
+   global env
+   
+   foreach path [split $env(SPI_TOOL) :] {
+      if { [file exists $path/Layouts/$Layout.tcl] } {
+         uplevel #0 source $path/Layouts/$Layout.tcl
+         return True
+      }
+   }
+   return False
+}
+
 proc SPI::LayoutLoad { Frame Layout } {
    global   GDefs env
    global   env
@@ -584,10 +606,9 @@ proc SPI::LayoutLoad { Frame Layout } {
    } elseif { [file exists $Layout.tcl] && ![file isdirectory $Layout.tcl] } {
       uplevel #0 source $Layout.tcl
       set Layout [file rootname [file tail $Layout]]
-   } elseif { [info exists env(EER_TOOL)] && [file exists $env(EER_TOOL)/tcl/Layouts/$Layout.tcl] } {
-      uplevel #0 source \$env(EER_TOOL)/tcl/Layouts/$Layout.tcl
+   } elseif { [SPI::LayoutUser $Layout] } {
    } elseif { [file exists $env(HOME)/.spi/Layout/$Layout.tcl] } {
-      uplevel #0 source \$env(HOME)/.spi/Layout/$Layout.tcl
+      uplevel #0 source $env(HOME)/.spi/Layout/$Layout.tcl
    } elseif { [namespace exists ::$Layout] && [llength [info procs ::${Layout}::Layout]] } {
    } else {
       Log::Print ERROR "Invalid Layout"

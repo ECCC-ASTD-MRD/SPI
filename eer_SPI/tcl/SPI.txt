@@ -179,6 +179,7 @@ namespace eval SPI {
    set Error(Icon)         { "Fichier d'icones invalide" "Invalid icon file" }
    set Error(LayoutDel)    { "Vous ne pouvez pas supprimer ce modèle de page." "You cannot delete this page layout." }
    set Error(Page)         { "Page inexistante.\n\nCréée une page avant d'y insérer des objets." "Invalid page.\n\nCreate a page before inserting new objects." }
+   set Error(Source)       { "Erreur en incluant l'extension:" "Error sourcing extension:" }
 
    #----- Definition des messages
 
