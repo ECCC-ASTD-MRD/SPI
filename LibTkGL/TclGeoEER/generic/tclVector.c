@@ -981,7 +981,7 @@ void Vector_QuickSort(TVector *Vec,int Comp,int start,int end) {
 
 int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique) {
 
-   int      n,end,c,cn;
+   int      n,end,c,cn,d=0;
    Tcl_Obj *obj;
 
    if (!Vec) {
@@ -1014,20 +1014,22 @@ int Vector_Sort(Tcl_Interp *Interp,TVector *Vec,char *Comp,int Unique) {
    /*Check for repeted element*/
    if (Unique) {
       if (Comp) {
-         for(n=0;n<Vec->Cp[c]->N-1;n++) {
+         for(n=0;n<Vec->Cp[c]->N-1-d;n++) {
             if (Vec->Cp[c]->V[n]==Vec->Cp[c]->V[n+1]) {
                for(cn=0;cn<Vec->N;cn++) {
                   memcpy(&Vec->Cp[cn]->V[n+1],&Vec->Cp[cn]->V[n+2],(Vec->Cp[cn]->N-(n+1))*sizeof(double));
                   Vec->Cp[cn]->N--;
                }
                n--;
+               d++;
             }
          }
       } else {
-         for(n=0;n<Vec->N-1;n++) {
+         for(n=0;n<Vec->N-1-d;n++) {
             if (Vec->V[n]==Vec->V[n+1]) {
                memcpy(&Vec->V[n+1],&Vec->V[n+2],(Vec->N-(n+1))*sizeof(double));
                n--;
+               d++;
             }
             Vec->N--;
          }

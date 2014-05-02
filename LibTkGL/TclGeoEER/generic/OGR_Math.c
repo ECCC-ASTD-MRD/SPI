@@ -272,7 +272,10 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
       if (!Poly->hole[g]) {
          gpc=&Poly->contour[g];
          ring=OGR_G_CreateGeometry(wkbLinearRing);
-         OGR_G_SetPoints(ring,gpc->num_vertices,&gpc->vertex[0].x,sizeof(gpc_vertex),&gpc->vertex[0].y,sizeof(gpc_vertex),NULL,0);
+         //OGR_G_SetPoints(ring,gpc->num_vertices,&(gpc->vertex[0].x),sizeof(gpc_vertex),&(gpc->vertex[0].y),sizeof(gpc_vertex),NULL,0);
+         for (n=0;n<gpc->num_vertices;n++) {
+            OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
+         }
 
          /*Make sure polygon is closed*/
          if (gpc->vertex[n-1].x!=gpc->vertex[0].x || gpc->vertex[n-1].y!=gpc->vertex[0].y) {
@@ -294,7 +297,10 @@ void GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom) {
          if (Poly->hole[g]) {
             gpc=&Poly->contour[g];
             ring=OGR_G_CreateGeometry(wkbLinearRing);
-            OGR_G_SetPoints(ring,gpc->num_vertices,&gpc->vertex[0].x,sizeof(gpc_vertex),&gpc->vertex[0].y,sizeof(gpc_vertex),NULL,0);
+            //OGR_G_SetPoints(ring,gpc->num_vertices,&(gpc->vertex[0].x),sizeof(gpc_vertex),&(gpc->vertex[0].y),sizeof(gpc_vertex),NULL,0);
+            for (n=0;n<gpc->num_vertices;n++) {
+               OGR_G_AddPoint_2D(ring,gpc->vertex[n].x,gpc->vertex[n].y);
+            }
 
             /*Make sure polygon is closed*/
             if (gpc->vertex[n-1].x!=gpc->vertex[0].x || gpc->vertex[n-1].y!=gpc->vertex[0].y) {
