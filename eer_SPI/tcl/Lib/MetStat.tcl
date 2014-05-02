@@ -484,10 +484,9 @@ proc MetStat::RECRCLoad { File } {
             gets $file line
             set line [string trim $line]
          }
-
          #----- Verifier la structure de la commande
          if { [catch {MetStat::RECRCEval $cmd}] } {
-            Dialog::Error . $Msg(RECRC) " $File:\n\n$cmd"
+            Log::Print WARNING "[lindex $Msg(RECRC) $GDefs(Lang)] $File:\n\t$cmd"
          }
       } else {
          gets $file line
