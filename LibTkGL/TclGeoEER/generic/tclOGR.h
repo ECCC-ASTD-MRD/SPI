@@ -104,7 +104,7 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id);
 
 OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
 
-OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name);
+OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
 OGRLayerH        OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
 void             OGR_LayerClean(OGR_Layer *Layer,int Index);
 void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);

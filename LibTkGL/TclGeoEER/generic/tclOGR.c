@@ -364,7 +364,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          } else {
             ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
          }
-         if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3])),Tcl_GetString(Objv[4]),ref)) {
+         if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3]),NULL,wkbNone),Tcl_GetString(Objv[4]),ref)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
@@ -390,13 +390,13 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
          }
-         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[2])))) {
+         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),t))) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
 
-         layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
-         layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
+//         layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
+//         layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
          layer->Def=OGR_L_GetLayerDefn(layer->Layer);             
          layer->Ref=ref;             
          layer->Changed=1;
@@ -751,7 +751,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
+OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type) {
 
    OGR_Layer *layer;
 
@@ -765,37 +765,43 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name) {
    layer->Spec->RenderTexture=1;
 
    /*Initialisation de la structure layer*/
-   layer->Changed      = 0;
-   layer->Update       = 0;
-   layer->Mask         = 0;
-   layer->CFeature     = -1;
-   layer->Topo         = -1;
-   layer->Extrude      = -1;
-   layer->Loc          = NULL;
-   layer->Data         = NULL;
-   layer->Min          = 0.0;
-   layer->Max          = 0.0;
+   layer->Changed    = 0;
+   layer->Update     = 0;
+   layer->Mask       = 0;
+   layer->CFeature   = -1;
+   layer->Topo       = -1;
+   layer->Extrude    = -1;
+   layer->Loc        = NULL;
+   layer->Min        = 0.0;
+   layer->Max        = 0.0;
 
-   layer->GFeature   =0;
-   layer->NFeature   =0;
-   layer->LFeature   =0;
-   layer->NSFeature  =0;
-   layer->SFeature   =NULL;
-   layer->Feature    =NULL;
-   layer->Select     =NULL;
+   layer->GFeature   = 0;
+   layer->NFeature   = 0;
+   layer->LFeature   = 0;
+   layer->NSFeature  = 0;
+   layer->SFeature   = NULL;
+   layer->Feature    = NULL;
+   layer->Select     = NULL;
 
-   layer->File       =NULL;
-   layer->Layer      =NULL;
-   layer->Feature    =NULL;
-   layer->Def        =NULL;
-   layer->Ref        =NULL;
-   layer->Tag        =NULL;
+   if (Desc) {
+      layer->Data    = OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
+      layer->Layer   = OGR_DS_CreateLayer(layer->Data,Desc,NULL,Type,NULL);
+   } else {
+      layer->Layer   = NULL;
+      layer->Data    = NULL;  
+   }
+         
+   layer->File       = NULL;
+   layer->Feature    = NULL;
+   layer->Def        = NULL;
+   layer->Ref        = NULL;
+   layer->Tag        = NULL;
 
-   layer->Sort.Field =-1;
-   layer->Sort.Type  =0;
-   layer->Sort.Order =1;
-   layer->Sort.Nb    =0;
-   layer->Sort.Table =NULL;
+   layer->Sort.Field = -1;
+   layer->Sort.Type  = 0;
+   layer->Sort.Order = 1;
+   layer->Sort.Nb    = 0;
+   layer->Sort.Table = NULL;
 
    Vect_Init(layer->Vr[0],1e32,1e32,1e32);
    Vect_Init(layer->Vr[1],-1e32,-1e32,-1e32);
