@@ -22,7 +22,7 @@
 # Remarques :
 #   - Ce script traite tous les fichiers de trajectoires dans le repertoire specifie
 #   - Lancement: SPI -batch -layout JetLayout -macro JetMapper.tcl -args [run] [hour] [dir]
-#     Exemple :  SPI -batch -layout JetLayout -macro JetMapper.tcl -args  00 18 ./ WXO
+#     Exemple :  SPI -batch -layout JetLayout -macro JetMapper.tcl -args  00 18 ./
 #===============================================================================
 
 namespace eval Macro::JetMapper { } {

@@ -174,6 +174,13 @@ fstdfield write TIC 3 -32 True
 fstdfield write TAC 3 -32 True
 fstdfile close 1 2 3
 
+puts "\nTesting Y grid coordinate interpolation"
+fstdfile open 1 read DataIn/2013061419_024
+fstdfield read ZH 1 -1 "" -1 -1 -1 "" "ZH"
+
+puts "   I J  : [set ij [fstdfield stats ZH -coordpoint 39.021 -69.017]]"
+puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats ZH -gridvalue [lindex $ij 0] [lindex $ij 1]]"
+
 #catch { fstdfile open BAD read DataOut/2012022412_TOT_ES.txt }
 #fstdfile open OK read DataOut/2006122900_000.eta.mask
 

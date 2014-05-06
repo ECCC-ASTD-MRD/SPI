@@ -20,7 +20,7 @@ namespace eval Macro::AutoGraphTime {
    variable Params
 
    set Param(Info)      { "Serie temporelle" "Time series" }
-   set Param(InfoArgs)  { { "Fichier" "Variable" "Lat" "Lon" } { "File" "Variable" "Lat" "Lon" } }
+   set Param(InfoArgs)  { { "Fichier" "[Variable]" "[Lat]" "[Lon]" } { "File" "[Variable]" "[Lat]" "[Lon]" } }
 
    set Param(Paths)     ""
    set Param(Var)       "SEUD"
@@ -159,8 +159,9 @@ proc Macro::AutoGraphTime::Args { } {
    global argv argc
    variable Param
 
-   #----- Lire les parametres si il y en a
-   if { $argc>0 } { set Param(Paths) [lindex $argv 0] }
+   set Param(Paths) [lindex $argv 0]
+   
+   #----- Parametres optionels
    if { $argc>1 } { set Param(Var)   [lindex $argv 1] }
    if { $argc>2 } { set Param(Lat)   [lindex $argv 2] }
    if { $argc>3 } { set Param(Lon)   [lindex $argv 3] }

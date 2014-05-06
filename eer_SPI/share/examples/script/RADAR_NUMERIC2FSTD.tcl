@@ -153,17 +153,19 @@ if { [llength $Data(Indexes)] != $Data(SizeInBytes) } {
 }
 
 #----- Create index field
-fstdfield define GRID -DATA $Data(Indexes)
+fstdfield define GRID -DATA 0 $Data(Indexes)
 
 Log::Print INFO "Applying lookup table"
 
 #----- LUT and Save fields
 set i 0
-foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {
-   vexpr FLD$field lut(GRID,VECT0,VECT$i)
+foreach field $Data(TableLabels_PrecipitationRate-Reflectivity) {   
+   vexpr FLD$i lut(GRID,VECT0,VECT$i)
 
-   fstdfield define FLD$field -NOMVAR $Param($field) -ETIKET $field -DATEO [fstdstamp fromdate [string range $Data(ValidTime) 0 7] [string range $Data(ValidTime) 8 end]0000]
-   fstdfield write FLD$field FSTD -32 True
+   fstdfield define FLD$i -NOMVAR $Param($field) -ETIKET $field -DATEO [fstdstamp fromdate [string range $Data(ValidTime) 0 7] [string range $Data(ValidTime) 8 end]0000]
+   vexpr FLD$i ifelse(FLD$i<0,1e-13,FLD$i)
+   
+   fstdfield write FLD$i FSTD -32 True
    incr i
 }
 fstdfile close FSTD

@@ -5,7 +5,7 @@ export SPI_PATH=$(readlink -f $(dirname $(readlink -f $0))/..)
 SOFT=0
 HARD=0
 XVFB=0
-XSVR=${XSVR:=99}
+XSVR=${XSVR:=9999}
 SPI_DEBUG=""
 HOST=`hostname`
 

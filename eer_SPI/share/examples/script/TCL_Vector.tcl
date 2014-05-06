@@ -39,24 +39,32 @@ vector dim SPACETIME { X Y Z T }
 vector mem SPACETIME 10000
 
 #---- Afficher le contenu du vecteur
+puts "Before:"
 puts "   SPACETIME=[vector get SPACETIME]"
 puts "   SPACETIME.X=[vector get SPACETIME.X]"
 
 #----- Definir l'item 0 dans chaque composante du vecteur
-vector append SPACETIME { 10 11 12 13 }
-vector append SPACETIME { 40 21 12 63 }
-vector append SPACETIME { 20 1 121 66 }
+vector append SPACETIME { 10 5 11 13 }
+vector append SPACETIME { 40 4 11 23 }
+vector append SPACETIME { 20 3 12 43 }
+vector append SPACETIME { 20 3 12 43 }
+vector append SPACETIME { 20 3 12 43 }
+vector append SPACETIME { 30 2 12 53 }
+vector append SPACETIME { 10 1 13 63 }
 
+puts "After:"
+puts "   SPACETIME=[vector get SPACETIME]"
 puts "   SPACETIME 0  =[vector get SPACETIME 0]"
 puts "   SPACETIME end=[vector get SPACETIME end]"
 puts "   SPACETIME.X  =[vector get SPACETIME.X end-1]"
 
 #----- Trier selon l'item 1
-puts "   Vector before sort on Y:"
-puts "      SPACETIME=[vector get SPACETIME]"
-vector sort SPACETIME Y
-puts "   Vector after sort on Y:"
-puts "      SPACETIME=[vector get SPACETIME]"
+vector sort -unique SPACETIME Y
+puts "Vector after sort on Y:"
+puts "   SPACETIME=[vector get SPACETIME]"
+puts "   SPACETIME 0  =[vector get SPACETIME 0]"
+puts "   SPACETIME end=[vector get SPACETIME end]"
+puts "   SPACETIME.X  =[vector get SPACETIME.X end-1]"
 
 #----- Definir l'item 1 dans chaque composante du vecteur
 vector length SPACETIME 5
@@ -79,11 +87,11 @@ vector copy SPACETIME2 SPACETIME
 #----- Ajouter la copie a la fin du vecteur
 vector append SPACETIME SPACETIME2
 
-#----- Afficher la dimension du vecteru
-puts [vector length SPACETIME.X]
+#----- Afficher la dimension du vecteur
+puts "Vector length: [vector length SPACETIME.X]"
 
 #----- Afficher l'espace memoire requise par le vecteur
-puts [vector mem SPACETIME]
+puts "Vector mem   : [vector mem SPACETIME]"
 
 #----- Liberer le vecteur
 vector free SPACETIME
