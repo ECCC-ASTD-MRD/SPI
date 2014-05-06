@@ -1843,7 +1843,7 @@ int Murphy_WideLine(TMurphy *M,Vect3d P0,Vect3d P1) {
    return(1);
 }
 
-int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double Angle) {
+int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double Angle,int Included) {
 
    int      n,i=0,j;
    double   sina,cosa;
@@ -1869,43 +1869,47 @@ int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double A
       maxy=FMAX(maxy,poly[n+1]);
    }
 
-   // Loop through the rows of the raster grid.
-   for (y=miny;y<maxy;y++) {
+   // Render only if completely included
+   if (!Included || (minx>=-2 && miny>=-2 && maxx<M->Def->NI+2 && maxy<M->Def->NJ+2)) {
+      
+      // Loop through the rows of the raster grid.
+      for (y=miny;y<maxy;y++) {
 
-      //  Build a list of nodes.
-      n=0; j=Nb-2;
-      for (i=0; i<Nb; i+=2) {
-         pyi=poly[i+1];
-         pyj=poly[j+1];
-         pxi=poly[i];
-         pxj=poly[j];
+         //  Build a list of nodes.
+         n=0; j=Nb-2;
+         for (i=0; i<Nb; i+=2) {
+            pyi=poly[i+1];
+            pyj=poly[j+1];
+            pxi=poly[i];
+            pxj=poly[j];
 
-         if ((pyi<y && pyj>=y) || (pyj<y && pyi>=y)) {
-            node[n++]=(pxi+(y-pyi)/(pyj-pyi)*(pxj-pxi));
+            if ((pyi<y && pyj>=y) || (pyj<y && pyi>=y)) {
+               node[n++]=(pxi+(y-pyi)/(pyj-pyi)*(pxj-pxi));
+            }
+            j=i;
          }
-         j=i;
-      }
 
-      // Sort the nodes, via a simple Bubble sort.
-      i=0;
-      while (i<n-1) {
-         if (node[i]>node[i+1]) {
-            swap=node[i]; node[i]=node[i+1]; node[i+1]=swap;
-            if (i) i--;
-         } else {
-            i++;
+         // Sort the nodes, via a simple Bubble sort.
+         i=0;
+         while (i<n-1) {
+            if (node[i]>node[i+1]) {
+               swap=node[i]; node[i]=node[i+1]; node[i+1]=swap;
+               if (i) i--;
+            } else {
+               i++;
+            }
          }
-      }
 
-      // Rasterize between node pairs.
-      for (i=0; i<n; i+=2) {
-         if (node[i]>M->Def->NI) break;
-         if (node[i+1]>0 ) {
-            if (node[i]  <0 ) node[i]=0 ;
-            if (node[i+1]>M->Def->NI) node[i+1]=M->Def->NI-1;
+         // Rasterize between node pairs.
+         for (i=0; i<n; i+=2) {
+            if (node[i]>M->Def->NI) break;
+            if (node[i+1]>0 ) {
+               if (node[i]  <0 ) node[i]=0 ;
+               if (node[i+1]>M->Def->NI) node[i+1]=M->Def->NI-1;
 
-            for (x=node[i]; x<node[i+1]; x++) {
-               Murphy_Plot(M,x,y);
+               for (x=node[i]; x<node[i+1]; x++) {
+                  Murphy_Plot(M,x,y);
+               }
             }
          }
       }
@@ -2070,7 +2074,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    if (def) DataDef_Free(def);
 
-   /* Check for vectorial */
+   // Check for vectorial 
    if (Field->Spec->RenderVector && Field->Def->NC>=2) {
 
       m.Def=Band->Def;
@@ -2085,7 +2089,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
       m.Color[3]=255;
 
-      /*Loop on raster and place arrows at specified interval*/
+      // Loop on raster and place arrows at specified interval
       for(x=0;x<Band->Def->NI;x+=Field->Spec->Sample) {
          for(y=0;y<Band->Def->NJ;y+=Field->Spec->Sample) {
             Band->Ref->Project(Band->Ref,x,y,&lat,&lon,0,1);
@@ -2101,8 +2105,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
                      m.Color[2]=Field->Spec->Map->Color[m.Idx][2];
                      m.Color[3]=Field->Spec->Map->Color[m.Idx][3];
                   }
-
-                  Murphy_Polygon(&m,IconList[13].Co,IconList[13].Nb,x,y,VECTORSIZE(Field->Spec,val),dir);
+                  
+                  Murphy_Polygon(&m,IconList[13].Co,IconList[13].Nb,x,y,VECTORSIZE(Field->Spec,val),dir,TRUE);
                }
             }
          }

@@ -486,7 +486,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,int NFeature) {
 
    OGR_Layer *layerres;
-   
    if (!(layerres=OGR_LayerCreate(Interp,Name,(char*)OGR_FD_GetName(From->Def),wkbUnknown))) {
       Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to create operation layer",(char*)NULL);
       return(NULL);
@@ -2029,7 +2028,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    }
 
    if (OGR_DS_TestCapability(file->Data,ODsCCreateLayer)) {
-      olayer=OGR_DS_CreateLayer(file->Data,Name,layer->Ref->Spatial,wkbUnknown,opt);
+      olayer=OGR_DS_CreateLayer(file->Data,OGR_FD_GetName(layer->Def),layer->Ref->Spatial,wkbUnknown,opt);
       defn=OGR_L_GetLayerDefn(olayer);
    } else {
       Tcl_AppendResult(Interp,"OGR_LayerWrite: Write operation not supported for this file type",(char*)NULL);

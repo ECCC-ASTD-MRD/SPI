@@ -277,6 +277,8 @@ fi
 cp -d ${LIB_PATH}/${PROJ}/lib/*.so* ${SPI_LIB}
 
 #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
+export LD_LIBRARY_PATH={LIB_PATH}/${GEOS}/lib:$LD_LIBRARY_PATH
+
 cd ${ARCH_PATH}/${GDAL}
 make distclean
 ./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes --disable-rpath \
