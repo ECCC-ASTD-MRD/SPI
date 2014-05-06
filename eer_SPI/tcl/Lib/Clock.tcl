@@ -97,19 +97,13 @@ proc Clock::Create { Frame Label Var args } {
 
    if { $args!="" } {
       label $Frame.sep -text ":"
-      entry $Frame.mm -width 2 -bd 1 -bg $GDefs(ColorLight) -textvariable $Data(MM$Frame)
+      entry $Frame.mm -width 2 -bd 1 -bg $GDefs(ColorLight) -textvariable $Data(MM$Frame) -validate focusout -validatecommand "Clock::Incr $Frame 0 1"
       pack $Frame.sep $Frame.mm -after $Frame.hh -side left
 
       set mm [Clock::Check $mm 1 0 59]
-
-      bind $Frame.mm <Any-KeyRelease>   "Clock::Incr $Frame 0 0"
-      bind $Frame.mm <ButtonRelease-1>  "$Frame.mm selection range 0 end"
    }
 
    set hh [Clock::Check $hh 1 0 23]
-
-   bind $Frame.hh <Any-KeyRelease>   "Clock::Incr $Frame 0 0"
-#   bind $Frame.hh <ButtonRelease-1>  "$Frame.hh selection range 0 end"
    bind $Frame.hh <ButtonRelease-1>  "tk_popup $Frame.hh.lst \[winfo rootx $Frame\] \[expr \[winfo rooty $Frame\]+\[winfo height $Frame\]\]"
 }
 
@@ -205,7 +199,7 @@ proc Clock::Incr { Widget Inc Fill } {
 
    set wdg [focus]
 
-   if { "$wdg" == "$Widget.hh" || $Data(MM$Widget)==0 } {
+   if { "$wdg" == "$Widget.hh"  } {
 
       #------ Recuperer l'heure courante
 
@@ -219,12 +213,12 @@ proc Clock::Incr { Widget Inc Fill } {
       incr h $Inc
       set hh [Clock::Check $h $Fill 0 23]
 
-   } elseif  { "$wdg" == "$Widget.mm" } {
+   } else {
 
       #------ Recuperer la minute courante
-
+      $Widget.mm configure -validate none
       set m [string trimleft $mm 0]
-      if { $m=="" } {
+      if { $m=="" || ![string is integer $m]} {
          set m 0
       }
 
@@ -232,7 +226,9 @@ proc Clock::Incr { Widget Inc Fill } {
 
       incr m $Inc
       set mm [Clock::Check $m $Fill 0 59]
+      $Widget.mm configure -validate focusout
    }
+   return True
 }
 
 #----------------------------------------------------------------------------
@@ -264,6 +260,7 @@ proc Clock::Check { Val Fill Min Max } {
    if { $Val < $Min } {
       set Val $Max
    }
+   
    if { $Val > $Max } {
       set Val $Min
    }
