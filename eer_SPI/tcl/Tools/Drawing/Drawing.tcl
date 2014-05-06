@@ -184,6 +184,11 @@ proc Drawing::ImageAdd { File } {
          $menu.menu.new add radiobutton -image IMG$name -variable Drawing::Current(Image) -value IMG$name -indicatoron false \
             -command "Drawing::SetImage $Page::Data(Frame) \$Drawing::Current(Image) ; $menu configure -image \$Drawing::Current(Image)"
          lappend Resources(Image) IMG$name
+         
+         #----- Select this new image
+         set Drawing::Current(Image) IMG$name
+         Drawing::SetImage $Page::Data(Frame) $Drawing::Current(Image) 
+         $menu configure -image $Drawing::Current(Image)
       }
    }
 }
