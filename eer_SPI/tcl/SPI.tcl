@@ -549,10 +549,12 @@ proc SPI::LayoutUnLock { Frame } {
 proc SPI::LayoutUser { Layout } {
    global env
    
-   foreach path [split $env(SPI_TOOL) :] {
-      if { [file exists $path/Layouts/$Layout.tcl] } {
-         uplevel #0 source $path/Layouts/$Layout.tcl
-         return True
+   if { [info exists env(SPI_TOOL)] } {
+      foreach path [split $env(SPI_TOOL) :] {
+         if { [file exists $path/Layouts/$Layout.tcl] } {
+            uplevel #0 source $path/Layouts/$Layout.tcl
+            return True
+         }
       }
    }
    return False
