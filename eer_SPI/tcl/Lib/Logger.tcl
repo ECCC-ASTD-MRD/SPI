@@ -13,7 +13,7 @@
 # Fonctions:
 #   Args::ParseDo    { Argv Argc No Multi Must Cmd }
 #   Args::Parse      { Argv Argc No Multi Var { Values {} } { Glob "" } }
-#   Args::InputParse { File Var }
+#   Args::ParseInput { File Var }
 #
 #   Log::Start    { Job Version { Input "" } }
 #   Log::End      { { Status 0 } }
@@ -31,10 +31,10 @@
 #
 #===============================================================================
 
-package provide Logger 1.1
+package provide Logger 1.2
 package require TclSystem
 
-catch { SPI::Splash "Loading Package Logger 1.1" }
+catch { SPI::Splash "Loading Package Logger 1.2" }
 
 #----- Force default language
 set GDefs(Lang) 1
@@ -227,7 +227,7 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
 }
 
 #----------------------------------------------------------------------------
-# Name     : <Args::InputParse>
+# Name     : <Args::ParseInput>
 # Creation : Mai 2014 - J.P. Gauthier - CMC/CMOE
 #
 # Goal     : Parcourir un fichier de directives.
@@ -248,7 +248,7 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
 #         ...
 #----------------------------------------------------------------------------
 
-proc Args::InputParse { File Var } {
+proc Args::ParseInput { File Var } {
 
    upvar #0 $Var input
    
