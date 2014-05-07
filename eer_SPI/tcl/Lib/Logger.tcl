@@ -11,6 +11,10 @@
 # Description: Definitions de diverses fonctions pour la gestion standardisee des logs.
 #
 # Fonctions:
+#   Args::ParseDo    { Argv Argc No Multi Must Cmd }
+#   Args::Parse      { Argv Argc No Multi Var { Values {} } { Glob "" } }
+#   Args::InputParse { File Var }
+#
 #   Log::Start    { Job Version { Input "" } }
 #   Log::End      { { Status 0 } }
 #   Log::Print    { Type Message { Var "" } }
@@ -220,6 +224,57 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
    }
 
    return $No
+}
+
+#----------------------------------------------------------------------------
+# Name     : <Args::InputParse>
+# Creation : Mai 2014 - J.P. Gauthier - CMC/CMOE
+#
+# Goal     : Parcourir un fichier de directives.
+#
+# Parameters :
+#   <File>   : Fichier de directives
+#   <Var>    : Variable a a assigner les valeurs
+#
+# Return:
+#   <Nb>     : Nombre d'arguments traites.
+#
+# Remarks :
+#    - Le fichier doit avoir le format suivant:
+#
+#         SRC_NAME   = Rigaud Test           # Source name.
+#         SRC_TYPE   = ACCIDENT              # Source type
+#         SRC_TIME   = 201205181620          # Emission date-time [UTC]: Year, Month, Day, Hour, Minutes.
+#         ...
+#----------------------------------------------------------------------------
+
+proc Args::InputParse { File Var } {
+
+   upvar #0 $Var input
+   
+   set tok  ""
+   set ntok 0
+   array unset input
+   
+   #----- Parse input file
+   foreach dir [split [exec cat $File] '\n'] {
+   
+      #----- Get rid of comments
+      if { [set idx [string first # $dir]]!=-1 } {
+         set dir [string range $dir 0 $idx-1]
+      }
+      
+      #----- Check for line continuation
+      if { [set idx [string first = $dir]]!=-1 } {
+         set param       [split $dir =]
+         set tok         [string trim [lindex $param 0]]
+         set input($tok) [string trim [lindex $param end]]
+         incr ntok
+      } else {
+         lappend input($tok) [string trim $dir]
+      }
+   }
+   return $ntok
 }
 
 proc Log::CheckSPI { Version } {
