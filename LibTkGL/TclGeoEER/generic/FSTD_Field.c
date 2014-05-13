@@ -1674,13 +1674,23 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case DATA:
             nidx=-1;
+            obj=NULL;
             
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
+               
+               if (strcmp(Objv[i]->typePtr->name,"bytearray")==0) {
+                  obj=Objv[i];
+                  nidx=-1;
+               }
+            }
+           
+            if (Objc>2) {
+               obj=Objv[++i];
             }
             
-            if (Objc>2) {
-               return Data_ValPutMatrix(Interp,Field,nidx,Objv[++i]);
+            if (obj) {
+               return Data_ValPutMatrix(Interp,Field,nidx,obj);
             } else {
                Data_ValGetMatrix(Interp,Field,nidx,0);
             }

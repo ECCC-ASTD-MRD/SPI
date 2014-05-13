@@ -2119,7 +2119,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDVALUE:
-            if (!Field->Stat)
+            if (!Field->Stat && Objc!=4)
                Data_GetStat(Field);
 
             if (Objc==1 || Objc==2) {
@@ -2206,7 +2206,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
             Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,1,1);
 
-            if (!Field->Stat)
+            if (!Field->Stat && Objc!=4)
                Data_GetStat(Field);
 
             if (Objc==4) {
@@ -3083,29 +3083,30 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
    int      i,j;
    double   val=0.0;
    Tcl_Obj *objj,*obji;
-
-   objj=Tcl_NewListObj(0,NULL);
-   
-   if (Component<0) Component=0;
-   
-   if (Component<Field->Def->NC) {
-      if (Flip) {
-         for(i=0;i<Field->Def->NI;i++){
-            obji=Tcl_NewListObj(0,NULL);
-            for(j=0;j<Field->Def->NJ;j++){
-               Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-               Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
-            }
-            Tcl_ListObjAppendElement(Interp,objj,obji);
-         }
-      } else {
-         for(j=0;j<Field->Def->NJ;j++){
-            obji=Tcl_NewListObj(0,NULL);
+  
+   if (Component<0) {
+      objj=Tcl_NewByteArrayObj((unsigned char*)Field->Def->Data[0],FSIZE3D(Field->Def)*TData_Size[Field->Def->Type]);
+   } else {
+      objj=Tcl_NewListObj(0,NULL);
+      if (Component<Field->Def->NC) {
+         if (Flip) {
             for(i=0;i<Field->Def->NI;i++){
-               Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-               Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+               obji=Tcl_NewListObj(0,NULL);
+               for(j=0;j<Field->Def->NJ;j++){
+                  Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
+                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+               }
+               Tcl_ListObjAppendElement(Interp,objj,obji);
             }
-            Tcl_ListObjAppendElement(Interp,objj,obji);
+         } else {
+            for(j=0;j<Field->Def->NJ;j++){
+               obji=Tcl_NewListObj(0,NULL);
+               for(i=0;i<Field->Def->NI;i++){
+                  Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
+                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+               }
+               Tcl_ListObjAppendElement(Interp,objj,obji);
+            }
          }
       }
    }
@@ -3146,8 +3147,8 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Lis
    }      
       
    if (Component<0) {
-     data=Tcl_GetByteArrayFromObj(List,&nobjj);
-     memcpy(Field->Def->Data[0],data,nobjj);  
+      data=Tcl_GetByteArrayFromObj(List,&nobjj);
+      memcpy(Field->Def->Data[0],data,nobjj);  
    } else {
       /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
       Tcl_ListObjLength(Interp,List,&nobjj);

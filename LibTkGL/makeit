@@ -47,6 +47,7 @@ if [[ $arg = "ssm" ]]; then
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -exec rm -f -r {} \;
    find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -delete
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name .nfs* -delete
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace/${SSM_NAME}/lib; ln -s ubuntu-10.04-amd64-64 Linux_x86_64; cd -
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
