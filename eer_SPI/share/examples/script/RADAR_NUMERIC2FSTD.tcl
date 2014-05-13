@@ -120,12 +120,12 @@ switch $Data(Projection) {
 
    PolarStereographic {
       if { $Data(LatCentre)<=0 } {
-         set grtyp SUD
+         set grtyp S
          set nhem  2
          set xg4  [expr 90.0+$Data(LonCentre)]
          set xg4  [expr floor(fmod($xg4+360.0,360.0))]
       } else {
-         set grtyp NORD
+         set grtyp N
          set nhem  1
          set xg4   [expr (270.0-$Data(ReferenceLongitude)+360.0)/360.0]
          set xg4   [expr ($xg4-floor($xg4))*360.0]

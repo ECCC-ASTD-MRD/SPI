@@ -70,7 +70,7 @@ proc Profiler::Run { } {
             foreach loc $Param(Locations) {
 
                fstdfield vertical PROFIL FIELD [lrange $loc 1 end]
-               lappend Data(Loc$var) [fstdfield define PROFIL -DATA]
+               lappend Data(Loc$var) [fstdfield define PROFIL -DATA 0]
 
             }
          }

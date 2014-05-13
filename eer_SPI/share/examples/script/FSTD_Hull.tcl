@@ -22,6 +22,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 
 package require TclData
 #package require TclGeoEER
+package require Export
 package require Logger
 
 namespace eval FSTD_Hull { } {
@@ -30,20 +31,23 @@ namespace eval FSTD_Hull { } {
 
    set Param(Version) 1.0
 
-   set Param(Min)     ""
-   set Param(Max)     ""
-   set Param(Buffer)  1
-   set Param(Dist)    0
-   set Param(Vars)    ""
-   set Param(IP1)     -1
-   set Param(IP3)     -1
-   set Param(Etiket)  ""
-   set Param(File)    ""
-   set Param(Out)     ./out
+   set Param(Format)    "ESRI Shapefile"
+   set Param(ProjFile)  ""
+   set Param(Min)       ""
+   set Param(Max)       ""
+   set Param(Buffer)    0
+   set Param(Dist)      0
+   set Param(Vars)      ""
+   set Param(IP1)       -1
+   set Param(IP3)       -1
+   set Param(Etiket)    ""
+   set Param(File)      ""
+   set Param(Out)       ./out
 
-   set Param(CommandInfo) "Calculate convex hull of specific range values in an RPN field and saves them in shapefile"
+   set Param(CommandInfo) "Calculate convex hull of specific range values in an RPN field"
    
    set Param(CommandLine) "   Command line otions are:\n
+      -format : Output format (Default: \"$Param(Format)\")
       -fstd   : RPN file (Mandatory)
       -var    : List of variables to process (Mandatory)
       -ip1    : IP1 to use (Default: $Param(IP1))
@@ -53,94 +57,117 @@ namespace eval FSTD_Hull { } {
       -max    : Maximum value to contour (Default: \"$Param(Max)\")
       -buffer : Distance buffer arounf points (Default: \"$Param(Buffer)\"\")
       -dist   : Distance between hull befor merging (Default: \"$Param(Dist)\"\")
+      -prj    : prj georeference file to use for output file (default: WGS84 latlon)
       -out    : Output directory (Default: $Param(Out))
-      -help   : This information"
+      -help   : This information
+      
+      Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
 }
 
 proc FSTD_Hull::Run { } {
    variable Param
 
-   catch { eval file delete [glob DataOut/FSTD_Hull.*] }
+   #----- check for format and extract extension if valid
+   if { [set idx [lsearch -exact -index 0 $Export::Vector::Param(Formats) $Param(Format)]]==-1 } {
+      Log::Print ERROR "Wrong format, available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
+   }
+   set ext [file extension [lindex $Export::Vector::Param(Formats) $idx end 0]]
    
+   if { [file exists $Param(ProjFile)] } {
+      georef create REF [exec cat $Param(ProjFile)]
+   }
+
    fstdfile open FILEIN read $Param(File)
- 
-   fstdfield read FLD FILEIN -1 $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $Param(Vars)
 
-   #   fstdfield read FLD FILEIN $field
-
-   #----- Configure range of value and export type
-   if { $Param(Min)!="" } {
-      fstdfield configure FLD -min $Param(Min) -mapbellow False
-   }
-   if { $Param(Max)!="" } {
-      fstdfield configure FLD -max $Param(Max) -mapabove False
-   }
-   fstdfield configure FLD -rendertexture 1
-   
-   #----- Creer la couche avec le bon referential
-   ogrlayer new OGRLAYER "Data" "Polygon"
-
-   #----- Si c'est vide, on retourne
-   if { ![ogrlayer define OGRLAYER -nb] } {
-      Log::Print WARNING "No data within value range"
-      return
-   }
-
-   #----- Importer les donnees RPN dans la couche
-   ogrlayer import OGRLAYER FLD
-
-   #----- Dissolve into polygon masses
-   ogrlayer stats OGRLAYER -dissolve DISSOLVED
-
-   #----- Apply a distance buffer
-   ogrlayer stats DISSOLVED -buffer $Param(Buffer) 5 BUFFERED         
-         
-   #----- Iterate to merge touching hull
-   set n 4
-   set geom    [ogrlayer define BUFFERED -geometry 0]
-   set newgeom ""
-   
-   while { [incr n -1] } {
-     
-      #----- Get the sub geoms
-      set hulls [ogrgeometry define $geom -geometry]
+   foreach var $Param(Vars) {
+      foreach fld [fstdfield find FILEIN -1 $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $var] {
       
-      #----- If we're inside a polygon, break
-      if { [ogrgeometry define [lindex $hulls 0] -type]=="Line String" } {
-         break
-      }
-      
-      #----- Loop on each convex hull and do a geographic union
-      set newgeom {}
-      foreach hull $hulls {
-      
-         #----- Check hull distances for merge
-         foreach dgeom $hulls {
-            if { $Param(Dist) && $hull!=$dgeom && [ogrgeometry stats $hull -dist $dgeom]<=$Param(Dist) } {
-               set hull [ogrgeometry stat [ogrgeometry stat $hull -union $dgeom] -convexhull]
-            }
+         fstdfield read FLD FILEIN $fld
+
+         set date [clock format [fstdstamp toseconds [fstdfield define FLD -DATEV]] -format "%Y%m%d_%H%M" -timezone :UTC]
+         Log::Print INFO "Processing $var for $date"
+
+         #----- Configure range of value and export type
+         if { $Param(Min)!="" } {
+            fstdfield configure FLD -min $Param(Min) -mapbellow False
          }
+         if { $Param(Max)!="" } {
+            fstdfield configure FLD -max $Param(Max) -mapabove False
+         }
+         fstdfield configure FLD -rendertexture 1
          
-         #-----Create convex hulls
-         if { [ogrgeometry is $newgeom] } {
-            set newgeom [ogrgeometry stat $newgeom -union [ogrgeometry stat $hull -convexhull]]
+         #----- Creer la couche avec le bon referential
+         ogrlayer free OGRLAYER DISSOLVED BUFFERED
+         if { [georef is REF] } {
+            ogrlayer new OGRLAYER "${var}_${date}" "Polygon" REF
          } else {
-            set newgeom [ogrgeometry stat $hull -convexhull]
+            ogrlayer new OGRLAYER "${var}_${date}" "Polygon"
          }
-      }    
-      set geom $newgeom
-   }
+         
+         #----- Importer les donnees RPN dans la couche
+         ogrlayer import OGRLAYER FLD
 
-   #----- Keep resulting hulls
-   if { ![ogrgeometry is $newgeom] } {
-      set newgeom [ogrgeometry stat $geom -convexhull]
+         #----- Si c'est vide, on retourne
+         if { ![ogrlayer define OGRLAYER -nb] } {
+            Log::Print WARNING "No data within value range"
+            continue
+         }
+
+         #----- Dissolve into polygon masses
+         ogrlayer stats OGRLAYER -dissolve DISSOLVED
+
+         #----- Apply a distance buffer
+         ogrlayer stats DISSOLVED -buffer $Param(Buffer) 5 BUFFERED
+               
+         #----- Iterate to merge touching hull
+         set n 4
+         set geom    [ogrlayer define BUFFERED -geometry 0]
+         set newgeom ""
+         
+         while { [incr n -1] } {
+         
+            #----- Get the sub geoms
+            set hulls [ogrgeometry define $geom -geometry]
+            
+            #----- If we're inside a polygon, break
+            if { [ogrgeometry define [lindex $hulls 0] -type]=="Line String" } {
+               break
+            }
+            
+            #----- Loop on each convex hull and do a geographic union
+            set newgeom {}
+            foreach hull $hulls {
+            
+               #----- Check hull distances for merge
+               foreach dgeom $hulls {
+                  if { $Param(Dist)<0 || ($Param(Dist) && $hull!=$dgeom && [ogrgeometry stats $hull -dist $dgeom]<=$Param(Dist)) } {
+                     set hull [ogrgeometry stat [ogrgeometry stat $hull -union $dgeom] -convexhull]
+                  }
+               }
+               
+               #-----Create convex hulls
+               if { [ogrgeometry is $newgeom] } {
+                  set newgeom [ogrgeometry stat $newgeom -union [ogrgeometry stat $hull -convexhull]]
+               } else {
+                  set newgeom [ogrgeometry stat $hull -convexhull]
+               }
+            }    
+            set geom $newgeom
+         }
+
+         #----- Keep resulting hulls
+         if { ![ogrgeometry is $newgeom] } {
+            set newgeom [ogrgeometry stat $geom -convexhull]
+         }
+         ogrlayer define BUFFERED -geometry 0 False $newgeom
+         
+         #----- Save it all
+         catch { eval file delete [glob $Param(Out)_${var}_${date}*] }   
+         ogrfile open OGRFILE write $Param(Out)_${var}_${date}${ext} $Param(Format)
+         ogrlayer write BUFFERED OGRFILE
+         ogrfile close OGRFILE 
+      }
    }
-   ogrlayer define BUFFERED -geometry 0 False $newgeom
-   
-   #----- Save it all
-   ogrfile open OGRFILE write $Param(Out) "ESRI Shapefile"
-   ogrlayer write BUFFERED OGRFILE
-   ogrfile close OGRFILE 
 }
 
 proc FSTD_Hull::ParseCommandLine { } {
@@ -157,6 +184,7 @@ proc FSTD_Hull::ParseCommandLine { } {
    #----- Parse arguments
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
+         "format"   { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(Format)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(File)] }
          "var"      { set i [Args::Parse $gargv $gargc $i LIST  FSTD_Hull::Param(Vars)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(IP1)] }
@@ -168,7 +196,7 @@ proc FSTD_Hull::ParseCommandLine { } {
          "dist"     { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(Dist)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(Out)] }
 
-         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$$Param(CommandLine)"; Log::End 0 }
+         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
          default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }

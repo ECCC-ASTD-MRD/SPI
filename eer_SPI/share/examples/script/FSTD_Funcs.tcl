@@ -136,7 +136,7 @@ puts "   min=[vexpr NIL smin(TT)] [fstdfield stats TT -min]"
 puts "   min((10,20),(10,20))=[vexpr NIL smin(TT((10,20),(10,20)))]"
 
 vexpr NIL TT((10,20),(10,20))
-puts "   data=[join [fstdfield define NIL -DATA] \n]"
+puts "   data=[join [fstdfield define NIL -DATA 0] \n]"
 
 puts "\nTesting parser's bins"
 set n [vexpr - win(-20,-10,TT)]
@@ -180,6 +180,16 @@ fstdfield read ZH 1 -1 "" -1 -1 -1 "" "ZH"
 
 puts "   I J  : [set ij [fstdfield stats ZH -coordpoint 39.021 -69.017]]"
 puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats ZH -gridvalue [lindex $ij 0] [lindex $ij 1]]"
+
+puts "\nTesting Y grid concatenation"
+set data [fstdfield define ZH -DATA ]
+set ni   [fstdfield define ZH -NI]
+
+fstdfield create NIL2 [expr $ni*2] 1 1 Float32
+fstdfield define NIL2 -DATA $data$data
+
+set data [fstdfield define NIL2 -DATA 0]
+puts "  Values: [lrange [lindex $data 0] $ni [expr $ni+20]]"
 
 #catch { fstdfile open BAD read DataOut/2012022412_TOT_ES.txt }
 #fstdfile open OK read DataOut/2006122900_000.eta.mask
