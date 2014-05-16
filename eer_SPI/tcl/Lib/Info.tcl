@@ -511,7 +511,7 @@ proc Info::Path { Info } {
    Info::Decode ::Info::Tmp $Info
 
    if { [info exists ::Info::Tmp(AccSecs)] } {
-      return "$Tmp(Model).$Tmp(NoSim).[clock format $Tmp(AccSecs) -format %Y%m%d.%H%M]"
+      return "$Tmp(Model).$Tmp(NoSim).[clock format $Tmp(AccSecs) -format %Y%m%d.%H%M -timezone :UTC]"
    } else {
       return "$Tmp(Model).$Tmp(NoSim).$Tmp(AccYear)$Tmp(AccMonth)$Tmp(AccDay).$Tmp(AccHour)$Tmp(AccMin)"
    }
