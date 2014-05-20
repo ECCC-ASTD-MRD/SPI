@@ -264,14 +264,17 @@ proc Args::ParseInput { File Var } {
          set dir [string range $dir 0 $idx-1]
       }
       
-      #----- Check for line continuation
-      if { [set idx [string first = $dir]]!=-1 } {
-         set param       [split $dir =]
-         set tok         [string trim [lindex $param 0]]
-         set input($tok) [string trim [lindex $param end]]
-         incr ntok
-      } else {
-         lappend input($tok) [string trim $dir]
+      if { [string length [set dir [string trim $dir]]] } {
+      
+         #----- Check for line continuation
+         if { [set idx [string first = $dir]]!=-1 } {
+            set param       [split $dir =]
+            set tok         [string trim [lindex $param 0]]
+            set input($tok) [string trim [lindex $param end]]
+            incr ntok
+         } else {
+            lappend input($tok) [string trim $dir]
+         }
       }
    }
    return $ntok

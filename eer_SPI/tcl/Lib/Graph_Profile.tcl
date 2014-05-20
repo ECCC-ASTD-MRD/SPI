@@ -683,7 +683,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
              }
          }
 
-         vector set $Item.X [fstdfield define GRAPHPROFILE -DATA]
+         vector set $Item.X [fstdfield define GRAPHPROFILE -DATA 0]
 
          set graph(UnitX) [fstdfield configure $Data -unit]
       } elseif { [observation is $Data] } {

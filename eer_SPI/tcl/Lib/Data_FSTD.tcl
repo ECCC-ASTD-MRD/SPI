@@ -227,11 +227,11 @@ proc FSTD::Data { Field } {
    set text   ""
 
    if { $nomvar=="INFO" || $nomvar=="OL" } {
-      foreach i [join [fstdfield define $Field -DATA]] {    
+      foreach i [join [fstdfield define $Field -DATA 0]] {    
          append text [format "%c" [expr int(($nbit==8 && $i>127)?$i-128:$i)]]
       }
    } else {
-      foreach line [fstdfield define $Field -DATA] {
+      foreach line [fstdfield define $Field -DATA 0] {
          append text $line
       }
    }
@@ -1156,7 +1156,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {
                dataspec copy $var $spec
-#               fstdfield configure $fld -dataspec $var
+               fstdfield configure $fld -dataspec $var
                dataspec free $spec
             }
             FSTD::ParamInit $fld $var

@@ -317,7 +317,7 @@ proc Animator::Window { { Parent .} } {
           -side left -fill both -expand true
 
       #----- If the web animator script is available
-      if { [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
+      if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
          radiobutton .anim.comm.playweb -image VCRWEB -bd 1 -variable Animator::Play(Web) -indicatoron False -value 1  -selectcolor "" \
             -command { Animator::PlayWeb }
          pack .anim.comm.playweb -side left -fill both -expand true
