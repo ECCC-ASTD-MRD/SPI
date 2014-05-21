@@ -1445,7 +1445,7 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
       }
    }
 
-   return(pix[4]);
+   return(pix[4]+20);
 }
 
 /*----------------------------------------------------------------------------
