@@ -378,13 +378,12 @@ proc Mapper::Zoom { { All False } { Idx {} } } {
       set objects [$Data(Tab1).select.list get 0 end]
    } else {
       if { [set idx [$Data(Tab1).select.list curselection]]!="" } {
-         set objects [$Data(Tab1).select.list get $idx]
+         set objects [list [$Data(Tab1).select.list get $idx]]
       }
    }
 
    foreach object $objects {
-      set coords0 [set coords1 {}]
-
+      set coords {}
       if { [gdalband is $object] } {
          set coords [gdalband stats $object -llextent]
       } elseif { [ogrlayer is $object] } {
