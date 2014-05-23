@@ -215,9 +215,9 @@ proc Calendar::Invoke { Frame Second } {
    } else {
       set Data(Second) [clock seconds]
    }
-   set Data(Year)   [clock format $Data(Second) -format %Y]
-   set Data(Month)  [string trimleft [clock format $Data(Second) -format %m] 0]
-   set Data(Day)    [clock format $Data(Second) -format %e]
+   set Data(Year)   [clock format $Data(Second) -format %Y -timezone :UTC]
+   set Data(Month)  [string trimleft [clock format $Data(Second) -format %m -timezone :UTC] 0]
+   set Data(Day)    [clock format $Data(Second) -format %e -timezone :UTC]
 
    set Data(Result) $Data(Second)
 
@@ -334,8 +334,8 @@ proc Calendar::Update { Frame  } {
    set day  1
    set y    36
 
-   set sec  [clock scan "$Data(Month)/$day/$Data(Year)"]
-   set date [clock format $sec -format "%B %Y"]
+   set sec  [clock scan "$Data(Year)$Data(Month)$day" -format "%Y%m%d" -timezone :UTC]
+   set date [clock format $sec -format "%B %Y" -timezone :UTC]
 
    .cal.date delete CALDAY
    .cal.date itemconf CALDATE -text $date
@@ -381,11 +381,11 @@ proc Calendar::Select { Frame { Day "" } } {
 
    if { $Day=="" } {
       set Data(Second) $Data(Result)
-      set Data(Year)   [clock format $Data(Second) -format "%Y"]
-      set Data(Month)  [clock format $Data(Second) -format "%m"]
-      set Data(Day)    [clock format $Data(Second) -format "%d"]
+      set Data(Year)   [clock format $Data(Second) -format "%Y" -timezone :UTC]
+      set Data(Month)  [clock format $Data(Second) -format "%m" -timezone :UTC]
+      set Data(Day)    [clock format $Data(Second) -format "%d" -timezone :UTC]
    } else {
-      set Data(Second) [clock scan "$Data(Month)/$Day/$Data(Year)"]
+      set Data(Second) [clock scan "$Data(Year)/$Data(Month)/$Day" -format "%Y/%m/%d" -timezone :UTC]
    }
    set Data(Date$Frame) [DateStuff::StringDateOnlyFromSeconds $Data(Second) $GDefs(Lang)]
 
