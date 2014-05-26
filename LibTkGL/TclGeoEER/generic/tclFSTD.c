@@ -39,6 +39,7 @@
 #include "tclOGR.h"
 #include "tclGDAL.h"
 #include "tcl3DModel.h"
+#include "Dict.h"
 #include <sys/timeb.h>
 
 /*Table contenant la liste des champs en memoire*/
@@ -52,6 +53,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_GridCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_StampCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int FSTD_DictCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldIPGet>
@@ -1417,7 +1419,8 @@ FSTD_File* FSTD_FileGet(Tcl_Interp *Interp,char *Id){
 int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
 
    int ok=0,rem=0;
-
+   char err[8];
+   
    if (!File) {
       Tcl_AppendResult(Interp,"FSTD_FileSet: Unknown file (NULL)",(char *)NULL);
       return(-1);
@@ -1456,7 +1459,8 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       }
 
       if (ok<0) {
-         if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed)",(char *)NULL);
+         snprintf(err,"%i",ok);
+         if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed = ",err,")",(char *)NULL);
          EZUnLock_RPNFile();
          return(-1);
       }
@@ -1465,7 +1469,8 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       if (ok<0) {
          // We should close the fid but c_fstouv keeps something opened and fstfrm blows up.
          // ok=c_fclos(File->Id);
-         if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv)",(char *)NULL);
+         snprintf(err,"%i",ok);
+         if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv failed = ",err,")",(char *)NULL);
          EZUnLock_RPNFile();
          return(-1);
       }
@@ -1696,6 +1701,298 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    return(TCL_OK);
 }
 
+static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]);
+static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Var,int Objc,Tcl_Obj *CONST Objv[]);
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DictCmd>
+ * Creation : Mai 2014 2001 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Appel des commandes relatives aux manipulations du dictionnaire
+ *            des variables.
+ *
+ * Parametres     :
+ *  <clientData>  : Donnees du module.
+ *  <interp>      : Interpreteur TCL.
+ *  <Objc>        : Nombre d'arguments
+ *  <Objv>        : Liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+
+   Tcl_Obj   *obj;
+   TList     *iter;
+   TDictVar  *var;
+   TDictType *type;
+   char       file[2048];
+   
+   int         idx;
+   static CONST char *sopt[] = { "load","var","type","varinfo","typeinfo",NULL };
+   enum                opt { LOAD,VAR,TYPE,VARINFO,TYPEINFO };
+
+   Tcl_ResetResult(Interp);
+
+   if (Objc<2) {
+      Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
+      return TCL_ERROR;
+   }
+
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+      return TCL_ERROR;
+   }
+
+   switch ((enum opt)idx) {
+
+ 
+      case LOAD:
+
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"[dictfile]");
+            return(TCL_ERROR);
+         }
+         
+         if (Objc>2) {
+            if (!Dict_Parse(Tcl_GetString(Objv[2]))) {
+               Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            sprintf(file,"%s%s",getenv("AFSISIO"),"/datafiles/constants/stdf.variable_dictionary.xml");
+            if (!Dict_Parse(file)) {
+               Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         break;
+         
+      case VAR:
+         obj=Tcl_NewListObj(0,NULL);
+         iter=NULL;
+         while((var=Dict_IterateVar(&iter))) {
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(var->Name,-1));
+         }
+         Tcl_SetObjResult(Interp,obj);
+         break;
+         
+      case TYPE:
+         obj=Tcl_NewListObj(0,NULL);
+         iter=NULL;
+         while((type=Dict_IterateType(&iter))) {
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(type->Name,-1));
+         }
+         Tcl_SetObjResult(Interp,obj);
+         break;
+         
+      case VARINFO:
+
+         if (Objc>2) {
+            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1);
+            var=Dict_GetVar(Tcl_GetString(Objv[2]));
+            return(FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
+         }        
+         break;
+
+      case TYPEINFO:
+
+         if (Objc>2) {
+            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1);
+            type=Dict_GetType(Tcl_GetString(Objv[2]));
+            return(FSTD_DictTypeInfo(Interp,type,Objc-3,Objv+3));
+         }        
+         break;
+   }
+
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DictVarInfo>
+ * Creation : Mai 2014 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Gestion des parametres des variables
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <Var>     : Variable
+ *  <Objc>    : Nombre d'arguments
+ *  <Objv>    : Pointeur sur la liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code de reussite Tcl
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]){
+
+   Tcl_Obj *obj;
+   int      i,idx;
+   char     lang=1,n=0;;
+
+   static CONST char *sopt[] = { "-lang","-short","-long","-magnitude","-min","-max","-units","-nature",NULL };
+   enum                opt { LANG,SHORT,LONG,MAGNITUDE,MIN,MAX,UNITS,NATURE };
+
+   if (!Var) {
+      Tcl_AppendResult(Interp,"FSTD_DictVarInfo: Invalid variable",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case LANG:
+            lang=Tcl_GetString(Objv[++i])[0];
+            lang=(lang=='e' || lang=='E')?1:0;
+            break;
+
+         case SHORT:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Short[(int)lang],-1));
+            break;
+
+         case LONG:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Long[(int)lang],-1));
+            break;
+
+         case NATURE:
+            n++;
+            switch(Var->Nature) {
+               case DICT_INTEGER:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1)); break;
+               case DICT_REAL   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));    break;
+               case DICT_LOGICAL:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1)); break;
+               case DICT_CODE   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Code",-1));     break;
+            }
+            break;
+            
+         case UNITS:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Units,-1));
+            break;
+            
+         case MIN:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
+            break;
+            
+         case MAX:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
+            break;
+            
+         case MAGNITUDE:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
+            break;
+            
+      }
+   }
+   
+   // If not param requested, return all
+   if (!n) {
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Short[(int)lang],-1));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Long[(int)lang],-1));
+      switch(Var->Nature) {
+         case DICT_INTEGER:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1)); break;
+         case DICT_REAL   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));    break;
+         case DICT_LOGICAL:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1)); break;
+         case DICT_CODE   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Code",-1));     break;
+      }
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Units,-1));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
+   }
+
+   Tcl_SetObjResult(Interp,obj);
+
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_DictTypeInfo>
+ * Creation : Mai 2014 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Gestion des parametres des variables
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <Var>     : Variable
+ *  <Objc>    : Nombre d'arguments
+ *  <Objv>    : Pointeur sur la liste des arguments
+ *
+ * Retour:
+ *  <TCL_...> : Code de reussite Tcl
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Type,int Objc,Tcl_Obj *CONST Objv[]){
+
+   Tcl_Obj *obj;
+   int      i,idx;
+   char     lang=1,n=0;;
+
+   static CONST char *sopt[] = { "-lang","-short","-long",NULL };
+   enum                opt { LANG,SHORT,LONG };
+
+   if (!Type) {
+      Tcl_AppendResult(Interp,"FSTD_DictTypeInfo: Invalid type",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   obj=Tcl_NewListObj(0,NULL);
+
+   for(i=0;i<Objc;i++) {
+
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+
+      switch ((enum opt)idx) {
+         case LANG:
+            lang=Tcl_GetString(Objv[++i])[0];
+            lang=(lang=='e' || lang=='E')?1:0;
+            break;
+
+         case SHORT:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Type->Short[(int)lang],-1));
+            break;
+
+         case LONG:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Type->Long[(int)lang],-1));
+            break;
+      }
+   }
+   
+   // If not param requested, return all
+   if (!n) {
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Type->Short[(int)lang],-1));
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Type->Long[(int)lang],-1));
+   }
+
+   Tcl_SetObjResult(Interp,obj);
+
+   return(TCL_OK);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <tclFSTD_Init>
  * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
@@ -1717,6 +2014,7 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
    Tcl_CreateObjCommand(Interp,"fstdfield",FSTD_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
    Tcl_CreateObjCommand(Interp,"fstdgrid",FSTD_GridCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
    Tcl_CreateObjCommand(Interp,"fstdstamp",FSTD_StampCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   Tcl_CreateObjCommand(Interp,"fstddict",FSTD_DictCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
 
    if (!FSTDInit++) {
       Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
