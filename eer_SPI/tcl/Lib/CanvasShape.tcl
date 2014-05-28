@@ -400,24 +400,29 @@ namespace eval CVClock {
    set Param(Zone) UTC           ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
 
    set Param(Zones) {
-      { UTC  "Coordinated Universal Time" 0 }
-      { HADT "Hawaii-Aleutian Daylight Time" -9 }
-      { HAST "Hawaii-Aleutian Standard Time" -10 }
-      { AKDT "Alaska Daylight Time" -8 }
-      { AKST "Alaska Standard Time" -9 }
-      { PDT  "Pacific Daylight Time" -7 }
-      { PST  "Pacific Standard Time" -8 }
-      { MDT  "Mountain Daylight Time" -6 }
-      { MST  "Mountain Standard Time" -7 }
-      { CDT  "Central Daylight Time" -5 }
-      { CST  "Central Standard Time" -6 }
-      { EDT  "Eastern Daylight Time" -4 }
-      { EST  "Eastern Standard Time" -5 }
-      { ADT  "Atlantic Daylight Time" -3 }
-      { AST  "Atlantic Standard Time" -4 }
-      { NDT  "Newfoundland Daylight Time" -2.5 }
-      { NST  "Newfoundland Standard Time" -3.5 }
-   }
+      { { UTC UTC }    { "Temps universel coordonné" "Coordinated Universal Time" }                    0 }
+      { { -  - }       -                                                                               - }  
+      { { HAHA HADT }  { "Heure Avancée d'Hawaï-Aléoutiennes"     "Hawaii-Aleutian Daylight Time" }   -9 }
+      { { HAA AKDT }   { "Heure Avancée de l'Alaska"              "Alaska Daylight Time" }            -8 }
+      { { HAP PDT }    { "Heure Avancée du Pacifique"             "Pacific Daylight Time" }           -7 }
+      { { HAR MDT }    { "Heure Avancée des Rocheuses"            "Mountain Daylight Time" }          -6 }
+      { { HAC CDT }    { "Heure Avancée du Centre"                "Central Daylight Time" }           -5 }
+      { { HAE EDT }    { "Heure Avancée de l'Est"                 "Eastern Daylight Time" }           -4 }
+      { { HAA ADT }    { "Heure Avancée de l'Atlantique"          "Atlantic Daylight Time"  }         -3 }
+      { { HAT NDT }    { "Heure Avancée de Terre-Neuve"           "Newfoundland Daylight Time" }      -2.5 }
+      { { HAEG WGST }  { "Heure Avancée de l'Ouest du Groenland"  "Western Greenland Summer Time" }   -2 }
+      { { HAOG EGST }  { "Heure Avancée de l'Est du Groenland"    "Eastern Greenland Summer Time" }   -1 } 
+      { { - - }        -                                                                               - }  
+      { { HNHA HAST }  { "Heure Normale d'Hawaï-Aléoutiennes"    "Hawaii-Aleutian Standard Time" }   -10 } 
+      { { HNA AKST }   { "Heure Normale de l'Alaska"             "Alaska Standard Time" }             -9 } 
+      { { HNP PST }    { "Heure Normale du Pacifique"            "Pacific Standard Time"  }           -8 } 
+      { { HNR MST }    { "Heure Normale des Rocheuses"           "Mountain Standard Time"  }          -7 } 
+      { { HNC CST }    { "Heure Normale du Centre"               "Central Standard Time" }            -6 } 
+      { { HNE EST }    { "Heure Normale de l'Est"                "Eastern Standard Time" }            -5 } 
+      { { HNA AST }    { "Heure Normale de l'Atlantique"         "Atlantic Standard Time"  }          -4 } 
+      { { HNT NST }    { "Heure Normale de Terre-Neuve"          "Newfoundland Standard Time " }      -3.5 } 
+      { { HNEG WGT }   { "Heure Normale de l'Ouest du Groenland" "West Greenland Time" }              -3 } 
+      { { HNOG EGT }   { "Heure Normale de l'Est du Groenland"   "East Greenland Time" }              -1 } }
 }
 
 proc CVClock::Create { Frame X Y } {
@@ -453,7 +458,7 @@ proc CVClock::Create { Frame X Y } {
    set Data(Zone$Frame) 0
 
    #----- Set zone to default
-   if { [set zone [lsearch -exact -index 0 $Param(Zones) $Param(Zone)]]!=-1 } {
+   if { [set zone [lsearch -index { 0 0 } $Param(Zones) $Param(Zone)]]!=-1 || [set zone [lsearch -index { 0 1 } $Param(Zones) $Param(Zone)]]!=-1 } {
        set Data(Zone$Frame) $zone
    }
 
@@ -461,13 +466,15 @@ proc CVClock::Create { Frame X Y } {
       menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
          -relief raised -menu $canvas.cvclock.menu
       menu $canvas.cvclock.menu -tearoff 0 -bg $GDefs(ColorFrame)
-      set z -1
+      set z 0
       foreach zone $Param(Zones) {
-         if { $z==0 } {
+         if { [lindex $zone end]=="-" } {
             $canvas.cvclock.menu add separator
+         } else {
+            $canvas.cvclock.menu add radiobutton -label "[lindex [lindex $zone 1] $GDefs(Lang)] ([lindex [lindex $zone 0] $GDefs(Lang)])" -variable CVClock::Data(Zone$Frame) -value $z \
+               -command "CVClock::Time $Frame \$CVClock::Data(Sec$Frame) -1"
          }
-         $canvas.cvclock.menu add radiobutton -label "[lindex $zone 1] ([lindex $zone 0])" -variable CVClock::Data(Zone$Frame) -value [incr z] \
-            -command "CVClock::Time $Frame \$CVClock::Data(Sec$Frame) -1"
+         incr z
       }
    }
 
@@ -637,7 +644,7 @@ proc CVClock::Time { Frame Sec Total } {
       $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
 
       $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -gmt true]
-      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0]"
+      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0] $GDefs(Lang)]"
    }
 
    $canvas raise CVCLOCK
