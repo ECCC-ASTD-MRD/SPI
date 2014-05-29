@@ -31,15 +31,15 @@
 #
 #===============================================================================
 
-package provide Logger 1.2
+package provide Logger 1.3
 package require TclSystem
 
-catch { SPI::Splash "Loading Package Logger 1.2" }
+catch { SPI::Splash "Loading Package Logger 1.3" }
 
 #----- Force default language
 set GDefs(Lang) 1
 
-#----- Define defeaul shelle color (as in the App C package
+#----- Define default shellecolor (as in the App C package)
 set APP_COLOR_RED     "\x1b\[31m"
 set APP_COLOR_GREEN   "\x1b\[32m"
 set APP_COLOR_YELLOW  "\x1b\[33m"
@@ -566,6 +566,14 @@ proc Log::Print { Type Message { Var "" } } {
          incr Param(Error)
       }
       
+      if { $Param(Color) } {
+         set cstart $Color($Type)
+         set cend   $Color(RESET)
+      } else {
+         set cstart ""
+         set cend ""
+      }
+      
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
@@ -573,7 +581,7 @@ proc Log::Print { Type Message { Var "" } } {
             set err [catch { exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}" } msg]
             if { $err } {
                puts stderr "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
-               puts $Param(Out) "$Color($Type)${time}(ERROR) Problems while calling oclog:\n\n\t$msg$Color(RESET)"
+               puts $Param(Out) "${cstart}${time}(ERROR) Problems while calling oclog:\n\n\t$msg${cend}"
             }
          }
       }
@@ -581,7 +589,7 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="MUST" } {
          puts $Param(Out) "${Message}"
       } else {
-         puts $Param(Out) "$Color($Type)${time}${id}(${Type}) ${proc}${Message}${vars}$Color(RESET)"
+         puts $Param(Out) "${cstart}${time}${id}(${Type}) ${proc}${Message}${vars}${cend}"
       }
    }
 }
