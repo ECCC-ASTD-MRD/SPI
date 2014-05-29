@@ -47,18 +47,18 @@ namespace eval FSTD_Hull { } {
    set Param(CommandInfo) "Calculate convex hull of specific range values in an RPN field"
    
    set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (Default: \"$Param(Format)\")
+      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
       -fstd   : RPN file (Mandatory)
       -var    : List of variables to process (Mandatory)
-      -ip1    : IP1 to use (Default: $Param(IP1))
-      -ip3    : IP3 to use (Default: $Param(IP3))
-      -etiket : Etiket to use (Default: $Param(Etiket))
-      -min    : Minimum value to contour (Default: \"$Param(Min)\")
-      -max    : Maximum value to contour (Default: \"$Param(Max)\")
-      -buffer : Distance buffer arounf points (Default: \"$Param(Buffer)\"\")
-      -dist   : Distance between hull befor merging (Default: \"$Param(Dist)\"\")
-      -prj    : prj georeference file to use for output file (default: WGS84 latlon)
-      -out    : Output directory (Default: $Param(Out))
+      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+      -min    : Minimum value to contour
+      -max    : Maximum value to contour
+      -buffer : Distance buffer arounf points (${APP_COLOR_GREEN}$Param(Buffer)${APP_COLOR_RESET})
+      -dist   : Distance between hull befor merging (${APP_COLOR_GREEN}$Param(Dist)${APP_COLOR_RESET})
+      -prj    : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       -help   : This information
       
       Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"

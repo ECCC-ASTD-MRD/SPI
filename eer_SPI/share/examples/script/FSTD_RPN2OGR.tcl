@@ -46,18 +46,18 @@ namespace eval RPN2OGR { } {
    set Param(CommandInfo) "Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
    
    set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (Default: \"$Param(Format)\")
+      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
       -var    : List of variables to process (Mandatory)
-      -factor : List of factors per variables (Default:{})
-      -map    : Colormap (Default: $Param(Map))
-      -mode   : Feature type ($Export::Vector::Param(Modes)) (Default: \"$Param(Mode)\")
-      -inter  : List of coutour to use (Default: None)
+      -factor : List of factors per variables
+      -map    : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
+      -mode   : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR)
+      -inter  : List of coutour to use
       -fstd   : List of RPN files to process (Mandatory)
-      -ip1    : IP1 to use (Default: $Param(IP1))
-      -ip3    : IP3 to use (Default: $Param(IP3))
-      -etiket : Etiket to use (Default: $Param(Etiket))
-      -prj    : prj georeference file to use for output file (default: WGS84 latlon)
-      -out    : Output directory (Default: $Param(Out))
+      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+      -prj    : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       -help   : This information
       
       Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"

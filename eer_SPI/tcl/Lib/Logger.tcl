@@ -39,13 +39,24 @@ catch { SPI::Splash "Loading Package Logger 1.2" }
 #----- Force default language
 set GDefs(Lang) 1
 
+#----- Define defeaul shelle color (as in the App C package
+set APP_COLOR_RED     "\x1b\[31m"
+set APP_COLOR_GREEN   "\x1b\[32m"
+set APP_COLOR_YELLOW  "\x1b\[33m"
+set APP_COLOR_BLUE    "\x1b\[34m"
+set APP_COLOR_MAGENTA "\x1b\[35m"
+set APP_COLOR_CYAN    "\x1b\[36m"
+set APP_COLOR_RESET   "\x1b\[0m"
+
 namespace eval Log { } {
    global env
    variable Param
+   variable Color
    
    set Param(Out)         stdout                ;#Output file/channel
    set Param(OutFile)     ""                    ;#Output filename
    set Param(Level)       INFO                  ;#Log level
+   set Param(Color)       False                 ;#Log color
    set Param(Time)        False                 ;#Print the time
    set Param(Proc)        True                  ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
@@ -77,7 +88,8 @@ namespace eval Log { } {
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
 
    set Param(Levels)     { ERROR WARNING INFO DEBUG EXTRA }
-   array set Param { MUST -1 ERROR 0 WARNING 1 INFO 2 MESSAGE 2 QUESTION 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
+   array set Param       { MUST -1 ERROR 0 WARNING 1 INFO 2 MESSAGE 2 QUESTION 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
+   array set Color       { MUST "" ERROR "\x1b\[31m" WARNING "\x1b\[34m" INFO "" MESSAGE "\x1b\[33m" QUESTION "\x1b\[33m" DEBUG "\x1b\[36m" EXTRA "\x1b\[36m" RESET "\x1b\[0m" -1 "" 0 "\x1b\[31m" 1 "\x1b\[34m" 2 "\x1b\[33m" 3  "\x1b\[36m" 4  "\x1b\[36m"};
 }
 
 #---------------------------------------------------------------------------
@@ -452,7 +464,8 @@ proc Log::End { { Status 0 } { Exit True } } {
 
 proc Log::Print { Type Message { Var "" } } {
    variable Param
-
+   variable Color
+   
    #----- Check for log file
    if { $Param(Out)=="" || [string first "/" $Param(Out)]!=-1 } {
 
@@ -560,7 +573,7 @@ proc Log::Print { Type Message { Var "" } } {
             set err [catch { exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}" } msg]
             if { $err } {
                puts stderr "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
-               puts $Param(Out) "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
+               puts $Param(Out) "$Color($Type)${time}(ERROR) Problems while calling oclog:\n\n\t$msg$Color(RESET)"
             }
          }
       }
@@ -568,7 +581,7 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="MUST" } {
          puts $Param(Out) "${Message}"
       } else {
-         puts $Param(Out) "${time}${id}(${Type}) ${proc}${Message}${vars}"
+         puts $Param(Out) "$Color($Type)${time}${id}(${Type}) ${proc}${Message}${vars}$Color(RESET)"
       }
    }
 }

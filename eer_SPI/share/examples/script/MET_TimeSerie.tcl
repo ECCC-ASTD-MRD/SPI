@@ -44,13 +44,13 @@ namespace eval Met {
    set Param(IP1s)  { 93423264 }
 
    set Param(CommandLine) "Arguments must be:
-\t-run    : Model run
-\t-hours  : Nb hours from start of model run
+\t-run    : Model run (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET})
+\t-hours  : Nb hours from start of model run (${APP_COLOR_GREEN}$Param(Hours)${APP_COLOR_RESET})
 \t-lat    : Latitude
 \t-lon    : Longitude
-\t-vars   : Variables
-\t-ip1s   : IP1s
-\t-out    : Output file"
+\t-vars   : Variables (${APP_COLOR_GREEN}$Param(Vars)${APP_COLOR_RESET})
+\t-ip1s   : IP1s (${APP_COLOR_GREEN}$Param(IP1s)${APP_COLOR_RESET})
+\t-out    : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})"
 }
 
 proc Met::Process { } {

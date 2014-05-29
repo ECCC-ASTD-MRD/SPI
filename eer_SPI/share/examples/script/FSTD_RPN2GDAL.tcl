@@ -56,22 +56,22 @@ namespace eval RPN2GDAL { } {
    set Param(CommandInfo) "Export RPN fields into GDAL raster files as values, rgb colors or index colors."
    
    set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (Default: \"$Param(Format)\")
-      -nodata : No data value when out of domain (Default: \"$Param(NoData)\")
-      -mode   : Image data ($Export::Raster::Param(Modes)) (Default: \"$Param(Mode)\")
-      -map    : Colormap (Default: $Param(Map))
-      -bbox   : Bounding box (Default: $Param(BBox))
-      -res    : Image resolution in degrees (Default: $Param(Res))
+      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
+      -nodata : No data value when out of domain (${APP_COLOR_GREEN}$Param(NoData)${APP_COLOR_RESET})
+      -mode   : Image data (INDEX ${APP_COLOR_GREEN}RGBA${APP_COLOR_RESET} DATA)
+      -map    : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
+      -bbox   : Bounding box
+      -res    : Image resolution in degrees (${APP_COLOR_GREEN}$Param(Res)${APP_COLOR_RESET})
       -var    : List of variables to process (Mandatory)
-      -factor : List of factors per variables (Default:{})
-      -inter  : List of intervals (Default: None)
-      -min    : Minimum value (Default: None)
-      -max    : Maximum value (Default: None)
+      -factor : List of factors per variables
+      -inter  : List of intervals
+      -min    : Minimum value
+      -max    : Maximum value
       -fstd   : List of RPN files to process (Mandatory)
-      -ip1    : IP1 to use (Default: $Param(IP1))
-      -ip3    : IP3 to use (Default: $Param(IP3))
-      -etiket : Etiket to use (Default: $Param(Etiket))
-      -out    : Output directory (Default: $Param(Out))
+      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       -help   : This information
       
       Available formats: \n\t[lmap f $Export::Raster::Param(Formats) {lindex $f end-1}]"
