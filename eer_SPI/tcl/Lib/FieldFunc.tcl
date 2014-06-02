@@ -67,12 +67,16 @@ proc FieldFunc::MinMax { Fields } {
       set box  [lindex $tags 2]
 
       #----- Get field info to look for
+      set fid    [fstdfield define $fld -FID]
       set ip1    [fstdfield define $fld -IP1]
       set ip3    [fstdfield define $fld -IP3]
       set etiket [fstdfield define $fld -ETIKET]
       set var    [fstdfield define $fld -NOMVAR]
       
-      set fields [FieldBox::GetContent $box]
+      #----- Get fields from fieldbox if interactive, else from file itself
+      if { ![llength [set fields [FieldBox::GetContent $box]]] } {
+         set fields [fstdfile info $fid SPI $var]
+      }
       set n 0
       set nx [llength $fields]
 
