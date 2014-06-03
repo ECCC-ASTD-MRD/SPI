@@ -448,8 +448,9 @@ proc Obs::ParamFrame { Frame Apply } {
    pack $Data(Frame).def -side top -fill x -anchor n
    pack $Data(Frame).lev -side top -fill x -anchor n -padx 5
 
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease>      {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
-   bind $Data(Frame).lev.desc.edit.select <ButtonRelease-2> {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
+   bind $Data(Frame).lev.desc.edit.select <KeyRelease>       {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
+   bind $Data(Frame).lev.desc.edit.select <<Paste>>          {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
+   bind $Data(Frame).lev.desc.edit.select <<PasteSelection>> {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
 
    #----- Creation du menu de mode de niveaux
 

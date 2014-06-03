@@ -573,13 +573,13 @@ proc Animator::GetPlayListField { } {
          switch $Play(Type) {
             "IP1"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 $ip3 .+field$" }
             "IP2"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
-            "IP3"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ $ip1 $ip2 \\d+ .+field$" }
+            "IP3"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 \\d+ .+field$" }
             "ETIKET"  { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
             "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
-
-        set no 0
-        foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+         
+         set no 0
+         foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
             set type    [lindex $field end]

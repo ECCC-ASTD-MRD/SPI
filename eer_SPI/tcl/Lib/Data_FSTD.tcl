@@ -498,8 +498,9 @@ proc FSTD::ParamFrame { Frame Apply } {
             -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 2] $i"
       }
       
-   bind $Data(Frame).lev.desc.edit.select <KeyRelease>      {+ FSTD::IntervalSetMode NONE 0 True }
-   bind $Data(Frame).lev.desc.edit.select <ButtonRelease-2> {+ FSTD::IntervalSetMode NONE 0 True }
+   bind $Data(Frame).lev.desc.edit.select <KeyRelease>       {+ FSTD::IntervalSetMode NONE 0 True }
+   bind $Data(Frame).lev.desc.edit.select <<Paste>>          {+ FSTD::IntervalSetMode NONE 0 True }
+   bind $Data(Frame).lev.desc.edit.select <<PasteSelection>> {+ FSTD::IntervalSetMode NONE 0 True }
 
    #------ Creation des bulles d'aide
 
