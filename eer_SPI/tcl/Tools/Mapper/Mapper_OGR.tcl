@@ -2036,6 +2036,12 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
       return ""
    }
 
+   if { ![llength $idxs] } {
+      Dialog::Error . $Mapper::Msg(NoFeature)
+      ogrfile close $File
+      return ""
+   }
+   
    set Data(Job)   [lindex $Mapper::Msg(Read) $GDefs(Lang)]
    update idletasks;
 
