@@ -104,6 +104,8 @@ proc  Mapper::DepotWare::WMS::Parse { Tree Branch } {
    } else {
       set req [http::geturl "${path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
    }
+   upvar #0 $req state
+#   puts stderr $state(charset)
 
    if { [catch { set doc [dom parse [http::data $req]] } msg ] } {
       Dialog::ErrorListing . $Msg(Request) "$msg\n[http::data $req]"
@@ -280,8 +282,8 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          LatLonBoundingBox        { Mapper::DepotWare::WMS::ParseLatLonBoundingBox $node }
          BoundingBox              { Mapper::DepotWare::WMS::ParseBoundingBox $node }
          Name                     { set Data(Identifier)  [[$node firstChild] nodeValue] }
-         Title                    { set Data(Title) [[$node firstChild] nodeValue] }
-         Abstract                 { catch { set Data(Abstract) [[$node firstChild] nodeValue] } }
+         Title                    { set Data(Title) [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] }
+         Abstract                 { catch { set Data(Abstract) [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] } }
          Dimension                { set Data(Cache) 0 }
          DataURL                  { }
          MetadataURL              { Mapper::DepotWare::WMS::ParseMeta $node }
@@ -290,14 +292,13 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
       }
    }
 
-
    if { $Data(Identifier)!="" } {
       set Data($Data(Title)) [list $URL $Data(Title) $Data(Abstract) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Styles) $Data(Times) $Data(Opaque) $Data(Cache) $Data(Meta)]
       lappend Data(Layers) $Data(Title)
    } else {
       set Data($Data(Title)) [list $URL $Data(Title) $Data(Abstract)]
    }
-
+   
    set branch [Mapper::DepotWare::WMS::Add $Tree $Branch $Data(Title)]
 
    foreach node $childs {
@@ -355,8 +356,8 @@ proc Mapper::DepotWare::WMS::ParseStyle { Node } {
    foreach node [$Node childNodes] {
       switch [$node nodeName] {
          Name      { set name [[$node firstChild] nodeValue] }
-         Title     { set title [[$node firstChild] nodeValue] }
-         Abstract  { set abstract [[$node firstChild] nodeValue] }
+         Title     { set title [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] }
+         Abstract  { set abstract [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] }
          LegendURL { set legend [[$node getElementsByTagName OnlineResource] getAttribute xlink:href] }
 
       }

@@ -245,7 +245,7 @@ proc Mapper::DepotWare::WCS::ParseLayer { URL Node { First True } } {
                switch [$n nodeName] {
                   CoverageSummary      { Mapper::DepotWare::WCS::ParseLayer $URL $n False}
                   Identifier           { set Data(Identifier) [[$n firstChild] nodeValue] }
-                  ows:Title            { set Data(Title) [[$n firstChild] nodeValue] }
+                  ows:Title            { set Data(Title) [encoding convertfrom utf-8 [[$n firstChild] nodeValue]] }
                   ows:WGS84BoundingBox { foreach n1 [$n childNodes] { set Data(BBox) [concat $Data(BBox) [[$n1 firstChild] nodeValue]] } }
                }
             }
