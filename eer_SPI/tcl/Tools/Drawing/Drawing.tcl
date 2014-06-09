@@ -110,17 +110,30 @@ proc Drawing::PageActivate { Frame } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::ImageSetup { } {
+proc Drawing::ImageSetup { { Path "" } } {
    global   GDefs
    variable Resources
    variable Lbl
    variable Data
-
+   
+   if { $Path=="" } {
+      set Path $GDefs(Dir)/share/image/Symbol
+   }
+   
    set path .drawing.params.image.lbl.opt
-   menu $path.menu
-
+   if { ![winfo exists $path.menu] } {
+      menu $path.menu
+      $path.menu add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu $path.menu.new
+      menu $path.menu.new
+      $path.menu.new add command -label [lindex $Lbl(Open) $GDefs(Lang)] \
+         -command { Drawing::ImageAdd [FileBox::Create .drawing "" Load [list {Graphic Interchange Format {*.gif}}]] }
+      $path.menu.new add separator
+   }
+   
+   $path.menu add separator
+   
    set Resources(Image) {}
-   foreach group [lsort -dictionary [glob $GDefs(Dir)/share/image/Symbol/*]] {
+   foreach group [lsort -dictionary [glob $Path/*]] {
 
       set menu $path.menu.[string tolower [file tail $group]]
       $path.menu add cascade -label [file tail $group] -menu $menu
@@ -147,12 +160,6 @@ proc Drawing::ImageSetup { } {
       }
    }
    set Drawing::Current(Image) [lindex $Resources(Image) 0]
-
-   $path.menu add cascade -label [lindex $Lbl(New) $GDefs(Lang)] -menu $path.menu.new
-   menu $path.menu.new
-   $path.menu.new add command -label [lindex $Lbl(Open) $GDefs(Lang)] \
-      -command { Drawing::ImageAdd [FileBox::Create .drawing "" Load [list {Graphic Interchange Format {*.gif}}]] }
-   $path.menu.new add separator
 }
 
 #----------------------------------------------------------------------------

@@ -33,7 +33,7 @@
 #----------------------------------------------------------------------------
 
 proc Drawing::Window { } {
-   global GDefs
+   global GDefs env
    variable Lbl
    variable Bubble
    variable Current
@@ -284,7 +284,16 @@ proc Drawing::Window { } {
       Bubble::Create $Data(Tab).head.idx.down  $Bubble(Up)
       Bubble::Create $Data(Tab).items.list.box $Bubble(List)
 
-      Drawing::ImageSetup
+      Drawing::ImageSetup 
+
+      #----- Load user images
+      if { [info exists env(SPI_TOOL)] } {
+         foreach path [split $env(SPI_TOOL) :] {
+            if { [file isdirectory $path/Images] } {
+               Drawing::ImageSetup $path/Images
+            }
+         }
+      }
    }
 
    Drawing::PageActivate $Page::Data(Frame)
