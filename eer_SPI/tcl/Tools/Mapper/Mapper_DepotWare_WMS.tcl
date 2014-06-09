@@ -519,7 +519,7 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
    #----- Decrease effective resolution (WMS-TMS)
    gdalband define $band -date $Data(Time)
 
-   Mapper::GDAL::Params $band 0
+   Mapper::GDAL::Params $band { 0 1 }
 
    #----- Get legend
    if { [set idx [lsearch -index 0 $Data(Styles) $Style]]!=-1 } {
@@ -683,10 +683,4 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    close $f
 
    return $file
-}
-
-proc Mapper::DepotWare::WMS::GetFeatureInfo { Layer X Y } {
-   variable Data
-
-#   puts stderr [gdalband stats $Layer GetMetadataItem("Pixel_iCol_iLine", "LocationInfo")]
 }
