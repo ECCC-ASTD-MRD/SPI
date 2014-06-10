@@ -26,16 +26,19 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-fstddict load /users/dor/afsr/005/stdf.variable_dictionary.xml
+fstddict load /users/dor/afsr/005/Projects/libeerUtils/data/stdf.variable_dictionary.xml
 fstddict load DataIn/eer.variable_dictionary.xml
 
-puts "Variables: [fstddict var]"
-puts "Types    : [fstddict type]"
+puts "Variables (All): [fstddict var]"
+puts "Variables:(TT*): [fstddict var TT]"
+puts "Types    : [fstddict type]\n"
 
-puts "Var TT : [fstddict varinfo TT]"
-puts "Var TT : [fstddict varinfo TT -lang fr -short -units]"
-puts "Var FM : [fstddict varinfo FM -lang fr -short -units]"
-puts "Var FM : [fstddict varinfo FM -lang fr -units -short]"
+puts "Var TT      : [fstddict varinfo TT]"
+puts "Var TT      : [fstddict varinfo TT -lang fr -short -units]"
+puts "Var FM      : [fstddict varinfo FM -lang fr -short -units]"
+puts "Var FM      : [fstddict varinfo FM -lang fr -units -short -origin -nature]"
+puts "Var VF (22) : [fstddict varinfo VF -lang fr -ip1 22 -short -units]"
+puts "Var VF (33) : [fstddict varinfo VF -lang fr -ip1 33 -short -units]"
 
 puts "Type C : [fstddict typeinfo C]"
 puts "Type A : [fstddict typeinfo A -lang fr -short]"
