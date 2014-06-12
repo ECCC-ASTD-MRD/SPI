@@ -526,11 +526,11 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
 
    switch -glob [set type [$Tree get $Branch type]] {
       "GDAL" { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                  Mapper::ReadBand $path
+                  Mapper::GDAL::Read $path
                }
                }
       "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                  Mapper::ReadLayer $path
+                  Mapper::OGR::Read $path
                }
                }
       "URL*"  { }
