@@ -46,6 +46,7 @@ namespace eval RPN2GDAL { } {
    set Param(NoData)    0.0
    set Param(Out)       ./out
    set Param(Mode)      RGBA
+   set Param(Interp)    NEAREST
    set Param(Res)       0.1
    set Param(BBox)      {}
    set Param(Lat0)      -999
@@ -58,13 +59,14 @@ namespace eval RPN2GDAL { } {
    set Param(CommandLine) "   Command line otions are:\n
       -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
       -nodata : No data value when out of domain (${APP_COLOR_GREEN}$Param(NoData)${APP_COLOR_RESET})
-      -mode   : Image data (INDEX ${APP_COLOR_GREEN}RGBA${APP_COLOR_RESET} DATA)
+      -mode   : Image data (INDEX,${APP_COLOR_GREEN}RGBA${APP_COLOR_RESET},DATA)
       -map    : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
       -bbox   : Bounding box
       -res    : Image resolution in degrees (${APP_COLOR_GREEN}$Param(Res)${APP_COLOR_RESET})
       -var    : List of variables to process (Mandatory)
       -factor : List of factors per variables
       -inter  : List of intervals
+      -interp : Data interpolation type (${APP_COLOR_GREEN}NEAREST${APP_COLOR_RESET},LINEAR)
       -min    : Minimum value
       -max    : Maximum value
       -fstd   : List of RPN files to process (Mandatory)
@@ -118,7 +120,7 @@ proc RPN2GDAL::Run { } {
                   set Param(Lon1) [lindex $ll 3]
                }
 
-               fstdfield configure DATA$n -desc ${var} -rendertexture 1 -colormap MAP -min $Param(Min) -max $Param(Max) -intervals $Param(Intervals)
+               fstdfield configure DATA$n -interpdegree $Param(Interp) -desc ${var} -rendertexture 1 -colormap MAP -min $Param(Min) -max $Param(Max) -intervals $Param(Intervals)
                fstdfield stats DATA$n -nodata $Param(NoData)
                
                if { [llength $Param(Factors)] } {
@@ -168,6 +170,7 @@ proc RPN2GDAL::ParseCommandLine { } {
          "var"      { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Vars)] }
          "factor"   { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Factors)] }
          "inter"    { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Intervals)] }
+         "interp"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Interp)] }
          "min"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Min)] }
          "max"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Max)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Files)] }

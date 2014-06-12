@@ -161,7 +161,7 @@ fstdfile open 2 read DataIn/2006122900_000.eta
 fstdfield read GZ 2 -1 "" 12000 -1 -1 "" "GZ"
 fstdfield stats GZ -nodata 0.0
 vexpr GZ GZ<<0
-vexpr TT TT<<1
+#vexpr TT TT<<1
 
 fstdfield configure GZ -extrapdegree VALUE
 fstdfield gridinterp GZ TT
@@ -177,9 +177,13 @@ fstdfile close 1 2 3
 puts "\nTesting Y grid coordinate interpolation"
 fstdfile open 1 read DataIn/2013061419_024
 fstdfield read ZH 1 -1 "" -1 -1 -1 "" "ZH"
+fstdfield read CV 1 -1 "" -1 -1 -1 "" "CV"
 
 puts "   I J  : [set ij [fstdfield stats ZH -coordpoint 39.021 -69.017]]"
 puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats ZH -gridvalue [lindex $ij 0] [lindex $ij 1]]"
+
+puts "\nTesting Y grid field interpolation"
+fstdfield gridinterp ZH CV
 
 puts "\nTesting Y grid concatenation"
 set data [fstdfield define ZH -DATA ]
