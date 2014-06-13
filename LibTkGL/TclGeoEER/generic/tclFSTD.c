@@ -1459,7 +1459,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       }
 
       if (ok<0) {
-         snprintf(err,"%i",ok);
+         snprintf(err,8,"%i",ok);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed = ",err,")",(char *)NULL);
          EZUnLock_RPNFile();
          return(-1);
@@ -1469,7 +1469,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
       if (ok<0) {
          // We should close the fid but c_fstouv keeps something opened and fstfrm blows up.
          // ok=c_fclos(File->Id);
-         snprintf(err,"%i",ok);
+         snprintf(err,8,"%i",ok);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv failed = ",err,")",(char *)NULL);
          EZUnLock_RPNFile();
          return(-1);
@@ -1731,14 +1731,18 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TList     *iter;
    TDictVar  *var;
    TDictType *type;
-   char       file[2048];
+   char       file[2048],*str;
+   int        ip1,ip3;
    
-   int         idx;
+   int         idx,tidx;
    static CONST char *sopt[] = { "load","var","type","varinfo","typeinfo",NULL };
    enum                opt { LOAD,VAR,TYPE,VARINFO,TYPEINFO };
 
    Tcl_ResetResult(Interp);
 
+   Dict_SetEncoding(DICT_UTF8);
+   Dict_SetSearch(DICT_GLOB,DICT_ALL,NULL,-1,-1,-1);
+   
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
       return TCL_ERROR;
@@ -1773,18 +1777,39 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
          
       case VAR:
-         obj=Tcl_NewListObj(0,NULL);
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"[var]");
+            return(TCL_ERROR);
+         }
+         
          iter=NULL;
-         while((var=Dict_IterateVar(&iter))) {
+         str=NULL;
+         
+         if (Objc>2) {
+            str=Tcl_GetString(Objv[2]);
+         }
+         
+         obj=Tcl_NewListObj(0,NULL);
+         while((var=Dict_IterateVar(&iter,str))) {
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(var->Name,-1));
          }
          Tcl_SetObjResult(Interp,obj);
          break;
          
       case TYPE:
-         obj=Tcl_NewListObj(0,NULL);
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"[type]");
+            return(TCL_ERROR);
+         }
+
+         str=NULL;
          iter=NULL;
-         while((type=Dict_IterateType(&iter))) {
+         if (Objc>2) {
+            str=Tcl_GetString(Objv[2]);
+         }
+         
+         obj=Tcl_NewListObj(0,NULL);
+         while((type=Dict_IterateType(&iter,str))) {
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(type->Name,-1));
          }
          Tcl_SetObjResult(Interp,obj);
@@ -1793,7 +1818,16 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       case VARINFO:
 
          if (Objc>2) {
-            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1);
+            ip1=ip3=-1;
+            for(tidx=2;tidx<Objc;tidx++) {
+               if (!strcmp(Tcl_GetString(Objv[tidx]),"-ip1")) {
+                  Tcl_GetIntFromObj(Interp,Objv[++tidx],&ip1);
+               }
+               if (!strcmp(Tcl_GetString(Objv[tidx]),"-ip3")) {
+                  Tcl_GetIntFromObj(Interp,Objv[++tidx],&ip3);
+               }
+            }
+            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,ip1,-1,ip3);
             var=Dict_GetVar(Tcl_GetString(Objv[2]));
             return(FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
          }        
@@ -1837,16 +1871,15 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
    int      i,idx;
    char     lang=1,n=0;;
 
-   static CONST char *sopt[] = { "-lang","-short","-long","-magnitude","-min","-max","-units","-nature",NULL };
-   enum                opt { LANG,SHORT,LONG,MAGNITUDE,MIN,MAX,UNITS,NATURE };
+   static CONST char *sopt[] = { "-lang","-ip1","-ip3","-short","-long","-magnitude","-min","-max","-units","-nature","-origin","-state",NULL };
+   enum                opt { LANG,IP1,IP3,SHORT,LONG,MAGNITUDE,MIN,MAX,UNITS,NATURE,ORIGIN,STATE };
 
    if (!Var) {
-      Tcl_AppendResult(Interp,"FSTD_DictVarInfo: Invalid variable",(char*)NULL);
-      return(TCL_ERROR);
+      return(TCL_OK);
    }
 
    obj=Tcl_NewListObj(0,NULL);
-
+   
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
@@ -1854,6 +1887,11 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
       }
 
       switch ((enum opt)idx) {
+         case IP1:
+         case IP3:
+            ++i;
+            break;
+            
          case LANG:
             lang=Tcl_GetString(Objv[++i])[0];
             lang=(lang=='e' || lang=='E')?1:0;
@@ -1871,11 +1909,14 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
 
          case NATURE:
             n++;
-            switch(Var->Nature) {
-               case DICT_INTEGER:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1)); break;
-               case DICT_REAL   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));    break;
-               case DICT_LOGICAL:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1)); break;
-               case DICT_CODE   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Code",-1));     break;
+            if (Var->Nature&DICT_INTEGER) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1));
+            } else if (Var->Nature&DICT_REAL) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));
+            } else if (Var->Nature&DICT_LOGICAL) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1));
+            } else if (Var->Nature&DICT_CODE) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Coded",-1));
             }
             break;
             
@@ -1886,19 +1927,39 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
             
          case MIN:
             n++;
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
+           if (Var->Min!=DICT_NOTSET)
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
             break;
             
          case MAX:
             n++;
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
+             if (Var->Max!=DICT_NOTSET)
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
             break;
             
          case MAGNITUDE:
             n++;
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
+            if (Var->Magnitude!=DICT_NOTSET)
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
             break;
             
+          case ORIGIN:
+            n++;
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Origin,-1));
+            break;
+            
+          case STATE:
+            n++;
+            if (Var->Nature&DICT_OBSOLETE) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("obsolete",-1));
+            } else if (Var->Nature&DICT_CURRENT) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("current",-1));
+            } else if (Var->Nature&DICT_FUTURE) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("future",-1));
+            } else if (Var->Nature&DICT_INCOMPLETE) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("incomplete",-1));
+            }
+            break;
       }
    }
    
@@ -1906,16 +1967,41 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
    if (!n) {
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Short[(int)lang],-1));
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Long[(int)lang],-1));
-      switch(Var->Nature) {
-         case DICT_INTEGER:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1)); break;
-         case DICT_REAL   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));    break;
-         case DICT_LOGICAL:Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1)); break;
-         case DICT_CODE   :Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Code",-1));     break;
+      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Origin,-1));
+      if (Var->Nature&DICT_OBSOLETE) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("obsolete",-1));
+      } else if (Var->Nature&DICT_CURRENT) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("current",-1));
+      } else if (Var->Nature&DICT_FUTURE) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("future",-1));
+      } else if (Var->Nature&DICT_INCOMPLETE) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("incomplete",-1));
+      }
+      if (Var->Nature&DICT_INTEGER) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Integer",-1));
+      } else if (Var->Nature&DICT_REAL) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Real",-1));
+      } else if (Var->Nature&DICT_LOGICAL) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Logical",-1));
+      } else if (Var->Nature&DICT_CODE) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("Coded",-1));
       }
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Units,-1));
-      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
-      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
-      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
+      if (Var->Min!=DICT_NOTSET) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
+      } else {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("",-1));
+      }
+      if (Var->Max!=DICT_NOTSET) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
+      } else {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("",-1));
+      }
+      if (Var->Magnitude!=DICT_NOTSET) {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
+      } else {
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("",-1));
+      }
    }
 
    Tcl_SetObjResult(Interp,obj);

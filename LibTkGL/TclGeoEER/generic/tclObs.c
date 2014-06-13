@@ -2255,7 +2255,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 */
 void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
 
-   int i;
+   int i,idc;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2273,7 +2273,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    } else {
       glColor3us(0,0,0);
    }
-
+   
    if (Interp) {
       glFeedbackInit(Obs->Loc->Nb*200,GL_2D);
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n0 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
@@ -2284,6 +2284,15 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
       }
+      if (Obs->Spec->MapAll && Obs->Spec->Map) {
+         VAL2COL(idc,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Obs->Spec->Map,idc);
+         } else {
+            glColor4ubv(Obs->Spec->Map->Color[idc]);
+         }
+      }
+      
       glPushName(i);
       Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
       glPopName();

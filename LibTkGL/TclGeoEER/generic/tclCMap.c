@@ -1449,10 +1449,10 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
                return(TCL_ERROR);
             }
 
-            CMap->Control[idx][0] = strtol(e,&e,10);
-            CMap->Control[idx][1] = strtol(e,&e,10);
-            CMap->Control[idx][2] = strtol(e,&e,10);
-            CMap->Control[idx][3] = strtol(e,&e,10);
+            CMap->Control[idx][0] = strtol(e,&e,0);
+            CMap->Control[idx][1] = strtol(e,&e,0);
+            CMap->Control[idx][2] = strtol(e,&e,0);
+            CMap->Control[idx][3] = strtol(e,&e,0);
 
             /* 0,0,0,0 is empty cell so make sure this control point is not empty */
             if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
