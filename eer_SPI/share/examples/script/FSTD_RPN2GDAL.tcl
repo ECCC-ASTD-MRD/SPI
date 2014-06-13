@@ -46,7 +46,7 @@ namespace eval RPN2GDAL { } {
    set Param(NoData)    0.0
    set Param(Out)       ./out
    set Param(Mode)      RGBA
-   set Param(Interp)    NEAREST
+   set Param(Interp)    LINEAR
    set Param(Res)       0.1
    set Param(BBox)      {}
    set Param(Lat0)      -999
@@ -66,7 +66,7 @@ namespace eval RPN2GDAL { } {
       -var    : List of variables to process (Mandatory)
       -factor : List of factors per variables
       -inter  : List of intervals
-      -interp : Data interpolation type (${APP_COLOR_GREEN}NEAREST${APP_COLOR_RESET},LINEAR)
+      -interp : Data interpolation type (NEAREST$,${APP_COLOR_GREEN}LINEAR${APP_COLOR_RESET})
       -min    : Minimum value
       -max    : Maximum value
       -fstd   : List of RPN files to process (Mandatory)
