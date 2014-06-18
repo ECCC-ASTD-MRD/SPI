@@ -34,6 +34,7 @@ namespace eval RPN2GDAL { } {
    set Param(Format)    "KMZ"
    set Param(Files)     {}
    set Param(IP1)       -1
+   set Param(IP2)       -1
    set Param(IP3)       -1
    set Param(Etiket)    ""
    set Param(ProjFile)  ""
@@ -71,6 +72,7 @@ namespace eval RPN2GDAL { } {
       -max    : Maximum value
       -fstd   : List of RPN files to process (Mandatory)
       -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+      -ip2    : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
       -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
       -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
       -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
@@ -109,7 +111,7 @@ proc RPN2GDAL::Run { } {
 
             Log::Print DEBUG "   Checking for variable $var"
 
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) $Param(IP2) $Param(IP3) "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                if { [llength $Param(BBox)]!=4 } {
@@ -176,6 +178,7 @@ proc RPN2GDAL::ParseCommandLine { } {
          "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Files)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP1)] }
+         "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP2)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 

@@ -36,6 +36,7 @@ namespace eval RPN2OGR { } {
    set Param(Map)       "$env(HOME)/.spi/Colormap/REC_Col.std1.rgba"
    set Param(Etiket)    ""
    set Param(IP1)       -1
+   set Param(IP2)       -1
    set Param(IP3)       -1
    set Param(ProjFile)  ""
    set Param(Intervals) {}
@@ -54,6 +55,7 @@ namespace eval RPN2OGR { } {
       -inter  : List of coutour to use
       -fstd   : List of RPN files to process (Mandatory)
       -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+      -ip2    : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
       -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
       -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
       -prj    : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
@@ -89,7 +91,7 @@ proc RPN2OGR::Run { } {
          set v 0
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) -1 $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) $Param(IP2) $Param(IP3) "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
@@ -165,6 +167,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "prj"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(ProjFile)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }
+         "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP2)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Etiket)] }
 
