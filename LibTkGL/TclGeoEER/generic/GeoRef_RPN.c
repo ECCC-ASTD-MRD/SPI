@@ -418,7 +418,7 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       EZLock_RPNInt();
       c_gdxyfll(Ref->Ids[Ref->NId],&i,&j,&lat,&lon,1);
       EZUnLock_RPNInt();
-
+ 
       *X=i-1.0;
       *Y=j-1.0;
 
@@ -499,6 +499,7 @@ TGeoRef* GeoRef_RPNSetup(int NI,int NJ,int NK,int Type,float *Levels,char *GRTYP
       }
 #endif
    }
+   
    ref->IG1=IG1;
    ref->IG2=IG2;
    ref->IG3=IG3;

@@ -992,7 +992,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ez=0;
    }
 
-   if (FieldFrom->Ref->Grid[0]=='R' || FieldTo->Ref->Grid[0]=='R' || FieldFrom->Ref->Grid[0]=='W' || FieldTo->Ref->Grid[0]=='W') {
+   if (FieldFrom->Ref->Grid[0]=='R' || FieldTo->Ref->Grid[0]=='R' || FieldFrom->Ref->Grid[0]=='W' || FieldTo->Ref->Grid[0]=='W' || FieldTo->Ref->Hgt) {
       ez=0;
    }
 

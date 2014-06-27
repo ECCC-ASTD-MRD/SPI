@@ -1075,8 +1075,10 @@ int GeoRef_Destroy(Tcl_Interp *Interp,char *Name) {
 
       if (entry) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
-         if (GeoRef_Free(ref))
-            TclY_DeleteHashEntry(entry);
+         TclY_DeleteHashEntry(entry);
+         GeoRef_Free(ref);
+//         if (GeoRef_Free(ref))
+//            TclY_DeleteHashEntry(entry);
       }
    }
    return(TCL_OK);
@@ -1238,16 +1240,23 @@ void GeoRef_Clear(TGeoRef *Ref,int New) {
       OCTDestroyCoordinateTransformation(Ref->InvFunction);
       Ref->InvFunction=NULL;
    }
+   
+   Ref->RefFrom=NULL;
+   Ref->Project=NULL;
+   Ref->UnProject=NULL;
+   Ref->Value=NULL;
+   Ref->Distance=NULL;
+   Ref->Height=NULL;
 }
 
 void GeoRef_Qualify(TGeoRef *Ref) {
 
    Coord co[2];
    double d[2];
-
-   Ref->Type=GRID_NONE;
    
    if (Ref) {
+      Ref->Type=GRID_NONE;
+      
       if (Ref->Grid[0]=='X') {
          return;
       }
