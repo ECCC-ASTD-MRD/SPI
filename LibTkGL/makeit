@@ -16,7 +16,7 @@ MAINTAINER="Jean-Philippe Gauthier"
 SSM_NAME=${NAME}_${VERSION}_multi
 
 MAKE=make
-LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}
+LIB=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}
 TCL=${LIB}/SPI
 
 export CC=c99

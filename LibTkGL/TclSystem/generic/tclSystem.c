@@ -243,10 +243,10 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *Lock
 */
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int   idx,pid;
+   int   idx,pid,status;
 
-   static CONST char *sopt[] = { "daemonize","fork","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
-   enum               opt { DAEMONIZE,FORK,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
+   static CONST char *sopt[] = { "daemonize","fork","wait","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
+   enum               opt { DAEMONIZE,FORK,WAIT,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
 
    Tcl_ResetResult(Interp);
 
@@ -274,6 +274,20 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          return(TCL_OK);
          break;
 
+      case WAIT:
+         if(Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"?pid?");
+            return(TCL_ERROR);
+         }
+         
+         pid=-1;
+         if (Objc==3) {
+            Tcl_GetIntFromObj(Interp,Objv[2],&pid);
+         }
+         waitpid(pid,&status,0);
+         return(TCL_OK);
+         break;
+         
       case SIGNAL:
          return(System_Signal(Interp,Objc-2,Objv+2));
          break;
@@ -403,11 +417,11 @@ void System_SignalProcess(int SigNum) {
 */
 static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int              i,idx;
+   int              i,idx,pid;
    struct sigaction new,old,*pnew;
    
-   static CONST char *sopt[] = { "-trap","-default","-ignore",NULL };
-   enum               opt { TRAP,DEFAULT,IGNORE };
+   static CONST char *sopt[] = { "-trap","-default","-ignore","-send",NULL };
+   enum               opt { TRAP,DEFAULT,IGNORE,SEND };
     
    static CONST char *ssig[] = { "SIGILL","SIGSEGV","SIGBUS","SIGABRT","SIGIOT","SIGTRAP","SIGSYS","SIGTERM","SIGINT","SIGQUIT","SIGKILL", 
       "SIGHUP","SIGALRM","SIGVTALRM","SIGPROF","SIGIO","SIGURG","SIGPOLL","SIGCHLD","SIGCLD","SIGCONT","SIGSTOP","SIGTSTP","SIGTTIN","SIGTTOU",
@@ -433,6 +447,15 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
+         case SEND:
+            pid=getppid();
+            if (Objc==3) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&pid);
+            }
+            fprintf(stderr,"------ %i\n",pid);
+            kill(pid,sig[isig]);
+            break;
+            
          case TRAP:
             if (Objc==2) {
                if (System_SignalTable[sig[isig]]) {

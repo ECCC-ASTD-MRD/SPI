@@ -6,12 +6,12 @@ VERSION=7.7.1
 echo "Architecture: ${ARCH}_${PROC}"
 
 #----- Location of the library source codes
-ARCH_PATH=/cnfs/ops/cmoe/afsr005/Archive
+ARCH_PATH=/users/dor/afsr/005/Links/dev/Archive
 
 #----- Where to install libraries
-LIB_PATH=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}
+LIB_PATH=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}
 
-SPI_LIB=/cnfs/ops/cmoe/afsr005/Lib/${VERSION}/${ORDENV_PLAT}/SPI
+SPI_LIB=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}/SPI
 SPI_PATH=/users/dor/afsr/005/Projects/eerSPI/eer_SPI
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
@@ -317,4 +317,4 @@ cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
 #--with-hdf4=${LIB_PATH}/${HDF4} \
 #--with-kakadu=${LIB_PATH}/${KKDU}
-#--with-ecw=/cnfs/ops/cmoe/afsr005/Lib/Linux/libecwj2-3.3
+#--with-ecw=/users/dor/afsr/005/Links/dev/Lib/Linux/libecwj2-3.3
