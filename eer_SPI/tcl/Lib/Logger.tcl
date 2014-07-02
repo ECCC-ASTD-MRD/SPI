@@ -189,6 +189,7 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
       #----- Garder l'index de depart
       set idx [incr No]
       set var {}
+      set vs  -
 
       if { $Multi==3 } {
          set var True
@@ -225,7 +226,7 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
       }
 
       #----- Verifier le nombre de valeur
-      if { $Multi && ![llength $var] }  {
+      if { $Multi && $vs=="-" }  {
          Log::Print ERROR "No value specified for parameter [lindex $Argv [expr $No-1]]"
          Log::End 1
       }
