@@ -113,9 +113,6 @@ proc Graph::Contingency::Create { Frame X0 Y0 Width Height Active Full { Link Tr
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
       Graph::Contingency::Update $data(FrameData) $gr
-   } else {
-      set data(VP)        ""
-      set data(FrameData) ""
    }
 
    Graph::Contingency::Page $gr
@@ -241,16 +238,19 @@ proc Graph::Contingency::Init { Frame } {
 
       #----- Constantes relatives aux series temporelles
 
-      set Data(Items)   {}         ;#Liste des items
-      set Data(Pos)     {}         ;#Liste des positions
-      set Data(Coords)  {}         ;#Liste des coordonnees de coupe
-      set Data(Data)    {}        ;#Liste des donnees du graph
-      set Data(Select)  ""        ;#Case selectionnee
-      set Data(Lat0)    0         ;#Rectangle de selection
-      set Data(Lat1)    0         ;#Rectangle de selection
-      set Data(Lon0)    0         ;#Rectangle de selection
-      set Data(Lon1)    0         ;#Rectangle de selection
-      set Data(TIJ)     0         ;#Total en X-Y
+      set Data(Items)     {}        ;#Liste des items
+      set Data(Pos)       {}        ;#Liste des positions
+      set Data(Coords)    {}        ;#Liste des coordonnees de coupe
+      set Data(Data)      {}        ;#Liste des donnees du graph
+      set Data(Select)    ""        ;#Case selectionnee
+      set Data(Lat0)      0         ;#Rectangle de selection
+      set Data(Lat1)      0         ;#Rectangle de selection
+      set Data(Lon0)      0         ;#Rectangle de selection
+      set Data(Lon1)      0         ;#Rectangle de selection
+      set Data(TIJ)       0         ;#Total en X-Y
+      set Data(Field)     ""        ;#Champs de donnees
+      set Data(VP)        ""
+      set Data(FrameData) ""
 
       #----- Constantes relatives au Graph
 

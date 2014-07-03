@@ -100,9 +100,6 @@ proc Graph::TimeSection::Create { Frame X0 Y0 Width Height Active Full { Link Tr
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
       Graph::TimeSection::Update $data(FrameData) $gr
-   } else {
-      set data(VP)        ""
-      set data(FrameData) ""
    }
 
    Graph::Activate $Frame $gr TimeSection
@@ -437,17 +434,20 @@ proc Graph::TimeSection::Init { Frame } {
       variable Data
       variable Graph
 
-      set Data(Items)  {}        ;#Liste des items
-      set Data(Pos)    {}        ;#Liste des positions
-      set Data(Coords) {}        ;#Liste des coordonnees de coupe
-      set Data(Data)   {}        ;#Liste des champs selectionnees
-      set Data(Tmp)    {}        ;#Liste des champs temporaire
+      set Data(Items)    {}        ;#Liste des items
+      set Data(Pos)      {}        ;#Liste des positions
+      set Data(Coords)   {}        ;#Liste des coordonnees de coupe
+      set Data(Data)     {}        ;#Liste des champs selectionnees
+      set Data(Tmp)      {}        ;#Liste des champs temporaire
 
-      set Data(Dates)  {}
-      set Data(Levels) {}
-      set Data(Date0)           ""
-      set Data(Date1)           ""
-      set Data(Vertical)        {}
+      set Data(Dates)    {}
+      set Data(Levels)   {}
+      set Data(Date0)    ""
+      set Data(Date1)    ""
+      set Data(Vertical) {}
+      set Data(Field)     ""       ;#Champs de donnees
+      set Data(VP)        ""
+      set Data(FrameData) ""
 
       #----- Constantes relatives au Graph
 

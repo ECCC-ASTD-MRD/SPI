@@ -876,8 +876,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -intervalmode $Param(IntervalMode) $Param(IntervalParam) -transparency $alpha  -min $min -max $max \
-      -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
+      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
    #----- Set intervals depending on interval mode
    if { $Param(IntervalMode)=="NONE" } {
@@ -891,7 +890,7 @@ proc FSTD::ParamSet { { Spec "" } } {
 
    catch { $Data(ApplyButton) configure -state normal }
 
-   MetStat::RECRCAdd [dataspec configure $Spec -desc] "" $Param(Unit) $Param(Factor) "" ""
+#   MetStat::RECRCAdd [dataspec configure $Spec -desc] "" $Param(Unit) $Param(Factor) "" ""
 }
 
 #-------------------------------------------------------------------------------
@@ -909,6 +908,7 @@ proc FSTD::ParamSet { { Spec "" } } {
 #-------------------------------------------------------------------------------
 
 proc FSTD::ParamPut { { Update False } } {
+   global GDefs
    variable Data
    variable Param
 
@@ -941,18 +941,22 @@ proc FSTD::ParamPut { { Update False } } {
    if { [dataspec is $Param(Spec)] } {
       set var $Param(Spec)
 
-      if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
+      if { [info exist ::MetStat::Rec(Level$var)] } {
          ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$var)
-         if { $Update } { 
-            set Param(Unit)   $MetStat::Rec(Unit$var)
-            set Param(Factor) $MetStat::Rec(Factor$var)
-            set Param(Desc)   $MetStat::Rec(Desc$var)
-         }
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
                -command "FSTD::IntervalSetMode INTERVAL $inter"
          }
+      }
+      if { $Update && [fstddict isvar $var] } {
+         if { $Update } { 
+            set Param(Unit)   [fstddict varinfo $var -lang $GDefs(Lang) -unit]
+            set Param(Factor) [fstddict varinfo $var -lang $GDefs(Lang) -factor]
+            set Param(Delta)  [fstddict varinfo $var -lang $GDefs(Lang) -delta]
+            set Param(Desc)   [fstddict varinfo $var -lang $GDefs(Lang) -short]
+         }
+
       }
    }
    #----- Set intervals to right values
@@ -977,6 +981,7 @@ proc FSTD::ParamPut { { Update False } } {
 #-------------------------------------------------------------------------------
 
 proc FSTD::ParamInit { Field { Spec "" } } {
+   global GDefs
    variable Param
 
    if { [dataspec is $Spec] } {
@@ -1013,8 +1018,8 @@ proc FSTD::ParamInit { Field { Spec "" } } {
             dataspec configure $Spec -rendervector BARBULE -rendertexture 0
          }
 
-         if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
-            dataspec configure $Spec -desc $MetStat::Rec(Desc$var) -unit $MetStat::Rec(Unit$var) -factor $MetStat::Rec(Factor$var)
+         if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -unit -factor -delta]]] } {
+            dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
          } else {
             dataspec configure $Spec -desc $desc -unit $unit        
          }

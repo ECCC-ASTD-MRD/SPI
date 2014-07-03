@@ -18,7 +18,6 @@
 #   MetStat::LevelLogList { Min Max Mult }
 #   MetStat::LevelMod     { Min Max Delta }
 #   MetStat::LevelRSMC    { Min Max }
-#   MetStat::RECRCAdd     { Var Desc Unit Factor Level Inter }
 #   MetStat::RECRCEval    { Cmd }
 #   MetStat::RECRCLoad    { File }
 #   MetStat::Calculate    { X Y { Factor -1 } }
@@ -75,20 +74,6 @@ namespace eval MetStat { } {
 
    #----- Definitions des champs
 
-   set Rec(TypeA) "Analyse"
-   set Rec(TypeC) "Climatologie"
-   set Rec(TypeD) "Données brutes aux stations"
-   set Rec(TypeE) "Erreur mensuelle"
-   set Rec(TypeK) "Constantes variées"
-   set Rec(TypeM) "Matrice de vérification"
-   set Rec(TypeO) "Observation"
-   set Rec(TypeP) "Prévision"
-   set Rec(TypeQ) "Diagnostic QPF"
-   set Rec(TypeS) "Scores divers"
-   set Rec(TypeT) "Série temporelle"
-   set Rec(TypeX) "Divers"
-   set Rec(Var)   ""
-   set Rec(Desc)  ""
    set Rec(Level) {}
    set Rec(Inter) {}
 
@@ -331,46 +316,6 @@ proc MetStat::LevelRSMC { Min Max } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <MetStat::RECRCAdd>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajouter une nouvelle variable dans le recrc (in memory).
-#
-# Parametres :
-#   <Desc>   : Description de la variable
-#   <Unit>   : Unite de la variable
-#   <Factor> : Facteur de conversion
-#   <Level>  : Liste des niveaux
-#   <Inter>  : Liste des intervalles
-#
-# Retour    :
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc MetStat::RECRCAdd { Var Desc Unit Factor Level Inter } {
-   variable Rec
-
-   if { $Var!="" }   {
-
-      lappend Rec(Var) $Var
-
-      if { $Desc==""   && ![info exists MetStat::Rec(Desc$Var)] }   { set Rec(Desc$Var)   $Rec(Desc) }
-      if { $Level==""  && ![info exists MetStat::Rec(Level$Var)] }  { set Rec(Level$Var)  $Rec(Level) }
-      if { $Inter==""  && ![info exists MetStat::Rec(Inter$Var)] }  { set Rec(Inter$Var)  $Rec(Inter) }
-
-      if { $Desc!=""   || ![info exists MetStat::Rec(Desc$Var)] }   { set Rec(Desc$Var)   $Desc }
-      if { $Level!=""  || ![info exists MetStat::Rec(Level$Var)] }  { set Rec(Level$Var)  $Level }
-      if { $Inter!=""  || ![info exists MetStat::Rec(Inter$Var)] }  { set Rec(Inter$Var)  $Inter }
-
-      set Rec(Unit$Var)   $Unit
-      set Rec(Factor$Var) $Factor
-      set Rec(Var) [lsort -unique -dictionary $Rec(Var)]
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <MetStat::RECRCEval>
 # Creation : Septembre 2002 - J.P. Gauthier - CMC/CMOE
 #
@@ -385,6 +330,7 @@ proc MetStat::RECRCAdd { Var Desc Unit Factor Level Inter } {
 #-------------------------------------------------------------------------------
 
 proc MetStat::RECRCEval { Cmd } {
+   global GDefs
    variable Rec
 
    #----- Creer un liste d'arguments
@@ -395,11 +341,10 @@ proc MetStat::RECRCEval { Cmd } {
    #----- Extraire les parametres specifiques
 
    set var [string toupper [lindex $arg 0]]
-   lappend Rec(Var)    $var
 
-   set Rec(Desc$var)   [lindex $arg 1]
-   set Rec(Unit$var)   [lindex $arg 2]
-   set Rec(Factor$var) [expr double(1.0/[lindex $arg 4])]
+   set desc   [string trim [lindex $arg 1]]
+   set unit   [string trim [lindex $arg 2]]
+   set factor [expr double(1.0/[lindex $arg 4])]
    set Rec(Level$var)  ""
    set Rec(Inter$var)  ""
 
@@ -414,6 +359,16 @@ proc MetStat::RECRCEval { Cmd } {
          lappend Rec(Inter$var) $token
       }
    }
+   
+   #----- Overload dictionnary info if any is specified
+   if { $desc!="" } {
+      fstddict varinfo $var -lang $GDefs(Lang) -short $desc
+   }
+   if { $unit!="" } {
+      fstddict varinfo $var -lang $GDefs(Lang) -unit $unit
+   }
+
+   fstddict varinfo $var -lang $GDefs(Lang) -factor $factor -delta 0.0
 }
 
 
@@ -725,7 +680,7 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
    return 1
 }
 
-if { [info exist env(ARMNLIB)] } {
-   MetStat::RECRCLoad $env(ARMNLIB)/data/dict_rec.[lindex { f e } $GDefs(Lang)]
-}
+fstddict load /users/dor/afsr/005/Projects/libeerUtils/data/stdf.variable_dictionary.xml
+
+#----- Load user RECRC
 MetStat::RECRCLoad $env(HOME)/.recrc

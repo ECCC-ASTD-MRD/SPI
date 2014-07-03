@@ -102,9 +102,6 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
       Graph::Section::Update $data(FrameData) $gr
-   } else {
-      set data(VP)        ""
-      set data(FrameData) ""
    }
 
    Graph::Activate $Frame $gr Section
@@ -375,15 +372,17 @@ proc Graph::Section::Init { Frame } {
       variable Data
       variable Graph
 
-      set Data(Items)    {}           ;#Liste des items
-      set Data(Pos)      {}           ;#Liste des positions
-      set Data(Data)     {}           ;#Liste des champs selectionnees
-      set Data(Tmp)      {}           ;#Liste des champs temporaire
-      set Data(Proj)     0            ;#Mode projection
-      set Data(DCoords)  {}           ;#Liste des longueur des segment
-      set Data(Levels)   {}           ;#Liste des niveaux
-      set Data(Coords)   {}           ;#Liste des coordonnees de coupe
-      set Data(Field)    ""           ;#Champs de coupe
+      set Data(Items)     {}           ;#Liste des items
+      set Data(Pos)       {}           ;#Liste des positions
+      set Data(Data)      {}           ;#Liste des champs selectionnees
+      set Data(Tmp)       {}           ;#Liste des champs temporaire
+      set Data(Proj)      0            ;#Mode projection
+      set Data(DCoords)   {}           ;#Liste des longueur des segment
+      set Data(Levels)    {}           ;#Liste des niveaux
+      set Data(Coords)    {}           ;#Liste des coordonnees de coupe
+      set Data(Field)     ""           ;#Champs de donnees
+      set Data(VP)        ""
+      set Data(FrameData) ""
 
       #----- Constantes relatives au Graph
 

@@ -289,8 +289,8 @@ proc DataBar::IdField { Field } {
 
    set lbl [fstdfield define $Field -NOMVAR]
 
-   if { [info exists MetStat::Rec(Desc$lbl)] } {
-      append lbl " $MetStat::Rec(Desc$lbl)"
+   if { [set desc [fstdfield configure $Field -desc]]!="" } {
+      append lbl " $desc"
    }
    append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
 
@@ -324,8 +324,8 @@ proc DataBar::IdGrib { Field } {
 
    set lbl [gribfield define $Field -NOMVAR]
 
-   if { [info exists MetStat::Rec(Desc$lbl)] } {
-      append lbl " $MetStat::Rec(Desc$lbl)"
+   if { [set desc [fstdfield configure $Field -desc]]!="" } {
+      append lbl " $desc"
    }
    append lbl " ([lrange [fstdgrid convip [gribfield define $Field -IP1]] 0 1])"
 

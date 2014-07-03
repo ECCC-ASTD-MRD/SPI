@@ -673,7 +673,7 @@ proc Obs::ParamPut { } {
    $Data(Frame).lev.select.mode.list.inter delete 0 end
 
    set spec ""
-   if { [lsearch -exact $MetStat::Rec(Var) $Param(Spec)]!=-1 } {
+   if { [info exist ::MetStat::Rec(Level$Param(Spec))] } {
       set spec $Param(Spec)
    }
 
@@ -730,8 +730,8 @@ proc Obs::ParamInit { Obs { Spec "" } } {
          dataspec configure $Spec -colormap OBSMAP$Spec
       }
 
-      if { [lsearch -exact $MetStat::Rec(Var) $var]!=-1 } {
-         dataspec configure $Spec -unit $MetStat::Rec(Unit$var)
+      if { [set unit [fstddict varinfo $var -unit]]!="" } {
+         dataspec configure $Spec -unit $unit
       }
    }
 }

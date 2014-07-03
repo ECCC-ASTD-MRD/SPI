@@ -103,9 +103,6 @@ proc Graph::Frequence::Create { Frame X0 Y0 Width Height Active Full { Link True
       set data(VP)        $Viewport::Data(VP)
       set data(FrameData) $Viewport::Data(Frame$data(VP))
       Graph::Frequence::Update $data(FrameData) $gr
-   } else {
-      set data(VP)        ""
-      set data(FrameData) ""
    }
 
    Graph::Activate $Frame $gr Frequence
@@ -300,14 +297,17 @@ proc Graph::Frequence::Init { Frame } {
       variable Data
       variable Graph
 
-      set Data(Items)   {}         ;#Liste des items
-      set Data(Pos)     {}         ;#Liste des positions
-      set Data(Coords)  {}         ;#Liste des coordonnees de coupe
-      set Data(Data)    {}         ;#Donnees du graph
-      set Data(Lat0)     0         ;#Rectangle de selection
-      set Data(Lat1)     0         ;#Rectangle de selection
-      set Data(Lon0)     0         ;#Rectangle de selection
-      set Data(Lon1)     0         ;#Rectangle de selection
+      set Data(Items)     {}        ;#Liste des items
+      set Data(Pos)       {}        ;#Liste des positions
+      set Data(Coords)    {}        ;#Liste des coordonnees de coupe
+      set Data(Data)      {}        ;#Donnees du graph
+      set Data(Lat0)      0         ;#Rectangle de selection
+      set Data(Lat1)      0         ;#Rectangle de selection
+      set Data(Lon0)      0         ;#Rectangle de selection
+      set Data(Lon1)      0         ;#Rectangle de selection
+      set Data(Field)     ""        ;#Champs de donnees
+      set Data(VP)        ""
+      set Data(FrameData) ""
 
       set Data(Obs)      ""        ;#Liste des stations selectionnee
       set Data(Select)   ""        ;#Case selectionnee

@@ -908,14 +908,14 @@ proc FieldBox::InfoCommand { No Index } {
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
    catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -gmt True] $GDefs(Lang)] }
 
-   if { [info exists MetStat::Rec(Unit$nv)] } {
-      set info  "$MetStat::Rec(Desc$nv) ($MetStat::Rec(Unit$nv))"
+   if { [fstddict isvar $nv] } {
+      eval set info  \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -unit]\]
    } else {
       set info  "$nv ??? (???)"
-   }
-
-   if { [info exists MetStat::Rec(Type$tv)] } {
-      append info  "\n$MetStat::Rec(Type$tv)"
+   }   
+   
+   if { [fstddict istype $tv] } {
+      append info  "\n[fstddict typeinfo $tv -lang $GDefs(Lang) -short]"
    } else {
       append info  "\n???"
    }
