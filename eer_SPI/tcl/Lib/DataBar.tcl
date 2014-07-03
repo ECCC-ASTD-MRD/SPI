@@ -288,18 +288,19 @@ proc DataBar::IdField { Field } {
    global GDefs
 
    set lbl [fstdfield define $Field -NOMVAR]
-
-   if { [set desc [fstdfield configure $Field -desc]]!="" } {
-      append lbl " $desc"
+   set desc [fstdfield configure $Field -desc]
+   
+   if { $desc!="" && $desc!=$lbl } {
+      append lbl " - $desc"
    }
-   append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
 
    if { [set unit [fstdfield configure $Field -unit]]!="" } {
       append lbl " ($unit)"
    }
+   
+   append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
    append lbl " ([fstdfield define $Field -ETIKET])"
-   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
-   append lbl " ([fstdfield define $Field -IP2])"
+   append lbl " [lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
 
    return $lbl
 }

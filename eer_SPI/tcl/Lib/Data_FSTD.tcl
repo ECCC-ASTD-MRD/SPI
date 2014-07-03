@@ -942,12 +942,21 @@ proc FSTD::ParamPut { { Update False } } {
       set var $Param(Spec)
 
       if { [info exist ::MetStat::Rec(Level$var)] } {
+         #----- Add intervals list to interface
          ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level$var)
 
          foreach inter $MetStat::Rec(Inter$var) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
                -command "FSTD::IntervalSetMode INTERVAL $inter"
          }
+      } else {
+         #----- Add default interval list to interface
+         ComboBox::AddList $Data(Frame).lev.desc.edit $MetStat::Rec(Level)
+
+         foreach inter $MetStat::Rec(Inter) {
+            $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
+               -command "FSTD::IntervalSetMode INTERVAL $inter"
+         }    
       }
       if { $Update && [fstddict isvar $var] } {
          if { $Update } { 
@@ -956,7 +965,6 @@ proc FSTD::ParamPut { { Update False } } {
             set Param(Delta)  [fstddict varinfo $var -lang $GDefs(Lang) -delta]
             set Param(Desc)   [fstddict varinfo $var -lang $GDefs(Lang) -short]
          }
-
       }
    }
    #----- Set intervals to right values
@@ -1018,10 +1026,11 @@ proc FSTD::ParamInit { Field { Spec "" } } {
             dataspec configure $Spec -rendervector BARBULE -rendertexture 0
          }
 
+         if { ![fstddict isvar $var] } {
+            fstddict varinfo $var -lang $GDefs(Lang) -short $desc
+         }
          if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -unit -factor -delta]]] } {
             dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
-         } else {
-            dataspec configure $Spec -desc $desc -unit $unit        
          }
       }
    }
