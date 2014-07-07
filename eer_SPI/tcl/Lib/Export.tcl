@@ -384,9 +384,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
          <href>[file tail ${name}.tif]</href>
       </Icon>
    </GroundOverlay>\n"
-         gdalfile open FILE write ${name}.tif GTiff
-         gdalband write BAND FILE
-         gdalfile close FILE
+         gdalfile createcopy ${name}.tif BAND GTiff
          lappend kmz ${name}.tif ${name}_legend.png
       } else {
          gdalfile createcopy ${name}${ext} BAND $Format

@@ -458,15 +458,17 @@ proc Animator::GetPlayList { } {
       set pframe [lindex $Play(Frames) 0]
       foreach frame [lrange $Play(Frames) 1 end] {
          set i 0
-         foreach d $Play($vp$pframe) { 
-            if { [fstdfield is $d] } {
-               set idx [lindex [split $d .] 1]
-               
-               if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
-                  set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
+         if { [info exists Animator::Play($vp$pframe)] } {
+            foreach d $Play($vp$pframe) { 
+               if { [fstdfield is $d] } {
+                  set idx [lindex [split $d .] 1]
+                  
+                  if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
+                     set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
+                  }
+               } else {
+                  incr i
                }
-            } else {
-               incr i
             }
          }
          set pframe $frame
