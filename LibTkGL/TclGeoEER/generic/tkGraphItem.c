@@ -2053,7 +2053,7 @@ int GraphItem_FitGauss(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGrap
 */
 void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1){
 
-   int    i,j,c0,c1,c2,c3,idx0,idx1,idx2,idx3;
+   int    i,j,c0,c1,c2,c3,idx0,idx3;
    int    depth=0,base=0;
    Vect3d g0,g1,g2,g3,min,max;
    double v0,v1,v2,v3,vf;
@@ -2093,8 +2093,6 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       for(i=0;i<Data->Def->NI;i++) {
 
          if (i!=0) {
-            idx1=idx0;
-            idx2=idx3;
             v1=v0;
             v2=v3;
             c1=c0;
@@ -2141,7 +2139,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
                dx=fabs(g2[0]-g0[0]);
                dy=fabs(g2[1]-g0[1]);
                dx=Data->Spec->InterNb?MAX(dx,dy):MIN(dx,dy);
-               while (dx>>=1) depth++;
+               depth=ceil(LOG2(dx));
             }
 
             if (Data->Spec->InterpDegree[0]=='N') {
@@ -2229,7 +2227,7 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    glBindTexture(GL_TEXTURE_1D,tx[0]);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Data->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Data->Spec->Map->Color);
 
    /*Setup 1D Interval Texture*/
@@ -2252,11 +2250,15 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
    glUniform1iARB(GLShader_UniformGet(prog,"Data"),2);
+   glUniform1iARB(GLShader_UniformGet(prog,"Mask"),3);
+   glUniform1iARB(GLShader_UniformGet(prog,"IsMask"),0);
    glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),-999.0);
    glUniform1fARB(GLShader_UniformGet(prog,"Min"),min);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),rng);
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Data->Spec->InterNb);
    glUniform1iARB(GLShader_UniformGet(prog,"Bi"),(Data->Spec->InterpDegree[0]=='N'?0:1));
+   glUniform1iARB(GLShader_UniformGet(prog,"Above"),Data->Spec->MapAbove);
+   glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Data->Spec->MapBellow);
 
    for(j=0;j<Data->Def->NJ-1;j++) {
       glBegin(GL_QUAD_STRIP);
