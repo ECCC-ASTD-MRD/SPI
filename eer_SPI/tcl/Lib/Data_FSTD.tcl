@@ -800,7 +800,7 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) " $Param(Max)\]"
       }
    }
-
+   
    if { [llength [set interlabels [dataspec configure $Spec -interlabels]]] } {
       set inters $Param(Intervals)
       set Param(Intervals) ""
@@ -879,9 +879,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
 
    #----- Set intervals depending on interval mode
-   if { $Param(IntervalMode)=="NONE" } {
-      dataspec configure $Spec -intervals $inter -interlabels $label 
-   } elseif  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
+   if  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
       dataspec configure $Spec -intervalmode $Param(IntervalMode) $Param(IntervalParam)
       set Param(Intervals) [dataspec configure $Spec -intervals]
    } else {
@@ -1183,7 +1181,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          
          if { "$var"=="$current" } {
              set Param(Spec) $current
-             set Param(Intervals) [dataspec configure $current -intervals]
+             #set Param(Intervals) [dataspec configure $current -intervals]
              set exist 1
          }
 
