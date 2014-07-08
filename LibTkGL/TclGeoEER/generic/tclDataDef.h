@@ -44,6 +44,7 @@
 #include "ogr_api.h"
 
 #define DEFSELECTTYPE(A,B)  (A->Type>B->Type?A:B)
+#define DEFSIGNEDTYPE(A)    ((A->Type==TD_UByte || A->Type==TD_UInt16 || A->Type==TD_UInt32 || A->Type==TD_UInt64)?A->Type+1:A->Type)
 #define DEFCLAMP(D,X,Y)      X=(X>D->NI-1?D->NI-1:(X<0?0:X));Y=(Y>D->NJ-1?D->NJ-1:(Y<0?0:Y))
 #define DEF2DIN(D,I,J)      ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1])
 #define DEF3DIN(D,I,J,K)    ((I)>=D->Limits[0][0] && (I)<=D->Limits[0][1] && (J)>=D->Limits[1][0] && (J)<=D->Limits[1][1] && (K)>=D->Limits[2][0] && (K)<=D->Limits[2][1])

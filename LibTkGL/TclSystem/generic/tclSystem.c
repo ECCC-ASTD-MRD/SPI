@@ -452,7 +452,6 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==3) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&pid);
             }
-            fprintf(stderr,"------ %i\n",pid);
             kill(pid,sig[isig]);
             break;
             

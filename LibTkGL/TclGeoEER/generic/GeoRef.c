@@ -1075,10 +1075,8 @@ int GeoRef_Destroy(Tcl_Interp *Interp,char *Name) {
 
       if (entry) {
          ref=(TGeoRef*)Tcl_GetHashValue(entry);
-         TclY_DeleteHashEntry(entry);
-         GeoRef_Free(ref);
-//         if (GeoRef_Free(ref))
-//            TclY_DeleteHashEntry(entry);
+         if (GeoRef_Free(ref))
+            TclY_DeleteHashEntry(entry);
       }
    }
    return(TCL_OK);
@@ -1137,12 +1135,13 @@ int GeoRef_Free(TGeoRef *Ref) {
   if (!Ref)
       return(0);
   
-   if (__sync_sub_and_fetch(&Ref->NRef,1)) {
+   if (__sync_sub_and_fetch(&Ref->NRef,1)>0) {
       return(0);
    }
 
    if (Ref->RefFrom) {
-      GeoRef_Free(Ref->RefFrom);
+//      GeoRef_Free(Ref->RefFrom);
+      __sync_sub_and_fetch(&Ref->RefFrom->NRef,1);
    }
 
    GeoRef_Clear(Ref,1);

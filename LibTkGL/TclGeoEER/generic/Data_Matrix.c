@@ -71,11 +71,11 @@ void Calc_Iterate2(TDataDef *R,TDataDef *A,TDataDef *B,TFunc2 *Func) {
    if (sb==1) t|=0x01;
 
    sa=sa>sb?sa:sb;
-
    while (A->Data[n] || B->Data[n]) {
       for(i=0;i<sa;i++) {
          Def_Get(A,(A->Data[n]?n:0),(t&0x10?0:i),a);
          Def_Get(B,(B->Data[n]?n:0),(t&0x01?0:i),b);
+            
          a=Func(a,b);
          Def_Set(R,n,i,a);
       }
@@ -597,7 +597,7 @@ TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Typ
    GDataN++;
 
    if (Iterate) {
-      GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:(Type?Type:A->Type)));
+      GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:(Type?Type:DEFSIGNEDTYPE(A))));
       Calc_Iterate1(GData[GDataN],A,Func);
    } else {
       if (Matrix) {
@@ -640,7 +640,7 @@ TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matr
 
    if (Iterate) {
       t=DEFSELECTTYPE(A,B);
-      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:t->Type)));
+      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
       Calc_Iterate2(GData[GDataN],A,B,Func);
    } else {
       if (Matrix) {
@@ -691,7 +691,7 @@ TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iter
    if (Iterate) {
       t=DEFSELECTTYPE(B,C);
       t=DEFSELECTTYPE(A,t);
-      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:t->Type)));
+      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
       Calc_Iterate3(GData[GDataN],A,B,C,Func);
    } else {
       if (Matrix) {
