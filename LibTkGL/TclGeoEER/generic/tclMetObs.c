@@ -2584,6 +2584,7 @@ int MetObs_RenderIcon(Tcl_Interp *Interp,TDataSpec *Spec,double Alpha,double Val
       if (Interp) glFeedbackInit(IconList[Spec->Icon].Nb*40,GL_2D);
       glDrawArrays(IconList[Spec->Icon].Type,0,IconList[Spec->Icon].Nb);
       if (Interp) glFeedbackProcess(Interp,GL_2D);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
    return(1);
 }

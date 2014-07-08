@@ -114,8 +114,8 @@ void FSTD_FieldSet(TData *Data){
       head->DATEV=0;
       head->DEET=0;
       head->NPAS=0;
-      head->NBITS=16;
-      head->DATYP=1;
+      head->NBITS=-1;
+      head->DATYP=-1;
       head->IP1=-1;
       head->IP2=head->IP3=0;
       head->TYPVAR[0]='\0';
@@ -1748,39 +1748,17 @@ void FSTD_FieldFree(TData *Field){
 */
 TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData_Type Type){
 
-   TData      *field;
-   TData_Type  type;
-   int         datyp,nbit;
+   TData *field;
 
-   type=Type;
-  
-   switch(Type) {
-      case TD_Binary:  datyp=0;nbit=1;type=TD_Byte; break;
-      case TD_UByte:   datyp=2;nbit=8;break;
-      case TD_Byte:    datyp=4;nbit=8;break;
-      case TD_UInt16:  datyp=2;nbit=16;break;
-      case TD_Int16:   datyp=4;nbit=16;break;
-      case TD_UInt32:  datyp=2;nbit=32;break;
-      case TD_Int32:   datyp=4;nbit=32;break;
-      case TD_UInt64:  datyp=2;nbit=64;break;
-      case TD_Int64:   datyp=4;nbit=64;break;
-      case TD_Float32: datyp=1;nbit=32;break;
-      case TD_Float64: datyp=5;nbit=64;break;
-      case TD_Unknown:
-      default: return(NULL);
-   }
-
-   field=Data_Valid(Interp,Name,NI,NJ,NK,1,type);
+   field=Data_Valid(Interp,Name,NI,NJ,NK,1,Type==TD_Binary?TD_Byte:Type);
 
    if (!field)
      return(NULL);
 
    FSTD_FieldSet(field);
    field->Ref=GeoRef_RPNSetup(NI,NJ,NK,LVL_UNDEF,NULL,"X",0,0,0,0,-1);
-   ((FSTD_Head*)field->Head)->DATYP=datyp;
-   ((FSTD_Head*)field->Head)->NBITS=nbit;
 
-   return field;
+   return(field);
 }
 
 /*----------------------------------------------------------------------------
@@ -2696,6 +2674,25 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
 
+   // Check for DATYP and NBIT
+   if (head->DATYP==-1) {
+      switch(Field->Def->Type) {
+         case TD_Binary:  head->DATYP=0;head->NBITS=1;break;
+         case TD_UByte:   head->DATYP=2;head->NBITS=8;break;
+         case TD_Byte:    head->DATYP=4;head->NBITS=8;break;
+         case TD_UInt16:  head->DATYP=2;head->NBITS=16;break;
+         case TD_Int16:   head->DATYP=4;head->NBITS=16;break;
+         case TD_UInt32:  head->DATYP=2;head->NBITS=32;break;
+         case TD_Int32:   head->DATYP=4;head->NBITS=32;break;
+         case TD_UInt64:  head->DATYP=2;head->NBITS=64;break;
+         case TD_Int64:   head->DATYP=4;head->NBITS=64;break;
+         case TD_Float32: head->DATYP=1;head->NBITS=32;break;
+         case TD_Float64: head->DATYP=5;head->NBITS=64;break;
+         case TD_Unknown:
+         default: return(TCL_ERROR);
+      }     
+   }
+   
    head->FID=file;
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
    NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);

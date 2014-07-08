@@ -117,6 +117,10 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                if (GField->Ref && GField->Ref->Grid[0]=='U') {
                   FSTD_FieldSubBuild(GField);
                }
+               // Force RPN DATYP update at write time
+               if (GField->Type==TD_RPN) {
+                  ((FSTD_Head*)GField->Head)->DATYP=-1;
+               }
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is field\n");

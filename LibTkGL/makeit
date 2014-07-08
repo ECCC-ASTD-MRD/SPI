@@ -5,6 +5,7 @@
 #-----    Change version in TclTk/lib/tclConfig.sh and tkConfig.sh for all platform
 #-----    Change version in gdal.../bin/gdal-config for all platform
 #-----    ./makeit reconf
+#-----    Make sure BUFR dictionnaries and RPN dictionnaries are up-to-date
 
 arg=$1
 
