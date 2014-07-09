@@ -245,8 +245,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid,status;
 
-   static CONST char *sopt[] = { "daemonize","fork","wait","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
-   enum               opt { DAEMONIZE,FORK,WAIT,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
+   static CONST char *sopt[] = { "daemonize","fork","exit","wait","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
+   enum               opt { DAEMONIZE,FORK,EXIT,WAIT,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
 
    Tcl_ResetResult(Interp);
 
@@ -274,6 +274,13 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          return(TCL_OK);
          break;
 
+      case EXIT:
+         status=0;
+         if (Objc>2)
+            Tcl_GetIntFromObj(Interp,Objv[2],&status);
+         exit(status);
+         break;
+         
       case WAIT:
          if(Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"?pid?");
