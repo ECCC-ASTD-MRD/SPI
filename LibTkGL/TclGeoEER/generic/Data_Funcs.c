@@ -161,6 +161,7 @@ TFuncDef FuncM[] = {
   { "pow"   , (TFunc*)pow   , 2 , TD_Unknown },
   { "frand" , (TFunc*)frand , 3 , TD_Unknown },
   { "clamp" , (TFunc*)clamp , 3 , TD_Unknown },
+  { "within", (TFunc*)within, 3 , TD_Unknown },
   { "?"     , (TFunc*)ifelse, 3 , TD_Unknown },
   { "ifelse", (TFunc*)ifelse, 3 , TD_Unknown },
   { "sin"   , (TFunc*)sin   , 1 , TD_Float32 },   /* Trigonometric functions */
@@ -1736,6 +1737,10 @@ double max(double a,double b) {
 
 double clamp(double a,double b,double c) {
    return(a<=b?b:(a>=c?c:a));
+}
+
+double within(double a,double b,double c) {
+   return(a>=b && a<=c);
 }
 
 double ifelse(double a,double b,double c) {

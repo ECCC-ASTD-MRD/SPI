@@ -191,6 +191,7 @@ double bor(double a,double b);
 double min(double a,double b);
 double max(double a,double b);
 double clamp(double a,double b,double c);
+double within(double a,double b,double c);
 double ifelse(double a,double b,double c);
 
 double frand(double a,double b,double c);
