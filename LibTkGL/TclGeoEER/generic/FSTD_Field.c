@@ -1905,7 +1905,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    char         buf[1024],grtyp[2];
    double       nhour,lvl;
    const char **units;
-   
+
    if (Mode==FSTD_LISTNONE) {
       return(TCL_OK);
    }
@@ -1949,8 +1949,14 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
          if (head.DATEV==101010101) head.DATEV=0;
          switch(Mode) {
             case FSTD_LISTSPI:
+               if (head.NOMVAR[0]=='\0') {
+                  head.NOMVAR[0]='-'; head.NOMVAR[1]='\0';
+               }
                if (head.TYPVAR[0]=='\0') {
                   head.TYPVAR[0]='-'; head.TYPVAR[1]='\0';
+               }
+               if (head.ETIKET[0]=='\0') {
+                  head.ETIKET[0]='-'; head.ETIKET[1]='\0';
                }
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
                lvl=ZRef_IP2Level(head.IP1,&type);
