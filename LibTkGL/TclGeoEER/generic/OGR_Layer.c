@@ -670,7 +670,6 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             
          } else {
             for(f=0;f<layer->NFeature;f++) {
-               fprintf(stderr,"--- %li\n",f);
                if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   area+=GPC_Centroid2D(geom,&x,&y);
                   OGR_G_AddPoint_2D(new,x,y);

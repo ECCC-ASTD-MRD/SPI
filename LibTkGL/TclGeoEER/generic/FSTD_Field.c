@@ -365,9 +365,11 @@ int FSTD_FieldReadMesh(TData *Field) {
       FSTD_FileUnset(NULL,head->FID);
    }
 
-   // Make sure longitude go from -180 - 180
-   for(ni=0;ni<nijk;ni++) {
-      if (Field->Ref->Lon[ni]>180) Field->Ref->Lon[ni]-=360.0;
+   // Make sure longitude go from -180 - 180, unless WKT grid
+   if (Field->Ref->Grid[0]!='W') {
+      for(ni=0;ni<nijk;ni++) {
+         if (Field->Ref->Lon[ni]>180) Field->Ref->Lon[ni]-=360.0;
+      }
    }
    
    return(Field->Ref->Lat && Field->Ref->Lon);
@@ -2160,7 +2162,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Projection description field does not exist (c_fstinf failed)",(char*)NULL);
       }
    }  
-   
    datyp=h.DATYP>128?h.DATYP-128:h.DATYP;
 
    // have to boost nbit to 32 for nbit=1, not sure why (X32) ????
