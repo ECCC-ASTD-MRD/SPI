@@ -68,6 +68,16 @@ EXTCHAR [A-Za-z0-9_.:#]
    return T_INT;
 }
 
+"NAN" {
+   vexpr_lval.Num = nan("NaN");
+   return T_FLOAT;
+}
+
+"INFINITY" {
+   vexpr_lval.Num = INFINITY;
+   return T_FLOAT;
+}
+
 {DIGIT}+ {
    vexpr_lval.Num = atof(yytext);
    return T_INT;
