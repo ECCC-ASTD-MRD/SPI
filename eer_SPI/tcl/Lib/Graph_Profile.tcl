@@ -232,7 +232,7 @@ proc Graph::Profile::Graph { GR } {
       set data(XMax) [expr $max>$data(XMax)?$max:$data(XMax)]
       set data(Levels) [concat $data(Levels) [vector get $item.Y]]
    }
-
+   
    if { [vector length $item.Y] && [vector get $item.Y 0]<[vector get $item.Y end] } {
       set data(Order) -increasing
    } else {
@@ -292,11 +292,12 @@ proc Graph::Profile::Graph { GR } {
       set ymin $data(YMin)
       set ymax $data(YMax)
    }
-
+   
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
+   
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter  -increment $xincr -angle $graph(XAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
@@ -533,6 +534,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    set data(Items$Pos)  {}
    set data(Coords$Pos) $Coords
    set data(Pos$Pos)    $Coords
+   set data(Desc$Pos)   $Graph::Param(AxisZs)
    set i -1
 
    Graph::Idle $GR Profile
@@ -545,6 +547,43 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
       if { $Update } {
          Graph::Profile::ItemData $GR $Pos $item $field
       }
+   }
+   
+   Graph::Profile::UpdateItems $data(FrameData) $GR
+   Graph::Profile::Graph $GR
+   Graph::UnIdle $GR Profile
+}
+
+proc Graph::Profile::ItemDefineV { GR Pos { Descriptor {} } { Update True } } {
+
+   upvar #0 Graph::Profile::Profile${GR}::Data  data
+
+   if { [info exists Graph::Profile::Profile${GR}::Data(Items$Pos)] } {
+      foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
+         Graph::Profile::ItemDel $GR $item
+      }
+   }
+
+   if { [lsearch -exact $data(Pos) $Pos]==-1 } {
+      lappend data(Pos) $Pos
+   }
+   set coords [fstdfield stats $Pos -grid]
+   
+   set data(Items$Pos)  {}
+   set data(Coords$Pos) $coords
+   set data(Pos$Pos)    $coords
+   set data(Desc$Pos)   $Descriptor
+   set i -1
+
+   Graph::Idle $GR Profile
+
+#   set item [fstdfield define $Pos -NOMVAR]
+   set item ${Pos}_Item
+   lappend data(Items$Pos) $item
+
+   Graph::Profile::ItemAdd $GR $item
+   if { $Update } {
+      Graph::Profile::ItemData $GR $Pos $item $Pos
    }
 
    Graph::Profile::UpdateItems $data(FrameData) $GR
@@ -602,49 +641,55 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
    upvar #0 Graph::Profile::Profile${GR}::Data  data
    upvar #0 Graph::Profile::Profile${GR}::Graph graph
 
-   if { [graphitem is $Item]  && [llength $data(Pos$Pos)] } {
+   if { [graphitem is $Item] && [llength $data(Pos$Pos)] } {
 
       if { [fstdfield is $Data] } {
-         if { $graph(ZType)=="GRID" } {
-            fstdfield configure $Data -ztype UNDEFINED
+         if { [fstdfield define $Data -GRTYP]=="V" } {
+             fstdfield free GRAPHPROFILE
+             fstdfield copy GRAPHPROFILE $Data
+             fstdfield configure GRAPHPROFILE -extrude $graph(ZType)
          } else {
-            fstdfield configure $Data -ztype $graph(ZType)
-         }
+            if { $graph(ZType)=="GRID" } {
+               fstdfield configure $Data -ztype UNDEFINED
+            } else {
+               fstdfield configure $Data -ztype $graph(ZType)
+            }
 
-         if { [llength $data(Pos$Pos)]>2 } {
-            set n   0
-            set ijs [fstdfield stats $Data -within $data(Pos$Pos)]
-            set df  [expr 100.0/([llength $ijs]-1)]
+            if { [llength $data(Pos$Pos)]>2 } {
+               set n   0
+               set ijs [fstdfield stats $Data -within $data(Pos$Pos)]
+               set df  [expr 100.0/([llength $ijs]-1)]
 
-            fstdfield free GRAPHPROFILE
+               fstdfield free GRAPHPROFILE
 
-            foreach ij $ijs {
-               fstdfield vertical GRAPHPROFILE_TMP $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
-               if { [fstdfield is GRAPHPROFILE] } {
-                  switch $Graph::Param(SelectType) {
-                     AVG { vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILE_TMP }
-                     MIN { vexpr GRAPHPROFILE min(GRAPHPROFILE,GRAPHPROFILE_TMP) }
-                     MAX { vexpr GRAPHPROFILE max(GRAPHPROFILE,GRAPHPROFILE_TMP) }
-                     MED { }
-                     STD { }
+               foreach ij $ijs {
+                  fstdfield vertical GRAPHPROFILE_TMP $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
+                  if { [fstdfield is GRAPHPROFILE] } {
+                     switch $Graph::Param(SelectType) {
+                        AVG { vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILE_TMP }
+                        MIN { vexpr GRAPHPROFILE min(GRAPHPROFILE,GRAPHPROFILE_TMP) }
+                        MAX { vexpr GRAPHPROFILE max(GRAPHPROFILE,GRAPHPROFILE_TMP) }
+                        MED { }
+                        STD { }
+                     }
+                  } else {
+                     fstdfield copy GRAPHPROFILE GRAPHPROFILE_TMP
                   }
-               } else {
-                  fstdfield copy GRAPHPROFILE GRAPHPROFILE_TMP
+                  incr n
+                  SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
                }
-               incr n
-               SPI::Progress +$df "[lindex $Graph::Msg(Extracting) $GDefs(Lang)]"
-            }
-            if { !$n } {
-               return
-            }
-            fstdfield free GRAPHPROFILE_TMP
+               if { !$n } {
+                  return
+               }
+               fstdfield free GRAPHPROFILE_TMP
 
-            if { $Graph::Param(SelectType)=="AVG" } {
-               vexpr GRAPHPROFILE GRAPHPROFILE/$n
+               if { $Graph::Param(SelectType)=="AVG" } {
+                  vexpr GRAPHPROFILE GRAPHPROFILE/$n
+               }
+               SPI::Progress 0
+            } else {
+               fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
             }
-            SPI::Progress 0
-         } else {
-            fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
          }
          FSTD::ParamUpdate GRAPHPROFILE
 
@@ -658,7 +703,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                default  { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR]" }
             }
          }
-
+             
          #----- Check for vertical coordinate selection
          switch $graph(ZType) {
             "PRESSURE" {
@@ -677,7 +722,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                vector set $Item.Y $levels
                set graph(UnitY) [lindex $Graph::Lbl(MASL) $GDefs(Lang)]
             }
-            "GRID" {
+            default {
                vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
                set graph(UnitY) [fstdfield stats $Data -leveltype]
              }
@@ -755,7 +800,11 @@ proc Graph::Profile::Update { Frame { GR {} } } {
          #----- Update des items
 
          foreach pos $data(Pos) {
-            Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
+            if { [fstdfield is $pos] } {
+               Graph::Profile::ItemDefineV $gr $pos $data(Desc$pos)
+            } else {
+               Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
+            }
          }
          Graph::PosSet $gr Profile
 

@@ -34,7 +34,6 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================
 
 package require TclData
-#package require TclGeoEER
 package require Logger
 
 namespace eval Bulletin::FXCN3X {
@@ -285,7 +284,7 @@ proc Bulletin::FXCN3X::Process { } {
          set tcdvlp "HU"
          set force 1
       } elseif { $kts>=35 } {
-         set tcdvlp "TSD"
+         set tcdvlp "TS"
          set force 0
       } else {
          set tcdvlp "TD"
@@ -318,11 +317,8 @@ proc Bulletin::FXCN3X::Process { } {
       if { $errct>0.0 } {
          set bearing [projection function PROJ -bearing $plat $plon $lat $lon]
          set dist    [expr $errct*1852.0]
-         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing+90.0,360)]]
-         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod(-$bearing-90.0,360)]]
-#----- For SPI 7.5.2 and greater
-#         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
-#         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
+         set ll0     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing-90.0,360)]]
+         set ll1     [projection function PROJ -circle $lat $lon $dist [expr fmod($bearing+90.0,360)]]
          set cone0  "$cone0 [lindex $ll0 1] [lindex $ll0 0]"
          set cone1  "[lindex $ll1 1] [lindex $ll1 0] $cone1"
       } else {
@@ -453,7 +449,7 @@ proc Bulletin::FXCN3X::ProcessRadii { Lat Lon Valid Force NE SE SW NW } {
       } else {
          #----- Calculate circle every 10 degree
          for { set b $a } { $b<=[expr $a+90] } { incr b 10 } {
-            set ll [projection function PROJ -circle $Lat $Lon $r $b]
+            set ll [projection function PROJ -circle $Lat $Lon $r -$b]
             ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
          }
       }

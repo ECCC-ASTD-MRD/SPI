@@ -169,6 +169,8 @@ image create photo BUBBLE      -file $GDefs(Dir)/share/image/Icon/HelpBubble.gif
 image create photo BUBBLEGRAPH -file $GDefs(Dir)/share/image/Icon/GraphBubble.gif
 image create photo INFO        -file $GDefs(Dir)/share/image/Icon/InfoBubble.gif
 image create photo PALETTE     -file $GDefs(Dir)/share/image/Icon/Palette.gif
+image create photo PALETTEDEL  -file $GDefs(Dir)/share/image/Icon/PaletteDel.gif
+image create photo PALETTESAVE -file $GDefs(Dir)/share/image/Icon/PaletteSave.gif
 image create photo COMPUTER    -file $GDefs(Dir)/share/image/Icon/Computer.gif
 image create photo LOCATION    -file $GDefs(Dir)/share/image/Icon/Location.gif
 image create photo FINGER      -file $GDefs(Dir)/share/image/Icon/FingerDown.gif

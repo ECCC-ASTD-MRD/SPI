@@ -88,7 +88,7 @@ namespace eval Graph {
    variable Bubble
    variable Param
 
-   set Font(Select)    [font create -family courier -size -10  -weight bold]
+   set Font(Select)    [font create -family courier -size -12  -weight bold]
    set Font(Axis)      [font create -family courier -size -10  -weight bold]
    set Font(Graph)     [font create -family courier -size -14  -weight bold]
 
@@ -1295,7 +1295,7 @@ proc Graph::DataSheet { Type Graph } {
       if { [graphitem is $item] } {
 
          $text insert end "Item       : [lindex [$data(Canvas) itemconfigure [graphitem configure $item -desc] -text] end]\n"
-         set pos [lindex [split $item _] 0]
+         set pos [join [lrange [split $item _]  0 end-1] _]
          $text insert end "Unit X     : $graph(UnitX)\n"
          $text insert end "Unit Y     : $graph(UnitY)\n"
          $text insert end "Coordinates: $data(Pos$pos)\n"
@@ -1815,12 +1815,20 @@ proc Graph::PosSelect { Graph Type } {
    variable Data
 
    upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
    if { [winfo exist $Data(Frame).item.sel.list] } {
       $Data(Frame).item.sel.list selection clear 0 end
       $Data(Frame).item.sel.list selection set 0
    }
+   
+   if { [winfo exist $Data(Frame).scaleY.z.val] } {
+      ComboBox::DelAll $Data(Frame).scaleY.z.val
+      ComboBox::AddList $Data(Frame).scaleY.z.val $data(Desc$Data(Pos))
+      set graph(ZType) [lindex $data(Desc$Data(Pos)) 0]
+   }
+   
    Graph::ItemSelect $Graph::Data(Item)
 }
 

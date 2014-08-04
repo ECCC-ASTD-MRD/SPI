@@ -44,25 +44,30 @@ namespace eval RPN2OGR { } {
    set Param(Factors)   {}
    set Param(Out)       ./out
 
-   set Param(CommandInfo) "Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
+   set Param(CommandInfo) "   Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
    
-   set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
-      -var    : List of variables to process (Mandatory)
-      -factor : List of factors per variables
-      -map    : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
-      -mode   : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR)
-      -inter  : List of coutour to use
-      -fstd   : List of RPN files to process (Mandatory)
-      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
-      -ip2    : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
-      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
-      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
-      -prj    : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
-      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
-      -help   : This information
+   set Param(CommandLine) "   Command line otions:\n
+\t-format      : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
+\t-var         : List of variables to process (Mandatory)
+\t-factor      : List of factors per variables
+\t-map         : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
+\t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR)
+\t-inter       : List of coutour to use
+\t-fstd        : List of RPN files to process (Mandatory)
+\t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+\t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
+\t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+\t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+\t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+\t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
+\t-help        : This information
       
-      Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
+   Information parameters:\n
+\t-help        : This information
+\t-version     : Version
+\t-verbose     : Trace level (ERROR,WARNING,${APP_COLOR_GREEN}INFO${APP_COLOR_RESET},DEBUG,EXTRA,0-4)
+
+   Available formats: \n\n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
 }
 
 proc RPN2OGR::Run { } {
@@ -150,7 +155,7 @@ proc RPN2OGR::ParseCommandLine { } {
    upvar argv gargv
 
    if { !$gargc } {
-      Log::Print MUST "$Param(CommandInfo)\n\n$$Param(CommandLine)"
+      Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"
       Log::End 0
    }
 
@@ -171,8 +176,10 @@ proc RPN2OGR::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Etiket)] }
 
-         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$$Param(CommandLine)"; Log::End 0 }
-         default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
+         "verbose"  { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
+         "help"     { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
+         "version"  { Log::Print MUST $Param(Version); Log::End 0 }
+         default    { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }
 }

@@ -55,30 +55,34 @@ namespace eval RPN2GDAL { } {
    set Param(Lat1)      -999
    set Param(Lon1)      -999
 
-   set Param(CommandInfo) "Export RPN fields into GDAL raster files as values, rgb colors or index colors."
+   set Param(CommandInfo) "   Export RPN fields into GDAL raster files as values, rgb colors or index colors."
    
-   set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
-      -nodata : No data value when out of domain (${APP_COLOR_GREEN}$Param(NoData)${APP_COLOR_RESET})
-      -mode   : Image data (INDEX,${APP_COLOR_GREEN}RGBA${APP_COLOR_RESET},DATA)
-      -map    : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
-      -bbox   : Bounding box
-      -res    : Image resolution in degrees (${APP_COLOR_GREEN}$Param(Res)${APP_COLOR_RESET})
-      -var    : List of variables to process (Mandatory)
-      -factor : List of factors per variables
-      -inter  : List of intervals
-      -interp : Data interpolation type (NEAREST$,${APP_COLOR_GREEN}LINEAR${APP_COLOR_RESET})
-      -min    : Minimum value
-      -max    : Maximum value
-      -fstd   : List of RPN files to process (Mandatory)
-      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
-      -ip2    : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
-      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
-      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
-      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
-      -help   : This information
+   set Param(CommandLine) "   Command line otions:\n
+\t-format      : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
+\t-nodata      : No data value when out of domain (${APP_COLOR_GREEN}$Param(NoData)${APP_COLOR_RESET})
+\t-mode        : Image data (INDEX,${APP_COLOR_GREEN}RGBA${APP_COLOR_RESET},DATA)
+\t-map         : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
+\t-bbox        : Bounding box
+\t-res         : Image resolution in degrees (${APP_COLOR_GREEN}$Param(Res)${APP_COLOR_RESET})
+\t-var         : List of variables to process (Mandatory)
+\t-factor      : List of factors per variables
+\t-inter       : List of intervals
+\t-interp      : Data interpolation type (NEAREST$,${APP_COLOR_GREEN}LINEAR${APP_COLOR_RESET})
+\t-min         : Minimum value
+\t-max         : Maximum value
+\t-fstd        : List of RPN files to process (Mandatory)
+\t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+\t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
+\t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+\t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+\t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       
-      Available formats: \n\t[lmap f $Export::Raster::Param(Formats) {lindex $f end-1}]"
+  Information parameters:\n
+\t-help        : This information
+\t-version     : Version
+\t-verbose     : Trace level (ERROR,WARNING,${APP_COLOR_GREEN}INFO${APP_COLOR_RESET},DEBUG,EXTRA,0-4)
+
+   Available formats: \n\n\t[lmap f $Export::Raster::Param(Formats) {lindex $f end-1}]"
 }
 
 proc RPN2GDAL::Run { } {
@@ -182,8 +186,10 @@ proc RPN2GDAL::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 
-         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
-         default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
+         "verbose"  { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
+         "help"     { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
+         "version"  { Log::Print MUST $Param(Version); Log::End 0 }
+         default    { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }
 }

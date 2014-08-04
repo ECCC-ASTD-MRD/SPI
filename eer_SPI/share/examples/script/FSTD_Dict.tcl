@@ -29,18 +29,32 @@ Log::Start [info script] 0.1
 fstddict load /users/dor/afsr/005/Projects/libeerUtils/data/stdf.variable_dictionary.xml
 fstddict load DataIn/eer.variable_dictionary.xml
 
-puts "Variables (All): [fstddict var]"
-puts "Variables:(TT*): [fstddict var TT]"
+puts "Variables (All) : [fstddict var]"
+puts "Variables:(TT*) : [fstddict var TT]"
+puts "Variables:(CMOE): [fstddict var -searchorigin CMOE]"
+puts "Variables:(CV CMOE): [fstddict var CV -searchorigin CMOE]"
 puts "Types    : [fstddict type]\n"
 
 puts "Var TT      : [fstddict varinfo TT]"
 puts "Var TT      : [fstddict varinfo TT -lang fr -short -units]"
+puts "Var FM      : [fstddict varinfo FM]"
 puts "Var FM      : [fstddict varinfo FM -lang fr -short -units]"
 puts "Var FM      : [fstddict varinfo FM -lang fr -units -short -origin -nature]"
-puts "Var VF (22) : [fstddict varinfo VF -lang fr -ip1 22 -short -units]"
-puts "Var VF (33) : [fstddict varinfo VF -lang fr -ip1 33 -short -units]"
+puts "Var CV      : [fstddict varinfo CV -searchorigin CMOE]"
+puts "Var VF (22) : [fstddict varinfo VF -lang fr -searchip1 22 -short -units]"
+puts "Var VF (33) : [fstddict varinfo VF -lang fr -searchip1 33 -short -units]"
+puts "Var VFDGD   : [fstddict varinfo VFDGD -lang fr -short -units]"
 
-puts "Type C : [fstddict typeinfo C]"
-puts "Type A : [fstddict typeinfo A -lang fr -short]"
+fstddict varinfo TT -lang en -short "tototo tititi"
+puts "Var TT new  : [fstddict varinfo TT -lang en -short]"
+
+fstddict varinfo XXXX -lang en -short "toxxxxxx tixxxxx"
+puts "Var XXXX new: [fstddict varinfo XXXX -lang en -short]"
+
+puts "Type C      : [fstddict typeinfo C]"
+puts "Type A      : [fstddict typeinfo A -lang fr -short]"
+
+fstddict typeinfo XX -lang en -short "toxxxxxx tixxxxx"
+puts "Type XX new : [fstddict typeinfo XX -lang en -short]"
 
 Log::End 0

@@ -22,6 +22,7 @@
 #   FieldBox::FileOpen      { No File }
 #   FieldBox::FileReOpen    { No }
 #   FieldBox::FileSelect    { No File FID }
+#   FieldBox::Descriptors   { }
 #   FieldBox::Get           { }
 #   FieldBox::GetContent    { { Id "" } }
 #   FieldBox::GetFID        { args }
@@ -75,6 +76,11 @@ namespace eval FieldBox {
    set Data(Current)  ""               ;#Numero de boite ayant le focus
    set Data(BoxList)  ""               ;#Liste des numeros de boite FieldBox
    set Data(FIDList)  ""               ;#Liste des numeros de fichiers
+   
+   set Param(ShowDesc)  False          ;#Afficher les descripteurs
+   set Param(Desc)      { ^^ >> ^> ## !! HY ^HYT ^HYM ^GZT ^GZM ^PRT ^PRM ^SGT ^SL ^2J }
+
+   fstdfield hide $Param(Desc)
 
    #----- Textes et labels
 
@@ -92,6 +98,7 @@ namespace eval FieldBox {
    set Lbl(ReOpen)         { "Re-ouvrir fichier" "Re-open file" }
    set Lbl(Level)          { "NIVEAU" "LEVEL" }
    set Lbl(Params)         { "Détails du champ" "Field details" }
+   set Lbl(Desc)           { "Afficher les descripteurs" "Show descriptors" }
 
    #----- Erreurs
 
@@ -303,11 +310,41 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
          .fieldmenu add command -label "[lindex $Lbl(Copy) $GDefs(Lang)] ..."\
             -command { FieldBox::FieldCopy [FileBox::Create .fieldbox$FieldBox::Data(Current) "" Save ""] }
          .fieldmenu add separator
+         .fieldmenu add checkbutton -label [lindex $Lbl(Desc) $GDefs(Lang)] -onvalue True -offvalue False \
+            -variable FieldBox::Param(ShowDesc) -command FieldBox::Descriptors
          .fieldmenu add checkbutton -label [lindex $Lbl(Bubble) $GDefs(Lang)] \
             -variable ListboxBubble::Data(State) -command "ListboxBubble::Activate"
    }
    set Data(Current) $no
    return $no
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FieldBox::Descriptors>
+# Creation : Aout 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher / Cacher les descripteurs
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldBox::Descriptors { } {
+   variable Param
+   variable Data
+   
+   if { $Param(ShowDesc) } {
+      fstdfield hide {}
+   } else {
+      fstdfield hide $Param(Desc)
+   }
+   
+   set FieldBox::Data(FileCurrent) -1  
+   FieldBox::FileReOpen $Data(Current)
 }
 
 #----------------------------------------------------------------------------
@@ -1221,8 +1258,8 @@ proc FieldBox::Restrict { No args } {
       set sfid ($data(FID))
    }
 
-   set str "^$svar\\s+$styp\\s+$sip1\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat $sfid \\d+ \\d+ \\d+ \\d+ .+field$"
-
+   set str  "^$svar\\s+$styp\\s+$sip1\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat $sfid \\d+ \\d+ \\d+ \\d+ .+field$"
+   
    .fieldbox$No.data.list delete 0 end
    set data(NbShow) 0
 
@@ -1386,6 +1423,8 @@ proc FieldBox::Select { } {
 
          if { $lidx==-1 } {
             eval $type read $fld $fid $fidx
+            
+            #----- If this is a text field
             set nv [fstdfield define $fld -NOMVAR]
             if { $nv=="INFO" || $nv=="META" || $nv=="TEXT" || $nv=="PROJ" || ($nv=="OL" && [fstdfield define $fld -TYPVAR]=="X") } {
                if { [winfo exists .fieldboxparams] } {
@@ -1394,6 +1433,20 @@ proc FieldBox::Select { } {
                }
                FieldBox::Show $fld
                continue
+            }
+            
+            #---- If this is a vertical grid (profile/xsection)
+            if { [fstdfield define $fld -GRTYP]=="V" } {
+               set vdesc [lsearch -all -inline -regexp [fstdfile info [fstdfield define $fld -FID] NOMVAR] "^\\^{1}.."]
+               
+               if { $Graph::Data(Graph)=="" || $Graph::Data(Type$Graph::Data(Graph))!="Profile" } {
+                  Graph::Params
+                  if { ![SPI::ObjectAdd Graph ::Profile] } {
+                     continue
+                  }
+               }
+               Graph::Profile::ItemDefineV $Graph::Data(Graph) $fld $vdesc
+               Graph::PosSelect $Graph::Data(Graph) Profile
             }
             #----- Si le champs n'etait pas deja selectionnee
 

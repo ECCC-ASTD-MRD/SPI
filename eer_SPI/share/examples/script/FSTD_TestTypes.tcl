@@ -31,7 +31,8 @@ catch { file delete DataOut/FSTD_TestTypes.fstd }
 
 fstdfile open 1 write DataOut/FSTD_TestTypes.fstd
 
-foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 3 4 5 6 7 8 9 10 11 } {
+#foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 3 4 5 6 7 8 9 10 11 } {
+foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 4 2 4 2 4 2 4 5 5 } {
 
    Log::Print INFO "Creating field of type $type"
 
@@ -43,7 +44,7 @@ foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64
    fstdfield stats GRID -nodata $val
    fstdfield clear GRID
 #   fstdfield stats GRID -gridvalue 10 10 -1
-   fstdfield stats GRID -gridvalue 100 100 [expr $val*10]
+#   fstdfield stats GRID -gridvalue 100 100 [expr $val*10]
 
    fstdfield write GRID 1 0 False
 }

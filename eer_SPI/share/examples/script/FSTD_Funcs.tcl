@@ -28,6 +28,9 @@ Log::Start [info script] 0.1
 
 fstdfield ip1mode NEW
 
+file delete DataOut/FSTD_Funcs.fstd
+fstdfile open OUT write DataOut/FSTD_Funcs.fstd
+
 set secs [clock seconds]
 puts "Testing stamp functions for [clock format $secs]"
 puts "   seconds: $secs"
@@ -51,6 +54,12 @@ puts "   10     COUNT    : [fstdgrid convip 10.0 COUNT] -> [fstdgrid convip [fst
 puts "   10     IDX      : [fstdgrid convip 10.0 IDX] -> [fstdgrid convip [fstdgrid convip 10.0 IDX]]"
 puts "   10     MPRES    : [fstdgrid convip 10.0 MPRES] -> [fstdgrid convip [fstdgrid convip 10.0 MPRES]]"
 puts "   10     UNDEFINED: [fstdgrid convip 10.0 UNDEFINED] -> [fstdgrid convip [fstdgrid convip 10.0 UNDEFINED]]"
+
+puts "\nTesting 3D field"
+fstdfield create FLDINT 10 1 58 Float32
+fstdfield define FLDINT -NOMVAR VTST -TYPVAR X -ETICKET XSECTION
+fstdfield write FLDINT OUT -32 True
+exit
 
 puts "\nTesting integer data"
 fstdfield create FLDINT 10 10 1 UInt32
@@ -184,9 +193,10 @@ puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats 
 
 puts "\nTesting Y grid field interpolation"
 fstdfield gridinterp ZH CV
+#puts [fstdfield define ZH -DATA 0]
 
 puts "\nTesting Y grid concatenation"
-set data [fstdfield define ZH -DATA ]
+set data [fstdfield define ZH -DATA]
 set ni   [fstdfield define ZH -NI]
 
 fstdfield create NIL2 [expr $ni*2] 1 1 Float32
@@ -194,6 +204,18 @@ fstdfield define NIL2 -DATA $data$data
 
 set data [fstdfield define NIL2 -DATA 0]
 puts "  Values: [lrange [lindex $data 0] $ni [expr $ni+20]]"
+
+puts "\nTesting read/write TIC/TAC/TOC"
+fstdfile open GEM4 read  DataIn/2014061900_000.gem4
+
+fstdfield read TIC  GEM4 -1 "" -1 -1  -1 "" ">>"
+fstdfield read TAC  GEM4 -1 "" -1 -1  -1 "" "^^"
+fstdfield read TOC  GEM4 -1 "" -1 -1  -1 "" "!!"
+fstdfield write TIC OUT 0 True
+fstdfield write TAC OUT 0 True
+fstdfield write TOC OUT 0 True
+
+fstdfile close GEM4 OUT
 
 #catch { fstdfile open BAD read DataOut/2012022412_TOT_ES.txt }
 #fstdfile open OK read DataOut/2006122900_000.eta.mask

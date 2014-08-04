@@ -680,7 +680,8 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
    return 1
 }
 
-fstddict load /users/dor/afsr/005/Projects/libeerUtils/data/stdf.variable_dictionary.xml
+#----- Load RPN dictionnary
+fstddict load $env(SPI_PATH)/share/rmn/stdf.variable_dictionary.xml
 
 #----- Load user RECRC
 MetStat::RECRCLoad $env(HOME)/.recrc

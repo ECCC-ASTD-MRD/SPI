@@ -272,11 +272,13 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).var.lbl -side left -fill x -padx 2 -pady 1
       pack $Data(Frame).var.sel -side left -fill both -expand True -padx 2 -pady 2
 
+      pack [Styles::Widget $Data(Frame).var ""] -side left -fill x 
+
       menu $Data(Frame).var.lbl.lst
       foreach mode "FLD VAR TYPVAR LEVEL IP1 IP2 IP3 ETIKET DATEO FILE" {
          $Data(Frame).var.lbl.lst add command -label $mode -command "FSTD::VarMode $mode"
       }
-
+          
    frame $Data(Frame).def
       frame $Data(Frame).def.l
 
@@ -456,9 +458,9 @@ proc FSTD::ParamFrame { Frame Apply } {
          pack $Data(Frame).lev.desc.above -side left  -fill y
       pack $Data(Frame).lev.desc -side top -fill x -padx 2 -pady 2 -expand true
 
-   pack $Data(Frame).var -side top -fill x -anchor n -padx 5 -pady 5
-   pack $Data(Frame).def -side top -fill x -anchor n
-   pack $Data(Frame).lev -side top -fill x -anchor n -padx 5
+   pack $Data(Frame).var   -side top -fill x -anchor n -padx 5 -pady 5
+   pack $Data(Frame).def   -side top -fill x -anchor n
+   pack $Data(Frame).lev   -side top -fill x -anchor n -padx 5
 
    #----- Creation du menu de mode de niveaux
 

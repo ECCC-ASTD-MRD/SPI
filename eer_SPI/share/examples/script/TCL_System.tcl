@@ -72,8 +72,27 @@ puts "System signal (pid:[pid])"
 puts "  Current SIGUSR1 value: [system signal SIGUSR1 -trap ManageSignal]"
 puts "  Current SIGUSR1 value: [system signal SIGUSR1]"
 
-#vwait forever
+#----- Fork du process courant
+set ppid [pid]
 
+#proc exit { } {
+#   exec kill [pid]
+#}
+
+if { ![set pid [system fork]] } {
+   puts "Signaling parrent"
+   after 2000
+   system signal SIGUSR1 -send $ppid
+   puts "[pid] Child exiting"
+   system exit 0
+} else {
+#   system signal SIGKILL -send $pid
+   puts "Waiting for child process"
+   system wait $pid
+}
+exit
+
+#vwait forever
 puts "\nSystem usage for process"
 after 5000
 set calls [list -utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch]

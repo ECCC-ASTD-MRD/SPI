@@ -44,31 +44,35 @@ namespace eval FSTD_Hull { } {
    set Param(File)      ""
    set Param(Out)       ./out
 
-   set Param(CommandInfo) "Calculate convex hull of specific range values in an RPN field"
+   set Param(CommandInfo) "   Calculate convex hull of specific range values in an RPN field"
    
-   set Param(CommandLine) "   Command line otions are:\n
-      -format : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
-      -fstd   : RPN file (Mandatory)
-      -var    : List of variables to process (Mandatory)
-      -ip1    : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
-      -ip3    : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
-      -etiket : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
-      -min    : Minimum value to contour
-      -max    : Maximum value to contour
-      -buffer : Distance buffer arounf points (${APP_COLOR_GREEN}$Param(Buffer)${APP_COLOR_RESET})
-      -dist   : Distance between hull befor merging (${APP_COLOR_GREEN}$Param(Dist)${APP_COLOR_RESET})
-      -prj    : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
-      -out    : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
-      -help   : This information
+   set Param(CommandLine) "   Command line otions:\n
+\t-format      : Output format (${APP_COLOR_GREEN}\"$Param(Format)\"${APP_COLOR_RESET})
+\t-fstd        : RPN file (Mandatory)
+\t-var         : List of variables to process (Mandatory)
+\t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
+\t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
+\t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
+\t-min         : Minimum value to contour
+\t-max         : Maximum value to contour
+\t-buffer      : Distance buffer arounf points (${APP_COLOR_GREEN}$Param(Buffer)${APP_COLOR_RESET})
+\t-dist        : Distance between hull befor merging (${APP_COLOR_GREEN}$Param(Dist)${APP_COLOR_RESET})
+\t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+\t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       
-      Available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
+   Information parameters:\n
+\t-help        : This information
+\t-version     : Version
+\t-verbose     : Trace level (ERROR,WARNING,${APP_COLOR_GREEN}INFO${APP_COLOR_RESET},DEBUG,EXTRA,0-4)
+
+   Available formats: \n\n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
 }
 
 proc FSTD_Hull::Run { } {
    variable Param
 
    #----- check for format and extract extension if valid
-   if { [set idx [lsearch -exact -index 0 $Export::Vector::Param(Formats) $Param(Format)]]==-1 } {
+   if { [set idx [lsearch -exact -index end-1 $Export::Vector::Param(Formats) $Param(Format)]]==-1 } {
       Log::Print ERROR "Wrong format, available formats: \n\t[lmap f $Export::Vector::Param(Formats) {lindex $f end-1}]"
    }
    set ext [file extension [lindex $Export::Vector::Param(Formats) $idx end 0]]
@@ -196,8 +200,10 @@ proc FSTD_Hull::ParseCommandLine { } {
          "dist"     { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(Dist)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE FSTD_Hull::Param(Out)] }
 
-         "help"      { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
-         default     { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
+         "verbose"  { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
+         "help"     { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
+         "version"  { Log::Print MUST $Param(Version); Log::End 0 }
+         default    { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }
 }
@@ -205,6 +211,7 @@ proc FSTD_Hull::ParseCommandLine { } {
 set Log::Param(Level) INFO       ;#Log level
 set Log::Param(Time)  False      ;#Print the time
 set Log::Param(Proc)  False      ;#Print the calling proc
+set Log::Param(SPI)   7.7.1
 
 Log::Start FSTD_Hull $FSTD_Hull::Param(Version)
 
