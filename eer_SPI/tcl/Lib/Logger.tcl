@@ -189,11 +189,12 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
       #----- Garder l'index de depart
       set idx [incr No]
       set var {}
-      set vs  -
+      set vs  {}
 
       if { $Multi==3 } {
          set var True
       } else {
+         set vs  -
          set var {}
       }
 
