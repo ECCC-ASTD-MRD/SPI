@@ -29,7 +29,7 @@ namespace eval NowCaster::Obs { } {
    font create TEPHIFONT  -family arial  -size -10
 
    set Param(Title)      { "Observation" "Observation" }
-
+   
    set Param(PathsSurf)  { }
    set Param(PathsUpper) { }
    set Param(MarkerOp)   AND
@@ -1560,21 +1560,29 @@ proc NowCaster::Obs::ModelLoad { } {
    variable Data
 
    set Data(Models) {}
-
-   if {[file exists $env(HOME)/.spi/ObsModel] } {
-      set f [open $env(HOME)/.spi/ObsModel r]
-      while { ![eof $f] } {
-         gets $f line
-         if { [string index $line 0] != "#" && [string length $line] > 0 } {
-            set name [lindex $line 0]
-            lappend Data(Models) $name
-            set Data(Models$name) [lindex $line 1]
-            set Data(Param$name)  [lindex $line 2]
-         }
-      }
-      close $f
+   
+   set paths $env(HOME)/.spi
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
+   
+   foreach path $paths {
+      if { [file exists $path/ObsModel] } {
+         set f [open $path/ObsModel r]
+         while { ![eof $f] } {
+            gets $f line
 
+            if { [string index $line 0] != "#" && [string length $line] > 0 } {
+               set name [lindex $line 0]
+               lappend Data(Models) $name
+               set Data(Models$name) [lindex $line 1]
+               set Data(Param$name)  [lindex $line 2]
+            }
+         }
+         close $f
+      }
+   }
+   
    ComboBox::DelAll  $Data(Frame).model.sel.name
    ComboBox::AddList $Data(Frame).model.sel.name $Data(Models)
 }
@@ -1611,10 +1619,10 @@ proc NowCaster::Obs::ModelSave { } {
       foreach item $Data(Models$model) {
 
          set code [lindex $item 2]
-         Obs::ParamGet $var
+         Obs::ParamGet $code
          lappend mparam "dataspec configure $code -factor $Obs::Param(Factor)  -delta $Obs::Param(Delta) -value $Obs::Param(Order) $Obs::Param(Mantisse) \
-            -width $Obs::Param(Width) -size $Obs::Param(Size) -style $Obs::Param(Style) -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\"\
-            -unit \"$Obs::Param(Unit)\" -desc \"$Obs::Param(Desc)\"  -mapall $Obs::Param(MapAll) -topography $Obs::Param(Topo) \
+            -width $Obs::Param(Width) -size $Obs::Param(Size) -style \"$Obs::Param(Style)\" -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\"\
+            -unit \"$Obs::Param(Unit)\" -desc \"$Obs::Param(Desc)\"  -mapall $Obs::Param(MapAll) -topography \"$Obs::Param(Topo)\" \
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
             -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Inters)\" -interlabels \"$Obs::Param(Labels)\" \

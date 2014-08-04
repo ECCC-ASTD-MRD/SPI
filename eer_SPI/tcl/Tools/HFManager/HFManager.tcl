@@ -70,7 +70,6 @@ proc HFManager::FileGet { Id } {
    } else {
       set fileindex end
    }
-puts stderr "$idxs $fileindex"
 
    foreach idx $idxs {
       set file [file tail [lindex [.hfman.host.$Id.file.sel.list get $idx] $fileindex]]
@@ -78,7 +77,7 @@ puts stderr "$idxs $fileindex"
          lappend files $HFManager::Host(Path$Id)/$file
       }
    }
-puts stderr "$idxs $files"
+
    return $files
 }
 

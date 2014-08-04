@@ -305,11 +305,6 @@ namespace eval Writer {
    set Param(Path)      { }
 }
 
-namespace eval Writer::VASIGMET {
-   set Param(Mail)      { }
-   set Param(CCMail)    { }
-}
-
 namespace eval NowCaster {
    set Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
    set Param(Dock) True
