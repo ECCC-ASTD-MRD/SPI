@@ -711,24 +711,20 @@ proc MapBox::List { Widget } {
    set Data(Maps) {}
    set maps       {}
    
-   foreach file [glob $env(HOME)/.spi/Colormap/*.rgba] {
-      regsub ".rgba" [file tail $file] "" name
-      lappend Data(Maps) [list $name $file]
-      lappend maps $name
+   set paths $env(HOME)/.spi  
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
 
-   if { [info exists env(SPI_TOOL)] } {
-      foreach path [split $env(SPI_TOOL) :] {
-         foreach file [glob -nocomplain $path/Colormaps/*.rgba] {
-            regsub ".rgba" [file tail $file] "" name
-            if { [lsearch -index 0 $Data(Maps) $name]==-1 } {
-               lappend Data(Maps) [list $name $file]
-               lappend maps $name
-            }
-         }
+   foreach path $paths {
+      foreach file [glob -nocomplain $path/Colormap/*.rgba] {
+         regsub ".rgba" [file tail $file] "" name
+         lappend Data(Maps) [list $name $file]
+         lappend maps $name
       }
    }
-   set Data(Maps) [lsort -index 1 $Data(Maps)]
+
+   set Data(Maps) [lsort -unique -index 1 $Data(Maps)]
    
    ComboBox::DelAll  $Widget False
    ComboBox::AddList $Widget [lsort $maps]

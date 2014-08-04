@@ -685,20 +685,25 @@ proc FieldCalc::FormulaLoad { } {
    set Data(Formulas) [lindex $Lbl(None) $GDefs(Lang)]
    set Data(Formula[lindex $Lbl(None) $GDefs(Lang)]) ""
 
-   if { ![file exist $env(HOME)/.spi/FieldCalc] } {
-      return
+   set paths $env(HOME)/.spi
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
+   
+   foreach path $paths {
+      if { [file exist $path/FieldCalc] } {
 
-   set f [open $env(HOME)/.spi/FieldCalc r]
+         set f [open $path/FieldCalc r]
+         while { ![eof $f] } {
+            gets $f line
 
-   while { ![eof $f] } {
-      gets $f line
-
-      if { $line!="" } {
-         set name [lindex $line 0]
-         set oper [lindex $line 1]
-         set Data(Formula$name) $oper
-         lappend Data(Formulas) $name
+            if { $line!="" } {
+               set name [lindex $line 0]
+               set oper [lindex $line 1]
+               set Data(Formula$name) $oper
+               lappend Data(Formulas) $name
+            }
+         }
       }
    }
 }

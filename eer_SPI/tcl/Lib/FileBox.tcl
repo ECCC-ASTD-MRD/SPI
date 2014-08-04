@@ -56,7 +56,6 @@ namespace eval FileBox {
    set Param(Mode)        ""
    set Param(Type)        ""
    set Param(Types)       {}
-   set Param(DirList)     "$env(HOME)/.spi/FileBox"
    set Param(All)         0
    set Param(Sort)        File
    set Param(Pattern)     ""
@@ -670,25 +669,34 @@ proc FileBox::MemDel { } {
 #----------------------------------------------------------------------------
 
 proc FileBox::MemLoad { } {
+   global env
    variable Param
 
    set p $Param(Path)
    ComboBox::DelAll .filebox.path.name
    set maxlen 40
 
-   if { ![catch { set file [open $Param(DirList) r] }]  } {
+   set paths $env(HOME)/.spi
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
+   }
+   
+   foreach path $paths {
+      if { [file exists $path/FileBox] } {
 
-      while { ![eof $file] } {
-         gets $file path
-         set len [string length $path]
-         if { [string length $path]>0 } {
-            ComboBox::Add .filebox.path.name $path
+         set file [open $env(HOME)/.spi/FileBox r]
+         while { ![eof $file] } {
+            gets $file path
+            set len [string length $path]
+            if { [string length $path]>0 } {
+               ComboBox::Add .filebox.path.name $path
+            }
+            if { $len>$maxlen } {
+               set maxlen [incr len 2]
+            }
          }
-         if { $len>$maxlen } {
-            set maxlen [incr len 2]
-         }
+         close $file
       }
-      close $file
    }
    set Param(Path) $p
 }
@@ -707,11 +715,12 @@ proc FileBox::MemLoad { } {
 #----------------------------------------------------------------------------
 
 proc FileBox::MemSave { } {
+   global env
    variable Param
 
    .filebox configure -cursor watch
 
-   set file [open $Param(DirList) w]
+   set file [open $env(HOME)/.spi/FileBox w]
 
    foreach path [ComboBox::List .filebox.path.name] {
       puts $file $path

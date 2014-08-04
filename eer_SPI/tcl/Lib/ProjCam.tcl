@@ -54,7 +54,6 @@ package require Dialog
 #----- Definitions des constantes
 
 namespace eval ProjCam {
-   global env
    variable Param
    variable Data
    variable Lbl
@@ -81,7 +80,6 @@ namespace eval ProjCam {
    set Data(Name)   ""                            ;#Nome de la camera courante
    set Data(Names)  {}                            ;#Liste des noms de vues
    set Data(Combo)  ""
-   set Data(File)   $env(HOME)/.spi/ProjCam
 
    #----- Definitions des labels
 
@@ -306,17 +304,17 @@ proc ProjCam::Create { Cam } {
 #----------------------------------------------------------------------------
 
 proc ProjCam::Delete { Combo } {
-   global GDefs
+   global env
    variable Data
    variable Lbl
    variable Msg
 
    if { [ComboBox::Index $Combo exact $Data(Name)]!=-1 && $Data(Name)!="" } {
 
-      if { [Dialog::Default . 200 WARNING $Msg(Del) "" 0 $Lbl(No) $Lbl(Yes)] } {
+      if { [Dialog::Default . 200 WARNING $Msg(Del) "\n\n\t$Data(Name)" 0 $Lbl(No) $Lbl(Yes)] } {
 
-         file copy -force $Data(File) $Data(File).old
-         exec grep -v "$Data(Name).*" $Data(File).old > $Data(File)
+         file copy -force $env(HOME)/.spi/ProjCam $env(HOME)/.spi/ProjCam.old
+         exec grep -v "$Data(Name).*" $env(HOME)/.spi/ProjCam.old > $env(HOME)/.spi/ProjCam
 
          #----- Supprimer la vue a la liste des vues
 
@@ -482,22 +480,31 @@ proc ProjCam::Mem { Cam Name } {
 #----------------------------------------------------------------------------
 
 proc ProjCam::Read { } {
+   global env
    variable Data
 
    set Data(Names) ""
 
-   if { ![catch { set file [open $Data(File) r] }]  } {
+   set paths $env(HOME)/.spi
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
+   }
+   
+   foreach path $paths {
+      if { [file exists $path/ProjCam] } {
 
-      while { ![eof $file] } {
+         set file [open $env(HOME)/.spi/ProjCam r]
 
-         gets $file line
+         while { ![eof $file] } {
 
-         if { [string index $line 0] != "#" && [string length $line] > 0 } {
-            eval ProjCam::Set $line
+            gets $file line
+            if { [string index $line 0] != "#" && [string length $line] > 0 } {
+               eval ProjCam::Set $line
+            }
          }
+         close $file
       }
-      close $file
-  }
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -596,7 +603,7 @@ proc ProjCam::Reset { Cam { All True } } {
 #----------------------------------------------------------------------------
 
 proc ProjCam::Save { Combo Name } {
-   global   GDefs
+   global   env
    variable Data
    variable Msg
    variable Lbl
@@ -618,11 +625,11 @@ proc ProjCam::Save { Combo Name } {
       set Data(Name) $Name
       set line "$Data(Name) [ProjCam::Mem $Page::Data(Frame) $Data(Name)]"
 
-      if { [file exists $Data(File)] } {
-         file rename -force $Data(File) $Data(File).old
+      if { [file exists $env(HOME)/.spi/ProjCam] } {
+         file rename -force $env(HOME)/.spi/ProjCam $env(HOME)/.spi/ProjCam.old
       }
-      catch { exec grep -v "^$Data(Name) " $Data(File).old > $Data(File) }
-      exec echo $line >> $Data(File)
+      catch { exec grep -v "^$Data(Name) " $env(HOME)/.spi/ProjCam.old > $env(HOME)/.spi/ProjCam }
+      exec echo $line >> $env(HOME)/.spi/ProjCam
 
       #----- Add to list of camera
       ComboBox::Add $Combo $Data(Name)
