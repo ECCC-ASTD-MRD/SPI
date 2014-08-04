@@ -2160,8 +2160,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
    if { $Params } {
 
       puts $f "\n#----- Data parameters"
-      set fonts {}
-      set cmaps {}
 
       #----- Force obs parameters to be defined
       foreach obs [observation all] {

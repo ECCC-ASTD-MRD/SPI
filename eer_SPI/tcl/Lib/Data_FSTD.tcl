@@ -272,7 +272,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).var.lbl -side left -fill x -padx 2 -pady 1
       pack $Data(Frame).var.sel -side left -fill both -expand True -padx 2 -pady 2
 
-      pack [Styles::Widget $Data(Frame).var ""] -side left -fill x 
+#      pack [Styles::Widget $Data(Frame).var ""] -side left -fill x 
 
       menu $Data(Frame).var.lbl.lst
       foreach mode "FLD VAR TYPVAR LEVEL IP1 IP2 IP3 ETIKET DATEO FILE" {

@@ -92,6 +92,9 @@ proc Styles::Read { } {
 proc Styles::Write { File Spec } {
 
    puts $File "\n#----- Style $Spec"
+   
+   set fonts {}
+   set cmaps {}
 
    set cmap [dataspec configure $Spec -colormap]
    if { [colormap is $cmap] && [lsearch -exact $cmaps $cmap]==-1 } {
