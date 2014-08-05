@@ -345,7 +345,7 @@ proc Locator::Insert { Type Mode Update } {
             } else {
               .locator.list.box insert end [join $info " "]
             }
-    }
+         }
       } else {
          if { $rng } {
             Locator::RangeCheck $info
@@ -356,7 +356,6 @@ proc Locator::Insert { Type Mode Update } {
    }
 
    #----- Afficher les sources du range
-
 
    if { $rng } {
       set ico ""
@@ -485,6 +484,34 @@ proc Locator::Select { List Y { Locate False } } {
    if { $Locate } {
       SPI::Locate $SPI::Src(Lat) $SPI::Src(Lon)
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Locator::SelectSource>
+# Creation : Aout 2014 J.P. Gauthier - CMC/CMOE
+#
+# But     : Selectionner une source directement par son nom, sans interface.
+#
+# Parametres :
+#   <Type>   : Type de source
+#   <Name>   : Nom de la source
+#
+# Retour:
+#   <Info>  :  { No Name Area Lat Lon Elev }
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Locator::SelectSource { Type Name } {
+   variable Data
+   
+   set Data(Current) $Type
+   
+   set name [string map { _ " " } $Name]
+   set line [split [exec egrep -i ".+: ${name}.*:.+:.+:.+:.+:.+:.+" [lindex $Data(Files) $Type]] :]
+
+   return [set SPI::Src(Info) [Locator::Format [join $line " "]]]
 }
 
 #-------------------------------------------------------------------------------
