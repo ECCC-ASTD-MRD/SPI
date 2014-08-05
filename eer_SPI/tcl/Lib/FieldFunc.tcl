@@ -27,6 +27,52 @@ namespace eval FieldFunc { } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <FieldFunc::ConvexHull>
+# Creation : Juillet 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calculer le convex hull d<un champs selon ses intervalles de contours ou minimum
+#
+# Parametres  :
+#   <Field>   : Field to get hull for
+#   <Res>     : Maximum Segment resolution
+#
+# Retour:
+#   <Coords>  : { lat lon elev lat lon elev ... }
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldFunc::ConvexHull { Field { Res 0.5 } } {
+    
+   #----- Creer la couche avec le bon referentiel
+   ogrlayer new FFOGRLAYER "Data" "Polygon"
+
+   #----- Importer les donnees RPN dans la couche
+   ogrlayer import FFOGRLAYER $Field
+
+   #----- Si c'est vide, on retourne
+   if { ![ogrlayer define FFOGRLAYER -nb] } {
+      return ""
+   }
+
+   #----- Dissolve into polygon masses
+#      ogrlayer stats OGRLAYER -dissolve DISSOLVED
+         
+   ogrlayer stat FFOGRLAYER -convexhull FFHULL
+   ogrlayer stat FFHULL -simplify $Res
+   set coords {}
+   catch {
+      foreach { lon lat } [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] {
+         lappend coords $lat $lon 0.0
+      }
+   }
+   ogrlayer free FFOGRLAYER FFHULL
+   
+   return $coords
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <FieldFunc::MinMax>
 # Creation : Janvier 2014 - J.P. Gauthier - CMC/CMOE
 #
