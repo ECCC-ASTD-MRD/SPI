@@ -20,7 +20,7 @@
 #    PrintBox::Postscript       { Frame Format File { Device ps } }
 #    PrintBox::Print            { Frame X Y Width Height { Format "" } }
 #    PrintBox::PrintCommand     { Frame }
-#    PrintBox::PrintTXT         { File }
+#    PrintBox::PrintTXT         { File { Type "" } }
 #    PrintBox::Save             { Frame X Y Width Height File }
 #    PrintBox::SelectOutputType { Type }
 #
@@ -163,7 +163,7 @@ proc PrintBox::FontMap { } {
 #
 # Parametres :
 #  <File>    : Fichier a imprimer
-#  <Printer> : Imprimante
+#  <Type>    : Print type (printer,file)
 #
 # Retour:
 #
@@ -171,11 +171,15 @@ proc PrintBox::FontMap { } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::PrintTXT { File } {
+proc PrintBox::PrintTXT { File { Type "" } } {
    variable Print
    variable Param
 
-   if { $PrintBox::Print(Type)=="printer" } {
+   if { $Type=="" } {
+      set Type $PrintBox::Print(Type)
+   }
+   
+   if { $Type=="printer" } {
       if { $Param(Angle) == "portrait" } {
          catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Param(Printer) }
       } else {

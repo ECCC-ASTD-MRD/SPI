@@ -35,6 +35,7 @@ namespace eval FieldFunc { } {
 # Parametres  :
 #   <Field>   : Field to get hull for
 #   <Res>     : Maximum Segment resolution
+#   <Buffer>  : Buffer around the hull
 #
 # Retour:
 #   <Coords>  : { lat lon elev lat lon elev ... }
@@ -43,8 +44,10 @@ namespace eval FieldFunc { } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldFunc::ConvexHull { Field { Res 0.5 } } {
+proc FieldFunc::ConvexHull { Field { Res 0.5 } { Buffer 0.5 } } {
     
+   ogrlayer free FFOGRLAYER FFHULL
+
    #----- Creer la couche avec le bon referentiel
    ogrlayer new FFOGRLAYER "Data" "Polygon"
 
@@ -60,10 +63,11 @@ proc FieldFunc::ConvexHull { Field { Res 0.5 } } {
 #      ogrlayer stats OGRLAYER -dissolve DISSOLVED
          
    ogrlayer stat FFOGRLAYER -convexhull FFHULL
+   ogrlayer stat FFHULL -buffer $Buffer 1
    ogrlayer stat FFHULL -simplify $Res
    set coords {}
    catch {
-      foreach { lon lat } [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] {
+      foreach { lon lat } [lrange [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] 0 end-2] {
          lappend coords $lat $lon 0.0
       }
    }

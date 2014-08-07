@@ -1665,7 +1665,7 @@ proc Page::Update { { Frame "" } { VP True } } {
    if { $VP } {
       set vp ""
       foreach vp [Page::Registered $Frame Viewport] {
-         $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
+         $Frame.page.canvas itemconf $vp -projection $Frame -frame 0 
       }
 
       if { $vp!="" } {
