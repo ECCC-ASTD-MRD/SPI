@@ -411,8 +411,8 @@ proc SPI::Window { } {
    Bubble::Create .info.altval $Bubble(Alt)
    Bubble::Create .info.fldval $Bubble(Val)
    
-   bind . <KeyRelease-Escape> { SPI::ToolMode SPI Zoom }
-   bind . <F11>               { set SPI::Param(FullScreen) [expr !$SPI::Param(FullScreen)]; SPI::FullScreen }
+   bind all <KeyRelease-Escape> { SPI::ToolMode SPI Zoom }
+   bind all <F11>               { SPI::FullScreen %W }
 }
 
 #-------------------------------------------------------------------------------
@@ -429,21 +429,28 @@ proc SPI::Window { } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::FullScreen { } {
+proc SPI::FullScreen { Win } {
    variable Param
    
-   wm attributes . -fullscreen $Param(FullScreen)
+   set w [winfo toplevel $Win]
+   set full [expr ![wm attributes $w -fullscreen]]
    
-   if { $Param(FullScreen) } {
-      pack forget .menu .bar .info
-      bind .mdi <Leave>  { if { %Y<10 } { pack .menu .bar -before .pan -side top -fill x } }
-      bind .mdi <Enter>  { pack forget .menu .bar .info }
+   wm attributes $w -fullscreen $full
+   
+   if { $w=="." } {
+      set Param(FullScreen) $full
       
-   } else {
-      bind .mdi <Leave>  { }
-      bind .mdi <Enter>  { }
-      pack .menu .bar -before [lindex [pack slaves .] 0] -side top -fill x -anchor n
-      pack .info -after .pan -side top -fill x 
+      if { $full } {
+         pack forget .menu .bar .info
+         bind .mdi <Leave>  { if { %Y<10 } { pack .menu .bar -before .pan -side top -fill x } }
+         bind .mdi <Enter>  { pack forget .menu .bar .info }
+         
+      } else {
+         bind .mdi <Leave>  { }
+         bind .mdi <Enter>  { }
+         pack .menu .bar -before [lindex [pack slaves .] 0] -side top -fill x -anchor n
+         pack .info -after .pan -side top -fill x 
+      }
    }
 }
 
@@ -685,7 +692,7 @@ proc SPI::WindowMenu { } {
          -command "CVText::Create \$Page::Data(Frame)"
       .menu.disp.menu add separator
       .menu.disp.menu add checkbutton -label [lindex $Lbl(FullScreen) $GDefs(Lang)] -variable SPI::Param(FullScreen) \
-         -command { SPI::FullScreen } -onvalue 1 -offvalue 0 -accelerator "F11"
+         -command { SPI::FullScreen . } -onvalue 1 -offvalue 0 -accelerator "F11"
 
    menu .menu.disp.menu.graph -tearoff 1
       foreach graph $Graph::Data(Types) {
@@ -724,14 +731,14 @@ proc SPI::WindowMenu { } {
       }
       .menu.tools.menu add separator
 
-   bind . <Alt-a>     ".menu.tools.menu invoke 0"
-   bind . <Alt-c>     ".menu.tools.menu invoke 1"
-   bind . <Alt-m>     ".menu.tools.menu invoke 2"
-   bind . <Control-l> ".menu.disp.menu invoke 8"
-   bind . <Control-c> ".menu.disp.menu invoke 9"
-   bind . <Control-m> ".menu.disp.menu invoke 17"
-   bind . <Control-p> ".menu.disp.menu invoke 16"
-   bind . <Control-t> ".menu.disp.menu invoke 18"
+   bind all <Alt-a>     ".menu.tools.menu invoke 0"
+   bind all <Alt-c>     ".menu.tools.menu invoke 1"
+   bind all <Alt-m>     ".menu.tools.menu invoke 2"
+   bind all <Control-l> ".menu.disp.menu invoke 8"
+   bind all <Control-c> ".menu.disp.menu invoke 9"
+   bind all <Control-m> ".menu.disp.menu invoke 17"
+   bind all <Control-p> ".menu.disp.menu invoke 16"
+   bind all <Control-t> ".menu.disp.menu invoke 18"
 
    Areas::CreateWidget .menu.disp.menu
 
@@ -1003,12 +1010,12 @@ proc SPI::ContextMenuProj { } {
    ProjCam::Read
 
    #----- Creation des evenements de touches rapide
-   bind . <Key-F1>          ".mapmenu invoke 3"
-   bind . <Key-F2>          ".mapmenu invoke 4"
-   bind . <Key-F3>          ".mapmenu invoke 5"
-   bind . <Key-F4>          ".mapmenu invoke 6"
-   bind . <Key-Print>       ".mapmenu invoke 11"
-   bind . <Key-F9>          ".mapmenu invoke 13"
+   bind all <Key-F1>          ".mapmenu invoke 3"
+   bind all <Key-F2>          ".mapmenu invoke 4"
+   bind all <Key-F3>          ".mapmenu invoke 5"
+   bind all <Key-F4>          ".mapmenu invoke 6"
+   bind all <Key-Print>       ".mapmenu invoke 11"
+   bind all <Key-F9>          ".mapmenu invoke 13"
 }
 
 #-------------------------------------------------------------------------------

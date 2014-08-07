@@ -2003,21 +2003,41 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
 #-------------------------------------------------------------------------------
 
 proc SPI::ProjectRead { File { Force False } } {
-   global GDefs
+   global GDefs env
    variable Error
    variable Msg
    variable Lbl
 
-   if { $File=="" } {
+   set file ""
+   
+   #----- Determiner si le fichier de projet est valide
+   if { [file exists $File] } {
+      set file $File]
+   } else {
+      if { [file exists $File.spi] } {
+         set file $File.spi
+      } else {
+         if { [info exists env(SPI_TOOL)] } {
+            foreach path [split $env(SPI_TOOL) :] {
+            puts ssss
+               if { [file exists $path/Projects/$File] } {
+                  set file $path/Projects/$File
+                  break;
+               }
+               if { [file exists $path/Projects/$File.spi] } {
+                  set file $path/Projects/$File.spi
+                  break;
+               }               
+            }
+         }
+      }
+   }
+
+   if { $file=="" } {
       return
    }
-
-   #----- Determiner si le fichier de projet est valide
-   if { [file exists $File.spi] } {
-      set File $File.spi
-   }
-
-   set f [open $File r]
+   
+   set f [open $file r]
    gets $f head
    close $f
 
@@ -2036,7 +2056,7 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    #----- Lire le projet
-   set err [catch { source $File } msg]
+   set err [catch { source $file } msg]
    if { $err } {
       Dialog::Error . $Error(Project) ":\n\n\t$msg"
    }
