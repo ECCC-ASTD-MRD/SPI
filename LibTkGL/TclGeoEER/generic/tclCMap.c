@@ -1448,11 +1448,12 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
                fclose(fp);
                return(TCL_ERROR);
             }
-
-            CMap->Control[idx][0] = strtol(e,&e,0);
-            CMap->Control[idx][1] = strtol(e,&e,0);
-            CMap->Control[idx][2] = strtol(e,&e,0);
-            CMap->Control[idx][3] = strtol(e,&e,0);
+            
+            // Check for base type (0x within the first 3 char = base 16)
+            CMap->Control[idx][0] = strtol(e,&e,((c=index(e,'x')) && e-c<4)?16:10);
+            CMap->Control[idx][1] = strtol(e,&e,((c=index(e,'x')) && e-c<4)?16:10);
+            CMap->Control[idx][2] = strtol(e,&e,((c=index(e,'x')) && e-c<4)?16:10);
+            CMap->Control[idx][3] = strtol(e,&e,((c=index(e,'x')) && e-c<4)?16:10);
 
             /* 0,0,0,0 is empty cell so make sure this control point is not empty */
             if (memcmp(CMap->Control[idx],CMapEmptyCell,4)==0) {
