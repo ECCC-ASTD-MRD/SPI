@@ -46,8 +46,9 @@
 static Tcl_HashTable FSTD_FileTable;
 static int           FSTDInit=0;
 
-extern int ZREF_IP1MODE;
-extern int FSTD_UNTILE;
+extern int      ZREF_IP1MODE;
+extern int      FSTD_UNTILE;
+extern Tcl_Obj *FSTD_HIDELIST;
 
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -353,9 +354,9 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
 
-   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
-   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -410,6 +411,21 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          break;
 
+      case HIDE:
+         if (Objc==2) {
+            if (FSTD_HIDELIST)
+               Tcl_SetObjResult(Interp,FSTD_HIDELIST);
+         } else {
+            if (FSTD_HIDELIST)
+               Tcl_DecrRefCount(FSTD_HIDELIST);
+           
+//            FSTD_HIDELIST=Tcl_DuplicateObj(Objv[2]);
+            FSTD_HIDELIST=Objv[2];
+            if (FSTD_HIDELIST)
+               Tcl_IncrRefCount(FSTD_HIDELIST);
+         }
+         break;
+         
       case IP1MODE:
          if (Objc==2) {
             if (ZREF_IP1MODE==2) {
