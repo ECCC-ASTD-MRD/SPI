@@ -12,12 +12,13 @@
 #    Gestion des styles
 #
 # Fonctions:
-#   Styles::Read   { }
-#   Styles::Save   { Frame { Style "" } }
-#   Styles::Delete { Frame Style }
-#   Styles::Apply  { Style }
-#   Styles::Widget { Frame { Update False } }
-#   Styles::Write  { Channel Spec { Style "" } }
+#   Styles::Read     { }
+#   Styles::Save     { Frame { Style "" } }
+#   Styles::Delete   { Frame Style }
+#   Styles::Apply    { Style }
+#   Styles::Overview { Frame X Y } 
+#   Styles::Widget   { Frame { Update False } }
+#   Styles::Write    { Channel Spec { Style "" } }
 #
 # Remarques :
 #
@@ -33,8 +34,9 @@ namespace eval Styles { } {
    variable Bubble
    variable Data
    
-   set Data(Style)  ""
-   set Data(Styles) {}
+   set Data(Style)    ""               ;# Current style
+   set Data(Styles)   {}               ;# List of styles
+   set Data(Overview) ""               ;# Current style overview
    
    #----- Definitions des labels
    set Lbl(Yes)       { "Oui" "Yes" }
@@ -79,10 +81,19 @@ proc Styles::Read { } {
       set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
    
+   #----- Loop on possible paths
    foreach path $paths {
-      foreach file [glob -nocomplain $path/Style/*] {
-         source $file
-         lappend Data(Styles) [file rootname [file tail $file]]
+      foreach file [glob -nocomplain -tails -directory $path/Style *.tcl] {
+
+         set style [file rootname $file]
+         
+         source $path/Style/$file
+         
+         #----- Check for overview
+         if { [file exists $path/Style/$style.png] } {
+            set Data(Overview$style) $path/Style/$style.png
+         }
+         lappend Data(Styles) $style
       }
    }
 }
@@ -201,6 +212,44 @@ proc Styles::Apply { Style } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Styles::Overview>
+# Creation : Aout 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Display an overview of the style if it exists
+#
+# Parametres :
+#   <Frame>  : Frame into which to build the widget
+#   <X>      : X coordinate of the cursor
+#   <Y>      : Y coordinate of the cursor
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Styles::Overview { Frame X Y } {
+   global env
+   variable Data
+   
+   if { [set item [$Frame.styles.menu index active]]!="" && $item>2 } {
+      set style [$Frame.styles.menu entrycget $item -label]
+      
+      if { $style!="" && [info exist ::Styles::Data(Overview$style)] } {
+         if { $style!=$Data(Overview) } {
+            set Data(Overview) $style
+            puts stderr $style
+            STYLE_OVERVIEW read $Data(Overview$style)
+         }
+         wm deiconify .style;
+         wm geometry .style +[expr [winfo rootx $Frame.styles.menu]+[winfo width $Frame.styles.menu]+10]+$Y
+      } else {
+         wm withdraw  .style
+      }   
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Styles::Widget>
 # Creation : Aout 2014 - J.P. Gauthier - CMC/CMOE
 #
@@ -230,6 +279,18 @@ proc Styles::Widget { Frame { Update False } } {
       $Frame.styles.menu add command -label [lindex $Lbl(Save) $GDefs(Lang)] -command "Styles::Save $Frame \[Dialog::Get . \$Styles::Msg(Save) \$Styles::Msg(Name)\]"
       $Frame.styles.menu add command -label [lindex $Lbl(Del) $GDefs(Lang)]  -command "Styles::Delete $Frame \$Styles::Data(Style)"
       $Frame.styles.menu add separator
+      
+      toplevel            .style
+      wm withdraw         .style
+      wm overrideredirect .style true
+      wm attributes       .style -type splash -alpha 0.85
+      
+      image create photo STYLE_OVERVIEW
+      label .style.overview -image STYLE_OVERVIEW -width 256 -height 256 -relief flat -bd 0
+      pack .style.overview    
+      
+      bind $Frame.styles.menu <Motion>  "Styles::Overview $Frame %X %Y"
+      bind $Frame.styles.menu <Leave>   "wm withdraw .style"
    }
    
    Bubble::Create $Frame.styles $Bubble(Style)
@@ -314,7 +375,7 @@ proc Styles::Write { Channel Spec { Style "" } } {
       -texsample \"[dataspec configure $Spec -texsample]\" -texsize \"[dataspec configure $Spec -texsize]\" -texres \"[dataspec configure $Spec -texres]\" \
       -interpolation \"[dataspec configure $Spec -interpolation]\" -topography \"[dataspec configure $Spec -topography]\" -topographyfactor \"[dataspec configure $Spec -topographyfactor]\" \
       -mask \"[dataspec configure $Spec -mask]\" -light \"[dataspec configure $Spec -light]\" -labelvar \"[dataspec configure $Spec -labelvar]\" \
-      -sizevar \"[dataspec configure $Spec -sizevar]\" -mapvar \"[dataspec configure $Spec -mapvar]\" \
+      -sizevar \"[dataspec configure $Spec -sizevar]\" -mapvar \"[dataspec configure $Spec -mapvar]\" -mapall \"[dataspec configure $Spec -mapall]\" \
       -extrude \"[dataspec configure $Spec -extrude]\" -extrudefactor \"[dataspec configure $Spec -extrudefactor]\""
 }
 
