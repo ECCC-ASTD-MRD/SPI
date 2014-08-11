@@ -49,7 +49,7 @@ proc SPI::Setup { { Force False } } {
 
       SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
 
-      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro
+      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro $env(HOME)/.spi/Style
 
       #----- Installer les fichiers de definitions
       if { ![file exists $env(HOME)/.spi/SPI] } {
@@ -174,7 +174,6 @@ package require http
 package require tdom
 package require struct::tree
 
-package require Styles
 package require Icons
 package require Page
 package require Viewport
@@ -183,6 +182,7 @@ package require Graph
 package require FSTD
 package require Obs
 package require Trajectory
+package require Styles
 package require FieldBox
 package require ObsBox
 package require TrajBox
@@ -551,8 +551,8 @@ proc SPI::LayoutUser { Layout } {
    
    if { [info exists env(SPI_TOOL)] } {
       foreach path [split $env(SPI_TOOL) :] {
-         if { [file exists $path/Layouts/$Layout.tcl] } {
-            uplevel #0 source $path/Layouts/$Layout.tcl
+         if { [file exists $path/Layout/$Layout.tcl] } {
+            uplevel #0 source $path/Layout/$Layout.tcl
             return True
          }
       }
@@ -2019,13 +2019,12 @@ proc SPI::ProjectRead { File { Force False } } {
       } else {
          if { [info exists env(SPI_TOOL)] } {
             foreach path [split $env(SPI_TOOL) :] {
-            puts ssss
-               if { [file exists $path/Projects/$File] } {
-                  set file $path/Projects/$File
+               if { [file exists $path/Project/$File] } {
+                  set file $path/Project/$File
                   break;
                }
-               if { [file exists $path/Projects/$File.spi] } {
-                  set file $path/Projects/$File.spi
+               if { [file exists $path/Project/$File.spi] } {
+                  set file $path/Project/$File.spi
                   break;
                }               
             }
