@@ -289,8 +289,8 @@ proc Drawing::Window { } {
       #----- Load user images
       if { [info exists env(SPI_TOOL)] } {
          foreach path [split $env(SPI_TOOL) :] {
-            if { [file isdirectory $path/Images] } {
-               Drawing::ImageSetup $path/Images
+            if { [file isdirectory $path/Image] } {
+               Drawing::ImageSetup $path/Image
             }
          }
       }
