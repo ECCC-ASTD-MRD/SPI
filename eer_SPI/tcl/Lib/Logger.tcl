@@ -403,6 +403,10 @@ proc Log::Start { Job Version { Input "" } } {
 proc Log::End { { Status 0 } { Exit True } } {
    variable Param
 
+   if { $Status==-1 } {
+       set Status [expr {$Param(Error)>0 ? 1 : 0}]
+   }
+
    set Param(SecEnd) [clock seconds]
 
    Log::Print MUST "\n-------------------------------------------------------------------------------"
