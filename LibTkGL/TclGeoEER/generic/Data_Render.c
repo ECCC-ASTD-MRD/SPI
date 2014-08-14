@@ -851,11 +851,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || !Field->Spec->Outline) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
-   /*Setup 1D Texture*/
+  /*Setup 1D Texture*/
    glEnable(GL_TEXTURE_1D);
    map=FFStreamMapSetup1D(0.025);
 
@@ -947,7 +947,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll)) {
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
