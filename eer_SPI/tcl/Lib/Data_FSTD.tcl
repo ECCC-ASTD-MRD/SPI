@@ -729,60 +729,66 @@ proc FSTD::ParamGet { { Spec "" } } {
    variable Data
    variable Param
 
-   if { $Spec=="" } {
-      set Spec $Param(Spec)
+   set spec $Spec
+   if { $spec=="" } {
+      set spec $Param(Spec)
    }
 
-   if { ![dataspec is $Spec] } {
+   if { ![dataspec is $spec] } {
       return
    }
 
-   set val  [dataspec configure $Spec -value]
+   set val  [dataspec configure $spec -value]
    set Param(Order)     [lindex $val 0]
    set Param(Mantisse)  [lindex $val 1]
 
-   set mode [dataspec configure $Spec -intervalmode]
+   set mode [dataspec configure $spec -intervalmode]
    set Param(IntervalMode)  [lindex $mode 0]
    set Param(IntervalParam) [lindex $mode 1]
 
-   set Param(Font)       [dataspec configure $Spec -font]
-   set Param(Factor)     [dataspec configure $Spec -factor]
-   set Param(Delta)      [dataspec configure $Spec -delta]
-   set Param(Unit)       [dataspec configure $Spec -unit]
-   set Param(Desc)       [dataspec configure $Spec -desc]
-   set Param(Map)        [dataspec configure $Spec -colormap]
-   set Param(MapAll)     [dataspec configure $Spec -mapall]
-   set Param(MapAbove)   [dataspec configure $Spec -mapabove]
-   set Param(MapBellow)  [dataspec configure $Spec -mapbellow]
-   set Param(Size)       [dataspec configure $Spec -size]
-   set Param(SizeRange)  [dataspec configure $Spec -sizerange]
-   set Param(Color)      [dataspec configure $Spec -color]
-   set Param(Alpha)      [dataspec configure $Spec -transparency]
-   set Param(Dash)       [dataspec configure $Spec -dash]
-   set Param(Width)      [dataspec configure $Spec -width]
-   set Param(Contour)    [dataspec configure $Spec -rendercontour]
-   set Param(Texture)    [dataspec configure $Spec -rendertexture]
-   set Param(Volume)     [dataspec configure $Spec -rendervolume]
-   set Param(Coord)      [dataspec configure $Spec -rendercoord]
-   set Param(Value)      [dataspec configure $Spec -rendervalue]
-   set Param(Label)      [dataspec configure $Spec -renderlabel]
-   set Param(Grid)       [dataspec configure $Spec -rendergrid]
-   set Param(Particle)   [dataspec configure $Spec -renderparticle]
-   set Param(Intervals)  [dataspec configure $Spec -intervals]
-   set Param(Interp)     [dataspec configure $Spec -interpdegree]
-   set Param(Extrap)     [dataspec configure $Spec -extrapdegree]
-   set Param(Topo)       [dataspec configure $Spec -topography]
-   set Param(TopoFac)    [dataspec configure $Spec -topographyfactor]
-   set Param(Sample)     [dataspec configure $Spec -sample]
-   set Param(SampleType) [dataspec configure $Spec -sampletype]
-   set Param(Step)       [dataspec configure $Spec -step]
-   set Param(Min)        [dataspec configure $Spec -min]
-   set Param(Max)        [dataspec configure $Spec -max]
-   set Param(GridVec)    [dataspec configure $Spec -gridvector]
-   set Param(Vector)     [dataspec configure $Spec -rendervector]
-   set Param(Axis)       [dataspec configure $Spec -axis]
+   if { [dataspec configure $spec -desc]!="" || $Spec=="" } {
+      set Param(Desc)       [dataspec configure $spec -desc]
+   }
+   if { [dataspec configure $spec -unit]!="" || $Spec=="" } {
+      set Param(Unit)       [dataspec configure $spec -unit]
+   }
+   
+   set Param(Factor)     [dataspec configure $spec -factor]
+   set Param(Delta)      [dataspec configure $spec -delta]
+   set Param(Font)       [dataspec configure $spec -font]
+   set Param(Map)        [dataspec configure $spec -colormap]
+   set Param(MapAll)     [dataspec configure $spec -mapall]
+   set Param(MapAbove)   [dataspec configure $spec -mapabove]
+   set Param(MapBellow)  [dataspec configure $spec -mapbellow]
+   set Param(Size)       [dataspec configure $spec -size]
+   set Param(SizeRange)  [dataspec configure $spec -sizerange]
+   set Param(Color)      [dataspec configure $spec -color]
+   set Param(Alpha)      [dataspec configure $spec -transparency]
+   set Param(Dash)       [dataspec configure $spec -dash]
+   set Param(Width)      [dataspec configure $spec -width]
+   set Param(Contour)    [dataspec configure $spec -rendercontour]
+   set Param(Texture)    [dataspec configure $spec -rendertexture]
+   set Param(Volume)     [dataspec configure $spec -rendervolume]
+   set Param(Coord)      [dataspec configure $spec -rendercoord]
+   set Param(Value)      [dataspec configure $spec -rendervalue]
+   set Param(Label)      [dataspec configure $spec -renderlabel]
+   set Param(Grid)       [dataspec configure $spec -rendergrid]
+   set Param(Particle)   [dataspec configure $spec -renderparticle]
+   set Param(Intervals)  [dataspec configure $spec -intervals]
+   set Param(Interp)     [dataspec configure $spec -interpdegree]
+   set Param(Extrap)     [dataspec configure $spec -extrapdegree]
+   set Param(Topo)       [dataspec configure $spec -topography]
+   set Param(TopoFac)    [dataspec configure $spec -topographyfactor]
+   set Param(Sample)     [dataspec configure $spec -sample]
+   set Param(SampleType) [dataspec configure $spec -sampletype]
+   set Param(Step)       [dataspec configure $spec -step]
+   set Param(Min)        [dataspec configure $spec -min]
+   set Param(Max)        [dataspec configure $spec -max]
+   set Param(GridVec)    [dataspec configure $spec -gridvector]
+   set Param(Vector)     [dataspec configure $spec -rendervector]
+   set Param(Axis)       [dataspec configure $spec -axis]
 
-   set plane             [dataspec configure $Spec -cube]
+   set plane             [dataspec configure $spec -cube]
    set Param(X0)         [lindex $plane 0]
    set Param(Y0)         [lindex $plane 1]
    set Param(Z0)         [lindex $plane 2]
@@ -803,7 +809,7 @@ proc FSTD::ParamGet { { Spec "" } } {
       }
    }
    
-   if { [llength [set interlabels [dataspec configure $Spec -interlabels]]] } {
+   if { [llength [set interlabels [dataspec configure $spec -interlabels]]] } {
       set inters $Param(Intervals)
       set Param(Intervals) ""
       foreach label $interlabels inter $inters {

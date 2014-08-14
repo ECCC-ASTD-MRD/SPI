@@ -238,7 +238,6 @@ proc Styles::Overview { Frame X Y } {
       if { $style!="" && [info exist ::Styles::Data(Overview$style)] } {
          if { $style!=$Data(Overview) } {
             set Data(Overview) $style
-            puts stderr $style
             STYLE_OVERVIEW read $Data(Overview$style)
          }
          wm deiconify .style;

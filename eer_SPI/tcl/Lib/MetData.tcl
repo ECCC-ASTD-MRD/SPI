@@ -345,7 +345,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set afile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/\[1-2\]*_000"] }
+         catch { set afile [exec ssh -n -x $host "ls $path/\[1-2\]*_000"] }
       } else {
          set afile [lsort -dictionary -increasing [glob -nocomplain $APath/\[1-2\]*_000]]
       }
@@ -360,7 +360,7 @@ proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
       if { [llength $lst]>1 } {
          set host [lindex $lst 0]
          set path [join [lrange $lst 1 end] :]
-         catch { set pfile [exec ssh -l $GDefs(FrontEndUser) -n -x $host "ls $path/\[1-2\]*_???"] }
+         catch { set pfile [exec ssh -n -x $host "ls $path/\[1-2\]*_???"] }
       } else {
          set pfile [lsort -dictionary -increasing [glob -nocomplain $PPath/\[1-2\]*_???]]
       }
