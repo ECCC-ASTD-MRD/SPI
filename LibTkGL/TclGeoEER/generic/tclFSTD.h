@@ -37,17 +37,22 @@
 
 #include "tclData.h"
 
-#define FSTD_NKMAX     1024
-#define FSTD_LISTNONE   0
-#define FSTD_LISTSPI    1
-#define FSTD_LISTALL    2
-#define FSTD_LISTVAR    3
-#define FSTD_LISTTYPVAR 4
-#define FSTD_LISTDATEV  5
-#define FSTD_LISTIP1    6
-#define FSTD_LISTIP2    7
-#define FSTD_LISTIP3    8
-#define FSTD_LISTETIKET 9
+#define FSTD_NKMAX        1024
+#define FSTD_LISTNONE     0
+#define FSTD_LISTSPI      1
+#define FSTD_LISTALL      2
+#define FSTD_LISTVAR      3
+#define FSTD_LISTTYPVAR   4
+#define FSTD_LISTDATEV    5
+#define FSTD_LISTIP1      6
+#define FSTD_LISTIP2      7
+#define FSTD_LISTIP3      8
+#define FSTD_LISTETIKET   9
+#define FSTD_LISTIG1      10
+#define FSTD_LISTIG2      11
+#define FSTD_LISTIG3      12
+#define FSTD_LISTIG4      13
+#define FSTD_LISTEXTENDED 14
 
 typedef struct FSTD_File {
    char *CId;              /*Identificateur du fichier*/

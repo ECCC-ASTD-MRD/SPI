@@ -1074,7 +1074,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    int                n,idx,itype,type;
    FSTD_File         *file=NULL;
 
-   static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","TYPVAR","DATEV","IP1","IP2","IP3","ETIKET" };
+   static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","TYPVAR","DATEV","IP1","IP2","IP3","ETIKET","IG1","IG2","IG3","IG4","EXTENDED" };
    static CONST char *sopt[] = { "is","open","close","link","unlink","filename","mode","info",NULL };
    enum               opt { IS,OPEN,CLOSE,LINK,UNLINK,FILENAME,MODE,INFO };
 

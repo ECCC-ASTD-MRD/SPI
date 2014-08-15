@@ -4,14 +4,16 @@
 #-----    Change version in TclGeoEER/configure.in
 #-----    Change version in TclTk/lib/tclConfig.sh and tkConfig.sh for all platform
 #-----    Change version in gdal.../bin/gdal-config for all platform
+#-----    Change version in .profile_spi
 #-----    ./makeit reconf
 #-----    Make sure BUFR dictionnaries and RPN dictionnaries are up-to-date
+#-----    Remove old libs
 
 arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.7.1"
+VERSION="7.7.3"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_multi

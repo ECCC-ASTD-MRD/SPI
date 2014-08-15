@@ -40,7 +40,8 @@
 
 TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
-int FSTD_UNTILE=0;
+int      FSTD_UNTILE=0;
+Tcl_Obj *FSTD_HIDELIST=NULL;
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_TypeCheck>
@@ -254,11 +255,14 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
 */
 int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force) {
 
-   int key,ni=0,nj=0,nk=0;
+   int key=0,ni=0,nj=0,nk=0;
 
    if (!*Ptr || Force) {
       if (Grid==1) {
-         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
+         // Look for corresponding time and if not use any time
+         if ((key==cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,"",Head->IG1,Head->IG2,Head->IG3,"",Var))<=0) {
+            key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
+         }
       } else if (Grid==0) {
          key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
       } else {
@@ -359,7 +363,19 @@ int FSTD_FieldReadMesh(TData *Field) {
             if (Field->Ref->ZRef.Levels)
                free(Field->Ref->ZRef.Levels);
             Field->Ref->ZRef.Levels=NULL;
-            Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(head,&Field->Ref->ZRef.Levels,"^>",1,0);
+            Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
+            
+            // If we don't find any level definition, use level index
+            if (!Field->Ref->ZRef.Levels) {
+               if (!(Field->Ref->ZRef.Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
+                  fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
+               } else {
+                  for(nj=0;nj<Field->Def->NJ;nj++) {
+                     Field->Ref->ZRef.Levels[nj]=nj+1;
+                  }
+                  Field->Ref->ZRef.LevelNb=Field->Def->NJ;
+               }
+            }
             break;
       }
       FSTD_FileUnset(NULL,head->FID);
@@ -1901,8 +1917,8 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 
    FSTD_Head    head;
-   Tcl_Obj     *list,*obj;
-   int          nb,ni,nj,nk;
+   Tcl_Obj     *list,*obj,*tmp;
+   int          nobj,nb,ni,nj,nk;
    int          yyyy,mm,dd,h,m,s,type;
    char         buf[1024],grtyp[2];
    double       nhour,lvl;
@@ -1923,7 +1939,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 
    units=ZRef_LevelUnits();
    
-   /* Boucel sur tout les enregistrements */
+   /* Boucle sur tout les enregistrements */
    while (head.KEY>=0) {
 
       strcpy(head.NOMVAR,"    ");
@@ -1954,12 +1970,30 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                if (head.NOMVAR[0]=='\0') {
                   head.NOMVAR[0]='-'; head.NOMVAR[1]='\0';
                }
+                              
                if (head.TYPVAR[0]=='\0') {
                   head.TYPVAR[0]='-'; head.TYPVAR[1]='\0';
                }
                if (head.ETIKET[0]=='\0') {
                   head.ETIKET[0]='-'; head.ETIKET[1]='\0';
                }
+               
+               // Check for descriptor
+               if (FSTD_HIDELIST) {
+                  Tcl_ListObjLength(Interp,FSTD_HIDELIST,&nobj);
+                  for(s=0;s<nobj;s++) {
+                     Tcl_ListObjIndex(Interp,FSTD_HIDELIST,s,&tmp);
+                     if (!strncmp(head.NOMVAR,Tcl_GetString(tmp),4)) {
+                        nobj=9999;
+                        break;
+                     }
+                  }
+                  // If it is, skip
+                  if (nobj==9999) {
+                     break;
+                  }
+               }
+              
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
                lvl=ZRef_IP2Level(head.IP1,&type);
                switch(type) {
@@ -2018,7 +2052,14 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;
 
-            case FSTD_LISTVAR:
+             case FSTD_LISTEXTENDED:
+               sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i %c %i %i %i %i",
+                  File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nj,grtyp[0],head.IG1,head.IG2,head.IG3,head.IG4);
+               Tcl_SetStringObj(obj,buf,-1);
+               Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               break;
+
+           case FSTD_LISTVAR:
                Tcl_SetStringObj(obj,head.NOMVAR,-1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
                   Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
@@ -2068,6 +2109,34 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
+               
+            case FSTD_LISTIG1:
+               Tcl_SetIntObj(obj,head.IG1);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+               
+            case FSTD_LISTIG2:
+               Tcl_SetIntObj(obj,head.IG2);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+               
+            case FSTD_LISTIG3:
+               Tcl_SetIntObj(obj,head.IG3);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+               
+            case FSTD_LISTIG4:
+               Tcl_SetIntObj(obj,head.IG4);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;              
          }
       }
       head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
@@ -2167,6 +2236,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    // have to boost nbit to 32 for nbit=1, not sure why (X32) ????
    if (h.NBITS==32 && datyp==0) datyp=5;
    dtype=FSTD_TypeCheck(datyp,h.NBITS==1?32:h.NBITS);
+//   fprintf(stderr,"---- %i\n",dtype);
+//dtype=TD_UInt32;
 
    /*Calculer la date de validitee du champs*/
    if (h.DATEO!=0) {
@@ -2396,6 +2467,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    if (grtyp[0]=='U') {
       FSTD_FieldSubBuild(field);
    }
+   
 //TODO   h.FID->NRef++;
 
    FSTD_FieldSet(field);
@@ -2406,6 +2478,12 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
    field->Spec->Desc=strdup(h.NOMVAR);
    memcpy(field->Head,&h,sizeof(FSTD_Head));
+
+   // If it's a profile/xsection, read descriptors
+   if (grtyp[0]=='V') {
+      field->Spec->Extrude=strdup("^>");
+      FSTD_FieldReadMesh(field);
+   }
 
    FSTD_FileUnset(Interp,file);
    return(TCL_OK);

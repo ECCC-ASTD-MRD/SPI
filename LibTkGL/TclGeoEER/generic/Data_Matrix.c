@@ -464,8 +464,9 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
       Def_Set(A,0,0,v);
    } else {
 
-      if (!Calc_Compat(GInterp,A,B,2,1))
-         return(NULL);
+// Dangerous but to be revisited
+//      if (!Calc_Compat(GInterp,A,B,2,1))
+//         return(NULL);
 
       if (FSIZE3D(B)==1) {
          Def_Get(B,0,0,v);

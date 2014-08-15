@@ -210,12 +210,12 @@ int Tclgeoeer_Init(Tcl_Interp *Interp) {
 int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int        idx,n,bool;
-   TData     *field0;
+   TData     *field0,*field1;
    TDataSpec *spec;
    double     nd;
 
-   static CONST char *sopt[] = { "copy","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
-   enum                opt { COPY,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
+   enum                opt { COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -244,6 +244,28 @@ int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Ob
          } else {
             return(TCL_OK);
          }
+         break;
+
+      case COPYHEAD:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom");
+            return(TCL_ERROR);
+         }
+         field0=Data_Get(Tcl_GetString(Objv[2]));
+         if (!field0) {
+            Tcl_AppendResult(Interp,"invalid field: ",Tcl_GetString(Objv[2]),(char*)NULL);
+            return(TCL_ERROR);
+         }
+         field1=Data_Get(Tcl_GetString(Objv[3]));
+         if (!field0) {
+            Tcl_AppendResult(Interp,"invalid field: ",Tcl_GetString(Objv[3]),(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         field1->Set(field0);
+         field1->Copy(field0->Head,field1->Head);
+         return(TCL_OK);
+
          break;
 
       case FREE:
@@ -1857,10 +1879,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
                          }
-                      }
+                     }
                      if (!(--npt)) break;
                   }
-                  if (!npt) break;
+                  if (Field->Ref->Grid[0]=='V' || !npt) break;
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
@@ -1957,7 +1979,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   if (!(--npt)) break;
                }
-               if (!npt) break;
+               if (Field->Ref->Grid[0]=='V' || !npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
@@ -1986,7 +2008,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   if (!(--npt)) break;
                }
-               if (!npt) break;
+               if (Field->Ref->Grid[0]=='V' || !npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
@@ -2565,8 +2587,16 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
          case LEVELS:
             if (Objc==1) {
                if (Field->Ref) {
+                  // If xsection/profile, reload vertical descriptor (COLUMN model)
+                  if (Field->Ref->Grid[0]=='V' && Field->Spec->Extrude && strlen(Field->Spec->Extrude)) {
+                     if (FSTD_FileSet(NULL,((FSTD_Head*)Field->Head)->FID)>=0) {
+                        Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,1);
+                        FSTD_FileUnset(NULL,((FSTD_Head*)Field->Head)->FID);
+                     }
+                  }
+                  // Use NJ for xsection since NK and ZRefs levelnb are not set
                   nb=(Field->Ref && Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
-
+                  
                   obj=Tcl_NewListObj(0,NULL);
                   for (index=0;index<nb;index++) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels[index]));
@@ -2699,6 +2729,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
             break;
+            
          case MATRIX:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"matrix var");
