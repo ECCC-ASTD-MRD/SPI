@@ -57,7 +57,7 @@ proc SPI::Setup { { Force False } } {
       }
 
       #----- Copy standard stuff
-      foreach file { Colormap Scenario } {
+      foreach file { Colormap Scenario Style } {
          exec cp -r $GDefs(Dir)/tcl/Setup/$file $env(HOME)/.spi
       }
 
@@ -213,7 +213,7 @@ if { !$SPI::Param(Batch) } {
                lappend SPI::Param(Tools) $name
             }
          }
-         foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layouts *.tcl]] {
+         foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layout *.tcl]] {
             lappend SPI::Param(Layouts) [file rootname $layout]
          }
          lappend SPI::Param(Layouts) ""        
@@ -504,7 +504,7 @@ proc SPI::LayoutDelete { } {
    variable Lbl
 
    if { $SPI::Param(Layout)!="SPI" } {
-      if { [file exists $GDefs(Dir)/tcl/Layouts/${SPI::Param(Layout)}.tcl] } {
+      if { [file exists $GDefs(Dir)/tcl/Layout/${SPI::Param(Layout)}.tcl] } {
          Dialog::Error . $Error(LayoutDel) "\n\n\t$SPI::Param(Layout)"
          return
       }
@@ -1137,7 +1137,9 @@ proc SPI::DrawTrajGraph { Frame } {
    if { $Data(ShowTrajGraph) } {
       Trajectory::Graph $Frame 0 0 300 200 $Trajectory::Data(List)
       Shape::BindAllMove $Frame.page.canvas TRAJGRAPH
-      Shape::BindScale $Frame.page.canvas TRAJGRAPH "Trajectory::GraphScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale   $Frame.page.canvas TRAJGRAPH "Trajectory::GraphScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindWidget  $Frame.page.canvas TRAJGRAPH
+
    } else {
       Shape::UnBind $Frame.page.canvas TRAJGRAPH
       $Frame.page.canvas delete TRAJGRAPH
@@ -1168,7 +1170,8 @@ proc SPI::DrawTrajHeight { Frame } {
    if { $Data(ShowTrajHeight) } {
       Trajectory::Height $Frame 0 0 70 350 $Trajectory::Data(List)
       Shape::BindAllMove $Frame.page.canvas TRAJHEIGHT
-      Shape::BindScale $Frame.page.canvas TRAJHEIGHT "Trajectory::HeightScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale   $Frame.page.canvas TRAJHEIGHT "Trajectory::HeightScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindWidget  $Frame.page.canvas TRAJHEIGHT
    } else {
       Shape::UnBind $Frame.page.canvas TRAJHEIGHT
       $Frame.page.canvas delete TRAJHEIGHT
@@ -1199,7 +1202,8 @@ proc SPI::DrawTrajLegend { Frame } {
    if { $Data(ShowTrajLegend) } {
       Trajectory::Legend $Frame 0 0 555 80 $Trajectory::Data(List)
       Shape::BindAllMove $Frame.page.canvas TRAJLEGEND
-      Shape::BindScale $Frame.page.canvas TRAJLEGEND "Trajectory::LegendScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale   $Frame.page.canvas TRAJLEGEND "Trajectory::LegendScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindWidget  $Frame.page.canvas TRAJLEGEND
    } else {
       Shape::UnBind $Frame.page.canvas TRAJLEGEND
       $Frame.page.canvas delete TRAJLEGEND
@@ -1975,8 +1979,10 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
       2 { SPI::PageNew True $Type${Sub} }
    }
 
+   #----- Check if there's already an object of this type in the current page
    set obj [lindex [Page::Registered $Page::Data(Frame) ${Type}${Sub}] end]
 
+   #----- If so, use the same dimensions, otherwise, fill the page
    if { $obj=="" } {
       eval ${Type}${Sub}::Create $Page::Data(Frame) 0 0 [winfo width $Page::Data(Canvas)] [winfo height $Page::Data(Canvas)] 1 1
    } else {
@@ -2012,7 +2018,7 @@ proc SPI::ProjectRead { File { Force False } } {
    
    #----- Determiner si le fichier de projet est valide
    if { [file exists $File] } {
-      set file $File]
+      set file $File
    } else {
       if { [file exists $File.spi] } {
          set file $File.spi
