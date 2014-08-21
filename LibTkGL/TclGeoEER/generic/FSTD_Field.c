@@ -301,6 +301,29 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force)
  *
  *----------------------------------------------------------------------------
 */
+int FSTD_FieldReadVLevels(TData *Field) {
+
+   int nj=0;
+
+   if (Field->Ref->ZRef.Levels)
+      free(Field->Ref->ZRef.Levels);
+   Field->Ref->ZRef.Levels=NULL;
+   Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp((FSTD_Head*)Field->Head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
+   
+   // If we don't find any level definition, use level index
+   if (!Field->Ref->ZRef.Levels) {
+      if (!(Field->Ref->ZRef.Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
+         fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
+      } else {
+         for(nj=0;nj<Field->Def->NJ;nj++) {
+            Field->Ref->ZRef.Levels[nj]=nj+1;
+         }
+         Field->Ref->ZRef.LevelNb=Field->Def->NJ;
+      }
+   }
+   return(nj);
+}
+
 int FSTD_FieldReadMesh(TData *Field) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;
@@ -360,22 +383,7 @@ int FSTD_FieldReadMesh(TData *Field) {
          case 'V':
             if (!Field->Ref->Lat) FSTD_FieldReadComp(head,&Field->Ref->Lat,"^^",1,0);
             if (!Field->Ref->Lon) nijk=FSTD_FieldReadComp(head,&Field->Ref->Lon,">>",1,0);
-            if (Field->Ref->ZRef.Levels)
-               free(Field->Ref->ZRef.Levels);
-            Field->Ref->ZRef.Levels=NULL;
-            Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
-            
-            // If we don't find any level definition, use level index
-            if (!Field->Ref->ZRef.Levels) {
-               if (!(Field->Ref->ZRef.Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
-                  fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
-               } else {
-                  for(nj=0;nj<Field->Def->NJ;nj++) {
-                     Field->Ref->ZRef.Levels[nj]=nj+1;
-                  }
-                  Field->Ref->ZRef.LevelNb=Field->Def->NJ;
-               }
-            }
+            FSTD_FieldReadVLevels(Field);
             break;
       }
       FSTD_FileUnset(NULL,head->FID);
@@ -1280,7 +1288,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case FID:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->FID->CId,-1));
+               if (head->FID) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->FID->CId,-1));
+               }
             } else {
                head->FID=FSTD_FileGet(Interp,Tcl_GetString(Objv[++i]));
             }
@@ -1860,8 +1870,8 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
    char       buf[1024],grtyp[2];
 
    file=FSTD_FileGet(Interp,Id);
-   if(FSTD_FileSet(Interp,file)<0)
-      return TCL_ERROR;
+   if (FSTD_FileSet(Interp,file)<0)
+      return(TCL_ERROR);
 
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");

@@ -819,6 +819,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 
    Field[0]->Set(cut);
    Field[0]->Copy(cut->Head,Field[0]->Head);
+   ((FSTD_Head*)cut->Head)->FID=NULL;
 
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
    cut->Ref->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
@@ -2586,11 +2587,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case LEVELS:
             if (Objc==1) {
-               if (Field->Ref) {
-                  // If xsection/profile, reload vertical descriptor (COLUMN model)
+                if (Field->Ref) {
+                 // If xsection/profile, reload vertical descriptor (COLUMN model)
                   if (Field->Ref->Grid[0]=='V' && Field->Spec->Extrude && strlen(Field->Spec->Extrude)) {
                      if (FSTD_FileSet(NULL,((FSTD_Head*)Field->Head)->FID)>=0) {
-                        Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp(((FSTD_Head*)Field->Head),&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,1);
+                        FSTD_FieldReadVLevels(Field);
                         FSTD_FileUnset(NULL,((FSTD_Head*)Field->Head)->FID);
                      }
                   }
@@ -2599,7 +2600,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   
                   obj=Tcl_NewListObj(0,NULL);
                   for (index=0;index<nb;index++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels[index]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels?Field->Ref->ZRef.Levels[index]:index));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
