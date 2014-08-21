@@ -1608,7 +1608,6 @@ proc Graph::ItemSelect { Item } {
       set Graph::Item(Stipple) -1
    }
 
-
    catch { IcoMenu::Set $Data(Frame).item.line.dash $Graph::Item(Dash) }
 
    IcoMenu::Set $Data(Frame).item.fill.stipple $Graph::Item(Stipple)
@@ -1756,14 +1755,19 @@ proc Graph::PosSet { Graph Type } {
    variable Data
 
    upvar #0 Graph::${Type}::${Type}${Graph}::Data data
-
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
 
    if { [winfo exist $Data(Frame).pos.sel] } {
       ComboBox::DelAll $Data(Frame).pos.sel
       ComboBox::AddList $Data(Frame).pos.sel $data(Pos)
    }
 
-   if { [set Data(Pos)  [lindex $data(Pos) end]]!="" } {
+   if { [set Data(Pos) [lindex $data(Pos) end]]!="" } {
+      if { [winfo exist $Data(Frame).scaleY.z.val] } {
+         ComboBox::DelAll $Data(Frame).scaleY.z.val False
+         ComboBox::AddList $Data(Frame).scaleY.z.val $data(ZTypes$Data(Pos))
+      }
+      
       set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
       if { [winfo exist $Data(Frame).item.sel.list] } {
          $Data(Frame).item.sel.list selection set 0
@@ -1822,11 +1826,10 @@ proc Graph::PosSelect { Graph Type } {
       $Data(Frame).item.sel.list selection clear 0 end
       $Data(Frame).item.sel.list selection set 0
    }
-   
+
    if { [winfo exist $Data(Frame).scaleY.z.val] } {
-      ComboBox::DelAll $Data(Frame).scaleY.z.val
-      ComboBox::AddList $Data(Frame).scaleY.z.val $data(Desc$Data(Pos))
-      set graph(ZType) [lindex $data(Desc$Data(Pos)) 0]
+      ComboBox::DelAll $Data(Frame).scaleY.z.val False
+      ComboBox::AddList $Data(Frame).scaleY.z.val $data(ZTypes$Data(Pos))
    }
    
    Graph::ItemSelect $Graph::Data(Item)

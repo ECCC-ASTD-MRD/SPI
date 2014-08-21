@@ -1004,7 +1004,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #      set var [dataspec configure $Spec -desc]
       set desc [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]
-
+      
       if { !$set } {
          dataspec copy $Spec FLDDEFAULT
       }

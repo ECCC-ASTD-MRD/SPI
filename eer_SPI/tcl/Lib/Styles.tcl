@@ -285,7 +285,7 @@ proc Styles::Widget { Frame { Update False } } {
       wm attributes       .style -type splash -alpha 0.85
       
       image create photo STYLE_OVERVIEW
-      label .style.overview -image STYLE_OVERVIEW -width 256 -height 256 -relief flat -bd 0
+      label .style.overview -image STYLE_OVERVIEW -width 256 -height 256 -relief ridge -bd 2
       pack .style.overview    
       
       bind $Frame.styles.menu <Motion>  "Styles::Overview $Frame %X %Y"

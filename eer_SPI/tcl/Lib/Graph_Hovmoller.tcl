@@ -409,7 +409,7 @@ proc Graph::Hovmoller::Init { Frame } {
 
       set Graph(YScale)    LINEAR                                               ;#Type d'echelle en Y
       set Graph(XScale)    LINEAR                                               ;#Type d'echelle en Y
-      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"     ;#Descriptif de l'echelle des valeur en Y
+      set Graph(UnitY)     "[lindex $Graph::Lbl(Unit) $GDefs(Lang)] Y"          ;#Descriptif de l'echelle des valeur en Y
       set Graph(UnitX)     "[lindex $Graph::Lbl(Pos) $GDefs(Lang)]"             ;#Descriptif de l'echelle des valeur en X
       set Graph(XInter)    ""               ;#Liste des niveau specifie par l'usager
       set Graph(YInter)    ""               ;#Liste des niveau specifie par l'usager

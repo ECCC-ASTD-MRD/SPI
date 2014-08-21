@@ -587,6 +587,7 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
    set data(Items$Pos)  {}
    set data(Coords$Pos) $Coords
    set data(Pos$Pos)    [Graph::VertexSample Section $GR $Coords]
+   set data(ZTypes$Pos) $Graph::Param(AxisZs)
    set i -1
 
    Graph::Idle $GR Section

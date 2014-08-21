@@ -2811,7 +2811,7 @@ proc Shape::BindScale { Canvas Tag { Command "" } } {
 
       $Canvas create window [lindex $box 2] [lindex $box 3] -window $Canvas.bs$Tag -anchor se -tags "BS$Tag NOPRINT"
    }
-
+   
    bind $Canvas.bs$Tag <ButtonPress-1>   "Shape::Set   $Canvas $Tag %X %Y"
    bind $Canvas.bs$Tag <ButtonRelease-1> "Shape::UnSet $Canvas $Tag"
    bind $Canvas.bs$Tag <B1-Motion>       "Shape::Scale $Canvas $Tag %X %Y $Command"

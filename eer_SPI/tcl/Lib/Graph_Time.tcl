@@ -688,7 +688,9 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
             }
          }
          SPI::Progress 0
-         set graph(UnitY) [fstdfield configure $Data -unit]
+         if { [set graph(UnitY) [fstdfield configure $Data -unit]]=="" } {
+            set graph(UnitY) UNDEFINED
+         }
       } elseif { [observation is $Data] } {
 
          foreach obs $data(Data$Data) {

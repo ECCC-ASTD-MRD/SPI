@@ -1437,17 +1437,28 @@ proc FieldBox::Select { } {
             
             #---- If this is a vertical grid (profile/xsection)
             if { [fstdfield define $fld -GRTYP]=="V" } {
-               set vdesc [lsearch -all -inline -regexp [fstdfile info [fstdfield define $fld -FID] NOMVAR] "^\\^{1}.."]
+               if { [fstdfield define $fld -NI]<1 } {
+                  #----- If more than 1 in I, this is an xsection
+                  if { $Graph::Data(Graph)=="" || $Graph::Data(Type$Graph::Data(Graph))!="Section" } {
+                     Graph::Params
+                     if { ![SPI::ObjectAdd Graph ::Section] } {
+                        continue
+                     } 
+                     Graph::PosDel $Graph::Data(Graph) $Graph::Data(Type$Graph::Data(Graph))
+                  }
                
-               if { $Graph::Data(Graph)=="" || $Graph::Data(Type$Graph::Data(Graph))!="Profile" } {
-                  Graph::Params
-                  if { ![SPI::ObjectAdd Graph ::Profile] } {
-                     continue
+               } else {
+                  #----- Otherwise, this is a profile
+                  if { $Graph::Data(Graph)=="" || ($Graph::Data(Type$Graph::Data(Graph))!="Profile" && $Graph::Data(Type$Graph::Data(Graph))!="TimeSection") } {
+                     Graph::Params
+                     if { ![SPI::ObjectAdd Graph ::Profile] } {
+                        continue
+                     }                 
+                     Graph::PosDel $Graph::Data(Graph) $Graph::Data(Type$Graph::Data(Graph))
                   }
                }
-               Graph::Profile::ItemDefineV $Graph::Data(Graph) $fld $vdesc
-               Graph::PosSelect $Graph::Data(Graph) Profile
             }
+            
             #----- Si le champs n'etait pas deja selectionnee
 
             eval $type stats $fld -tag \"$Page::Data(Frame) $Page::Data(VP) $box\"

@@ -422,7 +422,6 @@ proc Graph::Profile::ItemAdd { GR Item } {
       vector free   $Item
       vector create $Item
       vector dim    $Item { X Y }
-
       set id [$data(Canvas) create text -100 -100 -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem create $Item
@@ -431,7 +430,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
       lappend data(Items) $Item
       Graph::Profile::ItemDefault $GR $Item
       $data(Canvas) itemconfigure $GR -item $data(Items)
-  }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -518,10 +517,11 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
 
    upvar #0 Graph::Profile::Profile${GR}::Data  data
 
-   if { $Pos=="" } {
+   #----- If it's invalid or a profile field
+   if { $Pos=="" || [string match PROFILE_* $Pos] } {
       return
    }
-
+   
    if { [info exists Graph::Profile::Profile${GR}::Data(Items$Pos)] } {
       foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
          Graph::Profile::ItemDel $GR $item
@@ -534,18 +534,20 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    set data(Items$Pos)  {}
    set data(Coords$Pos) $Coords
    set data(Pos$Pos)    $Coords
-   set data(Desc$Pos)   $Graph::Param(AxisZs)
+   set data(ZTypes$Pos) $Graph::Param(AxisZs)
    set i -1
 
    Graph::Idle $GR Profile
 
    foreach field $data(Data) {
-      set item ${Pos}_Item[incr i]
-      lappend data(Items$Pos) $item
+      if { [fstdfield define $field -GRTYP]!="V"} {
+         set item ${Pos}_Item[incr i]
+         lappend data(Items$Pos) $item
 
-      Graph::Profile::ItemAdd $GR $item
-      if { $Update } {
-         Graph::Profile::ItemData $GR $Pos $item $field
+         Graph::Profile::ItemAdd $GR $item
+         if { $Update } {
+            Graph::Profile::ItemData $GR $Pos $item $field
+         }
       }
    }
    
@@ -554,36 +556,43 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    Graph::UnIdle $GR Profile
 }
 
-proc Graph::Profile::ItemDefineV { GR Pos { Descriptor {} } { Update True } } {
+proc Graph::Profile::ItemDefineV { GR { Update True } } {
 
    upvar #0 Graph::Profile::Profile${GR}::Data  data
 
-   if { [info exists Graph::Profile::Profile${GR}::Data(Items$Pos)] } {
-      foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
-         Graph::Profile::ItemDel $GR $item
+   Graph::Idle $GR Profile
+   
+   #----- Cleanup previous items
+   foreach pos $data(Pos) {
+      if { [string match PROFILE_* $pos] } {
+         Graph::Profile::ItemUnDefine $GR $pos
       }
    }
-
-   if { [lsearch -exact $data(Pos) $Pos]==-1 } {
-      lappend data(Pos) $Pos
-   }
-   set coords [fstdfield stats $Pos -grid]
    
-   set data(Items$Pos)  {}
-   set data(Coords$Pos) $coords
-   set data(Pos$Pos)    $coords
-   set data(Desc$Pos)   $Descriptor
-   set i -1
+   set i 0 
+   foreach field $data(Data) {
+      if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" } {
 
-   Graph::Idle $GR Profile
+         set Pos PROF_[fstdfield define $field -NOMVAR]_[incr i]
+       
+         if { [lsearch -exact $data(Pos) $Pos]==-1 } {
+            lappend data(Pos) $Pos
+         }
+         set coords [fstdfield stats $field -grid]
+         
+         set data(Items$Pos)  {}
+         set data(Coords$Pos) $coords
+         set data(Pos$Pos)    $coords
+         set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
 
-#   set item [fstdfield define $Pos -NOMVAR]
-   set item ${Pos}_Item
-   lappend data(Items$Pos) $item
-
-   Graph::Profile::ItemAdd $GR $item
-   if { $Update } {
-      Graph::Profile::ItemData $GR $Pos $item $Pos
+         set item ${Pos}_Item
+         lappend data(Items$Pos) $item
+         
+         Graph::Profile::ItemAdd $GR $item
+         if { $Update } {
+            Graph::Profile::ItemData $GR $Pos $item $field
+         }
+      }
    }
 
    Graph::Profile::UpdateItems $data(FrameData) $GR
@@ -614,7 +623,7 @@ proc Graph::Profile::ItemUnDefine { GR Pos } {
          Graph::Profile::ItemDel $GR $item
       }
 
-      set data(Pos) [lreplace $data(Pos)  $idx $idx]
+      set data(Pos) [lreplace $data(Pos) $idx $idx]
       set Graph::Data(Pos) [lindex $data(Pos) end]
    }
 }
@@ -690,8 +699,8 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
             } else {
                fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
             }
+            FSTD::ParamUpdate GRAPHPROFILE
          }
-         FSTD::ParamUpdate GRAPHPROFILE
 
          #----- Configure info label if allowed
          if { $Graph::Data(Update) } {
@@ -717,20 +726,26 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
             "MASL" {
                set levels [fstdfield stats GRAPHPROFILE -meterlevels]
                if { ![llength $levels] } {
-                  Dialog::Error . $Graph::Error(Pressure)
+                  Dialog::Error . $Graph::Error(Meter)
                }
                vector set $Item.Y $levels
                set graph(UnitY) [lindex $Graph::Lbl(MASL) $GDefs(Lang)]
             }
             default {
                vector set $Item.Y [fstdfield stats GRAPHPROFILE -levels]
-               set graph(UnitY) [fstdfield stats $Data -leveltype]
-             }
+               if { [set ztype [fstdfield configure GRAPHPROFILE -extrude]]!="" } {
+                  set graph(UnitY) $ztype
+               } else {
+                  set graph(UnitY) [fstdfield stats $Data -leveltype]
+               }
+            }
          }
 
          vector set $Item.X [fstdfield define GRAPHPROFILE -DATA 0]
 
-         set graph(UnitX) [fstdfield configure $Data -unit]
+         if { [set graph(UnitX) [fstdfield configure $Data -unit]]=="" } {
+            set graph(UnitX) UNDEFINED
+         }
       } elseif { [observation is $Data] } {
 
          set lst {}
@@ -789,7 +804,6 @@ proc Graph::Profile::Update { Frame { GR {} } } {
          }
 
          #----- Recuperer les donnees
-
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
             if { [info exist Animator::Play(Data$data(VP))] } {
                Graph::Profile::Data $gr $Animator::Play(Data$data(VP))
@@ -797,17 +811,14 @@ proc Graph::Profile::Update { Frame { GR {} } } {
                Graph::Profile::Data $gr $Viewport::Data(Data$data(VP))
             }
          }
+         
          #----- Update des items
-
          foreach pos $data(Pos) {
-            if { [fstdfield is $pos] } {
-               Graph::Profile::ItemDefineV $gr $pos $data(Desc$pos)
-            } else {
-               Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
-            }
+            Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
          }
+         Graph::Profile::ItemDefineV $gr
          Graph::PosSet $gr Profile
-
+         
          catch {
             $data(Canvas) configure -cursor left_ptr
             $data(FrameData).page.canvas configure -cursor left_ptr
@@ -894,14 +905,16 @@ proc Graph::Profile::Data { GR Data } {
    SPI::Progress +$nb
 
    foreach item $Data {
-      if { [fstdfield is $item] && [fstdfield define $item -GRTYP]!="V" } {
-         if { $Graph::Data(IP3) } {
-            fstdfield readcube $item
-         } else {
-            set ip3 [fstdfield define $item -IP3]
-            fstdfield define $item -IP3 -1
-            fstdfield readcube $item
-            fstdfield define $item -IP3 $ip3
+      if { [fstdfield is $item] && [fstdfield define $item -FID]!="" } {
+         if { [fstdfield define $item -GRTYP]!="V"} {
+            if { $Graph::Data(IP3) } {
+               fstdfield readcube $item
+            } else {
+               set ip3 [fstdfield define $item -IP3]
+               fstdfield define $item -IP3 -1
+               fstdfield readcube $item
+               fstdfield define $item -IP3 $ip3
+            }
          }
          lappend data(Data) $item
       } elseif { [observation is $item] } {

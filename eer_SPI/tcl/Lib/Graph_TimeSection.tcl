@@ -279,6 +279,10 @@ proc Graph::TimeSection::Graph { GR } {
                 fstdfield configure TIMESECTION$item -ztype UNDEFINED
                 set data(Levels) [fstdfield stats TIMESECTION$item -levels]
                 set graph(UnitY) [fstdfield stats TIMESECTION$item -leveltype]
+            }
+            default {
+                set data(Levels) [fstdfield stats TIMESECTION$item -levels]
+                set graph(UnitY) [fstdfield stats TIMESECTION$item -leveltype]
              }
          }
       } else {
@@ -618,10 +622,11 @@ proc Graph::TimeSection::ItemDefine { GR Pos Coords { Update True } } {
 
    upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
 
-   if { $Pos=="" } {
+   #----- If it's invalid or a profile field
+   if { $Pos=="" || [string match PROFILE_* $Pos] } {
       return
    }
-
+   
    if { [info exists Graph::TimeSection::TimeSection${GR}::Data(Items$Pos)] } {
       foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
          Graph::TimeSection::ItemDel $GR $item
@@ -634,6 +639,7 @@ proc Graph::TimeSection::ItemDefine { GR Pos Coords { Update True } } {
    set data(Items$Pos)  {}
    set data(Coords$Pos) $Coords
    set data(Pos$Pos)    $Coords
+   set data(ZTypes$Pos) $Graph::Param(AxisZs)
    set i -1
 
    Graph::Idle $GR TimeSection
@@ -645,6 +651,52 @@ proc Graph::TimeSection::ItemDefine { GR Pos Coords { Update True } } {
       Graph::TimeSection::ItemAdd $GR $item
       if { $Update } {
          Graph::TimeSection::ItemData $GR $Pos $item $field
+      }
+   }
+
+   Graph::TimeSection::UpdateItems $data(FrameData) $GR
+   Graph::TimeSection::Graph $GR
+   Graph::UnIdle $GR TimeSection
+}
+
+proc Graph::TimeSection::ItemDefineV { GR { Update True } } {
+
+   upvar #0 Graph::TimeSection::TimeSection${GR}::Data  data
+
+   Graph::Idle $GR TimeSection
+   
+   #----- Cleanup previous items
+   foreach pos $data(Pos) {
+      if { [string match PROFILE_* $pos] } {
+         Graph::TimeSection::ItemUnDefine $GR $pos
+      }
+   }
+   
+   set i 0
+   foreach field $data(Data) {
+      if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" } {
+
+         set Pos TPROF_[fstdfield define $field -NOMVAR]_[incr i]
+       
+         if { [lsearch -exact $data(Pos) $Pos]==-1 } {
+            lappend data(Pos) $Pos
+         }
+         set coords [fstdfield stats $field -grid]
+         
+         set data(Items$Pos)  {}
+         set data(Coords$Pos) $coords
+         set data(Pos$Pos)    $coords
+         set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
+
+         set item ${Pos}_Item
+         lappend data(Items$Pos) $item
+         
+         Graph::TimeSection::ItemAdd $GR $item
+         Graph::TimeSection::Data $GR $field [fstdfield define $field -FID]
+         
+         if { $Update } {
+            Graph::TimeSection::ItemData $GR $Pos $item $field
+         }
       }
    }
 
@@ -705,6 +757,20 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
 
    if { [fstdfield is $Data] && [graphitem is $Item] && [llength $data(Data$Data)] && [llength $data(Pos$Pos)] } {
 
+      if { [fstdfield define $Data -GRTYP]=="V" } {
+         fstdfield free TIMESECTION$Item
+         fstdfield create TIMESECTION$Item [llength $data(Data$Data)] [fstdfield define $Data -NJ] 1 Float32
+         fstdfield copyhead TIMESECTION$Item $Data
+         fstdfield define TIMESECTION$Item -georef [fstdfield define $Data -georef]
+         set i 0
+         foreach field $data(Data$Data) {
+            vector append $Item.X [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
+            vexpr TIMESECTION${Item} TIMESECTION${Item}($i)()()=[lindex $field 1]
+            incr i
+         }
+         fstdfield configure TIMESECTION${Item} -extrude $graph(ZType)
+      }  else {
+      
       set fields {}
       foreach field $data(Data$Data) {
          if { $graph(ZType)=="GRID" } {
@@ -751,6 +817,7 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
       } else {
          fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
       }
+      }
       FSTD::Register TIMESECTION$Item
 
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data TIMESECTION$Item
@@ -792,16 +859,15 @@ proc Graph::TimeSection::Update { Frame { GR {} } } {
          }
 
          #----- Recuperer les donnees
-
          if { [Page::Registered All Viewport $data(VP)]!=-1 } {
             Graph::TimeSection::Data $gr [Viewport::Assigned $Viewport::Data(Frame$data(VP)) $data(VP) fstdfield]
          }
 
          #----- Update des items
-
          foreach pos $data(Pos) {
             Graph::TimeSection::ItemDefine $gr $pos $data(Coords$pos)
          }
+         Graph::TimeSection::ItemDefineV $gr
          Graph::PosSet $gr TimeSection
 
          catch {
@@ -931,14 +997,16 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
 
          foreach id $lst {
             set grtyp [fstdfield define $id -GRTYP]
-            if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
-               if { $Graph::Data(IP3) } {
-                  fstdfield readcube $id
-               } else {
-                  set ip3 [fstdfield define $id -IP3]
-                  fstdfield define $id -IP3 -1
-                  fstdfield readcube $id
-                  fstdfield define $id -IP3 $ip3
+            if { $grtyp!="X"  && $grtyp!="Y" } {
+               if { $grtyp!="V" } {
+                  if { $Graph::Data(IP3) } {
+                     fstdfield readcube $id
+                  } else {
+                     set ip3 [fstdfield define $id -IP3]
+                     fstdfield define $id -IP3 -1
+                     fstdfield readcube $id
+                     fstdfield define $id -IP3 $ip3
+                  }
                }
                set sec [fstdstamp toseconds [fstdfield define $id -DATEV]]
                lappend data(Data$item) "$sec $id"
