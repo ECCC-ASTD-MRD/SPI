@@ -569,14 +569,15 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    tile=(Field->Ref->Grid[1]=='#')&&FSTD_UNTILE?'#':0;
 
    if (Field->Ref->Grid[0]=='V') {
-
       FSTD_FieldReadMesh(Field);
+      
       if (!Field->Ref->Lat || !Field->Ref->Lon) {
          fprintf(stderr,"(ERROR) FSTD_Grid: Section coordinates not defined");
          return(NULL);
       }
 
       FSTD_FileSet(NULL,head->FID);
+      
       for (j=0;j<def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/

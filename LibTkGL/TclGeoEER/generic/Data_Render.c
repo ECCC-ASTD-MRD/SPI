@@ -688,7 +688,6 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
    char buf[128];
-   int  dp;
    
    if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline)
       return;
@@ -708,13 +707,9 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
    }
 
-   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
-   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*4;
-   dp=CLAMP(dp,1,20);
-
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def)/dp,dp,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),1,NULL,NULL);
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);

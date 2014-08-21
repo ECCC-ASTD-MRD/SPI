@@ -1438,7 +1438,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,FSTD_File *File){
    char err[8];
    
    if (!File) {
-      Tcl_AppendResult(Interp,"FSTD_FileSet: Unknown file (NULL)",(char *)NULL);
+      if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unknown file (NULL)",(char *)NULL);
       return(-1);
    }
 
