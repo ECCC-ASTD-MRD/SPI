@@ -45,8 +45,8 @@
  * @see init_record
  */
 
-double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vs,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
-       Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmb,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,
+double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
+       Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,Vmedx,Vmedy,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,
        Vfb,Vnad,Vfms,Vosf,Vpcc,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp;
 
@@ -85,38 +85,43 @@ TFuncDef FuncD[] = {
 TFuncDef FuncF[] = {
   { "sall"  , stat_all    , 2 , TD_Float64 },
   { "snb"   , stat_nb     , 1 , TD_Float64 },
-  { "smed"  , stat_median , 1 , TD_Float64 },
+  { "smed"  , stat_med    , 1 , TD_Float64 },
+  { "smedx" , stat_medx   , 2 , TD_Float64 },
+  { "smedy" , stat_medy   , 2 , TD_Float64 },
   { "suniq" , stat_unique , 1 , TD_Int32 },
   { "ssum"  , stat_sum    , 1 , TD_Float64 },
+  { "ssumx" , stat_sumx   , 2 , TD_Float64 },
+  { "ssumy" , stat_sumy   , 2 , TD_Float64 },
   { "smin"  , stat_min    , 1 , TD_Float64 },
+  { "sminx" , stat_minx   , 2 , TD_Float64 },
+  { "sminy" , stat_miny   , 2 , TD_Float64 },
   { "smax"  , stat_max    , 1 , TD_Float64 },
+  { "smaxx" , stat_maxx   , 2 , TD_Float64 },
+  { "smaxy" , stat_maxy   , 2 , TD_Float64 },
   { "savg"  , stat_avg    , 1 , TD_Float64 },
-  { "savgx" , stat_avgx   , 1 , TD_Float64 },
-  { "savgy" , stat_avgy   , 1 , TD_Float64 },
-  { "ssumx" , stat_sumx   , 1 , TD_Float64 },
-  { "sminx" , stat_minx   , 1 , TD_Float64 },
-  { "smaxx" , stat_maxx   , 1 , TD_Float64 },
-  { "ssumy" , stat_sumy   , 1 , TD_Float64 },
-  { "sminy" , stat_miny   , 1 , TD_Float64 },
-  { "smaxy" , stat_maxy   , 1 , TD_Float64 },
-  { "svar"  , stat_varx   , 1 , TD_Float64 },
-  { "svarx" , stat_varx   , 1 , TD_Float64 },
-  { "svary" , stat_vary   , 1 , TD_Float64 },
-  { "sssx"  , stat_ssx    , 1 , TD_Float64 },
+  { "savgx" , stat_avgx   , 2 , TD_Float64 },
+  { "savgy" , stat_avgy   , 2 , TD_Float64 },
+  { "svar"  , stat_var    , 1 , TD_Float64 },
+  { "svarx" , stat_varx   , 2 , TD_Float64 },
+  { "svary" , stat_vary   , 2 , TD_Float64 },
+  { "sssx"  , stat_ssx    , 2 , TD_Float64 },
+  { "sssy"  , stat_ssy    , 2 , TD_Float64 },
+  { "sssxy" , stat_ssxy   , 2 , TD_Float64 },
   { "srmse" , stat_rmse   , 2 , TD_Float64 },
   { "ssdev" , stat_sdev   , 1 , TD_Float64 },
+  { "ssdevx", stat_sdevx  , 2 , TD_Float64 },
+  { "ssdevy", stat_sdevy  , 2 , TD_Float64 },
   { "scor"  , stat_corr   , 2 , TD_Float64 },
   { "scov"  , stat_covar  , 2 , TD_Float64 },
   { "sregb" , stat_regb   , 2 , TD_Float64 },
   { "srega" , stat_rega   , 2 , TD_Float64 },
   { "serra" , stat_erra   , 2 , TD_Float64 },
   { "serrb" , stat_errb   , 2 , TD_Float64 },
-  { "sssxy" , stat_ssxy   , 2 , TD_Float64 },
   { "smb"   , stat_mb     , 2 , TD_Float64 },
   { "snmb"  , stat_nmb    , 2 , TD_Float64 },
   { "snme"  , stat_nme    , 2 , TD_Float64 },
   { "sme"   , stat_me     , 2 , TD_Float64 },
-  { "smnb"  , stat_mb     , 2 , TD_Float64 },
+  { "smnb"  , stat_mnb    , 2 , TD_Float64 },
   { "smne"  , stat_mne    , 2 , TD_Float64 },
   { "smfb"  , stat_mfb    , 2 , TD_Float64 },
   { "smfe"  , stat_mfe    , 2 , TD_Float64 },
@@ -915,86 +920,87 @@ double dcore(TDataDef *Res,TDataDef *Def,int Mode) {
 
 // For the given value, return the assiciated probability in the Empiricaly-calculated Cumulative Distribution Function
 inline double ecdf(double val, double* vals, unsigned int* cums, unsigned long n) {
-    unsigned long i, min=0, max=n;
+   unsigned long i, min=0, max=n;
 
-    // Limit cases
+   // Limit cases
 
-    if (n<=0 || val<vals[0]) return 0.0;
-    if (val>=vals[n-1]) return 1.0;
+   if (n<=0 || val<vals[0]) return 0.0;
+   if (val>=vals[n-1]) return 1.0;
 
-    // Normal binary search
+   // Normal binary search
 
-    while (min<=max) {
-        i = (max+min)/2;
+   while (min<=max) {
+      i = (max+min)/2;
 
-        if (vals[i]==val) {
-            return (double)cums[i]/(double)cums[n-1];
-        }
+      if (vals[i]==val) {
+         return (double)cums[i]/(double)cums[n-1];
+      }
 
-        if (val>vals[i]) {
-            min = i + 1;
-        } else {
-            max = i - 1;
-        }
-    }
+      if (val>vals[i]) {
+         min = i + 1;
+      } else {
+         max = i - 1;
+      }
+   }
 
-    // If we get to this point, the exact number doesn't exist and we need to round to the closest inferior point
+   // If we get to this point, the exact number doesn't exist and we need to round to the closest inferior point
 
-    return (double)cums[max]/(double)cums[n-1];
+   return (double)cums[max]/(double)cums[n-1];
 }
 
 void stat_core(TDataDef *MA,TDataDef *MB) {
 
-   double va,vb,t;
+   double va,vb,t,nblok=0;
    double ratio,sum,dif,adif;
-   unsigned long i,n,nx=0,ny=0;
+   unsigned long i,n,nx=0,ny=0,d=0;
    double *vx,*vy;
    unsigned int *cx,*cy;
 
-   Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
+   Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
    Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vosf=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
    Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
+   Vmedx=Vmedy=nan("NaN");
 
    if ((n=FSIZE3D(MA))==0) {
       return;
    }
 
-   if (MA && MB) {
-       vx = malloc(n*sizeof(double));
-       vy = malloc(n*sizeof(double));
-       cx = malloc(n*sizeof(unsigned int));
-       cy = malloc(n*sizeof(unsigned int));
+   // Init fields that will be used later on for ksp
 
-       if (!vx || !vy || !cx || !cy) {
-           fprintf(stderr,  "[stat_core] : Could not allocate memory\n");
-           if( vx ) free(vx);
-           if( vy ) free(vy);
-           if( cx ) free(cx);
-           if( cy ) free(cy);
-           return;
-       }
+   if (MA && MB) {
+      vx = malloc(n*sizeof(double));
+      vy = malloc(n*sizeof(double));
+      cx = malloc(n*sizeof(unsigned int));
+      cy = malloc(n*sizeof(unsigned int));
+
+      if (!vx || !vy || !cx || !cy) {
+         fprintf(stderr,  "[stat_core] : Could not allocate memory\n");
+         if( vx ) free(vx);
+         if( vy ) free(vy);
+         if( cx ) free(cx);
+         if( cy ) free(cy);
+         return;
+      }
    } else {
-       vx=vy=NULL;
-       cx=cy=NULL;
+      vx=vy=NULL;
+      cx=cy=NULL;
    }
 
    for(i=0;i<n;i++) {
       if (MA) {
          Def_Get(MA,0,i,va);
-         if (va==MA->NoData) {
+         if (isnan(va) || va==MA->NoData) {
             Vna++;
-            vx[i]=vy[i]=HUGE_VAL;
             continue;
          }
       }
 
       if (MB) {
          Def_Get(MB,0,i,vb);
-         if (vb==MB->NoData) {
+         if (isnan(vb) || vb==MB->NoData) {
             Vna++;
-            vx[i]=vy[i]=HUGE_VAL;
             continue;
          }
       }
@@ -1006,7 +1012,6 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       Vssx+=va*va;
 
       if (MB) {
-         //printf("%.17G\t%.17G\n", va, vb);
          sum=vb+va;
          dif=vb-va;
          adif=fabs(dif);
@@ -1016,64 +1021,61 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          Vsumy+=vb;
          Vssy+=vb*vb;
          Vssxy+=va*vb;
-         Vrmse+=dif*dif;
-         Vmb+=dif;
          Vme+=adif;
          Vmaxb=dif>Vmaxb?dif:Vmaxb;
          Vmaxe=adif>Vmaxe?adif:Vmaxe;
-         Vnad+=fabs(va-vb);
-         Vfms+=sum;
          Vosf+=va<=vb?va:vb;
 
-         vx[i]=va;
-         vy[i]=vb;
+         vx[d]=va;
+         vy[d]=vb;
+         ++d;
 
          if (va==vb) Vnbeq++;
          else if (vb>va) Vnbgt++;
          else Vnblt++;
 
          if (va!=0.0f) {
-            t=1.0/va;
-            Vmnb+=dif*t;
-            Vmne+=fabs(dif*t);
+            t=dif/va;
+            Vmnb+=t;
+            Vmne+=fabs(t);
 
-            ratio=vb*t;
+            ratio=vb/va;
             if (ratio>0.0f) {
-               Vlmnb+=log(ratio);
-               Vlmne+=fabs(log(ratio));
+               ++nblok;
+               t=log(ratio);
+
+               Vlmnb+=t;
+               Vlmne+=fabs(t);
+
+               Vgmb+=t;
+               Vgmv+=t*t;
             }
 
-            t=fabs(1.0-vb/va);
+            if (0.5<=ratio && ratio<=2.0) {
+               ++Vfa2; ++Vfa5; ++Vfa10;
+            } else if (0.2<=ratio && ratio<=5.0) {
+               ++Vfa5; ++Vfa10;
+            } else if (0.1<=ratio && ratio<=10.0)
+               ++Vfa10;
+
+            t=fabs(1.0-ratio);
             Vmre+=t;
             Vmaxre=t>Vmaxre?t:Vmaxre;
 
-            t=vb/va;
-            if (0.5f<=t && t<=2.0f) Vfa2++;
-            if (0.2f<=t && t<=5.0f) Vfa5++;
-            if (0.1f<=t && t<=10.0f) Vfa10++;
-            if (t>0.0f) {
-                t = log(t);
-                Vgmb+=t;
-                Vgmv+=t*t;
-            }
-
             if (vb==0.0f) {
-                Vnbmi++;
+               ++Vnbmi;
             }
          } else {
-             if (vb==0.0f) {
-                 Vfa2++;
-                 Vfa5++;
-                 Vfa10++;
-                 Vnbnp++;
-             } else {
-                 Vnbfa++;
-             }
+            if (vb==0.0f) {
+               ++Vnbnp;
+            } else {
+               ++Vnbfa;
+            }
          }
 
          if (sum!=0.0f) {
             Vmfb+=dif/sum;
-            Vmfe+=fabs(dif/sum);
+            Vmfe+=adif/sum;
          }
       }
       Vnb++;
@@ -1082,7 +1084,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vrna=Vnb/n;
 
    if (Vnb==0) {
-      Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vs=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse;
+      Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=0.0;
       Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vosf=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=0.0;
 
       if( vx ) free(vx);
@@ -1093,106 +1095,93 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       return;
    }
 
-   if (Vsumx!=0.0f) {
-      Vnmb=Vmb/Vsumx*100.0f;
-      Vnme=Vme/Vsumx*100.0f;
-   } else {
-      Vnmb=0.0f;
-      Vnme=0.0f;
+   if (MA && MB) {
+      // Calculate the Empirical Cumulative Distribution Function for x and y
+
+      qsort(vx, d, sizeof(double), QSort_Double);
+      qsort(vy, d, sizeof(double), QSort_Double);
+
+      // We might as well use the sorted values to calculate the median
+      i=d>>1;
+      Vmedx=(d&1)?vx[i]:(vx[i-1]+vx[i])*0.5;
+      Vmedy=(d&1)?vy[i]:(vy[i-1]+vy[i])*0.5;
+
+      // Eliminate duplicate values, but keep the number of occurrences in the c[xy] array
+      for(nx=0,ny=0,i=1;i<d;++i) {
+         if (vx[i]!=vx[nx]) {
+            cx[nx]=i;
+            if (++nx<i) {
+               vx[nx]=vx[i];
+            }
+         }
+
+         if (vy[i]!=vy[ny]) {
+            cy[ny]=i;
+            if (++ny<i) {
+               vy[ny]=vy[i];
+            }
+         }
+      }
+      cx[nx++]=cy[ny++]=d;
+
+      // Calculate KSP = Max|D(Xk) - D(Yk)|
+
+      for(i=0;i<nx;++i)
+         Vksp = fmax(Vksp, fabs((double)cx[i]/(double)cx[nx-1] - ecdf(vx[i],vy,cy,ny)));
+      for(i=0;i<ny;++i)
+         Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
    }
 
-   Vssx  -= (Vsumx*Vsumx)/Vnb;
-   Vssy  -= (Vsumy*Vsumy)/Vnb;
-   Vssxy -= (Vsumx*Vsumy)/Vnb;
+   Vmb   = Vsumy-Vsumx;
+   Vnmb  = Vsumx!=0?Vmb/Vsumx*100:0;
+   Vmb   /= Vnb;
+
+   Vnad  =(Vsumx+Vsumy==0)?0:Vme/(Vsumx+Vsumy);
+   Vnme  = Vsumx!=0?Vme/Vsumx*100:0;
+   Vme   /=Vnb;
+
    Vavgx = Vsumx/Vnb;
    Vavgy = Vsumy/Vnb;
-   Vs     = sqrt((Vssy-(Vssxy*Vssxy)/Vssx)/(Vnb-2.0));
 
-   if (MA && MB) {
-       // Calculate the Empirical Cumulative Distribution Function for x and y
+   Vvarx    = Vssx/Vnb-Vavgx*Vavgx;
+   Vvary    = Vssy/Vnb-Vavgy*Vavgy;
+   Vcovar   = Vssxy/Vnb-Vavgx*Vavgy;
 
-       qsort(vx, n, sizeof(double), QSort_Double);
-       qsort(vy, n, sizeof(double), QSort_Double);
+   Vpcc=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx*Vvary));
+   Vcorr=Vpcc;
 
-       // Eliminate duplicate values, but keep the number of occurrences in the c[xy] array
-       for(nx=0,ny=0,i=1;i<n;++i) {
-           if (vx[i]!=vx[nx]) {
-               cx[nx]=i;
-               if (++nx<i) {
-                   vx[nx]=vx[i];
-               }
-           }
-
-           if (vy[i]!=vy[ny]) {
-               cy[ny]=i;
-               if (++ny<i) {
-                   vy[ny]=vy[i];
-               }
-           }
-       }
-       if (vx[nx] != HUGE_VAL) { cx[nx++]=n; }
-       if (vy[ny] != HUGE_VAL) { cy[ny++]=n; }
-
-       // Calculate KSP = Max|D(Xk) - D(Yk)|
-
-       for(i=0;i<nx;++i)
-           Vksp = fmax(Vksp, fabs((double)cx[i]/(double)cx[nx-1] - ecdf(vx[i],vy,cy,ny)));
-       for(i=0;i<ny;++i)
-           Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
-   }
-
-   for(i=0;i<n;i++) {
-      Def_Get(MA,0,i,va);
-      if (MB)
-         Def_Get(MB,0,i,vb);
-
-      if (va!=MA->NoData)
-         Vvarx+=(va-Vavgx)*(va-Vavgx);
-      if (MB && vb!=MB->NoData)
-         Vvary+=(vb-Vavgy)*(vb-Vavgy);
-      if (va!=MA->NoData && (MB && vb!=MB->NoData))
-         Vcovar+=(va-Vavgx)*(vb-Vavgy);
-   }
-
-
-   Vpcc=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx)*sqrt(Vvary));
-   Vvarx/=Vnb;
-   Vvary/=Vnb;
-   Vcovar/=Vnb;
-   Vcorr=(Vssy==0 ||Vssx==0)?0:Vssxy/sqrt(Vssx*Vssy);
-   Vnmse=Vrmse/(Vnb*Vavgx*Vavgy);
-   Vrmse=sqrt(Vrmse/Vnb);
+   Vrmse=(Vssy-Vssxy*2+Vssx)/Vnb;
+   Vnmse=Vrmse/(Vavgx*Vavgy);
+   Vrmse=sqrt(Vrmse);
    Vnrmse=Vrmse/Vavgx;
-   Vregb=Vssxy/Vssx;
-   Vrega=Vavgy-(Vssxy/Vssx)*Vavgx;
-   Verra=Vs*sqrt(1.0/Vnb+(Vavgx*Vavgx)/Vssx);
-   Verrb=Vs/sqrt(Vssx);
+
+   Vregb=Vcovar/Vvarx;
+   Vrega=Vavgy-Vregb*Vavgx;
+   Verrb=sqrt((Vnb*Vssy-Vsumy*Vsumy-Vregb*Vregb*(Vnb*Vssx-Vsumx*Vsumx))/((Vnb-2.0)*(Vnb*Vssx-Vsumx*Vsumx)));
+   Verra=Verrb*sqrt(Vssx/Vnb);
+
    Vmre/=Vnb;
-   Vmb/=Vnb;
-   Vme/=Vnb;
    Vmne/=Vnb;
    Vmnb/=Vnb;
    Vmfb=2.0*Vmfb/Vnb*100;
    Vmfe=2.0*Vmfe/Vnb*100;
    Vlmnb=Vlmnb/Vnb-1;
    Vlmne=Vlmne/Vnb-1;
-   Vgmb=exp(Vgmb/(Vnb-Vnbfa-Vnbmi));
-   Vgmv=exp(Vgmv/(Vnb-Vnbfa-Vnbmi));
-   Vfoex=((Vnbgt+Vnbeq/2.0f)/Vnb-0.5f)*100.0f;
-   Vfa2=(Vfa2/Vnb)*100.0f;
-   Vfa5=(Vfa5/Vnb)*100.0f;
-   Vfa10=(Vfa10/Vnb)*100.0f;
-   Vfb=(Vavgy==0 || Vavgx==0)?0:2.0f*(Vavgy-Vavgx)/(Vavgy+Vavgx);
-   Vnad=Vfms==0?0:Vnad/Vfms;
-   Vfms=(1.0f-Vnad)/(1.0f+Vnad)*100.0f;
+
+   t=nblok+Vnbnp;
+   Vgmb=exp(Vgmb/t);
+   Vgmv=exp(Vgmv/t);
+
+   Vfoex=((Vnbgt+Vnbeq/2.0)/Vnb-0.5)*100.0;
+   Vfa2=((Vfa2+Vnbnp)/Vnb)*100.0;
+   Vfa5=((Vfa5+Vnbnp)/Vnb)*100.0;
+   Vfa10=((Vfa10+Vnbnp)/Vnb)*100.0;
+   Vfb=(Vavgy==0 || Vavgx==0)?0:2.0*(Vavgy-Vavgx)/(Vavgy+Vavgx);
+   Vfms=(1.0-Vnad)/(1.0+Vnad)*100.0;
    Vosf=(Vsumx==0 || Vsumy==0)?0:sqrt(pow(1-Vosf/Vsumx,2.0)+pow(1-Vosf/Vsumy,2.0));
    Vksp*=100.0;
    //Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-fabs(Vfoex/50.0))+(1-Vksp/100.0)+(1-Vnad);
    Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-Vksp/100.0)+(1-Vnad);
-   //printf("pcc\tvarx\tvary\tavgx\tavgy\tnb\tcovar\tcorr\tnmse\tgmb\tgmv\tfoex\tfa2\tfa5\tfa10\tfb\tnad\tfms\tosf\tksp\trank\tnbeq\tnbgt\tnblt\tnbfa\tnbmi\tnbnp\n");
-   //printf("%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\t%.17G\n", 
-   //        Vpcc, Vvarx, Vvary, Vavgx, Vavgy, Vnb, Vcovar, Vcorr, Vnmse, Vgmb, Vgmv, Vfoex, Vfa2, Vfa5, Vfa10, Vfb, Vnad, Vfms, Vosf, Vksp, Vrank, Vnbeq, Vnbgt, Vnblt, Vnbfa, Vnbmi, Vnbnp);
-   //fflush(stdout);
 
    if( vx ) free(vx);
    if( vy ) free(vy);
@@ -1207,121 +1196,121 @@ double stat_all(TDataDef *MA,TDataDef *MB) {
 }
 
 double stat_nmse(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnmse);
 }
 
 double stat_gmb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vgmb);
 }
 
 double stat_gmv(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vgmv);
 }
 
 double stat_foex(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfoex);
 }
 
 double stat_fa2(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa2);
 }
 
 double stat_fa5(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa5);
 }
 
 double stat_fa10(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa10);
 }
 
 double stat_fb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfb);
 }
 
 double stat_nad(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnad);
 }
 
 double stat_fms(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vfms);
 }
 
 double stat_osf(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vosf);
 }
 
 double stat_pcc(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vpcc);
 }
 
 double stat_ksp(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vksp);
 }
 
 double stat_rank(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vrank);
 }
 
 double stat_nbeq(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbeq);
 }
 
 double stat_nbgt(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbgt);
 }
 
 double stat_nblt(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnblt);
 }
 
 double stat_nbfa(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbfa);
 }
 
 double stat_nbmi(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbmi);
 }
 
 double stat_nbnp(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbnp);
 }
@@ -1339,193 +1328,193 @@ double stat_rna(TDataDef *MA,TDataDef *MB) {
 }
 
 double stat_mb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmb);
 }
 
 double stat_me(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vme);
 }
 
 double stat_nmb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnmb);
 }
 
 double stat_nme(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnme);
 }
 
 double stat_mnb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmnb);
 }
 
 double stat_mne(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmne);
 }
 
 double stat_lmne(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vlmne);
 }
 
 double stat_lmnb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vlmnb);
 }
 
 double stat_mfb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmfb);
 }
 
 double stat_mfe(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmfe);
 }
 
 double stat_mre(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmre);
 }
 
 double stat_maxb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxb);
 }
 
 double stat_maxe(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxe);
 }
 
 double stat_maxre(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxre);
 }
 
 double stat_rmse(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vrmse);
 }
 
 double stat_nrmse(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vnrmse);
 }
 
 double stat_corr(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vcorr);
 }
 
 double stat_covar(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vcovar);
 }
 
-double stat_varx(TDataDef *MA) {
+double stat_varx(TDataDef *MA,TDataDef *MB) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(MA,MB);
    return(Vvarx);
 }
 
-double stat_vary(TDataDef *MA) {
-   if (MA)
-      stat_core(MA,NULL);
+double stat_vary(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
    return(Vvary);
 }
 
-double stat_sumx(TDataDef *MA) {
+double stat_sumx(TDataDef *MA,TDataDef *MB) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(MA,MB);
    return(Vsumx);
 }
 
-double stat_sumy(TDataDef *MA) {
-   if (MA)
-      stat_core(MA,NULL);
+double stat_sumy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
    return(Vsumy);
 }
 
-double stat_avgx(TDataDef *MA) {
+double stat_avgx(TDataDef *MA,TDataDef *MB) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(MA,MB);
    return(Vavgx);
 }
 
-double stat_avgy(TDataDef *MA) {
-   if (MA)
-      stat_core(MA,NULL);
+double stat_avgy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
    return(Vavgy);
 }
 
-double stat_minx(TDataDef *MA) {
+double stat_minx(TDataDef *MA,TDataDef *MB) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(MA,MB);
    return(Vminx);
 }
 
-double stat_miny(TDataDef *MA) {
-   if (MA)
-      stat_core(MA,NULL);
+double stat_miny(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
    return(Vminy);
 }
 
-double stat_maxx(TDataDef *MA) {
+double stat_maxx(TDataDef *MA,TDataDef *MB) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(MA,MB);
    return(Vmaxx);
 }
 
-double stat_maxy(TDataDef *MA) {
-   if (MA)
-      stat_core(MA,NULL);
+double stat_maxy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
    return(Vmaxy);
 }
 
 double stat_regb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vregb);
 }
 
 double stat_rega(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vrega);
 }
 
 double stat_erra(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Verra);
 }
 
 double stat_errb(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Verrb);
 }
@@ -1536,10 +1525,48 @@ double stat_ssx(TDataDef *MA,TDataDef *MB) {
    return(Vssx);
 }
 
-double stat_ssxy(TDataDef *MA,TDataDef *MB) {
-   if (MA)
+double stat_ssy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
       stat_core(MA,MB);
    return(Vssy);
+}
+
+double stat_ssxy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+   return(Vssxy);
+}
+
+double stat_sdevx(TDataDef *MA,TDataDef *MB) {
+   if (MA)
+      stat_core(MA,MB);
+
+   return(sqrt(Vvarx));
+}
+
+double stat_sdevy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+
+   return(sqrt(Vvary));
+}
+
+double stat_medx(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+   return(Vmedx);
+}
+
+double stat_medy(TDataDef *MA,TDataDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+   return(Vmedy);
+}
+
+double stat_nb(TDataDef *MA) {
+   if (MA)
+      stat_core(MA,NULL);
+   return(Vnb);
 }
 
 double stat_sdev(TDataDef *MA) {
@@ -1549,27 +1576,29 @@ double stat_sdev(TDataDef *MA) {
    return(sqrt(Vvarx));
 }
 
-double stat_nb(TDataDef *MA) {
+double stat_var(TDataDef *MA) {
    if (MA)
       stat_core(MA,NULL);
-   return(Vnb);
+   return(Vvarx);
 }
 
-double stat_median(TDataDef *M) {
+double stat_med(TDataDef *M) {
 
-   int     n,nb;
+   int     n,nb,t=0;
    double *v,med=0;
 
    nb=FSIZE3D(M);
    if ((v=(double*)malloc(nb*sizeof(double)))) {
       for(n=0;n<nb;n++) {
-         Def_Get(M,0,n,v[n]);
+         Def_Get(M,0,n,v[t]);
+         if( !isnan(v[t]) && v[t]!=M->NoData )
+            ++t;
       }
 
-      qsort(v,nb,sizeof(double),QSort_Double);
+      qsort(v,t,sizeof(double),QSort_Double);
 
-      n=nb>>1;
-      med=(nb%2)?v[n]:(v[n-1]+v[n])*0.5;
+      n=t>>1;
+      med=(t&1)?v[n]:(v[n-1]+v[n])*0.5;
 
       free(v);
    }
@@ -1579,20 +1608,24 @@ double stat_median(TDataDef *M) {
 
 double stat_unique(TDataDef *M) {
 
-   int     n,nb,uniq=0;
+   int     n,nb,uniq=0,t=0;
    double *v;
 
    nb=FSIZE3D(M);
    if ((v=(double*)malloc(nb*sizeof(double)))) {
       for(n=0;n<nb;n++) {
-         Def_Get(M,0,n,v[n]);
+         Def_Get(M,0,n,v[t]);
+         if( !isnan(v[t]) && v[t]!=M->NoData )
+            ++t;
       }
 
-      qsort(v,nb,sizeof(double),QSort_Double);
-      
-      for(n=0;n<nb;n++) {
-          if (!bsearch(&v[n],&v[n+1],nb-n-1,sizeof(double),QSort_Double))
-            uniq++;
+      if( t>0 ) {
+         qsort(v,t,sizeof(double),QSort_Double);
+         
+         for(uniq=1,n=1;n<t;++n) {
+            if( v[n-1]!=v[n] )
+               ++uniq;
+         }
       }
 
       free(v);
@@ -1608,7 +1641,8 @@ double stat_sum(TDataDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      sum+=v;
+      if( !isnan(v) && v!=M->NoData )
+         sum+=v;
    }
    return sum;
 }
@@ -1620,7 +1654,8 @@ double stat_min(TDataDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      min=min<v?min:v;
+      if( !isnan(v) && v!=M->NoData && v<min )
+         min=v;
    }
    return min;
 }
@@ -1632,7 +1667,8 @@ double stat_max(TDataDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      max=max>v?max:v;
+      if( !isnan(v) && v!=M->NoData && v>max )
+         max=v;
    }
    return max;
 }
@@ -1640,13 +1676,16 @@ double stat_max(TDataDef *M) {
 double stat_avg(TDataDef *M) {
 
    double        sum=0,v=0;
-   unsigned long i;
+   unsigned long i,n=0;
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      sum+=v;
+      if( !isnan(v) && v!=M->NoData ) {
+         sum+=v;
+         ++n;
+      }
    }
-   return sum/FSIZE3D(M);
+   return sum/n;
 }
 
 double add(double a,double b) {

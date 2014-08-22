@@ -116,33 +116,39 @@ double stat_nrmse(TDataDef *MA,TDataDef *MB); /* Normalized Root mean square err
 double stat_corr(TDataDef *MA,TDataDef *MB);  /* Correlation coeficient */
 double stat_covar(TDataDef *MA,TDataDef *MB); /* Covariance */
 double stat_sdev(TDataDef *MA);               /* Standard deviation */
-double stat_varx(TDataDef *MA);               /* Variance */
-double stat_vary(TDataDef *MA);               /* Variance */
+double stat_sdevx(TDataDef *MA,TDataDef *MB); /* Standard deviation X*/
+double stat_sdevy(TDataDef *MA,TDataDef *MB); /* Standard deviation Y*/
+double stat_var(TDataDef *MA);                /* Variance */
+double stat_varx(TDataDef *MA,TDataDef *MB);  /* Variance */
+double stat_vary(TDataDef *MA,TDataDef *MB);  /* Variance */
 double stat_regb(TDataDef *MA,TDataDef *MB);  /* Regression coeficient (Slope of curve fitting) */
 double stat_rega(TDataDef *MA,TDataDef *MB);  /* Regression coeficient (Delta of curve fitting) */
 double stat_erra(TDataDef *MA,TDataDef *MB);  /* Standard Error for a */
 double stat_errb(TDataDef *MA,TDataDef *MB);  /* Standard Error for b */
-double stat_ssx(TDataDef *MA,TDataDef *MB);   /* Sum of squared values */
-double stat_ssxy(TDataDef *MA,TDataDef *MB);  /* Sum of squared values X-Y */
+double stat_ssx(TDataDef *MA,TDataDef *MB);   /* Sum of squared X values */
+double stat_ssy(TDataDef *MA,TDataDef *MB);   /* Sum of squared Y values */
+double stat_ssxy(TDataDef *MA,TDataDef *MB);  /* Sum of X*Y values */
 double stat_maxb(TDataDef *M,TDataDef *MB);   /* Maximum bias*/
 double stat_maxe(TDataDef *M,TDataDef *MB);   /* Maximum error*/
 double stat_maxre(TDataDef *MA,TDataDef *MB); /* Maximum relative error*/
 double stat_mre(TDataDef *MA,TDataDef *MB);   /* Mean Relative error*/
 double stat_nb(TDataDef *M);                  /* Number of sample */
-double stat_median(TDataDef *MA);             /* Median */
+double stat_med(TDataDef *MA);                /* Median */
+double stat_medx(TDataDef *MA,TDataDef *MB);  /* Median X*/
+double stat_medy(TDataDef *MA,TDataDef *MB);  /* Median Y*/
 double stat_unique(TDataDef *MA);             /* Number of unique values */
 double stat_sum(TDataDef *M);                 /* Sum */
 double stat_min(TDataDef *M);                 /* Minimum */
 double stat_max(TDataDef *M);                 /* Maximum */
 double stat_avg(TDataDef *M);                 /* Average */
-double stat_sumx(TDataDef *M);                /* Sum X*/
-double stat_sumy(TDataDef *M);                /* Sum Y*/
-double stat_avgx(TDataDef *M);                /* Average X*/
-double stat_avgy(TDataDef *M);                /* Average Y*/
-double stat_minx(TDataDef *M);                /* Minimum X*/
-double stat_miny(TDataDef *M);                /* Minimum Y*/
-double stat_maxx(TDataDef *M);                /* Maximum X*/
-double stat_maxy(TDataDef *M);                /* Maximum Y*/
+double stat_sumx(TDataDef *M,TDataDef *MB);   /* Sum X*/
+double stat_sumy(TDataDef *M,TDataDef *MB);   /* Sum Y*/
+double stat_avgx(TDataDef *M,TDataDef *MB);   /* Average X*/
+double stat_avgy(TDataDef *M,TDataDef *MB);   /* Average Y*/
+double stat_minx(TDataDef *M,TDataDef *MB);   /* Minimum X*/
+double stat_miny(TDataDef *M,TDataDef *MB);   /* Minimum Y*/
+double stat_maxx(TDataDef *M,TDataDef *MB);   /* Maximum X*/
+double stat_maxy(TDataDef *M,TDataDef *MB);   /* Maximum Y*/
 double stat_nmse(TDataDef *MA,TDataDef *MB);  /* Normalized mean square error */
 double stat_gmb(TDataDef *MA,TDataDef *MB);   /* Geometric mean bias */
 double stat_gmv(TDataDef *MA,TDataDef *MB);   /* Geometric mean variance */
