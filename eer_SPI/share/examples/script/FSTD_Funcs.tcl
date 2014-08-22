@@ -57,9 +57,8 @@ puts "   10     UNDEFINED: [fstdgrid convip 10.0 UNDEFINED] -> [fstdgrid convip 
 
 puts "\nTesting 3D field"
 fstdfield create FLDINT 10 1 58 Float32
-fstdfield define FLDINT -NOMVAR VTST -TYPVAR X -ETICKET XSECTION
+fstdfield define FLDINT -NOMVAR VTST -TYPVAR X -ETIKET XSECTION
 fstdfield write FLDINT OUT -32 True
-exit
 
 puts "\nTesting integer data"
 fstdfield create FLDINT 10 10 1 UInt32

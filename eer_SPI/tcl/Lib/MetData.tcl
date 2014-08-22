@@ -256,7 +256,7 @@ proc MetData::GetMode { Files { Mixed True } } {
 
       set filename [lindex $file 2]
 
-      if { [string match "*trial*" $filename] } {
+      if { [string match "*trial*" $filename] || [string match "*anal*" $filename] } {
          incr trials
       } elseif { [string match "*prog*" $filename] } {
          incr progs

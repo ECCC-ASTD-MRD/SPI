@@ -463,8 +463,11 @@ proc Animator::GetPlayList { } {
                if { [fstdfield is $d] } {
                   set idx [lindex [split $d .] 1]
                   
-                  if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
-                     set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
+                  #----- We might be missing one of the end frame
+                  catch {
+                     if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
+                        set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
+                     }
                   }
                } else {
                   incr i
