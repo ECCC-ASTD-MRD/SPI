@@ -85,4 +85,4 @@ if { $inf_min!="-Inf" } {
 fstdfield free FLD
 fstdfile close FLE
 
-Log::End
+Log::End -1
