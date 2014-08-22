@@ -12,21 +12,23 @@
 #
 # Fonctions:
 #
+#   MetData::TextCode         { Text }
+#   MetData::TextDecode       { Field }
 #   MetData::Duration         { List Idx0 Idx1 }
-#   MetData::File             { Date APath PPath Mode Mixed { Host "" } }
-#   MetData::Find             { FLD FID NOMVAR TYPVAR DATEV IP1 IP2 IP3 ETIKET }
-#   MetData::FindAll          { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
-#   MetData::FormatDATEV      { Field { Min False } }
 #   MetData::GetLatestRun     { Path }
 #   MetData::GetLatestStamp   { Path }
 #   MetData::GetStampFromFile { File }
-#   MetData::GetMode          { Files }
 #   MetData::StampModulo      { Stamp Sec }
-#   MetData::GridDefineLL     { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
+#   MetData::File2Sec         { File }
+#   MetData::Find             { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
+#   MetData::FindAll          { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
+#   MetData::FormatDATEV      { Field { Min False } }
+#   MetData::GridDefineUTM    { Lat0 Lon0 Lat1 Lon1 Res { Field "" } }
+#   MetData::GridDefineLL     { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }}
 #   MetData::GridDefinePS     { Scale NI NJ Lat Lon { Field "" } }
+#   MetData::GridLLDelta      { Lat0 Lon0 Lat1 Lon1 Delta }
 #   MetData::ListIP2          { Index Var { Stamp 0 } }
-#   MetData::Path             { Level Model DiagVar ProgVar }
-#   MetData::Profile          { Stamp Var File Lat Lon }
+#   MetData::Profile          { Stamp Var File Lat Lon { From 0 } { To end } }
 #   MetData::Obukhov          { Stamp File Lat Lon }
 #   MetData::ObukhovCalculate { Stamp File Lat Lon }
 #
@@ -35,18 +37,13 @@
 #
 #===============================================================================
 
-package provide MetData 1.1
+package provide MetData 1.2
 
-catch { SPI::Splash "Loading Widget Package MetData 1.1" }
+catch { SPI::Splash "Loading Widget Package MetData 1.2" }
 
 namespace eval MetData { } {
    global env
-   variable Data
-   variable Param
    variable Const
-
-   set Param(Path) ""
-   catch { set Param(Path) $env(CMCGRIDF) }
 
    #----- Lire les diverses definitions
 
@@ -54,11 +51,6 @@ namespace eval MetData { } {
       source $GDefs(Dir)/data/AEGL.tcl
       source $GDefs(Dir)/data/ERPG.tcl
    }
-
-   set Data(ProgMax)  240   ;# Max prog usable
-   set Data(T0)  -1         ;# First Metdata time available
-   set Data(T1)  -1         ;# Last Metdata time available
-   set Data(TA)  -1         ;# Last Analysys time available
 
    set Const(Deg2Rad)     0.017453292519943295474371680598
    set Const(PIRad)       3.141592653589793238462643383279503
@@ -230,52 +222,6 @@ proc MetData::GetStampFromFile { File } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <MetData::GetMode>
-# Creation : Octobre 2008 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Determiner le mode selon la liste des fichiers selectionnes
-#
-# Parametres :
-#  <Files>   : Liste des fichiers
-#  <Mixed>   : Mode mixte possible
-#
-# Retour     :
-#  <Mode>    : mode (prog, diag ou mixte)
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc MetData::GetMode { Files { Mixed True } } {
-
-   #----- Count number of diagnostics and prognostics met files.
-   set trials 0
-   set progs  0
-
-   foreach file $Files {
-
-      set filename [lindex $file 2]
-
-      if { [string match "*trial*" $filename] || [string match "*anal*" $filename] } {
-         incr trials
-      } elseif { [string match "*prog*" $filename] } {
-         incr progs
-      }
-   }
-
-   #----- Figure out mode.
-   if { $trials } {
-      if { $progs && $Mixed } {
-         return "mixte"
-      } else {
-         return "diag"
-      }
-   } else {
-      return "prog"
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <MetData::StampModulo>
 # Creation : Juin 2006 - J.P. Gauthier - CMC/CMOE
 #
@@ -296,28 +242,6 @@ proc MetData::StampModulo { Stamp Sec } {
    return [fstdstamp fromsecond [expr [fstdstamp tosecond $Stamp]/$Sec*$Sec]]
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <MetData::File>
-# Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Recuperer les fichiers meteorologiques disponibles.
-#
-# Parametres :
-#  <Date>    : Date de depart
-#  <APath>   : Repertoire des analyses
-#  <PPath>   : Repertoire des prognostiques
-#  <Mode>    : Mode de recuperation (B=Backward,F=Forward)
-#  <Mixed>   : Mode mixed (anap+prog) (0=Non mixte,1=Mixte,-1=Mixte+ Dont care about the run)
-#  <Delta>    : Delta T entre les pas de temps des donnees meteo
-#
-# Retour     :
-#  <Fichiers>: Liste de fichiers ordonnee au format
-#                 { { stamp date path } { ... } ... }
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
 proc MetData::File2Sec { File } {
 
    set dh [split [file tail $File] _]
@@ -325,178 +249,6 @@ proc MetData::File2Sec { File } {
    set ex [lindex $dh 1]
 
    return [clock scan "[string range $r 0 7] [string range $r 8 9] +[string range [lindex $dh 1] 0 2] hours" -gmt True]
-}
-
-proc MetData::File { Date APath PPath Mode Mixed { Delta { 1 } } } {
-   global GDefs
-   variable Data
-
-   set Mode [string index $Mode 0]
-
-   set Data(T0)  -1
-   set Data(T1)  -1
-   set Data(TA)  -1
-
-   #----- Get all Analysis available
-   set afile { }
-   set astmp 0
-   if { $APath!="" } {
-      set lst [split $APath ":"]
-      if { [llength $lst]>1 } {
-         set host [lindex $lst 0]
-         set path [join [lrange $lst 1 end] :]
-         catch { set afile [exec ssh -n -x $host "ls $path/\[1-2\]*_000"] }
-      } else {
-         set afile [lsort -dictionary -increasing [glob -nocomplain $APath/\[1-2\]*_000]]
-      }
-   }
-
-   #----- Get all Prognostics available
-   set pfile { }
-   set prun  0
-   set pstmp 0
-   if { $PPath!="" } {
-      set lst [split $PPath ":"]
-      if { [llength $lst]>1 } {
-         set host [lindex $lst 0]
-         set path [join [lrange $lst 1 end] :]
-         catch { set pfile [exec ssh -n -x $host "ls $path/\[1-2\]*_???"] }
-      } else {
-         set pfile [lsort -dictionary -increasing [glob -nocomplain $PPath/\[1-2\]*_???]]
-      }
-   }
-
-   if { [llength $afile]==0 && [llength $pfile]==0 } {
-      Log::Print WARNING "No data found (Analysis=$APath, Prognostics=$PPath)"
-      return ""
-   }
-
-   #----- Get time range available
-   set data [concat $afile $pfile]
-   set Data(T0)  [MetData::File2Sec [lindex $data 0]]
-   set Data(T1)  [MetData::File2Sec [lindex $data end]]
-
-   #----- Get the last run
-   if { [llength $pfile] } {
-      set prun  [lindex [split [file tail [lindex $pfile end]] _] 0]
-      set pstmp [fstdstamp fromdate [string range $prun 0 7] [string range $prun 8 end]000000]
-      Log::Print DEBUG "Last run  : $prun ($pstmp)"
-   }
-
-   #----- Get the last trial
-   if { [llength $afile] } {
-      set astmp [lindex [split [file tail [lindex $afile end]] _] 0]
-      set astmp [fstdstamp fromdate [string range $astmp 0 7] [string range $astmp 8 end]000000]
-      Log::Print DEBUG "Last trial: $astmp"
-      set Data(TA) [fstdstamp toseconds $astmp]
-   }
-
-   Log::Print DEBUG "Found data:\n\tAnalysis:\n\t\t[join $afile "\n\t\t"]\n\tPrognostics:\n\t\t[join $pfile "\n\t\t"]"
-
-   if { $Mixed || $Date>=$pstmp } {
-
-      #----- Process Prognostics
-      foreach f $pfile {
-         set dh [split [file tail $f] _]
-         set r  [lindex $dh 0]
-
-         #----- Are we using the last run ??? or if no diags exists
-         if { $Mixed!=-1 && ($r!=$prun && $APath!="") } {
-            continue
-         }
-
-         set d  [string range $r 0 7]
-         set h "[string range $r 8 9]000000"
-         set ex [lindex $dh 1]
-
-         if { $ex<=$Data(ProgMax) } {
-            set st [fstdstamp fromdate $d $h]
-            set st [fstdstamp incr $st $ex]
-
-            #----- Prioritize analysis if there are any
-            if { !$astmp || $st>$astmp } {
-               if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
-
-               #----- Keep if it is on the right time interval
-               if { [expr $hour%$Delta]==0 } {
-                  set met($st) $f
-               }
-            }
-         }
-      }
-   }
-
-   if { $Mixed || $Date<$pstmp } {
-
-      #----- Process Analysis
-      foreach f $afile {
-         set dh [split [file tail $f] _]
-         set r  [lindex $dh 0]
-
-         set d  [string range $r 0 7]
-         set h "[string range $r 8 9]000000"
-         set ex [lindex $dh 1]
-
-         set st [fstdstamp fromdate $d $h]
-         set st [fstdstamp incr $st $ex]
-
-         if { [set hour [string trimleft [clock format [fstdstamp toseconds $st] -format %H -gmt True] 0]]=="" } { set hour 0 }
-
-         #----- Keep if it is on the right time interval
-         if { [expr $hour%$Delta]==0 } {
-            set met($st) $f
-         }
-      }
-
-      #----- Dans le cas ou il manque un trial pour aller jusqu'au prog
-      if { !$Mixed && $st<$pstmp } {
-         set met($pstmp) $PPath/${prun}_000
-      }
-   }
-
-   #------ Sort following mode specification
-   set data ""
-   set pidx ""
-
-   set order [lsort -dictionary -increasing [array names met *]]
-   if { ![llength $order] } {
-      Log::Print WARNING "Available filtered data is empty"
-      return ""
-   }
-
-   if { $Mode=="F" } {
-
-      #------ Forward mode
-      foreach idx $order {
-         if { $Date < $idx } {
-            if { $pidx=="" } {
-               Log::Print INFO "Data starting later than $Date"
-               return
-            } else {
-               lappend data [list $pidx [join [fstdstamp todate $pidx] ""] $met($pidx)]
-            }
-         }
-         set pidx $idx
-      }
-      lappend data [list $pidx [join [fstdstamp todate $pidx] ""] $met($pidx)]
-   } else {
-
-      #------ Backward mode
-      foreach idx $order {
-         lappend data [list $idx [join [fstdstamp todate $idx] ""] $met($idx)]
-         if { $Date <= $idx } {
-            break
-         }
-      }
-   }
-
-   if { [llength $data] } {
-      Log::Print DEBUG "Available processed and sorted files:\n\t[join $data "\n\t"]"
-   } else {
-      Log::Print INFO "No data available for this date"
-   }
-
-   return $data
 }
 
 #----------------------------------------------------------------------------
@@ -863,102 +615,6 @@ proc MetData::ListIP2 { Index Var { Stamp 0 } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <MetData::Path>
-# Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Initialiser les path des fichiers de donnees meteo
-#            d'analyse et de prognostique.
-#
-# Parametres :
-#   <Level>  : Niveau utilise
-#   <Model>  : Model utilise
-#   <DiagVar>: Variable contenant le repertoires des fichiers diagnostiques
-#   <ProgVar>: Variable contenant le repertoire des donnees prognostiques
-#
-# Retour     :
-#   <DiagVar>: Variable contenant le repertoires des fichiers diagnostiques
-#   <ProgVar>: Variable contenant le repertoire des donnees prognostiques
-#
-# Remarques :
-#    Aucune.
-#
-#----------------------------------------------------------------------------
-
-proc MetData::Path { Level Model DiagVar ProgVar } {
-   variable Param
-
-   upvar #0 $DiagVar diag
-   upvar #0 $ProgVar prog
-
-   switch $Level {
-      "hyb" {
-         switch $Model {
-            "glb" {
-               set diag "$Param(Path)/trial/glbhyb2"
-               set prog "$Param(Path)/prog/glbhyb"
-            }
-            "reg" {
-               set diag "$Param(Path)/trial/reghyb2"
-               set prog "$Param(Path)/prog/reghyb"
-            }
-            default {
-               set diag ""
-               set prog ""
-            }
-         }
-      }
-      "eta" {
-         switch $Model {
-            "glb" {
-               set diag "$Param(Path)/trial/glbeta2"
-               set prog "$Param(Path)/prog/glbeta"
-            }
-            "reg" {
-               set diag "$Param(Path)/trial/regeta2"
-               set prog "$Param(Path)/prog/regeta"
-            }
-            "lameast" {
-               set diag ""
-               set prog "$Param(Path)/prog/lam/east.eta"
-            }
-            "lamwest" {
-               set diag ""
-               set prog "$Param(Path)/prog/lam/west.eta"
-            }
-            "lamarct" {
-               set diag ""
-               set prog "$Param(Path)/prog/lam/arctic.eta"
-            }
-            "lammari" {
-               set diag ""
-               set prog "$Param(Path)/prog/lam/maritimes.eta"
-            }
-            default {
-               set diag ""
-               set prog ""
-            }
-         }
-      }
-      "pres" {
-         switch $Model {
-            "glb" {
-               set diag "$Param(Path)/trial/glbpres2"
-               set prog "$Param(Path)/prog/glbpres"
-            }
-            "reg" {
-               set diag "$Param(Path)/trial/regpres2"
-               set prog "$Param(Path)/prog/regpres"
-            }
-            default {
-               set diag ""
-               set prog ""
-            }
-         }
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <MetData::Profile>
 # Creation : Novembre 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -1091,6 +747,7 @@ proc MetData::Obukhov { Stamp File Lat Lon } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
+
 proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
 
    set rgas  287.00
