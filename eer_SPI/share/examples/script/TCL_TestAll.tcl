@@ -101,6 +101,7 @@ set tests {
    {BUL_FXCN3X_to_SHP.tcl DataIn/FXCN3X/20111003175406.Ophelia.technical.txt.en}
    SIM_Traj.tcl
    VEXPR_NaN.tcl
+   VEXPR_Stats.tcl
 }
 
 set date [clock format [clock seconds] -format "%Y%m%d"]
