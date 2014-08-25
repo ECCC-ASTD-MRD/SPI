@@ -375,7 +375,7 @@ proc Styles::Write { Channel Spec { Style "" } } {
       -interpolation \"[dataspec configure $Spec -interpolation]\" -topography \"[dataspec configure $Spec -topography]\" -topographyfactor \"[dataspec configure $Spec -topographyfactor]\" \
       -mask \"[dataspec configure $Spec -mask]\" -light \"[dataspec configure $Spec -light]\" -labelvar \"[dataspec configure $Spec -labelvar]\" \
       -sizevar \"[dataspec configure $Spec -sizevar]\" -mapvar \"[dataspec configure $Spec -mapvar]\" -mapall \"[dataspec configure $Spec -mapall]\" \
-      -extrude \"[dataspec configure $Spec -extrude]\" -extrudefactor \"[dataspec configure $Spec -extrudefactor]\""
+      -mapabove [dataspec configure $Spec -mapabove] -mapbelow [dataspec configure $Spec -mapbelow] -extrude \"[dataspec configure $Spec -extrude]\" -extrudefactor \"[dataspec configure $Spec -extrudefactor]\""
 }
 
 Styles::Read

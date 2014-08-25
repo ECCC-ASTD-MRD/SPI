@@ -62,7 +62,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbellow False -mapabove True -transparency 100
+      -intervals {} -mapbelow False -mapabove True -transparency 100
 
    fstdfield vector { UU VV }
    fstdfield vector { UP VP }
@@ -99,7 +99,7 @@ namespace eval FSTD {
    set Param(Contour)       0              ;#Affichage des contours
    set Param(MapAll)        0              ;#Affichage des contours avec la colormap
    set Param(MapAbove)      1              ;#Affichage de couleur au dessus du dernier interval
-   set Param(MapBellow)     0              ;#Affichage de coule en dessous du premier interval
+   set Param(MapBelow)     0              ;#Affichage de coule en dessous du premier interval
    set Param(Grid)          0              ;#Affichage de la grille
    set Param(Vector)        NONE           ;#Affichage vectorise
    set Param(Texture)       1              ;#Affichage des donnees
@@ -195,7 +195,7 @@ namespace eval FSTD {
                            "Colormap used for values" }
    set Bubble(MapAbove)  { "Palette utilisée pour les valeurs haut dessus du maximum spécifié"
                            "Colormap used for values above maximum specified" }
-   set Bubble(MapBellow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
+   set Bubble(MapBelow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
                            "Colormap used for values bellow minimum specified" }
    set Bubble(Interp)    { "Méthode d'interpolation des données (Lissage)"
                            "Interpolation method (Smoothing)" }
@@ -448,7 +448,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
       frame $Data(Frame).lev.desc
-         checkbutton $Data(Frame).lev.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable FSTD::Param(MapBellow) -onvalue 1 -offvalue 0 \
+         checkbutton $Data(Frame).lev.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable FSTD::Param(MapBelow) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false -selectcolor "" -width 10
          checkbutton $Data(Frame).lev.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable FSTD::Param(MapAbove) -onvalue 1 -offvalue 0 \
                -relief sunken -bd 2 -overrelief raised -offrelief groove -command { FSTD::ParamSet } -indicatoron false -selectcolor ""  -width 10
@@ -521,7 +521,7 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).lev.select.mode      $Bubble(Mode)
    Bubble::Create $Data(Frame).lev.select.number    $Bubble(Nb)
    Bubble::Create $Data(Frame).lev.edit             $Bubble(Intervals)
-   Bubble::Create $Data(Frame).lev.desc.bellow      $Bubble(MapBellow)
+   Bubble::Create $Data(Frame).lev.desc.bellow      $Bubble(MapBelow)
    Bubble::Create $Data(Frame).lev.desc.above       $Bubble(MapAbove)
 }
 
@@ -759,7 +759,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Map)        [dataspec configure $spec -colormap]
    set Param(MapAll)     [dataspec configure $spec -mapall]
    set Param(MapAbove)   [dataspec configure $spec -mapabove]
-   set Param(MapBellow)  [dataspec configure $spec -mapbellow]
+   set Param(MapBelow)  [dataspec configure $spec -mapbelow]
    set Param(Size)       [dataspec configure $spec -size]
    set Param(SizeRange)  [dataspec configure $spec -sizerange]
    set Param(Color)      [dataspec configure $spec -color]
@@ -884,7 +884,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbellow $Param(MapBellow)
+      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow)
 
    #----- Set intervals depending on interval mode
    if  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
