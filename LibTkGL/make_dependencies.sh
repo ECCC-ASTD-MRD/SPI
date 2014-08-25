@@ -1,7 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.7.1
+VERSION=7.7.3
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -30,6 +30,7 @@ GEOS=geos-3.4.0
 GDAL=gdal-1.11.0
 MYSQL=mysql-5.1
 JASPER=jasper-1.900.1
+JPEG=jpeg-6b
 HDF4=hdf-4.2.5
 SZIP=szip-2.1
 HDF5=hdf5-1.8.11
@@ -185,10 +186,20 @@ if [[ $? -ne 0 ]] ; then
 fi
 cp -d ${LIB_PATH}/${JASPER}/lib/*.so* ${SPI_LIB}
 
+#----- JPEG
+cd ${ARCH_PATH}/${JPEG}
+make clean
+make -f makefile.ansi
+mkdir -p ${LIB_PATH}/${JPEG}/lib
+mkdir -p ${LIB_PATH}/${JPEG}/include
+
+cp libjpeg.a ${LIB_PATH}/${JPEG}/lib
+cp *.h ${LIB_PATH}/${JPEG}/include
+
 #----- HDF-4
 cd ${ARCH_PATH}/${HDF4}
 make distclean
-./configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran 
+./configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}/${JPEG}
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -299,6 +310,7 @@ make distclean
 --with-curl=${LIB_PATH}/${CURL}/bin/curl-config \
 --with-sqlite3=${LIB_PATH}/${SQLITE} \
 --with-geos=${LIB_PATH}/${GEOS}/bin/geos-config \
+--with-hdf4=${LIB_PATH}/${HDF4} \
 --with-hdf5=${LIB_PATH}/${HDF5} \
 --with-pg=${LIB_PATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIB_PATH}/${ODBC} \
