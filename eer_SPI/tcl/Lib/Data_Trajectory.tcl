@@ -109,7 +109,7 @@ namespace eval Trajectory {
    dataspec create 700.00  -width $Param(Width)  -fill white  -color #0000FF -icon SQUARE \
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 
-   dataspec create 250.000 -width $Param(Width)  -fill white  -color #006400 -icon CIRCLE \
+   dataspec create 250.00 -width $Param(Width)  -fill white  -color #006400 -icon CIRCLE \
       -style $Param(Style) -size $Param(Size) -intervals [expr $Param(Interval)*3600] -mark [expr $Param(Mark)*3600]
 }
 
