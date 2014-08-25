@@ -1165,8 +1165,8 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vmnb/=Vnb;
    Vmfb=2.0*Vmfb/Vnb*100;
    Vmfe=2.0*Vmfe/Vnb*100;
-   Vlmnb=Vlmnb/Vnb-1;
-   Vlmne=Vlmne/Vnb-1;
+   Vlmnb=exp(Vlmnb/Vnb)-1;
+   Vlmne=exp(Vlmne/Vnb)-1;
 
    t=nblok+Vnbnp;
    Vgmb=exp(Vgmb/t);
