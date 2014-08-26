@@ -83,7 +83,7 @@ proc Styles::Read { } {
    
    #----- Loop on possible paths
    foreach path $paths {
-      foreach file [glob -nocomplain -tails -directory $path/Style *.tcl] {
+      foreach file [lsort -dictionary [glob -nocomplain -tails -directory $path/Style *.tcl]] {
 
          set style [file rootname $file]
          
