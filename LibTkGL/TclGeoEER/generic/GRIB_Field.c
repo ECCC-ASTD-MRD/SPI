@@ -170,8 +170,8 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
    double       tra[6],inv[6],*tm,*im;
    const char **list;
 
-   static CONST char *sopt[] = { "-DATEO","-DATEV","-FID","-KEY","-NI","-NJ","-NK","-IP1","-NOMVAR","-CENTER","-DATA","-projection","-transform","-georef",NULL };
-   enum        opt { DATEO,DATEV,FID,KEY,NI,NJ,NK,IP1,NOMVAR,CENTER,DATA,PROJECTION,TRANSFORM,GEOREF };
+   static CONST char *sopt[] = { "-DATEO","-DATEV","-FID","-KEY","-NI","-NJ","-NK","-IP1","-NOMVAR","-GRTYP","-CENTER","-DATA","-projection","-transform","-georef",NULL };
+   enum        opt { DATEO,DATEV,FID,KEY,NI,NJ,NK,IP1,NOMVAR,GRTYP,CENTER,DATA,PROJECTION,TRANSFORM,GEOREF };
 
    if (!Field) {
       Tcl_AppendResult(Interp,"Invalid field",(char*)NULL);
@@ -266,6 +266,13 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             }
             break;
 
+         case GRTYP:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Grid,-1));
+            } else {
+            }
+            break;
+            
          case CENTER:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->CENTER,-1));

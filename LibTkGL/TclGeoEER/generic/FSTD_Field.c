@@ -287,10 +287,10 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force)
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_FieldReadMesh>
- * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+ * Nom      : <FSTD_FieldReadVLevels>
+ * Creation : Aout 2014 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Effectue les calculs et l'affichage pour le type particule.
+ * But      : Lire la coordonnee verticale pour un profile/xsection.
  *
  * Parametres :
  *  <Field>   : Adresse des valeurs du champs
@@ -324,6 +324,21 @@ int FSTD_FieldReadVLevels(TData *Field) {
    return(nj);
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FieldReadMesh>
+ * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue les calculs et l'affichage pour le type particule.
+ *
+ * Parametres :
+ *  <Field>   : Adresse des valeurs du champs
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
 int FSTD_FieldReadMesh(TData *Field) {
 
    FSTD_Head *head=(FSTD_Head*)Field->Head;

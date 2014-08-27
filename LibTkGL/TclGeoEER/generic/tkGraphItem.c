@@ -2225,8 +2225,8 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    /*Setup 1D Colormap Texture*/
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_1D,tx[0]);
-   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Data->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Data->Spec->Map->Color);
 
@@ -2494,7 +2494,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    float  step;
    Vect3d pix,*vbuf;
 
-   if (!Data || !Data->Spec->Width || !Data->Spec->Outline)
+   if (!Data || !Data->Def->Data[1] || !Data->Spec->Width || !Data->Spec->Outline)
       return;
 
    if (GLRender->Resolution>2) {
