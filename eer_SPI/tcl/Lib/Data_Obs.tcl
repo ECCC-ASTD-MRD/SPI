@@ -53,12 +53,18 @@ namespace eval Obs {
 
    #----- Lecture des tables BUFR
    set code [ catch {
-      if { $GDefs(Lang)==0 } {
-         metobs table -readmaster B $env(SPI_PATH)/share/rmn/table_b_bufr_f
-         metobs table -readmaster D $env(SPI_PATH)/share/rmn/table_d_bufr_f
+      if { [info exists env(AFSISIO)] } {
+         set path $env(AFSISIO)/datafiles/constants
       } else {
-         metobs table -readmaster B $env(SPI_PATH)/share/rmn/table_b_bufr_e
-         metobs table -readmaster D $env(SPI_PATH)/share/rmnr/table_d_bufr_e
+         set path $env(SPI_PATH)/share/rmn
+      }
+      
+      if { $GDefs(Lang)==0 } {
+         metobs table -readmaster B $path/table_b_bufr_f
+         metobs table -readmaster D $path/table_d_bufr_f
+      } else {
+         metobs table -readmaster B $path/table_b_bufr_e
+         metobs table -readmaster D $path/table_d_bufr_e
       }
    } error ]
 

@@ -681,7 +681,12 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
 }
 
 #----- Load RPN dictionnary
-fstddict load $env(SPI_PATH)/share/rmn/stdf.variable_dictionary.xml
+if { [info exists env(AFSISIO)] } {
+   set path $env(AFSISIO)/datafiles/constants
+} else {
+   set path $env(SPI_PATH)/share/rmn
+}
+fstddict load $path/ops.variable_dictionary.xml
 
 #----- Load user RECRC
 MetStat::RECRCLoad $env(HOME)/.recrc
