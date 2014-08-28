@@ -470,6 +470,7 @@ proc Graph::Section::ItemAdd { GR Item } {
    if { [lsearch -exact $data(Items) $Item]==-1 } {
       set id [$data(Canvas) create text -100 -100  -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
+      graphitem free   $Item
       graphitem create $Item
       graphitem configure $Item -desc $id
 

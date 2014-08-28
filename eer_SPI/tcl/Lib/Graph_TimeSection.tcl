@@ -527,6 +527,7 @@ proc Graph::TimeSection::ItemAdd { GR Item } {
 
       set id [$data(Canvas) create text -100 -100  -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
+      graphitem free   $Item
       graphitem create $Item
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -xdata $Item.X -ydata $Item.Y -orient X -desc $id
 

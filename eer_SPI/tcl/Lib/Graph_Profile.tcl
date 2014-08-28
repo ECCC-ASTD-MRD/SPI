@@ -424,6 +424,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
       vector dim    $Item { X Y }
       set id [$data(Canvas) create text -100 -100 -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
+      graphitem free   $Item
       graphitem create $Item
       graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -xdata $Item.X -ydata $Item.Y -orient Y -desc $id
 
