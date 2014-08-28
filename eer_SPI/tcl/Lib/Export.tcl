@@ -70,6 +70,8 @@ namespace eval Export {
    set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
    set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
                         "No RPN data to export. You have to display the fields on the active viewport to be able to export them." }
+
+   georef create EXPORT_PROJ { GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]] }
 }
 
 namespace eval Export::Raster {
@@ -346,7 +348,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
          RGBA  { gdalband create BAND $Param(DX) $Param(DY) 4 Byte }
          INDEX { gdalband create BAND $Param(DX) $Param(DY) 1 Byte }
       }
-      gdalband define BAND -transform [list $Param(Lon0) $Param(DLon) 0.0 $Param(Lat1) 0.0 -$Param(DLat)]
+      gdalband define BAND -georef EXPORT_PROJ -transform [list $Param(Lon0) $Param(DLon) 0.0 $Param(Lat1) 0.0 -$Param(DLat)]
       gdalband import BAND $field
 
       if { $Format=="KMZ" } {
@@ -516,7 +518,7 @@ proc Export::Vector::Export { Path Format Fields } {
       }
 
       
-      ogrlayer create FILE LAYER [file tail $name]
+      ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ
       ogrlayer import LAYER $field
       ogrfile close FILE
       ogrlayer free LAYER
