@@ -71,7 +71,7 @@ if { $inf_max!="Inf" } {
 
 vexpr FLD ifelse(RES,FLD,-INFINITY)
 
-set inf_min [vexpr NIL sminx(FLD)]
+set inf_min [vexpr NIL smin(FLD)]
 Log::Print DEBUG "Min with infinity: minx=$inf_min"
 
 if { $inf_min!="-Inf" } {
