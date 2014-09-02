@@ -26,7 +26,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-fstddict load /users/dor/afsr/005/Projects/libeerUtils/data/stdf.variable_dictionary.xml
+fstddict load $env(AFSISIO)/datafiles/constants/ops.variable_dictionary.xml
 fstddict load DataIn/eer.variable_dictionary.xml
 
 puts "Variables (All) : [fstddict var]"

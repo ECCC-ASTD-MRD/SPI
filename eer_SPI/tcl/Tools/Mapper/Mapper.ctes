@@ -22,17 +22,21 @@ namespace eval Mapper { } {
    variable Param
    variable License
 
-   set License(MapQuest)       "Data, imagery and map information provided by MapQuest, Open Street Map"
-   set License(OpenStreetMap)  "© OpenStreetMap contributors"
-   set License(OneEarth)       "Data provided by NASA / JPL"
-   set License(BlueMarble)     "Data provided by NASA / JPL"
-   set License(MSVirtualEarth) "Data, imagery and map information provided by Microsoft VirtualEarth"
+   set License(MapQuest)          "Data, imagery and map information provided by MapQuest, Open Street Map"
+   set License(OpenStreetMap)     "© OpenStreetMap contributors"
+   set License(Stamen-Toner)      "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL"
+   set License(Stamen-Watercolor) "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
+   set License(Stamen-Terrain)    "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
+   set License(OneEarth)          "Data provided by NASA / JPL"
+   set License(BlueMarble)        "Data provided by NASA / JPL"
+   set License(MSVirtualEarth)    "Data, imagery and map information provided by Microsoft VirtualEarth"
    set License(Google-Maps)            "Data, imagery and map information provided by Google"
    set License(Google-Satellite)       "Data, imagery and map information provided by Google"
    set License(Google-SatelliteHybrid) "Data, imagery and map information provided by Google"
    set License(Google-Terrain)         "Data, imagery and map information provided by Google"
    set License(Google-TerrainHybrid)   "Data, imagery and map information provided by Google"
-   set License(ESRI-Server)            "Data, imagery and map information provided by ESRI"
+   set License(ESRI-WorldStreet)       "Data, imagery and map information provided by ESRI"
+   set License(ESRI-WorldTopo)         "Data, imagery and map information provided by ESRI"
 
    set Param(Title)     { "Données Geographiques" "Geographical data" }
    set Param(Version)   2.1

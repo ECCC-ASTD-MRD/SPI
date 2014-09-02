@@ -208,7 +208,7 @@ namespace eval Mapper::DepotWare::TMS {
    <MaxConnections>5</MaxConnections>
 </GDAL_WMS> } }
 
-      { ESRI-Server TMS { <GDAL_WMS>
+      { ESRI-WorldStreet TMS { <GDAL_WMS>
    <Service name="TMS">
    <ServerUrl>http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${x}</ServerUrl>
    </Service>
@@ -228,6 +228,27 @@ namespace eval Mapper::DepotWare::TMS {
    <BandsCount>3</BandsCount>
    <MaxConnections>10</MaxConnections>
 </GDAL_WMS> } }   
+
+   { ESRI-WorldTopo TMS { <GDAL_WMS>
+   <Service name="TMS">
+   <ServerUrl>http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/${z}/${y}/${x}</ServerUrl>
+   </Service>
+   <DataWindow>
+      <UpperLeftX>-20037508.34</UpperLeftX>
+      <UpperLeftY>20037508.34</UpperLeftY>
+      <LowerRightX>20037508.34</LowerRightX>
+      <LowerRightY>-20037508.34</LowerRightY>
+      <TileLevel>17</TileLevel>
+      <TileCountX>1</TileCountX>
+      <TileCountY>1</TileCountY>
+      <YOrigin>top</YOrigin>
+   </DataWindow>
+   <Projection>EPSG:900913</Projection>
+   <BlockSizeX>256</BlockSizeX>
+   <BlockSizeY>256</BlockSizeY>
+   <BandsCount>3</BandsCount>
+   <MaxConnections>10</MaxConnections>
+</GDAL_WMS> } }
    }
 }
 

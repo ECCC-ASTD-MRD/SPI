@@ -62,8 +62,8 @@ namespace eval Convert { } {
 
    set Lbl(1852)  "Nautical mile"
 
-   set Lbl(DistL)   { "metres" "meters" }
-   set Lbl(DistU)   { "Metres" "Meters" }
+   set Lbl(DistL)   { "mètres" "meters" }
+   set Lbl(DistU)   { "Mètres" "Meters" }
 
    set Unit(1e24)  "Y"
    set Unit(1e21)  "Z"
