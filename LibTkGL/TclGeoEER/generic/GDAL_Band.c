@@ -3201,7 +3201,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
          Band->Stat[c].Min=0.0;
          Band->Stat[c].Max=255.0;
       } else if (Band->Band[c]) {
-         GDALComputeRasterMinMax(Band->Band[c],TRUE,minmax);
+         GDALComputeRasterMinMax(Band->Band[c],FALSE,minmax);
          Band->Stat[c].Min=minmax[0];
          Band->Stat[c].Max=minmax[1];
       } else {
