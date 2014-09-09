@@ -42,7 +42,7 @@ namespace eval RPN2OGR { } {
    set Param(Intervals) {}
    set Param(Vars)      {}
    set Param(Factors)   {}
-   set Param(Out)       ./out
+   set Param(Out)       ./export_%d-%t
 
    set Param(CommandInfo) "   Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
    
@@ -59,8 +59,8 @@ namespace eval RPN2OGR { } {
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
 \t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
-\t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
-\t-help        : This information
+\t-out         : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET}). 
+\t                  Wildcards : %d date, %t time
       
    Information parameters:\n
 \t-help        : This information
@@ -90,8 +90,16 @@ proc RPN2OGR::Run { } {
       foreach datev [fstdfile info FILEIN DATEV] {
 
          set fields {}
-         set time [clock format $datev -format "%Y%m%d_%H%M" -gmt True]
-         Log::Print INFO "   Found date $time"
+         set date [clock format $datev -format "%Y%m%d" -gmt True]
+         set time [clock format $datev -format "%H%M" -gmt True]
+         Log::Print INFO "   Found date $date $time"
+         
+         #----- Create filename 
+         set name [string map [list %d $date %t $time] $Param(Out)]
+
+         if  { [set nb [llength [glob -nocomplain ${name}*.*]]] } {
+            set name $name.[incr nb]
+         }
 
          set v 0
          foreach var $Param(Vars) {
@@ -121,12 +129,12 @@ proc RPN2OGR::Run { } {
          if { [llength $fields] && $Param(Format)!="KMZ" && $Param(Mode)!="CONTOUR" } {
             Log::Print INFO "   Exporting [llength $fields] field(s)"
 
-            ogrfile open FILE write $Param(Out)_${time} $Param(Format)
+            ogrfile open FILE write $name $Param(Format)
 
             if { [georef is REF] } {
-               ogrlayer create FILE LAYER ${time} REF
+               ogrlayer create FILE LAYER ${date}_${time} REF
             } else {
-               ogrlayer create FILE LAYER ${time}
+               ogrlayer create FILE LAYER ${date}_${time}
             }
 
             ogrlayer import LAYER $fields
@@ -135,8 +143,8 @@ proc RPN2OGR::Run { } {
             ogrlayer free LAYER
             eval fstdfield free $fields
 
-            set files [glob $Param(Out)_${time}*]
-            eval exec zip -j -r $Param(Out)_${time}.zip $files
+            set files [glob $name*]
+            eval exec zip -j -r $name.zip $files
             eval file delete -force $files
          }
       }

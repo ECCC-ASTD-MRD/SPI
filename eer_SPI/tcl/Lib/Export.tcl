@@ -61,7 +61,7 @@ namespace eval Export {
    set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
    set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
    set Bubble(Data)   { "Sélection des données a exporter" "Select data to export" }
-   set Bubble(File)   { "Nom du fichier d'exportation" "Export filename" }
+   set Bubble(File)   { "Nom du fichier d'exportation. Peut inclure des wildcards:\n\t%n nomvar\n\t%l level\n\t%h level type\n\t%e etiket\n\t%d date\n\t%t time\n\t%1 ip1\n\t%2 ip2\n\t%3 ip3" "Export filename. Can include wildcards:\n\t%n nomvar\n\t%l level\n\t%h level type\n\t%e etiket\n\t%d date\n\t%t time\n\t%1 ip1\n\t%2 ip2\n\t%3 ip3" }
    set Bubble(DBase)  { "Paramêtres de connection a la base de donnée" "Database connexion parameters" }
 
    set Msg(Export)    { "Exportation de " "Exporting data " }
@@ -329,14 +329,25 @@ proc Export::Raster::Export { Path Format Mode Fields } {
    foreach field $Fields {
 
       set nv      [fstdfield define $field -NOMVAR]
+      set etiket  [fstdfield define $field -ETIKET]
+      set ip1     [fstdfield define $field -IP1]
+      set ip2     [fstdfield define $field -IP2]
+      set ip3     [fstdfield define $field -IP3]
       set lvl     [fstdfield stats $field -level]
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-      set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
-      set name    ${file}_${nv}_${date}_${lvl}_${lvltype}
+      set date    [clock format $sec0 -format "%Y%m%d" -gmt true]
+      set time    [clock format $sec0 -format "%H%M" -gmt true]
       set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+     
+      #----- Create filename 
+      set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
 
+      if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
+         set name $name.[incr nb]
+      }
+      
       Dialog::Wait .export $Export::Msg(Export) $desc
 
       switch $Mode {
@@ -401,9 +412,9 @@ proc Export::Raster::Export { Path Format Mode Fields } {
    if { $Format=="KMZ" } {
       puts $f "</Document>\n</kml>"
       close $f
-      file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
-      eval file delete ${file}.kml $kmz
+      file delete -force ${name}.kmz
+      eval exec zip -j ${name}.kmz ${name}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
+      eval file delete ${name}.kml $kmz
    }
 
    Dialog::WaitDestroy
@@ -456,19 +467,27 @@ proc Export::Vector::Export { Path Format Fields } {
    foreach field $Fields {
 
       set nv      [fstdfield define $field -NOMVAR]
+      set etiket  [fstdfield define $field -ETIKET]
+      set ip1     [fstdfield define $field -IP1]
+      set ip2     [fstdfield define $field -IP2]
+      set ip3     [fstdfield define $field -IP3]
       set lvl     [fstdfield stats $field -level]
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-      set date    [clock format $sec0 -format "%Y%m%d_%H:%M" -gmt true]
-      set name    ${file}_${nv}_${date}_${lvl}_${lvltype}
+      set date    [clock format $sec0 -format "%Y%m%d" -gmt true]
+      set time    [clock format $sec0 -format "%H%M" -gmt true]
       set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
 
+      #----- Create filename 
+      set name    [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
+
+      if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
+         set name $name.[incr nb]
+      }
+      
       Dialog::Wait .export $Export::Msg(Export) $desc
 
-      if { [file exists ${name}${ext}] } {
-         file delete -force ${name}${ext}
-      }
       switch $Format {
          "PostgreSQL" {
             set req "PG:"
@@ -516,8 +535,7 @@ proc Export::Vector::Export { Path Format Fields } {
             ogrfile open FILE write $name${ext} $Format
          }
       }
-
-      
+  
       ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ
       ogrlayer import LAYER $field
       ogrfile close FILE
@@ -527,9 +545,9 @@ proc Export::Vector::Export { Path Format Fields } {
    if { $Format=="KMZ" } {
       puts $f "</Document>\n</kml>"
       close $f
-      file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
-      eval file delete ${file}.kml $kmz
+      file delete -force ${name}.kmz
+      eval exec zip -j ${name}.kmz ${name}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
+      eval file delete ${name}.kml $kmz
    }
 
    Dialog::WaitDestroy
@@ -756,11 +774,11 @@ proc Export::Window { } {
       pack .export.cmd.ok .export.cmd.cancel -side left -fill x -expand true
    pack .export.cmd -side top -fill x -expand true -padx 5 -pady 5
 
-   Bubble:::Create .export.what       [lindex $Bubble(Data) $GDefs(Lang)]
-   Bubble:::Create .export.how.type   [lindex $Bubble(Type) $GDefs(Lang)]
-   Bubble:::Create .export.how.sel    [lindex $Bubble(Format) $GDefs(Lang)]
-   Bubble:::Create .export.where.file [lindex $Bubble(File) $GDefs(Lang)]
-   Bubble:::Create .export.where.db   [lindex $Bubble(DBase) $GDefs(Lang)]
+   Bubble:::Create .export.what       $Bubble(Data)
+   Bubble:::Create .export.how.type   $Bubble(Type)
+   Bubble:::Create .export.how.sel    $Bubble(Format)
+   Bubble:::Create .export.where.file $Bubble(File)
+   Bubble:::Create .export.where.db   $Bubble(DBase)
 
    set format $Data(Format)
    Export::SetType $Data(Type)

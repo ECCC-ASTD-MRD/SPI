@@ -45,7 +45,7 @@ namespace eval RPN2GDAL { } {
    set Param(Vars)      {}
    set Param(Factors)   {}
    set Param(NoData)    0.0
-   set Param(Out)       ./out
+   set Param(Out)       ./export_%n_%d-%t
    set Param(Mode)      RGBA
    set Param(Interp)    LINEAR
    set Param(Res)       0.1
@@ -67,7 +67,7 @@ namespace eval RPN2GDAL { } {
 \t-var         : List of variables to process (Mandatory)
 \t-factor      : List of factors per variables
 \t-inter       : List of intervals
-\t-interp      : Data interpolation type (NEAREST$,${APP_COLOR_GREEN}LINEAR${APP_COLOR_RESET})
+\t-interp      : Data interpolation type (NEAREST,${APP_COLOR_GREEN}LINEAR${APP_COLOR_RESET})
 \t-min         : Minimum value
 \t-max         : Maximum value
 \t-fstd        : List of RPN files to process (Mandatory)
@@ -75,7 +75,8 @@ namespace eval RPN2GDAL { } {
 \t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
-\t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
+\t-out         : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET}). 
+\t                  Wildcards : %n nomvar, %l level, %h level type, %e etiket, %d date, %t time, %1 ip1, %2 ip2, %3 ip3
       
   Information parameters:\n
 \t-help        : This information

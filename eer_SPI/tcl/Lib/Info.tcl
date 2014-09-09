@@ -542,14 +542,12 @@ proc Info::Read { Id } {
       return ""
    }
 
-   #----- Recuperer le champs OL ou INFO
-
-   if { [catch { fstdfield read INFO $Id -1 "" -1 -1 -1 "" "OL" }] } {
-      if { [catch { fstdfield read INFO $Id -1 "" -1 -1 -1 "" "INFO" }] } {
-         Dialog::Error . $Msg(Info)
-         return ""
-      }
+   #----- Recuperer le champs INFO
+   if { [catch { fstdfield read INFO $Id -1 "" -1 -1 -1 "" "INFO" }] } {
+      Dialog::Error . $Msg(Info)
+      return ""
    }
+   
 
    #----- Extraire les donnees
 
