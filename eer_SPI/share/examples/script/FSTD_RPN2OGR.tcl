@@ -28,7 +28,7 @@ package require Logger
 namespace eval RPN2OGR { } {
    variable Param
 
-   set Param(Version) 1.0
+   set Param(Version) 1.1
 
    set Param(Format)    "ESRI Shapefile"
    set Param(Files)     {}
@@ -52,7 +52,7 @@ namespace eval RPN2OGR { } {
 \t-factor      : List of factors per variables
 \t-map         : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
 \t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR)
-\t-inter       : List of coutour to use
+\t-inter       : List of contour to use
 \t-fstd        : List of RPN files to process (Mandatory)
 \t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
 \t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})

@@ -29,7 +29,7 @@ namespace eval RPN2GDAL { } {
    global env
    variable Param
 
-   set Param(Version) 1.0
+   set Param(Version) 1.1
 
    set Param(Format)    "KMZ"
    set Param(Files)     {}

@@ -44,7 +44,7 @@ namespace eval Met {
    set Param(IP1s)  { 93423264 }
 
    set Param(CommandLine) "Arguments must be:
-\t-run    : Model run (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET})
+\t-run    : Model run (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET}), or path to data
 \t-hours  : Nb hours from start of model run (${APP_COLOR_GREEN}$Param(Hours)${APP_COLOR_RESET})
 \t-lat    : Latitude
 \t-lon    : Longitude
@@ -58,7 +58,7 @@ proc Met::Process { } {
    variable Param
 
    set f [open $Param(Out) w]
-   
+
    set head "Date (UTC),Hour (UTC),"
    foreach var $Param(Vars) {
       foreach ip1 $Param(IP1s) {
@@ -72,37 +72,52 @@ proc Met::Process { } {
    }
    puts $f "$head"
    
-   set run [string range [exec r.date $Param(Run)] 0 9]
-   switch [string index $Param(Run) 0] {
-      "r" { set path prog/reghyb }
-      "g" { set path prog/glbhyb }
-      default { Log::Print ERROR "Invalid model"; Log::End 1
+   if { [file isdirectory $Param(Run)] } {
+      set files [glob $Param(Run)/*_???]
+   } else {
+      set run [string range [exec r.date $Param(Run)] 0 9]
+      switch [string index $Param(Run) 0] {
+         "r" { set path prog/regeta }
+         "g" { set path prog/glbeta }
+         default { Log::Print ERROR "Invalid model"; Log::End 1 }
       }
+      set files [glob $env(CMCGRIDF)/$path/${run}_???]
    }
    
-   set path prog/glbhyb
-   set run 2014040912
-
-   foreach file [lrange [lsort -increasing [glob $env(CMCGRIDF)/$path/${run}_???]] 0 $Param(Hours)] {
+   set date0 0
+   foreach file [lsort -increasing $files] {
 
       Log::Print INFO "Processing $file"
-      set vals {}
       fstdfile open METFILE read $file
-      foreach var $Param(Vars) {
+      
+      foreach datev [fstdfile info METFILE DATEV [lindex $Param(Vars) 0]] {
+         set vals {}
          
-         foreach ip1 $Param(IP1s) {
-            fstdfield read FLD METFILE -1 "" $ip1 -1 -1 "" "$var"
-            set val [fstdfield stats FLD -coordvalue $Param(Lat) $Param(Lon)]
-            if { [llength $val]>1 } {
-               lappend vals [format "%.3f" [lindex $val 1]]
-               lappend vals [format "%.3f" [expr [lindex $val 0]*1.8519969184024652]]
-            } else {
-               lappend vals [format "%.3f" [lindex $val 0]]
+         if { $date0 && [fstdstamp diff [fstdstamp fromseconds $datev] $date0]>$Param(Hours) } {
+            close $f
+            return
+         }
+         
+         foreach var $Param(Vars) {
+            foreach ip1 $Param(IP1s) {
+               fstdfield read FLD METFILE [fstdstamp fromseconds $datev] "" $ip1 -1 -1 "" "$var"
+               
+               #----- Get initial date
+               if { !$date0 } {
+                  set date0 [fstdfield define FLD -DATEV]
+               }
+               
+               set val [fstdfield stats FLD -coordvalue $Param(Lat) $Param(Lon)]
+               if { [llength $val]>1 } {
+                  lappend vals [format "%.3f" [lindex $val 1]]
+                  lappend vals [format "%.3f" [expr [lindex $val 0]*1.8519969184024652]]
+               } else {
+                  lappend vals [format "%.3f" [lindex $val 0]]
+               }
             }
          }
-         set date [clock format [fstdstamp toseconds [fstdfield define FLD -DATEV]] -format "%Y%m%d,%H:%M"]
+         puts $f "[clock format $datev -format "%Y%m%d,%H:%M" -gmt True],[join $vals ,]"   
       }
-      puts $f "$date,[join $vals ,]"   
       
       fstdfile close METFILE
    }
@@ -129,8 +144,8 @@ for { set i 0 } { $i < $argc } { incr i } {
       lat        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lat)] }
       lon        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lon)] }
       hours      { set i [Args::Parse $argv $argc $i VALUE Met::Param(Hours)] }
-      ip1s       { set i [Args::Parse $argv $argc $i VALUE Met::Param(IP1s)] }
-      vars       { set i [Args::Parse $argv $argc $i VALUE Met::Param(Vars)] }
+      ip1s       { set i [Args::Parse $argv $argc $i LIST Met::Param(IP1s)] }
+      vars       { set i [Args::Parse $argv $argc $i LIST Met::Param(Vars)] }
       out        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Out)] }
       help       { puts $Met::Param(CommandLine); Log::End 0 }
       default    { Log::Print INFO "Invalid argument [lindex $argv $i]:\n\n$Met::Param(CommandLine)"; Log::End 1 }
