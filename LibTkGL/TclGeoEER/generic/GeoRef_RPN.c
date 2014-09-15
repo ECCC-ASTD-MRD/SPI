@@ -418,10 +418,13 @@ int GeoRef_RPNUnProject(TGeoRef *Ref,double *X,double *Y,double Lat,double Lon,i
       EZLock_RPNInt();
       c_gdxyfll(Ref->Ids[Ref->NId],&i,&j,&lat,&lon,1);
       EZUnLock_RPNInt();
- 
+
       *X=i-1.0;
       *Y=j-1.0;
 
+      // Fix for G grid 0-360 1/5 gridpoint problem
+      if (Ref->Grid[0]=='G' && *X>Ref->X1+0.5) *X-=(Ref->X1+1);
+         
       /*Si on est a l'interieur de la grille*/
       if (*X>(Ref->X1+0.5) || *Y>(Ref->Y1+0.5) || *X<(Ref->X0-0.5) || *Y<(Ref->Y0-0.5)) {
          if (!Extrap) {
