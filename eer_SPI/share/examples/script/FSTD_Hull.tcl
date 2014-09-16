@@ -55,8 +55,8 @@ namespace eval FSTD_Hull { } {
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
 \t-min         : Minimum value to contour
 \t-max         : Maximum value to contour
-\t-buffer      : Distance buffer arounf points (${APP_COLOR_GREEN}$Param(Buffer)${APP_COLOR_RESET})
-\t-dist        : Distance between hull befor merging (${APP_COLOR_GREEN}$Param(Dist)${APP_COLOR_RESET})
+\t-buffer      : Distance buffer around points (${APP_COLOR_GREEN}$Param(Buffer)${APP_COLOR_RESET})
+\t-dist        : Distance between hull before merging (${APP_COLOR_GREEN}$Param(Dist)${APP_COLOR_RESET})
 \t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
 \t-out         : Output directory (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
       
@@ -166,7 +166,7 @@ proc FSTD_Hull::Run { } {
          ogrlayer define BUFFERED -geometry 0 False $newgeom
          
          #----- Save it all
-         catch { eval file delete [glob $Param(Out)_${var}_${date}*] }   
+         catch { eval file delete -force [glob $Param(Out)_${var}_${date}*] }   
          ogrfile open OGRFILE write $Param(Out)_${var}_${date}${ext} $Param(Format)
          ogrlayer write BUFFERED OGRFILE
          ogrfile close OGRFILE 

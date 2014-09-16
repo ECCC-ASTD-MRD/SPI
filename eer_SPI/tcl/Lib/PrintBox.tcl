@@ -32,6 +32,15 @@ package provide PrintBox 3.2
 
 catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }
 
+#----- We don't load the whole img package because their png are washedout
+#package require Img
+package require img::tga
+package require img::pcx
+package require img::jpeg
+package require img::tiff
+package require img::bmp
+package require img::gif
+
 package require FileBox
 package require ComboBox
 package require TabFrame
@@ -72,16 +81,17 @@ namespace eval PrintBox {
    set Print(DPI)            [expr [winfo screenwidth .]/([winfo screenmmwidth .]*0.03937008231878280600)] ;#DPI de l'ecran
    set Print(Type)           printer                                        ;#Type de sortie
 
-   set Type(RASTER)  { {Adobe PostScript {*.ps}}
-                       {Portable Network Graphics {*.png}}
-                       {CompuServe Graphics Interchange {*.gif}}
-                       {Joint Photographic Experts Group {*.jpg}}
-                       {Truevision Targa {*.tga}}
-                       {Tagged Image File {*.tif}}
-                       {Microsoft Windows bitmap image {*.bmp}}
-                       {Portable pixmap {*.ppm}}}
+   set Param(Formats)  { {Adobe PostScript {*.ps}}
+                         {Portable Network Graphics {*.png}}
+                         {Personal Computer Exchange {*.pcx}}
+                         {CompuServe Graphics Interchange {*.gif}}
+                         {Joint Photographic Experts Group {*.jpeg}}
+                         {Truevision Targa {*.tga}}
+                         {Tagged Image File {*.tiff}}
+                         {Microsoft Windows bitmap image {*.bmp}}
+                         {Portable pixmap {*.ppm}}}
 
-   set Param(Format)    [lindex $Type(RASTER) 1]
+   set Param(Format)    [lindex $Param(Formats) 1]
    set Print(Device)    png                                            ;#Type de fichier
 
    #----- Definitions des labels
@@ -325,7 +335,7 @@ proc PrintBox::Create { Frame Mode args } {
          frame $frame.file
             label $frame.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 8 -anchor w
             button $frame.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-               -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Type(RASTER) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
+               -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
             entry $frame.file.name -width 32 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
                -bd 1 -justify left
             $frame.file.name xview moveto 1
@@ -334,7 +344,7 @@ proc PrintBox::Create { Frame Mode args } {
 
          frame $frame.format
             label $frame.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 8 -anchor w
-            ComboBox::Create $frame.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Type(RASTER) 33 5 PrintBox::SetDevice
+            ComboBox::Create $frame.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Param(Formats) 33 5 PrintBox::SetDevice
             pack $frame.format.lbl $frame.format.sel -side left
          pack $frame.format -side top
 
@@ -629,14 +639,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-         PrintBox::Save $Frame $X $Y $Width $Height $tmpfile
-         
-         if { $Print(Device)=="ppm" } {
-            file rename -force $tmpfile.ppm  $Param(FullName).$Print(Device)
-         } else {
-            exec convert $tmpfile.ppm $Param(FullName).$Print(Device)
-            file delete -force $tmpfile.ppm
-         }    
+         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName).$Print(Device)       
       } else {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
          PrintBox::Postscript $Frame $Param(FullName) $X $Y $Width $Height
@@ -702,8 +705,7 @@ proc PrintBox::Save { Frame X Y Width Height File } {
 
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-#   TMPIMG write "$File.$Print(Device)" -format $Print(Device)
-   TMPIMG write "$File.ppm" -format ppm
+   TMPIMG write "$File" -format $Print(Device)
    image delete TMPIMG
 }
 

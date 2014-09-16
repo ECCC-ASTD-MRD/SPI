@@ -130,10 +130,18 @@ update idletasks
 
 .canvas postscript -file DataOut/TK_glCanvas_tk.ps
 .glcanvas postscript -file DataOut/TK_glCanvas_gl.ps
+package require Img
 
 image create photo TMPIMG
-#.glcanvas buffer TMPIMG 1 1 300 300
+.glcanvas buffer TMPIMG 1 1 300 300
 
+TMPIMG write "DataOut/TK_glCanvas.gif" -format gif
 TMPIMG write "DataOut/TK_glCanvas.png" -format png
+TMPIMG write "DataOut/TK_glCanvas.jpg" -format jpeg
+TMPIMG write "DataOut/TK_glCanvas.bmp" -format bmp
+TMPIMG write "DataOut/TK_glCanvas.tga" -format tga
+TMPIMG write "DataOut/TK_glCanvas.tif" -format tiff
+TMPIMG write "DataOut/TK_glCanvas.sgi" -format sgi
+
 
 
