@@ -89,7 +89,7 @@ namespace eval Log { } {
 
    set Param(Levels)     { ERROR WARNING INFO DEBUG EXTRA }
    array set Param       { MUST -1 ERROR 0 WARNING 1 INFO 2 MESSAGE 2 QUESTION 2 DEBUG 3 EXTRA 4 -1 -1 0 0 1 1 2 2 3 3 4 4 }
-   array set Color       { MUST "" ERROR "\x1b\[31m" WARNING "\x1b\[34m" INFO "" MESSAGE "\x1b\[33m" QUESTION "\x1b\[33m" DEBUG "\x1b\[36m" EXTRA "\x1b\[36m" RESET "\x1b\[0m" -1 "" 0 "\x1b\[31m" 1 "\x1b\[34m" 2 "\x1b\[33m" 3  "\x1b\[36m" 4  "\x1b\[36m"};
+   array set Color       { MUST "" ERROR "\x1b\[31m" WARNING "\x1b\[34m" INFO "" MESSAGE "\x1b\[33m" QUESTION "\x1b\[33m" DEBUG "\x1b\[36m" EXTRA "\x1b\[36m" RESET "\x1b\[0m" PROGRESS "\x1b\[35m" -1 "" 0 "\x1b\[31m" 1 "\x1b\[34m" 2 "\x1b\[33m" 3  "\x1b\[36m" 4  "\x1b\[36m"};
 }
 
 #---------------------------------------------------------------------------
@@ -457,7 +457,7 @@ proc Log::End { { Status 0 } { Exit True } } {
 # Nom      : <Log::Print>
 # Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Afficher une message standard.
+# But      : Afficher un message standard.
 #
 # Parametres  :
 #    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG)
@@ -598,6 +598,43 @@ proc Log::Print { Type Message { Var "" } } {
          puts $Param(Out) "${cstart}${time}${id}(${Type}) ${proc}${Message}${vars}${cend}"
       }
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::Progress>
+# Creation : Septembre 2014 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Afficher le progret d'une tâche dans un format standard et
+#            plus facile à parser automatiquement.
+#
+# Parametres  :
+#    <Percent>: Le pourcentage d'avancement de la job
+#    <Msg>    : Message supplémentaire
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Log::Progress { Percent {Msg ""} } {
+   variable Param
+   variable Color
+
+   if { $Param(Color) } {
+       set cstart $Color(PROGRESS)
+       set cend   $Color(RESET)
+   } else {
+       set cstart ""
+       set cend ""
+   }
+
+   #----- Do we print the time
+  if { $Param(Time) } {
+     set time "([clock format [clock seconds]]) "
+  } else {
+     set time ""
+  }
+
+   puts $Param(Out) "${cstart}${time}(PROGRESS) \[[format %.2f $Percent] %\] $Msg$cend"
 }
 
 #----------------------------------------------------------------------------
