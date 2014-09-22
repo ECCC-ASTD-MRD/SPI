@@ -609,7 +609,7 @@ proc Dialog::Give { Master Title Text Info } {
 
       frame .dlggive.cmd
          button .dlggive.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
-         button .dlggive.copy -text [lindex $Lbl(Clip) $GDefs(Lang)] -command { clipboard clear; clipboard append [.dlggive.out get 0.0 end] } -bd 1
+         button .dlggive.copy -text [lindex $Lbl(Clip) $GDefs(Lang)] -command { clipboard clear; clipboard append [string range [.dlggive.out get 0.0 end] 0 end-1] } -bd 1
          pack .dlggive.copy .dlggive.ok -side left -fill x  -expand True
       pack .dlggive.cmd -side top -fill x
    }

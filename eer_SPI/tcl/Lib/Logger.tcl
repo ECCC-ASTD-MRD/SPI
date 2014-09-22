@@ -58,7 +58,7 @@ namespace eval Log { } {
    set Param(Level)       INFO                  ;#Log level
    set Param(Color)       False                 ;#Log color
    set Param(Time)        False                 ;#Print the time
-   set Param(Proc)        True                  ;#Print the calling proc
+   set Param(Proc)        False                 ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Keep)        24                    ;#Number of back log to keep
    set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
@@ -615,6 +615,7 @@ proc Log::Print { Type Message { Var "" } } {
 #
 # Remarques :
 #----------------------------------------------------------------------------
+
 proc Log::Progress { Percent {Msg ""} } {
    variable Param
    variable Color
@@ -634,7 +635,7 @@ proc Log::Progress { Percent {Msg ""} } {
      set time ""
   }
 
-   puts $Param(Out) "${cstart}${time}(PROGRESS) \[[format %.2f $Percent] %\] $Msg$cend"
+   puts $Param(Out) "${cstart}${time}(PROGRESS) \[[format %6.2f $Percent] %\] $Msg$cend"
 }
 
 #----------------------------------------------------------------------------
