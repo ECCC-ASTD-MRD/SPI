@@ -58,8 +58,10 @@ set R_CMDS {
    fa10  "t<-y/x; fa10 <- length(which( 0.1<=t & t<=10.0 ))/length(x) * 100"
    fb    "fb    <- 2.0*(mean(y)-mean(x))/(mean(y)+mean(x))"
    nad   "nad   <- sum(abs(x-y))/sum(x+y)"
-   fms   "minxy<-pmin(x,y); fms <- sum(minxy) / sum(pmax(x-minxy,0) + pmax(y-minxy,0) + minxy) * 100"
-   osf   "t<-sum(pmin(x,y)); osf <- sqrt( (1-t/sum(x))^2 + (1-t/sum(y))^2 )"
+   fmsb  "fmsb <- length(which( x!=0 & y!=0 )) / length(which( x!=0 | y!=0 )) * 100"
+   fmsi  "minxy<-pmin(x,y); fmsi <- sum(minxy) / sum(pmax(x-minxy,0) + pmax(y-minxy,0) + minxy) * 100"
+   osfb  "osfb <- sqrt( (length(which(x!=0 & y==0))/length(which(x!=0)))^2 + (length(which(x==0 & y!=0))/length(which(y!=0)))^2 )"
+   osfi  "t<-sum(pmin(x,y)); osfi <- sqrt( (1-t/sum(x))^2 + (1-t/sum(y))^2 )"
    pcc   "pcc   <- cor(x, y, method='pearson')"
    ksp   "ksp   <- ks.test(x,y)$statistic * 100"
    rank  "rpcc<-cor(x, y, method='pearson');rfb<-(mean(y)-mean(x))/(mean(y)+mean(x));rminxy<-pmin(x,y);rfms<-sum(minxy)/sum(pmax(x-minxy,0)+pmax(y-minxy,0)+minxy);rfa2<-length(which(0.5<=y/x&y/x<=2))/length(x);rksp<-ks.test(x,y)$statistic;rnad<-sum(abs(x-y))/sum(x+y); rank <- rpcc^2 + (1-abs(rfb)) + rfms + rfa2 + (1-rksp) + (1-rnad)"
@@ -80,12 +82,13 @@ set R_CMDS {
    avg   "avg   <- mean(x)"
 }
 
+# Every calculation implicating Areas cannot be calculated (osf,fms, rank (via fms), aov, afp, afn, ax, ay, etc.)
 set VARS_COMBO { nb medx medy sumx sumy minx miny maxx maxy avgx avgy
                  varx vary ssx ssy ssxy rmse sdev sdevx sdevy cor cov
                  regb rega errb erra mb nmb nme me mnb mne mfb mfe lmnb
                  lmne mre maxb maxe maxre nrmse na rna nmse gmb gmv foex
-                 fa2 fa5 fa10 fb nad fms osf pcc ksp rank nbeq nbgt nblt
-                 nbfa nbmi nbnp }
+                 fa2 fa5 fa10 fb nad fmsb fmsi osfb osfi pcc ksp nbeq nbgt
+                 nblt nbfa nbmi nbnp }
 set VARS_ALONE { med uniq sum min max avg var }
 
 proc ReadFromChan { Chan Var {Flag ""} } {
