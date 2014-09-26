@@ -158,8 +158,12 @@ double stat_fa5(TDataDef *MA,TDataDef *MB);   /* Factor of 5 */
 double stat_fa10(TDataDef *MA,TDataDef *MB);  /* Factor of 10 */
 double stat_fb(TDataDef *MA,TDataDef *MB);    /* Fractionnal bias */
 double stat_nad(TDataDef *MA,TDataDef *MB);   /* Normalized absolute difference */
-double stat_fms(TDataDef *MA,TDataDef *MB);   /* Figure of merit in space */
-double stat_osf(TDataDef *MA,TDataDef *MB);   /* Objective scoring function */
+double stat_fms(TDataDef *MA,TDataDef *MB);   /* Figure of merit in space (area) */
+double stat_fmsb(TDataDef *MA,TDataDef *MB);  /* Figure of merit in space (binary) */
+double stat_fmsi(TDataDef *MA,TDataDef *MB);  /* Figure of merit in space (integrated) */
+double stat_osf(TDataDef *MA,TDataDef *MB);   /* Objective scoring function (area) */
+double stat_osfb(TDataDef *MA,TDataDef *MB);  /* Objective scoring function (binary) */
+double stat_osfi(TDataDef *MA,TDataDef *MB);  /* Objective scoring function (integrated) */
 double stat_pcc(TDataDef *MA,TDataDef *MB);   /* Pearson's correlation coefficient */
 double stat_ksp(TDataDef *MA,TDataDef *MB);   /* Kolmogorov-Smirnov parameter */
 double stat_rank(TDataDef *MA,TDataDef *MB);  /* Rank calculated with a combination of fb, fms, fa2, foex, ksp and nad. ranges from 0 to 7 (the higher the better) */
@@ -169,6 +173,11 @@ double stat_nblt(TDataDef *MA,TDataDef *MB);  /* Nb of values of MB smaller than
 double stat_nbfa(TDataDef *MA,TDataDef *MB);  /* Nb of false alarms (MA=0, MB!=0)*/
 double stat_nbmi(TDataDef *MA,TDataDef *MB);  /* Nb of misses (MA!=0, MB=0) */
 double stat_nbnp(TDataDef *MA,TDataDef *MB);  /* Nb of null pairs (MA=0, MB=0) */
+double stat_aov(TDataDef *MA,TDataDef *MB);   /* Overlap area */
+double stat_afn(TDataDef *MA,TDataDef *MB);   /* False negative area */
+double stat_afp(TDataDef *MA,TDataDef *MB);   /* False positive area */
+double stat_ax(TDataDef *MA,TDataDef *MB);    /* Area X */
+double stat_ay(TDataDef *MA,TDataDef *MB);    /* Area Y */
 
 /*Base operators*/
 double add(double a,double b);
