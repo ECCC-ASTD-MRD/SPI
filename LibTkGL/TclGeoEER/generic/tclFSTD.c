@@ -2296,6 +2296,8 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
 
       c_fstopc("MSGLVL","WARNIN",0);
       c_fstopc("TOLRNC","SYSTEM",0);
+      c_ezsetopt("VERBOSE","NO");
+      
    }
 
    return(TCL_OK);

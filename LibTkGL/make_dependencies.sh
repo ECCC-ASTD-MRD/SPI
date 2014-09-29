@@ -1,7 +1,7 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.7.3
+VERSION=7.7.4
 
 echo "Architecture: ${ARCH}_${PROC}"
 
@@ -16,8 +16,9 @@ SPI_PATH=/users/dor/afsr/005/Projects/eerSPI/eer_SPI
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
 
-TCL_VERSION=8.6.0
-TCL_LIB=1.14
+TCL_VERSION=8.6.2
+TCLLIB=1.16
+TKIMG=tkimg1.4
 TKTABLE=Tktable2.10
 F90=/home/afsr/005/Projects/RMN/f90tcl
 
@@ -85,11 +86,20 @@ fi
 
 #----- Tk
 #----- Remove visibility-hidden flag from makefile for glCanvas to work
-#----- TkImgPhoto.c patch dans ImgGetPhoto - alphaOffset=blockPtr->offset[3];
+#----- tkImgPhoto.c patch dans ImgGetPhoto - alphaOffset=blockPtr->offset[3];
 
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean
 ./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
+
+#----- TkImg
+cd ${ARCH_PATH}/${TKIMG}
+make distclean
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --with-tk=${SPI_LIB}/TclTk/lib
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -115,6 +125,9 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+
+cd ${ARCH_PATH}/Tcllib-${TCLLIB}
+./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${SPI_LIB}/TclTk/lib/tcllib${TCLLIB}
 
 #----- libxml2
 cd ${ARCH_PATH}/${XML}
