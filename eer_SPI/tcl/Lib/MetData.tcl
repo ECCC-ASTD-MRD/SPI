@@ -318,7 +318,7 @@ proc MetData::FindAll { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR } {
    set i 0
 
    foreach fid $FID {
-      set idxs [fstdfield find $fid $DATEV $ETIKET $IP1 $IP2 $IP3 $TYPVAR $NOMVAR]
+      set idxs [fstdfield find $fid $DATEV $ETIKET $IP1 $IP2 $IP3 $TYPVAR $NOMVAR 10000]
       foreach idx $idxs {
          fstdfield read $FLD$i $fid $idx
          lappend lst $FLD$i
