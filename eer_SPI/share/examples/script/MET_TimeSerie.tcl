@@ -43,14 +43,22 @@ namespace eval Met {
    set Param(Vars)  { UU }
    set Param(IP1s)  { "1.0 ETA" }
 
-   set Param(CommandLine) "Arguments must be:
+   set Param(CommandInfo) "   Extract timeseries for variables through a model run"
+
+   set Param(CommandLine) "   Command line otions:\n
 \t-run    : Model run or path to data (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET})
 \t-hours  : Nb hours from start of model run (${APP_COLOR_GREEN}$Param(Hours)${APP_COLOR_RESET})
 \t-lat    : Latitude
 \t-lon    : Longitude
 \t-vars   : Variables (${APP_COLOR_GREEN}$Param(Vars)${APP_COLOR_RESET})
 \t-ip1s   : IP1(s) or level(s) and unit(s) (${APP_COLOR_GREEN}$Param(IP1s)${APP_COLOR_RESET})
-\t-out    : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})"
+\t-out    : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
+
+   Information parameters:\n
+\t-help        : This information
+\t-version     : Version
+\t-verbose     : Trace level (ERROR,WARNING,${APP_COLOR_GREEN}INFO${APP_COLOR_RESET},DEBUG,EXTRA,0-4)
+\t-verbosecolor: Use color for log messages"
 }
 
 proc Met::Process { } {
@@ -124,34 +132,42 @@ proc Met::Process { } {
    close $f
 }
 
-#----- This is where it all starts
-set Log::Param(Level) DEBUG      ;#Log level
-set Log::Param(Time)  False      ;#Print the time
-set Log::Param(Proc)  False      ;#Print the calling proc
+proc Met::ParseCommandLine { } {
+   variable Param
 
-Log::Start [info script] $Met::Param(Version)
+   upvar argc gargc
+   upvar argv gargv
 
-#----- Check for number of arguments
-if { [llength $argv]==0 } {
-   Log::Print INFO "Invalid number of arguments:\n\n$Met::Param(CommandLine)"
-   Log::End 1
-}
+   if { !$gargc } {
+      Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"
+      Log::End 0
+   }
 
-#----- Parcourir la liste des parametres post-launch
-for { set i 0 } { $i < $argc } { incr i } {
-   switch -exact [string trimleft [lindex $argv $i] "-"] {
-      run        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Run)] }
-      lat        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lat)] }
-      lon        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Lon)] }
-      hours      { set i [Args::Parse $argv $argc $i VALUE Met::Param(Hours)] }
-      ip1s       { set i [Args::Parse $argv $argc $i LIST Met::Param(IP1s)] }
-      vars       { set i [Args::Parse $argv $argc $i LIST Met::Param(Vars)] }
-      out        { set i [Args::Parse $argv $argc $i VALUE Met::Param(Out)] }
-      help       { puts $Met::Param(CommandLine); Log::End 0 }
-      default    { Log::Print INFO "Invalid argument [lindex $argv $i]:\n\n$Met::Param(CommandLine)"; Log::End 1 }
+   #----- Parcourir la liste des parametres post-launch
+   for { set i 0 } { $i < $gargc } { incr i } {
+      switch -exact [string trimleft [lindex $gargv $i] "-"] {
+         run        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Run)] }
+         lat        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Lat)] }
+         lon        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Lon)] }
+         hours      { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Hours)] }
+         ip1s       { set i [Args::Parse $gargv $gargc $i LIST Met::Param(IP1s)] }
+         vars       { set i [Args::Parse $gargv $gargc $i LIST Met::Param(Vars)] }
+         out        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Out)] }
+         help       { puts $Met::Param(CommandLine); Log::End 0 }
+         
+            "verbose"       { set i [Args::Parse $gargv $gargc $i VALUE         Log::Param(Level)] }
+            "verbosecolor"  { set i [Args::Parse $gargv $gargc $i FLAG          Log::Param(Color)] }
+            "help"          { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
+            "version"       { Log::Print MUST $Param(Version); Log::End 0 }
+            default         { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
+      }
    }
 }
 
+#----- This is where it all starts
+Log::Start [info script] $Met::Param(Version)
+
+Met::ParseCommandLine
 Met::Process 
 
 Log::End

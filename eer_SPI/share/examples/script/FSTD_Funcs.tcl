@@ -192,8 +192,8 @@ puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats 
 
 puts "\nTesting Y grid field interpolation"
 fstdfield gridinterp ZH CV
-#puts [fstdfield define ZH -DATA 0]
-
+puts [fstdfield define ZH -DATA 0]
+exit
 puts "\nTesting Y grid concatenation"
 set data [fstdfield define ZH -DATA]
 set ni   [fstdfield define ZH -NI]

@@ -82,6 +82,7 @@ namespace eval RPN2GDAL { } {
 \t-help        : This information
 \t-version     : Version
 \t-verbose     : Trace level (ERROR,WARNING,${APP_COLOR_GREEN}INFO${APP_COLOR_RESET},DEBUG,EXTRA,0-4)
+\t-verbosecolor: Use color for log messages
 
    Available formats: \n\n\t[lmap f $Export::Raster::Param(Formats) {lindex $f end-1}]"
 }
@@ -187,17 +188,14 @@ proc RPN2GDAL::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 
-         "verbose"  { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
-         "help"     { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
-         "version"  { Log::Print MUST $Param(Version); Log::End 0 }
-         default    { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
+         "verbose"       { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
+         "verbosecolor"  { set i [Args::Parse $argv $argc $i FLAG          Log::Param(Color)] }
+         "help"          { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
+         "version"       { Log::Print MUST $Param(Version); Log::End 0 }
+         default         { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }
       }
    }
 }
-
-set Log::Param(Level) INFO       ;#Log level
-set Log::Param(Time)  False      ;#Print the time
-set Log::Param(Proc)  False      ;#Print the calling proc
 
 Log::Start RPN2GDAL $RPN2GDAL::Param(Version)
 
