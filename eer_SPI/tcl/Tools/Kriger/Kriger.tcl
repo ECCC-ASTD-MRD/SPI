@@ -240,7 +240,7 @@ proc Kriger::Grid { Coords } {
             fstdfield define KRIGTAC -NOMVAR ^^ -TYPVAR X -GRTYP L 0 0 1.0 1.0 -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
             fstdfield create KRIGTOC $nj 1 1 Float32
             fstdfield define KRIGTOC -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET KRIG_GRIDV -IP1 $nij -IP2 $ni -IP3 $nj
-            fstdfield define KRIGTOC -DATA [list $elevs]
+            fstdfield define KRIGTOC -DATA 0 [list $elevs]
 
             for { set i 0 } { $i < $ni } { incr i } {
                fstdfield stats KRIGTAC -gridvalue 0 $i [lindex $coords [expr $i*2]]
