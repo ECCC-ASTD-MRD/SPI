@@ -456,6 +456,9 @@ proc Macro::Run { Macro { Interactive True } } {
          set Data(Current) ""
       }
    } else {
+      if { $SPI::Param(Batch) } {
+         SPI::Quit
+      }
       set Data(Current) ""
    }
 }
