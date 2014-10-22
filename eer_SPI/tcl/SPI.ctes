@@ -47,6 +47,7 @@ namespace eval SPI {
    set Param(Tools)          ""           ;#Liste des outils disponibles
    set Param(Layouts)        { SPI }      ;#Liste des layouts
    set Param(Project)        ""           ;#Projet courant
+   set Param(Geos)           {}           ;#Georeferenced data to load at startup
    set Param(Loading)        "Loading"    ;#Load en cours
    set Param(Batch)          False        ;#Mode batch
    set Param(Threads)        True         ;#Use threads

@@ -195,7 +195,7 @@ proc SPI::DockTool { Tool { Command "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc SPI::Params { } {
+proc SPI::Params { { Frame . } } {
    global GDefs
    variable Lbl
 
@@ -231,12 +231,12 @@ proc SPI::Params { } {
    } else {
       if { ![winfo ismapped .params] } {
          .params.command.apply configure -state disabled
-         wm geometry .params 350x400+[winfo rootx .]+[winfo rooty .]
+         wm geometry .params 350x400+[winfo rootx $Frame]+[winfo rooty $Frame]
       }
       update idletasks
       wm deiconify .params
-      wm transient .params .
-      raise .params .
+      wm transient .params $Frame
+      raise .params $Frame
       update idletasks
    }
 }

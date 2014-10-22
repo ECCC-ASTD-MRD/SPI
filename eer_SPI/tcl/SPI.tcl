@@ -113,6 +113,7 @@ proc SPI::CommandLine { { Args {} }} {
       \[-traj ... ...\]                     : Open the specified trajectory files
       \[-obs ...\]                          : Open the specified observation files
       \[-metobs ...\]                       : Open the specified BURP or BUFR observation files
+      \[-geo ... ...\]                      : Open the specified georeferenced data files 
       \[-icon ... ...\]                     : Open the specified icon files
       \[-macro ... ...\]                    : Run the specified macro script
       \[-args ... ...\]                     : Arguments to be used by the previously specified script
@@ -145,6 +146,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "args"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "script"    { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
@@ -1971,12 +1973,13 @@ proc SPI::ObjectAdd { Type { Sub "" } } {
    variable Msg
    variable Error
 
-   set new [Dialog::Default . 300 QUESTION $Msg(Page) "\n\n\t$Type$Sub" 2 $Lbl(Current) $Lbl(Page) $Lbl(Window)]
+   set new [Dialog::Default . 300 QUESTION $Msg(Page) "\n\n\t$Type$Sub" 2 $Lbl(Current) $Lbl(Page) $Lbl(Window) $Lbl(Cancel)]
 
    switch $new {
       0 { if { ![winfo exists $Page::Data(Canvas)] } { Dialog::Error . $Error(Page); return False } }
       1 { SPI::PageNew False $Type${Sub} }
       2 { SPI::PageNew True $Type${Sub} }
+      3 { return True }
    }
 
    #----- Check if there's already an object of this type in the current page
@@ -2375,6 +2378,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
       "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
       "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
+      "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) Mapper; lappend SPI::Param(Geos)"] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
       "args"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Args)"] }
       "script"    { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
@@ -2426,6 +2430,11 @@ if { $SPI::Param(Project)!="" } {
 #----- Selection d'un outils
 foreach tool $SPI::Param(Tool) {
    eval ${tool}::Window
+}
+
+#----- Ouvrir les donnees georeference
+foreach file $SPI::Param(Geos) {
+   Mapper::Read $file
 }
 
 #----- Refresh final
