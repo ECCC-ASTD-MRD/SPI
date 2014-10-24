@@ -422,7 +422,7 @@ proc Macro::Run { Macro { Interactive True } } {
 
             if { [info exists Macro::${Macro}::Param(InfoArgs)] } {
                eval set args \$\{Macro::${Macro}::Param(InfoArgs)\}
-               if { [llength [lsearch -all -not -glob [lindex $args 0] \\\[*\\\]]]!=$argc } {
+               if { [llength [lsearch -all -not -glob [lindex $args 0] \\\[*\\\]]]>$argc || [llength [lindex $args 0]]<$argc  } {
                   set msg [list "[lindex $Msg(Args) 0]\n\n\t[join [lindex $args 0] \n\t]" "[lindex $Msg(Args) 1]\n\n\t[join [lindex $args 1] \n\t]"]
                }
             }
@@ -437,7 +437,7 @@ proc Macro::Run { Macro { Interactive True } } {
             #----- check for right number of arguments
             if { [info exists Macro::${Macro}::Param(InfoArgs)] } {
                eval set args \$\{Macro::${Macro}::Param(InfoArgs)\}
-               if { [llength [lsearch -all -not -glob [lindex $args 0] \\\[*\\\]]]!=$argc } {
+               if { [llength [lsearch -all -not -glob [lindex $args 0] \\\[*\\\]]]>$argc || [llength [lindex $args 0]]<$argc } {
                   Dialog::Error .macro $Error(Args) "\n\n\t[join [lindex $args $GDefs(Lang)] \n\t]"
                   SPI::Quit 1
               }
