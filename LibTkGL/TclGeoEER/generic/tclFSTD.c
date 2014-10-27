@@ -1106,7 +1106,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
       case OPEN:
          if(Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [index]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"id mode filename [info]");
             return(TCL_ERROR);
          }
          itype=2;

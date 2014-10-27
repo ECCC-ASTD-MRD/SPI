@@ -458,14 +458,14 @@ int GeoFunc_RadialIntersect(Coord C1,Coord C2,double CRS13,double CRS23,Coord *C
 */
 static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   double      x,y,lat0,lon0,lat1,lon1;
+   double      x,y,lat0,lon0,lat1,lon1,dx,dy;
    int         idx,in=0,x0,y0,x1,y1,n;
    char       *proj=NULL;
    TGeoRef    *ref0,*ref1;
    Tcl_Obj    *lst;
 
-   static CONST char *sopt[] = { "create","copy","free","define","export","project","unproject","limit","within","intersect","is","isequal","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,DEFINE,EXPORT,PROJECT,UNPROJECT,LIMIT,WITHIN,INTERSECT,IS,ISEQUAL,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","define","export","project","unproject","limit","size","within","intersect","is","isequal","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,DEFINE,EXPORT,PROJECT,UNPROJECT,LIMIT,SIZE,WITHIN,INTERSECT,IS,ISEQUAL,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -654,6 +654,36 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon0));
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat1));
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon1));
+               Tcl_SetObjResult(Interp,lst);
+               return(TCL_OK);
+            }
+         }
+         break;
+
+      case SIZE:
+         if (Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"georef");
+            return(TCL_ERROR);
+         } else {
+            ref0=GeoRef_Get(Tcl_GetString(Objv[2]));
+            if (!ref0) {
+               Tcl_AppendResult(Interp,"\n   GeoRef_Cmd invalid georeference object",(char*)NULL);
+               return(TCL_ERROR);
+            } else {
+               GeoRef_Limits(ref0,&lat0,&lon0,&lat1,&lon1);
+               
+               x=DIST(EARTHRADIUS,lat0,lon0,lat0,lon1);
+               dx=DIST(EARTHRADIUS,lat1,lon0,lat1,lon1);
+               dx=FMAX(x,dx);
+               
+               y=DIST(EARTHRADIUS,lat0,lon0,lat1,lon0);
+               dy=DIST(EARTHRADIUS,lat0,lon1,lat1,lon1);
+               dy=FMAX(y,dy);
+               
+               lst=Tcl_NewListObj(0,NULL);
+               
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(dx));
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(dy));
                Tcl_SetObjResult(Interp,lst);
                return(TCL_OK);
             }

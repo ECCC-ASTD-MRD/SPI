@@ -1846,7 +1846,7 @@ TMetElemData *TMetElemData_Resize(TMetElemData *Data,int Ne,int Nv,int Nt) {
 */
 int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
-   int res,type=31;
+   int res=0,type=31;
 
 #ifdef HAVE_RMN
    type=f77name(wkoffit)(File,strlen(File));
@@ -1857,13 +1857,13 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 #endif
 
    switch (type) {
-      case 6 : res=MetObs_LoadBURP(Interp,File,Obs);  break;
+      case 6: res=MetObs_LoadBURP(Interp,File,Obs);  break;
+      case 8: res=MetObs_LoadBUFR(Interp,File,Obs); break;
 //Not recognized      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
-      case 31: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
+      case -1: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
                   res=MetObs_LoadASCII(Interp,File,Obs);
                }
                break;
-      default: res=MetObs_LoadBUFR(Interp,File,Obs); break;
    }
 
    if (!Obs->Time)

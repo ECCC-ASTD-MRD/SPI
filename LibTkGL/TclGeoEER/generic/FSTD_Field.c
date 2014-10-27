@@ -257,7 +257,7 @@ int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force)
 
    int key=0,ni=0,nj=0,nk=0;
 
-   if (!*Ptr || Force) {
+   if (Var && (!*Ptr || Force)) {
       if (Grid==1) {
          // Look for corresponding time and if not use any time
          if ((key==cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,"",Head->IG1,Head->IG2,Head->IG3,"",Var))<=0) {
@@ -307,6 +307,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
 
    if (Field->Ref->ZRef.Levels)
       free(Field->Ref->ZRef.Levels);
+
    Field->Ref->ZRef.Levels=NULL;
    Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp((FSTD_Head*)Field->Head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
 
@@ -2009,7 +2010,8 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                   Tcl_ListObjLength(Interp,FSTD_HIDELIST,&nobj);
                   for(s=0;s<nobj;s++) {
                      Tcl_ListObjIndex(Interp,FSTD_HIDELIST,s,&tmp);
-                     if (!strncmp(head.NOMVAR,Tcl_GetString(tmp),4)) {
+                     if (Tcl_StringMatch(head.NOMVAR,Tcl_GetString(tmp))) {                     
+//                     if (!strncmp(head.NOMVAR,Tcl_GetString(tmp),4)) {
                         nobj=9999;
                         break;
                      }
@@ -2079,8 +2081,8 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
                break;
 
              case FSTD_LISTEXTENDED:
-               sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %09i %i %i %i %c %i %i %i %i",
-                  File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DATEV,ni,nj,nj,grtyp[0],head.IG1,head.IG2,head.IG3,head.IG4);
+               sprintf(buf,"%s %i {%s} {%s} %i %i %i {%s} %09i %i %i %09i %i %i %i %c %i %i %i %i %i %i",
+                  File->CId,head.KEY,head.NOMVAR,head.TYPVAR,head.IP1,head.IP2,head.IP3,head.ETIKET,head.DATEO,head.DEET,head.NPAS,head.DATEV,ni,nj,nk,grtyp[0],head.IG1,head.IG2,head.IG3,head.IG4,head.DATYP,head.NBITS);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;
