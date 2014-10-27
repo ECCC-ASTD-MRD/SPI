@@ -66,8 +66,12 @@ namespace eval PrintBox {
    set Param(Margin)         0.20                                             ;#Marge
    set Param(WEBNameList)    ""                                               ;#Liste des noms de sites
    set Param(WEBPathList)    ""                                               ;#Liste des path de sites
-
-   #----- Recuperer les imprimantes
+   set Param(Quality)  75
+   set Param(Smooth)   0
+   set Param(Compress) none
+   
+   
+  #----- Recuperer les imprimantes
    catch {
       set Param(Printers)    {}
       foreach printer [split [exec lpstat -a] \n] {
@@ -95,7 +99,6 @@ namespace eval PrintBox {
    set Print(Device)    png                                            ;#Type de fichier
 
    #----- Definitions des labels
-
    set Lbl(Color)      { "Couleur" "Color" }
    set Lbl(Margin)     { "Marge" "Margin" }
    set Lbl(Close)      { "Fermer" "Close" }
@@ -114,21 +117,26 @@ namespace eval PrintBox {
    set Lbl(Print)      { "Imprimer" "Print" }
    set Lbl(Save)       { "Sauvegarder" "Save" }
    set Lbl(SendTo)     { "Envoyer vers" "Send to" }
+   set Lbl(Quality)    { "Qualité" "Quality" }
+   set Lbl(Smooth)     { "Lissage" "Smooth" }
+   set Lbl(Compress)   { "Compression" "Compress" }
    set Lbl(Version)    "3.1"
 
    #----- Definitions des titres
-
    set Titre(PrintBoxPrint) { "Paramêtres d'impression" "Printing parameters" }
    set Titre(PrintBoxSave)  { "Paramêtres de sauvegarde" "Saving parameters" }
 
-   #----- Definitions des textes
+   #----- Definitions des bulles d'aides
+   set Bubble(Quality)  { "Spécifie le niveau de compression an pourcentage de qualité. Meilleure est la qualité, mon de compression il y aura.\nLes valeurs utiles sont de 5...95. Le défaut est 75." "Specifies the compression level as a quality percentage. The higher the quality, the less the compression.\nUseful values are in the range 5...95. The default value is 75." }
+   set Bubble(Smooth)   { "Lissage de l'image avant la compression.\nDes valeurs entre 10...30 sont habituellement correcte. Le défaut est 0, pas de lissage." "Smooth the image before performing the compression.\nValues in the 10...30 are usually enough. The default is 0, i.e no smoothing." }
+   set Bubble(Compress) { "Type de compression utilisée.\nLe défaut est none." "Type of compression to use.\nThe default is none." }
 
+    #----- Definitions des textes
    set Txt(Postscript) { "Génération du postscript pour le canvas" "Generating postscript for canvas" }
    set Txt(Print)      { "Impression" "Printing" }
    set Txt(Image)      { "Génération de l'image" "Generating image file" }
 
    #----- Definition des erreurs
-
    set Error(Convert)  { "Il semble y avoir un problème avec le fichier postscript ou la conversion de celui-ci"
                          "There seems to be an error within the postscript file or while converting the file" }
    set Error(Path)     { "Ce répertoire n'est pas accessible" "This directory is not accessible" }
@@ -277,12 +285,13 @@ proc PrintBox::Create { Frame Mode args } {
 
    toplevel     .printbox
    wm transient .printbox $Frame
-   wm geom      .printbox 335x220+[winfo rootx $Frame]+[winfo rooty $Frame]
+   wm geom      .printbox 335x250+[winfo rootx $Frame]+[winfo rooty $Frame]
    wm protocol  .printbox WM_DELETE_WINDOW { PrintBox::Destroy }
 
    .printbox configure -cursor left_ptr
 
    set Param(FullName) "$Param(Path)/$Param(Filename)"
+   set Param(Frame)    ""
    set Print(Job)      ""
 
    TabFrame::Create .printbox.tab 1 ""
@@ -330,33 +339,36 @@ proc PrintBox::Create { Frame Mode args } {
 
    if { $Mode=="SAVE" } {
       wm title     .printbox "[lindex $Titre(PrintBoxSave) $GDefs(Lang)] $Lbl(Version)"
-      set frame [TabFrame::Add .printbox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
+      set Param(Frame) [TabFrame::Add .printbox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
 
-         frame $frame.file
-            label $frame.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 8 -anchor w
-            button $frame.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+      labelframe $Param(Frame).img -text Image
+      pack $Param(Frame).img -side top -fill x -padx 5 -ipady 2 -anchor n
+
+      frame $Param(Frame).img.file
+            label $Param(Frame).img.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 9 -anchor w
+            button $Param(Frame).img.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
                -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
-            entry $frame.file.name -width 32 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
+            entry $Param(Frame).img.file.name -width 30 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
                -bd 1 -justify left
-            $frame.file.name xview moveto 1
-            pack $frame.file.lbl $frame.file.name $frame.file.sel -side left
-         pack $frame.file -side top -pady 5
+            $Param(Frame).img.file.name xview moveto 1
+            pack $Param(Frame).img.file.lbl $Param(Frame).img.file.name $Param(Frame).img.file.sel -side left -fill y
+         pack $Param(Frame).img.file -side top
 
-         frame $frame.format
-            label $frame.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 8 -anchor w
-            ComboBox::Create $frame.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Param(Formats) 33 5 PrintBox::SetDevice
-            pack $frame.format.lbl $frame.format.sel -side left
-         pack $frame.format -side top
+         frame $Param(Frame).img.format
+            label $Param(Frame).img.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 9 -anchor w
+            ComboBox::Create $Param(Frame).img.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Param(Formats) 31 5 PrintBox::SetDevice
+            pack $Param(Frame).img.format.lbl $Param(Frame).img.format.sel -side left
+         pack $Param(Frame).img.format -side top -pady 2
 
-         frame $frame.web
-            label $frame.web.lbl -text [lindex $Lbl(WEBSite) $GDefs(Lang)] -width 8 -anchor w
-            ComboBox::Create $frame.web.sel PrintBox::Print(WEBSite) \
-               noedit sorted nodouble -1 $Param(WEBNameList) 33 5
-            ComboBox::Add $frame.web.sel ""
-            pack $frame.web.lbl $frame.web.sel -side left
-         pack $frame.web -side top -pady 5
+         frame $Param(Frame).img.web
+            label $Param(Frame).img.web.lbl -text [lindex $Lbl(WEBSite) $GDefs(Lang)] -width 9 -anchor w
+            ComboBox::Create $Param(Frame).img.web.sel PrintBox::Print(WEBSite) \
+               noedit sorted nodouble -1 $Param(WEBNameList) 31 5
+            ComboBox::Add $Param(Frame).img.web.sel ""
+            pack $Param(Frame).img.web.lbl $Param(Frame).img.web.sel -side left
+         pack $Param(Frame).img.web -side top
 
-      bind  $frame.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
+      bind  $Param(Frame).img.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
    }
 
    frame .printbox.par -relief raised -bd 1
@@ -396,10 +408,65 @@ proc PrintBox::Create { Frame Mode args } {
 }
 
 proc PrintBox::SetDevice { } {
+   global GDefs
    variable Print
    variable Param
-
+   variable Lbl
+   variable Bubble
+   
    set Print(Device) [lindex [split [lindex $Param(Format) end] .] end]
+
+   if { [winfo exists $Param(Frame)] } {
+      destroy $Param(Frame).opt
+      labelframe $Param(Frame).opt -text Options
+       
+      switch $Print(Device) {
+         "jpeg" {
+            frame $Param(Frame).opt.quality
+               label $Param(Frame).opt.quality.lbl -text [lindex $Lbl(Quality) $GDefs(Lang)] -width 12 -anchor w
+               entry  $Param(Frame).opt.quality.inf -textvariable PrintBox::Param(Quality) -width 3 -bg $GDefs(ColorLight)
+               scale $Param(Frame).opt.quality.sel  -orient horizontal -from 5 -to 100 -variable PrintBox::Param(Quality) -showvalue False -width 16 -sliderlength 8 -bd 1 -resolution 1 
+               pack $Param(Frame).opt.quality.lbl $Param(Frame).opt.quality.inf -side left
+               pack $Param(Frame).opt.quality.sel -side left -fill both -expand True
+            pack $Param(Frame).opt.quality -side top -fill x -expand True -padx 5
+            frame $Param(Frame).opt.smooth
+               label $Param(Frame).opt.smooth.lbl -text [lindex $Lbl(Smooth) $GDefs(Lang)] -width 12 -anchor w
+               entry  $Param(Frame).opt.smooth.inf -textvariable PrintBox::Param(Smooth) -width 3 -bg $GDefs(ColorLight)
+               scale $Param(Frame).opt.smooth.sel  -orient horizontal -from 0 -to 30 -variable PrintBox::Param(Smooth) -showvalue False -width 16 -sliderlength 8 -bd 1 -resolution 1 
+               pack $Param(Frame).opt.smooth.lbl $Param(Frame).opt.smooth.inf -side left
+               pack $Param(Frame).opt.smooth.sel -side left -fill both -expand True
+            pack $Param(Frame).opt.smooth -side top -fill x -expand True -padx 5
+         
+            Bubble::Create $Param(Frame).opt.quality $Bubble(Quality)
+            Bubble::Create $Param(Frame).opt.smooth  $Bubble(Smooth)
+           pack $Param(Frame).opt -side top -fill x -padx 5 -ipady 2 -pady 5 -anchor n
+                }
+         "tiff" {
+            frame $Param(Frame).opt.compress
+               label $Param(Frame).opt.compress.lbl -text [lindex $Lbl(Compress) $GDefs(Lang)] -width 12 -anchor w
+               ComboBox::Create $Param(Frame).opt.compress.sel PrintBox::Param(Compress) noedit unsorted nodouble -1 { none jpeg packbits deflate } 10 5
+               pack $Param(Frame).opt.compress.lbl -side left
+               pack $Param(Frame).opt.compress.sel -side left -fill both -expand True            
+            pack $Param(Frame).opt.compress -side top -fill x -expand True -padx 5
+            pack $Param(Frame).opt -side top -fill x -padx 5 -ipady 2 -pady 5 -anchor n
+                
+            Bubble::Create $Param(Frame).opt.compress $Bubble(Compress)
+                }
+      
+         "pcx" -
+         "tga" {
+            frame $Param(Frame).opt.compress
+               label $Param(Frame).opt.compress.lbl -text [lindex $Lbl(Compress) $GDefs(Lang)] -width 12 -anchor w
+               ComboBox::Create $Param(Frame).opt.compress.sel PrintBox::Param(Compress) noedit unsorted nodouble -1 { none rle } 10 5
+               pack $Param(Frame).opt.compress.lbl -side left
+               pack $Param(Frame).opt.compress.sel -side left -fill both -expand True            
+            pack $Param(Frame).opt.compress -side top -fill x -expand True -padx 5
+            pack $Param(Frame).opt -side top -fill x -padx 5 -ipady 2 -pady 5 -anchor n
+                
+            Bubble::Create $Param(Frame).opt.compress $Bubble(Compress)
+                }
+      }
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -702,10 +769,19 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
 proc PrintBox::Save { Frame X Y Width Height File } {
    variable Print
+   variable Param
 
+   switch $Print(Device) {
+      "jpeg" { set opt "-quality $Param(Quality) -smooth $Param(Smooth)" }
+      "pcx"  -
+      "tga"  -
+      "tiff" { set opt "-compress $Param(Compress)" }
+      default { set opt "" }
+   }
+   
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-   TMPIMG write "$File" -format $Print(Device)
+   eval TMPIMG write "$File" -format \{$Print(Device) $opt\}
    image delete TMPIMG
 }
 
