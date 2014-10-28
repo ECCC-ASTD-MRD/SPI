@@ -16,80 +16,378 @@
 #   FieldCalc::Close          { }
 #   FieldCalc::ConvertFactor  { }
 #   FieldCalc::ConvertList    { Frame }
+#   FieldCalc::FuncList       { Frame }
 #   FieldCalc::Window         { Parent }
 #   FieldCalc::FormulaLoad    { }
 #   FieldCalc::FormulaSave    { Name }
 #   FieldCalc::FormulaSet     { { Formula VP }
 #   FieldCalc::InsertDigit    { Digit }
-#   FieldCalc::InsertFunc     { Func Argc Trigo }
+#   FieldCalc::InsertFunc     { Func }
 #   FieldCalc::InsertOperator { Op }
 #   FieldCalc::Operand        { VP Id Fields }
 #   FieldCalc::Paste          { File Field }
 #   FieldCalc::Save           { File }
-#   FieldCalc::WidgetCond     { Frame }
 #   FieldCalc::WidgetConst    { Frame }
-#   FieldCalc::WidgetConv     { Frame }
-#   FieldCalc::WidgetMath     { Frame }
-#   FieldCalc::WidgetMem      { Frame }
+#   FieldCalc::WidgetConvert  { Frame }
 #   FieldCalc::WidgetOps      { Frame }
-#   FieldCalc::WidgetStat     { Frame }
-#   FieldCalc::WidgetTrigo    { Frame }
+#   FieldCalc::WidgetFunc     { Frame }
 #
 # Remarques :
 #
 #===============================================================================
 
-package provide FieldCalc 2.1
+package provide FieldCalc 2.2
 
-catch { SPI::Splash "Loading Widget Package FieldCalc 2.1" }
+catch { SPI::Splash "Loading Widget Package FieldCalc 2.2" }
 
 namespace eval FieldCalc {
    variable Lbl
    variable Bubble
-   variable Error
    variable Msg
    variable Data
-   variable Const
-   variable Conv
-   variable Unit
-   variable Desc
    variable Param
 
    set Param(Geom)     { 620x190+[winfo rootx $Parent]+[winfo rooty $Parent] }
    set Param(Title)    { "Calculatrice" "Calculator" }
-   set Param(Version)  2.1
+   set Param(Version)  2.2
 
-   set Data(FieldNo)  0
-   set Data(Formulas) {}
-   set Data(Mem)      {}
+   set Data(FieldNo)    0
+   set Data(Formulas)   {}
+   set Data(FuncType)   Maths  ;#----- Current function type
+   set Data(ConvType)   ""     ;#----- Current conversion type
+   set Data(ConvFrom)   ""     ;#----- Current conversion from
+   set Data(ConvTo)     ""     ;#----- Current conversion to
+   set Data(ConvFactor) ""     ;#----- Current conversion factor
+   
+   set Param(Logical) { 
+      { ifelse(A,B,C) "Operateur conditionnel (Si A alors B sinon C)" "Conditional operator (If A then B else C)" }
+      { within(A,B,C) "Si la valeur de A est entre B et C"            "Checks if the Value of A is between B and C" }
+      { in(A,B)       "Si la valeur de A existe dans B"               "Checks if the value of A exists in B" }
+   }
+   
+   set Param(Derivative) {
+      { darea(A)      "Aire des cellules"                                         "Area of grid cells" }
+      { dlat(A)       "Latitudes de chaque points de grilles"                     "Latitudes of grid cells" }
+      { dlon(A)       "Longitudes de chaque points de grilles"                    "Longitudes of grid cells" }
+      { ddx(A)        "Longueur des cellules selon X en mètres"                   "Length of grid cells in meters along X axis" }
+      { ddy(A)        "Longueur des cellules selon Y en mètres"                   "Length of grid cells in meters along Y axis" }
+      { dangle(A)     "Orientation des cellules par rapport au nord géographique" "Grid cell orientation in relation to geographical north" }
+      { dslopedeg(A)  "Pente en dégrée"                                           "Slope in degrees" }
+      { dslope100(A)  "Pente en pourcentage (90º = 100%)"                         "Slope in percentage (90º = 100%)" }
+      { daspect(A)    "Angle azimutale de la pente"                               "Azimuthal angel of the slope" }
+      { ddxfirst(A)   "Dérivée en x du premier degré"                             "First degree derivate along x" }
+      { ddyfirst(A)   "Dérivée en y du premier degré"                             "First degree derivate along y" }
+      { ddxsecond(A)  "Dérivée en x du second degré"                              "Second degree derivate along x" }
+      { ddysecond(A)  "Dérivée en y du second degré"                              "Second degree derivate along y" }
+      { ddxysecond(A) "Dérivée en xy du second degré"                             "Second degree derivate along xy"  }
+      { dprofcurve(A) "Calcul de la courbature du profil"                         "Profile curvature" }
+      { dtangcurve(A) "Calcul de la courbature tangentielle "                     "Tangential profile curvature" }
+   }
+   
+   set Param(Table) {   
+      { win(A,B,C)      "Nombre d'occurence de valeur de C entre A et B"                                                                    "Number of occurence of C value between A and B" }
+      { tcount(A,B)     "Compte le nombre d'indices de A apparaissant dans B"                                                               "Number of occurence of A in B" }
+      { lut(A,B,C)      "Assigne a A la valeur correspondante de B dans C (lookup table)"                                                   "Assigns to A the corresponding value of B in C (lookup table)" }
+      { slut(A,B,C)     "Assigne a A la valeur correspondante de B dans C, pour les tables de correspondances triées (sorted lookup table)" "Assigns to A the corresponding value of B in C for sorted tables (sorted lookup table)" }
+      { fkernel(A,B)    "filtre (convolution) la matrice A en utilisant le kernel B"                                                        "Filter (convolution) matrix A using kernel B" }
+      { fcentile(A,B,C) "filtre centile de la matrice A en utilisant le kernel de dimension B en sélectionnant le centile C"                "Centile filter matrix A using kernel of dimension B while selecting centile C" }
+   }
+   
+   set Param(Mathematical) {
+      { log(A)       "Logarithme base 10"                             "Logarithm" }
+      { logn(A)      "Logarithme naturel"                             "Natural logarithm" }
+      { exp(A)       "Exponentielle"                                  "Exponential" }
+      { sqrt(A)      "Racine carré"                                   "Square" }
+      { cbrt(A)      "Racine cubique"                                 "Cubic" }
+      { abs(A)       "Valeur absolue"                                 "Aboslute value" }
+      { ceil(A)      "Valeur entiere plafond"                         "Higher integer value" }
+      { floor(A)     "Valeur entiere plancher"                        "Lower integer value" }
+      { round(A)     "Valeur entiere arondie"                         "Round to nearest integer" }
+      { rem(A,n)     "Reste point flottant"                           "Remainder value" }
+      { mod(A,n)     "Module point flottant"                          "Modulo value" }
+      { min(A,n)     "Définir le minium"                              "Set minimum to n" }
+      { max(A,n)     "Définir le maximum"                             "set maximum to n" }
+      { clamp(A,m,n) "Définir le minimum et le maximum"               "Set minimum to m and maximum value to n" }
+      { frand(A,m,n) "Nombre aléatoire entre m et n"                  "Random number between m and n" }
+      { sin(A)       "Sinus"                                          "Sinus" }
+      { cos(A)       "Cosinus"                                        "Cosinus" }
+      { tan(A)       "Tangente"                                       "Tangent" }
+      { asin(A)      "Arc sinus"                                      "Arc sinus" }
+      { acos(A)      "Arc cosinus"                                    "Arc cosinus" }
+      { atan(A)      "Arc tangente"                                   "Arc tangent" }
+      { atan2(A,B)   "Arc tangente de X sur Y (résultat de -PI a PI)" "Arc tangent of X over Y (results fromt -PI to PI)" }
+      { sinh(A)      "Sinus hyperbolique"                             "Sinus hyperbolic" }
+      { cosh(A)      "Cosinus hyperbolique"                           "Cosinus hyperbolic" }
+      { tanh(A)      "Tangente hyperbolique"                          "Tangent hyperbolic" }
+      { asinh(A)     "Arc sinus hyperbolique"                         "Arc sinus hyperbolic" }
+      { acosh(A)     "Arc cosinus hyperbolique"                       "Arc cosinus hyperbolic" }
+      { atanh(A)     "Arc tangente hyperbolique"                      "Arc tangent hyperbolic" }
+   }
+   
+   set Param(Statistical) {
+      { smb(A,B)    "Biais moyen" "Mean bias" }
+      { sme(A,B)    "Erreur moyenne" "Mean error" }
+      { snmb(A,B)   "Biais moyen normalisé" "Normalized mean bias" }
+      { snme(A,B)   "Erreur moyenne normalisée" "Normalized mean error" } 
+      { smnb(A,B)   "Moyenne du biais normalisé" "Mean normalized bias" }
+      { smne(A,B)   "Moyenne de l'erreur normalisée" "Mean normalized error" }
+      { slmnb(A,B)  "Biais moyen logarithmique normalisé" "Logarithmic mean normalized bias" }
+      { slmne(A,B)  "Erreur moyenne logarithmique normalisée" "Logarithmic mean normalized error" }
+      { sfb(A,B)    "Biais fractionnel" "Fractionnal bias" }
+      { smfb(A,B)   "Biais fractionel moyen" "Mean fractional bias" }
+      { smfe(A,B)   "Erreur fractionelle moyenne" "Mean fractional error" }
+      { smre(A,B)   "Erreur relative moyenne" "Mean relative error" }
+      { smaxb(A,B)  "Biais maximum" "Maximum bias" }
+      { smaxe(A,B)  "Erreur maximale" "Maximum error" }
+      { smaxre(A,B) "Erreur maximale relative" "Maximum relative error" }
+      { srmse(A,B)  "Erreur moyenne quadratique" "Root mean square error" }
+      { snrmse(A,B) "Erreur moyenne quadratique normalisée" "Normalized Root mean square error" }
+      { snmse(A,B)  "Erreur moyenne au carré normalisée" "Normalized mean square error" }
+      { sgmb(A,B)   "Biais géométrique moyen" "Geometric mean bias" }
+      { sgmv(A,B)   "Variance géométrique moyenne" "Geometric mean variance" }
+      { scor(A,B)   "Coefficient de corrélation" "Correlation coeficient" }
+      { scov(A,B)   "Covariance" "Covariance" }
+      { svar(A)     "Variance" "Variance" }
+      { svarx(A,B)  "Variance en X" "Variance X" }
+      { svary(A,B)  "Variance en Y" "Variance Y" }
+      { sregb(A,B)  "Coefficient de régression (Pente de la courbe)" "Regression coefficient (Slope of curve fitting)" }
+      { srega(A,B)  "Coefficient de régression (Interscetion de la courbe)" "Regression coefficient (Intercept of curve fitting)" }
+      { serra(A,B)  "Erreur standard pour a" "Standard Error for a" }
+      { serrb(A,B)  "Erreut standard pour b" "Standard Error for b" }
+      { sssx(A,B)   "Somme des carrés en X" "Sum of squared values X" }
+      { sssy(A,B)   "Somme des carrés en Y" "Sum of squared values Y" }
+      { sssxy(A,B)  "Somme des carrés en XY" "Sum of squared values XY" }
+      { snb(A)      "Nombre d'échantillon" "Number of sample" }
+      { ssdev(A)    "Déviation standard" "Standard deviation" }
+      { ssdevx(A,B) "Déviation standard en X" "Standard deviation X" }
+      { ssdevy(A,B) "Déviation standard en Y" "Standard deviation Y" }
+      { smed(A)     "Médianne" "Median" }
+      { smedx(A,B)  "Médianne en X" "Median X" }
+      { smedy(A,B)  "Médianne en Y" "Median Y" }
+      { suniq(A)    "Nombre de valeur unique" "Number of unique values" }
+      { ssum(A)     "Somme" "Sum" }
+      { ssumx(A,B)  "Somme en X" "Sum in X" }
+      { ssumy(A,B)  "Somme en Y" "Sum in Y" }
+      { smin(A)     "Minimum" "Minimum" }
+      { sminx(A,B)  "Minimum en X" "Minimum in X" }
+      { sminy(A,B)  "Minimum en Y" "Minimum in Y" }
+      { smax(A)     "Maximum" "Maximum" }
+      { smaxx(A,B)  "Maximum en X" "Maximum in X" }
+      { smaxy(A,B)  "Maximum en Y" "Maximum in Y" }
+      { savg(A)     "Moyenne" "Average" }
+      { savgX(A,B)  "Moyenne en X" "Average in X" }
+      { savgY(A,B)  "Moyenne en Y" "Average in Y" }
+      { na(A,B)     "Nombre de valeurs rejetées (NoData)" "Number of rejected values (NoData)" }
+      { srna(A,B)   "Ratio de valeurs rejetées (NoData)" "Ratio of rejected values (NoData)" }
+      { sfoex(A,B)  "Facteur d'excédance" "Factor of excedance" }
+      { sfa2(A,B)   "Facteur 2" "Factor of 2" }
+      { sfa5(A,B)   "Facteur 5" "Factor of 5" }
+      { sfa10(A,B)  "Facteur 10" "Factor of 10" }
+      { snad(A,B)   "Différence absolue normalisée" "Normalized absolute difference" }
+      { sfms(A,B)   "Figure de mérite dans l'espace" "Figure of merit in space" }
+      { fmsb(A,B)   "Figure de mérite dans l'espace (binaire)" "Figure of merit in space (binary)" }
+      { sfmsi(A,B)  "Figure de mérite dans l'espace (intégré)" "Figure of merit in space (integrated)" } 
+      { osf(A,B)    "Fonction de score objectif" "Objective scoring function" }
+      { sosfb(A,B)  "Fonction de score objectif (binaire)" "Objective scoring function (binary)" }
+      { sosfi(A,B)  "Fonction de score objectif (intégré)" "Objective scoring function (integrated)" } 
+      { spcc(A,B)   "Coefficient de corrélationde Pearson" "Pearson's correlation coefficient" }
+      { sksp(A,B)   "Paramètre de Kolmogorov-Smirnov" "Kolmogorov-Smirnov parameter" }
+      { srank(A,B)  "Rang calculaté avec une combinaison de fb, fms, fa2, ksp et nad" "Rank calculated with a combination of fb, fms, fa2, ksp and nad" }
+      { snbeq(A,B)  "Nombre de valeur égale" "Number of equal values" }
+      { snbgt(A,B)  "Nombre de valeur de B plus grande que A"  "Number of values of B greater than A" }
+      { snblt(A,B)  "Nombre de valeur de B plus petite que A" "Number of values of B smaller than A" }
+      { snbfa(A,B)  "Nombre de fausse alarmes (A=0, B!=0)" "Number of false alarms (A=0, B!=0)" }
+      { snbmi(A,B)  "Nombre de d'échec (A!=0, B=0)" "Number of misses (A!=0, B=0)" }
+      { snbnp(A,B)  "Nombre de paire nulles (A=0, B=0)" "Number of null pairs (A=0, B=0)" }
+      { saov(A,B)   "Région de superposition (A!=0 B!=0)" "Overlap area (A!=0, B!=0)" }
+      { safn(A,B)   "Région de faux négatifs (A!=0, B=0)" "False negative area (A!=0, B=0)" }
+      { safp(A,B)   "Région de faux positifs (A=0, B!=0)" "False positive area (A=0, B!=0)" }
+      { sax(A,B)    "Région de valeurs no-bulle pour A" "Area covered by non-null values in field A" }
+      { say(A,B)    "Région de valeurs no-bulle pour B" "Area covered by non-null values in field B" }
+   }
+   
+   set Param(Distance) {
+      { m    1.0           "mètre"              "meter" }
+      { in   0.0254        "pouce"              "inch" }
+      { A    1e-10         "angstrom"           "angstrom" }
+      { km   1000.0        "kilomètre"          "kilometer" }
+      { ft   0.3048        "pied"               "foot" }
+      { yd   0.9144        "verge"              "yard" }
+      { nm   1852          "mile nautique"      "nautical mile" }
+      { au   1.49597870e11 "unité astronomique" "astronomical unit" }
+      { pc   3.0857e16     "parsec"             "parsec" }
+      { ly   9.4607e15     "anneé lumière"      "lightyear" }
+      { fg   201.168       "furlong"            "furlong" }
+      { fa   1.8288        "brasse"             "fathom" }
+      { ch   20.1168       "chaine"             "chain" }
+      { mile 1609.344      "mile"               "mile" }
+      { cb   182.88        "câble"              "cable" }
+   }
 
+   set Param(Area) {
+      { m²    1.0            "mètre carré" "square meter" }
+      { hc    10000.0        "hectare"     "hectare" }
+      { hi    485000.0       "hide"        "hide" }
+      { in²   6.4516e-4      "pouce carré" "square inch" }
+      { ft²   9.290304e-2    "pied carré"  "square foot" }
+      { yd²   8.3612736e-1   "verge carré" "square yard" }
+      { rood  1.01171e3      "rood"        "rood" }
+      { acre  4.0468564224e3 "acre"        "acre" }
+      { mile² 2.58998811e6   "mile carré"  "square mile" }
+   }
+
+   set Param(Volume) {
+      { m³     1.0            "mètre cube"    "cubic meter" }
+      { in³    1.6387064e-5   "pouce cube"    "cubic inch" }
+      { ft³    2.8316846e-2   "pied cube"     "cubic foot" }
+      { yd³    7.64554858e-1  "verge cube"    "cubic yard" }
+      { mile³  4.168181825e9  "mile cube"     "cubic mile" }
+      { min    6.16115e-8     "minim"         "minim" }
+      { dram   3.69669e-6     "dram liquide"  "fluid dram" }
+      { liqoz  2.95735e-5     "once liquide"  "liquid ounce" }
+      { gi     1.18294e-4     "gill"          "gill" }
+      { liqpt  4.73176e-4     "pinte liquide" "liquid pint" }
+      { liqqt  9.46353e-4     "quart liquide" "liquid quart" }
+      { gal    3.785411784e-3 "gallon"        "gallon" }
+      { drypt  5.50610e-4     "pinte sèche"   "dry pint" }
+      { dryqt  1.10122e-3     "quart sec"     "dry quart" }
+      { pk     8.80977e-3     "peck"          "peck" }
+      { bu     3.52391e-2     "bushel"        "bushel" }
+      { bbl    1.58987e-1     "baril"         "barrel" }
+      { drybbl 1.15627e-1     "baril sec"     "dry barrel" }
+   }
+
+   set Param(Mass) {
+      { kg    1.0        "kilogramme" "kilogram" }
+      { dr    1.77185e-3 "dram"       "dram" }
+      { oz    2.83495e-2 "once"       "ounce" }
+      { lb    0.45359237 "livre"      "pound" }
+      { shcwt 4.53592e1  "centième"   "short hundredweight" }
+      { shtn  9.07185e2  "tonne"      "short ton" }
+      { ca    0.0002     "carat"      "carat" }
+      { gr    0.000065   "grain"      "grain" }
+   }
+
+   set Param(Speed) {
+      { ms    1.0        "mètre par seconde"     "meter second" }
+      { kmh   2.77778e-1 "kilomètre heure"       "kilometer per hour" }
+      { mph   4.4704e-1  "mile a l'heure"        "mile per hour" }
+      { knot  5.14444e-1 "noeud"                 "knot" }
+      { Mach  340.2933   "Vitesse du son"        "Sound speed" }
+      { Light 99790000   "Vitesse de la lumiere" "Light speed" }
+   }
+
+  set Param(Pressure) {
+      { Pa      1.0       "pascal"                      "pascal" }
+      { lbf/ft² 4.78803e1 "livre-force par pied carré"  "pound-force per square foot" }
+      { lbf/in² 6.89476e3 "livre-force par pouce carré" "pound-force per square inch" }
+      { mmHg    1.33322e2 "millimètre de mercure"       "millimeter of mercury" }
+      { inH2O   2.49089e2 "pouce d'eau"                 "inch of water" }
+      { inHg    3.38639e3 "pouce de mercure"            "inch of mercury" }
+      { atm     1.01325e5 "atmosphère standard"         "standard atmosphere" }
+      { torr    1.33322e2 "torr"                        "torr" }
+      { bar     1e5       "bar"                         "bar" }
+   }
+
+  set Param(Energy) {
+      { J     1.0           "joule"                "joule" }
+      { eV    1.6021892e-19 "electronvolt"         "electronvolt" }
+      { ftlbf 1.35582       "foot pound force"     "foot pound force" }
+      { cal   4.1868        "calorie"              "calorie" }
+      { kgfm  9.80665       "kilogram force meter" "kilogram force meter" }
+      { Btu   1.05506e3     "British Thermal Unit" "British Thermal Unit" }
+      { Wh    3.6e3         "watt heure"           "watt hour" }
+      { kWh   3.6e6         "kilowatt heure"       "kilowatt hour" }
+      { therm 1.05506e8     "therm"                "therm" }
+      { erg   1e-7          "erg"                  "erg" }
+   }
+
+  set Param(Power) {
+      { W   1.0       "watt"                "watt" }
+      { hp  7.45700e2 "horsepower"          "horsepower" }
+      { hpm 7.35499e2 "horsepower métrique" "horsepower metric" }
+   }
+
+  set Param(Force) {
+      { N   1.0        "newton"           "newton" }
+      { dyn 1e-5       "dyne"             "dyne" }
+      { lbf 4.44822    "livre force"      "pound force" }
+      { kgf 9.80665    "kilogramme force" "kilogram force" }
+      { sn  1e3        "sthene"           "sthene" }
+      { pdl 1.38255e-1 "poundal"          "poundal" }
+   }
+
+   set Param(Radiation) {
+      { Bq      1.0     "becquerel"              "becquerel" }
+      { Ci      3.7e10  "curie"                  "curie" }
+      { Sv      1e-2    "sievert"                "sievert" }
+      { rem     1.0     "Rontgen Equivalent Man" "Rontgen Equivalent Man" }
+      { C/kg    2.58e-4 "coulomb par kilogramme" "coulomb per kilogram" }
+      { rontgen 1.0     "rontgen"                "rontgen" }
+   }
+   
+   set Param(Const) {
+      { Pi  3.14159265358979323846264338327 "Pi"                                                                      "Pi" }
+      { Re  6.37e6                          "Rayon moyen de la Terre (m)"                                             "Average radius of Earth (m)" }
+      { g   9.81                            "Gravite moyenne de la Terre (m/s²)"                                      "Mean gravity of Earth (m/s²)" }
+      { W   7.292e-5                        "Velocitee angulaire de la Terre (rad/s)"                                 "Angular velocity of Earth (rad/s)" }
+      { c   2.998e8                         "Vitesse de la lumiere (m/s)"                                             "Velocity of light (m/s)" }
+      { Rx  8.3143e3                        "Constante des gaz universel (J/K/mol)"                                   "Universal gas constant (J/K/mol)" }
+      { k   1.381e-23                       "Constante de Boltzman (J/K/mol)"                                         "Boltzmann`s constant (J/K/mol/)" }
+      { Na  6.022e23                        "Nombre d'Avogadro (mol-1)"                                               "Avogadro number (mol-1)" }
+      { S   5.6696e-8                       "Constante de Stefan-Boltzman (W m-2 K-4)"                                "Stefan-Boltzman constant (W m-2 K-4)" }
+      { h   6.6262e-34                      "Constante de Planck (J s)"                                               "Planck constant (J s)" }
+      { e0  8.85e-12                        "Permissivitee du vacuum (C2 N-1 m2)"                                     "Permittivity of vacuum (C2 N-1 m2)" }
+      { Md  28.97                           "Poid moyen de l'air sec"                                                 "Average molecule weight of dry air" }
+      { Rd  287                             "Constante des gas de l'air sec (J K-1 kg-1)"                             "Gas constant of dry air (J K-1 kg-1)" }
+      { Rv  461                             "Constante des gaz de la vapeur d'eau (J K-1 kg-1)"                       "Gas constant of water vapor (J K-1 kg-1)" }
+      { rd  1.275                           "Densite de l'air sec a 0ºC et 1000mb (kg/m³)"                            "Density of dry air at 0ºC and 1000mb (kg/m³)" }
+      { rw  1.0e3                           "Densite de l'eau liquide a 0ºC (kgm³)"                                   "Density of liquid water at 0ºC (kg/m³)" }
+      { ri  0.917e3                         "Densite de la glace a 0ºC (kg/m³)"                                       "Density of ice at 0ºC (kg/m³)" }
+      { cpd 1004                            "Chaleur specifique de l'air sec a pression constante (J K-1 kg-1)"       "Specific dry air heat at constant pressure (J K-1 kg-1)" }
+      { cvd 717                             "Chaleur specifique de l'air a volume constant volume (J K-1 kg-1)"       "Specific dry air heat at constant volume (J K-1 kg-1)" }
+      { cpv 1952                            "Chaleur specifique de la vapeur d'eau a pression constante (J K-1 kg-1)" "Specific water vapor heat at constant pressure (J K-1 kg-1)" }
+      { cvv 1463                            "Chaleur specifique de la vapeur d'eau a volume constant(J K-1 kg-1)"     "Specific water vapor heat at constant volume (J K-1 kg-1)" }
+      { cw  4218                            "Chaleur specifique de la vapeur d'eau a 0ºC (J K-1 kg-1)"                "Specific water vapor heat at 0ºC (J K-1 kg-1)" }
+      { ci  2106                            "Chaleur specifique de la glace a 0ºC (J K-1 kg-1)"                       "Specific ice heat at 0ºC (J K-1 kg-1)" }
+   }
+   
    #----- Textes et labels
-
    set Lbl(To)       { " en " " to " }
    set Lbl(Yes)      { "Oui" "Yes" }
    set Lbl(No)       { "Non" "No" }
    set Lbl(None)     { "Aucune" "None" }
-   set Lbl(Mem)      { "Memoire" "Memory" }
+   set Lbl(Funcs)    { "Fonctions" "Functions" }
    set Lbl(Conv)     { "Conversion" "Conversion" }
    set Lbl(Const)    { "Constantes" "Constant" }
-   set Lbl(Trigo)    { "Trigonometrie" "Trigonometry" }
-   set Lbl(Math)     { "Math" "Math" }
-   set Lbl(Cond)     { "Condition" "Condition" }
-   set Lbl(Stat)     { "Stat" "Stat" }
-
-   #----- Erreurs
-
-   set Error(Operand)  { "L'opérande n'est pas un champs.\n\n\tRésultat: " "Operand is not a field.\n\n\tResult: " }
+   
+   set Lbl(Operators) { 
+      { "Mathématiques" "Mathematical" }
+      { "Logiques"      "Logical" }
+      { "Dérivatifs"    "Derivative" }
+      { "Satistiques"   "Statistical" }
+      { "Tables"        "Table" } }
+      
+   set Lbl(Converts) { 
+      { "Distance"  "Distance" }
+      { "Région"    "Area" }
+      { "Volume"    "Volume" }
+      { "Masse"     "Mass" }
+      { "Vitesse"   "Speed" }
+      { "Pression"  "Pressure" }
+      { "Energie"   "Energy" }
+      { "Puissance" "Power" }
+      { "Force"     "Force" }
+      { "Radiation" "Radiation" } }
 
    #----- Messagess
-
    set Msg(Del)     { "Voulez-vous vraiment supprimer cette fonction ?" "Do you really want to suppress this function ?" }
    set Msg(Exist)   { "Cette fonction existe deja, voulez-vous la remplacer ?" "This function is already defined, do you want to replace it ?" }
    set Msg(Name)    { "Veuillez spéfifier le nom de la formule." "Please enter the formula name." }
    set Msg(Saved)   { "Formule sauvegardee." "Formula saved." }
+   set Msg(Operand)  { "L'opérande n'est pas un champs.\n\n\tRésultat: " "Operand is not a field.\n\n\tResult: " }
 
    #----- Bulles d'aides
-
    set Bubble(Param)   { "Définir/Sauvegader les paramêtres du champs résultant" "Define/Save the result field parameters" }
    set Bubble(Formula) { "Nom de la formule courante" "Current formula name" }
    set Bubble(Save)    { "Sauvegarde de la formule courante" "Save the current formula" }
@@ -98,370 +396,20 @@ namespace eval FieldCalc {
                           selectionne le dans une boite de champs avec le bouton central de la souris."
                          "Mantisse\nType in the formula or use the calculator buttons\nTo insert a field,\
                           click on it with the middle mouse button in a fieldbox." }
-   set Bubble(List)  { "Liste des operations effectuees" "Past operations made" }
-
-   set Bubble(STO)   { "Memoriser le resultat" "Memorize the result" }
-   set Bubble(RCL)   { "Rappeler le resultat memorise" "Recall memorized result" }
-   set Bubble(DEL)   { "Supprimer le resultat memorise" "Delete memorized result" }
-   set Bubble(LST)   { "Liste des resultats memorise" "Memorized result list" }
-
+   set Bubble(List)    { "Liste des operations effectuees" "Past operations made" }
    set Bubble(ConvType)   { "Selection du type de conversion" "Select the conversion type" }
    set Bubble(ConvFrom)   { "Unite du format a convertir" "Unit to convert from" }
    set Bubble(ConvTo)     { "Unite de conversion" "Unit to convert to" }
    set Bubble(ConvFact)   { "Facteur de conversion\nAppuyer pour appliquer a la mantisse"
                            "Conversion factor\nPress to apply to mantissa" }
-
-   set Bubble(CondNOT)    { "Negation logique" "Logical negation" }
-   set Bubble(CondAND)    { "ET logique" "Logical AND" }
-   set Bubble(CondOR)     { "OU logique" "Logical OR" }
-   set Bubble(CondMIN)    { "min(A,B)\nMinimum entre A a B" "min(A,B)\nMinimum between A an B" }
-   set Bubble(CondMAX)    { "min(A,B)\nMaximum entre A a B" "min(A,B)\nMaximum between A an B" }
-   set Bubble(CondCLAMP)  { "clamp(A,B,C)\nFixe le minimum de A a B et le maximum a C" \
-                            "clamp(A,B,C)\nSet the minimum of A to B and the maximum to C" }
-   set Bubble(CondIFELSE) { "ifelse(A,B,C)\nSi A alors A=B sinon A=C" "ifelse(A,B,C)\nIf A then A=B else A=C" }
-
-   set Bubble(MathLN)     { "ln(A)\nLogarithme naturel de A" "ln(A)\nNatural logarithm of A" }
-   set Bubble(MathEXP)    { "exp(A)\nExponentielle de A" "exp(A)\nExponential of A" }
-   set Bubble(MathLOG)    { "log(A)\nLogarithme en base 10 de A" "log(A)\nBase 10 logarithme of A" }
-   set Bubble(MathSQRT)   { "sqrt(A)\nRacine carre de A" "sqrt(A)\nSquare root of A" }
-   set Bubble(MathCBRT)   { "cbrt(A)\nRacine cubique de A" "cbrt(A)\nCubic root of A" }
-   set Bubble(MathFMOD)   { "fmod(A,B)\nReste de la division de A par B" "fmod(A,B)\nRemainder of A divided by B" }
-   set Bubble(MathCEIL)   { "ceil(A)\nArrondi vers le haut au plus proche entier" "ceil(A)\nRound upward to the nearest integer" }
-   set Bubble(MathFLOOR)  { "floor(A)\nArrondi vers le bas au plus proche entier" "floor(A)\Round downward to the nearest integer" }
-   set Bubble(MathROUND)  { "round(A)\nArrondi au plus proche entier" "round(A)Round to the nearest integer\n" }
-   set Bubble(MathABS)    { "abs(A)\nValeur absolue de A" "abs(A)\nAbsolute value of A" }
-   set Bubble(MathDIF)    { "dif(A,b)\nPourcentage de difference entre A et B" "dif(A,b)\nPercent difference between A and B" }
-
-   set Bubble(StatSSUM)   { "ssum(A)\nSomme de la matrice A"   "ssum(A)\nSum the matrix A" }
-   set Bubble(StatSMIN)   { "smin(A)\nMinimum de la matrice A" "smin(A)\nMinimum of the matrix A" }
-   set Bubble(StatSMAX)   { "smax(A)\nMaximum de la matrice A" "smax(A)\nMaximum of the matrix A" }
-   set Bubble(StatSAVG)   { "savg(A)\nMoyenne de la matrice A" "savg(A)\nAverage of the matrix A" }
-   set Bubble(StatSMED)   { "smed(A)\nValeur medianne de la matrice A" "savg(A)\nMedian value of the matrix A" }
-   set Bubble(StatSUNIQ)  { "suniq(A)\nNombre de valeur distincte de la matrice A" "savg(A)\nNumber of unique value of the matrix A" }
-   set Bubble(StatSNB)    { "snb(A)\nNombre d'item de la matrice A" "snbg(A)\nNumber of item of the matrix A" }
-   set Bubble(StatSVAR)   { "svar(A)\nVariance de la matrice A" "svar(A)\nVariance of the matrix A" }
-   set Bubble(StatSCOR)   { "scor(A,B)\nCorrelation entre la matrice A et B" "scor(A,B)\nCorrelation between matrix A and B" }
-   set Bubble(StatSCOV)   { "scov(A,B)\nCovariance entre la matrice A et B" "scov(A,B)\nCovariance between matrix A and B" }
-   set Bubble(StatSRMSE)  { "srms(A,B)\nRMS entre la matrice A et B" "srms(A,B)\nRoot Mean Square between matrix A and B" }
-   set Bubble(StatSREGA)  { "srega(A,B)\nCoefficient de regression a entre la matrice A et B" "srega(A,B)\nRegression coefficient a between matrix A and B" }
-   set Bubble(StatSREGB)  { "sregb(A,B)\nCoefficient de regression b entre la matrice A et B" "sregb(A,B)\nRegression coefficient b between matrix A and B" }
-   set Bubble(StatSERRA)  { "serra(A,B)\nErreur standard a entre la matrice A et B" "serra(A,B)\nStandard error a between matrix A and B" }
-   set Bubble(StatSERRB)  { "serrb(A,B)\nErreur standard b entre la matrice A et B" "serrb(A,B)\nStandard error b between matrix A and B" }
-   set Bubble(StatSMB)    { "smb(A,B)\nBiais moyen entre la matrice A et B" "smb(A,B)\nMean bias between matrix A and B" }
-   set Bubble(StatSNMB)   { "snmb(A,B)\nBiais moyen normalise entre la matrice A et B" "smb(A,B)\nNormalized mean bias between matrix A and B" }
-   set Bubble(StatSNME)   { "snme(A,B)\nErreur moyenne normalisee entre la matrice A et B" "smb(A,B)\nNormalized mean error between matrix A and B" }
-   set Bubble(StatSME)    { "sme(A,B)\n Erreur moyenne entre la matrice A et B" "sme(A,B)\nMean error between matrix A and B" }
-   set Bubble(StatSNME)   { "snme(A,B)\nErreur moyenne normalise entre la matrice A et B" "snme(A,B)\nNormalized mean error  between matrix A and B" }
-   set Bubble(StatSMNB)   { "smnb(A,B)\nBiais moyen normalise entre la matrice A et B " "smnb(A,B)\nMean normalized bias  between matrix A and B" }
-   set Bubble(StatSMNE)   { "smne(A,B)\nErreur moyenne normalise entre la matrice A et B" "smne(A,B)\nMean normalized error between matrix A and B" }
-   set Bubble(StatSLMNE)  { "slmne(A,B)\nErreur moyenne normalise logarithmique entre la matrice A et B" "slmne(A,B)\nLogarithmic mean normalized error between matrix A and B" }
-   set Bubble(StatSLMNB)  { "slmnb(A,B)\nBiais moyen normalise logarithmique entre la matrice A et B" "slmnb(A,B)\nLogarithmic mean normalized bias between matrix A and B" }
-   set Bubble(StatSMFB)   { "smfb(A,B)\nBiais moyen fractionnaire entre la matrice A et B" "smfb(A,B)\nMean fractional bias between matrix A and B" }
-   set Bubble(StatSMFE)   { "smfe(A,B)\nErreur moyenne fractionnaire entre la matrice A et B" "smfe(A,B)\nMean fractional error  between matrix A and B" }
-   set Bubble(StatSRMSE)  { "srmse(A,B)\nRMS entre la matrice A et B" "snrmse(A,B)\nRoot mean square error between matrix A and B" }
-   set Bubble(StatSNRMSE) { "snrmse(A,B)\nRMS normalise entre la matrice A et B" "snrmse(A,B)\nNormalized Root mean square error between matrix A and B" }
-
-   set Bubble(TrigoARC)   { "Applique la fonction inverse" "Appy inverse function" }
-   set Bubble(TrigoHYP)   { "Applique la fonction hyperbolique" "Apply hyperbolic function" }
-   set Bubble(TrigoSIN)   { "sin(A)\nSinus the A en radian" "sin(A)\nSinus of A in radian" }
-   set Bubble(TrigoCOS)   { "cos(A)\nCosinus the A en radian" "cos(A)\nCosinus of A in radian" }
-   set Bubble(TrigoTAN)   { "tan(A)\nTangente the A en radian" "tan(A)\nTangent of A in radian" }
-
+   set Bubble(FuncType)   { "Selection du type de fonctions" "Select the function type" }
+   set Bubble(FuncList)   { "Liste des fonctions, cliquez pour insérer" "List of functions, click one to insert" }   
+   set Bubble(NOT)        { "Negation logique" "Logical negation" }
+   set Bubble(AND)        { "ET logique" "Logical AND" }
+   set Bubble(OR)         { "OU logique" "Logical OR" }
    set Bubble(Int2)       { "Interpolation lineaire" "Linear interpolation" }
    set Bubble(Int3)       { "Interpolation cubique"  "cubic interpolation" }
    set Bubble(Idx)        { "Indexation vectorielle ou norme du vecteur"  "Vectorial indexation or vector length" }
-
-   #----- Definitions de constantes
-
-   set Const(Pi)  3.14159265358979323846264338327
-   set Const(Re)  6.37e6
-   set Const(g)   9.81
-   set Const(W)   7.292e-5
-   set Const(c)   2.998e8
-   set Const(Rx)  8.3143e3
-   set Const(k)   1.381e-23
-   set Const(Na)  6.022e23
-   set Const(S)   5.6696e-8
-   set Const(h)   6.6262e-34
-   set Const(e0)  8.85e-12
-   set Const(Md)  28.97
-   set Const(Rd)  287
-   set Const(Rv)  461
-   set Const(rd)  1.275
-   set Const(rw)  1.0e3
-   set Const(ri)  0.917e3
-   set Const(cpd) 1004
-   set Const(cvd) 717
-   set Const(cpv) 1952
-   set Const(cvv) 1463
-   set Const(cw)  4218
-   set Const(ci)  2106
-
-   set Desc(Pi)  { "Pi" "Pi" }
-   set Desc(Re)  { "Rayon moyen de la Terre (m)" "Average radius of Earth (m)" }
-   set Desc(g)   { "Gravite moyenne de la Terre (m s-2)" "Mean gravity of Earth (m s-2)" }
-   set Desc(W)   { "Velocitee angulaire de la Terre (rad s-1)" "Angular velocity of Earth (rad s-1)" }
-   set Desc(c)   { "Vitesse de la lumiere (m s-1)" "Velocity of light (m s-1)" }
-   set Desc(Rx)  { "Constante des gaz universel (J K-1 mol-1)" "Universal gas constant (J K-1 mol-1)" }
-   set Desc(k)   { "Constante de Boltzman (J K-1 mol-1)" "Boltzmann`s constant (J K-1 mol-1)" }
-   set Desc(Na)  { "Nombre d'Avogadro (mol-1)" "Avogadro number (mol-1)" }
-   set Desc(S)   { "Constante de Stefan-Boltzman (W m-2 K-4)" "Stefan-Boltzman constant (W m-2 K-4)" }
-   set Desc(h)   { "Constante de Planck (J s)" "Planck constant (J s)" }
-   set Desc(e0)  { "Permissivitee du vacuum (C2 N-1 m2)" "Permittivity of vacuum (C2 N-1 m2)" }
-   set Desc(Md)  { "Poid moyen de l'air sec" "Average molecule weight of dry air" }
-   set Desc(Rd)  { "Constante des gas de l'air sec (J K-1 kg-1)" "Gas constant of dry air (J K-1 kg-1)" }
-   set Desc(Rv)  { "Constante des gaz de la vapeur d'eau (J K-1 kg-1)" "Gas constant of water vapor (J K-1 kg-1)" }
-   set Desc(rd)  { "Densite de l'air sec a 0C et 1000mb (kg m3)" "Density of dry air at 0C and 1000mb (kg m3)" }
-   set Desc(rw)  { "Densite de l'eau liquide a 0C (kg m3)" "Density of liquid water at 0C (kg m3)" }
-   set Desc(ri)  { "Densite de la glace a 0C (kg m3)" "Density of ice at 0C (kg m3)" }
-   set Desc(cpd) { "Chaleur specifique de l'air sec a pression constante (J K-1 kg-1)" "Specific dry air heat at constant pressure (J K-1 kg-1)" }
-   set Desc(cvd) { "Chaleur specifique de l'air a volume constant volume (J K-1 kg-1)" "Specific dry air heat at constant volume (J K-1 kg-1)" }
-   set Desc(cpv) { "Chaleur specifique de la vapeur d'eau a pression constante (J K-1 kg-1)" "Specific water vapor heat at constant pressure (J K-1 kg-1)" }
-   set Desc(cvv) { "Chaleur specifique de la vapeur d'eau a volume constant(J K-1 kg-1)" "Specific water vapor heat at constant volume (J K-1 kg-1)" }
-   set Desc(cw)  { "Chaleur specifique de la vapeur d'eau a 0c (J K-1 kg-1)" "Specific water vapor heat at 0c (J K-1 kg-1)" }
-   set Desc(ci)  { "Chaleur specifique de la glace a 0c (J K-1 kg-1)" "Specific ice heat at 0c (J K-1 kg-1)" }
-
-   #----- Definitions de facteur de conversion
-
-   set Unit(From)  ""
-   set Unit(To)    ""
-
-   set Conv(Type)  ""
-   set Conv(Types) { "Distance Region Volume Masse Vitesse Pression Energie Puissance Force Radiation" \
-                     "Distance Area Volume Mass Speed Pressure Energy Power Force Radiation" }
-
-   set Conv(0) { in m km ft yd nm au pc ly fg fa ch cb mile A }
-   set Conv(1) { in2 m2 ft2 yd2 rood acre mile2 hc hi }
-   set Conv(2) { m3 in3 ft3 yd3 mile3 min dram liqoz gi liqpt liqqt gal drypt dryqt pk bu bbl drybbl }
-   set Conv(3) { dr oz lb shcwt shtn kg ca gr }
-   set Conv(4) { kmh mph knot ms Mach Light }
-   set Conv(5) { Pa lbf/ft2 lbf/in2 mmHg inH2O inHg atm torr bar }
-   set Conv(6) { J eV ftlbf cal kgfm Btu Wh kWh therm erg }
-   set Conv(7) { W hp hpm }
-   set Conv(8) { dyn N lbf kgf sn pdl }
-   set Conv(9) { Bq Ci }
-
-   #--- Distance
-
-   set Unit(in)    { "pouce" "inch" }
-   set Unit(m)     { "metre" "meter" }
-   set Unit(A)     { "angstrom" "angstrom" }
-   set Unit(km)    { "kilometre" "kilometer" }
-   set Unit(ft)    { "pied" "foot" }
-   set Unit(yd)    { "verge" "yard" }
-   set Unit(nm)    { "mile nautique" "nautical mile" }
-   set Unit(au)    { "unite astronomique" "astronomical unit" }
-   set Unit(pc)    { "parsec" "parsec" }
-   set Unit(ly)    { "annee lumiere" "lightyear" }
-   set Unit(fg)    { "furlong" "furlong" }
-   set Unit(fa)    { "brasse" "fathom" }
-   set Unit(ch)    { "chaine" "chain" }
-   set Unit(mile)  { "mile" "mile" }
-   set Unit(cb)    { "cable" "cable" }
-
-   set Conv(m)    1.0
-   set Conv(A)    1E-10
-   set Conv(km)   1000.0
-   set Conv(in)   0.0254
-   set Conv(ft)   0.3048
-   set Conv(yd)   0.9144
-   set Conv(fa)   1.8288
-   set Conv(ch)   20.1168
-   set Conv(fg)   201.168
-   set Conv(mile) 1609.344
-   set Conv(nm)   1852
-   set Conv(au)   1.49597870E11
-   set Conv(ly)   9.4607E15
-   set Conv(pc)   3.0857E16
-   set Conv(cb)   182.88
-
-   #----- Area
-
-   set Unit(m2)    { "metre carre" "square meter" }
-   set Unit(hc)    { "hectare" "hectare" }
-   set Unit(hi)    { "hide" "hide" }
-   set Unit(in2)   { "pouce carre" "square inch" }
-   set Unit(ft2)   { "pied carre" "square foot" }
-   set Unit(yd2)   { "verge carre" "square yard" }
-   set Unit(rood)  { "rood" "rood" }
-   set Unit(acre)  { "acre" "acre" }
-   set Unit(mile2) { "mile carre" "square mile" }
-
-   set Conv(m2)    1.0
-   set Conv(hc)    10000.0
-   set Conv(hi)    485000.0
-   set Conv(in2)   6.4516E-4
-   set Conv(ft2)   9.290304E-2
-   set Conv(yd2)   8.3612736E-1
-   set Conv(rood)  1.01171E3
-   set Conv(acre)  4.0468564224E3
-   set Conv(mile2) 2.58998811E6
-
-   #----- Volume
-
-   set Unit(m3)     { "metre cube" "cubic meter" }
-   set Unit(in3)    { "pouce cube" "cubic inch" }
-   set Unit(ft3)    { "pied cube" "cubic foot" }
-   set Unit(yd3)    { "verge cube" "cubic yard" }
-   set Unit(mile3)  { "mile cube" "cubic mile" }
-   set Unit(min)    { "minim" "minim" }
-   set Unit(dram)   { "dram liquide" "fluid dram" }
-   set Unit(liqoz)  { "once liquide" "liquid ounce" }
-   set Unit(gi)     { "gill " "gill" }
-   set Unit(liqpt)  { "pinte liquide" "liquid pint" }
-   set Unit(liqqt)  { "quart liquide" "liquid quart" }
-   set Unit(gal)    { "gallon" "gallon" }
-   set Unit(drypt)  { "pinte seche" "dry pint" }
-   set Unit(dryqt)  { "quart sec" "dray quart" }
-   set Unit(pk)     { "peck" "peck" }
-   set Unit(bu)     { "bushel" "bushel" }
-   set Unit(bbl)    { "baril" "barrel" }
-   set Unit(drybbl) { "baril sec" "dry barrel" }
-
-   set Conv(m3)     1.0
-   set Conv(in3)    1.6387064E-5
-   set Conv(ft3)    2.8316846E-2
-   set Conv(yd3)    7.64554858E-1
-   set Conv(mile3)  4.168181825E9
-   set Conv(min)    6.16115E-8
-   set Conv(dram)   3.69669E-6
-   set Conv(oz)     2.95735E-5
-   set Conv(gi)     1.18294E-4
-   set Conv(liqpt)  4.73176E-4
-   set Conv(liqqt)  9.46353E-4
-   set Conv(gal)    3.785411784E-3
-   set Conv(bbl)    1.58987E-1
-   set Conv(drypt)  5.50610E-4
-   set Conv(dryqt)  1.10122E-3
-   set Conv(drybbl) 1.15627E-1
-   set Conv(pk)     8.80977E-3
-   set Conv(bu)     3.52391E-2
-
-   #----- Mass
-
-   set Unit(dr)    { "dram" "dram" }
-   set Unit(oz)    { "once" "ounce" }
-   set Unit(lb)    { "livre" "pound" }
-   set Unit(shcwt) { "centieme" "short hundredweight" }
-   set Unit(shtn)  { "tonne" "short ton" }
-   set Unit(kg)    { "kilogramme" "kilogram" }
-   set Unit(ca)    { "carat" "carat" }
-   set Unit(gr)    { "grain" "grain" }
-
-   set Conv(kg)    1.0
-   set Conv(ca)    0.0002
-   set Conv(gr)    0.000065
-   set Conv(dr)    1.77185E-3
-   set Conv(oz)    2.83495E-2
-   set Conv(lb)    0.45359237
-   set Conv(shcwt) 4.53592E1
-   set Conv(shtn)  9.07185E2
-
-   #----- Speed
-
-   set Unit(kmh)   { "kilometre heure" "kilometer per hour" }
-   set Unit(mph)   { "mile a l'heure" "mile per hour" }
-   set Unit(knot)  { "noeud" "knot" }
-   set Unit(ms)    { "metre par seconde" "meter second" }
-   set Unit(Mach)  { "Vitesse du son" "Sound speed" }
-   set Unit(Light) { "Vitesse de la lumiere" "Light speed" }
-
-   set Conv(ms)    1.0
-   set Conv(kmh)   2.77778E-1
-   set Conv(mph)   4.4704E-1
-   set Conv(knot)  5.14444E-1
-   set Conv(Mach)  340.2933
-   set Conv(Light) 299790000
-
-   #----- Pressure
-
-   set Unit(Pa)      { "pascal" "pascal" }
-   set Unit(lbf/ft2) { "livre-force par pied carre" "pound-force per square foot" }
-   set Unit(lbf/in2) { "livre-force par pouce carre" "pound-force per square inch" }
-   set Unit(mmHg)    { "millimetre de mercure" "millimeter of mercury" }
-   set Unit(inH2O)   { "pouce d'eau" "inch of water" }
-   set Unit(inHg)    { "pouce de mercure" "inch of mercury" }
-   set Unit(atm)     { "atmosphere standard" "standard atmosphere" }
-   set Unit(torr)    { "torr" "torr" }
-   set Unit(bar)     { "bar" "bar" }
-
-   set Conv(Pa)      1.0
-   set Conv(lbf/ft2) 4.78803E1
-   set Conv(lbf/in2) 6.89476E3
-   set Conv(mmHg)    1.33322E2
-   set Conv(torr)    1.33322E2
-   set Conv(inH2O)   2.49089E2
-   set Conv(inHg)    3.38639E3
-   set Conv(bar)     1E5
-   set Conv(atm)     1.01325E5
-
-   #----- Energy
-
-   set Unit(J)     { "joule" "joule" }
-   set Unit(eV)    { "electronvolt" "electronvolt" }
-   set Unit(ftlbf) { "foot pound force" "foot pound force" }
-   set Unit(cal)   { "calorie" "calorie" }
-   set Unit(kgfm)  { "kilogram force meter" "kilogram force meter" }
-   set Unit(Btu)   { "British Thermal Unit" "British Thermal Unit" }
-   set Unit(Wh)    { "watt heure" "watt hour" }
-   set Unit(kWh)   { "kilowatt heure" "kilowatt hour" }
-   set Unit(therm) { "therm" "therm" }
-   set Unit(erg)   { "erg" "erg" }
-
-   set Conv(J)     1.0
-   set Conv(eV)    1.6021892E-19
-   set Conv(erg)   1E-7
-   set Conv(ftlbf) 1.35582
-   set Conv(cal)   4.1868
-   set Conv(kgfm)  9.80665
-   set Conv(Btu)   1.05506E3
-   set Conv(Wh)    3.6E3
-   set Conv(kWh)   3.6E6
-   set Conv(therm) 1.05506E8
-
-   #----- Power
-
-   set Unit(W)   { "watt" "watt" }
-   set Unit(hp)  { "horsepower" "horsepower" }
-   set Unit(hpm) { "horsepower metrique" "horsepower metric" }
-
-   set Conv(W)   1.0
-   set Conv(hpm) 7.35499E2
-   set Conv(hp)  7.45700E2
-
-   #----- Force
-
-   set Unit(dyn) { "dyne" "dyne" }
-   set Unit(N)   { "newton" "newton" }
-   set Unit(lbf) { "livre force" "pound force" }
-   set Unit(kgf) { "kilogramme force" "kilogram force" }
-   set Unit(sn)  { "sthene" "sthene" }
-   set Unit(pdl) { "poundal" "poundal" }
-
-   set Conv(N)   1.0
-   set Conv(dyn) 1E-5
-   set Conv(pdl) 1.38255E-1
-   set Conv(lbf) 4.44822
-   set Conv(kgf) 9.80665
-   set Conv(sn)  1E3
-
-   #----- Radiation
-
-   set Unit(Bq)      { "becquerel" "becquerel" }
-   set Unit(Ci)      { "curie" "curie" }
-   set Unit(Sv)      { "sievert" "sievert" }
-   set Unit(rem)     { "Rontgen Equivalent Man" "Rontgen Equivalent Man" }
-   set Unit(C/kg)    { "coulomb par kilogramme" "coulomb per kilogram" }
-   set Unit(rontgen) { "rontgen" "rontgen" }
-
-   set Conv(Bq)      1.0
-   set Conv(Ci)      3.7E10
-
-   set Conv(rem)     1.0
-   set Conv(Sv)      1E-2
-
-   set Conv(rontgen) 1.0
-   set Conv(C/kg)    2.58E-4
 }
 
 #----------------------------------------------------------------------------
@@ -500,44 +448,17 @@ proc FieldCalc::Close { } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::ConvertFactor { } {
-   variable Conv
+   variable Param
+   variable Data
 
-   if { $Conv(From)!= "" && $Conv(To)!= "" } {
-      set Conv(Factor) [expr $Conv($Conv(From)) * (1.0/$Conv($Conv(To)))]
+   if { $Data(ConvFrom)!= "" && $Data(ConvTo)!= "" } {      
+      set from [lindex [lsearch -index 0 -inline $Param($Data(ConvArray)) $Data(ConvFrom)] 1]
+      set to   [lindex [lsearch -index 0 -inline $Param($Data(ConvArray)) $Data(ConvTo)] 1]
+   
+      set Data(ConvFactor) [expr $from * (1.0/$to)]
    } else {
-      set Conv(Factor) ""
+      set Data(ConvFactor) ""
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::ConvertList>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Inserer les convertisseur dans les liste.
-#
-# Parametres :
-#  <Frame>   : Frame contenant les listes de convertisseur
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::ConvertList { Frame } {
-   global GDefs
-   variable Conv
-
-   set list [lindex $Conv(Types) $GDefs(Lang)]
-   set idx  [lsearch -exact $list $Conv(Type)]
-
-   ComboBox::DelAll $Frame.conv.from
-   ComboBox::DelAll $Frame.conv.to
-
-   ComboBox::AddList $Frame.conv.from $Conv($idx)
-   ComboBox::AddList $Frame.conv.to   $Conv($idx)
-
-   set Conv(Factor) ""
 }
 
 #----------------------------------------------------------------------------
@@ -593,29 +514,23 @@ proc FieldCalc::Window { { Parent .} } {
    Bubble::Create .fieldcalc.expr.fdel  $Bubble(Del)
 
    #----- Creation des fonctions
-
    TabFrame::Create .fieldcalc.func 2 ""
    pack .fieldcalc.func -side right -fill both -expand true -padx 2 -pady 2
 
-   FieldCalc::WidgetMem    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Mem)   $GDefs(Lang)] False ""]
-   FieldCalc::WidgetConv   [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Conv)  $GDefs(Lang)] False ""]
-   FieldCalc::WidgetConst  [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Const) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetTrigo  [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Trigo) $GDefs(Lang)] False ""]
-   FieldCalc::WidgetMath   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Math)  $GDefs(Lang)] False ""]
-   FieldCalc::WidgetStat   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Stat)  $GDefs(Lang)] False ""]
-   FieldCalc::WidgetCond   [TabFrame::Add .fieldcalc.func 2 [lindex $Lbl(Cond)  $GDefs(Lang)] False ""]
-   FieldCalc::WidgetOps    .fieldcalc
+   FieldCalc::WidgetFunc    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Funcs)   $GDefs(Lang)] False ""]
+   FieldCalc::WidgetConvert [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Conv)  $GDefs(Lang)] False ""]
+   FieldCalc::WidgetConst   [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Const) $GDefs(Lang)] False ""]
+   FieldCalc::WidgetOps     .fieldcalc
 
+   TabFrame::Select .fieldcalc.func 0
+   
    bind .fieldcalc.expr.op <KeyRelease> { FieldCalc::FormulaSet "" }
    bind .fieldcalc.expr.op <Return>     { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
-
-   wm resizable .fieldcalc True False
 
    focus .fieldcalc.expr.op
    .fieldcalc.expr.op icursor 0
 
    #----- Reset internal variable
-
    set Data(Operand) ""
    set Data(FieldNo) 0
 }
@@ -837,7 +752,6 @@ proc FieldCalc::InsertDigit { Digit } {
 # Parametres :
 #   <Func>   : Fonction a inserer
 #   <Argc>   : Nombre d'argument de la fonction
-#   <Trigo>  : La fonction est-elle trigonometrique ?
 #
 # Retour:
 #
@@ -847,44 +761,20 @@ proc FieldCalc::InsertDigit { Digit } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::InsertFunc { Func Argc Trigo } {
+proc FieldCalc::InsertFunc { Func } {
    variable Data
 
-   #----- Dans le cas trigo, on verifie les inverses et hyperboliques
-
-   if { $Trigo } {
-      if { $Data(Arc) } {
-         set Func "a$Func"
-      }
-      if { $Data(Hyp) } {
-         set Func "${Func}h"
-      }
-   }
-
+   set func [lindex $Func 0]
+   
    #----- Si il y a selection, s'en servir pour le premier argument de la fonction
-
    if { [.fieldcalc.expr.op selection present] } {
-      .fieldcalc.expr.op insert sel.first "${Func}("
-
-      set virg ""
-
-      while { [incr Argc -1] } {
-         append virg ","
-      }
-      .fieldcalc.expr.op insert sel.last "${virg})"
-      .fieldcalc.expr.op icursor [expr [.fieldcalc.expr.op index sel.last] +1]
+      set idx [string first A $func]
+      .fieldcalc.expr.op insert sel.first [string range $func 0 [expr $idx-1]]
+      .fieldcalc.expr.op insert sel.last [string range $func [expr $idx+1] end]
+      .fieldcalc.expr.op icursor [.fieldcalc.expr.op index sel.last]
 
   } else {
-
-      set virg "${Func}("
-      set idx $Argc
-
-      while { [incr Argc -1] } {
-         append virg ","
-      }
-
-      .fieldcalc.expr.op insert inser "${virg})"
-      .fieldcalc.expr.op icursor [expr [.fieldcalc.expr.op index insert] -$idx]
+     .fieldcalc.expr.op insert insert $func
   }
 
    .fieldcalc.expr.op selection clear
@@ -943,8 +833,8 @@ proc FieldCalc::IsOperand { VP } {
 
 proc FieldCalc::Operand { VP Fields { Result "" }} {
    global   GDefs
-   variable Error
    variable Data
+   variable Msg
 
    if { $Result=="" } {
       set Result CALC$VP
@@ -1025,7 +915,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
    if { !$nout && $expr!="" } {
       set res [vexpr $Result $expr]
       if { ![fstdfield is $res] } {
-         Dialog::Info . $Error(Operand) $res
+         Dialog::Info . $Msg(Operand) $res
          set data $Fields
       } else {
          FSTD::Register $res
@@ -1074,10 +964,10 @@ proc FieldCalc::Paste { File Field } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetCond>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
+# Nom      : <FieldCalc::WidgetFunc>
+# Creation : Octobre 2014 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Creer le frame des fonction conditionnelle.
+# But      : Creer le frame des fonctions.
 #
 # Parametres :
 #   <Frame>  : Frame parent
@@ -1088,37 +978,110 @@ proc FieldCalc::Paste { File Field } {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::WidgetCond { Frame } {
+proc FieldCalc::WidgetFunc { Frame } {
+   global GDefs
+   variable Lbl 
+   variable Data
+   variable Bubble 
+   
+   set Data(FuncType) [lindex [lindex $Lbl(Operators) 0] $GDefs(Lang)]
+
+   ComboBox::Create $Frame.type FieldCalc::Data(FuncType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Operators) {lindex $lbl $GDefs(Lang)}] 9 6 "FieldCalc::FuncList $Frame"
+   pack  $Frame.type -side top -fill x -padx 5 -pady 2
+   
+   frame $Frame.funcs -padx 5 -pady 2
+      listbox $Frame.funcs.list -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
+         -yscrollcommand "$Frame.funcs.scroll set" -height 1 -width 1 -background $GDefs(ColorLight)
+      scrollbar $Frame.funcs.scroll -command "$Frame.funcs.list yview" -bd 1 -width 10  -highlightthickness 0
+      pack $Frame.funcs.list -side left -expand true -fill both
+      pack $Frame.funcs.scroll -side left -fill y
+   pack $Frame.funcs -side top -anchor w -expand true -fill both
+   
+   Bubble::Create $Frame.type  $Bubble(FuncType)
+   Bubble::Create $Frame.funcs $Bubble(FuncList)
+
+   bind  $Frame.funcs.list <B1-ButtonRelease> { FieldCalc::InsertFunc [%W get [%W nearest %y]] }
+
+   FieldCalc::FuncList $Frame
+}
+
+proc FieldCalc::FuncList { Frame } {
+   global GDefs
+   variable Lbl 
+   variable Param 
+   variable Data
+
+   $Frame.funcs.list delete 0 end
+   
+   set idx   [lsearch -index $GDefs(Lang) $Lbl(Operators) $Data(FuncType)]
+   set array [lindex [lindex $Lbl(Operators) $idx] 1]
+
+   foreach func $Param($array) {
+      $Frame.funcs.list insert end [format "%-15s %s" [lindex $func 0] [lindex $func [expr $GDefs(Lang)+1]]]
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FieldCalc::WidgetConvert>
+# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer le frame des facteur de conversions.
+#
+# Parametres :
+#   <Frame>  : Frame parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldCalc::WidgetConvert { Frame } {
+   global GDefs
+   variable Lbl
    variable Bubble
 
-   frame $Frame.sunk -relief sunken -bd 1
-      frame $Frame.sunk.l1
-         button $Frame.sunk.l1.min   -text " min " -command "FieldCalc::InsertFunc min  2 0" -bd 1
-         button $Frame.sunk.l1.max   -text " max " -command "FieldCalc::InsertFunc max  2 0" -bd 1
-         button $Frame.sunk.l1.clamp -text "clamp" -command "FieldCalc::InsertFunc clamp  3 0" -bd 1
-         pack $Frame.sunk.l1.min $Frame.sunk.l1.max $Frame.sunk.l1.clamp -side top
-      frame $Frame.sunk.l2
-         button $Frame.sunk.l2.if -text "ifelse" -command "FieldCalc::InsertFunc ifelse  3 0" -bd 1
-         pack $Frame.sunk.l2.if -side top -anchor n
-      pack  $Frame.sunk.l1 $Frame.sunk.l2  -side left -fill y
+   ComboBox::Create $Frame.type FieldCalc::Data(ConvType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Converts) {lindex $lbl $GDefs(Lang)}] 9 6 \
+      "FieldCalc::ConvertList $Frame"
+   pack  $Frame.type -side top -fill x -padx 5 -pady 2
+ 
+   frame $Frame.conv
+      ComboBox::Create $Frame.conv.from FieldCalc::Data(ConvFrom) noedit unsorted nodouble -1 "" 9 6 \
+         "FieldCalc::ConvertFactor"
+      label $Frame.conv.ind -text [lindex $Lbl(To) $GDefs(Lang)]
+      ComboBox::Create $Frame.conv.to FieldCalc::Data(ConvTo) noedit unsorted nodouble -1 "" 8 6 \
+         "FieldCalc::ConvertFactor"
+      pack  $Frame.conv.from $Frame.conv.to -side left -fill x -expand true
+      pack  $Frame.conv.ind -before $Frame.conv.to -side left
+   button $Frame.factor -textvariable FieldCalc::Data(ConvFactor) -relief groove -bd 2 \
+      -command "if { \$FieldCalc::Data(ConvFactor)!=\"\" } { FieldCalc::InsertOperator *\$FieldCalc::Data(ConvFactor) }"
 
-   frame $Frame.ops -relief sunken -bd 1
-      frame $Frame.ops.if
-         button $Frame.ops.if.not -text "! " -command "FieldCalc::InsertOperator !" -bd 1
-         button $Frame.ops.if.and -text "&&" -command "FieldCalc::InsertOperator &&" -bd 1
-         button $Frame.ops.if.or  -text "||" -command "FieldCalc::InsertOperator !!" -bd 1
-         pack $Frame.ops.if.not $Frame.ops.if.and $Frame.ops.if.or -side top
-      pack $Frame.ops.if -side left -fill y
+   pack $Frame.conv -side top -fill x -padx 5 -anchor w 
+   pack $Frame.factor -side top -padx 5 -fill x -expand true
 
-   pack $Frame.ops $Frame.sunk -side left -pady 10 -padx 5 -anchor nw
+   Bubble::Create $Frame.type      $Bubble(ConvType)
+   Bubble::Create $Frame.conv.from $Bubble(ConvFrom)
+   Bubble::Create $Frame.conv.to   $Bubble(ConvTo)
+   Bubble::Create $Frame.factor    $Bubble(ConvFact)
+}
 
-   Bubble::Create $Frame.sunk.l1.min   $Bubble(CondMIN)
-   Bubble::Create $Frame.sunk.l1.max   $Bubble(CondMAX)
-   Bubble::Create $Frame.sunk.l1.clamp $Bubble(CondCLAMP)
-   Bubble::Create $Frame.sunk.l2.if    $Bubble(CondIFELSE)
-   Bubble::Create $Frame.ops.if.not    $Bubble(CondNOT)
-   Bubble::Create $Frame.ops.if.and    $Bubble(CondAND)
-   Bubble::Create $Frame.ops.if.or     $Bubble(CondOR)
+proc FieldCalc::ConvertList { Frame } {
+   global GDefs
+   variable Lbl
+   variable Data
+   variable Param
+
+   set idx             [lsearch -index $GDefs(Lang) $Lbl(Converts) $Data(ConvType)]
+   set Data(ConvArray) [lindex [lindex $Lbl(Converts) $idx] 1]
+   set units           [lmap conv $Param($Data(ConvArray)) {lindex $conv 0}] 
+   
+   ComboBox::DelAll $Frame.conv.from
+   ComboBox::DelAll $Frame.conv.to
+
+   ComboBox::AddList $Frame.conv.from $units
+   ComboBox::AddList $Frame.conv.to   $units
+
+   set Data(ConvFactor) ""
 }
 
 #----------------------------------------------------------------------------
@@ -1137,195 +1100,29 @@ proc FieldCalc::WidgetCond { Frame } {
 #----------------------------------------------------------------------------
 
 proc FieldCalc::WidgetConst { Frame } {
-   variable Const
-   variable Desc
+   variable Param
 
    frame $Frame.sunk -relief sunken -bd 1
-      frame $Frame.sunk.l1
-         button $Frame.sunk.l1.pi  -text "pi" -bd 1 -command "FieldCalc::InsertDigit $Const(Pi)"
-         button $Frame.sunk.l1.re  -text "Re" -bd 1 -command "FieldCalc::InsertDigit $Const(Re)"
-         button $Frame.sunk.l1.g   -text "g " -bd 1 -command "FieldCalc::InsertDigit $Const(g)"
-         button $Frame.sunk.l1.w   -text "W " -bd 1 -command "FieldCalc::InsertDigit $Const(W)"
-         button $Frame.sunk.l1.c   -text "c " -bd 1 -command "FieldCalc::InsertDigit $Const(c)"
-         button $Frame.sunk.l1.md   -text "Md " -bd 1 -command "FieldCalc::InsertDigit $Const(Md)"
-         Bubble::Create $Frame.sunk.l1.pi $Desc(Pi)
-         Bubble::Create $Frame.sunk.l1.re $Desc(Re)
-         Bubble::Create $Frame.sunk.l1.g  $Desc(g)
-         Bubble::Create $Frame.sunk.l1.w  $Desc(W)
-         Bubble::Create $Frame.sunk.l1.c  $Desc(c)
-         Bubble::Create $Frame.sunk.l1.md $Desc(Md)
-      pack $Frame.sunk.l1.pi $Frame.sunk.l1.re $Frame.sunk.l1.g $Frame.sunk.l1.w $Frame.sunk.l1.c $Frame.sunk.l1.md -side left -anchor n
-      frame $Frame.sunk.l2
-         button $Frame.sunk.l2.rx  -text "Rx" -bd 1 -command "FieldCalc::InsertDigit $Const(Rx)"
-         button $Frame.sunk.l2.na  -text "Na" -bd 1 -command "FieldCalc::InsertDigit $Const(Na)"
-         button $Frame.sunk.l2.k   -text "k " -bd 1 -command "FieldCalc::InsertDigit $Const(k)"
-         button $Frame.sunk.l2.s   -text "S " -bd 1 -command "FieldCalc::InsertDigit $Const(S)"
-         button $Frame.sunk.l2.h   -text "h " -bd 1 -command "FieldCalc::InsertDigit $Const(h)"
-         button $Frame.sunk.l2.cpd -text "cpd" -bd 1 -command "FieldCalc::InsertDigit $Const(cpd)"
-         Bubble::Create $Frame.sunk.l2.rx  $Desc(Rx)
-         Bubble::Create $Frame.sunk.l2.na  $Desc(Na)
-         Bubble::Create $Frame.sunk.l2.k   $Desc(k)
-         Bubble::Create $Frame.sunk.l2.s   $Desc(S)
-         Bubble::Create $Frame.sunk.l2.h   $Desc(h)
-         Bubble::Create $Frame.sunk.l2.cpd $Desc(cpd)
-         pack $Frame.sunk.l2.rx $Frame.sunk.l2.na $Frame.sunk.l2.k $Frame.sunk.l2.s $Frame.sunk.l2.h $Frame.sunk.l2.cpd -side left -anchor n
-      frame $Frame.sunk.l3
-         button $Frame.sunk.l3.rd  -text "Rd" -bd 1 -command "FieldCalc::InsertDigit $Const(Rd)"
-         button $Frame.sunk.l3.rv  -text "Rv" -bd 1 -command "FieldCalc::InsertDigit $Const(Rv)"
-         button $Frame.sunk.l3.rw  -text "rw" -bd 1 -command "FieldCalc::InsertDigit $Const(rw)"
-         button $Frame.sunk.l3.ri  -text "ri" -bd 1 -command "FieldCalc::InsertDigit $Const(ri)"
-         button $Frame.sunk.l3.rrd -text "rd" -bd 1 -command "FieldCalc::InsertDigit $Const(rd)"
-         button $Frame.sunk.l3.cvd -text "cvd" -bd 1 -command "FieldCalc::InsertDigit $Const(cvd)"
-         Bubble::Create $Frame.sunk.l3.rd  $Desc(Rd)
-         Bubble::Create $Frame.sunk.l3.rv  $Desc(Rv)
-         Bubble::Create $Frame.sunk.l3.rw  $Desc(rw)
-         Bubble::Create $Frame.sunk.l3.ri  $Desc(ri)
-         Bubble::Create $Frame.sunk.l3.rrd $Desc(rd)
-         Bubble::Create $Frame.sunk.l3.cvd $Desc(cvd)
-         pack $Frame.sunk.l3.rd $Frame.sunk.l3.rv $Frame.sunk.l3.rw $Frame.sunk.l3.ri $Frame.sunk.l3.rrd $Frame.sunk.l3.cvd -side left -anchor n
+      set n 0
+      set c 0
+      foreach const $Param(Const) {
+         if { !$n } {    
+            incr c
+            frame $Frame.sunk.l$c
+            pack  $Frame.sunk.l$c -side top -fill y -anchor nw
+        }
+         set name [lindex $const 0]
+         set val  [lindex $const 1]
+         button $Frame.sunk.l$c.c$name -text [format "%-3s" $name] -bd 1 -command "FieldCalc::InsertDigit $val"
+         Bubble::Create  $Frame.sunk.l$c.c$name [lrange $const 2 3]
+         pack $Frame.sunk.l$c.c$name -side left -anchor nw
+         
+         if { [incr n]==6 } {
+            set n 0
+         }
+      }
       pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 -side top -fill y
-   pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetConv>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer le frame des facteur de conversions.
-#
-# Parametres :
-#   <Frame>  : Frame parent
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::WidgetConv { Frame } {
-   global GDefs
-   variable Lbl
-   variable Bubble
-   variable Conv
-
-   ComboBox::Create $Frame.type FieldCalc::Conv(Type) noedit unsorted nodouble -1 [lindex $Conv(Types) $GDefs(Lang)] 9 6 \
-      "FieldCalc::ConvertList $Frame"
-   frame $Frame.conv
-      ComboBox::Create $Frame.conv.from FieldCalc::Conv(From) noedit unsorted nodouble -1 "" 9 6 \
-         "FieldCalc::ConvertFactor"
-      label $Frame.conv.ind -text [lindex $Lbl(To) $GDefs(Lang)]
-      ComboBox::Create $Frame.conv.to FieldCalc::Conv(To) noedit unsorted nodouble -1 "" 8 6 \
-         "FieldCalc::ConvertFactor"
-      pack  $Frame.conv.from $Frame.conv.ind $Frame.conv.to -side left
-   button $Frame.factor -textvariable FieldCalc::Conv(Factor) -relief groove -bd 2 \
-      -command "if { \$FieldCalc::Conv(Factor)!=\"\" } { FieldCalc::InsertOperator *\$FieldCalc::Conv(Factor) }"
-
-   pack $Frame.type -side top -pady 10 -padx 5 -anchor w
-   pack $Frame.conv -side top -padx 5 -anchor w
-   pack $Frame.factor -side top -padx 5 -fill x -expand true
-
-   Bubble::Create $Frame.type      $Bubble(ConvType)
-   Bubble::Create $Frame.conv.from $Bubble(ConvFrom)
-   Bubble::Create $Frame.conv.to   $Bubble(ConvTo)
-   Bubble::Create $Frame.factor    $Bubble(ConvFact)
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetMath>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer le frame des fonctions mathematiques.
-#
-# Parametres :
-#   <Frame>  : Frame parent
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::WidgetMath { Frame } {
-   variable Bubble
-
-   frame $Frame.sunk -relief sunken -bd 1
-      frame $Frame.sunk.l1
-         button $Frame.sunk.l1.ln   -text "ln " -command "FieldCalc::InsertFunc ln   1 0" -bd 1
-         button $Frame.sunk.l1.exp  -text "exp" -command "FieldCalc::InsertFunc exp  1 0" -bd 1
-         button $Frame.sunk.l1.log  -text "log" -command "FieldCalc::InsertFunc log  1 0" -bd 1
-         pack $Frame.sunk.l1.ln $Frame.sunk.l1.exp $Frame.sunk.l1.log -side top
-      frame $Frame.sunk.l2
-         button $Frame.sunk.l2.sqrt -text "sqrt" -command "FieldCalc::InsertFunc sqrt 1 0" -bd 1
-         button $Frame.sunk.l2.cbrt -text "cbrt" -command "FieldCalc::InsertFunc cbrt 1 0" -bd 1
-         button $Frame.sunk.l2.mod  -text "fmod" -command "FieldCalc::InsertFunc fmod 2 0" -bd 1
-         pack $Frame.sunk.l2.sqrt $Frame.sunk.l2.cbrt $Frame.sunk.l2.mod -side top
-      pack  $Frame.sunk.l1 $Frame.sunk.l2 -side top
-      frame $Frame.sunk.l3
-         button $Frame.sunk.l3.ceil  -text "ceil " -command "FieldCalc::InsertFunc ceil 1 0" -bd 1
-         button $Frame.sunk.l3.floor -text "floor" -command "FieldCalc::InsertFunc floor 1 0" -bd 1
-         button $Frame.sunk.l3.round -text "round" -command "FieldCalc::InsertFunc round 1 0" -bd 1
-         pack $Frame.sunk.l3.ceil $Frame.sunk.l3.floor $Frame.sunk.l3.round -side top
-      pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 -side left
-      frame $Frame.sunk.l4
-         button $Frame.sunk.l4.abs   -text "abs" -command "FieldCalc::InsertFunc abs 1 0" -bd 1
-         button $Frame.sunk.l4.dif   -text "dif" -command "FieldCalc::InsertFunc dif 2 0" -bd 1
-         pack $Frame.sunk.l4.abs $Frame.sunk.l4.dif -side top -anchor n
-      pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 -side left  -fill y
-   pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
-
-   Bubble::Create $Frame.sunk.l1.ln    $Bubble(MathLN)
-   Bubble::Create $Frame.sunk.l1.exp   $Bubble(MathEXP)
-   Bubble::Create $Frame.sunk.l1.log   $Bubble(MathLOG)
-   Bubble::Create $Frame.sunk.l2.sqrt  $Bubble(MathSQRT)
-   Bubble::Create $Frame.sunk.l2.cbrt  $Bubble(MathCBRT)
-   Bubble::Create $Frame.sunk.l2.mod   $Bubble(MathFMOD)
-   Bubble::Create $Frame.sunk.l3.ceil  $Bubble(MathCEIL)
-   Bubble::Create $Frame.sunk.l3.floor $Bubble(MathFLOOR)
-   Bubble::Create $Frame.sunk.l3.round $Bubble(MathROUND)
-   Bubble::Create $Frame.sunk.l4.abs   $Bubble(MathABS)
-   Bubble::Create $Frame.sunk.l4.dif   $Bubble(MathDIF)
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetMem>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer le frame des fonctions memoires.
-#
-# Parametres :
-#   <Frame>  : Frame parent
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::WidgetMem { Frame } {
-   global GDefs
-   variable Bubble
-
-   frame $Frame.fun -relief sunken -bd 1
-      button $Frame.fun.sto -text "STO" -bd 1 \
-         -command "if { \[fstdfield is \$FieldCalc::Data(Operand)\] } { incr FieldCalc::Data(FieldNo) }; $Frame.mem.list insert end \$FieldCalc::Data(Operand)"
-      button $Frame.fun.rcl -text "RCL" -bd 1 \
-         -command "catch { FieldCalc::InsertDigit \[$Frame.mem.list get \[$Frame.mem.list curselection]\] }"
-      button $Frame.fun.del -text "DEL" -bd 1 \
-         -command "catch { $Frame.mem.list delete \[set fld \[$Frame.mem.list curselection\]\]; if { \[fstdfield is \$fld\] } { fstdfield free \$fld } }"
-      pack  $Frame.fun.sto $Frame.fun.rcl $Frame.fun.del -side top
-   pack $Frame.fun -side left -pady 10 -padx 5
-
-   frame $Frame.mem
-      listbox $Frame.mem.list -bg $GDefs(ColorLight) -width 17 -bd 1 -yscrollcommand "$Frame.mem.scroll set" -exportselection false -listvar FieldCalc::Data(Mem)
-      scrollbar $Frame.mem.scroll -orient vertical -bd 1 -width 10 -command "$Frame.mem.list yview"
-      pack $Frame.mem.list -side left -fill both -expand true
-      pack $Frame.mem.scroll -side left -fill y
-   pack $Frame.mem -side left -fill both -pady 10 -padx 5 -expand true
-
-   Bubble::Create $Frame.fun.sto  $Bubble(STO)
-   Bubble::Create $Frame.fun.rcl  $Bubble(RCL)
-   Bubble::Create $Frame.fun.del  $Bubble(DEL)
-   Bubble::Create $Frame.mem.list $Bubble(LST)
+   pack $Frame.sunk -side top -pady 5 -padx 5 -anchor nw
 }
 
 #----------------------------------------------------------------------------
@@ -1402,11 +1199,18 @@ proc FieldCalc::WidgetOps { Frame } {
       pack $Frame.ops.log.a $Frame.ops.log.b -side left -anchor n
    pack $Frame.ops.log -side left -anchor n -padx 2
 
+   frame $Frame.ops.if
+      button $Frame.ops.if.not -text "! " -command "FieldCalc::InsertOperator !" -bd 1
+      button $Frame.ops.if.and -text "&&" -command "FieldCalc::InsertOperator &&" -bd 1
+      button $Frame.ops.if.or  -text "||" -command "FieldCalc::InsertOperator ||" -bd 1
+      pack $Frame.ops.if.not $Frame.ops.if.and $Frame.ops.if.or -side top
+   pack $Frame.ops.if -side left -anchor n -padx 2
+   
    pack $Frame.ops -side top -pady 2
 
    frame $Frame.cmd
       button $Frame.cmd.equal -text "   =  "  -bd 1 -command { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { FieldCalc::FormulaSet ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { FieldCalc::FormulaSet ""; set FieldCalc::Data(Operand) ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1
@@ -1415,123 +1219,10 @@ proc FieldCalc::WidgetOps { Frame } {
       pack $Frame.cmd.idx $Frame.cmd.int3 $Frame.cmd.int2 -side right
    pack $Frame.cmd -side bottom -fill both  -padx 2 -pady 2
 
-   Bubble::Create $Frame.cmd.int2 $Bubble(Int2)
-   Bubble::Create $Frame.cmd.int3 $Bubble(Int3)
-   Bubble::Create $Frame.cmd.idx  $Bubble(Idx)
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetStat>
-# Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer le frame des fonctions de reduction de matrices.
-#
-# Parametres :
-#   <Frame>  : Frame parent
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::WidgetStat { Frame } {
-   variable Bubble
-
-   frame $Frame.sunk -relief sunken -bd 1
-      frame $Frame.sunk.l1
-         button $Frame.sunk.l1.smin -text "smin" -command "FieldCalc::InsertFunc smin 1 0" -bd 1
-         button $Frame.sunk.l1.smax -text "smax" -command "FieldCalc::InsertFunc smax 1 0" -bd 1
-         button $Frame.sunk.l1.savg -text "savg" -command "FieldCalc::InsertFunc savg 1 0" -bd 1
-         pack $Frame.sunk.l1.smin $Frame.sunk.l1.smax $Frame.sunk.l1.savg -side top
-      frame $Frame.sunk.l2
-         button $Frame.sunk.l2.snb  -text "snb " -command "FieldCalc::InsertFunc snb  1 0" -bd 1
-         button $Frame.sunk.l2.ssum -text "ssum" -command "FieldCalc::InsertFunc ssum 1 0" -bd 1
-         button $Frame.sunk.l2.svar -text "svar" -command "FieldCalc::InsertFunc svar 1 0" -bd 1
-         pack $Frame.sunk.l2.snb $Frame.sunk.l2.ssum $Frame.sunk.l2.svar -side top
-      frame $Frame.sunk.l3
-         button $Frame.sunk.l3.snb  -text "smed  " -command "FieldCalc::InsertFunc smed  1 0" -bd 1
-         button $Frame.sunk.l3.ssum -text "suniq " -command "FieldCalc::InsertFunc suniq 1 0" -bd 1
-         button $Frame.sunk.l3.svar -text "snrmse" -command "FieldCalc::InsertFunc snrmse 2 0" -bd 1
-         pack $Frame.sunk.l3.snb $Frame.sunk.l3.ssum $Frame.sunk.l3.svar -side top
-      frame $Frame.sunk.l4
-         button $Frame.sunk.l4.scor  -text "scor " -command "FieldCalc::InsertFunc scor  2 0" -bd 1
-         button $Frame.sunk.l4.scov  -text "scov " -command "FieldCalc::InsertFunc scov  2 0" -bd 1
-         button $Frame.sunk.l4.srms  -text "srmse" -command "FieldCalc::InsertFunc srmse 2 0" -bd 1
-         pack $Frame.sunk.l4.scor $Frame.sunk.l4.scov $Frame.sunk.l4.srms -side top
-      frame $Frame.sunk.l5
-         button $Frame.sunk.l5.smb  -text "smb "  -command "FieldCalc::InsertFunc smb 2 0" -bd 1
-         button $Frame.sunk.l5.snmb -text "snmb"  -command "FieldCalc::InsertFunc snmb 2 0" -bd 1
-         button $Frame.sunk.l5.smnb -text "smnb"  -command "FieldCalc::InsertFunc smnb 2 0" -bd 1
-         pack $Frame.sunk.l5.smb $Frame.sunk.l5.snmb $Frame.sunk.l5.smnb -side top
-      frame $Frame.sunk.l6
-         button $Frame.sunk.l6.sme  -text "sme "  -command "FieldCalc::InsertFunc sme 2 0" -bd 1
-         button $Frame.sunk.l6.snme -text "snme"  -command "FieldCalc::InsertFunc snme 2 0" -bd 1
-         button $Frame.sunk.l6.smne -text "smne"  -command "FieldCalc::InsertFunc smne 2 0" -bd 1
-         pack $Frame.sunk.l6.sme $Frame.sunk.l6.snme $Frame.sunk.l6.smne -side top
-      frame $Frame.sunk.l7
-         button $Frame.sunk.l7.srega -text "srega"  -command "FieldCalc::InsertFunc srega 2 0" -bd 1
-         button $Frame.sunk.l7.sregb -text "sregb"  -command "FieldCalc::InsertFunc sregb 2 0" -bd 1
-         pack $Frame.sunk.l7.srega $Frame.sunk.l7.sregb -side top
-      pack  $Frame.sunk.l1 $Frame.sunk.l2 $Frame.sunk.l3 $Frame.sunk.l4 $Frame.sunk.l5 $Frame.sunk.l6 -side left  -fill y
-   pack $Frame.sunk -side top -pady 10 -padx 5 -anchor nw
-
-   Bubble::Create $Frame.sunk.l1.smin  $Bubble(StatSMIN)
-   Bubble::Create $Frame.sunk.l1.smax  $Bubble(StatSMAX)
-   Bubble::Create $Frame.sunk.l1.savg  $Bubble(StatSAVG)
-   Bubble::Create $Frame.sunk.l2.ssum  $Bubble(StatSSUM)
-   Bubble::Create $Frame.sunk.l2.snb   $Bubble(StatSNB)
-   Bubble::Create $Frame.sunk.l2.svar  $Bubble(StatSVAR)
-   Bubble::Create $Frame.sunk.l3.ssum  $Bubble(StatSMED)
-   Bubble::Create $Frame.sunk.l3.snb   $Bubble(StatSUNIQ)
-   Bubble::Create $Frame.sunk.l3.svar  $Bubble(StatSNRMSE)
-   Bubble::Create $Frame.sunk.l4.scor  $Bubble(StatSCOR)
-   Bubble::Create $Frame.sunk.l4.scov  $Bubble(StatSCOV)
-   Bubble::Create $Frame.sunk.l4.srms  $Bubble(StatSRMSE)
-   Bubble::Create $Frame.sunk.l5.smb   $Bubble(StatSMB)
-   Bubble::Create $Frame.sunk.l5.snmb  $Bubble(StatSNMB)
-   Bubble::Create $Frame.sunk.l5.smnb  $Bubble(StatSMNB)
-   Bubble::Create $Frame.sunk.l6.sme   $Bubble(StatSME)
-   Bubble::Create $Frame.sunk.l6.snme  $Bubble(StatSNME)
-   Bubble::Create $Frame.sunk.l6.smne  $Bubble(StatSMNE)
-   Bubble::Create $Frame.sunk.l7.srega $Bubble(StatSREGA)
-   Bubble::Create $Frame.sunk.l7.sregb $Bubble(StatSREGB)
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <FieldCalc::WidgetTrigo>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Creer le frame des fonctions trigonometriques.
-#
-# Parametres :
-#   <Frame>  : Frame parent
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc FieldCalc::WidgetTrigo { Frame } {
-   variable Bubble
-
-   frame $Frame.typ -relief sunken -bd 1
-      checkbutton $Frame.typ.arc -text "arc" -bd 1 -command "" -variable FieldCalc::Data(Arc) -indicatoron false
-      checkbutton $Frame.typ.hyp -text "hyp" -bd 1 -command "" -variable FieldCalc::Data(Hyp) -indicatoron false
-      pack  $Frame.typ.arc $Frame.typ.hyp -side left -fill y -ipadx 5 -ipady 3
-   pack $Frame.typ -side left -pady 10 -padx 5 -anchor nw
-
-   frame $Frame.fun -relief sunken -bd 1
-      button $Frame.fun.sin -text "sin" -bd 1 -command "FieldCalc::InsertFunc sin 1 1"
-      button $Frame.fun.cos -text "cos" -bd 1 -command "FieldCalc::InsertFunc cos 1 1"
-      button $Frame.fun.tan -text "tan" -bd 1 -command "FieldCalc::InsertFunc tan 1 1"
-       pack $Frame.fun.sin $Frame.fun.cos $Frame.fun.tan -side left -fill x -expand true
-   pack $Frame.fun -side left -pady 10 -padx 5 -anchor nw
-
-   Bubble::Create $Frame.typ.arc $Bubble(TrigoARC)
-   Bubble::Create $Frame.typ.hyp $Bubble(TrigoHYP)
-   Bubble::Create $Frame.fun.sin $Bubble(TrigoSIN)
-   Bubble::Create $Frame.fun.cos $Bubble(TrigoCOS)
-   Bubble::Create $Frame.fun.tan $Bubble(TrigoTAN)
+   Bubble::Create $Frame.ops.if.not $Bubble(NOT)
+   Bubble::Create $Frame.ops.if.and $Bubble(AND)
+   Bubble::Create $Frame.ops.if.or  $Bubble(OR)
+   Bubble::Create $Frame.cmd.int2   $Bubble(Int2)
+   Bubble::Create $Frame.cmd.int3   $Bubble(Int3)
+   Bubble::Create $Frame.cmd.idx    $Bubble(Idx)
 }
