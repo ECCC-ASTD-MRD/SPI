@@ -53,11 +53,13 @@ namespace eval FieldCalc {
 
    set Data(FieldNo)    0
    set Data(Formulas)   {}
-   set Data(FuncType)   Maths  ;#----- Current function type
+   set Data(FuncType)   ""     ;#----- Current function type
    set Data(ConvType)   ""     ;#----- Current conversion type
    set Data(ConvFrom)   ""     ;#----- Current conversion from
    set Data(ConvTo)     ""     ;#----- Current conversion to
    set Data(ConvFactor) ""     ;#----- Current conversion factor
+   
+   set Param(All) { }
    
    set Param(Logical) { 
       { ifelse(A,B,C) "Operateur conditionnel (Si A alors B sinon C)" "Conditional operator (If A then B else C)" }
@@ -362,6 +364,7 @@ namespace eval FieldCalc {
    set Lbl(Const)    { "Constantes" "Constant" }
    
    set Lbl(Operators) { 
+      { "Tous"          "All" }
       { "Mathématiques" "Mathematical" }
       { "Logiques"      "Logical" }
       { "Dérivatifs"    "Derivative" }
@@ -403,6 +406,7 @@ namespace eval FieldCalc {
    set Bubble(ConvFact)   { "Facteur de conversion\nAppuyer pour appliquer a la mantisse"
                            "Conversion factor\nPress to apply to mantissa" }
    set Bubble(FuncType)   { "Selection du type de fonctions" "Select the function type" }
+   set Bubble(FuncSearch) { "Recherche une fonction" "Search functions" }
    set Bubble(FuncList)   { "Liste des fonctions, cliquez pour insérer" "List of functions, click one to insert" }   
    set Bubble(NOT)        { "Negation logique" "Logical negation" }
    set Bubble(AND)        { "ET logique" "Logical AND" }
@@ -986,8 +990,12 @@ proc FieldCalc::WidgetFunc { Frame } {
    
    set Data(FuncType) [lindex [lindex $Lbl(Operators) 0] $GDefs(Lang)]
 
-   ComboBox::Create $Frame.type FieldCalc::Data(FuncType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Operators) {lindex $lbl $GDefs(Lang)}] 9 6 "FieldCalc::FuncList $Frame"
-   pack  $Frame.type -side top -fill x -padx 5 -pady 2
+   frame  $Frame.type
+      ComboBox::Create $Frame.type.sel FieldCalc::Data(FuncType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Operators) {lindex $lbl $GDefs(Lang)}] 9 6 "FieldCalc::FuncList $Frame"
+      entry $Frame.type.search -bg $GDefs(ColorLight) -textvariable FieldCalc::Param(Search) -width 10 -relief sunken -bd 1
+      pack  $Frame.type.sel -side left -fill x -expand True
+      pack  $Frame.type.search -side left 
+      pack  $Frame.type -side top -fill x -padx 5 -pady 2
    
    frame $Frame.funcs -padx 5 -pady 2
       listbox $Frame.funcs.list -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
@@ -995,12 +1003,14 @@ proc FieldCalc::WidgetFunc { Frame } {
       scrollbar $Frame.funcs.scroll -command "$Frame.funcs.list yview" -bd 1 -width 10  -highlightthickness 0
       pack $Frame.funcs.list -side left -expand true -fill both
       pack $Frame.funcs.scroll -side left -fill y
-   pack $Frame.funcs -side top -anchor w -expand true -fill both
+   pack $Frame.funcs -side bottom -anchor w -expand true -fill both
    
-   Bubble::Create $Frame.type  $Bubble(FuncType)
-   Bubble::Create $Frame.funcs $Bubble(FuncList)
+   Bubble::Create $Frame.type.sel     $Bubble(FuncType)
+   Bubble::Create $Frame.type.search  $Bubble(FuncSearch)
+   Bubble::Create $Frame.funcs        $Bubble(FuncList)
 
-   bind  $Frame.funcs.list <B1-ButtonRelease> { FieldCalc::InsertFunc [%W get [%W nearest %y]] }
+   bind  $Frame.type.search <Any-KeyRelease>   "FieldCalc::FuncList $Frame"
+   bind  $Frame.funcs.list  <B1-ButtonRelease> { FieldCalc::InsertFunc [%W get [%W nearest %y]] }
 
    FieldCalc::FuncList $Frame
 }
@@ -1013,12 +1023,24 @@ proc FieldCalc::FuncList { Frame } {
 
    $Frame.funcs.list delete 0 end
    
-   set idx   [lsearch -index $GDefs(Lang) $Lbl(Operators) $Data(FuncType)]
-   set array [lindex [lindex $Lbl(Operators) $idx] 1]
+   set idx    [lsearch -index $GDefs(Lang) $Lbl(Operators) $Data(FuncType)]
+   set arrays [lindex [lindex $Lbl(Operators) $idx] 1]
 
-   foreach func $Param($array) {
-      $Frame.funcs.list insert end [format "%-15s %s" [lindex $func 0] [lindex $func [expr $GDefs(Lang)+1]]]
+   if { $arrays=="All" } {
+      set arrays [lmap lbl $Lbl(Operators) {lindex $lbl 1}]
    }
+   foreach array $arrays {
+      if { $Param(Search)!="" } {
+         foreach func [lsort -unique [concat [lsearch -all -inline -index 0 -glob $Param($array) *$Param(Search)*] [lsearch -all -inline -index [expr $GDefs(Lang)+1] -glob $Param($array) *$Param(Search)*]]] {
+            $Frame.funcs.list insert end [format "%-15s %s" [lindex $func 0] [lindex $func [expr $GDefs(Lang)+1]]]
+         }
+      } else {
+         foreach func $Param($array) {
+            $Frame.funcs.list insert end [format "%-15s %s" [lindex $func 0] [lindex $func [expr $GDefs(Lang)+1]]]
+         }
+      }
+   }
+   return True
 }
 
 #----------------------------------------------------------------------------
