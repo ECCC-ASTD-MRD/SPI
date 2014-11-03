@@ -1248,9 +1248,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
    Tcl_Obj     *obj;
    TData       *fieldAX,*fieldAY;
    FSTD_Head   *head=(FSTD_Head*)Field->Head;
-   TGeoRef     *ref;
+   TGeoRef     *ref=NULL;
    int          i,j,idx,nidx;
-   char         buf[64],*grtyp;
+   char         buf[64],*grtyp=NULL;
    double       dxg1,dxg2,dxg3,dxg4;
    float        xg1,xg2,xg3,xg4;
    double       tra[6],inv[6],*tm,*im;
@@ -1469,6 +1469,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   } else {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
                   }
+                  ref=NULL;
                   Data_Clean(Field,1,1,1);
                }
             }
@@ -1509,6 +1510,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   } else {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
                   }
+                  ref=NULL;
                   Data_Clean(Field,1,1,1);
                }
             }
@@ -1531,6 +1533,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   Data_Clean(Field,1,1,1);
                }
                Field->Ref=ref;
+               ref=NULL;
                GeoRef_Incr(Field->Ref);
             }
             break;
@@ -1591,6 +1594,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   } else {
                      Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,grtyp,0,0,0,0,NULL,NULL,NULL,NULL);
                   }
+                  grtyp=NULL;
                } else {
                   if (grtyp[0]=='L' || grtyp[0]=='N' || grtyp[0]=='S') {
                      if (i+4<Objc && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
@@ -1621,11 +1625,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      }
                      Field->Ref->ZRef.Levels=(float*)realloc(Field->Ref->ZRef.Levels,Field->Def->NJ*sizeof(float));
                   }
-                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->Type:LVL_UNDEF),(ref?ref->ZRef.Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
-                  GeoRef_Qualify(Field->Ref);
                }
-               if (ref)
-                  GeoRef_Destroy(Interp,ref->Name);
             }
             break;
 
@@ -1742,6 +1742,15 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
        }
    }
+   
+   if (grtyp) {
+      Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->Type:LVL_UNDEF),(ref?ref->ZRef.Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+      GeoRef_Qualify(Field->Ref);
+   }
+   if (ref) {
+      GeoRef_Destroy(Interp,ref->Name);
+   }
+   
    return(TCL_OK);
 }
 

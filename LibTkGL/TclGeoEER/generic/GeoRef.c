@@ -672,6 +672,10 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             } else {
                GeoRef_Limits(ref0,&lat0,&lon0,&lat1,&lon1);
                
+               lat0=DEG2RAD(lat0);
+               lon0=DEG2RAD(lon0);
+               lat1=DEG2RAD(lat1);
+               lon1=DEG2RAD(lon1);
                x=DIST(EARTHRADIUS,lat0,lon0,lat0,lon1);
                dx=DIST(EARTHRADIUS,lat1,lon0,lat1,lon1);
                dx=FMAX(x,dx);
