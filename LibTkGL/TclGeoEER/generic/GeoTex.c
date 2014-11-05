@@ -197,54 +197,54 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
    GLuint    sc[]={ GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
    GLuint    bc[]={ GL_RED_BIAS, GL_GREEN_BIAS, GL_BLUE_BIAS, GL_ALPHA_BIAS };
 
-   if (!Band->Tex.Indexed && Band->Spec->Map) {
-      Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
-      Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
+   if (Band->Spec->Map) {
+      if (!Band->Tex.Indexed) {
+         Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
+         Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
 
-      if (!GLRender->ShaderAvailable) {
+         if (!GLRender->ShaderAvailable) {
+            glEnable(GL_COLOR_TABLE);
+            glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
+
+            for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
+               switch(Band->Def->Type) {
+                  case TD_Unknown:
+                  case TD_Binary:
+                  case TD_UByte:  Band->Tex.Scale[nc]=((0x1<<8)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<8)-1);
+                                  break;
+                  case TD_Byte:   Band->Tex.Scale[nc]=((0x1<<7)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<7)-1);
+                                  break;
+                  case TD_UInt16: Band->Tex.Scale[nc]=((0x1<<16)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<16)-1);
+                                  break;
+                  case TD_Int16:  Band->Tex.Scale[nc]=((0x1<<15)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<15)-1);
+                                  break;
+                  case TD_UInt64:
+                  case TD_Int64:
+                  case TD_UInt32:
+                  case TD_Int32:  Band->Tex.Scale[nc]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/(((unsigned int)0x1<<31)-1);
+                                  break;
+                  case TD_Float32:
+                  case TD_Float64: Band->Tex.Scale[nc]=1.0/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
+                                   Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc];
+                                   break;
+               }
+               glPixelTransferf(sc[nc],Band->Tex.Scale[nc]);
+               glPixelTransferf(bc[nc],Band->Tex.Bias[nc]*Band->Tex.Scale[nc]);
+               if (GLRender->GLDebug)
+                  fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
+            }
+         }
+      } else {
          glEnable(GL_COLOR_TABLE);
          glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
-
-         for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
-            switch(Band->Def->Type) {
-               case TD_Unknown:
-               case TD_Binary:
-               case TD_UByte:  Band->Tex.Scale[nc]=((0x1<<8)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<8)-1);
-                               break;
-               case TD_Byte:   Band->Tex.Scale[nc]=((0x1<<7)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<7)-1);
-                               break;
-               case TD_UInt16: Band->Tex.Scale[nc]=((0x1<<16)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<16)-1);
-                               break;
-               case TD_Int16:  Band->Tex.Scale[nc]=((0x1<<15)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<15)-1);
-                               break;
-               case TD_UInt64:
-               case TD_Int64:
-               case TD_UInt32:
-               case TD_Int32:  Band->Tex.Scale[nc]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                               Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/(((unsigned int)0x1<<31)-1);
-                               break;
-               case TD_Float32:
-               case TD_Float64: Band->Tex.Scale[nc]=1.0/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc];
-                                break;
-            }
-            glPixelTransferf(sc[nc],Band->Tex.Scale[nc]);
-            glPixelTransferf(bc[nc],Band->Tex.Bias[nc]*Band->Tex.Scale[nc]);
-            if (GLRender->GLDebug)
-               fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
-         }
       }
    }
-
-   if (Band->Tex.Indexed && Band->Spec->Map) {
-      glEnable(GL_COLOR_TABLE);
-      glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
-   }
-
+   
    /*Create OpenGL texture*/
    glGenTextures(1,&Tile->Tx);
    if (Tile->Tx<=0) {
@@ -253,8 +253,8 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
    } else {
       glBindTexture(GL_TEXTURE_2D,Tile->Tx);
       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 
       if (Band->Tex.Indexed) {
          Band->Tex.IType=GLRender->Ext[ARB_texture_compression]?GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:GL_RGBA;

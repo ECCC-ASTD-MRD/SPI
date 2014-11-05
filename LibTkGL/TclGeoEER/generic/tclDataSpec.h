@@ -40,8 +40,8 @@
 #include "tclCMap.h"
 #include "ogr_api.h"
 #include "Vector.h"
-#include "eerStruct.h"
 #include "glStuff.h"
+#include "List.h"
 
 #define DATASPEC_MAX 256
 #define DATASPEC_NOTSET 0x00

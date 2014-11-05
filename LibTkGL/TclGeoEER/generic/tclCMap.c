@@ -1662,6 +1662,10 @@ void CMap_RatioDefine(CMap_Rec *CMap){
             CMap->Alpha=1;
          }
       }
+      // Fill in with the last color (When used with band, its fixes the clamping)
+      for (i=CMap->NbPixels;i<CR_MAX;i++) {
+         CMap->Color[i][c]=CMap->Color[i-1][c];
+      }
    }
 }
 

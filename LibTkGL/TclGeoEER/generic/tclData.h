@@ -41,6 +41,7 @@
 #include "tclDataDef.h"
 #include "tclVector.h"
 #include "Vector.h"
+#include "Array.h"
 #include "glStuff.h"
 
 #define REF_PROJ  0

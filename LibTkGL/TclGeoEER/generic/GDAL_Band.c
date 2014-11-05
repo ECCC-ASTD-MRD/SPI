@@ -3362,7 +3362,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
          glGenTextures(1,&tx);
          glActiveTexture(GL_TEXTURE1);
          glBindTexture(GL_TEXTURE_1D,tx);
-         glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+         glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
          glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
          glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
          glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Band->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Band->Spec->Map->Color);

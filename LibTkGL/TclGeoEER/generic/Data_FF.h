@@ -36,6 +36,7 @@
 
 #include "Projection.h"
 #include "tclData.h"
+#include "Array.h"
 
 #define FF_BOX   0x01
 #define FF_TXT   0x02

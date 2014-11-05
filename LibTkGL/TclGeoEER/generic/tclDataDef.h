@@ -39,8 +39,9 @@
 #include <stdlib.h>
 
 #include "eerUtils.h"
-#include "eerStruct.h"
 #include "tclUtils.h"
+#include "List.h"
+#include "Array.h"
 #include "ogr_api.h"
 
 #define DEFSELECTTYPE(A,B)  (A->Type>B->Type?A:B)
