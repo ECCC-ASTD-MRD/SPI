@@ -2256,11 +2256,12 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int          i,c,w,h,idx,*histo,ex=0,tr=1,i0,i1,b,c0,c1,cnt;
-   double       lat,lon,x0,y0,dval,min,max;
+   int          i,c,w,h,idx,*histo,ex=0,tr=1,i0,i1,b,c0,c1,cnt,s;
+   double       lat,lon,x0,y0,dval,min,max,mean,std;
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
+   static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
       "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH };
@@ -2360,60 +2361,99 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case STRETCH:
-            if (Objc!=4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band index from_percent to_percent");
+            if (Objc<3) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"band index type [params]");
                return(TCL_ERROR);
             } else {
-               b=0;
                Tcl_GetIntFromObj(Interp,Objv[++i],&b);
-               if (b<band->Def->NC) {
-                  if (!band->Stat)
-                     GDAL_BandGetStat(band);
-                  min=band->Stat[b].Min;
-                  max=band->Stat[b].Max;
-                  h=1024;
-                  dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
-                  if (!(histo=(int*)malloc(h*sizeof(int)))) {
-                     Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
-                     return(TCL_ERROR);
-                  } else {
-                     GDALGetRasterHistogram(band->Band[b],min,max,h,histo,FALSE,FALSE,GDALDummyProgress,NULL);
-                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
-                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
-                     obj=Tcl_NewListObj(0,NULL);
-
-                     c0=FSIZE2D(band->Def)*(min/100.0);
-                     c1=FSIZE2D(band->Def)*(max/100.0);
-                     cnt=0;
-                     i0=-1;
-                     i1=-1;
-                     for(c=0;c<h;c++) {
-                        if (cnt<=c0)
-                           i0=c;
-
-                        cnt+=histo[c];
-
-                        if (cnt<=c1)
-                           i1=c;
-                        else
-                           break;
-                     }
-                     free(histo);
-
-                     if (i0==i1) {
-                        i0=0;
-                        i1=h-1;
-                     }
-                     if (band->Spec->Map) {
-                        band->Spec->Map->Min[b]=band->Stat[b].Min+i0*dval;
-                        band->Spec->Map->Max[b]=band->Stat[b].Min+i1*dval;
-                     }
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i0*dval));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[b].Min+i1*dval));
-
-                     Tcl_SetObjResult(Interp,obj);
-                  }
+               if (b<0 || b>band->Def->NC) {
+                  Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Invalid band index",(char*)NULL);
+                  return(TCL_ERROR);
                }
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],stretchs,"type",0,&s)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
+                
+               obj=Tcl_NewListObj(0,NULL);
+               
+               switch(s) {
+                      
+                  case 0:
+                     if (Objc!=3) {
+                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type");
+                        return(TCL_ERROR);
+                     }
+                     GDALGetRasterStatistics(band->Band[b],FALSE,TRUE,&min,&max,&mean,&std);    
+                     break;
+                     
+                 case 1: 
+                     if (Objc!=5) {
+                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type percent_from percent_to");
+                        return(TCL_ERROR);
+                     }
+                     if (!band->Stat)
+                        GDAL_BandGetStat(band);
+                     min=band->Stat[b].Min;
+                     max=band->Stat[b].Max;
+                     h=1024;
+                     dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
+                     
+                     if (!(histo=(int*)malloc(h*sizeof(int)))) {
+                        Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
+                        return(TCL_ERROR);
+                     } else {
+                        GDALGetRasterHistogram(band->Band[b],min,max,h,histo,FALSE,FALSE,GDALDummyProgress,NULL);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
+
+                        c0=FSIZE2D(band->Def)*(min/100.0);
+                        c1=FSIZE2D(band->Def)*(max/100.0);
+                        cnt=0;
+                        i0=-1;
+                        i1=-1;
+                        for(c=0;c<h;c++) {
+                           if (cnt<=c0)
+                              i0=c;
+
+                           cnt+=histo[c];
+
+                           if (cnt<=c1)
+                              i1=c;
+                           else
+                              break;
+                        }
+                        free(histo);
+
+                        if (i0==i1) {
+                           i0=0;
+                           i1=h-1;
+                        }
+                        min=band->Stat[b].Min+i0*dval;
+                        max=band->Stat[b].Min+i1*dval; 
+                     }
+                     break;
+                     
+                  case 2:
+                     if (Objc!=4) {
+                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev");
+                        return(TCL_ERROR);
+                     }
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
+                     
+                     GDALGetRasterStatistics(band->Band[b],FALSE,TRUE,&min,&max,&mean,&std);    
+                     min=mean-dval*std;
+                     max=mean+dval*std;
+                     break;
+               }
+                       
+               if (band->Spec->Map) {
+                  band->Spec->Map->Min[b]=min;
+                  band->Spec->Map->Max[b]=max;
+               }
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
+
+               Tcl_SetObjResult(Interp,obj);
             }
             break;
 
