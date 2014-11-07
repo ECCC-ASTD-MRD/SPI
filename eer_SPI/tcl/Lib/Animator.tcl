@@ -819,9 +819,17 @@ proc Animator::Play { } {
    variable Fly
    variable Lbl
 
-   set Play(Canvas)  $Page::Data(Canvas)
    set Play(Page)    $Page::Data(Frame)
-   set Play(VPs)     [Page::Registered $Page::Data(Frame) Viewport]
+   set Play(Canvas)  $Page::Data(Canvas)
+
+   #----- If no viewport is active in the active page, try for a graph
+   if { ![llength [set Play(VPs) [Page::Registered $Play(Page) Viewport]]] } {
+      upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
+
+      set Play(Page)    $data(FrameData)
+      set Play(Canvas)  $data(FrameData).page.canvas
+      set Play(VPs)     [Page::Registered $Play(Page) Viewport]
+   }
 
    if { ![llength $Play(Frames)] } {
       Animator::GetPlayList

@@ -277,6 +277,7 @@ namespace eval Graph {
    set Bubble(Mode)      { "Mode de sélection de coordonées dans la projection" "Coordinate selection mode" }
    set Bubble(Reset)     { "Réinitialiser le graph" "Reinitialize the graph" }
    set Bubble(Sheet)     { "Affichage des données du graph" "Display graph data" }
+   set Bubble(Save)      { "Sauvegarde des données en format RPN" "Save the data in RPN format" }
    set Bubble(Update)    { "Mise-à-jour automatique des unités et information à partir des données" "Automatic update of graph units and information from data source" }
 
    set Bubble(ItemList)  { "Liste des items par sélection de position" "List of itmes per position selection" }
@@ -944,8 +945,9 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
          $Data(Tab).head.sel.down.menu add separator
 
          button $Data(Tab).head.reset -image GRAPHRESET -relief flat -bd 0 -overrelief raised -state disabled -command { Graph::ZoomReset $Graph::Data(Type) $Graph::Data(Graph) }
-         button $Data(Tab).head.data -image GRAPHDATA -relief flat -bd 0 -overrelief raised -state disabled -command {  Graph::DataSheet $Graph::Data(Type) $Graph::Data(Graph) }
-         pack $Data(Tab).head.sel $Data(Tab).head.reset $Data(Tab).head.data -side left -fill y -padx 2
+         button $Data(Tab).head.data -image GRID -relief flat -bd 0 -overrelief raised -state disabled -command {  Graph::DataSheet $Graph::Data(Type) $Graph::Data(Graph) }
+         button $Data(Tab).head.save -image GRIDSAVE -relief flat -bd 0 -overrelief raised -state disabled -command {  Graph::DataSave $Graph::Data(Type) $Graph::Data(Graph) [FileBox::Create . "" Save [list $FileBox::Type(FSTD)]] }
+         pack $Data(Tab).head.sel $Data(Tab).head.reset $Data(Tab).head.data $Data(Tab).head.save -side left -fill y -padx 2
       pack $Data(Tab).head -side top -fill x
 
       frame .graphparams.dock -relief raised -bd 1
@@ -959,6 +961,7 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
       Bubble::Create $Data(Tab).head.sel   $Bubble(Mode)
       Bubble::Create $Data(Tab).head.reset $Bubble(Reset)
       Bubble::Create $Data(Tab).head.data  $Bubble(Sheet)
+      Bubble::Create $Data(Tab).head.save  $Bubble(Save)
    }
 
    #----- Inserer les parametres du graph
@@ -970,6 +973,12 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
       $Data(Tab).head.reset    configure -state normal
       $Data(Tab).head.data     configure -state normal
       $Data(Tab).head.sel.down configure -state normal
+
+      if { $Type=="Section" } {
+         $Data(Tab).head.save     configure -state normal
+      } else {
+         $Data(Tab).head.save     configure -state disabled      
+      }
 
       destroy $Data(Tab).graph
       frame $Data(Tab).graph
@@ -1331,7 +1340,64 @@ proc Graph::DataSheet { Type Graph } {
       }
    }
 }
+ 
+proc Graph::DataSave { Type Graph File } {
+   global GDefs
+   variable Lbl
 
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data  data
+   upvar #0 Graph::${Type}::${Type}${Graph}::Graph graph
+
+   if { $File!="" } {
+
+      fstdfile open GRAPHFILE write $File
+      
+      set n 0
+      foreach item $data(Items) {
+         if { [graphitem is $item] } {
+
+            #----- Graph Raster
+            if { [set ditem [graphitem configure $item -data]]!="" } {
+            
+               if { [fstdfield define $ditem -GRTYP]=="V" } {
+               
+                  if { !$n } {
+                     incr n
+                     
+                     set ni     [fstdfield define $ditem -NI]
+                     set nj     [fstdfield define $ditem -NJ]
+                     set etiket [fstdfield define $ditem -ETIKET] 
+                     set typvar [fstdfield define $ditem -TYPVAR]                   
+
+                     fstdfield create GRAPHTIC $ni 1 1 Float32
+                     fstdfield define GRAPHTIC -NOMVAR >> -TYPVAR $typvar -GRTYP L 0 0 1.0 1.0 -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
+                     fstdfield define GRAPHTIC -DATA 0 [fstdfield stats $ditem -gridlon]
+
+                     fstdfield create GRAPHTAC 1 $ni 1 Float32
+                     fstdfield define GRAPHTAC -NOMVAR ^^ -TYPVAR $typvar -GRTYP L 0 0 1.0 1.0 -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
+                     fstdfield define GRAPHTAC -DATA 0 [fstdfield stats $ditem -gridlat]
+                     
+                     fstdfield create GRAPHTOC $nj 1 1 Float32
+                     fstdfield define GRAPHTOC -NOMVAR ^> -TYPVAR $typvar -GRTYP X -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
+                     fstdfield define GRAPHTOC -DATA 0 [fstdfield stats $ditem -levels]
+
+                     
+                     fstdfield write GRAPHTIC GRAPHFILE -32 True
+                     fstdfield write GRAPHTAC GRAPHFILE -32 True
+                     fstdfield write GRAPHTOC GRAPHFILE -32 True
+                     
+                     fstdfield free GRAPHTIC GRAPHTAC GRAPHTOC
+                  }
+                  
+                  fstdfield define $ditem -IG1 $ni -IG2 $nj -IG3 $n -IG4 0
+                  fstdfield write $ditem   GRAPHFILE -32 True
+               }
+            }
+         }
+      }
+      fstdfile close GRAPHFILE
+   }
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::ParamsOff>

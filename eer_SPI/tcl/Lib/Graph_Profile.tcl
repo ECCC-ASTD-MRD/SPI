@@ -519,7 +519,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    upvar #0 Graph::Profile::Profile${GR}::Data  data
 
    #----- If it's invalid or a profile field
-   if { $Pos=="" || [string match PROFILE_* $Pos] } {
+   if { $Pos=="" || [string match DATA_* $Pos] } {
       return
    }
    
@@ -562,19 +562,19 @@ proc Graph::Profile::ItemDefineV { GR { Update True } } {
    upvar #0 Graph::Profile::Profile${GR}::Data  data
 
    Graph::Idle $GR Profile
-   
+
    #----- Cleanup previous items
    foreach pos $data(Pos) {
-      if { [string match PROFILE_* $pos] } {
+      if { [string match DATA_* $pos] } {
          Graph::Profile::ItemUnDefine $GR $pos
       }
    }
-   
+
    set i 0 
    foreach field $data(Data) {
       if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" } {
 
-         set Pos PROF_[fstdfield define $field -NOMVAR]_[incr i]
+         set Pos DATA_[fstdfield define $field -NOMVAR]_[incr i]
        
          if { [lsearch -exact $data(Pos) $Pos]==-1 } {
             lappend data(Pos) $Pos
@@ -585,7 +585,7 @@ proc Graph::Profile::ItemDefineV { GR { Update True } } {
          set data(Coords$Pos) $coords
          set data(Pos$Pos)    $coords
          set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
-
+         
          set item ${Pos}_Item
          lappend data(Items$Pos) $item
          

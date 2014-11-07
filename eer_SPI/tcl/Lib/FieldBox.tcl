@@ -78,7 +78,7 @@ namespace eval FieldBox {
    set Data(FIDList)  ""               ;#Liste des numeros de fichiers
    
    set Param(ShowDesc)  False          ;#Afficher les descripteurs
-   set Param(Desc)      { ^^ >> ^> ## !! HY ^HYT ^HYM ^GZT ^GZM ^PRT ^PRM ^SGT ^SL ^2J }
+   set Param(Desc)      { ^* >> ## !! HY }
 
    fstdfield hide $Param(Desc)
 
@@ -1437,7 +1437,7 @@ proc FieldBox::Select { } {
             
             #---- If this is a vertical grid (profile/xsection)
             if { [fstdfield define $fld -GRTYP]=="V" } {
-               if { [fstdfield define $fld -NI]<1 } {
+               if { [fstdfield define $fld -NI]>1 } {
                   #----- If more than 1 in I, this is an xsection
                   if { $Graph::Data(Graph)=="" || $Graph::Data(Type$Graph::Data(Graph))!="Section" } {
                      Graph::Params

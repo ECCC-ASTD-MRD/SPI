@@ -606,6 +606,50 @@ proc Graph::Section::ItemDefine { GR Pos Coords { Update True } } {
    Graph::UnIdle $GR Section
 }
 
+proc Graph::Section::ItemDefineV { GR { Update True } } {
+
+   upvar #0 Graph::Section::Section${GR}::Data  data
+
+   Graph::Idle $GR Section
+   
+   #----- Cleanup previous items
+   foreach pos $data(Pos) {
+      if { [string match DATA_* $pos] } {
+         Graph::Profile::ItemUnDefine $GR $pos
+      }
+   }
+  
+   set i 0 
+   foreach field $data(Data) {
+      if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" && [fstdfield define $field -NI]>1 } {
+
+         set Pos DATA_[fstdfield define $field -NOMVAR]_[incr i]
+       
+         if { [lsearch -exact $data(Pos) $Pos]==-1 } {
+            lappend data(Pos) $Pos
+         }
+         set coords [fstdfield stats $field -grid]
+         
+         set data(Items$Pos)  {}
+         set data(Coords$Pos) $coords
+         set data(Pos$Pos)    $coords
+         set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
+
+         set item ${Pos}_Item
+         lappend data(Items$Pos) $item
+         
+         Graph::Section::ItemAdd $GR $item
+         if { $Update } {
+            Graph::Section::ItemData $GR $Pos $item $field
+         }
+      }
+   }
+
+   Graph::Section::UpdateItems $data(FrameData) $GR
+   Graph::Section::Graph $GR
+   Graph::UnIdle $GR Section
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Graph::Section::ItemUnDefine>
 # Creation : Avril 2005 - J.P. Gauthier - CMC/CMOE -
@@ -657,16 +701,21 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 
   if { [graphitem is $Item] } {
       if { [fstdfield is $Data True] && [llength $data(Pos$Pos)] } {
-         fstdfield free GRAPHSELECT$Item
-
-         if { $graph(ZType)=="GRID" } {
-            fstdfield configure $Data -ztype UNDEFINED
+         if { [fstdfield define $Data -GRTYP]=="V" } {
+             fstdfield free GRAPHSELECT$Item
+             fstdfield copy GRAPHSELECT$Item $Data
+             fstdfield configure GRAPHSELECT$Item -extrude $graph(ZType) -set 0
          } else {
-            fstdfield configure $Data -ztype $graph(ZType)
+            fstdfield free GRAPHSELECT$Item
+
+            if { $graph(ZType)=="GRID" } {
+               fstdfield configure $Data -ztype UNDEFINED
+            } else {
+               fstdfield configure $Data -ztype $graph(ZType)
+            }
+
+            fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos)
          }
-
-         fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos)
-
          FSTD::Register GRAPHSELECT$Item
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item
       } else {
@@ -699,7 +748,7 @@ proc Graph::Section::Update { Frame { GR {} } } {
 
    foreach gr $GR {
 
-      upvar #0 Graph::Section::Section${gr}::Data  data
+      upvar #0 Graph::Section::Section${gr}::Data data
 
       if { $Graph::Data(Link$gr) && $data(FrameData)==$Frame } {
 
@@ -711,7 +760,7 @@ proc Graph::Section::Update { Frame { GR {} } } {
 
          #----- Recuperer les donnees
 
-        if { [Page::Registered All Viewport $data(VP)]!=-1 } {
+         if { [Page::Registered All Viewport $data(VP)]!=-1 } {
             if { [info exist Animator::Play(Data$data(VP))] } {
                Graph::Section::Data $gr $Animator::Play(Data$data(VP))
             } else {
@@ -725,6 +774,7 @@ proc Graph::Section::Update { Frame { GR {} } } {
          foreach pos $data(Pos) {
             Graph::Section::ItemDefine $gr $pos $data(Coords$pos)
          }
+         Graph::Section::ItemDefineV $gr
          Graph::PosSet $gr Section
          Graph::Section::FieldShow $gr
 
@@ -801,12 +851,15 @@ proc Graph::Section::Data { GR Data } {
    #----- Recuperer les champs correspondants du viewport actif
 
    set data(Data)   {}
-
+   
    set fields {}
    foreach field $Data {
       if { [fstdfield is $field True] } {
          set grtyp [fstdfield define $field -GRTYP]
-         if { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
+         
+         if { $grtyp=="V" && [fstdfield define $field -NI]>1 } {
+            lappend fields $field
+         } elseif { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
             if { $Graph::Data(IP3) } {
                fstdfield readcube $field
             } else {

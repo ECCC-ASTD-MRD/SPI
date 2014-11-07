@@ -89,9 +89,9 @@ namespace eval PrintBox {
                          {Portable Network Graphics {*.png}}
                          {Personal Computer Exchange {*.pcx}}
                          {CompuServe Graphics Interchange {*.gif}}
-                         {Joint Photographic Experts Group {*.jpeg}}
+                         {Joint Photographic Experts Group {*.jpg}}
                          {Truevision Targa {*.tga}}
-                         {Tagged Image File {*.tiff}}
+                         {Tagged Image File {*.tif}}
                          {Microsoft Windows bitmap image {*.bmp}}
                          {Portable pixmap {*.ppm}}}
 
@@ -421,7 +421,7 @@ proc PrintBox::SetDevice { } {
       labelframe $Param(Frame).opt -text Options
        
       switch $Print(Device) {
-         "jpeg" {
+         "jpg" {
             frame $Param(Frame).opt.quality
                label $Param(Frame).opt.quality.lbl -text [lindex $Lbl(Quality) $GDefs(Lang)] -width 12 -anchor w
                entry  $Param(Frame).opt.quality.inf -textvariable PrintBox::Param(Quality) -width 3 -bg $GDefs(ColorLight)
@@ -441,7 +441,7 @@ proc PrintBox::SetDevice { } {
             Bubble::Create $Param(Frame).opt.smooth  $Bubble(Smooth)
            pack $Param(Frame).opt -side top -fill x -padx 5 -ipady 2 -pady 5 -anchor n
                 }
-         "tiff" {
+         "tif" {
             frame $Param(Frame).opt.compress
                label $Param(Frame).opt.compress.lbl -text [lindex $Lbl(Compress) $GDefs(Lang)] -width 12 -anchor w
                ComboBox::Create $Param(Frame).opt.compress.sel PrintBox::Param(Compress) noedit unsorted nodouble -1 { none jpeg packbits deflate } 10 5
@@ -771,17 +771,20 @@ proc PrintBox::Save { Frame X Y Width Height File } {
    variable Print
    variable Param
 
+   set device $Print(Device) 
    switch $Print(Device) {
-      "jpeg" { set opt "-quality $Param(Quality) -smooth $Param(Smooth)" }
+      "jpg"  -
+      "jpeg" { set device jpeg; set opt "-quality $Param(Quality) -smooth $Param(Smooth)" }
       "pcx"  -
       "tga"  -
-      "tiff" { set opt "-compress $Param(Compress)" }
+      "tif"  -
+      "tiff" { set device tif; set opt "-compress $Param(Compress)" }
       default { set opt "" }
    }
    
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-   eval TMPIMG write "$File" -format \{$Print(Device) $opt\}
+   eval TMPIMG write "$File" -format \{$device $opt\}
    image delete TMPIMG
 }
 
