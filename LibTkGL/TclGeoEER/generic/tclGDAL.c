@@ -955,7 +955,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
       /*Liberation de la memoire allouee pour les textures*/
       GeoTex_Clear(&band->Tex,GEOTEX_CLRALL,0,0);
 
-      if (band->Stat)      free(band->Stat);
+      if (band->Stat)      Data_StatFree(band->Stat);
       if (band->Tag)       Tcl_DecrRefCount(band->Tag);
       if (band->GCPs)      free(band->GCPs);
       if (band->Def)       DataDef_Free(band->Def);

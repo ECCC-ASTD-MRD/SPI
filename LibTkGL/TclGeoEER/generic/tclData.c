@@ -566,6 +566,8 @@ void Data_GetStat(TData *Field){
       Field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
 
    if (Field->Stat) {
+      Field->Stat->Histo=NULL;
+      Field->Stat->HistoBin=256;
       Field->Stat->Min=1e200;
       Field->Stat->Max=-1e200;
       Field->Stat->Avg=0.0;
@@ -635,6 +637,10 @@ void Data_GetStat(TData *Field){
    }
 }
 
+void Data_StatFree(TDataStat *Stat) {
+   if (Stat->Histo) free(Stat->Histo);
+}
+
 int Data_Free(TData *Field) {
 
    int i;
@@ -658,7 +664,7 @@ int Data_Free(TData *Field) {
       }
 
       /*Liberer l'espace du descriptif*/
-      if (Field->Stat) free(Field->Stat);
+      if (Field->Stat) Data_StatFree(Field->Stat);
       if (Field->Ref)  GeoRef_Destroy(NULL,Field->Ref->Name);
       if (Field->Tag)  Tcl_DecrRefCount(Field->Tag);
 
@@ -1092,7 +1098,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDa
       Data_Clean(field,1,1,1);
       field->Free(field);                                   field->Head=NULL;
       if (field->Tag)         Tcl_DecrRefCount(field->Tag); field->Tag=NULL;
-      if (field->Stat)        free(field->Stat);            field->Stat=NULL;
+      if (field->Stat)        Data_StatFree(field->Stat);   field->Stat=NULL;
 
       /*Normally we would free the georef but if the field is being overwritten, chances are it's the same grid so we just keep
         the object alive to be reused if needed*/
@@ -3237,7 +3243,7 @@ int Data_ValSet(TData *Field,double I,double J,double Val) {
       return 0;
 
    if (Field->Stat) {
-      free(Field->Stat);
+      Data_StatFree(Field->Stat);
       Field->Stat=NULL;
    }
 

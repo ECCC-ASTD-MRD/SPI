@@ -110,7 +110,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                GField=Data_Copy(Interp,GField,Name,0,0);
 
                if (GField->Stat) {
-                  free(GField->Stat);
+                  Data_StatFree(GField->Stat);
                   GField->Stat=NULL;
                }
                GField->Def= needcopy ? DataDef_Copy(Data) : Data;
@@ -131,7 +131,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
             if (!(band=GDAL_BandGet(Name)) || band->Def!=Data) {
                GBand=GDAL_BandCopy(Interp,GBand,Name,0);
                if (GBand->Stat) {
-                  free(GBand->Stat);
+                  Data_StatFree(GBand->Stat);
                   GBand->Stat=NULL;
                }
                GBand->Def= needcopy ? DataDef_Copy(Data) : Data;

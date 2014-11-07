@@ -938,7 +938,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    ((FSTD_Head*)FieldTo->Head)->IP1=ip1;
 
    if (FieldTo->Stat) {
-      free(FieldTo->Stat);
+      Data_StatFree(FieldTo->Stat);
       FieldTo->Stat=NULL;
    }
 
@@ -969,7 +969,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
 
    /*Initialiaser les valeurs de descriptions du champs destination*/
    if (FieldTo->Stat) {
-      free(FieldTo->Stat);
+      Data_StatFree(FieldTo->Stat);
       FieldTo->Stat=NULL;
    }
 
@@ -1201,7 +1201,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
 
    /*Initialiser les valeurs de descriptions du champs destination*/
    if (field->Stat) {
-      free(field->Stat);
+      Data_StatFree(field->Stat);
       field->Stat=NULL;
    }
 
@@ -1569,7 +1569,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   EZUnLock_RPNInt();
                   EZGrid_IdIncr(Field->Ref->Ids[Field->Ref->NId]);
                }
-               if (Field->Stat) { free(Field->Stat); Field->Stat=NULL; }
+               if (Field->Stat) { Data_StatFree(Field->Stat); Field->Stat=NULL; }
 
                GeoRef_Qualify(Field->Ref);
                Data_Clean(Field,1,1,1);

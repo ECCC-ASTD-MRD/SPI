@@ -91,8 +91,9 @@ typedef enum {
 } TDataType;
 
 typedef struct TDataStat {
-   double Min,Max,Avg;      /*Minimum maximum et moyenne de l'enregistrement*/
-   Coord  MinLoc,MaxLoc;    /*Coordonnees des minimums et maximums*/
+   int   *Histo,HistoBin;   // Histogramme des valeurs
+   double Min,Max,Avg;      // Minimum maximum et moyenne de l'enregistrement
+   Coord  MinLoc,MaxLoc;    // Coordonnees des minimums et maximums
 } TDataStat;
 
 typedef struct TDataVector {
@@ -111,23 +112,23 @@ typedef int     (TData_Define)   (Tcl_Interp *Interp,struct TData *Field,int Obj
 
 typedef struct TData {
    Tcl_Obj      *Tag;
-   void         *Head;       /*Entete de l'enregistrement (metadata)*/
+   void         *Head;       // Entete de l'enregistrement (metadata)
 
-   TGeoRef      *Ref;        /*Reference geographique horizontale*/
+   TGeoRef      *Ref;        // Reference geographique horizontale
 
-   TDataDef     *Def,**SDef; /*Definition des donnees*/
-   TDataSpec    *Spec;       /*Specification des donnees (pour l'affichage)*/
-   TDataStat    *Stat;       /*Statistiques de l'enregistrement*/
-   TDataType    Type;        /*Type de donnee*/
+   TDataDef     *Def,**SDef; // Definition des donnees
+   TDataSpec    *Spec;       // Specification des donnees (pour l'affichage)
+   TDataStat    *Stat;       // Statistiques de l'enregistrement
+   TDataType    Type;        // Type de donnee
 
-   TData_Set      *Set;      /*Fonction d'initialisation*/
-   TData_Free     *Free;     /*Fonction de liberation*/
-   TData_Copy     *Copy;     /*Fonction de copie de champs*/
-   TData_ReadCube *ReadCube; /*Fonction de lecture du cube de donnees (niveaux verticaux)*/
-   TData_Grid     *Grid;     /*Fonction de recuperation de la grille (geo-localisation)*/
-   TData_Define   *Define;   /*Fonction de recuperation/definition des parametres*/
+   TData_Set      *Set;      // Fonction d'initialisation
+   TData_Free     *Free;     // Fonction de liberation
+   TData_Copy     *Copy;     // Fonction de copie de champs
+   TData_ReadCube *ReadCube; // Fonction de lecture du cube de donnees (niveaux verticaux)
+   TData_Grid     *Grid;     // Fonction de recuperation de la grille (geo-localisation)
+   TData_Define   *Define;   // Fonction de recuperation/definition des parametres
    
-   float  *Map;              /*Texture du champs*/
+   float  *Map;              // Texture du champs
 } TData;
 
 #include "Vertex.h"
@@ -145,7 +146,6 @@ TData*   Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias)
 int      Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC);
 TData*   Data_Get(char *Name);
 TData*   Data_GetShell(Tcl_Interp *Interp,char *Name);
-void     Data_GetStat(TData *Field);
 int      Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List);
 Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
 TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TData_Type Type);
@@ -161,6 +161,9 @@ int      Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDat
 int      Data_SubInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
 int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 int      Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+
+void     Data_StatGet(TData *Field);
+void     Data_StatFree(TDataStat *Stat);
 
 TDataVector *Data_VectorTableCheck(char *Var,int *Idx);
 TDataVector *Data_VectorTableAdd(void);

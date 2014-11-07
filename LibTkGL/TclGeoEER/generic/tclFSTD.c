@@ -967,7 +967,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_AppendResult(Interp,"Obs krigging failed",(char*)NULL);
                return(TCL_ERROR);
             }
-            if (field0->Stat) { free(field0->Stat); field0->Stat=NULL; }
+            if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
             return(TCL_OK);
          }
 
@@ -1011,7 +1011,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_AppendResult(Interp,"MetObs krigging failed",(char*)NULL);
                return(TCL_ERROR);
             }
-            if (field0->Stat) { free(field0->Stat); field0->Stat=NULL; }
+            if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
             return(TCL_OK);
          }
 #endif
