@@ -24,6 +24,8 @@ namespace eval Mapper::GDAL { } {
    set Data(Topos)       { NONE INTERNAL }
    set Data(Curve)       LINEAR
    set Data(Curves)      { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
+   set Data(Stretch)     MIN_MAX
+   set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90"  "PERCENT_CLIP 25 75" "STANDARD_DEV 1" "STANDARD_DEV 2" }
    set Data(Interp)      NEAREST
    set Data(Interps)     { NEAREST LINEAR }
    set Data(Mask)        False
@@ -170,7 +172,7 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
       set pos [wm geometry .mapperparams]
       destroy .mapperparams
    } else {
-      set pos 500x475
+      set pos 530x475
    }
 
    set Mapper::Data(Mode)     gdalband
@@ -211,6 +213,11 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                   $Data(Frame2).col.sel.alpha -side top -fill y -expand true -padx 5 -pady 5
 
             frame $Data(Frame2).col.def
+               frame $Data(Frame2).col.def.stretch
+                  label $Data(Frame2).col.def.stretch.lbl -text [lindex $Mapper::Lbl(Stretch) $GDefs(Lang)] -width 14 -anchor w
+                  ComboBox::Create $Data(Frame2).col.def.stretch.sel Mapper::GDAL::Data(Stretch) noedit unsorted nodouble -1 $Data(Stretchs) 1 8 { Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) }
+                  pack $Data(Frame2).col.def.stretch.lbl -side left
+                  pack $Data(Frame2).col.def.stretch.sel -side left -fill x -expand True
                frame $Data(Frame2).col.def.curve
                   label $Data(Frame2).col.def.curve.lbl -text [lindex $Mapper::Lbl(Curve) $GDefs(Lang)] -width 14 -anchor w
                   ComboBox::Create $Data(Frame2).col.def.curve.sel Mapper::GDAL::Data(Curve) noedit unsorted nodouble -1 $Data(Curves) 1 8 { Mapper::GDAL::CurveSet $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) }
@@ -256,7 +263,7 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                   ComboBox::Create $Data(Frame2).col.def.style.sel Mapper::GDAL::Data(Style) noedit unsorted nodouble -1 $Data(Styles) 1 8 { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) }
                   pack $Data(Frame2).col.def.style.lbl -side left
                   pack $Data(Frame2).col.def.style.sel -side left -fill x -expand True
-               pack $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
+               pack $Data(Frame2).col.def.stretch $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
                    $Data(Frame2).col.def.interp $Data(Frame2).col.def.nodata -side top -fill x
             frame $Data(Frame2).col.curve
                button $Data(Frame2).col.curve.map -bd 2 -relief groove -image GDALMAPImg \
@@ -770,7 +777,6 @@ proc Mapper::GDAL::CurveDefine { Object Bands } {
    bind $canvas <Motion> { Mapper::GDAL::CurveValue %x }
 
    Mapper::GDAL::CurveSelect $canvas $Object red
-   Mapper::GDAL::Curve       $canvas $Object $Bands
 }
 
 proc Mapper::GDAL::CurveInvert { Canvas Object Band Axis Value } {
@@ -823,10 +829,12 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       $Canvas raise min
       $Canvas raise max
 
+      eval gdalband stats $Object -stretch $Data(Band) $Data(Stretch)
+
       #----- Setup min-max
       set Data(CurveMin) [lindex [gdalband stats $Object -min $idx] 0]
       set Data(CurveMax) [lindex [gdalband stats $Object -max $idx] 0]
-
+      
       if { $Data(CurveMin)>[colormap configure $map -min $Band] } {
          colormap configure $map -min $Band $Data(CurveMin)
          catch { unset Data(Histo$Object$idx) }
@@ -891,9 +899,7 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       set Data(Curve) [colormap configure $map -curve $Band]
       if { ![glrender -shaderavailable] } { gdalband clean $Object }
 
-      if  { !$MinMax } {
-         Mapper::GDAL::Curve $Canvas $Object $Band
-      }
+      Mapper::GDAL::Curve $Canvas $Object $Band
    }
 }
 
@@ -1182,13 +1188,12 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
 proc Mapper::GDAL::ReadPos { Id BandX BandY } {
    global GDefs errorInfo
    variable Data
-   variable Msg
 
    if  { ![info exists Mapper::Data(Id$Id)] || $BandX=="" || $BandY=="" } {
       return
    }
 
-   set Data(Job)   [lindex $Msg(Read) $GDefs(Lang)]
+   set Data(Job)   [lindex $Mapper::Msg(Read) $GDefs(Lang)]
    update idletasks;
 
    set err [catch { gdalband read BandX$Id [list $BandX] } errmsg ]

@@ -134,7 +134,7 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       Mapper::ParamsClose
       destroy .mapperparams
    } else {
-      set pos 500x425
+      set pos 530x425
    }
    set Mapper::Data(Mode) ogrlayer
    

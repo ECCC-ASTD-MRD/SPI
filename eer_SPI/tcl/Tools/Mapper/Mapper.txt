@@ -27,6 +27,7 @@ namespace eval Mapper { } {
    set Lbl(Cancel)        { "Annuler" "Cancel" }
    set Lbl(GeoRef)        { "Utiliser la projection de cette donnée" "Use this data's projection" }
    set Lbl(Curve)         { "Courbe" "Curve" }
+   set Lbl(Stretch)       { "Étendue" "Stretch" }
    set Lbl(Style)         { "Style" "Style" }
    set Lbl(Data)          { "Données" "Data" }
    set Lbl(Dig)           { "Dépots de données" "Data digging" }
