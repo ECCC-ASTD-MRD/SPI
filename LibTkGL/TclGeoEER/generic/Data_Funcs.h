@@ -164,7 +164,6 @@ double stat_fmsi(TDataDef *MA,TDataDef *MB);  /* Figure of merit in space (integ
 double stat_osf(TDataDef *MA,TDataDef *MB);   /* Objective scoring function (area) */
 double stat_osfb(TDataDef *MA,TDataDef *MB);  /* Objective scoring function (binary) */
 double stat_osfi(TDataDef *MA,TDataDef *MB);  /* Objective scoring function (integrated) */
-double stat_pcc(TDataDef *MA,TDataDef *MB);   /* Pearson's correlation coefficient */
 double stat_ksp(TDataDef *MA,TDataDef *MB);   /* Kolmogorov-Smirnov parameter */
 double stat_rank(TDataDef *MA,TDataDef *MB);  /* Rank calculated with a combination of fb, fms, fa2, foex, ksp and nad. ranges from 0 to 7 (the higher the better) */
 double stat_nbeq(TDataDef *MA,TDataDef *MB);  /* Nb of equal values */

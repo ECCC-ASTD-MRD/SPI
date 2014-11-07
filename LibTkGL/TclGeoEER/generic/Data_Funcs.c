@@ -48,7 +48,7 @@
 double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,Vmedx,Vmedy,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,Vfb,Vnad,
-       Vfms,Vfmsi,Vfmsb,Vosf,Vosfb,Vosfi,Vpcc,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
+       Vfms,Vfmsi,Vfmsb,Vosf,Vosfb,Vosfi,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
        Vaov,Vafn,Vafp,Vax,Vay;
 
 /*Matrix Derivative Functions*/
@@ -150,7 +150,6 @@ TFuncDef FuncF[] = {
   { "sosf"  , stat_osf    , 2 , TD_Float64 },
   { "sosfb" , stat_osfb   , 2 , TD_Float64 },
   { "sosfi" , stat_osfi   , 2 , TD_Float64 },
-  { "spcc"  , stat_pcc    , 2 , TD_Float64 },
   { "sksp"  , stat_ksp    , 2 , TD_Float64 },
   { "srank" , stat_rank   , 2 , TD_Float64 },
   { "snbeq" , stat_nbeq   , 2 , TD_Float64 },
@@ -972,7 +971,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    extern int        GMode;
 
    Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
-   Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
+   Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
    Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
@@ -1126,7 +1125,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
 
    if (Vnb==0) {
       Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=0.0;
-      Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vpcc=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
+      Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
 
       if( vx ) free(vx);
       if( vy ) free(vy);
@@ -1173,8 +1172,8 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
    }
 
-   Vafn  = (Vax-Vaov)/Vax;
-   Vafp  = (Vay-Vaov)/Vay;
+   Vafn  = Vax-Vaov;
+   Vafp  = Vay-Vaov;
 
    Vmb   = Vsumy-Vsumx;
    Vnmb  = Vsumx!=0?Vmb/Vsumx*100:0;
@@ -1191,8 +1190,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vvary    = Vssy/Vnb-Vavgy*Vavgy;
    Vcovar   = Vssxy/Vnb-Vavgx*Vavgy;
 
-   Vpcc=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx*Vvary));
-   Vcorr=Vpcc;
+   Vcorr=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx*Vvary));
 
    Vrmse=(Vssy-Vssxy*2+Vssx)/Vnb;
    Vnmse=Vrmse/(Vavgx*Vavgy);
@@ -1228,8 +1226,8 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vosfb=((Vnb-Vnbnp-Vnbfa)==0 || (Vnb-Vnbnp-Vnbmi)==0)?0:sqrt(pow(Vnbmi/(Vnb-Vnbnp-Vnbfa),2)+pow(Vnbfa/(Vnb-Vnbnp-Vnbmi),2));
    Vosfi=(Vsumx==0 || Vsumy==0)?0:sqrt(pow(1-Vosfi/Vsumx,2.0)+pow(1-Vosfi/Vsumy,2.0));
    Vksp*=100.0;
-   //Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-fabs(Vfoex/50.0))+(1-Vksp/100.0)+(1-Vnad);
-   Vrank=Vpcc*Vpcc+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-Vksp/100.0)+(1-Vnad);
+   //Vrank=Vcorr*Vcorr+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-fabs(Vfoex/50.0))+(1-Vksp/100.0)+(1-Vnad);
+   Vrank=Vcorr*Vcorr+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-Vksp/100.0)+(1-Vnad);
 
    if( vx ) free(vx);
    if( vy ) free(vy);
@@ -1331,12 +1329,6 @@ double stat_osfi(TDataDef *MA,TDataDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vosfi);
-}
-
-double stat_pcc(TDataDef *MA,TDataDef *MB) {
-   if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vpcc);
 }
 
 double stat_ksp(TDataDef *MA,TDataDef *MB) {
