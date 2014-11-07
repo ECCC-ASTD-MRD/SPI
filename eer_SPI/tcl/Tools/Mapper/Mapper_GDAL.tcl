@@ -25,7 +25,7 @@ namespace eval Mapper::GDAL { } {
    set Data(Curve)       LINEAR
    set Data(Curves)      { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
    set Data(Stretch)     MIN_MAX
-   set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90"  "PERCENT_CLIP 25 75" "STANDARD_DEV 1" "STANDARD_DEV 2" }
+   set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 2 98" "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90" "STANDARD_DEV 1" "STANDARD_DEV 2" }
    set Data(Interp)      NEAREST
    set Data(Interps)     { NEAREST LINEAR }
    set Data(Mask)        False
@@ -586,8 +586,8 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
    ComboBox::Add $Data(Frame1).pos.y.val ""
    ComboBox::AddList $Data(Frame1).pos.y.val $Data(Band$Object) False
 
-   bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) False } }
-   bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) False } }
+   bind $Data(Frame2).col.curve.info.min <Any-KeyRelease>  { catch { set Mapper::GDAL::Data(Stretch) ""; Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) False } }
+   bind $Data(Frame2).col.curve.info.max <Any-KeyRelease>  { catch { set Mapper::GDAL::Data(Stretch) ""; Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) False } }
 
    #----- Setup colormap
 
@@ -829,7 +829,9 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       $Canvas raise min
       $Canvas raise max
 
-      eval gdalband stats $Object -stretch $Data(Band) $Data(Stretch)
+      if { $Data(Stretch)!="" } {
+         eval gdalband stats $Object -stretch $Data(Band) $Data(Stretch)
+      }
 
       #----- Setup min-max
       set Data(CurveMin) [lindex [gdalband stats $Object -min $idx] 0]
@@ -906,6 +908,7 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
 proc Mapper::GDAL::CurveRange { Canvas Object Band Side X } {
    variable Data
 
+   set Data(Stretch) ""
    set map [gdalband configure $Object -colormap]
 
    Mapper::GDAL::CurveValue $X
