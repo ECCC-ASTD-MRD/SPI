@@ -24,7 +24,7 @@ set R_CMDS {
    nrmse "nrmse <- sqrt(mean((y-x)^2)) / mean(x)"
    sdevx "sdevx <- sd(x) * sqrt((length(x)-1)/length(x))"
    sdevy "sdevy <- sd(y) * sqrt((length(y)-1)/length(y))"
-   cor   "cor   <- cor(x,y)"
+   cor   "cor   <- cor(x,y,method='pearson')"
    cov   "cov   <- cov(x,y) * (length(x)-1)/length(x)"
    regb  "regb  <- summary(lm(y~x))$coefficients[2]"
    rega  "rega  <- summary(lm(y~x))$coefficients[1]"
@@ -62,9 +62,8 @@ set R_CMDS {
    fmsi  "minxy<-pmin(x,y); fmsi <- sum(minxy) / sum(pmax(x-minxy,0) + pmax(y-minxy,0) + minxy) * 100"
    osfb  "osfb <- sqrt( (length(which(x!=0 & y==0))/length(which(x!=0)))^2 + (length(which(x==0 & y!=0))/length(which(y!=0)))^2 )"
    osfi  "t<-sum(pmin(x,y)); osfi <- sqrt( (1-t/sum(x))^2 + (1-t/sum(y))^2 )"
-   pcc   "pcc   <- cor(x, y, method='pearson')"
    ksp   "ksp   <- ks.test(x,y)$statistic * 100"
-   rank  "rpcc<-cor(x, y, method='pearson');rfb<-(mean(y)-mean(x))/(mean(y)+mean(x));rminxy<-pmin(x,y);rfms<-sum(minxy)/sum(pmax(x-minxy,0)+pmax(y-minxy,0)+minxy);rfa2<-length(which(0.5<=y/x&y/x<=2))/length(x);rksp<-ks.test(x,y)$statistic;rnad<-sum(abs(x-y))/sum(x+y); rank <- rpcc^2 + (1-abs(rfb)) + rfms + rfa2 + (1-rksp) + (1-rnad)"
+   rank  "rcor<-cor(x, y, method='pearson');rfb<-(mean(y)-mean(x))/(mean(y)+mean(x));rminxy<-pmin(x,y);rfms<-sum(minxy)/sum(pmax(x-minxy,0)+pmax(y-minxy,0)+minxy);rfa2<-length(which(0.5<=y/x&y/x<=2))/length(x);rksp<-ks.test(x,y)$statistic;rnad<-sum(abs(x-y))/sum(x+y); rank <- rcor^2 + (1-abs(rfb)) + rfms + rfa2 + (1-rksp) + (1-rnad)"
    nbeq  "nbeq  <- length(which( x == y ))"
    nbgt  "nbgt  <- length(which( x < y ))"
    nblt  "nblt  <- length(which( x > y ))"
@@ -87,7 +86,7 @@ set VARS_COMBO { nb medx medy sumx sumy minx miny maxx maxy avgx avgy
                  varx vary ssx ssy ssxy rmse sdev sdevx sdevy cor cov
                  regb rega errb erra mb nmb nme me mnb mne mfb mfe lmnb
                  lmne mre maxb maxe maxre nrmse na rna nmse gmb gmv foex
-                 fa2 fa5 fa10 fb nad fmsb fmsi osfb osfi pcc ksp nbeq nbgt
+                 fa2 fa5 fa10 fb nad fmsb fmsi osfb osfi ksp nbeq nbgt
                  nblt nbfa nbmi nbnp }
 set VARS_ALONE { med uniq sum min max avg var }
 
