@@ -1787,7 +1787,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
 
       switch(Item->Value) {
-         case  1: val=(Item->Orient[0]=='X')?vecx:vecy; break;
+         case  1: val=(Item->Orient[0]=='X')?vecy:vecx; break;
          case  2: val=vecx; break;
          case  3: val=vecx; break;
          case  4: val=vecy; break;
@@ -3413,11 +3413,12 @@ void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 */
 void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
 
-   TVector   *vecx,*vecy;
+   Tk_FontMetrics tkm;
+   TVector   *vecx,*vecy,*val;;
    Vect3d    *v,v0,v1,vt;
    char       buf[256];
    double     x,y,db,dh,x0,y0;
-   int        i,j,n,vn,hd;
+   int        i,j,n,vn,hd,px,py,pw;
    double     rect[8],sz;
 
    vecx=Vector_Get(Item->XData);
@@ -3702,20 +3703,52 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    /* Display Values */
    if (Item->Value && Item->Font) {
-      glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
-      glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
+      Tk_CanvasPsFont(Interp,Graph->canvas,Item->Font);
+      Tk_CanvasPsColor(Interp,Graph->canvas,Item->Outline);
 
-      for(i=0;i<vn-hd;i++) {
-         if (Item->Orient[0]=='X') {
-            GraphAxis_Print(AxisY,buf,vecy->V[i],-2);
-         } else {
-            GraphAxis_Print(AxisX,buf,vecx->V[i],-2);
+      switch(Item->Value) {
+         case  1: val=(Item->Orient[0]=='X')?vecy:vecx; break;
+         case  2: val=vecx; break;
+         case  3: val=vecx; break;
+         case  4: val=vecy; break;
+         case  5: val=Vector_Get(Item->ZData); break;
+         case  6: val=Vector_Get(Item->Speed); break;
+         case  7: val=Vector_Get(Item->Dir); break;
+         case  8: val=Vector_Get(Item->ErrorData); break;
+         case  9: val=Vector_Get(Item->HighData); break;
+         case 10: val=Vector_Get(Item->LowData); break;
+         case 11: val=Vector_Get(Item->MedianData); break;
+         case 12: val=Vector_Get(Item->MinData); break;
+         case 13: val=Vector_Get(Item->MaxData); break;
+      }
+      if (val) {
+         px=py=pw=0;
+         Tk_GetFontMetrics(Item->Font,&tkm);
+         for(i=0;i<vn-hd;i++) {
+            if (Item->Value==4) {
+               GraphAxis_Print(AxisY,buf,val->V[i],-2);
+            } else {
+               GraphAxis_Print(AxisX,buf,val->V[i],-2);
+            }
+            j=Item->Width+2+(Item->Icon?Item->Size:0);
+            y=v[i][1]+j;
+            j=Tk_TextWidth(Item->Font,buf,strlen(buf));
+            switch(Item->Anchor) {
+               case TK_ANCHOR_N:
+               case TK_ANCHOR_S:
+               case TK_ANCHOR_CENTER: x=v[i][0]-j/2; break;
+               case TK_ANCHOR_NW:
+               case TK_ANCHOR_SW:               
+               case TK_ANCHOR_W:      x=v[i][0]+j/strlen(buf);     break;
+               case TK_ANCHOR_NE:
+               case TK_ANCHOR_SE:
+               case TK_ANCHOR_E:      x=v[i][0]-j-j/strlen(buf);   break;
+            }
+            if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {
+               px=x;py=y;pw=j;
+               glPrintFlip(Interp,Graph->canvas,buf,x,y,0.0);
+            }
          }
-         j=Tk_TextWidth(Item->Font,buf,strlen(buf))/2;
-         x=v[i][0]-j;
-         j=Item->Width+2+(Item->Icon?Item->Size:0);
-         y=v[i][1]+j;
-         glPrintFlip(Interp,Graph->canvas,buf,x,y,0.0);
       }
    }
 
