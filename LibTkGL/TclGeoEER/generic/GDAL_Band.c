@@ -2262,6 +2262,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_Obj     *obj,*lst;
 
    static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV",NULL };
+   static CONST char *bands[] = { "red","green","blue","alpha",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
       "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch",NULL };
    enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH };
@@ -2365,7 +2366,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"band index type [params]");
                return(TCL_ERROR);
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&b);
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&b)==TCL_ERROR) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],bands,"type",0,&b)!=TCL_OK) {
+                     return(TCL_ERROR);
+                  }
+               }
                if (b<0 || b>band->Def->NC) {
                   Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Invalid band index",(char*)NULL);
                   return(TCL_ERROR);
@@ -2936,7 +2941,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                         Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: () Unable to fit control points",(char*)NULL);
                         return(TCL_ERROR);
                      }
-                     GDALInvGeoTransform(band->Ref->Transform,band->Ref->InvTransform);
+                     c=GDALInvGeoTransform(band->Ref->Transform,band->Ref->InvTransform);
                      break;
                   case 1:
                   case 2:
