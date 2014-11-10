@@ -59,7 +59,7 @@ namespace eval FSTD {
    colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
-   dataspec create FLDDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
+   dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -colormap FLDDMAPEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100
@@ -878,7 +878,7 @@ proc FSTD::ParamSet { { Spec "" } } {
    set alpha [expr int(0x$Param(Alpha)/255.0*100.0)]
 
    #----- Set all params
-   dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
+   dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
@@ -999,15 +999,12 @@ proc FSTD::ParamInit { Field { Spec "" } } {
    variable Param
 
    if { [dataspec is $Spec] } {
-      set set [dataspec configure $Spec -set]
       set var [fstdfield define $Field -NOMVAR]
 #      set var [dataspec configure $Spec -desc]
       set desc [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]
       
-      if { !$set } {
-         dataspec copy $Spec FLDDEFAULT
-      }
+      dataspec copy $Spec FLDDEFAULT
 
       #----- Set a colormap if not done
       set map [dataspec configure $Spec -colormap]
@@ -1021,23 +1018,21 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          dataspec configure $Spec -colormap FLDMAP$Spec
       }
 
-      if { !$set } {
-         #----- Override particle fields params
-         if { [fstdfield is $Field] && ([fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH") } {
-            dataspec configure $Spec -renderparticle 2
-         }
+      #----- Override particle fields params
+      if { [fstdfield is $Field] && ([fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH") } {
+         dataspec configure $Spec -renderparticle 2
+      }
 
-         #----- Override vectorial fields params
-         if { [fstdfield stats $Field -component]>1 } {
-            dataspec configure $Spec -rendervector BARBULE -rendertexture 0
-         }
+      #----- Override vectorial fields params
+      if { [fstdfield stats $Field -component]>1 } {
+         dataspec configure $Spec -rendervector BARBULE -rendertexture 0
+      }
 
-         if { ![fstddict isvar $var] } {
-            fstddict varinfo $var -lang $GDefs(Lang) -short $desc
-         }
-         if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -unit -factor -delta]]] } {
-            dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
-         }
+      if { ![fstddict isvar $var] } {
+         fstddict varinfo $var -lang $GDefs(Lang) -short $desc
+      }
+      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -unit -factor -delta]]] } {
+         dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
       }
    }
 }
@@ -1117,12 +1112,54 @@ proc FSTD::Params { Id Map args } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <FSTD::ParamOwnership>
+# Creation : Novembre 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Parse pre-configure fields (macro/script) and get ownership of them
+#
+# Parametres :
+#   <Fields> : List of fields (Empty will use all known)
+#  
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FSTD::ParamOwnership { { Fields { } } } {
+   variable Data
+
+   if { ![llength $Fields] } {
+      set Fields [concat $Data(List) $Data(ListTool)]
+   }
+   
+   set n 0
+
+   #----- Parse all fields
+   foreach fld $Fields {
+   
+      #----- If they were configured outside SPI
+      if { [fstdfield configure $fld -set]==1 } {
+         incr n
+         
+         #----- Get ownership
+         fstdfield configure $fld -set 2
+      }
+   }
+   
+   if { $n } {
+      FSTD::ParamUpdate
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <FSTD::ParamUpdate>
 # Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Mettre a jour la liste des observations selectionnees
 #
 # Parametres :
+#   <Fields> : List of fields (Empty will use all known)
 #
 # Retour:
 #
@@ -1149,10 +1186,12 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 
       if { [fstdfield is $fld True] } {
 
-          catch { fstdfield define $fld -grid $Param(GridNo) }
+         set set [fstdfield configure $fld -set]
+         
+         catch { fstdfield define $fld -grid $Param(GridNo) }
           
-          #----- Get the name of the configuration object
-          switch $Param(Mode) {
+         #----- Get the name of the configuration object
+         switch $Param(Mode) {
             "FLD"    { set var $fld }
             "VAR"    { set var [fstdfield define $fld -NOMVAR] }
             "TYPVAR" { set var [fstdfield define $fld -TYPVAR] }
@@ -1165,34 +1204,34 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             "FILE"   { set var [fstdfield define $fld -FID] }
          }
 
+         #----- If the var is empty
          if { [set var [string trim $var]]=="" } {
             set var "<>"
          }
-
-         #----- Check if field has already been setup
-         set set [fstdfield configure $fld -set]
-
-         #----- Define default config for this object
-         if { ![dataspec is $var] || $set } {
+        
+         #----- Define default config
+         if { ![dataspec is $var] } {               
             set spec [fstdfield configure $fld -dataspec]
             if { $spec!=$var } {
-               dataspec copy $var $spec
-               fstdfield configure $fld -dataspec $var
-               dataspec free $spec
+               dataspec copy $var $spec   
+
+               #----- If field has not been configured yet or is owned by SPI
+               if { $set==0 || $set==2 } {
+                  dataspec free $spec
+                  FSTD::ParamInit $fld $var
+               }
             }
-            FSTD::ParamInit $fld $var
          }
-         
-         if { !$set } {
+            
+         #----- If field has not been configured yet or is owned by SPI
+         if { $set==0 || $set==2 } {
             fstdfield configure $fld -dataspec $var
          }
          
          if { "$var"=="$current" } {
              set Param(Spec) $current
-             #set Param(Intervals) [dataspec configure $current -intervals]
              set exist 1
          }
-
          ComboBox::Add $Data(Frame).var.sel $var
       }
    }

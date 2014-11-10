@@ -44,11 +44,11 @@ proc Macro::SimpleDiff::Execute { } {
 #   Viewport::Do $Page::Data(Frame)
 
    Macro::Doing "Reading fields"
-   fstdfile open DIFF_FILE1 read ../Script/DataIn/2005102612_012
-   fstdfield read DIFF_FIELD1 DIFF_FILE1 -1 "" 12000 24 -1 "" ES
+   fstdfile open DIFF_FILE1 read DataIn/2005102612_012
+   fstdfield read DIFF_FIELD1 DIFF_FILE1 -1 "" 12000 24 -1 "" TT
 
-   fstdfile open DIFF_FILE2 read ../Script/DataIn/2005102612_012
-   fstdfield read DIFF_FIELD2 DIFF_FILE2 -1 "" 12000 24 -1 "" TT
+   fstdfile open DIFF_FILE2 read DataIn/2005102612_012
+   fstdfield read DIFF_FIELD2 DIFF_FILE2 -1 "" 12000 18 -1 "" TT
 
    Macro::Doing "Doing diff"
    vexpr DIFF DIFF_FIELD1-DIFF_FIELD2
@@ -60,11 +60,14 @@ proc Macro::SimpleDiff::Execute { } {
    font create DIFF_FONT -family courier -size -12 -weight bold
 
    fstdfield configure DIFF -desc "Diff" -factor 1 -color black -colormap DIFF_MAP -font DIFF_FONT \
-      -rendertexture 1 -value FLOAT 2
+      -rendertexture 1 -value FLOAT 2 -min -10 -max 10
+
+   fstdfield configure DIFF_FIELD2 -factor 1 -color grey -font DIFF_FONT -rendercontour 1 -renderlabel 5 -rendervalue 1 -width 3 -intervalmode INTERVAL 5 -value INTEGER -unit "" -desc "" 
 
    Macro::Doing "Creating product"
    Viewport::UnAssign $Page::Data(Frame) $Viewport::Data(VP)
    Viewport::Assign   $Page::Data(Frame) $Viewport::Data(VP) DIFF
+   Viewport::Assign   $Page::Data(Frame) $Viewport::Data(VP) DIFF_FIELD2
 
    #----- Test projection rotation
 #   projcam define $Page::Data(Frame) -circlefrom 90.0 0.0 1.0

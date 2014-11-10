@@ -111,11 +111,11 @@ proc SPI::CommandLine { { Args {} }} {
       \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
       \[-field ... ...\]                    : Open the specified standard files
       \[-traj ... ...\]                     : Open the specified trajectory files
-      \[-obs ...\]                          : Open the specified observation files
-      \[-metobs ...\]                       : Open the specified BURP or BUFR observation files
+      \[-obs ... ...\]                      : Open the specified observation files
+      \[-metobs ... ...\]                   : Open the specified BURP or BUFR observation files
       \[-geo ... ...\]                      : Open the specified georeferenced data files 
       \[-icon ... ...\]                     : Open the specified icon files
-      \[-macro ... ...\]                    : Run the specified macro script
+      \[-macro ... ...\]                    : Run the specified macro scripts
       \[-args ... ...\]                     : Arguments to be used by the previously specified script
       \[-layout ...\]                       : Use the specified layout
       \[-project ...\]                      : Use the specified spi project file

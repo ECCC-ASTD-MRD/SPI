@@ -238,6 +238,9 @@ proc SPI::Params { { Frame . } } {
       wm transient .params $Frame
       raise .params $Frame
       update idletasks
+      
+      #----- Check of out of SPI configured fields
+      FSTD::ParamOwnership
    }
 }
 
