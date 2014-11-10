@@ -1010,7 +1010,7 @@ proc Animator::PlayFile { { Filename "" } } {
    variable Play
 
    if { $Filename=="" } {
-      set Play(Filename) [FileBox::Create . "" Save $PrintBox::Param(Formats)]
+      set Play(Filename) [FileBox::Create . "" Save [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)]]
    } else {
       set Play(Filename) $Filename
    }

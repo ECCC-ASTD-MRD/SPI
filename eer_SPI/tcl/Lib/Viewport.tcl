@@ -1521,7 +1521,10 @@ proc Viewport::ForceGrid { Frame { Clean False } } {
          update idletasks
 
          projection clean $Frame
-         Viewport::Reset $Frame True
+         
+         if { $ProjCam::Data(Name)=="" } {       
+            Viewport::Reset $Frame True
+         }
       }
 
       set ij [projection configure $Frame -gridpoint]

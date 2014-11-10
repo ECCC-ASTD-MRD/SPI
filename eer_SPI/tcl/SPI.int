@@ -239,7 +239,7 @@ proc SPI::Params { { Frame . } } {
       raise .params $Frame
       update idletasks
       
-      #----- Check of out of SPI configured fields
+      #----- Check for out of SPI configured fields
       FSTD::ParamOwnership
    }
 }

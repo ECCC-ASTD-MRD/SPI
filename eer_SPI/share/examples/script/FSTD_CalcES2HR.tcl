@@ -28,6 +28,8 @@ Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
+file delete -force DataOut/FSTD_CalcES2HR.fstd
+
 fstdfile open 1 read  DataIn/2005102612_012
 fstdfile open 2 write DataOut/FSTD_CalcES2HR.fstd
 
@@ -51,8 +53,8 @@ foreach field [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
 
    #----- Ecrire les champs resultants
 
-   fstdfield write PV 2 -16 True
-   fstdfield write HR 2 -16 True
+   fstdfield write PV 2 -32 True True
+   fstdfield write HR 2 -16 True True
 
 }
 
