@@ -162,7 +162,7 @@ int      Data_SubInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TData
 int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 int      Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
-void     Data_StatGet(TData *Field);
+void     Data_GetStat(TData *Field);
 void     Data_StatFree(TDataStat *Stat);
 
 TDataVector *Data_VectorTableCheck(char *Var,int *Idx);

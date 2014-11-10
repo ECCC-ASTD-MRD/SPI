@@ -1366,7 +1366,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       DataSpec_Clean(Spec,cmap,cpos,cseg);
    }
 
-   if (s) {
+   if (s && !Spec->Set) {
       Spec->Set=1;
    } else {
       DataSpec_Define(Spec);
