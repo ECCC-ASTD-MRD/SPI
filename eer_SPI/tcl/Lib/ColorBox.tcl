@@ -320,6 +320,8 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
       if { $Alpha!="" } {
          eval scan \$$Alpha %02x Data(A)
       }
+      set alpha $Data(A)
+      
       ColorBox::UpdateHSV
    }
 
@@ -340,7 +342,7 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
       set $Alpha [string toupper [format "%02x" $ColorBox::Data(A)]]
    }
    
-   if { $color!=$ColorBox::Data(Result) } {
+   if { $color!=$ColorBox::Data(Result) || $alpha!=$Data(A) } {
       return True
    } else {
       return False
