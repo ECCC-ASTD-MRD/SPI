@@ -905,7 +905,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   CMap->Control[index][3]=ii;
                }
-               /* 0,0,0,0 is empty cell so mkae sure this control point is not empty */
+               /* 0,0,0,0 is empty cell so make sure this control point is not empty */
                if (memcmp(CMap->Control[index],CMapEmptyCell,4)==0) {
                   CMap->Control[index][0]=CMap->Control[index][1]=CMap->Control[index][2]=1;
                }

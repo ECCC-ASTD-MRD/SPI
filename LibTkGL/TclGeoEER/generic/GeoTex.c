@@ -202,10 +202,10 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
          Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
          Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
 
-         if (!GLRender->ShaderAvailable) {
-            glEnable(GL_COLOR_TABLE);
-            glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
+         glEnable(GL_COLOR_TABLE);
+         glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
 
+         if (!GLRender->ShaderAvailable) {
             for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
                switch(Band->Def->Type) {
                   case TD_Unknown:
@@ -239,12 +239,9 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
                   fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
             }
          }
-      } else {
-         glEnable(GL_COLOR_TABLE);
-         glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
       }
    }
-   
+
    /*Create OpenGL texture*/
    glGenTextures(1,&Tile->Tx);
    if (Tile->Tx<=0) {

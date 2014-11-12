@@ -2264,8 +2264,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV",NULL };
    static CONST char *bands[] = { "red","green","blue","alpha",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
-      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH };
+      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch","-approx",NULL };
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH,APPROX };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2325,9 +2325,17 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             return GDALBand_GetImage(Interp,band,Tcl_GetString(Objv[++i]));
             break;
 
+         case APPROX:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(band->Approx));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&band->Approx);
+            }
+            break;
+            
          case HISTOGRAM:
             if (Objc!=2 && Objc!=6) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band index [min max bin approx]");
+               Tcl_WrongNumArgs(Interp,2,Objv,"band index [min max bin]");
                return(TCL_ERROR);
             } else {
                b=0;
@@ -2338,14 +2346,12 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   min=band->Stat[b].Min;
                   max=band->Stat[b].Max;
                   h=256;
-                  w=1;
                   if (Objc>2) {
                      Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
                      Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
                      Tcl_GetIntFromObj(Interp,Objv[++i],&h);
-                     Tcl_GetBooleanFromObj(Interp,Objv[++i],&w);
                   }
-                  if (!GDAL_BandGetHisto(band,b,h,min,max,w)) {
+                  if (!GDAL_BandGetHisto(band,b,h,min,max)) {
                      Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
                      return(TCL_ERROR);
                    }
@@ -2386,7 +2392,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         Tcl_WrongNumArgs(Interp,2,Objv,"band index type");
                         return(TCL_ERROR);
                      }
-                     GDALGetRasterStatistics(band->Band[b],FALSE,TRUE,&min,&max,&mean,&std);    
+                     GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
                      break;
                      
                  case 1: 
@@ -2399,10 +2405,9 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      min=band->Stat[b].Min;
                      max=band->Stat[b].Max;
                      h=1024;
-                     w=0;
                      dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
                      
-                     if (!GDAL_BandGetHisto(band,b,h,min,max,w)) {
+                     if (!GDAL_BandGetHisto(band,b,h,min,max)) {
                         Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
                         return(TCL_ERROR);
                      }
@@ -2443,7 +2448,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      }
                      Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
                      
-                     GDALGetRasterStatistics(band->Band[b],FALSE,TRUE,&min,&max,&mean,&std);    
+                     GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
                      min=mean-dval*std;
                      max=mean+dval*std;
                      break;
@@ -3304,7 +3309,6 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
  *  <Bin>     : Nombre de bin
  *  <Min>     : Limite minimale 
  *  <Max>     : Limite maximale
- *  <Approx>  : Ok to approximate
  *
  * Retour:
  *
@@ -3312,7 +3316,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
  *
  *----------------------------------------------------------------------------
 */
-int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max,int Approx) {
+int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max) {
    
    // If the number of bins requested is different
    if (Band->Stat[Index].Histo && Band->Stat[Index].HistoBin!=Bin) {
@@ -3325,7 +3329,7 @@ int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max,in
          return(0);
       }
       Band->Stat[Index].HistoBin=Bin;
-      GDALGetRasterHistogram(Band->Band[Index],Min,Max,Band->Stat[Index].HistoBin,Band->Stat[Index].Histo,FALSE,Approx,GDALDummyProgress,NULL);
+      GDALGetRasterHistogram(Band->Band[Index],Min,Max,Band->Stat[Index].HistoBin,Band->Stat[Index].Histo,FALSE,Band->Approx,GDALDummyProgress,NULL);
    }
    return(1);
 } 

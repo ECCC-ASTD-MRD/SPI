@@ -67,7 +67,7 @@ typedef struct GDAL_Band {
    GDALRasterBandH Band[256];
    GDAL_GCP     *GCPs;
    int           NbGCPs;
-
+   int           Approx;
    TGeoTex      Tex;                  /* Tiled texture info */
 
    time_t        Date;                /* Valid time */
