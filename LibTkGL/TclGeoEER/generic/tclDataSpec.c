@@ -47,7 +47,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
 CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*","ARROW" };
 CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
-CONST char *VECTORS[] = { "NONE","BARB","SPEAR","ARROW","STREAMLINE","STREAMLINE3D" };
+CONST char *VECTORS[] = { "NONE","BARB","SPEAR","ARROW","STREAMLINE","STREAMLINE3D","BARBULE" };
 CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
 // If you add icons here, look in GDAL_Band.c for references to this array
@@ -480,9 +480,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(VECTORS[Spec->RenderVector],-1));
             } else {
-                 if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,(int*)&Spec->RenderVector)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,(int*)&Spec->RenderVector)!=TCL_OK) {
                   return(TCL_ERROR);
                }
+               // Fix for backward compatibility (BARBULE-->BARB)
+               if (Spec->RenderVector==6) Spec->RenderVector=BARB;
             }
             break;
 
