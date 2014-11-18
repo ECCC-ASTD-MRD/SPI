@@ -1364,10 +1364,10 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
    float      jps,jan;
    Tk_Justify just;
 
-   if (!Spec->RenderVector || Spec->RenderVector>=3 || !CB->UColor)
+   if (!Spec->RenderVector || Spec->RenderVector>=4 || !CB->UColor)
       return(0);
 
-   if (Spec->RenderVector==BARBULE) {
+   if (Spec->RenderVector==BARB) {
       inter[0]=5;
       inter[1]=10;
       inter[2]=25;
@@ -1489,10 +1489,10 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
    float      jps,jan;
    Tk_Justify just;
 
-   if (!Spec->RenderVector || Spec->RenderVector>=3 || !CB->UColor)
+   if (!Spec->RenderVector || Spec->RenderVector>=4 || !CB->UColor)
       return(0);
 
-   if (Spec->RenderVector==BARBULE) {
+   if (Spec->RenderVector==BARB) {
       inter[0]=5;
       inter[1]=10;
       inter[2]=25;

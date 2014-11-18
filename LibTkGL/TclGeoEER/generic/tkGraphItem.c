@@ -1054,7 +1054,7 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
          if (data->Spec->RenderGrid)
             GraphItem_Display2DGrid(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
-         if (data->Spec->RenderVector==BARBULE || data->Spec->RenderVector==ARROW )
+         if (data->Spec->RenderVector==BARB || data->Spec->RenderVector==SPEAR ||data->Spec->RenderVector==ARROW )
             GraphItem_Display2DVector(Interp,Graph,axisx,axisy,axisz,data,X0,Y0,X1,Y1);
 
          if (data->Spec->RenderVector==STREAMLINE)

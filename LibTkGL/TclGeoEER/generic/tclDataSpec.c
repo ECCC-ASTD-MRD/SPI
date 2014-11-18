@@ -47,7 +47,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
 CONST char *ICONS[]   = { "NONE","TRIANGLE","SQUARE","VBAR","HBAR","CIRCLE","PENTAGON","HEXAGON","LOZENGE","LIGHTNING","X","+","*","ARROW" };
 CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(10min)","AEGL(30min)","AEGL(60min)","AEGL(4hr)","AEGL(8hr)","ERPG" };
-CONST char *VECTORS[] = { "NONE","BARBULE","ARROW","STREAMLINE","STREAMLINE3D" };
+CONST char *VECTORS[] = { "NONE","BARB","SPEAR","ARROW","STREAMLINE","STREAMLINE3D" };
 CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
 // If you add icons here, look in GDAL_Band.c for references to this array

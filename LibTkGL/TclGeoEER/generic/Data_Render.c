@@ -191,7 +191,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
          if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
             Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
 
-         if (Field->Spec->RenderVector==BARBULE || Field->Spec->RenderVector==ARROW)
+         if (Field->Spec->RenderVector==BARB || Field->Spec->RenderVector==SPEAR || Field->Spec->RenderVector==ARROW)
             Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
 
          if (Field->Spec->RenderValue)
@@ -329,58 +329,74 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
       glRotatef(Dir,0.0,0.0,1.0);
    }
 
-   if (Type==ARROW) {
-      glScalef(Size,Size,1.0);
-      glDrawArrow(GL_POLYGON);
-   } else {
-      /*Afficher un cercle pour des vitesses < 1*/
-      if (Speed<1) {
-         Size*=0.4;
-         glScalef(Size,Size,1.0);
-         glDrawCircle(64,GL_LINE_STRIP);
-      } else {
-         glScalef(Size,Size,1.0);
-         y=-1.8;
-         spd=Speed;
+   switch (Type) {
+      case BARB:
+         /*Afficher un cercle pour des vitesses < 1*/
+         if (Speed<1) {
+            Size*=0.4;
+            glScalef(Size,Size,1.0);
+            glDrawCircle(64,GL_LINE_STRIP);
+         } else {
+            glScalef(Size,Size,1.0);
+            y=-1.8;
+            spd=Speed;
 
-         /*Vecteur de base*/
-         glBegin(GL_LINES);
-            glVertex3d(0.0,0.0,0.0);
-            glVertex3d(0.0,y,0.0);
-         glEnd();
-
-         /*Vitesse >50*/
-         while (spd>=50.0) {
-            glBegin(GL_TRIANGLES);
-            glVertex3d(0.0,y,0.0);
-            glVertex3d(0.0,y+0.4,0.0);
-            glVertex3d(0.7,y-0.2,0.0);
-            spd-=50.0;
-            y+=0.5;
+            /*Vecteur de base*/
+            glBegin(GL_LINES);
+               glVertex3d(0.0,0.0,0.0);
+               glVertex3d(0.0,y,0.0);
             glEnd();
-         }
 
-         glBegin(GL_LINES);
-         /*Vitesse >10*/
-         while (spd>=10.0) {
-            glVertex3d(0.0,y,0.0);
-            glVertex3d(0.7,y-0.2,0.0);
-            spd-=10.0;
-            y+=0.25;
-         }
+            /*Vitesse >50*/
+            while (spd>=50.0) {
+               glBegin(GL_TRIANGLES);
+               glVertex3d(0.0,y,0.0);
+               glVertex3d(0.0,y+0.4,0.0);
+               glVertex3d(0.7,y-0.2,0.0);
+               spd-=50.0;
+               y+=0.5;
+               glEnd();
+            }
 
-         /*Vitesse >5*/
-         if (spd>=5.0 || (Speed<5.0 && Speed>0.0)) {
-
-            /*Positionner la ligne plus loin si c'est la seule*/
-            if (Speed<10.0) {
+            glBegin(GL_LINES);
+            /*Vitesse >10*/
+            while (spd>=10.0) {
+               glVertex3d(0.0,y,0.0);
+               glVertex3d(0.7,y-0.2,0.0);
+               spd-=10.0;
                y+=0.25;
             }
-            glVertex3d(0.0,y,0.0);
-            glVertex3d(0.4,y-0.15,0.0);
-         }
+
+            /*Vitesse >5*/
+            if (spd>=5.0 || (Speed<5.0 && Speed>0.0)) {
+
+               /*Positionner la ligne plus loin si c'est la seule*/
+               if (Speed<10.0) {
+                  y+=0.25;
+               }
+               glVertex3d(0.0,y,0.0);
+               glVertex3d(0.4,y-0.15,0.0);
+            }
+            glEnd();
+        }
+        break;
+        
+      case SPEAR:
+         glScalef(Size,Size,1.0);
+         glBegin(GL_LINES);
+            glVertex3d(0.0,-1.0,0.0);
+            glVertex3d(0.0,0.0,0.0);
+            glVertex3d(0.0,0.0,0.0);
+            glVertex3d(-0.25,-0.25,0.0);
+            glVertex3d(0.0,0.0,0.0);
+            glVertex3d(0.25,-0.25,0.0);
          glEnd();
-      }
+         break;
+         
+      case ARROW: 
+         glScalef(Size,Size,1.0);
+         glDrawArrow(GL_POLYGON);
+         break;     
    }
    glPopMatrix();
 }

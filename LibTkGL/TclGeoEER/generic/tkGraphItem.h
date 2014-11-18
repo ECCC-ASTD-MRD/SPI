@@ -39,7 +39,7 @@
 #include "tclVector.h"
 #include "GeoData.h"
 
-enum GraphType { NONE,LINE,SPLINE,BAR,WIDEBAR,HISTOGRAM,RASTER,BOXPLOT,MINMAX,BARB };
+enum GraphType { NONE,LINE,SPLINE,BAR,WIDEBAR,HISTOGRAM,RASTER,BOXPLOT,MINMAX };
 
 typedef struct TGraphItem {
    Tcl_Interp    *Interp;
