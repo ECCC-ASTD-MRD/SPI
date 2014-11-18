@@ -151,6 +151,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } } {
             #----- Decrease effective resolution (WMS-TMS)
             gdalband configure $band -texres 3
             gdalband define $band -date $Data(Time)
+            gdalband stats $band -approx True
 
             #----- Get legend
             Mapper::DepotWare::WMS::GetLegend $band [lindex [lindex $Data(Styles) 0] end]

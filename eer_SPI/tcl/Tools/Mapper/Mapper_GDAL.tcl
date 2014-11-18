@@ -24,7 +24,7 @@ namespace eval Mapper::GDAL { } {
    set Data(Topos)       { NONE INTERNAL }
    set Data(Curve)       LINEAR
    set Data(Curves)      { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
-   set Data(Stretch)     MIN_MAX
+   set Data(Stretch)     ""
    set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 2 98" "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90" "STANDARD_DEV 1" "STANDARD_DEV 2" }
    set Data(Interp)      NEAREST
    set Data(Interps)     { NEAREST LINEAR }
@@ -764,8 +764,8 @@ proc Mapper::GDAL::CurveDefine { Object Bands } {
 
       $canvas bind min <ButtonPress-1>   "set Mapper::GDAL::Data(MMSet) 1; $canvas configure -cursor hand1"
       $canvas bind max <ButtonPress-1>   "set Mapper::GDAL::Data(MMSet) 1; $canvas configure -cursor hand1"
-      $canvas bind min <B1-Motion>       "Mapper::GDAL::CurveRange $canvas $Object \$Mapper::GDAL::Data(Band) min %x"
-      $canvas bind max <B1-Motion>       "Mapper::GDAL::CurveRange $canvas $Object \$Mapper::GDAL::Data(Band) max %x"
+      $canvas bind min <B1-Motion>       "Mapper::GDAL::CurveRange $canvas \$Mapper::Data(Object) \$Mapper::GDAL::Data(Band) min %x"
+      $canvas bind max <B1-Motion>       "Mapper::GDAL::CurveRange $canvas \$Mapper::Data(Object) \$Mapper::GDAL::Data(Band) max %x"
       $canvas bind min <ButtonRelease-1> "set Mapper::GDAL::Data(MMSet) 0; $canvas configure -cursor left_ptr"
       $canvas bind max <ButtonRelease-1> "set Mapper::GDAL::Data(MMSet) 0; $canvas configure -cursor left_ptr"
 
@@ -830,7 +830,7 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       $Canvas raise max
 
       if { $Data(Stretch)!="" } {
-         eval gdalband stats $Object -stretch $Data(Band) $Data(Stretch)
+         eval gdalband stats \$Object -stretch \$Data(Band) $Data(Stretch)
       }
 
       #----- Setup min-max

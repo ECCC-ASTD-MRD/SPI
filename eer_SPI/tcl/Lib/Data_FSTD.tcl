@@ -411,7 +411,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.vect
             label $Data(Frame).def.r.disp.vect.lbl -text " [lindex $Lbl(Vector) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm wind1.xbm wind2.xbm wind3.xbm wind4.xbm" "NONE BARBULE ARROW STREAMLINE STREAMLINE3D" FSTD::Param(Vector) \
+               "zeroth.xbm wind1.xbm wind2.xbm wind3.xbm wind4.xbm wind5.xbm" "NONE BARB SPEAR ARROW STREAMLINE STREAMLINE3D" FSTD::Param(Vector) \
                "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vect.sel $Data(Frame).def.r.disp.vect.lbl -side left
             $Data(Frame).def.r.disp.vect.sel.menu add separator
@@ -1025,7 +1025,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 
       #----- Override vectorial fields params
       if { [fstdfield stats $Field -component]>1 } {
-         dataspec configure $Spec -rendervector BARBULE -rendertexture 0
+         dataspec configure $Spec -rendervector BARB -rendertexture 0
       }
 
       if { ![fstddict isvar $var] } {
