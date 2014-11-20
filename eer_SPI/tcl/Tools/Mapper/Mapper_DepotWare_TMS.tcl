@@ -432,4 +432,6 @@ proc  Mapper::DepotWare::TMS::Load { Name { Res 3 } } {
    gdalband configure $band -texres $Res
 
    Mapper::UpdateData $Page::Data(Frame)
+   
+   return $band
 }

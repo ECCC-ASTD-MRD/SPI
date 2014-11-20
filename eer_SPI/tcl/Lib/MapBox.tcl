@@ -625,7 +625,6 @@ proc MapBox::Create { Parent Apply Map args } {
 
    .mapbox.fr.edit.map create text 0 5 -anchor s -fill black -tags "CTRLVALUE" -text ""
 #   .mapbox.fr.edit.map bind MAPBOXIMG <Motion> "MapBox::ControlValue .mapbox.fr.edit.map %x"
-
    MapBox::ControlInit .mapbox.fr.edit.map
    .mapbox.fr.edit.map bind MAPBOXIMG <ButtonPress-3> { MapBox::ControlPopup .mapbox.fr.edit.map %X %Y %x -1 }
    Bubble::Create .mapbox.fr.edit.map $Bubble(Map)
@@ -652,7 +651,6 @@ proc MapBox::Create { Parent Apply Map args } {
    }
 
    MapBox::Select ""
-   TabFrame::Select .mapbox.tab 0
 
    update
    set Data(Init) False

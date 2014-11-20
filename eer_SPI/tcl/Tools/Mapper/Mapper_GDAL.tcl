@@ -674,6 +674,15 @@ proc Mapper::GDAL::ParamsSet { Object { CheckData True } } {
 
    if { $CheckData } {
       if { $Data(Band0$Object)!=$Data(Red) || $Data(Band1$Object)!=$Data(Green) || $Data(Band2$Object)!=$Data(Blue) || $Data(Band3$Object)!=$Data(Alpha) } {
+      
+         #----- Make sure band combination is legal (Grey,Grey-Alpha,RGB,RGBA)
+         set nb [llength [set bands [lsearch -not -all -inline [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)] ""]]]
+         
+         switch $nb {
+            1 { set Data(Red) [lindex $bands 0]; set Data(Green) ""; set Data(Blue) ""; set Data(Alpha) "" }
+            2 { set Data(Red) [lindex $bands 0]; set Data(Green) ""; set Data(Blue) ""; set Data(Alpha) [lindex $bands 1] }
+            3 { set Data(Red) [lindex $bands 0]; set Data(Green) [lindex $bands 1]; set Data(Blue) [lindex $bands 2]; set Data(Alpha) "" }
+         }
          Mapper::GDAL::Read $Object [list $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha)]
       }
 
@@ -830,7 +839,7 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       $Canvas raise max
 
       if { $Data(Stretch)!="" } {
-         eval gdalband stats \$Object -stretch \$Data(Band) $Data(Stretch)
+         eval gdalband stats \$Object -stretch \$idx $Data(Stretch)
       }
 
       #----- Setup min-max
@@ -1082,6 +1091,9 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    global GDefs errorInfo
    variable Data
    
+   if { [winfo exists .mapbox] } {
+      destroy .mapbox
+   }
    #---- If an id is passed, use it
    if  { [info exists Mapper::Data(Id$File)] } {
       set obj $File
@@ -1134,28 +1146,19 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
          }
       }
    }
-    
-   set Data(Band0$obj) ""
-   set Data(Band1$obj) ""
-   set Data(Band2$obj) ""
-   set Data(Band3$obj) ""
-   set Data(Bands$obj) {}
 
-   if  { [llength $Bands]>=1 } {
-      set Data(Band0$obj) [lindex $Bands 0]
-      lappend Data(Bands$obj) red
-   }
-   if  { [llength $Bands]>=2 } {
-      set Data(Band1$obj) [lindex $Bands 1]
-      lappend Data(Bands$obj) green
-   }
-   if  { [llength $Bands]>=3 } {
-      set Data(Band2$obj) [lindex $Bands 2]
-      lappend Data(Bands$obj) blue
-   }
-   if  { [llength $Bands]>=4 } {
-      set Data(Band3$obj) [lindex $Bands 3]
-      lappend Data(Bands$obj) alpha
+   set Data(Bands$obj) {}
+   set Data(Bands0$obj) ""
+   set Data(Bands1$obj) ""
+   set Data(Bands2$obj) ""
+   set Data(Bands3$obj) ""
+   
+   foreach band $Bands index { 0 1 2 3 } channel { red green blue alpha } {
+      set Data(Band$index$obj) $band
+      
+      if { $band!="" } {
+         lappend Data(Bands$obj) $channel
+      }
    }
 
    set er [catch { gdalband read $obj $Bands $Full } errmsg]
@@ -1169,14 +1172,15 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
       gdalband define $obj -positional BandX$obj BandY$obj
    }
 
-   set map [gdalband configure $obj -colormap]
+   set Data(ColorMap) [gdalband configure $obj -colormap]
+  
    gdalband configure $obj -interpolation $Data(Interp)
 
    foreach min [gdalband stats $obj -min] band $Data(Bands$obj) {
-      colormap configure $map -min $band [lindex $min 0]
+      colormap configure $Data(ColorMap) -min $band [lindex $min 0]
    }
    foreach max [gdalband stats $obj -max] band $Data(Bands$obj) {
-      colormap configure $map -max $band [lindex $max 0]
+      colormap configure $Data(ColorMap) -max $band [lindex $max 0]
   }
 
    set Mapper::Data(Job) ""
