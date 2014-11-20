@@ -2261,7 +2261,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
-   static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV",NULL };
+   static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV","RANGE",NULL };
    static CONST char *bands[] = { "red","green","blue","alpha",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
       "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch","-approx",NULL };
@@ -2340,6 +2340,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                b=0;
                Tcl_GetIntFromObj(Interp,Objv[++i],&b);
+               // Force 2nd component on LUMINANCE_ALPHA composition
+               if (b==3 && band->Def->NC==2) b=1;
                if (c<band->Def->NC) {
                   if (!band->Stat)
                      GDAL_BandGetStat(band);
@@ -2364,10 +2366,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
             break;
-
+            
          case STRETCH:
-            if (Objc<3) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band index type [params]");
+            if (Objc<2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"index type [params]");
                return(TCL_ERROR);
             } else {
                if (Tcl_GetIntFromObj(Interp,Objv[++i],&b)==TCL_ERROR) {
@@ -2375,92 +2377,111 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      return(TCL_ERROR);
                   }
                }
+               
+               // Force 2nd component on LUMINANCE_ALPHA composition
+               if (b==3 && band->Def->NC==2) b=1;
+               
                if (b<0 || b>band->Def->NC) {
                   Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Invalid band index",(char*)NULL);
                   return(TCL_ERROR);
                }
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],stretchs,"type",0,&s)!=TCL_OK) {
-                  return(TCL_ERROR);
-               }
-                
+
                obj=Tcl_NewListObj(0,NULL);
                
-               switch(s) {
-                      
-                  case 0:
-                     if (Objc!=3) {
-                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type");
-                        return(TCL_ERROR);
-                     }
-                     GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
-                     break;
-                     
-                 case 1: 
-                     if (Objc!=5) {
-                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type percent_from percent_to");
-                        return(TCL_ERROR);
-                     }
-                     if (!band->Stat)
-                        GDAL_BandGetStat(band);
-                     min=band->Stat[b].Min;
-                     max=band->Stat[b].Max;
-                     h=1024;
-                     dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
-                     
-                     if (!GDAL_BandGetHisto(band,b,h,min,max)) {
-                        Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
-                        return(TCL_ERROR);
-                     }
-                     
-                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
-                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
+               if (Objc==2) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Spec->Map->Min[b]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Spec->Map->Max[b]));
+               } else {
+                  
+                  if (Tcl_GetIndexFromObj(Interp,Objv[++i],stretchs,"type",0,&s)!=TCL_OK) {
+                     return(TCL_ERROR);
+                  }
+                                 
+                  switch(s) {
+                        
+                     case 0: // MIN_MAX
+                        if (Objc!=3) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type");
+                           return(TCL_ERROR);
+                        }
+                        GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
+                        break;
+                        
+                     case 1: // PERCENT_CLIP
+                        if (Objc!=5) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type percent_from percent_to");
+                           return(TCL_ERROR);
+                        }
+                        if (!band->Stat)
+                           GDAL_BandGetStat(band);
+                        min=band->Stat[b].Min;
+                        max=band->Stat[b].Max;
+                        h=1024;
+                        dval=(band->Stat[b].Max-band->Stat[b].Min)/h;
+                        
+                        if (!GDAL_BandGetHisto(band,b,h,min,max)) {
+                           Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
+                           return(TCL_ERROR);
+                        }
+                        
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
 
-                     c0=FSIZE2D(band->Def)*(min/100.0);
-                     c1=FSIZE2D(band->Def)*(max/100.0);
-                     cnt=0;
-                     i0=-1;
-                     i1=-1;
-                     for(c=0;c<h;c++) {
-                        if (cnt<=c0)
-                           i0=c;
+                        c0=FSIZE2D(band->Def)*(min/100.0);
+                        c1=FSIZE2D(band->Def)*(max/100.0);
+                        cnt=0;
+                        i0=-1;
+                        i1=-1;
+                        for(c=0;c<h;c++) {
+                           if (cnt<=c0)
+                              i0=c;
 
-                        cnt+=band->Stat[b].Histo[c];
+                           cnt+=band->Stat[b].Histo[c];
 
-                        if (cnt<=c1)
-                           i1=c;
-                        else
-                           break;
-                     }
+                           if (cnt<=c1)
+                              i1=c;
+                           else
+                              break;
+                        }
 
-                     if (i0==i1) {
-                        i0=0;
-                        i1=h-1;
-                     }
-                     min=band->Stat[b].Min+i0*dval;
-                     max=band->Stat[b].Min+i1*dval; 
-                     
-                     break;
-                     
-                  case 2:
-                     if (Objc!=4) {
-                        Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev");
-                        return(TCL_ERROR);
-                     }
-                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
-                     
-                     GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
-                     min=mean-dval*std;
-                     max=mean+dval*std;
-                     break;
+                        if (i0==i1) {
+                           i0=0;
+                           i1=h-1;
+                        }
+                        min=band->Stat[b].Min+i0*dval;
+                        max=band->Stat[b].Min+i1*dval; 
+                        
+                        break;
+                        
+                     case 2: // STANDARD_DEV
+                        if (Objc!=4) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev");
+                           return(TCL_ERROR);
+                        }
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
+                        
+                        GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);    
+                        min=mean-dval*std;
+                        max=mean+dval*std;
+                        break;
+                        
+                     case 3: // RANGE
+                        if (Objc!=5) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type low high");
+                           return(TCL_ERROR);
+                        }
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
+                        break;
+                  }
+                        
+                  if (band->Spec->Map) {
+                     band->Spec->Map->Min[b]=min;
+                     band->Spec->Map->Max[b]=max;
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
                }
-                       
-               if (band->Spec->Map) {
-                  band->Spec->Map->Min[b]=min;
-                  band->Spec->Map->Max[b]=max;
-               }
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
-
                Tcl_SetObjResult(Interp,obj);
             }
             break;
@@ -2480,20 +2501,22 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,lst,obj);
                }
                Tcl_SetObjResult(Interp,lst);
-            } else if (Objc==2) {
+            } else if (Objc>=2) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&c);
-               if (c<band->Def->NC) {
-                  obj=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Max));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Elev));
-                  Tcl_SetObjResult(Interp,obj);
-               }
-            } else if (Objc==3) {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
-               if (c<band->Def->NC) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Max);
+               
+               // Force 2nd component on LUMINANCE_ALPHA composition
+               if (c==3 && band->Def->NC==2) c=1;
+               if (c<band->Def->NC) {              
+                  if (Objc==2) {
+                     obj=Tcl_NewListObj(0,NULL);
+                     Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Max));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Lon));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MaxLoc.Elev));
+                     Tcl_SetObjResult(Interp,obj);
+                  } else if (Objc==3) {
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Max);
+                  }
                }
             }
             break;
@@ -2513,20 +2536,22 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,lst,obj);
                }
                Tcl_SetObjResult(Interp,lst);
-            } else if (Objc==2) {
+            } else if (Objc>=2) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&c);
-               if (c<band->Def->NC) {
-                  obj=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Min));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lat));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lon));
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Elev));
-                  Tcl_SetObjResult(Interp,obj);
-               }
-            } else if (Objc==3) {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&c);
-               if (c<band->Def->NC) {
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Min);
+               
+               // Force 2nd component on LUMINANCE_ALPHA composition
+               if (c==3 && band->Def->NC==2) c=1;
+               if (c<band->Def->NC) {              
+                  if (Objc==2) {
+                     obj=Tcl_NewListObj(0,NULL);
+                     Tcl_ListObjAppendElement(Interp,obj,Data_Val2Obj(band->Def,band->Stat[c].Min));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lat));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Lon));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Stat[c].MinLoc.Elev));
+                     Tcl_SetObjResult(Interp,obj);
+                  } else if (Objc==3) {
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&band->Stat[c].Min);
+                  }
                }
             }
             break;
@@ -3252,7 +3277,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
             Band->Stat[c].Min=0.0;
             Band->Stat[c].Max=255.0;
          } else if (Band->Band[c]) {
-            GDALComputeRasterMinMax(Band->Band[c],FALSE,minmax);
+            GDALComputeRasterMinMax(Band->Band[c],Band->Approx,minmax);
             Band->Stat[c].Min=minmax[0];
             Band->Stat[c].Max=minmax[1];
          } else {
@@ -3358,6 +3383,9 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    OGR_Layer     *layer;
    OGRGeometryH  *geom;
 
+   GLuint    sc[]={ GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
+   GLuint    bc[]={ GL_RED_BIAS,  GL_GREEN_BIAS,  GL_BLUE_BIAS,  GL_ALPHA_BIAS  };
+
    if (!Band || !Band->Spec) {
       fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid band object\n");
       return(0);
@@ -3442,7 +3470,61 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
    }
 
-//   GLRender->Prog[PROG_DATATEX]=GLShader_Load("/home/afsr/005/eer_SPI/LibTkGL/TclData","DataTex");
+   // Setup scalings
+   Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
+   Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
+      
+   if (!Band->Tex.Indexed) {
+     
+      for (n=0;n<(Band->Def->NC<=4?Band->Def->NC:4);n++) {
+         switch(Band->Def->Type) {
+            case TD_Unknown:
+            case TD_Binary:
+            case TD_UInt64:
+            case TD_Int64:   break;
+            case TD_UByte:   Band->Tex.Scale[n]=((0x1<<8)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<8)-1);
+                             break;
+            case TD_Byte:    Band->Tex.Scale[n]=((0x1<<7)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<7)-1);
+                             break;
+            case TD_UInt16:  Band->Tex.Scale[n]=((0x1<<16)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<16)-1);
+                             break;
+            case TD_Int16:   Band->Tex.Scale[n]=((0x1<<15)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<15)-1);
+                             break;
+            case TD_UInt32:
+            case TD_Int32:   Band->Tex.Scale[n]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/(((unsigned int)0x1<<31)-1);
+                             break;
+            case TD_Float32:
+            case TD_Float64: Band->Tex.Scale[n]=1.0/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
+                             Band->Tex.Bias[n]=-Band->Spec->Map->Min[n];
+                             break;
+         }
+         if (GLRender->GLDebug)
+            fprintf(stdout,"(DEBUG) GDAL_BandRender: Normalizing factor (%i) Sc=%f Bc=%f\n",n,Band->Tex.Scale[n],Band->Tex.Bias[n]);
+      }
+      
+      if (!GLRender->ShaderAvailable) {
+         for (n=0;n<(Band->Def->NC<=4?Band->Def->NC:4);n++) {
+            glPixelTransferf(sc[n],Band->Tex.Scale[n]);
+            glPixelTransferf(bc[n],Band->Tex.Bias[n]*Band->Tex.Scale[n]);
+         }
+         for (;n<4;n++) {
+            glPixelTransferf(sc[n],Band->Tex.Scale[0]);
+            glPixelTransferf(bc[n],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
+        }
+      }
+   }
+   
+   if (Band->Spec->Map) {
+      glEnable(GL_COLOR_TABLE);
+      glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
+   }
+   
+   //   GLRender->Prog[PROG_DATATEX]=GLShader_Load("/home/afsr/005/eer_SPI/LibTkGL/TclData","DataTex");
    if ((prog=GLRender->Prog[PROG_DATATEX])) {
       glUseProgramObjectARB(prog);
 
@@ -3458,48 +3540,12 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glUniform1iARB(GLShader_UniformGet(prog,"Map"),0);
 
       /*Setup 1D Colormap Texture*/
-      if (Band->Tex.Indexed) {
-         Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
-         Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
-      } else {
-         Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
-         Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
-
-         if (Band->Spec->Map) {
-            if (Band->Def->NC==1) {
-               glUniform1iARB(GLShader_UniformGet(prog,"Map"),1);
-            }
-
-            for (n=0;n<Band->Def->NC;n++) {
-               switch(Band->Def->Type) {
-                  case TD_Unknown:
-                  case TD_Binary:
-                  case TD_UInt64:
-                  case TD_Int64:  break;
-                  case TD_UByte:  Band->Tex.Scale[n]=((0x1<<8)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<8)-1);
-                                  break;
-                  case TD_Byte:   Band->Tex.Scale[n]=((0x1<<7)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<7)-1);
-                                  break;
-                  case TD_UInt16: Band->Tex.Scale[n]=((0x1<<16)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<16)-1);
-                                  break;
-                  case TD_Int16:  Band->Tex.Scale[n]=((0x1<<15)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/((0x1<<15)-1);
-                                  break;
-                  case TD_UInt32:
-                  case TD_Int32:  Band->Tex.Scale[n]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                  Band->Tex.Bias[n]=-Band->Spec->Map->Min[n]/(((unsigned int)0x1<<31)-1);
-                                  break;
-                  case TD_Float32:
-                  case TD_Float64: Band->Tex.Scale[n]=1.0/(Band->Spec->Map->Max[n]-Band->Spec->Map->Min[n]);
-                                   Band->Tex.Bias[n]=-Band->Spec->Map->Min[n];
-                                   break;
-               }
-            }
+      if (!Band->Tex.Indexed && Band->Spec->Map) {
+         if (Band->Def->NC==1) {
+            glUniform1iARB(GLShader_UniformGet(prog,"Map"),1);
          }
       }
+      
       glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),1);
       glUniform1iARB(GLShader_UniformGet(prog,"Data"),0);
       glUniform1fARB(GLShader_UniformGet(prog,"Cylindric"),(Proj->Type->Def==PROJCYLIN?Proj->L:-999.0));
@@ -3528,7 +3574,12 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    glDisable(GL_COLOR_MATERIAL);
    glDisable(GL_LIGHTING);
    glDisable(GL_LIGHT0);
+   glDisable(GL_COLOR_TABLE);
 
+   for (n=0;n<4;n++) {
+      glPixelTransferf(sc[n],1.0);
+      glPixelTransferf(bc[n],0.0);
+   }
    return(1);
 }
 

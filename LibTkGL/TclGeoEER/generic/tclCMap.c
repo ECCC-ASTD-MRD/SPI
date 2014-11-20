@@ -801,7 +801,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      CMap->Max[1]=CMap->Max[2]=CMap->Max[3]=CMap->Max[0];
                   } else {
                      Tcl_GetDoubleFromObj(Interp,Objv[++i],&CMap->Max[index]);
-                  }
+                 }
                }
             }
             break;
@@ -895,8 +895,8 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                return(TCL_ERROR);
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
-               Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                if (index>=0 && index<CR_MAX) {
+                  Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   CMap->Control[index][0]=ii;
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
                   CMap->Control[index][1]=ii;

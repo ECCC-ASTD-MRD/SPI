@@ -42,7 +42,7 @@ ECBUFR=libecbufr-0.8.2rc1
 OCI=instantclient_11_2
 FGDB=FileGDB_API
 PROJ=proj-4.8.0
-MESA=Mesa-10.3.3
+MESA=Mesa-7.9.2
 
 #----- not recompiled yet
 NETCDF=netcdf-4.1.1
@@ -67,7 +67,7 @@ mkdir -p ${SPI_LIB}
 #----- Mesa
 cd ${ARCH_PATH}/${MESA}
 make distclean
-./configure --prefix=${SPI_LIB}/GL --enable-xlib-glx --disable-dri --disable-dri3 --disable-driglx-direct --disable-vdpau --disable-gbm --disable-xvmc  --disable-omx  --disable-gallium-gbm
+./configure --prefix=${SPI_LIB}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1

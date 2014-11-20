@@ -192,56 +192,9 @@ TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb) {
 */
 int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
 
-   int       nc;
-   float    *buf;
-   GLuint    sc[]={ GL_RED_SCALE, GL_GREEN_SCALE, GL_BLUE_SCALE, GL_ALPHA_SCALE };
-   GLuint    bc[]={ GL_RED_BIAS, GL_GREEN_BIAS, GL_BLUE_BIAS, GL_ALPHA_BIAS };
-
-   if (Band->Spec->Map) {
-      if (!Band->Tex.Indexed) {
-         Band->Tex.Scale[0]=Band->Tex.Scale[1]=Band->Tex.Scale[2]=Band->Tex.Scale[3]=-1.0;
-         Band->Tex.Bias[0]=Band->Tex.Bias[1]=Band->Tex.Bias[2]=Band->Tex.Bias[3]=0.0;
-
-         glEnable(GL_COLOR_TABLE);
-         glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
-
-         if (!GLRender->ShaderAvailable) {
-            for (nc=0;nc<(Band->Def->NC<=4?Band->Def->NC:4);nc++) {
-               switch(Band->Def->Type) {
-                  case TD_Unknown:
-                  case TD_Binary:
-                  case TD_UByte:  Band->Tex.Scale[nc]=((0x1<<8)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<8)-1);
-                                  break;
-                  case TD_Byte:   Band->Tex.Scale[nc]=((0x1<<7)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<7)-1);
-                                  break;
-                  case TD_UInt16: Band->Tex.Scale[nc]=((0x1<<16)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<16)-1);
-                                  break;
-                  case TD_Int16:  Band->Tex.Scale[nc]=((0x1<<15)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/((0x1<<15)-1);
-                                  break;
-                  case TD_UInt64:
-                  case TD_Int64:
-                  case TD_UInt32:
-                  case TD_Int32:  Band->Tex.Scale[nc]=(((unsigned int)0x1<<31)-1)/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                  Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc]/(((unsigned int)0x1<<31)-1);
-                                  break;
-                  case TD_Float32:
-                  case TD_Float64: Band->Tex.Scale[nc]=1.0/(Band->Spec->Map->Max[nc]-Band->Spec->Map->Min[nc]);
-                                   Band->Tex.Bias[nc]=-Band->Spec->Map->Min[nc];
-                                   break;
-               }
-               glPixelTransferf(sc[nc],Band->Tex.Scale[nc]);
-               glPixelTransferf(bc[nc],Band->Tex.Bias[nc]*Band->Tex.Scale[nc]);
-               if (GLRender->GLDebug)
-                  fprintf(stdout,"(DEBUG) GeoTex_Texture: Normalizing factor (%i) Sc=%f Bc=%f\n",nc,Band->Tex.Scale[nc],Band->Tex.Bias[nc]);
-            }
-         }
-      }
-   }
-
+   float *buf;
+   int    n;
+   
    /*Create OpenGL texture*/
    glGenTextures(1,&Tile->Tx);
    if (Tile->Tx<=0) {
@@ -256,23 +209,20 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
       if (Band->Tex.Indexed) {
          Band->Tex.IType=GLRender->Ext[ARB_texture_compression]?GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:GL_RGBA;
       } else {
-         if (!GLRender->ShaderAvailable && Band->Def->NC==1) {
+         if (Band->Def->NC==1)  {
             Band->Tex.IType=GL_RGBA;
-
-            glPixelTransferf(sc[1],Band->Tex.Scale[0]);
-            glPixelTransferf(bc[1],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
-            glPixelTransferf(sc[2],Band->Tex.Scale[0]);
-            glPixelTransferf(bc[2],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
-            glPixelTransferf(sc[3],Band->Tex.Scale[0]);
-            glPixelTransferf(bc[3],Band->Tex.Bias[0]*Band->Tex.Scale[0]);
+         }
+         if (Band->Def->NC==2)  {
+            Band->Tex.IType=GL_RGBA;
+            Band->Tex.Type=GL_LUMINANCE_ALPHA;
          }
       }
 
       /*OpenGL does not manage 64 bit (double data), so we have to use a temporery float buffer*/
       if (Band->Def->Type==TD_Float64) {
          if ((buf=(float*)malloc(Tile->Nx*Tile->Ny*sizeof(float)))) {
-            for(nc=0;nc<Tile->Nx*Tile->Ny;nc++) {
-               buf[nc]=((double*)Tile->Data)[nc];
+            for(n=0;n<Tile->Nx*Tile->Ny;n++) {
+               buf[n]=((double*)Tile->Data)[n];
             }
             glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx+2,Tile->Ny+2,1,Band->Tex.Type,GL_FLOAT,(GLvoid*)buf);
             free(buf);
@@ -281,12 +231,6 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
          glTexImage2D(GL_TEXTURE_2D,0,Band->Tex.IType,Tile->Nx+2,Tile->Ny+2,1,Band->Tex.Type,Band->Tex.Dim,(GLvoid*)Tile->Data);
       }
    }
-
-   for (nc=0;nc<4;nc++) {
-      glPixelTransferf(sc[nc],1.0);
-      glPixelTransferf(bc[nc],0.0);
-   }
-   glDisable(GL_COLOR_TABLE);
 
   return(1);
 }
@@ -543,7 +487,7 @@ void GeoTex_Qualify(GDAL_Band *Band) {
   /*Set the kind of image*/
    switch(Band->Def->NC) {
       case 1 : Band->Tex.Type=GL_LUMINANCE; break;
-      case 2 :
+      case 2 : Band->Tex.Type=GL_LUMINANCE_ALPHA; break;
       case 3 : Band->Tex.Type=GL_RGB; break;
       case 4 : Band->Tex.Type=GL_RGBA; break;
    }
@@ -554,37 +498,37 @@ void GeoTex_Qualify(GDAL_Band *Band) {
       case TD_Binary:
       case TD_UByte:
          Band->Tex.Dim=GL_UNSIGNED_BYTE;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE8_EXT:(Band->Tex.Type==GL_RGB)?GL_RGB8_EXT:GL_RGBA8_EXT;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE8_EXT:(Band->Tex.Type==GL_RGB)?GL_RGB8_EXT:GL_RGBA8_EXT;
          break;
       case TD_Byte:
          Band->Tex.Dim=GL_BYTE;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE8_EXT:(Band->Tex.Type==GL_RGB)?GL_RGB8_EXT:GL_RGBA8_EXT;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE8_EXT:(Band->Tex.Type==GL_RGB)?GL_RGB8_EXT:GL_RGBA8_EXT;
          break;
       case TD_UInt16:
          Band->Tex.Dim=GL_UNSIGNED_SHORT;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE16F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB16F_ARB:GL_RGBA16F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE16F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB16F_ARB:GL_RGBA16F_ARB;
          break;
       case TD_Int16:
          Band->Tex.Dim=GL_SHORT;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE16F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB16F_ARB:GL_RGBA16F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE16F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB16F_ARB:GL_RGBA16F_ARB;
          break;
       case TD_UInt64:
       case TD_UInt32:
          Band->Tex.Dim=GL_UNSIGNED_INT;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
          break;
       case TD_Int64:
       case TD_Int32:
          Band->Tex.Dim=GL_INT;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
          break;
       case TD_Float32:
          Band->Tex.Dim=GL_FLOAT;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
         break;
       case TD_Float64:
          Band->Tex.Dim=GL_DOUBLE;
-         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
+         Band->Tex.IType=(Band->Tex.Type==GL_LUMINANCE || Band->Tex.Type==GL_LUMINANCE_ALPHA)?GL_LUMINANCE32F_ARB:(Band->Tex.Type==GL_RGB)?GL_RGB32F_ARB:GL_RGBA32F_ARB;
          break;
     }
 
@@ -642,14 +586,14 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    
    // Allocate tile buffer if not already done
    if (!Tile->Data) {
-      if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
+      if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*Band->Def->NC*TData_Size[Band->Def->Type]))) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
          return(0);
       }
       
       // Size might not fit texture so allocate data input buffer to be copied into texture after read
       if (nx!=2 || ny!=2) {
-         if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*(Band->Tex.Type==GL_LUMINANCE?1:(Band->Tex.Type==GL_RGB?3:4))*TData_Size[Band->Def->Type]))) {
+         if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*Band->Def->NC*TData_Size[Band->Def->Type]))) {
             fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
             free(Tile->Data);
             Tile->Data=NULL;
@@ -1173,7 +1117,12 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
 
    Tcl_MutexLock(&MUTEX_GEOTEX);
    tile=GeoTex_Pick(Tex,Tex->Res,&x,&y);
-   nc=Tex->Type==GL_LUMINANCE?1:Tex->Type==GL_RGB?3:4;
+   switch(Tex->Type) {
+      case GL_LUMINANCE:       nc=1; break;
+      case GL_LUMINANCE_ALPHA: nc=2; break;
+      case GL_RGB :            nc=3; break;
+      default:                 nc=4; break;
+   }
 
    if (tile && tile->Ny) {
       t=GeoTex_Index(tile,nc,x,y);
