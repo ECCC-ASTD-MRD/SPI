@@ -1032,7 +1032,7 @@ proc Viewport::FollowerSet { Idx Id Value CoordX CoordY RefX RefY } {
          label .position.info$Idx.prjy -width 15 -relief sunken -bd 1 -bg $GDefs(ColorLight) -anchor w
          pack .position.info$Idx.ids .position.info$Idx.val .position.info$Idx.coox .position.info$Idx.cooy \
             .position.info$Idx.prjx .position.info$Idx.prjy -side left -ipadx 2 -ipady 2 -fill x -expand true
-      pack .position.info$Idx -side top -after .position.head -fill x
+      pack .position.info$Idx -side bottom -after .position.head -fill x
    }
 
    .position.info$Idx.ids  configure -text $Id
