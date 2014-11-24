@@ -2080,33 +2080,33 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
 
    switch(o) {
       case 1: switch(m) {
-            case 10: sprintf(Str,"%.10f",Val);break;
-            case  9: sprintf(Str,"%.9f",Val);break;
-            case  8: sprintf(Str,"%.8f",Val);break;
-            case  7: sprintf(Str,"%.7f",Val);break;
-            case  6: sprintf(Str,"%.6f",Val);break;
-            case  5: sprintf(Str,"%.5f",Val);break;
-            case  4: sprintf(Str,"%.4f",Val);break;
-            case  3: sprintf(Str,"%.3f",Val);break;
-            case  2: sprintf(Str,"%.2f",Val);break;
-            case  1: sprintf(Str,"%.1f",Val);break;
-            default: sprintf(Str,"%.0f",nearbyint(Val));
+            case 10: snprintf(Str,32,"%.10f",Val);break;
+            case  9: snprintf(Str,32,"%.9f",Val);break;
+            case  8: snprintf(Str,32,"%.8f",Val);break;
+            case  7: snprintf(Str,32,"%.7f",Val);break;
+            case  6: snprintf(Str,32,"%.6f",Val);break;
+            case  5: snprintf(Str,32,"%.5f",Val);break;
+            case  4: snprintf(Str,32,"%.4f",Val);break;
+            case  3: snprintf(Str,32,"%.3f",Val);break;
+            case  2: snprintf(Str,32,"%.2f",Val);break;
+            case  1: snprintf(Str,32,"%.1f",Val);break;
+            default: snprintf(Str,32,"%.0f",nearbyint(Val));
          }
          break;
       case 2: switch(m) {
-            case 10: sprintf(Str,"%.10e",Val);break;
-            case  9: sprintf(Str,"%.9e",Val);break;
-            case  8: sprintf(Str,"%.8e",Val);break;
-            case  7: sprintf(Str,"%.7e",Val);break;
-            case  6: sprintf(Str,"%.6e",Val);break;
-            case  5: sprintf(Str,"%.5e",Val);break;
-            case  4: sprintf(Str,"%.4e",Val);break;
-            case  3: sprintf(Str,"%.3e",Val);break;
-            case  2: sprintf(Str,"%.2e",Val);break;
-            default: sprintf(Str,"%.1e",Val);break;
+            case 10: snprintf(Str,32,"%.10e",Val);break;
+            case  9: snprintf(Str,32,"%.9e",Val);break;
+            case  8: snprintf(Str,32,"%.8e",Val);break;
+            case  7: snprintf(Str,32,"%.7e",Val);break;
+            case  6: snprintf(Str,32,"%.6e",Val);break;
+            case  5: snprintf(Str,32,"%.5e",Val);break;
+            case  4: snprintf(Str,32,"%.4e",Val);break;
+            case  3: snprintf(Str,32,"%.3e",Val);break;
+            case  2: snprintf(Str,32,"%.2e",Val);break;
+            default: snprintf(Str,32,"%.1e",Val);break;
          }
          break;
-      default: sprintf(Str,"%.0f",nearbyint(Val));
+      default: snprintf(Str,32,"%.0f",nearbyint(Val));
          break;
    }
 }
