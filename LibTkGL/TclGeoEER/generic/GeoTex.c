@@ -209,12 +209,14 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
       if (Band->Tex.Indexed) {
          Band->Tex.IType=GLRender->Ext[ARB_texture_compression]?GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:GL_RGBA;
       } else {
-         if (Band->Def->NC==1)  {
-            Band->Tex.IType=GL_RGBA;
-         }
-         if (Band->Def->NC==2)  {
-            Band->Tex.IType=GL_RGBA;
-            Band->Tex.Type=GL_LUMINANCE_ALPHA;
+         if (!GLRender->ShaderAvailable) {
+            if (Band->Def->NC==1)  {
+               Band->Tex.IType=GL_RGBA;
+            }
+            if (Band->Def->NC==2)  {
+               Band->Tex.IType=GL_RGBA;
+               Band->Tex.Type=GL_LUMINANCE_ALPHA;
+            }
          }
       }
 

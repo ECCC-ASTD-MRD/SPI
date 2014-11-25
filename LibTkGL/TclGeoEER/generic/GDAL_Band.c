@@ -2476,9 +2476,16 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                         
                   if (band->Spec->Map) {
-                     band->Spec->Map->Min[b]=min;
-                     band->Spec->Map->Max[b]=max;
+                     // In case of LUMINANCE or LUMINANCE_ALPHA, set all the same.
+                     if (band->Def->NC<3) {
+                        band->Spec->Map->Min[0]=band->Spec->Map->Min[1]=band->Spec->Map->Min[2]=band->Spec->Map->Min[3]=min;
+                        band->Spec->Map->Max[0]=band->Spec->Map->Max[1]=band->Spec->Map->Max[2]=band->Spec->Map->Max[3]=max;
+                     } else {
+                        band->Spec->Map->Min[b]=min;
+                        band->Spec->Map->Max[b]=max;                  
+                     }
                   }
+
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
                }
@@ -3519,7 +3526,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       }
    }
    
-   if (Band->Spec->Map) {
+   if (!GLRender->ShaderAvailable && Band->Spec->Map) {
       glEnable(GL_COLOR_TABLE);
       glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
    }

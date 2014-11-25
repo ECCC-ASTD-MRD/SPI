@@ -20,7 +20,7 @@ void main() {
    float att,dist;
 
    /*Get value, nearest or linear*/
-   inter=clamp((texture2D(Data,gl_TexCoord[0].st)+Bc)*abs(Sc),0.01,0.99);
+   inter=clamp((texture2D(Data,gl_TexCoord[0].st)+Bc)*abs(Sc),0.00,1.0);
 
    frg=inter;
    if (Sc.r>=0.0) {
