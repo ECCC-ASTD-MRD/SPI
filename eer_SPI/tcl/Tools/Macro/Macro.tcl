@@ -375,6 +375,8 @@ proc Macro::Execute { Macro } {
       set Data(Code$Macro) [$Data(Tab).desc.text.list get 0.0 end]
       uplevel #0 $Data(Code$Macro)
    }
+  
+   set Macro::Param(Path) $Data(Path$Macro)
 
    Macro::Run $Macro
    Macro::Cursor left_ptr

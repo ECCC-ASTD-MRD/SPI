@@ -1255,6 +1255,7 @@ proc SPI::Execute { Script } {
 
       if { [namespace exists ::Macro::$script] } {
 
+         set Macro::Param(Path) [file dirname $Script]
          Macro::Run $script False
       }
    }
