@@ -81,6 +81,58 @@ SPI::Setup
 #----- Lire la liste des definitions communes
 catch { source $env(HOME)/.spi/SPI }
 
+#-------------------------------------------------------------------------------
+# Nom      : <SPI::Execute>
+# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Executer un script.
+#
+# Parametres :
+#   <Script> : Script a executer
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc SPI::Execute { Script } {
+   global env argv
+   variable Param
+
+   if { $Script!="" } {
+
+      #----- Check for regular script
+      if { ![file exists $Script] } {
+         if { ![file exists $env(HOME)/.spi/Macro/$Script] } {
+            if { ![file exists $env(HOME)/.spi/Macro/$Script.tcl] } {
+               Log::Print ERROR "Could not find script $Script"
+               SPI::Quit 1
+            } else {
+               set Script $env(HOME)/.spi/Macro/$Script.tcl
+            }
+         } else {
+            set Script $env(HOME)/.spi/Macro/$Script
+         }
+      }
+
+      #----- Source the script
+      namespace inscope :: source $Script
+
+      #----- If Macro then execute it
+      set script [file rootname [file tail $Script]]
+
+      if { [namespace exists ::Macro::$script] } {
+         if { $Param(Help) } {
+            Macro::Desc $script
+         } else {
+            set Macro::Param(Path) [file dirname $Script]
+            Macro::Run $script False
+         }
+      }
+   }
+}
+
 #---------------------------------------------------------------------------
 # Nom      : <SPI::CommandLine>
 # Creation : Decembre 2004 - J.P. Gauthier - CMC/CMOE
@@ -99,32 +151,41 @@ catch { source $env(HOME)/.spi/SPI }
 proc SPI::CommandLine { { Args {} }} {
    global GDefs
 
-   Log::Print ERROR "Wrong arguments $Args, must be:\n
-      \[-tclsh ...\]                        : Launch a tcl script through SPI's environment (No Tk)
-      \[-soft\]                             : Force software OpenGL mode
-      \[-hard\]                             : Force hardware OpenGL mode
-      \[-nothreads\]                        : Don't use multithreading
-      \[-batch\]                            : Launch in batch mode (No screen rendering)
-      \[-setup\]                            : Force initial setup (~/.spi)
-      \[-default ... ...\]                  : Use the file specified as the default parameter definition
-      \[-lang 0|1\]                         : Select language (0 Francais, 1 English)
-      \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
-      \[-field ... ...\]                    : Open the specified standard files
-      \[-traj ... ...\]                     : Open the specified trajectory files
-      \[-obs ... ...\]                      : Open the specified observation files
-      \[-metobs ... ...\]                   : Open the specified BURP or BUFR observation files
-      \[-geo ... ...\]                      : Open the specified georeferenced data files 
-      \[-icon ... ...\]                     : Open the specified icon files
-      \[-macro ... ...\]                    : Run the specified macro scripts
-      \[-macroinfo\]                        : Give information about specified macro
-      \[-args ... ...\]                     : Arguments to be used by the previously specified script
-      \[-layout ...\]                       : Use the specified layout
-      \[-project ...\]                      : Use the specified spi project file
-      \[-tool ... ...\]                     : Start a specific tool
-      \[-pane WxH ...\]                     : Dimensions of the secondary panes
-      \[-side left|right|top|bottom\]       : Side on wich to put the secondary panes
-      \[-geom WxH+X+Y\]                     : Global window size
-      \[-verbose ERROR,WARNING,INFO,DEBUG\] : Verbose level"
+   if { [llength $Args] } {
+      Log::Print ERROR "Wrong arguments $Args.\n"
+   }
+   Log::Print MUST "Arguments list:\n
+   \[-tclsh ...\]                        : Launch a tcl script through SPI's environment (No Tk)
+   \[-soft\]                             : Force software OpenGL mode
+   \[-hard\]                             : Force hardware OpenGL mode
+   \[-nothreads\]                        : Don't use multithreading
+   \[-batch\]                            : Launch in batch mode (No screen rendering)
+   \[-setup\]                            : Force initial setup (~/.spi)
+   \[-default ... ...\]                  : Use the file specified as the default parameter definition
+   \[-lang 0|1\]                         : Select language (0 Francais, 1 English)
+   \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
+   \[-field ... ...\]                    : Open the specified standard files
+   \[-traj ... ...\]                     : Open the specified trajectory files
+   \[-obs ... ...\]                      : Open the specified observation files
+   \[-metobs ... ...\]                   : Open the specified BURP or BUFR observation files
+   \[-geo ... ...\]                      : Open the specified georeferenced data files (GDAL,OGR)
+   \[-icon ... ...\]                     : Open the specified icon files
+   \[-macro ... ...\]                    : Run the specified macro scripts
+   \[-args ... ...\]                     : Arguments to be used by the previously specified script
+   \[-layout ...\]                       : Use the specified layout
+   \[-project ...\]                      : Use the specified spi project file
+   \[-tool ... ...\]                     : Start a specific tool
+   \[-pane WxH ...\]                     : Dimensions of the secondary panes
+   \[-side left|right|top|bottom\]       : Side on wich to put the secondary panes
+   \[-geom WxH+X+Y\]                     : Global window size\n
+   \[-help\]                             : Help information (about SPI and macro)
+   \[-verbose ERROR,WARNING,INFO,DEBUG\] : Verbose level\n"
+
+   foreach script $SPI::Param(Script) {
+      SPI::Execute $script
+   }
+   
+   exit [llength $Args]
 }
 
 #----- Parcourir la liste des parametres pre-launch
@@ -135,7 +196,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "soft"      { }
       "hard"      { }
       "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
-      "info"      { set SPI::Param(Info) True }
+      "help"      { set Log::Param(Level) ERROR; set SPI::Param(Help) True }
       "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
       "nothreads" { set SPI::Param(Threads) False }
       "batch"     { set SPI::Param(Batch) True }
@@ -151,15 +212,15 @@ for { set i 0 } { $i < $argc } { incr i } {
       "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "args"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
-      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
-      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
+      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
       "pane"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "side"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "layout"    { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "project"   { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "tool"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
 
-      default     { SPI::CommandLine [lindex $argv $i]; Log::End 1 }
+      default     { SPI::CommandLine [lindex $argv $i] }
    }
 }
 
@@ -242,6 +303,10 @@ foreach tool [lsort [glob $GDefs(Dir)/tcl/Tools/*]] {
    set name [file tail [file rootname $tool]]
    uplevel #0 source $tool/$name.tcl
    lappend SPI::Param(Tools) $name
+}
+
+if { $SPI::Param(Help) } {
+   SPI::CommandLine
 }
 
 Log::Print INFO "System: Available Tools\n   $SPI::Param(Tools)"
@@ -1211,59 +1276,6 @@ proc SPI::DrawTrajLegend { Frame } {
    } else {
       Shape::UnBind $Frame.page.canvas TRAJLEGEND
       $Frame.page.canvas delete TRAJLEGEND
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <SPI::Execute>
-# Creation : Juillet 2004 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Executer un script.
-#
-# Parametres :
-#   <Script> : Script a executer
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc SPI::Execute { Script } {
-   global env argv
-   variable Param
-
-   if { $Script!="" } {
-
-      #----- Check for regular script
-      if { ![file exists $Script] } {
-         if { ![file exists $env(HOME)/.spi/Macro/$Script] } {
-            if { ![file exists $env(HOME)/.spi/Macro/$Script.tcl] } {
-               Log::Print ERROR "Could not find script $Script"
-               SPI::Quit 1
-            } else {
-               set Script $env(HOME)/.spi/Macro/$Script.tcl
-            }
-         } else {
-            set Script $env(HOME)/.spi/Macro/$Script
-         }
-      }
-
-      #----- Source the script
-      namespace inscope :: source $Script
-
-      #----- If Macro then execute it
-      set script [file rootname [file tail $Script]]
-
-      if { [namespace exists ::Macro::$script] } {
-         if { $Param(Info) } {
-            Macro::Desc $script
-            SPI::Quit 0
-         }
-
-         set Macro::Param(Path) [file dirname $Script]
-         Macro::Run $script False
-      }
    }
 }
 
@@ -2374,7 +2386,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "hard"      { }
       "nothreads" { }
       "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
-      "info"      { set SPI::Param(Info) True }
+      "help"      { set SPI::Param(Help) True }
       "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
@@ -2389,8 +2401,8 @@ for { set i 0 } { $i < $argc } { incr i } {
       "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) Mapper; lappend SPI::Param(Geos)"] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
       "args"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Args)"] }
-      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
-      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Script)"] }
+      "script"    { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
+      "macro"     { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
       "pane"      { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Panes)"] }
       "side"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(PaneSide)"] }
       "layout"    { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Layout)"] }

@@ -513,11 +513,11 @@ proc Macro::Desc { Macro } {
       set param(InfoArgs) { - - }
    }
 
-   Log::Print INFO "Macro info ($Macro)"
+   puts "Macro $Macro:"
    puts "   [lindex $Lbl(SPI) $GDefs(Lang)] : $param(SPI)"
    puts "   [lindex $Lbl(Version) $GDefs(Lang)] : $param(Version)"
    puts "   [lindex $Lbl(Info) $GDefs(Lang)] : [lindex $param(Info) $GDefs(Lang)]"
-   puts "   [lindex $Lbl(InfoArgs) $GDefs(Lang)] : [lindex $param(InfoArgs) $GDefs(Lang)]"
+   puts "   [lindex $Lbl(InfoArgs) $GDefs(Lang)] : [lindex $param(InfoArgs) $GDefs(Lang)]\n"
 }
 
 #-------------------------------------------------------------------------------
