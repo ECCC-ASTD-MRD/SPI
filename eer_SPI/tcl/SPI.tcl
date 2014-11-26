@@ -116,6 +116,7 @@ proc SPI::CommandLine { { Args {} }} {
       \[-geo ... ...\]                      : Open the specified georeferenced data files 
       \[-icon ... ...\]                     : Open the specified icon files
       \[-macro ... ...\]                    : Run the specified macro scripts
+      \[-macroinfo\]                        : Give information about specified macro
       \[-args ... ...\]                     : Arguments to be used by the previously specified script
       \[-layout ...\]                       : Use the specified layout
       \[-project ...\]                      : Use the specified spi project file
@@ -134,6 +135,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "soft"      { }
       "hard"      { }
       "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
+      "info"      { set SPI::Param(Info) True }
       "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
       "nothreads" { set SPI::Param(Threads) False }
       "batch"     { set SPI::Param(Batch) True }
@@ -1228,8 +1230,8 @@ proc SPI::DrawTrajLegend { Frame } {
 #-------------------------------------------------------------------------------
 
 proc SPI::Execute { Script } {
-   global env
-   global argv
+   global env argv
+   variable Param
 
    if { $Script!="" } {
 
@@ -1254,6 +1256,10 @@ proc SPI::Execute { Script } {
       set script [file rootname [file tail $Script]]
 
       if { [namespace exists ::Macro::$script] } {
+         if { $Param(Info) } {
+            Macro::Desc $script
+            SPI::Quit 0
+         }
 
          set Macro::Param(Path) [file dirname $Script]
          Macro::Run $script False
@@ -2368,6 +2374,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "hard"      { }
       "nothreads" { }
       "verbose"   { set i [Args::ParseDo $argv $argc $i 0 1 "set Log::Param(Level)"] }
+      "info"      { set SPI::Param(Info) True }
       "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }

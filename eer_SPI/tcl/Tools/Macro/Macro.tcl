@@ -247,10 +247,12 @@ proc Macro::Load { Paths } {
 #-------------------------------------------------------------------------------
 
 proc Macro::Check { Macro } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Lbl
    variable Error
+
+   upvar #0 Macro::${Macro}::Param  param
 
    #----- Check de la validite de la macro
    eval set proc \[info procs ::Macro::${Macro}::Execute\]
@@ -259,10 +261,19 @@ proc Macro::Check { Macro } {
       return False
    }
 
-   if { ![info exists ::Macro::${Macro}::Param(Info)] } {
+   if { ![info exists param(Info)] } {
       Dialog::Error . $Error(Info) " (Macro::$Macro)"
       return False
    }
+   
+   #----- Make sure we have the minimum version of SPI
+   if { [info exists param(SPI)] } {     
+      if { ![package vsatisfies $env(SPI_VERSION) $param(SPI)] } {
+         Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($param(SPI))"
+         return False
+      }
+    }
+
    return True
 }
 
@@ -459,10 +470,54 @@ proc Macro::Run { Macro { Interactive True } } {
       }
    } else {
       if { $SPI::Param(Batch) } {
-         SPI::Quit
+         SPI::Quit 1
       }
       set Data(Current) ""
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Macro::Desc>
+# Creation : Novembre 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Print macro information, dependencies and paramaters.
+#
+# Parametres :
+#   <Macro>       : Macro a lancer
+#
+# Retour    :
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Macro::Desc { Macro } {
+   global GDefs
+   variable Lbl
+   
+   upvar #0 Macro::${Macro}::Param  param
+
+   if { ![info exist param(Version)] } {
+      set param(Version) ???
+   }
+
+   if { ![info exist param(SPI)] } {
+      set param(SPI) 7.0
+   }
+   
+   if { ![info exist param(Info)] } {
+      set param(Info) { - - }
+   }
+
+   if { ![info exist param(InfoArgs)] } {
+      set param(InfoArgs) { - - }
+   }
+
+   Log::Print INFO "Macro info ($Macro)"
+   puts "   [lindex $Lbl(SPI) $GDefs(Lang)] : $param(SPI)"
+   puts "   [lindex $Lbl(Version) $GDefs(Lang)] : $param(Version)"
+   puts "   [lindex $Lbl(Info) $GDefs(Lang)] : [lindex $param(Info) $GDefs(Lang)]"
+   puts "   [lindex $Lbl(InfoArgs) $GDefs(Lang)] : [lindex $param(InfoArgs) $GDefs(Lang)]"
 }
 
 #-------------------------------------------------------------------------------
@@ -576,6 +631,7 @@ proc Macro::Save { Macro } {
 #-------------------------------------------------------------------------------
 
 proc Macro::New { Path } {
+   global env
    variable Data
 
    if { $Path!="" } {
@@ -583,7 +639,7 @@ proc Macro::New { Path } {
       set macro [file tail [file rootname $Path]]
 
       set f [open $Path w]
-      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n"
+      puts $f "namespace eval Macro::${macro} { } {\n   variable Param\n   variable Data\n   variable Error\n\n   set Data(Something)  \"Some data value\"\n\n   set Error(Something) { \"Une erreur quelconque\" \"Some error\" }\n\n   set Param(SPI)      $env(SPI_VERSION)\n\n   set Param(Info)      { \"Description de la macro\" \"Macro description\" }\n}\n"
       puts $f "proc Macro::${macro}::Execute { } {\n   variable Data\nvariable Param\n\n}\n"
       puts $f "proc Macro::${macro}::Clean { } {\n   variable Data\nvariable Param\n\n}\n"
 

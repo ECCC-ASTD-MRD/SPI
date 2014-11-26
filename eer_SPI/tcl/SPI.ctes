@@ -59,7 +59,8 @@ namespace eval SPI {
    set Param(IconDX)         10           ;#Delta en X pour l'id de l'icone
    set Param(IconDY)        -10           ;#Delta en Y pour l'id de l'icone
    set Param(IconAnchor)     sw           ;#Point d'ancrage de l'id de l'icone
-
+   set Param(Info)           False        ;#Print information
+   
    #----- Definitions des variables internes
 
    set Data(Items)          { ColorBar DataBar Mini LOGO TEST Clock Compass Flyer Scale GeoLegend DataLegend TrajGraph TrajHeight TrajLegend  }

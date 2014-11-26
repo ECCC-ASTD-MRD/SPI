@@ -26,6 +26,11 @@ namespace eval Macro { } {
    set Lbl(No)           { "Non" "No" }
    set Lbl(Args)         { "Arguments" "Arguments" }
 
+   set Lbl(SPI)          { "SPI pré-requis" "SPI requirements" }
+   set Lbl(Version)      { "Version       " "Version         " }
+   set Lbl(Info)         { "Description   " "Description     " }
+   set Lbl(InfoArgs)     { "Arguments     " "Arguments       " }
+
    set Error(Execute)    { "La fonction \"Execute\" n'est pas définie" "The \"Execute\" function is not defined" }
    set Error(Info)       { "La description (Info) de la macro n'est pas définie" "The macro description (Info) is no defined" }
    set Error(Fault)      { "Macro fautive" "Faulty macro" }
