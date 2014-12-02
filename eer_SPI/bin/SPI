@@ -36,7 +36,7 @@ do
 
    if [[ $flag = "-tclsh" ]]
    then
-      ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" $@
+      ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} -- $@
       code=$?
       exit $code
    fi

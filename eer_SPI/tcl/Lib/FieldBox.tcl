@@ -31,8 +31,6 @@
 #   FieldBox::InfoCommand   { No Index }
 #   FieldBox::Init          { No }
 #   FieldBox::Insert        { No }
-#   FieldBox::PasteClick    { No Y }
-#   FieldBox::PasteDeClick  { Y }
 #   FieldBox::PopUp         { X Y  } 
 #   FieldBox::Raise         { }
 #   FieldBox::Restrict      { No }
@@ -240,6 +238,10 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
       pack $id.data.scrolly -side right -fill y
    pack $id.data -side top -fill both -expand true
 
+#   tkdnd::drag_source register $id.data.list DND_Text 1
+#   bind $id.data.list <B1-Motion> "puts dtdtd; break"
+#   bind $id.data.list <<DragInitCmd>> {list copy DND_Text [FieldBox::PasteClick %W %Y]}
+   
    frame $id.info
       button $id.info.refresh -image DOCSEL -bd 1 -command "set FieldBox::Data(Current) $no ;FieldBox::Select"
       menubutton $id.info.file -menu $id.info.file.menu -bd 1 -relief raised -image OPEN
@@ -1336,41 +1338,18 @@ proc FieldBox::RestrictSet { No Var Value } {
 #
 #-------------------------------------------------------------------------------
 
-proc FieldBox::PasteClick { No Y } {
-   variable Data
+proc FieldBox::PasteClick { Widget Y } {
 
-   #----- Obtenir la selection de l'usager
-
-   set Data(Paste)  [.fieldbox$No.data.list nearest $Y]
-   .fieldbox$No.data.list selection set $Data(Paste)
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <FieldBox::PasteDeClick>
-# Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Envoyer le champs selectione a la calculatrice.
-#
-# Parametres :
-#  <No>      : Numero de FieldBox
-#  <Y>       : Coordonnee y du curseur
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc FieldBox::PasteDeClick { No Y } {
-   variable Data
-
-   #----- Obtenir la selection de l'usager
-
-   set idx [.fieldbox$No.data.list nearest $Y]
-   .fieldbox$No.data.list selection clear $Data(Paste)
-
-   if { $idx==$Data(Paste) } {
-      set data [.fieldbox$No.data.list get $Data(Paste)]
-      FieldCalc::Paste [lindex $data end-2] [lindex $data end-1]
+   puts stderr $Y
+   if { ![llength [set idxs [$Widget curselection]]] } {
+      set idxs  [$Widget nearest $Y]
+      $Widget   selection set $idxs
    }
+
+   set idx [lindex $idxs 0]
+   
+   set data [$Widget get $idx]
+   return field([lindex $data end-5],[lindex $data end-4])  
 }
 
 #-------------------------------------------------------------------------------

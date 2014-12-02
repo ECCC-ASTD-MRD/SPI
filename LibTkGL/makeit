@@ -18,7 +18,7 @@ MAINTAINER="Jean-Philippe Gauthier"
 SSM_NAME=${NAME}_${VERSION}_multi
 
 MAKE=make
-LIB=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}
+LIB=/users/dor/afsr/005/Links/libfs${VERSION}/${ORDENV_PLAT}
 TCL=${LIB}/SPI
 
 export CC=c99
@@ -74,6 +74,7 @@ else
      make distclean
      autoconf2.50
      ./configure \
+   --prefix=${TCL}/TclTk/ \
 	--exec-prefix=${TCL}/TclTk \
 	--enable-threads \
 	--enable-64bit \
@@ -112,6 +113,7 @@ else
       make distclean
       autoconf2.50
       ./configure \
+   --prefix=${TCL}/TclTk/ \
 	--exec-prefix=${TCL}/TclTk \
 	--enable-threads \
 	--enable-64bit \

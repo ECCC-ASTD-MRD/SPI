@@ -171,7 +171,7 @@ proc SPI::CommandLine { { Args {} }} {
    \[-geo ... ...\]                      : Open the specified georeferenced data files (GDAL,OGR)
    \[-icon ... ...\]                     : Open the specified icon files
    \[-macro ... ...\]                    : Run the specified macro scripts
-   \[-args ... ...\]                     : Arguments to be used by the previously specified script
+   \[-args ... ...\]                     : Arguments to be used by the previously specified macro script
    \[-layout ...\]                       : Use the specified layout
    \[-project ...\]                      : Use the specified spi project file
    \[-tool ... ...\]                     : Start a specific tool
@@ -235,6 +235,7 @@ glrender -xbatch $SPI::Param(Batch) -usethreads $SPI::Param(Threads)
 
 #----- Fonctions en librairie.
 package require Tktable
+package require tkdnd
 package require http
 package require tdom
 package require struct::tree

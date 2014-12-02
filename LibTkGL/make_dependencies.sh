@@ -1,17 +1,17 @@
 #!/bin/sh
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
-VERSION=7.7.4
+VERSION=7.8.0
 
 echo "Architecture: ${ARCH}_${PROC}"
 
 #----- Location of the library source codes
-ARCH_PATH=/users/dor/afsr/005/Links/dev/Archive
+ARCH_PATH=/users/dor/afsr/005/Links/devfs/Archive
 
 #----- Where to install libraries
-LIB_PATH=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}
+LIB_PATH=/users/dor/afsr/005/Links/libfs${VERSION}/${ORDENV_PLAT}
 
-SPI_LIB=/users/dor/afsr/005/Links/dev/Lib/${VERSION}/${ORDENV_PLAT}/SPI
+SPI_LIB=/users/dor/afsr/005/Links/libfs${VERSION}/${ORDENV_PLAT}/SPI
 SPI_PATH=/users/dor/afsr/005/Projects/eerSPI/eer_SPI
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
@@ -20,6 +20,7 @@ TCL_VERSION=8.6.2
 TCLLIB=1.16
 TKIMG=tkimg1.4
 TKTABLE=Tktable2.10
+TKDND=tkdnd2.7
 F90=/home/afsr/005/Projects/RMN/f90tcl
 
 XML=libxml2-2.9.1
@@ -121,6 +122,15 @@ fi
 cd ${ARCH_PATH}/${TKTABLE}
 ./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make clean
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
+
+#----- Tkdnd
+cd ${ARCH_PATH}/${TKDND}
+make distclean
+./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1

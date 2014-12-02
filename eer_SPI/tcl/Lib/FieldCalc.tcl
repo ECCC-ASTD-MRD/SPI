@@ -25,7 +25,7 @@
 #   FieldCalc::InsertFunc     { Func }
 #   FieldCalc::InsertOperator { Op }
 #   FieldCalc::Operand        { VP Id Fields }
-#   FieldCalc::Paste          { File Field }
+#   FieldCalc::Paste          { Text }
 #   FieldCalc::Save           { File }
 #   FieldCalc::WidgetConst    { Frame }
 #   FieldCalc::WidgetConvert  { Frame }
@@ -512,6 +512,9 @@ proc FieldCalc::Window { { Parent .} } {
       pack .fieldcalc.expr.fsave .fieldcalc.expr.fdel -side left -fill both
    pack .fieldcalc.expr -side top -anchor e -padx 2 -pady 2 -fill x
 
+#   tkdnd::drop_target register .fieldcalc.expr.op DND_Text
+#   bind .fieldcalc.expr.op <<Drop>> { return [FieldCalc::Paste %D] }
+   
    Bubble::Create .fieldcalc.expr.sel   $Bubble(Formula)
    Bubble::Create .fieldcalc.expr.param $Bubble(Param)
    Bubble::Create .fieldcalc.expr.fsave $Bubble(Save)
@@ -953,17 +956,18 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
 #
 #----------------------------------------------------------------------------
 
-proc FieldCalc::Paste { File Field } {
+proc FieldCalc::Paste { Text } {
    variable Data
 
    if { ! [winfo exists .fieldcalc] } {
       return
    }
 
-   if { !$File } {
-     .fieldcalc.expr.op insert insert "$Field"
+   if { [string range $Text 0 4]=="field" } {
+     .fieldcalc.expr.op insert insert "$Text"
+     return copy
    } else {
-     .fieldcalc.expr.op insert insert "field($File,$Field)"
+     return refuse_drop
    }
 }
 
