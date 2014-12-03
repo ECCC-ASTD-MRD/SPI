@@ -33,10 +33,6 @@
 */
 #include "tclSystem.h"
 
-#ifdef HAVE_DMV
-#include "libdmv.h"
-#endif
-
 static Tcl_Obj    *System_SignalTable[128];    // Tcl Command to call on each signal
 static Tcl_Interp *System_Interp[128];         // Interpreter on which to call the command
 
@@ -49,7 +45,6 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclSystem_Init>
@@ -245,8 +240,8 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    int   idx,pid,status;
 
-   static CONST char *sopt[] = { "daemonize","fork","exit","wait","info","signal","socket","limit","usage","process","filesystem","dmv",NULL };
-   enum               opt { DAEMONIZE,FORK,EXIT,WAIT,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM,DMV };
+   static CONST char *sopt[] = { "daemonize","fork","exit","wait","info","signal","socket","limit","usage","process","filesystem",NULL };
+   enum               opt { DAEMONIZE,FORK,EXIT,WAIT,INFO,SIGNAL,SOCKET,LIMIT,USAGE,PROCESS,FILESYSTEM };
 
    Tcl_ResetResult(Interp);
 
@@ -321,10 +316,6 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
       case FILESYSTEM:
          return(System_FileSystem(Interp,Objc-2,Objv+2));
-         break;
-
-      case DMV:
-         return(System_DataMover(Interp,Objc-2,Objv+2));
          break;
    }
    return(TCL_OK);
@@ -1187,136 +1178,3 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_SetObjResult(Interp,obj);
    return(TCL_OK);
 }
-
-/*----------------------------------------------------------------------------
- * Nom      : <System_DataMover>
- * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Effectue la configuration des parametres de deamonisation.
- *
- * Parametres     :
- *  <Interp>      : Interpreteur TCL
- *  <Objc>        : Nombre d'arguments
- *  <Objv>        : Liste des arguments
- *
- * Retour:
- *  <TCL_...> : Code d'erreur de TCL.
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-
-static int System_DataMover(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
-
-   int   i,idx,init=0;
-   char  argc;
-   static CONST char *sopt[] = { "-step","-copy","-move","-sync","-wait","-exec",NULL };
-   enum               opt { STEP,COPY,MOVE,SYNC,WAIT,EXEC };
-
-#ifdef HAVE_DMV
-   for(i=0;i<Objc;i++) {
-
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return(TCL_ERROR);
-      }
-
-      switch ((enum opt)idx) {
-
-         case STEP:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=2) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -step \"successcommand\" \"errorcommand\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvstep_c(Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
-            i+=2;
-            break;
-
-         case COPY:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=3) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -copy \"source\" \"destination\" \"options\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvcopy_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
-            i+=3;
-            break;
-
-         case MOVE:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=3) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -move \"source\" \"destination\" \"options\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvcopy_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
-            i+=3;
-            break;
-
-         case SYNC:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=3) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -sync \"source\" \"destination\" \"options\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvsync_c(Tcl_GetString(Objv[i+3]),Tcl_GetString(Objv[i+1]),Tcl_GetString(Objv[i+2]));
-            i+=3;
-            break;
-
-         case WAIT:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=0) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -wait",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvwait_c();
-            break;
-
-         case EXEC:
-            argc=0; while((i+1+argc)<Objc && Tcl_GetIndexFromObj(Interp,Objv[i+1+argc],sopt,"option",0,&idx)!=TCL_OK) argc++;
-            Tcl_ResetResult(Interp);
-            if (argc!=1) {
-               Tcl_AppendResult(Interp,"wrong # args: should be -exec \"command\"",(char*)NULL);
-               return(TCL_ERROR);
-            }
-
-            if (!init) {
-               dmvinit_c();
-               init=1;
-            }
-            dmvexec_c(Tcl_GetString(Objv[++i]));
-            break;
-         }
-   }
-   if (init)
-      dmvlaunch_c();
-#endif
-
-   return(TCL_OK);
-}
-

@@ -38,18 +38,6 @@ if test "$HAVE_EER" = "yes"; then
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
 fi
 
-# ---------------------------------------------------------------------------
-# Check for DMV
-# ---------------------------------------------------------------------------
-
-DMV_REQ_VERSION="0.1"
-AX_LIB_DMV($DMV_REQ_VERSION)
- 
-if test "$HAVE_DMV" = "yes"; then
-    PKG_LIBS="$PKG_LIBS $DMV_LDFLAGS"
-    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_DMV $DMV_CFLAGS"
-fi
-
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
 # This will define a ${TEA_PLATFORM} variable == "unix" or "windows"
