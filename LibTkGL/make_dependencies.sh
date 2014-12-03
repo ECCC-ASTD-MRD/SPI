@@ -6,17 +6,20 @@ VERSION=7.8.0
 echo "Architecture: ${ARCH}_${PROC}"
 
 #----- Location of the library source codes
-ARCH_PATH=/users/dor/afsr/005/Links/devfs/Archive
+ARCH_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Archive
+ARCH_PATH=$HOME/data/Archive
 
 #----- Where to install libraries
-LIB_PATH=/users/dor/afsr/005/Links/libfs${VERSION}/${ORDENV_PLAT}
+LIB_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Lib/${ORDENV_PLAT}
+LIB_PATH=$HOME/Links/Lib${VERSION}/${ORDENV_PLAT}
 
-SPI_LIB=/users/dor/afsr/005/Links/libfs${VERSION}/${ORDENV_PLAT}/SPI
-SPI_PATH=/users/dor/afsr/005/Projects/eerSPI/eer_SPI
+SPI_LIB=$LIB_PATH/SPI
+SPI_PATH=$HOME/Projects/SPI
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
+export LIBRARY_PATH=${SPI_LIB}:$LIBRARY_PATH
 
-TCL_VERSION=8.6.2
+TCL_VERSION=8.6.3
 TCLLIB=1.16
 TKIMG=tkimg1.4
 TKTABLE=Tktable2.10
@@ -48,6 +51,79 @@ MESA=Mesa-7.9.2
 #----- not recompiled yet
 NETCDF=netcdf-4.1.1
 KKDU=kakadu-6.3
+FLT=fltlib-0.5.1
+RMN=librmn-15
+
+#----- Define the list of compiled items and package name that this script will use
+ARCH_LIBS="tcl${TCL_VERSION} tk${TCL_VERSION} ${TKIMG} ${TKTABLE} ${TKDND} Tcllib-${TCLLIB} $XML $TDOM $EXPAT $CURL $SQLITE.1 $GEOS $GDAL $JASPER $JPEG $HDF4 $SZIP $HDF5 $POSTGRESQL $ODBC $GRIB $ECBUFR $PROJ $MESA $NETCDF"
+
+#----- Define the list of items we won't compile but will link with
+SLINK_LIBS="$FGDB URP $FLT gdb $RMN $MYSQL"
+
+#----- Create output directories
+
+mkdir -p ${LIB_PATH}
+mkdir -p ${SPI_LIB}
+
+#----- Either copy missing packages or output an error if they are non-existant
+
+if [ "$1" = "localcopy" ]; then
+    set -e
+
+    #----- Only necessary because I can't create the object files (therefore I can't compile) in JP's Archive directory
+    if [[ $ARCH_PATH_INI != $ARCH_PATH ]]; then
+        #----- Not added : KKDU MYSQL OCI FGDB
+
+        for l in $ARCH_LIBS; do
+            if [[ -d $ARCH_PATH/$l && $ARCH_PATH_INI/$l -nt $ARCH_PATH/$l ]]; then
+                echo deleting $ARCH_PATH/$l
+                #rm -rf "$ARCH_PATH/$l"
+            fi
+            if [[ ! -d $ARCH_PATH/$l ]]; then
+                echo copying $ARCH_PATH_INI/$l to $ARCH_PATH/
+                sscp -r -p "$ARCH_PATH_INI/$l" "$ARCH_PATH/"
+            fi
+        done
+    fi
+
+    #----- The library we don't compile doesn't need to be copied, so link them to the original dir
+
+    if [[ $LIB_PATH_INI != $LIB_PATH ]]; then
+
+        for l in $SLINK_LIBS; do
+            if [[ ! -e $LIB_PATH/$l ]]; then
+                echo "Creating symlink from $LIB_PATH_INI/$l to $LIB_PATH/$l"
+                if [[ -e $LIB_PATH_INI/$l ]]; then
+                    ln -fsT $LIB_PATH_INI/$l $LIB_PATH/$l
+                    cp $LIB_PATH/$l/lib/lib* $SPI_LIB/
+                else
+                    echo "Library $l could not be found : symlink failed."
+                    exit 1
+                fi
+            fi
+        done
+    fi
+
+    set +e
+else
+    #----- Make sure every package we need to compile is available locally
+
+    for l in $ARCH_LIBS; do
+        if [[ ! -e $ARCH_PATH/$l ]]; then
+            echo "Package $ARCH_PATH/$l should exist and doesn't. I strongly suggest checking this script's config."
+            exit 1
+        fi
+    done
+
+    #----- Make sure every library we don't compile is available in the lib path
+
+    for l in $SLINK_LIBS; do
+        if [[ ! -e $LIB_PATH/$l ]]; then
+            echo "Library $LIB_PATH/$l should exist and doesn't. I strongly suggest checking this script's config."
+            exit 1
+        fi
+    done
+fi
 
 if [[ $PROC == "x86_64" ]]; then
    x64=yes
@@ -62,13 +138,11 @@ if [[ $ARCH == "AIX" ]]; then
    export make=gmake
 fi
 
-mkdir -p ${LIB_PATH}
-mkdir -p ${SPI_LIB}
-
 #----- Mesa
 cd ${ARCH_PATH}/${MESA}
 make distclean
 ./configure --prefix=${SPI_LIB}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
+make
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -92,6 +166,8 @@ fi
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean
 ./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
+mv Makefile Makefile.hidden
+sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -142,7 +218,7 @@ cd ${ARCH_PATH}/Tcllib-${TCLLIB}
 #----- libxml2
 cd ${ARCH_PATH}/${XML}
 make distclean
-./configure --prefix=${LIB_PATH}/${XML} --enable-64bit=${x64}
+./configure --prefix=${LIB_PATH}/${XML} --enable-64bit=${x64} --without-python
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
@@ -281,14 +357,15 @@ fi
 cp -d ${LIB_PATH}/${ECBUFR}/lib/libecbufr0.8.2rc1/*.so* ${SPI_LIB}
 
 #----- PostgreSQL
-#cd ${ARCH_PATH}/${POSTGRESQL}
-#make distclean
+cd ${ARCH_PATH}/${POSTGRESQL}
+make distclean
 #./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-libxslt
-#make install
-#if [[ $? -ne 0 ]] ; then
-#   exit 1
-#fi
-#cp -d ${LIB_PATH}/${POSTGRESQL}/lib/*.so* ${SPI_LIB}
+./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${ARCH_PATH}/${XML}/include
+make install
+if [[ $? -ne 0 ]] ; then
+   exit 1
+fi
+cp -d ${LIB_PATH}/${POSTGRESQL}/lib/*.so* ${SPI_LIB}
 
 #----- ODBC
 cd ${ARCH_PATH}/${ODBC}
@@ -348,6 +425,7 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 cp -d ${LIB_PATH}/${GDAL}/lib/*.so* ${SPI_LIB}
+mkdir -p ${SPI_PATH}/share/gdal
 cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
 #--with-hdf4=${LIB_PATH}/${HDF4} \
