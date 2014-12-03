@@ -7,14 +7,14 @@ echo "Architecture: ${ARCH}_${PROC}"
 
 #----- Location of the library source codes
 ARCH_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Archive
-ARCH_PATH=$HOME/data/Archive
+ARCH_PATH=$ARCH_PATH_INI
 
 #----- Where to install libraries
 LIB_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Lib/${ORDENV_PLAT}
-LIB_PATH=$HOME/Links/Lib${VERSION}/${ORDENV_PLAT}
+LIB_PATH=$HOME/Links/libfs${VERSION}/${ORDENV_PLAT}
 
 SPI_LIB=$LIB_PATH/SPI
-SPI_PATH=$HOME/Projects/SPI
+SPI_PATH=$HOME/Projects/SPI/eer_SPI
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${SPI_LIB}:$LIBRARY_PATH
@@ -24,7 +24,6 @@ TCLLIB=1.16
 TKIMG=tkimg1.4
 TKTABLE=Tktable2.10
 TKDND=tkdnd2.7
-F90=/home/afsr/005/Projects/RMN/f90tcl
 
 XML=libxml2-2.9.1
 TDOM=tdom-master
@@ -160,12 +159,11 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 #----- Tk
-#----- Remove visibility-hidden flag from makefile for glCanvas to work
-#----- tkImgPhoto.c patch dans ImgGetPhoto - alphaOffset=blockPtr->offset[3];
-
 cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
 make distclean
 ./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
+
+#----- Remove visibility-hidden flag from makefile for glCanvas to work
 mv Makefile Makefile.hidden
 sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
 make install
@@ -181,18 +179,6 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-
-#----- f90 stuff (for RMN with fortran)
-#cd ${F90}/
-#export FC='pgf90 -Bdynamic -fPIC -byteswapio'
-#s.cc -c -I${SPI_LIB}/TclTk/include f90tclsh.c f90wish.c
-#./f90_call_c.sh f90tclsh f90tclsh.o -L${SPI_LIB}/TclTk/lib -ltcl8.6
-#rm f90tclsh.o
-#./f90_call_c.sh f90wish f90wish.o -L${SPI_LIB}/TclTk/lib -ltk8.6 -ltcl8.6
-#rm f90wish.o
-#ln -fs f90tclsh tclsh8.6
-#ln -fs f90wish  wish8.6
-#cp -d f90tclsh f90wish ${SPI_LIB}/TclTk/bin
 
 #----- TkTable
 cd ${ARCH_PATH}/${TKTABLE}
@@ -344,6 +330,7 @@ if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 cp -d ${LIB_PATH}/${GRIB}/lib/*.so* ${SPI_LIB}
+mkdir -p ${SPI_PATH}/share/grib
 cp -r ${LIB_PATH}/${GRIB}/share/grib_api/definitions ${SPI_PATH}/share/grib
 
 #----- ECBUFR
@@ -428,6 +415,5 @@ cp -d ${LIB_PATH}/${GDAL}/lib/*.so* ${SPI_LIB}
 mkdir -p ${SPI_PATH}/share/gdal
 cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
-#--with-hdf4=${LIB_PATH}/${HDF4} \
 #--with-kakadu=${LIB_PATH}/${KKDU}
 #--with-ecw=/users/dor/afsr/005/Links/dev/Lib/Linux/libecwj2-3.3

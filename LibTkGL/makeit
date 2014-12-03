@@ -80,7 +80,6 @@ else
 	--enable-64bit \
 	--with-tcl=${TCL}/TclTk/lib \
 	--with-eer=${SSM_DEV}/workspace/eerUtils_1.9.0_${ORDENV_PLAT}
-  #      --with-dmv=/home/ordenv/ssm-domains/ssm-utils/dmv_1.0_linux26-x86-64
   fi
 
   $MAKE install
