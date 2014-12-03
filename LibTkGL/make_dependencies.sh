@@ -341,7 +341,12 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
-cp -d ${LIB_PATH}/${ECBUFR}/lib/libecbufr0.8.2rc1/*.so* ${SPI_LIB}
+#----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
+cd ${LIB_PATH}/${ECBUFR}/include
+ln -sf -t ./ */*.h
+cd ${LIB_PATH}/${ECBUFR}/lib
+ln -sf -t ./ */*.{a,la,so}*
+cp -d ${LIB_PATH}/${ECBUFR}/lib/*/*.so* ${SPI_LIB}
 
 #----- PostgreSQL
 cd ${ARCH_PATH}/${POSTGRESQL}
