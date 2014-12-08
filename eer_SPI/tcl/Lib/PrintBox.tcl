@@ -706,7 +706,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName).$Print(Device)       
+         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName) $Print(Device)       
       } else {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
          PrintBox::Postscript $Frame $Param(FullName) $X $Y $Width $Height
@@ -767,24 +767,32 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::Save { Frame X Y Width Height File } {
+proc PrintBox::Save { Frame X Y Width Height File Device } {
    variable Print
    variable Param
 
-   set device $Print(Device) 
-   switch $Print(Device) {
+   set device $Device 
+   switch $Device {
       "jpg"  -
       "jpeg" { set device jpeg; set opt "-quality $Param(Quality) -smooth $Param(Smooth)" }
       "pcx"  -
       "tga"  -
       "tif"  -
-      "tiff" { set device tif; set opt "-compress $Param(Compress)" }
+      "tiff" { set device tiff; set opt "-compression $Param(Compress)" }
       default { set opt "" }
    }
    
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
-   eval TMPIMG write "$File" -format \{$device $opt\}
+   
+   #----- PNGs sometime are corrupt, Iraised a tocket for this
+   if { $device == "png" } {
+      TMPIMG write "$File.ppm" -format ppm
+      exec convert $File.ppm $File.png
+      file delete $File.ppm
+   } else {
+      eval TMPIMG write "$File.$Device " -format \{$device $opt\}
+   }
    image delete TMPIMG
 }
 

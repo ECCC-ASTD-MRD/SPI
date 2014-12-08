@@ -49,7 +49,7 @@ puts "   Min     : [gdalband stats RASTER -min]"
 puts "   Max     : [gdalband stats RASTER -max]"
 
 puts "   Histogram  : [gdalband stats RASTER -histogram 0]"
-puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 0 90]"
+puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 PERCENT_CLIP 0 90]"
 
 #----- converions pixel-latlon et inverse
 set ll [gdalband project RASTER 100 100]
