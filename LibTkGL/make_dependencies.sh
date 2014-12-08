@@ -341,6 +341,7 @@ make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
+
 #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
 cd ${LIB_PATH}/${ECBUFR}/include
 ln -sf -t ./ */*.h

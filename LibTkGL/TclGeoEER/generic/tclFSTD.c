@@ -1718,7 +1718,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
 }
 
 static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
-static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]);
+static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]);
 static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Var,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*----------------------------------------------------------------------------
@@ -1744,11 +1744,11 @@ static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Var,int Objc,Tcl_Obj 
 static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj   *obj;
-   TList     *iter;
+   TList     *iter=NULL;
    TDictVar  *var;
    TDictType *type;
-   char       file[2048],*str,*origin;
-   int        ip1,ip3;
+   char       file[2048],*str,*origin,*etiket;
+   int        ip1,ip3,all=0;
    
    int         idx,tidx;
    static CONST char *sopt[] = { "load","var","type","isvar","istype","varinfo","typeinfo",NULL };
@@ -1757,7 +1757,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    Tcl_ResetResult(Interp);
 
    Dict_SetEncoding(DICT_UTF8);
-   Dict_SetSearch(DICT_GLOB,DICT_ALL,NULL,-1,-1,-1);
+   Dict_SetSearch(DICT_GLOB,DICT_ALL,NULL,-1,-1,-1,NULL);
    
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
@@ -1798,7 +1798,6 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
          
-         iter=NULL;
          str=NULL;
          
          if (Objc>2) {
@@ -1808,7 +1807,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             
             ip1=ip3=-1;
-            origin=NULL;
+            origin=etiket=NULL;
             for(;tidx<Objc;tidx++) {
                if (tidx+1<Objc && Tcl_GetString(Objv[tidx+1])[0]!='-') {
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchip1")) {
@@ -1817,12 +1816,15 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchip3")) {
                      Tcl_GetIntFromObj(Interp,Objv[++tidx],&ip3);
                   }
+                  if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchetiket")) {
+                     etiket=Tcl_GetString(Objv[++tidx]);
+                  }
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchorigin")) {
                      origin=Tcl_GetString(Objv[++tidx]);
                   }
                }
             }
-            Dict_SetSearch(DICT_GLOB,DICT_ALL,origin,ip1,-1,ip3);
+            Dict_SetSearch(DICT_GLOB,DICT_ALL,origin,ip1,-1,ip3,etiket);
          }
 
          obj=Tcl_NewListObj(0,NULL);
@@ -1837,9 +1839,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_WrongNumArgs(Interp,2,Objv,"[var]");
             return(TCL_ERROR);
          }
-         
-         iter=NULL;
-         
+                  
          str=Tcl_GetString(Objv[2]);         
          var=Dict_IterateVar(&iter,str);
          Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(var?TRUE:FALSE));
@@ -1852,7 +1852,6 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
 
          str=NULL;
-         iter=NULL;
          if (Objc>2) {
             str=Tcl_GetString(Objv[2]);
          }
@@ -1869,9 +1868,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_WrongNumArgs(Interp,2,Objv,"[type]");
             return(TCL_ERROR);
          }
-         
-         iter=NULL;
-         
+                  
          str=Tcl_GetString(Objv[2]);         
          type=Dict_IterateType(&iter,str);
          Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(type?TRUE:FALSE));
@@ -1881,8 +1878,11 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
          if (Objc>2) {
             ip1=ip3=-1;
-            origin=NULL;
+            origin=etiket=NULL;
             for(tidx=2;tidx<Objc;tidx++) {
+               if (!strcmp(Tcl_GetString(Objv[tidx]),"-all")) {
+                 all=1;
+               }
                if (tidx+1<Objc && Tcl_GetString(Objv[tidx+1])[0]!='-') {
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchip1")) {
                      Tcl_GetIntFromObj(Interp,Objv[++tidx],&ip1);
@@ -1893,26 +1893,42 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchorigin")) {
                      origin=Tcl_GetString(Objv[++tidx]);
                   }
+                  if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchetiket")) {
+                     etiket=Tcl_GetString(Objv[++tidx]);
+                  }
                }
             }
-            Dict_SetSearch(DICT_EXACT,DICT_ALL,origin,ip1,-1,ip3);
-            if ((var=Dict_GetVar(Tcl_GetString(Objv[2])))) {
-               // Var exist
-               return(FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
+            
+            Dict_SetSearch(DICT_EXACT,DICT_ALL,origin,ip1,-1,ip3,etiket);
+            if (all) {
+               obj=Tcl_NewListObj(0,NULL);
+               while (var=Dict_IterateVar(&iter,Tcl_GetString(Objv[2]))) {
+                  Tcl_ListObjAppendElement(Interp,obj,FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
+               }
             } else {
-               // Var does not exist, add it 
-               var=(TDictVar*)calloc(1,sizeof(TDictVar));
-               strncpy(var->Name,Tcl_GetString(Objv[2]),5);
-               Dict_AddVar(var);
-               return(FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
+               if ((var=Dict_GetVar(Tcl_GetString(Objv[2])))) {
+                  // Var exist
+                  obj=FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3);
+               } else {
+                  // Var does not exist, add it 
+                  var=(TDictVar*)calloc(1,sizeof(TDictVar));
+                  strncpy(var->Name,Tcl_GetString(Objv[2]),5);
+                  Dict_AddVar(var);
+                  obj=FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3);
+               }
             }
+            if (!obj) {
+               return(TCL_ERROR);
+            }
+            Tcl_SetObjResult(Interp,obj);
+
          }        
          break;
 
       case TYPEINFO:
 
          if (Objc>2) {
-            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1);
+            Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1,NULL);
             if ((type=Dict_GetType(Tcl_GetString(Objv[2])))) {
                // Var exist
                return(FSTD_DictTypeInfo(Interp,type,Objc-3,Objv+3));
@@ -1949,17 +1965,17 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  *----------------------------------------------------------------------------
 */
-static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]){
+static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj *obj;
    int      i,idx;
    char     lang=0,n=0;;
 
-   static CONST char *sopt[] = { "-lang","-searchip1","-searchip3","-searchorigin","-short","-long","-magnitude","-min","-max","-factor","-delta","-units","-nature","-origin","-state","-date",NULL };
-   enum                opt { LANG,SEARCHIP1,SEARCHIP3,SEARCHORIGIN,SHORT,LONG,MAGNITUDE,MIN,MAX,FACTOR,DELTA,UNITS,NATURE,ORIGIN,STATE,DATE };
+   static CONST char *sopt[] = { "-lang","-all","-searchip1","-searchip3","-searchetiket","-searchorigin","-short","-long","-magnitude","-min","-max","-factor","-delta","-units","-nature","-origin","-state","-date","-ip1","-ip3","-etiket",NULL };
+   enum                opt { LANG,ALL,SEARCHIP1,SEARCHIP3,SEARCHETIKET,SEARCHORIGIN,SHORT,LONG,MAGNITUDE,MIN,MAX,FACTOR,DELTA,UNITS,NATURE,ORIGIN,STATE,DATE,IP1,IP3,ETIKET };
 
    if (!Var) {
-      return(TCL_OK);
+      return(NULL);
    }
 
    obj=Tcl_NewListObj(0,NULL);
@@ -1967,12 +1983,16 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
-         return(TCL_ERROR);
+         return(NULL);
       }
 
       switch ((enum opt)idx) {
+         case ALL:
+            break;
+            
          case SEARCHIP1:
          case SEARCHIP3:
+         case SEARCHETIKET:
          case SEARCHORIGIN:
             ++i;
             break;
@@ -2095,6 +2115,33 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
             }
             break;
             
+          case ETIKET:
+            n++;
+            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+               strncpy(Var->ETIKET,Tcl_GetString(Objv[++i]),32);
+            } else {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->ETIKET,-1));
+            }
+            break;
+            
+          case IP1:
+            n++;
+            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Var->IP1);
+            } else {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP1));
+            }
+            break;
+            
+          case IP3:
+            n++;
+            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Var->IP3);
+            } else {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP3));
+            }
+            break;
+
           case DATE:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2181,9 +2228,7 @@ static int FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_Obj *C
       }
    }
 
-   Tcl_SetObjResult(Interp,obj);
-
-   return(TCL_OK);
+   return(obj);
 }
 
 /*----------------------------------------------------------------------------
