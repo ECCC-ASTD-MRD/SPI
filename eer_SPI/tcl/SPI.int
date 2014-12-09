@@ -204,7 +204,7 @@ proc SPI::Params { { Frame . } } {
       toplevel     .params -class Dialog
       wm withdraw  .params
       wm title     .params [lindex $Lbl(Params) $GDefs(Lang)]
-      wm geometry  .params 350x400+[winfo rootx .]+[winfo rooty .]
+      wm geometry  .params 375x400+[winfo rootx .]+[winfo rooty .]
 #      wm resizable .params 0 0
       wm protocol  .params WM_DELETE_WINDOW { wm withdraw .params }
       wm transient .params .
@@ -231,7 +231,7 @@ proc SPI::Params { { Frame . } } {
    } else {
       if { ![winfo ismapped .params] } {
          .params.command.apply configure -state disabled
-         wm geometry .params 350x400+[winfo rootx $Frame]+[winfo rooty $Frame]
+         wm geometry .params 375x400+[winfo rootx $Frame]+[winfo rooty $Frame]
       }
       update idletasks
       wm deiconify .params

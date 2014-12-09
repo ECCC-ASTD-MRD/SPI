@@ -55,7 +55,7 @@ namespace eval FSTD {
 
    font create FLDFONTDEFAULT -family courier -size -12 -weight bold
 
-   image create photo FLDMAPImg -width 185 -height 15
+   image create photo FLDMAPImg -width 205 -height 15
    colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
@@ -99,7 +99,7 @@ namespace eval FSTD {
    set Param(Contour)       0              ;#Affichage des contours
    set Param(MapAll)        0              ;#Affichage des contours avec la colormap
    set Param(MapAbove)      1              ;#Affichage de couleur au dessus du dernier interval
-   set Param(MapBelow)     0              ;#Affichage de coule en dessous du premier interval
+   set Param(MapBelow)      0              ;#Affichage de coule en dessous du premier interval
    set Param(Grid)          0              ;#Affichage de la grille
    set Param(Vector)        NONE           ;#Affichage vectorise
    set Param(Texture)       1              ;#Affichage des donnees

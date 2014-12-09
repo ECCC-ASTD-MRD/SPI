@@ -76,6 +76,7 @@ static const Tk_CustomOption CamOption   = { VP_CamParseProc,VP_CamPrintProc,NUL
 static const Tk_CustomOption ArrayOption = { VP_ArrayParseProc,VP_ArrayPrintProc,NULL };
 static const Tk_CustomOption ProjOption  = { VP_ProjParseProc,VP_ProjPrintProc,NULL };
 static const Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL };
+static const Tk_CustomOption dashOption  = { TkCanvasDashParseProc,TkCanvasDashPrintProc,NULL };
 
 void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS);
 void ViewportSet(ViewportItem *VP,Projection *Proj);
@@ -107,6 +108,7 @@ static const Tk_ConfigSpec configSpecs[] = {
    { TK_CONFIG_COLOR, "-colorutil", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorUtil),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR, "-colorcanal", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCanal),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR, "-colorcoord", NULL, NULL, "black",Tk_Offset(ViewportItem,ColorCoord),TK_CONFIG_NULL_OK },
+   { TK_CONFIG_CUSTOM, "-dashcoord", NULL, NULL, NULL, Tk_Offset(ViewportItem, DashCoord), TK_CONFIG_NULL_OK, &dashOption },
    { TK_CONFIG_COLOR, "-fg","-foreground", NULL, "black",Tk_Offset(ViewportItem,FGColor),TK_CONFIG_NULL_OK },
    { TK_CONFIG_COLOR, "-bg","-background", NULL, "white",Tk_Offset(ViewportItem,BGColor),TK_CONFIG_NULL_OK },
    { TK_CONFIG_BOOLEAN, "-update", NULL, NULL, "1",Tk_Offset(ViewportItem,Update),TK_CONFIG_DONT_SET_DEFAULT },
@@ -396,6 +398,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->ColorUtil   = NULL;
    vp->ColorCanal  = NULL;
    vp->ColorCoord  = NULL;
+   vp->DashCoord.number=0;
    vp->Width       = 0;
    vp->Height      = 0;
    vp->x           = 0;

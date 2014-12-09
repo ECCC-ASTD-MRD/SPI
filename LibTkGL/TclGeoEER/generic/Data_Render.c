@@ -1868,7 +1868,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
          if (Field->Spec->GridVector) {
               c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
-         } else {
+         } else {        
               c_gdllvval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
          }
          // We have to get the speed from the modulus in case of 3 component vector

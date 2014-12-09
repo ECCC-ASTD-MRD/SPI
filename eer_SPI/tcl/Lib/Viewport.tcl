@@ -155,6 +155,7 @@ namespace eval Viewport {
    set Resources(Road)      #404040      ;#Routes
    set Resources(Rail)      #ff1493      ;#Chemin de fer
    set Resources(Coord)     #000000      ;#Latlon
+   set Resources(DashCoord) -            ;#LatLon dashing
    set Resources(Font)      ""           ;#Police
 
    #----- Definitions des labels relatives a la projection
@@ -570,6 +571,7 @@ proc Viewport::ConfigGet { Frame VP } {
    set Resources(Road)      [lindex [$Frame.page.canvas itemconf $VP -colorroad] 4]
    set Resources(Rail)      [lindex [$Frame.page.canvas itemconf $VP -colorrail] 4]
    set Resources(Coord)     [lindex [$Frame.page.canvas itemconf $VP -colorcoord] 4]
+   set Resources(DashCoord) [lindex [$Frame.page.canvas itemconf $VP -dashcoord] 4]
 }
 
 #----------------------------------------------------------------------------
@@ -620,6 +622,8 @@ proc Viewport::ConfigPut { Frame VP } {
    ColorBox::ConfigNoColor $Data(Frame).layer.road.col $Resources(Road)
    ColorBox::ConfigNoColor $Data(Frame).layer.rail.col $Resources(Rail)
    ColorBox::ConfigNoColor $Data(Frame).layer.ll.col $Resources(Coord)
+
+   IcoMenu::Set $Data(Frame).layer.ll.ds      $Resources(DashCoord)
 }
 
 #----------------------------------------------------------------------------
@@ -666,7 +670,7 @@ proc Viewport::ConfigSet { Frame } {
       $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord)
    }
 
    foreach mini $Miniport::Data(Mini$Frame) {
@@ -680,7 +684,7 @@ proc Viewport::ConfigSet { Frame } {
      $Frame.page.canvas itemconfigure $mini -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord)
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord)
    }
 }
 
@@ -1203,7 +1207,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
    $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
-      -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) \
+      -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord) \
       -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp \
       -maskitem [$Frame.page.canvas find withtag VPINTRUDE] -maskwidth $Page::Param(Intrusion)
 
@@ -1339,7 +1343,7 @@ proc Viewport::Do { Frame } {
       $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) -colorplace $Resources(Place) \
-         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorcoord $Resources(Coord)
+         -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord)
    }
 
    Page::Update  $Frame
@@ -1940,25 +1944,28 @@ proc Viewport::ParamFrame { Frame Apply } {
          IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Coord) "$Apply configure -state normal" $Viewport::Map(Coord) -relief groove -bd 2
+         IcoMenu::CreateDef $Data(Frame).layer.ll.ds $GDefs(Dir)/share/bitmap \
+            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
+            Viewport::Resources(DashCoord) "$Apply configure -state normal" 0 -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).layer.ll.col Viewport::Resources(Coord) $Apply configure -state normal
          label $Data(Frame).layer.ll.lbl -text [format "%-10s" [lindex $Lbl(Coord) $GDefs(Lang)]]
          menubutton $Data(Frame).layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/share/bitmap/more.xbm \
             -menu $Data(Frame).layer.ll.opt.menu
-         pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.opt -side left
+         pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.ds $Data(Frame).layer.ll.opt -side left
          pack $Data(Frame).layer.ll.lbl -side right
 
       frame $Data(Frame).layer.min
          scale $Data(Frame).layer.min.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(MinSize) -relief flat \
-            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 71 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.min.lbl -text [format "  %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
+            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 107 -sliderlength 8  -bd 1 -resolution 1
+         label $Data(Frame).layer.min.lbl -text [format " %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
          pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
 
       frame $Data(Frame).layer.crowd
          scale $Data(Frame).layer.crowd.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(Crowd) -relief flat \
-            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 71 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.crowd.lbl -text [format "  %-10s" [lindex $Lbl(Crowd) $GDefs(Lang)]]
+            -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 107 -sliderlength 8  -bd 1 -resolution 1
+         label $Data(Frame).layer.crowd.lbl -text [format " %-10s" [lindex $Lbl(Crowd) $GDefs(Lang)]]
          pack $Data(Frame).layer.crowd.sc $Data(Frame).layer.crowd.lbl -side left
 
          pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
@@ -3158,6 +3165,7 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Resources(Road)      \"[lindex [$Frame.page.canvas itemconf $vp -colorroad] 4]\""
       puts $File "   set Viewport::Resources(Rail)      \"[lindex [$Frame.page.canvas itemconf $vp -colorrail] 4]\""
       puts $File "   set Viewport::Resources(Coord)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcoord] 4]\""
+      puts $File "   set Viewport::Resources(DashCoord) \"[lindex [$Frame.page.canvas itemconf $vp -dashcoord] 4]\""
 
       set no 1
       foreach vp $vps {

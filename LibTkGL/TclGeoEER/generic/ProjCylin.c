@@ -129,14 +129,16 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    /*Latlons*/
    if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
-      glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
-      glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
-
-      if (Interp) {
+     if (Interp) {
          glFeedbackInit(MAXGEOSEG*2,GL_2D);
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoord);
          sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.CoordLoc)-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
+         glPostscriptDash(Interp,&VP->DashCoord,ABS(Proj->Geo->Params.CoordLoc)-1);
+      } else {
+         glDash(&VP->DashCoord);
+         glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
+         glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
       }
 
       glBegin(GL_LINES);

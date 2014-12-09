@@ -59,6 +59,7 @@ typedef struct ViewportItem  {
    Tk_Canvas canvas;              /*Pointeur sur le canvas contenant le viewport*/
    Tk_Anchor anchor;              /*Where to anchor pixmap relative to (x,y)*/
    Tk_Font tkfont;                /*Font for drawing text*/
+   Tk_Dash DashCoord;             /*Pointille*/
    Tcl_TimerToken Timer;          /*Tcl refresh timer event*/
    double x,y;                    /*Coordinates of positioning point for pixmap*/
    int VX,VY;                     /*Virtual position for point for pixmap*/

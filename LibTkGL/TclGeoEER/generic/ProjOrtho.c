@@ -235,10 +235,12 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoord);
          sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.CoordLoc)-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
+         glPostscriptDash(Interp,&VP->DashCoord,ABS(Proj->Geo->Params.CoordLoc)-1);
+      } else {
+         glDash(&VP->DashCoord);
+         glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
+         glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
       }
-
-      glLineWidth(ABS(Proj->Geo->Params.CoordLoc));
-      glColor3us(VP->ColorCoord->red,VP->ColorCoord->green,VP->ColorCoord->blue);
 
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();

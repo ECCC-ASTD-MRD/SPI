@@ -1163,7 +1163,7 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
  *  <Tcl_Interp> : Interpreteur Tcl
  *  <VP>         : Parametres du viewport
  *  <Proj>       : Parametres de la projection
- *   <Geo>   : Liste des boites de donnees geographiques
+ *  <Geo>        : Liste des boites de donnees geographiques
  *
  * Retour:
  *  <TCL_...>    : Code de retour standard TCL

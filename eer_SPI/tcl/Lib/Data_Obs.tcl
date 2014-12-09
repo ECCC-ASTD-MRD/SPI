@@ -43,7 +43,7 @@ namespace eval Obs {
 
    font create OBSFONTDEFAULT -family courier -weight bold -size -10
 
-   image create photo OBSMAPImg -width 170 -height 15
+   image create photo OBSMAPImg -width 195 -height 15
    colormap create OBSMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
