@@ -237,7 +237,8 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
             Y=iy;
          }
 
-         if (Def->Type<TD_Float32 || Mode=='N' || (X==ix && Y==iy)) {
+         // G grids have something weire which measn we have to use ezscint
+         if ((Def->Type<TD_Float32 || Mode=='N' || (X==ix && Y==iy)) && Ref->Grid[0]!='G') {
             mem+=idx;
             Def_Get(Def,C,mem,*Length);
             if (Def->Data[1] && !C)
@@ -257,6 +258,7 @@ int GeoRef_RPNValue(TGeoRef *Ref,TDataDef *Def,char Mode,int C,double X,double Y
               
 //EZFIX               EZLock_RPNInt();
                c_gdxysval(Ref->Ids[Ref->NId],&valf,p0,&x,&y,1);
+               fprintf(stderr,"2--- %f %f    %f\n",x,y,valf);
                *Length=valf;
 //EZFIX               EZUnLock_RPNInt();
             } else {
