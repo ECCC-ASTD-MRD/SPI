@@ -155,7 +155,7 @@ namespace eval Viewport {
    set Resources(Road)      #404040      ;#Routes
    set Resources(Rail)      #ff1493      ;#Chemin de fer
    set Resources(Coord)     #000000      ;#Latlon
-   set Resources(DashCoord) -            ;#LatLon dashing
+   set Resources(DashCoord) ""           ;#LatLon dashing
    set Resources(Font)      ""           ;#Police
 
    #----- Definitions des labels relatives a la projection

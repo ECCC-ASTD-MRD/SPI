@@ -1142,7 +1142,7 @@ proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
                      }
                   }
 
-                  set info "[fstdfield configure $field -desc]:$spd"
+                  set info "[fstdfield define $field -NOMVAR]:$spd"
 
                   if { $dir != "" } {
                      set info "$info@[format "%1.2f" $dir]"
@@ -1150,7 +1150,11 @@ proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
 
                   if { $Grid } {
                      set grid [fstdfield stats $field -coordpoint $la $lo]
-                     set info "$info \[[format "%0.2f,%0.2f" [lindex $grid 0] [lindex $grid 1]]\]"
+                     if { [fstdfield configure $field -interpdegree]=="LINEAR" } {
+                        set info "$info \[[format "%0.2f,%0.2f" [lindex $grid 0] [lindex $grid 1]]\]"
+                     } else {
+                        set info "$info \[[format "%i,%i" [expr round([lindex $grid 0])] [expr round([lindex $grid 1])]]\]"
+                     } 
                   }
 
                   if { $Date } {
