@@ -888,7 +888,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          }
 
          GRIB_GetLevel(&head,&lvl,&lvtyp);
-         head.IP1=ZRef_Level2IP(lvl,lvtyp);
+         head.IP1=ZRef_Level2IP(lvl,lvtyp,DEFAULT);
 
          /*Calculer la date de validitee du champs*/
          date=date<=1231?date+19800000:date;

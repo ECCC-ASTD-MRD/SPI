@@ -1463,14 +1463,15 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    Tk_FontMetrics tkm;
-   TVector       *vecx,*vecy,*vecs,*vecd,*val;
-   Vect3d        *v=NULL,v0,v1,vt;
+   TVector       *vecx,*vecy,*vecl,*vecs,*vecd,*val;
+   Vect3d        *v=NULL,*vl=NULL,v0,v1,vt;
    char           buf[32];
    double        *vm,x,y,db,dh,x0,y0,sz;
    int            i,j,n,vn,px,py,pw,hd;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
+   vecl=Vector_Get(Item->LowData);
 
    if (!vecx || !vecy)
       return;
@@ -1486,6 +1487,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
    v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
 
+   if (vecl) {
+      vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+   }
+   
    /* Compute graph curve points */
    db=1000.0;
    vn=0;
@@ -1506,6 +1511,12 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          v[vn][1]=Y0+AXISVALUE(AxisY,y);
          v[vn][2]=0.0;
 
+         if (vecl) {
+            vl[vn][0]=X0+AXISVALUE(AxisX,vecl->V[i]);
+            vl[vn][1]=Y0+AXISVALUE(AxisY,vecl->V[i]);
+            vl[vn][2]=0.0;
+         }
+         
          if (vn>0) {
             if (Item->Orient[0]=='X') {
                dh=fabs(v[vn][0]-v[vn-1][0]);
@@ -1565,14 +1576,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
-                  glVertex2f(v[i][0],y0);
+                  glVertex2f(v[i][0],vl?vl[i][1]:y0);
                   glVertex2f(v[i][0],v[i][1]);
                   if (!hd && (i+1)==vn) {
                      glVertex2f(X1,v[i][1]);
-                     glVertex2f(X1,y0);
+                     glVertex2f(X1,vl?vl[i][1]:y0);
                   } else {
                      glVertex2f(v[i+1][0],v[i][1]);
-                     glVertex2f(v[i+1][0],y0);
+                     glVertex2f(v[i+1][0],vl?vl[i][1]:y0);
                   }
                glEnd();
                glPopName();
@@ -1582,14 +1593,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
-                  glVertex2f(x0,v[i][1]);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]);
                   glVertex2f(v[i][0],v[i][1]);
                   if (!hd && (i+1)==vn) {
                      glVertex2f(v[i][0],Y1);
-                     glVertex2f(x0,Y1);
+                     glVertex2f(vl?vl[i][0]:x0,Y1);
                   } else {
                      glVertex2f(v[i][0],v[i+1][1]);
-                     glVertex2f(x0,v[i+1][1]);
+                     glVertex2f(vl?vl[i][0]:x0,v[i+1][1]);
                   }
                glEnd();
                glPopName();
@@ -1601,10 +1612,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
-                  glVertex2f(v[i][0]-db-dh,y0);
+                  glVertex2f(v[i][0]-db-dh,vl?vl[i][1]:y0);
                   glVertex2f(v[i][0]-db-dh,v[i][1]);
                   glVertex2f(v[i][0]+db-dh,v[i][1]);
-                  glVertex2f(v[i][0]+db-dh,y0);
+                  glVertex2f(v[i][0]+db-dh,vl?vl[i][1]:y0);
                glEnd();
                glPopName();
             }
@@ -1613,10 +1624,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                glPushName(i);
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                glBegin(GL_QUADS);
-                  glVertex2f(x0,v[i][1]-db-dh);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]-db-dh);
                   glVertex2f(v[i][0],v[i][1]-db-dh);
                   glVertex2f(v[i][0],v[i][1]+db-dh);
-                  glVertex2f(x0,v[i][1]+db-dh);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]+db-dh);
                glEnd();
                glPopName();
             }
@@ -1661,14 +1672,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             for(i=0;i<vn-hd;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
-                  glVertex2f(v[i][0],y0);
+                  glVertex2f(v[i][0],vl?vl[i][1]:y0);
                   glVertex2f(v[i][0],v[i][1]);
                   if (!hd && (i+1)==vn) {
                      glVertex2f(X1,v[i][1]);
-                     glVertex2f(X1,y0);
+                     glVertex2f(X1,vl?vl[i][1]:y0);
                    } else {
                      glVertex2f(v[i+1][0],v[i][1]);
-                     glVertex2f(v[i+1][0],y0);
+                     glVertex2f(v[i+1][0],vl?vl[i][1]:y0);
                    }
                glEnd();
                glPopName();
@@ -1677,14 +1688,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             for(i=0;i<vn-hd;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
-                  glVertex2f(x0,v[i][1]);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]);
                   glVertex2f(v[i][0],v[i][1]);
                   if (!hd && (i+1)==vn) {
                      glVertex2f(v[i][0],Y1);
-                     glVertex2f(x0,Y1);
+                     glVertex2f(vl?vl[i][0]:x0,Y1);
                   } else {
                      glVertex2f(v[i][0],v[i+1][1]);
-                     glVertex2f(x0,v[i+1][1]);
+                     glVertex2f(vl?vl[i][0]:x0,v[i+1][1]);
                   }
                glEnd();
                glPopName();
@@ -1695,10 +1706,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             for(i=0;i<vn;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
-                  glVertex2f(v[i][0]-db-dh,y0);
+                  glVertex2f(v[i][0]-db-dh,vl?vl[i][1]:y0);
                   glVertex2f(v[i][0]-db-dh,v[i][1]);
                   glVertex2f(v[i][0]+db-dh,v[i][1]);
-                  glVertex2f(v[i][0]+db-dh,y0);
+                  glVertex2f(v[i][0]+db-dh,vl?vl[i][1]:y0);
                glEnd();
                glPopName();
            }
@@ -1706,10 +1717,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
             for(i=0;i<vn;i++) {
                glPushName(i);
                glBegin(GL_QUADS);
-                  glVertex2f(x0,v[i][1]-db-dh);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]-db-dh);
                   glVertex2f(v[i][0],v[i][1]-db-dh);
                   glVertex2f(v[i][0],v[i][1]+db-dh);
-                  glVertex2f(x0,v[i][1]+db-dh);
+                  glVertex2f(vl?vl[i][0]:x0,v[i][1]+db-dh);
                glEnd();
                glPopName();
            }
@@ -1901,7 +1912,8 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
    glDisable(GL_BLEND);
 
-   if (v) free(v);
+   if (v)  free(v);
+   if (vl) free(vl);
 }
 
 int GraphItem_FitLinear(Vect3d *V,TVector *VX,TVector *VY,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
@@ -3414,8 +3426,8 @@ void GraphItem_PostscriptBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,int X0,int Y0,int X1,int Y1) {
 
    Tk_FontMetrics tkm;
-   TVector   *vecx,*vecy,*val;;
-   Vect3d    *v,v0,v1,vt;
+   TVector   *vecx,*vecy,*vecl,*val;
+   Vect3d    *v,v0,v1,vt,*vl=NULL;
    char       buf[256];
    double     x,y,db,dh,x0,y0;
    int        i,j,n,vn,hd,px,py,pw;
@@ -3423,6 +3435,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
+   vecl=Vector_Get(Item->LowData);
 
    n=vecx->N<vecy->N?vecx->N:vecy->N;
    x0=y0=0.0;
@@ -3434,6 +3447,10 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
       hd=0;
    }
    v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+
+   if (vecl) {
+      vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+   }
 
    GraphAxis_Define(AxisX,vecx,X1-X0);
    GraphAxis_Define(AxisY,vecy,Y1-Y0);
@@ -3456,6 +3473,12 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          v[vn][1]=Y0+AXISVALUE(AxisY,y);
          v[vn][2]=0.0;
 
+         if (vecl) {
+            vl[vn][0]=X0+AXISVALUE(AxisX,vecl->V[i]);
+            vl[vn][1]=Y0+AXISVALUE(AxisY,vecl->V[i]);
+            vl[vn][2]=0.0;
+         }
+         
          /* Check font spacing */
          if (vn>0) {
             if (Item->Orient[0]=='X') {
@@ -3508,9 +3531,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             for(i=0;i<vn-hd;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                if (!hd && (i+1)==vn) {
-                  SETRECT(rect,v[i][0],y0,X1,v[i][1]);
+                  SETRECT(rect,v[i][0],vl?vl[i][1]:y0,X1,v[i][1]);
                } else {
-                  SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
+                  SETRECT(rect,v[i][0],vl?vl[i][1]:y0,v[i+1][0],v[i][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
@@ -3524,9 +3547,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
             for(i=0;i<vn-hd;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
                if (!hd && (i+1)==vn) {
-                  SETRECT(rect,x0,v[i][1],v[i][0],Y1);
+                  SETRECT(rect,vl?vl[i][0]:x0,v[i][1],v[i][0],Y1);
                } else {
-                  SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
+                  SETRECT(rect,vl?vl[i][0]:x0,v[i][1],v[i][0],v[i+1][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
@@ -3541,7 +3564,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
-               SETRECT(rect,v[i][0]-db-dh,y0,v[i][0]+db-dh,v[i][1]);
+               SETRECT(rect,v[i][0]-db-dh,vl?vl[i][1]:y0,v[i][0]+db-dh,v[i][1]);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
@@ -3553,7 +3576,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          } else {
             for(i=0;i<vn;i++) {
                GraphItem_ColorXYZ(Interp,Graph,Item,i);
-               SETRECT(rect,x0,v[i][1]-db-dh,v[i][0],v[i][1]+db-dh);
+               SETRECT(rect,vl?vl[i][0]:x0,v[i][1]-db-dh,v[i][0],v[i][1]+db-dh);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                if (Item->Stipple) {
                   Tcl_AppendResult(Interp,"eoclip ",(char*)NULL);
@@ -3599,9 +3622,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn-hd;i++) {
                if (!hd && (i+1)==vn) {
-                  SETRECT(rect,v[i][0],y0,X1,v[i][1]);
+                  SETRECT(rect,v[i][0],vl?vl[i][1]:y0,X1,v[i][1]);
                } else {
-                  SETRECT(rect,v[i][0],y0,v[i+1][0],v[i][1]);
+                  SETRECT(rect,v[i][0],vl?vl[i][1]:y0,v[i+1][0],v[i][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                sprintf(buf,"%.15g %i lineto\n",v[i][0],Y0);
@@ -3610,9 +3633,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          } else {
             for(i=0;i<vn-hd;i++) {
                if (!hd && (i+1)==vn) {
-                  SETRECT(rect,x0,v[i][1],v[i][0],Y1);
+                  SETRECT(rect,vl?vl[i][0]:x0,v[i][1],v[i][0],Y1);
                } else {
-                  SETRECT(rect,x0,v[i][1],v[i][0],v[i+1][1]);
+                  SETRECT(rect,vl?vl[i][0]:x0,v[i][1],v[i][0],v[i+1][1]);
                }
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                sprintf(buf,"%i %.15g lineto\n",X0,v[i][1]);
@@ -3622,14 +3645,14 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
       } else if (Item->Type==BAR || Item->Type==WIDEBAR) {
          if (Item->Orient[0]=='X') {
             for(i=0;i<vn;i++) {
-               SETRECT(rect,v[i][0]-db-dh,y0,v[i][0]+db-dh,v[i][1]);
+               SETRECT(rect,v[i][0]-db-dh,vl?vl[i][1]:y0,v[i][0]+db-dh,v[i][1]);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                sprintf(buf,"%.15g %i lineto\n",v[i][0]-db-dh,Y0);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
            }
          } else {
             for(i=0;i<vn;i++) {
-               SETRECT(rect,x0,v[i][1]-db-dh,v[i][0],v[i][1]+db-dh);
+               SETRECT(rect,vl?vl[i][0]:x0,v[i][1]-db-dh,v[i][0],v[i][1]+db-dh);
                Tk_glCanvasPsPath(Interp,Graph->canvas,rect,4);
                sprintf(buf,"%i %.15g lineto\n",X0,v[i][1]-db-dh);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
@@ -3822,6 +3845,9 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          Tcl_AppendResult(Interp,buf,(char*)NULL);
       }
    }
+   
+   if (v)  free(v);
+   if (vl) free(vl);
    free(v);
 }
 

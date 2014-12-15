@@ -598,7 +598,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
          if (head->FID && Field->Spec->Topo) {
-            ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type);
+            ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type,DEFAULT);
             idx=cs_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
@@ -648,7 +648,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       /*Essayer de recuperer le GZ*/
       if (Field->Spec->Topo && head->FID && FSTD_FileSet(NULL,head->FID)>=0) {
 
-         ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type);
+         ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type,DEFAULT);
          if (Field->Spec->Topo) {
             idx=cs_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
@@ -2580,7 +2580,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       for(k=0;k<nk;k++) {
          Tcl_ListObjIndex(Interp,List,k,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&level);
-         ip1=ZRef_Level2IP(level,Field->Ref->ZRef.Type);
+         ip1=ZRef_Level2IP(level,Field->Ref->ZRef.Type,DEFAULT);
          cs_fstinl(head->FID->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
 
          if (k2==0) {
@@ -2837,7 +2837,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 
       /*If IP1 is set, use it otherwise, convert it from levels array*/
       if ((ip1=head->IP1)==-1 || Field->Def->NK>1) {
-         ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[k],Field->Ref->ZRef.Type);
+         ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[k],Field->Ref->ZRef.Type,DEFAULT);
       }
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);

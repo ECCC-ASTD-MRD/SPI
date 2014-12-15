@@ -946,7 +946,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      if (FSTD_FileSet(NULL,((FSTD_Head*)Field[f]->Head)->FID)>=0) {
                         ip1=((FSTD_Head*)Field[f]->Head)->IP1;
                         fp=&Field[f]->Def->Height[idxp];
-                        ((FSTD_Head*)Field[f]->Head)->IP1=ZRef_Level2IP(Field[f]->Ref->ZRef.Levels[k],Field[f]->Ref->ZRef.Type);
+                        ((FSTD_Head*)Field[f]->Head)->IP1=ZRef_Level2IP(Field[f]->Ref->ZRef.Levels[k],Field[f]->Ref->ZRef.Type,DEFAULT);
                         if (!(FSTD_FieldReadComp(((FSTD_Head*)Field[f]->Head),&fp,"GZ",0,1))) {
                            /*We won't be able to calculate pressure levels*/
                            free(cut->Ref->Hgt);

@@ -34,12 +34,12 @@
 
 #ifdef HAVE_RMN
 
+#include "Dict.h"
 #include "tclFSTD.h"
 #include "tclObs.h"
 #include "tclOGR.h"
 #include "tclGDAL.h"
 #include "tcl3DModel.h"
-#include "Dict.h"
 #include <sys/timeb.h>
 
 /*Table contenant la liste des champs en memoire*/
@@ -96,7 +96,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
       if (Tcl_GetIndexFromObj(Interp,obj,ZRef_LevelNames(),"type",0,&type)!=TCL_OK) {
          return(-2);
       }
-      return(ZRef_Level2IP(val,type));
+      return(ZRef_Level2IP(val,type,DEFAULT));
    } else {
       return(val);
    }
@@ -1745,9 +1745,9 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    Tcl_Obj   *obj;
    TList     *iter=NULL;
-   TDictVar  *var;
+   TDictVar  *var,*mod;
    TDictType *type;
-   char       file[2048],*str,*origin,*etiket;
+   char       file[2048],*str,*origin,*etiket,*modifier;
    int        ip1,ip3,all=0;
    
    int         idx,tidx;
@@ -1756,7 +1756,6 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    Tcl_ResetResult(Interp);
 
-   Dict_SetEncoding(DICT_UTF8);
    Dict_SetSearch(DICT_GLOB,DICT_ALL,NULL,-1,-1,-1,NULL);
    
    if (Objc<2) {
@@ -1779,13 +1778,13 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          
          if (Objc>2) {
-            if (!Dict_Parse(Tcl_GetString(Objv[2]))) {
+            if (!Dict_Parse(Tcl_GetString(Objv[2]),DICT_UTF8)) {
                Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
                return(TCL_ERROR);
             }
          } else {
             sprintf(file,"%s%s",getenv("AFSISIO"),"/datafiles/constants/stdf.variable_dictionary.xml");
-            if (!Dict_Parse(file)) {
+            if (!Dict_Parse(file,DICT_UTF8)) {
                Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1878,7 +1877,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
          if (Objc>2) {
             ip1=ip3=-1;
-            origin=etiket=NULL;
+            origin=etiket=modifier=NULL;
             for(tidx=2;tidx<Objc;tidx++) {
                if (!strcmp(Tcl_GetString(Objv[tidx]),"-all")) {
                  all=1;
@@ -1896,19 +1895,35 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   if (!strcmp(Tcl_GetString(Objv[tidx]),"-searchetiket")) {
                      etiket=Tcl_GetString(Objv[++tidx]);
                   }
+                  if (!strcmp(Tcl_GetString(Objv[tidx]),"-modifier")) {
+                     modifier=Tcl_GetString(Objv[++tidx]);
+                  }
                }
             }
             
             Dict_SetSearch(DICT_EXACT,DICT_ALL,origin,ip1,-1,ip3,etiket);
             if (all) {
                obj=Tcl_NewListObj(0,NULL);
-               while (var=Dict_IterateVar(&iter,Tcl_GetString(Objv[2]))) {
-                  Tcl_ListObjAppendElement(Interp,obj,FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3));
+               while ((var=Dict_IterateVar(&iter,Tcl_GetString(Objv[2])))) {
+                  // Apply modifier if any
+                  if (!(mod=Dict_ApplyModifier(var,modifier))) {
+                     return;
+                  }
+
+                  Tcl_ListObjAppendElement(Interp,obj,FSTD_DictVarInfo(Interp,mod,Objc-3,Objv+3));
+                  if (mod!=var) free(mod);
                }
             } else {
                if ((var=Dict_GetVar(Tcl_GetString(Objv[2])))) {
+                  // Apply modifier if any
+                  if (!(mod=Dict_ApplyModifier(var,modifier))) {
+                     return;
+                  }
+
                   // Var exist
-                  obj=FSTD_DictVarInfo(Interp,var,Objc-3,Objv+3);
+                  obj=FSTD_DictVarInfo(Interp,mod,Objc-3,Objv+3);
+                  
+                  if (mod!=var) free(mod);
                } else {
                   // Var does not exist, add it 
                   var=(TDictVar*)calloc(1,sizeof(TDictVar));
@@ -1971,8 +1986,8 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
    int      i,idx;
    char     lang=0,n=0;;
 
-   static CONST char *sopt[] = { "-lang","-all","-searchip1","-searchip3","-searchetiket","-searchorigin","-short","-long","-magnitude","-min","-max","-factor","-delta","-units","-nature","-origin","-state","-date","-ip1","-ip3","-etiket",NULL };
-   enum                opt { LANG,ALL,SEARCHIP1,SEARCHIP3,SEARCHETIKET,SEARCHORIGIN,SHORT,LONG,MAGNITUDE,MIN,MAX,FACTOR,DELTA,UNITS,NATURE,ORIGIN,STATE,DATE,IP1,IP3,ETIKET };
+   static CONST char *sopt[] = { "-lang","-all","-modifier","-searchip1","-searchip3","-searchorigin","-searchetiket","-short","-long","-magnitude","-min","-max","-factor","-delta","-units","-nature","-origin","-state","-date","-ip1","-ip3",NULL };
+   enum                opt { LANG,ALL,MODIFIER,SEARCHIP1,SEARCHIP3,SEARCHORIGIN,SEARCHETIKET,SHORT,LONG,MAGNITUDE,MIN,MAX,FACTOR,DELTA,UNITS,NATURE,ORIGIN,STATE,DATE,IP1,IP3 };
 
    if (!Var) {
       return(NULL);
@@ -1994,6 +2009,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
          case SEARCHIP3:
          case SEARCHETIKET:
          case SEARCHORIGIN:
+         case MODIFIER:
             ++i;
             break;
             
@@ -2112,15 +2128,6 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                strncpy(Var->Origin,Tcl_GetString(Objv[++i]),32);
             } else {
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Origin,-1));
-            }
-            break;
-            
-          case ETIKET:
-            n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
-               strncpy(Var->ETIKET,Tcl_GetString(Objv[++i]),32);
-            } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->ETIKET,-1));
             }
             break;
             
