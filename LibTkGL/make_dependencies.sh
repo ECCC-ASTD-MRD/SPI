@@ -5,13 +5,13 @@ VERSION=7.8.0
 
 echo "Architecture: ${ARCH}_${PROC}"
 
-#----- Location of the library source codes
-ARCH_PATH_OPS=/fs/cetus/fs2/ops/cmoe/afsrops/Archive
+#----- Location of the library source code
+ARCH_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Archive
 ARCH_PATH=$ARCH_PATH_OPS
 #ARCH_PATH=$HOME/data/Archive
 
 #----- Location of libraries we won't compile
-LIB_PATH_OPS=/fs/cetus/fs2/ops/cmoe/afsrops/Lib/${ORDENV_PLAT}
+LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}
 
 #----- Where to install libraries
 LIB_PATH=$HOME/Links/Lib${VERSION}/${ORDENV_PLAT}
@@ -57,7 +57,7 @@ MESA=Mesa-7.9.2
 NETCDF=netcdf-4.1.1
 KKDU=kakadu-6.3
 FLT=fltlib-0.5.1
-RMN=librmn-15
+RMN=librmn-15.1
 
 #----- Define the list of compiled items and package name that this script will use
 ARCH_LIBS="tcl${TCL_VERSION} tk${TCL_VERSION} ${TKIMG} ${TKTABLE} ${TKDND} Tcllib-${TCLLIB} $XML $TDOM $EXPAT $CURL $SQLITE.1 $GEOS $GDAL $JASPER $JPEG $HDF4 $SZIP $HDF5 $POSTGRESQL $ODBC $GRIB $ECBUFR $PROJ $MESA $NETCDF"
@@ -310,6 +310,8 @@ cp -r ${LIB_PATH}/${GRIB}/share/grib_api/definitions ${SPI_PATH}/share/grib
 mkdir ${TMP_PATH}/${ECBUFR}
 cd ${TMP_PATH}/${ECBUFR}
 ${ARCH_PATH}/${ECBUFR}/configure --prefix=${LIB_PATH}/${ECBUFR} --enable-shared=yes CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
+#----- Because the headers won't be copied by the install directive if we don't do that
+cp ${ARCH_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
 make install
 
 #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
