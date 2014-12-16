@@ -245,7 +245,10 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                }
 
                if (axis->GridNb) {
-                  axis->Grid=(double*)malloc(axis->GridNb*sizeof(double));
+                  if (!(axis->Grid=(double*)malloc(axis->GridNb*sizeof(double)))) {
+                     Tcl_AppendResult(Interp,"Memory allocation error",(char*)NULL);
+                     return(TCL_ERROR);
+                  }                     
                   for (j=0;j<axis->GridNb;j++){
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
                      Tcl_GetDoubleFromObj(Interp,obj,&axis->Grid[j]);
@@ -271,7 +274,10 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                }
 
                if (axis->HighLightNb) {
-                  axis->HighLight=(double*)malloc(axis->HighLightNb*sizeof(double));
+                  if (!(axis->HighLight=(double*)malloc(axis->HighLightNb*sizeof(double)))) {
+                     Tcl_AppendResult(Interp,"Memory allocation error",(char*)NULL);
+                     return(TCL_ERROR);
+                  }                     
                   for (j=0;j<axis->HighLightNb;j++){
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
                      Tcl_GetDoubleFromObj(Interp,obj,&axis->HighLight[j]);
@@ -488,7 +494,10 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                }
 
                if (axis->InterNb) {
-                  axis->Inter=(double*)malloc(axis->InterNb*sizeof(double));
+                  if (!(axis->Inter=(double*)malloc(axis->InterNb*sizeof(double)))) {
+                     Tcl_AppendResult(Interp,"Memory allocation error",(char*)NULL);
+                     return(TCL_ERROR);
+                  }                     
                   for (j=0;j<axis->InterNb;j++){
                      Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
                      if (Tcl_GetDoubleFromObj(Interp,obj,&axis->Inter[j])==TCL_ERROR) {

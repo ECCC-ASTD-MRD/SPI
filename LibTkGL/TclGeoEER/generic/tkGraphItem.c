@@ -1145,7 +1145,10 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
 
    if (vec0 && vec0->N<=vec->N && vec1 && vec1->N<=vec->N && Item->Outline) {
 
-      v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d));
+      if (!(v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d)))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
       vn=0;
 
       /* Compute graph curve points */
@@ -1221,6 +1224,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          glDisable(GL_LINE_STIPPLE);
       }
    }
+   
    free(v);
 }
 
@@ -1485,10 +1489,16 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    } else {
       hd=0;
    }
-   v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+   if (!(v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
+      fprintf(stderr,"(ERROR) Memory allocation error");
+      return;
+   }
 
    if (vecl) {
-      vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+      if (!(vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
    }
    
    /* Compute graph curve points */
@@ -1867,7 +1877,10 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       Tk_PhotoGetImage(handle,&data);
 
       /*We have to flip the image data along the Y axis*/
-      pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize);
+      if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
       memcpy(pixel,data.pixelPtr,data.width*data.height*data.pixelSize);
       DataFlip(data.pixelPtr,pixel,data.width,data.height,data.pixelSize);
 
@@ -2970,7 +2983,11 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       Tk_PhotoGetImage(handle,&data);
 
       /*We have to flip the image data along the Y axis*/
-      pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize);
+      if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
+         
       memcpy(pixel,data.pixelPtr,data.width*data.height*data.pixelSize);
       DataFlip(data.pixelPtr,pixel,data.width,data.height,data.pixelSize);
 
@@ -3130,7 +3147,10 @@ void GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *
 
       Tcl_AppendResult(Interp,"% Postscript du graph MinMax\n",(char*)NULL);
 
-      v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d));
+      if (!(v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d)))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
       vn=0;
 
       /* Compute graph curve points */
@@ -3446,10 +3466,16 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    } else {
       hd=0;
    }
-   v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+   if (!(v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
+      fprintf(stderr,"(ERROR) Memory allocation error");
+      return;
+   }
 
    if (vecl) {
-      vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d));
+      if (!(vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
+         fprintf(stderr,"(ERROR) Memory allocation error");
+         return;
+      }
    }
 
    GraphAxis_Define(AxisX,vecx,X1-X0);
