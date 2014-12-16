@@ -28,7 +28,6 @@ Log::Start [info script] 0.1
 
 fstddict load $env(AFSISIO)/datafiles/constants/ops.variable_dictionary.xml
 fstddict load DataIn/eer.variable_dictionary.xml
-fstddict load /users/dor/afsr/005/Projects/CMCDataServer/Resources/XML/labQC2.variable_dictionary.xml
 
 puts "Variables (All) : [fstddict var]"
 puts "Variables:(TT*) : [fstddict var TT]"
@@ -45,8 +44,8 @@ puts "Var CV      : [fstddict varinfo CV -searchorigin CMOE]"
 puts "Var VF (22) : [fstddict varinfo VF -lang fr -searchip1 22 -short -units]"
 puts "Var VF (33) : [fstddict varinfo VF -lang fr -searchip1 33 -short -units]"
 puts "Var VFDGD   : [fstddict varinfo VFDGD -lang fr -short -units]"
-puts "Var PR (all)         : [fstddict varinfo PR -lang fr -all -unit -etiket]"
-puts "Var PR (ERGE1___NALL): [fstddict varinfo PR -lang fr -searchetiket ERGE1___NALL -short -unit -etiket]"
+puts "Var PR (ERC25___NALL): [fstddict varinfo PR -lang fr -all -modifier ERC25___NALL -short -unit]"
+puts "Var TT (ERGE1___NALL): [fstddict varinfo TT -lang fr -modifier ERGE1___NALL -short -unit]"
 
 fstddict varinfo TT -lang en -short "tototo tititi"
 puts "Var TT new  : [fstddict varinfo TT -lang en -short]"

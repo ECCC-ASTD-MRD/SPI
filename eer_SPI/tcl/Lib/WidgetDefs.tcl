@@ -139,8 +139,11 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
          pack $Frame.l -side left -fill y
       }
       entry $Frame.e -relief sunken -bd 1 -width $Width -textvariable [lindex $Var 0] -bg $GDefs(ColorLight)
-      menubutton $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -menu $Frame.b.m
-      pack $Frame.b -side left -fill y
+      
+      if { [llength $List] } {
+         menubutton $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -menu $Frame.b.m
+         pack $Frame.b -side left -fill y
+      }
 
    if { $Width==-1 } {
       pack $Frame.e -side left -fill both -expand true
@@ -153,9 +156,10 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
    }
 
    #----- Insertion des valeurs dans le menu
-   menu $Frame.b.m -tearoff $Data(Check$Frame)
-
-   Option::Set $Frame $List [lindex $args 0]
+   if { [llength $List] } {
+      menu $Frame.b.m -tearoff $Data(Check$Frame)
+      Option::Set $Frame $List [lindex $args 0]
+   }
    
    if { $Data(Check$Frame) } {
       eval Option::SetList $Frame \$$Var \$$Var 

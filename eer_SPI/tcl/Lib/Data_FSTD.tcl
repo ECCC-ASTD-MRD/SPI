@@ -701,7 +701,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
          } else {
             set value [FSTD::FieldFormat $field $spd]
          }
-         set desc [fstdfield configure $field -desc]
+         set desc [fstdfield define $field -NOMVAR]
          
          lappend list [list $desc $ij $pij $value]
          append Page::Data(Value) "$desc:$value "
