@@ -6,15 +6,21 @@ VERSION=7.8.0
 echo "Architecture: ${ARCH}_${PROC}"
 
 #----- Location of the library source codes
-ARCH_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Archive
-ARCH_PATH=$ARCH_PATH_INI
+ARCH_PATH_OPS=/fs/cetus/fs2/ops/cmoe/afsrops/Archive
+ARCH_PATH=$ARCH_PATH_OPS
+#ARCH_PATH=$HOME/data/Archive
+
+#----- Location of libraries we won't compile
+LIB_PATH_OPS=/fs/cetus/fs2/ops/cmoe/afsrops/Lib/${ORDENV_PLAT}
 
 #----- Where to install libraries
-LIB_PATH_INI=/fs/cetus/fs2/ops/cmoe/afsr005/Lib/${ORDENV_PLAT}
-LIB_PATH=$HOME/Links/libfs${VERSION}/${ORDENV_PLAT}
+LIB_PATH=$HOME/Links/Lib${VERSION}/${ORDENV_PLAT}
 
 SPI_LIB=$LIB_PATH/SPI
-SPI_PATH=$HOME/Projects/SPI/eer_SPI
+SPI_PATH=$HOME/Projects/SPI
+
+#------ Temporary directory where the object files will be compiled
+TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}
 
 export LD_LIBRARY_PATH=${SPI_LIB}:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${SPI_LIB}:$LIBRARY_PATH
@@ -57,44 +63,48 @@ RMN=librmn-15
 ARCH_LIBS="tcl${TCL_VERSION} tk${TCL_VERSION} ${TKIMG} ${TKTABLE} ${TKDND} Tcllib-${TCLLIB} $XML $TDOM $EXPAT $CURL $SQLITE.1 $GEOS $GDAL $JASPER $JPEG $HDF4 $SZIP $HDF5 $POSTGRESQL $ODBC $GRIB $ECBUFR $PROJ $MESA $NETCDF"
 
 #----- Define the list of items we won't compile but will link with
-SLINK_LIBS="$FGDB URP $FLT gdb $RMN $MYSQL"
+SLINK_LIBS="$FGDB URP $FLT gdb $RMN $MYSQL $OCI"
 
 #----- Create output directories
 
 mkdir -p ${LIB_PATH}
 mkdir -p ${SPI_LIB}
 
+[ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
+mkdir -p "${TMP_PATH}"
+echo "Temporary directory is [$TMP_PATH]"
+
 #----- Either copy missing packages or output an error if they are non-existant
 
 if [ "$1" = "localcopy" ]; then
     set -e
 
-    #----- Only necessary because I can't create the object files (therefore I can't compile) in JP's Archive directory
-    if [[ $ARCH_PATH_INI != $ARCH_PATH ]]; then
-        #----- Not added : KKDU MYSQL OCI FGDB
+    #----- Only necessary If using a local cache
+
+    if [[ $ARCH_PATH_OPS != $ARCH_PATH ]]; then
 
         for l in $ARCH_LIBS; do
-            if [[ -d $ARCH_PATH/$l && $ARCH_PATH_INI/$l -nt $ARCH_PATH/$l ]]; then
+            if [[ -d $ARCH_PATH/$l && $ARCH_PATH_OPS/$l -nt $ARCH_PATH/$l ]]; then
                 echo deleting $ARCH_PATH/$l
                 #rm -rf "$ARCH_PATH/$l"
             fi
             if [[ ! -d $ARCH_PATH/$l ]]; then
-                echo copying $ARCH_PATH_INI/$l to $ARCH_PATH/
-                sscp -r -p "$ARCH_PATH_INI/$l" "$ARCH_PATH/"
+                echo copying $ARCH_PATH_OPS/$l to $ARCH_PATH/
+                sscp -r -p "$ARCH_PATH_OPS/$l" "$ARCH_PATH/"
             fi
         done
     fi
 
     #----- The library we don't compile doesn't need to be copied, so link them to the original dir
 
-    if [[ $LIB_PATH_INI != $LIB_PATH ]]; then
+    if [[ $LIB_PATH_OPS != $LIB_PATH ]]; then
 
         for l in $SLINK_LIBS; do
             if [[ ! -e $LIB_PATH/$l ]]; then
-                echo "Creating symlink from $LIB_PATH_INI/$l to $LIB_PATH/$l"
-                if [[ -e $LIB_PATH_INI/$l ]]; then
-                    ln -fsT $LIB_PATH_INI/$l $LIB_PATH/$l
-                    cp $LIB_PATH/$l/lib/lib* $SPI_LIB/
+                echo "Creating symlink $LIB_PATH/$l -> $LIB_PATH_OPS/$l"
+                if [[ -e $LIB_PATH_OPS/$l ]]; then
+                    ln -fsT $LIB_PATH_OPS/$l $LIB_PATH/$l
+                    cp -f $LIB_PATH/$l/lib/lib*so* $SPI_LIB/ || echo No shared libraries to copy for $l
                 else
                     echo "Library $l could not be found : symlink failed."
                     exit 1
@@ -105,7 +115,7 @@ if [ "$1" = "localcopy" ]; then
 
     set +e
 else
-    #----- Make sure every package we need to compile is available locally
+    #----- Make sure every package we need to compile is available
 
     for l in $ARCH_LIBS; do
         if [[ ! -e $ARCH_PATH/$l ]]; then
@@ -137,9 +147,12 @@ if [[ $ARCH == "AIX" ]]; then
    export make=gmake
 fi
 
+set -e
+
 #----- Mesa
-cd ${ARCH_PATH}/${MESA}
-make distclean
+mkdir ${TMP_PATH}/${MESA}
+cd ${TMP_PATH}/${MESA}
+cp -r -p ${ARCH_PATH}/${MESA}/ ${TMP_PATH}/
 ./configure --prefix=${SPI_LIB}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
 make
 make install
@@ -150,197 +163,154 @@ fi
 #----- Tcl Specifics
 
 #----- Tcl
-cd ${ARCH_PATH}/tcl${TCL_VERSION}/unix
-make distclean
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads  --enable-64bit=${x64}
+mkdir ${TMP_PATH}/tcl${TCL_VERSION}
+cd ${TMP_PATH}/tcl${TCL_VERSION}
+${ARCH_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${SPI_LIB}/TclTk --enable-threads  --enable-64bit=${x64}
 make install
 if [[ $? -ne 0 ]] ; then
    exit 1
 fi
 
 #----- Tk
-cd ${ARCH_PATH}/tk${TCL_VERSION}/unix
-make distclean
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
+mkdir ${TMP_PATH}/tk${TCL_VERSION}
+cd ${TMP_PATH}/tk${TCL_VERSION}
+${ARCH_PATH}/tk${TCL_VERSION}/unix/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --enable-xft=no
 
 #----- Remove visibility-hidden flag from makefile for glCanvas to work
 mv Makefile Makefile.hidden
 sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- TkImg
-cd ${ARCH_PATH}/${TKIMG}
-make distclean
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --with-tk=${SPI_LIB}/TclTk/lib
+mkdir ${TMP_PATH}/${TKIMG}
+cd ${TMP_PATH}/${TKIMG}
+${ARCH_PATH}/${TKIMG}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --with-tk=${SPI_LIB}/TclTk/lib
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- TkTable
-cd ${ARCH_PATH}/${TKTABLE}
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
+mkdir ${TMP_PATH}/${TKTABLE}
+cd ${TMP_PATH}/${TKTABLE}
+${ARCH_PATH}/${TKTABLE}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make clean
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- Tkdnd
-cd ${ARCH_PATH}/${TKDND}
-make distclean
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
+mkdir ${TMP_PATH}/${TKDND}
+cd ${TMP_PATH}/${TKDND}
+${ARCH_PATH}/${TKDND}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
+#----- Tcllib
 cd ${ARCH_PATH}/Tcllib-${TCLLIB}
 ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${SPI_LIB}/TclTk/lib/tcllib${TCLLIB}
 
 #----- libxml2
-cd ${ARCH_PATH}/${XML}
-make distclean
-./configure --prefix=${LIB_PATH}/${XML} --enable-64bit=${x64} --without-python
+mkdir ${TMP_PATH}/${XML}
+cd ${TMP_PATH}/${XML}
+${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH}/${XML} --enable-64bit=${x64} --without-python
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${XML}/lib/*.so* ${SPI_LIB}
 
 #----- tDOM
-cd ${ARCH_PATH}/${TDOM}
-make distclean
-./configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tclinclude=${SPI_LIB}/TclTk/include --with-tcl=${SPI_LIB}/TclTk/lib
+mkdir ${TMP_PATH}/${TDOM}
+cd ${TMP_PATH}/${TDOM}
+${ARCH_PATH}/${TDOM}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tclinclude=${SPI_LIB}/TclTk/include --with-tcl=${SPI_LIB}/TclTk/lib
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- GDAL Specifics
 
-#----- expath
-cd ${ARCH_PATH}/${EXPAT}
-make distclean
-./configure --prefix=${LIB_PATH}/${EXPAT} --enable-shared=yes
+#----- expat
+mkdir ${TMP_PATH}/${EXPAT}
+cd ${TMP_PATH}/${EXPAT}
+${ARCH_PATH}/${EXPAT}/configure --prefix=${LIB_PATH}/${EXPAT} --enable-shared=yes
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${EXPAT}/lib/*.so* ${SPI_LIB}
 
 #----- curl
-cd ${ARCH_PATH}/${CURL}
-make distclean
-./configure --prefix=${LIB_PATH}/${CURL} --enable-shared=no --without-libssh2 --without-ssl
+mkdir ${TMP_PATH}/${CURL}
+cd ${TMP_PATH}/${CURL}
+${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH}/${CURL} --enable-shared=no --without-libssh2 --without-ssl
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- sqlite
-cd ${ARCH_PATH}/${SQLITE}.1
-make distclean
-./configure --prefix=${LIB_PATH}/${SQLITE} --enable-shared=yes --enable-threadsafe
+mkdir ${TMP_PATH}/${SQLITE}.1
+cd ${TMP_PATH}/${SQLITE}.1
+${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH}/${SQLITE} --enable-shared=yes --enable-threadsafe
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${SQLITE}/lib/*.so* ${SPI_LIB}
 
 #----- geos
-cd ${ARCH_PATH}/${GEOS}
-make distclean
-./configure --prefix=${LIB_PATH}/${GEOS} --enable-shared --enable-python=no --enable-ruby=no --with-gnu-ld=yes
+mkdir ${TMP_PATH}/${GEOS}
+cd ${TMP_PATH}/${GEOS}
+${ARCH_PATH}/${GEOS}/configure --prefix=${LIB_PATH}/${GEOS} --enable-shared --enable-python=no --enable-ruby=no --with-gnu-ld=yes
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${GEOS}/lib/*.so* ${SPI_LIB}
 
 #----- jasper
-cd ${ARCH_PATH}/${JASPER}
-make distclean
-./configure --prefix=${LIB_PATH}/${JASPER} --enable-shared=yes
+mkdir ${TMP_PATH}/${JASPER}
+cd ${TMP_PATH}/${JASPER}
+CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS" ${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH}/${JASPER} --enable-shared=yes
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${JASPER}/lib/*.so* ${SPI_LIB}
 
 #----- JPEG
-cd ${ARCH_PATH}/${JPEG}
-make clean
-make -f makefile.ansi
-mkdir -p ${LIB_PATH}/${JPEG}/lib
-mkdir -p ${LIB_PATH}/${JPEG}/include
-
-cp libjpeg.a ${LIB_PATH}/${JPEG}/lib
-cp *.h ${LIB_PATH}/${JPEG}/include
+mkdir ${TMP_PATH}/${JPEG}
+cd ${TMP_PATH}/${JPEG}
+${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH}/${JPEG} --enable-shared --enable-static
+make install
 
 #----- HDF-4
-cd ${ARCH_PATH}/${HDF4}
-make distclean
-./configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}/${JPEG}
+mkdir ${TMP_PATH}/${HDF4}
+cd ${TMP_PATH}/${HDF4}
+${ARCH_PATH}/${HDF4}/configure --prefix=${LIB_PATH}/${HDF4} --enable-shared=yes --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}/${JPEG}
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${HDF4}/lib/*.so* ${SPI_LIB}
 
 #----- SZIP
-cd ${ARCH_PATH}/${SZIP}
-make distclean
-./configure --prefix=${LIB_PATH}/${SZIP} --enable-shared=yes 
+mkdir ${TMP_PATH}/${SZIP}
+cd ${TMP_PATH}/${SZIP}
+${ARCH_PATH}/${SZIP}/configure --prefix=${LIB_PATH}/${SZIP} --enable-shared=yes 
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${SZIP}/lib/*.so* ${SPI_LIB}
 
 #----- HDF-5
-cd ${ARCH_PATH}/${HDF5}
-make distclean
-./configure --prefix=${LIB_PATH}/${HDF5} --enable-shared=yes --with-szlib=${LIB_PATH}/${SZIP} --disable-fortran
+mkdir ${TMP_PATH}/${HDF5}
+cd ${TMP_PATH}/${HDF5}
+${ARCH_PATH}/${HDF5}/configure --prefix=${LIB_PATH}/${HDF5} --enable-shared=yes --with-szlib=${LIB_PATH}/${SZIP} --disable-fortran
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${HDF5}/lib/*.so* ${SPI_LIB}
 
 #----- netCDF
-cd ${ARCH_PATH}/${NETCDF}
-make distclean
-./configure --prefix=${LIB_PATH}/${NETCDF} --disable-netcdf-4 --enable-shared=yes --enable-c-only --with-hdf5=${LIB_PATH}/${HDF5} -with-hdf4=${LIB_PATH}/${HDF4}
+mkdir ${TMP_PATH}/${NETCDF}
+cd ${TMP_PATH}/${NETCDF}
+${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH}/${NETCDF} --disable-netcdf-4 --enable-shared=yes --enable-c-only --with-hdf5=${LIB_PATH}/${HDF5} -with-hdf4=${LIB_PATH}/${HDF4}
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${NETCDF}/lib/*.so* ${SPI_LIB}
 
 #----- grib
-cd ${ARCH_PATH}/${GRIB}
-make distclean
-./configure --prefix=${LIB_PATH}/${GRIB} --enable-shared=yes --enable-pthread  --with-png-support --with-jasper=${LIB_PATH}/${JASPER}
+mkdir ${TMP_PATH}/${GRIB}
+cd ${TMP_PATH}/${GRIB}
+${ARCH_PATH}/${GRIB}/configure --prefix=${LIB_PATH}/${GRIB} --enable-shared=yes --enable-pthread --with-png-support --with-jasper=${LIB_PATH}/${JASPER} \
+    FCFLAGS="-I${ARCH_PATH}/${GRIB}/src -I${ARCH_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${ARCH_PATH}/${GRIB}/src $CFLAGS"
+
+#----- Because the genius who developped the DEVEL_RULES mechanism never build outside his tree
+touch ${TMP_PATH}/${GRIB}/{src,definitions}/dummy.am
+
+#----- Because using variables to locate executables and source files instead of just hoping they magically appear in the current directory is just too difficult
+cp -p ${ARCH_PATH}/${GRIB}/tools/grib1to2.txt ${TMP_PATH}/${GRIB}/tools/
+cp -p ${ARCH_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
+cp -p ${ARCH_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
+
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${GRIB}/lib/*.so* ${SPI_LIB}
 mkdir -p ${SPI_PATH}/share/grib
 cp -r ${LIB_PATH}/${GRIB}/share/grib_api/definitions ${SPI_PATH}/share/grib
 
 #----- ECBUFR
-cd ${ARCH_PATH}/${ECBUFR}
-make distclean
-./configure --prefix=${LIB_PATH}/${ECBUFR} --enable-shared=yes
+mkdir ${TMP_PATH}/${ECBUFR}
+cd ${TMP_PATH}/${ECBUFR}
+${ARCH_PATH}/${ECBUFR}/configure --prefix=${LIB_PATH}/${ECBUFR} --enable-shared=yes CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 
 #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
 cd ${LIB_PATH}/${ECBUFR}/include
@@ -350,45 +320,37 @@ ln -sf -t ./ */*.{a,la,so}*
 cp -d ${LIB_PATH}/${ECBUFR}/lib/*/*.so* ${SPI_LIB}
 
 #----- PostgreSQL
-cd ${ARCH_PATH}/${POSTGRESQL}
-make distclean
+mkdir ${TMP_PATH}/${POSTGRESQL}
+cd ${TMP_PATH}/${POSTGRESQL}
 #./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-libxslt
-./configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${ARCH_PATH}/${XML}/include
+${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH}/${POSTGRESQL} --enable-shared --disable-rpath  --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIB_PATH}/${XML}/include/libxml2
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${POSTGRESQL}/lib/*.so* ${SPI_LIB}
 
 #----- ODBC
-cd ${ARCH_PATH}/${ODBC}
-make distclean
-./configure --prefix=${LIB_PATH}/${ODBC}
+mkdir ${TMP_PATH}/${ODBC}
+cd ${TMP_PATH}/${ODBC}
+${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH}/${ODBC}
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${ODBC}/lib/*.so* ${SPI_LIB}
 
 #----- PROJ 4
-cd ${ARCH_PATH}/${PROJ}
-make distclean
-./configure --prefix=${LIB_PATH}/${PROJ}
+mkdir ${TMP_PATH}/${PROJ}
+cd ${TMP_PATH}/${PROJ}
+${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH}/${PROJ}
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${PROJ}/lib/*.so* ${SPI_LIB}
 
 #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
 export LD_LIBRARY_PATH={LIB_PATH}/${GEOS}/lib:$LD_LIBRARY_PATH
 
-cd ${ARCH_PATH}/${GDAL}
-make distclean
+mkdir ${TMP_PATH}/${GDAL}
+cd ${TMP_PATH}/${GDAL}
+cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}/
 ./configure --prefix=${LIB_PATH}/${GDAL} --with-threads=yes --disable-rpath \
 --with-libz=internal \
 --with-liblzma=yes \
---with-xml2=${LIB_PATH}/${XML}/bin \
+--with-xml2=${LIB_PATH}/${XML}/bin/xml2-config \
 --with-pcidsk=internal \
 --with-pcraster=internal \
 --with-png=internal \
@@ -408,18 +370,18 @@ make distclean
 --with-pg=${LIB_PATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIB_PATH}/${ODBC} \
 --with-netcdf=${LIB_PATH}/${NETCDF} \
---with-oci-lib=${LIB_PATH}/${OCI} \
+--with-oci-lib=${LIB_PATH}/${OCI} LDFLAGS="-Wl,--no-as-needed $LDFLAGS" \
 --with-oci-include=${LIB_PATH}/${OCI}/sdk/include \
 --with-fgdb=${LIB_PATH}/${FGDB} \
 --with-static-proj4=${LIB_PATH}/${PROJ}
 
 make install
-if [[ $? -ne 0 ]] ; then
-   exit 1
-fi
 cp -d ${LIB_PATH}/${GDAL}/lib/*.so* ${SPI_LIB}
 mkdir -p ${SPI_PATH}/share/gdal
 cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
 #--with-kakadu=${LIB_PATH}/${KKDU}
 #--with-ecw=/users/dor/afsr/005/Links/dev/Lib/Linux/libecwj2-3.3
+
+#----- Delete the temporary dir
+rm -rf "${TMP_PATH}"
