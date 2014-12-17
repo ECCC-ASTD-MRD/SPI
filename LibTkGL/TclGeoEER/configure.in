@@ -24,17 +24,6 @@ AC_INIT([TclGeoEER], [7.8.0])
 PKG_CFLAGS="-D_GNU_SOURCE -D_BSD_SOURCE"
 
 # ---------------------------------------------------------------------------
-# Check for EER
-# ---------------------------------------- -----------------------------------
-
-AX_LIB_EER()
- 
-if test "$HAVE_EER" = "yes"; then
-   PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
-   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
-fi
-
-# ---------------------------------------------------------------------------
 # Check for RMN
 # ---------------------------------------- -----------------------------------
 
@@ -108,6 +97,17 @@ GDAL_INIT(1.9.0)
 if test "$HAVE_GDAL" = "yes"; then
    PKG_LIBS="$PKG_LIBS $GDAL_LIBS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDAL $GDAL_CFLAGS"
+fi
+
+# ---------------------------------------------------------------------------
+# Check for EER
+# ---------------------------------------- -----------------------------------
+
+AX_LIB_EER()
+ 
+if test "$HAVE_EER" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
 fi
 
 #--------------------------------------------------------------------

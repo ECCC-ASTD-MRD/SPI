@@ -104,7 +104,7 @@ AC_DEFUN([AX_LIB_EER],
         CPPFLAGS="$CPPFLAGS -I$eer_include_dir"
 
         saved_LIBS="$LIBS"
-        LIBS="$LIBS $eer_lib_flags"
+        LIBS="$LIBS $eer_lib_flags -lm $RMN_LDFLAGS"
 
         #
         # Check headers
@@ -167,9 +167,9 @@ System_IsBigEndian();
 
     AC_MSG_CHECKING([for EER])
 
-EER_LDFLAGS="$eer_lib_flags"
-eer_header_found="yes"
-eer_lib_found="yes"
+#EER_LDFLAGS="$eer_lib_flags"
+#eer_header_found="yes"
+#eer_lib_found="yes"
 
     if test "$run_eer_test" = "yes"; then
         if test "$eer_header_found" = "yes" -a "$eer_lib_found" = "yes"; then
