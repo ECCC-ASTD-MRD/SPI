@@ -38,9 +38,13 @@ AC_DEFUN([AX_LIB_EER],
         elif test -d "$withval"; then
             eer_prefix="$withval"
             eer_requested="yes"
-        else
+        elif test "$withval" = "no"; then
             eer_prefix=""
             eer_requested="no"
+        else
+            eer_prefix=""
+            eer_requested="yes"
+            AC_MSG_ERROR([--with-eer option was used with an invalid value ($withval). It can either be 'yes', 'no' or a valid directory.])
         fi
         ],
         [
