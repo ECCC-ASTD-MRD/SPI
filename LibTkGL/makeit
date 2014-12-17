@@ -119,7 +119,7 @@ else
 	--with-tcl=${TCL}/TclTk/lib \
 	--with-tk=${TCL}/TclTk/lib \
 	--with-eer=${SSM_DEV}/workspace/eerUtils_1.10.0_${ORDENV_PLAT}\
-	--with-rmn=${LIB}/librmn-15 \
+	--with-rmn=${LIB}/librmn-15.1 \
 	--with-gdb=${LIB}/gdb \
 	--with-gdal=${LIB}/gdal-1.11.0/bin/gdal-config  \
 	--with-grib=${LIB}/grib_api-1.12.0 \

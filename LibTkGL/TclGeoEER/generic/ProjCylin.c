@@ -155,8 +155,8 @@ void Cylin_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
          }
       glEnd();
 
-      if (Interp)
-         glFeedbackProcess(Interp,GL_2D);
+      if (Interp) glFeedbackProcess(Interp,GL_2D);      
+      glDisable(GL_LINE_STIPPLE);      
    }
 }
 

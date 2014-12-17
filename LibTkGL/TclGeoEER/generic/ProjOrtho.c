@@ -272,6 +272,7 @@ void Ortho_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       }
 
       glPopMatrix();
+      glDisable(GL_LINE_STIPPLE);
    }
 }
 

@@ -145,9 +145,10 @@ void Azimuth_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
             Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&vr,1);
             glVertex3dv(vr);
          }
-        glEnd();
-     }
+         glEnd();
+      }
       if (Interp) glFeedbackProcess(Interp,GL_2D);
+      glDisable(GL_LINE_STIPPLE);
    }
 }
 
