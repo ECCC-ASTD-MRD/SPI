@@ -225,7 +225,7 @@ proc Option::Set { Frame List { ListVal {} } } {
    
    foreach item $List val $ListVal {
 
-      if { [expr $noitem % 10] == 0 } {
+      if { [expr $noitem % 20] == 0 } {
          set columnbreak 1
       } else {
          set columnbreak 0

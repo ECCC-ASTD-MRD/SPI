@@ -999,7 +999,8 @@ proc FSTD::ParamInit { Field { Spec "" } } {
    variable Param
 
    if { [dataspec is $Spec] } {
-      set var [fstdfield define $Field -NOMVAR]
+      set var  [fstdfield define $Field -NOMVAR]
+#      set etik [fstdfield define $Field -ETIKET]
 #      set var [dataspec configure $Spec -desc]
       set desc [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]

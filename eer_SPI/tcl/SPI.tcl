@@ -49,7 +49,7 @@ proc SPI::Setup { { Force False } } {
 
       SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
 
-      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Scenario $env(HOME)/.spi/Macro $env(HOME)/.spi/Style
+      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Macro $env(HOME)/.spi/Style
 
       #----- Installer les fichiers de definitions
       if { ![file exists $env(HOME)/.spi/SPI] } {
@@ -57,20 +57,8 @@ proc SPI::Setup { { Force False } } {
       }
 
       #----- Copy standard stuff
-      foreach file { Colormap Scenario Style } {
+      foreach file { Colormap Style } {
          exec cp -r $GDefs(Dir)/tcl/Setup/$file $env(HOME)/.spi
-      }
-
-      #----- Copy old users definitions
-      if { [file exists $env(HOME)/.eer_ToolDefs] } {
-         foreach fileold { eer_FieldCalc eer_FileBoxPath eer_Host eer_ObsModel eer_ProjCam eer_SatDomain } filenew { FieldCalc FileBox HFManager ObsModel ProjCam SatData } {
-            catch { file copy -force $env(HOME)/.eer_ToolDefs/$fileold $env(HOME)/.spi/$filenew }
-         }
-         foreach fileold { eer_Layout eer_Scenario Macro } filenew { Layout Scenario Macro } {
-            catch { eval exec cp -r [glob $env(HOME)/.eer_ToolDefs/${fileold}/*] $env(HOME)/.spi/${filenew} }
-         }
-
-         catch { file copy $env(HOME)/.eer_ToolDefs/Mapper/Params $env(HOME)/.spi/Mapper }
       }
    }
 }
