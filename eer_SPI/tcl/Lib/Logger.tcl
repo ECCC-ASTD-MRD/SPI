@@ -40,12 +40,15 @@ catch { SPI::Splash "Loading Package Logger 1.3" }
 set GDefs(Lang) 1
 
 #----- Define default shellecolor (as in the App C package)
+set APP_COLOR_BLINK   "\x1b\[5m"
+set APP_COLOR_BLACK   "\x1b\[30m"
 set APP_COLOR_RED     "\x1b\[31m"
 set APP_COLOR_GREEN   "\x1b\[32m"
 set APP_COLOR_YELLOW  "\x1b\[33m"
 set APP_COLOR_BLUE    "\x1b\[34m"
 set APP_COLOR_MAGENTA "\x1b\[35m"
 set APP_COLOR_CYAN    "\x1b\[36m"
+set APP_COLOR_GRAY    "\x1b\[37m"
 set APP_COLOR_RESET   "\x1b\[0m"
 
 namespace eval Log { } {
