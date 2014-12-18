@@ -181,11 +181,16 @@ mv Makefile Makefile.hidden
 sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
 make install
 
+#----- Tcllib
+cd ${ARCH_PATH}/Tcllib-${TCLLIB}
+./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${SPI_LIB}/TclTk/lib/tcllib${TCLLIB}
+
 #----- TkImg
 mkdir ${TMP_PATH}/${TKIMG}
 cd ${TMP_PATH}/${TKIMG}
 ${ARCH_PATH}/${TKIMG}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib --with-tk=${SPI_LIB}/TclTk/lib
-make install
+#----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
+TCLLIBPATH="${SPI_LIB}/TclTk/lib $TCLLIBPATH" make install
 
 #----- TkTable
 mkdir ${TMP_PATH}/${TKTABLE}
@@ -199,10 +204,6 @@ mkdir ${TMP_PATH}/${TKDND}
 cd ${TMP_PATH}/${TKDND}
 ${ARCH_PATH}/${TKDND}/configure --prefix=${SPI_LIB}/TclTk --enable-threads --enable-64bit=${x64} --with-tcl=${SPI_LIB}/TclTk/lib
 make install
-
-#----- Tcllib
-cd ${ARCH_PATH}/Tcllib-${TCLLIB}
-./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${SPI_LIB}/TclTk/lib/tcllib${TCLLIB}
 
 #----- libxml2
 mkdir ${TMP_PATH}/${XML}
