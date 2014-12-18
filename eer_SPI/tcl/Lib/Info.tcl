@@ -446,9 +446,11 @@ proc Info::Format { Info } {
          "AccSecs" { set val [clock format $val] }
       }
 
-      if { $tok!="Scenario" } {
-         set text "$text[format "%-${l}s" $lbl] = $val\n"
+      #----- For scenario, only show then name (1st item)
+      if { $tok=="Scenario" } {
+         set val [lindex [split $val |] 0]
       }
+      set text "$text[format "%-${l}s" $lbl] = $val\n"
    }
    return $text
 }
