@@ -331,7 +331,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,compress=0;
+   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,compress=0,nid,pnid;
    unsigned long dk;
    int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
    long          time;
@@ -347,6 +347,9 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TData_Type  type;
    TDataVector *uvw;
    Vect3d      *pos;
+#ifdef HAVE_ECBUFR
+   TMetObs *metobs;
+#endif
    char        *field,imode,itype,rmn[128];
 
    int         idx;
@@ -688,345 +691,347 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          if (field0->Ref && field0->Ref->Type|GRID_SPARSE)
             FSTD_FieldReadMesh(field0);
 
-         n=-1;
-         /*Interpolate a field*/
-         field1=Data_Get(Tcl_GetString(Objv[3]));
-         if (field1) {
-            if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
-                  return(TCL_ERROR);
+         // Process each sub grids independently
+         pnid=field0->Ref->NId;
+         
+         for(nid=pnid?pnid:(field0->Ref->NbId>1?1:0);nid<=pnid?pnid:field0->Ref->NbId;nid++) {
+            FSTD_FieldSubSelect(field0,nid);
+
+            n=-1;
+            /*Interpolate a field*/
+            if ((field1=Data_Get(Tcl_GetString(Objv[3])))) {
+               if (Objc>4) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+                     ok=TCL_ERROR; break;
+                  }
                }
-            }
 
-            if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
-               FSTD_FieldReadMesh(field1);
-            }
+               if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
+                  FSTD_FieldReadMesh(field1);
+               }
 
-            /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
-            if (n<17 && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
-               if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1,0)) {
-                  return(TCL_ERROR);
+               /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
+               if (n<17 && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
+                  if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1,0)) {
+                     ok=TCL_ERROR; break;
+                  } else {
+                     ok=TCL_OK; continue;
+                  }
+               }
+
+               if (n==3 || n==4) {
+                  if (Objc>8 || Objc<6) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Split [Final] [Index list variable]");
+                     ok=TCL_ERROR; break;
+                  }
+                  if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                     ok=TCL_ERROR; break;
+                  }
+                  nj=1;
+                  obj=NULL;
+                  if (Objc>6) {
+                     if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
+                        obj=Objv[6];
+                     }
+                  }
+                  if (Objc>7) {
+                     obj=Objv[7];
+                  }
+                  /*Check compatibility between source and destination*/
+                  if (!DataDef_Compat(field0->Def,field1->Def)) {
+                     field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->ZRef.Type,field1->Ref->ZRef.Levels);
+                  }
+                  field0->Ref->ZRef.Type=field1->Ref->ZRef.Type;
+                  FSTD_FieldSetTo(field0,field1);
+                  ok=Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj);
+                  if (ok==TCL_ERROR) break;
+               } else if (n>=5 && n<=19) {
+                  if (Objc<5 || Objc>7) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
+                     ok=TCL_ERROR; break;
+                  }
+
+                  ni=1;
+                  table=NULL;
+                  fieldt=NULL;
+                  if (Objc>5) {
+                     if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                        if (!(fieldt=Data_Get(Tcl_GetString(Objv[5])))) {
+                           Tcl_ListObjLength(Interp,Objv[5],&nk);
+                           if (!(table=(double*)malloc(nk*sizeof(double)))) {
+                              Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                              ok=TCL_ERROR; break;                       
+                           }
+                           for(k=0;k<nk;k++) {
+                              Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
+                              Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
+                           }
+                           if (nk!=field0->Def->NK) {
+                              field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
+                              for(key=0;key<FSIZE3D(field0->Def);key++) {
+                                 Def_Set(field0->Def,0,key,0);
+                              }
+                              GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
+                           }
+                        }
+                     }
+                  }
+                  if(Objc==7) {
+                     Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
+                  }
+                  ok=Data_GridAverage(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,table,fieldt?fieldt->Def:NULL,n,ni);
+                  if (table)
+                     free(table);
+                  if (ok==TCL_ERROR) break;
+               } else if (n==20) {
+                  if (Objc<6) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
+                     ok=TCL_ERROR; break;
+                  }
+                  if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                     ok=TCL_ERROR; break;
+                  }
+                  if (ni!=field0->Def->SubSample && field0->Def->Sub) {
+                     free(field0->Def->Sub); field0->Def->Sub=NULL;
+                  }
+                  field0->Def->SubSample=ni;
+                  ok=Data_SubInterpolate(Interp,'N',field0->Ref,field0->Def,field1->Ref,field1->Def);
+               } else if (n==21) {
+                  if (Objc<6) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
+                     ok=TCL_ERROR; break;
+                  }
+                  if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                     ok=TCL_ERROR; break;
+                  }
+                  if (ni!=field0->Def->SubSample && field0->Def->Sub) {
+                     free(field0->Def->Sub); field0->Def->Sub=NULL;
+                  }
+                  field0->Def->SubSample=ni;
+                  ok=Data_SubInterpolate(Interp,'L',field0->Ref,field0->Def,field1->Ref,field1->Def);
                } else {
-                  return(TCL_OK);
+                  ok=FSTD_FieldGridInterpolate(Interp,field0,field1,n);
                }
-            }
+               if (ok==TCL_ERROR) break;
+            } else if ((band=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
 
-            if (n==3 || n==4) {
-               if (Objc>8 || Objc<6) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Split [Final] [Index list variable]");
-                  return(TCL_ERROR);
-               }
-               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                  return(TCL_ERROR);
-               }
-               nj=1;
-               obj=NULL;
-               if (Objc>6) {
-                  if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
-                     obj=Objv[6];
+               /*Interpolate a band*/            
+               if (Objc>4) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+                     ok=TCL_ERROR; break;
                   }
                }
-               if (Objc>7) {
-                  obj=Objv[7];
-               }
-               /*Check compatibility between source and destination*/
-               if (!DataDef_Compat(field0->Def,field1->Def)) {
-                  field0->Ref=GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->ZRef.Type,field1->Ref->ZRef.Levels);
-               }
-               field0->Ref->ZRef.Type=field1->Ref->ZRef.Type;
-               FSTD_FieldSetTo(field0,field1);
-               return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=19) {
-               if (Objc<5 || Objc>7) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
-                  return(TCL_ERROR);
-               }
 
-               ni=1;
-               table=NULL;
-               fieldt=NULL;
-               if (Objc>5) {
-                  if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                     if (!(fieldt=Data_Get(Tcl_GetString(Objv[5])))) {
-                        Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        if (!(table=(double*)malloc(nk*sizeof(double)))) {
-                           Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                           return(TCL_ERROR);                          
-                        }
-                        for(k=0;k<nk;k++) {
-                           Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
-                           Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
-                        }
-                        if (nk!=field0->Def->NK) {
-                           field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
-                           for(key=0;key<FSIZE3D(field0->Def);key++) {
-                              Def_Set(field0->Def,0,key,0);
+               if (n==3 || n==4) {
+                  if (Objc>8 || Objc<6) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Split] [Final] [Index list variable]");
+                     ok=TCL_ERROR; break;
+                  }
+                  if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                     ok=TCL_ERROR; break;
+                  }
+                  nj=1;
+                  obj=NULL;
+                  if (Objc>6) {
+                     if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
+                        obj=Objv[6];
+                     }
+                  }
+                  if (Objc>7) {
+                     obj=Objv[7];
+                  }
+                  ok=Data_GridConservative(Interp,field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj);
+                  if (ok==TCL_ERROR) break;
+               } else if (n>=5 && n<=19) {
+                  if (Objc<5 || Objc>7) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
+                     ok=TCL_ERROR; break;
+                  }
+                  ni=1;
+                  table=NULL;
+                  bandt=NULL;
+                  if (Objc>5) {
+                     if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                        if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
+                           Tcl_ListObjLength(Interp,Objv[5],&nk);
+                           if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
+                              Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                              ok=TCL_ERROR; break;                       
                            }
-                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
+                           for(k=0;k<nk;k++) {
+                              Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
+                              Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
+                           }
+                           table[k]=field0->Def->NoData;
+                           if (nk!=field0->Def->NK) {
+                              if (!(field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk))) {
+                                 Tcl_AppendResult(Interp,"Unable to rellocate buffer",(char*)NULL);
+                                 ok=TCL_ERROR; break;
+                              }
+
+                              for(dk=0;dk<FSIZE3D(field0->Def);dk++) {
+                                 Def_Set(field0->Def,0,dk,0);
+                              }
+                              GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
+                           }
                         }
                      }
                   }
+                  if (Objc==7) {
+                     Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
+                  }
+                  ok=Data_GridAverage(Interp,field0->Ref,field0->Def,band->Ref,band->Def,table,bandt?bandt->Def:NULL,n,ni);
+                  if (table)
+                     free(table);
+               } else {
+                  ok=Data_GridInterpolate(Interp,Objv[4]?Tcl_GetString(Objv[4])[0]:'L',field0->Ref,field0->Def,band->Ref,band->Def);
                }
-               if(Objc==7) {
-                  Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
-               }
-               key=Data_GridAverage(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,table,fieldt?fieldt->Def:NULL,n,ni);
-               if (table)
-                  free(table);
-               return(key);
-            } else if (n==20) {
-               if (Objc<6) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
-                  return(TCL_ERROR);
-               }
-               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                  return(TCL_ERROR);
-               }
-               if (ni!=field0->Def->SubSample && field0->Def->Sub) {
-                  free(field0->Def->Sub); field0->Def->Sub=NULL;
-               }
-               field0->Def->SubSample=ni;
-                return(Data_SubInterpolate(Interp,'N',field0->Ref,field0->Def,field1->Ref,field1->Def));
-            } else if (n==21) {
-               if (Objc<6) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
-                  return(TCL_ERROR);
-               }
-               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                  return(TCL_ERROR);
-               }
-               if (ni!=field0->Def->SubSample && field0->Def->Sub) {
-                  free(field0->Def->Sub); field0->Def->Sub=NULL;
-               }
-               field0->Def->SubSample=ni;
-               return(Data_SubInterpolate(Interp,'L',field0->Ref,field0->Def,field1->Ref,field1->Def));
-            } else {
-               return(FSTD_FieldGridInterpolate(Interp,field0,field1,n));
-            }
-            break;
-         }
+               if (ok==TCL_ERROR) break;
+            } else if ((layer=OGR_LayerGet(Tcl_GetString(Objv[3])))) {
 
-         /*Interpolate a band*/
-         band=GDAL_BandGet(Tcl_GetString(Objv[3]));
-         if (band) {
-            if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
-                  return(TCL_ERROR);
+               /*Interpolate a layer*/
+               if (Objc!=5 && Objc!=6) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"field layer type [field]");
+                  ok=TCL_ERROR; break;
                }
-            }
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
+                  ok=TCL_ERROR; break;
+               }
+               field=NULL;
+               x=1.0;
 
-            if (n==3 || n==4) {
-               if (Objc>8 || Objc<6) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Split] [Final] [Index list variable]");
-                  return(TCL_ERROR);
-               }
-               if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                  return(TCL_ERROR);
-               }
-               nj=1;
-               obj=NULL;
-               if (Objc>6) {
-                  if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
-                     obj=Objv[6];
+               if (Objc==6) {
+                  if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
+                     field=Tcl_GetString(Objv[5]);
                   }
                }
-               if (Objc>7) {
-                  obj=Objv[7];
+               imode=modeogr[n][0];
+               itype='A';
+               if (imode=='L') {
+                  imode=modeogr[n][7];
+                  itype='L';
+               } else if (imode=='P') {
+                  imode=modeogr[n][6];
+                  itype='P';
                }
-               return(Data_GridConservative(Interp,field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=19) {
-               if (Objc<5 || Objc>7) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
-                  return(TCL_ERROR);
-               }
-               ni=1;
-               table=NULL;
-               bandt=NULL;
-               if (Objc>5) {
-                  if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
-                     if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
-                        Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
-                           Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                           return(TCL_ERROR);                          
-                        }
-                        for(k=0;k<nk;k++) {
-                           Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
-                           Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
-                        }
-                        table[k]=field0->Def->NoData;
-                        if (nk!=field0->Def->NK) {
-                           if (!(field0->Def=DataDef_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk))) {
-                              Tcl_AppendResult(Interp,"Unable to rellocate buffer",(char*)NULL);
-                              return (TCL_ERROR);
-                           }
+               ok=Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x);
+               if (ok==TCL_ERROR) break;
+            } else if ((model=Model_Get(Tcl_GetString(Objv[3])))) {
 
-                           for(dk=0;dk<FSIZE3D(field0->Def);dk++) {
-                              Def_Set(field0->Def,0,dk,0);
-                           }
-                           GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels);
-                        }
-                     }
+               /*Interpolate a model*/            
+               if (Objc!=5 && Objc!=6) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
+                  ok=TCL_ERROR; break;
+               }
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
+                  ok=TCL_ERROR; break;
+               }
+               x=1.0;
+
+               if (Objc==6) {
+                  if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
+                     field=Tcl_GetString(Objv[5]);
                   }
                }
-               if (Objc==7) {
-                  Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
+   //            imode=modeogr[n][0];
+               ok=Model_Grid(Interp,field0,model,NULL);
+               if (ok==TCL_ERROR) break;
+            } else if ((obs=Obs_Get(Tcl_GetString(Objv[3])))) {
+
+               /*Interpolate an observation*/
+               if(Objc!=8 && Objc!=9) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto obsfrom [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
+                  ok=TCL_ERROR; break;
                }
-               key=Data_GridAverage(Interp,field0->Ref,field0->Def,band->Ref,band->Def,table,bandt?bandt->Def:NULL,n,ni);
-               if (table)
-                  free(table);
-               return(key);
-            } else {
-               return(Data_GridInterpolate(Interp,Objv[4]?Tcl_GetString(Objv[4])[0]:'L',field0->Ref,field0->Def,band->Ref,band->Def));
-            }
-            break;
-         }
+               Tcl_GetDoubleFromObj(Interp,Objv[5],&c0);
+               Tcl_GetDoubleFromObj(Interp,Objv[6],&c1);c1-=c0;
+               Tcl_GetDoubleFromObj(Interp,Objv[7],&a);
 
-         /*Interpolate a layer*/
-         layer=OGR_LayerGet(Tcl_GetString(Objv[3]));
-         if (layer) {
-            if (Objc!=5 && Objc!=6) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"field layer type [field]");
-               return(TCL_ERROR);
-            }
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
-               return(TCL_ERROR);
-            }
-            field=NULL;
-            x=1.0;
-
-            if (Objc==6) {
-               if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
-                  field=Tcl_GetString(Objv[5]);
+               n=1;
+               if (Objc==9) {
+                  Tcl_GetBooleanFromObj(Interp,Objv[8],&n);
                }
-            }
-            imode=modeogr[n][0];
-            itype='A';
-            if (imode=='L') {
-               imode=modeogr[n][7];
-               itype='L';
-            } else if (imode=='P') {
-               imode=modeogr[n][6];
-               itype='P';
-            }
-            return(Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x));
-         }
 
-         /*Interpolate a model*/
-         model=Model_Get(Tcl_GetString(Objv[3]));
-         if (model) {
-            if (Objc!=5 && Objc!=6) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
-               return(TCL_ERROR);
-            }
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
-               return(TCL_ERROR);
-            }
-            x=1.0;
-
-            if (Objc==6) {
-               if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
-                  field=Tcl_GetString(Objv[5]);
+               switch(Tcl_GetString(Objv[4])[0]) {
+                  case 'S':id=1;break;
+                  case 'E':id=2;break;
+                  case 'G':id=3;break;
+                  case 'L':id=4;break;
                }
-            }
-//            imode=modeogr[n][0];
-            return(Model_Grid(Interp,field0,model,NULL));
-         }
+               if ((pos=Obs_Grid(field0->Ref,obs,&npos,n))) {
+                  ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
+                  free(pos);
+               } else {
+                  Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
+                  ok=TCL_ERROR; break;
+               }
 
-         /*Interpolate an observation*/
-         obs=Obs_Get(Tcl_GetString(Objv[3]));
-         if (obs) {
-            if(Objc!=8 && Objc!=9) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"fldto obsfrom [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
-               return(TCL_ERROR);
-            }
-            Tcl_GetDoubleFromObj(Interp,Objv[5],&c0);
-            Tcl_GetDoubleFromObj(Interp,Objv[6],&c1);c1-=c0;
-            Tcl_GetDoubleFromObj(Interp,Objv[7],&a);
-
-            n=1;
-            if (Objc==9) {
-               Tcl_GetBooleanFromObj(Interp,Objv[8],&n);
-            }
-
-            switch(Tcl_GetString(Objv[4])[0]) {
-               case 'S':id=1;break;
-               case 'E':id=2;break;
-               case 'G':id=3;break;
-               case 'L':id=4;break;
-            }
-            if ((pos=Obs_Grid(field0->Ref,obs,&npos,n))) {
-               ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
-               free(pos);
-            } else {
-               Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
-               return(TCL_ERROR);
-            }
-
-            if (!ok) {
-               Tcl_AppendResult(Interp,"Obs krigging failed",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
-            return(TCL_OK);
-         }
-
+               if (!ok) {
+                  Tcl_AppendResult(Interp,"Obs krigging failed",(char*)NULL);
+                  ok=TCL_ERROR; break;
+               }
+               if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
+               ok=TCL_OK;
 #ifdef HAVE_ECBUFR
-         /*Interpolate a metobs*/
-         TMetObs *metobs;
-         metobs=MetObs_Get(Tcl_GetString(Objv[3]));
-         if (metobs) {
-            if(Objc!=10 && Objc!=11) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"fldto metobsfrom time element [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
-               return(TCL_ERROR);
-            }
-            Tcl_GetLongFromObj(Interp,Objv[4],&time);
+            } else if ((metobs=MetObs_Get(Tcl_GetString(Objv[3])))) {
 
-            Tcl_GetDoubleFromObj(Interp,Objv[7],&c0);
-            Tcl_GetDoubleFromObj(Interp,Objv[8],&c1);
-            Tcl_GetDoubleFromObj(Interp,Objv[9],&a);
+              /*Interpolate a metobs*/            
+               if(Objc!=10 && Objc!=11) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"fldto metobsfrom time element [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
+                  ok=TCL_ERROR; break;
+               }
+               Tcl_GetLongFromObj(Interp,Objv[4],&time);
 
-            n=1;
-            if(Objc==11) {
-               Tcl_GetBooleanFromObj(Interp,Objv[10],&n);
-            }
+               Tcl_GetDoubleFromObj(Interp,Objv[7],&c0);
+               Tcl_GetDoubleFromObj(Interp,Objv[8],&c1);
+               Tcl_GetDoubleFromObj(Interp,Objv[9],&a);
 
-            switch(Tcl_GetString(Objv[6])[0]) {
-               case 'S':id=1;break;
-               case 'E':id=2;break;
-               case 'G':id=3;break;
-               case 'L':id=4;break;
-            }
+               n=1;
+               if(Objc==11) {
+                  Tcl_GetBooleanFromObj(Interp,Objv[10],&n);
+               }
+
+               switch(Tcl_GetString(Objv[6])[0]) {
+                  case 'S':id=1;break;
+                  case 'E':id=2;break;
+                  case 'G':id=3;break;
+                  case 'L':id=4;break;
+               }
 
 
-            if ((pos=MetObs_Grid(Interp,field0->Ref,metobs,time,Objv[5],&npos,n))) {
-               ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
-               free(pos);
-            } else {
-               Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
-               return(TCL_ERROR);
-            }
+               if ((pos=MetObs_Grid(Interp,field0->Ref,metobs,time,Objv[5],&npos,n))) {
+                  ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
+                  free(pos);
+               } else {
+                  Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
+                  ok=TCL_ERROR; break;
+               }
 
-            if (!ok) {
-               Tcl_AppendResult(Interp,"MetObs krigging failed",(char*)NULL);
-               return(TCL_ERROR);
-            }
-            if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
-            return(TCL_OK);
-         }
+               if (!ok) {
+                  Tcl_AppendResult(Interp,"MetObs krigging failed",(char*)NULL);
+                  ok=TCL_ERROR; break;
+               }
+               if (field0->Stat) { Data_StatFree(field0->Stat); field0->Stat=NULL; }
+               ok=TCL_OK;
 #endif
-         /* If we get here, it has to be a NOP or ACCUM*/
-         if (Objc>4) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
-               return(TCL_ERROR);
+            } else {
+               /* If we get here, it has to be a NOP or ACCUM*/
+               if (Objc>4) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+                     ok=TCL_ERROR; break;
+                  }
+               }
+               if (n==16 || n==17 || n==18) {
+                  ok=Data_GridAverage(Interp,field0->Ref,field0->Def,NULL,NULL,NULL,NULL,n,1);
+                  if (ok==TCL_ERROR) break;
+               } else {
+                  Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
+                  ok=TCL_ERROR; break;
+               }
             }
          }
-         if (n==16 || n==17 || n==18) {
-            return(Data_GridAverage(Interp,field0->Ref,field0->Def,NULL,NULL,NULL,NULL,n,1));
-         } else {
-            Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
-            return(TCL_ERROR);
-         }
+         FSTD_FieldSubSelect(field0,pnid);
+         return(ok);
          break;
 
       case VERTICALINTERP:
@@ -1907,7 +1912,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                while ((var=Dict_IterateVar(&iter,Tcl_GetString(Objv[2])))) {
                   // Apply modifier if any
                   if (!(mod=Dict_ApplyModifier(var,modifier))) {
-                     return;
+                     return(TCL_ERROR);
                   }
 
                   Tcl_ListObjAppendElement(Interp,obj,FSTD_DictVarInfo(Interp,mod,Objc-3,Objv+3));
@@ -1917,7 +1922,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                if ((var=Dict_GetVar(Tcl_GetString(Objv[2])))) {
                   // Apply modifier if any
                   if (!(mod=Dict_ApplyModifier(var,modifier))) {
-                     return;
+                     return(TCL_ERROR);
                   }
 
                   // Var exist
