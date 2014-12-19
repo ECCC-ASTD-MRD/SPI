@@ -2782,7 +2782,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    FSTD_File    *file;
    FSTD_Head    *head=(FSTD_Head*)Field->Head;
    TDataVector  *uvw;
-   int          ok=-1,ip1,datyp;
+   int          ok=-1,ip1,datyp,nid;
    unsigned long k,idx;
    void         *p;
 
@@ -2796,6 +2796,10 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
 
+   // Force datadef to master grid
+   nid=Field->Ref->NId;
+   FSTD_FieldSubSelect(Field,0);
+   
    // Check for DATYP and NBIT
    if (head->DATYP==-1) {
       switch(Field->Def->Type) {
@@ -2871,6 +2875,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    EZUnLock_RPNField();
 
    FSTD_FileUnset(Interp,file);
+   FSTD_FieldSubSelect(Field,nid);
 
    if (ok>=0){
       return(TCL_OK);

@@ -1770,6 +1770,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Def->NoData));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Def->NoData);
+               if (Field->Ref->NId==0 && Field->Ref->NbId>0) {
+                  for(nb=1;nb<=Field->Ref->NbId;nb++) 
+                     Field->SDef[nb]->NoData=Field->Def->NoData;
+               }
+
             }
             break;
 
