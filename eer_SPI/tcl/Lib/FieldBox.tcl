@@ -1644,7 +1644,7 @@ proc FieldParams::Window { { Field "" } } {
 
       frame $Data(Tab1).var
          entry $Data(Tab1).var.nomvar -bg $GDefs(ColorLight) -bd 1 -width 4 -textvariable FieldParams::Data(NOMVAR)
-         entry $Data(Tab1).var.typvar -bg $GDefs(ColorLight) -bd 1 -width 1 -textvariable FieldParams::Data(TYPVAR)
+         entry $Data(Tab1).var.typvar -bg $GDefs(ColorLight) -bd 1 -width 2 -textvariable FieldParams::Data(TYPVAR)
          entry $Data(Tab1).var.ip1 -bg $GDefs(ColorLight) -bd 1 -width 8 -textvariable FieldParams::Data(IP1)
          entry $Data(Tab1).var.ip2 -bg $GDefs(ColorLight) -bd 1 -width 8 -textvariable FieldParams::Data(IP2)
          entry $Data(Tab1).var.ip3 -bg $GDefs(ColorLight) -bd 1 -width 8 -textvariable FieldParams::Data(IP3)

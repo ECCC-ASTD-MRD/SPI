@@ -45,6 +45,7 @@ set tests {
    FSTD_InterpHorizontal.tcl
    FSTD_InterpConservative.tcl
    FSTD_InterpTime.tcl
+   FSTD_InterpYY.tcl
    FSTD_ETA2SIGMA.tcl
    FSTD_ETA2METER.tcl
    {FSTD_HYBRID2ETA.tcl DataIn/2006122900_000.hyb}
