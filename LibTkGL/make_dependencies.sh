@@ -373,8 +373,6 @@ cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}/
 --with-pg=${LIB_PATH}/${POSTGRESQL}/bin/pg_config \
 --with-odbc=${LIB_PATH}/${ODBC} \
 --with-netcdf=${LIB_PATH}/${NETCDF} \
---with-oci-lib=${LIB_PATH}/${OCI} LDFLAGS="-Wl,--no-as-needed $LDFLAGS" \
---with-oci-include=${LIB_PATH}/${OCI}/sdk/include \
 --with-fgdb=${LIB_PATH}/${FGDB} \
 --with-static-proj4=${LIB_PATH}/${PROJ}
 
@@ -383,6 +381,8 @@ cp -d ${LIB_PATH}/${GDAL}/lib/*.so* ${SPI_LIB}
 mkdir -p ${SPI_PATH}/share/gdal
 cp -d ${LIB_PATH}/${GDAL}/share/gdal/* ${SPI_PATH}/share/gdal
 
+#--with-oci-lib=${LIB_PATH}/${OCI} LDFLAGS="-Wl,--no-as-needed $LDFLAGS" \
+#--with-oci-include=${LIB_PATH}/${OCI}/sdk/include \
 #--with-kakadu=${LIB_PATH}/${KKDU}
 #--with-ecw=/users/dor/afsr/005/Links/dev/Lib/Linux/libecwj2-3.3
 
