@@ -734,15 +734,6 @@ proc SPI::WindowMenu { } {
       }
       .menu.tools.menu add separator
 
-   bind all <Alt-a>     ".menu.tools.menu invoke 0"
-   bind all <Alt-c>     ".menu.tools.menu invoke 1"
-   bind all <Alt-m>     ".menu.tools.menu invoke 2"
-   bind all <Control-l> ".menu.disp.menu invoke 8"
-   bind all <Control-c> ".menu.disp.menu invoke 9"
-   bind all <Control-m> ".menu.disp.menu invoke 17"
-   bind all <Control-p> ".menu.disp.menu invoke 16"
-   bind all <Control-t> ".menu.disp.menu invoke 18"
-
    Areas::CreateWidget .menu.disp.menu
 
    menu .menu.disp.menu.icons -tearoff 1
@@ -786,6 +777,33 @@ proc SPI::WindowMenu { } {
        .menu.help.menu add command -label [lindex $Lbl(About) $GDefs(Lang)] -command "SPI::About"
 
    Bubble::Activate $Param(Bubble)
+   SPI::WindowBind .
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <SPI::WindowBind>
+# Creation : Decembre 2014 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialiser les bindings de fenetre
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc SPI::WindowBind { Frame } {
+
+   bind $Frame <Alt-a>     ".menu.tools.menu invoke 0"
+   bind $Frame <Alt-c>     ".menu.tools.menu invoke 1"
+   bind $Frame <Alt-m>     ".menu.tools.menu invoke 2"
+   bind $Frame <Control-l> ".menu.disp.menu invoke 8"
+   bind $Frame <Control-c> ".menu.disp.menu invoke 9"
+   bind $Frame <Control-m> ".menu.disp.menu invoke 17"
+   bind $Frame <Control-p> ".menu.disp.menu invoke 16"
+   bind $Frame <Control-t> ".menu.disp.menu invoke 18"
 }
 
 #-------------------------------------------------------------------------------

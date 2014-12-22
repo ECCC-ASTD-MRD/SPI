@@ -1697,6 +1697,8 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
                pack $frame.info.cooval .info.altval -ipadx 2 -side left -fill y
             pack $frame.info.fldval -side left -fill both -expand true
          pack $frame.info -side bottom -fill x
+         
+         SPI::WindowBind $frame
       }
       if { [winfo exists $frame.mdi] } {
          set page [TabFrame::Add $frame.mdi 1 $Label True].frame
