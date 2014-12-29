@@ -1442,7 +1442,7 @@ proc Mapper::OGR::TableStat { Object } {
    
    set c 1
    foreach field $fields {
-      if { [catch { $Data(Frame5).pan.stat.table set 0,$c [vexpr NIL ssumx($Object.$field)] }] } {
+      if { [catch { $Data(Frame5).pan.stat.table set 0,$c [vexpr NIL ssumx($Object.$field,$Object.$field)] }] } {
           $Data(Frame5).pan.stat.table set 0,$c ""
           $Data(Frame5).pan.stat.table set 1,$c ""
           $Data(Frame5).pan.stat.table set 2,$c ""

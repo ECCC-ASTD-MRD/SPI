@@ -59,4 +59,11 @@ puts "Type A      : [fstddict typeinfo A -lang fr -short]"
 fstddict typeinfo XX -lang en -short "toxxxxxx tixxxxx"
 puts "Type XX new : [fstddict typeinfo XX -lang en -short]"
 
+puts -nonewline "Time of 100000 iterations: " 
+puts [time {
+for { set n 0 } { $n < 100000 } { incr n } {
+   fstddict varinfo TT -lang en -short -unit
+}
+}]
+
 Log::End 0

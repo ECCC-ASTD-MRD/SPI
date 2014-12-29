@@ -875,7 +875,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
    
    #----- Separate the fields from the rest
    foreach fld $Fields {
-      if { [fstdfield is $fld] && [fstdfield define $fld -GRTYP]!="V" } {
+      if { [fstdfield is $fld True] && [fstdfield define $fld -GRTYP]!="V" } {
          if { [fstdfield define $fld -NK]>1 } {
             set vert True
          }
@@ -921,7 +921,7 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
 
    if { !$nout && $expr!="" } {
       set res [vexpr $Result $expr]
-      if { ![fstdfield is $res] } {
+      if { ![fstdfield is $res True] } {
          Dialog::Info . $Msg(Operand) $res
          set data $Fields
       } else {
