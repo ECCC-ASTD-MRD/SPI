@@ -986,10 +986,6 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
       case T_FLD : ref=GField->Ref; break;
    }
 
-   if (!ref) {
-      return;
-   }
-
    // Init fields that will be used later on for ksp
 
    if (MA && MB) {
@@ -1057,7 +1053,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
          else if (vb>va) Vnbgt++;
          else Vnblt++;
 
-         if (va!=0.0 || vb!=0.0) {
+         if (ref && (va!=0.0 || vb!=0.0)) {
             gi=i%MA->NI;
             gj=i/MA->NI;
             t=ref->Distance(ref,gi-0.5,gj,gi+0.5,gj) * ref->Distance(ref,gi,gj-0.5,gi,gj+0.5);
