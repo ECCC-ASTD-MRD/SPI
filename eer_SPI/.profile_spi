@@ -28,7 +28,9 @@ export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
-export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/share/rmn/table_b_bufr
+if [ -z $AFSISIO ]; then 
+   export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/share/rmn/table_b_bufr
+fi
 
 #----- Force GRIB API Tables
 export GRIB_TEMPLATE_PATH=${SPI_PATH}/share/grib/templates
