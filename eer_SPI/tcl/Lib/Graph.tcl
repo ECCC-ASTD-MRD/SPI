@@ -863,11 +863,12 @@ proc Graph::PosSelectSaved { Graph Type Pos Def } {
       "BOX"     { set data(Lat0) [lindex $coords 0]; set data(Lon0) [lindex $coords 1]; set data(Lat1) [lindex $coords 2]; set data(Lon1) [lindex $coords 3] }
       "POLYGON" { set data(Coords) $coords }
    }
-   
+
    #----- Force field assignation if none is present
-   if { $data(Field)=="" && $data(VP)!="" } {
+   if { ![fstdfield is $data(Field)] && $data(VP)!="" } {
       set data(Field)     [lindex [Viewport::Assigned $data(FrameData) $data(VP) fstdfield] 0]
    }
+   
    Graph::VertexResolution $Type $Graph False
    Graph::${Type}::ItemDefine $Graph $Pos $coords
 }
