@@ -12,7 +12,7 @@ arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.8.0"
+VERSION="7.8.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_multi
@@ -53,7 +53,7 @@ if [[ $arg = "ssm" ]]; then
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace/${SSM_NAME}/lib; ln -s ubuntu-10.04-amd64-64 Linux_x86_64; cd -
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
-   
+   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
    
 elif [[ $arg = "src" ]]; then
 
@@ -79,7 +79,7 @@ else
 	--enable-threads \
 	--enable-64bit \
 	--with-tcl=${TCL}/TclTk/lib \
-	--with-eer=${SSM_DEV}/workspace/eerUtils_1.10.0_${ORDENV_PLAT}
+	--with-eer=${SSM_DEV}/workspace/eerUtils_1.10.1_${ORDENV_PLAT}
   fi
 
   $MAKE install
@@ -118,7 +118,7 @@ else
 	--enable-64bit \
 	--with-tcl=${TCL}/TclTk/lib \
 	--with-tk=${TCL}/TclTk/lib \
-	--with-eer=${SSM_DEV}/workspace/eerUtils_1.10.0_${ORDENV_PLAT}\
+	--with-eer=${SSM_DEV}/workspace/eerUtils_1.10.1_${ORDENV_PLAT}\
 	--with-rmn=${LIB}/librmn-15.1 \
 	--with-gdb=${LIB}/gdb \
 	--with-gdal=${LIB}/gdal-1.11.0/bin/gdal-config  \

@@ -1863,7 +1863,7 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
 
    } else {
       /*Get value increment*/
-      incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ);
+      incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ-1);
 
       for(y=0;y<Band->Def->NJ;y++) {
 
