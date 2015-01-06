@@ -85,7 +85,7 @@ namespace eval Log { } {
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
    set Param(JobId)       ""                    ;#Job unique identifier
-   set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%M%SZ" -gmt True] ;#----- Current date.
+   set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%M%S" -gmt True] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
@@ -344,7 +344,7 @@ proc Log::Start { Job Version { Input "" } } {
    if { $Param(JobId)=="" } {
       set Param(JobId) [string toupper $Param(Job)]
    }
-   append Param(JobId) "-[clock format [clock seconds] -format "%Y%m%d_%H%M%S" -gmt True]"
+   append Param(JobId) "-$Param(JobDate)"
 
    Log::Print MUST "-------------------------------------------------------------------------------"
    Log::Print MUST "App/Script          : $Job"
