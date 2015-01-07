@@ -733,7 +733,7 @@ proc Log::CyclopeStart { } {
          puts $f "Command   : $env(SelfJobResubmit)"
          puts $f "Kill      : $env(SelfJobKill)"
       } else {
-         puts $f "Command   : ssh [info hostname] [info script] [split $argv]"
+         puts $f "Command   : ssh [info hostname] '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
          puts $f "Kill      : ssh [info hostname] kill [pid]"
       }
       puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
