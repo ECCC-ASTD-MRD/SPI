@@ -574,7 +574,7 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
                co.blue=mdl->Mt[0].Amb[2]*65535.0f;
                Tcl_AppendResult(Interp,Tk_NameOfColor(&co),(char*)NULL);
             } else {
-              ci=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
+               ci=Tk_AllocColorFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
                if (ci) {
                   mdl->Mt[0].Amb[0]=ci->red/65535.0f;
                   mdl->Mt[0].Amb[1]=ci->green/65535.0f;
@@ -637,10 +637,10 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
 
          case SHININESS:
             if (Objc==1) {
-               sprintf(buf,"%f",mdl->Mt[0].Shi/255.0f);
+               sprintf(buf,"%f",mdl->Mt[0].Shi/128.0);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);mdl->Mt[0].Shi=tmp*255.0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);mdl->Mt[0].Shi=tmp*128.0;
             }
             break;
 
@@ -1516,14 +1516,6 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       return(0);
    }
 
-   glMatrixMode(GL_MODELVIEW);
-   glPushMatrix();
-   glEnable(GL_LIGHTING);
-   glEnable(GL_LIGHT0);
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
    /*Parse material for texture setup*/
    for(i=0;i<M->NMt;i++) {
       if (!M->Mt[i].Tex && strlen(M->Mt[i].Path)) {
@@ -1548,11 +1540,12 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
             for (i=0;i<obj->NFc;i++) {
 
                if ((mt=obj->Fc[i].Mt)) {
-                  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,mt->Shi);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mt->Amb);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mt->Dif);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mt->Spe);
-                  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,mt->Emi);
+// TODO: don'tuse model material, allows more flexibility for user
+//                  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,mt->Shi);
+//                  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mt->Amb);
+//                  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mt->Dif);
+//                  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mt->Spe);
+//                  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,mt->Emi);
                   if (mt->Tex>0) {
                      glBindTexture(GL_TEXTURE_2D,mt->Tex);
                      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
@@ -1577,7 +1570,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   }
                   if (obj->Tx && mt && mt->Tex>0) glTexCoord2fv(obj->Tx[idx]);
                   if (obj->Nr)                    glNormal3fv(obj->Nr[idx]);
-                  if (obj->Cl)                    glColor4fv(obj->Cl[idx]);
+// TODO: Necessary ?                 if (obj->Cl)                    glColor4fv(obj->Cl[idx]);
 
                   /*Projection to georef*/
                   if (M->Ref) {
@@ -1597,6 +1590,9 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       }
    }
 
+   glMatrixMode(GL_MODELVIEW);
+   glPushMatrix();
+
    /*Position the model within geography*/
    if (!M->Ref) {
       Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
@@ -1614,6 +1610,13 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    glRotatef(M->MatrixR[2],0.0,1.0,0.0);
 
    if (Model_LOD(Proj,VP,M,M->Extent)) {
+      glEnable(GL_COLOR_MATERIAL);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+      glEnable(GL_DEPTH_TEST);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
 
       if (M->Scn) {
          Model_RenderScene(Proj,VP,M,M->Scn);
@@ -1622,13 +1625,14 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
             Model_RenderObject(Proj,VP,M,&M->Obj[o]);
          }
       }
-   }
 
-   glDisable(GL_COLOR_MATERIAL);
-   glDisable(GL_BLEND);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_LIGHTING);
-   glDisable(GL_LIGHT0);
+      glDisable(GL_COLOR_MATERIAL);
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glDisable(GL_DEPTH_TEST);
+      glDisable(GL_BLEND);
+   }
+   
    glPopMatrix();
 
    return(1);
@@ -1657,9 +1661,17 @@ void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject 
    if (Obj && Obj->GLId && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
 
+         glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,M->Mt[0].Shi);
+         glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,M->Mt[0].Amb);
+         glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,M->Mt[0].Dif);
+         glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,M->Mt[0].Spe);
+         glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,M->Mt[0].Emi);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
          if (M->Spec->RenderTexture) {
+//            glColor4f(1.0,1.0,1.0,M->Mt[0].Dif[3]);
             glEnable(GL_TEXTURE_2D);
+         } else {
+            glColor4f(M->Mt[0].Dif[0],M->Mt[0].Dif[1],M->Mt[0].Dif[2],M->Mt[0].Dif[3]);
          }
 
          if (M->Spec->Outline && M->Spec->Width) {
@@ -1674,20 +1686,19 @@ void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject 
          }
 
          glCallList(Obj->GLId);
+         glDisable(GL_TEXTURE_2D);
+         glDisable(GL_POLYGON_OFFSET_FILL);
       }
 
       if (M->Spec->Outline && M->Spec->Width) {
          glDisable(GL_LIGHTING);
-         glDisable(GL_TEXTURE_2D);
-         glDisable(GL_POLYGON_OFFSET_FILL);
          glDash(&M->Spec->Dash);
          glLineWidth(ABS(M->Spec->Width));
          glColor4us(M->Spec->Outline->red,M->Spec->Outline->green,M->Spec->Outline->blue,M->Spec->Alpha*655.35);
          glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
          glCallList(Obj->GLId);
-         glEnable(GL_LIGHTING);
+         glEnable(GL_LIGHTING);        
       }
-      glDisable(GL_TEXTURE_2D);
    }
 }
 

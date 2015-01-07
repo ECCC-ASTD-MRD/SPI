@@ -322,6 +322,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             if (GOBJ->Cl &&(vert->list[v]->localFlags & FVHAS_COLOR)) {
                fltLookupColor(FLT,vert->list[v]->colorIndex,&GOBJ->Cl[i][0],&GOBJ->Cl[i][1],&GOBJ->Cl[i][2],&GOBJ->Cl[i][3]);
             }
+
             if (GOBJ->Vr) {
                GOBJ->Vr[i][0]=vert->list[v]->x;GOBJ->Vr[i][1]=vert->list[v]->y;GOBJ->Vr[i][2]=vert->list[v]->z;
             } else {
