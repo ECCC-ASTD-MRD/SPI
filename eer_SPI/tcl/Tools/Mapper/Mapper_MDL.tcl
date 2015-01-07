@@ -74,31 +74,31 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
          labelframe $Data(Frame2).mat -text [lindex $Mapper::Lbl(Material) $GDefs(Lang)]
             frame $Data(Frame2).mat.ambi
                label $Data(Frame2).mat.ambi.lbl -text [lindex $Mapper::Lbl(Ambi) $GDefs(Lang)] -width 12 -anchor w
-               ColorBox::CreateSel $Data(Frame2).mat.ambi.col Mapper::Data(Ambi) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
+               ColorBox::CreateSel $Data(Frame2).mat.ambi.col Mapper::MDL::Data(Ambi) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
                pack $Data(Frame2).mat.ambi.lbl $Data(Frame2).mat.ambi.col -side left
             frame $Data(Frame2).mat.emis
                label $Data(Frame2).mat.emis.lbl -text [lindex $Mapper::Lbl(Emis) $GDefs(Lang)] -width 12 -anchor w
-               ColorBox::CreateSel $Data(Frame2).mat.emis.col Mapper::Data(Emis) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
+               ColorBox::CreateSel $Data(Frame2).mat.emis.col Mapper::MDL::Data(Emis) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
                pack $Data(Frame2).mat.emis.lbl $Data(Frame2).mat.emis.col -side left
             frame $Data(Frame2).mat.diff
                label $Data(Frame2).mat.diff.lbl -text [lindex $Mapper::Lbl(Diff) $GDefs(Lang)] -width 12 -anchor w
-               ColorBox::CreateSel $Data(Frame2).mat.diff.col Mapper::Data(Diff) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
+               ColorBox::CreateSel $Data(Frame2).mat.diff.col Mapper::MDL::Data(Diff) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
                pack $Data(Frame2).mat.diff.lbl $Data(Frame2).mat.diff.col -side left
             frame $Data(Frame2).mat.spec
                label $Data(Frame2).mat.spec.lbl -text [lindex $Mapper::Lbl(Spec) $GDefs(Lang)] -width 12 -anchor w
-               ColorBox::CreateSel $Data(Frame2).mat.spec.col Mapper::Data(Spec) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
+               ColorBox::CreateSel $Data(Frame2).mat.spec.col Mapper::MDL::Data(Spec) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
                pack $Data(Frame2).mat.spec.lbl $Data(Frame2).mat.spec.col -side left
             frame $Data(Frame2).mat.shin
                label $Data(Frame2).mat.shin.lbl -text [lindex $Mapper::Lbl(Shin) $GDefs(Lang)] -width 12 -anchor w
-               entry $Data(Frame2).mat.shin.val -bd 1 -textvariable Mapper::Data(Shin) -bg $GDefs(ColorLight) -width 5
-               scale $Data(Frame2).mat.shin.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.1 -from 0 -to 1 -variable Mapper::Data(Shin) -orient horizontal \
+               entry $Data(Frame2).mat.shin.val -bd 1 -textvariable Mapper::MDL::Data(Shin) -bg $GDefs(ColorLight) -width 5
+               scale $Data(Frame2).mat.shin.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.1 -from 0 -to 1 -variable Mapper::MDL::Data(Shin) -orient horizontal \
                   -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::MDL::ParamsSet $Mapper::Data(Object) }; catch }
                pack $Data(Frame2).mat.shin.lbl $Data(Frame2).mat.shin.val -side left
                pack $Data(Frame2).mat.shin.sc -side left -fill x -expand True
             frame $Data(Frame2).mat.tran
                label $Data(Frame2).mat.tran.lbl -text [lindex $Mapper::Lbl(Tran) $GDefs(Lang)] -width 12 -anchor w
-               entry $Data(Frame2).mat.tran.val -bd 1 -textvariable Mapper::Data(Tram) -bg $GDefs(ColorLight) -width 5
-               scale $Data(Frame2).mat.tran.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.1 -from 0 -to 1 -variable Mapper::Data(Tram) -orient horizontal \
+               entry $Data(Frame2).mat.tran.val -bd 1 -textvariable Mapper::MDL::Data(Tram) -bg $GDefs(ColorLight) -width 5
+               scale $Data(Frame2).mat.tran.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.1 -from 0 -to 1 -variable Mapper::MDL::Data(Tram) -orient horizontal \
                   -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::MDL::ParamsSet $Mapper::Data(Object) }; catch }
                pack $Data(Frame2).mat.tran.lbl $Data(Frame2).mat.tran.val -side left
                pack $Data(Frame2).mat.tran.sc -side left -fill x -expand True
@@ -108,22 +108,22 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
          labelframe $Data(Frame2).mode -text [lindex $Mapper::Lbl(Mode) $GDefs(Lang)]
             frame $Data(Frame2).mode.out
                label $Data(Frame2).mode.out.lbl -text [lindex $Mapper::Lbl(Out) $GDefs(Lang)] -width 12 -anchor w
-               ColorBox::CreateSel $Data(Frame2).mode.out.col Mapper::Data(Color) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
+               ColorBox::CreateSel $Data(Frame2).mode.out.col Mapper::MDL::Data(Color) Mapper::MDL::ParamsSet \$Mapper::Data(Object)
                IcoMenu::Create $Data(Frame2).mode.out.width $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
-                  Mapper::Data(Width) { Mapper::MDL::ParamsSet $Mapper::Data(Object) } $Mapper::Data(Width) -relief groove -bd 2
+                  Mapper::MDL::Data(Width) { Mapper::MDL::ParamsSet $Mapper::Data(Object) } $Mapper::MDL::Data(Width) -relief groove -bd 2
                IcoMenu::CreateDef $Data(Frame2).mode.out.dash $GDefs(Dir)/share/bitmap \
                 { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
-                Mapper::Data(Dash) { Mapper::MDL::ParamsSet $Mapper::Data(Object) } $Mapper::Data(Dash) -relief groove -bd 2
+                Mapper::MDL::Data(Dash) { Mapper::MDL::ParamsSet $Mapper::Data(Object) } $Mapper::MDL::Data(Dash) -relief groove -bd 2
                pack $Data(Frame2).mode.out.lbl $Data(Frame2).mode.out.col $Data(Frame2).mode.out.width $Data(Frame2).mode.out.dash -side left -anchor w
             frame $Data(Frame2).mode.text
                label $Data(Frame2).mode.text.lbl -text [lindex $Mapper::Lbl(Texture) $GDefs(Lang)] -width 12 -anchor w
-               checkbutton $Data(Frame2).mode.text.val -variable Mapper::Data(Texture) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
+               checkbutton $Data(Frame2).mode.text.val -variable Mapper::MDL::Data(Texture) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
                   -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Mapper::MDL::ParamsSet $Mapper::Data(Object) }
                pack $Data(Frame2).mode.text.lbl $Data(Frame2).mode.text.val -side left
             frame $Data(Frame2).mode.light
                label $Data(Frame2).mode.light.lbl -text [lindex $Mapper::Lbl(Light) $GDefs(Lang)] -width 12 -anchor w
-               checkbutton $Data(Frame2).mode.light.val -variable Mapper::Data(Light) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
+               checkbutton $Data(Frame2).mode.light.val -variable Mapper::MDL::Data(Light) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" \
                   -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Mapper::MDL::ParamsSet $Mapper::Data(Object) }
                pack $Data(Frame2).mode.light.lbl $Data(Frame2).mode.light.val -side left
             pack $Data(Frame2).mode.out $Data(Frame2).mode.text $Data(Frame2).mode.light -side top -anchor w -padx 5
@@ -135,7 +135,7 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
             button $Data(Frame1).projhead.file -image OPEN -relief flat -bd 0 -overrelief raised \
                -command "Mapper::ProjFile $Data(Frame1).proj.val \[FileBox::Create . \"\" Load \[list \$FileBox::Type(PROJ) \$FileBox::Type(TXT)\]\]"
             button $Data(Frame1).projhead.tab -image INTEROGATE -relief flat -bd 0 -overrelief raised \
-               -command { set Mapper::Data(Proj) [Mapper::WKT::Param $Mapper::Data(Proj)]; $Mapper::Data(Frame1).proj.val delete 0.0 end ; $Mapper::Data(Frame1).proj.val insert end $Mapper::Data(Proj); Mapper::MDL::ParamsSet $Mapper::Data(Object) }
+               -command { set Mapper::MDL::Data(Proj) [Mapper::WKT::Param $Mapper::MDL::Data(Proj)]; $Mapper::Data(Frame1).proj.val delete 0.0 end ; $Mapper::Data(Frame1).proj.val insert end $Mapper::MDL::Data(Proj); Mapper::MDL::ParamsSet $Mapper::Data(Object) }
             pack $Data(Frame1).projhead.lbl -side left
             pack $Data(Frame1).projhead.tab $Data(Frame1).projhead.file -side left -padx 2
          labelframe $Data(Frame1).proj -labelwidget $Data(Frame1).projhead
@@ -149,23 +149,23 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
          labelframe $Data(Frame1).matrix -text [lindex $Mapper::Lbl(Matrix) $GDefs(Lang)]
             frame $Data(Frame1).matrix.loc
                label $Data(Frame1).matrix.loc.lbl -text [lindex $Mapper::Lbl(Translate) $GDefs(Lang)] -width 14 -anchor w
-               entry $Data(Frame1).matrix.loc.lat -bd 1 -textvariable Mapper::Data(Lat) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.loc.lon -bd 1 -textvariable Mapper::Data(Lon) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.loc.ele -bd 1 -textvariable Mapper::Data(Ele) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.loc.lat -bd 1 -textvariable Mapper::MDL::Data(Lat) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.loc.lon -bd 1 -textvariable Mapper::MDL::Data(Lon) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.loc.ele -bd 1 -textvariable Mapper::MDL::Data(Ele) -bg $GDefs(ColorLight) -width 8
                pack $Data(Frame1).matrix.loc.lbl -side left
                pack $Data(Frame1).matrix.loc.lat $Data(Frame1).matrix.loc.lon $Data(Frame1).matrix.loc.ele -side left -fill x -expand True
             frame $Data(Frame1).matrix.rot
                label $Data(Frame1).matrix.rot.lbl -text [lindex $Mapper::Lbl(Rotation) $GDefs(Lang)] -width 14 -anchor w
-               entry $Data(Frame1).matrix.rot.x -bd 1 -textvariable Mapper::Data(RX) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.rot.y -bd 1 -textvariable Mapper::Data(RY) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.rot.z -bd 1 -textvariable Mapper::Data(RZ) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.rot.x -bd 1 -textvariable Mapper::MDL::Data(RX) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.rot.y -bd 1 -textvariable Mapper::MDL::Data(RY) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.rot.z -bd 1 -textvariable Mapper::MDL::Data(RZ) -bg $GDefs(ColorLight) -width 8
                pack $Data(Frame1).matrix.rot.lbl -side left
                pack $Data(Frame1).matrix.rot.x $Data(Frame1).matrix.rot.y $Data(Frame1).matrix.rot.z -side left -fill x -expand True
             frame $Data(Frame1).matrix.sca
                label $Data(Frame1).matrix.sca.lbl -text [lindex $Mapper::Lbl(Scale) $GDefs(Lang)] -width 14 -anchor w
-               entry $Data(Frame1).matrix.sca.x -bd 1 -textvariable Mapper::Data(SX) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.sca.y -bd 1 -textvariable Mapper::Data(SY) -bg $GDefs(ColorLight) -width 8
-               entry $Data(Frame1).matrix.sca.z -bd 1 -textvariable Mapper::Data(SZ) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.sca.x -bd 1 -textvariable Mapper::MDL::Data(SX) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.sca.y -bd 1 -textvariable Mapper::MDL::Data(SY) -bg $GDefs(ColorLight) -width 8
+               entry $Data(Frame1).matrix.sca.z -bd 1 -textvariable Mapper::MDL::Data(SZ) -bg $GDefs(ColorLight) -width 8
                pack $Data(Frame1).matrix.sca.lbl -side left
                pack $Data(Frame1).matrix.sca.x $Data(Frame1).matrix.sca.y $Data(Frame1).matrix.sca.z -side left -fill x -expand True
             pack $Data(Frame1).matrix.loc $Data(Frame1).matrix.rot $Data(Frame1).matrix.sca -side top -fill x -padx 5
