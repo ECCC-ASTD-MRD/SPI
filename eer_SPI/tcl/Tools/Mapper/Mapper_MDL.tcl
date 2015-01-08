@@ -91,7 +91,7 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
             frame $Data(Frame2).mat.shin
                label $Data(Frame2).mat.shin.lbl -text [lindex $Mapper::Lbl(Shin) $GDefs(Lang)] -width 12 -anchor w
                entry $Data(Frame2).mat.shin.val -bd 1 -textvariable Mapper::MDL::Data(Shin) -bg $GDefs(ColorLight) -width 5
-               scale $Data(Frame2).mat.shin.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.1 -from 0 -to 1 -variable Mapper::MDL::Data(Shin) -orient horizontal \
+               scale $Data(Frame2).mat.shin.sc -bd 1 -relief flat -width 15 -sliderlength 10 -resolution 0.01 -from 0 -to 1.0 -variable Mapper::MDL::Data(Shin) -orient horizontal \
                   -showvalue False -command { if { $Mapper::Data(RealTime) } { Mapper::MDL::ParamsSet $Mapper::Data(Object) }; catch }
                pack $Data(Frame2).mat.shin.lbl $Data(Frame2).mat.shin.val -side left
                pack $Data(Frame2).mat.shin.sc -side left -fill x -expand True
@@ -187,6 +187,10 @@ proc Mapper::MDL::Params { Object { Tabs {} } } {
    ColorBox::ConfigNoColor $Data(Frame2).mat.emis.col $Data(Emis)
    ColorBox::ConfigNoColor $Data(Frame2).mat.diff.col $Data(Diff)
    ColorBox::ConfigNoColor $Data(Frame2).mat.spec.col $Data(Spec)
+   ColorBox::ConfigNoColor $Data(Frame2).mode.out.col $Data(Color)
+
+   IcoMenu::Set $Data(Frame2).mode.out.width     $Data(Width)
+   IcoMenu::Set $Data(Frame2).mode.out.dash      $Data(Dash)
 }
 
 #-------------------------------------------------------------------------------
