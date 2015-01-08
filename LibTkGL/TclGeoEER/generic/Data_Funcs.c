@@ -1172,23 +1172,23 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vafp  = Vay-Vaov;
 
    Vmb   = Vsumy-Vsumx;
-   Vnmb  = Vsumx!=0?Vmb/Vsumx*100:0;
+   Vnmb  = Vsumx!=0.0?Vmb/Vsumx*100:0;
    Vmb   /= Vnb;
 
-   Vnad  = (Vsumx+Vsumy==0)?0:Vme/(Vsumx+Vsumy);
-   Vnme  = Vsumx!=0?Vme/Vsumx*100:0;
+   Vnad  = (Vsumx+Vsumy==0.0)?0.0:Vme/(Vsumx+Vsumy);
+   Vnme  = Vsumx!=0.0?Vme/Vsumx*100.0:0.0;
    Vme   /= Vnb;
 
    Vavgx = Vsumx/Vnb;
    Vavgy = Vsumy/Vnb;
 
-   Vvarx    = Vssx/Vnb-Vavgx*Vavgx;
-   Vvary    = Vssy/Vnb-Vavgy*Vavgy;
+   Vvarx    = fmax(Vssx/Vnb-Vavgx*Vavgx,0.0);
+   Vvary    = fmax(Vssy/Vnb-Vavgy*Vavgy,0.0);
    Vcovar   = Vssxy/Vnb-Vavgx*Vavgy;
 
-   Vcorr=(Vvarx==0 || Vvary==0)?0:Vcovar/(sqrt(Vvarx*Vvary));
+   Vcorr=(Vvarx==0.0 || Vvary==0.0)?0.0:Vcovar/(sqrt(Vvarx*Vvary));
 
-   Vrmse=(Vssy-Vssxy*2+Vssx)/Vnb;
+   Vrmse=(Vssy-Vssxy*2.0+Vssx)/Vnb;
    Vnmse=Vrmse/(Vavgx*Vavgy);
    Vrmse=sqrt(Vrmse);
    Vnrmse=Vrmse/Vavgx;
@@ -1201,10 +1201,10 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vmre/=Vnb;
    Vmne/=Vnb;
    Vmnb/=Vnb;
-   Vmfb=2.0*Vmfb/Vnb*100;
-   Vmfe=2.0*Vmfe/Vnb*100;
-   Vlmnb=exp(Vlmnb/Vnb)-1;
-   Vlmne=exp(Vlmne/Vnb)-1;
+   Vmfb=2.0*Vmfb/Vnb*100.0;
+   Vmfe=2.0*Vmfe/Vnb*100.0;
+   Vlmnb=exp(Vlmnb/Vnb)-1.0;
+   Vlmne=exp(Vlmne/Vnb)-1.0;
 
    t=nblok+Vnbnp;
    Vgmb=exp(Vgmb/t);
@@ -1218,7 +1218,7 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    Vfms=Vfms!=0?Vaov/Vfms*100.0:0;
    Vfmsb=(Vnb-Vnbmi-Vnbfa-Vnbnp)/(Vnb-Vnbnp)*100.0;
    Vfmsi=(1.0-Vnad)/(1.0+Vnad)*100.0;
-   Vosf=(Vax==0 || Vay==0)?0:sqrt(pow(Vafn/Vax,2)+pow(Vafp/Vay,2));
+   Vosf=(Vax==0 || Vay==0)?0.0:sqrt(pow(Vafn/Vax,2)+pow(Vafp/Vay,2));
    Vosfb=((Vnb-Vnbnp-Vnbfa)==0 || (Vnb-Vnbnp-Vnbmi)==0)?0:sqrt(pow(Vnbmi/(Vnb-Vnbnp-Vnbfa),2)+pow(Vnbfa/(Vnb-Vnbnp-Vnbmi),2));
    Vosfi=(Vsumx==0 || Vsumy==0)?0:sqrt(pow(1-Vosfi/Vsumx,2.0)+pow(1-Vosfi/Vsumy,2.0));
    Vksp*=100.0;
