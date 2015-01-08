@@ -136,8 +136,10 @@ proc Drawing::ImageSetup { { Path "" } } {
    foreach group [lsort -dictionary [glob $Path/*]] {
 
       set menu $path.menu.[string tolower [file tail $group]]
-      $path.menu add cascade -label [file tail $group] -menu $menu
-      menu $menu
+      if { ![winfo exists $menu] } {
+         $path.menu add cascade -label [file tail $group] -menu $menu
+         menu $menu
+      }
 
       set i 0
       foreach image [lsort -dictionary [glob $group/*.gif]] {
