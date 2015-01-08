@@ -263,18 +263,20 @@ if { !$SPI::Param(Batch) } {
    if { [info exists env(SPI_TOOL)] } {
    
       foreach path [split $env(SPI_TOOL) :] {
-         foreach SPI::Param(ToolPath) [lsort [glob -nocomplain $path/Tools/*]] {
-            set name [file tail [file rootname $SPI::Param(ToolPath)]]
-            if { [catch { uplevel #0 source $SPI::Param(ToolPath)/$name.tcl } msg] } {
-               Dialog::Error . $SPI::Error(Source) "\n\n\t$name: $SPI::Param(ToolPath)/$name.tcl\n\n$msg"
-            } else {
-               lappend SPI::Param(Tools) $name
+         if { [file isdirectory $path] } {
+            foreach SPI::Param(ToolPath) [lsort [glob -nocomplain $path/Tools/*]] {
+               set name [file tail [file rootname $SPI::Param(ToolPath)]]
+               if { [catch { uplevel #0 source $SPI::Param(ToolPath)/$name.tcl } msg] } {
+                  Dialog::Error . $SPI::Error(Source) "\n\n\t$name: $SPI::Param(ToolPath)/$name.tcl\n\n$msg"
+               } else {
+                  lappend SPI::Param(Tools) $name
+               }
             }
+            foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layout *.tcl]] {
+               lappend SPI::Param(Layouts) [file rootname $layout]
+            }
+            lappend SPI::Param(Layouts) ""        
          }
-         foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layout *.tcl]] {
-            lappend SPI::Param(Layouts) [file rootname $layout]
-         }
-         lappend SPI::Param(Layouts) ""        
       }
    }
 
