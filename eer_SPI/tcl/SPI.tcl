@@ -253,6 +253,10 @@ package require Animator
 package require Info
 package require MetData
 
+if { [info exists env(SPI_TOOL)] } {
+   set env(SPI_TOOL) [join [lsort -unique [split $env(SPI_TOOL) :]] :]
+}
+
 if { !$SPI::Param(Batch) } {
 
    #----- User defined layouts and tools
