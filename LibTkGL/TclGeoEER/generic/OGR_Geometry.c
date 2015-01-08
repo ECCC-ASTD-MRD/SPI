@@ -1375,7 +1375,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          Ref->LLExtent.MinY=Ref->LLExtent.MinY>co.Lat?co.Lat:Ref->LLExtent.MinY;
          Ref->LLExtent.MaxY=Ref->LLExtent.MaxY<co.Lon?co.Lat:Ref->LLExtent.MaxY;
 
-         co.Elev=vr[2];
+         co.Elev=pvr[n][2];
 
          if (Layer) {
             /*Apply topography*/
