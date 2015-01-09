@@ -24,6 +24,7 @@ namespace eval Mapper { } {
    set Lbl(Active)        { "Actif (Afficher)" "Active (Displayed)" }
    set Lbl(Apply)         { "Appliquer" "Apply" }
    set Lbl(Close)         { "Fermer" "Close" }
+   set Lbl(Ok)            { "Ok" "Ok" }
    set Lbl(Cancel)        { "Annuler" "Cancel" }
    set Lbl(GeoRef)        { "Utiliser la projection de cette donnée" "Use this data's projection" }
    set Lbl(Curve)         { "Courbe" "Curve" }
@@ -160,6 +161,7 @@ namespace eval Mapper { } {
    set Lbl(DelGeom)      { "Supprimer une geometrie" "Delete geometry" }
    set Lbl(ColAdd)       { "Ajouter une colonne" "Add column" }
    set Lbl(Expr)         { "Expression" "Expression" }
+   set Lbl(LayerSelect)  { "Sélection des couches" "Select layers" }
 
    set Msg(GeoProcessInfo) { "Le géotraitement ne vas utiliser\nque les items sélectionné des couches" "Geoprocessing will only use\nselected features of the layers" }
    set Msg(NoFeature)      { "La couche ne continent aucun item" "The layer contains no features" }

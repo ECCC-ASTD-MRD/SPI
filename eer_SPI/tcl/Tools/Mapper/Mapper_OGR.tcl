@@ -2042,6 +2042,11 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
       return ""
    }
    
+   #----- If more than one layer and not running in batch, ask user which ones to load
+   if { [llength $idxs]>1 && !$SPI::Param(Batch) } {
+      set idxs [Mapper::OGR::LayerSelect $idxs]
+   }
+   
    set Data(Job)   [lindex $Mapper::Msg(Read) $GDefs(Lang)]
    update idletasks;
 
@@ -2064,7 +2069,7 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
          }
 
          if { [ogrlayer define $obj -nb]==0 } {
-            Dialog::Error . $Mapper::Msg(NoFeature) $obj
+            Dialog::Error . $Mapper::Msg(NoFeature) \n\n\t$obj
             ogrlayer free $obj
             ogrfile close $File
             continue
@@ -2078,6 +2083,68 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    Mapper::Progress $obj
 
    return $obj
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::OGR::LayerSelect>
+# Creation : Janvier 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher la liste des couches pour sélection par l'usager
+#
+# Parametres  :
+#   <Indexes> : Liste des couches
+#
+# Retour    :
+#   <Indexes> : Liste des couches sélectionnées
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::OGR::LayerSelect { Indexes } {
+   global GDefs
+   
+   set Mapper::OGR::Data(Indexes) {}
+   
+   toplevel .mapperselect -class Dialog
+
+   wm title     .mapperselect "[lindex $Mapper::Lbl(LayerSelect) $GDefs(Lang)]"
+   wm transient .mapperselect .mapper
+   wm geometry  .mapperselect =200x400+[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
+
+   frame  .mapperselect.select
+      listbox  .mapperselect.select.list -relief sunken -bd 1 -exportselection false -selectmode multiple -width 1 -height 1 -background white \
+         -yscrollcommand " .mapperselect.select.scrolly set" -xscrollcommand " .mapperselect.select.scrollx set" \
+         -selectbackground $GDefs(ColorHighLight) -selectforeground black
+      scrollbar  .mapperselect.select.scrolly -relief sunken -command " .mapperselect.select.list yview" -bd 1 -width 10
+      scrollbar  .mapperselect.select.scrollx -relief sunken -command " .mapperselect.select.list xview" -bd 1 -width 10 -orient horizontal
+      pack  .mapperselect.select.scrollx -side bottom -fill x
+      pack  .mapperselect.select.list -side left -fill both -expand true
+      pack  .mapperselect.select.scrolly -side left -fill y
+   pack  .mapperselect.select -side top -fill both -expand true
+   
+   frame  .mapperselect.cmd
+      button .mapperselect.cmd.ok -text [lindex $Mapper::Lbl(Ok) $GDefs(Lang)] -bd 1 \
+         -command { foreach sel [.mapperselect.select.list curselection] { lappend Mapper::OGR::Data(Indexes) [.mapperselect.select.list get $sel] } }
+      button .mapperselect.cmd.cancel -text [lindex $Mapper::Lbl(Cancel) $GDefs(Lang)] -bd 1  \
+         -command { set Mapper::OGR::Data(Indexes) {} }
+      pack .mapperselect.cmd.ok .mapperselect.cmd.cancel -side left -fill x -expand true
+   pack .mapperselect.cmd -side top -fill x
+   
+   eval .mapperselect.select.list insert 0 $Indexes
+   .mapperselect.select.list selection set 0 end
+   
+   #----- Attente de la selection du boutton
+   set prevgrab [grab current]
+   grab .mapperselect
+   tkwait variable Mapper::OGR::Data(Indexes)
+   catch { destroy .mapperselect }
+
+   if { $prevgrab!="" } {
+      grab $prevgrab
+   }
+   
+   return $Mapper::OGR::Data(Indexes)
 }
 
 #-------------------------------------------------------------------------------

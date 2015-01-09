@@ -27,6 +27,11 @@ source $GDefs(Dir)/tcl/SPI.txt
 source $GDefs(Dir)/tcl/SPI.ctes
 source $GDefs(Dir)/tcl/SPI.int
 
+#----- Cleanup SPI_TOOL env variable
+if { [info exists env(SPI_TOOL)] } {
+   set env(SPI_TOOL) [join [lsort -unique [split $env(SPI_TOOL) :]] :]
+}
+
 #---------------------------------------------------------------------------
 # Nom      : <SPI::Setup>
 # Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
@@ -252,10 +257,6 @@ package require Export
 package require Animator
 package require Info
 package require MetData
-
-if { [info exists env(SPI_TOOL)] } {
-   set env(SPI_TOOL) [join [lsort -unique [split $env(SPI_TOOL) :]] :]
-}
 
 if { !$SPI::Param(Batch) } {
 
