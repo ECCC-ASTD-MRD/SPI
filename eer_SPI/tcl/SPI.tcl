@@ -2450,14 +2450,14 @@ foreach tool $SPI::Param(Tool) {
    eval ${tool}::Window
 }
 
+#----- Refresh final
+SPI::Splash $SPI::Param(Script)
+Page::Update
+
 #----- Ouvrir les donnees georeference
 foreach file $SPI::Param(Geos) {
    Mapper::Read $file
 }
-
-#----- Refresh final
-SPI::Splash $SPI::Param(Script)
-Page::Update
 
 #----- On bypass les arguments regulier de SPI pour ceux du script a etre execute
 set argv $SPI::Param(Args)
@@ -2475,4 +2475,5 @@ foreach script $SPI::Param(Script) {
    SPI::Execute $script
    Log::Print INFO "System: Done executing script $script"
 }
+
 SPI::Splash
