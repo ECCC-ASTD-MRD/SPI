@@ -195,7 +195,13 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
    float *buf;
    int    n;
    
-   /*Create OpenGL texture*/
+   // For colorindex mode
+   if (Band->Tex.Indexed && Band->Spec->Map) {
+      glEnable(GL_COLOR_TABLE);
+      glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);
+   }
+   
+   // Create OpenGL texture
    glGenTextures(1,&Tile->Tx);
    if (Tile->Tx<=0) {
       fprintf(stderr,"(ERROR) GeoTex_Texture: Unable to allocate texture memory\n");
@@ -220,7 +226,7 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
          }
       }
 
-      /*OpenGL does not manage 64 bit (double data), so we have to use a temporery float buffer*/
+      // OpenGL does not manage 64 bit (double data), so we have to use a temporery float buffer*
       if (Band->Def->Type==TD_Float64) {
          if ((buf=(float*)malloc(Tile->Nx*Tile->Ny*sizeof(float)))) {
             for(n=0;n<Tile->Nx*Tile->Ny;n++) {
