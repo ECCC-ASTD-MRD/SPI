@@ -982,17 +982,20 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
                
                /*Determine si ils sont nouveaux*/
-               internew=1;
-               Spec->InterNb=nobj;
+               if (Spec->InterNb!=0 || nobj!=0) {
+                  internew=1;
 
-               if (Spec->InterVals) {
-                  if (strcmp(Tcl_GetString(Spec->InterVals),Tcl_GetString(Objv[i]))==0) {
-                     internew=0;
+                  if (Spec->InterVals) {
+                     if (strcmp(Tcl_GetString(Spec->InterVals),Tcl_GetString(Objv[i]))==0) {
+                        internew=0;
+                     }
+                     Tcl_DecrRefCount(Spec->InterVals);
                   }
-                  Tcl_DecrRefCount(Spec->InterVals);
                }
+               Spec->InterNb=nobj;
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
                Tcl_IncrRefCount(Spec->InterVals);
+
             }
             break;
 
@@ -1362,7 +1365,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       }
       cmap=1;
    }
-
+   
    /*Cleanup des tableaux*/
    if (cmap || cpos || cseg) {
       DataSpec_Clean(Spec,cmap,cpos,cseg);

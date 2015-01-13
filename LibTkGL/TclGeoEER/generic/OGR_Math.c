@@ -36,6 +36,15 @@ static Vect3d*  GPC_Geom[2];
 static Vect3d** GPC_Ptr;
 static unsigned int GPC_GeomNb=0;
 
+void GPC_ClearVect3d(void) {
+ 
+   if (GPC_GeomNb>OGR_BUFFER) {
+      if (GPC_Geom[0]) free(GPC_Geom[0]); GPC_Geom[0]=GPC_Geom[1]=NULL;
+      if (GPC_Ptr)  free(GPC_Ptr); GPC_Ptr=NULL;
+      GPC_GeomNb=0;
+   }
+}
+
 Vect3d* GPC_GetVect3d(unsigned int Size,unsigned int No) {
    
    if (Size>GPC_GeomNb) {

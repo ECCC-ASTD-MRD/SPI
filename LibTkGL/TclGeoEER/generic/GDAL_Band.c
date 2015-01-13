@@ -240,6 +240,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
  *   <Ref>      : Referentiel des donnnes raster
  *   <Geom>     : Donnees vectorielle a rasteriser
  *   <Value>    : Valuer a assigner
+ *   <Multi>    : Mode de combinaison des valeurs multiples (GDAL_REPLACE,GDAL_MIN,GDAL_MAX,GDAL_AVERAGE)
  *
  * Retour       :
  *
@@ -247,7 +248,31 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
+
+static void inline GDAL_RasterizeValue(TDataDef *Def,int X, int Y,double Value,int Multi) {
+
+   unsigned long idx;
+   double        val;
+   
+   if (FIN2D(Def,X,Y)) {
+      idx=FIDX2D(Def,X,Y);
+      
+      if (Multi==GDAL_REPLACE) {
+         Def_Set(Def,0,idx,Value);
+      } else {
+         Def_Get(Def,0,idx,val);
+         if (val==Def->NoData) val=0.0;
+         
+         switch(Multi) {
+            case GDAL_MIN    : if (Value<val) Def_Set(Def,0,idx,Value); break;
+            case GDAL_MAX    : if (Value>val) Def_Set(Def,0,idx,Value); break;
+            case GDAL_AVERAGE: Def->Accum[idx]++; Value+=val;    Def_Set(Def,0,idx,Value); break;
+         }
+      }
+   }
+}                        
+
+void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value,int Multi) {
 
    int    i,j,g,ind1,ind2;
    int    x,y,miny,maxy,minx,maxx;
@@ -280,7 +305,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                dmaxy=dy;
          }
       } else {
-         GDAL_Rasterize(Def,Ref,geom,Value);
+         GDAL_Rasterize(Def,Ref,geom,Value,0);
       }
    }
    if (!(n+=OGR_G_GetPointCount(Geom)))
@@ -293,8 +318,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             dy1=OGR_G_GetY(Geom,i);
             x=lrint(dx1);
             y=lrint(dy1);
-            if (FIN2D(Def,x,y))
-               Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+            GDAL_RasterizeValue(Def,x,y,Value,Multi);
          }
          break;
 
@@ -339,8 +363,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   x0+=sx;
                   fr+=dny;
-                  if (FIN2D(Def,x0,y0))
-                     Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+                  GDAL_RasterizeValue(Def,x0,y0,Value,Multi);
                }
             } else {
                fr=dnx-(dny>>1);
@@ -351,8 +374,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
                   }
                   y0+=sy;
                   fr+=dnx;
-                  if (FIN2D(Def,x0,y0))
-                     Def_Set(Def,0,FIDX2D(Def,x0,y0),Value);
+                  GDAL_RasterizeValue(Def,x0,y0,Value,Multi);
                }
             }
          }
@@ -418,8 +440,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
 
                         /*fill the horizontal segment (separately from the rest)*/
                         for(x=horizontal_x1;x<horizontal_x2;x++)
-                          if (FIN2D(Def,x,y))
-                            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+                           GDAL_RasterizeValue(Def,x,y,Value,Multi);
                         continue;
                      } else {
                         /*skip top horizontal segments (they are already filled in the regular loop)*/
@@ -438,8 +459,7 @@ void GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value) {
             for (i=0;i<ints;i+=2) {
                if (polyInts[i]<=maxx && polyInts[i+1]>=minx) {
                   for(x=polyInts[i];x<=polyInts[i+1];x++)
-                     if (FIN2D(Def,x,y))
-                        Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+                     GDAL_RasterizeValue(Def,x,y,Value,Multi);
                }
             }
          }
@@ -642,7 +662,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
       }
    }
 
-   /*Process on level at a time*/
+   /*Process one level at a time*/
    for (k=0;k<ToDef->NK;k++) {
 
       if (ToDef->Buffer) {
@@ -909,6 +929,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
  *   <Final>    : Finalisation de l'operation (Averaging en plusieurs passe)
  *   <Field>    : Champs de la couche a utiliser
  *   <Value>    : Valeur a assigner
+ *   <Multi>    : Mode de combinaison des valeurs multiples (GDAL_REPLACE,GDAL_MIN,GDAL_MAX,GDAL_AVERAGE)
  *
  * Retour       : Code d'erreur standard TCL
  *
@@ -916,7 +937,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,char Mode,char Type,int Final,char *Field,double Value) {
+int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,char Mode,char Type,int Final,char *Field,double Value,int Multi) {
 
    long     f,n=0,nt=0;
    double   value,area;
@@ -966,6 +987,17 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
       OGR_G_AddGeometryDirectly(Def->Poly,Def->Pick);
    }
 
+   /*In case of average, we need an accumulator*/
+   if (Multi==GDAL_AVERAGE) {
+      if (!Def->Accum) {
+         Def->Accum=calloc(FSIZE2D(Def),sizeof(int));
+         if (!Def->Accum) {
+            Tcl_AppendResult(Interp,"\n   Data_GridOGR: Unable to allocate accumulation buffer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+   }
+   
    /*Trouve la feature en intersection*/
    for(f=0;f<Layer->NFeature;f++) {
 
@@ -1028,7 +1060,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          Data_OGRProject(geom,Layer->Ref,Ref);
 
          if (Mode=='F') {
-             GDAL_Rasterize(Def,Ref,geom,value);
+             GDAL_Rasterize(Def,Ref,geom,value,0);
          } else {
 
             area=0.0;
@@ -1074,7 +1106,16 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    if (srs)
       OSRDestroySpatialReference(srs);
 
-
+   if (Multi==GDAL_AVERAGE) {
+      for(n=0;n<FSIZE2D(Def);n++) {
+         if (Def->Accum[n]!=0.0) {
+            Def_Get(Def,0,n,value);
+            value/=Def->Accum[n];
+            Def_Set(Def,0,n,value);
+         }
+      }
+   }
+   
    return(TCL_OK);
 }
 

@@ -270,7 +270,6 @@ typedef enum {
     TD_Float64 = 11,
 } TData_Type;
 
-
 extern int TData_Size[];
 
 typedef struct TDataDef {

@@ -138,11 +138,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case SPACE:
             if (Objc==1) {
-               if (layer->Feature && layer->Feature[0] && (geom=OGR_F_GetGeometryRef(layer->Feature[0]))) {
-                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetDimension(geom)));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(-1));
-               }
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(layer->Space));
             } else {
             }
             break;
@@ -1843,10 +1839,13 @@ int OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer) {
 
    OGR_L_ResetReading(Layer->Layer);
    for(f=0;f<Layer->NFeature;f++) {
+      
       if (!(Layer->Feature[f]=OGR_L_GetNextFeature(Layer->Layer))) {
          Tcl_AppendResult(Interp,"OGR_LayerReadFeature: Unable to read features",(char*)NULL);
          return(TCL_ERROR);
       }
+      if (!Layer->Space) 
+         Layer->Space=OGR_G_GetCoordinateDimension(OGR_F_GetGeometryRef(Layer->Feature[f]));
    }
    return(TCL_OK);   
 }
@@ -3099,7 +3098,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    /*Check for extrusion selection*/
-   if (GLRender->GLZBuf || Layer->Extrude!=-1 || Layer->Topo!=-1) {
+   if (GLRender->GLZBuf || Layer->Space==3 || Layer->Extrude!=-1 || Layer->Topo!=-1) {
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LESS);
       if (spec->Fill) {
@@ -3121,7 +3120,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             if (idx<0) continue;
          }
 
-         if (Layer->Extrude!=-1) {
+         if (Layer->Space==3 || Layer->Extrude!=-1) {
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {
@@ -3144,10 +3143,12 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
 
          if (spec->Fill) {
-            if (Proj->Sun || Layer->Extrude!=-1) {
+            if (Proj->Sun || Layer->Space==3 || Layer->Extrude!=-1) {
                glEnable(GL_LIGHTING);
                glEnable(GL_LIGHT0);
                glEnable(GL_COLOR_MATERIAL);
+               glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+               
             }
             glDisable(GL_CULL_FACE);
             glLineWidth(0.0001);
@@ -3165,7 +3166,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glDisable(GL_COLOR_MATERIAL);
          }
 
-         if (Layer->Extrude==-1) {
+          if (Layer->Space!=3 && Layer->Extrude==-1) {
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {

@@ -331,7 +331,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,k,compress=0,nid,pnid;
+   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,m,k,compress=0,nid,pnid;
    unsigned long dk;
    int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok;
    long          time;
@@ -356,6 +356,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE","NOP","ACCUM","BUFFER","SUBNEAREST","SUBLINEAR",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
+   static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
 
    static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
@@ -890,21 +891,30 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             } else if ((layer=OGR_LayerGet(Tcl_GetString(Objv[3])))) {
 
                /*Interpolate a layer*/
-               if (Objc!=5 && Objc!=6) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"field layer type [field]");
+               if (Objc!=5 && Objc!=6 && Objc!=7) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"field layer mode [field] [multiple]");
                   ok=TCL_ERROR; break;
                }
                if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
                   ok=TCL_ERROR; break;
                }
+               
                field=NULL;
                x=1.0;
-
-               if (Objc==6) {
+               m=0;
+               
+               if (Objc>=6) {
                   if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
                      field=Tcl_GetString(Objv[5]);
                   }
                }
+               
+               if (Objc==7) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[6],modemul,"multiple",0,&m)!=TCL_OK) {
+                     ok=TCL_ERROR; break;
+                  }
+               }
+               
                imode=modeogr[n][0];
                itype='A';
                if (imode=='L') {
@@ -914,7 +924,8 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   imode=modeogr[n][6];
                   itype='P';
                }
-               ok=Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x);
+               
+               ok=Data_GridOGR(Interp,field0->Def,field0->Ref,layer,imode,itype,1,field,x,m);
                if (ok==TCL_ERROR) break;
             } else if ((model=Model_Get(Tcl_GetString(Objv[3])))) {
 

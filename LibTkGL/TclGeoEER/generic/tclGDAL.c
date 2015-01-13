@@ -103,7 +103,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    int            width=0,height=0,space=0,full=1;
 
    Tcl_Obj       *obj,*sub;
-   int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd;
+   int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd,m;
    double         c0,c1,a;
    TData         *data;
    TDataSpec     *spec;
@@ -114,6 +114,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE,","NOP","ACCUM","BUFFER",NULL };
    static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
+   static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
    static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
 
@@ -225,7 +226,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          layer=OGR_LayerGet(Tcl_GetString(Objv[3]));
          if (layer) {
             if (Objc!=5 && Objc!=6) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field]");
+               Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field] [multiple]");
                return(TCL_ERROR);
             }
             if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
@@ -233,9 +234,17 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             }
             field=NULL;
             x=1.0;
-            if (Objc==6) {
+            m=0;
+            
+            if (Objc>=6) {
                if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
                   field=Tcl_GetString(Objv[5]);
+               }
+            }
+            
+            if (Objc==7) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[6],modemul,"multiple",0,&m)!=TCL_OK) {
+                  return(TCL_ERROR);
                }
             }
             imode=modeogr[n][0];
@@ -247,7 +256,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                imode=modeogr[n][6];
                itype='P';
             }
-            return(Data_GridOGR(Interp,band->Def,band->Ref,layer,imode,itype,1,field,x));
+            return(Data_GridOGR(Interp,band->Def,band->Ref,layer,imode,itype,1,field,x,m));
          }
 
          /*Interpolate a field*/

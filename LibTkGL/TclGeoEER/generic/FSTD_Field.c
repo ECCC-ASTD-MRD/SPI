@@ -2129,49 +2129,49 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
             case FSTD_LISTIP1:
                Tcl_SetIntObj(obj,head.IP1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
 
             case FSTD_LISTIP2:
                Tcl_SetIntObj(obj,head.IP2);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
 
             case FSTD_LISTIP3:
                Tcl_SetIntObj(obj,head.IP3);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
                
             case FSTD_LISTIG1:
                Tcl_SetIntObj(obj,head.IG1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
                
             case FSTD_LISTIG2:
                Tcl_SetIntObj(obj,head.IG2);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
                
             case FSTD_LISTIG3:
                Tcl_SetIntObj(obj,head.IG3);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
                
             case FSTD_LISTIG4:
                Tcl_SetIntObj(obj,head.IG4);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                     Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;              
          }

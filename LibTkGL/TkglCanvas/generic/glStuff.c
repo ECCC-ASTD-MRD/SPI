@@ -48,7 +48,7 @@ static Tcl_HashTable glBitmapTable;
 static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int  glInfo(Tcl_Interp *Interp,char *Argv);
 
-static GLdouble glTessTmp[GL_MAXTESS][3];
+static GLdouble glTessTmp[GL_MAXTESS][6];
 static GLuint   glTessNo=0;
 
 void glTessError(GLenum Err) {
@@ -59,23 +59,71 @@ GLdouble *glTessTmpGet() {
    return glTessTmp[(glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0)];
 }
 
-static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdouble *Out[3]) {
+static void glTessCombineNr(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdouble **Out) {
+
+   *Out=glTessTmp[glTessNo];
 
    glTessTmp[glTessNo][0]=coords[0];
    glTessTmp[glTessNo][1]=coords[1];
    glTessTmp[glTessNo][2]=coords[2];
-   *Out=glTessTmp[glTessNo];
 
+   glTessTmp[glTessNo][3]=d[0][3];
+   glTessTmp[glTessNo][4]=d[0][4];
+   glTessTmp[glTessNo][5]=d[0][5];
+// glTessTmp[glTessNo][3]=(d[0]?w[0]*d[0][3]:0.0)+(d[1]?w[1]*d[1][3]:0.0)+(d[2]?w[2]*d[2][3]:0.0)+(d[3]?w[3]*d[3][3]:0.0);
+// glTessTmp[glTessNo][4]=(d[0]?w[0]*d[0][4]:0.0)+(d[1]?w[1]*d[1][4]:0.0)+(d[2]?w[2]*d[2][4]:0.0)+(d[3]?w[3]*d[3][4]:0.0);
+// glTessTmp[glTessNo][5]=(d[0]?w[0]*d[0][5]:0.0)+(d[1]?w[1]*d[1][5]:0.0)+(d[2]?w[2]*d[2][5]:0.0)+(d[3]?w[3]*d[3][5]:0.0);
+   
    /*Iterate through the temporary tessselation vertices*/
    glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0;
 }
 
-static void glTessVertex(GLdouble Vertex[3]) {
+static void glTessVertexNr(GLdouble *Vertex) {
+   glNormal3dv(Vertex+3);
+   glVertex3dv(Vertex);
+}
+
+static void glTessCombine(GLdouble coords[3],GLdouble *d[4],GLfloat w[4],GLdouble **Out) {
+
+   *Out=glTessTmp[glTessNo];
+
+   glTessTmp[glTessNo][0]=coords[0];
+   glTessTmp[glTessNo][1]=coords[1];
+   glTessTmp[glTessNo][2]=coords[2];
+   
+   /*Iterate through the temporary tessselation vertices*/
+   glTessNo=glTessNo<(GL_MAXTESS-1)?glTessNo+1:0;
+}
+
+static void glTessVertex(GLdouble *Vertex) {
 
    glNormal3dv(Vertex);
    glVertex3dv(Vertex);
 }
 
+void glTessInit() {
+   
+   gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glTessVertex);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_END,(_GLUfuncptr)glEnd);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_COMBINE,(_GLUfuncptr)glTessCombine);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
+
+   gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
+   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
+}
+
+void glTessInitNr() {
+   
+   gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glTessVertexNr);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_END,(_GLUfuncptr)glEnd);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_COMBINE,(_GLUfuncptr)glTessCombineNr);
+   gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
+
+   gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
+   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
+}
 /*----------------------------------------------------------------------------
  * Nom      : <glInfo>
  * Creation : Septembre 2000 - J.P. Gauthier - CMC/CMOE
@@ -1986,14 +2034,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->MagScale=1;
    GLRender->MagX=GLRender->MagY=GLRender->MagD=0;
 
-   gluTessCallback(GLRender->GLTess,GLU_TESS_BEGIN,(_GLUfuncptr)glBegin);
-   gluTessCallback(GLRender->GLTess,GLU_TESS_VERTEX,(_GLUfuncptr)glTessVertex);
-   gluTessCallback(GLRender->GLTess,GLU_TESS_END,(_GLUfuncptr)glEnd);
-   gluTessCallback(GLRender->GLTess,GLU_TESS_COMBINE,(_GLUfuncptr)glTessCombine);
-   gluTessCallback(GLRender->GLTess,GLU_TESS_ERROR,(_GLUfuncptr)glTessError);
-
-   gluTessProperty(GLRender->GLTess,GLU_TESS_BOUNDARY_ONLY,GL_FALSE);
-   gluTessProperty(GLRender->GLTess,GLU_TESS_WINDING_RULE,GLU_TESS_WINDING_ODD);
+   glTessInit();
 }
 
 /*----------------------------------------------------------------------------

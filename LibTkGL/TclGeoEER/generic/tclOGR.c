@@ -771,6 +771,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
    layer->CFeature   = -1;
    layer->Topo       = -1;
    layer->Extrude    = -1;
+   layer->Space      = 0;
    layer->Loc        = NULL;
    layer->Min        = 0.0;
    layer->Max        = 0.0;

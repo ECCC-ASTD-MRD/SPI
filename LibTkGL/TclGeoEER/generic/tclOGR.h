@@ -90,7 +90,7 @@ typedef struct OGR_Layer {
    unsigned int   NSFeature;
 
    int            CFeature;
-   int            Topo,Extrude;
+   int            Topo,Extrude,Space;
    double         Min,Max;
    Coord         *Loc;          /* Position simple */
 } OGR_Layer;
@@ -107,7 +107,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
 OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
 OGRLayerH        OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
 void             OGR_LayerClean(OGR_Layer *Layer,int Index);
-void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
+void             OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
 void             OGR_LayerUpdate(OGR_Layer *Layer);
 int              OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
 int              OGR_LayerDestroy(Tcl_Interp *Interp,char *Name);
@@ -152,6 +152,7 @@ int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRField
 #define GPC_ARRAYPTR 2
 
 Vect3d*      GPC_GetVect3d(unsigned int Size,unsigned int No);
+void         GPC_ClearVect3d(void);
 void         GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
 void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
 void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);

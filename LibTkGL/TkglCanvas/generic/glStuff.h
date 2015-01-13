@@ -223,6 +223,8 @@ void        glDrawArc(float Start,float Extent,int Inter,GLint Mode,int Style);
 void        glPickInit(double WinX,double WinY,double DX,double DY);
 int         glPickProcess();
 
+void        glTessInit();
+void        glTessInitNr();
 void        glTessError(GLenum Err);
 GLdouble   *glTessTmpGet();
 
