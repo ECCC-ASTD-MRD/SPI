@@ -623,7 +623,7 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
       if { $Data(Type)=="DIR" } {
          if { [file exists $Data(Path)/Index/] } {
             foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
-               .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::ReadLayer $file; Mapper::UpdateData $Page::Data(Frame)"
+               .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::OGR::Read $file; Mapper::UpdateData $Page::Data(Frame)"
             }
             .depotwaremenu entryconfigure 1 -state normal
          }

@@ -755,7 +755,7 @@ proc Mapper::OGR::Config { Frame Object } {
 
    ogrlayer configure $Object -font OGRFONT -activeoutline yellow -width 1 -noselecttransparency 0
 
-   if { [ogrlayer define $Object -space]==2 } {
+   if { [ogrlayer define $Object -space]>=2 } {
       ogrlayer configure $Object -outline black -fill [Mapper::GetColor]
    } else {
       ogrlayer configure $Object -outline [Mapper::GetColor]
