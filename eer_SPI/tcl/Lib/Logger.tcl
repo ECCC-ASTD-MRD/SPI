@@ -85,7 +85,7 @@ namespace eval Log { } {
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
    set Param(JobId)       ""                    ;#Job unique identifier
-   set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%M%S" -gmt True] ;#----- Current date.
+   set Param(JobDate)     [clock format $Param(SecTime) -format "%Y%m%d_%H%M%S" -timezone :UTC] ;#----- Current date.
    set Param(JobPath)     ""                    ;#Job temp dir
    set Param(JobClass)    SCRIPT                ;#Job class (SCRIPT,DAEMON,ORJI,HCRON,INTERACTIVE,REPORT)
    set Param(JobReport)   ALL                   ;#Job report (True,ALL,ERROR,WARNING)
@@ -364,7 +364,7 @@ proc Log::Start { Job Version { Input "" } } {
       catch { Log::Print MUST "   Job ID           : $env(LOADL_STEP_ID)" }
       if { [file exists $Input] } {
          set secs [file mtime $Input]
-         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
+         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
     } elseif { [info exists env(SGE_CELL)] } {
       Log::Print MUST "Queue Method        : sge"
@@ -372,7 +372,7 @@ proc Log::Start { Job Version { Input "" } } {
       catch { Log::Print MUST "   Job ID              : $env(JOB_ID)" }
       if { [file exists $Input] } {
          set secs [file mtime $Input]
-         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -gmt True]"
+         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
    }
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
@@ -423,7 +423,7 @@ proc Log::End { { Status 0 } { Exit True } } {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
    Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
-   Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -gmt True]"
+   Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -timezone :UTC]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
@@ -486,10 +486,10 @@ proc Log::Print { Type Message { Var "" } } {
          #----- Keep only last $Param(Keep) hour logs
          set err [catch { exec find $Param(Path) -name *.log -ctime +$Param(Keep) -exec rm \{\} \; } msg]
 
-         set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]-[pid].log
+         set Param(OutFile) $Param(Path)/[clock format [clock seconds] -format "%Y%m%d%H%M" -timezone :UTC]-[pid].log
       } else {
          if { $Param(Rotate) && [file exists $Param(Out)] } {
-            file rename -force $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -gmt True]
+            file rename -force $Param(Out) $Param(Out).[clock format [clock seconds] -format "%Y%m%d%H%M" -timezone :UTC]
          }
          set Param(OutFile) $Param(Out)
       }
@@ -501,7 +501,7 @@ proc Log::Print { Type Message { Var "" } } {
    if { $Param(Rotate) && $Param(JobClass)=="DAEMON" && [expr [clock seconds]-$Param(SecLog)]>$Param(Rotate) } {
       if { [file exists $Param(OutFile)] } {
          close $Param(Out)
-         file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -gmt True]
+         file rename -force $Param(OutFile) $Param(OutFile).[clock format $Param(SecLog) -format "%Y%m%d" -timezone :UTC]
          set Param(Out) [open $Param(OutFile) w]
          fconfigure $Param(Out) -buffering line
       }

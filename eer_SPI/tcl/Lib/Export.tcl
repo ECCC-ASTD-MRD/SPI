@@ -337,9 +337,9 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-      set date    [clock format $sec0 -format "%Y%m%d" -gmt true]
-      set time    [clock format $sec0 -format "%H%M" -gmt true]
-      set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+      set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
+      set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
+      set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
      
       #----- Create filename 
       set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
@@ -475,9 +475,9 @@ proc Export::Vector::Export { Path Format Fields } {
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-      set date    [clock format $sec0 -format "%Y%m%d" -gmt true]
-      set time    [clock format $sec0 -format "%H%M" -gmt true]
-      set desc    "$nv [clock format $sec0 -gmt True] $lvl $lvltype"
+      set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
+      set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
+      set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
 
       #----- Create filename 
       set name    [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]

@@ -810,8 +810,8 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          if { [expr $date%3600]==0 || $date==$date0 || $date==$date1 } {
             lappend secs $date
          }
-         set hour [clock format $date -format "%H" -gmt true]
-         set min  [clock format $date -format "%M" -gmt true]
+         set hour [clock format $date -format "%H" -timezone :UTC]
+         set min  [clock format $date -format "%M" -timezone :UTC]
          if { $hour=="00" } {
             set hour 0
          } else {
@@ -951,8 +951,8 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
          set date [lindex $parcel 0]
          set elev [format %5.1f [lindex $parcel 5]]
-         set hour [clock format $date -format "%H" -gmt true]
-         set min  [clock format $date -format "%M" -gmt true]
+         set hour [clock format $date -format "%H" -timezone :UTC]
+         set min  [clock format $date -format "%M" -timezone :UTC]
          if { $hour=="00" } {
             set hour 0
          } else {
@@ -1102,7 +1102,7 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
 
    set parcel [trajectory define $t -PARCEL 0]
    set name   [trajectory define $t -ID]
-   set date   [clock format [trajectory define $t -DATE] -format "%Y%m%d %H%M" -gmt True]
+   set date   [clock format [trajectory define $t -DATE] -format "%Y%m%d %H%M" -timezone :UTC]
    set type   [trajectory define $t -LEVELTYPE]
    set coordm [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] MIN 1]
    set coordd [Convert::FormatCoord [lindex $parcel 1] [lindex $parcel 2] DEG 6]

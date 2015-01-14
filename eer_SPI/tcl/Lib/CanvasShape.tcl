@@ -609,10 +609,10 @@ proc CVClock::Time { Frame Sec Total } {
       set Data(Sec$Frame) $Sec
       set Sec [expr int($Sec+[lindex [lindex $Param(Zones) $Data(Zone$Frame)] 2]*3600)]
 
-      set hour [clock format $Sec -format "%k" -gmt true]
-      set min  [clock format $Sec -format "%M" -gmt true]
-      set jour [DateStuff::StringDay   [clock format $Sec -format "%w" -gmt true] $GDefs(Lang)]
-      set mois [DateStuff::StringMonth [clock format $Sec -format "%m" -gmt true] $GDefs(Lang)]
+      set hour [clock format $Sec -format "%k" -timezone :UTC]
+      set min  [clock format $Sec -format "%M" -timezone :UTC]
+      set jour [DateStuff::StringDay   [clock format $Sec -format "%w" -timezone :UTC] $GDefs(Lang)]
+      set mois [DateStuff::StringMonth [clock format $Sec -format "%m" -timezone :UTC] $GDefs(Lang)]
 
       #----- Positionner l'aiguille des heures
 
@@ -643,7 +643,7 @@ proc CVClock::Time { Frame Sec Total } {
 
       $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
 
-      $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -gmt true]
+      $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -timezone :UTC]
       $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0] $GDefs(Lang)]"
    }
 

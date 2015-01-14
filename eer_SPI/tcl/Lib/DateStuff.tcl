@@ -301,13 +301,13 @@ proc DateStuff::StringDateFromSeconds { Seconds Lang { Zone Z } } {
 
    set Seconds [expr int($Seconds)]
 
-   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -gmt true] $Lang]
-   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -gmt true] $Lang]
+   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -timezone :UTC] $Lang]
+   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "$jour %d $mois %Y à %H:%M$Zone" -gmt true]"
+      set date "[clock format $Seconds -format "$jour %d $mois %Y à %H:%M$Zone" -timezone :UTC]"
    } else {
-      set date "[clock format $Seconds -format "$jour $mois %d %Y at %H:%M$Zone" -gmt true]"
+      set date "[clock format $Seconds -format "$jour $mois %d %Y at %H:%M$Zone" -timezone :UTC]"
    }
 
    return $date
@@ -317,13 +317,13 @@ proc DateStuff::StringDateOnlyFromSeconds { Seconds Lang { Zone Z } } {
 
    set Seconds [expr int($Seconds)]
 
-   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -gmt true] $Lang]
-   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -gmt true] $Lang]
+   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -timezone :UTC] $Lang]
+   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "$jour %d $mois %Y" -gmt true]"
+      set date "[clock format $Seconds -format "$jour %d $mois %Y" -timezone :UTC]"
    } else {
-      set date "[clock format $Seconds -format "$jour $mois %d %Y" -gmt true]"
+      set date "[clock format $Seconds -format "$jour $mois %d %Y" -timezone :UTC]"
    }
 
    return $date
@@ -333,13 +333,13 @@ proc DateStuff::StringShortDateFromSeconds { Seconds Lang { Zone Z } } {
 
    set Seconds [expr int($Seconds)]
 
-   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -gmt true] $Lang]
-   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -gmt true] $Lang]
+   set jour [DateStuff::StringDay   [clock format $Seconds -format "%w" -timezone :UTC] $Lang]
+   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "%d $mois %Y à %H:%M$Zone" -gmt true]"
+      set date "[clock format $Seconds -format "%d $mois %Y à %H:%M$Zone" -timezone :UTC]"
    } else {
-      set date "[clock format $Seconds -format "$mois %d %Y at %H:%M$Zone" -gmt true]"
+      set date "[clock format $Seconds -format "$mois %d %Y at %H:%M$Zone" -timezone :UTC]"
    }
 
    return $date
@@ -349,12 +349,12 @@ proc DateStuff::StringShortDateOnlyFromSeconds { Seconds Lang { Zone Z } } {
 
    set Seconds [expr int($Seconds)]
 
-   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -gmt true] $Lang]
+   set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "%d $mois %Y" -gmt true]"
+      set date "[clock format $Seconds -format "%d $mois %Y" -timezone :UTC]"
    } else {
-      set date "[clock format $Seconds -format "$mois %d %Y" -gmt true]"
+      set date "[clock format $Seconds -format "$mois %d %Y" -timezone :UTC]"
    }
 
    return $date
@@ -364,7 +364,7 @@ proc DateStuff::StringTimeFromSeconds { Seconds { Zone Z } } {
 
    set Seconds [expr int($Seconds)]
 
-   set time "[clock format $Seconds -format "%H$Zone" -gmt true]"
+   set time "[clock format $Seconds -format "%H$Zone" -timezone :UTC]"
 
    return $time
 }

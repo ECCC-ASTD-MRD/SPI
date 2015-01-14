@@ -724,7 +724,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
          #----- Hardcode temporaire pour envoyer sur le nouveau site
 
          if { $Print(WEBSite)=="WEB_VAAC" } {
-            set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -gmt True]
+            set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -timezone :UTC]
             set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {

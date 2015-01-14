@@ -2415,8 +2415,8 @@ proc Graph::TimeFormat { Sec Mode { From 0 } } {
       "M"     { return [expr int($Sec-$From)/60] }
       "H"     { return [expr int($Sec-$From)/3600] }
       "D"     { return [expr int($Sec-$From)/86400] }
-      "DATE"  { return [clock format [expr int($Sec)] -format "%d/%m %H:%M" -gmt True] }
-      default { return [clock format [expr int($Sec)] -format $Mode -gmt true] }
+      "DATE"  { return [clock format [expr int($Sec)] -format "%d/%m %H:%M" -timezone :UTC] }
+      default { return [clock format [expr int($Sec)] -format $Mode -timezone :UTC] }
    }
 }
 

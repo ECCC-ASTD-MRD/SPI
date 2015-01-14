@@ -945,7 +945,7 @@ proc FieldBox::InfoCommand { No Index } {
 
    #----- Date de validite
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
-   catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -gmt True] $GDefs(Lang)] }
+   catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -timezone :UTC] $GDefs(Lang)] }
 
    if { [fstddict isvar $nv] } {
       eval set info  \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -unit]\]
@@ -1757,7 +1757,7 @@ proc FieldParams::GetInfo { { Field "" } } {
       foreach param $Data(ParamsOut) {
          set Data($param) [fstdfield define $Field -$param]
       }
-      wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([fstdfield stats $Field -level] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
+      wm title .fieldboxparams "[lindex $Param(Title) $GDefs(Lang)]: [fstdfield define $Field -NOMVAR] ([fstdfield stats $Field -level] [fstdfield stats $Field -leveltype]) [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC]"
    } else {
       foreach param $Data(ParamsOut) {
          set Data($param) ""

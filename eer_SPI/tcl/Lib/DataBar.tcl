@@ -300,7 +300,7 @@ proc DataBar::IdField { Field } {
    
    append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
    append lbl " ([fstdfield define $Field -ETIKET])"
-   append lbl " [lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -gmt true]"
+   append lbl " [lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC]"
 
    return $lbl
 }
@@ -333,7 +333,7 @@ proc DataBar::IdGrib { Field } {
    if { [set unit [fstdfield configure $Field -unit]]!="" } {
       append lbl " ($unit)"
    }
-   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [gribfield define $Field -DATEV] -format "%H:%M %Y%m%d" -gmt true]"
+   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [gribfield define $Field -DATEV] -format "%H:%M %Y%m%d" -timezone :UTC]"
 
    return $lbl
 }
@@ -356,7 +356,7 @@ proc DataBar::IdObs { Obs } {
    global GDefs
 
    set lbl    "Obs [observation configure $Obs -desc]([observation define $Obs -NB])"
-   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [observation define $Obs -DATE] -format "%H:%M %Y%m%d" -gmt true]"
+   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [observation define $Obs -DATE] -format "%H:%M %Y%m%d" -timezone :UTC]"
 
    return $lbl
 }
@@ -380,7 +380,7 @@ proc DataBar::IdMetObs { MetObs } {
    global GDefs
 
    set lbl    "$MetObs"
-   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [metobs define $MetObs -VALID] -format "%H:%M %Y%m%d" -gmt True]"
+   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [metobs define $MetObs -VALID] -format "%H:%M %Y%m%d" -timezone :UTC]"
 
    return $lbl
 }
@@ -433,7 +433,7 @@ proc DataBar::IdTraj { Traj } {
        append lbl " AGL"
    }
 
-   append lbl " [lindex $info $GDefs(Lang)] [clock format [lindex $pr 0] -format "%H:%M %Y%m%d" -gmt true]]"
+   append lbl " [lindex $info $GDefs(Lang)] [clock format [lindex $pr 0] -format "%H:%M %Y%m%d" -timezone :UTC]]"
 
    return $lbl
 }

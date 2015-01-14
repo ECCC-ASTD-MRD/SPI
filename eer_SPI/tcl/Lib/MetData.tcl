@@ -248,7 +248,7 @@ proc MetData::File2Sec { File } {
    set r  [lindex $dh 0]
    set ex [lindex $dh 1]
 
-   return [clock scan "[string range $r 0 7] [string range $r 8 9] +[string range [lindex $dh 1] 0 2] hours" -gmt True]
+   return [clock scan "[string range $r 0 7] [string range $r 8 9] +[string range [lindex $dh 1] 0 2] hours" -timezone :UTC]
 }
 
 #----------------------------------------------------------------------------
@@ -355,9 +355,9 @@ proc MetData::FormatDATEV { Field { Min False } } {
    #----- Retour de la date de validitee
 
    if { $Min } {
-      return [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -gmt true]
+      return [clock format $seconds -format "%a %b %d %Y, %H:%M UTC" -timezone :UTC]
    } else {
-      return [clock format $seconds -format "%a %b %d %Y, %H UTC" -gmt true]
+      return [clock format $seconds -format "%a %b %d %Y, %H UTC" -timezone :UTC]
    }
 }
 

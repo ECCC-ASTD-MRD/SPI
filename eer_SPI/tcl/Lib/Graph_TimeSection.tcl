@@ -299,10 +299,10 @@ proc Graph::TimeSection::Graph { GR } {
    }
 
    if { $data(Date0)!="" } {
-      set data(XMin) [clock scan $data(Date0) -gmt True]
+      set data(XMin) [clock scan $data(Date0) -timezone :UTC]
    }
    if { $data(Date1)!="" } {
-      set data(XMax) [clock scan $data(Date1) -gmt True]
+      set data(XMax) [clock scan $data(Date1) -timezone :UTC]
    }
 
    #----- Verifier la selection de l'usager

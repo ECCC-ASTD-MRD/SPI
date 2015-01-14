@@ -553,7 +553,7 @@ proc Animator::GetPlayListField { } {
             set ip2     [fstdfield define $fld -IP2]
             set ip3     [fstdfield define $fld -IP3]
             set etiket  [fstdfield define $fld -ETIKET]
-            set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -gmt True]
+            set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -timezone :UTC]
          } elseif { [gribfield is $fld] } {
 
             set tags [gribfield stats $fld -tag]
@@ -566,7 +566,7 @@ proc Animator::GetPlayListField { } {
             set ip2     \\d+
             set ip3     \\d+
             set etiket  .+
-            set date    [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -gmt True]
+            set date    [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -timezone :UTC]
          } else {
             continue
          }
@@ -906,7 +906,7 @@ proc Animator::Play { } {
 
       if { $Play(Type)=="DATE" && $info!="" } {
          projection configure $Play(Page) -date $info
-         set label [clock format $info -format "%R, %a %b %d %Y" -gmt true]
+         set label [clock format $info -format "%R, %a %b %d %Y" -timezone :UTC]
          CVClock::Time $Play(Page) $info [expr ($Play(Idx)-$Play(Idx0))*100.0/($Play(Idx1)-$Play(Idx0))]
       } else {
          projection configure $Play(Page) -date $Viewport::Data(Seconds)
@@ -921,7 +921,7 @@ proc Animator::Play { } {
       if { $Play(File) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
-            set id [clock format $info -format "%Y%m%d_%H%M%S" -gmt true]_UTC
+            set id [clock format $info -format "%Y%m%d_%H%M%S" -timezone :UTC]_UTC
          } else {
             set id [format "%04i" $no]
          }
@@ -1182,7 +1182,7 @@ proc Animator::Range { Side args } {
    #----- Ajuster l'information
 
    if { $Play(Type)=="DATE" && $info!="" } {
-      set Play(Label) [clock format $info -format "%R, %a %b %d %Y" -gmt true]
+      set Play(Label) [clock format $info -format "%R, %a %b %d %Y" -timezone :UTC]
    } else {
       set Play(Label) $info
    }

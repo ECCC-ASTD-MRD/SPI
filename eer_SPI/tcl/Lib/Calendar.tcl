@@ -44,9 +44,9 @@ namespace eval Calendar {
    set Lbl(Day)     " S M T W T F S"
 
    set Data(Second) [clock seconds]
-   set Data(Year)   [clock format $Data(Second) -format "%Y" -gmt true]
-   set Data(Month)  [string trimleft [clock format $Data(Second) -format "%m" -gmt true] 0]
-   set Data(Day)    [clock format $Data(Second) -format "%d" -gmt true]
+   set Data(Year)   [clock format $Data(Second) -format "%Y" -timezone :UTC]
+   set Data(Month)  [string trimleft [clock format $Data(Second) -format "%m" -timezone :UTC] 0]
+   set Data(Day)    [clock format $Data(Second) -format "%d" -timezone :UTC
    set Data(Result) ""
 
    catch {
@@ -120,7 +120,7 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
          -command "set $Var \[Calendar::Invoke $Frame \$$Var\]; $Cmd"
       pack $Frame.b -side left -fill y
 
-      bind $Frame.e <Return>  "set $Var \[clock scan \$Calendar::Data(Date$Frame)]; set Data(Date$Frame) \[DateStuff::StringDateOnlyFromSeconds \$$Var $GDefs(Lang)\]; $Cmd"
+      bind $Frame.e <Return>  "set $Var \[clock scan \$Calendar::Data(Date$Frame) -timezone :UTC]; set Data(Date$Frame) \[DateStuff::StringDateOnlyFromSeconds \$$Var $GDefs(Lang)\]; $Cmd"
 
    if { $Width==-1 } {
       pack $Frame.e -side left -fill both -expand true
@@ -344,7 +344,7 @@ proc Calendar::Update { Frame  } {
 
    while { $day <= [Calendar::MonthLength $Data(Year) $Data(Month)] } {
 
-      set d [clock format $sec -format "%w"]
+      set d [clock format $sec -format "%w" -timezone :UTC]
       set x [expr 22+$d*18]
 
       .cal.date create text $x $y -text $day -font $GDefs(Font) -anchor e -tags "CALDAY CALDAY$day"

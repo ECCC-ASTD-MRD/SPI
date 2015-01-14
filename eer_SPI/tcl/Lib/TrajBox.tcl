@@ -741,7 +741,7 @@ proc TrajBox::Insert { No } {
          } else {
             set mode Traj
          }
-         set date [clock format [trajectory define $traj -DATE] -format "%Y%m%d%H%M" -gmt True]
+         set date [clock format [trajectory define $traj -DATE] -format "%Y%m%d%H%M" -timezone :UTC]
          set level [format "%.2f" [trajectory define $traj -LEVEL]]
 
          #----- Garder la liste des champs de selection
@@ -923,7 +923,7 @@ proc TrajBox::Restrict { No args } {
          } else {
             set mode Traj
          }
-         set date [clock format [trajectory define $traj -DATE] -format "%Y%m%d%H%M" -gmt True]
+         set date [clock format [trajectory define $traj -DATE] -format "%Y%m%d%H%M" -timezone :UTC]
          set level [format "%.2f" [trajectory define $traj -LEVEL]]
 
          if { ($data(Id)    == "" || [lsearch -exact $data(Id) $id]       != -1) &&

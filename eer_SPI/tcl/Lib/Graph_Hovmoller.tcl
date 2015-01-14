@@ -270,10 +270,10 @@ proc Graph::Hovmoller::Graph { GR } {
    }
 
    if { $data(Date0)!="" } {
-      set data(YMin) [clock scan $data(Date0) -gmt True]
+      set data(YMin) [clock scan $data(Date0) -timezone :UTC]
    }
    if { $data(Date1)!="" } {
-      set data(YMax) [clock scan $data(Date1) -gmt True]
+      set data(YMax) [clock scan $data(Date1) -timezone :UTC]
    }
 
    #----- Verifier la selection de l'usager

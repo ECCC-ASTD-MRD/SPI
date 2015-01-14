@@ -739,7 +739,7 @@ proc ObsBox::Insert { No } {
             set id "[string range $id 0 16]..."
          }
          set sec  [lindex [observation define $obs -DATE] 0]
-         set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
+         set date [clock format $sec -format "%Y%m%d%H%M" -timezone :UTC]
          set nb   [observation define $obs -NB]
 
          #----- Garder la liste des champs de selection
@@ -963,7 +963,7 @@ proc ObsBox::Restrict { No args } {
          }
 
          set sec  [lindex [observation define $obs -DATE] 0]
-         set date [clock format $sec -format "%Y%m%d%H%M" -gmt true]
+         set date [clock format $sec -format "%Y%m%d%H%M" -timezone :UTC]
          set nb   [observation define $obs -NB]
 
          if { ($data(Id)   == "" || [lsearch -exact $data(Id) $id]     != -1) &&

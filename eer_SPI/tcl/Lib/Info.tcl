@@ -443,7 +443,7 @@ proc Info::Format { Info } {
          "Click" -
          "Sim0Secs" -
          "SimSecs" -
-         "AccSecs" { set val [clock format $val] }
+         "AccSecs" { set val [clock format $val -timezone :UTC] }
       }
 
       #----- For scenario, only show then name (1st item)
