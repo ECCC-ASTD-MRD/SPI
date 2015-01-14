@@ -785,10 +785,10 @@ proc PrintBox::Save { Frame X Y Width Height File Device } {
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
    
-   #----- PNGs sometime are corrupt, Iraised a tocket for this
-   if { $device == "png" } {
+   #----- PNGs sometime are corrupt, I raised a tocket for this, GIF need color resampling to have <=256 colors
+   if { $device == "png" || $device == "gif" } {
       TMPIMG write "$File.ppm" -format ppm
-      exec convert $File.ppm $File.png
+      exec convert $File.ppm $File.$device
       file delete $File.ppm
    } else {
       eval TMPIMG write "$File.$Device " -format \{$device $opt\}
