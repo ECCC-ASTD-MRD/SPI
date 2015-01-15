@@ -703,6 +703,13 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
          }
          set desc [fstdfield define $field -NOMVAR]
          
+         if { [fstdfield configure $field -interpdegree]=="NEAREST" } {
+            lset ij 0  [expr round([lindex $ij 0])]
+            lset ij 1  [expr round([lindex $ij 1])]
+            lset pij 0 [expr round([lindex $pij 0])]
+            lset pij 1 [expr round([lindex $pij 1])]
+         }
+                     
          lappend list [list $desc $ij $pij $value]
          append Page::Data(Value) "$desc:$value "
       }

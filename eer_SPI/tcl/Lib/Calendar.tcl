@@ -46,7 +46,7 @@ namespace eval Calendar {
    set Data(Second) [clock seconds]
    set Data(Year)   [clock format $Data(Second) -format "%Y" -timezone :UTC]
    set Data(Month)  [string trimleft [clock format $Data(Second) -format "%m" -timezone :UTC] 0]
-   set Data(Day)    [clock format $Data(Second) -format "%d" -timezone :UTC
+   set Data(Day)    [clock format $Data(Second) -format "%d" -timezone :UTC]
    set Data(Result) ""
 
    catch {
