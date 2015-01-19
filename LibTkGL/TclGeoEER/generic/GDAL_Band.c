@@ -33,9 +33,7 @@
 #include <math.h>
 
 #include "tclGDAL.h"
-#include "gpc.h"
 
-extern OGRGeometryH gpc_ogr(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
 extern int GDAL_Type[];
 extern int TD2GDAL[];
 
@@ -538,7 +536,6 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
             if (isnan(val) || val==Def->NoData)
                val=0.0;
          }
-
          /* If we are computing areas */
          if (Area>0.0) {
             switch(Type) {
@@ -566,6 +563,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
                   dp=1.0;
                   break;
             }
+            
             val+=Value*dp;
             OGR_G_DestroyGeometry(inter);
          }
@@ -634,7 +632,7 @@ int Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref
 */
 int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
-   int          i,j,f,n,nt,p=0,pt,pi,pj,len=-1,idx2,idx3,wrap,k=0,rw;
+   int          i,j,f,n,nt=0,p=0,pt,pi,pj,len=-1,idx2,idx3,wrap,k=0,rw;
    double       val0,val1,area,x,y,z;
    char         buf[64];
    OGRGeometryH cell,ring;
@@ -664,10 +662,8 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
    /*Process one level at a time*/
    for (k=0;k<ToDef->NK;k++) {
-
-      if (ToDef->Buffer) {
-         memset(ToDef->Buffer,0x0,FSIZE2D(ToDef)*sizeof(double));
-      }
+      if (ToDef->Buffer)
+         for(i=0;i<FSIZE2D(ToDef);i++) ToDef->Buffer[i]=0.0;
 
       /*Check for included channel or list containing index*/
       if (List) {
@@ -764,7 +760,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
             }
          }
       } else {
-
+         
          /*Damn, we dont have the index, do the long run*/
          for(j=0;j<FromDef->NJ;j++) {
             for(i=0;i<FromDef->NI;i++) {
@@ -776,6 +772,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
 
                /*Are we crossing the wrap around*/
                if (wrap<0) {
+                  
                   /*If so, move the wrapped points (assumed greater than NI/2) to the other side*/
                   for(p=0;p<-wrap;p++) {
                      OGR_G_GetPoint(ring,p,&x,&y,&z);
@@ -789,7 +786,7 @@ int Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeo
                   OGR_G_Empty(cell);
                   OGR_G_AddGeometry(cell,ring);
                   area=OGR_G_Area(cell);
-
+                  
                   if (area>0.0) {
                      Def_Get(FromDef,0,FIDX3D(FromDef,i,j,k),val1);
                      /*If we are saving the indexes, we have to process even if nodata but use 0.0 so as to not affect results*/
@@ -1057,7 +1054,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          }
 
          /*Transformation dans le bon referentiel*/
-         Data_OGRProject(geom,Layer->Ref,Ref);
+         GPC_OGRProject(geom,Layer->Ref,Ref);
 
          if (Mode=='F') {
              GDAL_Rasterize(Def,Ref,geom,value,0);
@@ -1117,45 +1114,6 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
    }
    
    return(TCL_OK);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <Data_OGRProject>
- * Creation     : Novembre 2005 J.P. Gauthier - CMC/CMOE
- *
- * But          : Transforme les coordonnees d'un object vectoriel OGR dans une autre referentiel
- *
- * Parametres   :
- *   <Geom>     : Object geometrique OGR
- *   <FromRef>  : Reference source
- *   <ToRef>    : Reference destination
- *
- * Retour       : Code d'erreur standard TCL
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-void Data_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
-
-   OGRGeometryH geom;
-   Vect3d       vr;
-   Coord        co;
-   int          n;
-
-   if (FromRef!=ToRef) {
-      for(n=0;n<OGR_G_GetGeometryCount(Geom);n++) {
-         geom=OGR_G_GetGeometryRef(Geom,n);
-         Data_OGRProject(geom,FromRef,ToRef);
-      }
-
-      for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
-         OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
-         FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
-         ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
-         OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
-      }
-   }
 }
 
 /*----------------------------------------------------------------------------
@@ -1319,7 +1277,7 @@ int Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *
                if (di0>=ToDef->NI || dj0>=ToDef->NJ || di1<0 || dj1<0)
                   continue;
 
-               /*Test for polar outsidness (Problem we had with yingyang grids)*/
+               /*Test for polar outsidness (Problem we had with yinyang grids)*/
                if ((di0<0 && di1>ToDef->NI) || (dj0<0 && dj1>ToDef->NJ))
                   continue;
 

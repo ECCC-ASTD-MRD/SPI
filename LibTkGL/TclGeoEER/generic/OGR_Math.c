@@ -107,6 +107,7 @@ int GPC_QSortInter(const Vect3d *A,const Vect3d *B){
 void GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
 
    OGRGeometryH geom;
+   Vect3d       vr;
    Coord        co;
    int          n;
 
@@ -116,10 +117,11 @@ void GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef) {
          GPC_OGRProject(geom,FromRef,ToRef);
       }
 
-      for(n=0;n<GPC_ToVect3d(Geom,GPC_ARRAY0);n++) {
-         FromRef->Project(FromRef,GPC_Geom[0][n][0],GPC_Geom[0][n][1],&co.Lat,&co.Lon,1,1);
-         ToRef->UnProject(ToRef,&GPC_Geom[0][n][0],&GPC_Geom[0][n][1],co.Lat,co.Lon,1,1);
-         OGR_G_SetPoint(Geom,n,GPC_Geom[0][n][0],GPC_Geom[0][n][1],GPC_Geom[0][n][2]);
+      for(n=0;n<OGR_G_GetPointCount(Geom);n++) {
+         OGR_G_GetPoint(Geom,n,&vr[0],&vr[1],&vr[2]);
+         FromRef->Project(FromRef,vr[0],vr[1],&co.Lat,&co.Lon,1,1);
+         ToRef->UnProject(ToRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
+         OGR_G_SetPoint(Geom,n,vr[0],vr[1],vr[2]);
       }
    }
 }

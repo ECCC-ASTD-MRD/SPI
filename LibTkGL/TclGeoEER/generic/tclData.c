@@ -828,6 +828,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    ((FSTD_Head*)cut->Head)->FID=NULL;
 
    cut->Ref=GeoRef_Reference(Field[0]->Ref);
+//TODO:EER   GeoRef_Put(Interp,NULL,cut->Ref);
+
    cut->Ref->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
    cut->Ref->ZRef.Type=Field[0]->Ref->ZRef.Type;
    cut->Ref->ZRef.ETop=Field[0]->Ref->ZRef.ETop;

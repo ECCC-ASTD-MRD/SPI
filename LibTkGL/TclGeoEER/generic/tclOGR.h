@@ -66,7 +66,6 @@ typedef struct OGR_File {
 
 typedef struct OGR_Layer {
    Tcl_Obj         *Tag;
-   char             Changed;
    OGR_File        *File;
 
    OGRLayerH        Layer;
@@ -81,6 +80,7 @@ typedef struct OGR_Layer {
    TDataSpec     *Spec;         /* Specification des donnees */
 
    Vect3d         Vr[2];
+   char           Changed;
    int            Update;
    int            Mask,FMask;   /* Masque */
    GLuint         LFeature;

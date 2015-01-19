@@ -694,8 +694,7 @@ static int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
          // Process each sub grids independently
          pnid=field0->Ref->NId;
-         
-         for(nid=(pnid?pnid:(field0->Ref->NbId>1?1:0));nid<=(pnid?pnid:field0->Ref->NbId);nid++) {
+         for(nid=(pnid?pnid:(field0->Ref->NbId>1?1:0));nid<=(pnid?pnid:(field0->Ref->NbId>1?field0->Ref->NbId:0));nid++) {
             FSTD_FieldSubSelect(field0,nid);
 
             n=-1;

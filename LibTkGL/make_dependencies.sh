@@ -144,6 +144,7 @@ fi
 
 if [[ $ARCH == "AIX" ]]; then
    export CC=xlc
+   export CXX=xlc++
    export make=gmake
 fi
 
@@ -345,6 +346,7 @@ make install
 cp -d ${LIB_PATH}/${PROJ}/lib/*.so* ${SPI_LIB}
 
 #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
+#----- On AIX, have to wrap the int64 definition betweer ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmtsfit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
 export LD_LIBRARY_PATH={LIB_PATH}/${GEOS}/lib:$LD_LIBRARY_PATH
 
 mkdir ${TMP_PATH}/${GDAL}

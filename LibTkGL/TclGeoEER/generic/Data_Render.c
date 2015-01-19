@@ -426,7 +426,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    TList   *list;
    T3DArray *array;
 
-   if (!Field->Ref || Field->Ref->Grid[0]=='Y' || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
    /*Les contours sont-ils definit*/

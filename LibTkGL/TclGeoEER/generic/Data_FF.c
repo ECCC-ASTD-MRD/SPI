@@ -960,7 +960,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Pr
    TList         *list;
    
    /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
-   if (Mode==REF_COOR && !Ref)
+   if ((Mode==REF_COOR && !Ref) || Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' )
       return(0);
 
    for (n=0;n<NbInter;n++) {

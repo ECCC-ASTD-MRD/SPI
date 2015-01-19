@@ -1622,6 +1622,8 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   } else if (grtyp[0]=='V') {
                      if (!Field->Ref) {
                          Field->Ref=GeoRef_Reference(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,"A ",0,0,0,0,-1));
+                         //TODO:EER   GeoRef_Put(Interp,NULL,Field->Ref);
+
                      }
                      Field->Ref->ZRef.Levels=(float*)realloc(Field->Ref->ZRef.Levels,Field->Def->NJ*sizeof(float));
                   }
