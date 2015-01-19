@@ -1940,14 +1940,6 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
                   if (Field->Ref->Grid[0]!='V') {
-                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
-                     if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
-                           dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
-
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
-                     }
-                  } else {
                      Field->Ref->Project(Field->Ref,ni-0.5,nj-0.5,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
