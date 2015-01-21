@@ -709,7 +709,6 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
             lset pij 0 [expr round([lindex $pij 0])]
             lset pij 1 [expr round([lindex $pij 1])]
          }
-                     
          lappend list [list $desc $ij $pij $value]
          append Page::Data(Value) "$desc:$value "
       }

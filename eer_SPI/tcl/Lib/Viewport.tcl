@@ -118,6 +118,13 @@ namespace eval Viewport {
 
    set Map(Types)       { "azimuthal equidistant" "azimuthal equal-area" "orthographic" "cylindric" "mercator" "grid" } ;#Type de projection geographique
 
+   set MapDef(Robinson)    { { PROJCS["World_Robinson",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Robinson"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54030"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Mollweide)   { { PROJCS["World_Mollweide",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Mollweide"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54009"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_I)    { { PROJCS["World_Eckert_I",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_I"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54015"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_III)  { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_V)    { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Homolonsine) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -18000000 18000000 -9000000 9000000 }
+   
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
    set Map(X)           0           ;#Pixel en X
    set Map(Y)           0           ;#Pixel en Y
@@ -525,8 +532,13 @@ proc Viewport::ConfigGet { Frame VP } {
    set Data(Seconds$Frame) [expr $sec-$Data(Seconds)]
 
    set Map(GeoRef$Frame) [projection configure $Frame -georef]
-   set Map(Type)         [projection configure $Frame -type]
-   set Map(Type$Frame)   $Map(Type)
+   set Map(Type$Frame)   [projection configure $Frame -type]
+   
+   if { $Map(GeoRef$Frame)!="" } {
+      set Map(Type)      $Map(Type$Frame):$Map(GeoRef$Frame)
+   } else {
+      set Map(Type)      $Map(Type$Frame) 
+   }
 
    set Map(Data)        [projection configure $Frame -data]
    set Map(Elev)        [projection configure $Frame -scale]
@@ -650,12 +662,25 @@ proc Viewport::ConfigSet { Frame } {
       return
    }
 
-   set Map(Type$Frame)   $Map(Type)
+   set Map(Type$Frame)   [lindex [split $Map(Type) :] 0]
    set Map(GeoRef$Frame) $Map(GeoRef)
 
-   Viewport::ForceGrid $Frame
+   #----- Check for grid type definition
+   set clean False
+   if { [set def [lindex [split $Map(Type) :] 1]]!="" } {
+      if { [info exists ::Viewport::MapDef($def)] } {
+          catch { georef create $def }
+          georef define $def -type { WRAP PSEUDO }
+          if { $Map(GeoRef)!=$def } {
+             set clean True
+          }
+          Viewport::ParamProjSet $def $def
+      }
+   }
+   
+   Viewport::ForceGrid $Frame $clean
 
-   projection configure $Frame -type $Map(Type) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
+   projection configure $Frame -type $Map(Type$Frame) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
       -draw $Map(Draw) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
@@ -1328,10 +1353,10 @@ proc Viewport::Do { Frame } {
    variable Data
    variable Resources
 
-   set Map(Type$Frame)   $Map(Type)
+   set Map(Type$Frame)   [lindex [split $Map(Type) :] 0]
    set Map(GeoRef$Frame) $Map(GeoRef)
 
-   projection configure $Frame -type $Map(Type) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
+   projection configure $Frame -type $Map(Type$Frame) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
       -mapres $Map(Res) -draw $Map(Draw)  -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapplace $Map(Place) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
@@ -1617,25 +1642,39 @@ proc Viewport::ParamProjGet { Ref } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::ParamProjSet { { Ref "" } } {
+proc Viewport::ParamProjSet { { Ref "" } { Def "" } } {
    variable Map
+   variable MapDef
 
    if { ![georef is $Ref] } {
       set Ref $Page::Data(Frame)
       catch { georef create $Ref }
    }
    set Map(GeoRef) $Ref
-
+   
+   if { [info exists ::Viewport::MapDef($Def)] } {
+      set Map(GridProj) [lindex $MapDef($Def) 0]
+      set Map(GridMinX) [lindex $MapDef($Def) 1]
+      set Map(GridMaxX) [lindex $MapDef($Def) 2]
+      set Map(GridMinY) [lindex $MapDef($Def) 3]
+      set Map(GridMaxY) [lindex $MapDef($Def) 4]
+      set Map(GridTrX) ""
+      set Map(GridScX) ""
+      set Map(GridRtX) ""
+      set Map(GridTrY) ""
+      set Map(GridScY) ""
+      set Map(GridRtY) "" 
+   } 
    eval set tr \[list $Map(GridTrX) $Map(GridScX) $Map(GridRtX) $Map(GridTrY) $Map(GridRtY) $Map(GridScY)\]
-   georef define $Ref -projection $Map(GridProj)
-   georef define $Ref -transform $tr
-   georef define $Ref -extent [list $Map(GridMinX) $Map(GridMinY) $Map(GridMaxX) $Map(GridMaxY)]
+   georef define $Map(GeoRef) -projection $Map(GridProj)
+   georef define $Map(GeoRef) -transform $tr
+   georef define $Map(GeoRef) -extent [list $Map(GridMinX) $Map(GridMinY) $Map(GridMaxX) $Map(GridMaxY)]
 
    projection clean $Page::Data(Frame)
    projection configure $Page::Data(Frame) -type grid -georef $Map(GeoRef)
 
-   Viewport::ConfigGet $Page::Data(Frame) $Viewport::Data(VP)
-   Viewport::Reset $Page::Data(Frame)
+#TODO:   Viewport::ConfigGet $Page::Data(Frame) $Viewport::Data(VP)
+#   Viewport::Reset $Page::Data(Frame)
 }
 
 #----------------------------------------------------------------------------
@@ -1769,7 +1808,7 @@ proc Viewport::ParamFrame { Frame Apply } {
    set Data(Frame) [TabFrame::Add $Frame 1 [lindex $Lbl(Geo) $GDefs(Lang)] False ""]
 
    labelframe $Data(Frame).proj -text [lindex $Lbl(Proj) $GDefs(Lang)]
-      ComboBox::Create $Data(Frame).proj.type Viewport::Map(Type) noedit sorted nodouble -1 $Map(Types) 12 4 "set Viewport::Map(GeoRef) \"\"; Viewport::ParamSet ; $Apply configure -state normal"
+      ComboBox::Create $Data(Frame).proj.type Viewport::Map(Type) noedit unsorted nodouble -1 $Map(Types) 12 4 "set Viewport::Map(GeoRef) \"\"; Viewport::ParamSet ; $Apply configure -state normal"
       button $Data(Frame).proj.def -image WORLD -relief flat -bd 0 -overrelief raised -command { Viewport::ParamProj $Viewport::Map(GeoRef) }
       pack $Data(Frame).proj.def -side left -padx 2
       pack $Data(Frame).proj.type -side left -fill x -expand true
@@ -1782,6 +1821,11 @@ proc Viewport::ParamFrame { Frame Apply } {
 
    pack $Data(Frame).proj -side top -fill x -padx 5 -pady 5
 
+   #----- Add user defined projections
+   foreach def [lsort [array names Viewport::MapDef]] {
+      ComboBox::Add $Data(Frame).proj.type "grid:$def"
+   }
+   
    frame $Data(Frame).left
 
    labelframe $Data(Frame).left.ras -text [lindex $Lbl(Raster) $GDefs(Lang)]
@@ -2890,7 +2934,7 @@ proc Viewport::Setup { Frame } {
    }
 
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
-   set Map(Type$Frame)              $Map(Type)     ;#Type de projection
+   set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
    set Map(GeoRef$Frame)            $Map(GeoRef)   ;#Georef associee
    set Data(Seconds$Frame)          0              ;#Frame per second counter
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
