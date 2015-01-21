@@ -1279,7 +1279,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (Proj->Type->Def==PROJCYLIN && Field->Ref->Grid[0]!='V') {
+   if ((Proj->Type->Def!=PROJGLOBE) && Field->Ref->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
    } else {

@@ -689,16 +689,16 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
             if (((Projection*)Proj)->Type->Def==PROJPLANE && !Field->Ref->Ids) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
-            } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
+            } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
                Vect_Init(Field->Ref->Pos[Level][idxi],i,j,coord.Elev);
             } else {
               if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
-                  // Fix for G grids which seems to have inverted lat on IG2=1
+                   // Fix for G grids which seems to have inverted lat on IG2=1
                   coord.Lat=(Field->Ref->Grid[0]=='G' && head->IG2==1)?-lat[idxi]:lat[idxi];
                   coord.Lon=CLAMPLON(lon[idxi]);
                } else {
                   Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,0,1);
-               }
+                }
                Vect_Init(Field->Ref->Pos[Level][idxi],coord.Lon,coord.Lat,coord.Elev);
             }
          }
@@ -706,7 +706,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
      
       if (((Projection*)Proj)->Type->Def==PROJPLANE && !Field->Ref->Ids) {
          FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
-      } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
+      } else if (((Projection*)Proj)->Type->Def==PROJPLANE && ((Projection*)Proj)->Ref && ((Projection*)Proj)->Ref->Ids && ((Projection*)Proj)->Ref->Ids[0]==Field->Ref->Ids[0]) {
          FSTD_Project(((Projection*)Proj),Field->Ref->Pos[Level],FSIZE2D(def));
       } else {
          ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(def));

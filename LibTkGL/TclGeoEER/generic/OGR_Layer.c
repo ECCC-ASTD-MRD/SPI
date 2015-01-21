@@ -3107,7 +3107,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       }
    }
    glCullFace(GL_FRONT_AND_BACK);
-
+   
    /*Render the features*/
    for(f=g;f<Layer->GFeature;f++) {
       

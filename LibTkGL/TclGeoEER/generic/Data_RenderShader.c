@@ -327,7 +327,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(1);
    }
 
-   if (Proj->Type->Def==PROJCYLIN && Field->Ref->Grid[0]!='V') {
+   if ((Proj->Type->Def!=PROJGLOBE) && Field->Ref->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
    } else {
       glDisable(GL_CULL_FACE);

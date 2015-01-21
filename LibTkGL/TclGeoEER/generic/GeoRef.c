@@ -851,7 +851,7 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                }
 
                ref->Type=GRID_NONE;
-               for(j=0;j<6;j++) {
+               for(j=0;j<nidx;j++) {
                   Tcl_ListObjIndex(Interp,Objv[i],j,&obj);
                   if (strcmp(Tcl_GetString(obj),"REGULAR")==0) {
                      ref->Type|=GRID_REGULAR;

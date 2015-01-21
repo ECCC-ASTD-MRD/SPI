@@ -148,10 +148,10 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       if (Proj->Ref->LLExtent.MinY==1e32) {
          GeoRef_Limits(Proj->Ref,&Proj->Ref->LLExtent.MinY,&Proj->Ref->LLExtent.MinX,&Proj->Ref->LLExtent.MaxY,&Proj->Ref->LLExtent.MaxX);
       }
-
+      
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=Proj->Geo->Params.CoordDef){
+      for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX)+Proj->Geo->Params.CoordDef*0.5;loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lat=floor(Proj->Ref->LLExtent.MinY);loc.Lat<=ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
@@ -166,7 +166,7 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Latitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=Proj->Geo->Params.CoordDef){
+      for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY)+Proj->Geo->Params.CoordDef*0.5;loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lon=floor(Proj->Ref->LLExtent.MinX);loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
@@ -801,7 +801,7 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
    GeoVect *out;
    Coord    loc;
    double   d,r;
-   int      s;
+   int      s,o=1;
    long     n,e=0;
 
    out=(Pix?Pix:Loc);

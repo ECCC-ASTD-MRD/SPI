@@ -1277,10 +1277,11 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
             
-            glNormal3dv(*OGR_ArrayNr[n]);
-            glVertex3dv(OGR_ArrayVr[n]);
-            gluTessVertex(GLRender->GLTess,OGR_ArrayVr[n],OGR_ArrayVr[n]);
-            
+            for(n=pnv;n<pnv+nv;n++) {
+               glNormal3dv(*OGR_ArrayNr[n]);
+               glVertex3dv(OGR_ArrayVr[n]);
+               gluTessVertex(GLRender->GLTess,OGR_ArrayVr[n],OGR_ArrayVr[n]);
+            }            
             glEnd();
             gluTessEndContour(GLRender->GLTess);
             pnv+=nv;
@@ -1291,7 +1292,6 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 
    /*Process extruded polygon*/
    if (Extrude!=0.0) {
-      glTessInit();
 
       for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
          geom=OGR_G_GetGeometryRef(Geom,g);
