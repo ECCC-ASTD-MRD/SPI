@@ -943,7 +943,7 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
 
    OGRSpatialReferenceH          srs=NULL;
    OGRCoordinateTransformationH  tr=NULL;
-   OGRGeometryH                  geom,utmgeom=NULL;
+   OGRGeometryH                  geom,utmgeom=NULL,hgeom;
    OGREnvelope                   env;
 
    if (!Layer->NFeature) {
@@ -994,14 +994,20 @@ int Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,
          }
       }
    }
-   
+
    /*Trouve la feature en intersection*/
    for(f=0;f<Layer->NFeature;f++) {
 
       if (Layer->Select[f] && Layer->Feature[f]) {
 
+         /*try to access geometrie, skipping instead of failing on bad ones*/
+         if (!(hgeom=OGR_F_GetGeometryRef(Layer->Feature[f]))) {
+            fprintf( stderr, "(WARNING) Data_GridOGR: Cannot get handle from geometry: %d\n", f );
+            continue;
+         }
+
          /*Copie de la geometrie pour transformation*/
-         if (!(geom=OGR_G_Clone(OGR_F_GetGeometryRef(Layer->Feature[f])))) {
+         if (!(geom=OGR_G_Clone(hgeom))) {
             Tcl_AppendResult(Interp,"\n   Data_GridOGR: Could not clone the geomtry",(char*)NULL);
             return(TCL_ERROR);
          }
