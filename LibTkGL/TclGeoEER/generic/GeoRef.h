@@ -54,7 +54,8 @@
 #define GRID_TILE     0x10
 #define GRID_VERTICAL 0x20
 #define GRID_RADIAL   0x40
-#define GRID_REPEAT   0x80
+#define GRID_REPEAT   0x80    
+#define GRID_PSEUDO   0x100      // Pesudocylindrical
 
 //#define REFDEFAULT "GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]"
 //#define REFDEFAULT "GEOGCS[\"NAD83",DATUM[\"North_American_Datum_1983\",SPHEROID[\"GRS 1980\",6378137,298.257222101]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]"

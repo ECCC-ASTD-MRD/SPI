@@ -796,21 +796,23 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
 #ifdef HAVE_RMN
                Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
-               if (nidx>ref->NbId) {
-                  Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid subgrid index",(char*)NULL);
-                  return(TCL_ERROR);
-               } else {
-                  int ni,nj,ig;
-                  char grtyp[2];
+               if (ref->Ids) {
+                  if (nidx>ref->NbId) {
+                     Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid subgrid index",(char*)NULL);
+                     return(TCL_ERROR);
+                  } else {
+                     int ni,nj,ig;
+                     char grtyp[2];
 
-                  // If the subgrid index is different from the current
-                  if (ref->Ids && nidx!=ref->NId && nidx<=ref->NbId) {
-                     ref->NId=nidx;
+                     // If the subgrid index is different from the current
+                     if (ref->Ids && nidx!=ref->NId && nidx<=ref->NbId) {
+                        ref->NId=nidx;
 
-                     // Define grid limits
-                     c_ezgprm(ref->Ids[nidx],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
-                     ref->X0=0;    ref->Y0=0;
-                     ref->X1=ni-1; ref->Y1=nj-1;
+                        // Define grid limits
+                        c_ezgprm(ref->Ids[nidx],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+                        ref->X0=0;    ref->Y0=0;
+                        ref->X1=ni-1; ref->Y1=nj-1;
+                     }
                   }
                }
 #else
@@ -844,6 +846,9 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                if (ref->Type&GRID_RADIAL) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("RADIAL",-1));
                }
+               if (ref->Type&GRID_PSEUDO) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("PSEUDO",-1));
+               }
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Tcl_ListObjLength(Interp,Objv[++i],&nidx)==TCL_ERROR) {
@@ -873,6 +878,9 @@ int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   if (strcmp(Tcl_GetString(obj),"RADIAL")==0) {
                      ref->Type|=GRID_RADIAL;
+                  }
+                  if (strcmp(Tcl_GetString(obj),"PSEUDO")==0) {
+                     ref->Type|=GRID_PSEUDO;
                   }
                }
             }

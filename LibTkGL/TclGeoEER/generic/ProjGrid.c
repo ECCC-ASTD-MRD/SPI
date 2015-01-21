@@ -74,7 +74,14 @@ Tcl_Obj*      Grid_ProjectLine(Tcl_Interp *Interp,ViewportItem *VP,Projection *P
 */
 void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
-   char    buf[256];
+   char   buf[256];
+   Vect3d pix;
+   Coord  loc;
+
+   // Get latlon bounding box
+   if (Proj->Ref->LLExtent.MinY==1e32) {
+      GeoRef_Limits(Proj->Ref,&Proj->Ref->LLExtent.MinY,&Proj->Ref->LLExtent.MinX,&Proj->Ref->LLExtent.MaxY,&Proj->Ref->LLExtent.MaxX);
+   }
 
    if (Interp) {
       glFeedbackInit(20,GL_2D);
@@ -88,17 +95,38 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       Tcl_AppendResult(Interp,buf,(char*)NULL);
    }
 
-   /*Pourtour de la carte*/
+   /*Pourtour de la carte*/    
    if (VP->ColorFLake && VP->ColorFCoast) {
       glColor3us(VP->ColorFLake->red,VP->ColorFLake->green,VP->ColorFLake->blue);
       glDisable(GL_STENCIL_TEST);
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glBegin(GL_POLYGON);
+
+      if (Proj->Ref->Type&GRID_PSEUDO) {     
+         loc.Lat=Proj->Ref->LLExtent.MinY;
+         for(loc.Lon=Proj->Ref->LLExtent.MinX;loc.Lon<Proj->Ref->LLExtent.MaxX;loc.Lon+=5.0) {
+            Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+            glVertex3dv(pix);
+         }
+         for(loc.Lat=Proj->Ref->LLExtent.MinY;loc.Lat<Proj->Ref->LLExtent.MaxY;loc.Lat+=5.0) {
+            Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+            glVertex3dv(pix);
+         }
+         for(loc.Lon=Proj->Ref->LLExtent.MaxX;loc.Lon>Proj->Ref->LLExtent.MinX;loc.Lon-=5.0) {
+            Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+            glVertex3dv(pix);
+         }
+         for(loc.Lat=Proj->Ref->LLExtent.MaxY;loc.Lat>Proj->Ref->LLExtent.MinY;loc.Lat-=5.0) {
+            Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+            glVertex3dv(pix);
+         }
+      } else {  
          glVertex3d(-Proj->LI,-Proj->LJ,1.0);
          glVertex3d(Proj->LI,-Proj->LJ,1.0);
          glVertex3d(Proj->LI,Proj->LJ,1.0);
          glVertex3d(-Proj->LI,Proj->LJ,1.0);
-         glVertex3d(-Proj->LI,-Proj->LJ,1.0);
+         glVertex3d(-Proj->LI,-Proj->LJ,1.0);     
+      }
       glEnd();
       glEnable(GL_STENCIL_TEST);
 
@@ -110,11 +138,31 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 // TODO: For unknown reasons, MESA makes memory faults on the longitudes when this is greater than 1
 //   glLineWidth(ABS(Proj->Geo->Params.Coast));
    glBegin(GL_LINE_STRIP);
+   if (Proj->Ref->Type&GRID_PSEUDO) {     
+      loc.Lat=Proj->Ref->LLExtent.MinY;
+      for(loc.Lon=Proj->Ref->LLExtent.MinX;loc.Lon<Proj->Ref->LLExtent.MaxX;loc.Lon+=5.0) {
+         Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+         glVertex3dv(pix);
+      }
+      for(loc.Lat=Proj->Ref->LLExtent.MinY;loc.Lat<Proj->Ref->LLExtent.MaxY;loc.Lat+=5.0) {
+         Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+         glVertex3dv(pix);
+      }
+      for(loc.Lon=Proj->Ref->LLExtent.MaxX;loc.Lon>Proj->Ref->LLExtent.MinX;loc.Lon-=5.0) {
+         Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+         glVertex3dv(pix);
+      }
+      for(loc.Lat=Proj->Ref->LLExtent.MaxY;loc.Lat>Proj->Ref->LLExtent.MinY;loc.Lat-=5.0) {
+         Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1);
+         glVertex3dv(pix);
+      }
+   } else {  
       glVertex3d(-Proj->LI,-Proj->LJ,1.0);
       glVertex3d(-Proj->LI,Proj->LJ,1.0);
       glVertex3d(Proj->LI,Proj->LJ,1.0);
       glVertex3d(Proj->LI,-Proj->LJ,1.0);
       glVertex3d(-Proj->LI,-Proj->LJ,1.0);
+   }
    glEnd();
 
    if (Interp)
@@ -126,6 +174,7 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    char    buf[256];
    Coord   loc;
    Vect3d  pix,prev;
+   float   di;
 
    /*Latlons*/
    if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
@@ -143,15 +192,10 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       }
 
       loc.Elev=0.0;
-
-      // Get latlon bounding box
-      if (Proj->Ref->LLExtent.MinY==1e32) {
-         GeoRef_Limits(Proj->Ref,&Proj->Ref->LLExtent.MinY,&Proj->Ref->LLExtent.MinX,&Proj->Ref->LLExtent.MaxY,&Proj->Ref->LLExtent.MaxX);
-      }
       
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX)+Proj->Geo->Params.CoordDef*0.5;loc.Lon+=Proj->Geo->Params.CoordDef){
+      for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<ceil(Proj->Ref->LLExtent.MaxX)+Proj->Geo->Params.CoordDef;loc.Lon+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lat=floor(Proj->Ref->LLExtent.MinY);loc.Lat<=ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
@@ -165,12 +209,13 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       }
 
       /*Latitudes*/
+      di=Proj->Ref->Type&GRID_PSEUDO?0.01:Proj->LI;
       Vect_Init(prev,0.0,0.0,0.0);
-      for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY)+Proj->Geo->Params.CoordDef*0.5;loc.Lat+=Proj->Geo->Params.CoordDef){
+      for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY)+Proj->Geo->Params.CoordDef;loc.Lat+=Proj->Geo->Params.CoordDef){
          glBegin(GL_LINE_STRIP);
          for(loc.Lon=floor(Proj->Ref->LLExtent.MinX);loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
-               Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
+               Grid_Vertex(pix,prev,di,GL_LINE_STRIP);
             } else {
                glEnd();
                glBegin(GL_LINE_STRIP);
@@ -356,23 +401,28 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 */
 static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
 
-   if ((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=0.0 && Prev[0]>=0.0)) {
+   if (((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=-0.0 && Prev[0]>=-0.0)) && fabs(Pix[0]-Prev[0])<fabs(Len)) {
       glVertex3dv(Pix);
    } else {
-      if (fabs(Pix[0]-Prev[0])>Len) {
-         if (Pix[0]>0.0) {
-            glVertex3d(-Len,Pix[1],Pix[2]);
-            glEnd();
-            glBegin(Mode);
-            glVertex3d(Len,Pix[1],Pix[2]);
-         } else {
-            glVertex3d(Len,Pix[1],Pix[2]);
-            glEnd();
-            glBegin(Mode);
-            glVertex3d(-Len,Pix[1],Pix[2]);
+      if (Len<0) {
+         glEnd();
+         glBegin(Mode);
+      } else {  
+         if (fabs(Pix[0]-Prev[0])>fabs(Len)) {
+            if (Pix[0]>0.0) {
+               glVertex3d(-Len,Pix[1],Pix[2]);
+               glEnd();
+               glBegin(Mode);
+               glVertex3d(Len,Pix[1],Pix[2]);
+            } else {
+               glVertex3d(Len,Pix[1],Pix[2]);
+               glEnd();
+               glBegin(Mode);
+               glVertex3d(-Len,Pix[1],Pix[2]);
+            }
          }
+         glVertex3dv(Pix);
       }
-      glVertex3dv(Pix);
    }
 
    Vect_Assign(Prev,Pix);
@@ -409,7 +459,7 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
          glBegin(Mode);
             for(i=0;i<n;i+=Stride) {
               if (Tex) glTexCoord1f(Tex[i]);
-              Grid_Vertex(Data[i],prev,Proj->LI,Mode);
+              Grid_Vertex(Data[i],prev,Proj->Ref->Type&GRID_PSEUDO?-0.01:Proj->LI,Mode);
             }
          glEnd();
       } else {
@@ -801,7 +851,7 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
    GeoVect *out;
    Coord    loc;
    double   d,r;
-   int      s,o=1;
+   int      s;
    long     n,e=0;
 
    out=(Pix?Pix:Loc);
