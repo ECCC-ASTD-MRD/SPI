@@ -1494,10 +1494,11 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y2-((TkCanvas*)Canvas)->yOrigin);
          glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
       glEnd();
+
+      /*Mask intrusions*/
+      ViewportIntrusion(NULL,Canvas,Item);
    }
 
-   /*Mask intrusions*/
-   ViewportIntrusion(NULL,Canvas,Item);
    ViewportLicense(NULL,vp,proj);
 
    /*Loading data*/

@@ -135,8 +135,7 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    }
 
    glColor3us(VP->ColorCoast->red,VP->ColorCoast->green,VP->ColorCoast->blue);
-// TODO: For unknown reasons, MESA makes memory faults on the longitudes when this is greater than 1
-//   glLineWidth(ABS(Proj->Geo->Params.Coast));
+   glLineWidth(ABS(Proj->Geo->Params.Coast));
    glBegin(GL_LINE_STRIP);
    if (Proj->Ref->Type&GRID_PSEUDO) {     
       loc.Lat=Proj->Ref->LLExtent.MinY;

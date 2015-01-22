@@ -1176,7 +1176,8 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
    Coord  coord;
    Vect3d pix;
-   int    txtw,i;
+   int    txtw,i,dx,dy,d0,d1,px,py;
+   float  db;
    char   buf[16];
    double old=-1.0,cmod,tolerance;
 
@@ -1202,77 +1203,150 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
    Tk_GetFontMetrics(VP->tkfont,&tkm);
    tolerance=Proj->PixDist/16200.0;
+   
+   // Latitudes
+   db=GDB->Params.CoordNum*GDB->Params.CoordDef;
+   px=py=-32768;
+   
+   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
+      coord.Lon=-180.0;
+      cmod=fmod(Proj->Ref->LLExtent.MinY,db);
+      d0=Proj->Ref->LLExtent.MinY-cmod;
+      d1=Proj->Ref->LLExtent.MaxY+db*0.5;
+      if (d0<-90) d0+=db;
+      
+      for(coord.Lat=d0;coord.Lat<d1;coord.Lat+=db){
+         if (Projection_Pixel(Proj,VP,coord,pix) && (pix[1]-py)>tkm.linespace) {
+            if (GDB->Params.CoordDef<1.0) {
+               sprintf(buf,"%0.2f",ABS(coord.Lat));
+            } else {
+               sprintf(buf,"%i",(int)ABS(coord.Lat));
+            }
 
-   pix[0]=2;
-   for(i=0;i<=VP->Height;i++) {
-
-      pix[1]=i;
-      if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
-         cmod=fmod(coord.Lat,GDB->Params.CoordNum*GDB->Params.CoordDef);
-         if (ABS(cmod)<tolerance) {
-
-            coord.Lat-=cmod;
-            if (old!=coord.Lat) {
-
-               old=coord.Lat;
-
-               if (GDB->Params.CoordDef<1.0) {
-                  sprintf(buf,"%0.2f",ABS(coord.Lat));
+            if (coord.Lat!=0.0) {
+               if (coord.Lat>0.0) {
+                  strcat(buf,"N");
                } else {
-                  sprintf(buf,"%i",(int)ABS(coord.Lat));
+                  strcat(buf,"S");
                }
+            }
 
-               if (coord.Lat!=0.0) {
-                  if (coord.Lat>0.0) {
-                     strcat(buf,"N");
+            dx=-Tk_TextWidth(VP->tkfont,buf,strlen(buf)+1);
+            dy=-tkm.ascent/2;
+            if (coord.Lat>0) dy+=tkm.ascent/5;
+            glPrint(Interp,VP->canvas,buf,pix[0]+dx,pix[1]+dy,0);
+            py=pix[1];
+         }
+      }  
+   } else {         
+  
+      pix[0]=2;
+      for(i=0;i<=VP->Height;i++) {
+
+         pix[1]=i;
+         if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
+            cmod=fmod(coord.Lat,db);
+            if (ABS(cmod)<tolerance) {
+
+               coord.Lat-=cmod;
+               if (old!=coord.Lat) {
+
+                  old=coord.Lat;
+
+                  if (GDB->Params.CoordDef<1.0) {
+                     sprintf(buf,"%0.2f",ABS(coord.Lat));
                   } else {
-                     strcat(buf,"S");
+                     sprintf(buf,"%i",(int)ABS(coord.Lat));
                   }
-               }
 
-               glPrint(Interp,VP->canvas,buf,3,VP->Height-(i+tkm.linespace/2),0);
-               i+=tkm.linespace;
+                  if (coord.Lat!=0.0) {
+                     if (coord.Lat>0.0) {
+                        strcat(buf,"N");
+                     } else {
+                        strcat(buf,"S");
+                     }
+                  }
+
+                  glPrint(Interp,VP->canvas,buf,3,VP->Height-(i+tkm.linespace/2),0);
+                  i+=tkm.linespace;
+               }
             }
          }
       }
    }
+   
+   //Longitudes
+   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
+      coord.Lat=-90.0;
+      cmod=fmod(Proj->Ref->LLExtent.MinX,db);
+      d0=Proj->Ref->LLExtent.MinX-cmod;
+      d1=Proj->Ref->LLExtent.MaxX+db*0.5;
+      if (d0<-180) d0+=db;
+      
+      for(coord.Lon=d0;coord.Lon<d1;coord.Lon+=db){
+         if (Projection_Pixel(Proj,VP,coord,pix)) {
+            if (GDB->Params.CoordDef<1.0) {
+               sprintf(buf,"%0.2f",ABS(coord.Lon));
+            } else {
+               sprintf(buf,"%i",(int)ABS(coord.Lon));
+            }
 
-   pix[1]=VP->Height-2;
-   for(i=0;i<=VP->Width;i++) {
-
-      pix[0]=i;
-      if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
-         cmod=fmod(coord.Lon,GDB->Params.CoordNum*GDB->Params.CoordDef);
-         if (ABS(cmod)<tolerance) {
-
-            coord.Lon-=cmod;
-            if (old!=coord.Lon) {
-
-               old=coord.Lon;
-               coord.Lon=CLAMPLON(coord.Lon);
-
-               if (GDB->Params.CoordDef<1.0) {
-                  sprintf(buf,"%0.2f",ABS(coord.Lon));
+            if (coord.Lon!=0.0) {
+               if (coord.Lon>0.0) {
+                  strcat(buf,"E");
                } else {
-                  sprintf(buf,"%i",(int)ABS(coord.Lon));
+                  strcat(buf,"W");
                }
+            }
 
-               if (coord.Lon!=0.0 && ABS(coord.Lon)!=180.0) {
-                  if (coord.Lon>0.0) {
-                     strcat(buf,"E");
+            dx=-Tk_TextWidth(VP->tkfont,buf,strlen(buf))>>1;
+            
+            if ((pix[0]+dx-px)>tkm.ascent>>1) {
+               dy=-tkm.ascent*1.5;
+               glPrint(Interp,VP->canvas,buf,pix[0]+dx,pix[1]+dy,0);
+               px=pix[0]-dx;
+            }
+        }
+      }  
+   } else {         
+  
+      pix[1]=VP->Height-2;
+      for(i=0;i<=VP->Width;i++) {
+
+         pix[0]=i;
+         if (Proj->Type->UnProject(VP,Proj,&coord,pix)) {
+            cmod=fmod(coord.Lon,db);
+            if (ABS(cmod)<tolerance) {
+
+               coord.Lon-=cmod;
+               if (old!=coord.Lon) {
+
+                  old=coord.Lon;
+                  coord.Lon=CLAMPLON(coord.Lon);
+
+                  if (GDB->Params.CoordDef<1.0) {
+                     sprintf(buf,"%0.2f",ABS(coord.Lon));
                   } else {
-                     strcat(buf,"W");
+                     sprintf(buf,"%i",(int)ABS(coord.Lon));
                   }
-               }
 
-               txtw=Tk_TextWidth(VP->tkfont,buf,strlen(buf));
-               glPrint(Interp,VP->canvas,buf,i-txtw/2,3,0);
-               i+=txtw-2;
+                  if (coord.Lon!=0.0 && ABS(coord.Lon)!=180.0) {
+                     if (coord.Lon>0.0) {
+                        strcat(buf,"E");
+                     } else {
+                        strcat(buf,"W");
+                     }
+                  }
+
+                  txtw=Tk_TextWidth(VP->tkfont,buf,strlen(buf));
+                  glPrint(Interp,VP->canvas,buf,i-txtw/2,3,0);
+                  i+=txtw-2;
+               }
             }
          }
       }
    }
-
+   
    glPopMatrix();
    glMatrixMode(GL_MODELVIEW);
    glPopMatrix();

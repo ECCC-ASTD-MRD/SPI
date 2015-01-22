@@ -1311,7 +1311,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->InterNb) 
       dp>>=2;
    
-   dp=(dp<1 || Field->Ref->Grid[0]=='V')?1:dp;
+   dp=(dp<1 || Field->Ref->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
 
    /*Grille avec loop sur la longitude*/
    if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
