@@ -123,7 +123,7 @@ namespace eval Viewport {
    set MapDef(Eckert_I)    { { PROJCS["World_Eckert_I",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_I"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54015"]] } -18000000 18000000 -9000000 9000000 }
    set MapDef(Eckert_III)  { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } -18000000 18000000 -9000000 9000000 }
    set MapDef(Eckert_V)    { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } -18000000 18000000 -9000000 9000000 }
-   set MapDef(Homolonsine) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(HomolonsineTest) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -18000000 18000000 -9000000 9000000 }
    
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
    set Map(X)           0           ;#Pixel en X
@@ -150,6 +150,7 @@ namespace eval Viewport {
    #----- Descriptions des resources utilisees par le package
 
    set Resources(Bkg)       white        ;#Couleur du font (background)
+   set Resources(BD)        1            ;#Largeur du pourtour (background)
    set Resources(FillCoast) ""           ;#Cotes (Polygones)
    set Resources(FillLake)  ""           ;#Lacs (Polygones)
    set Resources(Coast)     #000000      ;#Cotes
@@ -570,6 +571,7 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(Crowd)       [lindex [$Frame.page.canvas itemconf $VP -crowd] 4]
    set Resources(Font)      [lindex [$Frame.page.canvas itemconf $VP -font] 4]
    set Resources(Bkg)       [lindex [$Frame.page.canvas itemconf $VP -bg] 4]
+   set Resources(BD)        [lindex [$Frame.page.canvas itemconf $VP -bd] 4]
 
    set Resources(FillCoast) [lindex [$Frame.page.canvas itemconf $VP -colorfillcoast] 4]
    set Resources(FillLake)  [lindex [$Frame.page.canvas itemconf $VP -colorfilllake] 4]
@@ -613,6 +615,7 @@ proc Viewport::ConfigPut { Frame VP } {
    IcoMenu::Set $Data(Frame).left.ras.mask.sel $Map(Mask)
 
    set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
+   $Data(Frame).layer.vp.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Resources(BD)]
    $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coast)]
    $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Lake)]
    $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(River)]
@@ -692,7 +695,7 @@ proc Viewport::ConfigSet { Frame } {
    set Map(Lon) [lindex $ll 1]
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -font $Resources(Font) -bg $Resources(Bkg) \
+      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -font $Resources(Font) -bg $Resources(Bkg) -bd $Resources(BD)\
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake) -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord)
@@ -1229,7 +1232,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 
    Viewport::ConfigSet $Frame
 
-   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd 1 -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
+   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd $Resources(BD) -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord) \
@@ -1365,7 +1368,7 @@ proc Viewport::Do { Frame } {
    projcam configure $Frame -lens $ProjCam::Param(Lens) -from $ProjCam::Param(From) -to $ProjCam::Param(To)
 
    foreach vp [Page::Registered $Frame Viewport] {
-      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -bg $Resources(Bkg) \
+      $Frame.page.canvas itemconfigure $vp -crowd $Map(Crowd) -bg $Resources(Bkg) -bd $Resources(BD) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
          -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) -colorplace $Resources(Place) \
          -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord)
@@ -1893,11 +1896,14 @@ proc Viewport::ParamFrame { Frame Apply } {
    labelframe $Data(Frame).layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
 
       frame $Data(Frame).layer.vp
+         IcoMenu::Create $Data(Frame).layer.vp.sz $GDefs(Dir)/share/bitmap \
+            "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
+            Viewport::Resources(BD) "$Apply configure -state normal" $Viewport::Resources(BD) -relief groove -bd 2
          button $Data(Frame).layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
             -command "FontBox::Create $Data(Frame).layer.vp.font \"$Apply configure -state normal; $Apply invoke\"  \$Viewport::Resources(Font)"
          ColorBox::CreateSel $Data(Frame).layer.vp.col Viewport::Resources(Bkg) $Apply configure -state normal
          label $Data(Frame).layer.vp.lbl -text [format "%-10s" [lindex $Lbl(Viewport) $GDefs(Lang)]]
-         pack $Data(Frame).layer.vp.col $Data(Frame).layer.vp.font -side left
+         pack $Data(Frame).layer.vp.col $Data(Frame).layer.vp.sz $Data(Frame).layer.vp.font -side left
          pack $Data(Frame).layer.vp.lbl -side right
 
       frame $Data(Frame).layer.coast
@@ -3197,6 +3203,7 @@ proc Viewport::Write { Frame File } {
       puts $File "   set Viewport::Map(Bath)        [projection configure $Frame -mapbath]"
       puts $File "   set Viewport::Map(Text)        [projection configure $Frame -maptext]"
       puts $File "   set Viewport::Resources(Bkg)       \"[lindex [$Frame.page.canvas itemconf $vp -bg] 4]\""
+      puts $File "   set Viewport::Resources(BD)        \"[lindex [$Frame.page.canvas itemconf $vp -bd] 4]\""
       puts $File "   set Viewport::Resources(FillCoast) \"[lindex [$Frame.page.canvas itemconf $vp -colorfillcoast] 4]\""
       puts $File "   set Viewport::Resources(FillLake)  \"[lindex [$Frame.page.canvas itemconf $vp -colorfilllake] 4]\""
       puts $File "   set Viewport::Resources(Coast)     \"[lindex [$Frame.page.canvas itemconf $vp -colorcoast] 4]\""

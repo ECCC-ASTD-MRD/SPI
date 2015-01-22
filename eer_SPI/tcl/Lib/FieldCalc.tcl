@@ -150,8 +150,6 @@ namespace eval FieldCalc {
       { scor(A,B)   "Coefficient de corrélation" "Correlation coeficient" }
       { scov(A,B)   "Covariance" "Covariance" }
       { svar(A)     "Variance" "Variance" }
-      { svarx(A,B)  "Variance en X" "Variance X" }
-      { svary(A,B)  "Variance en Y" "Variance Y" }
       { sregb(A,B)  "Coefficient de régression (Pente de la courbe)" "Regression coefficient (Slope of curve fitting)" }
       { srega(A,B)  "Coefficient de régression (Interscetion de la courbe)" "Regression coefficient (Intercept of curve fitting)" }
       { serra(A,B)  "Erreur standard pour a" "Standard Error for a" }
@@ -168,17 +166,9 @@ namespace eval FieldCalc {
       { smedy(A,B)  "Médianne en Y" "Median Y" }
       { suniq(A)    "Nombre de valeur unique" "Number of unique values" }
       { ssum(A)     "Somme" "Sum" }
-      { ssumx(A,B)  "Somme en X" "Sum in X" }
-      { ssumy(A,B)  "Somme en Y" "Sum in Y" }
       { smin(A)     "Minimum" "Minimum" }
-      { sminx(A,B)  "Minimum en X" "Minimum in X" }
-      { sminy(A,B)  "Minimum en Y" "Minimum in Y" }
       { smax(A)     "Maximum" "Maximum" }
-      { smaxx(A,B)  "Maximum en X" "Maximum in X" }
-      { smaxy(A,B)  "Maximum en Y" "Maximum in Y" }
       { savg(A)     "Moyenne" "Average" }
-      { savgX(A,B)  "Moyenne en X" "Average in X" }
-      { savgY(A,B)  "Moyenne en Y" "Average in Y" }
       { na(A,B)     "Nombre de valeurs rejetées (NoData)" "Number of rejected values (NoData)" }
       { srna(A,B)   "Ratio de valeurs rejetées (NoData)" "Ratio of rejected values (NoData)" }
       { sfoex(A,B)  "Facteur d'excédance" "Factor of excedance" }
@@ -524,7 +514,7 @@ proc FieldCalc::Window { { Parent .} } {
    TabFrame::Create .fieldcalc.func 2 ""
    pack .fieldcalc.func -side right -fill both -expand true -padx 2 -pady 2
 
-   FieldCalc::WidgetFunc    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Funcs)   $GDefs(Lang)] False ""]
+   FieldCalc::WidgetFunc    [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Funcs) $GDefs(Lang)] False ""]
    FieldCalc::WidgetConvert [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Conv)  $GDefs(Lang)] False ""]
    FieldCalc::WidgetConst   [TabFrame::Add .fieldcalc.func 1 [lindex $Lbl(Const) $GDefs(Lang)] False ""]
    FieldCalc::WidgetOps     .fieldcalc
@@ -1014,7 +1004,7 @@ proc FieldCalc::WidgetFunc { Frame } {
    Bubble::Create $Frame.funcs        $Bubble(FuncList)
 
    bind  $Frame.type.search <Any-KeyRelease>   "FieldCalc::FuncList $Frame"
-   bind  $Frame.funcs.list  <B1-ButtonRelease> { FieldCalc::InsertFunc [%W get [%W nearest %y]] }
+   bind  $Frame.funcs.list  <B1-ButtonRelease> { FieldCalc::InsertFunc [%W get [%W nearest %y]]; FieldCalc::FormulaSet "" }
 
    FieldCalc::FuncList $Frame
 }
@@ -1235,8 +1225,8 @@ proc FieldCalc::WidgetOps { Frame } {
    pack $Frame.ops -side top -pady 2
 
    frame $Frame.cmd
-      button $Frame.cmd.equal -text "   =  "  -bd 1 -command { Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
-      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { FieldCalc::FormulaSet ""; set FieldCalc::Data(Operand) ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
+      button $Frame.cmd.equal -text "   =  "  -bd 1 -command { FieldCalc::FormulaSet ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame) }
+      button $Frame.cmd.clear -text "C"  -bd 1 -bg red -command { set FieldCalc::Data(Operand) ""; FieldCalc::FormulaSet ""; Viewport::UpdateData $Page::Data(Frame); Page::UpdateCommand $Page::Data(Frame)}
       button $Frame.cmd.int2  -text "<<" -command "FieldCalc::InsertOperator <<" -bd 1
       button $Frame.cmd.int3  -text "<<<" -command "FieldCalc::InsertOperator <<<" -bd 1
       button $Frame.cmd.idx   -text "\[\]" -command "FieldCalc::InsertOperator \\\[\\\]" -bd 1
