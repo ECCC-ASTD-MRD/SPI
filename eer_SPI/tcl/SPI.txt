@@ -107,7 +107,7 @@ namespace eval SPI {
    set Lbl(LinkSrc)        { "Définir comme source du lien" "Set as link source" }
    set Lbl(LinkDest)       { "Lier a la vue source" "Link to source viewport" }
    set Lbl(LinkUn)         { "Annuler le lien" "Cancel Link" }
-   set Lbl(Lock)           { "Fixer la l'encart" "Lock inset" }
+   set Lbl(Lock)           { "Fixer l'encart" "Lock inset" }
    set Lbl(Page)           { "Page" "Page" }
    set Lbl(Current)        { "Courante" "Current" }
    set Lbl(ModeZoom)       { "Zoom/Rotation" "Zoom/Rotate" }
