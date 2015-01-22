@@ -318,7 +318,7 @@ proc Styles::Widget { Frame { Update False } } {
 #   <Spec>   : Dataspec definition
 #   <Style>  : Style name, otherwise, use Spec name
 #
-# Retour:
+# Retour:`
 #
 # Remarques :
 #
@@ -328,7 +328,9 @@ proc Styles::Write { Channel Spec { Style "" } } {
    
    set fonts {}
    set cmaps {}
-
+   set dfont ""
+   set dcmap ""
+   
    if { $Style=="" } {
       set Style $Spec
    }
@@ -336,26 +338,32 @@ proc Styles::Write { Channel Spec { Style "" } } {
    puts $Channel "\n#----- Style $Style"
    
    set cmap [dataspec configure $Spec -colormap]
-   if { [colormap is $cmap] && [lsearch -exact $cmaps CMAP$Style]==-1 } {
-      lappend cmaps CMAP$Style
-      puts $Channel "\ncatch { colormap create CMAP$Style }"
-      puts $Channel "colormap control CMAP$Style -del"
-      puts $Channel "colormap control CMAP$Style -list { [colormap control $cmap -list] }"
-      puts $Channel "colormap configure CMAP$Style  -RGBAratio [colormap configure $cmap -RGBAratio] -MMratio [colormap configure $cmap -MMratio] \
-         -curve red [colormap configure $cmap -curve red] -curve green [colormap configure $cmap -curve green] -curve blue [colormap configure $cmap -curve blue] -curve alpha [colormap configure $cmap -curve alpha] \
-         -invertx red [colormap configure $cmap -invertx red] -invertx green [colormap configure $cmap -invertx green] -invertx blue [colormap configure $cmap -invertx blue] -invertx alpha [colormap configure $cmap -invertx alpha] \
-         -inverty red [colormap configure $cmap -inverty red] -inverty green [colormap configure $cmap -inverty green] -inverty blue [colormap configure $cmap -inverty blue] -inverty alpha [colormap configure $cmap -inverty alpha] \
-         -min red [colormap configure $cmap -min red] -min green [colormap configure $cmap -min green] -min blue [colormap configure $cmap -min blue] -min alpha [colormap configure $cmap -min alpha] \
-         -max red [colormap configure $cmap -max red] -max green [colormap configure $cmap -max green] -max blue [colormap configure $cmap -max blue] -max alpha [colormap configure $cmap -max alpha] \
-         -interp [colormap configure $cmap -interp]"
+   if { [colormap is $cmap] } {
+      if { [lsearch -exact $cmaps CMAP$Style]==-1 } {
+         lappend cmaps CMAP$Style
+         puts $Channel "\ncatch { colormap create CMAP$Style }"
+         puts $Channel "colormap control CMAP$Style -del"
+         puts $Channel "colormap control CMAP$Style -list { [colormap control $cmap -list] }"
+         puts $Channel "colormap configure CMAP$Style  -RGBAratio [colormap configure $cmap -RGBAratio] -MMratio [colormap configure $cmap -MMratio] \
+            -curve red [colormap configure $cmap -curve red] -curve green [colormap configure $cmap -curve green] -curve blue [colormap configure $cmap -curve blue] -curve alpha [colormap configure $cmap -curve alpha] \
+            -invertx red [colormap configure $cmap -invertx red] -invertx green [colormap configure $cmap -invertx green] -invertx blue [colormap configure $cmap -invertx blue] -invertx alpha [colormap configure $cmap -invertx alpha] \
+            -inverty red [colormap configure $cmap -inverty red] -inverty green [colormap configure $cmap -inverty green] -inverty blue [colormap configure $cmap -inverty blue] -inverty alpha [colormap configure $cmap -inverty alpha] \
+            -min red [colormap configure $cmap -min red] -min green [colormap configure $cmap -min green] -min blue [colormap configure $cmap -min blue] -min alpha [colormap configure $cmap -min alpha] \
+            -max red [colormap configure $cmap -max red] -max green [colormap configure $cmap -max green] -max blue [colormap configure $cmap -max blue] -max alpha [colormap configure $cmap -max alpha] \
+            -interp [colormap configure $cmap -interp]"
+      }
+      set dcmap "-colormap \"CMAP$Style\""
    }
 
    set font [dataspec configure $Spec -font]
-   if { $font!="" && [lsearch -exact $fonts FONT$Style]==-1 } {
-      lappend fonts $font
-      puts $Channel "\ncatch { font create FONT$Style }"
-      puts $Channel "font configure FONT$Style -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
-            -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
+   if { $font!="" } {
+      if { [lsearch -exact $fonts FONT$Style]==-1 } {
+         lappend fonts $font
+         puts $Channel "\ncatch { font create FONT$Style }"
+         puts $Channel "font configure FONT$Style -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
+               -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
+      }
+      set dfont "-font \"FONT$Style\""
    }
 
    puts $Channel "\ndataspec create \"$Style\" -factor [dataspec configure $Spec -factor] -value [dataspec configure $Spec -value]\
@@ -370,12 +378,13 @@ proc Styles::Write { Channel Spec { Style "" } } {
       -rendergrid [dataspec configure $Spec -rendergrid] -min \"[dataspec configure $Spec -min]\" -max \"[dataspec configure $Spec -max]\"\
       -intervals \"[dataspec configure $Spec -intervals]\" -interlabels \"[dataspec configure $Spec -interlabels]\" -intervalmode [dataspec configure $Spec -intervalmode] \
       -interpdegree \"[dataspec configure $Spec -interpdegree]\" -extrapdegree \"[dataspec configure $Spec -extrapdegree]\" \
-      -sample \"[dataspec configure $Spec -sample]\" -stipple \"[dataspec configure $Spec -stipple]\" -colormap \"CMAP$Style\" -font \"FONT$Style\" \
+      -sample \"[dataspec configure $Spec -sample]\" -stipple \"[dataspec configure $Spec -stipple]\" \
       -texsample \"[dataspec configure $Spec -texsample]\" -texsize \"[dataspec configure $Spec -texsize]\" -texres \"[dataspec configure $Spec -texres]\" \
       -interpolation \"[dataspec configure $Spec -interpolation]\" -topography \"[dataspec configure $Spec -topography]\" -topographyfactor \"[dataspec configure $Spec -topographyfactor]\" \
       -mask \"[dataspec configure $Spec -mask]\" -light \"[dataspec configure $Spec -light]\" -labelvar \"[dataspec configure $Spec -labelvar]\" \
       -sizevar \"[dataspec configure $Spec -sizevar]\" -mapvar \"[dataspec configure $Spec -mapvar]\" -mapall \"[dataspec configure $Spec -mapall]\" \
-      -mapabove [dataspec configure $Spec -mapabove] -mapbelow [dataspec configure $Spec -mapbelow] -extrude \"[dataspec configure $Spec -extrude]\" -extrudefactor \"[dataspec configure $Spec -extrudefactor]\""
+      -mapabove [dataspec configure $Spec -mapabove] -mapbelow [dataspec configure $Spec -mapbelow] -extrude \"[dataspec configure $Spec -extrude]\" -extrudefactor \"[dataspec configure $Spec -extrudefactor]\" \
+      $dcmap $dfont"
 }
 
 Styles::Read

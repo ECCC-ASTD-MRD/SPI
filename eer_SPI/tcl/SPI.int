@@ -859,8 +859,8 @@ proc SPI::ToolBar { Frame } {
       frame $Frame.data -relief raised -bd 1
          button $Frame.data.clr -image WORLDRESET -relief flat -bd 1 -overrelief raised \
             -command { SPI::Clear }
-         checkbutton $Frame.data.geo -image WORLD -selectimage RESET -variable Viewport::Map(Draw) -relief sunken -bd 1 -overrelief raised -offrelief flat \
-            -onvalue 0 -offvalue 1 -indicatoron False -command { Viewport::ConfigSet $Page::Data(Frame) }
+         checkbutton $Frame.data.geo -image RESET -selectimage WORLD -variable Viewport::Map(Draw) -relief sunken -bd 1 -overrelief raised -offrelief flat \
+            -onvalue 1 -offvalue 0 -indicatoron False -command { Viewport::ConfigSet $Page::Data(Frame) }
          pack $Frame.data.clr $Frame.data.geo -side left -padx 2
       pack  $Frame.data -side left
       
