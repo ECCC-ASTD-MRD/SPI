@@ -84,13 +84,12 @@ void Grid_DrawGlobe(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    }
 
    if (Interp) {
-      glFeedbackInit(20,GL_2D);
+      glFeedbackInit(MAXGEOSEG,GL_2D);
       if (VP->ColorFLake && VP->ColorFCoast) {
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorFLake);
       } else {
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
       }
-      Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoast);
       sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.Coast)-1);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
    }
@@ -179,7 +178,6 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
    if (Proj->Geo->Params.CoordLoc && VP->ColorCoord) {
 
      if (Interp) {
-         glFeedbackInit(MAXGEOSEG*4,GL_2D);
          Tk_CanvasPsColor(Interp,VP->canvas,VP->ColorCoord);
          sprintf(buf,"%i setlinewidth 1 setlinecap 1 setlinejoin\n",ABS(Proj->Geo->Params.CoordLoc)-1);
          Tcl_AppendResult(Interp,buf,(char*)NULL);
@@ -195,6 +193,7 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       /*Longitudes*/
       Vect_Init(prev,0.0,0.0,0.0);
       for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<ceil(Proj->Ref->LLExtent.MaxX)+Proj->Geo->Params.CoordDef;loc.Lon+=Proj->Geo->Params.CoordDef){
+         if (Interp) glFeedbackInit(MAXGEOSEG*4,GL_2D);
          glBegin(GL_LINE_STRIP);
          for(loc.Lat=floor(Proj->Ref->LLExtent.MinY);loc.Lat<=ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
@@ -205,12 +204,14 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
             }
          }
          glEnd();
+         if (Interp) glFeedbackProcess(Interp,GL_2D);    
       }
 
       /*Latitudes*/
       di=Proj->Ref->Type&GRID_PSEUDO?0.01:Proj->LI;
       Vect_Init(prev,0.0,0.0,0.0);
       for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY)+Proj->Geo->Params.CoordDef;loc.Lat+=Proj->Geo->Params.CoordDef){
+         if (Interp) glFeedbackInit(MAXGEOSEG*4,GL_2D);
          glBegin(GL_LINE_STRIP);
          for(loc.Lon=floor(Proj->Ref->LLExtent.MinX);loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
@@ -221,9 +222,9 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
             }
          }
          glEnd();
+         if (Interp) glFeedbackProcess(Interp,GL_2D);    
       }
-
-      if (Interp) glFeedbackProcess(Interp,GL_2D);    
+      
       glDisable(GL_LINE_STIPPLE);
    }
 }
@@ -387,7 +388,7 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
  * Parametres :
  *  <Pix>     : Vecteur position
  *  <Prev>    : Vecteur position precedent
- *  <Len>     : Longueur maximale
+ *  <Len>     : Longueur maximale (<0, comes from pseudocylindrical)
  *  <Mode>    : Mode de creation des primitives
  *
  * Retour:
@@ -400,25 +401,28 @@ int Grid_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
 */
 static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
 
-   if (((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=-0.0 && Prev[0]>=-0.0)) && fabs(Pix[0]-Prev[0])<fabs(Len)) {
+   char len;
+   
+   len=fabs(Pix[0]-Prev[0])<fabs(Len);
+   
+//   if ((((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=0.0 && Prev[0]>=0.0)) && len)) {
+   if (len) {
       glVertex3dv(Pix);
    } else {
       if (Len<0) {
          glEnd();
          glBegin(Mode);
       } else {  
-         if (fabs(Pix[0]-Prev[0])>fabs(Len)) {
-            if (Pix[0]>0.0) {
-               glVertex3d(-Len,Pix[1],Pix[2]);
-               glEnd();
-               glBegin(Mode);
-               glVertex3d(Len,Pix[1],Pix[2]);
-            } else {
-               glVertex3d(Len,Pix[1],Pix[2]);
-               glEnd();
-               glBegin(Mode);
-               glVertex3d(-Len,Pix[1],Pix[2]);
-            }
+         if (Pix[0]>0.0) {
+            glVertex3d(-Len,Pix[1],Pix[2]);
+            glEnd();
+            glBegin(Mode);
+            glVertex3d(Len,Pix[1],Pix[2]);
+         } else {
+            glVertex3d(Len,Pix[1],Pix[2]);
+            glEnd();
+            glBegin(Mode);
+            glVertex3d(-Len,Pix[1],Pix[2]);
          }
          glVertex3dv(Pix);
       }
@@ -452,13 +456,13 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
 
    if (Data) {
       if (Mode==GL_LINE_STRIP) {
-         Vect_Init(prev,0.0,0.0,0.0);
+         Vect_Assign(prev,Data[0]);
          Stride=Stride==0?1:Stride;
          n=Nb*Stride;
          glBegin(Mode);
             for(i=0;i<n;i+=Stride) {
               if (Tex) glTexCoord1f(Tex[i]);
-              Grid_Vertex(Data[i],prev,Proj->Ref->Type&GRID_PSEUDO?-0.01:Proj->LI,Mode);
+              Grid_Vertex(Data[i],prev,Proj->Ref->Type&GRID_PSEUDO?-Proj->LI:Proj->LI,Mode);
             }
          glEnd();
       } else {

@@ -54,6 +54,21 @@ extern int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *P
 extern int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 
+// Grid projection forcing wrap-over detection treshold functions
+void Grid_ForceLI(Projection *Proj,float Value) {
+   
+   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
+      Proj->TLI=Proj->LI;
+      Proj->LI=Value;
+   }
+}
+void Grid_ResetLI(Projection *Proj) {
+   
+   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
+      Proj->LI=Proj->TLI;
+   }
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_DataMap>
  * Creation : Mars 2006 - J.P. Gauthier - CMC/CMOE
@@ -419,6 +434,7 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
  *
  *----------------------------------------------------------------------------
 */
+
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
    int      c=0;
@@ -474,6 +490,9 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 
       list=Field->Def->Segments;
 
+      // For PseudoCylindric projection, keep depth to 1
+      Grid_ForceLI(Proj,0.01);
+      
       while(list) {
          array=(T3DArray*)list->Data;
 
@@ -488,7 +507,6 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
                glColor4ubv(Field->Spec->Map->Color[c]);
             }
          }
-
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,0,NULL,NULL);
 
          if (Interp)
@@ -497,6 +515,9 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
          list=list->Next;
       }
 
+      // For PseudoCylindric projection, keep depth to 1
+      Grid_ResetLI(Proj);
+     
       glDisableClientState(GL_VERTEX_ARRAY);
       glDisable(GL_LINE_STIPPLE);
       glDisable(GL_LINE_SMOOTH);
@@ -922,6 +943,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             if (b+f>2) {
                glLineWidth(Field->Spec->Width);
                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+               Grid_ForceLI(Proj,0.01);
+               
                Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
 
                if (Field->Spec->SizeRange>1.0) {
@@ -929,6 +952,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
                   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
                   Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
                }
+               Grid_ResetLI(Proj);
             }
             glPopMatrix();
          }
@@ -1023,7 +1047,9 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                   glTranslatef(Field->Spec->TexStep,0.0,0.0);
                }
             }
+            Grid_ForceLI(Proj,0.01);
             Proj->Type->Render(Proj,0,&vbuf[(len>>1)-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
+            Grid_ResetLI(Proj);
             glPopMatrix();
          }
       }
@@ -1051,7 +1077,9 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
                         glTranslatef(Field->Spec->TexStep,0.0,0.0);
                      }
                   }
+                  Grid_ForceLI(Proj,0.01);
                   Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,0,NULL,NULL);
+                  Grid_ResetLI(Proj);
                   glPopMatrix();
                }
             }

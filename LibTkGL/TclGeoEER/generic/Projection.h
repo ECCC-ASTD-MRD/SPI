@@ -66,7 +66,7 @@ typedef struct Projection {
    int                   Draw;        /*Affichage de la geo*/
    int                   Loading;     /*Indicateur de lecture en arriere plan*/
    int                   MinSize;     /*Dimension minimale des features a afficher*/
-   float                 L,LI,LJ;     /*Longueur des axes*/
+   float                 L,LI,LJ,TLI; /*Longueur des axes*/
    double                Scale;       /*Facteur d'ajustement de l'elevation*/
    int                   TAxis;       /*Axis Type*/
    Coord                 ZAxis;       /*Activation de l'echelle 3D*/
