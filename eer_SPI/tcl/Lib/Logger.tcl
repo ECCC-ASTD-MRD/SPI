@@ -703,7 +703,11 @@ proc Log::CyclopePing { {Delay -1} { Job "" } } {
    }
 
    if { $Delay==-1 } {
-      exec touch $Param(CyclopePath)/ping/$Job
+      if { [file exists $Param(CyclopePath)/ping/$Job] } {
+         exec touch $Param(CyclopePath)/ping/$Job
+      } else {
+         Log::Print ERROR "A ping delay must already be set in order to use the no-delay ping"
+      }
    } else {
       set fd [open $Param(CyclopePath)/ping/$Job w]
       puts $fd $Delay
