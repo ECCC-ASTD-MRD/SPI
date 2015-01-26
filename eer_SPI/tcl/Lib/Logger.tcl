@@ -69,6 +69,7 @@ namespace eval Log { } {
    set Param(Error)       0                     ;#Number of errors
    set Param(Process)     ""                    ;#Process number
    set Param(SPI)         ""                    ;#SPI version requirement
+   set Param(Vanish)      False                 ;#Disappear without leaving any trace (only applied if no error nor warning was encountered)
 
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
@@ -446,10 +447,17 @@ proc Log::End { { Status 0 } { Exit True } } {
       Log::Mail "Job finished (ERROR)" $Param(OutFile)
    }
 
-   #----- Activate Cylope links
-   Log::CyclopeEnd $Status
-   Log::CyclopeSysInfo
-   Log::CyclopeProcInfo
+   if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
+      if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
+         file delete -force -- $Param(OutFile)
+      }
+      Log::CyclopeDelete
+   } else {
+      #----- Activate Cylope links
+      Log::CyclopeEnd $Status
+      Log::CyclopeSysInfo
+      Log::CyclopeProcInfo
+   }
 
    if { $Exit } {
       exit $Status
@@ -787,6 +795,26 @@ proc Log::CyclopeEnd { Status } {
       }
 
       close $f
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::CyclopeDelete>
+# Creation : Janvier 2015 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Supprimer le dossier Cyclope associe a la job.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Log::CyclopeDelete { } {
+   variable Param
+
+   if { $Param(Cyclope) } {
+      file delete -force -- $Param(CyclopePath)/jobs/$Param(JobId)
    }
 }
 
