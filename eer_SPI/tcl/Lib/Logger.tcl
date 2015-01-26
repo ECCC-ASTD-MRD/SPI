@@ -695,13 +695,20 @@ proc Log::Mail { Subject File { Address { } } } {
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::CyclopePing { Delay { Job "" } } {
+proc Log::CyclopePing { {Delay -1} { Job "" } } {
    variable Param
 
    if { $Job=="" } {
       set Job $Param(JobId)
    }
-   exec echo $Delay > $Param(CyclopePath)/ping/$Job
+
+   if { $Delay==-1 } {
+      exec touch $Param(CyclopePath)/ping/$Job
+   } else {
+      set fd [open $Param(CyclopePath)/ping/$Job w]
+      puts $fd $Delay
+      close $fd
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -733,8 +740,9 @@ proc Log::CyclopeStart { } {
          puts $f "Command   : $env(SelfJobResubmit)"
          puts $f "Kill      : $env(SelfJobKill)"
       } else {
-         puts $f "Command   : ssh [info hostname] '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
-         puts $f "Kill      : ssh [info hostname] kill [pid]"
+         set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
+         puts $f "Command   : ssh $host '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
+         puts $f "Kill      : ssh $host kill [pid]"
       }
       puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
 
