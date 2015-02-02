@@ -431,12 +431,15 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case IMPORT:
-         if (Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer fields");
+         if (Objc!=4 && Objc!=5) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer fields [grid]");
             return(TCL_ERROR);
          }
-
-         return(OGR_LayerImport(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),Objv[3]));
+         n=0;
+         if (Objc==5) {
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&n);
+         }
+         return(OGR_LayerImport(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),Objv[3],n));
          break;
 
       case INTERP:
