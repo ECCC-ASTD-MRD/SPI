@@ -52,7 +52,7 @@ proc FieldFunc::ConvexHull { Field { Res 0.5 } { Buffer 0.5 } } {
    ogrlayer new FFOGRLAYER "Data" "Polygon"
 
    #----- Importer les donnees RPN dans la couche
-   ogrlayer import FFOGRLAYER $Field
+   ogrlayer import FFOGRLAYER $Field True
 
    #----- Si c'est vide, on retourne
    if { ![ogrlayer define FFOGRLAYER -nb] } {
@@ -67,8 +67,9 @@ proc FieldFunc::ConvexHull { Field { Res 0.5 } { Buffer 0.5 } } {
    ogrlayer stat FFHULL -simplify $Res
    set coords {}
    catch {
-      foreach { lon lat } [lrange [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] 0 end-2] {
-         lappend coords $lat $lon 0.0
+      foreach { i j } [lrange [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] 0 end-2] {
+         set ll [fstdfield stats $Field -gridpoint $i $j]
+         lappend coords [lindex $ll 0] [lindex $ll 1] 0.0
       }
    }
    ogrlayer free FFOGRLAYER FFHULL
