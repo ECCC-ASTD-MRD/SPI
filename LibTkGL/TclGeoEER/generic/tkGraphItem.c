@@ -3874,7 +3874,6 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    
    if (v)  free(v);
    if (vl) free(vl);
-   free(v);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
