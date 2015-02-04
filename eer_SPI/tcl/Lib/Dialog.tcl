@@ -117,44 +117,48 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
       return True
    }
    
-   toplevel     .dlgdef -class Dialog
-   wm title     .dlgdef $title
-   wm resizable .dlgdef 0 0
-   wm protocol  .dlgdef WM_DELETE_WINDOW { }
-
-   #----- Positionnement de la boite
-   if { [winfo exists $Master] } {
-      wm transient .dlgdef $Master
-      wm geom .dlgdef +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
-   }
-
-   frame .dlgdef.top -relief raised -bd 1
-      label .dlgdef.top.bitmap -image $icon
-      message .dlgdef.top.msg -width $Width -text "[lindex $Text $GDefs(Lang)]$Extra"
-      pack .dlgdef.top.bitmap .dlgdef.top.msg -side left -expand 1 -fill both -padx 3m -pady 3m
-    pack .dlgdef.top -side top -fill both -expand true
-
-   frame .dlgdef.bot
-   pack .dlgdef.bot -side bottom -fill x -expand true
-
-   set i 0
-   foreach but $args {
-      button .dlgdef.bot.button$i -text [lindex $but $GDefs(Lang)] -command "set button $i"  -relief raised -bd 1
-      if {$i == $Default} {
-         .dlgdef.bot.button$i configure -foreground green
-      }
-      pack .dlgdef.bot.button$i -side left -expand 1 -fill x
-      incr i
-   }
-
    set oldFocus [focus]
+   
+   if { [winfo exists .dlgdef] } {
+      raise .dlgdef
+   } else {
+   
+      toplevel     .dlgdef -class Dialog
+      wm title     .dlgdef $title
+      wm resizable .dlgdef 0 0
+      wm protocol  .dlgdef WM_DELETE_WINDOW { }
 
-   #----- Mise en place de la surveillance des bouttons
-   if { $Default>=0 } {
-      bind .dlgdef <Return> ".dlgdef.bot.button$Default flash; set button $Default"
-      focus .dlgdef.bot.button$Default
+      #----- Positionnement de la boite
+      if { [winfo exists $Master] } {
+         wm transient .dlgdef $Master
+         wm geom .dlgdef +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+      }
+
+      frame .dlgdef.top -relief raised -bd 1
+         label .dlgdef.top.bitmap -image $icon
+         message .dlgdef.top.msg -width $Width -text "[lindex $Text $GDefs(Lang)]$Extra"
+         pack .dlgdef.top.bitmap .dlgdef.top.msg -side left -expand 1 -fill both -padx 3m -pady 3m
+      pack .dlgdef.top -side top -fill both -expand true
+
+      frame .dlgdef.bot
+      pack .dlgdef.bot -side bottom -fill x -expand true
+
+      set i 0
+      foreach but $args {
+         button .dlgdef.bot.button$i -text [lindex $but $GDefs(Lang)] -command "set button $i"  -relief raised -bd 1
+         if {$i == $Default} {
+            .dlgdef.bot.button$i configure -foreground green
+         }
+         pack .dlgdef.bot.button$i -side left -expand 1 -fill x
+         incr i
+      }
+
+      #----- Mise en place de la surveillance des bouttons
+      if { $Default>=0 } {
+         bind .dlgdef <Return> ".dlgdef.bot.button$Default flash; set button $Default"
+         focus .dlgdef.bot.button$Default
+      }
    }
-
    update idletasks
    grab .dlgdef
 

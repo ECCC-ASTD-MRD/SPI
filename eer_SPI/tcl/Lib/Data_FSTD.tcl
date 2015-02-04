@@ -1113,8 +1113,18 @@ proc FSTD::Params { Id Map args } {
    if { ![colormap is FLDMAP$Id] } {
       colormap create FLDMAP$Id
    }
-   colormap read FLDMAP$Id $env(HOME)/.spi/Colormap/$Map.rgba
-
+   
+   set paths $env(HOME)/.spi
+   if { [info exists env(SPI_TOOL)] } {
+      set paths [concat [split $env(SPI_TOOL) :] $paths]
+   }
+   
+   foreach path $paths {
+      if { [file exists $path/Colormap/$Map.rgba] } {
+         colormap read FLDMAP$Id $env(HOME)/.spi/Colormap/$Map.rgba
+         break
+      }
+   }
    eval dataspec configure $Id $args -font FLDFONTDEFAULT -colormap FLDMAP$Id
 }
 
