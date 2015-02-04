@@ -445,10 +445,13 @@ proc TabFrame::GetTabs { Tab { Index -1 } } {
    variable Data
 
    set list {}
-   for { set i 1 } { $i<=$Data(Level$Tab) } { incr i } {
-      set list [concat $list $Data(W$i$Tab)]
-   }
 
+   if { [winfo exists $Tab] } {
+      for { set i 1 } { $i<=$Data(Level$Tab) } { incr i } {
+         set list [concat $list $Data(W$i$Tab)]
+      }
+   }
+   
    if { $Index!=-1 } {
       return [lindex $list $Index]
    } else {
