@@ -386,7 +386,6 @@ proc Drawing::Draw { Frame Params } {
    variable Resources
 
    #----- Extraire les parametres
-
    set mode    [lindex $Params 0]
    set no      [lindex $Params 1]
    set vp      [lindex $Params 2]
@@ -398,10 +397,12 @@ proc Drawing::Draw { Frame Params } {
    set extra   [lindex $Params 8]
    set info    [lindex $Params 9]
 
-   $Frame.page.canvas delete $Data(Tag)$no D$Data(Tag)$no VERTEXFOLLOW DVERTEXFOLLOW
+   #----- Est-ce que le canvas existe toujours
+   if { [catch { $Frame.page.canvas delete $Data(Tag)$no D$Data(Tag)$no VERTEXFOLLOW DVERTEXFOLLOW } ] } {
+      return
+   }
 
    #----- Est-ce que l'item est localise
-
    if { [llength $vertex] == 0 } {
       return
    }
@@ -409,9 +410,8 @@ proc Drawing::Draw { Frame Params } {
    if { $info=="" } {
       set info False
    }
+   
    #----- Est-ce que le viewport existe toujours
-
-
    if { $vp==-1 || [Page::Registered $Page::Data(Frame) Viewport $vp]!=-1 } {
 
       switch $mode {

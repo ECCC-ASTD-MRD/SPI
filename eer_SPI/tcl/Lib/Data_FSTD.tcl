@@ -1121,7 +1121,7 @@ proc FSTD::Params { Id Map args } {
    
    foreach path $paths {
       if { [file exists $path/Colormap/$Map.rgba] } {
-         colormap read FLDMAP$Id $env(HOME)/.spi/Colormap/$Map.rgba
+         colormap read FLDMAP$Id $path/Colormap/$Map.rgba
          break
       }
    }

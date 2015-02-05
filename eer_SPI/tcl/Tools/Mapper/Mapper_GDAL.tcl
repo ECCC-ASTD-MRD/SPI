@@ -1114,7 +1114,7 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
 
       gdalfile close $id
       set bands {}
-      eval set bad [catch { set bands [gdalfile open $id read $File] }]
+      eval set bad [catch { set bands [gdalfile open $id read $File] } err]
 
       if { $bad || ![llength $bands] } {
          return ""
