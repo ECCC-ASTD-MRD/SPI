@@ -82,6 +82,8 @@ namespace eval Trajectory {
    set Param(Mark)      24                                                          ;#Remplir les icones
    set Param(Interval)  3                                                           ;#Intervale de selection des donnees
    set Param(Idx)       2                                                           ;#Index de config
+   set Param(MaxTicksX) 24                                                          ;#Maximum number of X axis ticks
+   set Param(SqueezeX)  0.60                                                        ;#Maximum squeeze ratio (MaxTicksX/SqueezeX gives the maximum number of ticks that would fit on the graph without their label overlapping)
 
    set Param(Modes)     { LEVEL PARCEL ALL }                                        ;#Mode de selection des parametres
    set Param(Mode)      LEVEL                                                       ;#Mode de selection des parametres
@@ -800,22 +802,23 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       vector set TRAJGRAPH$t.X {}
       vector set TRAJGRAPH$t.Y {}
 
+      #----- Élaguer les dates à afficher en fonction de leur nombre
+
+      set dur     [expr {($date1-$date0)/3600}]
+      set pow     [expr {$dur>0 ? int(ceil( log(double($dur)/double($Param(MaxTicksX))/3.0) / log(2.0) )) : 0}]
+      set delta   [expr {$dur<=$Param(MaxTicksX) ? 1 : 3*($pow>0 ? 1<<$pow : 1)}]
+      set tresh   [expr {$dur/($Param(MaxTicksX)/$Param(SqueezeX))*3600}]
+
       foreach parcel [trajectory define $t -PARCELS] {
 
-         set date  [lindex $parcel 0]
-         set elev  [lindex $parcel 5]
-         set spd   [lindex $parcel 8]
+         set date [lindex $parcel 0]
+         set elev [lindex $parcel 5]
+         set spd  [lindex $parcel 8]
+         lassign [clock format $date -format "%k %M" -timezone :UTC] h m
 
          #----- Keep only > hourly date/time for axis
-         if { [expr $date%3600]==0 || $date==$date0 || $date==$date1 } {
+         if { $date==$date0 || $date==$date1 || $m=="00" && $h%$delta==0 && ($date-$date0)>=$tresh && ($date1-$date)>=$tresh } {
             lappend secs $date
-         }
-         set hour [clock format $date -format "%H" -timezone :UTC]
-         set min  [clock format $date -format "%M" -timezone :UTC]
-         if { $hour=="00" } {
-            set hour 0
-         } else {
-            set hour [string trimleft $hour 0]
          }
 
          #----- Pour l'interval choisie, incluant la date de depart et d'arrivee
@@ -848,8 +851,8 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          set incr 5
       }
 
-      set secs [lsort -unique $secs]
-      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -grid $datea -spacing 1
+      set secs  [lsort -unique -integer $secs]
+      graphaxis configure TRAJGRAPHAXISX -intervals $secs -min [lindex $secs 0] -max [lindex $secs end] -grid $datea -spacing 0
       graphaxis configure TRAJGRAPHAXISY -incr $incr -min $h0 -max $h1
 
       graphitem configure TRAJGRAPH$t -xaxis TRAJGRAPHAXISX -yaxis TRAJGRAPHAXISY -type LINE \
@@ -896,6 +899,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
    global   GDefs
    variable Graph
    variable Data
+   variable Param
 
    set canvas $Frame.page.canvas
 
@@ -935,9 +939,11 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
       set mark    [expr int([trajectory configure $t -mark]/3600)]
       set inter   [expr int([trajectory configure $t -intervals]/3600)]
 
+      #----- Title
+
       if { $y < $Y1 } {
          if { [trajectory define $t -LEVELTYPE]=="P" } {
-            set Title "[format %5.0f [trajectory define $t -LEVEL]] HPA"
+            set Title "[format %5.0f [trajectory define $t -LEVEL]] hPa"
          } else {
             set Title "[format %5.0f [trajectory define $t -LEVEL]] AGL"
          }
@@ -947,21 +953,24 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
       }
       set no 0
 
+      #----- Initialize the filter (prevents the list from being too long for the page)
+
+      set dur     [expr {($date1-$date0)/3600}]
+      set pow     [expr {$dur>0 ? int(ceil( log(double($dur)/double($Param(MaxTicksX))/3.0) / log(2.0) )) : 0}]
+      set delta   [expr {$dur<=$Param(MaxTicksX) ? 1 : 3*($pow>0 ? 1<<$pow : 1)}]
+      set tresh   [expr {int(double($dur)/(double($Param(MaxTicksX))/$Param(SqueezeX))*3600)}]
+
+      #----- Add the data points
+
       foreach parcel $parcels {
 
          set date [lindex $parcel 0]
          set elev [format %5.1f [lindex $parcel 5]]
-         set hour [clock format $date -format "%H" -timezone :UTC]
-         set min  [clock format $date -format "%M" -timezone :UTC]
-         if { $hour=="00" } {
-            set hour 0
-         } else {
-            set hour [string trimleft $hour 0]
-         }
+         lassign [clock format $date -format "%k %M" -timezone :UTC] hour min
 
          #----- Pour l'interval choisie , incluant la date de depart et d'arrivee
 
-         if { $inter==0 || $date==$date0 || $date==$date1 || ($min=="00" && [expr $hour%$inter]==0) } {
+         if { $min=="00" && $hour%$delta==0 && ($date-$date0)>=$tresh && ($date1-$date)>=$tresh || $date==$date0 || $date==$date1 } {
 
             if { [incr y 10] < $Y1 } {
                $canvas create text $x $y -text "$elev" -fill black -font XFont10 -anchor e -tags "P.$t.$no P.$t.$no.TEXT TRAJHEIGHT"
@@ -1053,45 +1062,45 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
    #----- Determiner les parametres de la legende
 
    if { [trajectory define $t -BACKWARD] } {
-      set start "Arrivee    / Arrival "
+      set start "Arrivée    / Arrival "
       set where "A          / At      "
 
       switch [trajectory define $t -MODE] {
 
          "0" {
-            set traj_f "Prevision de retrotrajectoires"
+            set traj_f "Prévision de rétrotrajectoires"
             set traj_a "Back trajectory forecasts"
          }
          "1" {
-            set traj_f "Prevision a posteriori de retrotrajectoires"
+            set traj_f "Prévision a posteriori de rétrotrajectoires"
             set traj_a "Back trajectory hindcasts"
          }
          "2" {
-            set traj_f "Retro-trajectoires mixtes"
+            set traj_f "Rétro-trajectoires mixtes"
             set traj_a "Mixed mode back trajectories"
          }
          "3" {
-            set traj_f "Retro-trajectoires"
+            set traj_f "Rétro-trajectoires"
             set traj_a "Back trajectories"
          }
       }
    } else {
-      set start "Depart     / Start   "
+      set start "Départ     / Start   "
       set where "De         / From    "
 
       switch [trajectory define $t -MODE] {
 
          "0" {
-            set traj_f "Prevision de trajectoires"
+            set traj_f "Prévision de trajectoires"
             set traj_a "Trajectory forecasts"
          }
          "1" {
-            set traj_f "Prevision a posteriori de trajectoires"
+            set traj_f "Prévision a posteriori de trajectoires"
             set traj_a "Trajectory hindcasts"
          }
          "2" {
-            set traj_f "Trajectoires mixtes"
-            set traj_a "Mixed mode trajectories"
+            set traj_f "Modèle trajectoire piloté par analyses et prévisions"
+            set traj_a "Trajectory model driven by analyses and forecasts"
          }
          "3" {
             set traj_f "Trajectoires"
@@ -1120,13 +1129,13 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
 
 
    if { $type=="P" } {
-      set txt_elev   "HPA"
-      set txt_elev_a "All heights (M) above sea level"
-      set txt_elev_f "Hauteurs (M) au-dessus du niveau de la mer"
+      set txt_elev   "hPa"
+      set txt_elev_a "All heights (m) above sea level"
+      set txt_elev_f "Hauteurs (m) au-dessus du niveau de la mer"
    } else {
       set txt_elev   "AGL"
-      set txt_elev_a "All heights (M) above surface"
-      set txt_elev_f "Hauteurs (M) au-dessus de la surface"
+      set txt_elev_a "All heights (m) above surface"
+      set txt_elev_f "Hauteurs (m) au-dessus de la surface"
    }
 
    $canvas create text [expr $X0+2] [expr $Y0+30] -text ${txt_elev_f} -font XFont8 -tags TRAJLEGEND -anchor nw
