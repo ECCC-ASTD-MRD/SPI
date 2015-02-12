@@ -804,7 +804,8 @@ proc Trajectory::GraphPlot { Frame TrajId } {
 
       #----- Élaguer les dates à afficher en fonction de leur nombre
 
-      set dur     [expr {($date1-$date0)/3600}]
+      set sign    [expr {$date0>$date1 ? -1 : 1}]
+      set dur     [expr {$sign*($date1-$date0)/3600}]
       set pow     [expr {$dur>0 ? int(ceil( log(double($dur)/double($Param(MaxTicksX))/3.0) / log(2.0) )) : 0}]
       set delta   [expr {$dur<=$Param(MaxTicksX) ? 1 : 3*($pow>0 ? 1<<$pow : 1)}]
       set tresh   [expr {$dur/($Param(MaxTicksX)/$Param(SqueezeX))*3600}]
@@ -817,7 +818,7 @@ proc Trajectory::GraphPlot { Frame TrajId } {
          lassign [clock format $date -format "%k %M" -timezone :UTC] h m
 
          #----- Keep only > hourly date/time for axis
-         if { $date==$date0 || $date==$date1 || $m=="00" && $h%$delta==0 && ($date-$date0)>=$tresh && ($date1-$date)>=$tresh } {
+         if { $date==$date0 || $date==$date1 || $m=="00" && $h%$delta==0 && $sign*($date-$date0)>=$tresh && $sign*($date1-$date)>=$tresh } {
             lappend secs $date
          }
 
@@ -955,7 +956,8 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
       #----- Initialize the filter (prevents the list from being too long for the page)
 
-      set dur     [expr {($date1-$date0)/3600}]
+      set sign    [expr {$date0>$date1 ? -1 : 1}]
+      set dur     [expr {$sign*($date1-$date0)/3600}]
       set pow     [expr {$dur>0 ? int(ceil( log(double($dur)/double($Param(MaxTicksX))/3.0) / log(2.0) )) : 0}]
       set delta   [expr {$dur<=$Param(MaxTicksX) ? 1 : 3*($pow>0 ? 1<<$pow : 1)}]
       set tresh   [expr {int(double($dur)/(double($Param(MaxTicksX))/$Param(SqueezeX))*3600)}]
@@ -970,7 +972,7 @@ proc Trajectory::Height { Frame X0 Y0 X1 Y1 TrajId } {
 
          #----- Pour l'interval choisie , incluant la date de depart et d'arrivee
 
-         if { $min=="00" && $hour%$delta==0 && ($date-$date0)>=$tresh && ($date1-$date)>=$tresh || $date==$date0 || $date==$date1 } {
+         if { $min=="00" && $hour%$delta==0 && $sign*($date-$date0)>=$tresh && $sign*($date1-$date)>=$tresh || $date==$date0 || $date==$date1 } {
 
             if { [incr y 10] < $Y1 } {
                $canvas create text $x $y -text "$elev" -fill black -font XFont10 -anchor e -tags "P.$t.$no P.$t.$no.TEXT TRAJHEIGHT"
