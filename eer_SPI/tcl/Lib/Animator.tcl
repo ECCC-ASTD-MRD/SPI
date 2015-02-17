@@ -906,7 +906,7 @@ proc Animator::Play { } {
 
       if { $Play(Type)=="DATE" && $info!="" } {
          projection configure $Play(Page) -date $info
-         set label [clock format $info -format "%R, %a %b %d %Y" -timezone :UTC]
+         set label [clock format $info -format "%T, %a %b %d %Y" -timezone :UTC]
          CVClock::Time $Play(Page) $info [expr ($Play(Idx)-$Play(Idx0))*100.0/($Play(Idx1)-$Play(Idx0))]
       } else {
          projection configure $Play(Page) -date $Viewport::Data(Seconds)
