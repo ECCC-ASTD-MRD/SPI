@@ -668,23 +668,23 @@ TVector *Vector_Copy(Tcl_Interp *Interp,TVector *Vec,char *Name) {
  * Nom          : <Vector_GetDef>
  * Creation     : Aout 2005 J.P. Gauthier
  *
- * But          : Retourner la representation TDataDef du vecteur.
+ * But          : Retourner la representation TDef du vecteur.
  *
  * Parametres   :
  *   <Vec>      : Vecteur a copier
  *
- * Retour       : Representation TDataDef
+ * Retour       : Representation TDef
  *
  * Remarques    : On initialise la representation si elle n'existe pas
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-struct TDataDef* Vector_GetDef(TVector *Vec) {
+struct TDef* Vector_GetDef(TVector *Vec) {
 
    int i;
 
    if (!Vec->Def) {
-      Vec->Def=(struct TDataDef*)malloc(sizeof(struct TDataDef));
+      Vec->Def=(struct TDef*)malloc(sizeof(struct TDef));
    }
 
    if (Vec->Def) {

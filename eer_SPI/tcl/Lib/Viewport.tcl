@@ -892,10 +892,11 @@ proc Viewport::Follower { Page Canvas VP Lat Lon X Y } {
                             set coord [metobs define $obj -COORD $tag]
                             set item  [lindex [metmodel define [metobs define $obj -MODEL] -items] [lindex $Data(Picked) 3]]
                             set id    [lindex [metobs table -desc [lindex $item 2]] 0]
-                            set vals  [lindex [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]] 0]
+                            set vals  [lindex [metobs define $obj -ELEMENT $tag [lindex $item 2] [metobs define $obj -VALID]] [lindex $Data(Picked) 4]]
 
                             if { [llength $vals] } {
                                append Page::Data(Value) "$id:[format "%g" [lindex $vals 0]] "
+                               set info  $info\n$id:[format "%g" [lindex $vals 0]]
                             }
                             set graph [Obs::InfoGraph $obj $tag [lindex $item 2]]
                           }

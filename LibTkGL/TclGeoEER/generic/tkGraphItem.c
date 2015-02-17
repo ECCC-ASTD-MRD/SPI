@@ -43,8 +43,8 @@ extern unsigned char StreamMap[256][4];
 extern CONST  char *ICONS[];
 extern TIcon  IconList[];
 extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
-extern int    FFStreamLine(TGeoRef *Ref,TDataDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
-extern int    FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
+extern int    FFStreamLine(TGeoRef *Ref,TDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+extern int    FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
 extern float *FFStreamMapSetup1D(double Delta);
 
 extern void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
@@ -2168,11 +2168,11 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
             }
 
             if (Data->Spec->InterpDegree[0]=='N') {
-               VertexQuad_Nearest(Data,g0,g1,g2,g3,c0,c1,c2,c3,base);
+               FFCellQuadNearest(Data->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
             } else {
                /*Is the quad resolution enough ???*/
                if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
-                  VertexQuad_Linear(Data,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
+                  FFCellQuadLinear(Data->Spec,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                } else {
                   glColor4ubv(Data->Spec->Map->Color[c0<0?base:c0]);glVertex3dv(g0);
                   glColor4ubv(Data->Spec->Map->Color[c1<0?base:c1]);glVertex3dv(g1);

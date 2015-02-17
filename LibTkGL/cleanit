@@ -10,16 +10,16 @@ echo ""
 echo "----- Cleaning System Call Library Object -----"
 echo ""
 cd TclSystem
-$MAKE clean
+$MAKE distclean
 
 echo ""
 echo "----- Cleaning OpenGL Renderer Library Object -----"
 echo ""
 cd ../TkglCanvas
-$MAKE clean
+$MAKE distclean
 
 echo ""
 echo "----- Cleaning Tcl GeoEER Library Object -----"
 echo ""
 cd ../TclGeoEER
-$MAKE clean
+$MAKE distclean

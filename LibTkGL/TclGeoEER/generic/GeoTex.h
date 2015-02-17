@@ -86,12 +86,25 @@ typedef struct TGeoTex {
    GLenum        Dim;                 /* OpenGL Texture dimension*/
 } TGeoTex;
 
+struct GDAL_Band;
+
 Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData);
 
 void         GeoTex_Signal(TGeoTex *Tex,int Flags);
 void         GeoTex_Clear(TGeoTex *Tex,char Flags,int Res,int Nb);
 TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb);
 Tcl_Obj*     GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y);
-double       GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z);
+double       GeoTex_ValueGet(TDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z);
+int          GeoTex_Get(struct GDAL_Band *Band,TGeoTexTile *Tile);
+int          GeoTex_Texture(struct GDAL_Band *Band,TGeoTexTile *Tile);
+TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y);
+int          GeoTex_Limit(struct GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj);
+void         GeoTex_Sample(struct GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj);
+TGeoTexTile *GeoTex_New(struct GDAL_Band *Band,int Resolution,int X0,int Y0);
+void         GeoTex_Qualify(struct GDAL_Band *Band);
+TGeoTexTile *GeoTex_New(struct GDAL_Band *Band,int Resolution,int X0,int Y0);
+int          GeoTex_Parse(struct GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportItem *VP,int Resolution,int X0,int Y0);
+int          GeoTex_Render(struct GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportItem *VP,int Lock);
+int          GeoTex_Resolution(struct GDAL_Band *Band,Projection *Proj);
 
 #endif

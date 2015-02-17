@@ -824,7 +824,7 @@ double FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Er
  *       http://www.nbb.cornell.edu/neurobio/land/oldstudentprojects/cs490-94to95/clang/kriging.html
  *----------------------------------------------------------------------------
  */
-int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
+int FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
 
    TKrigging krig;
 
@@ -951,7 +951,7 @@ int FFKrigging(TGeoRef *Ref,TDataDef *Def,Vect3d *Pos,int NPos,double C0,double 
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContour(int Mode,TGeoRef *Ref,TDataDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
+int FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
 
    int            n,ci,cj;
    unsigned int   len,i0,i1,j0,j1,i,j;
@@ -1247,7 +1247,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *----------------------------------------------------------------------------
  */
-unsigned int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
+unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
 
    double        vox[4],pvox[4],mid=0,x,y,d;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;
@@ -1480,7 +1480,7 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDataDef *Def,unsigned char *PMatrix,in
  *
  *----------------------------------------------------------------------------
 */
-int FFMarchingCube(TGeoRef *Ref,TDataDef *Def,Projection *Proj,double Value) {
+int FFMarchingCube(TGeoRef *Ref,TDef *Def,Projection *Proj,double Value) {
 
    int    n,i,j,k;
    int    cubeidx,vridx=0;
@@ -1690,7 +1690,7 @@ float *FFStreamMapSetup1D(double Delta) {
  *
  *----------------------------------------------------------------------------
 */
-int FFStreamLine(TGeoRef *Ref,TDataDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim) {
+int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim) {
 
    int npos=0;         /*Number of position in a particular streamline/fieldline*/
    int iter=0;         /*Keep track of the number of iteration of a numerical method*/
@@ -1928,5 +1928,162 @@ int FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G
       return(1);
   }
   return(0);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FFCellQuadLinear>
+ * Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage d'un quad en le subdivisant de maniere recursive.
+ *
+ * Parametres     :
+ *  <Spec>        : Configuration du champ
+ *  <P0,P1,P2,P3> : Localisation du quad
+ *  <C0,C1,C2,C3> : Couleurs du quad
+ *  <V0,V1,V2,V3> : Valeurs du quad
+ *  <Depth>       : Profondeur de l'appel recursif
+ *
+ * Retour:
+ *
+ * Remarques :
+ *    -Les appels recursifs arrete quand la profondeur maximale est atteinte ou
+ *     que le quad n'a plus besion d'etre divise (difference de couleur entre les vertex
+ *     minime)
+ *
+ *----------------------------------------------------------------------------
+*/
+
+void FFCellQuadLinear(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,double V0,double V1,double V2,double V3,int Depth,int Base){
+
+   int    c,c0,c1,c2,c3;
+   float  v,v0,v1,v2,v3;
+   Vect3d p,p0,p1,p2,p3;
+
+   /*Interpolate the localisations*/
+   Vect_Mid(p0,P0,P1);
+   Vect_Mid(p1,P1,P2);
+   Vect_Mid(p2,P2,P3);
+   Vect_Mid(p3,P3,P0);
+   Vect_Mid(p,p0,p2);
+
+   /*Interpolate the values*/
+   v=(V0+V1+V2+V3)*0.25;
+   v0=(V0+V1)*0.5;
+   v1=(V1+V2)*0.5;
+   v2=(V2+V3)*0.5;
+   v3=(V3+V0)*0.5;
+
+   /*Interpolate the indexes*/
+   VAL2COL(c ,Spec,v);
+   VAL2COL(c0,Spec,v0);
+   VAL2COL(c1,Spec,v1);
+   VAL2COL(c2,Spec,v2);
+   VAL2COL(c3,Spec,v3);
+
+   Depth--;
+
+   /*Draw if visible*/
+   if (C0>-1 || c0>-1 || c>-1 || c3>-1) {
+      if (Depth && ((C0!=c0) || (c0!=c) || (c!=c3) || (c3!=C0))) {
+         FFCellQuadLinear(Spec,P0,p0,p,p3,C0,c0,c,c3,V0,v0,v,v3,Depth,Base);
+      } else {
+         VR(Spec,P0,C0,Base);
+         VR(Spec,p0,c0,Base);
+         VR(Spec,p,c,Base);
+         VR(Spec,p3,c3,Base);
+      }
+   }
+
+   if (c0>-1 || C1>-1 || c1>-1 || c>-1) {
+      if (Depth && ((c0!=C1) || (C1!=c1) || (C1!=c) || (c!=c0))) {
+         FFCellQuadLinear(Spec,p0,P1,p1,p,c0,C1,c1,c,v0,V1,v1,v,Depth,Base);
+      } else {
+         VR(Spec,p0,c0,Base);
+         VR(Spec,P1,C1,Base);
+         VR(Spec,p1,c1,Base);
+         VR(Spec,p,c,Base);
+      }
+   }
+
+   if (c>-1 || c1>-1 || C2>-1 || c2>-1) {
+      if (Depth && ((c!=c1) || (c1!=C2) || (C2!=c2) || (c2!=c))) {
+         FFCellQuadLinear(Spec,p,p1,P2,p2,c,c1,C2,c2,v,v1,V2,v2,Depth,Base);
+      } else {
+         VR(Spec,p,c,Base);
+         VR(Spec,p1,c1,Base);
+         VR(Spec,P2,C2,Base);
+         VR(Spec,p2,c2,Base);
+      }
+   }
+
+   if (c3>-1 || c>-1 || c2>-1 || C3>-1) {
+      if (Depth && ((c3!=c) || (c!=c2) || (c2!=C3) || (C3!=c3))) {
+         FFCellQuadLinear(Spec,p3,p,p2,P3,c3,c,c2,C3,v3,v,v2,V3,Depth,Base);
+      } else {
+         VR(Spec,p3,c3,Base);
+         VR(Spec,p,c,Base);
+         VR(Spec,p2,c2,Base);
+         VR(Spec,P3,C3,Base);
+      }
+   }
+}
+
+
+/*----------------------------------------------------------------------------
+ * Nom      : <FFCellQuadNearest>
+ * Creation : Octobre 2001 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage d'un quad en sans interpolation.
+ *
+ * Parametres     :
+ *  <Spec>        : Configuration du champ
+ *  <P0,P1,P2,P3> : Localisation du quad
+ *  <C0,C1,C2,C3> : Couleurs du quad
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void FFCellQuadNearest(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,int Base){
+
+   Vect3d p,p0,p1,p2,p3;
+
+   /*Interpolate the localisations*/
+   Vect_Mid(p0,P0,P1);
+   Vect_Mid(p1,P1,P2);
+   Vect_Mid(p2,P2,P3);
+   Vect_Mid(p3,P3,P0);
+   Vect_Mid(p,p0,p2);
+
+   /*Draw quads*/
+   if (C0>-1) {
+      VR(Spec,P0,C0,Base);
+      VR(Spec,p0,C0,Base);
+      VR(Spec,p,C0,Base);
+      VR(Spec,p3,C0,Base);
+   }
+
+   if (C1>-1) {
+      VR(Spec,p0,C1,Base);
+      VR(Spec,P1,C1,Base);
+      VR(Spec,p1,C1,Base);
+      VR(Spec,p,C1,Base);
+   }
+
+   if (C2>-1) {
+      VR(Spec,p,C2,Base);
+      VR(Spec,p1,C2,Base);
+      VR(Spec,P2,C2,Base);
+      VR(Spec,p2,C2,Base);
+   }
+
+   if (C3>-1) {
+      VR(Spec,p3,C3,Base);
+      VR(Spec,p,C3,Base);
+      VR(Spec,p2,C3,Base);
+      VR(Spec,P3,C3,Base);
+   }
 }
 

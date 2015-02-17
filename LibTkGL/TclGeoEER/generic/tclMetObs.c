@@ -1523,7 +1523,7 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    return(loc);
 }
 
-float TMetElem_Height(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt) {
+float TMetElem_Component(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt) {
 
    int   e,ne;
    float v;
@@ -1546,6 +1546,34 @@ float TMetElem_Height(const TMetElemData* restrict const Data,const int Code,con
       }
    }
    return(-999.0f);
+}
+
+float TMetElem_ComponentFromIndex(const TMetElemData* restrict const Data,const int Ne,const int Nv,const int Nt) {
+
+   float v=-999.0f;
+
+   if (Ne>=0) {
+      v=MetObs_GetData(Data,Ne,Nv,Nt);
+      if (v!=-999.0f && !strcmp(Data->Code[Ne]->unit,"PA")) {
+         v=PRESS2METER(v/100.0f);
+      }
+   }
+   return(v);
+}
+
+int TMetElem_Index(const TMetElemData* restrict const Data,const int Code,const int Ne) {
+
+   int   e,ne;
+
+   ne=Ne;
+   for(e=0;e<Data->Ne;e++) {
+      if (Code==Data->Code[e]->descriptor) {
+         if ((ne--)==0) {
+            return(e);
+         }
+      }
+   }
+   return(-1);
 }
 
 float TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt) {
@@ -2021,14 +2049,15 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    TMetElem     *elem;
    TMetElemData *data,*cdata;
    TDataSpec    *spec;
-   EntryTableB  *eb;
+   EntryTableB  *eb,*ea,*eo;
+   int           ib,ia,io;
    Vect3d        pix;
    Coord         co;
    char          buf[128];
-   double        z,val,valid,dir,dx,dy,k;
+   double        dlat,dlon,z,val,valid,dir,dx,dy,k;
    int           d,e,i,n,v,t,iy,idx,line,id,ne,mk;
    double        alpha=1.0;
-   int           clat,clon,cdir,nobs,min[2],max[2],skip,flag;
+   int           clat,clon,cdir,nobs,min[2],max[2],skip,flag,nv;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
 
@@ -2065,38 +2094,43 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations meteorologiques\n",(char*)NULL);
 
-  if (Obs->Model->Topo) {
+   // Get height code definition pointer
+   if (Obs->Model->Topo) {
       glEnable(GL_DEPTH_TEST);
       eb=MetObs_BUFRFindTableCode(Obs->Model->Topo);
    } else {
       eb=NULL;
    }
+   
+   // Get latlon displacement pointer
+   ea=MetObs_BUFRFindTableCode(5015);
+   eo=MetObs_BUFRFindTableCode(6015);
 
    data=cdata=NULL;
-   
-   /*Initialize rendering parameters per model items*/
+
+   // Initialize rendering parameters per model items
    min[0]=min[1]=max[0]=max[1]=0;n=0;
    for(i=0;i<Obs->Model->NItem;i++) {
       if ((spec=Obs->Model->Items[i].Spec)) {
 
-         /*Get value limits*/
+         // Get value limits
          if (isnan(spec->Min) || isnan(spec->Max) || spec->Min==spec->Max)
             MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
-         /*Keep model limits*/
+         // Keep model limits 
          min[0]=FMIN(min[0],Obs->Model->Items[i].X);
          min[1]=FMIN(min[1],Obs->Model->Items[i].Y);
          max[0]=FMAX(max[0],Obs->Model->Items[i].X);
          max[1]=FMAX(max[1],Obs->Model->Items[i].Y);
          n=FMAX(n,Obs->Model->Items[i].Spec->Size);
 
-         /*Define rendering parameters*/
+         // Define rendering parameters
          DataSpec_Intervals(spec,spec->Min,spec->Max);
          DataSpec_Define(spec);
       }
    }
 
-   /*Add spacing for crowd coverage*/
+   // Add spacing for crowd coverage
    min[0]*=Obs->Model->Space;
    min[1]*=Obs->Model->Space;
    max[0]*=Obs->Model->Space;
@@ -2107,11 +2141,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    max[0]+=n;
    max[1]+=n;
 
-   /*For all of the sations*/
+   // for all of the sations
    loc=Obs->Loc;
    n=-1;
    nobs=0;
-   co.Lat=co.Lon=0.0;
    
    glPushName(PICK_METOBS);
 
@@ -2120,7 +2153,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       line=0;
       n++;
 
-      /*Check for data bktyp matching*/
+      // Check for data bktyp matching
       if (Obs->CodeType && Obs->CodeType!=loc->CodeType) {
          loc=loc->Next;
          continue;
@@ -2132,17 +2165,17 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          }
       }
 
-      /*Check if visible or delay test for grouped data (loc->Grid)*/
+      // Check if visible or delay test for grouped data (loc->Grid)
       if (loc->Grid[0]!=0.0 || Projection_Pixel(Proj,VP,loc->Coord,pix)) {
 
-         /*Get the elements group for the specific time*/
+         // et the elements group for the specific time
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
 
-            /*Fix transparency on validity time persistance*/
+            // Fix transparency on validity time persistance
             if (Obs->Persistance) {
                alpha=1.0-((double)(Obs->Time-elem->Time)/Obs->Persistance);
 
-               /*Continue with next location if this data is too old to be seen*/
+               // Continue with next location if this data is too old to be seen
                if (alpha<=0.0) {
                   loc=loc->Next;
                   continue;
@@ -2154,7 +2187,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                continue;
             }
 
-            /*For grouped data, find location record indexes*/
+            // For grouped data, find location record indexes
             clat=clon=-1;
             if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
                for(d=0;d<elem->NData;d++) {
@@ -2173,10 +2206,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
             glPushName(n);
 
-            /*Get station height*/
+            // Get station height
             z=ZRef_Level2Meter(loc->Coord.Elev,loc->Level);
 
-            /*Loop on the model items*/
+            // Loop on the model items
             skip=1;
             for(i=0;i<Obs->Model->NItem;i++) {
                if (!(spec=Obs->Model->Items[i].Spec)) {
@@ -2190,7 +2223,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
                glPushName(i);
 
-               /*Loop on the data elements*/
+               // Loop on the data elements
+               nv=0;
                for(d=0;d<elem->NData;d++) {
                   data=elem->EData[d];
 
@@ -2204,13 +2238,13 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                      }
                   }
 
-                  /*Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved*/
+                  // Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved
                   flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
                   if (Obs->Family && ((Obs->FamilyOp=='O' && !(Obs->Family&flag)) || (Obs->FamilyOp=='A' && !(Obs->Family==flag)))) {
                       continue;
                   }
 
-                  /*Check for data bktyp matching*/
+                  // Check for data bktyp matching
                   if (Obs->Type>-1 && !((data->Type>>6&0x1)==Obs->Type)) {
                      continue;
                   }
@@ -2219,11 +2253,17 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   for(e=0;e<data->Ne;e++) {
                      if (data->Code[e]->descriptor==Obs->Model->Items[i].Code[0]) {
                         ne++;
+
+                        // Get component indexes
+                        if (eb) ib=TMetElem_Index(data,eb->descriptor,ne);
+                        if (ea) ia=TMetElem_Index(data,ea->descriptor,ne);
+                        if (eo) io=TMetElem_Index(data,eo->descriptor,ne);
+                        
                         id=0;
                         for(v=(Obs->NVal<=-1?0:Obs->NVal);v<(Obs->NVal<=-1?data->Nv:((Obs->NVal+1)>data->Nv?data->Nv:(Obs->NVal+1)));v++) {
                            for(t=0;t<data->Nt;t++) {
-
-                              /*Check markers*/
+                                                            
+                              // Check markers
                               if (Obs->Marker) {
                                  mk=MetObs_GetMarker(data,e,v,t);
                                  if ((Obs->MarkerOp=='O' && !(mk&Obs->Marker)) || (Obs->MarkerOp=='A' && !(mk==Obs->Marker))) {
@@ -2231,7 +2271,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               }
 
-                              /*Check for validity*/
+                              // Check for validity
                               val=MetObs_GetData(data,e,v,t);
                               valid=MET_VALID(val,Obs->NoData);
 
@@ -2243,15 +2283,31 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     continue;
                               }
 
-                              /*Get height if specified*/
-                              if (eb && (k=TMetElem_Height(data,eb->descriptor,ne,v,0))!=-999.0) {
-                                 z=k;
+                              // Get height if specified
+                              if (eb) { 
+                                 if ((k=TMetElem_ComponentFromIndex(data,ib,v,0))!=-999.0) {
+                                    z=k;
+                                 }
                               }
 
-                              /*Check coordinates for grouped data*/
+                              // Get latlon displacement
+                              co.Lat=loc->Coord.Lat;
+                              co.Lon=loc->Coord.Lon;
+                              co.Elev=loc->Coord.Elev;
+                              dlat=dlon=0.0;
+                              if (ea && eb) {
+                                 if ((k=TMetElem_ComponentFromIndex(data,ia,v,0))!=-999.0) {
+                                    co.Lat+=dlat=k;
+                                 }
+                                 if ((k=TMetElem_ComponentFromIndex(data,io,v,0))!=-999.0) {
+                                    co.Lon+=dlon=k;
+                                 }
+                              }
+                              
+                              // Check coordinates for grouped data
                               if (clat!=-1 && clon!=-1) {
-                                 co.Lat=MetObs_GetData(cdata,clat,0,t);
-                                 co.Lon=MetObs_GetData(cdata,clon,0,t);
+                                 co.Lat=MetObs_GetData(cdata,clat,0,t)+dlat;
+                                 co.Lon=MetObs_GetData(cdata,clon,0,t)+dlon;
                                  co.Elev=z;
 
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
@@ -2260,6 +2316,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  if (Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
                                     continue;
                                  }
+                              } else {
+                                 // if there's displacement then reproject
+                                 if (ia && ib) Projection_Pixel(Proj,VP,co,pix);                         
                               }
 
                               skip=0;
@@ -2277,9 +2336,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  glLineWidth(spec->Width);
                               }
 
-                              /*Set position within projection*/
+                              // Set position within projection
                               glPushMatrix();
-
+                              glPushName(nv++);
+                              
                               if (Obs->Model->Flat) {
                                  if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
                                     glTranslated(loc->Pix[0],ViewportY(VP)+VP->Height-loc->Pix[1],0.0);
@@ -2287,11 +2347,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     glTranslated(pix[0],pix[1],0.0);
                                  }
                               } else {
-                                 if (clat!=-1 && clon!=-1) {
-                                    Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
-                                 } else {
-                                    Proj->Type->Locate(Proj,loc->Coord.Lat,loc->Coord.Lon,1);
-                                 }
+                                 Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
                                  glTranslated(0.0,0.0,ZM(Proj,z));
                                  glScalef(VP->Ratio,VP->Ratio,1.0);
                               }
@@ -2299,7 +2355,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               dx=Obs->Model->Items[i].X*Obs->Model->Space+(Obs->Model->Flat?0:loc->Pix[0]);
                               dy=-Obs->Model->Items[i].Y*Obs->Model->Space+(Obs->Model->Flat?0:-loc->Pix[1]);
 
-                              /*Draw the position line if needed*/
+                              // Draw the position line if needed
                               if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
                                  if (Interp)
                                     glFeedbackInit(20,GL_2D);
@@ -2333,7 +2389,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               }
 
-                              /*Positionner dans le modele*/
+                              // Positionner dans le modele
                               glTranslated(dx,dy,0.0);
 
                               iy=spec->RenderLabel+spec->RenderCoord+spec->RenderValue+(spec->WMO?1:0);
@@ -2352,7 +2408,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
 
                                  if (spec->RenderCoord && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                    snprintf(buf,128,"(%.4f,%.4f)",loc->Coord.Lat,loc->Coord.Lon);
+                                    snprintf(buf,128,"(%.4f,%.4f)",co.Lat,co.Lon);
                                     MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                  }
                                  id=1;
@@ -2397,14 +2453,14 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               if (spec->WMO && GLRender->Resolution<=1 && GLMode!=GL_SELECT) {
-                                 /*Load up the symbols if not done yet*/
+                                 // Load up the symbols if not done yet
                                  if (!WMO_Symbol1) {
                                     WMO_Symbol1=Tk_GetFont(Interp,GLRender->TkWin,"-misc-weathersymbols-medium-r-normal--14-0-0-0-p-0-microsoft-symbol");
                                  }
                                   if (!WMO_Symbol2) {
                                     WMO_Symbol2=Tk_GetFont(Interp,GLRender->TkWin,"-macromedia-meteo_b-medium-r-normal--14-0-0-0-p-0-microsoft-symbol");
                                  }
-                                 if (spec->WMO==1) { /*AUTO*/
+                                 if (spec->WMO==1) { // AUTO
                                     if (val==0) {
                                        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                                        glEnableClientState(GL_VERTEX_ARRAY);
@@ -2416,42 +2472,42 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                        glDrawArrays(IconList[1].Type,0,IconList[1].Nb);
                                        if (Interp) glFeedbackProcess(Interp,GL_2D);
                                     }
-                                 } else if (spec->WMO==2) { /*N*/
+                                 } else if (spec->WMO==2) { // N
                                     if (val>=0 && val<=9) {
                                        spec->Font=WMO_Symbol1;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+40);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==3) { /*WW*/
+                                 } else if (spec->WMO==3) { // WW
                                     if (val>=4 && val<=99) {
                                        spec->Font=WMO_Symbol1;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+100);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==4) { /*CL*/
+                                 } else if (spec->WMO==4) { // CL
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+34);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==5) { /*CM*/
+                                 } else if (spec->WMO==5) { // CM
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+44);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==6) { /*CH*/
+                                 } else if (spec->WMO==6) { // CH
                                     if (val>=1 && val<=9) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
                                        sprintf(buf,"%c",(int)val+55);
                                        MetObs_RenderInfo(Interp,spec,buf,VP,Proj,iy--,pix[0]+dx,pix[1]+dy);
                                     }
-                                 } else if (spec->WMO==7) { /*A*/
+                                 } else if (spec->WMO==7) { // A
                                     if (val>=0 && val<=8) {
                                        spec->Font=WMO_Symbol2;
                                        Tk_GetFontMetrics(spec->Font,&spec->TKM);
@@ -2466,25 +2522,26 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
                               nobs++;
 
+                              glPopName();
                               glPopMatrix();
 
-                              /*If we're dynamic, only show first of grouped data*/
+                              // If we're dynamic, only show first of grouped data
                               if (clat && GLRender->Resolution!=1) {
                                  break;
                               }
                            }
 
-                           /*If this is no grouped data, skip the rest if no height is specified, they'll all be overlapped anyway*/
+                           // If this is no grouped data, skip the rest if no height is specified, they'll all be overlapped anyway
                            if (clat==-1 && !eb) {
                               break;
                            }
 
                         }
-                        /*TODO break if grouped data, until we can select the variables (ex:Per channel)*/
+                        // TODO break if grouped data, until we can select the variables (ex:Per channel)
                         if (data->Nt>1)
                            break;
                      }
-                     /*Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway*/
+                     // Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway
                      if (ne>=0 && (!eb || Proj->Scale==1.0)) {
                         break;
                      }
@@ -2493,7 +2550,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                glPopName();
             }
 
-            /*It is possible nothing was drawn so remove from crowd list if so*/
+            // It is possible nothing was drawn so remove from crowd list if so
             if (Obs->Model->Overspace && skip) {
                ViewportCrowdPop(VP);
             };

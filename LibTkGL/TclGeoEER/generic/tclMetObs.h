@@ -167,8 +167,9 @@ TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time);
 TMetElem     *TMetElem_Find(const TMetLoc* restrict const Loc,const long Time,const long Lag);
 void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
+int           TMetElem_Index(const TMetElemData* restrict const Data,const int Code,const int Ne);
 float         TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt);
-float         TMetElem_Height(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt);
+float         TMetElem_Component(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt);
 int           TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *Multi);
 
 TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt);

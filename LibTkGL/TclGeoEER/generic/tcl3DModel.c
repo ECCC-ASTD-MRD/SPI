@@ -37,6 +37,7 @@
 #include <math.h>
 
 #include "tcl3DModel.h"
+#include "tclGeoRef.h"
 
 static Tcl_HashTable ModelTable;
 static int ModelInit=0;
@@ -302,7 +303,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                   if (mdl->Ref && mdl->Ref->String && strlen(mdl->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),mdl->Ref->String)==0) {
                   } else {
                      GeoRef_Destroy(Interp,mdl->Ref->Name);
-                     mdl->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     mdl->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                      GeoRef_Size(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],0,mdl->Extent[1][0],mdl->Extent[1][1],1000,0);
                      Model_Clean(mdl);
                   }
@@ -1883,7 +1884,7 @@ int Vect_PlaneWithin(Vect3d Point,Vect3d V0,Vect3d V1,Vect3d V2) {
    return(abs(b+c+d-a)<TINY_VALUE);
 }
 
-void Model_Rasterize(TDataDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
+void Model_Rasterize(TDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
 
    Vect4d plane;
    Vect3d v0,v1;

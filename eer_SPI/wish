@@ -7,4 +7,4 @@ export SPI_PATH=${0%wish}
 export LD_LIBRARY_PATH=${SPI_LIB}/GL:$LD_LIBRARY_PATH
 
 #----- One can use SPI_DEBUG="valgrind --track-origins=yes --leak-check=full" to debug memory problems
-${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/wish${TCL_VERSION} "$@"
+${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "$@"

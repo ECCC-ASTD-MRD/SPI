@@ -41,7 +41,7 @@ proc Macro::ModelVancouver::Execute { } {
    Mapper::UpdateData $Page::Data(Frame) VANC3D
 
    Macro::Doing "Reading 10cm imagery"
-#   Mapper::Read /cnfs/ops/production/cmoe/geo/3DModel/Vancouver/Images_10cm/Vancouver_10cm.tif
+   Mapper::Read /cnfs/ops/production/cmoe/geo/3DModel/Vancouver/Images_10cm/Vancouver_10cm.tif
 
 }
 

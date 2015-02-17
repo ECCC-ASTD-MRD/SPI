@@ -328,7 +328,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    OGRGeometryH       geom;
    OGRwkbGeometryType t;
    TGeoRef           *ref=NULL;
-   TDataDef          *def=NULL;
+   TDef          *def=NULL;
    TDataSpec         *spec=NULL;
    Tcl_Obj           *lst,*obj;
    Tcl_WideInt        w;
@@ -362,7 +362,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
+            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
          if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3]),NULL,wkbNone),Tcl_GetString(Objv[4]),ref)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);
@@ -383,7 +383,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL);
+            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[4]));
          if (t==wkbNone) {
@@ -1019,24 +1019,24 @@ OGR_Layer* OGR_LayerGet(char *Name) {
  * Nom          : <OGR_LayerToDef>
  * Creation     : Aout 2010 J.P. Gauthier
  *
- * But          : Retourner la representation TDataDef du champs de la couche.
+ * But          : Retourner la representation TDef du champs de la couche.
  *
  * Parametres   :
  *   <Layer>    : Couche
  *   <Field>    : Nom du vecteur
  *
- * Retour       : Representation TDataDef
+ * Retour       : Representation TDef
  *
  * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
+struct TDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 
-   TDataDef  *def=NULL;
-   TData_Type type=TD_Unknown;
-   int        i,f,n=0;
-   double     val;
+   TDef     *def=NULL;
+   TDef_Type type=TD_Unknown;
+   int       i,f,n=0;
+   double    val;
 
    /*Get the field index*/
    if ((i=OGR_FD_GetFieldIndex(Layer->Def,Field))>-1) {
@@ -1052,7 +1052,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
       if (type!=TD_Unknown) {
 
          /*Get the data in*/
-         def=DataDef_New(Layer->NFeature,1,1,1,type);
+         def=Def_New(Layer->NFeature,1,1,1,type);
 
          for(f=0;f<Layer->NFeature;f++) {
             if (Layer->Select[f] && Layer->Feature[f]) {
@@ -1071,7 +1071,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
  * Nom          : <OGR_LayerFromDef>
  * Creation     : Aout 2010 J.P. Gauthier
  *
- * But          : Remettre le contenue d'un DataDef dans un champ de couche.
+ * But          : Remettre le contenue d'un Def dans un champ de couche.
  *
  * Parametres   :
  *   <Layer>    : Couche
@@ -1084,7 +1084,7 @@ struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def) {
+OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDef *Def) {
 
    int    i,f,n=0;
    double val;

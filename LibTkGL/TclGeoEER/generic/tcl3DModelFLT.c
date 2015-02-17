@@ -125,7 +125,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    FltVertexList        *vert=(FltVertexList*)Node;
    FltNode              *attr;
    FltMaterial          *mat;
-   FltMultiTexture      *tex,*mtex=(FltMultiTexture*)Node;
+//   FltMultiTexture      *tex,*mtex=(FltMultiTexture*)Node;
    char                  path[MAX_PATHLEN],file[MAX_PATHLEN];
    unsigned int          i,v,m;
    TMaterial             tmat;

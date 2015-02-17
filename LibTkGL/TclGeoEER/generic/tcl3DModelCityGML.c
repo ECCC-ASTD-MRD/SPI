@@ -49,7 +49,6 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
 
    XML_Data  *data=(XML_Data*)Data;
    GML_Data  *gml=(GML_Data*)data->Specific;
-   T3DObject *obj=NULL;
    int        i;
 
    XML_CharReset(Data);
@@ -146,8 +145,7 @@ void ModelCityGML_EndHandler0(void *Data,const char *Elem) {
 
    XML_Data  *data=(XML_Data*)Data;
    GML_Data  *gml=(GML_Data*)data->Specific;
-   T3DObject *obj=NULL;
-   int        n,i;
+   int        n;
 
    if (Elem && XML_Valid(Data)) {
 #ifdef DEBUG
@@ -180,7 +178,6 @@ void ModelCityGML_EndHandler1(void *Data,const char *Elem) {
 
    XML_Data  *data=(XML_Data*)Data;
    GML_Data  *gml=(GML_Data*)data->Specific;
-   T3DObject *obj=NULL;
    int        n,i;
 
    if (Elem && XML_Valid(Data)) {

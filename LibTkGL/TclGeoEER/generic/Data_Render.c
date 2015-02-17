@@ -31,6 +31,9 @@
  *==============================================================================
  */
 
+#include "tclUtils.h"
+#include "RPN.h"
+
 #include "Data_FF.h"
 
 void  Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
@@ -412,6 +415,10 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
          glScalef(Size,Size,1.0);
          glDrawArrow(GL_POLYGON);
          break;     
+
+      case VNONE: 
+      case STREAMLINE: 
+      case STREAMLINE3D: break;
    }
    glPopMatrix();
 }
@@ -1406,7 +1413,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                /* Is the cell visible ??? */
                if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                   if (Field->Spec->InterpDegree[0]=='N') {
-                     VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
+                     FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
                   } else {
 
                      dx=ABS(dim[0]);
@@ -1416,12 +1423,12 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
                      /* Is the cell resolution enough ??? */
                      if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
-                        VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
+                        FFCellQuadLinear(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                      } else {
-                        VR(g0,c0,base);
-                        VR(g1,c1,base);
-                        VR(g2,c2,base);
-                        VR(g3,c3,base);
+                        VR(Field->Spec,g0,c0,base);
+                        VR(Field->Spec,g1,c1,base);
+                        VR(Field->Spec,g2,c2,base);
+                        VR(Field->Spec,g3,c3,base);
                      }
                   }
                }
@@ -1490,7 +1497,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             /* Is the cell visible ??? */
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                if (Field->Spec->InterpDegree[0]=='N') {
-                  VertexQuad_Nearest(Field,g0,g1,g2,g3,c0,c1,c2,c3,base);
+                  FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
                } else {
 
                   dx=ABS(dim[0]);
@@ -1500,12 +1507,12 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
                   /* Is the cell resolution enough ??? */
                   if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
-                     VertexQuad_Linear(Field,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
+                     FFCellQuadLinear(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                   } else {
-                     VR(g0,c0,base);
-                     VR(g1,c1,base);
-                     VR(g2,c2,base);
-                     VR(g3,c3,base);
+                     VR(Field->Spec,g0,c0,base);
+                     VR(Field->Spec,g1,c1,base);
+                     VR(Field->Spec,g2,c2,base);
+                     VR(Field->Spec,g3,c3,base);
                   }
                }
             }
@@ -1845,9 +1852,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             }
 
             /*Recuperer les informations sur les vents et leurs localisations*/
-            EZLock_RPNInt();
+            RPN_IntLock();
             c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
-            EZUnLock_RPNInt();
+            RPN_IntUnlock();
             
             mem=0;i=0;
             while (mem<n) {
@@ -1870,9 +1877,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
                return;
             }
-            EZLock_RPNInt();
+            RPN_IntLock();
             c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
-            EZUnLock_RPNInt();
+            RPN_IntUnlock();
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
@@ -1892,7 +1899,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
          mem=FSIZE2D(Field->Def)*Field->Def->Level;
 
-         EZLock_RPNInt();
+         RPN_IntLock();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
          if (Field->Spec->GridVector) {
               c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
@@ -1901,7 +1908,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          // We have to get the speed from the modulus in case of 3 component vector
          c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,(float*)&Field->Def->Mode[mem],lat,lon,n);
-         EZUnLock_RPNInt();
+         RPN_IntUnlock();
 
          while (n--) {
             if (Field->Spec->GridVector) {

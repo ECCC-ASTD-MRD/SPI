@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([TclGeoEER], [7.8.1])
+AC_INIT([TclGeoEER], [7.9.0])
 
 PKG_CFLAGS="-D_GNU_SOURCE -D_BSD_SOURCE"
 
@@ -170,17 +170,11 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/FSTD_Field.c \
                  generic/GDAL_Band.c \
                  generic/GRIB_Field.c \
-                 generic/GeoRef.c \
-                 generic/GeoRef_RDR.c \
-                 generic/GeoRef_RPN.c \
-                 generic/GeoRef_WKT.c \
                  generic/GeoTex.c \
                  generic/OGR_Geometry.c \
                  generic/OGR_Layer.c \
-                 generic/OGR_Math.c \
                  generic/Radar_Scan.c \
-                 generic/Vertex.c \
-                 generic/gpc.c \
+                 generic/tclGeoRef.c \
                  generic/tcl3DModel.c \
                  generic/tcl3DModel3DS.c \
                  generic/tcl3DModelCityGML.c \
@@ -190,7 +184,6 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tcl3DModelMDL.c \
                  generic/tclCMap.c \
                  generic/tclData.c \
-                 generic/tclDataDef.c \
                  generic/tclDataSpec.c \
                  generic/tclFSTD.c \
                  generic/tclGDAL.c \
@@ -228,19 +221,15 @@ TEA_ADD_HEADERS([generic/Data_Calc.h
                  generic/Data_Funcs.h \
                  generic/Data_Matrix.h \
                  generic/GeoData.h \
-                 generic/GeoRef.h \
                  generic/GeoSpatialData.h \
                  generic/GeoTex.h \
                  generic/ProjCam.h \
                  generic/Projection.h \
-                 generic/Vertex.h \
-                 generic/gpc.h \
                  generic/stars.h \
                  generic/tcl3DModel.h \
                  generic/tcl3DModel3DS.h \
                  generic/tclCMap.h \
                  generic/tclData.h \
-                 generic/tclDataDef.h \
                  generic/tclDataSpec.h \
                  generic/tclFSTD.h \
                  generic/tclGDAL.h \

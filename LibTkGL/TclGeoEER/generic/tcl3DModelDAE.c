@@ -502,7 +502,7 @@ int Model_LoadDAE(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    XML_ParserFree(parser);
 
    /*Free associates parsing data structure*/
-   TList_Clear(dae->Sources,ModelDAE_SourceFree);
+   TList_Clear(dae->Sources,(TList_FreeProc*)ModelDAE_SourceFree);
    free(dae);
 
    return(state);

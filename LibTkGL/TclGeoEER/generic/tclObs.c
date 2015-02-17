@@ -584,9 +584,9 @@ static int Obs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
                obs->Loc->Nb=idx;
 
                if (!obs->Def) {
-                  obs->Def=DataDef_New(obs->Loc->Nb,1,1,1,TD_Float32);
+                  obs->Def=Def_New(obs->Loc->Nb,1,1,1,TD_Float32);
                } else {
-                  obs->Def=DataDef_Resize(obs->Def,obs->Loc->Nb,1,1);
+                  obs->Def=Def_Resize(obs->Def,obs->Loc->Nb,1,1);
                }
                obs->Def->NoData=-999.0;
 
@@ -664,7 +664,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
          Obs_FreeHash(Interp,Name);
       } else {
          if (!Def && new->Def) {
-            DataDef_Free(new->Def);
+            Def_Free(new->Def);
             new->Def=NULL;
          }
          return(new);
@@ -693,7 +693,7 @@ TObs *Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def) {
    new->Tag=NULL;
 
    if (Def) {
-      new->Def=DataDef_Copy(Obs->Def);
+      new->Def=Def_Copy(Obs->Def);
       if (!new->Def) {
          Tcl_AppendResult(Interp,"\n   Obs_Copy : Unable to allocate data definition",(char*)NULL);
          return(NULL);
@@ -743,7 +743,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
 
 #ifdef HAVE_RMN
    i=-3;
-   f77name(newdate)(&((FSTD_Head*)(Field->Head))->DATEV,&Obs->Date,&Obs->Time,&i);
+   f77name(newdate)(&((TRPNHeader*)(Field->Head))->DATEV,&Obs->Date,&Obs->Time,&i);
    c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
 #endif
    for(i=0;i<Obs->Loc->Nb;i++) {
@@ -880,7 +880,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
    char     **array0,**array1,**array=NULL;
    TObs     *obs0=NULL,*obs1=NULL;
    TLoc     *loc=NULL;
-   TDataDef *def=NULL;
+   TDef *def=NULL;
    Tcl_Obj  *obj;
 
    if (!List) {
@@ -960,7 +960,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=DataDef_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=Def_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/
@@ -991,7 +991,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
       obs0->Loc=loc;
       loc->Ref++;
-      DataDef_Free(obs0->Def);
+      Def_Free(obs0->Def);
       obs0->Def=def;
    }
    return TCL_OK;
@@ -1021,7 +1021,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
    char     **array0,**array;
    TObs     *obs0=NULL;
    TLoc     *loc=NULL;
-   TDataDef *def=NULL;
+   TDef *def=NULL;
    Tcl_Obj  *obj;
 
    if (!List) {
@@ -1091,7 +1091,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=DataDef_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=Def_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/
@@ -1127,7 +1127,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
 
       obs0->Loc=loc;
       loc->Ref++;
-      DataDef_Free(obs0->Def);
+      Def_Free(obs0->Def);
       obs0->Def=def;
    }
    return(TCL_OK);
@@ -1223,7 +1223,7 @@ static int Obs_FreeHash(Tcl_Interp *Interp,char *Name) {
 */
 void Obs_Free(TObs *Obs) {
 
-   DataDef_Free(Obs->Def);
+   Def_Free(Obs->Def);
 
    if (Obs->Tag)                 Tcl_DecrRefCount(Obs->Tag);
    if (Obs_LocFree(Obs->Loc)==0) free(Obs->Loc);
@@ -1481,7 +1481,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
          if (Obs_Create(Interp,name)==TCL_OK) {
             obs=Obs_Get(name);
-            obs->Def=DataDef_New(nb,1,1,1,TD_Float32);
+            obs->Def=Def_New(nb,1,1,1,TD_Float32);
             obs->Def->NoData=-999.0;
             obs->Loc=loc;
             obs->Date=obs->Time=0;
@@ -1569,7 +1569,8 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                      levtyp=8;
                   } else {
                      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Invalid level type, must be [ MASL SIGMA PRESSURE UNDEFINED MAGL HYBRID THETA ETA GALCHEN ]",(char*)NULL);
-                     err=TCL_ERROR;
+                     return(TCL_ERROR);
+                     break;
                   }
                }
             } else if (strcmp(gtok[n],"ELEV")==0) {          /*Elevation information*/
@@ -1601,7 +1602,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                   if ((err=Tcl_SplitList(Interp,tok[n],&nltok,(const char ***)&ltok))==TCL_OK) {
                      for(k=0;k<nltok;k++) {
                         if (!obs->Def->Data[k]) {
-                           if (!(obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TData_Size[TD_Float32]))) {
+                           if (!(obs->Def->Data[k]=(char*)calloc(FSIZE3D(obs->Def),TDef_Size[TD_Float32]))) {
                               Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unable to allocate memory for vectorial components",(char*)NULL);
                               err=TCL_ERROR;
                               break;
@@ -1644,7 +1645,6 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    free(bytes);
 
    ObsNo+=gntok;
-
    return(err);
 }
 

@@ -33,6 +33,7 @@
 
 #ifdef HAVE_RMN
 
+#include "RPN.h"
 #include "tclFSTD.h"
 #include "tclGDAL.h"
 
@@ -99,14 +100,14 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
          Tcl_AppendResult(Interp,"HIRLAM_Export: Could not allocate memory for grid processing",(char*)NULL);
          return(TCL_ERROR);
       }
-      EZLock_RPNInt();
+      RPN_IntLock();
       c_gdll(Field->Ref->Ids[Field->Ref->NId],fy,fx);
-      EZUnLock_RPNInt();
+      RPN_IntUnlock();
 
       /* Output grid longitude*/
 
       for (i=0;i<sz;i++,x++) {
-         *x=CLAMPLON(*x);
+         CLAMPLON(*x);
       }
 
       HIRLAM_WriteHead(fid,"longitude (decimal deg.)",Info,Factor);
@@ -143,9 +144,9 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
            x++;y++;
          }
       }
-      EZLock_RPNInt();
+      RPN_IntLock();
       c_gdxywdval(Field->Ref->Ids[Field->Ref->NId],spd,dir,(float*)(Field->Def->Data[0]),(float*)(Field->Def->Data[1]),fx,fy,sz);
-      EZUnLock_RPNInt();
+      RPN_IntUnlock();
 
       if (Type[1]=='P') {
          HIRLAM_WriteHead(fid,"wind speed (m/s)",Info,Factor);
@@ -329,7 +330,7 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
       lo0=fld->Ref->AX[0];
       la0=fld->Ref->AY[0];
    } else {
-      f77name(cigaxg)(&fld->Ref->Grid[0],&la0,&lo0,&dx,&dy,&((FSTD_Head*)fld->Head)->IG1,&((FSTD_Head*)fld->Head)->IG2,&((FSTD_Head*)fld->Head)->IG3,&((FSTD_Head*)fld->Head)->IG4);
+      f77name(cigaxg)(&fld->Ref->Grid[0],&la0,&lo0,&dx,&dy,&((TRPNHeader*)fld->Head)->IG1,&((TRPNHeader*)fld->Head)->IG2,&((TRPNHeader*)fld->Head)->IG3,&((TRPNHeader*)fld->Head)->IG4);
    }
 
    lo0-=0.5*dx;
@@ -344,7 +345,7 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    tmps=nb;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=0;     SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
 
-   System_StampDecode(((FSTD_Head*)fld->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
+   System_StampDecode(((TRPNHeader*)fld->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
    tmps=yyyy;  SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=mm;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=dd;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);

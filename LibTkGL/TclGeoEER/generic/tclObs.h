@@ -59,7 +59,7 @@ typedef struct TObs {
 
    TLoc      *Loc;
    TDataSpec *Spec;       /*Specification des donnees*/
-   TDataDef  *Def;        /*Definition des donnees*/
+   TDef      *Def;        /*Definition des donnees*/
 } TObs;
 
 int   TclObs_Init(Tcl_Interp*);

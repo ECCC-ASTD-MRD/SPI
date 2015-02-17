@@ -63,6 +63,9 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    /*Material list*/
    /*Number of material*/
    f=fread(&M->NMt,sizeof(int),1,file);
+   if (!f) 
+      return(0);
+   
    if (M->NMt>256 || M->NMt<0) {
       fclose(file);
       M->NMt=0;

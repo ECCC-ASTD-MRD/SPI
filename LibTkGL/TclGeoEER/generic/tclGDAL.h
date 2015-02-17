@@ -38,12 +38,12 @@
 #include "Projection.h"
 #include "tclData.h"
 #include "tclOGR.h"
-#include "GeoRef.h"
+#include "tclGeoRef.h"
 #include "GeoTex.h"
 
-#include "gdal.h"
-#include "ogr_srs_api.h"
-#include "cpl_string.h"
+//#include "gdal.h"
+//#include "ogr_srs_api.h"
+//#include "cpl_string.h"
 
 #define GDAL_REPLACE   0
 #define GDAL_MIN       1
@@ -77,7 +77,7 @@ typedef struct GDAL_Band {
 
    time_t        Date;                /* Valid time */
    TGeoRef      *Ref;                 /* GeoReference */
-   TDataDef     *Def;                 /* Data definition */
+   TDef         *Def;                 /* Data definition */
    TDataSpec    *Spec;                /* Specification des donnees*/
    TDataStat    *Stat;                /* Data stats */
 } GDAL_Band;
@@ -105,12 +105,10 @@ int        GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band);
 int        GDAL_BandRenderTile(Projection *Proj,ViewportItem *VP,GDAL_Band *Band,TGeoTexTile *Tile,int Resolution);
 int        GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options);
 int        GDAL_BandTile(GDAL_Band *Band,Projection *Proj);
+int        GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field);
+int        GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale);
 int        GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List);
-
-void       GDAL_Rasterize(TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,double Value,int Combine);
-int        Data_GridAverage(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,double *Table,TDataDef *TmpDef,TDataInterp Mode,int Final);
-int        Data_GridConservative(Tcl_Interp *Interp,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);
-int        Data_GridOGR(Tcl_Interp *Interp,TDataDef *Def,TGeoRef *Ref,OGR_Layer *Layer,char Mode,char Type,int Final,char *Field,double Value,int Combine);
-int        Data_GridOGRQuad(Tcl_Interp *Interp,Tcl_Obj *List,TDataDef *Def,TGeoRef *Ref,OGRGeometryH Geom,char Mode,char Type,double Area,double Value,int X0,int Y0,int X1,int Y1,int Z);
+int        GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max);
+int        GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band);
 
 #endif

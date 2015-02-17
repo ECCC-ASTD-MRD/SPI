@@ -23,9 +23,9 @@ extern GDAL_Band *GBand;
 extern OGR_Layer *GLayer;
 extern TObs      *GObs;
 extern TVector   *GVec;
-extern TData_Type GType;
+extern TDef_Type  GType;
 extern int        GMode;
-extern TDataDef  *GData[1024];
+extern TDef      *GData[1024];
 extern int        GDataN;
 
 /*

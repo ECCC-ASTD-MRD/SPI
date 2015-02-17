@@ -31,16 +31,16 @@
  *==============================================================================
  */
 
-#include "tclFSTD.h"
+#include "RPN.h"
 #include "Data_Matrix.h"
 
 extern Tcl_Interp *GInterp;
 extern TData      *GField,*GFieldP;
-extern TDataDef   *GData[256];
-extern TData_Type GType;
+extern TDef   *GData[256];
+extern TDef_Type GType;
 extern int        GDataN;
 
-void Calc_Iterate1(TDataDef *R,TDataDef *A,TFunc1 *Func) {
+void Calc_Iterate1(TDef *R,TDef *A,TFunc1 *Func) {
 
    unsigned long i,sa;
    int           n=0;
@@ -58,7 +58,7 @@ void Calc_Iterate1(TDataDef *R,TDataDef *A,TFunc1 *Func) {
    }
 }
 
-void Calc_Iterate2(TDataDef *R,TDataDef *A,TDataDef *B,TFunc2 *Func) {
+void Calc_Iterate2(TDef *R,TDef *A,TDef *B,TFunc2 *Func) {
 
    unsigned long i,sa,sb;
    int           n=0,t=0;
@@ -83,7 +83,7 @@ void Calc_Iterate2(TDataDef *R,TDataDef *A,TDataDef *B,TFunc2 *Func) {
    }
 }
 
-void Calc_Iterate3(TDataDef *R,TDataDef *A,TDataDef *B,TDataDef *C,TFunc3 *Func) {
+void Calc_Iterate3(TDef *R,TDef *A,TDef *B,TDef *C,TFunc3 *Func) {
 
    unsigned long i,sa,sb,sc;
    int           n=0,t=0;
@@ -124,7 +124,7 @@ void Calc_Iterate3(TDataDef *R,TDataDef *A,TDataDef *B,TDataDef *C,TFunc3 *Func)
  * this is C-based, so what did you expect?
  *
  */
-TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim,int Vect) {
+TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Called Calc_Compat(A:%p,B:%p)\n",(void*)A,(void*)B);
@@ -168,19 +168,19 @@ TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim,int Vec
 
 /**
  * @author Jean-Philippe Gauthier
- * @brief Converts a numeral to a TDataDef represented one
+ * @brief Converts a numeral to a TDef represented one
  * @param Val Numeral to convert
- * @return def new TDataDef
+ * @return def new TDef
  *
- * This function converts a std C double to a TDataDef* of the right type.
+ * This function converts a std C double to a TDef* of the right type.
  *
  * NI, NJ, NK are initialized to 1 (this shouldn't matter, but is used to
  * prevent new code from segfaulting, you get a Calc_Compat error
  * instead)
  */
-TDataDef* Calc_MatrixFloat(double Val) {
+TDef* Calc_MatrixFloat(double Val) {
 
-   TData_Type type;
+   TDef_Type type;
 
    GDataN++;
 
@@ -189,7 +189,7 @@ TDataDef* Calc_MatrixFloat(double Val) {
       type=TD_Float64;
    }
 
-   GData[GDataN]=DataDef_New(1,1,1,1,(GType?GType:type));
+   GData[GDataN]=Def_New(1,1,1,1,(GType?GType:type));
    Def_Set(GData[GDataN],0,0,Val);
 
    return(GData[GDataN]);
@@ -197,19 +197,19 @@ TDataDef* Calc_MatrixFloat(double Val) {
 
 /**
  * @author Jean-Philippe Gauthier
- * @brief Converts a numeral to a TDataDef represented one
+ * @brief Converts a numeral to a TDef represented one
  * @param Val Numeral to convert
- * @return def new TDataDef
+ * @return def new TDef
  *
- * This function converts a std C long to a TDataDef* of the right type.
+ * This function converts a std C long to a TDef* of the right type.
  *
  * NI, NJ, NK are initialized to 1 (this shouldn't matter, but is used to
  * prevent new code from segfaulting, you get a Calc_Compat error
  * instead)
  */
-TDataDef* Calc_MatrixInt(long Val) {
+TDef* Calc_MatrixInt(long Val) {
 
-   TData_Type type;
+   TDef_Type type;
 
    GDataN++;
 
@@ -226,7 +226,7 @@ TDataDef* Calc_MatrixInt(long Val) {
    }
    type=TD_Int32;
 
-   GData[GDataN]=DataDef_New(1,1,1,1,(GType?GType:type));
+   GData[GDataN]=Def_New(1,1,1,1,(GType?GType:type));
    Def_Set(GData[GDataN],0,0,Val);
    return(GData[GDataN]);
 }
@@ -234,12 +234,12 @@ TDataDef* Calc_MatrixInt(long Val) {
 /**
  * @author Jean-Philippe Gauthier
  * @brief  Interpolate one matrix into another
- * @param A      First TDataDef to iterate over
- * @param B      Second TDataDef to iterate over
+ * @param A      First TDef to iterate over
+ * @param B      Second TDef to iterate over
  * @param Degree Interpolation degree
- * @return New TDataDef containing the results
+ * @return New TDef containing the results
  */
-TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
+TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
 
    unsigned long k;
    int           n=0;
@@ -251,7 +251,7 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
 #endif
 
    GDataN++;
-   GData[GDataN]=DataDef_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
+   GData[GDataN]=Def_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
 
 #ifdef HAVE_RMN
    if (FSIZE3D(GData[GDataN])==1) {
@@ -271,7 +271,9 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
       }
 
       if (GField->Ref->Ids[GField->Ref->NId]<=-1 || GFieldP->Ref->Ids[GFieldP->Ref->NId]<=-1) {
-         Data_GridInterpolate(NULL,'L',GField->Ref,GData[GDataN],GFieldP->Ref,B);
+         if (!Def_GridInterp(GField->Ref,GData[GDataN],GFieldP->Ref,B,'L')) {
+            return(NULL);
+          }
       } else {
          switch(Degree) {
             case 1:c_ezsetopt("INTERP_DEGREE","NEAREST");break;
@@ -306,31 +308,31 @@ TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree) {
 /**
  * @author Jean-Philippe Gauthier
  * @brief Returns a component of a vectorial field
- * @param A DataDef to work on
+ * @param A Def to work on
  * @param Index Index of the composant
- * @return New TDataDef* containing the results
+ * @return New TDef* containing the results
  */
-TDataDef* Calc_Index(TDataDef* A,int Index) {
+TDef* Calc_Index(TDef* A,int Index) {
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Calc_Index(A:%p,%i)\n",(void*)A,Index);
 #endif
 
    GDataN++;
-   GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+   GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
-   memcpy(GData[GDataN]->Data[0],A->Data[Index],FSIZE3D(A)*TData_Size[A->Type]);
+   memcpy(GData[GDataN]->Data[0],A->Data[Index],FSIZE3D(A)*TDef_Size[A->Type]);
    return(GData[GDataN]);
 }
 
 /**
  * @author Jean-Philippe Gauthier
  * @brief Returns a level component
- * @param A DataDef to work on
+ * @param A Def to work on
  * @param Index Index of the composant
- * @return New TDataDef* containing the results
+ * @return New TDef* containing the results
  */
-TDataDef* Calc_IndexValue(TDataDef* A,int I,int J,int K) {
+TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
 
    double v=0;
    int    n=0;
@@ -341,7 +343,7 @@ TDataDef* Calc_IndexValue(TDataDef* A,int I,int J,int K) {
 
    GDataN++;
 
-   GData[GDataN]=DataDef_New(1,1,1,DSIZE(A->Data),(GType?GType:A->Type));
+   GData[GDataN]=Def_New(1,1,1,DSIZE(A->Data),(GType?GType:A->Type));
 
    while(A->Data[n]) {
       Def_Get(A,n,(FSIZE2D(A)*K)+J*A->NI+I,v);
@@ -351,7 +353,7 @@ TDataDef* Calc_IndexValue(TDataDef* A,int I,int J,int K) {
    return(GData[GDataN]);
 }
 
-TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
+TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
 
    unsigned int  n,j,jn,k,kn;
    void *p0,*p1;
@@ -368,7 +370,7 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
       return(NULL);
 
    GDataN++;
-   GData[GDataN]=DataDef_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),A->Type);
+   GData[GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),A->Type);
 
    for(k=K0,kn=0;k<=K1;k++,kn++) {
 //      GData[GDataN]->GridLevels[kn]=A->GridLevels[k];
@@ -377,7 +379,7 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
          while(A->Data[n]) {
             Def_Pointer(GData[GDataN],n,FSIZE2D(GData[GDataN])*kn+jn*GData[GDataN]->NI,p0);
             Def_Pointer(A,n,FSIZE2D(A)*k+j*A->NI+I0,p1);
-            memcpy(p0,p1,GData[GDataN]->NI*TData_Size[A->Type]);
+            memcpy(p0,p1,GData[GDataN]->NI*TDef_Size[A->Type]);
             n++;
          }
       }
@@ -385,7 +387,7 @@ TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1)
    return(GData[GDataN]);
 }
 
-TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
+TDef* Calc_Slice(TDef* A,int N,int D) {
 
    unsigned int  n,i,j,k;
    void  *p;
@@ -398,7 +400,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
    switch(D) {
       case 0:
          i=N;
-         GData[++GDataN]=DataDef_New(A->NJ,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NJ,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -413,7 +415,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
 
       case 1:
          j=N;
-         GData[++GDataN]=DataDef_New(A->NI,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NI,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -429,11 +431,11 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
       case 2:
          k=N;
          n=0;
-         GData[++GDataN]=DataDef_New(A->NI,A->NJ,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NI,A->NJ,1,DSIZE(A->Data),(GType?GType:A->Type));
 //         GData[GDataN]->GridLevels[0]=A->GridLevels[k];
          while(A->Data[n]) {
             Def_Pointer(A,n,FSIZE2D(A)*k,p);
-            memcpy(GData[GDataN]->Data[n],p,FSIZE2D(A)*TData_Size[A->Type]);
+            memcpy(GData[GDataN]->Data[n],p,FSIZE2D(A)*TDef_Size[A->Type]);
             n++;
          }
          break;
@@ -441,7 +443,7 @@ TDataDef* Calc_Slice(TDataDef* A,int N,int D) {
    return(GData[GDataN]);
 }
 
-TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
+TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
 
    unsigned int  n=0,i,j,k,bi,bj,bk,uni=0;
    double  v=0.0;
@@ -495,10 +497,10 @@ TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,in
 /**
  * @author Jean-Philippe Gauthier
  * @brief Calculates the wind speed (vector length)
- * @param A DataDef to work on
- * @return New TDataDef* containing the results
+ * @param A Def to work on
+ * @return New TDef* containing the results
  */
-TDataDef* Calc_Length(TDataDef* A) {
+TDef* Calc_Length(TDef* A) {
 
    unsigned long i;
    double        v[3]= { 0.0, 0.0, 0.0 };
@@ -509,9 +511,9 @@ TDataDef* Calc_Length(TDataDef* A) {
    GDataN++;
 
    if (!A->Data[1]) {
-      GData[GDataN]=DataDef_Copy(A);
+      GData[GDataN]=Def_Copy(A);
    } else {
-      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+      GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
       for(i=0;i<FSIZE3D(A);i++) {
          Def_Get(A,0,i,v[0]);
@@ -527,7 +529,7 @@ TDataDef* Calc_Length(TDataDef* A) {
    return(GData[GDataN]);
 }
 
-TDataDef* Calc_Dir(TDataDef* A) {
+TDef* Calc_Dir(TDef* A) {
 
    unsigned int i,j,k;
    float       *x,*y,*fx,*fy,*spd;
@@ -545,9 +547,9 @@ TDataDef* Calc_Dir(TDataDef* A) {
    GDataN++;
 
    if (!A->Data[1]) {
-      GData[GDataN]=DataDef_Copy(A);
+      GData[GDataN]=Def_Copy(A);
    } else {
-      GData[GDataN]=DataDef_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+      GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
       spd=(float*)malloc(FSIZE2D(A)*sizeof(float));
       x=fx=(float*)malloc(FSIZE2D(A)*sizeof(float));
@@ -565,14 +567,14 @@ TDataDef* Calc_Dir(TDataDef* A) {
          }
       }
 
-      EZLock_RPNInt();
+      RPN_IntLock();
       for(k=0;k<A->NK;k++) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
          c_gdxywdval(GField->Ref->Ids[GField->Ref->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
-      EZUnLock_RPNInt();
+      RPN_IntUnlock();
 
       free(fx);
       free(fy);
@@ -583,12 +585,12 @@ TDataDef* Calc_Dir(TDataDef* A) {
 
 /**
  * @author Jean-Philippe Gauthier
- * @brief Iterates over all elements of a TDataDef
+ * @brief Iterates over all elements of a TDef
  * @param a to iterate over
  * @param func Float to float function to apply
- * @return New TDataDef* containing the results
+ * @return New TDef* containing the results
  */
-TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Type Type) {
+TDef* Calc_Matrix1(TDef* A,TFunc1 *Func,int Iterate,int Matrix,TDef_Type Type) {
 
    double v;
 #ifdef DEBUG
@@ -598,14 +600,14 @@ TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Typ
    GDataN++;
 
    if (Iterate) {
-      GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:(Type?Type:DEFSIGNEDTYPE(A))));
+      GData[GDataN]=Def_CopyPromote(A,(GType?GType:(Type?Type:DEFSIGNEDTYPE(A))));
       Calc_Iterate1(GData[GDataN],A,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
+         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A);
       } else {
-         GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);
+         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
          v=((TFunc*)Func)(A);
          Def_Set(GData[GDataN],0,0,v);
       }
@@ -617,18 +619,18 @@ TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Typ
 /**
  * @author Jean-Philippe Gauthier
  * @brief Processes two matrices, element to element
- * @param A First TDataDef to iterate over
- * @param B Second TDataDef to iterate over
+ * @param A First TDef to iterate over
+ * @param B Second TDef to iterate over
  * @param Func (Float, float) function to apply
- * @return New TDataDef containing the results
+ * @return New TDef containing the results
  *
  * <strong>Note:</strong> Non-commutative operations are handle a (op) b. So a
  * division is a / b.
  */
-TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matrix,TData_Type Type) {
+TDef* Calc_Matrix2(TDef* A,TDef* B,TFunc2 *Func,int Iterate,int Matrix,TDef_Type Type) {
 
    double    v;
-   TDataDef *m,*t;
+   TDef *m,*t;
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Called Calc_Matrix2(A:%p,B:%p,Func:%p)\n",(void*)A,(void*)B,(void*)Func);
 #endif
@@ -641,14 +643,14 @@ TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matr
 
    if (Iterate) {
       t=DEFSELECTTYPE(A,B);
-      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
+      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
       Calc_Iterate2(GData[GDataN],A,B,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
+         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A,B);
       } else {
-         GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);
+         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
          v=((TFunc*)Func)(A,B);
          Def_Set(GData[GDataN],0,0,v);
       }
@@ -659,16 +661,16 @@ TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matr
 /**
  * @author Jean-Philippe Gauthier
  * @brief Processes three matrices, element to element
- * @param A First TDataDef to iterate over
- * @param B Second TDataDef to iterate over
- * @param C Third TDataDef to iterate over
+ * @param A First TDef to iterate over
+ * @param B Second TDef to iterate over
+ * @param C Third TDef to iterate over
  * @param Func (float,float,float) function to apply
- * @return New TDataDef containing the results
+ * @return New TDef containing the results
  */
-TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iterate,int Matrix,TData_Type Type) {
+TDef* Calc_Matrix3(TDef* A,TDef* B,TDef* C,TFunc3 *Func,int Iterate,int Matrix,TDef_Type Type) {
 
    double    v;
-   TDataDef *m,*t;
+   TDef *m,*t;
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Called Calc_Matrix3(A:%p,B:%p,C:%p,Func:%p)\n",(void*)A,(void*)B,(void*)C,(void*)Func);
@@ -692,14 +694,14 @@ TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iter
    if (Iterate) {
       t=DEFSELECTTYPE(B,C);
       t=DEFSELECTTYPE(A,t);
-      GData[GDataN]=DataDef_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
+      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
       Calc_Iterate3(GData[GDataN],A,B,C,Func);
    } else {
       if (Matrix) {
-         GData[GDataN]=DataDef_CopyPromote(A,(GType?GType:A->Type));
+         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
          ((TFunc*)Func)(GData[GDataN],A,B,C);
       } else {
-         GData[GDataN]=DataDef_New(1,1,1,1,TD_Float64);
+         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
          v=((TFunc*)Func)(A,B,C);
          Def_Set(GData[GDataN],0,0,v);
       }

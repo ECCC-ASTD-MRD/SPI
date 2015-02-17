@@ -1397,8 +1397,8 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       
       for(n=0;n<nv;n++) {
          Ref->Project(Ref,pvr[n][0],pvr[n][1],&co.Lat,&co.Lon,1,0);
-         co.Lat=CLAMPLAT(co.Lat);
-         co.Lon=CLAMPLON(co.Lon);
+         CLAMPLAT(co.Lat);
+         CLAMPLON(co.Lon);
          co.Lon=CLAMP(co.Lon,-180.0,180.0);
 
          /*Keep latlon extent since it's not the same than the original extent reprojected to latlon*/

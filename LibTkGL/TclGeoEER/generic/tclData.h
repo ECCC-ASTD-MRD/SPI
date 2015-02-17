@@ -36,9 +36,9 @@
 
 #include "eerUtils.h"
 #include "tclUtils.h"
-#include "GeoRef.h"
 #include "tclDataSpec.h"
-#include "tclDataDef.h"
+#include "GeoRef.h"
+#include "Def.h"
 #include "tclVector.h"
 #include "Vector.h"
 #include "Array.h"
@@ -60,29 +60,6 @@
 #define GAUSS  3
 #define LINEAR 4
 #define PARSE_LEN  4096
-
-typedef enum {
-   TD_NEAREST                        = 0,
-   TD_LINEAR                         = 1,
-   TD_CUBIC                          = 2,
-   TD_NORMALIZED_CONSERVATIVE        = 3,
-   TD_CONSERVATIVE                   = 4,
-   TD_MAXIMUM                        = 5,
-   TD_MINIMUM                        = 6,
-   TD_SUM                            = 7,
-   TD_AVERAGE                        = 8,
-   TD_VARIANCE                       = 9,
-   TD_SQUARE                         = 10,
-   TD_NORMALIZED_COUNT               = 11,
-   TD_COUNT                          = 12,
-   TD_LENGTH_CONSERVATIVE            = 13,
-   TD_LENGTH_ALIASED                 = 14,
-   TD_LENGTH_NORMALIZED_CONSERVATIVE = 15,
-   TD_VECTOR_AVERAGE                 = 16,
-   TD_NOP                            = 17,
-   TD_ACCUM                          = 18,
-   TD_BUFFER                         = 19
-} TDataInterp;
 
 typedef enum {
    TD_RPN,
@@ -115,8 +92,7 @@ typedef struct TData {
    void         *Head;       // Entete de l'enregistrement (metadata)
 
    TGeoRef      *Ref;        // Reference geographique horizontale
-
-   TDataDef     *Def,**SDef; // Definition des donnees
+   TDef         *Def,**SDef; // Definition des donnees
    TDataSpec    *Spec;       // Specification des donnees (pour l'affichage)
    TDataStat    *Stat;       // Statistiques de l'enregistrement
    TDataType    Type;        // Type de donnee
@@ -135,8 +111,8 @@ typedef struct TData {
 
 int      Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
-void     Data_FromString(char *String,TDataDef *Def,int Comp,int Idx);
-Tcl_Obj *Data_Val2Obj(TDataDef *Def,double Val);
+void     Data_FromString(char *String,TDef *Def,int Comp,int Idx);
+Tcl_Obj *Data_Val2Obj(TDef *Def,double Val);
 
 void     Data_Clean(TData *Data,int Map,int Pos,int Seg);
 void     Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
@@ -148,8 +124,8 @@ TData*   Data_Get(char *Name);
 TData*   Data_GetShell(Tcl_Interp *Interp,char *Name);
 int      Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List);
 Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
-TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TData_Type Type);
-Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDataDef *Def,int X,int Y);
+TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDef_Type Type);
+Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDef *Def,int X,int Y);
 int      Data_ValSet(TData *Field,double I,double J,double Val);
 void     Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip);
 int      Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *List);
@@ -157,8 +133,6 @@ int      Data_Within(TData *Field,float Val);
 int      Data_WithinNb(TData *Field);
 void     Data_Wipe();
 void     Data_PreInit(TData *Data);
-int      Data_GridInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
-int      Data_SubInterpolate(Tcl_Interp *Interp,char Degree,TGeoRef *ToRef,TDataDef *ToDef,TGeoRef *FromRef,TDataDef *FromDef);
 int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 int      Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 

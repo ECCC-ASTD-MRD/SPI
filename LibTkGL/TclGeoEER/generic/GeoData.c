@@ -1322,7 +1322,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
                if (old!=coord.Lon) {
 
                   old=coord.Lon;
-                  coord.Lon=CLAMPLON(coord.Lon);
+                  CLAMPLON(coord.Lon);
 
                   if (GDB->Params.CoordDef<1.0) {
                      sprintf(buf,"%0.2f",ABS(coord.Lon));

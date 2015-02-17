@@ -2231,12 +2231,6 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
       puts $f "\nwm geom . \$SPI::Param(Geom)"
       puts $f "\nSPI::WindowLayout \$SPI::Param(PaneSide) \$SPI::Param(Panes)"
 
-      if { [winfo exists .params] && [winfo ismapped .params] } {
-         puts $f "\nSPI::Params"
-         puts $f "wm geometry .params [wm geom .params]"
-         puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
-      }
-
       foreach pane [.pan.side panes] {
          if { $Layout } {
              puts $f "set Frame $pane"
@@ -2277,6 +2271,14 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
             }
          }
       }
+      
+      #----- Param window
+      if { [winfo exists .params] && [winfo ismapped .params] } {
+         puts $f "\nSPI::Params"
+         puts $f "wm geometry .params [wm geom .params]"
+         puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
+      }
+      
 
       #----- Process Tools
       puts $f "\n#----- Invoke tools\n"

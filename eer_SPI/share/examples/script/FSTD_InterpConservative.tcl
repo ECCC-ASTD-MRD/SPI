@@ -35,19 +35,24 @@ fstdfile open 3 write DataOut/FSTD_InterpConservative.fstd
 fstdfield read TO 2 -1 "" -1 -1 -1 "" "P0"
 fstdfield stats TO -nodata 0.0
 
-set f [open DataOut/FSTD_InterpConservative.idx { RDWR CREAT }]
+#set f [open DataOut/FSTD_InterpConservative.idx w]
+set f [open DataOut/FSTD_InterpConservative.idx r]
+fconfigure $f -encoding binary -translation binary
+set index [read $f]
+binary scan $index f* data
+puts [llength $data]
 
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    puts "   Processing: $fld"
    fstdfield read IN 1 $fld
    fstdfield clear TO
    fstdfield define TO -IP1 [fstdfield define IN -IP1]
-#   fstdfield gridinterp TO IN CONSERVATIVE 1 index
-   fstdfield gridinterp TO IN CONSERVATIVE 1 $f
+   fstdfield gridinterp TO IN CONSERVATIVE 1 index
 #   fstdfield gridinterp TO IN AVERAGE_VARIANCE TO 1
    fstdfield write TO 3 -32 False
 }
 
+#puts $f $index
 close $f
 
 fstdfile close 1 2 3

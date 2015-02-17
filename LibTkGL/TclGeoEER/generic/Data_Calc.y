@@ -11,8 +11,8 @@
 extern Tcl_Interp *GInterp;
 
 extern TData      *GField,*GFieldP;
-extern TDataDef   *GResult;
-extern TDataDef   *GData[256];
+extern TDef   *GResult;
+extern TDef   *GData[256];
 extern int         GDataN;
 extern int         GError;
 extern int         GMode;
@@ -21,9 +21,9 @@ int vexpr_error(char* s);
 %}
 
 %union {
-  TDataDef   *Val;            /*!< For returning numbers. */
+  TDef   *Val;            /*!< For returning numbers. */
   double     Num;
-  TDataDef   *Data;           /*!< If we found a data */
+  TDef   *Data;           /*!< If we found a data */
   TData      *Field;          /*!< If we found a field */
   TObs       *Obs;            /*!< If we found an observation */
   TVector    *Vec;            /*!< If we found a vector */
@@ -576,7 +576,7 @@ exp:
       GField=Data_Get("TMPCALCXXXXXX");
       GMode=GMode==T_VAL?T_FLD:GMode;
 
-      $$ = GData[++GDataN]=DataDef_Copy(GField->Def);
+      $$ = GData[++GDataN]=Def_Copy(GField->Def);
 #endif
       if (!$$) {
          vexpr_error("FSTD_Field failed (T_FIELD_FUNC): Critical!");

@@ -35,6 +35,7 @@
 #ifdef HAVE_URP
 
 #include "tclRADAR.h"
+#include "tclGeoRef.h"
 #include "Projection.h"
 
 /*----------------------------------------------------------------------------
@@ -271,7 +272,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
 
                if (loc.Lat!=Rad->Ref->Loc.Lat || loc.Lon!=Rad->Ref->Loc.Lon  || loc.Elev!=Rad->Ref->Loc.Elev) {
                   ref=Rad->Ref;
-                  Rad->Ref=GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->ZRef.Levels);
+                  Rad->Ref=GeoRef_Find(GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->ZRef.Levels));
                   GeoRef_Destroy(Interp,ref->Name);
                   Data_Clean(Rad,1,1,1);
                   th=DEG2RAD(head->Data->volScan[head->Scan]->sweep[Rad->Def->Level]->elevationAngle);

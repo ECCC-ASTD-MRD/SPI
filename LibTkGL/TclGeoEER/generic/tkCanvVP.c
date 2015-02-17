@@ -850,7 +850,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                glPopName();
             }
 
-            if (glPickProcess()>0) {
+            if ((np=glPickProcess())>0) {
                obj=Tcl_NewListObj(0,NULL);
                switch(GLRender->GLPick[1]) {
                   case PICK_TRAJ:      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("trajectory",-1));  break;
@@ -871,6 +871,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                }
 
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[3]));
+               if (GLRender->GLPick[1]==PICK_METOBS) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(GLRender->GLPick[4]));
+               }
                Tcl_SetObjResult(Interp,obj);
             }
             vp->ForcePick=1;

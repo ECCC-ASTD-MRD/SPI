@@ -44,14 +44,14 @@
 #include "Data_Funcs.h"
 
 Tcl_Interp   *GInterp;
-TData_Type    GType;
+TDef_Type     GType;
 TData        *GField,*GFieldP;
 GDAL_Band    *GBand;
 OGR_Layer    *GLayer;
 TObs         *GObs;
 TVector      *GVec;
-TDataDef     *GResult;
-TDataDef     *GData[1024];
+TDef     *GResult;
+TDef     *GData[1024];
 int           GDataN;
 int           GMode;
 char         *curPos;
@@ -66,7 +66,7 @@ int           GExcept;
  * @param Name Grammar structure for champ
  * @param Field Values from the math side
  */
-void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
+void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
 
    TData     *field;
    GDAL_Band *band;
@@ -91,7 +91,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          }
       }
       /*Free the DataDef since it won't be passed to the script side*/
-      DataDef_Free(Data);
+      Def_Free(Data);
 #ifdef DEBUG
       fprintf(stderr,"(DEBUG) Calc_Update: Result is float\n");
 #endif
@@ -113,13 +113,13 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                   Data_StatFree(GField->Stat);
                   GField->Stat=NULL;
                }
-               GField->Def= needcopy ? DataDef_Copy(Data) : Data;
+               GField->Def= needcopy ? Def_Copy(Data) : Data;
                if (GField->Ref && GField->Ref->Grid[0]=='U') {
                   FSTD_FieldSubBuild(GField);
                }
                // Force RPN DATYP update at write time
                if (GField->Type==TD_RPN) {
-                  ((FSTD_Head*)GField->Head)->DATYP=-1;
+                  ((TRPNHeader*)GField->Head)->DATYP=-1;
                }
             }
 #ifdef DEBUG
@@ -134,7 +134,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                   Data_StatFree(GBand->Stat);
                   GBand->Stat=NULL;
                }
-               GBand->Def= needcopy ? DataDef_Copy(Data) : Data;
+               GBand->Def= needcopy ? Def_Copy(Data) : Data;
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is band\n");
@@ -146,7 +146,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
                GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
             }
             /*For layers, we copy back the data so we don't need the Def anymore*/
-            DataDef_Free(Data);
+            Def_Free(Data);
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is layer\n");
 #endif
@@ -155,7 +155,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
          case T_OBS:
             if (!(obs=Obs_Get(Name)) || obs->Def!=Data) {
                GObs=Obs_Copy(Interp,GObs,Name,0);
-               GObs->Def= needcopy ? DataDef_Copy(Data) : Data;
+               GObs->Def= needcopy ? Def_Copy(Data) : Data;
             }
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is observation\n");
@@ -164,9 +164,9 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDataDef* Data) {
 
          case T_VEC:
             GVec=Vector_Copy(Interp,GVec,Name);
-            memcpy(GVec->V,Data->Data[0],n*TData_Size[GVec->Def->Type]);
+            memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
             /*For vectors, we copy back the data so we don't need the Def anymore*/
-            DataDef_Free(Data);
+            Def_Free(Data);
 #ifdef DEBUG
             fprintf(stderr,"(DEBUG) Calc_Update: Result is vector\n");
 #endif
@@ -228,7 +228,7 @@ int vexpr_error(char *Error){
  * @param Mode_ Parsing mode
  * @return Error code
  */
-int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Expr) {
+int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TDef_Type Type,char* Expr) {
 
    int  i;
 
@@ -273,7 +273,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TData_Type Type,char* Ex
    /* Free temporary data */
    for(i=0;i<=GDataN;i++) {
       if (GData[i] && GData[i]!=GResult)
-         DataDef_Free(GData[i]);
+         Def_Free(GData[i]);
       GData[i]=NULL;
    }
 

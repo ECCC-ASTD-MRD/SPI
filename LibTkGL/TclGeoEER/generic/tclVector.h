@@ -53,7 +53,7 @@
    }\
 }
 
-struct TDataDef;
+struct TDef;
 
 typedef struct TVectorSpec {
    double Alloc;       /* Mode d'allocation memoire (facteur d'agrandissement) */
@@ -65,13 +65,13 @@ typedef struct TVector {
    int              N,Nr;   /* Longueur du vecteur et longueur memoire*/
    Tcl_Obj         *Cn;     /* Noms des composantes */
    struct TVector **Cp;     /* Pointeur sur les composantes */
-   struct TDataDef *Def;    /* Representation TDataDef temporaire */
+   struct TDef *Def;    /* Representation TDef temporaire */
 } TVector;
 
 int TclVector_Init(Tcl_Interp *Interp);
 
 TVector*         Vector_Get(char *Name);
-struct TDataDef* Vector_GetDef(TVector *Vec);
+struct TDef* Vector_GetDef(TVector *Vec);
 
 int      Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp);
 void     Vector_Clear(Tcl_Interp *Interp,TVector *Vec);

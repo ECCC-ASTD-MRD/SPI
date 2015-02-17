@@ -17,6 +17,7 @@
 #ifdef HAVE_GRIB
 
 #include "tclGRIB.h"
+#include "tclGeoRef.h"
 #include "Projection.h"
 
 /*----------------------------------------------------------------------------
@@ -36,19 +37,18 @@
 */
 void GRIB_FieldSet(TData *Data){
 
-   GRIB_Head *head;
+   TGRIBHeader *head;
 
    if (Data->Head && Data->Free)
       Data->Free(Data);
 
-   head=(GRIB_Head*)malloc(sizeof(GRIB_Head));
+   head=(TGRIBHeader*)malloc(sizeof(TGRIBHeader));
 
    if (head) {
       head->FID=NULL;
       head->Handle=NULL;
       head->Version=0;
       head->NOMVAR[0]='\0';
-      head->CENTER[0]='\0';
       head->KEY=0;
       head->IP1=0;
       head->DATEV=0;
@@ -67,7 +67,7 @@ void GRIB_FieldSet(TData *Data){
 }
 
 void GRIB_HeadCopy(void *To,void *From) {
-   memcpy((GRIB_Head*)To,(GRIB_Head*)From,sizeof(GRIB_Head));
+   memcpy((TGRIBHeader*)To,(TGRIBHeader*)From,sizeof(TGRIBHeader));
 }
 
 /*----------------------------------------------------------------------------
@@ -141,6 +141,29 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
    return(Field->Ref->Pos[Level]);
 }
 
+static int GRIB_KeySet(Tcl_Interp *Interp,grib_handle *Handle,char *Key,Tcl_Obj *Val) {
+   
+   char   sval[1024];
+   double dval;
+   long   lval;
+   size_t len;
+   
+   if (Tcl_GetLongFromObj(Interp,Val,&lval)==TCL_OK) {
+      grib_set_long(Handle,Key,lval);
+      grib_get_long(Handle,Key,&lval);
+      Tcl_SetObjResult(Interp,Tcl_NewIntObj(lval));                  
+   } else if (Tcl_GetDoubleFromObj(Interp,Val,&dval)==TCL_OK) {
+      grib_set_double(Handle,Key,dval);
+      grib_get_double(Handle,Key,&dval);
+      Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(dval));
+   } else {
+      grib_set_string(Handle,Key,Tcl_GetString(Val),&len);
+      grib_get_string(Handle,Key,sval,&len);
+      Tcl_SetObjResult(Interp,Tcl_NewStringObj(sval,-1));                  
+   }
+   return(TCL_OK);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldDefine>
  * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
@@ -164,14 +187,22 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
 int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj     *obj;
-   GRIB_Head   *head=(GRIB_Head*)Field->Head;
+   TGRIBHeader *head=(TGRIBHeader*)Field->Head;
    TGeoRef     *ref;
-   int          i,j,idx,nidx;
+   int          i,j,idx,nidx,n,nobj,type=0;
    double       tra[6],inv[6],*tm,*im;
    const char **list;
+ 
+   unsigned long key_iterator_filter_flags=GRIB_KEYS_ITERATOR_SKIP_READ_ONLY || GRIB_KEYS_ITERATOR_SKIP_COMPUTED;
+//               char* name_space="ls";
+   grib_keys_iterator* kiter=NULL;
+   char   *key,sval[1024];
+   double dval;
+   long   lval;
+   size_t len;
 
-   static CONST char *sopt[] = { "-DATEO","-DATEV","-FID","-KEY","-NI","-NJ","-NK","-IP1","-NOMVAR","-GRTYP","-CENTER","-DATA","-projection","-transform","-georef",NULL };
-   enum        opt { DATEO,DATEV,FID,KEY,NI,NJ,NK,IP1,NOMVAR,GRTYP,CENTER,DATA,PROJECTION,TRANSFORM,GEOREF };
+   static CONST char *sopt[] = { "-DATEO","-DATEV","-FID","-NI","-NJ","-NK","-IP1","-NOMVAR","-GRTYP","-DATA","-projection","-transform","-georef","-key",NULL };
+   enum        opt { DATEO,DATEV,FID,NI,NJ,NK,IP1,NOMVAR,GRTYP,DATA,PROJECTION,TRANSFORM,GEOREF,KEY };
 
    if (!Field) {
       Tcl_AppendResult(Interp,"Invalid field",(char*)NULL);
@@ -209,14 +240,6 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->FID->Id,-1));
             } else {
                head->FID=GRIB_FileGet(Interp,Tcl_GetString(Objv[++i]));
-            }
-            break;
-
-         case KEY:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewLongObj(head->KEY));
-            } else {
-               Tcl_GetLongFromObj(Interp,Objv[++i],&head->KEY);
             }
             break;
 
@@ -273,15 +296,6 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             }
             break;
             
-         case CENTER:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->CENTER,-1));
-            } else {
-               strncpy(head->CENTER,Tcl_GetString(Objv[++i]),4);
-               head->CENTER[4]='\0';
-            }
-            break;
-
          case PROJECTION:
             if (Objc==1) {
                if (Field->Ref && Field->Ref->String)  {
@@ -293,11 +307,11 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
               } else {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
                      Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -313,12 +327,12 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&nidx,&list)==TCL_ERROR) {
-                  return TCL_ERROR;
+                  return(TCL_ERROR);
                }
 
                if (nidx!=6) {
-                  Tcl_AppendResult(Interp,"\n   FSTD_FieldDefine: Invalid number of transform element, must be 6 \"",(char*)NULL);
-                  return TCL_ERROR;
+                  Tcl_AppendResult(Interp,"GRIB_FieldDefine: Invalid number of transform element, must be 6 \"",(char*)NULL);
+                  return(TCL_ERROR);
                }
                for(j=0;j<6;j++) {
                   Tcl_GetDouble(Interp,list[j],&tra[j]);
@@ -334,10 +348,10 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -352,8 +366,8 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
-                  Tcl_AppendResult(Interp,"\n   GRIB_FieldDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
-                  return TCL_ERROR;
+                  Tcl_AppendResult(Interp,"GRIB_FieldDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
+                  return(TCL_ERROR);
                }
                if (Field->Ref && ref!=Field->Ref) {
                   GeoRef_Destroy(Interp,Field->Ref->Name);
@@ -376,6 +390,81 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                Data_ValGetMatrix(Interp,Field,nidx,0);
             }
+            break;
+            
+         case KEY:
+            if (Objc==1) {
+              
+               obj=Tcl_NewListObj(0,NULL);
+               kiter=grib_keys_iterator_new(head->Handle,key_iterator_filter_flags,NULL);
+               if (!kiter) {
+                  Tcl_AppendResult(Interp,"GRIB_FieldDefine: Unable to initialize key iterator",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+         
+               while(grib_keys_iterator_next(kiter)) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(grib_keys_iterator_get_name(kiter),-1));
+               }
+         
+               grib_keys_iterator_delete(kiter);
+               Tcl_SetObjResult(Interp,obj);
+               return(TCL_OK);
+            }
+            
+            // Check for a list of key/value pair
+            Tcl_ListObjLength(Interp,Objv[++i],&nobj);
+            
+            if (nobj>1) {
+               if (nobj%2) {
+                  Tcl_AppendResult(Interp,"GRIB_FieldDefine: Invalid key/value pairing",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               
+               for(n=0;n<nobj;n+=2) {
+                  Tcl_ListObjIndex(Interp,Objv[i],n,&obj);
+                  key=Tcl_GetString(obj);
+                  Tcl_ListObjIndex(Interp,Objv[i],n+1,&obj);
+                  GRIB_KeySet(Interp,head->Handle,key,obj);
+               }
+            } else {
+               
+               key=Tcl_GetString(Objv[i]);
+               
+               // Check fo type overloading
+               len=(long)key+strlen(key);
+               if (key[0]=='(') {
+                  // Check for specified type
+                  if (key[1]=='S') type=1;   // String
+                  if (key[1]=='I') type=2;   // Integer
+                  if (key[1]=='R') type=3;   // Real
+                  while(*(key++)!=')' && (size_t)key<len);
+               } else {
+                  // Try to get the native key type
+                  grib_get_native_type(head->Handle,key,&type);               
+               }
+
+               if (Objc==2) {
+                  // Only one key, provide value
+                  switch(type) {
+                     case 1: grib_get_string(head->Handle,key,sval,&len);
+                           Tcl_SetObjResult(Interp,Tcl_NewStringObj(sval,-1));
+                           break;
+                           
+                     case 2: grib_get_long(head->Handle,key,&lval);
+                           Tcl_SetObjResult(Interp,Tcl_NewLongObj(lval));
+                           break;
+                           
+                     case 3: 
+                     default:grib_get_double(head->Handle,key,&dval);
+                           Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(dval));
+                           break;
+                  }
+               } else if (Objc==3) {
+                  // A key and a value
+                  GRIB_KeySet(Interp,head->Handle,key,Objv[++i]);
+               }
+            }
+           
             break;
        }
    }
@@ -400,7 +489,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 */
 void GRIB_FieldFree(TData *Data){
 
-   GRIB_Head *head=(GRIB_Head*)Data->Head;
+   TGRIBHeader *head=(TGRIBHeader*)Data->Head;
 
    if (Data) {
       if (head) {
@@ -428,7 +517,7 @@ void GRIB_FieldFree(TData *Data){
  *
  *----------------------------------------------------------------------------
 */
-int GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType){
+int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
 
    long   lval,lval2;
    int    err=0;
@@ -516,9 +605,8 @@ int GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType){
  *
  *----------------------------------------------------------------------------
 */
-int GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor){
+int GRIB_GetData(TGRIBHeader *Head,TDef *Def,int Idx,double Factor){
 
-   int     err=0;
    size_t  i,len;
    double *data;
 
@@ -529,7 +617,7 @@ int GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor){
    if ((grib_get_double_array(Head->Handle,"values",data,&len))!=GRIB_SUCCESS) {
       return(0);
    }
-   err=grib_get_double(Head->Handle,"missingValue",&Def->NoData);
+   grib_get_double(Head->Handle,"missingValue",&Def->NoData);
 
    for(i=0;i<FSIZE3D(Def);i++) {
       if (Factor!=0.0)
@@ -541,9 +629,9 @@ int GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor){
    return(1);
 }
 
-GRIB_Head *GRIB_FieldFind(GRIB_File *File,int DATEV,int IP1,char* NOMVAR) {
+TGRIBHeader *GRIB_FieldFind(TGRIBFile *File,int DATEV,int IP1,char* NOMVAR) {
 
-   GRIB_Head *head=NULL;
+   TGRIBHeader *head=NULL;
    int  h=0;
 
    while(File->Table[h].KEY!=-1) {
@@ -580,19 +668,16 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 
    TData         *field=NULL;
    TDataVector   *uvw=NULL;;
-   GRIB_File     *file=NULL;
-   GRIB_Head     *head,*h;
-   grib_keys_iterator *iter;
+   TGRIBFile     *file=NULL;
+   TGRIBHeader   *head,*h;
 
-   OGRSpatialReferenceH         ref,llref=NULL;;
-   OGRCoordinateTransformationH func;
-
-   int         err=0,idx;
-   long        lval,i,ni=-1,nj=-1,nk=1,inci,incj;
+   int         idx;
+   long        ni=-1,nj=-1,nk=1;
    size_t      len;
-   double      dval;
    char        sval[GRIB_STRLEN];
-   double      mtx[6],inv[6];
+//   grib_keys_iterator *iter;
+//   long        lval
+//   double      dval;
 
   /*Get the file*/
    file=GRIB_FileGet(Interp,File);
@@ -611,13 +696,13 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    }
 
    /*Get dimensions*/
-   err=grib_get_long(head->Handle,"numberOfPointsAlongAParallel",&ni);
-   err=grib_get_long(head->Handle,"numberOfPointsAlongAMeridian",&nj);
+   grib_get_long(head->Handle,"numberOfPointsAlongAParallel",&ni);
+   grib_get_long(head->Handle,"numberOfPointsAlongAMeridian",&nj);
    if (ni==-1) {
-      err=grib_get_long(head->Handle,"numberOfPointsAlongXAxis",&ni);
-      err=grib_get_long(head->Handle,"numberOfPointsAlongYAxis",&nj);
+      grib_get_long(head->Handle,"numberOfPointsAlongXAxis",&ni);
+      grib_get_long(head->Handle,"numberOfPointsAlongYAxis",&nj);
    }
-   err=grib_get_long(head->Handle,"numberOfVerticalCoordinateValues",&nk);
+   grib_get_long(head->Handle,"numberOfVerticalCoordinateValues",&nk);
    nk=nk==0?1:nk;
 
    /*Champs vectoriel ???*/
@@ -683,66 +768,17 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
 //   grib_get_string(head->Handle,"parameterName",sval,&len);
 //   field->Spec->Desc=strdup(sval);
 
-   /*Create grid definition*/
-   err=grib_get_long(head->Handle,"gridDefinition",&i);
-   memset(mtx,0,6*sizeof(double));
-   err=grib_get_double(head->Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
-   err=grib_get_double(head->Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
-
-   if ((ref=GRIB_WKTProjCS(Interp,head->Handle))) {
-      if (OSRIsProjected(ref)) {
-         if ((llref=OSRCloneGeogCS(ref))) {
-            if ((func=OCTNewCoordinateTransformation(llref,ref))) {
-               if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
-                  fprintf(stderr,"(WARNING) GRIB_FieldRead: unable to project transform origin\n");
-               }
-            } else {
-               fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create transform function\n");
-            }
-            OSRDestroySpatialReference(llref);
-         } else {
-            fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create latlon transform\n");
-         }
-         err=grib_get_double(head->Handle,"DxInMetres",&mtx[1]);
-         err=grib_get_double(head->Handle,"DyInMetres",&mtx[5]);
-      } else {
-         err=grib_get_double(head->Handle,"iDirectionIncrementInDegrees",&mtx[1]);
-         err=grib_get_double(head->Handle,"jDirectionIncrementInDegrees",&mtx[5]);
-
-         /*Patch for a GRIB1 inversion*/
-//         if (mtx[3]==90.0) mtx[5]=-mtx[5];
-      }
-
-      /*Stored the direction of increment in other parameters and the i-j test are inversed ... so brainless*/
-      inci=incj=0;
-      err=grib_get_long(head->Handle,"iScansNegatively",&inci);
-      err=grib_get_long(head->Handle,"jScansPositively",&incj);
-      mtx[0]=CLAMPLON(mtx[0]);
-      mtx[1]=inci?-mtx[1]:mtx[1];
-      mtx[5]=incj?mtx[5]:-mtx[5];
-
-      GDALInvGeoTransform(mtx,inv);
-      field->Ref=GeoRef_WKTSetup(ni,nj,nk,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref);
-      GeoRef_Qualify(field->Ref);
-      field->Ref->ZRef.Levels[0]=ZRef_IP2Level(head->IP1,&field->Ref->ZRef.Type);
-
-#ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: Dim      : %i %i %i\n",ni,nj,nk);
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",field->Ref->String);
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
-#endif
-   } else {
-      return(TCL_ERROR);
-   }
-
    GRIB_FieldSet(field);
-   memcpy(field->Head,head,sizeof(GRIB_Head));
+   
+   memcpy(field->Head,head,sizeof(TGRIBHeader));
    if (field->Spec->Desc)
       free(field->Spec->Desc);
 
+   // Create grid definition
+   GRIB_GridGet(Interp,field,ni,nj,nk);
+
    len=GRIB_STRLEN;
    grib_get_string(head->Handle,"name",sval,&len);
-
    field->Spec->Desc=strdup(sval);
 //   field->Spec->Desc=strdup(head->NOMVAR);
 
@@ -790,6 +826,274 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    return(TCL_OK);
 }
 
+int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
+
+   TGRIBHeader *head=(TGRIBHeader*)Field->Head;
+
+   OGRSpatialReferenceH         ref,llref=NULL;;
+   OGRCoordinateTransformationH func;
+
+   long        i,inci,incj;
+   double      mtx[6],inv[6];
+   
+  /*Create grid definition*/   
+   grib_get_long(head->Handle,"gridDefinition",&i);
+   mtx[0]=mtx[1]=mtx[2]=mtx[3]=mtx[4]=mtx[5]=0.0;
+   grib_get_double(head->Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
+   grib_get_double(head->Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
+
+   if ((ref=GRIB_WKTProjCS(Interp,head->Handle))) {
+      if (OSRIsProjected(ref)) {
+         if ((llref=OSRCloneGeogCS(ref))) {
+            if ((func=OCTNewCoordinateTransformation(llref,ref))) {
+               if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
+                  fprintf(stderr,"(WARNING) GRIB_FieldRead: unable to project transform origin\n");
+               }
+            } else {
+               fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create transform function\n");
+            }
+            OSRDestroySpatialReference(llref);
+         } else {
+            fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create latlon transform\n");
+         }
+         grib_get_double(head->Handle,"DxInMetres",&mtx[1]);
+         grib_get_double(head->Handle,"DyInMetres",&mtx[5]);
+      } else {
+         grib_get_double(head->Handle,"iDirectionIncrementInDegrees",&mtx[1]);
+         grib_get_double(head->Handle,"jDirectionIncrementInDegrees",&mtx[5]);
+      }
+
+      // Stored the direction of increment in other parameters and the i-j test are inversed ... so brainless
+      inci=incj=0;
+      grib_get_long(head->Handle,"iScansNegatively",&inci);
+      grib_get_long(head->Handle,"jScansPositively",&incj);
+      CLAMPLON(mtx[0]);
+      mtx[1]=inci?-mtx[1]:mtx[1];
+      mtx[5]=incj?mtx[5]:-mtx[5];
+
+      if (!GDALInvGeoTransform(mtx,inv)) {
+         fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create inverse transform function\n");
+      }
+      Field->Ref=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NK,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref));
+      GeoRef_Qualify(Field->Ref);
+      Field->Ref->ZRef.Levels[0]=ZRef_IP2Level(head->IP1,&Field->Ref->ZRef.Type);
+
+//      if (OSRIsGeographic(ref))  Field->Ref->Type|=GRID_NOXNEG;
+#ifdef DEBUG
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",Field->Ref->String);
+      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
+#endif
+   } else {
+      return(TCL_ERROR);
+   }
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_FieldWrite>
+ * Creation : Fevrier 2015 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Inscrit un enregistrement.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Id>      : Identificateur a donner au fichier
+ *  <Field>   : Champ a ecrire
+ *
+ * Retour     :
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Compress) {
+
+   TGRIBFile   *file;
+   TGRIBHeader *head=(TGRIBHeader*)Field->Head;
+   size_t      i,size;
+   const void *buffer=NULL;   
+   double     *data;
+   
+   // Verifier l'existence du champs
+   if (!Field) {
+      Tcl_AppendResult(Interp,"GRIB_FieldWrite: Invalid field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+  
+    // Verifier l'existence du fichier
+   if (!(file=GRIB_FileGet(Interp,Id))) {
+      return(TCL_ERROR);
+   }
+    
+   // Update data array
+   size=FSIZE2D(Field->Def);
+   if (!(data=(double*)malloc(size*sizeof(double)))) {
+      Tcl_AppendResult(Interp,"GRIB_FieldWrite: Unable to allocate temporary array",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   for(i=0;i<size;i++) {
+      Def_Get(Field->Def,0,i,data[i]);
+   }
+   grib_set_double_array(head->Handle,"values",data,size);
+//   grib_set_long(head->Handle,"bitsPerValue",NPack);
+   free(data);
+
+   /* write the buffer to a file */
+   grib_get_message(head->Handle,&buffer,&size);
+   if(fwrite(buffer,1,size,file->Handle)!=size) {
+      Tcl_AppendResult(Interp,"GRIB_FieldWrite: Could not write field ",(char*)NULL);
+      return(TCL_ERROR);
+   }
+    
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_FieldCreate>
+ * Creation : Fevrier 2015 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Creer un enregistrement grib a partir d'une template.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Name>    : Identificateur du champs
+ *  <Sample>  : Nom de la template
+ *  <NI>      : Dimension en X
+ *  <NJ>      : Dimension en Y
+ *  <NK>      : Dimension en Z
+ *  <Type>    : Type des donnees
+ *
+ * Retour     :
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+TData *GRIB_FieldCreate(Tcl_Interp *Interp,char *Name,char *Sample,int NI,int NJ,int NK,TDef_Type Type){
+
+   TData       *field;
+   TGRIBHeader *head;
+   size_t       len;
+   
+   field=Data_Valid(Interp,Name,NI,NJ,NK,1,Type==TD_Binary?TD_Byte:Type);
+
+   if (!field)
+     return(NULL);
+
+   GRIB_FieldSet(field);
+   
+   // Initialize from template
+   head=(TGRIBHeader*)field->Head;
+   if (!(head->Handle=grib_handle_new_from_samples(0,Sample?Sample:"GRIB1"))) {
+      Tcl_AppendResult(Interp,"GRIB_FieldCreate: Unable to access template ",Sample,(char*)NULL);
+      return(NULL);
+      
+   }
+
+   // Set some default keys
+   grib_set_long(head->Handle,"Ni",field->Def->NI);
+   grib_set_long(head->Handle,"Nj",field->Def->NJ);
+   
+   len=4;grib_set_string(head->Handle,"centre","cwao",&len);
+
+   // Create grid definition
+   GRIB_GridGet(Interp,field,NI,NJ,NK);
+
+   return(field);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GRIB_FieldImport>
+ * Creation : Fevrier 2015 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Importer un FSTD dans un GRIB.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Field>   : Identificateur du champs GRIB
+ *  <RPN>     : Identificateur du champss FSTD
+ *
+ * Retour     :
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
+   
+   TGRIBHeader *head=(TGRIBHeader*)Field->Head;
+   TRPNHeader  *rhead=(TRPNHeader*)RPN->Head;
+   TCoord co;
+   float  xg[4];
+   int    yyyy,mm,dd,h,m,s;
+   size_t len;
+
+   // Copy data
+   Def_Free(Field->Def);
+   Field->Def=Def_Copy(RPN->Def);
+  
+   // Set some parameters
+   grib_set_long(head->Handle,"Ni",RPN->Def->NI);
+   grib_set_long(head->Handle,"Nj",RPN->Def->NJ);
+   
+   System_StampDecode(rhead->DATEO,&yyyy,&mm,&dd,&h,&m,&s);
+   grib_set_long(head->Handle,"dataDate",yyyy*10000+mm*100+dd);
+   grib_set_long(head->Handle,"dataTime",h*100+m);
+   grib_set_long(head->Handle,"stepUnits",1);
+   grib_set_long(head->Handle,"stepRange",rhead->IP2);
+   grib_set_long(head->Handle,"startStep",rhead->IP2);
+   grib_set_long(head->Handle,"endStep",rhead->IP2);
+   
+   // Define grid parameters
+   grib_set_long(head->Handle,"projectionCentreFlag",0);
+   grib_set_long(head->Handle,"iScansNegatively",0);
+   grib_set_long(head->Handle,"jScansPositively",1);
+         
+   switch(RPN->Ref->Grid[0]) {
+      case 'N':
+      case 'S':
+         f77name(cigaxg)(RPN->Ref->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+         RPN->Ref->Project(RPN->Ref,0,0,&co.Lat,&co.Lon,0,1);
+        
+         xg[3]=RPN->Ref->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
+         while(xg[3]<0)    xg[3]+=360;
+         while(xg[3]>360 ) xg[3]-=360;
+         
+         len=19;
+         grib_set_string(head->Handle,"gridType","polar_stereographic",&len);
+         grib_set_double(head->Handle,"latitudeOfFirstGridPointInDegrees",co.Lat);
+         grib_set_double(head->Handle,"longitudeOfFirstGridPointInDegrees",co.Lon);
+         grib_set_double(head->Handle,"LaDInDegrees",60.0);
+         grib_set_double(head->Handle,"DxInMetres",xg[2]);
+         grib_set_double(head->Handle,"DyInMetres",xg[2]);
+         grib_set_double(head->Handle,"orientationOfTheGridInDegrees",xg[3]);
+         break;   
+         
+      case 'L':
+         f77name(cigaxg)(RPN->Ref->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+        
+         xg[3]=RPN->Ref->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
+         while(xg[3]<0)    xg[3]+=360;
+         while(xg[3]>360 ) xg[3]-=360;
+         
+         len=10;
+         grib_set_string(head->Handle,"gridType","regular_ll",&len);
+         grib_set_double(head->Handle,"latitudeOfFirstGridPointInDegrees",xg[0]);
+         grib_set_double(head->Handle,"longitudeOfFirstGridPointInDegrees",xg[1]);
+         grib_set_double(head->Handle,"latitudeOfLastGridPointInDegrees",xg[0]+xg[2]*(RPN->Def->NJ-1));
+         grib_set_double(head->Handle,"longitudeOfLastGridPointInDegrees",xg[1]+xg[3]*(RPN->Def->NI-1));
+         grib_set_double(head->Handle,"jDirectionIncrementInDegrees",xg[2]);
+         grib_set_double(head->Handle,"iDirectionIncrementInDegrees",xg[3]);
+         break;   
+         
+   }
+   return(TCL_OK);
+}
+   
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FieldList>
  * Creation : Janvier 2010 - J.P. Gauthier - CMC/CMOE
@@ -809,11 +1113,11 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
  *
  *----------------------------------------------------------------------------
 */
-int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
+int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
 
-   GRIB_Head    head,*table;
+   TGRIBHeader  head,*table;
    Tcl_Obj     *list,*obj;
-   int          er,err=0,lvtyp,nb;
+   int          err=0,lvtyp,nb;
    size_t       len;
    long         date,time,step,unit,lval,ni=-1,nj=-1,nk=1,type;
    int          idate,itime;
@@ -837,7 +1141,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
 
    table=File->Table;
    if (!File->Table) {
-      File->Table=(GRIB_Head*)calloc(GRIB_TABLESIZE,sizeof(GRIB_Head));
+      File->Table=(TGRIBHeader*)calloc(GRIB_TABLESIZE,sizeof(TGRIBHeader));
    }
 //   grib_count_in_file(NULL,File->Handle,&err);
 //   fprintf(stderr,"----- %i messages\n",err);
@@ -847,30 +1151,27 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
       len=GRIB_STRLEN;
       grib_get_string(head.Handle,"shortName",head.NOMVAR,&len);
 
-      len=GRIB_STRLEN;
-      grib_get_string(head.Handle,"centre",head.CENTER,&len);
-
       /*Check for var if provided*/
       if (!Var || strcmp(Var,head.NOMVAR)==0) {
 
-         er=grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
+         grib_get_long(head.Handle,"GRIBEditionNumber",&lval);
          head.Version=lval;
 
-         er=grib_get_long(head.Handle,"dataDate",&date);
-         er=grib_get_long(head.Handle,"dataTime",&time);
-         er=grib_get_long(head.Handle,"stepUnits",&unit);
-         er=grib_get_long(head.Handle,"stepRange",&step);
+         grib_get_long(head.Handle,"dataDate",&date);
+         grib_get_long(head.Handle,"dataTime",&time);
+         grib_get_long(head.Handle,"stepUnits",&unit);
+         grib_get_long(head.Handle,"stepRange",&step);
          
-         er=grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
-         er=grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
+         grib_get_long(head.Handle,"numberOfPointsAlongAParallel",&ni);
+         grib_get_long(head.Handle,"numberOfPointsAlongAMeridian",&nj);
          if (ni==-1) {
-            er=grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
-            er=grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
+            grib_get_long(head.Handle,"numberOfPointsAlongXAxis",&ni);
+            grib_get_long(head.Handle,"numberOfPointsAlongYAxis",&nj);
          }
-         er=grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
+         grib_get_long(head.Handle,"numberOfVerticalCoordinateValues",&nk);
          nk=nk==0?1:nk;
 
-         err=grib_get_long(head.Handle,"typeOfGeneratingProcess",&type);
+         grib_get_long(head.Handle,"typeOfGeneratingProcess",&type);
          switch(type) {
             case 0: type='A';break;
             case 1: type='I';break;
@@ -961,7 +1262,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var){
          if (nb>=GRIB_TABLESIZE-1) {
             fprintf(stderr,"(WARNING) Number of records higher than table size\n");
          }
-         memcpy(&File->Table[nb],&head,sizeof(GRIB_Head));
+         memcpy(&File->Table[nb],&head,sizeof(TGRIBHeader));
          File->Table[nb+1].KEY=-1;
       }
       nb++;

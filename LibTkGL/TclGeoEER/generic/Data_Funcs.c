@@ -222,7 +222,7 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   return(NULL);
 }
 
-double flipy(TDataDef *Res,TDataDef *MA) {
+double flipy(TDef *Res,TDef *MA) {
 
    double        v;
    unsigned long i,j0,j1,idx0,idx1;
@@ -246,7 +246,7 @@ double flipy(TDataDef *Res,TDataDef *MA) {
    return(0.0);
 }
 
-double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
+double tcount(TDef *Res,TDef *Table,TDef *MB) {
 
    double        v,vb,va;
    unsigned long i,j,idx,idxi,k,nt;
@@ -281,7 +281,7 @@ double tcount(TDataDef *Res,TDataDef *Table,TDataDef *MB) {
    return(0.0);
 }
 
-double fpeel(TDataDef *Res,TDataDef *MA) {
+double fpeel(TDef *Res,TDef *MA) {
 
    double        v,va;
    unsigned long i,j,idx,idxi;
@@ -352,7 +352,7 @@ double fpeel(TDataDef *Res,TDataDef *MA) {
    return(0.0);
 }
 
-double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
+double fkernel(TDef *Res,TDef *MA,TDef *MB) {
 
    double        va,vb,s,w,dw;
    unsigned long i,j,fi,fj,idx,idxf;
@@ -410,7 +410,7 @@ double fkernel(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
    return(0.0);
 }
 
-double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        *vs,va,vb,vc;
    unsigned long i,j,fi,fj,idx;
@@ -461,7 +461,7 @@ double fcentile(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
    return(0.0);
 }
 
-double in(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
+double in(TDef *Res,TDef *MA,TDef *MB) {
 
    double        va,vb,vr;
    unsigned long i,n;
@@ -483,7 +483,7 @@ double in(TDataDef *Res,TDataDef *MA,TDataDef *MB) {
    return(0.0);
 }
 
-double win(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+double win(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        va,vb,vc;
    unsigned long i,j,n;
@@ -505,7 +505,7 @@ double win(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
    return(0.0);
 }
 
-double slut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double va,vb,vc;
    long   i,i0,i1,n,m;
@@ -536,7 +536,7 @@ double slut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
    return(0.0);
 }
 
-double lut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
+double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        va,vb,vc;
    unsigned long i,n,m;
@@ -560,48 +560,48 @@ double lut(TDataDef *Res,TDataDef *MA,TDataDef *MB,TDataDef *MC) {
    return(0.0);
 }
 
-double dslopedeg(TDataDef *Res,TDataDef *Def) {
+double dslopedeg(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DSLOPEDEG));
 }
-double dslope100(TDataDef *Res,TDataDef *Def) {
+double dslope100(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DSLOPE100));
 }
-double daspect(TDataDef *Res,TDataDef *Def) {
+double daspect(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DASPECT));
 }
-double ddxfirst(TDataDef *Res,TDataDef *Def) {
+double ddxfirst(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DDX));
 }
-double ddyfirst(TDataDef *Res,TDataDef *Def) {
+double ddyfirst(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DDY));
 }
-double ddxsecond(TDataDef *Res,TDataDef *Def) {
+double ddxsecond(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DDXX));
 }
-double ddysecond(TDataDef *Res,TDataDef *Def) {
+double ddysecond(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DDYY));
 }
-double ddxysecond(TDataDef *Res,TDataDef *Def) {
+double ddxysecond(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DDXY));
 }
-double dprofcurve(TDataDef *Res,TDataDef *Def) {
+double dprofcurve(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DPCURVE));
 }
-double dtangcurve(TDataDef *Res,TDataDef *Def) {
+double dtangcurve(TDef *Res,TDef *Def) {
 
    return(dcore(Res,Def,DTCURVE));
 }
 
-double darea(TDataDef *Res,TDataDef *Def,int Mode) {
+double darea(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        mx,my;
@@ -631,7 +631,7 @@ double darea(TDataDef *Res,TDataDef *Def,int Mode) {
    return(1.0);
 }
 
-double dangle(TDataDef *Res,TDataDef *Def,int Mode) {
+double dangle(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d,lat[2],lon[2];
@@ -666,7 +666,7 @@ double dangle(TDataDef *Res,TDataDef *Def,int Mode) {
    return(1.0);
 }
 
-double dlat(TDataDef *Res,TDataDef *Def,int Mode) {
+double dlat(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
@@ -695,7 +695,7 @@ double dlat(TDataDef *Res,TDataDef *Def,int Mode) {
    return(1.0);
 }
 
-double dlon(TDataDef *Res,TDataDef *Def,int Mode) {
+double dlon(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
@@ -724,7 +724,7 @@ double dlon(TDataDef *Res,TDataDef *Def,int Mode) {
    return(1.0);
 }
 
-double ddx(TDataDef *Res,TDataDef *Def,int Mode) {
+double ddx(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d;
@@ -753,7 +753,7 @@ double ddx(TDataDef *Res,TDataDef *Def,int Mode) {
    return(1.0);
 }
 
-double ddy(TDataDef *Res,TDataDef *Def,int Mode) {
+double ddy(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d;
@@ -783,7 +783,7 @@ double ddy(TDataDef *Res,TDataDef *Def,int Mode) {
 }
 
 /* Derived form GRASS */
-double dcore(TDataDef *Res,TDataDef *Def,int Mode) {
+double dcore(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx,d;
    double  b[9]={ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -957,7 +957,7 @@ inline double ecdf(double val, double* vals, unsigned int* cums, unsigned long n
    return (double)cums[max]/(double)cums[n-1];
 }
 
-void stat_core(TDataDef *MA,TDataDef *MB) {
+void stat_core(TDef *MA,TDef *MB) {
 
    double va,vb,t,nblok=0;
    double ratio,sum,dif,adif;
@@ -1231,448 +1231,448 @@ void stat_core(TDataDef *MA,TDataDef *MB) {
    if( cy ) free(cy);
 }
 
-double stat_all(TDataDef *MA,TDataDef *MB) {
+double stat_all(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vnb);
 }
 
-double stat_nmse(TDataDef *MA,TDataDef *MB) {
+double stat_nmse(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnmse);
 }
 
-double stat_gmb(TDataDef *MA,TDataDef *MB) {
+double stat_gmb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vgmb);
 }
 
-double stat_gmv(TDataDef *MA,TDataDef *MB) {
+double stat_gmv(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vgmv);
 }
 
-double stat_foex(TDataDef *MA,TDataDef *MB) {
+double stat_foex(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfoex);
 }
 
-double stat_fa2(TDataDef *MA,TDataDef *MB) {
+double stat_fa2(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa2);
 }
 
-double stat_fa5(TDataDef *MA,TDataDef *MB) {
+double stat_fa5(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa5);
 }
 
-double stat_fa10(TDataDef *MA,TDataDef *MB) {
+double stat_fa10(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfa10);
 }
 
-double stat_fb(TDataDef *MA,TDataDef *MB) {
+double stat_fb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfb);
 }
 
-double stat_nad(TDataDef *MA,TDataDef *MB) {
+double stat_nad(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnad);
 }
 
-double stat_fms(TDataDef *MA,TDataDef *MB) {
+double stat_fms(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfms);
 }
 
-double stat_fmsb(TDataDef *MA,TDataDef *MB) {
+double stat_fmsb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfmsb);
 }
 
-double stat_fmsi(TDataDef *MA,TDataDef *MB) {
+double stat_fmsi(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfmsi);
 }
 
-double stat_osf(TDataDef *MA,TDataDef *MB) {
+double stat_osf(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vosf);
 }
 
-double stat_osfb(TDataDef *MA,TDataDef *MB) {
+double stat_osfb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vosfb);
 }
 
-double stat_osfi(TDataDef *MA,TDataDef *MB) {
+double stat_osfi(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vosfi);
 }
 
-double stat_ksp(TDataDef *MA,TDataDef *MB) {
+double stat_ksp(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vksp);
 }
 
-double stat_rank(TDataDef *MA,TDataDef *MB) {
+double stat_rank(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vrank);
 }
 
-double stat_nbeq(TDataDef *MA,TDataDef *MB) {
+double stat_nbeq(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbeq);
 }
 
-double stat_nbgt(TDataDef *MA,TDataDef *MB) {
+double stat_nbgt(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbgt);
 }
 
-double stat_nblt(TDataDef *MA,TDataDef *MB) {
+double stat_nblt(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnblt);
 }
 
-double stat_nbfa(TDataDef *MA,TDataDef *MB) {
+double stat_nbfa(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbfa);
 }
 
-double stat_nbmi(TDataDef *MA,TDataDef *MB) {
+double stat_nbmi(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbmi);
 }
 
-double stat_nbnp(TDataDef *MA,TDataDef *MB) {
+double stat_nbnp(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnbnp);
 }
 
-double stat_aov(TDataDef *MA,TDataDef *MB) {
+double stat_aov(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vaov);
 }
 
-double stat_afn(TDataDef *MA,TDataDef *MB) {
+double stat_afn(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vafn);
 }
 
-double stat_afp(TDataDef *MA,TDataDef *MB) {
+double stat_afp(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vafp);
 }
 
-double stat_ax(TDataDef *MA,TDataDef *MB) {
+double stat_ax(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vax);
 }
 
-double stat_ay(TDataDef *MA,TDataDef *MB) {
+double stat_ay(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vay);
 }
 
-double stat_na(TDataDef *MA,TDataDef *MB) {
+double stat_na(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vna);
 }
 
-double stat_rna(TDataDef *MA,TDataDef *MB) {
+double stat_rna(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vrna);
 }
 
-double stat_mb(TDataDef *MA,TDataDef *MB) {
+double stat_mb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmb);
 }
 
-double stat_me(TDataDef *MA,TDataDef *MB) {
+double stat_me(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vme);
 }
 
-double stat_nmb(TDataDef *MA,TDataDef *MB) {
+double stat_nmb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnmb);
 }
 
-double stat_nme(TDataDef *MA,TDataDef *MB) {
+double stat_nme(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnme);
 }
 
-double stat_mnb(TDataDef *MA,TDataDef *MB) {
+double stat_mnb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmnb);
 }
 
-double stat_mne(TDataDef *MA,TDataDef *MB) {
+double stat_mne(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmne);
 }
 
-double stat_lmne(TDataDef *MA,TDataDef *MB) {
+double stat_lmne(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vlmne);
 }
 
-double stat_lmnb(TDataDef *MA,TDataDef *MB) {
+double stat_lmnb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vlmnb);
 }
 
-double stat_mfb(TDataDef *MA,TDataDef *MB) {
+double stat_mfb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmfb);
 }
 
-double stat_mfe(TDataDef *MA,TDataDef *MB) {
+double stat_mfe(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmfe);
 }
 
-double stat_mre(TDataDef *MA,TDataDef *MB) {
+double stat_mre(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmre);
 }
 
-double stat_maxb(TDataDef *MA,TDataDef *MB) {
+double stat_maxb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxb);
 }
 
-double stat_maxe(TDataDef *MA,TDataDef *MB) {
+double stat_maxe(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxe);
 }
 
-double stat_maxre(TDataDef *MA,TDataDef *MB) {
+double stat_maxre(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxre);
 }
 
-double stat_rmse(TDataDef *MA,TDataDef *MB) {
+double stat_rmse(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vrmse);
 }
 
-double stat_nrmse(TDataDef *MA,TDataDef *MB) {
+double stat_nrmse(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vnrmse);
 }
 
-double stat_corr(TDataDef *MA,TDataDef *MB) {
+double stat_corr(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vcorr);
 }
 
-double stat_covar(TDataDef *MA,TDataDef *MB) {
+double stat_covar(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vcovar);
 }
 
-double stat_varx(TDataDef *MA,TDataDef *MB) {
+double stat_varx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vvarx);
 }
 
-double stat_vary(TDataDef *MA,TDataDef *MB) {
+double stat_vary(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vvary);
 }
 
-double stat_sumx(TDataDef *MA,TDataDef *MB) {
+double stat_sumx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vsumx);
 }
 
-double stat_sumy(TDataDef *MA,TDataDef *MB) {
+double stat_sumy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vsumy);
 }
 
-double stat_avgx(TDataDef *MA,TDataDef *MB) {
+double stat_avgx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vavgx);
 }
 
-double stat_avgy(TDataDef *MA,TDataDef *MB) {
+double stat_avgy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vavgy);
 }
 
-double stat_minx(TDataDef *MA,TDataDef *MB) {
+double stat_minx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vminx);
 }
 
-double stat_miny(TDataDef *MA,TDataDef *MB) {
+double stat_miny(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vminy);
 }
 
-double stat_maxx(TDataDef *MA,TDataDef *MB) {
+double stat_maxx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vmaxx);
 }
 
-double stat_maxy(TDataDef *MA,TDataDef *MB) {
+double stat_maxy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmaxy);
 }
 
-double stat_regb(TDataDef *MA,TDataDef *MB) {
+double stat_regb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vregb);
 }
 
-double stat_rega(TDataDef *MA,TDataDef *MB) {
+double stat_rega(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vrega);
 }
 
-double stat_erra(TDataDef *MA,TDataDef *MB) {
+double stat_erra(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Verra);
 }
 
-double stat_errb(TDataDef *MA,TDataDef *MB) {
+double stat_errb(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Verrb);
 }
 
-double stat_ssx(TDataDef *MA,TDataDef *MB) {
+double stat_ssx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vssx);
 }
 
-double stat_ssy(TDataDef *MA,TDataDef *MB) {
+double stat_ssy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vssy);
 }
 
-double stat_ssxy(TDataDef *MA,TDataDef *MB) {
+double stat_ssxy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vssxy);
 }
 
-double stat_sdevx(TDataDef *MA,TDataDef *MB) {
+double stat_sdevx(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
 
    return(sqrt(Vvarx));
 }
 
-double stat_sdevy(TDataDef *MA,TDataDef *MB) {
+double stat_sdevy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
 
    return(sqrt(Vvary));
 }
 
-double stat_medx(TDataDef *MA,TDataDef *MB) {
+double stat_medx(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmedx);
 }
 
-double stat_medy(TDataDef *MA,TDataDef *MB) {
+double stat_medy(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vmedy);
 }
 
-double stat_nb(TDataDef *MA) {
+double stat_nb(TDef *MA) {
    if (MA)
       stat_core(MA,NULL);
    return(Vnb);
 }
 
-double stat_sdev(TDataDef *MA) {
+double stat_sdev(TDef *MA) {
    if (MA)
       stat_core(MA,NULL);
 
    return(sqrt(Vvarx));
 }
 
-double stat_var(TDataDef *MA) {
+double stat_var(TDef *MA) {
    if (MA)
       stat_core(MA,NULL);
    return(Vvarx);
 }
 
-double stat_med(TDataDef *M) {
+double stat_med(TDef *M) {
 
    int     n,nb,t=0;
    double *v,med=0;
@@ -1696,7 +1696,7 @@ double stat_med(TDataDef *M) {
    return(med);
 }
 
-double stat_unique(TDataDef *M) {
+double stat_unique(TDef *M) {
 
    int     n,nb,uniq=0,t=0;
    double *v;
@@ -1724,7 +1724,7 @@ double stat_unique(TDataDef *M) {
    return(uniq);
 }
 
-double stat_sum(TDataDef *M) {
+double stat_sum(TDef *M) {
 
    double        sum=0,v=0;
    unsigned long i;
@@ -1737,7 +1737,7 @@ double stat_sum(TDataDef *M) {
    return sum;
 }
 
-double stat_min(TDataDef *M) {
+double stat_min(TDef *M) {
 
    double        min=HUGE_VAL,v=0;
    unsigned long i;
@@ -1750,7 +1750,7 @@ double stat_min(TDataDef *M) {
    return min;
 }
 
-double stat_max(TDataDef *M) {
+double stat_max(TDef *M) {
 
    double        max=-HUGE_VAL,v=0;
    unsigned long i;
@@ -1763,7 +1763,7 @@ double stat_max(TDataDef *M) {
    return max;
 }
 
-double stat_avg(TDataDef *M) {
+double stat_avg(TDef *M) {
 
    double        sum=0,v=0;
    unsigned long i,n=0;

@@ -35,6 +35,7 @@
 #ifdef HAVE_URP
 
 #include "tclRADAR.h"
+#include "tclGeoRef.h"
 #include "Projection.h"
 
 static Tcl_HashTable Radar_FileTable;
@@ -314,9 +315,9 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
       th[v]=file->Data.volScan[0]->sweep[v]->elevationAngle;
    }
 
-   file->Ref=GeoRef_RDRSetup(getLatitude(&file->Data),getLongitude(&file->Data),getGroundHeight(&file->Data)+getHornHeight(&file->Data),
+   file->Ref=GeoRef_Find(GeoRef_RDRSetup(getLatitude(&file->Data),getLongitude(&file->Data),getGroundHeight(&file->Data)+getHornHeight(&file->Data),
        file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep,file->Data.binResolutionKM*1000,
-       file->Data.azimuthResolutionDegree,file->Data.volScan[0]->numSweeps,th);
+       file->Data.azimuthResolutionDegree,file->Data.volScan[0]->numSweeps,th));
 
    obj=Tcl_NewListObj(0,NULL);
    for(v=0;v<file->Data.numScans;v++) {

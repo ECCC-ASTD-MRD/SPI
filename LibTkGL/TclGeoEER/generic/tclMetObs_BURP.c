@@ -32,6 +32,7 @@
 #ifdef HAVE_ECBUFR
 #ifdef HAVE_RMN
 
+#include "RPN.h"
 #include "tclMetObs.h"
 
 TCL_DECLARE_MUTEX(MUTEX_BURPFILE)

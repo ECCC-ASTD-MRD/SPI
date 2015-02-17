@@ -15,7 +15,7 @@ respawn=1
 while [[ $respawn -gt 0 ]];
 do
    #----- One can use SPI_DEBUG="valgrind --track-origins=yes --leak-check=full" to debug memory problems
-   ${SPI_DEBUG} ${SPI_LIB}/TclTk/bin/tclsh${TCL_VERSION} "$@"
+   ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/tclsh${TCL_VERSION} "$@"
    code=$?
    
    #----- If exit status is ok (<=0), don't respawn

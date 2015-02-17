@@ -31,6 +31,7 @@
  */
 
 #include "tclOGR.h"
+#include "tclGeoRef.h"
 #include "Data_FF.h"
 #include <sys/types.h>
 #include </usr/include/regex.h>
@@ -122,7 +123,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if (layer->Ref && layer->Ref->String && strlen(layer->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),layer->Ref->String)==0) {
                } else {
                   GeoRef_Destroy(Interp,layer->Ref->Name);
-                  layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                  layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   OGR_LayerClean(layer,-1);
                   layer->Changed=1;
                }
@@ -1908,7 +1909,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    }
    
    layer->File=file;
-   layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
+   layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
    OGR_L_GetExtent(layer->Layer,&env,1);
    GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    return(TCL_OK);
@@ -2140,7 +2141,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
          }
       }
 
-      layer->Ref=GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer));
+      layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
       OGR_L_GetExtent(layer->Layer,&env,1);
       GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
    }
@@ -2549,7 +2550,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
+int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
 
    int           i,j,n=0,p=0,pt,len=-1,rw;
    unsigned int  f;

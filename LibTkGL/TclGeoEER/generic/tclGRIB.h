@@ -28,49 +28,51 @@
 #define GRIB_STRLEN 512
 #define GRIB_TABLESIZE 4096
 
-struct GRIB_File;
+struct TGRIBFile;
 
-typedef struct GRIB_Head {
-   struct GRIB_File *FID;
+typedef struct TGRIBHeader {
+   struct TGRIBFile *FID;
    grib_handle *Handle;
 
    int  Version;
    char NOMVAR[GRIB_STRLEN];
-   char CENTER[GRIB_STRLEN];
    long KEY;
    int  IP1;
    long DATEV;
    long DATEO;
-} GRIB_Head;
+} TGRIBHeader;
 
-typedef struct GRIB_File {
-   char       *Id;
-   char       *Path;
-   char        Mode;
-   FILE       *Handle;
-   long        Size;
-   GRIB_Head  *Table;
-   int         TableNb;
-} GRIB_File;
+typedef struct TGRIBFile {
+   char        *Id;
+   char        *Path;
+   char         Mode;
+   FILE        *Handle;
+   long         Size;
+   TGRIBHeader *Table;
+   int          TableNb;
+} TGRIBFile;
 
 
 int TclGRIB_Init(Tcl_Interp *Interp);
 
 int        GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index);
 int        GRIB_FileClose(Tcl_Interp *Interp,char *Id);
-GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id);
-int        GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File);
+TGRIBFile* GRIB_FileGet(Tcl_Interp *Interp,char *Id);
+int        GRIB_FilePut(Tcl_Interp *Interp,TGRIBFile *File);
 
+TData     *GRIB_FieldCreate(Tcl_Interp *Interp,char *Name,char *Sample,int NI,int NJ,int NK,TDef_Type Type);
 int        GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key);
 void       GRIB_FieldFree(TData *Data);
+int        GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN);
 void       GRIB_FieldSet(TData *Data);
-int        GRIB_FieldList(Tcl_Interp *Interp,GRIB_File *File,int Mode,char *Var);
-GRIB_Head *GRIB_FieldFind(GRIB_File *File,int DATEV,int IP1,char* NOMVAR);
+int        GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var);
+TGRIBHeader *GRIB_FieldFind(TGRIBFile *File,int DATEV,int IP1,char* NOMVAR);
 void       GRIB_HeadCopy(void *To,void *From);
 Vect3d*    GRIB_Grid(TData *Field,void *Proj,int Level);
 
-int     GRIB_GetLevel(GRIB_Head *Head,float *Level,int *LevelType);
-int     GRIB_GetData(GRIB_Head *Head,TDataDef *Def,int Idx,double Factor);
+int     GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK);
+int     GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType);
+int     GRIB_GetData(TGRIBHeader *Head,TDef *Def,int Idx,double Factor);
 
 int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 

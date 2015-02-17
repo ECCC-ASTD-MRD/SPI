@@ -48,7 +48,7 @@
 #define T_BAND  4
 #define T_LAYER 5
 
-int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TData_Type Type,char* Expr);
+int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TDef_Type Type,char* Expr);
 int  Calc_Validate(Tcl_Interp* Interp);
 int  vexpr_parse(void);
 

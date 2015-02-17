@@ -32,8 +32,10 @@
 
 #include <strings.h>
 
+#include "App.h"
 #include "tclGDAL.h"
 #include "Projection.h"
+#include "Data_FF.h"
 
 /*Table contenant la liste des fichiers en memoire*/
 static Tcl_HashTable GDAL_FileTable;
@@ -98,12 +100,13 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
 static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    double         lat,lon,x,y,*table;
-   char           idxid[4][128],*field,imode,itype;
+   char           idxid[4][128],*field;
    const char   **list;
-   int            width=0,height=0,space=0,full=1;
-
-   Tcl_Obj       *obj,*sub;
-   int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd,m;
+   int            width=0,height=0,space=0,full=1,imode;
+   float         *index=NULL;
+   
+   Tcl_Obj       *obj,*sub,*item=NULL;
+   int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd,m,npos;
    double         c0,c1,a;
    TData         *data;
    TDataSpec     *spec;
@@ -111,9 +114,11 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    GDAL_Band     *band,*comb,*bandt;
    TObs          *obs;
    GDALDataType   type;
+   Vect3d         *pos;
 
-   static CONST char *moderas[] = { "NEAREST","LINEAR","CUBIC","NORMALIZED_CONSERVATIVE","CONSERVATIVE","MAXIMUM","MINIMUM","SUM","AVERAGE","AVERAGE_VARIANCE","AVERAGE_SQUARE","NORMALIZED_COUNT","COUNT","LENGTH_CONSERVATIVE","LENGTH_ALIASED","LENGTH_NORMALIZED_CONSERVATIVE","VECTOR_AVERAGE,","NOP","ACCUM","BUFFER",NULL };
-   static CONST char *modeogr[] = { "FAST","WITHIN","INTERSECT","CONSERVATIVE","NORMALIZED_CONSERVATIVE","ALIASED","POINT_CONSERVATIVE","LENGTH_CONSERVATIVE","LENGTH_NORMALIZED_CONSERVATIVE","LENGTH_ALIASED",NULL };
+   extern const char *TDef_InterpVString[];
+   extern const char *TDef_InterpRString[];
+
    static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
    static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
    enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
@@ -149,12 +154,12 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
             type=GDALGetDataTypeByName(Tcl_GetString(Objv[6]));
-            if (!(band->Def=DataDef_New(width,height,1,space,GDAL_Type[type]))) {
+            if (!(band->Def=Def_New(width,height,1,space,GDAL_Type[type]))) {
                Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Unable to allocate band",(char*)NULL);
                return(TCL_ERROR);
             }
          } else {
-            band->Def=DataDef_New(0,0,0,0,TD_Unknown);
+            band->Def=Def_New(0,0,0,0,TD_Unknown);
          }
          break;
 
@@ -229,7 +234,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field] [multiple]");
                return(TCL_ERROR);
             }
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],modeogr,"mode",0,&n)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",0,&imode)!=TCL_OK) {
                return(TCL_ERROR);
             }
             field=NULL;
@@ -247,16 +252,11 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   return(TCL_ERROR);
                }
             }
-            imode=modeogr[n][0];
-            itype='A';
-            if (imode=='L') {
-               imode=modeogr[n][7];
-               itype='L';
-            } else if (imode=='P') {
-               imode=modeogr[n][6];
-               itype='P';
+
+            if (!(nk=Def_GridInterpOGR(band->Def,band->Ref,layer,layer->Ref,imode,1,field,x,m,index))) {
+               Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+               return(TCL_ERROR);             
             }
-            return(Data_GridOGR(Interp,band->Def,band->Ref,layer,imode,itype,1,field,x,m));
          }
 
          /*Interpolate a field*/
@@ -307,7 +307,10 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                   obj=Objv[7];
                }
                FSTD_FieldSetTo(field0,field1);
-               return(Data_GridConservative(Interp,field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
+               if (!Def_GridInterpConservative(field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj)) {
+                  Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+                  return(TCL_ERROR);
+               }
             } else if (n>=5 && n<=16) {
                if (Objc!=5 && Objc!=6) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Final]");
@@ -328,12 +331,12 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          comb=GDAL_BandGet(Tcl_GetString(Objv[3]));
          if (comb) {
             if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&imode)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
 
-            if (n==3 || n==4) {
+            if (imode==IR_CONSERVATIVE || imode==IR_NORMALIZED_CONSERVATIVE) {
                if (Objc>8 || Objc<6) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Split] [Final] [Index list variable]");
                   return(TCL_ERROR);
@@ -343,16 +346,42 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
                nj=1;
                obj=NULL;
+               index=NULL;
                if (Objc>6) {
                   if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
                      obj=Objv[6];
                   }
                }
+               
                if (Objc>7) {
                   obj=Objv[7];
                }
-               return(Data_GridConservative(Interp,band->Ref,band->Def,comb->Ref,comb->Def,Tcl_GetString(Objv[4])[0],nj,ni,obj));
-            } else if (n>=5 && n<=19) {
+               
+               // Check for index array
+               if (obj) {
+                  item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
+                  if (!item) {
+                     // Got an empty variable, will fill it with index
+                     item=Tcl_NewByteArrayObj(NULL,band->Def->NIJ*100*sizeof(float));
+                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                     index[0]=DEF_INDEX_EMPTY;
+                     obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                  } else {
+                     // Got a filled variable, will use it's index
+                     obj=NULL;
+                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);                        
+                  }
+               }
+
+               if (!(nk=Def_GridInterpConservative(band->Ref,band->Def,comb->Ref,comb->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
+                  Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               
+               // Make index object persistent and of the right size
+               if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
+               
+            } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"bandto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -374,11 +403,11 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                         }
                         table[k]=band->Def->NoData;
                         if (nk!=band->Def->NK) {
-                           band->Def=DataDef_Resize(band->Def,band->Def->NI,band->Def->NJ,nk);
+                           band->Def=Def_Resize(band->Def,band->Def->NI,band->Def->NJ,nk);
                            for(k=0;k<FSIZE3D(band->Def);k++) {
                               Def_Set(band->Def,0,k,0);
                            }
-                           GeoRef_Resize(band->Ref,band->Def->NI,band->Def->NJ,nk,band->Ref->ZRef.Type,band->Ref->ZRef.Levels);
+                           GeoRef_Find(GeoRef_Resize(band->Ref,band->Def->NI,band->Def->NJ,nk,band->Ref->ZRef.Type,band->Ref->ZRef.Levels));
                         }
                      }
                   }
@@ -386,12 +415,21 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                if (Objc==7) {
                   Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                }
-               code=Data_GridAverage(Interp,band->Ref,band->Def,comb->Ref,comb->Def,table,bandt?bandt->Def:NULL,n,ni);
-               if (table)
-                  free(table);
-               return(code);
+               code=Def_GridInterpAverage(band->Ref,band->Def,comb->Ref,comb->Def,table,bandt?bandt->Def:NULL,imode,ni);
+               
+               if (table) free(table);
+               if (!code) {
+                  Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+                  return(TCL_ERROR);
+               } 
+               return(TCL_OK);
             } else {
-               return(Data_GridInterpolate(Interp,Objv[4]?Tcl_GetString(Objv[4])[0]:'L',band->Ref,band->Def,comb->Ref,comb->Def));
+               if (!Def_GridInterp(band->Ref,band->Def,comb->Ref,comb->Def,Objv[4]?Tcl_GetString(Objv[4])[0]:'L')) {
+                  Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+                  return(TCL_ERROR);
+                  break;                     
+               }
+               return(TCL_OK);
             }
             break;
          }
@@ -421,23 +459,29 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                default:  id=1;
             }
 
-            if (FFKrigging(band->Ref,band->Def,obs,c0,c1,a,id,n)) {
-               return(TCL_OK);
+            if ((pos=Obs_Grid(band->Ref,obs,&npos,n))) {
+               if (!FFKrigging(band->Ref,band->Def,pos,npos,c0,c1,a,id)) {
+                  Tcl_AppendResult(Interp,"Obs krigging failed",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               free(pos);
             } else {
-               Tcl_AppendResult(Interp,"Krigging failed",(char*)NULL);
+               Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
                return(TCL_ERROR);
             }
-            break;
          }
 
          /* If we get here, it has to be a NOP or ACCUM*/
          if (Objc>4) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&n)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
-         if (n==16 || n==17 || n==18) {
-            return(Data_GridAverage(Interp,band->Ref,band->Def,NULL,NULL,NULL,NULL,n,1));
+         if (n==IR_NOP || n==IR_ACCUM || n==IR_BUFFER) {
+            if (!Def_GridInterpAverage(band->Ref,band->Def,NULL,NULL,NULL,NULL,n,1)) {
+               Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+               return(TCL_ERROR);
+            }           
          } else {
             Tcl_AppendResult(Interp,"invalid data type",(char*)NULL);
             return(TCL_ERROR);
@@ -521,7 +565,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          Tcl_GetIntFromObj(Interp,Objv[4],&x0);
          Tcl_GetIntFromObj(Interp,Objv[5],&y0);
 
-         DataDef_Tile(band->Def,comb->Def,x0,y0);
+         Def_Tile(band->Def,comb->Def,x0,y0);
          return(TCL_OK);
          break;
 
@@ -737,7 +781,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
    }
 
-   return TCL_OK;
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -894,7 +938,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
          GDAL_BandDestroy(Interp,Name);
       } else {
          if (!Def && band->Def) {
-            DataDef_Free(band->Def);
+            Def_Free(band->Def);
             band->Def=NULL;
          }
          return(band);
@@ -910,7 +954,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
    memcpy(&band->Tex,&Band->Tex,sizeof(TGeoTex));
 
    if (Def) {
-      band->Def=DataDef_Copy(Band->Def);
+      band->Def=Def_Copy(Band->Def);
       if (!band->Def) {
          Tcl_AppendResult(Interp,"\n   GDAL_BandCopy : Unable to allocate data definition",(char*)NULL);
          return(NULL);
@@ -968,7 +1012,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
       if (band->Stat)      Data_StatFree(band->Stat);
       if (band->Tag)       Tcl_DecrRefCount(band->Tag);
       if (band->GCPs)      free(band->GCPs);
-      if (band->Def)       DataDef_Free(band->Def);
+      if (band->Def)       Def_Free(band->Def);
       if (band->Ref)       GeoRef_Destroy(Interp,band->Ref->Name);
 
       free(band);
@@ -1612,8 +1656,10 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       // Y axis is inverted so build the transform accordingly
       tran[0]=xorig;tran[1]=xcell;tran[2]=0.0;
       tran[3]=ny*ycell+yorig;tran[4]=0.0;tran[5]=-ycell;
-      GDALInvGeoTransform(tran,inv);
-      ref=GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
+      if (!GDALInvGeoTransform(tran,inv)) {
+         fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+      }
+      ref=GeoRef_Find(GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL));
    } else {
       projdef=(char*)GDALGetProjectionRef(Set);
       
@@ -1621,7 +1667,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       if (GCPs) {
          /*If there are Ground Control Points*/
          projdef=(char*)GDALGetGCPProjection(Set);
-         ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
+         ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
 #ifdef DEBUG
          fprintf(stdout,"(DEBUG) GGDAL_GeoRef: Using GCPs to get transform\n");
@@ -1646,7 +1692,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       } else if (meta && 0) {
 //GDALExtractRPCInfo(meta,&rpcinfo)
          /*Get the transform from RPCInfo*/
-         ref=GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL);
+         ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,1,0,NULL,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
 #ifdef DEBUG
          fprintf(stdout,"(DEBUG) GDAL_GeoRef: Using RPC Info to get transform\n");
@@ -1656,8 +1702,10 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          }
       } else {
          GDALGetGeoTransform(Set,tran);
-         GDALInvGeoTransform(tran,inv);
-         ref=GeoRef_WKTSetup(Nx,Ny,1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL);
+         if (!GDALInvGeoTransform(tran,inv)) {
+            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+         }
+         ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,1,LVL_UNDEF,NULL,NULL,0,0,0,0,projdef,tran,inv,NULL));
       }
    }
 

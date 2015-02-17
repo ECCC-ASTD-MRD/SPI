@@ -4,17 +4,17 @@ export ORDENV_PLAT=${ORDENV_PLAT:=`uname -s`_`uname -m`}
 export TCL_VERSION=8.6
 
 export SPI_MAJOR=7
-export SPI_MINOR=8
-export SPI_PATCHLEVEL=1
+export SPI_MINOR=9
+export SPI_PATCHLEVEL=0
 export SPI_STATE=""
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
 export SPI_PATH
-export SPI_LIB=${SPI_PATH}/lib/${ORDENV_PLAT}
-export LD_LIBRARY_PATH=${SPI_LIB}:${SPI_LIB}/TclTk/lib:$LD_LIBRARY_PATH
-export TCLLIBPATH="${SPI_LIB} ${SPI_LIB}/TclTk/lib ${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION} ${SPI_LIB}/TclTk/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
-export TCL_LIBRARY="${SPI_LIB}/TclTk/lib/tcl${TCL_VERSION}"
+export SPI_LIB=${SPI_LIB:=${SPI_PATH}/lib/${ORDENV_PLAT}}
+export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
+export TCLLIBPATH="${SPI_LIB}/lib ${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
+export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
 
 #----- GDB data
 if [[ ${GDB_PATH} = "" ]] ; then
@@ -23,15 +23,18 @@ if [[ ${GDB_PATH} = "" ]] ; then
 fi
 
 #----- GDAL data
-export GDAL_DATA=${SPI_PATH}/share/gdal
+export GDAL_DATA=${SPI_LIB}/share/gdal
 export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
+#----- PROJ4 data
+export PROJ_LIB=${SPI_LIB}/share/proj
+
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
 if [ -z $AFSISIO ]; then 
-   export MA_TABLEBURP_PERSONNELLE=${SPI_PATH}/share/rmn/table_b_bufr
+   export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
 fi
 
 #----- Force GRIB API Tables
-export GRIB_TEMPLATE_PATH=${SPI_PATH}/share/grib/templates
-export GRIB_DEFINITION_PATH=${SPI_PATH}/share/grib/definitions
+export GRIB_SAMPLES_PATH=${SPI_LIB}/share/grib_api/samples
+export GRIB_DEFINITION_PATH=${SPI_LIB}/share/grib_api/definitions

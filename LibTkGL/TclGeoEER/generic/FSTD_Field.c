@@ -34,8 +34,8 @@
 #ifdef HAVE_RMN
 
 #include "tclFSTD.h"
+#include "tclGeoRef.h"
 #include "Projection.h"
-#include "EZTile.h"
 #include "ZRefInterp.h"
 
 TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
@@ -47,7 +47,7 @@ Tcl_Obj *FSTD_HIDELIST=NULL;
  * Nom      : <FSTD_TypeCheck>
  * Creation : Mars 2009 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Determiner le type (TData_Type) de donnees RPN.
+ * But      : Determiner le type (TDef_Type) de donnees RPN.
  *
  * Parametres   :
  *  <Type>      : DATYP
@@ -60,7 +60,7 @@ Tcl_Obj *FSTD_HIDELIST=NULL;
  *  16 bit integer don't exist in RPN, only 32bit, 64 bit ???
  *----------------------------------------------------------------------------
 */
-TData_Type FSTD_TypeCheck(int Type,int Size) {
+TDef_Type FSTD_TypeCheck(int Type,int Size) {
 
    switch(Type) {
 //      case 0: Type=TD_Binary;                                                          break;  
@@ -92,15 +92,15 @@ TData_Type FSTD_TypeCheck(int Type,int Size) {
 */
 void FSTD_FieldSet(TData *Data){
 
-   FSTD_Head *head=NULL;
+   TRPNHeader *head=NULL;
 
    if (Data->Head && Data->Free && Data->Set!=FSTD_FieldSet)
       Data->Free(Data);
 
    if (!Data->Head) {
-      head=(FSTD_Head*)malloc(sizeof(FSTD_Head));
+      head=(TRPNHeader*)malloc(sizeof(TRPNHeader));
    } else {
-      head=(FSTD_Head*)Data->Head;
+      head=(TRPNHeader*)Data->Head;
    }
 
    /*Initialiser les parametres de definition du champs*/
@@ -109,7 +109,7 @@ void FSTD_FieldSet(TData *Data){
       head->IG2=0;
       head->IG3=0;
       head->IG4=0;
-      head->FID=NULL;
+      head->File=NULL;
       head->KEY=-1;
       head->DATEO=0;
       head->DATEV=0;
@@ -134,7 +134,7 @@ void FSTD_FieldSet(TData *Data){
 }
 
 void FSTD_HeadCopy(void *To,void *From) {
-   memcpy((FSTD_Head*)To,(FSTD_Head*)From,sizeof(FSTD_Head));
+   memcpy((TRPNHeader*)To,(TRPNHeader*)From,sizeof(TRPNHeader));
 }
 
 int FSTD_FieldSubBuild(TData *Field) {
@@ -148,7 +148,7 @@ int FSTD_FieldSubBuild(TData *Field) {
       
       // Allocate subgrid array ans set index 0 to supergrid
       if (!Field->SDef) {
-         Field->SDef=(TDataDef**)calloc((Field->Ref->NbId+1),sizeof(TDataDef*));
+         Field->SDef=(TDef**)calloc((Field->Ref->NbId+1),sizeof(TDef*));
       }
       if (Field->SDef) {
          Field->SDef[0]=Field->Def;
@@ -158,17 +158,17 @@ int FSTD_FieldSubBuild(TData *Field) {
             c_ezgprm(Field->Ref->Ids[i],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
 
             if (Field->SDef[i])
-               DataDef_Free(Field->SDef[i]);
+               Def_Free(Field->SDef[i]);
 
             // Allocate a container
-            if ((Field->SDef[i]=DataDef_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
+            if ((Field->SDef[i]=Def_New(ni,nj,Field->Def->NK,-Field->Def->NC,Field->Def->Type))) {
 
                // Point to subgrid data within global data array
                for(c=0;c<Field->Def->NC;c++) {
                   Field->SDef[i]->Idx=dij;
                   Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
                   Field->SDef[i]->Level=Field->Def->Level;
-                  Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TData_Size[Field->Def->Type]];
+                  Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TDef_Size[Field->Def->Type]];
                }
                // Increment after global grid
                dij+=ni*nj;
@@ -253,20 +253,20 @@ void FSTD_Project(Projection *Proj,Vect3d *Grid,unsigned long Nb) {
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldReadComp(FSTD_Head *Head,float **Ptr,char *Var,int Grid,int Force) {
+int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force) {
 
    int key=0,ni=0,nj=0,nk=0;
 
    if (Var && (!*Ptr || Force)) {
       if (Grid==1) {
          // Look for corresponding time and if not use any time
-         if ((key==cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,"",Head->IG1,Head->IG2,Head->IG3,"",Var))<=0) {
-            key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
+         if ((key==cs_fstinf(Head->File->Id,&ni,&nj,&nk,Head->DATEV,"",Head->IG1,Head->IG2,Head->IG3,"",Var))<=0) {
+            key=cs_fstinf(Head->File->Id,&ni,&nj,&nk,-1,"",Head->IG1,Head->IG2,Head->IG3,"",Var);
          }
       } else if (Grid==0) {
-         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
+         key=cs_fstinf(Head->File->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,Head->IP1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
       } else {
-         key=cs_fstinf(Head->FID->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,-1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
+         key=cs_fstinf(Head->File->Id,&ni,&nj,&nk,Head->DATEV,Head->ETIKET,-1,Head->IP2,Head->IP3,Head->TYPVAR,Var);
       }
 
       if (key<0) {
@@ -309,7 +309,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
       free(Field->Ref->ZRef.Levels);
 
    Field->Ref->ZRef.Levels=NULL;
-   Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp((FSTD_Head*)Field->Head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
+   Field->Ref->ZRef.LevelNb=FSTD_FieldReadComp((TRPNHeader*)Field->Head,&Field->Ref->ZRef.Levels,Field->Spec->Extrude,1,0);
 
    // If we don't find any level definition, use level index
    if (!Field->Ref->ZRef.Levels) {
@@ -342,14 +342,14 @@ int FSTD_FieldReadVLevels(TData *Field) {
 */
 int FSTD_FieldReadMesh(TData *Field) {
 
-   FSTD_Head *head=(FSTD_Head*)Field->Head;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
    int        key,ni,nj,nk,nijk=0;
 
    if (!Field->Ref || !(Field->Ref->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
       return(0);
 
-   if ((!Field->Ref->Lat || !Field->Ref->Lon) && head->FID) {
-      if (FSTD_FileSet(NULL,head->FID)<0) {
+   if ((!Field->Ref->Lat || !Field->Ref->Lon) && head->File) {
+      if (FSTD_FileSet(NULL,head->File)<0) {
          return(0);
       }
 
@@ -360,7 +360,7 @@ int FSTD_FieldReadMesh(TData *Field) {
 
             /* Lire le champs d'indexes*/
             if (!Field->Ref->Idx) {
-               key=cs_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
+               key=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
                if (key < 0) {
                   fprintf(stderr,"(ERROR) FSTD_ReadMesh: Could not find index field %s (c_fstinf failed)","##");
                   return(0);
@@ -402,7 +402,7 @@ int FSTD_FieldReadMesh(TData *Field) {
             FSTD_FieldReadVLevels(Field);
             break;
       }
-      FSTD_FileUnset(NULL,head->FID);
+      FSTD_FileUnset(NULL,head->File);
    }
 
    // Make sure longitude go from -180 - 180, unless WKT grid
@@ -433,7 +433,7 @@ int FSTD_FieldReadMesh(TData *Field) {
 */
 Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
-   FSTD_Head *head=(FSTD_Head*)Field->Head;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
    Coord         coord;
    int           i,j,k;
    unsigned long idx;
@@ -460,15 +460,15 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       }
    }
 
-   if (Field->Spec->Topo && head->FID) {
-      if (FSTD_FileSet(NULL,head->FID)<0) {
+   if (Field->Spec->Topo && head->File) {
+      if (FSTD_FileSet(NULL,head->File)<0) {
          return(NULL);
       }
-      EZLock_RPNField();
-      idx=c_fstinf(head->FID->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+      RPN_FieldLock();
+      idx=c_fstinf(head->File->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
       if (idx<0) {
          fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-         idx=c_fstinf(head->FID->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
+         idx=c_fstinf(head->File->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
       }
       if (idx<0) {
          fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (%s)\n",Field->Spec->Topo);
@@ -476,8 +476,8 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
          if (gz)  c_fstluk(gz,idx,&i,&j,&k);
       }
-      EZUnLock_RPNField();
-      FSTD_FileUnset(NULL,head->FID);
+      RPN_FieldUnlock();
+      FSTD_FileUnset(NULL,head->File);
    }
 
    /*Precalculer les tableaux de particules dans l'espace*/
@@ -543,8 +543,8 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 */
 Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
-   FSTD_Head *head=(FSTD_Head*)Field->Head;
-   TDataDef  *def;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
+   TDef  *def;
    Coord      coord;
    float     *lat=NULL,*lon=NULL,*gz=NULL,flat,flon,fele;
    int        i,j,idx,ni,nj,nk,ip1;
@@ -592,14 +592,14 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          return(NULL);
       }
 
-      FSTD_FileSet(NULL,head->FID);
+      FSTD_FileSet(NULL,head->File);
       
       for (j=0;j<def->NJ;j++) {
 
          /*Essayer de recuperer le modulateur (GZ)*/
-         if (head->FID && Field->Spec->Topo) {
+         if (head->File && Field->Spec->Topo) {
             ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type,DEFAULT);
-            idx=cs_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+            idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->ZRef.Levels[j],ip1);
@@ -615,9 +615,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*def->NI+i;
             if (gz && Field->Ref->RefFrom && Field->Ref->RefFrom->Ids[0]>-1) {
-               EZLock_RPNInt();
+               RPN_IntLock();
                c_gdllsval(Field->Ref->RefFrom->Ids[0],&fele,gz,&flat,&flon,1);
-               EZUnLock_RPNInt();
+               RPN_IntUnlock();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             }
             Vect_Init(Field->Ref->Pos[Level][idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
@@ -627,7 +627,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       if (Proj) {
          ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(def));
       }
-      FSTD_FileUnset(NULL,head->FID);
+      FSTD_FileUnset(NULL,head->File);
    } else {
       
       if (Field->Ref->Ids && Field->Ref->Ids[0]>-1) {
@@ -640,20 +640,20 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             free(Field->Ref->Pos[Level]);
             return(Field->Ref->Pos[Level]=NULL);
          }
-         EZLock_RPNInt();
+         RPN_IntLock();
          c_gdll(Field->Ref->Ids[0],lat,lon);
-         EZUnLock_RPNInt();
+         RPN_IntUnlock();
       }
 
       /*Essayer de recuperer le GZ*/
-      if (Field->Spec->Topo && head->FID && FSTD_FileSet(NULL,head->FID)>=0) {
+      if (Field->Spec->Topo && head->File && FSTD_FileSet(NULL,head->File)>=0) {
 
          ip1=ZRef_Level2IP(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type,DEFAULT);
          if (Field->Spec->Topo) {
-            idx=cs_fstinf(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
+            idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
-               idx=cs_fstinf(head->FID->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
+               idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
             }
             if (!tile && (ni!=def->NI || nj!=def->NJ)) {
                idx=-1;
@@ -666,9 +666,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->Ref->ZRef.Levels[Level],ip1);
          } else {
             if (!gz) gz=(float*)malloc(def->NI*def->NJ*nk*sizeof(float));
-            if (gz)  cs_fstlukt(gz,head->FID->Id,idx,&tile,&ni,&nj,&nk);
+            if (gz)  cs_fstlukt(gz,head->File->Id,idx,&tile,&ni,&nj,&nk);
          }
-         FSTD_FileUnset(NULL,head->FID);
+         FSTD_FileUnset(NULL,head->File);
       }
 
       coord.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type)*Field->Spec->TopoFactor;
@@ -741,20 +741,20 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
  */
 int FSTD_DecodeRPNLevelParams(TData *Field) {
 
-   FSTD_File *fid;
-   int        i=1;
+   TRPNFile *fid;
+   int       i=1;
 
    if (Field->Ref->ZRef.Type==LVL_UNDEF || Field->Ref->ZRef.Type==LVL_SIGMA || Field->Ref->ZRef.Type==LVL_HYBRID || Field->Ref->ZRef.Type==LVL_ETA) {
       if (Field->Ref->ZRef.PTop==0.0) {
-         if ((fid=((FSTD_Head*)Field->Head)->FID)) {
+         if ((fid=((TRPNHeader*)Field->Head)->File)) {
             i=0;
 
             if (FSTD_FileSet(NULL,fid)<0)
                return(i);
 
-            EZLock_RPNField();
+            RPN_FieldLock();
             i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
-            EZUnLock_RPNField();
+            RPN_FieldUnlock();
 
             FSTD_FileUnset(NULL,fid);
          }
@@ -791,8 +791,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    char        *from,*to;
    int          i,ip1;
    TZRefInterp *interp;
-   FSTD_Head   *headto=(FSTD_Head*)FieldTo->Head;
-   FSTD_Head   *headfrom=(FSTD_Head*)FieldFrom->Head;
+   TRPNHeader   *headto=(TRPNHeader*)FieldTo->Head;
+   TRPNHeader   *headfrom=(TRPNHeader*)FieldFrom->Head;
 
    if (FieldFrom->Def->Type!=TD_Float32 || FieldTo->Def->Type!=TD_Float32) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid Field data type, must be Float32",(char*)NULL);
@@ -893,7 +893,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    for(i=0;i<3;i++) {
       if (FieldFrom->Def->Data[i]) {
          if (!FieldTo->Def->Data[i]) {
-            FieldTo->Def->Data[i]=(char*)calloc(FSIZE3D(FieldTo->Def),TData_Size[FieldTo->Def->Type]);
+            FieldTo->Def->Data[i]=(char*)calloc(FSIZE3D(FieldTo->Def),TDef_Size[FieldTo->Def->Type]);
             if (!FieldTo->Def->Data[i]) {
                Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Not enough memory to allocate field",(char*)NULL);
                Tcl_MutexUnlock(&MUTEX_FSTDVI);
@@ -933,9 +933,9 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FieldTo->Ref->NId=FieldFrom->Ref->NId;
    }
 
-   ip1=((FSTD_Head*)FieldTo->Head)->IP1;
-   memcpy(headto,headfrom,sizeof(FSTD_Head));
-   ((FSTD_Head*)FieldTo->Head)->IP1=ip1;
+   ip1=((TRPNHeader*)FieldTo->Head)->IP1;
+   memcpy(headto,headfrom,sizeof(TRPNHeader));
+   ((TRPNHeader*)FieldTo->Head)->IP1=ip1;
 
    if (FieldTo->Stat) {
       Data_StatFree(FieldTo->Stat);
@@ -964,8 +964,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 */
 void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
 
-   FSTD_Head *headto=(FSTD_Head*)FieldTo->Head;
-   FSTD_Head *headfrom=(FSTD_Head*)FieldFrom->Head;
+   TRPNHeader *headto=(TRPNHeader*)FieldTo->Head;
+   TRPNHeader *headfrom=(TRPNHeader*)FieldFrom->Head;
 
    /*Initialiaser les valeurs de descriptions du champs destination*/
    if (FieldTo->Stat) {
@@ -973,7 +973,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
       FieldTo->Stat=NULL;
    }
 
-   headto->FID=headfrom->FID;
+   headto->File=headfrom->File;
    headto->DATEO=headfrom->DATEO;
    headto->DATEV=headfrom->DATEV;
    headto->DEET=headfrom->DEET;
@@ -1001,7 +1001,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
  *  <Interp>   : Interpreteur TCL
  *  <FieldTo>  : Champs de destination
  *  <FieldFrom>: Champs d'origine
- *  <Mode>     : Mode d'interpolation (0=NEAREST, 1=LINEAR, 6=CUBIC, autre=INTERPDEGREE du champs FieldTo)
+ *  <Mode>     : Mode d'interpolation (0=NEAREST, 1=LINEAR, 2=CUBIC, autre=INTERPDEGREE du champs FieldTo)
  *
  * Retour:
  *  <TCL_...> : Code d'erreur de TCL.
@@ -1013,7 +1013,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
 int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode){
 
    double     val,lat,lon,di,dj;
-   int        ez=1,ok=-1,idx,n,i,j,k;
+   int        ez=1,ok=-1,idx,n,i,j,k,idxt;
    void      *pf0,*pt0,*pf1,*pt1;
 
    if (!FieldFrom || !FieldFrom->Ref) {
@@ -1026,7 +1026,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
 
    /*Verifier la compatibilite entre source et destination*/
-   if (!DataDef_Compat(FieldTo->Def,FieldFrom->Def)) {
+   if (!Def_Compat(FieldTo->Def,FieldFrom->Def)) {
       FieldTo->Ref=GeoRef_Resize(FieldTo->Ref,FieldTo->Def->NI,FieldTo->Def->NJ,FieldTo->Def->NK,FieldFrom->Ref->ZRef.Type,FieldFrom->Ref->ZRef.Levels);
    }
    FieldTo->Ref->ZRef.Type=FieldFrom->Ref->ZRef.Type;
@@ -1045,7 +1045,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
    /*Use ezscint*/
    if (ez) {
-      EZLock_RPNInt();
+      RPN_IntLock();
       if (Mode==0) {
          c_ezsetopt("INTERP_DEGREE","NEAREST");
       } else if (Mode==1) {
@@ -1065,7 +1065,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate:  EZSCINT internal error, could not define gridset",(char*)NULL);
-         EZUnLock_RPNInt();
+         RPN_IntUnlock();
          return(TCL_ERROR);
       }
 
@@ -1093,12 +1093,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
         }
         FieldTo->Ref->ZRef.Levels[k]=FieldFrom->Ref->ZRef.Levels[k];
       }
+      RPN_IntUnlock();
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
-         EZUnLock_RPNInt();
          return(TCL_ERROR);
       }
-      EZUnLock_RPNInt();
   } else {
       for(i=0;i<FieldTo->Def->NI;i++) {
          for(j=0;j<FieldTo->Def->NJ;j++) {
@@ -1110,7 +1109,12 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                n=0;
                while(FieldTo->Def->Data[n]) {
                   if (ok) {
-                     val=VertexVal(FieldFrom->Ref,FieldFrom->Def,n,di,dj,k);
+                     if (Mode==0) {
+                        idxt=ROUND(dj)*FieldFrom->Def->NI+ROUND(di);
+                        Def_GetMod(FieldFrom->Def,idxt,val);
+                     } else {
+                        val=VertexVal(FieldFrom->Ref,FieldFrom->Def,n,di,dj,k);
+                     }                       
                   } else {
                      val=FieldTo->Def->NoData;
                   }
@@ -1156,8 +1160,8 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    double delay,dt,v0,v1,vr;
 
    TData     *field;
-   FSTD_Head *head0=(FSTD_Head*)Field0->Head;
-   FSTD_Head *head1=(FSTD_Head*)Field1->Head;
+   TRPNHeader *head0=(TRPNHeader*)Field0->Head;
+   TRPNHeader *head1=(TRPNHeader*)Field1->Head;
 
    if (!Field0) {
       Tcl_AppendResult(Interp,"FSTD_FieldTimeInterpolate: Initial field not valid",(char*)NULL);
@@ -1205,11 +1209,11 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
       field->Stat=NULL;
    }
 
-   memcpy(field->Head,head0,sizeof(FSTD_Head));
+   memcpy(field->Head,head0,sizeof(TRPNHeader));
    field->Spec->Map=Field0->Spec->Map;
 
    /*Modifier les parametres de dates*/
-   head0=(FSTD_Head*)field->Head;
+   head0=(TRPNHeader*)field->Head;
    head0->DATEV=Stamp;
    head0->DATEO=Stamp;
    head0->NPAS=0;
@@ -1247,7 +1251,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
    Tcl_Obj     *obj;
    TData       *fieldAX,*fieldAY;
-   FSTD_Head   *head=(FSTD_Head*)Field->Head;
+   TRPNHeader   *head=(TRPNHeader*)Field->Head;
    TGeoRef     *ref=NULL;
    int          i,j,idx,nidx;
    char         buf[64],*grtyp=NULL;
@@ -1305,11 +1309,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case FID:
             if (Objc==1) {
-               if (head->FID) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->FID->CId,-1));
+               if (head->File) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(head->File->CId,-1));
                }
             } else {
-               head->FID=FSTD_FileGet(Interp,Tcl_GetString(Objv[++i]));
+               head->File=FSTD_FileGet(Interp,Tcl_GetString(Objv[++i]));
             }
             break;
 
@@ -1375,7 +1379,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&head->IP1);
                if (!Field->Ref) {
-                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),(Field->Ref?Field->Ref->ZRef.Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+                  Field->Ref=GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),(Field->Ref?Field->Ref->ZRef.Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->File?head->File->Id:-1));
                }
                Field->Ref->ZRef.Levels[Field->Def->Level]=ZRef_IP2Level(head->IP1,&Field->Ref->ZRef.Type);
             }
@@ -1463,11 +1467,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
               } else {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
                      Field->Ref->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   }
                   ref=NULL;
                   Data_Clean(Field,1,1,1);
@@ -1505,10 +1509,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
                   ref=Field->Ref;
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,tm,im,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,tm,im,NULL));
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
                   ref=NULL;
                   Data_Clean(Field,1,1,1);
@@ -1560,14 +1564,14 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                }
 
                if (Field->Ref->Grid[0]=='Z' || Field->Ref->Grid[0]=='Y') {
-                  head=(FSTD_Head*)fieldAX->Head;
-                  EZLock_RPNInt();
+                  head=(TRPNHeader*)fieldAX->Head;
+                  RPN_IntLock();
                   if (!Field->Ref->Ids) 
                      Field->Ref->Ids=(int*)malloc(1*sizeof(int));
 
                   Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->Ref->Lon,Field->Ref->Lat);
-                  EZUnLock_RPNInt();
-                  EZGrid_IdIncr(Field->Ref->Ids[Field->Ref->NId]);
+                  RPN_IntUnlock();
+                  RPN_IntIdIncr(Field->Ref->Ids[Field->Ref->NId]);
                }
                if (Field->Stat) { Data_StatFree(Field->Stat); Field->Stat=NULL; }
 
@@ -1590,9 +1594,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                if (grtyp[0]=='W' || grtyp[1]=='W') {
                   if (ref) {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->Type,ref->ZRef.Levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL));
                   } else {
-                     Field->Ref=GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,grtyp,0,0,0,0,NULL,NULL,NULL,NULL);
+                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,grtyp,0,0,0,0,NULL,NULL,NULL,NULL));
                   }
                   grtyp=NULL;
                } else {
@@ -1621,7 +1625,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      }
                   } else if (grtyp[0]=='V') {
                      if (!Field->Ref) {
-                         Field->Ref=GeoRef_Reference(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,"A ",0,0,0,0,-1));
+                         Field->Ref=GeoRef_Reference(GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,"A ",0,0,0,0,-1)));
                          //TODO:EER   GeoRef_Put(Interp,NULL,Field->Ref);
 
                      }
@@ -1746,7 +1750,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
    }
    
    if (grtyp) {
-      Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->Type:LVL_UNDEF),(ref?ref->ZRef.Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
+      Field->Ref=GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->Type:LVL_UNDEF),(ref?ref->ZRef.Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->File?head->File->Id:-1));
       GeoRef_Qualify(Field->Ref);
    }
    if (ref) {
@@ -1774,7 +1778,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 */
 void FSTD_FieldFree(TData *Field){
 
-   FSTD_Head *head=(FSTD_Head*)Field->Head;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
 
    if (Field && head)
       free(head);
@@ -1802,7 +1806,7 @@ void FSTD_FieldFree(TData *Field){
  *
  *----------------------------------------------------------------------------
 */
-TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData_Type Type){
+TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TDef_Type Type){
 
    TData *field;
 
@@ -1812,7 +1816,7 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData
      return(NULL);
 
    FSTD_FieldSet(field);
-   field->Ref=GeoRef_RPNSetup(NI,NJ,NK,LVL_UNDEF,NULL,"X",0,0,0,0,-1);
+   field->Ref=GeoRef_Find(GeoRef_RPNSetup(NI,NJ,NK,LVL_UNDEF,NULL,"X",0,0,0,0,-1));
 
    return(field);
 }
@@ -1845,9 +1849,9 @@ TData *FSTD_FieldCreate(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,TData
 */
 int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
 
-   FSTD_File *file;
-   int        ni,nj,nk,*idlst,idnb=0;
-   char       buf[32];
+   TRPNFile *file;
+   int       ni,nj,nk,*idlst,idnb=0;
+   char      buf[32];
 
    /*Recuperer les index de tout les champs satisfaisant*/
    file=FSTD_FileGet(Interp,Id);
@@ -1892,10 +1896,10 @@ int FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,i
 */
 int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 
-   FSTD_File *file;
-   FSTD_Head  h;
-   int        ok,ni,nj,nk;
-   char       buf[1024],grtyp[2];
+   TRPNFile *file;
+   TRPNHeader h;
+   int       ok,ni,nj,nk;
+   char      buf[1024],grtyp[2];
 
    file=FSTD_FileGet(Interp,Id);
    if (FSTD_FileSet(Interp,file)<0)
@@ -1952,9 +1956,9 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
+int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
 
-   FSTD_Head    head;
+   TRPNHeader    head;
    Tcl_Obj     *list,*obj,*tmp;
    int          nobj,nb,ni,nj,nk;
    int          yyyy,mm,dd,h,m,s,type;
@@ -1972,7 +1976,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
    list=Tcl_NewListObj(0,NULL);
    obj=Tcl_NewObj();
 
-   EZLock_RPNField();
+   RPN_FieldLock();
    head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
 
    units=ZRef_LevelUnits();
@@ -2180,7 +2184,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
       }
       head.KEY=c_fstsui(File->Id,&ni,&nj,&nk);
    }
-   EZUnLock_RPNField();
+   RPN_FieldUnlock();
    FSTD_FileUnset(Interp,File);
 
    Tcl_DecrRefCount(obj);
@@ -2216,11 +2220,11 @@ int FSTD_FieldList(Tcl_Interp *Interp,FSTD_File *File,int Mode,char *Var){
 */
 int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar){
 
-   FSTD_File   *file;
+   TRPNFile    *file;
    TData       *field=NULL;
    TDataVector *uvw=NULL;
-   TData_Type   dtype;
-   FSTD_Head    h;
+   TDef_Type    dtype;
+   TRPNHeader    h;
    int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
    int          pni,pnj,ig1,ig2,ig3,ig4;
    float        lvl,*tmp;
@@ -2236,7 +2240,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       Key=cs_fstinf(file->Id,&ni,&nj,&nk,DateV,Eticket,IP1,IP2,IP3,TypVar,NomVar);
       if (Key<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Specified field does not exist (c_fstinf failed)",(char*)NULL);
-         EZUnLock_RPNField();
+         RPN_FieldUnlock();
          FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
       }
@@ -2245,7 +2249,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    grtyp[0]=grtyp[1]=grtyp[2]='\0';
    
    h.KEY=Key;
-   h.FID=file;
+   h.File=file;
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");
    strcpy(h.ETIKET,"            ");
@@ -2301,8 +2305,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
-      c_fst_data_length(TData_Size[field->Def->Type]);
-      if (cs_fstlukt(field->Def->Data[idx],h.FID->Id,h.KEY,&tile,&ni,&nj,&nk)<0) {
+      c_fst_data_length(TDef_Size[field->Def->Type]);
+      if (cs_fstlukt(field->Def->Data[idx],h.File->Id,h.KEY,&tile,&ni,&nj,&nk)<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
@@ -2311,9 +2315,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 
       if (uvw->UU && idx!=0) {
          /*Rechercher et lire l'information de l'enregistrement complementaire*/
-         ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->UU);
+         ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->UU);
          if (ok<0) {
-            ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->UU);
+            ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->UU);
          }
 
          if (ok<0 || (!tile && (ni!=mni || nj!=mnj))) {
@@ -2321,8 +2325,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fst_data_length(TData_Size[field->Def->Type]);
-            if (cs_fstlukt(field->Def->Data[0],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
+            c_fst_data_length(TDef_Size[field->Def->Type]);
+            if (cs_fstlukt(field->Def->Data[0],h.File->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
                return(TCL_ERROR);
@@ -2331,9 +2335,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
       if (uvw->VV && idx!=1) {
          /*Rechercher et lire l'information de l'enregistrement complementaire*/
-         ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->VV);
+         ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->VV);
          if (ok<0) {
-            ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->VV);
+            ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->VV);
          }
 
          if (ok<0 || (!tile && (ni!=mni || nj!=mnj))) {
@@ -2341,8 +2345,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fst_data_length(TData_Size[field->Def->Type]);
-            if (cs_fstlukt(field->Def->Data[1],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
+            c_fst_data_length(TDef_Size[field->Def->Type]);
+            if (cs_fstlukt(field->Def->Data[1],h.File->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
                return(TCL_ERROR);
@@ -2351,9 +2355,9 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
       if (uvw->WW && idx!=2) {
          /*Rechercher et lire l'information de l'enregistrement complementaire*/
-         ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->WW);
+         ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->WW);
          if (ok<0) {
-            ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->WW);
+            ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,"",h.IP1,h.IP2,h.IP3,h.TYPVAR,uvw->WW);
          }
 
          if (ok<0 || (!tile && (ni!=mni || nj!=mnj))) {
@@ -2361,8 +2365,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             FSTD_FileUnset(Interp,file);
             return(TCL_ERROR);
          } else {
-            c_fst_data_length(TData_Size[field->Def->Type]);
-            if (cs_fstlukt(field->Def->Data[2],h.FID->Id,ok,&tile,&ni,&nj,&nk)<0) {
+            c_fst_data_length(TDef_Size[field->Def->Type]);
+            if (cs_fstlukt(field->Def->Data[2],h.File->Id,ok,&tile,&ni,&nj,&nk)<0) {
                Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
                FSTD_FileUnset(Interp,file);
                return(TCL_ERROR);
@@ -2385,8 +2389,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       }
 
       /*Recuperer les donnees du champs*/
-      c_fst_data_length(TData_Size[field->Def->Type]);
-      if ((ok=cs_fstlukt(field->Def->Data[0],h.FID->Id,h.KEY,&tile,&ni,&nj,&nk))<0) {
+      c_fst_data_length(TDef_Size[field->Def->Type]);
+      if ((ok=cs_fstlukt(field->Def->Data[0],h.File->Id,h.KEY,&tile,&ni,&nj,&nk))<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
@@ -2395,11 +2399,11 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    
    /*Check for mask (TYPVAR==@@)*/
    if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
-      ok=cs_fstinf(h.FID->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
+      ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
       if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
          if ((field->Def->Mask=(char*)malloc(ni*nj))) {
             if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
-               cs_fstlukt(tmp,h.FID->Id,ok,&tile,&ni,&nj,&nk);
+               cs_fstlukt(tmp,h.File->Id,ok,&tile,&ni,&nj,&nk);
                for(i=0;i<ni*nj;i++) {
                   field->Def->Mask[i]=tmp[i]!=0.0;
                }
@@ -2489,7 +2493,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             }
          }
          grtyp[1]=t;
-         field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL);
+         field->Ref=GeoRef_Find(GeoRef_WKTSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL));
 
          if (proj) free(proj);
       }
@@ -2500,14 +2504,14 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
    
    if (grtyp[0]!='W') {
-      field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,h.FID->Id);
+      field->Ref=GeoRef_Find(GeoRef_RPNSetup(ni,nj,nk,type,&lvl,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,h.File->Id));
    }
 
    if (grtyp[0]=='U') {
       FSTD_FieldSubBuild(field);
    }
    
-//TODO   h.FID->NRef++;
+//TODO   h.File->NRef++;
 
    FSTD_FieldSet(field);
    GeoRef_Qualify(field->Ref);
@@ -2516,7 +2520,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       free(field->Spec->Desc);
 
    field->Spec->Desc=strdup(h.NOMVAR);
-   memcpy(field->Head,&h,sizeof(FSTD_Head));
+   memcpy(field->Head,&h,sizeof(TRPNHeader));
 
    // If it's a profile/xsection, read descriptors
    if (grtyp[0]=='V') {
@@ -2552,7 +2556,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 */
 int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List){
 
-   FSTD_Head   *head=(FSTD_Head*)Field->Head;
+   TRPNHeader   *head=(TRPNHeader*)Field->Head;
    TDataVector *uvw;
    TGeoRef     *ref;
    Tcl_Obj     *obj;
@@ -2565,7 +2569,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    if (Field->Def->NK>1 || Field->Ref->Grid[0]=='V')
       return(1);
 
-   if (FSTD_FileSet(Interp,head->FID)<0)
+   if (FSTD_FileSet(Interp,head->File)<0)
       return(0);
 
    if (LevelFrom>LevelTo) {
@@ -2583,21 +2587,21 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          Tcl_ListObjIndex(Interp,List,k,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&level);
          ip1=ZRef_Level2IP(level,Field->Ref->ZRef.Type,DEFAULT);
-         cs_fstinl(head->FID->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
+         cs_fstinl(head->File->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
 
          if (k2==0) {
             Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find specific level ",Tcl_GetString(obj),(char*)NULL);
-            FSTD_FileUnset(Interp,head->FID);
+            FSTD_FileUnset(Interp,head->File);
             return(0);
          }
          tmp[k]=k;
       }
    } else {
       /*Recuperer les indexes de tout les niveaux*/
-      cs_fstinl(head->FID->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,idxs,&nk,FSTD_NKMAX);
+      cs_fstinl(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,-1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,idxs,&nk,FSTD_NKMAX);
 
       if (nk<=1) {
-         FSTD_FileUnset(Interp,head->FID);
+         FSTD_FileUnset(Interp,head->File);
          return(1);
       }
 
@@ -2658,9 +2662,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    FSTD_FieldSubSelect(Field,0);
 
    /*Augmenter la dimension du tableau*/
-   if (!DataDef_Resize(Field->Def,Field->Def->NI,Field->Def->NJ,nk)) {
+   if (!Def_Resize(Field->Def,Field->Def->NI,Field->Def->NJ,nk)) {
       Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Not enough memory to allocate levels",(char*)NULL);
-      FSTD_FileUnset(Interp,head->FID);
+      FSTD_FileUnset(Interp,head->File);
       return(0);
    }
 
@@ -2676,10 +2680,10 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       Def_Pointer(Field->Def,0,idx,p);
 
       /*Recuperer les donnees du champs*/
-      c_fst_data_length(TData_Size[Field->Def->Type]);
-      if (cs_fstlukt(p,head->FID->Id,idxs[k],&tile,&ni,&nj,&idump)<0) {
+      c_fst_data_length(TDef_Size[Field->Def->Type]);
+      if (cs_fstlukt(p,head->File->Id,idxs[k],&tile,&ni,&nj,&idump)<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find read field data (c_fstluk failed)",(char*)NULL);
-         FSTD_FileUnset(Interp,head->FID);
+         FSTD_FileUnset(Interp,head->File);
          return(0);
       }
 
@@ -2692,15 +2696,15 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       if (uvw) {
          if (uvw->VV) {
             Def_Pointer(Field->Def,1,idx,p);
-            ok=cs_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
-            c_fst_data_length(TData_Size[Field->Def->Type]);
-            cs_fstlukt(p,head->FID->Id,ok,&tile,&ni,&nj,&idump);
+            ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
+            c_fst_data_length(TDef_Size[Field->Def->Type]);
+            cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump);
          }
          if (uvw->WW) {
             Def_Pointer(Field->Def,2,idx,p);
-            ok=cs_fstinf(head->FID->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
-            c_fst_data_length(TData_Size[Field->Def->Type]);
-            cs_fstlukt(p,head->FID->Id,ok,&tile,&ni,&nj,&idump);
+            ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
+            c_fst_data_length(TDef_Size[Field->Def->Type]);
+            cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump);
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(Field->Def);i++) {
                   Def_Get(Field->Def,2,idx+i,val);
@@ -2719,7 +2723,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 
       if (ok<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed)",(char*)NULL);
-         FSTD_FileUnset(Interp,head->FID);
+         FSTD_FileUnset(Interp,head->File);
          return(0);
       }
    }
@@ -2734,9 +2738,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    }
    
    if (ref->Grid[0]=='W') {
-       Field->Ref=GeoRef_WKTSetup(ni,nj,nk,type,levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL);
+       Field->Ref=GeoRef_Find(GeoRef_WKTSetup(ni,nj,nk,type,levels,grtyp,ref->IG1,ref->IG2,ref->IG3,ref->IG4,ref->String,ref->Transform,ref->InvTransform,NULL));
    } else {
-       Field->Ref=GeoRef_RPNSetup(ni,nj,nk,type,levels,grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->FID->Id);
+       Field->Ref=GeoRef_Find(GeoRef_RPNSetup(ni,nj,nk,type,levels,grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->File->Id));
    }
    Field->Ref->Grid[1]=ref->Grid[1];
    if (ref!=Field->Ref) GeoRef_Destroy(Interp,ref->Name);
@@ -2752,7 +2756,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       FSTD_FieldSubBuild(Field);
    }
    FSTD_FieldSubSelect(Field,k2);
-   FSTD_FileUnset(Interp,head->FID);
+   FSTD_FileUnset(Interp,head->File);
 
    Data_GetStat(Field);
 
@@ -2781,8 +2785,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 */
 int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress){
 
-   FSTD_File    *file;
-   FSTD_Head    *head=(FSTD_Head*)Field->Head;
+   TRPNFile     *file;
+   TRPNHeader    *head=(TRPNHeader*)Field->Head;
    TDataVector  *uvw;
    int          ok=-1,ip1,datyp,nid;
    unsigned long k,idx;
@@ -2821,7 +2825,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       }     
    }
    
-   head->FID=file;
+   head->File=file;
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
    NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
 
@@ -2836,7 +2840,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 //      if (head->NBITS==64 && (head->DATYP=1 || head->DATYP==5)) datyp=801;
    }
 
-   EZLock_RPNField();
+   RPN_FieldLock();
 
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
@@ -2847,7 +2851,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       }
       /*Inscription de l'enregistrement*/
       Def_Pointer(Field->Def,0,idx,p);
-      c_fst_data_length(TData_Size[Field->Def->Type]);
+      c_fst_data_length(TDef_Size[Field->Def->Type]);
       ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                   ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,head->ETIKET,
                   (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
@@ -2858,7 +2862,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
             /*Inscription du champs complementaire 2D*/
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);
-               c_fst_data_length(TData_Size[Field->Def->Type]);
+               c_fst_data_length(TDef_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,
                            (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
@@ -2866,7 +2870,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
             /*Inscription du champs complementaire 3D*/
             if (Field->Def->Data[2] && uvw->WW) {
                Def_Pointer(Field->Def,2,idx,p);
-               c_fst_data_length(TData_Size[Field->Def->Type]);
+               c_fst_data_length(TDef_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,
                            (Field->Ref?(Field->Ref->Grid[1]!='\0'?&Field->Ref->Grid[1]:Field->Ref->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
@@ -2874,7 +2878,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          }
       }
    }
-   EZUnLock_RPNField();
+   RPN_FieldUnlock();
 
    FSTD_FileUnset(Interp,file);
    FSTD_FieldSubSelect(Field,nid);

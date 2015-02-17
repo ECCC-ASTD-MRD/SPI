@@ -42,17 +42,6 @@ extern int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float
 static int GeoTex_TileNb=0;
 static int GeoTex_TileNbMax=1024;
 
-int          GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile);
-int          GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile);
-int          GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportItem *VP,int Resolution,int X0,int Y0);
-TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y);
-int          GeoTex_Resolution(GDAL_Band *Band,Projection *Proj);
-int          GeoTex_Render(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj,ViewportItem *VP,int Lock);
-int          GeoTex_Limit(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj);
-void         GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj);
-void         GeoTex_Qualify(GDAL_Band *Band);
-TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0);
-
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <GeoTex_ThreadProc>
  * Creation     : Avril 2007 J.P. Gauthier - CMC/CMOE
@@ -594,14 +583,14 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    
    // Allocate tile buffer if not already done
    if (!Tile->Data) {
-      if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*Band->Def->NC*TData_Size[Band->Def->Type]))) {
+      if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*Band->Def->NC*TDef_Size[Band->Def->Type]))) {
          fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
          return(0);
       }
       
       // Size might not fit texture so allocate data input buffer to be copied into texture after read
       if (nx!=2 || ny!=2) {
-         if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*Band->Def->NC*TData_Size[Band->Def->Type]))) {
+         if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*Band->Def->NC*TDef_Size[Band->Def->Type]))) {
             fprintf(stderr,"(ERROR) GeoTex_Get: Unable to allocate temporaty buffer\n");
             free(Tile->Data);
             Tile->Data=NULL;
@@ -611,10 +600,10 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    }
 
    // Build the image buffer
-   sz=Band->Def->NC*TData_Size[Band->Def->Type];
+   sz=Band->Def->NC*TDef_Size[Band->Def->Type];
    for(c=0;c<Band->Def->NC;c++) {
       
-      if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx-dx,Tile->Dy-dy,Tile->Rx+rx,Tile->Ry+ry,data+c*TData_Size[Band->Def->Type],
+      if ((GDALRasterIO(Band->Band[c],GF_Read,Tile->Dx-dx,Tile->Dy-dy,Tile->Rx+rx,Tile->Ry+ry,data+c*TDef_Size[Band->Def->Type],
          Tile->Nx+nx,Tile->Ny+ny,TD2GDAL[Band->Def->Type],Band->Def->NC>1?sz:0,0))==CE_Failure) {
 
          free(Tile->Data);
@@ -1172,7 +1161,7 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-double GeoTex_ValueGet(TDataDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z) {
+double GeoTex_ValueGet(TDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z) {
 
    int          t,x,y,rx,ry,px,py;
    double       v0,v1,cube[2][4]={{0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0}};

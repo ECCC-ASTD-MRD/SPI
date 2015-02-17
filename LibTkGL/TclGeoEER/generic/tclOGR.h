@@ -37,63 +37,9 @@
 #include "tkCanvVP.h"
 #include "Projection.h"
 #include "tclData.h"
-#include "GeoRef.h"
+#include "OGR.h"
 
-#include "ogr_api.h"
-#include "ogr_srs_api.h"
 #include "cpl_string.h"
-
-#include "gpc.h"
-
-#define OGR_G_EnvelopeIntersect(ENV0,ENV1) (!(ENV0.MaxX<ENV1.MinX || ENV0.MinX>ENV1.MaxX || ENV0.MaxY<ENV1.MinY || ENV0.MinY>ENV1.MaxY))
-#define OGR_PointInside(V,V0,V1)           (((V0[1]<=V[1] && V[1]<V1[1]) || (V1[1]<=V[1] && V[1]<V0[1])) && (V[0]<((V1[0]-V0[0])*(V[1]-V0[1])/(V1[1]-V0[1])+V0[0])))
-
-#define OGR_GEOMTYPES "Point,3D Point,Line String,3D Line String,Polygon,3D Polygon,Multi Point,3D Multi Point,Multi Line String,3D Multi Line String,Multi Polygon,3D Multi Polygon,Geometry Collection,3D Geometry Collection,Linear Ring"
-#define OGR_BUFFER    4096
-
-typedef struct OGR_Sort {
-   int           Field,Type,Order;
-   unsigned int  Nb,*Table;
-} OGR_Sort;
-
-typedef struct OGR_File {
-   OGRDataSourceH  Data;
-   OGRSFDriverH    Driver;
-   char           *Id;
-   char           *Name;
-   char            Mode;
-} OGR_File;
-
-typedef struct OGR_Layer {
-   Tcl_Obj         *Tag;
-   OGR_File        *File;
-
-   OGRLayerH        Layer;
-   OGRFeatureH     *Feature;
-   OGRFeatureDefnH  Def;
-
-   OGRDataSourceH   Data;
-   OGR_Sort         Sort;
-   char            *Select;
-
-   TGeoRef       *Ref;          /* GeoReference */
-   TDataSpec     *Spec;         /* Specification des donnees */
-
-   Vect3d         Vr[2];
-   char           Changed;
-   int            Update;
-   int            Mask,FMask;   /* Masque */
-   GLuint         LFeature;
-   unsigned int   NFeature;
-   unsigned int   GFeature;
-   unsigned int  *SFeature;
-   unsigned int   NSFeature;
-
-   int            CFeature;
-   int            Topo,Extrude,Space;
-   double         Min,Max;
-   Coord         *Loc;          /* Position simple */
-} OGR_Layer;
 
 OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id);
 int       OGR_FilePut(Tcl_Interp *Interp,OGR_File *File);
@@ -102,35 +48,38 @@ void      OGR_Wipe();
 int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options);
 int OGR_FileClose(Tcl_Interp *Interp,char *Id);
 
-OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
+int                OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode);
+Tcl_Obj*           OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
+int                OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
-OGR_Layer*       OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
-OGRLayerH        OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
-void             OGR_LayerClean(OGR_Layer *Layer,int Index);
-void             OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
-void             OGR_LayerUpdate(OGR_Layer *Layer);
-int              OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
-int              OGR_LayerDestroy(Tcl_Interp *Interp,char *Name);
-int              OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
-void             OGR_LayerFree(OGR_Layer *Layer);
-OGR_Layer*       OGR_LayerGet(char *Name);
-struct TDataDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field);
-OGR_Layer*       OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDataDef *Def);
-int              OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom);
-int              OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
-int              OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer);
-int              OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
-int              OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer);
-int              OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
-int              OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);
-int              OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);
-void             OGR_LayerLimit(OGR_Layer *Layer);
-int              OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid);
-int              OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDataDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);
-int              OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
-void             OGR_LayerPreInit(OGR_Layer *Layer);
-int              OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg);
+OGRFieldDefnH      OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
 
+OGR_Layer*         OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
+OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
+void               OGR_LayerClean(OGR_Layer *Layer,int Index);
+void               OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
+void               OGR_LayerUpdate(OGR_Layer *Layer);
+int                OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
+int                OGR_LayerDestroy(Tcl_Interp *Interp,char *Name);
+int                OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
+void               OGR_LayerFree(OGR_Layer *Layer);
+OGR_Layer*         OGR_LayerGet(char *Name);
+TDef*              OGR_LayerToDef(OGR_Layer *Layer,char *Field);
+OGR_Layer*         OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDef *Def);
+int                OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom);
+int                OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates);
+int                OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer);
+int                OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx);
+int                OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer);
+int                OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
+int                OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);
+int                OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);
+void               OGR_LayerLimit(OGR_Layer *Layer);
+int                OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid);
+int                OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);
+int                OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
+void               OGR_LayerPreInit(OGR_Layer *Layer);
+int                OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg);
 
 int                OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 int                OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
@@ -142,43 +91,5 @@ int                OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *
 void               OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude);
 Tcl_Obj*           OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom);
 Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geom);
-
-int      OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode);
-Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
-int      OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
-
-#define GPC_ARRAY0   0
-#define GPC_ARRAY1   1
-#define GPC_ARRAYPTR 2
-
-Vect3d*      GPC_GetVect3d(unsigned int Size,unsigned int No);
-void         GPC_ClearVect3d(void);
-void         GPC_OGRProject(OGRGeometryH Geom,TGeoRef *FromRef,TGeoRef *ToRef);
-void         GPC_FromOGR(gpc_polygon* Poly,OGRGeometryH *Geom);
-void         GPC_ToOGR(gpc_polygon *Poly,OGRGeometryH *Geom);
-OGRGeometryH GPC_OnOGR(gpc_op Op,OGRGeometryH Geom0,OGRGeometryH Geom1);
-OGRGeometryH GPC_OnOGRLayer(gpc_op Op,OGR_Layer *Layer);
-void         GPC_New(gpc_polygon *Poly);
-int          GPC_QSortInter(const Vect3d *A,const Vect3d *B);
-int          GPC_Within(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
-int          GPC_Intersect(OGRGeometryH Geom0,OGRGeometryH Geom1,OGREnvelope *Env0,OGREnvelope *Env1);
-int          GPC_PointPointIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          GPC_PointLineIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          GPC_PointPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1,int All);
-int          GPC_PolyPolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
-int          GPC_LinePolyIntersect(OGRGeometryH Geom0,OGRGeometryH Geom1);
-int          GPC_SegmentIntersect(Vect3d PointA,Vect3d PointB,Vect3d PointC,Vect3d PointD,Vect3d Inter);
-double       GPC_Length(OGRGeometryH Geom);
-double       GPC_SegmentLength(OGRGeometryH Geom);
-double       GPC_SegmentDist(Vect3d SegA,Vect3d SegB,Vect3d Point);
-double       GPC_PointClosest(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
-int          GPC_PointInside(OGRGeometryH Geom,OGRGeometryH Pick,Vect3d Vr);
-double       GPC_CoordLimit(OGRGeometryH Geom,int Coord,int Mode);
-OGRGeometryH GPC_Clip(OGRGeometryH Line,OGRGeometryH Poly);
-int          GPC_ClipSegment(OGRGeometryH Line,OGRGeometryH Poly,OGRGeometryH Clip);
-double       GPC_Centroid2D(OGRGeometryH Geom,double *X,double *Y);
-double       GPC_Centroid2DProcess(OGRGeometryH Geom,double *X,double *Y);
-int          GPC_Simplify(double Tolerance,OGRGeometryH Geom);
-int          GPC_SimplifyDP(double Tolerance,Vect3d *Pt,int J,int K,int *Markers);
 
 #endif

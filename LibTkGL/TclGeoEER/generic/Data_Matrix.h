@@ -36,23 +36,23 @@
 
 #include "Data_Funcs.h"
 
-void Calc_Iterate1(TDataDef *R,TDataDef *A,TFunc1 *Func);
-void Calc_Iterate2(TDataDef *R,TDataDef *A,TDataDef *B,TFunc2 *Func);
-void Calc_Iterate3(TDataDef *R,TDataDef *A,TDataDef *B,TDataDef *C,TFunc3 *Func);
+void Calc_Iterate1(TDef *R,TDef *A,TFunc1 *Func);
+void Calc_Iterate2(TDef *R,TDef *A,TDef *B,TFunc2 *Func);
+void Calc_Iterate3(TDef *R,TDef *A,TDef *B,TDef *C,TFunc3 *Func);
 
-TDataDef *Calc_Compat(Tcl_Interp *Interp,TDataDef *A,TDataDef *B,int Dim,int Vect);
-TDataDef* Calc_Length(TDataDef* A);
-TDataDef* Calc_Dir(TDataDef* A);
-TDataDef* Calc_Index(TDataDef* A,int Index);
-TDataDef* Calc_IndexValue(TDataDef* A,int I,int J,int K);
-TDataDef* Calc_RangeValue(TDataDef* A,int I0,int I1,int J0,int J1,int K0,int K1);
-TDataDef* Calc_Slice(TDataDef* A,int N,int D);
-TDataDef* Calc_Set(TDataDef* A,TDataDef* B,int I0,int I1,int J0,int J1,int K0,int K1);
-TDataDef* Calc_MatrixInt(long Val);
-TDataDef* Calc_MatrixFloat(double Val);
-TDataDef* Calc_Matrix1(TDataDef* A,TFunc1 *Func,int Iterate,int Matrix,TData_Type Type);
-TDataDef* Calc_Matrix2(TDataDef* A,TDataDef* B,TFunc2 *Func,int Iterate,int Matrix,TData_Type Type);
-TDataDef* Calc_Matrix3(TDataDef* A,TDataDef* B,TDataDef* C,TFunc3 *Func,int Iterate,int Matrix,TData_Type Type);
-TDataDef* Calc_MatrixTo(TDataDef* A,TDataDef* B,char Degree);
+TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect);
+TDef* Calc_Length(TDef* A);
+TDef* Calc_Dir(TDef* A);
+TDef* Calc_Index(TDef* A,int Index);
+TDef* Calc_IndexValue(TDef* A,int I,int J,int K);
+TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1);
+TDef* Calc_Slice(TDef* A,int N,int D);
+TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1);
+TDef* Calc_MatrixInt(long Val);
+TDef* Calc_MatrixFloat(double Val);
+TDef* Calc_Matrix1(TDef* A,TFunc1 *Func,int Iterate,int Matrix,TDef_Type Type);
+TDef* Calc_Matrix2(TDef* A,TDef* B,TFunc2 *Func,int Iterate,int Matrix,TDef_Type Type);
+TDef* Calc_Matrix3(TDef* A,TDef* B,TDef* C,TFunc3 *Func,int Iterate,int Matrix,TDef_Type Type);
+TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree);
 
 #endif

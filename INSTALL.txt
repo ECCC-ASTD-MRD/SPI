@@ -1,6 +1,9 @@
 Installation procedures
 -----------------------
 
+*** Starting from version 7.9.0, the compiled parts of SPI are distributed as a separate file ***
+                           See "Packages description" section
+
 Documentation:
 - Application and librairie documentation can be found on the CMC wiki at https://wiki.cmc.ec.gc.ca/wiki/SPI/Doc
 - Example scripts and macro are available in the Demo directory of your SPI installation path
@@ -30,21 +33,22 @@ System requirements:
    Software:
 
      Xvfb       (For batch mode)
-      (For image output)
+     ImageMagik (For image output)
 
      Graphic drivers for direct rendering (use glxinfo to confirm)
-     XServer configured with 24 or 32 bit depth
 
 Installation:
 
    A) Packages description
 
-      - Geographical database (GDB)
-
+      - Geographical database (GDB), contains the base geographical data used by default by SPI
             DBGeo.tgz
 
-      - The SPI application (Application CD)
-         SPI-x.x.x.tgz
+      - The SPI libraries, the compiled librairies needed by SPI. Choose the one for your system
+         libSPI_x.x.x_platform.tgz
+         
+      - The SPI application, the tcl part of SPI
+         SPI_x.x.x.tgz
 
    B) Decompressing the packages
 
@@ -55,9 +59,12 @@ Installation:
 
            tar -zxvf DBGeo.tgz -C [your geo_path]
 
+      - Next is the SPI librairies which again is to be decompressed into it's final installation directory           
+           tar -zxvf libSPI_x.x.x_platform.tgz -C [your libspi_path]
+           
       - Then you can uncompress the SPI package to it's final installation directory.
 
-           tar -zxvf SPI-x.x.x.tgz -C [your spi_path]
+           tar -zxvf SPI_x.x.x.tgz -C [your spi_path]
 
    D) Profile setup.
 
@@ -75,6 +82,19 @@ Installation:
 
            setenv GDB_PATH [your geo_path]/data
 
+      - You will also have to define the SPI_LIB variable to the location of the SPI librairies
+
+        sh/ksh/bash
+           add this line to the .profile or .profile_usr
+
+           export SPI_LIB=[your spilib_path]
+
+        csh
+
+           add this line to the .cshrc
+
+           setenv SPI_LIB [your spilib_path]
+      
       - If you want to run scripts, you will have to define an environment variable pointing to the path
         where you installed SPI. Depending on the shell you are using, this might mean:
 
@@ -94,7 +114,7 @@ Installation:
 
       - You can now launch SPI by calling
 
-           [your  spi_path]/bin/SPI
+           [your spi_path]/bin/SPI
 
         or
 

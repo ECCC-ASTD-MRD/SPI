@@ -47,7 +47,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int        n,idx,type;
-   GRIB_File *file=NULL;
+   TGRIBFile *file=NULL;
 
    static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","DATEV","IP1" };
    static CONST char *sopt[] = { "is","open","close","filename","info",NULL };
@@ -158,11 +158,13 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int        idx;
+   int        ni,nj,nk,idx,npack,compress=0;
    long       key;
-
-   static CONST char *sopt[] = { "read",NULL };
-   enum                opt { READ };
+   char      *sample;
+   TData     *field,*rfield;
+   
+   static CONST char *sopt[] = { "create","read","write","gridinterp","import",NULL };
+   enum                opt { CREATE,READ,WRITE,GRIDINTERP,IMPORT };
 
    Tcl_ResetResult(Interp);
 
@@ -183,6 +185,69 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          Tcl_GetLongFromObj(Interp,Objv[4],&key);
          return(GRIB_FieldRead(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),key));
+         break;
+         
+      case WRITE:
+         if(Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld file npack [compress]");
+            return(TCL_ERROR);
+         }
+         if (!(field=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"GRIB_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_GetIntFromObj(Interp,Objv[4],&npack);
+         if (Objc==6) {
+            Tcl_GetBooleanFromObj(Interp,Objv[5],&compress);
+         }
+
+         return(GRIB_FieldWrite(Interp,Tcl_GetString(Objv[3]),field,npack,compress));
+         break;
+         
+      case CREATE:
+         if(Objc!=6 && Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld ni nj nk [sample]");
+            return(TCL_ERROR);
+         }
+         ni=nj=nk=-1;
+
+         Tcl_GetIntFromObj(Interp,Objv[3],&ni);
+         Tcl_GetIntFromObj(Interp,Objv[4],&nj);
+         Tcl_GetIntFromObj(Interp,Objv[5],&nk);
+
+         if (ni<=0 || nj<=0 || nk<=0) {
+             Tcl_AppendResult(Interp,"GRIB_FieldCmd: wrong dimensions",(char *)NULL);
+             return(TCL_ERROR);
+         }
+
+         sample=NULL;
+         if (Objc==7) {
+           sample=Tcl_GetString(Objv[6]);
+         }
+         if (!GRIB_FieldCreate(Interp,Tcl_GetString(Objv[2]),sample,ni,nj,nk,TD_Float32)) {
+            return(TCL_ERROR);
+         } else {
+            return(TCL_OK);
+         }
+         break;
+
+      case IMPORT:
+         if (Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"grib rpn");
+            return(TCL_ERROR);
+         }   
+         if (!(field=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"GRIB_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (!(rfield=Data_Get(Tcl_GetString(Objv[3])))) {
+            Tcl_AppendResult(Interp,"GRIB_FieldCmd: Invalid field (",Tcl_GetString(Objv[3]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         return(GRIB_FieldImport(Interp,field,rfield));
+         break;
+      case GRIDINTERP:
+         return(FSTD_FieldCmd(clientData,Interp,Objc,Objv));
          break;
    }
 
@@ -208,10 +273,10 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
 
-   GRIB_File *file=NULL;
+   TGRIBFile *file=NULL;
    int        t;
 
-   if ((file=(GRIB_File*)TclY_HashDel(&GRIB_FileTable,Id))) {
+   if ((file=(TGRIBFile*)TclY_HashDel(&GRIB_FileTable,Id))) {
       fclose(file->Handle);
       free(file->Path);
       free(file->Id);
@@ -248,20 +313,20 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
  *
  *----------------------------------------------------------------------------
 */
-GRIB_File* GRIB_FileGet(Tcl_Interp *Interp,char *Id){
+TGRIBFile* GRIB_FileGet(Tcl_Interp *Interp,char *Id){
 
    Tcl_HashEntry *entry;
 
    if (Id && strlen(Id)>0) {
       entry=TclY_FindHashEntry(&GRIB_FileTable,Id);
       if (entry) {
-         return (GRIB_File*)(Tcl_GetHashValue(entry));
+         return (TGRIBFile*)(Tcl_GetHashValue(entry));
       }
    }
    return(NULL);
 }
 
-int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
+int GRIB_FilePut(Tcl_Interp *Interp,TGRIBFile *File){
 
    Tcl_HashEntry *entry;
    int            new;
@@ -301,20 +366,22 @@ int GRIB_FilePut(Tcl_Interp *Interp,GRIB_File *File){
 */
 int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index){
 
-   GRIB_File *file;
+   TGRIBFile *file;
    FILE      *fi;
-
+   char      mode[2];
+   
   if (GRIB_FileGet(Interp,Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return TCL_ERROR;
    }
 
-   if (!(fi=fopen(Name,"r"))) {
+   mode[0]=Mode;mode[1]='\0';
+   if (!(fi=fopen(Name,mode))) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot open grib file ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
 
-   file=(GRIB_File*)malloc(sizeof(GRIB_File));
+   file=(TGRIBFile*)malloc(sizeof(TGRIBFile));
    file->Path=(char*)strdup(Name);
    file->Id=(char*)strdup(Id);
    file->Mode=Mode;
@@ -326,9 +393,11 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index){
 
    GRIB_FilePut(Interp,file);
 
-   return(GRIB_FieldList(Interp,file,Index,NULL));
-
-   return(TCL_OK);
+   if (Mode=='r') {
+      return(GRIB_FieldList(Interp,file,Index,NULL));
+   } else {
+      return(TCL_OK);
+   }
 }
 
 /*----------------------------------------------------------------------------

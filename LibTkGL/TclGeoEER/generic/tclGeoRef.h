@@ -4,11 +4,11 @@
  * 2100 Trans-Canadienne
  * Dorval, Quebec
  *
- * Projet       : Lecture et traitements de fichiers de trajectoires
- * Fichier      : tclTraj.h
- * Creation     : Fevrier 2003 - J.P. Gauthier
+ * Projet       : Lecture et traitements de fichiers raster
+ * Fichier      : GeoRef.h
+ * Creation     : Mars 2005 - J.P. Gauthier
  *
- * Description  : Fichier d'entete du module Traj.
+ * Description  : Fonctions de manipulations de projections.
  *
  * Remarques    :
  *
@@ -31,20 +31,19 @@
  *=========================================================
  */
 
-#ifndef _tclTRAJ_h
-#define _tclTRAJ_h
+#ifndef _tclGeoRef_h
+#define _tclGeoRef_h
 
-#include "tclData.h"
-#include "Traj.h"
+#include <tcl.h>
 
-TTraj*   Traj_New();
-void     Traj_Free(TTraj *Traj);
-TTraj*   Traj_Get(char *Name);
-Tcl_Obj* Traj_Put(Tcl_Interp *Interp,char *Name,TTraj *Traj);
-int      TclTraj_Init(Tcl_Interp*);
-int      Traj_Load(Tcl_Interp *Interp,char *File,TTraj **Traj);
-int      Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
-int      Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj);
-void     Traj_Wipe();
+#include "eerUtils.h"
+#include "tclUtils.h"
+#include "Vector.h"
+#include "GeoRef.h"
+
+TGeoRef* GeoRef_Get(char *Name);
+Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref);
+int      GeoRef_Destroy(Tcl_Interp *Interp,char *Name);
+TGeoRef* GeoRef_Find(TGeoRef *Ref);
 
 #endif
