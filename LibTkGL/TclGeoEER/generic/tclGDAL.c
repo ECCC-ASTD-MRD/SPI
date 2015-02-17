@@ -257,6 +257,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                return(TCL_ERROR);             
             }
+            break;
          }
 
          /*Interpolate a field*/

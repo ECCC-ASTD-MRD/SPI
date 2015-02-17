@@ -522,8 +522,8 @@ if [[ $SSM -eq 1 ]]; then
    rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -delete
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name .nfs* -delete
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -exec rm -f {} \;
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name .nfs* -exec rm -f {} \;
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
@@ -537,6 +537,6 @@ if [[ $SRC -eq 1 ]]; then
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
    find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -exec rm -f -r {} \;
-   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name *~ -delete
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name *~ -exec rm -f {} \;
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
 fi

@@ -811,6 +811,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if(Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
+                  
                   if (!Def_GridInterpAverage(field0->Ref,field0->Def,field1->Ref,field1->Def,table,fieldt?fieldt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
