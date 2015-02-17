@@ -170,7 +170,7 @@ if [[ $EXT -eq 1 ]]; then
       cp -r -p ${ARCH_PATH}/${MESA}/ ${TMP_PATH}/
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
       make
-      make install) 2>1 > ${TMP_PATH}/${MESA}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${MESA}/build.log
    fi
    #----- Tcl Specifics
 
@@ -179,7 +179,7 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/tcl${TCL_VERSION}
    cd ${TMP_PATH}/tcl${TCL_VERSION}
    (${ARCH_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
-   make install) 2>1 > ${TMP_PATH}/tcl${TCL_VERSION}/build.log
+   make install) 2>&1 > ${TMP_PATH}/tcl${TCL_VERSION}/build.log
 
    #----- Tk
    echo "Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
@@ -190,7 +190,7 @@ if [[ $EXT -eq 1 ]]; then
    #----- Remove visibility-hidden flag from makefile for glCanvas to work
    mv Makefile Makefile.hidden
    sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
-   make install) 2>1 > ${TMP_PATH}/tk${TCL_VERSION}/build.log
+   make install) 2>&1 > ${TMP_PATH}/tk${TCL_VERSION}/build.log
 
    #----- Tcllib
    cd ${ARCH_PATH}/Tcllib-${TCLLIB}
@@ -204,7 +204,7 @@ if [[ $EXT -eq 1 ]]; then
       (${ARCH_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
-      make install) 2>1 > ${TMP_PATH}/${TKIMG}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${TKIMG}/build.log
    fi
 
    #----- TkTable
@@ -212,21 +212,21 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${TKTABLE}
    cd ${TMP_PATH}/${TKTABLE}
    (${ARCH_PATH}/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
-   make install) 2>1 > ${TMP_PATH}/${TKTABLE}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${TKTABLE}/build.log
 
    #----- Tkdnd
    echo "Building ${TMP_PATH}/${TKDND}/build.log"
    mkdir ${TMP_PATH}/${TKDND}
    cd ${TMP_PATH}/${TKDND}
    (${ARCH_PATH}/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
-   make install) 2>1 > ${TMP_PATH}/${TKDND}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${TKDND}/build.log
 
    #----- libxml2
    echo "Building ${TMP_PATH}/${XML}/build.log"
    mkdir ${TMP_PATH}/${XML}
    cd ${TMP_PATH}/${XML}
    (${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
-   make install) 2>1 > ${TMP_PATH}/${XML}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${XML}/build.log
 
    #----- tDOM
    if [[ $ARCH != "AIX" ]]; then
@@ -234,7 +234,7 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${TDOM}
       cd ${TMP_PATH}/${TDOM}
       (${ARCH_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
-      make install) 2>1 > ${TMP_PATH}/${TDOM}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${TDOM}/build.log
    fi
 
    #----- GDAL Specifics
@@ -244,14 +244,14 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${EXPAT}
    cd ${TMP_PATH}/${EXPAT}
    (${ARCH_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) 2>1 > ${TMP_PATH}/${EXPAT}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${EXPAT}/build.log
 
    #----- curl
    echo "Building ${TMP_PATH}/${CURL}/build.log"
    mkdir ${TMP_PATH}/${CURL}
    cd ${TMP_PATH}/${CURL}
    (${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
-   make install) 2>1 > ${TMP_PATH}/${CURL}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${CURL}/build.log
 
    #----- sqlite
    if [[ $ARCH != "AIX" ]]; then
@@ -259,7 +259,7 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${SQLITE}.1
       cd ${TMP_PATH}/${SQLITE}.1
       (${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
-      make install) 2>1 > ${TMP_PATH}/${SQLITE}.1/build.log
+      make install) 2>&1 > ${TMP_PATH}/${SQLITE}.1/build.log
    fi
 
    #----- geos
@@ -268,7 +268,7 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${GEOS}
       cd ${TMP_PATH}/${GEOS}
       (${ARCH_PATH}/${GEOS}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-python=no --enable-ruby=no --with-gnu-ld=yes
-      make install) 2>1 > ${TMP_PATH}/${GEOS}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${GEOS}/build.log
    fi
 
    #----- jasper
@@ -276,42 +276,42 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${JASPER}
    cd ${TMP_PATH}/${JASPER}
    (CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS" ${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) 2>1 > ${TMP_PATH}/${JASPER}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${JASPER}/build.log
 
    #----- JPEG
    echo "Building ${TMP_PATH}/${JPEG}/build.log"
    mkdir ${TMP_PATH}/${JPEG}
    cd ${TMP_PATH}/${JPEG}
    (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
-   make install) 2>1 > ${TMP_PATH}/${JPEG}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${JPEG}/build.log
 
    #----- HDF-4
    echo "Building ${TMP_PATH}/${HDF4}/build.log"
    mkdir ${TMP_PATH}/${HDF4}
    cd ${TMP_PATH}/${HDF4}
    (${ARCH_PATH}/${HDF4}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}
-   make install) 2>1 > ${TMP_PATH}/${HDF4}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${HDF4}/build.log
 
    #----- SZIP
    echo "Building ${TMP_PATH}/${SZIP}/build.log"
    mkdir ${TMP_PATH}/${SZIP}
    cd ${TMP_PATH}/${SZIP}
    (${ARCH_PATH}/${SZIP}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) 2>1 > ${TMP_PATH}/${SZIP}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${SZIP}/build.log
 
    #----- HDF-5
    echo "Building ${TMP_PATH}/${HDF5}/build.log"
    mkdir ${TMP_PATH}/${HDF5}
    cd ${TMP_PATH}/${HDF5}
    (${ARCH_PATH}/${HDF5}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --with-szlib=${LIB_PATH} --disable-fortran
-   make install) 2>1 > ${TMP_PATH}/${HDF5}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${HDF5}/build.log
 
    #----- netCDF (Man path on AIX)
    echo "Building ${TMP_PATH}/${NETCDF}/build.log"
    mkdir ${TMP_PATH}/${NETCDF}
    cd ${TMP_PATH}/${NETCDF}
    (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --disable-netcdf-4 --enable-shared=yes --enable-static=no --enable-c-only --with-hdf5=${LIB_PATH} -with-hdf4=${LIB_PATH}
-   make install) 2>1 > ${TMP_PATH}/${NETCDF}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${NETCDF}/build.log
 
    #----- grib
    if [[ $ARCH != "AIX" ]]; then
@@ -329,7 +329,7 @@ if [[ $EXT -eq 1 ]]; then
       cp -p ${ARCH_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
       cp -p ${ARCH_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
 
-      make install) 2>1 > ${TMP_PATH}/${GRIB}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${GRIB}/build.log
    fi
 
    #----- ECBUFR
@@ -340,7 +340,7 @@ if [[ $EXT -eq 1 ]]; then
       (${ARCH_PATH}/${ECBUFR}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
       #----- Because the headers won't be copied by the install directive if we don't do that
       cp ${ARCH_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
-      make install) 2>1 > ${TMP_PATH}/${ECBUFR}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${ECBUFR}/build.log
 
       #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory 
       mv ${LIB_PATH}/lib/${ECBUFR}/* ${LIB_PATH}/lib/
@@ -352,14 +352,14 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${POSTGRESQL}
       cd ${TMP_PATH}/${POSTGRESQL}
       (${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIB_PATH}/include/libxml2
-      make install) 2>1 > ${TMP_PATH}/${POSTGRESQL}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${POSTGRESQL}/build.log
 
       #----- ODBC
       echo "Building ${TMP_PATH}/${ODBC}/build.log"
       mkdir ${TMP_PATH}/${ODBC}
       cd ${TMP_PATH}/${ODBC}
       (${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
-      make install) 2>1 > ${TMP_PATH}/${ODBC}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${ODBC}/build.log
    fi
 
    #----- PROJ 4
@@ -367,7 +367,7 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${PROJ}
    cd ${TMP_PATH}/${PROJ}
    (${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) 2>1 > ${TMP_PATH}/${PROJ}/build.log
+   make install) 2>&1 > ${TMP_PATH}/${PROJ}/build.log
 
    #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
    #----- On AIX, have to wrap the int64 definition betweer ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmts/fit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
@@ -393,7 +393,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-curl=${LIB_PATH}/bin/curl-config \
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH}
-      make install) 2>1 > ${TMP_PATH}/${GDAL}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${GDAL}/build.log
    else
       (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
       --with-libz=internal \
@@ -419,9 +419,10 @@ if [[ $EXT -eq 1 ]]; then
       --with-odbc=${LIB_PATH} \
       --with-netcdf=${LIB_PATH} \
       --with-fgdb=${LIB_PATH}
-      make install) 2>1 > ${TMP_PATH}/${GDAL}/build.log
+      make install) 2>&1 > ${TMP_PATH}/${GDAL}/build.log
    fi
    
+   rm -f -r ${TMP_PATH}
    set +e
 fi
 
@@ -522,8 +523,8 @@ if [[ $SSM -eq 1 ]]; then
    rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -exec rm -f {} \;
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name .nfs* -exec rm -f {} \;
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name "*~" -exec rm -f {} \+
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name ".nfs*" -exec rm -f {} \+
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
@@ -536,7 +537,7 @@ if [[ $SRC -eq 1 ]]; then
    ./cleanit
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
-   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -exec rm -f -r {} \;
-   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name *~ -exec rm -f {} \;
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -exec rm -f -r {} \+
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name "*~" -exec rm -f {} \+
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
 fi
