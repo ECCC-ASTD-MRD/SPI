@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/ksh
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
 
 #----- SSM specifics
 NAME="libSPI"
-DESC="EER/SPI library dependencies"
+DESC="EER-SPI library dependencies"
 VERSION="7.9.0"
 MAINTAINER="Jean-Philippe Gauthier"
 
@@ -15,6 +15,7 @@ EXT=0
 SSM=0
 SRC=0
 REC=0
+CLN=0
 
 HELP="Arguments must be:\n\n   Information parameters:
 \t-help        : This information
@@ -22,10 +23,11 @@ HELP="Arguments must be:\n\n   Information parameters:
 
    Commands:
 \t-spi         : Build SPI libraries
-\t-ext         : Build external libraries
+\t-clean       : Clean SPI libraries
+\t-reconf      : Reconfigure SPI libraries
 \t-ssm         : Build SSM package
 \t-src         : Build source package
-\t-reconf      : Reconfigure
+\t-ext         : Build external libraries
 \t-all         : Build and packages everything\n"
 
 #----- Get arguments.
@@ -36,6 +38,7 @@ while [ $# -gt 0 ]; do
         -ssm)     SSM=1;;
         -src)     SRC=1;;
         -reconf)  REC=1;;
+        -clean)   CLN=1;;
         -all)     SPI=1;EXT=1;SSM=1;SRC=1;REC=1; printf -- "\n\nYou can go for a coffee, ... make it 2 coffee\n\n";;
 
         -h|-help)     printf -- "$HELP\n"; exit 0;;
@@ -50,6 +53,7 @@ ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
 
 #----- Dependencies paths
+
 TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
 ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
@@ -76,15 +80,11 @@ fi
 
 #export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
 
-echo ""
-echo "----- Building platform : ${ORDENV_PLAT} -----"
-echo ""
+printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
 
 if [[ $EXT -eq 1 ]]; then
 
-   echo ""
-   echo "----- Making extenal dependencies ----- "
-   echo ""
+   printf -- "\n----- Making extenal dependencies -----\n"
    
    #----- Package to be compiled
    TCL_VERSION=8.6.3
@@ -123,7 +123,7 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- Define the list of items we won't compile but will link with
    if [[ $ARCH != "AIX" ]]; then
-      SLINK_LIBS="$FGDB URP $FLT gdb $MYSQL $OCI"
+      SLINK_LIBS="$FGDB $MYSQL $OCI"
    fi
 
    #----- Create output directories (link to SSM workspace)
@@ -425,92 +425,99 @@ if [[ $EXT -eq 1 ]]; then
    set +e
 fi
 
-if [[ $SPI -eq 1 ]]; then
-  
-  echo ""
-  echo "----- Making TclSystem Library  -----"
-  echo ""
+if [[ $CLN -eq 1 ]]; then
+   printf -- "\n----- Cleaning TclSystem Library -----\n"
+   cd TclSystem
+   make distclean
 
-  export CC=c99
-  export CFLAGS="-D_TK_SOURCE -fopenmp"
+   printf -- "\n----- Cleaning TkglCanvas Library -----\n"
+   cd ../TkglCanvas
+   make distclean
 
-  cd TclSystem
-  if [[ $REC -eq 1 ]]; then
-     make distclean
-     autoconf2.50
-     ./configure \
-   --prefix=${LIB_PATH}/TCL \
-	--exec-prefix=${LIB_PATH}/TCL \
-	--enable-threads \
-	--enable-64bit \
-	--with-tcl=${LIB_PATH}/TCL/lib \
-	--with-eer=${LIB_EER}
+   printf -- "\n----- Cleaning TclGeoEER Library -----\n"
+   cd ../TclGeoEER
+   make distclean
+   
+   cd ..
 fi
 
-  make install
+if [[ $SPI -eq 1 ]]; then
+  
+   export CC=c99
+   export CFLAGS="-D_TK_SOURCE -fopenmp"
 
-  echo ""
-  echo "----- Making TkglCanvas Library -----"
-  echo ""
+   printf -- "\n----- Making TclSystem Library  -----\n"
 
-  cd ../TkglCanvas
-  if [[ $REC -eq 1 ]]; then
-     make distclean
-     autoconf2.50
-     ./configure \
-	--prefix=${LIB_PATH}/TCL/ \
-	--exec-prefix=${LIB_PATH}/TCL/ \
-	--enable-threads \
-	--enable-64bit \
-	--with-tcl=${LIB_PATH}/TCL/lib \
-	--with-tk=${LIB_PATH}/TCL/lib
-  fi
-
-  make install
-
-  echo ""
-  echo "----- Making TclGeoEER Library -----"
-  echo ""
-
-  cd ../TclGeoEER
-  if [[ $REC -eq 1 ]]; then
+   cd TclSystem
+   if [[ $REC -eq 1 ]]; then
       make distclean
       autoconf2.50
       ./configure \
-   --prefix=${LIB_PATH}/TCL/ \
-	--exec-prefix=${LIB_PATH}/TCL \
-	--enable-threads \
-	--enable-64bit \
-	--with-tcl=${LIB_PATH}/TCL/lib \
-	--with-tk=${LIB_PATH}/TCL/lib \
-	--with-eer=${LIB_EER}\
-	--with-rmn=${LIB_PATH} \
-	--with-gdb=${LIB_PATH_OPS}/gdb \
-	--with-gdal=${LIB_PATH}/bin/gdal-config  \
-	--with-grib=${LIB_PATH} \
-	--with-ecbufr=${LIB_PATH} \
-	--with-flt=${LIB_PATH_OPS}/fltlib-0.5.1 \
-   --with-urp=${LIB_PATH_OPS}/URP
-  fi
+      --prefix=${LIB_PATH}/TCL \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER}
+   fi
+   make install
 
-  make install
+   printf -- "\n----- Making TkglCanvas Library -----\n"
 
-  cd ${LIB_PATH}/lib
-  ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
-  ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
+   cd ../TkglCanvas
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      autoconf2.50
+      ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL/ \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib
+   fi
+   make install
 
-  ln -fs ../TCL/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
-  ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+   printf -- "\n----- Making TclGeoEER Library -----\n"
+   
+   cd ../TclGeoEER
+   if [[ $REC -eq 1 ]]; then
+         make distclean
+         autoconf2.50
+         ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER}\
+      --with-rmn=${LIB_PATH} \
+      --with-gdb=${LIB_PATH_OPS}/gdb \
+      --with-gdal=${LIB_PATH}/bin/gdal-config  \
+      --with-grib=${LIB_PATH} \
+      --with-ecbufr=${LIB_PATH} \
+      --with-flt=${LIB_PATH_OPS}/fltlib-0.5.1 \
+      --with-urp=${LIB_PATH_OPS}/URP
+   fi
+   make install
+   cd ..
+   
+   cd ${LIB_PATH}/lib
+   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
+   ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
 
-  ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
-  ln -fs libTclSystem1.2.so libTclSystem.so
+   ln -fs ../TCL/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
+   ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+
+   ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
+   ln -fs libTclSystem1.2.so libTclSystem.so
+   cd -
 fi
 
 if [[ $SSM -eq 1 ]]; then
 
-   echo ""
-   echo "----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} ----- "
-   echo ""
+   printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
 
    rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
@@ -524,9 +531,7 @@ fi
 
 if [[ $SRC -eq 1 ]]; then
 
-   echo ""
-   echo "----- Building source package : ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz  ----- "
-   echo ""
+   printf -- "\n----- Building source package : ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz  -----\n"
    
    ./cleanit
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
