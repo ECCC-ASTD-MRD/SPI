@@ -11,6 +11,8 @@ export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
 export SPI_PATH
+[ -z $SPI_LIB ] && . ssmuse-sh -p cmoe/apps/beta/libSPI_${SPI_VERSION}
+
 export SPI_LIB=${SPI_LIB:=${SPI_PATH}/lib/${ORDENV_PLAT}}
 export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB}/lib ${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"

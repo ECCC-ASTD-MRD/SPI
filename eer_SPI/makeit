@@ -1,0 +1,39 @@
+#!/bin/sh
+#----- On version change:
+#-----    Update version in .profile_spi and check ssm dependenciesw
+
+arg=$1
+
+NAME="SPI"
+DESC="EER Visualisation, GIS, Processing and Modeling tool"
+VERSION="7.9.0"
+MAINTAINER="Jean-Philippe Gauthier"
+
+SSM_NAME=${NAME}_${VERSION}_all
+
+#----- Dependencies paths
+DEP_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}
+LIB_SPI=${SSM_DEV}/workspace/libSPI_${VERSION}_${ORDENV_PLAT}
+LIB_EER=${SSM_DEV}/workspace/eerUtils_2.0.0_${ORDENV_PLAT}
+
+echo ""
+echo "----- Building platform : ${ORDENV_PLAT} -----"
+echo ""
+
+if [[ $arg = "-ssm" ]]; then
+
+   echo ""
+   echo "----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} ----- "
+   echo ""
+
+   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME} ${SSM_DEV}/package/${SSM_NAME}.ssm 
+   mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d ${SSM_DEV}/workspace/${SSM_NAME}/lib
+   cp -r  bin tcl share data .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
+   cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -exec rm -f -r {} \;
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name *~ -delete
+   find ${SSM_DEV}/workspace/${SSM_NAME} -name .nfs* -delete
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
+fi
