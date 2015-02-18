@@ -55,7 +55,7 @@ proc OGRRasterize { File } {
 
       gdalband create RASTER $width $height 1 Byte
       gdalband define RASTER -projection [ogrlayer define LAYER -projection]
-      gdalband define RASTER -transform [list [lindex $extent 0] $res 0.000000000000000 [lindex $extent 1] 0.000000000000000 $res]
+      gdalband define RASTER -transform [list [lindex $extent 0] $res 0.0 [lindex $extent 1] 0.0 $res]
 
       #----- Effectuer la rasterization (import)
 

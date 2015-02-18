@@ -35,12 +35,12 @@ fstdfile open 3 write DataOut/FSTD_InterpConservative.fstd
 fstdfield read TO 2 -1 "" -1 -1 -1 "" "P0"
 fstdfield stats TO -nodata 0.0
 
-#set f [open DataOut/FSTD_InterpConservative.idx w]
-set f [open DataOut/FSTD_InterpConservative.idx r]
-fconfigure $f -encoding binary -translation binary
-set index [read $f]
-binary scan $index f* data
-puts [llength $data]
+set f [open DataOut/FSTD_InterpConservative.idx w]
+#set f [open DataOut/FSTD_InterpConservative.idx r]
+#fconfigure $f -encoding binary -translation binary
+#set index [read $f]
+#binary scan $index f* data
+#puts [llength $data]
 
 foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    puts "   Processing: $fld"
@@ -52,7 +52,7 @@ foreach fld [fstdfield find 1 -1 "" -1 -1 -1 "" "O3"] {
    fstdfield write TO 3 -32 False
 }
 
-#puts $f $index
+puts $f $index
 close $f
 
 fstdfile close 1 2 3

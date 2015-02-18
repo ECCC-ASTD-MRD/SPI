@@ -65,6 +65,8 @@ set tests {
    {FSTD_Hull.tcl -fstd DataIn/2005102612_012 -var ES -min 10 -max 30 -ip1 12000 -buffer 1 -dist 4 -out DataOut}
    {FSTD_RPN2GDAL.tcl -format GTiff -mode DATA -var TT -ip1 12000 -fstd DataIn/2006122900_000.eta -out DataOut/FSTD_RPN2GDAL}
    {FSTD_RPN2OGR.tcl -format "ESRI Shapefile" -mode CONTOUR -var TT -ip1 12000 -fstd DataIn/2006122900_000.eta -inter -20 -10 0 10 20 -out DataOut/FSTD_RPN2OGR}
+   GRIB_Funcs.tcl
+   GRIB_Convert.tcl
    GDAL_Basic.tcl
    GDAL_Functions.tcl
    GDAL_Slope.tcl
