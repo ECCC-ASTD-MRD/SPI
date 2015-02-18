@@ -127,8 +127,7 @@ if [[ $EXT -eq 1 ]]; then
    fi
 
    #----- Create output directories (link to SSM workspace)
-   rm -f -r ${LIB_PATH} $HOME/Links/libfs${VERSION}
-   ln -s ${SSM_DEV}/workspace $HOME/Links/libfs${VERSION}
+   rm -f -r ${LIB_PATH}
    mkdir -p ${LIB_PATH}/lib ${LIB_PATH}/include
 
    [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
@@ -141,7 +140,7 @@ if [[ $EXT -eq 1 ]]; then
    
       for l in $SLINK_LIBS; do
          if [[ -e $LIB_PATH_OPS/$l ]]; then
-            echo "Copying precompiled $LIB_PATH/$l -> $LIB_PATH"
+            echo "Copying precompiled $LIB_PATH/$l"
             cp -frd $LIB_PATH_OPS/$l/lib/*.so* $LIB_PATH/lib
             if [[ -e $LIB_PATH_OPS/$l/include ]]; then
                cp -frd $LIB_PATH_OPS/$l/include/* $LIB_PATH/include
@@ -376,21 +375,22 @@ if [[ $EXT -eq 1 ]]; then
    cd ${TMP_PATH}/${GDAL}
    cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}
    if [[ $ARCH = "AIX" ]]; then
-      (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
+      (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no --with-hide-internal-symbols=yes \
       --with-libz=internal \
       --with-liblzma=yes \
-      --with-pcidsk=no \
+      --with-pcidsk=internal \
       --with-pcraster=no \
-      --with-xml2=${LIB_PATH}/bin/xml2-config \
       --with-png=internal \
       --with-libtiff=internal \
       --with-geotiff=internal \
       --with-jpeg=internal \
       --with-gif=internal \
+      --with-static-proj4=${LIB_PATH}
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIB_PATH}/bin/curl-config \
+      --with-xml2=${LIB_PATH}/bin/xml2-config \
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH}
       make install) 2>&1 > ${TMP_PATH}/${GDAL}/build.log
