@@ -14,6 +14,8 @@
 # Fonctions:
 #
 #   Animator::Window           { Parent }
+#   Animator::MiniWindow       { Parent Frame }
+#   Animator::MiniSelect       { Parent Frame }
 #   Animator::EmptyPlayList    { }
 #   Animator::GetPlayListField { }
 #   Animator::GetPlayListObs   { }
@@ -36,9 +38,9 @@
 #
 #===============================================================================
 
-package provide Animator 4.1
+package provide Animator 4.2
 
-catch { SPI::Splash "Loading Widget Package Animator 4.1" }
+catch { SPI::Splash "Loading Widget Package Animator 4.2" }
 
 #----- Definitions des constantes
 
@@ -84,6 +86,7 @@ namespace eval Animator {
    set Play(Type)         DATE            ;#Type d'animation
    set Play(Types)        { DATE IP1 IP2 IP3 ETIKET }
    set Play(Data)         {}              ;#Data a animer
+   set Play(Mini)         {}              ;#Active miniplayer
 
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
 
@@ -275,13 +278,13 @@ proc Animator::Window { { Parent .} } {
       Bubble::Create $Data(Tab2).way.list.speed $Bubble(FlySpeed)
 
    frame .anim.params -relief raised -bd 1
-      scale .anim.params.frame -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx) -relief raised -bd 1 \
+      scale .anim.params.frame -from $Play(Idx0) -to $Play(Idx1) -resolution 1 -variable Animator::Play(Idx) -relief raised -bd 1 \
          -relief flat -orient horizontal -width 15 -sliderlength 10 -command "Animator::StepTo" -label "Frame" -showvalue true
       scale .anim.params.lapse -from 0 -to 500 -resolution 10 -variable Animator::Play(Delai) -relief raised -bd 1 \
          -relief flat -orient vertical -width 15 -sliderlength 10 -command ""  -length 35 -showvalue false
-      scale .anim.params.idx0 -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx0) -relief raised -bd 1 \
+      scale .anim.params.idx0 -from $Play(Idx0) -to $Play(Idx1) -resolution 1 -variable Animator::Play(Idx0) -relief raised -bd 1 \
          -relief flat -orient horizontal -width 5 -sliderlength 10 -command "Animator::Range 0" -showvalue false
-      scale .anim.params.idx1 -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx1) -relief raised -bd 1 \
+      scale .anim.params.idx1 -from $Play(Idx0) -to $Play(Idx1) -resolution 1 -variable Animator::Play(Idx1) -relief raised -bd 1 \
          -relief flat -orient horizontal -width 5 -sliderlength 10 -command "Animator::Range 1" -showvalue false
       pack .anim.params.lapse -side right -anchor s
       pack .anim.params.frame .anim.params.idx0 .anim.params.idx1 -side top -fill x -expand true
@@ -350,6 +353,100 @@ proc Animator::Window { { Parent .} } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Animator::MiniWindow>
+# Creation : Fevrier 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer une mini interface d'animation pour les toolbar
+#
+# Parametres :
+#   <Parent> : Identificateur de la fenetre parent
+#   <Frame>  : Frame qui sera anime
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Animator::MiniWindow { Parent Frame } {
+   global GDefs env
+   variable Data
+   variable Play
+   variable Lbl
+   variable Bubble
+   variable Param
+
+   if { [winfo exists $Parent.anim] } {
+      return
+   }
+
+   frame $Parent.anim -relief sunken -bd 0
+      scale $Parent.anim.frame -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx) -relief flat -bd 1 \
+         -relief flat -orient horizontal -width 19 -sliderlength 10 -command "Animator::StepTo" -showvalue False
+
+      button $Parent.anim.stop -image VCRSTOP -relief flat -bd 1 -overrelief raised \
+         -command { set Animator::Play(Stop) 1 }
+      button $Parent.anim.stepback -image VCRFRAMEB -relief flat -bd 1 -overrelief raised \
+         -command "Animator::MiniSelect $Parent $Frame; Animator::Step -1"
+      button $Parent.anim.stepforward -image VCRFRAMEF -relief flat -bd 1 -overrelief raised \
+         -command "Animator::MiniSelect $Parent $Frame; Animator::Step 1"
+      radiobutton $Parent.anim.playforward -image VCRPLAYF -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Animator::Play(Dir) -indicatoron False -value 1  -selectcolor ""\
+         -command "Animator::MiniSelect $Parent $Frame; set Animator::Play(Stop) 0; Animator::Play"
+      pack $Parent.anim.stepback  $Parent.anim.stop $Parent.anim.stepforward $Parent.anim.playforward -side left
+
+       #----- If the web animator script is available
+       if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
+         radiobutton $Parent.anim.playweb -image VCRWEB -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Animator::Play(Web) -indicatoron False -value 1 -selectcolor "" \
+            -command "Animator::MiniSelect $Parent $Frame; Animator::PlayWeb"
+         pack $Parent.anim.playweb -side left -fill x
+      }
+      pack $Parent.anim.frame -side left -fill y -expand true 
+
+   set Play(Cycle) 1
+
+   #----- Creation des bulles d'aides
+
+   Bubble::Create $Parent.anim.rewind      $Bubble(Rewind)
+   Bubble::Create $Parent.anim.stepback    $Bubble(StepBack)
+   Bubble::Create $Parent.anim.stop        $Bubble(Stop)
+   Bubble::Create $Parent.anim.stepforward $Bubble(StepForward)
+   Bubble::Create $Parent.anim.playforward $Bubble(PlayForward)
+   Bubble::Create $Parent.anim.playweb     $Bubble(PlayWeb)
+   Bubble::Create $Parent.anim.frame       $Bubble(Scroll)
+   
+   return $Parent.anim
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Animator::MiniSelect>
+# Creation : Fevrier 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : S'assure que le mini player selectionne est celui en cours d'animation
+#
+# Parametres :
+#   <Parent> : Identificateur de la fenetre parent
+#   <Frame>  : Frame qui sera anime
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Animator::MiniSelect { Parent Frame } {
+   variable Play
+
+   if { $Play(Mini)!="$Parent" } {
+      Animator::EmptyPlayList
+
+      Page::Activate $Frame 
+      set Play(Page)    $Page::Data(Frame)
+      set Play(Canvas)  $Page::Data(Canvas)
+   }
+   set Play(Mini) $Parent
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Animator::EmptyPlayList>
 # Creation : Decembre 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -373,7 +470,7 @@ proc Animator::EmptyPlayList { } {
 
    projection configure $Play(Page) -date $Viewport::Data(Seconds)
    projection configure $Play(Page) -date 0
-   set Play(Stop)    1
+   set Play(Stop) 1
    $Play(Canvas) configure -cursor watch
 
    #----- Liberer les champs
@@ -431,8 +528,8 @@ proc Animator::GetPlayList { } {
    if { $Play(Stop) } {
       set Play(Dir) 0
       return
-   }
-
+   }  
+   
    #----- initialiser le processus
    $Play(Canvas) configure -cursor watch
    update idletasks
@@ -509,7 +606,9 @@ proc Animator::Limits { } {
       .anim.params.idx0  configure -to $idx1
       .anim.params.idx1  configure -to $idx1
    }
-
+   if { [winfo exists $Play(Mini)] } {
+      $Play(Mini).anim.frame configure -to $idx1
+   }
    set Play(Idx0)  0
    set Play(Idx1)  $idx1
 
@@ -751,6 +850,11 @@ proc Animator::GetPlayListTraj { } {
 proc Animator::Step { Incr } {
    variable Play
 
+   set Play(Stop) 0
+   if { ![llength $Play(Frames)] } {
+      Animator::GetPlayList
+   }
+
    #----- Verifier les limites
 
    incr Play(Idx) $Incr
@@ -787,7 +891,6 @@ proc Animator::StepTo { Idx } {
    variable Play
 
    #----- Affectuer la saut de frame
-
    if { $Play(Idx)>$Play(Idx1) } {
       set Play(Idx) $Play(Idx1)
    }
@@ -980,7 +1083,6 @@ proc Animator::Play { } {
             incr Play(Idx) $Play(Dir)
          }
       }
-
       #----- Attendre le delai specifie
 
       after $Play(Delai)
