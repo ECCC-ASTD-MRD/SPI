@@ -208,7 +208,7 @@ proc Macro::Load { Paths } {
    foreach path $Paths {
       set macro [file tail [file rootname $path]]
       set Data(Time$macro) [file mtime $path]
-      set Data(Path$macro) $path
+      set Data(Path$macro) [file normalize $path]
       set Data(Code$macro) ""
       set Data(Save$macro) False
 
