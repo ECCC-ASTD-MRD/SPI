@@ -90,7 +90,6 @@ if { ![set pid [system fork]] } {
    puts "Waiting for child process"
    system wait $pid
 }
-exit
 
 #vwait forever
 puts "\nSystem usage for process"

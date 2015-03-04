@@ -29,8 +29,8 @@ Log::Start [info script] 0.1
 set ops $env(CMCGRIDF)/prog
 set par $env(CMCGRIDF)/../par/dbase/prog
 
-set names  { "Regional" "LAM Arctic" "LAM Lancaster" "LAM Est" "LAM Maritimes" "LAM Ouest" }
-set models [list $par/reghyb $ops/lam/arctic.model $ops/lam/lancaster.model $ops/lam/east.model $ops/lam/maritimes.model $ops/lam/west.model]
+set names  { "Regional" "LAM National" "LAM Arctic" "LAM Lancaster" "GEM-MACH" }
+set models [list $ops/reghyb $ops/lam/nat.model $ops/lam/arctic.model $ops/lam/lancaster.model $ops/mach]
 
 #----- Open GEM index file
 eval file delete [glob DataOut/GEM.*]
@@ -51,7 +51,7 @@ foreach model $models name $names {
    Log::Print INFO "Processing $model"
 
    #----- Pick the last file
-   set file [lindex [lsort -dictionary -increasing [glob $model/??????????_???*]] end]
+   set file [lindex [lsort -dictionary -increasing [glob $model/??????????_000*]] end]
 
    if { ![llength $file] } {
       Log::Print ERROR "No data is available of model $model"

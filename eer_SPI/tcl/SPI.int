@@ -732,7 +732,6 @@ proc SPI::WindowMenu { } {
          }
          .menu.tools.menu add command -label "[lindex $title $GDefs(Lang)] ..." -image $icon -compound left -command "${tool}::Window"
       }
-      .menu.tools.menu add separator
 
    Areas::CreateWidget .menu.disp.menu
 
