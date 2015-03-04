@@ -140,7 +140,8 @@ namespace eval SPI {
    set Bubble(PageOut)     { "Réduire la page de 10%" "Zoom page out 10%" }
    set Bubble(PageFull)    { "Mode page complète" "Full page mode" }
    set Bubble(LayoutName)  { "Nom de la mise-en-page courante" "Current page layout name" }
-   set Bubble(LayoutQck)   { "Appliquer une mise en page rapide" "Apply a quick layout" }
+   set Bubble(LayoutQck)   { "Appliquer une mise-en-page rapide\n\nPermet de créer une mise en page avec\nplusieurs vues en toute simplicité"
+                             "Apply a quick layout\n\nCreate a multi-viewport layout\nin just a few clicks" }
    set Bubble(LayoutSave)  { "Sauvegarder la mise-en-page courante" "Save the current page layout" }
    set Bubble(LayoutDel)   { "Supprimer la mise-en-page courante" "Delete the current page layout" }
    set Bubble(LayoutRun)   { "Exécuter un script sur la page courante" "Execute a script on the current page" }
