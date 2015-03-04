@@ -902,6 +902,8 @@ proc SPI::ToolBar { Frame } {
       frame $Frame.layout -relief raised -bd 1
          ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit unsorted nodouble -1 $SPI::Param(Layouts) 15 5 \
             { SPI::LayoutLoad $Page::Data(Frame) $SPI::Param(Layout) }
+         button $Frame.layout.qck -image PAGEQCK -relief flat -bd 1 -overrelief raised \
+            -command { QuickLayout::Window $Page::Data(Frame) }         
          button $Frame.layout.save -image PAGESAVE -relief flat -bd 1 -overrelief raised \
             -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::Get . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }
          button $Frame.layout.del -image PAGEDEL -relief flat -bd 1 -overrelief raised \
@@ -922,7 +924,7 @@ proc SPI::ToolBar { Frame } {
                $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 16x" -variable CVMagnifier::Param(Zoom) -value 16
                $Frame.layout.mag.opt.menu add radiobutton -label " Zoom 32x" -variable CVMagnifier::Param(Zoom) -value 32
 
-         pack $Frame.layout.sel $Frame.layout.save $Frame.layout.del $Frame.layout.run $Frame.layout.mag -side left -padx 2
+         pack $Frame.layout.sel $Frame.layout.qck $Frame.layout.save $Frame.layout.del $Frame.layout.run $Frame.layout.mag -side left -padx 2
       pack $Frame.layout -side left -fill x
 
       frame $Frame.win -relief raised -bd 1
@@ -954,6 +956,7 @@ proc SPI::ToolBar { Frame } {
    Bubble::Create $Frame.page.out    $Bubble(PageOut)
    Bubble::Create $Frame.page.full   $Bubble(PageFull)
    Bubble::Create $Frame.layout.sel  $Bubble(LayoutName)
+   Bubble::Create $Frame.layout.qck  $Bubble(LayoutQck)
    Bubble::Create $Frame.layout.save $Bubble(LayoutSave)
    Bubble::Create $Frame.layout.del  $Bubble(LayoutDel)
    Bubble::Create $Frame.layout.run  $Bubble(LayoutRun)

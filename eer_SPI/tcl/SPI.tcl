@@ -257,6 +257,7 @@ package require Export
 package require Animator
 package require Info
 package require MetData
+package require QuickLayout
 
 if { !$SPI::Param(Batch) } {
 

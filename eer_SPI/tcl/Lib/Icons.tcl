@@ -116,6 +116,7 @@ image create photo OPEN        -file $GDefs(Dir)/share/image/Icon/Open.gif
 image create photo OPENDIR     -file $GDefs(Dir)/share/image/Icon/OpenDir.gif
 image create photo OPENDOC     -file $GDefs(Dir)/share/image/Icon/OpenDoc.gif
 image create photo PAGE        -file $GDefs(Dir)/share/image/Icon/DocumentSetup.gif
+image create photo PAGEQCK     -file $GDefs(Dir)/share/image/Icon/QuickLayout.gif
 image create photo PAGESAVE    -file $GDefs(Dir)/share/image/Icon/PageSave.gif
 image create photo PAGEDEL     -file $GDefs(Dir)/share/image/Icon/PageDelete.gif
 image create photo PAGERUN     -file $GDefs(Dir)/share/image/Icon/PageRun.gif
