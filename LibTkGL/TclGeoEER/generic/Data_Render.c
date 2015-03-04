@@ -33,6 +33,7 @@
 
 #include "tclUtils.h"
 #include "RPN.h"
+#include "Triangle.h"
 
 #include "Data_FF.h"
 

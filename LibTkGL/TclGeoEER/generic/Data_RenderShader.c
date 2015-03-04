@@ -31,6 +31,7 @@
  *==============================================================================
  */
 
+#include "Triangle.h"
 #include "Data_FF.h"
 
 int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);

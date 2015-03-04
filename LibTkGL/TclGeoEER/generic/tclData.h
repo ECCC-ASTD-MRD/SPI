@@ -74,8 +74,8 @@ typedef struct TDataStat {
 } TDataStat;
 
 typedef struct TDataVector {
-   char  *UU,*VV,*WW;       /*Vector component names*/
-   double WWFactor;         /*Factor to apply to third component*/
+   char  *UU,*VV,*WW;       // Vector component names
+   double WWFactor;         // Factor to apply to third component
 } TDataVector;
 
 struct TData;

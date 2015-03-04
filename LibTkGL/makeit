@@ -54,7 +54,9 @@ PROC=`uname -m | tr _ -`
 
 #----- Dependencies paths
 
+SRC_PATH=`pwd`
 TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
+TMP_PATH=/tmp/llll                         #----- Temporary directory where the external libraries will be compiled
 ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
@@ -76,6 +78,7 @@ if [[ $ARCH == "AIX" ]]; then
    export CC=xlc
    export CXX=xlc++
    export make=gmake
+   export LIBPATH=$LD_LIBRARY_PATH
 fi
 
 #export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
@@ -109,7 +112,7 @@ if [[ $EXT -eq 1 ]]; then
    POSTGRESQL=postgresql-8.4.1
    ODBC=unixODBC-2.3.0
    GRIB=grib_api-1.12.0
-   ECBUFR=libecbufr0.8.2rc1
+   ECBUFR=libecbufr0.8.6
    OCI=instantclient_11_2
    FGDB=FileGDB_API
    PROJ=proj-4.8.0
@@ -332,13 +335,18 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- ECBUFR
    if [[ $ARCH != "AIX" ]]; then
+   
+      #----- Gives error on install (/etc/ld.so.conf.d/libecbufr.conf: Permission denied)
+      set +e
       echo "Building ${TMP_PATH}/${ECBUFR}/build.log"
-      mkdir ${TMP_PATH}/${ECBUFR}
+      cp -r -p ${ARCH_PATH}/${ECBUFR} ${TMP_PATH}
       cd ${TMP_PATH}/${ECBUFR}
-      (${ARCH_PATH}/${ECBUFR}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
+      (./configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
       #----- Because the headers won't be copied by the install directive if we don't do that
       cp ${ARCH_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
-      make install) > ${TMP_PATH}/${ECBUFR}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      make install) > ${TMP_PATH}/${ECBUFR}/build.log 2>&1
+      #|| { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      set -e
 
       #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory 
       mv ${LIB_PATH}/lib/${ECBUFR}/* ${LIB_PATH}/lib/
@@ -423,6 +431,8 @@ if [[ $EXT -eq 1 ]]; then
    
    rm -f -r ${TMP_PATH}
    set +e
+
+   cd $SRC_PATH
 fi
 
 if [[ $CLN -eq 1 ]]; then
@@ -501,7 +511,6 @@ if [[ $SPI -eq 1 ]]; then
       --with-urp=${LIB_PATH_OPS}/URP
    fi
    make install
-   cd ..
    
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
@@ -512,7 +521,8 @@ if [[ $SPI -eq 1 ]]; then
 
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
-   cd -
+   
+   cd ${SRC_PATH}
 fi
 
 if [[ $SSM -eq 1 ]]; then
@@ -527,6 +537,8 @@ if [[ $SSM -eq 1 ]]; then
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
+
+   cd ${SRC_PATH}
 fi
 
 if [[ $SRC -eq 1 ]]; then

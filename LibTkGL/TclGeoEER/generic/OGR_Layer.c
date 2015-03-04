@@ -3286,7 +3286,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Render the feature's labels only if they're all projected*/
    if (Layer->NFeature==Layer->GFeature) {
-      if (flabel>-1 && GLRender->Resolution<=1) {
+      if (flabel>-1 && GLRender->Resolution<=1 && spec->Font) {
          Projection_UnClip(Proj);
 
          glMatrixMode(GL_MODELVIEW);
@@ -3307,9 +3307,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          }
 
          glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),spec->Font);
-         glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
 
          if (spec->Outline) {
+            glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,spec->Alpha*655.35);
             field=OGR_FD_GetFieldDefn(Layer->Def,flabel);
 
             for(f=0;f<Layer->GFeature;f++) {
