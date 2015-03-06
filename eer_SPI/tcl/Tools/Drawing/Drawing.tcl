@@ -1336,9 +1336,9 @@ proc Drawing::FileSave { File } {
          switch -regexp [lindex $params 0] {
             "text|head|dist|valu|vert" {
                set item [lindex $params 6]
-               puts $file "font create $item -family [font actual $item -family] -weight [font actual $item -weight]\
-                  -size -[font actual $item -size] -slant [font actual $item -slant] -underline [font actual $item -underline]\
-                  -overstrike [font actual $item -overstrike]"
+               puts $file "font create $item -family [font configure $item -family] -weight [font configure $item -weight]\
+                  -size [font configure $item -size] -slant [font configure $item -slant] -underline [font configure $item -underline]\
+                  -overstrike [font configure $item -overstrike]"
                regsub -all "\n"  $params "\\n" params
                }
             "imag"  {
@@ -1570,9 +1570,9 @@ proc Drawing::InitFont { Font } {
       if { $old=="" } {
          set old  XFont18
       }
-      font configure $Font -family [font actual $old -family] -weight [font actual $old -weight] \
-         -size [font actual $old -size] -slant [font actual $old -slant] -underline [font actual $old -underline] \
-         -overstrike [font actual $old -overstrike]
+      font configure $Font -family [font configure $old -family] -weight [font configure $old -weight] \
+         -size [font configure $old -size] -slant [font configure $old -slant] -underline [font configure $old -underline] \
+         -overstrike [font configure $old -overstrike]
    }
 }
 
@@ -2824,7 +2824,7 @@ proc Drawing::Write { Frame File } {
       puts $File ""
 
       foreach font $Drawing::Resources(Font) {
-         puts $File "   font create $font -family \"[font actual $font -family]\" -weight [font actual $font -weight] -size [font actual $font -size] -slant [font actual $font -slant] -underline [font actual $font -underline] -overstrike [font actual $font -overstrike]"
+         puts $File "   font create $font -family \"[font configure $font -family]\" -weight [font configure $font -weight] -size [font configure $font -size] -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
       }
 
       foreach params $Drawing::Data(Params$Frame) {

@@ -20,6 +20,7 @@
 #   Log::Print    { Type Message { Var "" } }
 #   Log::Mail     { Subject File { Address { } } }
 #   Log::CheckSPI { Version }
+#   Log::Stack    { }
 #
 #   Log::CyclopeStart    { }
 #   Log::CyclopeEnd      { }
@@ -305,6 +306,40 @@ proc Log::CheckSPI { Version } {
       Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Version)"
       Log::End 1 True
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::Stack>
+# Creation : Mars 2015- J.P. Gauthier - CMC/CMOE
+#
+# But      : Afficher le call stack, utile pour debugger
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::Stack { } {
+
+   set stack "(DEBUG) Stack trace:\n"
+    
+   for { set i 1 } { $i < [info level] } { incr i } {
+      set lvl [info level -$i]
+      set pname [lindex $lvl 0]
+      append stack [string repeat "   " $i]$pname
+      
+      foreach value [lrange $lvl 1 end] arg [info args $pname] {
+         if { $value eq "" } {
+            info default $pname $arg value
+         }
+         append stack " $arg='$value'"
+      }
+      append stack \n
+   }
+   
+   return $stack
 }
 
 #----------------------------------------------------------------------------

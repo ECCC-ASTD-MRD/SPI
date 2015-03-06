@@ -2788,8 +2788,6 @@ proc Viewport::CloseUp { Frame Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
 proc Viewport::Resize { Frame VP X0 Y0 X1 Y1 Limit } {
    variable Data
 
-   Viewport::Activate $Frame $VP
-
    set cv $Frame.page.canvas
 
    if { $X0==-999 } {
