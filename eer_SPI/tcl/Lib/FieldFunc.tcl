@@ -68,7 +68,7 @@ proc FieldFunc::ConvexHull { Field { Res 0.5 } { Buffer 0.5 } } {
    set coords {}
    catch {
       foreach { i j } [lrange [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] 0 end-2] {
-         set ll [fstdfield stats $Field -gridpoint $i $j]
+         set ll [fstdfield stats $Field -project $i $j]
          lappend coords [lindex $ll 0] [lindex $ll 1] 0.0
       }
    }
