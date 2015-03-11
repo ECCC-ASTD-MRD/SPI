@@ -908,7 +908,6 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
    }
 
    #----- Check that we have enough fields
-
    if { !$nout && $expr!="" } {
       set res [vexpr $Result $expr]
       if { ![fstdfield is $res True] } {

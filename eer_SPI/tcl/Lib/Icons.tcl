@@ -27,6 +27,7 @@ image create photo MODEL       -file $GDefs(Dir)/share/image/Icon/Thermometer.gi
 image create photo RESET       -file $GDefs(Dir)/share/image/Icon/BlueCircle.gif
 image create photo INTEROGATE  -file $GDefs(Dir)/share/image/Icon/Help3.gif
 image create photo INFOLOG     -file $GDefs(Dir)/share/image/Icon/Inform.gif
+image create photo NEW         -file $GDefs(Dir)/share/image/Icon/Reset.gif
 
 image create photo FRAMESAVE   -file $GDefs(Dir)/share/image/Icon/FrameSave.gif
 image create photo FRAMEPOS    -file $GDefs(Dir)/share/image/Icon/FramePos.gif
