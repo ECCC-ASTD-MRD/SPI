@@ -193,7 +193,7 @@ puts "   Value: [fstdfield stats ZH -gridvalue 39.021 -69.017] [fstdfield stats 
 puts "\nTesting Y grid field interpolation"
 fstdfield gridinterp ZH CV
 puts [fstdfield define ZH -DATA 0]
-exit
+
 puts "\nTesting Y grid concatenation"
 set data [fstdfield define ZH -DATA]
 set ni   [fstdfield define ZH -NI]
@@ -213,6 +213,14 @@ fstdfield read TOC  GEM4 -1 "" -1 -1  -1 "" "!!"
 fstdfield write TIC OUT 0 True
 fstdfield write TAC OUT 0 True
 fstdfield write TOC OUT 0 True
+
+puts "\nTesting mscale"
+#fstdfield create SC 229 229 1
+#fstdfield define SC -NOMVAR SCAL -DATYP 5 -GRTYP N 115.0 115.0 150000.0 8.59999942779541
+fstdfield create SC 120 120 1
+fstdfield define SC -NOMVAR SCAL -DATYP 5 -GRTYP N 60.4999999 2591.691 2000.0 348.724819
+fstdgrid mscale SC
+fstdfield write SC OUT -32 True
 
 fstdfile close GEM4 OUT
 
