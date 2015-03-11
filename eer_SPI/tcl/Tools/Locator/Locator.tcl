@@ -509,7 +509,7 @@ proc Locator::SelectSource { Type Name } {
    set Data(Current) $Type
    
    set name [string map { _ " " } $Name]
-   if { [catch { set line [split [exec egrep -i ".+: ${name}.*:.+:.+:.+:.+:.+:.+" [lindex $Data(Files) $Type]] :] }] } {
+   if { [catch { set line [split [exec egrep -i ".+: ${name}\\s*:.+:.+:.+:.+:.+:.+" [lindex $Data(Files) $Type]] :] }] } {
       return ""
    } else {
       return [set SPI::Src(Info) [Locator::Format [join $line " "]]]
