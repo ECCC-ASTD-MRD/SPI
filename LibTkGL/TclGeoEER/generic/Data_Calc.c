@@ -256,6 +256,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TDef_Type Type,char* Exp
    if (GExcept) {
       feclearexcept(FE_ALL_EXCEPT);
    }
+   
    /* Parse, return value in GResult */
    vexpr_parse();
 

@@ -1781,7 +1781,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       if (Proj->Ref->Spatial && OSRIsProjected(Proj->Ref->Spatial)) {
          Proj->ZFactor=1.0/((Proj->L-1.0)*0.5);
       } else {
-         Proj->ZFactor=1.0/((Proj->L-1.0)*2000.0);
+         Proj->ZFactor=1.0/((Proj->L-1.0)*20000.0);
       }
    } else {
       Proj->ZFactor=1.0/EARTHRADIUS;

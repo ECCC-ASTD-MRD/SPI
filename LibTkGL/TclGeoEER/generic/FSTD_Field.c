@@ -881,7 +881,6 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    if (!FSTD_DecodeRPNLevelParams(FieldTo)) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
    }
-
    // Initialize verticap interpolator
    if (!(interp=ZRefInterp_Define(&FieldTo->Ref->ZRef,&FieldFrom->Ref->ZRef,FieldFrom->Def->NI,FieldFrom->Def->NJ))) {
       Tcl_AppendResult(Interp,"Unable to initialize vertical dataset (ZRefInterp_Define)\n");
@@ -2250,6 +2249,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    
    h.KEY=Key;
    h.File=file;
+   h.FID=file->Id;
    strcpy(h.NOMVAR,"    ");
    strcpy(h.TYPVAR,"  ");
    strcpy(h.ETIKET,"            ");
@@ -2826,6 +2826,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    }
    
    head->File=file;
+   head->FID=file->Id;
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
    NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
 

@@ -346,6 +346,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    GDAL_Band   *band,*bandt;
    T3DModel    *model;
    Tcl_Obj     *obj,*item=NULL;
+   TRPNFile    *file;
    TData       *field0,*field1,*fieldt;
    TDef_Type   type;
    TDataVector *uvw;
@@ -362,9 +363,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
-   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
-   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -574,6 +575,25 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          return(FSTD_FieldWrite(Interp,Tcl_GetString(Objv[3]),field0,npack,rewrite,compress));
          break;
 
+      case COPYDESC:
+         if(Objc!=4) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld id");
+            return(TCL_ERROR);
+         }
+         if (!(field0=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(Objv[3])))) {
+            return(TCL_ERROR);
+         }
+         FSTD_FileSet(Interp,file);
+         FSTD_FileSet(Interp,((TRPNHeader*)field0->Head)->File);
+         RPN_CopyDesc(file->Id,field0->Head);
+         FSTD_FileUnset(Interp,((TRPNHeader*)field0->Head)->File);
+         FSTD_FileUnset(Interp,file);
+         break;      
+      
       case EXPORT:
          if (strcmp(Tcl_GetString(Objv[2]),"HIRLAM")==0) {
             if (Objc!=10 && Objc!=14) {
