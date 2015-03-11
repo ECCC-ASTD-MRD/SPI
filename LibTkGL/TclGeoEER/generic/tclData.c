@@ -1265,13 +1265,15 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          free(Data->Ref->Pos);
          Data->Ref->Pos=NULL;
 
-         if (Data->Def->Pres)  {
-            free(Data->Def->Pres);
-            Data->Def->Pres=NULL;
-         }
-         if (Data->Def->Height) {
-            free(Data->Def->Height);
-            Data->Def->Height=NULL;
+         if (Data->Def) {
+            if (Data->Def->Pres)  {
+               free(Data->Def->Pres);
+               Data->Def->Pres=NULL;
+            }
+            if (Data->Def->Height) {
+               free(Data->Def->Height);
+               Data->Def->Height=NULL;
+            }
          }
       }
 
