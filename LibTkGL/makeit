@@ -56,7 +56,7 @@ PROC=`uname -m | tr _ -`
 
 SRC_PATH=`pwd`
 TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
-TMP_PATH=/tmp/llll                         #----- Temporary directory where the external libraries will be compiled
+#TMP_PATH=/tmp/llll                         #----- Temporary directory where the external libraries will be compiled
 ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
@@ -122,7 +122,7 @@ if [[ $EXT -eq 1 ]]; then
    #----- not recompiled yet
    KKDU=kakadu-6.3
    FLT=fltlib-0.5.1
-   RMN=librmn-15.1
+   RMN=librmn-15.2
 
    #----- Define the list of items we won't compile but will link with
    if [[ $ARCH != "AIX" ]]; then
@@ -135,14 +135,15 @@ if [[ $EXT -eq 1 ]]; then
 
    [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
    mkdir -p "${TMP_PATH}"
-   echo "Temporary directory is [$TMP_PATH]"
-
+   echo "Temporary directory is : $TMP_PATH"
+   echo "Install diectory is    : $LIB_PATH"
+   
    #----- The library we don't compile doesn't need to be copied, so link them to the original dir
 
    if [[ $LIB_PATH_OPS != $LIB_PATH ]]; then
       for l in $SLINK_LIBS; do
          if [[ -e $LIB_PATH_OPS/$l ]]; then
-            echo "Copying precompiled $LIB_PATH_OPS/$l -> $LIB_PATH"
+            echo "Copying precompiled $l"
             cp -frd $LIB_PATH_OPS/$l/lib/*.so* $LIB_PATH/lib
             if [[ -e $LIB_PATH_OPS/$l/include ]]; then
                cp -frd $LIB_PATH_OPS/$l/include/* $LIB_PATH/include
@@ -155,6 +156,7 @@ if [[ $EXT -eq 1 ]]; then
    fi
 
    #----- RMN, copies libs and BUFR and RPN dictionnaries
+   echo "Copying precompiled $RMN"
    cp -frd $LIB_PATH_OPS/$RMN/lib/* $LIB_PATH/lib
    cp -frd $LIB_PATH_OPS/$RMN/include/* $LIB_PATH/include
    mkdir -p $LIB_PATH/share/rmn
