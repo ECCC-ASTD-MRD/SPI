@@ -250,7 +250,7 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -348,7 +348,7 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -428,7 +428,7 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       SIGHUP,SIGALRM,SIGVTALRM,SIGPROF,SIGIO,SIGURG,SIGPOLL,SIGCHLD,SIGCLD,SIGCONT,SIGSTOP,SIGTSTP,SIGTTIN,SIGTTOU,
       SIGPIPE,SIGXCPU,SIGXFSZ,SIGUSR1,SIGUSR2,SIGWINCH };
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[0],ssig,"value",0,&isig)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[0],ssig,"value",TCL_EXACT,&isig)!=TCL_OK) {
       return(TCL_ERROR);
    }
    
@@ -440,7 +440,7 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    
    for(i=1;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -534,7 +534,7 @@ static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
     
    for(i=1;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -603,7 +603,7 @@ static int System_FileSystem(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    obj=Tcl_NewListObj(0,NULL);
 
    for(i=1;i<Objc;i++) {
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -729,7 +729,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -852,7 +852,7 @@ static int System_Info(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -929,7 +929,7 @@ static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -1045,7 +1045,7 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 

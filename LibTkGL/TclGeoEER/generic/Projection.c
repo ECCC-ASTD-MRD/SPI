@@ -87,7 +87,7 @@ static int Projection_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -240,7 +240,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -699,7 +699,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
   for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 

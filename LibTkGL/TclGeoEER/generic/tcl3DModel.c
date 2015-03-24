@@ -85,7 +85,7 @@ static int Model_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -235,7 +235,7 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return TCL_ERROR;
       }
 
@@ -362,7 +362,7 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -458,7 +458,7 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -563,7 +563,7 @@ static int Model_Material(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST 
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 

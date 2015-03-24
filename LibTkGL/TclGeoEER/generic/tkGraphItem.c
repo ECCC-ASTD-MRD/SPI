@@ -225,7 +225,7 @@ static int GraphItem_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -316,7 +316,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return TCL_ERROR;
       }
 
@@ -527,7 +527,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphDataName[item->Value],-1));
             } else {
                if (Tcl_GetBooleanFromObj(Interp,Objv[++i],&item->Value)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],GraphDataName,"data",0,&item->Value)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],GraphDataName,"data",TCL_EXACT,&item->Value)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -538,7 +538,7 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(GraphTypeName[item->Type],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GraphTypeName,"type",0,&item->Type)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GraphTypeName,"type",TCL_EXACT,&item->Type)!=TCL_OK) {
                    return(TCL_ERROR);
                }
             }

@@ -103,7 +103,7 @@ static int GraphAxis_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -543,7 +543,7 @@ static int GraphAxis_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(GRAPHFORMATS_STRING[axis->Format],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GRAPHFORMATS_STRING,"format",0,&axis->Format)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],GRAPHFORMATS_STRING,"format",TCL_EXACT,&axis->Format)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }

@@ -100,9 +100,9 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
          Tcl_AppendResult(Interp,"HIRLAM_Export: Could not allocate memory for grid processing",(char*)NULL);
          return(TCL_ERROR);
       }
-      RPN_IntLock();
+//      RPN_IntLock();
       c_gdll(Field->Ref->Ids[Field->Ref->NId],fy,fx);
-      RPN_IntUnlock();
+//      RPN_IntUnlock();
 
       /* Output grid longitude*/
 
@@ -144,9 +144,9 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
            x++;y++;
          }
       }
-      RPN_IntLock();
+//      RPN_IntLock();
       c_gdxywdval(Field->Ref->Ids[Field->Ref->NId],spd,dir,(float*)(Field->Def->Data[0]),(float*)(Field->Def->Data[1]),fx,fy,sz);
-      RPN_IntUnlock();
+//      RPN_IntUnlock();
 
       if (Type[1]=='P') {
          HIRLAM_WriteHead(fid,"wind speed (m/s)",Info,Factor);

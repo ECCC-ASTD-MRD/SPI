@@ -121,7 +121,7 @@ static int Radar_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -192,7 +192,7 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(Data_FieldCmd(clientData,TD_RADAR,Interp,Objc,Objv));
    }
 

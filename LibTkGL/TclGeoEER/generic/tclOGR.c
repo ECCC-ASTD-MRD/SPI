@@ -199,7 +199,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -344,7 +344,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -678,7 +678,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_GetBooleanFromObj(Interp,Objv[4],&all);
             }
             if (Objc>5) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[5],modepick,"mode",TCL_EXACT,&n)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -1146,7 +1146,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 

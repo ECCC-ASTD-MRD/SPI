@@ -1095,7 +1095,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -1193,7 +1193,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                return(TCL_ERROR);
             } else {
                if (Tcl_GetIntFromObj(Interp,Objv[++i],&b)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],bands,"type",0,&b)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],bands,"type",TCL_EXACT,&b)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -1213,7 +1213,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Spec->Map->Max[b]));
                } else {
                   
-                  if (Tcl_GetIndexFromObj(Interp,Objv[++i],stretchs,"type",0,&s)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[++i],stretchs,"type",TCL_EXACT,&s)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                                  
@@ -1646,7 +1646,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return TCL_ERROR;
       }
 

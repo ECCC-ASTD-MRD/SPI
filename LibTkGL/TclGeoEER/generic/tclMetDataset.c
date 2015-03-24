@@ -118,7 +118,7 @@ static int MetDataset_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -332,7 +332,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
    for (i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
       switch ((enum opt)idx) {
@@ -526,6 +526,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_WrongNumArgs(Interp,1,Objv,"[subset index] [code index] [value]");
                return(TCL_ERROR);
             }
+            
             if (Objc==1) {
                 lst=Tcl_NewListObj(0,NULL);
                 for(s=0;s<bufr_count_datasubset(set);s++) {
@@ -919,8 +920,10 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
             } else {
                obj=Tcl_NewDoubleObj(dval);
             }
+            break;
+            
          case VALTYPE_UNDEFINE  :
-            obj=NULL;
+            obj=Tcl_NewStringObj("UNDEFINED",-1);
             break;
       }
    }
@@ -1156,7 +1159,7 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -1285,7 +1288,7 @@ static int MetTemplate_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CO
 
    for (i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 

@@ -60,7 +60,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -89,7 +89,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          type=2;
 
          if(Objc==6) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",0,&type)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",TCL_EXACT,&type)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
@@ -127,7 +127,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (!(file=GRIB_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",0,&type)!=TCL_OK) {
+         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",TCL_EXACT,&type)!=TCL_OK) {
             return(TCL_ERROR);
          }
          return(GRIB_FieldList(Interp,file,type,Objc==5?Tcl_GetString(Objv[4]):NULL));
@@ -173,7 +173,7 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(Data_FieldCmd(clientData,TD_GRIB,Interp,Objc,Objv));
    }
 

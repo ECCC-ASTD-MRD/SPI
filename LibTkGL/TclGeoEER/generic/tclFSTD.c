@@ -95,7 +95,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
    }
 
    if (obj && strlen(Tcl_GetString(obj))) {
-      if (Tcl_GetIndexFromObj(Interp,obj,ZRef_LevelNames(),"type",0,&type)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,obj,ZRef_LevelNames(),"type",TCL_EXACT,&type)!=TCL_OK) {
          return(-2);
       }
       return(ZRef_Level2IP(val,type,DEFAULT));
@@ -148,7 +148,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -363,7 +363,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
-   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","desccopy","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
    enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
@@ -374,7 +374,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(Data_FieldCmd(clientData,TD_RPN,Interp,Objc,Objv));
    }
 
@@ -641,7 +641,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          type=TD_Float32;
          
          if (Objc==7) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",0,(int*)&type)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",TCL_EXACT,(int*)&type)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
@@ -727,7 +727,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             /*Interpolate a field*/
             if ((field1=Data_Get(Tcl_GetString(Objv[3])))) {
                if (Objc>4) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&imode)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                      ok=TCL_ERROR; break;
                   }
                }
@@ -831,7 +831,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if(Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
-                  
                   if (!Def_GridInterpAverage(field0->Ref,field0->Def,field1->Ref,field1->Def,table,fieldt?fieldt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
@@ -862,7 +861,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
                /*Interpolate a band*/            
                if (Objc>4) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&imode)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                      ok=TCL_ERROR; break;
                   }
                }
@@ -971,7 +970,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   Tcl_WrongNumArgs(Interp,2,Objv,"field layer mode [field] [index]");
                   ok=TCL_ERROR; break;
                }
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",0,&imode)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                   ok=TCL_ERROR; break;
                }
                
@@ -1022,7 +1021,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
                   ok=TCL_ERROR; break;
                }
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&n)!=TCL_OK) {
                   ok=TCL_ERROR; break;
                }
                x=1.0;
@@ -1115,7 +1114,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             } else {
                /* If we get here, it has to be a NOP or ACCUM*/
                if (Objc>4) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&n)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&n)!=TCL_OK) {
                      ok=TCL_ERROR; break;
                   }
                }
@@ -1193,7 +1192,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -1220,7 +1219,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          itype=2;
 
          if(Objc==6) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",0,&itype)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[5],types,"type",TCL_EXACT,&itype)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
@@ -1288,7 +1287,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (!(file=FSTD_FileGet(Interp,Tcl_GetString(Objv[2])))) {
             return(TCL_ERROR);
          }
-         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",0,&itype)!=TCL_OK) {
+         if (Tcl_GetIndexFromObj(Interp,Objv[3],types,"type",TCL_EXACT,&itype)!=TCL_OK) {
             return(TCL_ERROR);
          }
          return(FSTD_FieldList(Interp,file,itype,Objc==5?Tcl_GetString(Objv[4]):NULL));
@@ -1694,7 +1693,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -1871,7 +1870,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -2105,7 +2104,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
    
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(NULL);
       }
 
@@ -2383,7 +2382,7 @@ static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Type,int Objc,Tcl_Obj
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 

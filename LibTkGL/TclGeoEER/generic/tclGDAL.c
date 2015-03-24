@@ -130,7 +130,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -234,7 +234,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Tcl_WrongNumArgs(Interp,2,Objv,"band layer type [field] [multiple]");
                return(TCL_ERROR);
             }
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",0,&imode)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                return(TCL_ERROR);
             }
             field=NULL;
@@ -248,7 +248,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             }
             
             if (Objc==7) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[6],modemul,"multiple",0,&m)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[6],modemul,"multiple",TCL_EXACT,&m)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -282,7 +282,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          field1=Data_Get(Tcl_GetString(Objv[3]));
          if (field1) {
             if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",0,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],moderas,"mode",TCL_EXACT,&n)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -332,7 +332,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          comb=GDAL_BandGet(Tcl_GetString(Objv[3]));
          if (comb) {
             if (Objc>4) {
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&imode)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }
@@ -474,7 +474,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          /* If we get here, it has to be a NOP or ACCUM*/
          if (Objc>4) {
-            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",0,&n)!=TCL_OK) {
+            if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&n)!=TCL_OK) {
                return(TCL_ERROR);
             }
          }
@@ -1080,7 +1080,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 

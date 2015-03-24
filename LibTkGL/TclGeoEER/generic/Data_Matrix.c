@@ -567,14 +567,14 @@ TDef* Calc_Dir(TDef* A) {
          }
       }
 
-      RPN_IntLock();
+//      RPN_IntLock();
       for(k=0;k<A->NK;k++) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
          c_gdxywdval(GField->Ref->Ids[GField->Ref->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
-      RPN_IntUnlock();
+//      RPN_IntUnlock();
 
       free(fx);
       free(fy);

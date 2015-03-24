@@ -615,9 +615,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             flon=coord.Lon=CLAMPLON(Field->Ref->Lon[i]);
             idx=j*def->NI+i;
             if (gz && Field->Ref->RefFrom && Field->Ref->RefFrom->Ids[0]>-1) {
-               RPN_IntLock();
+//               RPN_IntLock();
                c_gdllsval(Field->Ref->RefFrom->Ids[0],&fele,gz,&flat,&flon,1);
-               RPN_IntUnlock();
+//               RPN_IntUnlock();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             }
             Vect_Init(Field->Ref->Pos[Level][idx],Field->Ref->Lon[i],Field->Ref->Lat[i],coord.Elev);
@@ -640,9 +640,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             free(Field->Ref->Pos[Level]);
             return(Field->Ref->Pos[Level]=NULL);
          }
-         RPN_IntLock();
+//         RPN_IntLock();
          c_gdll(Field->Ref->Ids[0],lat,lon);
-         RPN_IntUnlock();
+//         RPN_IntUnlock();
       }
 
       /*Essayer de recuperer le GZ*/
@@ -1272,7 +1272,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return TCL_ERROR;
       }
 
@@ -1570,7 +1570,6 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                   Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->Ref->Lon,Field->Ref->Lat);
                   RPN_IntUnlock();
-                  RPN_IntIdIncr(Field->Ref->Ids[Field->Ref->NId]);
                }
                if (Field->Stat) { Data_StatFree(Field->Stat); Field->Stat=NULL; }
 

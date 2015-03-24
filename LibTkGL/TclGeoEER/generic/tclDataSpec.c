@@ -252,7 +252,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
       return TCL_ERROR;
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return TCL_ERROR;
    }
 
@@ -480,7 +480,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(VECTORS[Spec->RenderVector],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",0,(int*)&Spec->RenderVector)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],VECTORS,"type",TCL_EXACT,(int*)&Spec->RenderVector)!=TCL_OK) {
                   return(TCL_ERROR);
                }
                // Fix for backward compatibility (BARBULE-->BARB)
@@ -581,7 +581,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Spec->ZType],-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],lvls,"type",0,&Spec->ZType)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],lvls,"type",TCL_EXACT,&Spec->ZType)!=TCL_OK) {
                   return(TCL_ERROR);
                }
             }

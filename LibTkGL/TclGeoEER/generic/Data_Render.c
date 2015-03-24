@@ -1853,9 +1853,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             }
 
             /*Recuperer les informations sur les vents et leurs localisations*/
-            RPN_IntLock();
+//            RPN_IntLock();
             c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
-            RPN_IntUnlock();
+//            RPN_IntUnlock();
             
             mem=0;i=0;
             while (mem<n) {
@@ -1878,9 +1878,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
                return;
             }
-            RPN_IntLock();
+//            RPN_IntLock();
             c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
-            RPN_IntUnlock();
+//            RPN_IntUnlock();
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
@@ -1900,7 +1900,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
          mem=FSIZE2D(Field->Def)*Field->Def->Level;
 
-         RPN_IntLock();
+//         RPN_IntLock();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
          if (Field->Spec->GridVector) {
               c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
@@ -1909,7 +1909,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          // We have to get the speed from the modulus in case of 3 component vector
          c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,(float*)&Field->Def->Mode[mem],lat,lon,n);
-         RPN_IntUnlock();
+//         RPN_IntUnlock();
 
          while (n--) {
             if (Field->Spec->GridVector) {

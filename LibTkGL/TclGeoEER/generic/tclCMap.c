@@ -314,7 +314,7 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
@@ -576,7 +576,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -615,7 +615,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -660,7 +660,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -700,7 +700,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -740,7 +740,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -779,7 +779,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                ++i;
                index=-1;
                if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
-                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",0,&index)!=TCL_OK) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
                      return(TCL_ERROR);
                   }
                }
@@ -884,7 +884,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
 
    for(i=0;i<Objc;i++) {
 
-      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
+      if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
          return(TCL_ERROR);
       }
 
@@ -1045,7 +1045,7 @@ static int CMap_CmdSel(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
       return(TCL_ERROR);
    }
 
-   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",0,&idx)!=TCL_OK) {
+   if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
       return(TCL_ERROR);
    }
 
