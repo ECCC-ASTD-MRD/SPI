@@ -170,14 +170,14 @@ proc Option::Disable { Frame } {
    global GDefs
 
    $Frame.e configure -state disabled -disabledbackground $GDefs(ColorFrame) -disabledforeground $GDefs(ColorOff)
-   $Frame.b configure -state disabled
+   catch { $Frame.b configure -state disabled }
 }
 
 proc Option::Enable { Frame { Edit True } } {
    global GDefs
 
    $Frame.e configure -state normal
-   $Frame.b configure -state normal
+   catch { $Frame.b configure -state normal }
 
    if { !$Edit } {
       $Frame.e configure -state disabled -disabledbackground $GDefs(ColorLight) -disabledforeground black
