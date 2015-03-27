@@ -605,6 +605,19 @@ proc SPI::LayoutDelete { } {
 #
 #-------------------------------------------------------------------------------
 
+namespace eval EMPTY { }
+
+proc EMPTY::Layout { Frame } {
+   variable Data
+   Page::Size $Frame 0 0
+
+   Page::UpdateItems $Frame
+}
+
+proc EMPTY::LayoutUpdate { Frame } {
+   SPI::LayoutUpdate $Frame
+}
+
 proc SPI::LayoutLock { Frame } {
    set Page::Data(Lock$Frame) True
 }
@@ -667,7 +680,7 @@ proc SPI::LayoutLoad { Frame Layout } {
    }
 
    #----- Lire le layout
-   if { $Layout=="SPI" } {
+   if { $Layout=="SPI" || $Layout=="EMPTY" } {
    } elseif { [file exists $Layout] && ![file isdirectory $Layout] } {
       uplevel #0 source $Layout
       set Layout [file rootname [file tail $Layout]]
