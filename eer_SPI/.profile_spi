@@ -1,6 +1,4 @@
-#----- Definitions
-export ORDENV_PLAT=${ORDENV_PLAT:=`uname -s`_`uname -m`}
-
+#----- Versions
 export TCL_VERSION=8.6
 
 export SPI_MAJOR=7

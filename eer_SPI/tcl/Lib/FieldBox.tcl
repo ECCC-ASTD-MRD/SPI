@@ -942,13 +942,18 @@ proc FieldBox::InfoCommand { No Index } {
    set level "[lindex $line 2] [lindex $line 3]"
    set id    [lindex $line end-5]_[lindex $line end-4]
    set date  [lindex $line end-6]
+   set ip1   [lindex $line end-3]
 
    #----- Date de validite
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
    catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -timezone :UTC] $GDefs(Lang)] }
 
    if { [fstddict isvar $nv] } {
-      eval set info  \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -unit]\]
+      if { [fstddict varinfo $nv -ip1]!="" } {
+         eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -searchip1 $ip1 -lang $GDefs(Lang) -short -units]\]
+      } else {
+         eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -units]\]
+      }
    } else {
       set info  "$nv ??? (???)"
    }   
@@ -1340,7 +1345,6 @@ proc FieldBox::RestrictSet { No Var Value } {
 
 proc FieldBox::PasteClick { Widget Y } {
 
-   puts stderr $Y
    if { ![llength [set idxs [$Widget curselection]]] } {
       set idxs  [$Widget nearest $Y]
       $Widget   selection set $idxs

@@ -972,7 +972,7 @@ proc FSTD::ParamPut { { Update False } } {
       }
       if { $Update && [fstddict isvar $var] } {
          if { $Update } { 
-            set Param(Unit)   [fstddict varinfo $var -lang $GDefs(Lang) -unit]
+            set Param(Unit)   [fstddict varinfo $var -lang $GDefs(Lang) -units]
             set Param(Factor) [fstddict varinfo $var -lang $GDefs(Lang) -factor]
             set Param(Delta)  [fstddict varinfo $var -lang $GDefs(Lang) -delta]
             set Param(Desc)   [fstddict varinfo $var -lang $GDefs(Lang) -short]
@@ -1010,6 +1010,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #      set var [dataspec configure $Spec -desc]
       set desc [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]
+      set ip1  -1
       
       dataspec copy $Spec FLDDEFAULT
 
@@ -1035,10 +1036,14 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          dataspec configure $Spec -rendervector BARB -rendertexture 0
       }
 
-      if { ![fstddict isvar $var] } {
-         fstddict varinfo $var -lang $GDefs(Lang) -short $desc
+      if { [fstddict varinfo $var -ip1]!="" } {
+         set ip1 [fstdfield define $Field -IP1]
       }
-      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -unit -factor -delta]]] } {
+      
+#      if { ![fstddict isvar $var] } {
+#         fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short $desc
+#      }
+      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short -units -factor -delta]]] } {
          dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
       }
    }

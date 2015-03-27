@@ -56,7 +56,7 @@ namespace eval Obs {
       if { [info exists env(AFSISIO)] } {
          set path $env(AFSISIO)/datafiles/constants
       } else {
-         set path $env(SPI_PATH)/share/rmn
+         set path $env(SPI_LIB)/share/rmn
       }
       
       if { $GDefs(Lang)==0 } {

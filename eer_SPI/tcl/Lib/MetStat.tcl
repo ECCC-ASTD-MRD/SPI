@@ -365,7 +365,7 @@ proc MetStat::RECRCEval { Cmd } {
       fstddict varinfo $var -lang $GDefs(Lang) -short $desc
    }
    if { $unit!="" } {
-      fstddict varinfo $var -lang $GDefs(Lang) -unit $unit
+      fstddict varinfo $var -lang $GDefs(Lang) -units $unit
    }
 
    fstddict varinfo $var -lang $GDefs(Lang) -factor $factor -delta 0.0
@@ -684,7 +684,7 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
 if { [info exists env(AFSISIO)] } {
    set path $env(AFSISIO)/datafiles/constants
 } else {
-   set path $env(SPI_PATH)/share/rmn
+   set path $env(SPI_LIB)/share/rmn
 }
 fstddict load $path/ops.variable_dictionary.xml
 
