@@ -189,7 +189,7 @@ namespace eval Info {
    set Lbl(EmTotalDuration)      { "Durée totale d'émission (s)" "Total release duration (s)" }
    set Lbl(EmEffectiveDuration)  { "Durée effective d'émission (s)" "Effective release duration (s)" }
    set Lbl(EmMaxAge)             { "Age maximum (s)" "Maximum age (s)" }
-   set Lbl(EmMinConc)            { "Concentration minimale (unité)" "Minimum concentration (unit)" }
+   set Lbl(EmMinMass)            { "Masse minimale (unité)" "Minimum mass (unit)" }
 
    set Lbl(EmLabel)              { "Type de période" "Type of period" }
    set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }

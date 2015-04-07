@@ -458,47 +458,63 @@ proc MetData::GridLLDelta { Lat0 Lon0 Lat1 Lon1 Delta } {
 #   <DLat>   : Delta en latitude
 #   <DLon>   : Delta en longitude
 #   <ETIKET> : Etiquette a assigner
+#   <ID>     : Field name
 #
 # Remarques :
 #    Aucune.
 #
 #-------------------------------------------------------------------------------
 
-proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID }} {
+proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID } { ID "" } { Type Float32 } { GridNo 0 } } {
 
+   #----- Order bounding box limits
+  if { $Lat1<$Lat0 } { 
+      set tmp $Lat0
+      set Lat0 $Lat1
+      set Lat1 $tmp
+   }   
+
+   if { $Lon1<$Lon0 } { 
+      set tmp $Lon0
+      set Lon0 $Lon1
+      set Lon1 $tmp
+   }   
+
+   if { $ID=="" } {
+      set ID GRIDLL
+   }
+   
    set ni [expr int(ceil(($Lon1-$Lon0)/$DLon))]
    set nj [expr int(ceil(($Lat1-$Lat0)/$DLat))]
+   
+   fstdfield create ${ID}TIC $ni 1 1
+   fstdfield create ${ID}TAC 1 $nj 1
 
-   fstdfield create GRIDLLTIC $ni 1 1
-   fstdfield create GRIDLLTAC 1 $nj 1
+   fstdfield define ${ID}TIC -GRTYP L 0 0 1.0 1.0
+   fstdfield define ${ID}TAC -GRTYP L 0 0 1.0 1.0
 
-   fstdfield define GRIDLLTIC -GRTYP L 0 0 1.0 1.0
-   fstdfield define GRIDLLTAC -GRTYP L 0 0 1.0 1.0
-
-   fstdfield define GRIDLLTIC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR ">>" -TYPVAR X
-   fstdfield define GRIDLLTAC -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET $ETIKET -DATYP 2 -NOMVAR "^^" -TYPVAR X
+   fstdfield define ${ID}TIC -DEET 0 -NPAS 0 -IP1 $GridNo -IP2 0 -IP3 0 -ETIKET $ETIKET -NOMVAR ">>" -TYPVAR X
+   fstdfield define ${ID}TAC -DEET 0 -NPAS 0 -IP1 $GridNo -IP2 0 -IP3 0 -ETIKET $ETIKET -NOMVAR "^^" -TYPVAR X
 
    #----- Compute tictic grid coordinates.
-
    set lon $Lon0
    for { set i 0 } { $i < $ni } { incr i } {
-      fstdfield stats GRIDLLTIC -gridvalue $i 0 $lon
+      fstdfield stats ${ID}TIC -gridvalue $i 0 [expr $lon<0.0?$lon+360.0:$lon]
       set lon [expr $lon+$DLon]
    }
 
    #----- Compute tactac grid coordinates.
-
    set lat $Lat0
    for { set j 0 } { $j < $nj } { incr j } {
-      fstdfield stats GRIDLLTAC -gridvalue 0 $j $lat
+      fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
       set lat [expr $lat+$DLat]
    }
 
-   fstdfield create GRIDLLMEM $ni $nj 1
-   fstdfield define GRIDLLMEM -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IP1 1200 -IP2 0 -IP3 0 -IG1 0 -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
-   fstdfield define GRIDLLMEM -positional GRIDLLTIC GRIDLLTAC
+   fstdfield create ${ID} $ni $nj 1 ${Type}
+   fstdfield define ${ID} -ETIKET $ETIKET -NOMVAR "GRID" -TYPVAR X -IP1 1200 -IP2 0 -IP3 0 -IG1 $GridNo -IG2 0 -IG3 0 -IG4 0 -GRTYP Z
+   fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
 
-   return GRIDLLMEM
+   return ${ID}
 }
 
 #-------------------------------------------------------------------------------
