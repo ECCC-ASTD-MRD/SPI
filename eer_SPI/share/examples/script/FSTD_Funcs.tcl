@@ -174,12 +174,18 @@ vexpr GZ GZ<<0
 fstdfield configure GZ -extrapdegree VALUE
 fstdfield gridinterp GZ TT
 
+file delete DataOut/2006122900_000.eta.mask
 fstdfile open 3 write DataOut/2006122900_000.eta.mask
 fstdfield write GZ 3 -32 True
 fstdfield read TIC 2 -1 "" -1 -1 -1 "" ">>"
 fstdfield read TAC 2 -1 "" -1 -1 -1 "" "^^"
 fstdfield write TIC 3 -32 True
 fstdfield write TAC 3 -32 True
+
+puts "\nTesting tiling"
+fstdfield define GZ -NOMVAR TILE
+fstdfield writetiled GZ 3 256 256 1 -32 True
+
 fstdfile close 1 2 3
 
 puts "\nTesting Y grid coordinate interpolation"
