@@ -353,7 +353,7 @@ proc  Mapper::DepotWare::TMS::SelectLayer { Layer } {
    Mapper::UpdateData $Page::Data(Frame)
 }
 
-proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } } {
+proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } { SQL "" } } {
    variable Param
 
    set name [$Tree get $Branch name]

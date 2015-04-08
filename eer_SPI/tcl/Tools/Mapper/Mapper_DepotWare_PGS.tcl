@@ -121,12 +121,12 @@ proc  Mapper::DepotWare::PGS::Parse { Tree Branch } {
    }
 }
 
-proc  Mapper::DepotWare::PGS::Select { Tree Branch { Select True } } {
+proc  Mapper::DepotWare::PGS::Select { Tree Branch { Select True } { SQL "" } } {
 
    if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]
       set layer [$Tree get $Branch path]
-      Mapper::OGR::Read $path [list $layer]
+      Mapper::OGR::Read $path [list $layer] $SQL
    } else {
    
    }

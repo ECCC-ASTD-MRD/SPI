@@ -65,6 +65,7 @@ namespace eval Mapper::DepotWare {
    set Lbl(Save)        { "Sauvegarder" "Save" }
    set Lbl(Cancel)      { "Annuler" "Cancel" }
    set Lbl(Desc)        { "Description" "Description" }
+   set Lbl(SQL)         { "Requete SQL" "SQL request" }
 
    set Msg(Search)     { "Recherche ..." "Searching ..." }
    set Msg(Clean)      { "Nettoyage du cache ..." "Cleaning cache ..." }
@@ -509,7 +510,7 @@ proc Mapper::DepotWare::TreeId { Tree Branch Leaf } {
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
+proc  Mapper::DepotWare::TreeSelect { Tree Branch Open { SQL "" } } {
    global GDefs
    variable Data
    variable Lbl
@@ -530,11 +531,11 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open } {
                }
                }
       "OGR"  { if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $path]==-1 } {
-                  Mapper::OGR::Read $path
+                  Mapper::OGR::Read $path {}
                }
                }
       "URL*"  { }
-      default { Mapper::DepotWare::${type}::Select $Tree $Branch $Open }
+      default { Mapper::DepotWare::${type}::Select $Tree $Branch $Open $SQL }
    }
    
    Mapper::UpdateData $Page::Data(Frame)
@@ -594,6 +595,7 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
    if { ![winfo exists .depotwaremenu] } {
       menu .depotwaremenu -type normal
       .depotwaremenu add command -label [lindex $Lbl(Display) $GDefs(Lang)] -command ""
+      .depotwaremenu add command -label [lindex $Lbl(SQL) $GDefs(Lang)] -command ""
       .depotwaremenu add cascade -label [lindex $Lbl(Index) $GDefs(Lang)] -menu .depotwaremenu.idx
       .depotwaremenu add separator
 #      .depotwaremenu add command -label [lindex $Lbl(Params) $GDefs(Lang)] -command { Mapper::DepotWare::Window 0 }
@@ -611,13 +613,14 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
 
       .depotwaremenu entryconfigure 0 -state disabled
       .depotwaremenu entryconfigure 1 -state disabled
-      .depotwaremenu entryconfigure 3 -state disabled
+      .depotwaremenu entryconfigure 2 -state disabled
       .depotwaremenu entryconfigure 4 -state disabled
+      .depotwaremenu entryconfigure 5 -state disabled
       .depotwaremenu.idx delete 0 end
 
       if { [TREE depth $Branch]==1 } {
-         .depotwaremenu entryconfigure 3 -state normal
          .depotwaremenu entryconfigure 4 -state normal
+         .depotwaremenu entryconfigure 5 -state normal
       }
 
       if { $Data(Type)=="DIR" } {
@@ -625,12 +628,16 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
             foreach file [glob -nocomplain $Data(Path)/Index/*.shp]  {
                .depotwaremenu.idx add command -label [file tail $file] -command "Mapper::OGR::Read $file; Mapper::UpdateData $Page::Data(Frame)"
             }
-            .depotwaremenu entryconfigure 1 -state normal
+            .depotwaremenu entryconfigure 2 -state normal
          }
       } elseif { [TREE isleaf $Branch] } {
          .depotwaremenu entryconfigure 0 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True"
       }
 
+      if { $Data(Type)=="PGS" } {
+         .depotwaremenu entryconfigure 1 -state normal -command "Mapper::DepotWare::TreeSelect Mapper::DepotWare::TREE $Branch True \[Mapper::DepotWare::SQLRequest \[lindex \$Mapper::DepotWare::Data(Path) 1]\]"      
+      }
+      
       set type [lindex $Data(Type) end]
       foreach lbl  $Lbl(Types) {
          if { $type==[lindex $lbl 0] } {
@@ -640,6 +647,66 @@ proc Mapper::DepotWare::PopUp { Canvas X Y Branch } {
       }
       tk_popup .depotwaremenu $X $Y 0
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::DepotWare::SQLRequest>
+# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Allow user to enter it's SQL request
+#
+# Parametres :
+#  <Layer>  : Layer on which to request
+#
+# Retour    : SQL request
+# 
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc Mapper::DepotWare::SQLRequest { Layer } {
+   global GDefs
+   global sql
+   variable Lbl
+
+   set oldFocus [focus]
+
+   if { [winfo exists .mappersql] } {
+      raise .mappersql
+   } else {
+      toplevel         .mappersql -relief raised -bd 1
+      wm title         .mappersql [lindex $Lbl(SQL) $GDefs(Lang)]
+      wm resizable     .mappersql 1 1
+      wm protocol      .mappersql WM_DELETE_WINDOW { }
+      wm geom          .mappersql +[expr [winfo rootx .mapper]+50]+[expr [winfo rooty .mapper]+50]
+      wm transient     .mappersql .mapper
+      
+      frame .mappersql.fr -relief raised -bd 1
+#         label .mappersql.fr.info -text [lindex $Lbl(SQL) $GDefs(Lang)]
+         text .mappersql.fr.req -relief sunken -bd 1 -bg $GDefs(ColorLight)
+#         pack .mappersql.fr.info -side top -fill x
+         pack .mappersql.fr.req -side top -fill both -expand True
+      pack .mappersql.fr -side top -fill both -padx 5
+         
+      frame .mappersql.cmd -relief sunken -bd 1
+         button .mappersql.cmd.ok -bd 1 -text [lindex $Lbl(Apply) $GDefs(Lang)] -command  { set sql  [.mappersql.fr.req get 0.0 end] }
+         button .mappersql.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command  { set sql "NIL" }
+         pack .mappersql.cmd.ok .mappersql.cmd.cancel -side left  -fill x -expand True
+      pack .mappersql.cmd -side top -fill x -padx 5 -pady 5
+   }
+   
+   #----- Insert initial part
+   .mappersql.fr.req insert 0.0 "SELECT * from $Layer WHERE"
+   
+   update idletasks
+   focus  .mappersql.fr.req 
+   grab .mappersql
+
+   #----- Attente de la selection du boutton
+   tkwait variable sql
+   focus $oldFocus
+   destroy .mappersql
+   return $sql
 }
 
 #-------------------------------------------------------------------------------

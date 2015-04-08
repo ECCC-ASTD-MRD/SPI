@@ -107,7 +107,7 @@ proc  Mapper::DepotWare::WCS::Parse { Tree Branch } {
    }
 }
 
-proc  Mapper::DepotWare::WCS::Select { Tree Branch { Select True } } {
+proc  Mapper::DepotWare::WCS::Select { Tree Branch { Select True } { SQL "" } } {
    global GDefs
    variable Data
    variable Msg

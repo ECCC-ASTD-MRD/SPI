@@ -80,7 +80,7 @@ proc  Mapper::DepotWare::WFS::Parse { Tree Branch } {
    }
 }
 
-proc  Mapper::DepotWare::WFS::Select { Tree Branch { Select True } } {
+proc  Mapper::DepotWare::WFS::Select { Tree Branch { Select True } { SQL "" } } {
 
    if { $Select } {
       set path  [$Tree get [$Tree parent $Branch] path]

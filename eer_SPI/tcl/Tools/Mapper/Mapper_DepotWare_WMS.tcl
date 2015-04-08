@@ -137,7 +137,7 @@ proc  Mapper::DepotWare::WMS::Parse { Tree Branch } {
    http::cleanup $req
 }
 
-proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } } {
+proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } { SQL "" } } {
    global GDefs
    variable Data
    variable Msg
@@ -569,7 +569,7 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
       }
       image create photo $tag
 
-      gdalband stat LG -image $tag
+      gdalband stats LG -image $tag
       gdalband free LG
       gdalfile close LGFILE
 

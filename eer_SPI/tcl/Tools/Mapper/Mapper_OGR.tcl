@@ -2028,6 +2028,13 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    global GDefs
    variable Data
 
+   #----- If canceled by SQL
+   if { $SQL=="NIL" } {
+      return ""
+   } else {
+      incr Data(IdSQL)
+   }
+   
    set id OGR[incr Data(IdNo)]
   
    eval set bad [catch { set idxs [ogrfile open $id read $File] } msg]
@@ -2041,31 +2048,35 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
       ogrfile close $File
       return ""
    }
-   
-   #----- If more than one layer and not running in batch, ask user which ones to load
-   if { [llength $idxs]>1 && !$SPI::Param(Batch) } {
-      if { ![llength [set idxs [Mapper::OGR::LayerSelect $idxs]]] } {
-         return True
+
+   if { [llength $Index] } {
+      #----- If a layer index has been specified, use it
+      set idxs {}
+      foreach idx $Index {
+         lappend idxs [list $id [lindex $idx 0] [lindex $idx 1]]
+      }
+   } else {
+      #----- If more than one layer and not running in batch, ask user which ones to load
+      if { [llength $idxs]>1 && !$SPI::Param(Batch) } {
+         if { ![llength [set idxs [Mapper::OGR::LayerSelect $idxs]]] } {
+            return True
+         }
       }
    }
    
    set Data(Job)   [lindex $Mapper::Msg(Read) $GDefs(Lang)]
    update idletasks;
 
-   #----- If a layer index has been specified, use it
-   if { [llength $Index] } {
-      set idxs {}
-      foreach idx $Index {
-         lappend idxs [list $id [lindex $idx 0] [lindex $idx 1]]
-      }
-   }
-
    foreach idx $idxs {
       set obj [lindex $idx 2]
 
+      if { $SQL!="" } {
+         append obj _$Data(IdSQL)
+      }
+      
       if { ![ogrlayer is $obj] } {
          if { $SQL!="" } {
-            ogrlayer sqlselect $objr $File $SQL
+            ogrlayer sqlselect $obj $id $SQL
          } else {
             eval ogrlayer read \$obj $idx
          }

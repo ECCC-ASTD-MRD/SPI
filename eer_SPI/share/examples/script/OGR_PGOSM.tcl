@@ -34,6 +34,7 @@ set layers0 [ogrfile open PGOSM read "PG: host=aqdb.cmc.ec.gc.ca port=5432 user=
 puts "Layers available: $layers0"
 
 set bbox [join [concat [georef unproject GOOGLE 47.74 -64.96] [georef unproject GOOGLE 47.498 -64.678]] ,]
+Log::Print INFO "Projected bounding box: $bbox"
 
 Log::Print INFO "Extracting everything"
 eval ogrlayer sqlselect ALL PGOSM \{ SELECT * FROM planet_osm_polygon WHERE (way && ST_MakeEnvelope($bbox)) \}
