@@ -499,7 +499,8 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID } { ID 
    #----- Compute tictic grid coordinates.
    set lon $Lon0
    for { set i 0 } { $i < $ni } { incr i } {
-      fstdfield stats ${ID}TIC -gridvalue $i 0 [expr $lon<0.0?$lon+360.0:$lon]
+#      fstdfield stats ${ID}TIC -gridvalue $i 0 [expr $lon<0.0?$lon+360.0:$lon]
+      fstdfield stats ${ID}TIC -gridvalue $i 0 $lon
       set lon [expr $lon+$DLon]
    }
 

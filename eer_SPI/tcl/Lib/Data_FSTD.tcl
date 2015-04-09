@@ -1036,14 +1036,19 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          dataspec configure $Spec -rendervector BARB -rendertexture 0
       }
 
-      if { [fstddict varinfo $var -ip1]!="" } {
-         set ip1 [fstdfield define $Field -IP1]
-      }
-      
+# This fails because convip exit if a not covered type in old format is passed
+#      if { [fstddict varinfo $var -ip1]!="" } {
+#         set ip1 [fstdfield define $Field -IP1]
+#      }
+     
 #      if { ![fstddict isvar $var] } {
 #         fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short $desc
 #      }
-      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short -units -factor -delta]]] } {
+
+#      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short -units -factor -delta]]] } {
+#         dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
+#      }
+      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -units -factor -delta]]] } {
          dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
       }
    }
@@ -1244,7 +1249,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
                }
             }
          }
-            
+           
          #----- If field has not been configured yet or is owned by SPI
          if { $set==0 || $set==2 } {
             fstdfield configure $fld -dataspec $var

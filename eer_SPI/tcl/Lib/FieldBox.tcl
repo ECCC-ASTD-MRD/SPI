@@ -949,11 +949,7 @@ proc FieldBox::InfoCommand { No Index } {
    catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -timezone :UTC] $GDefs(Lang)] }
 
    if { [fstddict isvar $nv] } {
-      if { [fstddict varinfo $nv -ip1]!="" } {
-         eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -searchip1 $ip1 -lang $GDefs(Lang) -short -units]\]
-      } else {
-         eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -units]\]
-      }
+      eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -units]\]
    } else {
       set info  "$nv ??? (???)"
    }   
