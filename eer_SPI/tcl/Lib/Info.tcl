@@ -81,7 +81,7 @@ namespace eval Info {
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
    set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
-   set Lbl(Seed)                 { "Semence aléatoire" "Random seed" }
+   set Lbl(Seed)                 { "Semence initiale" "Initial seed" }
    set Lbl(Aerosol)              { "Type d'aérosol" "Aerosol type" }
    set Lbl(WetScaMode)           { "Mode de lessivage humide" "Wet scavenging mode" }
    set Lbl(DryDepMode)           { "Mode de dépot sec" "Dry deposition mode" }
