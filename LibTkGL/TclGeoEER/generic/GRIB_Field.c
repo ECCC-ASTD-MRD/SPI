@@ -847,14 +847,14 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
          if ((llref=OSRCloneGeogCS(ref))) {
             if ((func=OCTNewCoordinateTransformation(llref,ref))) {
                if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
-                  fprintf(stderr,"(WARNING) GRIB_FieldRead: unable to project transform origin\n");
+                  fprintf(stderr,"(WARNING) GRIB_GridGet: unable to project transform origin\n");
                }
             } else {
-               fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create transform function\n");
+               fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create transform function\n");
             }
             OSRDestroySpatialReference(llref);
          } else {
-            fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create latlon transform\n");
+            fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create latlon transform\n");
          }
          grib_get_double(head->Handle,"DxInMetres",&mtx[1]);
          grib_get_double(head->Handle,"DyInMetres",&mtx[5]);
@@ -872,7 +872,7 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       mtx[5]=incj?mtx[5]:-mtx[5];
 
       if (!GDALInvGeoTransform(mtx,inv)) {
-         fprintf(stderr,"(WARNING) GRIB_FieldRead: Unable to create inverse transform function\n");
+         fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create inverse transform function\n");
       }
       Field->Ref=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NK,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref));
       GeoRef_Qualify(Field->Ref);
@@ -880,8 +880,8 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
 
 //      if (OSRIsGeographic(ref))  Field->Ref->Type|=GRID_NOXNEG;
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTString: '%s'\n",Field->Ref->String);
-      fprintf(stderr,"(DEBUG) GRIB_FieldRead: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
+      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTString: '%s'\n",Field->Ref->String);
+      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
    } else {
       return(TCL_ERROR);
@@ -996,6 +996,7 @@ TData *GRIB_FieldCreate(Tcl_Interp *Interp,char *Name,char *Sample,int NI,int NJ
    // Set some default keys
    grib_set_long(head->Handle,"Ni",field->Def->NI);
    grib_set_long(head->Handle,"Nj",field->Def->NJ);
+   grib_set_long(head->Handle,"bitsPerValue",0);
    
    len=4;grib_set_string(head->Handle,"centre","cwao",&len);
 
@@ -1052,6 +1053,9 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    grib_set_long(head->Handle,"projectionCentreFlag",0);
    grib_set_long(head->Handle,"iScansNegatively",0);
    grib_set_long(head->Handle,"jScansPositively",1);
+   grib_set_long(head->Handle,"jPointsAreConsecutive",0);
+   grib_set_long(head->Handle,"earthIsOblate",0);
+   grib_set_long(head->Handle,"uvRelativeToGrid",1);
          
    switch(RPN->Ref->Grid[0]) {
       case 'N':
@@ -1062,6 +1066,8 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          xg[3]=RPN->Ref->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
          while(xg[3]<0)    xg[3]+=360;
          while(xg[3]>360 ) xg[3]-=360;
+         
+         if (co.Lon<0) co.Lon+=360.0;
          
          len=19;
          grib_set_string(head->Handle,"gridType","polar_stereographic",&len);

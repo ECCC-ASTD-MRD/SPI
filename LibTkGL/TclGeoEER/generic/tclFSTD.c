@@ -333,7 +333,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,key,n,m,k,compress=0,nid,pnid;
+   int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,halo,key,n,m,k,compress=0,nid,pnid;
    unsigned long dk;
    int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok,imode=0;
    long          time;
@@ -363,9 +363,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
-   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","copydesc","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
-   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
@@ -573,6 +573,26 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
          return(FSTD_FieldWrite(Interp,Tcl_GetString(Objv[3]),field0,npack,rewrite,compress));
+         break;
+
+      case WRITETILED:
+         if(Objc!=9 && Objc!=10) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld id ni nj halo npack rewrite [compress]");
+            return(TCL_ERROR);
+         }
+         Tcl_GetIntFromObj(Interp,Objv[4],&ni);
+         Tcl_GetIntFromObj(Interp,Objv[5],&nj);
+         Tcl_GetIntFromObj(Interp,Objv[6],&halo);
+         Tcl_GetIntFromObj(Interp,Objv[7],&npack);
+         Tcl_GetBooleanFromObj(Interp,Objv[8],&rewrite);
+         if (Objc==7) {
+            Tcl_GetBooleanFromObj(Interp,Objv[9],&compress);
+         }
+         if (!(field0=Data_Get(Tcl_GetString(Objv[2])))) {
+            Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         return(FSTD_FieldTile(Interp,Tcl_GetString(Objv[3]),field0,ni,nj,halo,npack,rewrite,compress));
          break;
 
       case COPYDESC:
@@ -2243,7 +2263,8 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Var->IP1);
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP1));
+               if (Var->IP1>=0)
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP1));
             }
             break;
             
@@ -2252,7 +2273,8 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Var->IP3);
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP3));
+               if (Var->IP3>=0)
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP3));
             }
             break;
 

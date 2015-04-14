@@ -552,7 +552,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    char       tile;
 
    def=Field->SDef?Field->SDef[0]:Field->Def;
-   
+  
    /*Verifier la validite de la grille*/
    if (!Field->Ref)
       return(NULL);
@@ -745,18 +745,18 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
    int       i=1;
 
    if (Field->Ref->ZRef.Type==LVL_UNDEF || Field->Ref->ZRef.Type==LVL_SIGMA || Field->Ref->ZRef.Type==LVL_HYBRID || Field->Ref->ZRef.Type==LVL_ETA) {
-      if (Field->Ref->ZRef.PTop==0.0) {
+      if (Field->Ref->ZRef.Version==-1) {
          if ((fid=((TRPNHeader*)Field->Head)->File)) {
             i=0;
 
+#ifdef HAVE_RMN
             if (FSTD_FileSet(NULL,fid)<0)
                return(i);
 
-            RPN_FieldLock();
             i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
-            RPN_FieldUnlock();
 
             FSTD_FileUnset(NULL,fid);
+#endif
          }
       }
    }
@@ -1751,6 +1751,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
       Field->Ref=GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(ref?ref->Type:LVL_UNDEF),(ref?ref->ZRef.Levels:NULL),grtyp,head->IG1,head->IG2,head->IG3,head->IG4,head->File?head->File->Id:-1));
       GeoRef_Qualify(Field->Ref);
    }
+   
    if (ref) {
       GeoRef_Destroy(Interp,ref->Name);
    }
@@ -2884,6 +2885,96 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    FSTD_FieldSubSelect(Field,nid);
 
    if (ok>=0){
+      return(TCL_OK);
+   } else {
+      Tcl_AppendResult(Interp,"FSTD_FieldWrite: Could not write field (c_fstecr failed)",(char*)NULL);
+      return(TCL_ERROR);
+   }
+}
+
+int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress) {
+
+   TRPNFile    *file;
+   TRPNHeader   *head=(TRPNHeader*)Field->Head;
+   TDataVector *uvw;
+   int          ok=0,datyp,nid;
+   char         pvar[5];
+   
+   /*Verifier l'existence du champs*/
+   if (!Field) {
+      Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   file=FSTD_FileGet(Interp,Id);
+   if (FSTD_FileSet(Interp,file)<0)
+      return(TCL_ERROR);
+
+   // Force datadef to master grid
+   nid=Field->Ref->NId;
+   FSTD_FieldSubSelect(Field,0);
+   
+   // Check for DATYP and NBIT
+   if (head->DATYP==-1) {
+      switch(Field->Def->Type) {
+         case TD_Binary:  head->DATYP=0;head->NBITS=1;break;
+         case TD_UByte:   head->DATYP=2;head->NBITS=8;break;
+         case TD_Byte:    head->DATYP=4;head->NBITS=8;break;
+         case TD_UInt16:  head->DATYP=2;head->NBITS=16;break;
+         case TD_Int16:   head->DATYP=4;head->NBITS=16;break;
+         case TD_UInt32:  head->DATYP=2;head->NBITS=32;break;
+         case TD_Int32:   head->DATYP=4;head->NBITS=32;break;
+         case TD_UInt64:  head->DATYP=2;head->NBITS=64;break;
+         case TD_Int64:   head->DATYP=4;head->NBITS=64;break;
+         case TD_Float32: head->DATYP=5;head->NBITS=32;break;
+         case TD_Float64: head->DATYP=5;head->NBITS=64;break;
+         case TD_Unknown:
+         default: return(TCL_ERROR);
+      }     
+   }
+   
+   head->File=file;
+   head->FID=file->Id;
+   datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
+   NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
+
+   // Check for compression flag and adjust datyp accordingly
+   if (Compress) {
+      switch (head->DATYP) {
+         case 2: datyp=130; break;
+         case 4: datyp=132; break;
+         case 5: datyp=133; break;
+         case 1: datyp=134; break;
+      }
+//      if (head->NBITS==64 && (head->DATYP=1 || head->DATYP==5)) datyp=801;
+   }
+
+   ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->Ref,0,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);
+   
+   // Inscription des champs complementaires
+   if (Field->Def->Data[1]) {
+      if ((uvw=Data_VectorTableCheck(head->NOMVAR,NULL))) {
+         strncpy(pvar,head->NOMVAR,4);
+         
+         // Inscription du champs complementaire 2D
+         if (uvw->VV) {
+            strncpy(head->NOMVAR,uvw->VV,4);
+            ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->Ref,1,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);
+         }
+         
+         // Inscription du champs complementaire 3D
+         if (Field->Def->Data[2] && uvw->WW) {
+            strncpy(head->NOMVAR,uvw->WW,4);
+            ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->Ref,2,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);
+         }
+         strncpy(head->NOMVAR,pvar,4);            
+      }
+   }
+         
+   FSTD_FileUnset(Interp,file);
+   FSTD_FieldSubSelect(Field,nid);
+
+   if (ok){
       return(TCL_OK);
    } else {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Could not write field (c_fstecr failed)",(char*)NULL);

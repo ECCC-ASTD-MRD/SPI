@@ -2680,38 +2680,38 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case TOP:
             if (Objc==1) {
-               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
-#ifdef HAVE_RMN
+               if (Field->Ref->ZRef.Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
-#endif            
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PTop));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
                Field->Ref->ZRef.PTop=tmpd;
+               
+               // If 0, force ZRef refresh
+               Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
             }
             break;
 
          case REF:
             if (Objc==1) {
-               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
-#ifdef HAVE_RMN
+               if (Field->Ref->ZRef.Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
-#endif
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PRef));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
                Field->Ref->ZRef.PRef=tmpd;
+               
+               // If 0, force ZRef refresh
+               Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
             }
             break;
 
          case COEF:
             if (Objc==1) {
-               if (Field->Ref->ZRef.PTop==0.0 && Field->Ref->ZRef.PRef==0.0) {
-#ifdef HAVE_RMN
+               if (Field->Ref->ZRef.Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
-#endif
                }
                obj=Tcl_NewListObj(0,NULL);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
