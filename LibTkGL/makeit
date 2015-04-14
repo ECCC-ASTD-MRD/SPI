@@ -81,6 +81,8 @@ if [[ $ARCH == "AIX" ]]; then
    export LIBPATH=$LD_LIBRARY_PATH
 fi
 
+DEF_PWD=$PWD
+
 #export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
 
 printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
@@ -118,6 +120,7 @@ if [[ $EXT -eq 1 ]]; then
    PROJ=proj-4.8.0
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.1.1
+   EZIV=cezinterpv-15.2
 
    #----- not recompiled yet
    KKDU=kakadu-6.3
@@ -164,6 +167,12 @@ if [[ $EXT -eq 1 ]]; then
    cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.0.dtd iso-lat1.ent $LIB_PATH/share/rmn
 
    set -e
+
+   #----- cezinterpv
+   echo "Building ${TMP_PATH}/$EZIV/build.log"
+   mkdir ${TMP_PATH}/$EZIV
+   cd ${TMP_PATH}/$EZIV
+   (${ARCH_PATH}/$EZIV/makeit --prefix=${LIB_PATH}) > ${TMP_PATH}/$EZIV/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Mesa
    if [[ $ARCH != "AIX" ]]; then
@@ -274,19 +283,19 @@ if [[ $EXT -eq 1 ]]; then
       make install) > ${TMP_PATH}/${GEOS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
-   #----- jasper
-   echo "Building ${TMP_PATH}/${JASPER}/build.log"
-   mkdir ${TMP_PATH}/${JASPER}
-   cd ${TMP_PATH}/${JASPER}
-   (CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS" ${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) > ${TMP_PATH}/${JASPER}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-
    #----- JPEG
    echo "Building ${TMP_PATH}/${JPEG}/build.log"
    mkdir ${TMP_PATH}/${JPEG}
    cd ${TMP_PATH}/${JPEG}
    (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
    make install) > ${TMP_PATH}/${JPEG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- jasper
+   echo "Building ${TMP_PATH}/${JASPER}/build.log"
+   mkdir ${TMP_PATH}/${JASPER}
+   cd ${TMP_PATH}/${JASPER}
+   (CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS" ${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   make install) > ${TMP_PATH}/${JASPER}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- HDF-4
    echo "Building ${TMP_PATH}/${HDF4}/build.log"
@@ -438,6 +447,8 @@ if [[ $EXT -eq 1 ]]; then
 fi
 
 if [[ $CLN -eq 1 ]]; then
+   cd $DEF_PWD
+
    printf -- "\n----- Cleaning TclSystem Library -----\n"
    cd TclSystem
    make distclean
@@ -454,6 +465,7 @@ if [[ $CLN -eq 1 ]]; then
 fi
 
 if [[ $SPI -eq 1 ]]; then
+   cd $DEF_PWD
   
    export CC=c99
    export CFLAGS="-D_TK_SOURCE -fopenmp"
@@ -534,8 +546,7 @@ if [[ $SSM -eq 1 ]]; then
    rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name "*~" -exec rm -f {} \+
-   find ${SSM_DEV}/workspace/${SSM_NAME} -name ".nfs*" -exec rm -f {} \+
+   find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
@@ -550,7 +561,7 @@ if [[ $SRC -eq 1 ]]; then
    ./cleanit
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
-   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -exec rm -f -r {} \+
-   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name "*~" -exec rm -f {} \+
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -prune -exec rm -f -r {} \+
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
 fi
