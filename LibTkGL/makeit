@@ -56,7 +56,6 @@ PROC=`uname -m | tr _ -`
 
 SRC_PATH=`pwd`
 TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
-#TMP_PATH=/tmp/llll                         #----- Temporary directory where the external libraries will be compiled
 ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
@@ -121,6 +120,7 @@ if [[ $EXT -eq 1 ]]; then
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.1.1
    EZIV=cezinterpv-15.2
+   EZSCINT=ezscint
 
    #----- not recompiled yet
    KKDU=kakadu-6.3
@@ -165,6 +165,11 @@ if [[ $EXT -eq 1 ]]; then
    mkdir -p $LIB_PATH/share/rmn
    cd $AFSISIO/datafiles/constants/
    cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.0.dtd iso-lat1.ent $LIB_PATH/share/rmn
+
+   #----- EZSCINT, copies libs
+   echo "Copying precompiled $EZSCINT"
+   cp -frd $LIB_PATH_OPS/$EZSCINT/lib/* $LIB_PATH/lib
+   cp -frd $LIB_PATH_OPS/$EZSCINT/include/* $LIB_PATH/include
 
    set -e
 
