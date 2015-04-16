@@ -25,6 +25,8 @@ static Tcl_HashTable GRIB_FileTable;
 static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
+extern int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+
 /*----------------------------------------------------------------------------
  * Nom      : <GRIB_FileCmd>
  * Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
@@ -138,7 +140,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <FSTD_FieldCmd>
+ * Nom      : <GRIB_FieldCmd>
  * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
  *
  * But      : Appel des commandes relies aux fichiers standards.
@@ -246,6 +248,7 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          return(GRIB_FieldImport(Interp,field,rfield));
          break;
+         
       case GRIDINTERP:
          return(FSTD_FieldCmd(clientData,Interp,Objc,Objv));
          break;

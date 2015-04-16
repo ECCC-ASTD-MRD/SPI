@@ -109,8 +109,8 @@ void SWOB_StartHandler(void *Data,const char *Elem,const char **Attr) {
       if (swob->Ename && swob->Evalue) {
           switch (data->Bloc) {
             case SWOB_IDELEMENTS:
-               if (strcmp(swob->Ename,"wmo_station_id")==0 || strcmp(swob->Ename,"stn_name")==0) swob->Name=strdup(swob->Evalue);
-               if (strcmp(swob->Ename,"wmo_station_number")==0 ||strcmp(swob->Ename,"stn_id")==0 || strcmp(swob->Ename,"icao_stn_id")==0) swob->Id=strdup(swob->Evalue);
+               if (strcmp(swob->Ename,"wmo_station_id")==0 || strcmp(swob->Ename,"stn_nam")==0) swob->Name=strdup(swob->Evalue);
+               if (strcmp(swob->Ename,"wmo_station_number")==0 ||strcmp(swob->Ename,"stn_id")==0 || strcmp(swob->Ename,"clim_id")==0  || strcmp(swob->Ename,"msc_id")==0 || strcmp(swob->Ename,"icao_stn_id")==0) swob->Id=strdup(swob->Evalue);
                if (strcmp(swob->Ename,"lat")==0) swob->Co.Lat=atof(swob->Evalue);
                if (strcmp(swob->Ename,"long")==0) swob->Co.Lon=atof(swob->Evalue);
                if (strcmp(swob->Ename,"stn_elev")==0) swob->Co.Elev=atof(swob->Evalue);

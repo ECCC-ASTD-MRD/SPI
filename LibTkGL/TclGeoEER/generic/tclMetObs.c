@@ -2106,6 +2106,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    ea=MetObs_BUFRFindTableCode(5015);
    eo=MetObs_BUFRFindTableCode(6015);
 
+   io=ia=ib=0;
    data=cdata=NULL;
 
    // Initialize rendering parameters per model items

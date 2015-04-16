@@ -62,6 +62,7 @@ int        GRIB_FilePut(Tcl_Interp *Interp,TGRIBFile *File);
 
 TData     *GRIB_FieldCreate(Tcl_Interp *Interp,char *Name,char *Sample,int NI,int NJ,int NK,TDef_Type Type);
 int        GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key);
+int        GRIB_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Compress);
 void       GRIB_FieldFree(TData *Data);
 int        GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN);
 void       GRIB_FieldSet(TData *Data);
