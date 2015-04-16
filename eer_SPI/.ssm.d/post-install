@@ -7,6 +7,7 @@ packageHome=$2
 
 # create profiles
 packageName=`basename ${packageHome}`
+packageVersion=`echo $packageName | cut -d _ -f2 `
 profileDirPath=${packageHome}/etc/profile.d
 profilePath=${profileDirPath}/${packageName}.sh
 loginPath=${profileDirPath}/${packageName}.csh
@@ -16,20 +17,7 @@ mkdir -p ${profileDirPath}
 
 cat > ${profilePath} << EOF
 export SPI_PATH=${packageHome}
+
+#----- If within CMC environment and SPI_LIB not loaded, load only the profile
+[[ -n \${ORDENV_VERSION} && -z \${SPI_LIB} ]] && . ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT}/etc/profile.d/libSPI_${packageVersion}_\${ORDENV_PLAT}.sh
 EOF
-
-cat > ${loginPath} << EOF
-setenv SPI_PATH ${packageHome}
-EOF
-
-# change Tcl's installation config path
-path=${packageHome//\//\\\/}
-
-for arch in `ls -1 ${packageHome}/lib`; do
-   tclHome=${packageHome}/lib/$arch/TclTk/lib
-   cp ${tclHome}/tclConfig.sh ${tclHome}/tclConfig.sh.build
-   cp ${tclHome}/tkConfig.sh ${tclHome}/tkConfig.sh.build
-
-   sed -e "s/\/cnfs.*${arch}.*TclTk/${path}\/lib\/${arch}\/TclTk/" ${tclHome}/tclConfig.sh.build > ${tclHome}/tclConfig.sh 
-   sed -e "s/\/cnfs.*${arch}.*TclTk/${path}\/lib\/${arch}\/TclTk/" ${tclHome}/tkConfig.sh.build > ${tclHome}/tkConfig.sh 
-done
