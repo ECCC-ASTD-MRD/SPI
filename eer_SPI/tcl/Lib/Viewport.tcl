@@ -124,7 +124,7 @@ namespace eval Viewport {
    set MapDef(Eckert_III)      { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } -18000000 18000000 -9000000 9000000 }
    set MapDef(Eckert_V)        { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } -18000000 18000000 -9000000 9000000 }
    set MapDef(HomolonsineTest) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -22000000 22000000 -9000000 9000000 }
-   
+
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
    set Map(X)           0           ;#Pixel en X
    set Map(Y)           0           ;#Pixel en Y
@@ -137,8 +137,10 @@ namespace eval Viewport {
    set Map(LonReset)    -103.0      ;#Longitude initiale de remise a zero
    set Map(LatRot)      0.0         ;#Coordonnees de rotation en latitude
    set Map(LonRot)      0.0         ;#Coordonnees de rotation en longitude
-   set Map(Lat0)        0.0         ;#Coordonnees de rotation en latitude
-   set Map(Lon0)        0.0         ;#Coordonnees de rotation en longitude
+   set Map(Lat0)        0.0         ;#Coordonnees initiales de rotation/deplacement en latitude
+   set Map(Lon0)        0.0         ;#Coordonnees initialse de rotation/deplacement en longitude
+   set Map(LatD)        0.0         ;#Delta de deplacement en latitude
+   set Map(LonD)        0.0         ;#Delta de deplacement en longitude
 
    set Map(GridI)       0.0         ;#Point de grille central en x de l'affichage
    set Map(GridJ)       0.0         ;#Point de grille central en y de l'affichage
@@ -534,11 +536,11 @@ proc Viewport::ConfigGet { Frame VP } {
 
    set Map(GeoRef$Frame) [projection configure $Frame -georef]
    set Map(Type$Frame)   [projection configure $Frame -type]
-   
+
    if { $Map(GeoRef$Frame)!="" } {
       set Map(Type)      $Map(Type$Frame):$Map(GeoRef$Frame)
    } else {
-      set Map(Type)      $Map(Type$Frame) 
+      set Map(Type)      $Map(Type$Frame)
    }
 
    set Map(Data)        [projection configure $Frame -data]
@@ -680,7 +682,7 @@ proc Viewport::ConfigSet { Frame } {
           Viewport::ParamProjSet $def $def
       }
    }
-   
+
    Viewport::ForceGrid $Frame $clean
 
    projection configure $Frame -type $Map(Type$Frame) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
@@ -759,7 +761,7 @@ proc Viewport::Follow { Frame VP X Y } {
       set Map(GridICursor)   [lindex $ij 0]
       set Map(GridJCursor)   [lindex $ij 1]
    }
-   
+
    if { $Page::Data(CoordUnit)=="REF" || ![projection configure $Frame -geographic] } {
       catch { set Page::Data(Coord) [format "%.$Page::Data(CoordPrec)f %.$Page::Data(CoordPrec)f" $Map(GridICursor) $Map(GridJCursor)] }
    } else {
@@ -1554,8 +1556,8 @@ proc Viewport::ForceGrid { Frame { Clean False } } {
          update idletasks
 
          projection clean $Frame
-         
-         if { $ProjCam::Data(Name)=="" } {       
+
+         if { $ProjCam::Data(Name)=="" } {
             Viewport::Reset $Frame True
          }
       }
@@ -1655,7 +1657,7 @@ proc Viewport::ParamProjSet { { Ref "" } { Def "" } } {
       catch { georef create $Ref }
    }
    set Map(GeoRef) $Ref
-   
+
    if { [info exists ::Viewport::MapDef($Def)] } {
       set Map(GridProj) [lindex $MapDef($Def) 0]
       set Map(GridMinX) [lindex $MapDef($Def) 1]
@@ -1667,8 +1669,8 @@ proc Viewport::ParamProjSet { { Ref "" } { Def "" } } {
       set Map(GridRtX) ""
       set Map(GridTrY) ""
       set Map(GridScY) ""
-      set Map(GridRtY) "" 
-   } 
+      set Map(GridRtY) ""
+   }
    eval set tr \[list $Map(GridTrX) $Map(GridScX) $Map(GridRtX) $Map(GridTrY) $Map(GridRtY) $Map(GridScY)\]
    georef define $Map(GeoRef) -projection $Map(GridProj)
    georef define $Map(GeoRef) -transform $tr
@@ -1829,7 +1831,7 @@ proc Viewport::ParamFrame { Frame Apply } {
    foreach def [lsort [array names Viewport::MapDef]] {
       ComboBox::Add $Data(Frame).proj.type "grid:$def"
    }
-   
+
    frame $Data(Frame).left
 
    labelframe $Data(Frame).left.ras -text [lindex $Lbl(Raster) $GDefs(Lang)]
@@ -2188,7 +2190,7 @@ proc Viewport::Resolution { Frame Res } {
 
       if { $Res==1 } {
          glrender -delay $OpenGL::Param(Delay)
-         
+
          foreach vp [Page::Registered $Frame Viewport] {
             if { [winfo exists $Frame.page.canvas] } {
                $Frame.page.canvas itemconf $vp -update True
@@ -2649,7 +2651,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
    #----- Do only if we have the power to
    if { $OpenGL::Param(Res)==1 && !$isgeo } {
-    
+
       if { $dp>10 || $Zoom || $F || $T || $U } {
 
          Viewport::Resolution $Frame 2
@@ -2759,7 +2761,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
 proc Viewport::CloseUp { Frame Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
    variable Data
-   
+
    if { $Data(VP$Frame)!="" } {
       ProjCam::CloseUp $Frame $Frame $Data(VP$Frame) $Lat0 $Lon0 $Lat1 $Lon1 $Off
    }
@@ -3137,7 +3139,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
          $Frame.page.canvas itemconf $vp -data [FieldCalc::Operand $vp $Data(Data$vp)]
       }
    }
-   
+
    #----- Force parameter refresh (after viewport assign to get view dependent params)
    FSTD::ParamGet
 

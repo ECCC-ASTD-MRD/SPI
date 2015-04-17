@@ -754,10 +754,10 @@ proc Page::Create { Frame Width Height { Active True } } {
          bind $Frame <Configure> "if { \$Page::Data(Full$Frame) } { Page::ScaleSet $Frame }"
       }
    pack $Frame -side top -fill both -expand true
-   
-   bind $Frame.page.canvas      <Button> "Page::Activate $Frame"   
+
+   bind $Frame.page.canvas      <Button> "Page::Activate $Frame"
    bind [winfo toplevel $Frame] <Visibility> { if { "%s"!="VisibilityUnobscured" } { glrender -xexpose -1 } else { glrender -xexpose 1 } }
-   
+
    Viewport::Setup $Frame
    CVText::Init $Frame.page.canvas
 
@@ -973,19 +973,16 @@ proc Page::ModeFly { Frame VP } {
    $c bind PAGE$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de manipulation sur l'axe X-Y
-
    $c bind PAGE$VP <ButtonPress-1>       "Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]; $c config -cursor fleur"
    $c bind PAGE$VP <B1-Motion>           "ProjCam::ToDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 #   $c bind PAGE$VP <ButtonRelease-1>     "ProjCam::XYDone $Frame $Frame"
 
    #----- Evenements de rotation
-
    $c bind PAGE$VP <ButtonPress-2>       ""
    $c bind PAGE$VP <B2-Motion>           ""
    $c bind PAGE$VP <ButtonRelease-2>     ""
 
    #----- Evenements de manipulation sur l'axe Z
-
    $c bind PAGE$VP <B1-B2-ButtonPress>   ""
    $c bind PAGE$VP <B1-B2-Motion>        ""
    $c bind PAGE$VP <B1-B2-ButtonRelease> ""
@@ -1024,16 +1021,14 @@ proc Page::ModeData { Frame VP } {
    $c bind PAGE$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de selection de region
-
    $c bind PAGE$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP"
    $c bind PAGE$VP <B1-Motion>       "$c config -cursor sizing; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP }"
    $c bind PAGE$VP <ButtonRelease-1> "$c config -cursor hand1; \$Page::Data(ToolMode)::DrawDone $Frame $VP"
 
    #----- Evenement de deplacement de region (A implementer chez le client)
-
-   $c bind PAGE$VP <ButtonPress-2>   "$c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
-   $c bind PAGE$VP <B2-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
-   $c bind PAGE$VP <ButtonRelease-2> "$c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
+   $c bind PAGE$VP <ButtonPress-2>   "set Viewport::Map(Lat0) \$Viewport::Map(LatCursor); set Viewport::Map(Lon0) \$Viewport::Map(LonCursor); $c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP"
+   $c bind PAGE$VP <B2-Motion>       "set Viewport::Map(LatD) \[expr \$Viewport::Map(LatCursor)-\$Viewport::Map(Lat0)\]; set Viewport::Map(LonD) \[expr \$Viewport::Map(LonCursor)-\$Viewport::Map(Lon0)\]; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
+   $c bind PAGE$VP <ButtonRelease-2> "set Viewport::Map(LatD) 0.0; set Viewport::Map(LonD) 0.0; $c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
 
    $c config -cursor hand1
 }
@@ -1062,13 +1057,11 @@ proc Page::ModeDraw { Frame VP } {
    $c bind PAGE$VP <Motion>          "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 0 }"
 
    #----- Evenements de creation de vertex
-
    $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor pencil; Viewport::Activate $Frame $VP"
    $c bind PAGE$VP <B1-Motion>       "if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexFollow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] 1 }"
    $c bind PAGE$VP <ButtonRelease-1> "$c config -cursor left_ptr; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(DrawMode)::VertexAdd $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\] }"
 
    #----- Evenement de suppression de vertex
-
    $c bind PAGE$VP <ButtonPress-2>   ""
    $c bind PAGE$VP <B2-Motion>       ""
    $c bind PAGE$VP <ButtonRelease-2> "\$Page::Data(DrawMode)::VertexDelete $Frame $VP"
@@ -1100,10 +1093,10 @@ proc Page::ModeSelect { Mode { Frames {} } } {
    } else {
       set frames $Page::Data(Frames)
    }
-   
+
    foreach frame $frames {
 
-      Page::UpdateItems $frame 
+      Page::UpdateItems $frame
 
       if { [winfo exists [set c $frame.page.canvas]] } {
 
@@ -1155,7 +1148,7 @@ proc Page::ModeSelect { Mode { Frames {} } } {
             }
          }
          $c delete VERTEXFOLLOW
-         
+
          if { $Data(Mode)=="Mag" } {
             CVMagnifier::Create $c
          }
@@ -1589,7 +1582,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
    if { $Intrusion>=0 } {
       set Param(Intrusion) $Intrusion
    }
-   
+
    if { $Data(Width$Frame)!=$Width || $Data(Height$Frame)!=$Height } {
 
       set Data(Width)  [set Data(Width$Frame)  $Width]
@@ -1665,7 +1658,7 @@ proc Page::Update { { Frame "" } { VP True } } {
    if { $VP } {
       set vp ""
       foreach vp [Page::Registered $Frame Viewport] {
-         $Frame.page.canvas itemconf $vp -projection $Frame -frame 0 
+         $Frame.page.canvas itemconf $vp -projection $Frame -frame 0
       }
 
       if { $vp!="" } {
