@@ -55,7 +55,8 @@ PROC=`uname -m | tr _ -`
 #----- Dependencies paths
 
 SRC_PATH=`pwd`
-TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
+#TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
+TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
