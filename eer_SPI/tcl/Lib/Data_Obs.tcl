@@ -58,7 +58,7 @@ namespace eval Obs {
       } else {
          set path $env(SPI_LIB)/share/rmn
       }
-      
+
       if { $GDefs(Lang)==0 } {
          metobs table -readmaster B $path/table_b_bufr_f
          metobs table -readmaster D $path/table_d_bufr_f
@@ -228,7 +228,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
       #----- Is it a profile ?
       if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]] } {
          set elevs [metobs define $Obs -ELEMENT $Tag $elem]
-         
+
          #----- If the number of values = numner of elevs (good z axis values)
          if { [llength [lindex [lindex $items 0] 1]] == [llength [lindex [lindex $elevs 0] 1]] } {
             foreach item [lindex [lindex $items 0] 1] elev [lindex [lindex $elevs 0] 1] {
@@ -736,7 +736,7 @@ proc Obs::ParamInit { Obs { Spec "" } } {
          dataspec configure $Spec -colormap OBSMAP$Spec
       }
 
-      if { [set unit [fstddict varinfo $var -unit]]!="" } {
+      if { [set unit [fstddict varinfo $var -units]]!="" } {
          dataspec configure $Spec -unit $unit
       }
    }

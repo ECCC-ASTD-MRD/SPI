@@ -31,8 +31,6 @@ metobs table -readcmc
 
 metobs create SWOBDATA DataIn/71216.xml
 
-puts [metobs define SWOBDATA -ELEMENT]
-
 #----- Output global info on the metobs
 puts  "   Available info   : [metobs define SWOBDATA -INFO]"
 puts  "   Nb Stations      : [metobs define SWOBDATA -NB]"
@@ -50,7 +48,7 @@ foreach id [metobs define SWOBDATA -ID] {
    foreach date $dates  {
       puts  "      [clock format $date] :"
       foreach elem $elems {
-          puts  "         $elem : [metobs define SWOBDATA -ELEMENT $id $elem $date]"
+          puts  "         [metobs table -desc $elem] : [metobs define SWOBDATA -ELEMENT $id $elem $date]"
       }
    }
    if { [incr idx]>10 } {
@@ -68,7 +66,7 @@ foreach id [metobs define SWOBDATA -ID] {
       puts  "      [clock format $date] :"
       foreach report [metobs define SWOBDATA -REPORT $id $date] {
          foreach elem [metreport define $report -ELEMENT] {
-             puts  "         $elem : [metreport define $report -ELEMENT $elem]"
+             puts  "         [metobs table -desc $elem] : [metreport define $report -ELEMENT $elem]"
           }
       }
    }

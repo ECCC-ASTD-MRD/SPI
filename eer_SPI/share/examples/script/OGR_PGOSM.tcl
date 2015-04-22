@@ -34,6 +34,7 @@ set layers0 [ogrfile open PGOSM read "PG: host=aqdb.cmc.ec.gc.ca port=5432 user=
 puts "Layers available: $layers0"
 
 set bbox [join [concat [georef unproject GOOGLE 47.74 -64.96] [georef unproject GOOGLE 47.498 -64.678]] ,]
+set bbox [join [concat [georef unproject GOOGLE 52.76 -130.70] [georef unproject GOOGLE  54.33 -127.33]] ,]
 Log::Print INFO "Projected bounding box: $bbox"
 
 Log::Print INFO "Extracting everything"

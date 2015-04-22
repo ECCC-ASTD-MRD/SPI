@@ -29,7 +29,7 @@ namespace eval NowCaster::Obs { } {
    font create TEPHIFONT  -family arial  -size -10
 
    set Param(Title)      { "Observation" "Observation" }
-   
+
    set Param(PathsSurf)  { }
    set Param(PathsUpper) { }
    set Param(MarkerOp)   AND
@@ -57,7 +57,6 @@ namespace eval NowCaster::Obs { } {
       { 20  1048576  DERIV { "Erreur de position d'avion décelée par TrackQc" "Plane position error found by TrackQc" } }
       { 21  2097152  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
-   set Param(FamilyOp) OR
    set Param(Familys) {
       { 3 8  { "Bulletin corrigé" "Corrected bulletin" } }
       { 4 16 { "Bulletin répété" "Repeated bulletin" } }
@@ -648,11 +647,6 @@ proc NowCaster::Obs::Window { Frame } {
          entry $Frame.flags.bfam.ent -bg $GDefs(ColorLight) -textvariable NowCaster::Obs::Data(Family)
          menubutton $Frame.flags.bfam.sel -menu $Frame.flags.bfam.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
          menu $Frame.flags.bfam.sel.menu -tearoff 1
-         $Frame.flags.bfam.sel.menu add radiobutton -value AND -label [lindex $Lbl(And) $GDefs(Lang)] \
-            -variable NowCaster::Obs::Param(FamilyOp) -command NowCaster::Obs::Update
-         $Frame.flags.bfam.sel.menu add radiobutton -value OR -label [lindex $Lbl(Or) $GDefs(Lang)] \
-            -variable NowCaster::Obs::Param(FamilyOp) -command NowCaster::Obs::Update
-         $Frame.flags.bfam.sel.menu add separator
          foreach family $Param(Familys) {
             set NowCaster::Obs::Data(Family[lindex $family 0]) 0
             $Frame.flags.bfam.sel.menu add checkbutton -offvalue 0 -onvalue [lindex $family 1] -label [lindex [lindex $family 2] $GDefs(Lang)] \
@@ -1170,7 +1164,7 @@ proc NowCaster::Obs::Delete { Obs } {
 
 proc NowCaster::Obs::Clear { } {
    variable Data
-   
+
    foreach obs $Data(Obs) {
       NowCaster::Obs::Delete $obs
    }
@@ -1287,7 +1281,7 @@ proc NowCaster::Obs::Update { { Obs {} } } {
       set model [metobs define $obs -MODEL]
       metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
       metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
-         -CODETYPE $Data(Code$obs) -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -FAMILYOP $Param(FamilyOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
+         -CODETYPE $Data(Code$obs) -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
 
       foreach item $Data(Model$obs) {
          set code [lindex $item 2]
@@ -1560,12 +1554,12 @@ proc NowCaster::Obs::ModelLoad { } {
    variable Data
 
    set Data(Models) {}
-   
+
    set paths $env(HOME)/.spi
    if { [info exists env(SPI_TOOL)] } {
       set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
-   
+
    foreach path $paths {
       if { [file exists $path/ObsModel] } {
          set f [open $path/ObsModel r]
@@ -1582,7 +1576,7 @@ proc NowCaster::Obs::ModelLoad { } {
          close $f
       }
    }
-   
+
    ComboBox::DelAll  $Data(Frame).model.sel.name
    ComboBox::AddList $Data(Frame).model.sel.name $Data(Models)
 }
