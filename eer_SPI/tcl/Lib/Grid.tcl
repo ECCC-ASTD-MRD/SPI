@@ -77,6 +77,38 @@ namespace eval Grid {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Grid::Reset>
+# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Reset internal parameters.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::Reset { } {
+   variable Param
+
+   set Param(NI)       0                                                         ;# Number of gridpoint in I
+   set Param(NJ)       0                                                         ;# Number of gridpoint in J
+   set Param(Lat0)     0                                                         ;# Latitude of first bbox corner
+   set Param(Lat1)     0                                                         ;# Latitude of second bbox corner
+   set Param(Lon0)     0                                                         ;# Longitude of first bbox corner
+   set Param(Lon1)     0                                                         ;# Longitude of second bbox corner
+   set Param(LatM)     0                                                         ;# Delta on latitute translating grid
+   set Param(LonM)     0                                                         ;# Delta on longitude whehn translating grid
+   set Param(PGSM)     ""                                                        ;# Grid description for PGSM
+   set Param(GridInfo) ""                                                        ;# General grid description
+
+   fstdfield free MODELGRID
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Grid::Window>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
@@ -535,7 +567,7 @@ proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    fstdfield create ${ID}TAC 1 $Param(NJ) 1
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
-   fstdfield define ${ID}TAC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
+   fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
 
    #----- Compute tic grid coordinates.
    set lon $Lon0
