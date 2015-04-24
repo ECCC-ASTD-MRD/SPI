@@ -294,13 +294,16 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${JPEG}
    cd ${TMP_PATH}/${JPEG}
    (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
+   #----- This is needed because the defines in jconfig.h causes conflicts with cpl_config.h (GDAL)
+   mv jconfig.h jconfig.h.ori
+   sed 's/^\(#define \(HAVE_STDLIB_H\) *\)$/\/\/ ELO: HAVE_STDLIB_H may already be defined elsewhere\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif/' jconfig.h.ori > jconfig.h
    make install) > ${TMP_PATH}/${JPEG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- jasper
    echo "Building ${TMP_PATH}/${JASPER}/build.log"
    mkdir ${TMP_PATH}/${JASPER}
    cd ${TMP_PATH}/${JASPER}
-   (CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS" ${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   (${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS"
    make install) > ${TMP_PATH}/${JASPER}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- HDF-4
@@ -329,6 +332,8 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${NETCDF}
    cd ${TMP_PATH}/${NETCDF}
    (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --disable-netcdf-4 --enable-shared=yes --enable-static=no --enable-c-only --with-hdf5=${LIB_PATH} -with-hdf4=${LIB_PATH}
+   mv man4/Makefile man4/Makefile.real
+   printf 'install:\n\n' > man4/Makefile
    make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- grib
@@ -389,8 +394,12 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${PROJ}/build.log"
    mkdir ${TMP_PATH}/${PROJ}
    cd ${TMP_PATH}/${PROJ}
-   (${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
-   make install) > ${TMP_PATH}/${PROJ}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   (if [[ $ARCH != "AIX" ]]; then
+        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+    else
+        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no LDFLAGS="-lpthread $LDFLAGS"
+    fi
+    make install) > ${TMP_PATH}/${PROJ}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
    #----- On AIX, have to wrap the int64 definition betweer ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmts/fit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
@@ -399,7 +408,11 @@ if [[ $EXT -eq 1 ]]; then
    cd ${TMP_PATH}/${GDAL}
    cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}
    if [[ $ARCH = "AIX" ]]; then
-      (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no --with-hide-internal-symbols=yes \
+      (MkOriBckp() { test ! -e "$1".ori && mv "$1" "$1".ori; }
+      RmIntTypedef() { MkOriBckp "$2"; sed 's|^\([ '$'\t'']*\)\(typedef[ '$'\t''].*[ '$'\t'']\('"$1"'\);\)$|\1// ELO: Conflicts with \3 declared in /usr/include/sys/inttypes.h on AIX\'$'\n''\1//ELO//\2|' "$2".ori > "$2"; }
+      #----- Because -f in xlc has a totally different meaning...
+      MkOriBckp configure && sed 's/-fvisibility=hidden/-qvisibility=hidden/g' configure.ori > configure && chmod 755 configure
+      ./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
       --with-libz=internal \
       --with-liblzma=yes \
       --with-pcidsk=internal \
@@ -409,15 +422,30 @@ if [[ $EXT -eq 1 ]]; then
       --with-geotiff=internal \
       --with-jpeg=internal \
       --with-gif=internal \
-      --with-static-proj4=${LIB_PATH}
+      --with-static-proj4=${LIB_PATH} \
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIB_PATH}/bin/curl-config \
       --with-xml2=${LIB_PATH}/bin/xml2-config \
       --with-hdf4=${LIB_PATH} \
-      --with-netcdf=${LIB_PATH}
-      make install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      --with-netcdf=${LIB_PATH} \
+      --with-hide-internal-symbols=yes \
+      CFLAGS="-Wl,-G $CFLAGS" CXXFLAGS="-Wl,-G $CXXFLAGS" LDFLAGS="-Wl,-G $LDFLAGS"
+      #----- This is needed because tiff somehow tries to override int64, declared in /usr/include/sys/inttypes.h on AIX
+      RmIntTypedef int64 frmts/gtiff/libtiff/tiff.h
+      RmIntTypedef int64 frmts/fit/gstTypes.h
+      #----- Still int64, but for pcidsk
+      RmIntTypedef int64 frmts/pcidsk/sdk/pcidsk_config.h
+      #----- This is needed because int32 is declared in /usr/include/sys/inttypes.h on AIX
+      RmIntTypedef int32 ogr/ogrsf_frmts/shape/shpopen.c
+      #----- This is needed because M_PI is declared in /usr/include/math.h on AIX
+      MkOriBckp frmts/msg/reflectancecalculator.cpp
+      sed 's|^\(#define  *\(M_PI\) .*\)$|// ELO: Might conflict with /usr/include/math.h on AIX\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif|' frmts/msg/reflectancecalculator.cpp.ori > frmts/msg/reflectancecalculator.cpp
+      #----- Needed because AIX doesn't use the same defines as everybody else for its network structures (/usr/include/netdb.h)
+      MkOriBckp apps/gdalserver.c
+      sed 's|^\(#if defined(__STDC_VERSION__)\)$|// ELO: Added _AIX defines because its AIX and nothing works as is...\'$'\n''#ifdef _AIX\'$'\n''#define _XOPEN_SOURCE_EXTENDED 1\'$'\n''#define _ALL_SOURCE\'$'\n''#endif\'$'\n''\'$'\n''\1|' apps/gdalserver.c.ori > apps/gdalserver.c
+      $MAKE install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    else
       (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
       --with-libz=internal \
