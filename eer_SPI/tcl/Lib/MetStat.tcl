@@ -359,7 +359,7 @@ proc MetStat::RECRCEval { Cmd } {
          lappend Rec(Inter$var) $token
       }
    }
-   
+
    #----- Overload dictionnary info if any is specified
    if { $desc!="" } {
       fstddict varinfo $var -lang $GDefs(Lang) -short $desc
@@ -686,7 +686,8 @@ if { [info exists env(AFSISIO)] } {
 } else {
    set path $env(SPI_LIB)/share/rmn
 }
-fstddict load $path/ops.variable_dictionary.xml
+
+catch { fstddict load $path/ops.variable_dictionary.xml }
 
 #----- Load user RECRC
 MetStat::RECRCLoad $env(HOME)/.recrc
