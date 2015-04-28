@@ -46,7 +46,7 @@
 #define MetObs_GetData(MD,E,V,T)   (MD->Data?(MD->Data[(T*MD->Nv+V)*MD->Ne+E]):-999.0f)
 #define MetObs_GetMarker(MD,E,V,T) (MD->Marker?(MD->Marker[(T*MD->Nv+V)*MD->Ne+E]):0)
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
-#define MET_FLAG(OBS,FLAG) (!OBS->Family || ((OBS->FamilyOp=='O' && (OBS->Family&FLAG)) || (OBS->FamilyOp=='A' && (OBS->Family==FLAG))))
+#define MET_FLAG(OBS,FLAG) (!OBS->Family || (OBS->Family&FLAG))
 #define MET_VALID(V,N)  (V!=-979.0f && V!=-980.0f && V!=-999.0f && V!=N)
 #define MET_TYPEID   0x0
 #define MET_TYPENO   0x1
@@ -123,7 +123,7 @@ typedef struct TMetObs {
    int      Family;             /*Data family descriptor*/
    int      Type,SType;         /*Data family descriptor*/
    int      Marker;             /*Data marker descriptor*/
-   char     FamilyOp,MarkerOp;  /*Data bit operators*/
+   char     MarkerOp;           /*Data bit operators*/
    int      CodeType;           /*Data type*/
    int      FId;
 

@@ -576,7 +576,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
          case STATION:
          case ID:
             obj=Tcl_NewListObj(0,NULL);
-            
+
             if (Objc==1) {
                // List all stations
                loc=obs->Loc;
@@ -589,7 +589,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                // Add station
                search=Tcl_GetString(Objv[++i])[0]=='|'?MET_TYPETG:MET_TYPEID;
                loc=TMetLoc_Find(obs,NULL,Tcl_GetString(Objv[i]),search);
-               
+
                if (Objc==2) {
                   if (loc) {
                      if (search==MET_TYPETG) {
@@ -601,7 +601,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      }
                   }
                   TMetLoc_New(obs,Tcl_GetString(Objv[i]),NULL,0.0,0.0,0.0);
-                  
+
                } else if (Objc==3) {
                   // Find stations for specified date
                   Tcl_GetLongFromObj(Interp,Objv[++i],&time);
@@ -629,7 +629,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            }
                         }
                         loc=loc->Next;
-                     }                    
+                     }
                   } else {
                      Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong number of arguments, must be \"observation define -ID [id] [date]\"",(char*)NULL);
                      return(TCL_ERROR);
@@ -820,7 +820,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      Tcl_SetObjResult(Interp,obj);
                   } else if (Objc==5) {
                      // Add new element
-                     
+
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                      Tcl_ListObjLength(Interp,Objv[++i],&nv);
                      if (nv==0) {
@@ -850,7 +850,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         Tcl_ListObjAppendElement(Interp,obs->Elems,obj);
                      }
                      free(valf);
-                     
+
                      // Adjust time limits
                      obs->Time0=(obs->Time0<time && obs->Time0!=0)?obs->Time0:time;
                      obs->Time1=obs->Time1>time?obs->Time1:time;
@@ -872,7 +872,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                      Tcl_GetLongFromObj(Interp,Objv[++i],&time);
                   }
                   obj=Tcl_NewListObj(0,NULL);
- 
+
                   if (!strlen(Tcl_GetString(Objv[1])) && Objc==3) {
                      // No station specified, look for all report for all stations for this date
                      loc=obs->Loc;
@@ -897,7 +897,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         }
                         loc=loc->Next;
                      }
-                  } else {  
+                  } else {
                      // Station specificed, look for all report for this stations (and date if specified
                      loc=NULL;
                      while ((loc=TMetLoc_Find(obs,loc,Tcl_GetString(Objv[1]),search))) {
@@ -1036,22 +1036,6 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             }
             break;
 
-         case FAMILYOP:
-            if (Objc==1) {
-               if (obs->FamilyOp=='A') {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("AND",-1));
-               } else {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj("OR",-1));
-               }
-            } else {
-               ++i;
-               if (Tcl_GetString(Objv[i])[0]!='A' && Tcl_GetString(Objv[i])[0]!='O') {
-                  Tcl_AppendResult(Interp,"\n   MetObs_Define: Wrong operator, must be \"AND or OR\"",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-               obs->FamilyOp=Tcl_GetString(Objv[i])[0];
-            }
-            break;
 
          case TYPE:
             if (Objc==1) {
@@ -1179,7 +1163,6 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Type     = -1;
    obs->SType    = -1;
    obs->Family   = 0x0;
-   obs->FamilyOp = 'O';
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
    obs->CodeType = 0x0;
@@ -1728,7 +1711,7 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
    TMetElem *elem;
    TMetElemData *data=NULL;
    int nb,d;
-   
+
    // Check if an element exist at this time
    if (!(elem=TMetElem_Find(Loc,Time,0)) || elem->Time!=Time) {
        data=TMetElem_Insert(Loc,Min,Time,Fam,Type,SType,Ne,Nv,Nt,Data,Marker,Codes);
@@ -1762,14 +1745,14 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
          data->Data=(float*)realloc(data->Data,nb*sizeof(float));
          data->Code=(EntryTableB**)realloc(data->Code,nb*sizeof(EntryTableB*));
       }
-      
+
       // Add the new values
       if (Marker && data->Marker)
          memcpy(&data->Marker[d],Marker,Ne*data->Nv*data->Nt*sizeof(int));
       memcpy(&data->Code[d],Codes,Ne*sizeof(EntryTableB*));
       memcpy(&data->Data[d],Data,Ne*data->Nv*data->Nt*sizeof(float));
    }
-   
+
    return(data);
 }
 
@@ -1879,7 +1862,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 #ifdef HAVE_RMN
    type=f77name(wkoffit)(File,strlen(File));
 #endif
-   
+
 #ifdef DEBUG
    fprintf(stderr,"(DEBUG) MetObs_Load: File type is %i\n",type);
 #endif
@@ -2101,7 +2084,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    } else {
       eb=NULL;
    }
-   
+
    // Get latlon displacement pointer
    ea=MetObs_BUFRFindTableCode(5015);
    eo=MetObs_BUFRFindTableCode(6015);
@@ -2118,7 +2101,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          if (isnan(spec->Min) || isnan(spec->Max) || spec->Min==spec->Max)
             MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
-         // Keep model limits 
+         // Keep model limits
          min[0]=FMIN(min[0],Obs->Model->Items[i].X);
          min[1]=FMIN(min[1],Obs->Model->Items[i].Y);
          max[0]=FMAX(max[0],Obs->Model->Items[i].X);
@@ -2146,7 +2129,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    loc=Obs->Loc;
    n=-1;
    nobs=0;
-   
+
    glPushName(PICK_METOBS);
 
    while(loc) {
@@ -2241,7 +2224,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                   // Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved
                   flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
-                  if (Obs->Family && ((Obs->FamilyOp=='O' && !(Obs->Family&flag)) || (Obs->FamilyOp=='A' && !(Obs->Family==flag)))) {
+                  if (Obs->Family && !(Obs->Family&flag)) {
                       continue;
                   }
 
@@ -2259,11 +2242,11 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                         if (eb) ib=TMetElem_Index(data,eb->descriptor,ne);
                         if (ea) ia=TMetElem_Index(data,ea->descriptor,ne);
                         if (eo) io=TMetElem_Index(data,eo->descriptor,ne);
-                        
+
                         id=0;
                         for(v=(Obs->NVal<=-1?0:Obs->NVal);v<(Obs->NVal<=-1?data->Nv:((Obs->NVal+1)>data->Nv?data->Nv:(Obs->NVal+1)));v++) {
                            for(t=0;t<data->Nt;t++) {
-                                                            
+
                               // Check markers
                               if (Obs->Marker) {
                                  mk=MetObs_GetMarker(data,e,v,t);
@@ -2285,7 +2268,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               // Get height if specified
-                              if (eb) { 
+                              if (eb) {
                                  if ((k=TMetElem_ComponentFromIndex(data,ib,v,0))!=-999.0) {
                                     z=k;
                                  }
@@ -2304,7 +2287,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                     co.Lon+=dlon=k;
                                  }
                               }
-                              
+
                               // Check coordinates for grouped data
                               if (clat!=-1 && clon!=-1) {
                                  co.Lat=MetObs_GetData(cdata,clat,0,t)+dlat;
@@ -2319,7 +2302,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               } else {
                                  // if there's displacement then reproject
-                                 if (ia && ib) Projection_Pixel(Proj,VP,co,pix);                         
+                                 if (ia && ib) Projection_Pixel(Proj,VP,co,pix);
                               }
 
                               skip=0;
@@ -2340,7 +2323,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               // Set position within projection
                               glPushMatrix();
                               glPushName(nv++);
-                              
+
                               if (Obs->Model->Flat) {
                                  if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
                                     glTranslated(loc->Pix[0],ViewportY(VP)+VP->Height-loc->Pix[1],0.0);
@@ -2844,7 +2827,7 @@ static int MetReport_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
       case STATS:
          break;
-         
+
       case ALL:
          TclY_HashAll(Interp,&MetRepTable);
          break;
