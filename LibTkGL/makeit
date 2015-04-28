@@ -332,8 +332,8 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${NETCDF}
    cd ${TMP_PATH}/${NETCDF}
    (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --disable-netcdf-4 --enable-shared=yes --enable-static=no --enable-c-only --with-hdf5=${LIB_PATH} -with-hdf4=${LIB_PATH}
-   mv man4/Makefile man4/Makefile.real
-   printf 'install:\n\n' > man4/Makefile
+   mv man4/Makefile man4/Makefile.ori
+   printf 'install:\n\n' > man4/Makefile
    make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- grib
