@@ -48,7 +48,7 @@ namespace eval Info {
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs Duration
-                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStepMin IsoChain \
+                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStep IsoChain \
                         SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
@@ -158,6 +158,7 @@ namespace eval Info {
    set Lbl(Species)              { "Espèces" "Species" }
    set Lbl(OutputTimeStepMin)    { "Pas de temps de sortie (min)" "Output time step (min)" }
    set Lbl(ModelTimeStepMin)     { "Pas de temps du modèle (min)" "Model time step (min)" }
+   set Lbl(ModelTimeStep)        { "Pas de temps du modèle (s)" "Model time step (s)" }
    set Lbl(VerticalLevels)       { "Niveaux verticaux (m)" "Vertical levels (m)" }
    set Lbl(VarMesoscale)         { "Variance des vitesses horiz. des vents (m²/s²)" "Horiz. wind velocity variance (m²/s²)" }
    set Lbl(Timescale)            { "Échelle de temps lagrangienne (s)" "Lagrangian time scale (s)" }
@@ -551,7 +552,7 @@ proc Info::Read { Id } {
       Dialog::Error . $Msg(Info)
       return ""
    }
-   
+
 
    #----- Extraire les donnees
 
