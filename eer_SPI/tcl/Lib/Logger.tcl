@@ -56,7 +56,7 @@ namespace eval Log { } {
    global env
    variable Param
    variable Color
-   
+
    set Param(Out)         stdout                ;#Output file/channel
    set Param(OutFile)     ""                    ;#Output filename
    set Param(Level)       INFO                  ;#Log level
@@ -270,21 +270,21 @@ proc Args::Parse { Argv Argc No Multi Var { Values {} } { Glob "" } } {
 proc Args::ParseInput { File Var } {
 
    upvar #0 $Var input
-   
+
    set tok  ""
    set ntok 0
    array unset input
-   
+
    #----- Parse input file
    foreach dir [split [exec cat $File] '\n'] {
-   
+
       #----- Get rid of comments
       if { [set idx [string first # $dir]]!=-1 } {
          set dir [string range $dir 0 $idx-1]
       }
-      
+
       if { [string length [set dir [string trim $dir]]] } {
-      
+
          #----- Check for line continuation
          if { [set idx [string first = $dir]]!=-1 } {
             set param       [split $dir =]
@@ -301,7 +301,7 @@ proc Args::ParseInput { File Var } {
 
 proc Log::CheckSPI { Version } {
    global env
-   
+
    if { $Version!="" && ![package vsatisfies $env(SPI_VERSION) $Version] } {
       Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Version)"
       Log::End 1 True
@@ -324,12 +324,12 @@ proc Log::CheckSPI { Version } {
 proc Log::Stack { } {
 
    set stack "(DEBUG) Stack trace:\n"
-    
+
    for { set i 1 } { $i < [info level] } { incr i } {
       set lvl [info level -$i]
       set pname [lindex $lvl 0]
       append stack [string repeat "   " $i]$pname
-      
+
       foreach value [lrange $lvl 1 end] arg [info args $pname] {
          if { $value eq "" } {
             info default $pname $arg value
@@ -338,7 +338,7 @@ proc Log::Stack { } {
       }
       append stack \n
    }
-   
+
    return $stack
 }
 
@@ -386,7 +386,7 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "App/Script          : $Job"
    Log::Print MUST "Version             : $Version"
    Log::Print MUST "Hostname            : [system info -name]"
-   Log::Print MUST "Architecture        : $env(ORDENV_PLAT)"
+   Log::Print MUST "Architecture        : [expr {[info exists env(ORDENV_PLAT)] ? $env(ORDENV_PLAT) : [exec uname -s -m]}]"
    Log::Print MUST "Run ID              : $Param(JobId)"
 
    if { $Param(MailTo)!="" } {
@@ -454,7 +454,7 @@ proc Log::End { { Status 0 } { Exit True } } {
           Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
        } else {
           Log::Print MUST "Status              : Job has terminated successfully."
-       }       
+       }
    } else {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
@@ -476,7 +476,7 @@ proc Log::End { { Status 0 } { Exit True } } {
             Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
          } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
             Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-         }    
+         }
       }
    } else {
       Log::Mail "Job finished (ERROR)" $Param(OutFile)
@@ -517,7 +517,7 @@ proc Log::End { { Status 0 } { Exit True } } {
 proc Log::Print { Type Message { Var "" } } {
    variable Param
    variable Color
-   
+
    #----- Check for log file
    if { $Param(Out)=="" || [string first "/" $Param(Out)]!=-1 } {
 
@@ -617,7 +617,7 @@ proc Log::Print { Type Message { Var "" } } {
       if { $Type=="ERROR" } {
          incr Param(Error)
       }
-      
+
       if { $Param(Color) } {
          set cstart $Color($Type)
          set cend   $Color(RESET)
@@ -625,7 +625,7 @@ proc Log::Print { Type Message { Var "" } } {
          set cstart ""
          set cend ""
       }
-      
+
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
