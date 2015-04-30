@@ -43,12 +43,12 @@ while [ $# -gt 0 ]; do
 
         -h|-help)     printf -- "$HELP\n"; exit 0;;
         -v|-version)  printf -- "$VERSION\n"; exit 0;;
-        --)        shift; break;; 
+        --)        shift; break;;
         *)         printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
     esac
     shift
 done
-      
+
 ARCH=`uname -s`
 PROC=`uname -m | tr _ -`
 
@@ -57,7 +57,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 #TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
-ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code 
+ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
@@ -90,7 +90,7 @@ printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
 if [[ $EXT -eq 1 ]]; then
 
    printf -- "\n----- Making extenal dependencies -----\n"
-   
+
    #----- Package to be compiled
    TCL_VERSION=8.6.3
    TCLLIB=1.16
@@ -117,7 +117,7 @@ if [[ $EXT -eq 1 ]]; then
    ECBUFR=libecbufr0.8.6
    OCI=instantclient_11_2
    FGDB=FileGDB_API
-   PROJ=proj-4.8.0
+   PROJ=proj-4.9.1
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.1.1
    EZIV=cezinterpv-15.2
@@ -141,7 +141,7 @@ if [[ $EXT -eq 1 ]]; then
    mkdir -p "${TMP_PATH}"
    echo "Temporary directory is : $TMP_PATH"
    echo "Install diectory is    : $LIB_PATH"
-   
+
    #----- The library we don't compile doesn't need to be copied, so link them to the original dir
 
    if [[ $LIB_PATH_OPS != $LIB_PATH ]]; then
@@ -293,7 +293,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${JPEG}/build.log"
    mkdir ${TMP_PATH}/${JPEG}
    cd ${TMP_PATH}/${JPEG}
-   (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
+   (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
    #----- This is needed because the defines in jconfig.h causes conflicts with cpl_config.h (GDAL)
    mv jconfig.h jconfig.h.ori
    sed 's/^\(#define \(HAVE_STDLIB_H\) *\)$/\/\/ ELO: HAVE_STDLIB_H may already be defined elsewhere\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif/' jconfig.h.ori > jconfig.h
@@ -357,7 +357,7 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- ECBUFR
    if [[ $ARCH != "AIX" ]]; then
-   
+
       #----- Gives error on install (/etc/ld.so.conf.d/libecbufr.conf: Permission denied)
       set +e
       echo "Building ${TMP_PATH}/${ECBUFR}/build.log"
@@ -370,7 +370,7 @@ if [[ $EXT -eq 1 ]]; then
       #|| { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
       set -e
 
-      #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory 
+      #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
       mv ${LIB_PATH}/lib/${ECBUFR}/* ${LIB_PATH}/lib/
       mv ${LIB_PATH}/include/${ECBUFR}/* ${LIB_PATH}/include
       rm -f -r ${LIB_PATH}/lib/${ECBUFR} ${LIB_PATH}/include/${ECBUFR}
@@ -386,7 +386,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${ODBC}/build.log"
       mkdir ${TMP_PATH}/${ODBC}
       cd ${TMP_PATH}/${ODBC}
-      (${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no 
+      (${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
       make install) > ${TMP_PATH}/${ODBC}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -473,7 +473,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-fgdb=${LIB_PATH}
       make install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
-   
+
    rm -f -r ${TMP_PATH}
    set +e
 
@@ -494,13 +494,13 @@ if [[ $CLN -eq 1 ]]; then
    printf -- "\n----- Cleaning TclGeoEER Library -----\n"
    cd ../TclGeoEER
    make distclean
-   
+
    cd ..
 fi
 
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
-  
+
    export CC=c99
    export CFLAGS="-D_TK_SOURCE -fopenmp"
 
@@ -537,7 +537,7 @@ if [[ $SPI -eq 1 ]]; then
    make install
 
    printf -- "\n----- Making TclGeoEER Library -----\n"
-   
+
    cd ../TclGeoEER
    if [[ $REC -eq 1 ]]; then
          make distclean
@@ -559,7 +559,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-urp=${LIB_PATH_OPS}/URP
    fi
    make install
-   
+
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
    ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
@@ -569,7 +569,7 @@ if [[ $SPI -eq 1 ]]; then
 
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
-   
+
    cd ${SRC_PATH}
 fi
 
@@ -577,13 +577,13 @@ if [[ $SSM -eq 1 ]]; then
 
    printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
 
-   rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm 
+   rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
-#   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
+#   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
 
    cd ${SRC_PATH}
 fi
@@ -591,7 +591,7 @@ fi
 if [[ $SRC -eq 1 ]]; then
 
    printf -- "\n----- Building source package : ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz  -----\n"
-   
+
    ./cleanit
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}

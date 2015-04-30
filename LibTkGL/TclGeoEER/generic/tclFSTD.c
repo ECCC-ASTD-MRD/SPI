@@ -163,7 +163,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetDoubleFromObj(Interp,Objv[4],&tmp);dd60=tmp;
          Tcl_GetDoubleFromObj(Interp,Objv[5],&tmp);dgrw=tmp;
          Tcl_GetIntFromObj(Interp,Objv[6],&n);
-         
+
          f77name(xyfll)(&x,&y,&dlat,&dlon,&dd60,&dgrw,&n);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x));
@@ -360,7 +360,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
    extern const char *TDef_InterpVString[];
    extern const char *TDef_InterpRString[];
-   
+
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
@@ -378,14 +378,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    }
 
    switch ((enum opt)idx) {
-      
+
       case VERSION:
          n=1;
          f77name(rmnlib_version)(rmn,&n,127);
          rmn[89]='\0';
          Tcl_AppendResult(Interp,rmn,(char*)NULL);
          return(TCL_OK);
-      
+
       case VECTOR:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
@@ -426,14 +426,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          } else {
             if (FSTD_HIDELIST)
                Tcl_DecrRefCount(FSTD_HIDELIST);
-           
+
 //            FSTD_HIDELIST=Tcl_DuplicateObj(Objv[2]);
             FSTD_HIDELIST=Objv[2];
             if (FSTD_HIDELIST)
                Tcl_IncrRefCount(FSTD_HIDELIST);
          }
          break;
-         
+
       case IP1MODE:
          if (Objc==2) {
             if (ZREF_IP1MODE==2) {
@@ -460,7 +460,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_GetBooleanFromObj(Interp,Objv[2],&FSTD_UNTILE);
          }
          break;
-         
+
       case READ:
          if(Objc!=11 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld id { datev eticket ip1 ip2 ip3 typvar nomvar } | Index");
@@ -611,8 +611,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          RPN_CopyDesc(file->Id,field0->Head);
          FSTD_FileUnset(Interp,((TRPNHeader*)field0->Head)->File);
          FSTD_FileUnset(Interp,file);
-         break;      
-      
+         break;
+
       case EXPORT:
          if (strcmp(Tcl_GetString(Objv[2]),"HIRLAM")==0) {
             if (Objc!=10 && Objc!=14) {
@@ -658,7 +658,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
 
          type=TD_Float32;
-         
+
          if (Objc==7) {
             if (Tcl_GetIndexFromObj(Interp,Objv[6],types,"type",TCL_EXACT,(int*)&type)!=TCL_OK) {
                return(TCL_ERROR);
@@ -738,7 +738,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          // Process each sub grids independently
          pnid=field0->Ref->NId;
          ok=TCL_OK;
-         
+
          for(nid=(pnid?pnid:(field0->Ref->NbId>1?1:0));nid<=(pnid?pnid:(field0->Ref->NbId>1?field0->Ref->NbId:0));nid++) {
             FSTD_FieldSubSelect(field0,nid);
 
@@ -785,7 +785,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc>7) {
                      obj=Objv[7];
                   }
-                  
+
                   // Check for index array
                   if (obj) {
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
@@ -798,10 +798,10 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      } else {
                         // Got a filled variable, will use it's index
                         obj=NULL;
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);                        
+                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
                      }
                   }
-                  
+
                   /*Check compatibility between source and destination*/
                   if (!Def_Compat(field0->Def,field1->Def)) {
                      field0->Ref=GeoRef_Find(GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->ZRef.Type,field1->Ref->ZRef.Levels));
@@ -813,7 +813,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      ok=TCL_ERROR;
                      break;
                   }
-                  
+
                   // Make index object persistent and of the right size
                   if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
 
@@ -831,7 +831,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                            Tcl_ListObjLength(Interp,Objv[5],&nk);
                            if (!table && !(table=(double*)malloc(nk*sizeof(double)))) {
                               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                              ok=TCL_ERROR; break;                       
+                              ok=TCL_ERROR; break;
                            }
                            for(k=0;k<nk;k++) {
                               Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
@@ -878,7 +878,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                if (ok==TCL_ERROR) break;
             } else if ((band=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
 
-               /*Interpolate a band*/            
+               /*Interpolate a band*/
                if (Objc>4) {
                   if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                      ok=TCL_ERROR; break;
@@ -896,17 +896,17 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   nj=1;
                   obj=NULL;
                   index=NULL;
-                  
+
                   if (Objc>6) {
                      if (Tcl_GetBooleanFromObj(Interp,Objv[6],&nj)==TCL_ERROR) {
                         obj=Objv[6];
                      }
                   }
-                  
+
                   if (Objc>7) {
                      obj=Objv[7];
                   }
-                  
+
                   // Check for index array
                   if (obj) {
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
@@ -919,19 +919,19 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      } else {
                         // Got a filled variable, will use it's index
                         obj=NULL;
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);                        
+                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
                      }
                   }
-                  
+
                   if (!(nk=Def_GridInterpConservative(field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
                   }
-                  
+
                   // Make index object persistent and of the right size
                   if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
-                  
+
                } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
                   if (Objc<5 || Objc>7) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
@@ -945,7 +945,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                            Tcl_ListObjLength(Interp,Objv[5],&nk);
                            if (!table && !(table=(double*)malloc((nk+1)*sizeof(double)))) {
                               Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                              ok=TCL_ERROR; break;                       
+                              ok=TCL_ERROR; break;
                            }
                            for(k=0;k<nk;k++) {
                               Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
@@ -978,7 +978,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (!Def_GridInterp(field0->Ref,field0->Def,band->Ref,band->Def,Objv[4]?Tcl_GetString(Objv[4])[0]:'L')) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
-                     break;                     
+                     break;
                   }
                }
                if (ok==TCL_ERROR) break;
@@ -992,22 +992,22 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                   ok=TCL_ERROR; break;
                }
-               
+
                field=NULL;
                obj=NULL;
                x=1.0;
                m=CB_REPLACE;
-               
+
                if (Objc>=6) {
                   if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
                      field=Tcl_GetString(Objv[5]);
                   }
                }
-               
+
                if (Objc==7) {
                   obj=Objv[6];
                }
-               
+
                // Check for index array
                if (obj) {
                   item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
@@ -1020,22 +1020,22 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   } else {
                      // Got a filled variable, will use it's index
                      obj=NULL;
-                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);                        
+                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
                   }
-               }           
+               }
 
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->Ref,layer,layer->Ref,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
-                  ok=TCL_ERROR;             
+                  ok=TCL_ERROR;
                   break;
                }
-               
+
                // Make index object persistent and of the right size
                if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
-               
+
             } else if ((model=Model_Get(Tcl_GetString(Objv[3])))) {
 
-               /*Interpolate a model*/            
+               /*Interpolate a model*/
                if (Objc!=5 && Objc!=6) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
                   ok=TCL_ERROR; break;
@@ -1091,7 +1091,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 #ifdef HAVE_ECBUFR
             } else if ((metobs=MetObs_Get(Tcl_GetString(Objv[3])))) {
 
-              /*Interpolate a metobs*/            
+              /*Interpolate a metobs*/
                if(Objc!=10 && Objc!=11) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto metobsfrom time element [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
                   ok=TCL_ERROR; break;
@@ -1386,9 +1386,9 @@ int FSTD_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,int Index){
 
    if (!(file=(TRPNFile*)malloc(sizeof(TRPNFile)))) {
       Tcl_AppendResult(Interp,"FSTD_FileOpen: Unable to allocate memory for file structure",Id,(char*)NULL);
-      return(TCL_ERROR);      
+      return(TCL_ERROR);
    }
-   
+
    file->Mode=toupper(Mode);
    file->CId=strdup(Id);
    file->Id=cs_fstlockid();
@@ -1431,7 +1431,7 @@ int FSTD_FileLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
          Tcl_AppendResult(Interp,"FSTD_FileLink: Unable to allocate link array",(char*)NULL);
          return(TCL_ERROR);
       }
-      
+
       // Build file table
       for(n=0;n<nobj;n++) {
          Tcl_ListObjIndex(Interp,Ids,n,&obj);
@@ -1439,20 +1439,20 @@ int FSTD_FileLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
             return(TCL_ERROR);
          }
          // First file will be the file id to use
-         if (n==0) 
+         if (n==0)
             Tcl_SetObjResult(Interp,Tcl_NewStringObj(file->CId,-1));
-         
+
          FSTD_FileSet(Interp,file);
          ids[n]=file->Id;
       }
-      
+
       ier=f77name(fstlnk)(ids,&n);
       if (ier<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not link files (c_fstlnk failed)",(char*)NULL);
          return(TCL_ERROR);
-      }    
+      }
    }
-     
+
    return(TCL_OK);
 }
 
@@ -1486,7 +1486,7 @@ int FSTD_FileUnLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
          Tcl_AppendResult(Interp,"FSTD_FileLink: Unable to allocate link array",(char*)NULL);
          return(TCL_ERROR);
       }
-      
+
       for(n=0;n<nobj;n++) {
          Tcl_ListObjIndex(Interp,Ids,n,&obj);
          if (!(file=FSTD_FileGet(Interp,Tcl_GetString(obj)))) {
@@ -1494,19 +1494,19 @@ int FSTD_FileUnLink(Tcl_Interp *Interp,Tcl_Obj *Ids){
          }
          ids[n]=file->Id;
       }
-      
+
       ier=f77name(fstunl)(ids,&n);
       if (ier<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not unlink files (c_fstunlnk failed)",(char*)NULL);
          return(TCL_ERROR);
-      } 
-      
+      }
+
       for(n=0;n<nobj;n++) {
          Tcl_ListObjIndex(Interp,Ids,n,&obj);
          FSTD_FileUnset(Interp,file);
       }
    }
-   
+
    return(TCL_OK);
 }
 
@@ -1562,7 +1562,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,TRPNFile *File){
 
    int ok=0,rem=0;
    char err[8];
-   
+
    if (!File) {
       if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unknown file (NULL)",(char *)NULL);
       return(-1);
@@ -1574,7 +1574,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,TRPNFile *File){
 
    RPN_FileLock();
    if (!File->Open) {
-      
+
       if (File->Mode=='W') {                /*Write Mode*/
          if (rem)
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/W+REMOTE",0);
@@ -1875,7 +1875,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    TDictType *type;
    char       file[2048],*str,*origin,*etiket,*modifier;
    int        ip1,ip3,all=0;
-   
+
    int         idx,tidx;
    static CONST char *sopt[] = { "load","var","type","isvar","istype","varinfo","typeinfo",NULL };
    enum                opt { LOAD,VAR,TYPE,ISVAR,ISTYPE,VARINFO,TYPEINFO };
@@ -1883,7 +1883,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    Tcl_ResetResult(Interp);
 
    Dict_SetSearch(DICT_GLOB,DICT_ALL,NULL,-1,-1,-1,NULL);
-   
+
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
       return TCL_ERROR;
@@ -1895,14 +1895,14 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
    switch ((enum opt)idx) {
 
- 
+
       case LOAD:
 
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[dictfile]");
             return(TCL_ERROR);
          }
-         
+
          if (Objc>2) {
             if (!Dict_Parse(Tcl_GetString(Objv[2]),DICT_UTF8)) {
                Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
@@ -1916,21 +1916,21 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
          }
          break;
-         
+
       case VAR:
          if (Objc<2) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[var] [-searchip1] [-searchip3] [-serachorigin]");
             return(TCL_ERROR);
          }
-         
+
          str=NULL;
-         
+
          if (Objc>2) {
             tidx=2;
             if (Tcl_GetString(Objv[2])[0]!='-') {
               str=Tcl_GetString(Objv[tidx++]);
             }
-            
+
             ip1=ip3=-1;
             origin=etiket=NULL;
             for(;tidx<Objc;tidx++) {
@@ -1958,18 +1958,18 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          Tcl_SetObjResult(Interp,obj);
          break;
-         
+
       case ISVAR:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[var]");
             return(TCL_ERROR);
          }
-                  
-         str=Tcl_GetString(Objv[2]);         
+
+         str=Tcl_GetString(Objv[2]);
          var=Dict_IterateVar(&iter,str);
          Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(var?TRUE:FALSE));
          break;
-         
+
       case TYPE:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[type]");
@@ -1980,21 +1980,21 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          if (Objc>2) {
             str=Tcl_GetString(Objv[2]);
          }
-         
+
          obj=Tcl_NewListObj(0,NULL);
          while((type=Dict_IterateType(&iter,str))) {
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(type->Name,-1));
          }
          Tcl_SetObjResult(Interp,obj);
          break;
-         
+
       case ISTYPE:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"[type]");
             return(TCL_ERROR);
          }
-                  
-         str=Tcl_GetString(Objv[2]);         
+
+         str=Tcl_GetString(Objv[2]);
          type=Dict_IterateType(&iter,str);
          Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(type?TRUE:FALSE));
          break;
@@ -2026,7 +2026,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                   }
                }
             }
-            
+
             Dict_SetSearch(DICT_EXACT,DICT_ALL,origin,ip1,-1,ip3,etiket);
             if (all) {
                obj=Tcl_NewListObj(0,NULL);
@@ -2048,10 +2048,10 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
                   // Var exist
                   obj=FSTD_DictVarInfo(Interp,mod,Objc-3,Objv+3);
-                  
+
                   if (mod!=var) free(mod);
                } else {
-                  // Var does not exist, add it 
+                  // Var does not exist, add it
                   var=(TDictVar*)calloc(1,sizeof(TDictVar));
                   strncpy(var->Name,Tcl_GetString(Objv[2]),5);
                   Dict_AddVar(var);
@@ -2063,7 +2063,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             Tcl_SetObjResult(Interp,obj);
 
-         }        
+         }
          break;
 
       case TYPEINFO:
@@ -2074,13 +2074,13 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                // Var exist
                return(FSTD_DictTypeInfo(Interp,type,Objc-3,Objv+3));
             } else {
-               // Var does not exist, add it 
+               // Var does not exist, add it
                type=(TDictType*)calloc(1,sizeof(TDictType));
                strncpy(type->Name,Tcl_GetString(Objv[2]),2);
                Dict_AddType(type);
                return(FSTD_DictTypeInfo(Interp,type,Objc-3,Objv+3));
              }
-         }        
+         }
          break;
    }
 
@@ -2120,7 +2120,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
    }
 
    obj=Tcl_NewListObj(0,NULL);
-   
+
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
@@ -2130,7 +2130,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
       switch ((enum opt)idx) {
          case ALL:
             break;
-            
+
          case SEARCHIP1:
          case SEARCHIP3:
          case SEARCHETIKET:
@@ -2138,7 +2138,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
          case MODIFIER:
             ++i;
             break;
-            
+
          case LANG:
             lang=Tcl_GetString(Objv[++i])[0];
             if (lang=='e' || lang=='E' || lang=='1') {
@@ -2188,7 +2188,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                }
             }
             break;
-            
+
          case UNITS:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2197,7 +2197,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Units,-1));
             }
             break;
-            
+
          case MIN:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2207,7 +2207,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Min));
             }
             break;
-            
+
          case MAX:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2217,7 +2217,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Max));
             }
             break;
-            
+
          case MAGNITUDE:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2227,7 +2227,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Magnitude));
             }
             break;
-            
+
          case FACTOR:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2237,7 +2237,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Factor));
             }
             break;
-            
+
          case DELTA:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2247,7 +2247,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Var->Delta));
             }
             break;
-            
+
           case ORIGIN:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2256,7 +2256,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Origin,-1));
             }
             break;
-            
+
           case IP1:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2266,7 +2266,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Var->IP1));
             }
             break;
-            
+
           case IP3:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2285,7 +2285,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(Var->Date));
             }
             break;
-            
+
           case STATE:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
@@ -2310,7 +2310,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
             break;
       }
    }
-   
+
    // If not param requested, return all
    if (!n) {
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Short[(int)lang],-1));
@@ -2436,7 +2436,7 @@ static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Type,int Objc,Tcl_Obj
             break;
       }
    }
-   
+
    // If not param requested, return all
    if (!n) {
       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Type->Short[(int)lang],-1));
@@ -2477,7 +2477,7 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
       c_fstopc("MSGLVL","WARNIN",0);
       c_fstopc("TOLRNC","SYSTEM",0);
       c_ezsetopt("VERBOSE","NO");
-      
+
    }
 
    return(TCL_OK);

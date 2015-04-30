@@ -53,7 +53,7 @@ int TclGeoRef_Init(Tcl_Interp *Interp) {
    if (!GeoRefInit++) {
       Tcl_InitHashTable(&GeoRef_Table,TCL_STRING_KEYS);
       TGeoRef_TableNo=1;
-      
+
       GeoScan_Init(&GScan);
    }
 
@@ -293,7 +293,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                return(TCL_ERROR);
             } else {
                GeoRef_Limits(ref0,&lat0,&lon0,&lat1,&lon1);
-               
+
                lat0=DEG2RAD(lat0);
                lon0=DEG2RAD(lon0);
                lat1=DEG2RAD(lat1);
@@ -301,13 +301,13 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                x=DIST(EARTHRADIUS,lat0,lon0,lat0,lon1);
                dx=DIST(EARTHRADIUS,lat1,lon0,lat1,lon1);
                dx=FMAX(x,dx);
-               
+
                y=DIST(EARTHRADIUS,lat0,lon0,lat1,lon0);
                dy=DIST(EARTHRADIUS,lat0,lon1,lat1,lon1);
                dy=FMAX(y,dy);
-               
+
                lst=Tcl_NewListObj(0,NULL);
-               
+
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(dx));
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(dy));
                Tcl_SetObjResult(Interp,lst);

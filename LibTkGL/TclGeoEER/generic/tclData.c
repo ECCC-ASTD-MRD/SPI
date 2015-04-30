@@ -148,7 +148,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    /*Initialisation du package OGR*/
    if (TclOGR_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-      
+
    /*Initialisation du package radar*/
 #ifdef HAVE_URP
    if (TclRadar_Init(Interp)==TCL_ERROR)
@@ -159,7 +159,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
    /*Initialisation du package metobs*/
    if (TclMetObs_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-      
+
    if (TclMetModel_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
@@ -181,7 +181,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
 }
 
 int Tclgeoeer_Init(Tcl_Interp *Interp) {
- 
+
    if (Tcl_PkgProvide(Interp,"TclGeoEER",PACKAGE_VERSION) != TCL_OK) {
       return(TCL_ERROR);
    }
@@ -238,7 +238,7 @@ int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Ob
          }
          bool=0;
          if (Objc==5) {
-            Tcl_GetBooleanFromObj(Interp,Objv[4],&bool);            
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&bool);
          }
          if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,bool)) {
             return(TCL_ERROR);
@@ -526,7 +526,7 @@ void Data_GetStat(TData *Field){
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 #endif
-      
+
    /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
    if (def->NC>1 && Field->Ref->Grid[0]!='Y') {
       if (!def->Mode || def->Mode==def->Data[0]) {
@@ -751,7 +751,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
          memcpy(field->Def->Mask,def->Mask,field->Def->NIJ);
       }
    }
-  
+
    if (field->Ref->Grid[0]=='U') {
       FSTD_FieldSubBuild(field);
    }
@@ -788,7 +788,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    float   *fp;
 
 #ifdef HAVE_RMN
-   
+
    /*Recuperer la grille dans l'espace des champs de base*/
    p=1;g=0;
    for(f=0;f<NbF;f++) {
@@ -842,7 +842,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    if (!(cut->Ref->ZRef.Levels=(float*)malloc(Field[0]->Ref->ZRef.LevelNb*sizeof(float)))) {
       Tcl_AppendResult(Interp,"Data_Cut:  Unable to allocate memory for levels",(char*)NULL);
       return(TCL_ERROR);
-   }    
+   }
    memcpy(cut->Ref->ZRef.Levels,Field[0]->Ref->ZRef.Levels,Field[0]->Ref->ZRef.LevelNb*sizeof(float));
 
    if (Field[0]->Spec) {
@@ -991,7 +991,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   Def_Set(cut->Def,0,idx,vi);
                   if (cut->Def->Data[1]) {
                      Def_Set(cut->Def,1,idx,vj);
-                  }  
+                  }
                }
             }
             i0=i;
@@ -1002,7 +1002,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
 #endif
-   
+
 #endif
   return(TCL_OK);
 }
@@ -1289,7 +1289,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
                TList_Clear(Data->SDef[n]->Segments,(TList_FreeProc*)T3DArray_Free);
                Data->SDef[n]->Segments=NULL;
             }
-         }     
+         }
          if (Data->Def) {
             TList_Clear(Data->Def->Segments,(TList_FreeProc*)T3DArray_Free);
             Data->Def->Segments=NULL;
@@ -1384,7 +1384,7 @@ int Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List){
       Tcl_AppendResult(Interp,"\n   Data_Sort: Unable to allocate temporary buffer",(char*)NULL);
       return(TCL_ERROR);
    }
-   
+
    return(TCL_OK);
 }
 
@@ -1502,7 +1502,7 @@ Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile){
    ni=Field->Def->NI;
    nj=Field->Def->NJ;
    zm=zmm=zn=zv=0.0;
-   
+
    /* ichk and jchk indicates the covering area under which the extrema is to be evaluated */
    ichk=ni/Tile;ichk=(2>=ichk?2:(2*Tile-1<=ichk?2*Tile-1:ichk));
    jchk=nj/Tile;jchk=(2>=jchk?2:(2*Tile-1<=jchk?2*Tile-1:jchk));
@@ -1592,7 +1592,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    float       *levels;
    char         buf[32],mode='L';
    const char **lvls;
-   
+
    extern int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
@@ -1610,7 +1610,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 #endif
-      
+
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",0,&idx)!=TCL_OK) {
@@ -1642,7 +1642,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Def->NoData);
                if (Field->Ref && Field->Ref->NId==0 && Field->Ref->NbId>1) {
-                  for(nb=1;nb<=Field->Ref->NbId;nb++) 
+                  for(nb=1;nb<=Field->Ref->NbId;nb++)
                      Field->SDef[nb]->NoData=Field->Def->NoData;
                }
 
@@ -1778,7 +1778,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Field->Ref->Lat=(float*)malloc(Field->Def->NI*sizeof(float));
                      Field->Ref->Lon=(float*)malloc(Field->Def->NI*sizeof(float));
                   }
-                  
+
                   if (Field->Ref->Lat && Field->Ref->Lon) {
                      for (index=0,n=0;index<nobj;index+=2,n++) {
                         Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
@@ -1791,7 +1791,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   } else {
                      Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate memory for coordinate buffer",(char*)NULL);
                      return(TCL_ERROR);
-                  }   
+                  }
                }
             }
             break;
@@ -2471,7 +2471,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                   // Use NJ for xsection since NK and ZRefs levelnb are not set
                   nb=(Field->Ref && Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
-                  
+
                   obj=Tcl_NewListObj(0,NULL);
                   for (index=0;index<nb;index++) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels?Field->Ref->ZRef.Levels[index]:index));
@@ -2541,7 +2541,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case LEVELTYPE:
             lvls=ZRef_LevelNames();
-            
+
             if (Objc==1) {
                if (Field->Ref)
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Field->Ref->ZRef.Type],-1));
@@ -2604,7 +2604,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
             break;
-            
+
          case MATRIX:
             if (Objc!=2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"matrix var");
@@ -2687,7 +2687,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
                Field->Ref->ZRef.PTop=tmpd;
-               
+
                // If 0, force ZRef refresh
                Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
             }
@@ -2702,7 +2702,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
                Field->Ref->ZRef.PRef=tmpd;
-               
+
                // If 0, force ZRef refresh
                Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
             }
@@ -2728,7 +2728,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Field->Ref->ZRef.RCoef[1]=tmpd;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&tmpd);
-                  Field->Ref->ZRef.RCoef[0]=tmpd;  
+                  Field->Ref->ZRef.RCoef[0]=tmpd;
                }
             }
             break;
@@ -2769,7 +2769,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
       return(TCL_ERROR);
    }
-   
+
    Tcl_ListObjLength(Interp,Objv[0],&nc);
    if (nc==4) {
       // This is a latlon bounding box defined by 2 corners
@@ -2806,7 +2806,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          Tcl_AppendResult(Interp,"Data_GetAreaValue: Unable to allocate memory for temporary buffer",(char*)NULL);
          return(TCL_ERROR);
       }
-         
+
       for(n=0,ni=0;n<vnb;n++) {
          Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&dlat);
@@ -2842,9 +2842,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                // Range case
                Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
                if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+360.0:dlon;
-                
+
                f=0;
-               if (dlat>=dlat0 && dlat<=dlat1) {                  
+               if (dlat>=dlat0 && dlat<=dlat1) {
                   if (dlon0<dlon1) {
                      if (dlon>=dlon0 && dlon<=dlon1) {
                         f=1;
@@ -2858,7 +2858,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
              } else {
                 // Polygon case
                 Vect_Init(vp,ni,nj,0.0);
- 
+
                 f=0;
                 for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
                    /*Check for point insidness*/
@@ -2989,7 +2989,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
    int      i,j;
    double   val=0.0;
    Tcl_Obj *objj,*obji;
-  
+
    if (Component<0) {
       objj=Tcl_NewByteArrayObj((unsigned char*)Field->Def->Data[0],FSIZE3D(Field->Def)*TDef_Size[Field->Def->Type]);
    } else {
@@ -3050,11 +3050,11 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Lis
    if (Component>=Field->Def->NC) {
       Tcl_AppendResult(Interp,"Data_ValPutMatrix: Invalid component index",(char*)NULL);
       return(TCL_ERROR);
-   }      
-      
+   }
+
    if (Component<0) {
       data=Tcl_GetByteArrayFromObj(List,&nobjj);
-      memcpy(Field->Def->Data[0],data,nobjj);  
+      memcpy(Field->Def->Data[0],data,nobjj);
    } else {
       /*Extraire les nj lignes de donnees de la liste bidimensionnelle*/
       Tcl_ListObjLength(Interp,List,&nobjj);
@@ -3106,7 +3106,7 @@ int Data_ValSet(TData *Field,double I,double J,double Val) {
    float         dx0,dx1,dy0,dy1;
    unsigned long x0,y0,idx;
    int           i,j;
-   
+
    if (I<0 || I>Field->Def->NI-1 || J<0 || J>Field->Def->NJ-1)
       return 0;
 

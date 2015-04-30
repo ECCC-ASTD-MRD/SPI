@@ -269,10 +269,10 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                return(TCL_ERROR);
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[1]);            
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[1]);
                if (Objc-dobj==4)
                   Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[2]);
-              
+
                obj=Tcl_NewListObj(0,NULL);
                OGR_G_GetPoint(geom,0,&pt[0],&pt[1],&pt[2]);
                for (n=1;n<OGR_G_GetPointCount(geom);n++) {
@@ -280,11 +280,11 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GPC_SegmentDist(pt,ptp,vr)));
                   Vect_Assign(pt,ptp);
                }
-               
+
                Tcl_SetObjResult(Interp,obj);
             }
             break;
-            
+
          case POINTDIST:
             if (Objc-dobj!=3 && Objc-dobj!=4) {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
@@ -294,7 +294,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[1]);
                if (Objc-dobj==4)
                   Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[2]);
-           
+
                obj=Tcl_NewListObj(0,NULL);
                for (n=0;n<OGR_G_GetPointCount(geom);n++) {
                   OGR_G_GetPoint(geom,n,&pt[0],&pt[1],&pt[2]);
@@ -303,7 +303,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,obj);
             }
             break;
-            
+
          case POINTS:
             if (Objc-dobj==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -381,17 +381,17 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid coordinate index",(char*)NULL);
                   return(TCL_ERROR);
                }
-               
+
                // If the index is within the range of points
                if ((ppt=(Vect3d*)malloc((n+1)*sizeof(Vect3d)))) {
                   v=0;
-                  for(j=0;j<n;j++) {                    
+                  for(j=0;j<n;j++) {
                      if (j==t) v++;
                      OGR_G_GetPoint(geom,j,&ppt[v][0],&ppt[v][1],&ppt[v][2]);
                      v++;
                   }
                   ppt[t][0]=pt[0]; ppt[t][1]=pt[1]; ppt[t][2]=pt[2];
-                  
+
                   // GDAL 1.10
                   OGR_G_Empty(geom);
                   for(v=0;v<n+1;v++) {
@@ -399,7 +399,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                   }
                   // GDAL 1.11
 //                  OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
-                  
+
                   if (d==2) OGR_G_FlattenTo2D(geom);
 
                   free(ppt);
@@ -416,18 +416,18 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 
                n=OGR_G_GetPointCount(geom);
                d=OGR_G_GetCoordinateDimension(geom);
-               
+
                // If the index is within the range of points
                if (t<n) {
                   if ((ppt=(Vect3d*)malloc(n*sizeof(Vect3d)))) {
                      v=0;
-                     for(j=0;j<n;j++) {                    
+                     for(j=0;j<n;j++) {
                         if (j!=t) {
                            OGR_G_GetPoint(geom,j,&ppt[v][0],&ppt[v][1],&ppt[v][2]);
                            v++;
                         }
                      }
-                     
+
                      // GDAL 1.10
                      OGR_G_Empty(geom);
                      for(v=0;v<n-1;v++) {
@@ -436,13 +436,13 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                      // GDAL 1.11
 //                     OGR_G_SetPoints(geom,n-1,&ppt[v][0],3*sizeof(double),&ppt[v][1],3*sizeof(double),&ppt[v][2],3*sizeof(double));
                      if (d==2) OGR_G_FlattenTo2D(geom);
-                     
+
                      free(ppt);
                   }
                }
             }
             break;
-            
+
          case SETPOINT:
             if (Objc-dobj!=4 && Objc-dobj!=5) {
                Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates",(char*)NULL);
@@ -460,7 +460,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                }
             }
             break;
-            
+
          case NB:
             if (Objc-dobj==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetPointCount(geom)));
@@ -472,7 +472,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(OGR_G_GetGeometryCount(geom)));
             }
             break;
-            
+
           case SUB:
             if (Tcl_ListObjLength(Interp,Objv[++i],&n)==TCL_ERROR) {
                return(TCL_ERROR);
@@ -488,12 +488,12 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                }
                if (!geom) {
                   Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid sub-geometry",(char*)NULL);
-                  return(TCL_ERROR);                 
+                  return(TCL_ERROR);
                }
             }
             dobj=2;
             break;
-            
+
          case TYPE:
             if (Objc-dobj==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_G_GetGeometryType(geom)),-1));
@@ -653,36 +653,36 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
-         
+
          if (Objc==3) {
             Tcl_GetIntFromObj(Interp,Objv[2],&nseg);
          } else {
             nseg=10;
          }
-         
+
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Buffer(g0,dist,nseg)));
          break;
 
-      case TOPOINT: 
+      case TOPOINT:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiPoint(g0)));
          break;
-         
-      case TOLINE:         
+
+      case TOLINE:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToLineString(g0)));
          break;
-         
-      case TOMULTILINE:         
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiLineString(g0)));         
+
+      case TOMULTILINE:
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiLineString(g0)));
          break;
-         
-      case TOPOLYGON:         
+
+      case TOPOLYGON:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToPolygon(g0)));
          break;
-         
-      case TOMULTIPOLYGON:         
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiPolygon(g0)));         
+
+      case TOMULTIPOLYGON:
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ForceToMultiPolygon(g0)));
          break;
-         
+
       case CONVEXHULL:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ConvexHull(g0)));
          break;
@@ -1246,13 +1246,13 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          if ((nv=OGR_G_GetPointCount(geom))) {
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
-            
+
             /*Calculate normal from adjacent vertices*/
             Vect_Substract(n1,OGR_ArrayVr[pnv+1],OGR_ArrayVr[pnv]);
             Vect_Substract(n0,OGR_ArrayVr[pnv+2],OGR_ArrayVr[pnv]);
             Vect_CrossProduct(nr,n0,n1);
 //            Vect_Mul(nr,nr,*OGR_ArrayNr[pnv]);
-            Vect_Normalize(nr);     
+            Vect_Normalize(nr);
 //            gluTessNormal(GLRender->GLTess,nr[0],nr[1],nr[2]);
             for(n=pnv;n<pnv+nv;n++) {
                Vect_Assign(OGR_ArrayEx[n],OGR_ArrayVr[n]);
@@ -1276,12 +1276,12 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          if ((nv=OGR_G_GetPointCount(geom))) {
             gluTessBeginContour(GLRender->GLTess);
             glBegin(GL_LINE_STRIP);
-            
+
             for(n=pnv;n<pnv+nv;n++) {
                glNormal3dv(*OGR_ArrayNr[n]);
                glVertex3dv(OGR_ArrayVr[n]);
                gluTessVertex(GLRender->GLTess,OGR_ArrayVr[n],OGR_ArrayVr[n]);
-            }            
+            }
             glEnd();
             gluTessEndContour(GLRender->GLTess);
             pnv+=nv;
@@ -1388,13 +1388,13 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       if (!OGR_ArrayVr || !OGR_ArrayNr || !OGR_ArrayEx) {
          return(0);
       }
-      
+
       pvr=Extrude!=0.0?&OGR_ArrayEx[Size]:&OGR_ArrayVr[Size];
       co.Lat=co.Lon=0.0;
-      
+
       /*Project vertices*/
       OGR_G_GetPoints(Geom,&pvr[0][0],sizeof(Vect3d),&pvr[0][1],sizeof(Vect3d),&pvr[0][2],sizeof(Vect3d));
-      
+
       for(n=0;n<nv;n++) {
          Ref->Project(Ref,pvr[n][0],pvr[n][1],&co.Lat,&co.Lon,1,0);
          CLAMPLAT(co.Lat);
@@ -1416,7 +1416,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
             } else if (Layer->Topo==0) {
 #ifdef HAVE_GDB
                if (Proj->Geo->Maps[GDB_MAP_DEM]) {
-                  
+
                   gdb_mapget(Proj->Geo->Maps[GDB_MAP_DEM],co.Lat,co.Lon,(char*)&z);
                   co.Elev=z*Layer->Spec->TopoFactor;
                }
