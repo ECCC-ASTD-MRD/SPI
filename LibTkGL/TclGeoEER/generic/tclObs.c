@@ -794,7 +794,7 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
          if (Ref->Grid[0]=='V') {
             j=1;
             COORD_CLEAR(c0);
-            
+
             /* Get the right level*/
             for(k=Ref->ZRef.LevelNb-1;k>=0;k--) {
               if (Obs->Loc->Coord[i].Elev>Ref->ZRef.Levels[k])
@@ -1826,6 +1826,10 @@ void Obs_PreInit(TObs *Obs) {
 */
 int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GLuint GLMode) {
 
+   if (!Obs->Spec || !Obs->Spec->Active) {
+      return(1);
+   }
+
    if (Interp)
       Tcl_AppendResult(Interp,"%% Postscript des observations\n",(char*)NULL);
 
@@ -1840,7 +1844,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->RenderVector)
       Obs_RenderVector(Interp,Obs,VP,Proj);
 
-   if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord)) 
+   if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord))
       Obs_RenderInfo(Interp,Obs,VP,Proj);
 
    return(1);
@@ -2173,7 +2177,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
          co.Elev=ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType);
          co.Lat=Obs->Loc->Coord[i].Lat;
          co.Lon=Obs->Loc->Coord[i].Lon;
-         
+
          /*If visible, draw text*/
          if (Projection_Pixel(Proj,VP,co,vr)) {
 
@@ -2273,7 +2277,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    } else {
       glColor3us(0,0,0);
    }
-   
+
    if (Interp) {
       glFeedbackInit(Obs->Loc->Nb*200,GL_2D);
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n0 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
@@ -2292,7 +2296,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
             glColor4ubv(Obs->Spec->Map->Color[idc]);
          }
       }
-      
+
       glPushName(i);
       Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
       glPopName();

@@ -2152,7 +2152,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       // Check if visible or delay test for grouped data (loc->Grid)
       if (loc->Grid[0]!=0.0 || Projection_Pixel(Proj,VP,loc->Coord,pix)) {
 
-         // et the elements group for the specific time
+         // Get the elements group for the specific time
          if ((elem=TMetElem_Find(loc,Obs->Time,Obs->Lag))) {
 
             // Fix transparency on validity time persistance

@@ -365,7 +365,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    char         buf[64];
    double       tmp,val,min=0.0,max=0.0;
    const char **lvls;
-   
+
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
@@ -841,7 +841,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->NoSelectAlpha);
             }
             break;
-            
+
          case LIGHT:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->Light));
@@ -980,7 +980,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"DataSpec_Config: too many intervals, maximum is 256",(char*) NULL);
                   return(TCL_ERROR);
                }
-               
+
                /*Determine si ils sont nouveaux*/
                if (Spec->InterNb!=0 || nobj!=0) {
                   internew=1;
@@ -1365,7 +1365,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       }
       cmap=1;
    }
-   
+
    /*Cleanup des tableaux*/
    if (cmap || cpos || cseg) {
       DataSpec_Clean(Spec,cmap,cpos,cseg);
@@ -1525,7 +1525,7 @@ int DataSpec_FreeHash(Tcl_Interp *Interp,char *Name) {
  * Retour    :Code de retour standard TCL
  *
  * Remarques :
- *    Si la detsination existe deja, la copie se fait et les valeurs de la destination
+ *    Si la destination existe deja, la copie se fait et les valeurs de la destination
  *    sont ecrasee sans bronchement
  *
  *----------------------------------------------------------------------------
@@ -1548,7 +1548,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       DataSpec_Clear(to);
    }
 
-   to->Active=from->Active;
+//   to->Active=from->Active;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
    to->ExtrudeFactor=from->ExtrudeFactor;
@@ -1793,11 +1793,11 @@ TDataSpec *DataSpec_New(){
  *----------------------------------------------------------------------------
 */
 int DataSpec_Free(TDataSpec *Spec) {
-   
+
    if (!Spec) {
       return(0);
    }
-   
+
    if (__sync_sub_and_fetch(&Spec->NRef,1)) {
       return(0);
    }
@@ -1944,7 +1944,7 @@ void DataSpec_IntervalsMod(TDataSpec *Spec,double Min,double Max) {
       d=SPEC2VAL(Spec,Spec->InterModeParam);
       if (Spec->InterModeParam>0.0) {
          Min=ceil(Min/d)*d;
- 
+
          // Loop up to one level over max to be sure to include the max
          for(v=Min;v<(Max+d);v+=d) {
             Spec->Inter[Spec->InterNb++]=v;

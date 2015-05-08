@@ -712,7 +712,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
       /*Read header*/
       r=fgets(buf,512,Stream);
       if (!r) break;
-      
+
       if (buf[0]!='\'' && buf[1]!='\'') break;
       r=fgets(buf,512,Stream);buf[511]='\0';head.Id=strdup(buf);
       i=strlen(head.Id);
@@ -869,7 +869,7 @@ int Traj_LoadARL(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
    /*Skip models*/
    r=fgets(buf,512,Stream);sscanf(buf,"%i",&nb);
    if (!r) return(0);
-   
+
    for(i=0;i<nb;i++) {
       r=fgets(buf,512,Stream);
    }
@@ -999,6 +999,10 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
 
    if (!(spec=Traj->Spec))
       return(TCL_OK);
+
+   if (!Traj->Spec->Active) {
+      return(TCL_OK);
+   }
 
    vbuf=VBuffer_Alloc(Traj->NPr*2+1);
    sz=VP->Ratio*(spec->Size+spec->Width);
