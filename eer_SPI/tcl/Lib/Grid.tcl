@@ -308,7 +308,7 @@ proc Grid::Create { { GridInfo {} } } {
    variable Data
 
    if { [llength $GridInfo] } {
-      scan "%s %i %i %f %f %f %f %f %f" $Param(Type) $Param(NI) $Param(NJ) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
+      scan $GridInfo "%s %i %i %f %f %f %f %f %f" Param(Type) Param(NI) Param(NJ) Param(Lat0) Param(Lon0) Param(Lat1) Param(Lon1) Param(ResM) Param(ResLL)]
    }
 
    if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
