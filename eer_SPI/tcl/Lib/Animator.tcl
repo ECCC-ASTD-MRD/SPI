@@ -400,7 +400,7 @@ proc Animator::MiniWindow { Parent Frame } {
             -command "Animator::MiniSelect $Parent $Frame; Animator::PlayWeb"
          pack $Parent.anim.playweb -side left -fill x
       }
-      pack $Parent.anim.frame -side left -fill y -expand true 
+      pack $Parent.anim.frame -side left -fill y -expand true
 
    set Play(Cycle) 1
 
@@ -413,7 +413,7 @@ proc Animator::MiniWindow { Parent Frame } {
    Bubble::Create $Parent.anim.playforward $Bubble(PlayForward)
    Bubble::Create $Parent.anim.playweb     $Bubble(PlayWeb)
    Bubble::Create $Parent.anim.frame       $Bubble(Scroll)
-   
+
    return $Parent.anim
 }
 
@@ -439,7 +439,7 @@ proc Animator::MiniSelect { Parent Frame } {
    if { $Play(Mini)!="$Parent" } {
       Animator::EmptyPlayList
 
-      Page::Activate $Frame 
+      Page::Activate $Frame
       set Play(Page)    $Page::Data(Frame)
       set Play(Canvas)  $Page::Data(Canvas)
    }
@@ -528,8 +528,8 @@ proc Animator::GetPlayList { } {
    if { $Play(Stop) } {
       set Play(Dir) 0
       return
-   }  
-   
+   }
+
    #----- initialiser le processus
    $Play(Canvas) configure -cursor watch
    update idletasks
@@ -556,14 +556,14 @@ proc Animator::GetPlayList { } {
       foreach frame [lrange $Play(Frames) 1 end] {
          set i 0
          if { [info exists Animator::Play($vp$pframe)] } {
-            foreach d $Play($vp$pframe) { 
+            foreach d $Play($vp$pframe) {
                if { [fstdfield is $d] } {
                   set idx [lindex [split $d .] 1]
-                  
+
                   #----- We might be missing one of the end frame
                   catch {
                      if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
-                        set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]                 
+                        set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]
                      }
                   }
                } else {
@@ -574,7 +574,7 @@ proc Animator::GetPlayList { } {
          set pframe $frame
       }
    }
-   
+
    Animator::Limits
 
    $Play(Canvas) configure -cursor left_ptr
@@ -643,6 +643,7 @@ proc Animator::GetPlayListField { } {
          if { [fstdfield is $fld] } {
 
             set tags [fstdfield stats $fld -tag]
+            set act  [fstdfield configure $fld -active]
             set box  [lindex $tags 2]
 
             #----- On recupere les parametres du champs selectionne
@@ -656,6 +657,7 @@ proc Animator::GetPlayListField { } {
          } elseif { [gribfield is $fld] } {
 
             set tags [gribfield stats $fld -tag]
+            set act  [gribfield configure $fld -active]
             set box  [lindex $tags 2]
 
             #----- On recupere les parametres du champs selectionne
@@ -681,13 +683,13 @@ proc Animator::GetPlayListField { } {
             "ETIKET"  { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
             "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
-         
+
          set no 0
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
             set type    [lindex $field end]
-            
+
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
             update idletask
 
@@ -696,6 +698,7 @@ proc Animator::GetPlayListField { } {
 
             lappend FSTD::Data(ListTool) ANI.$f.$no
             FSTD::ParamUpdate ANI.$f.$no
+            fstdfield configure ANI.$f.$no -active $act
 
             switch $Play(Type) {
                "IP1"     { set info [lrange $field 2 3] }
@@ -981,7 +984,7 @@ proc Animator::Play { } {
 
             #----- Applique la macro de calcul
             set Play(Data$vp) $Play($vp$info)
-            set Play(Data)    [FieldCalc::Operand $vp $Play($vp$info)]
+            set Play(Data)    [concat $Play($vp$info) [FieldCalc::Operand $vp $Play($vp$info)]]
 
             #----- Check for persistent data (time=0)
             if { $info!=0 && [info exists Play(${vp}0)] } {

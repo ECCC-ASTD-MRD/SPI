@@ -868,7 +868,7 @@ proc Graph::PosSelectSaved { Graph Type Pos Def } {
    if { ![fstdfield is $data(Field)] && $data(VP)!="" } {
       set data(Field)     [lindex [Viewport::Assigned $data(FrameData) $data(VP) fstdfield] 0]
    }
-   
+
    Graph::VertexResolution $Type $Graph False
    Graph::${Type}::ItemDefine $Graph $Pos $coords
 }
@@ -978,7 +978,7 @@ proc Graph::Params { { Graph "" } { Type "" } { Force False } } {
       if { $Type=="Section" } {
          $Data(Tab).head.save     configure -state normal
       } else {
-         $Data(Tab).head.save     configure -state disabled      
+         $Data(Tab).head.save     configure -state disabled
       }
 
       destroy $Data(Tab).graph
@@ -1341,7 +1341,7 @@ proc Graph::DataSheet { Type Graph } {
       }
    }
 }
- 
+
 proc Graph::DataSave { Type Graph File } {
    global GDefs
    variable Lbl
@@ -1352,23 +1352,23 @@ proc Graph::DataSave { Type Graph File } {
    if { $File!="" } {
 
       fstdfile open GRAPHFILE write $File
-      
+
       set n 0
       foreach item $data(Items) {
          if { [graphitem is $item] } {
 
             #----- Graph Raster
             if { [set ditem [graphitem configure $item -data]]!="" } {
-            
+
                if { [fstdfield define $ditem -GRTYP]=="V" } {
-               
+
                   if { !$n } {
                      incr n
-                     
+
                      set ni     [fstdfield define $ditem -NI]
                      set nj     [fstdfield define $ditem -NJ]
-                     set etiket [fstdfield define $ditem -ETIKET] 
-                     set typvar [fstdfield define $ditem -TYPVAR]                   
+                     set etiket [fstdfield define $ditem -ETIKET]
+                     set typvar [fstdfield define $ditem -TYPVAR]
 
                      fstdfield create GRAPHTIC $ni 1 1 Float32
                      fstdfield define GRAPHTIC -NOMVAR >> -TYPVAR $typvar -GRTYP L 0 0 1.0 1.0 -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
@@ -1377,19 +1377,19 @@ proc Graph::DataSave { Type Graph File } {
                      fstdfield create GRAPHTAC 1 $ni 1 Float32
                      fstdfield define GRAPHTAC -NOMVAR ^^ -TYPVAR $typvar -GRTYP L 0 0 1.0 1.0 -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
                      fstdfield define GRAPHTAC -DATA 0 [fstdfield stats $ditem -gridlat]
-                     
+
                      fstdfield create GRAPHTOC $nj 1 1 Float32
                      fstdfield define GRAPHTOC -NOMVAR ^> -TYPVAR $typvar -GRTYP X -ETIKET $etiket -IP1 $ni -IP2 $nj -IP3 $n
                      fstdfield define GRAPHTOC -DATA 0 [fstdfield stats $ditem -levels]
 
-                     
+
                      fstdfield write GRAPHTIC GRAPHFILE -32 True
                      fstdfield write GRAPHTAC GRAPHFILE -32 True
                      fstdfield write GRAPHTOC GRAPHFILE -32 True
-                     
+
                      fstdfield free GRAPHTIC GRAPHTAC GRAPHTOC
                   }
-                  
+
                   fstdfield define $ditem -IG1 $ni -IG2 $nj -IG3 $n -IG4 0
                   fstdfield write $ditem   GRAPHFILE -32 True
                }
@@ -1834,7 +1834,7 @@ proc Graph::PosSet { Graph Type } {
          ComboBox::DelAll $Data(Frame).scaleY.z.val False
          ComboBox::AddList $Data(Frame).scaleY.z.val $data(ZTypes$Data(Pos))
       }
-      
+
       set Data(Item) [lindex [set Data(Items) $data(Items$Data(Pos))] 0]
       if { [winfo exist $Data(Frame).item.sel.list] } {
          $Data(Frame).item.sel.list selection set 0
@@ -1898,7 +1898,7 @@ proc Graph::PosSelect { Graph Type } {
       ComboBox::DelAll $Data(Frame).scaleY.z.val False
       ComboBox::AddList $Data(Frame).scaleY.z.val $data(ZTypes$Data(Pos))
    }
-   
+
    Graph::ItemSelect $Graph::Data(Item)
 }
 

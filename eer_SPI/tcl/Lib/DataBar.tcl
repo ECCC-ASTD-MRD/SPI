@@ -200,6 +200,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    $Frame.page.canvas create image [expr $X0+2] [expr $Y0+2] -image DATABARLOGO -anchor nw -tags "PAGE DB$VP"
    $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "PAGE DB$VP TXTDB$VP CVTEXT"
 
+   set h [font metrics $Param(Font) -linespace]
    set y [expr $Y0+21]
    set x [expr $X0+25]
    set i 0
@@ -208,7 +209,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
    set ids "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
    if { [info exist Animator::Play(Data$VP)] } {
-      set datas  $Animator::Play(Data$VP)
+      set datas $Animator::Play(Data$VP)
    } else {
       set datas $Viewport::Data(Data$VP)
    }
@@ -218,29 +219,39 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
          set id   [lindex $ids $i]
          incr i
          set lbl  [DataBar::IdField $data]
-         set col  [fstdfield configure $data -color]
+         set typ  fstdfield
       } elseif { [gribfield is $data] } {
          set id   ""
          set lbl  [DataBar::IdGrib $data]
-         set col  [gribfield configure $data -color]
+         set typ  gribfield
       } elseif { [observation is $data] } {
          set id   ""
          set lbl  [DataBar::IdObs $data]
-         set col  [observation configure $data -color]
+         set typ  observation
       } elseif { [metobs is $data] } {
          set id   ""
          set lbl  [DataBar::IdMetObs $data]
-         set col  black
+         set typ  ""
       } elseif { [trajectory is $data] } {
          set id   ""
          set lbl  [DataBar::IdTraj $data]
-         set col  [trajectory configure $data -color]
+         set typ  trajectory
       }
-      
-      set h  [font metrics $Param(Font) -linespace]
+
       set y [expr $y+$h]
       if { $y>$Y1 } {
          break
+      }
+
+      #----- Get active status
+      set col black
+      set act 1
+      catch {
+         eval set col \[$typ configure $data -color\]
+         eval set act \[$typ configure $data -active\]
+      }
+      if { ![set Data(OnOff$n) $act] } {
+         set col gray75
       }
 
       $Frame.page.canvas create text $x $y -text $lbl -tags "PAGE DB$VP" -anchor sw -font $Param(Font) -fill $col
@@ -248,19 +259,22 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
       $Frame.page.canvas create line $X0 $y $X1 $y -tags "PAGE DB$VP" -fill #CCCCCC
 
       if { ![winfo exists $Frame.page.canvas.up$n] } {
-         button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/up.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
-         button $Frame.page.canvas.dn$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -bd 0 -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+         checkbutton $Frame.page.canvas.on$n -bg $GDefs(ColorFrame) -variable DataBar::Data(OnOff$n) -indicatoron False -cursor hand1 -bd 1 -activeforeground yellow -relief raised -image OPT_CHECK -selectimage "" -onvalue 1 -offvalue 0
+         button $Frame.page.canvas.up$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/up.xbm -cursor hand1 -bd 1 -relief raised -height 9 -width 9
+         button $Frame.page.canvas.dn$n -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -cursor hand1 -bd 1 -relief raised -height 9 -width 9
       }
+
       $Frame.page.canvas.up$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n-1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
       $Frame.page.canvas.dn$n configure -command "set Viewport::Data(Data$VP) \[linsert \[lreplace \$Viewport::Data(Data$VP) $n $n\] [expr $n+1] $data\] ;Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
+      $Frame.page.canvas.on$n configure -command "catch { $typ configure \[lindex \$Viewport::Data(Data$VP) $n\] -active \$DataBar::Data(OnOff$n) }; Animator::EmptyPlayList; Viewport::UpdateData $Frame $VP; Page::UpdateCommand $Frame"
       $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
-      $Frame.page.canvas create window [expr $X1-12] $y -window $Frame.page.canvas.dn$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
+      $Frame.page.canvas create window [expr $X1-13] $y -window $Frame.page.canvas.dn$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
+      $Frame.page.canvas create window [expr $X1-26] $y -window $Frame.page.canvas.on$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
       incr n
    }
 
    #----- Memo quelle est la formule ???
    if { [string trim $Viewport::Data(Operand$VP)]!="" } {
-      set h  [font metrics $Param(Font) -linespace]
       set y [expr $y+$h]
       if { $y<=$Y1 } {
          $Frame.page.canvas create text $x $y -text "$Viewport::Data(Operand$VP)" -tags "PAGE DB$VP" -anchor sw -font $Param(Font)
@@ -289,7 +303,7 @@ proc DataBar::IdField { Field } {
 
    set lbl [fstdfield define $Field -NOMVAR]
    set desc [fstdfield configure $Field -desc]
-   
+
    if { $desc!="" && $desc!=$lbl } {
       append lbl " - $desc"
    }
@@ -297,7 +311,7 @@ proc DataBar::IdField { Field } {
    if { [set unit [fstdfield configure $Field -unit]]!="" } {
       append lbl " ($unit)"
    }
-   
+
    append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
    append lbl " ([fstdfield define $Field -ETIKET])"
    append lbl " [lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC]"

@@ -121,7 +121,7 @@ proc Graph::Section::Create { Frame X0 Y0 Width Height Active Full { Link True }
          -font $Graph::Font(Axis) -fill $Graph::Color(Axis) -anchor nw -justify center]
       graphaxis configure axisy$gr -font $Graph::Font(Axis) -color $Graph::Color(Axis) -gridcolor $Graph::Grid(YColor) \
          -dash $Graph::Grid(YDash) -position LL -width 1 -unit $id
-         
+
       Graph::Mode $gr Section True
       Graph::PosAdd $gr Section
    }
@@ -611,25 +611,25 @@ proc Graph::Section::ItemDefineV { GR { Update True } } {
    upvar #0 Graph::Section::Section${GR}::Data  data
 
    Graph::Idle $GR Section
-   
+
    #----- Cleanup previous items
    foreach pos $data(Pos) {
       if { [string match DATA_* $pos] } {
          Graph::Profile::ItemUnDefine $GR $pos
       }
    }
-  
-   set i 0 
+
+   set i 0
    foreach field $data(Data) {
       if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" && [fstdfield define $field -NI]>1 } {
 
          set Pos DATA_[fstdfield define $field -NOMVAR]_[incr i]
-       
+
          if { [lsearch -exact $data(Pos) $Pos]==-1 } {
             lappend data(Pos) $Pos
          }
          set coords [fstdfield stats $field -grid]
-         
+
          set data(Items$Pos)  {}
          set data(Coords$Pos) $coords
          set data(Pos$Pos)    $coords
@@ -637,7 +637,7 @@ proc Graph::Section::ItemDefineV { GR { Update True } } {
 
          set item ${Pos}_Item
          lappend data(Items$Pos) $item
-         
+
          Graph::Section::ItemAdd $GR $item
          if { $Update } {
             Graph::Section::ItemData $GR $Pos $item $field
@@ -850,13 +850,13 @@ proc Graph::Section::Data { GR Data } {
 
    #----- Recuperer les champs correspondants du viewport actif
 
-   set data(Data)   {}
-   
-   set fields {}
+   set data(Data) {}
+   set fields     {}
+
    foreach field $Data {
       if { [fstdfield is $field True] } {
          set grtyp [fstdfield define $field -GRTYP]
-         
+
          if { $grtyp=="V" && [fstdfield define $field -NI]>1 } {
             lappend fields $field
          } elseif { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
@@ -877,8 +877,12 @@ proc Graph::Section::Data { GR Data } {
    SPI::Progress 0 ""
 
    #----- Applique le calcul MACRO au cubes de donnees
+   foreach field [concat $fields [FieldCalc::Operand $data(VP) $fields]] {
+      if { [fstdfield configure $field -active] } {
+        lappend data(Data) $field
+      }
+   }
 
-   set data(Data) [FieldCalc::Operand $data(VP) $fields]
    SPI::Progress 0
 }
 

@@ -103,7 +103,7 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full { Link True } } 
    }
 
    Graph::Activate $Frame $gr Time
-   
+
    graphaxis create axisx$gr
    graphaxis create axisy$gr
 
@@ -937,13 +937,21 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
 
       #----- Loop on timesteps
       for { set n 0 } { $n < $nbdata } { incr n } {
-         set lst {}
+         set lst  {}
+         set flds {}
 
          foreach item $data(Data) {
             lappend lst [lindex $data(Data$item) $n 1]
          }
+
+         #----- Applique le calcul MACRO au cubes de donnees
+         foreach field [concat $lst [FieldCalc::Operand $data(VP) $lst GRAPHTIME$n$data(VP)]] {
+            if { [fstdfield configure $field -active] } {
+               lappend flds $field
+            }
+         }
          #----- Apply expression to timestep
-         set flds [FieldCalc::Operand $data(VP) $lst GRAPHTIME$n$data(VP)]
+#         set flds [FieldCalc::Operand $data(VP) $lst GRAPHTIME$n$data(VP)]
 
          #----- If first loop step, set data list
          if { $n==0 } {

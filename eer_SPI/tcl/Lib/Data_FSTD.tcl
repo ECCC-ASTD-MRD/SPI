@@ -90,7 +90,7 @@ namespace eval FSTD {
    set Param(GridIds)        { SUPER YIN YANG }
 
    set Param(UnTile)        [fstdfield autountile]  ;#Reconstruction automatique des grilles tuilees
-   
+
    set Param(Mode)          VAR            ;#Mode de selection des parametres
    set Param(Map)           FLDMAPDEFAULT  ;#Palette de couleur
    set Param(Font)          FLDFONTDEFAULT ;#Police
@@ -203,7 +203,7 @@ namespace eval FSTD {
                            "Sub-grid or master grid selection" }
    set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (#) en une seule grille"
                            "Select to rebuild tiled grids (#) into one" }
-            
+
 }
 
 #-------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ proc FSTD::Data { Field } {
    set text   ""
 
    if { $nomvar=="INFO" || $nomvar=="OL" } {
-      foreach i [join [fstdfield define $Field -DATA 0]] {    
+      foreach i [join [fstdfield define $Field -DATA 0]] {
          append text [format "%c" [expr int(($nbit==8 && $i>127)?$i-128:$i)]]
       }
    } else {
@@ -276,10 +276,10 @@ proc FSTD::ParamFrame { Frame Apply } {
       foreach mode "FLD VAR TYPVAR LEVEL IP1 IP2 IP3 ETIKET DATEO FILE" {
          $Data(Frame).var.lbl.lst add command -label $mode -command "FSTD::VarMode $mode"
       }
-      
+
       pack [Styles::Widget $Data(Frame).var]  -side left -padx 2 -pady 2
-   pack $Data(Frame).var -side top -fill x -anchor n -padx 5 -pady 5    
-   
+   pack $Data(Frame).var -side top -fill x -anchor n -padx 5 -pady 5
+
    frame $Data(Frame).def
       frame $Data(Frame).def.l
 
@@ -374,7 +374,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm contour1.xbm contour2.xbm contour3.xbm" "0 1 2 3" \
                FSTD::Param(Contour) "FSTD::ParamSet" 0 -relief groove -bd 2
-               
+
             pack $Data(Frame).def.r.disp.cont.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.cont.lbl -side left  -fill y
 
@@ -499,7 +499,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          $Data(Frame).lev.select.mode.list.nb add command -label "$i" \
             -command "FSTD::IntervalSetMode [lindex $Param(IntervalModes) 2] $i"
       }
-      
+
    bind $Data(Frame).lev.desc.edit.select <KeyRelease>       {+ FSTD::IntervalSetMode NONE 0 True }
    bind $Data(Frame).lev.desc.edit.select <<Paste>>          {+ FSTD::IntervalSetMode NONE 0 True }
    bind $Data(Frame).lev.desc.edit.select <<PasteSelection>> {+ FSTD::IntervalSetMode NONE 0 True }
@@ -509,7 +509,7 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.l.val.interp.sel $Bubble(Interp)
    Bubble::Create $Data(Frame).def.l.val.grid.sel   $Bubble(Grid)
    Bubble::Create $Data(Frame).def.l.val.grid.tile  $Bubble(Tile)
-   
+
    Bubble::Create $Data(Frame).def.l.val.order.font $Bubble(Font)
    Bubble::Create $Data(Frame).def.l.val.order      $Bubble(Format)
    Bubble::Create $Data(Frame).def.l.val.unit       $Bubble(Unit)
@@ -607,7 +607,7 @@ proc FSTD::IntervalSet { { Select 0 } } {
          set Param(Desc)          $Param(IntervalDef)
       }
    }
-   
+
    FSTD::ParamSet
 }
 
@@ -683,7 +683,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 
    foreach field [lindex [$Canvas itemconfigure $VP -data] 4] {
 
-      if { [fstdfield is $field True] } {
+      if { [fstdfield is $field True] && [fstdfield configure $field -active] } {
          if { ![projection configure $Page -geographic] } {
             set ij    [projection function $Page -gridcoord $Lat $Lon]
             set pij   $ij
@@ -702,7 +702,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
             set value [FSTD::FieldFormat $field $spd]
          }
          set desc [fstdfield define $field -NOMVAR]
-         
+
          if { [fstdfield configure $field -interpdegree]=="NEAREST" } {
             lset ij 0  [expr round([lindex $ij 0])]
             lset ij 1  [expr round([lindex $ij 1])]
@@ -758,7 +758,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    if { [dataspec configure $spec -unit]!="" || $Spec=="" } {
       set Param(Unit)       [dataspec configure $spec -unit]
    }
-   
+
    set Param(Factor)     [dataspec configure $spec -factor]
    set Param(Delta)      [dataspec configure $spec -delta]
    set Param(Font)       [dataspec configure $spec -font]
@@ -803,7 +803,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Z1)         [lindex $plane 5]
 
    set Param(Alpha)      [format %02x [expr int($Param(Alpha)/100.0*255.0)]]
-   
+
    #----- Intervals and min-max selection are exclusive with priority to intervals
    if { (![llength $Param(Intervals)] || $Param(IntervalMode)!="") && $Param(Min)!=$Param(Max) } {
       set Param(Intervals) ""
@@ -814,7 +814,7 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) " $Param(Max)\]"
       }
    }
-   
+
    if { [llength [set interlabels [dataspec configure $spec -interlabels]]] } {
       set inters $Param(Intervals)
       set Param(Intervals) ""
@@ -822,8 +822,8 @@ proc FSTD::ParamGet { { Spec "" } } {
          append Param(Intervals) "${inter}($label) "
       }
    }
-   
-   FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True 
+
+   FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True
 }
 
 #----------------------------------------------------------------------------
@@ -879,7 +879,7 @@ proc FSTD::ParamSet { { Spec "" } } {
          }
       }
    }
-   
+
    set Param(GridNo) [lsearch -exact $Param(GridIds) $Param(GridId)]
    set alpha [expr int(0x$Param(Alpha)/255.0*100.0)]
 
@@ -968,10 +968,10 @@ proc FSTD::ParamPut { { Update False } } {
          foreach inter $MetStat::Rec(Inter) {
             $Data(Frame).lev.select.mode.list.inter add command -label "$inter" \
                -command "FSTD::IntervalSetMode INTERVAL $inter"
-         }    
+         }
       }
       if { $Update && [fstddict isvar $var] } {
-         if { $Update } { 
+         if { $Update } {
             set Param(Unit)   [fstddict varinfo $var -lang $GDefs(Lang) -units]
             set Param(Factor) [fstddict varinfo $var -lang $GDefs(Lang) -factor]
             set Param(Delta)  [fstddict varinfo $var -lang $GDefs(Lang) -delta]
@@ -1011,7 +1011,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       set desc [dataspec configure $Spec -desc]
       set unit [dataspec configure $Spec -unit]
       set ip1  -1
-      
+
       dataspec copy $Spec FLDDEFAULT
 
       #----- Set a colormap if not done
@@ -1040,7 +1040,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #      if { [fstddict varinfo $var -ip1]!="" } {
 #         set ip1 [fstdfield define $Field -IP1]
 #      }
-     
+
 #      if { ![fstddict isvar $var] } {
 #         fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short $desc
 #      }
@@ -1123,12 +1123,12 @@ proc FSTD::Params { Id Map args } {
    if { ![colormap is FLDMAP$Id] } {
       colormap create FLDMAP$Id
    }
-   
+
    set paths $env(HOME)/.spi
    if { [info exists env(SPI_TOOL)] } {
       set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
-   
+
    foreach path $paths {
       if { [file exists $path/Colormap/$Map.rgba] } {
          colormap read FLDMAP$Id $path/Colormap/$Map.rgba
@@ -1146,7 +1146,7 @@ proc FSTD::Params { Id Map args } {
 #
 # Parametres :
 #   <Fields> : List of fields (Empty will use all known)
-#  
+#
 # Retour:
 #
 # Remarques :
@@ -1159,21 +1159,21 @@ proc FSTD::ParamOwnership { { Fields { } } } {
    if { ![llength $Fields] } {
       set Fields [concat $Data(List) $Data(ListTool)]
    }
-   
+
    set n 0
 
    #----- Parse all fields
    foreach fld $Fields {
-   
+
       #----- If they were configured outside SPI
       if { [fstdfield configure $fld -set]==1 } {
          incr n
-         
+
          #----- Get ownership
          fstdfield configure $fld -set 2
       }
    }
-   
+
    if { $n } {
       FSTD::ParamUpdate
    }
@@ -1201,7 +1201,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    if { ![llength $Fields] } {
       set Fields [concat $Data(List) $Data(ListTool)]
    }
-   
+
    set current $Param(Spec)
    set exist 0
    set var   ""
@@ -1214,9 +1214,9 @@ proc FSTD::ParamUpdate { { Fields { } } } {
       if { [fstdfield is $fld True] } {
 
          set set [fstdfield configure $fld -set]
-         
+
          catch { fstdfield define $fld -grid $Param(GridNo) }
-          
+
          #----- Get the name of the configuration object
          switch $Param(Mode) {
             "FLD"    { set var $fld }
@@ -1235,26 +1235,26 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { [set var [string trim $var]]=="" } {
             set var "<>"
          }
-        
+
          #----- Define default config
-         if { ![dataspec is $var] } {               
-            set spec [fstdfield configure $fld -dataspec]
+         set spec [fstdfield configure $fld -dataspec]
+         if { ![dataspec is $var] } {
             if { $spec!=$var } {
-               dataspec copy $var $spec   
+               dataspec copy $var $spec
 
                #----- If field has not been configured yet or is owned by SPI
                if { $set==0 || $set==2 } {
-                  dataspec free $spec
                   FSTD::ParamInit $fld $var
                }
             }
          }
-           
+
          #----- If field has not been configured yet or is owned by SPI
          if { $set==0 || $set==2 } {
-            fstdfield configure $fld -dataspec $var
+            dataspec copy $spec $var
          }
-         
+         dataspec free $spec
+
          if { "$var"=="$current" } {
              set Param(Spec) $current
              set exist 1

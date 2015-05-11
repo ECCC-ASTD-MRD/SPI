@@ -233,3 +233,5 @@ image create photo SEL_STAT  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_STATI
 image create photo SEL_CITY  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_CITY.gif
 image create photo SEL_THERE -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_THERE.gif
 image create photo SEL_PLANE -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_PLANE.gif
+
+image create bitmap OPT_CHECK  -file $GDefs(Dir)/share/bitmap/optcheck.xbm

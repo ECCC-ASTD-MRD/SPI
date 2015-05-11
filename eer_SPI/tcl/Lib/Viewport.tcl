@@ -3136,7 +3136,7 @@ proc Viewport::UpdateData { Frame { VP { } } } {
             $Frame.page.canvas itemconf $vp -data {}
          }
       } else {
-         $Frame.page.canvas itemconf $vp -data [FieldCalc::Operand $vp $Data(Data$vp)]
+         $Frame.page.canvas itemconf $vp -data [concat $Data(Data$vp) [FieldCalc::Operand $vp $Data(Data$vp)]]
       }
    }
 

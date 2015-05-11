@@ -102,7 +102,7 @@ proc Graph::Profile::Create { Frame X0 Y0 Width Height Active Full { Link True }
    }
 
    Graph::Activate $Frame $gr Profile
-   
+
    graphaxis create axisx$gr
    graphaxis create axisy$gr
 
@@ -232,7 +232,7 @@ proc Graph::Profile::Graph { GR } {
       set data(XMax) [expr $max>$data(XMax)?$max:$data(XMax)]
       set data(Levels) [concat $data(Levels) [vector get $item.Y]]
    }
-   
+
    if { [vector length $item.Y] && [vector get $item.Y 0]<[vector get $item.Y end] } {
       set data(Order) -increasing
    } else {
@@ -292,12 +292,12 @@ proc Graph::Profile::Graph { GR } {
       set ymin $data(YMin)
       set ymax $data(YMax)
    }
-   
+
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
       $data(Canvas) itemconfigure $id -text $graph(UnitX)
    }
-   
+
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter  -increment $xincr -angle $graph(XAngle) \
       -font $Graph::Font(Axis) -gridcolor $Graph::Grid(XColor) -dash $Graph::Grid(XDash) -gridwidth $Graph::Grid(XWidth) -color $Graph::Color(Axis) \
@@ -522,7 +522,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
    if { $Pos=="" || [string match DATA_* $Pos] } {
       return
    }
-   
+
    if { [info exists Graph::Profile::Profile${GR}::Data(Items$Pos)] } {
       foreach item [lrange $data(Items$Pos) [llength $data(Data)] end] {
          Graph::Profile::ItemDel $GR $item
@@ -551,7 +551,7 @@ proc Graph::Profile::ItemDefine { GR Pos Coords { Update True } } {
          }
       }
    }
-   
+
    Graph::Profile::UpdateItems $data(FrameData) $GR
    Graph::Profile::Graph $GR
    Graph::UnIdle $GR Profile
@@ -570,25 +570,25 @@ proc Graph::Profile::ItemDefineV { GR { Update True } } {
       }
    }
 
-   set i 0 
+   set i 0
    foreach field $data(Data) {
       if { [fstdfield define $field -GRTYP]=="V" && [fstdfield define $field -FID]!="" } {
 
          set Pos DATA_[fstdfield define $field -NOMVAR]_[incr i]
-       
+
          if { [lsearch -exact $data(Pos) $Pos]==-1 } {
             lappend data(Pos) $Pos
          }
          set coords [fstdfield stats $field -grid]
-         
+
          set data(Items$Pos)  {}
          set data(Coords$Pos) $coords
          set data(Pos$Pos)    $coords
          set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
-         
+
          set item ${Pos}_Item
          lappend data(Items$Pos) $item
-         
+
          Graph::Profile::ItemAdd $GR $item
          if { $Update } {
             Graph::Profile::ItemData $GR $Pos $item $field
@@ -713,7 +713,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                default  { $data(Canvas) itemconfigure $obj -text "[fstdfield define GRAPHPROFILE -NOMVAR]" }
             }
          }
-             
+
          #----- Check for vertical coordinate selection
          switch $graph(ZType) {
             "PRESSURE" {
@@ -812,14 +812,14 @@ proc Graph::Profile::Update { Frame { GR {} } } {
                Graph::Profile::Data $gr $Viewport::Data(Data$data(VP))
             }
          }
-         
+
          #----- Update des items
          foreach pos $data(Pos) {
             Graph::Profile::ItemDefine $gr $pos $data(Coords$pos)
          }
          Graph::Profile::ItemDefineV $gr
          Graph::PosSet $gr Profile
-         
+
          catch {
             $data(Canvas) configure -cursor left_ptr
             $data(FrameData).page.canvas configure -cursor left_ptr
@@ -901,6 +901,7 @@ proc Graph::Profile::Data { GR Data } {
    #----- Recuperer les champs correspondants du viewport actif
 
    set data(Data)   {}
+   set fields       {}
    set data(ObsIds) {}
    set nb [expr 95.0/([llength $Data]+1)]
    SPI::Progress +$nb
@@ -917,7 +918,7 @@ proc Graph::Profile::Data { GR Data } {
                fstdfield define $item -IP3 $ip3
             }
          }
-         lappend data(Data) $item
+         lappend fields $item
       } elseif { [observation is $item] } {
          if { [set box  [lindex [observation stats $item -tag] end]]=="" } {
              continue
@@ -944,8 +945,11 @@ proc Graph::Profile::Data { GR Data } {
    Graph::ParamsObsSearch Profile $GR
 
    #----- Applique le calcul MACRO au cubes de donnees
-
-   set data(Data) [FieldCalc::Operand $data(VP) $data(Data)]
+   foreach field [concat $fields [FieldCalc::Operand $data(VP) $fields]] {
+      if { [fstdfield configure $field -active] } {
+        lappend data(Data) $field
+      }
+   }
 
    SPI::Progress 0
 }
