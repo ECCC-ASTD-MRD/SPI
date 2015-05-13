@@ -295,6 +295,7 @@ proc Grid::BBoxOrder { } {
 #
 # Parametres :
 #    <GridInfo> : Grid description string
+#    <ID>       : Identificateur du champs qui sera cree
 #
 # Retour:
 #
@@ -303,7 +304,7 @@ proc Grid::BBoxOrder { } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::Create { { GridInfo {} } } {
+proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
    variable Param
    variable Data
 
@@ -324,12 +325,12 @@ proc Grid::Create { { GridInfo {} } } {
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
 
       if { [info exists ::tk_version] } {
-         fstdfield configure MODELGRID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
+         fstdfield configure $ID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
 
          set Data(Frame) $Page::Data(Frame)
          set Data(VP)    $Viewport::Data(VP)
 
-         Viewport::Assign $Data(Frame) $Data(VP) MODELGRID
+         Viewport::Assign $Data(Frame) $Data(VP) $ID
          Viewport::UpdateData $Data(Frame)
       }
    }
