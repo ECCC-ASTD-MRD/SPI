@@ -47,12 +47,12 @@ proc SPI::Splash { { Msg "" } } {
             image create photo SPLASH -file $GDefs(Dir)/tcl/SPI.gif
             set iw [image width  SPLASH]
             set ih [image height SPLASH]
-            
+
             canvas .splash.c -bg white
             .splash.c create image 0 0 -image SPLASH -anchor nw
             .splash.c create text 5 35  -tag LOADING -font "-*-latin modern sans-bold-*-*-*-18-*-*-*-*-*" -fill #666666 -anchor nw
             .splash.c create text 5 [expr $ih+5] -tag VERSION -font "-*-latin modern sans-bold-*-*-*-64-*-*-*-*-*" -fill #FFFFFF -anchor sw -text "SPI $GDefs(Version)"
-            
+
             set h [winfo screenheight .]
             set w [winfo screenwidth  .]
 
@@ -64,7 +64,7 @@ proc SPI::Splash { { Msg "" } } {
             set y [expr int($h/2.0-$iw/2.0)]
 
             wm geometry .splash ${iw}x${ih}+${x}+${y}
-    
+
             pack .splash.c -side top -fill both
 
             wm withdraw .
@@ -116,7 +116,7 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) (2014/03/18)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) (2015/06/01)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"
@@ -238,7 +238,7 @@ proc SPI::Params { { Frame . } } {
       wm transient .params $Frame
       raise .params $Frame
       update idletasks
-      
+
       #----- Check for out of SPI configured fields
       FSTD::ParamOwnership
    }
@@ -263,7 +263,7 @@ proc SPI::Params { { Frame . } } {
 proc SPI::ParamsApply { } {
 
    Viewport::ConfigSet $Page::Data(Frame)
-
+   FSTD::ParamUpdate
    Page::ParamApply
 
    . config -cursor watch
@@ -413,7 +413,7 @@ proc SPI::Window { } {
    Bubble::Create .info.cooval $Bubble(Coords)
    Bubble::Create .info.altval $Bubble(Alt)
    Bubble::Create .info.fldval $Bubble(Val)
-   
+
    bind all <KeyRelease-Escape> { SPI::ToolMode SPI Zoom }
    bind all <F11>               { SPI::FullScreen %W }
 }
@@ -434,25 +434,25 @@ proc SPI::Window { } {
 
 proc SPI::FullScreen { Win } {
    variable Param
-   
+
    set w [winfo toplevel $Win]
    set full [expr ![wm attributes $w -fullscreen]]
-   
+
    wm attributes $w -fullscreen $full
-   
+
    if { $w=="." } {
       set Param(FullScreen) $full
-      
+
       if { $full } {
          pack forget .menu .bar .info
          bind .mdi <Leave>  { if { %Y<10 } { pack .menu .bar -before .pan -side top -fill x } }
          bind .mdi <Enter>  { pack forget .menu .bar .info }
-         
+
       } else {
          bind .mdi <Leave>  { }
          bind .mdi <Enter>  { }
          pack .menu .bar -before [lindex [pack slaves .] 0] -side top -fill x -anchor n
-         pack .info -after .pan -side top -fill x 
+         pack .info -after .pan -side top -fill x
       }
    }
 }
@@ -862,7 +862,7 @@ proc SPI::ToolBar { Frame } {
             -onvalue 1 -offvalue 0 -indicatoron False -command { Viewport::ConfigSet $Page::Data(Frame) }
          pack $Frame.data.clr $Frame.data.geo -side left -padx 2
       pack  $Frame.data -side left
-      
+
       frame $Frame.cam -relief raised -bd 1
          radiobutton $Frame.cam.zoom -image MODEZOOM -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False \
             -variable Page::Data(Mode) -value Zoom -command { SPI::ToolMode SPI Zoom } -selectcolor $GDefs(ColorLight)
@@ -903,7 +903,7 @@ proc SPI::ToolBar { Frame } {
          ComboBox::Create $Frame.layout.sel SPI::Param(Layout) edit unsorted nodouble -1 $SPI::Param(Layouts) 15 5 \
             { SPI::LayoutLoad $Page::Data(Frame) $SPI::Param(Layout) }
          button $Frame.layout.qck -image PAGEQCK -relief flat -bd 1 -overrelief raised \
-            -command { QuickLayout::Window $Page::Data(Frame) }         
+            -command { QuickLayout::Window $Page::Data(Frame) }
          button $Frame.layout.save -image PAGESAVE -relief flat -bd 1 -overrelief raised \
             -command { SPI::LayoutSave $Page::Data(Frame) [Dialog::Get . $SPI::Bubble(LayoutSave) $SPI::Msg(LayoutName)] }
          button $Frame.layout.del -image PAGEDEL -relief flat -bd 1 -overrelief raised \
@@ -970,7 +970,7 @@ proc SPI::ToolBar { Frame } {
    Bubble::Create $Frame.cam.in      $Bubble(CamDel)
    Bubble::Create $Frame.cam.fly     $Bubble(CamFly)
    Bubble::Create $Frame.cam.down    $Bubble(CamDown)
- 
+
    Bubble::Create $Frame.data.clr     $Bubble(DataClear)
    Bubble::Create $Frame.data.geo     $Bubble(GeoClear)
 }

@@ -177,7 +177,7 @@ proc SPI::CommandLine { { Args {} }} {
    foreach script $SPI::Param(Script) {
       SPI::Execute $script
    }
-   
+
    exit [llength $Args]
 }
 
@@ -263,7 +263,7 @@ if { !$SPI::Param(Batch) } {
 
    #----- User defined layouts and tools
    if { [info exists env(SPI_TOOL)] } {
-   
+
       foreach path [split $env(SPI_TOOL) :] {
          if { [file isdirectory $path] } {
             foreach SPI::Param(ToolPath) [lsort [glob -nocomplain $path/Tools/*]] {
@@ -277,7 +277,7 @@ if { !$SPI::Param(Batch) } {
             foreach layout [lsort -nocase [glob -nocomplain -tails -directory $path/Layout *.tcl]] {
                lappend SPI::Param(Layouts) [file rootname $layout]
             }
-            lappend SPI::Param(Layouts) ""        
+            lappend SPI::Param(Layouts) ""
          }
       }
    }
@@ -287,7 +287,7 @@ if { !$SPI::Param(Batch) } {
       set SPI::Param(EER) True
       source $env(EER_TOOL)/Models/Model.tcl
    }
-   
+
    #----- Liste des layouts
    foreach layout [lsort -nocase [glob -nocomplain -tails -directory $env(HOME)/.spi/Layout *.tcl]] {
       lappend SPI::Param(Layouts) [file rootname $layout]
@@ -627,7 +627,7 @@ proc SPI::LayoutUnLock { Frame } {
 
 proc SPI::LayoutUser { Layout } {
    global env
-   
+
    if { [info exists env(SPI_TOOL)] } {
       foreach path [split $env(SPI_TOOL) :] {
          if { [file exists $path/Layout/$Layout.tcl] } {
@@ -848,7 +848,7 @@ proc SPI::LayoutSaveItems { Frame File } {
 
    #----- Les boites de textes
    CVText::Write $Frame $File
-   
+
    #----- Colorbar
    set SPI::Data(ShowColorBar$Frame)   [ColorBar::Active $Frame]
    if { $SPI::Data(ShowColorBar$Frame) } {
@@ -1315,7 +1315,7 @@ proc SPI::Clear { } {
    FieldBox::Clear False
    TrajBox::Clear  False
    ObsBox::Clear   False
-   
+
    #----- Clear tools
    foreach tool $Param(Tools) {
       eval set proc \[info procs ::${tool}::Clear\]
@@ -1718,7 +1718,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
                pack $frame.info.cooval .info.altval -ipadx 2 -side left -fill y
             pack $frame.info.fldval -side left -fill both -expand true
          pack $frame.info -side bottom -fill x
-         
+
          SPI::WindowBind $frame
       }
       if { [winfo exists $frame.mdi] } {
@@ -1869,6 +1869,7 @@ proc SPI::ToolMode { Tool Mode { Off False } { Square 0 } } {
    if { $Mode!="Draw" && [winfo exists $Page::Data(Canvas)] } {
       $Page::Data(Canvas) delete VERTEXFOLLOW VERTEXTEMPORARY
    }
+
    set Page::Data(DrawMode) $Tool
    set Page::Data(ToolMode) $Tool
    set Page::Param(Square)  [expr $Square<0?0:$Square]
@@ -2049,7 +2050,7 @@ proc SPI::ProjectRead { File { Force False } } {
    variable Lbl
 
    set file ""
-   
+
    #----- Determiner si le fichier de projet est valide
    if { [file exists $File] } {
       set file $File
@@ -2066,7 +2067,7 @@ proc SPI::ProjectRead { File { Force False } } {
                if { [file exists $path/Project/$File.spi] } {
                   set file $path/Project/$File.spi
                   break;
-               }               
+               }
             }
          }
       }
@@ -2075,7 +2076,7 @@ proc SPI::ProjectRead { File { Force False } } {
    if { $file=="" } {
       return
    }
-   
+
    set f [open $file r]
    gets $f head
    close $f
@@ -2285,14 +2286,14 @@ proc SPI::ProjectSave { File Window Layout Cam Data Params } {
             }
          }
       }
-      
+
       #----- Param window
       if { [winfo exists .params] && [winfo ismapped .params] } {
          puts $f "\nSPI::Params"
          puts $f "wm geometry .params [wm geom .params]"
          puts $f "TabFrame::Select .params.tab [TabFrame::Current .params.tab]"
       }
-      
+
 
       #----- Process Tools
       puts $f "\n#----- Invoke tools\n"
