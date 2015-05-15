@@ -805,7 +805,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
 
          /*Check if we need to get the pressure levels*/
-         if (Field[f]->Ref->ZRef.Type==LVL_PRES || Field[f]->Ref->ZRef.Type==LVL_ANGLE || Field[f]->Ref->ZRef.Type==LVL_GALCHEN || Field[f]->Ref->ZRef.Type==LVL_MASL || Field[f]->Ref->ZRef.Type==LVL_MAGL || Field[f]->Ref->ZRef.Type==LVL_UNDEF) {
+         if (Field[f]->Ref->ZRef.Type==LVL_ANGLE || Field[f]->Ref->ZRef.Type==LVL_GALCHEN || Field[f]->Ref->ZRef.Type==LVL_MASL || Field[f]->Ref->ZRef.Type==LVL_MAGL || Field[f]->Ref->ZRef.Type==LVL_UNDEF) {
             p=0;
          }
       } else {
