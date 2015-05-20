@@ -278,13 +278,13 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/${CURL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- sqlite
-   if [[ $ARCH != "AIX" ]]; then
-      echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
-      mkdir ${TMP_PATH}/${SQLITE}.1
-      cd ${TMP_PATH}/${SQLITE}.1
-      (${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
-      make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-   fi
+#   if [[ $ARCH != "AIX" ]]; then
+#      echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
+#      mkdir ${TMP_PATH}/${SQLITE}.1
+#      cd ${TMP_PATH}/${SQLITE}.1
+#      (${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
+#      make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+#   fi
 
    #----- geos
    if [[ $ARCH != "AIX" ]]; then
@@ -433,7 +433,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-jasper=${LIB_PATH} \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIB_PATH}/bin/curl-config \
-      --with-xml2=${LIB_PATH}/bin/xml2-config \
+      --with-xml2=${LIBXML_PATH}/bin/xml2-config \
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH} \
       --with-hide-internal-symbols=yes \
@@ -467,9 +467,9 @@ if [[ $EXT -eq 1 ]]; then
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
       --with-mysql=${LIB_PATH_OPS}/${MYSQL}/bin/mysql_config \
+      --with-sqlite3=no \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIB_PATH}/bin/curl-config \
-      --with-sqlite3=${LIB_PATH} \
       --with-geos=${LIB_PATH}/bin/geos-config \
       --with-hdf4=${LIB_PATH} \
       --with-hdf5=${LIB_PATH} \
