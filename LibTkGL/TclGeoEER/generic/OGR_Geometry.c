@@ -555,7 +555,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    double        dist;
 
    static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-intersection","-union,","-difference","-symmetricdifference",
+                                 "-convexhull","-intersection","-union","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,

@@ -950,6 +950,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
    for(n=0;n<loc->NbInfo;n++) {
       loc->Head[n]=strdup(obs0->Loc->Head[n]);
    }
+   loc->Date=obs0->Loc->Date;
    loc->Info=(char***)malloc(loc->Nb*sizeof(char**));
    for(n=0;n<loc->Nb;n++) {
       loc->Info[n]=(char**)malloc(obs0->Loc->NbInfo*sizeof(char*));
@@ -994,7 +995,8 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Def_Free(obs0->Def);
       obs0->Def=def;
    }
-   return TCL_OK;
+   
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1064,6 +1066,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
          /*Check if already included*/
         if (Obs_LocFind(loc,array0[k0],array)==-1) {
             loc->Id[loc->Nb]=strdup(obs0->Loc->Id[k0]);
+            loc->Date=obs0->Loc->Date;
             if (loc->No) {
                if (obs0->Loc->No) {
                   loc->No[loc->Nb]=strdup(obs0->Loc->No[k0]);
@@ -1171,10 +1174,11 @@ static int Obs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Loc  = NULL;
    obs->Tag  = NULL;
 
-   obs->Date = 0;
-   obs->Time = 0;
-   obs->Min  = 0;
-   obs->Max  = 0;
+   obs->LevelType = 0;
+   obs->Date      = 0;
+   obs->Time      = 0;
+   obs->Min       = 0;
+   obs->Max       = 0;
 
    return(TCL_OK);
 }
@@ -1281,7 +1285,7 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
 
    if (!stream) {
       Tcl_AppendResult(Interp,"\n   Obs_WriteASCII :  Could not open observation file ",File,(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    Tcl_ListObjLength(Interp,List,&nobs);
@@ -1290,7 +1294,7 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
 
    if (!obs) {
       Tcl_AppendResult(Interp,"\n   Obs_WriteASCII: Observation id unknown: \"",Tcl_GetString(obj),"\"",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
    loc=obs->Loc;
 
@@ -1311,11 +1315,11 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
       obs=Obs_Get(Tcl_GetString(obj));
       if (!obs) {
          Tcl_AppendResult(Interp,"\n   Obs_WriteASCII: Observation id unknown: \"",Tcl_GetString(obj),"\"",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
       if (loc->Nb!=obs->Loc->Nb || loc->NbInfo!=obs->Loc->NbInfo) {
          Tcl_AppendResult(Interp,"\n   Obs_WriteASCII: Observations are incompatible",(char*)NULL);
-         return TCL_ERROR;
+         return(TCL_ERROR);
       }
 
       fputs(" DATA.",stream);
@@ -1340,7 +1344,7 @@ int Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title) {
       fputs(buf,stream);
       sprintf(buf," %.5f",loc->Coord[n].Elev);
       fputs(buf,stream);
-      sprintf(buf," %i",obs->LevelType);
+      sprintf(buf," %s",ZRef_LevelName(obs->LevelType));
       fputs(buf,stream);
 
       for(i=0;i<loc->NbInfo;i++) {
@@ -1402,7 +1406,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    int     ntok,gntok,nltok;
    char    **tok,**gtok,**ltok;
    int     err=TCL_OK;
-   int    levtyp=0;
+   int     levtyp=0;
 
    stream=fopen(File,"r");
 

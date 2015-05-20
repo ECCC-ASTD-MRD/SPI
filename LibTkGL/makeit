@@ -98,7 +98,7 @@ if [[ $EXT -eq 1 ]]; then
    TKTABLE=Tktable2.10
    TKDND=tkdnd2.7
 
-   XML=libxml2-2.9.1
+   XML=libxml2-2.9.2
    TDOM=tdom-master
    EXPAT=expat-2.0.1
    CURL=curl-7.21.3
@@ -240,12 +240,18 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- libxml2
-   echo "Building ${TMP_PATH}/${XML}/build.log"
-   mkdir ${TMP_PATH}/${XML}
-   cd ${TMP_PATH}/${XML}
-   (${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
-   make install) > ${TMP_PATH}/${XML}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-
+   if [ -x /usr/bin/xml2-config ]; then
+      echo "Found libxml2, using system version `/usr/bin/xml2-config --version`"
+      LIBXML_PATH=/usr
+   else
+      echo "Building ${TMP_PATH}/${XML}/build.log"
+      LIBXML_PATH=${LIB_PATH}
+      mkdir ${TMP_PATH}/${XML}
+      cd ${TMP_PATH}/${XML}
+      (${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
+      make install) > ${TMP_PATH}/${XML}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+   
    #----- tDOM
    if [[ $ARCH != "AIX" ]]; then
       echo "Building ${TMP_PATH}/${TDOM}/build.log"
@@ -379,7 +385,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${POSTGRESQL}/build.log"
       mkdir ${TMP_PATH}/${POSTGRESQL}
       cd ${TMP_PATH}/${POSTGRESQL}
-      (${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIB_PATH}/include/libxml2
+      (${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIBXML_PATH}/include/libxml2
       make install) > ${TMP_PATH}/${POSTGRESQL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
       #----- ODBC
@@ -450,7 +456,7 @@ if [[ $EXT -eq 1 ]]; then
       (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
       --with-libz=internal \
       --with-liblzma=yes \
-      --with-xml2=${LIB_PATH}/bin/xml2-config \
+      --with-xml2=${LIBXML_PATH}/bin/xml2-config \
       --with-pcidsk=internal \
       --with-pcraster=internal \
       --with-png=internal \
