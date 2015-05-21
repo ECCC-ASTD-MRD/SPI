@@ -109,13 +109,13 @@ puts  "   Convex hull area    : [ogrgeometry stats $hull -area]"
 ogrgeometry create POLY "Polygon"
 ogrgeometry create RING "Linear Ring"
 ogrgeometry define RING -points { 10 10 11 11 20 11 10 10 }
-ogrgeometry define POLY -geom True RING
+ogrgeometry define POLY -geometry True RING
 puts  "   Obj area            : [ogrgeometry stats POLY -area]"
-puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geom] -points]"
+puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geometry] -points]"
 
 #----- Make a buffer around it
 set geom [ogrgeometry stats POLY -buffer 1.0 20]
-puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geom] -points]"
+puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geometry] -points]"
 
 #----- Try some sql
 ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH="South America" }

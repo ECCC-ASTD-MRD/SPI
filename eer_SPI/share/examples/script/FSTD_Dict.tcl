@@ -35,17 +35,17 @@ puts "Variables:(CMOE): [fstddict var -searchorigin CMOE]"
 puts "Variables:(CV CMOE): [fstddict var CV -searchorigin CMOE]"
 puts "Types    : [fstddict type]\n"
 
-puts "Var TT      : [fstddict varinfo TT]"
-puts "Var TT      : [fstddict varinfo TT -lang fr -short -units]"
-puts "Var FM      : [fstddict varinfo FM]"
-puts "Var FM      : [fstddict varinfo FM -lang fr -short -units]"
-puts "Var FM      : [fstddict varinfo FM -lang fr -units -short -origin -nature]"
-puts "Var CV      : [fstddict varinfo CV -searchorigin CMOE]"
-puts "Var VF (22) : [fstddict varinfo VF -lang fr -searchip1 22 -short -units]"
-puts "Var VF (33) : [fstddict varinfo VF -lang fr -searchip1 33 -short -units]"
-puts "Var VFDGD   : [fstddict varinfo VFDGD -lang fr -short -units]"
-puts "Var PR (ERC25___NALL): [fstddict varinfo PR -lang fr -all -modifier ERC25___NALL -short -unit]"
-puts "Var TT (ERGE1___NALL): [fstddict varinfo TT -lang fr -modifier ERGE1___NALL -short -unit]"
+puts "Var TT        : [fstddict varinfo TT]"
+puts "Var TT        : [fstddict varinfo TT -lang fr -short -units]"
+puts "Var FM        : [fstddict varinfo FM]"
+puts "Var FM        : [fstddict varinfo FM -lang fr -short -units]"
+puts "Var FM        : [fstddict varinfo FM -lang fr -units -short -origin -nature]"
+puts "Var CV        : [fstddict varinfo CV -searchorigin CMOE]"
+puts "Var VF (1199) : [fstddict varinfo VF -lang fr -searchip1 1199 -short -units]"
+puts "Var VF (33)   : [fstddict varinfo VF -lang fr -searchip1 33 -short -units]"
+puts "Var VFDGD     : [fstddict varinfo VFDGD -lang fr -short -units]"
+puts "Var PR (ERC25___NALL): [fstddict varinfo PR -lang fr -all -modifier ERC25___NALL -short -units]"
+puts "Var TT (ERGE1___D010): [fstddict varinfo TT -lang fr -modifier ERGE1___NALL -short -units]"
 
 fstddict varinfo TT -lang en -short "tototo tititi"
 puts "Var TT new  : [fstddict varinfo TT -lang en -short]"
@@ -62,7 +62,7 @@ puts "Type XX new : [fstddict typeinfo XX -lang en -short]"
 puts -nonewline "Time of 100000 iterations: " 
 puts [time {
 for { set n 0 } { $n < 100000 } { incr n } {
-   fstddict varinfo TT -lang en -short -unit
+   fstddict varinfo TT -lang en -short -units
 }
 }]
 

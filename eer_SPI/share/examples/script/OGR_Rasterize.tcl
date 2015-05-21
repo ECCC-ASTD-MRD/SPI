@@ -33,7 +33,7 @@ proc OGRRasterize { File } {
    eval ogrlayer read LAYER $layer
 
    #----- Recuperer les limites qui couvre les donnees vectorielles
-   set extent [ogrlayer stat LAYER -extent]
+   set extent [ogrlayer stats LAYER -extent]
    set res    50.0
    set dx     [expr [lindex $extent 2]-[lindex $extent 0]]
    set dy     [expr [lindex $extent 3]-[lindex $extent 1]]

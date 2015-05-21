@@ -145,16 +145,16 @@ proc FSTD_Hull::Run { } {
             
                #----- Check hull distances for merge
                foreach dgeom $hulls {
-                  if { $Param(Dist)<0 || ($Param(Dist) && $hull!=$dgeom && [ogrgeometry stats $hull -dist $dgeom]<=$Param(Dist)) } {
-                     set hull [ogrgeometry stat [ogrgeometry stat $hull -union $dgeom] -convexhull]
+                  if { $Param(Dist)<0 || ($Param(Dist) && $hull!=$dgeom && [ogrgeometry stats $hull -distance $dgeom]<=$Param(Dist)) } {
+                     set hull [ogrgeometry stats [ogrgeometry stats $hull -union $dgeom] -convexhull]
                   }
                }
                
                #-----Create convex hulls
                if { [ogrgeometry is $newgeom] } {
-                  set newgeom [ogrgeometry stat $newgeom -union [ogrgeometry stat $hull -convexhull]]
+                  set newgeom [ogrgeometry stats $newgeom -union [ogrgeometry stats $hull -convexhull]]
                } else {
-                  set newgeom [ogrgeometry stat $hull -convexhull]
+                  set newgeom [ogrgeometry stats $hull -convexhull]
                }
             }    
             set geom $newgeom
@@ -162,7 +162,7 @@ proc FSTD_Hull::Run { } {
 
          #----- Keep resulting hulls
          if { ![ogrgeometry is $newgeom] } {
-            set newgeom [ogrgeometry stat $geom -convexhull]
+            set newgeom [ogrgeometry stats $geom -convexhull]
          }
          ogrlayer define BUFFERED -geometry 0 False $newgeom
          
