@@ -1207,8 +1207,8 @@ void stat_core(TDef *MA,TDef *MB) {
    Vlmne=exp(Vlmne/Vnb)-1.0;
 
    t=nblok+Vnbnp;
-   Vgmb=exp(Vgmb/t);
-   Vgmv=exp(Vgmv/t);
+   Vgmb=t?exp(Vgmb/t):0;
+   Vgmv=t?exp(Vgmv/t):0;
 
    Vfoex=((Vnbgt+Vnbeq/2.0)/Vnb-0.5)*100.0;
    Vfa2=((Vfa2+Vnbnp)/Vnb)*100.0;
