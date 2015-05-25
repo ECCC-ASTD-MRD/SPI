@@ -119,7 +119,7 @@ proc SPI::Execute { Script } {
          if { $Param(Help) } {
             Macro::Desc $script
          } else {
-            set Macro::Param(Path) [file dirname $Script]
+            set Macro::Param(Path) [file normalize [file dirname $Script]]
             Macro::Run $script False
          }
       }
