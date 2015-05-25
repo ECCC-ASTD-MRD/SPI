@@ -451,14 +451,14 @@ proc Macro::JetMapper::Print { } {
    #----- Francais
    Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 0 True
    PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
-   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
 
    #----- English
    Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 1 True
    PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
-   exec convert -antialias -resize 555x421+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
 }
 
 #----------------------------------------------------------------------------

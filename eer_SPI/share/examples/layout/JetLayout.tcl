@@ -47,7 +47,7 @@ proc JetLayout::Layout { Frame } {
    ProjCam::Select $Frame $Frame [namespace current]
 
    #----- Affichage des Viewports
-   set Data(Viewport001) [Viewport::Create $Frame 0 0 901 571 1 1]
+   set Data(Viewport001) [Viewport::Create $Frame 1 1 900 570 1 1]
 
    Page::UpdateItems $Frame
 }
