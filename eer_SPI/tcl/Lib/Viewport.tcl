@@ -1207,7 +1207,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       set Width   [winfo width  $Page::Data(Canvas)]
       set Height  [winfo height $Page::Data(Canvas)]
    }
-
+   
    #----- Initialiser les variables du viewport
 
    set Data(Full$vp)      $Full      ;#Mode FullCanvas
@@ -1239,8 +1239,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord) \
-      -anchor nw -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp \
-      -maskitem [$Frame.page.canvas find withtag VPINTRUDE] -maskwidth $Page::Param(Intrusion)
+      -tags "$vp $tag" -projection $Frame -camera $Frame -command $vp -maskitem [$Frame.page.canvas find withtag VPINTRUDE] -maskwidth $Page::Param(Intrusion)
 
    if { $Active } {
       scale $Frame.sc$vp -bg white -relief raised -bd 1 -width 8 -sliderlength 15  -orient horizontal -showvalue False -resolution 0.01 \
@@ -1249,7 +1248,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
       bind $Frame.sc$vp <ButtonPress-1> "Viewport::Resolution $Frame [expr $OpenGL::Param(Res)==1?2:$OpenGL::Param(Res)]; ProjCam::Zoom $Frame $Frame \[expr pow(2,\$Page::Data(L$Frame))\] True"
       bind $Frame.sc$vp <ButtonRelease-1> "Viewport::Resolution $Frame 1"
 
-      $Frame.page.canvas create window [expr $x1-150-35] $y1  -window $Frame.sc$vp -anchor sw -tags "SCPAGE$vp NOPRINT" -width 151
+      $Frame.page.canvas create window [expr $x1-150-35] $y1 -window $Frame.sc$vp -anchor sw -tags "SCPAGE$vp NOPRINT" -width 151
 
       Page::ActiveWrapper Viewport $Frame $vp $X0 $Y0 $x1 $y1
    }

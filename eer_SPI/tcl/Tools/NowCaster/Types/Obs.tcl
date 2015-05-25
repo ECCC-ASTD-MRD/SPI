@@ -1769,7 +1769,7 @@ proc NowCaster::Obs::InfoWindow { { Obs "" } } {
          pack ${tab}.info.scrolly -side left -fill y
       pack ${tab}.info -side right -fill y -padx 5 -pady 5
 
-      ${tab}.glcanvas create graph -x 0 -y 0 -width 1 -height 1 -anchor nw -xlegend 5 -ylegend 5 -command "gr" -legend True \
+      ${tab}.glcanvas create graph -x 0 -y 0 -width 1 -height 1 -xlegend 5 -ylegend 5 -command "gr" -legend True \
          -fg black -bg gray75 -fill white -tags "TEPHI" -font XFont12 -title "" -type TEPHI -tag TEPHI
       pack .nowcasterinfo.tab -side top -fill both -expand true -padx 5 -pady 5
 

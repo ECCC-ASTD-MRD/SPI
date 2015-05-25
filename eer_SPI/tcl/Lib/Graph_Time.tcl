@@ -92,7 +92,7 @@ proc Graph::Time::Create { Frame X0 Y0 Width Height Active Full { Link True } } 
 
    set id [$data(Canvas) create text $X0 $Y0  -tags "$tag CVTEXT GRAPHUPDATE$gr" -text [lindex $Lbl(Title) $GDefs(Lang)] \
       -font $Graph::Font(Graph) -fill black -anchor nw -justify center]
-   $data(Canvas) create graph -x $X0 -y $Y0 -width $Width -height $Height -anchor nw -xlegend 5 -ylegend 5 -command $gr \
+   $data(Canvas) create graph -x $X0 -y $Y0 -width $Width -height $Height -xlegend 5 -ylegend 5 -command $gr \
        -fg black -bg $Graph::Color(Frame) -fill $Graph::Color(Graph) -tags "$tag $gr" -font $Graph::Font(Graph) -title $id
    $data(Canvas) raise $id
 

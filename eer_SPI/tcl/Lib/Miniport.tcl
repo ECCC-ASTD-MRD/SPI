@@ -137,7 +137,7 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
       projection configure $mini -type orthographic
    }
    $Frame.page.canvas create viewport -x $x0 -y $y0 -width $Viewport::Data(Width$mini) -height $Viewport::Data(Height$mini) \
-      -anchor nw -tags "$mini $ctag VPINTRUDE" -projection $mini -camera $mini -command $mini -secondary True
+      -tags "$mini $ctag VPINTRUDE" -projection $mini -camera $mini -command $mini -secondary True
    $Frame.page.canvas bind $mini <ButtonPress-1>  "+Miniport::Select $Frame $mini"
 
    Viewport::ConfigSet $Frame

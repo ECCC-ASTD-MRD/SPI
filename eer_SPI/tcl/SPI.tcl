@@ -1519,7 +1519,7 @@ proc SPI::IcoDraw { Frame args } {
                      $Frame.page.canvas bind $tag <Enter> ""
                      $Frame.page.canvas bind $tag <Leave> ""
                   } else {
-                     $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame  \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
+                     $Frame.page.canvas bind $tag <Enter> "Page::CursorInfo $Frame \[$Frame.page.canvas canvasx %x\] \[$Frame.page.canvas canvasy %y\] \"$id\""
                      $Frame.page.canvas bind $tag <Leave> "Page::CursorInfo $Frame 0 0 \"\""
                   }
                }
