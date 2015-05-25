@@ -87,6 +87,7 @@ static ViewportItem *ViewportTable[256];
 /*Information used for parsing configuration specs:*/
 
 static const Tk_ConfigSpec configSpecs[] = {
+   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "nw",Tk_Offset(ViewportItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_FONT, "-font", NULL, NULL, "Helvetica 12",Tk_Offset(ViewportItem,tkfont),TK_CONFIG_NULL_OK },
    { TK_CONFIG_DOUBLE, "-x", NULL, NULL, "0",Tk_Offset(ViewportItem,x),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_DOUBLE, "-y", NULL, NULL, "0",Tk_Offset(ViewportItem,y),TK_CONFIG_DONT_SET_DEFAULT },
@@ -379,6 +380,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    /*Initialize item's record.*/
 
    vp->canvas      = Canvas;
+   vp->anchor      = TK_ANCHOR_NW;
    vp->tkfont      = NULL;
    vp->BGColor     = NULL;
    vp->FGColor     = NULL;
@@ -1185,6 +1187,41 @@ static void ViewportBBox(Tk_Canvas Canvas,ViewportItem *VP){
       VP->header.x1 = VP->header.x2 = x;
       VP->header.y1 = VP->header.y2 = y;
       return;
+   }
+
+   /*Compute location and size of pixmap, using anchor information.*/
+
+   switch (VP->anchor) {
+      case TK_ANCHOR_N:
+         x -= VP->Width/2;
+         break;
+      case TK_ANCHOR_NE:
+         x -= VP->Width;
+         break;
+      case TK_ANCHOR_E:
+         x -= VP->Width;
+         y -= VP->Height/2;
+         break;
+      case TK_ANCHOR_SE:
+         x -= VP->Width;
+         y -= VP->Height;
+         break;
+      case TK_ANCHOR_S:
+         x -= VP->Width/2;
+         y -= VP->Height;
+         break;
+      case TK_ANCHOR_SW:
+         y -= VP->Height;
+         break;
+      case TK_ANCHOR_W:
+         y -= VP->Height/2;
+         break;
+      case TK_ANCHOR_NW:
+         break;
+      case TK_ANCHOR_CENTER:
+         x -= VP->Width/2;
+         y -= VP->Height/2;
+         break;
    }
 
    /*Store the information in the item header.*/

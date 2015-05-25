@@ -49,6 +49,7 @@
 typedef struct GraphItem  {
    Tk_Item        header;          /*Generic stuff that's the same for all types*/
    Tk_Canvas      canvas;          /*Pointeur sur le canvas contenant le viewport*/
+   Tk_Anchor      anchor;          /*Where to anchor pixmap relative to (x,y)*/
    Tk_Font        Font;            /*Font for drawing text*/
    Tk_TextLayout  Text;            /*Cached text layout information*/
    Tk_Dash        Dash[3];         /*Pointille*/

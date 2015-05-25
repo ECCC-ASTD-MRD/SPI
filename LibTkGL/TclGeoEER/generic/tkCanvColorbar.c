@@ -55,6 +55,8 @@ static const Tk_CustomOption tagsOption  = { Tk_CanvasTagsParseProc,Tk_CanvasTag
 /*Information used for parsing configuration specs:*/
 
 static Tk_ConfigSpec ColorbarSpecs[] = {
+   { TK_CONFIG_ANCHOR, "-anchor",(char *)NULL,(char *)NULL,
+        "nw",Tk_Offset(ColorbarItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_FONT, "-font",(char*)NULL,(char*)NULL,
         "Helvetica -12",Tk_Offset(ColorbarItem,Font),0 },
    { TK_CONFIG_DOUBLE,"-x",(char *)NULL,(char *)NULL,
@@ -171,6 +173,7 @@ int ColorbarCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Argc,Tc
     /*Initialize item's record.*/
 
    cb->canvas     = Canvas;
+   cb->anchor     = TK_ANCHOR_NW;
    cb->Font       = NULL;
    cb->BGColor    = NULL;
    cb->FGColor    = NULL;
@@ -341,7 +344,43 @@ void ColorbarBBox(Tk_Canvas Canvas,ColorbarItem *CB){
       return;
    }
 
+   /*Compute location and size of pixmap, using anchor information.*/
+
+   switch (CB->anchor) {
+      case TK_ANCHOR_N:
+         x -= CB->Width/2;
+         break;
+      case TK_ANCHOR_NE:
+         x -= CB->Width;
+         break;
+      case TK_ANCHOR_E:
+         x -= CB->Width;
+         y -= CB->Height/2;
+         break;
+      case TK_ANCHOR_SE:
+         x -= CB->Width;
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_S:
+         x -= CB->Width/2;
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_SW:
+         y -= CB->Height;
+         break;
+      case TK_ANCHOR_W:
+         y -= CB->Height/2;
+         break;
+      case TK_ANCHOR_NW:
+         break;
+      case TK_ANCHOR_CENTER:
+         x -= CB->Width/2;
+         y -= CB->Height/2;
+         break;
+   }
+
    /*Store the information in the item header.*/
+
    CB->header.x1 = x ;
    CB->header.y1 = y ;
    CB->header.x2 = x + CB->Width;
