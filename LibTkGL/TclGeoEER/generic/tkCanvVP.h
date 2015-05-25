@@ -57,7 +57,6 @@ typedef struct Obj2Array {
 typedef struct ViewportItem  {
    Tk_Item header;                /*Generic stuff that's the same for all types*/
    Tk_Canvas canvas;              /*Pointeur sur le canvas contenant le viewport*/
-   Tk_Anchor anchor;              /*Where to anchor pixmap relative to (x,y)*/
    Tk_Font tkfont;                /*Font for drawing text*/
    Tk_Dash DashCoord;             /*Pointille*/
    Tcl_TimerToken Timer;          /*Tcl refresh timer event*/

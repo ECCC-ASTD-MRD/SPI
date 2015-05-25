@@ -73,7 +73,6 @@ static const Tk_CustomOption tagsOption = { Tk_CanvasTagsParseProc,Tk_CanvasTags
 /*Information used for parsing configuration specs:*/
 
 static const Tk_ConfigSpec GraphSpecs[] = {
-   { TK_CONFIG_ANCHOR, "-anchor", NULL, NULL, "center",Tk_Offset(GraphItem,anchor),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_FONT, "-font", NULL, NULL, "Helvetica -12",Tk_Offset(GraphItem,Font),0 },
    { TK_CONFIG_DOUBLE, "-x", NULL, NULL, "0",Tk_Offset(GraphItem,x),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_DOUBLE, "-y", NULL, NULL, "0",Tk_Offset(GraphItem,y),TK_CONFIG_DONT_SET_DEFAULT },
@@ -180,7 +179,6 @@ static int GraphCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int Arg
     /*Initialize item's record.*/
 
    gr->canvas     = Canvas;
-   gr->anchor     = TK_ANCHOR_CENTER;
    gr->Text       = NULL;
    gr->Font       = NULL;
    gr->BGColor    = NULL;
@@ -531,41 +529,6 @@ static void GraphBBox(Tk_Canvas Canvas,GraphItem *Gr){
       Gr->header.x1 = Gr->header.x2 = x;
       Gr->header.y1 = Gr->header.y2 = y;
       return;
-   }
-
-   /*Compute location and size of pixmap, using anchor information.*/
-
-   switch (Gr->anchor) {
-      case TK_ANCHOR_N:
-         x -= Gr->Width/2;
-         break;
-      case TK_ANCHOR_NE:
-         x -= Gr->Width;
-         break;
-      case TK_ANCHOR_E:
-         x -= Gr->Width;
-         y -= Gr->Height/2;
-         break;
-      case TK_ANCHOR_SE:
-         x -= Gr->Width;
-         y -= Gr->Height;
-         break;
-      case TK_ANCHOR_S:
-         x -= Gr->Width/2;
-         y -= Gr->Height;
-         break;
-      case TK_ANCHOR_SW:
-         y -= Gr->Height;
-         break;
-      case TK_ANCHOR_W:
-         y -= Gr->Height/2;
-         break;
-      case TK_ANCHOR_NW:
-         break;
-      case TK_ANCHOR_CENTER:
-         x -= Gr->Width/2;
-         y -= Gr->Height/2;
-         break;
    }
 
    /*Store the information in the item header.*/
@@ -962,7 +925,6 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             gr->CB->y      = gr->yg[1];
             gr->CB->Width  = 90;
             gr->CB->Height = gr->yg[0]-gr->yg[1];
-            gr->CB->anchor = TK_ANCHOR_NW;
             gr->CB->FGColor= gr->FGColor;
             gr->CB->BGColor= gr->BGColor;
             gr->CB->Font   = gr->Font;
