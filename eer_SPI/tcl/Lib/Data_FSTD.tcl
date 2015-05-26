@@ -765,7 +765,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Map)        [dataspec configure $spec -colormap]
    set Param(MapAll)     [dataspec configure $spec -mapall]
    set Param(MapAbove)   [dataspec configure $spec -mapabove]
-   set Param(MapBelow)  [dataspec configure $spec -mapbelow]
+   set Param(MapBelow)   [dataspec configure $spec -mapbelow]
    set Param(Size)       [dataspec configure $spec -size]
    set Param(SizeRange)  [dataspec configure $spec -sizerange]
    set Param(Color)      [dataspec configure $spec -color]
@@ -1231,6 +1231,11 @@ proc FSTD::ParamUpdate { { Fields { } } } {
             "FILE"   { set var [fstdfield define $fld -FID] }
          }
 
+         #----- Do not process animator fields
+         if { [string match ANI.* $var] } {
+            continue
+         }
+         
          #----- If the var is empty
          if { [set var [string trim $var]]=="" } {
             set var "<>"
