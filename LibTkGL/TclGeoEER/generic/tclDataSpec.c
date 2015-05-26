@@ -1345,7 +1345,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       }
    }
 
-   /*Appliquer les facteurs et delta aux nouveaux intervals*/
+   // Clear reference id to itself since we changed a parameter
+   Spec->Id=(unsigned int)Spec;
+
+   // Appliquer les facteurs et delta aux nouveaux intervals
    if (internew) {
       for (ii=0;ii<Spec->InterNb;ii++){
          Tcl_ListObjIndex(Interp,Spec->InterVals,ii,&obj);
@@ -1358,7 +1361,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       }
    }
 
-   /*Assigner les limites d'affichage*/
+   // Assigner les limites d'affichage
    if (cminmax) {
       if (Spec->Min==Spec->Max) {
          Spec->MinMax=DATASPEC_NOTSET;
@@ -1366,7 +1369,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
       cmap=1;
    }
 
-   /*Cleanup des tableaux*/
+   // Cleanup des tableaux
    if (cmap || cpos || cseg) {
       DataSpec_Clean(Spec,cmap,cpos,cseg);
    }
@@ -1548,6 +1551,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       DataSpec_Clear(to);
    }
 
+   to->Id=from->Id;
 //   to->Active=from->Active;
    to->SpriteImg=from->SpriteImg;
    to->TopoFactor=from->TopoFactor;
@@ -1692,6 +1696,7 @@ TDataSpec *DataSpec_New(){
 
    if ((spec=(TDataSpec*)malloc(sizeof(TDataSpec)))) {
 
+      spec->Id=(unsigned int)spec;
       spec->Active=1;
       spec->NRef=1;
       spec->Set=0;

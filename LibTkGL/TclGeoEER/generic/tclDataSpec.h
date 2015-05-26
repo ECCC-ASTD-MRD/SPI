@@ -90,9 +90,10 @@ typedef struct TIcon {
 } TIcon;
 
 typedef struct TDataSpec {
-   char       *Name;                /*Identificateur information*/
-   int         Set;                 /*Flag de configuration*/
-   int         NRef;                /*Compteur de reference*/
+   char        *Name;                /*Identificateur information*/
+   int          Set;                 /*Flag de configuration*/
+   int          NRef;                /*Compteur de reference*/
+   unsigned int Id;                  /*Identificateur de reference*/
 
    int             Active;              /*Flag d'activation de l'affichage*/
    CMap_Rec       *Map;                 /*Palette Associee*/
