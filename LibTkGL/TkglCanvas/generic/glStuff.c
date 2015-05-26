@@ -1189,7 +1189,7 @@ GLushort glDash(Tk_Dash *Dash) {
    /* For each char in the pattern */
    while(bits>=0) {
 
-      /* Divide the length by two since we can expande it with GL*/
+      /* Divide the length by two since we can expand it with GL*/
       nbits=array[i]>>1;
 
       if (on) {
@@ -1225,17 +1225,18 @@ void DashPrint(char *String,Tk_Dash *Dash) {
 
    if (i<0) {
       i=-i;
-      p=(i>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
+      p=(i>(int)sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
       memcpy(String,p,(unsigned int)i);
       String[i]=0;
+      return;
    } else if (!i) {
       String[0]='\0';
       return;
    }
-   p=(i>sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
-   sprintf(String,"%d",*p++ & 0xff);
+   p=(i>(int)sizeof(char*))?Dash->pattern.pt:Dash->pattern.array;
+   sprintf(String,"%d ",*p++ & 0xff);
    while(--i) {
-      sprintf(String+strlen(String),"%d",*p++&0xff);
+      sprintf(String+strlen(String)," %d",*p++&0xff);
    }
 }
 

@@ -715,7 +715,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                DashPrint(buf,&Spec->Dash);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             } else {
-               Tk_GetDash(Interp,Tcl_GetString(Objv[++i]),&Spec->Dash);
+               if (Tk_GetDash(Interp,Tcl_GetString(Objv[++i]),&Spec->Dash)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
             }
             break;
 
@@ -1346,7 +1348,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    }
 
    // Clear reference id to itself since we changed a parameter
-   Spec->Id=(unsigned int)Spec;
+   Spec->Id=(unsigned long)Spec;
 
    // Appliquer les facteurs et delta aux nouveaux intervals
    if (internew) {
@@ -1636,7 +1638,9 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Dash.number=0;
    if (from->Dash.number) {
       DashPrint(buf,&from->Dash);
-      Tk_GetDash(Interp,buf,&to->Dash);
+      if (Tk_GetDash(Interp,buf,&to->Dash)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
    }
 
    to->Stipple=NULL;
@@ -1696,7 +1700,7 @@ TDataSpec *DataSpec_New(){
 
    if ((spec=(TDataSpec*)malloc(sizeof(TDataSpec)))) {
 
-      spec->Id=(unsigned int)spec;
+      spec->Id=(unsigned long)spec;
       spec->Active=1;
       spec->NRef=1;
       spec->Set=0;
