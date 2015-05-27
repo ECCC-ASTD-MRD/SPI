@@ -922,8 +922,8 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
             if { $vert } {
                fstdfield readcube $fld
             }
-            fstdfield configure $fld -active $Param(ShowAll)
 
+            fstdfield configure $fld -active True
             lappend Data(Fields$VP) $fld
             append expr $fld
          } else {
@@ -949,6 +949,10 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
          FSTD::Register $res
          fstdfield stats $res -tag [fstdfield stats [lindex $fields 0] -tag]
          catch { .fieldcalc.expr.param configure -state normal }
+         
+         foreach fld $Data(Fields$VP) {
+            fstdfield configure $fld -active $Param(ShowAll)         
+         }
       }
    } else {
       return
