@@ -1860,9 +1860,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             mem=0;i=0;
             while (mem<n) {
                if (x[mem]<=Field->Def->NI && y[mem]<=Field->Def->NJ && x[mem]>=1 && y[mem]>=1) {
-                  lat[i]=lat[mem];
-                  lon[i]=lon[mem];
-                  i++;
+                  if (!Field->Def->Mask || Field->Def->Mask[FIDX2D(Field->Def,(int)x[mem],(int)y[mem])]) {
+                     lat[i]=lat[mem];
+                     lon[i]=lon[mem];
+                     i++;
+                  }
                }
                mem++;
             }
@@ -1884,9 +1886,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
-               lat[n]=lat[i];
-               lon[n]=lon[i];
-               n++;
+               if (!Field->Def->Mask || Field->Def->Mask[i]) {
+                  lat[n]=lat[i];
+                  lon[n]=lon[i];
+                  n++;
+               }
             }
 
             x=(float*)malloc(n*sizeof(float));
