@@ -1348,8 +1348,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    }
 
    // Clear reference id to itself since we changed a parameter
-   Spec->Id=(unsigned long)Spec;
-
+   if (Objc>1) {
+      Spec->Id=(unsigned long)Spec;
+   }
+   
    // Appliquer les facteurs et delta aux nouveaux intervals
    if (internew) {
       for (ii=0;ii<Spec->InterNb;ii++){

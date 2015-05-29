@@ -1270,6 +1270,9 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
 
          idx=Def->NI*Y+X;
 
+         // Check for mask
+//         if (Def->Mask && !Def->Mask[idx]) break;
+         
          /*Check if we've already parsed this voxel from this side*/
          if (PMatrix[idx]&side) break;
          PMatrix[idx]|=side;
