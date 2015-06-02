@@ -119,7 +119,7 @@ proc ComboBox::Add { W Item } {
          return -1
       }
       return [lsearch -exact $Lst $Item]
-  }
+   }
 }
 
 #-------------------------------------------------------------------------------

@@ -149,7 +149,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } { SQL "" } } 
             set band [Mapper::GDAL::Read $def "" 3]
 
             #----- Decrease effective resolution (WMS-TMS)
-            gdalband configure $band -texres 3
+            gdalband configure $band -texres 2
             gdalband define $band -date $Data(Time)
             gdalband stats $band -approx True
 

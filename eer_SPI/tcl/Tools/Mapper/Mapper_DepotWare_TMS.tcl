@@ -380,7 +380,7 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } { SQL "" } } 
    set band [Mapper::GDAL::Read $file "" 3]
 
    #----- Decrease effective resolution (WMS-TMS)
-   gdalband configure $band -texres 3
+   gdalband configure $band -texres 2
 }
 
 #-------------------------------------------------------------------------------
@@ -391,7 +391,7 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } { SQL "" } } 
 #
 # Parametres :
 #  <Name>    : Nom de la donnes TMS
-#  <Res>     : Facteur de resolution (Default:3)
+#  <Res>     : Facteur de resolution (Default:2)
 #
 # Retour    :
 #
@@ -399,7 +399,7 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } { SQL "" } } 
 #
 #-------------------------------------------------------------------------------
 
-proc  Mapper::DepotWare::TMS::Load { Name { Res 3 } } {
+proc  Mapper::DepotWare::TMS::Load { Name { Res 2 } } {
    variable Param
 
    if { [set idx [lsearch -exact -index 0 $Param(Depots) $Name]]!=-1 } {

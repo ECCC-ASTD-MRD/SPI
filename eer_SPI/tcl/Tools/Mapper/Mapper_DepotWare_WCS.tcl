@@ -120,7 +120,7 @@ proc  Mapper::DepotWare::WCS::Select { Tree Branch { Select True } { SQL "" } } 
          set band [Mapper::GDAL::Read $def "" 1]
 
          #----- Decrease effective resolution (WMS-WCS-TMS)
-         gdalband configure $band -texres 3
+         gdalband configure $band -texres 2
       }
    } else {
    
