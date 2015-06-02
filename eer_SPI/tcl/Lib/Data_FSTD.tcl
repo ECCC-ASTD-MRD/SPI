@@ -15,7 +15,6 @@
 # Fonctions:
 #
 #   FSTD::Data            { Field }
-#   VectorBox::Create     { Parent Apply args }
 #   FSTD::ParamFrame      { Frame Apply }
 #   FSTD::FieldFormat     { Field Val }
 #   FSTD::Follower        { Page Canvas VP Lat Lon X Y }
@@ -416,7 +415,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             pack $Data(Frame).def.r.disp.vect.sel $Data(Frame).def.r.disp.vect.lbl -side left
             $Data(Frame).def.r.disp.vect.sel.menu add separator
             $Data(Frame).def.r.disp.vect.sel.menu add command -label [lindex $Lbl(Params) $GDefs(Lang)] \
-               -command "VectorBox::Create $Data(Frame).def.r.disp.vect \"FSTD::ParamSet ; Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame)\""
+               -command "VectorBox::Create $Data(Frame).def.r.disp.vect \"FSTD::ParamSet ; FSTD::ParamUpdate; Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame)\""
 
          frame $Data(Frame).def.r.disp.val
             label $Data(Frame).def.r.disp.val.lbl -text " [lindex $Lbl(Value) $GDefs(Lang)]"
