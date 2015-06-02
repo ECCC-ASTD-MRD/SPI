@@ -212,8 +212,8 @@ proc Obs::InfoGraph { Obs Tag Elem } {
 
       vector create PAGEOBSGRAPHDATA
       vector dim    PAGEOBSGRAPHDATA { X Y }
-      vector stat   PAGEOBSGRAPHDATA.X -nodata -999.0
-      vector stat   PAGEOBSGRAPHDATA.Y -nodata -999.0
+      vector stats  PAGEOBSGRAPHDATA.X -nodata -999.0
+      vector stats  PAGEOBSGRAPHDATA.Y -nodata -999.0
 
       graphaxis configure PAGEOBSGRAPHAXISX -font XFont10 -color black -position LL -width 1 -incr 3600
       graphaxis configure PAGEOBSGRAPHAXISY -font XFont10 -color black -gridcolor gray50 -position LL -width 1 -highoffset 2

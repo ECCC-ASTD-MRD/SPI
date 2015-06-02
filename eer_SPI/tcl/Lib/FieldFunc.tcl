@@ -62,9 +62,9 @@ proc FieldFunc::ConvexHull { Field { Res 0.5 } { Buffer 0.5 } } {
    #----- Dissolve into polygon masses
 #      ogrlayer stats OGRLAYER -dissolve DISSOLVED
          
-   ogrlayer stat FFOGRLAYER -convexhull FFHULL
-   ogrlayer stat FFHULL -buffer $Buffer 1
-   ogrlayer stat FFHULL -simplify $Res
+   ogrlayer stats FFOGRLAYER -convexhull FFHULL
+   ogrlayer stats FFHULL -buffer $Buffer 1
+   ogrlayer stats FFHULL -simplify $Res
    set coords {}
    catch {
       foreach { i j } [lrange [ogrgeometry define [ogrlayer define FFHULL -geometry 0 True] -sub 0 -points] 0 end-2] {
