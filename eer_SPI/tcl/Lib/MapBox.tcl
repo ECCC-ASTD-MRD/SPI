@@ -759,20 +759,21 @@ proc MapBox::ListImg { Widget } {
 
       pack .mapboxmaps.maps -side left -fill both -expand true
       pack .mapboxmaps.scroll -side right -fill y
+
+      bind [winfo toplevel $Widget] <Configure> "+if { \[winfo ismapped .mapboxmaps\] }\
+         { wm geometry .mapboxmaps +\[winfo rootx $Widget\]+\[expr \[winfo rooty $Widget\] + \[winfo height $Widget\]\] }"
    }
    .mapboxmaps.maps delete all
 
    #----- Activate/Deactivate
    if { [winfo ismapped .mapboxmaps] } {
       wm withdraw .mapboxmaps
-      grab release .mapboxmaps
    } else {
       set yloc [expr [winfo rooty $Widget] + [winfo height $Widget]]
       set xloc [winfo rootx $Widget]
       wm geometry .mapboxmaps 500x400+$xloc+$yloc
       wm deiconify .mapboxmaps
       raise .mapboxmaps
-      grab .mapboxmaps
    }
 
    colormap create CMAPTMP
