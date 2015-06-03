@@ -436,7 +436,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-xml2=${LIBXML_PATH}/bin/xml2-config \
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH} \
-      --with-hide-internal-symbols=yes \
+      --with-hide-internal-symbols=yes
       CFLAGS="-Wl,-G $CFLAGS" CXXFLAGS="-Wl,-G $CXXFLAGS" LDFLAGS="-Wl,-G $LDFLAGS"
       #----- This is needed because tiff somehow tries to override int64, declared in /usr/include/sys/inttypes.h on AIX
       RmIntTypedef int64 frmts/gtiff/libtiff/tiff.h
@@ -600,7 +600,7 @@ if [[ $SRC -eq 1 ]]; then
 
    printf -- "\n----- Building source package : ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz  -----\n"
 
-   ./cleanit
+   ./makeit -clean
    rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
    find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -prune -exec rm -f -r {} \+
