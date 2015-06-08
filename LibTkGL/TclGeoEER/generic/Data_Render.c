@@ -1689,11 +1689,11 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
 void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   float   *lat,*lon,*x,*y,size,theta,thetad;
-   double  len,u,v,uv,w,i0,j0,i1,j1;
+   float   size,theta,thetad,*ll,*xy;
+   double  len,dir,u,v,uv,w,i0,j0,i1,j1;
    Vect3d  pix;
    Coord   coo;
-   int     n=0,mem,i,j,idx,idc,dz;
+   int     n=0,mem,i,j,idx,idc,dz,dn,nn;
    char    buf[32];
 
    if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline)
@@ -1816,143 +1816,123 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          break;
 
       default:
+#ifdef HAVE_RMN
          if (Field->Spec->SampleType=='P') {
             dz=Field->Spec->Sample*10;
 
-            /*Allouer la memoire pour les donnees*/
-            mem=(VP->Width*VP->Height)/dz*sizeof(float);
-            lat=(float*)malloc(mem);
-            lon=(float*)malloc(mem);
+            // Allouer la memoire pour les donnees
+            mem=(VP->Width*VP->Height)/dz;
+            ll=(float*)malloc(2*mem*sizeof(float));
 
-            if (!lat || !lon) {
-              fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
-              return;
+            if (!ll) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary coordinate buffer\n");
+               return;
             }
 
-            /*Recuperer les latlon des pixels sujets*/
+            // Recuperer les latlon des pixels sujets
             for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
                for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
                   Proj->Type->UnProject(VP,Proj,&coo,pix);
                   if (coo.Lat!=-999.0) {
-                     lat[n]=coo.Lat;
-                     lon[n]=(coo.Lon<0?coo.Lon+360:coo.Lon);
+                     ll[n]=coo.Lat;
+                     ll[mem+n]=(coo.Lon<0?coo.Lon+360:coo.Lon);
                      n++;
                   }
                }
             }
 
-            /*Allouer l'espaces memoire pour les retours d'ezscint*/
-            mem=n*sizeof(float);
-            x=(float*)malloc(mem);
-            y=(float*)malloc(mem);
+            // Allouer l'espaces memoire pour les retours d'ezscint
+            xy=(float*)malloc(3*n*sizeof(float));
 
-            if (!x || !y) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+            if (!xy) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary projected buffer\n");
                return;
             }
 
-            /*Recuperer les informations sur les vents et leurs localisations*/
-//            RPN_IntLock();
-            c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],x,y,lat,lon,n);
-//            RPN_IntUnlock();
+            //Recuperer les informations sur les vents et leurs localisations
+            c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],ll,&ll[mem],n);
             
-            mem=0;i=0;
-            while (mem<n) {
-               if (x[mem]<=Field->Def->NI && y[mem]<=Field->Def->NJ && x[mem]>=1 && y[mem]>=1) {
-                  if (!Field->Def->Mask || Field->Def->Mask[FIDX2D(Field->Def,(int)x[mem],(int)y[mem])]) {
-                     lat[i]=lat[mem];
-                     lon[i]=lon[mem];
+            dz=0;i=0;
+            while (dz<n) {
+               if (xy[dz]<=Field->Def->NI && xy[n+dz]<=Field->Def->NJ && xy[dz]>=1 && xy[n+dz]>=1) {
+                  if (!Field->Def->Mask || Field->Def->Mask[FIDX2D(Field->Def,(int)xy[dz],(int)xy[n+dz])]) {
+                     ll[i]=ll[dz];
+                     ll[mem+i]=ll[mem+dz];
                      i++;
                   }
                }
-               mem++;
+               dz++;
             }
             n=i;
          } else {
 
-            /*Allouer la memoire pour les donnees*/
+            // Allouer la memoire pour les donnees
             mem=FSIZE2D(Field->Def);
-            lat=(float*)malloc(mem*sizeof(float));
-            lon=(float*)malloc(mem*sizeof(float));
+            ll=(float*)malloc(2*mem*sizeof(float));
             
-            if (!lat || !lon) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+            if (!ll) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary coordinate buffer\n");
                return;
             }
-//            RPN_IntLock();
-            c_gdll(Field->Ref->Ids[Field->Ref->NId],lat,lon);
-//            RPN_IntUnlock();
+            c_gdll(Field->Ref->Ids[Field->Ref->NId],ll,&ll[mem]);
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
                if (!Field->Def->Mask || Field->Def->Mask[i]) {
-                  lat[n]=lat[i];
-                  lon[n]=lon[i];
+                  ll[n]=ll[i];
+                  ll[mem+n]=ll[mem+i];
                   n++;
                }
             }
 
-            x=(float*)malloc(n*sizeof(float));
-            y=(float*)malloc(n*sizeof(float));
+            xy=(float*)malloc(n*3*sizeof(float));
 
-            if (!x || !y) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary buffer\n");
+            if (!xy) {
+               fprintf(stderr,"(ERROR) Unable to allocate temporary projected buffer\n");
                return;
             }
          }
-
-         mem=FSIZE2D(Field->Def)*Field->Def->Level;
+         
+         dz=FSIZE2D(Field->Def)*Field->Def->Level;
+         dn=n;
+         nn=n+n;
 
 //         RPN_IntLock();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
-         if (Field->Spec->GridVector) {
-              c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
+         if (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE) {
+            c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
          } else {        
-              c_gdllvval(Field->Ref->Ids[Field->Ref->NId],x,y,(float*)&Field->Def->Data[0][mem],(float*)&Field->Def->Data[1][mem],lat,lon,n);
+            c_gdllvval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
          }
          // We have to get the speed from the modulus in case of 3 component vector
-         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],x,(float*)&Field->Def->Mode[mem],lat,lon,n);
+         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
 //         RPN_IntUnlock();
 
-         while (n--) {
-            if (Field->Spec->GridVector) {
-               if (x[n]<=Field->Spec->Max && x[n]>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll && Field->Spec->Map) {
-                     VAL2COL(idc,Field->Spec,x[n]);
-                     if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                     } else {
-                        glColor4ubv(Field->Spec->Map->Color[idc]);
-                     }
+         while (dn--) {
+            if (xy[dn+nn]<=Field->Spec->Max && xy[dn+nn]>=Field->Spec->Min) {
+               if (Field->Spec->MapAll && Field->Spec->Map) {
+                  VAL2COL(idc,Field->Spec,xy[dn+nn]);
+                  if (Interp) {
+                     CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
+                  } else {
+                     glColor4ubv(Field->Spec->Map->Color[idc]);
                   }
-                  size=VP->Ratio*VECTORSIZE(Field->Spec,x[n]);
-                  if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,x[n]),y[n],size,Proj);
-                  if (Interp) glFeedbackProcess(Interp,GL_2D);
                }
-            } else {
-               len=hypot(x[n],y[n]);
-               if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                  if (Field->Spec->MapAll && Field->Spec->Map) {
-                     VAL2COL(idc,Field->Spec,len);
-                     if (Interp) {
-                        CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                     } else {
-                        glColor4ubv(Field->Spec->Map->Color[idc]);
-                     }
-                  }
-                  size=VP->Ratio*VECTORSIZE(Field->Spec,len);
-                  if (Interp) glFeedbackInit(256,GL_2D);
-                  Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,lat[n],lon[n],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),180+RAD2DEG(atan2(x[n],y[n])),size,Proj);
-                  if (Interp) glFeedbackProcess(Interp,GL_2D);
-               }
+               size=VP->Ratio*VECTORSIZE(Field->Spec,xy[dn+nn]);
+               dir=(Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE)?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
+               if (Interp) glFeedbackInit(256,GL_2D);
+               Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,xy[dn+nn]),dir,size,Proj);
+               if (Interp) glFeedbackProcess(Interp,GL_2D);
             }
          }
 
-         /*Liberer l'espace memoire temporaire*/
-         free(lat);free(lon);
-         free(x);free(y);
+         // Liberer l'espace memoire temporaire
+         free(ll);
+         free(xy);
+#else
+   App_ErrorSet("%s: Need RMNLIB",__func__);
+#endif
    }
 
    glEnable(GL_CULL_FACE);
