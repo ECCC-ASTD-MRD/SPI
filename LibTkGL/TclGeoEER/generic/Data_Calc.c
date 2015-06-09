@@ -114,9 +114,11 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
                   GField->Stat=NULL;
                }
                GField->Def= needcopy ? Def_Copy(Data) : Data;
+#ifdef HAVE_RMN
                if (GField->Ref && GField->Ref->Grid[0]=='U') {
                   FSTD_FieldSubBuild(GField);
                }
+#endif
                // Force RPN DATYP update at write time
                if (GField->Type==TD_RPN) {
                   ((TRPNHeader*)GField->Head)->DATYP=-1;

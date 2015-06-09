@@ -539,6 +539,7 @@ TDef* Calc_Dir(TDef* A) {
    fprintf(stdout,"(DEBUG) Calc_Dir(A:%p,Func:%p)\n",(void*)A);
 #endif
 
+#ifdef HAVE_RMN
    if (!GField || GField->Ref->Grid[0]=='V') {
       fprintf(stderr,"(ERROR) Invalid grid while calculating direction\n");
       return(NULL);
@@ -580,6 +581,10 @@ TDef* Calc_Dir(TDef* A) {
       free(fy);
       free(spd);
    }
+#else
+   App_ErrorSet("%s: Need RMNLIB",__func__);
+#endif
+
    return(GData[GDataN]);
 }
 

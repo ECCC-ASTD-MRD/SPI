@@ -1025,7 +1025,8 @@ TData *GRIB_FieldCreate(Tcl_Interp *Interp,char *Name,char *Sample,int NI,int NJ
  *----------------------------------------------------------------------------
 */
 int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
-   
+
+#ifdef HAVE_RMN   
    TGRIBHeader *head=(TGRIBHeader*)Field->Head;
    TRPNHeader  *rhead=(TRPNHeader*)RPN->Head;
    TCoord co;
@@ -1097,6 +1098,10 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          break;   
          
    }
+#else
+   App_ErrorSet("%s: Need RMNLIB",__func__);
+#endif
+   
    return(TCL_OK);
 }
    

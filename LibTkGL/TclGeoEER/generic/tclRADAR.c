@@ -193,7 +193,7 @@ static int Radar_ScanCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,TD_RADAR,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv,TD_RADAR));
    }
 
    switch ((enum opt)idx) {

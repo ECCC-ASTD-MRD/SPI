@@ -749,14 +749,12 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
          if ((fid=((TRPNHeader*)Field->Head)->File)) {
             i=0;
 
-#ifdef HAVE_RMN
             if (FSTD_FileSet(NULL,fid)<0)
                return(i);
 
             i=ZRef_DecodeRPN(&Field->Ref->ZRef,fid->Id);
 
             FSTD_FileUnset(NULL,fid);
-#endif
          }
       }
    }

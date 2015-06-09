@@ -176,7 +176,7 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,TD_GRIB,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv,TD_GRIB));
    }
 
    switch ((enum opt)idx) {
@@ -250,7 +250,9 @@ static int GRIB_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          break;
          
       case GRIDINTERP:
+#ifdef HAVE_RMN
          return(FSTD_FieldCmd(clientData,Interp,Objc,Objv));
+#endif
          break;
    }
 

@@ -1841,6 +1841,7 @@ void GDB_MapRenderShader(Projection *Proj,GDB_Data *GDB,GDB_Map *Topo,float Lat0
 
 int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
 
+#ifdef HAVE_GDB
    if (Tile->Flag) {
       return(0);
    }
@@ -1892,6 +1893,7 @@ int GDB_TileGetData(GDB_Tile *Tile,GDB_Data *GDB,Projection *Proj) {
       sprintf(file,"%s/ras/tex-%i.%i.%i.tif",getenv("GDB_PATH"),Tile->Res<4?4:(Tile->Res>64?64:Tile->Res),(int)(Tile->Box.Co[0].Lon+180.0)/GDB->DegT,(int)(Tile->Box.Co[0].Lat+90.0)/GDB->DegT);
       Tile->Topo.Tex=Texture_Read(file);
    }
+#endif
    return(1);
 }
 

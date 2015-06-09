@@ -59,6 +59,41 @@ static int FSTD_StampCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 static int FSTD_DictCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 
 /*----------------------------------------------------------------------------
+ * Nom      : <tclFSTD_Init>
+ * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Initialiser le package lors de l'inclusion par Tcl.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int TclFSTD_Init(Tcl_Interp *Interp) {
+
+   Tcl_CreateObjCommand(Interp,"fstdfile",FSTD_FileCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   Tcl_CreateObjCommand(Interp,"fstdfield",FSTD_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   Tcl_CreateObjCommand(Interp,"fstdgrid",FSTD_GridCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   Tcl_CreateObjCommand(Interp,"fstdstamp",FSTD_StampCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+   Tcl_CreateObjCommand(Interp,"fstddict",FSTD_DictCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+
+   if (!FSTDInit++) {
+      Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
+
+      c_fstopc("MSGLVL","WARNIN",0);
+      c_fstopc("TOLRNC","SYSTEM",0);
+      c_ezsetopt("VERBOSE","NO");
+
+   }
+
+   return(TCL_OK);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldIPGet>
  * Creation : Novembre 2012 - J.P. Gauthier - CMC/CMOE
  *
@@ -349,7 +384,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    TRPNFile    *file;
    TData       *field0,*field1,*fieldt;
    TDef_Type   type;
-   TDataVector *uvw;
    Vect3d      *pos;
 #ifdef HAVE_ECBUFR
    TMetObs *metobs;
@@ -374,7 +408,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    }
 
    if (Tcl_GetIndexFromObj(Interp,Objv[1],sopt,"command",TCL_EXACT,&idx)!=TCL_OK) {
-      return(Data_FieldCmd(clientData,TD_RPN,Interp,Objc,Objv));
+      return(Data_FieldCmd(clientData,Interp,Objc,Objv,TD_RPN));
    }
 
    switch ((enum opt)idx) {
@@ -385,39 +419,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          rmn[89]='\0';
          Tcl_AppendResult(Interp,rmn,(char*)NULL);
          return(TCL_OK);
-
-      case VECTOR:
-         if (Objc!=3) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
-            return(TCL_ERROR);
-         } else {
-            Tcl_ListObjLength(Interp,Objv[2],&n);
-            if (n) {
-               Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
-               if (!(uvw=Data_VectorTableCheck(Tcl_GetString(obj),NULL))) {
-                  uvw=Data_VectorTableAdd();
-               }
-               if (uvw->UU) free(uvw->UU);
-               if (uvw->VV) free(uvw->VV);
-               if (uvw->WW) free(uvw->WW);
-               uvw->UU=strdup(Tcl_GetString(obj));
-               uvw->VV=uvw->WW=NULL;
-               uvw->WWFactor=0.0;
-               Tcl_ListObjIndex(Interp,Objv[2],1,&obj);
-               if (n>1) {
-                  uvw->VV=strdup(Tcl_GetString(obj));
-                  if (n>2) {
-                     Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
-                     uvw->WW=strdup(Tcl_GetString(obj));
-                     if (n>3) {
-                        Tcl_ListObjIndex(Interp,Objv[2],3,&obj);
-                        Tcl_GetDoubleFromObj(Interp,obj,&uvw->WWFactor);
-                     }
-                  }
-               }
-            }
-         }
-         break;
 
       case HIDE:
          if (Objc==2) {
@@ -2444,41 +2445,6 @@ static int FSTD_DictTypeInfo(Tcl_Interp *Interp,TDictType *Type,int Objc,Tcl_Obj
    }
 
    Tcl_SetObjResult(Interp,obj);
-
-   return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <tclFSTD_Init>
- * Creation : Aout 1998 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Initialiser le package lors de l'inclusion par Tcl.
- *
- * Parametres :
- *  <Interp>  : Interpreteur TCL
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int TclFSTD_Init(Tcl_Interp *Interp) {
-
-   Tcl_CreateObjCommand(Interp,"fstdfile",FSTD_FileCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
-   Tcl_CreateObjCommand(Interp,"fstdfield",FSTD_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
-   Tcl_CreateObjCommand(Interp,"fstdgrid",FSTD_GridCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
-   Tcl_CreateObjCommand(Interp,"fstdstamp",FSTD_StampCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
-   Tcl_CreateObjCommand(Interp,"fstddict",FSTD_DictCmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
-
-   if (!FSTDInit++) {
-      Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
-
-      c_fstopc("MSGLVL","WARNIN",0);
-      c_fstopc("TOLRNC","SYSTEM",0);
-      c_ezsetopt("VERBOSE","NO");
-
-   }
 
    return(TCL_OK);
 }

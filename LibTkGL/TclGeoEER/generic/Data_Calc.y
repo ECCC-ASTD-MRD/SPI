@@ -562,9 +562,9 @@ exp:
    }
 
    | T_FIELD_FUNC T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR {
-      char buf[32];
       $$ = 0;
 #ifdef HAVE_RMN
+      char buf[32];
       sprintf(buf,"%i",(int)$3);
       FSTD_FieldRead(GInterp,"TMPCALCXXXXXX",buf,(int)$5,-1,0,-1,-1,-1,0,0);
       Tcl_ResetResult(GInterp);

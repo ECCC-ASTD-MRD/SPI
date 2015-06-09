@@ -70,6 +70,7 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
 */
 int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *File,double Factor,char *Mode,char *Type,int I0,int J0,int I1,int J1){
 
+#ifdef HAVE_RMN
    FILE  *fid;
    int    i,j,sz;
    float *spd,*dir,*fx,*fy,*x,*y;
@@ -165,6 +166,9 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
    }
 
    fclose(fid);
+#else
+   App_ErrorSet("%s: Need RMNLIB",__func__);
+#endif
    return(TCL_OK);
 }
 

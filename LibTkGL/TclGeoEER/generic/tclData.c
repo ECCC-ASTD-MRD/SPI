@@ -93,70 +93,72 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
    }
 
-   /*Initialisation du package viewport*/
+   // Initialisation du package viewport
    if (Projection_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package des cameras*/
+   // Initialisation du package des cameras
    if (ProjCam_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package model*/
+   // Initialisation du package model
    if (Model_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package de palette de couleur*/
+   // Initialisation du package de palette de couleur
    if (TclCMap_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package de vecteur*/
+   // Initialisation du package de vecteur
    if (TclVector_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package de configuration des donnees*/
+   // Initialisation du package de configuration des donnees
    if (TclDataSpec_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package metobs*/
+   // Initialisation du package metobs
    if (TclGeoRef_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-  /*Initialisation du package d'observations*/
+   // Initialisation du package d'observations
    if (TclObs_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package trajectoires*/
+   // Initialisation du package trajectoires
    if (TclTraj_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
 #ifdef HAVE_RMN
-   /*Initialisation du package de fichier standard*/
+   // Initialisation du package de fichier standard
    if (TclFSTD_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
 
 #ifdef HAVE_GRIB
-   /*Initialisation du package de fichier standard*/
+   // Initialisation du package de fichier standard
    if (TclGRIB_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
 
-   /*Initialisation du package GDAL*/
+#ifdef HAVE_GDAL
+   // Initialisation du package GDAL
    if (TclGDAL_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
-   /*Initialisation du package OGR*/
+   // Initialisation du package OGR
    if (TclOGR_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
-
-   /*Initialisation du package radar*/
+#endif
+   
+   // Initialisation du package radar
 #ifdef HAVE_URP
    if (TclRadar_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 #endif
 
 #ifdef HAVE_ECBUFR
-   /*Initialisation du package metobs*/
+   // Initialisation du package metobs
    if (TclMetObs_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);
 
@@ -164,13 +166,13 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 #endif
 
-   /*Initialisation de la commande de calculatrice*/
+   Tcl_CreateObjCommand(Interp,"geodata",Data_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"vexpr",Data_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    if (!TDataInit++) {
       Tcl_InitHashTable(&TData_Table,TCL_STRING_KEYS);
 
-      /*Force UU-VV relashionship*/
+      // Force UU-VV relashionship
       DataVectorTable[0].UU=strdup("UU");
       DataVectorTable[0].VV=strdup("VV");
       DataVectorTable[0].WW=NULL;
@@ -208,15 +210,17 @@ int Tclgeoeer_Init(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
-int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type){
 
-   int        idx,n,bool;
-   TData     *field0,*field1;
-   TDataSpec *spec;
-   double     nd;
+   int          idx,n,bool;
+   TData       *field0,*field1;
+   TDataSpec   *spec;
+   TDataVector *uvw;
+   Tcl_Obj     *obj;
+   double       nd;
 
-   static CONST char *sopt[] = { "copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
-   enum                opt { COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "vector","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
+   enum                opt { VECTOR,COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -231,6 +235,39 @@ int Data_FieldCmd(ClientData clientData,TDataType Type,Tcl_Interp *Interp,int Ob
 
    switch ((enum opt)idx) {
 
+      case VECTOR:
+         if (Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
+            return(TCL_ERROR);
+         } else {
+            Tcl_ListObjLength(Interp,Objv[2],&n);
+            if (n) {
+               Tcl_ListObjIndex(Interp,Objv[2],0,&obj);
+               if (!(uvw=Data_VectorTableCheck(Tcl_GetString(obj),NULL))) {
+                  uvw=Data_VectorTableAdd();
+               }
+               if (uvw->UU) free(uvw->UU);
+               if (uvw->VV) free(uvw->VV);
+               if (uvw->WW) free(uvw->WW);
+               uvw->UU=strdup(Tcl_GetString(obj));
+               uvw->VV=uvw->WW=NULL;
+               uvw->WWFactor=0.0;
+               Tcl_ListObjIndex(Interp,Objv[2],1,&obj);
+               if (n>1) {
+                  uvw->VV=strdup(Tcl_GetString(obj));
+                  if (n>2) {
+                     Tcl_ListObjIndex(Interp,Objv[2],2,&obj);
+                     uvw->WW=strdup(Tcl_GetString(obj));
+                     if (n>3) {
+                        Tcl_ListObjIndex(Interp,Objv[2],3,&obj);
+                        Tcl_GetDoubleFromObj(Interp,obj,&uvw->WWFactor);
+                     }
+                  }
+               }
+            }
+         }
+         break;
+         
       case COPY:
          if (Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom [alias]");
@@ -752,9 +789,11 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
       }
    }
 
+#ifdef HAVE_RMN
    if (field->Ref->Grid[0]=='U') {
       FSTD_FieldSubBuild(field);
    }
+#endif
 
    return(field);
 }
@@ -781,13 +820,13 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 */
 int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
 
+#ifdef HAVE_RMN
    TData *cut;
    unsigned int  n,k,f,p,g,ip1;
    unsigned long idx,idxp;
    double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0;
    float   *fp;
 
-#ifdef HAVE_RMN
 
    /*Recuperer la grille dans l'espace des champs de base*/
    p=1;g=0;
@@ -2463,12 +2502,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==1) {
                 if (Field->Ref) {
                  // If xsection/profile, reload vertical descriptor (COLUMN model)
+#ifdef HAVE_RMN
                   if (Field->Ref->Grid[0]=='V' && Field->Spec->Extrude && strlen(Field->Spec->Extrude)) {
                      if (FSTD_FileSet(NULL,((TRPNHeader*)Field->Head)->File)>=0) {
                         FSTD_FieldReadVLevels(Field);
                         FSTD_FileUnset(NULL,((TRPNHeader*)Field->Head)->File);
                      }
                   }
+#endif
                   // Use NJ for xsection since NK and ZRefs levelnb are not set
                   nb=(Field->Ref && Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
 
@@ -2678,6 +2719,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+#ifdef HAVE_RMN
          case TOP:
             if (Objc==1) {
                if (Field->Ref->ZRef.Version==-1) {
@@ -2732,7 +2774,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                }
             }
             break;
-
+#endif
       }
    }
    return(TCL_OK);

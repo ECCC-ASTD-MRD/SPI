@@ -36,8 +36,11 @@
 #define _GeoData_h_
 
 #include "tcl.h"
-#include "gdb.h"
 #include "GeoRef.h"
+
+#ifdef HAVE_GDB
+#include "gdb.h"
+#endif
 
 #define GDB_DEGX 72
 #define GDB_DEGY 36
