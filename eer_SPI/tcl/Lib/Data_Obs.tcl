@@ -722,7 +722,6 @@ proc Obs::ParamInit { Obs { Spec "" } } {
       }
 
       #----- Set a colormap if not done
-
       set map [dataspec configure $Spec -colormap]
       if { $map=="" } {
          set map OBSMAP$Spec
@@ -734,10 +733,6 @@ proc Obs::ParamInit { Obs { Spec "" } } {
          colormap create OBSMAP$Spec
          colormap copy   OBSMAP$Spec OBSMAPDEFAULT
          dataspec configure $Spec -colormap OBSMAP$Spec
-      }
-
-      if { [set unit [fstddict varinfo $var -units]]!="" } {
-         dataspec configure $Spec -unit $unit
       }
    }
 }

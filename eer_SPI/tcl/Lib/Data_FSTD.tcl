@@ -63,9 +63,9 @@ namespace eval FSTD {
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100
 
-   fstdfield vector { UU VV }
-   fstdfield vector { UP VP }
-   fstdfield vector { U V W }
+   geodata vector { UU VV }
+   geodata vector { UP VP }
+   geodata vector { U V W }
 
    Viewport::FollowerAdd FSTD
 
@@ -88,7 +88,7 @@ namespace eval FSTD {
    set Param(IntervalModes)  { NONE INTERVAL LINEAR LOGARITHMIC RSMC }
    set Param(GridIds)        { SUPER YIN YANG }
 
-   set Param(UnTile)        [fstdfield autountile]  ;#Reconstruction automatique des grilles tuilees
+   catch { set Param(UnTile) [fstdfield autountile]  ;#Reconstruction automatique des grilles tuilees }
 
    set Param(Mode)          VAR            ;#Mode de selection des parametres
    set Param(Map)           FLDMAPDEFAULT  ;#Palette de couleur

@@ -67,6 +67,7 @@ namespace eval Drawing {
    set Current(3D)       0                                      ;#Methode d'affichage du 3D
    set Current(Coord)    0                                      ;#Affichage de la coordonne latlon
    set Current(Grid)     0                                      ;#Affichage de la coordonnee point de grille
+   set Current(Nautic)   0                                      ;#Affichage des distances en miles nautiques
 
    #----- Le format des parametres est le suivant selon le type d'item
    #

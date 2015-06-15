@@ -78,7 +78,7 @@ namespace eval FieldBox {
    set Param(ShowDesc)  False          ;#Afficher les descripteurs
    set Param(Desc)      { ^* >> ## !! HY }
 
-   fstdfield hide $Param(Desc)
+   catch { fstdfield hide $Param(Desc) }
 
    #----- Textes et labels
 

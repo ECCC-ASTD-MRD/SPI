@@ -42,6 +42,7 @@ namespace eval Grid {
    variable Lbl
    variable Msg
    variable Param
+   variable Bubble
 
    set Param(Id)       "User"                                                    ;# Grid identification (name)
    set Param(Data)     Float32                                                   ;# Data format of GRID field
@@ -74,6 +75,13 @@ namespace eval Grid {
    set Lbl(No)         { "Non" "No" }
 
    set Msg(Size)       { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
+   
+   set Bubble(Types)     { "Sélection du type de grille:\n\tPS  : Polaire stéréographique\n\tPS_N: Polaire stéréographique centrée au pôle nord\n\tPS_S: Polaire stéréographique centrée au pôle sud\n\tLL  : LatLon traditionelle (GRTYP=L)\n\tLZ  : LatLon utilisant des ^^ << (GRTYP:Z)\n\tUTM : Universelle mercator transveralle (GRTYP=Z)"
+                           "Grid type selection:\n\tPS  : Polar stereographic\n\tPS_N: Polar stereographic centered on north pole\n\tPS_S: Polar stereographic centered on south pole\n\tLL  : LatLon traditionnal (GRTYP=L)\n\tLZ  : LatLon using ^^ << (GRTYP:Z)\n\tUTM : Universal transverse mercator (GRTYP=Z)" }
+   set Bubble(ResM)      { "Résolution en mètres (selon l'axe des latitudes pour les grilles latlon)" "Resolution in meters (on the latutide axis for latlon grids)" }
+   set Bubble(ResLL)     { "Résolution en degrées" "Resolution in degrees" }
+   set Bubble(Dimension) { "Nombre de points de grilles" "Number of gridpoints" }
+   set Bubble(Coverage)  { "Couverture de la grille en latlon, spécifié par les coins opposés" "Grid coverage specified by the opposite corners in latlon" }
 }
 
 #----------------------------------------------------------------------------
@@ -127,13 +135,14 @@ proc Grid::Window { Frame } {
    global GDefs
    variable Lbl
    variable Param
+   variable Bubble
 
    #----- If wigdet already created
    if { [winfo exists $Frame.type] } {
       return
    }
 
-   Option::Create $Frame.type [lindex $Lbl(Grid) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init"
+   Option::Create $Frame.type [lindex $Lbl(Grid) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame"
    Option::Create $Frame.reskm  [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create"
    Option::Create $Frame.resll  [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create"
    frame  $Frame.dim
@@ -170,8 +179,10 @@ proc Grid::Window { Frame } {
 
    pack $Frame.bbox -padx 2 -pady 5 -ipadx 2 -ipady 2
 
-   bind $Frame.reskm.e <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create }"
-   bind $Frame.resll.e <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create }"
+   bind $Frame.reskm.e    <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create }"
+   bind $Frame.resll.e    <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create }"
+   bind $Frame.dim.ni     <Return> "catch { Grid::Create }"
+   bind $Frame.dim.nj     <Return> "catch { Grid::Create }"
    bind $Frame.bbox.elat0 <Return> "catch { Grid::Create }"
    bind $Frame.bbox.elon0 <Return> "catch { Grid::Create }"
    bind $Frame.bbox.elat1 <Return> "catch { Grid::Create }"
@@ -179,6 +190,54 @@ proc Grid::Window { Frame } {
 
    set Param(SizeWarn) True
    set Param(ResLL)    [expr $Param(ResM)/$Param(LL2M)]
+   
+   Bubble::Create $Frame.type  $Bubble(Types)
+   Bubble::Create $Frame.reskm $Bubble(ResM)
+   Bubble::Create $Frame.resll $Bubble(ResLL)
+   Bubble::Create $Frame.dim   $Bubble(Dimension)
+   Bubble::Create $Frame.bbox  $Bubble(Coverage)
+   
+   Grid::WindowSet $Frame
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Grid::Set>
+# Creation : Juin 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Ajuster l'interface selon le type de grille.
+#
+# Parametres :
+#  <Frame>   : Widget parent
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::WindowSet { Frame } {
+   variable Param
+   
+   $Frame.bbox.elat0 configure -state normal 
+   $Frame.bbox.elon0 configure -state normal 
+   $Frame.bbox.elat1 configure -state normal 
+   $Frame.bbox.elon1 configure -state normal 
+   $Frame.dim.ni     configure -state normal 
+   $Frame.dim.nj     configure -state normal 
+   
+   switch $Param(Type) {
+      "PS"   - 
+      "PS_N" -
+      "PS_S" { $Frame.bbox.elat1 configure -state disabled 
+               $Frame.bbox.elon1 configure -state disabled 
+             }     
+      "LL"   -
+      "LZ"   -
+      "UTM"  { $Frame.dim.ni configure -state disabled 
+               $Frame.dim.nj configure -state disabled 
+             }
+   }
 }
 
 #----------------------------------------------------------------------------

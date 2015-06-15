@@ -7,7 +7,7 @@ namespace eval Macro::HelloWorld { } {
 
    set Error(Something) { "Une erreur quelconque" "Some error" }
 
-   set Param(Info)      { "Bonjour le monde" "Hello world" }
+   set Param(Info)      { "Example: Bonjour le monde" "Example: Hello world" }
 } 
 
 proc Macro::HelloWorld::Execute { } {
@@ -16,7 +16,7 @@ proc Macro::HelloWorld::Execute { } {
 
    #----- Display a message box
 
-   Macro::Info "Hello World"
+   Macro::Info { "Bonjour le monde" "Hello world" }
 }
 
 proc Macro::HelloWorld::Clean { } {

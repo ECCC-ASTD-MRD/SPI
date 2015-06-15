@@ -1941,14 +1941,14 @@ proc SPI::Quit { { Code 0 } } {
          }
       }
 
-      fstdfield   wipe
-      observation wipe
-      trajectory  wipe
-      ogrlayer    wipe
-      gdalband    wipe
-      dataspec    wipe
-      graphitem   wipe
-      graphaxis   wipe
+      catch { fstdfield   wipe }
+      catch { observation wipe }
+      catch { trajectory  wipe }
+      catch { ogrlayer    wipe }
+      catch { gdalband    wipe }
+      catch { dataspec    wipe }
+      catch { graphitem   wipe }
+      catch { graphaxis   wipe }
 
       glrender -shutdown
    }

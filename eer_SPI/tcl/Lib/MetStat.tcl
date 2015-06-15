@@ -417,7 +417,7 @@ proc MetStat::RECRCLoad { File } {
                lappend comps $comp
             }
          }
-         fstdfield vector $comps
+         geodata vector $comps
          gets $file line
          continue
       }
