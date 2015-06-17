@@ -534,8 +534,9 @@ proc Viewport::ConfigGet { Frame VP } {
    set sec                 [projection configure $Frame -date]
    set Data(Seconds$Frame) [expr $sec-$Data(Seconds)]
 
-   set Map(GeoRef$Frame) [projection configure $Frame -georef]
-   set Map(Type$Frame)   [projection configure $Frame -type]
+   set Map(GeoRef$Frame)  [projection configure $Frame -georef]
+   set Map(Type$Frame)    [projection configure $Frame -type]
+   set Map(Draw$Frame)    [projection configure $Frame -draw]
 
    if { $Map(GeoRef$Frame)!="" } {
       set Map(Type)      $Map(Type$Frame):$Map(GeoRef$Frame)
@@ -556,7 +557,6 @@ proc Viewport::ConfigGet { Frame VP } {
    set Map(CoordNum)    [lindex $coo 2]
 
    set Map(MinSize)     [projection configure $Frame -minsize]
-   set Map(Draw)        [projection configure $Frame -draw]
    set Map(Sun)         [projection configure $Frame -sun]
    set Map(Res)         [projection configure $Frame -mapres]
    set Map(Mask)        [projection configure $Frame -mask]
@@ -669,6 +669,7 @@ proc Viewport::ConfigSet { Frame } {
 
    set Map(Type$Frame)   [lindex [split $Map(Type) :] 0]
    set Map(GeoRef$Frame) $Map(GeoRef)
+   set Map(Draw$Frame)   $Map(Draw)
 
    #----- Check for grid type definition
    set clean False
@@ -686,7 +687,7 @@ proc Viewport::ConfigSet { Frame } {
    Viewport::ForceGrid $Frame $clean
 
    projection configure $Frame -type $Map(Type$Frame) -scale $Map(Elev) -mapres $Map(Res) -mask $Map(Mask) \
-      -draw $Map(Draw) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
+      -draw $Map(Draw$Frame) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
@@ -706,7 +707,7 @@ proc Viewport::ConfigSet { Frame } {
    foreach mini $Miniport::Data(Mini$Frame) {
       Miniport::Projection $Frame $mini
 
-      projection configure $mini -draw $Map(Draw) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      projection configure $mini -draw $Map(Draw$Frame) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
          -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
@@ -1362,7 +1363,7 @@ proc Viewport::Do { Frame } {
    set Map(GeoRef$Frame) $Map(GeoRef)
 
    projection configure $Frame -type $Map(Type$Frame) -georef $Map(GeoRef) -scale $Map(Elev) -mask $Map(Mask) \
-      -mapres $Map(Res) -draw $Map(Draw)  -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
+      -mapres $Map(Res) -draw $Map(Draw$Frame)  -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
       -mapadmin $Map(Admin) -mapcity $Map(City) -maproad  $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapplace $Map(Place) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -sun $Map(Sun) \
       -data $Data(Data$Frame) -minsize $Map(MinSize) -perspective $Map(Perspective)

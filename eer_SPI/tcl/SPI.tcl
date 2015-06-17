@@ -366,13 +366,15 @@ proc Page::Activate { Frame { Force 0 } } {
       lappend Page::Data(Frames) $Page::Data(Frame)
    }
 
-   #----- Initial acitve page variables
+   #----- Initial active page variables
    set Page::Data(Frame)   $Frame
    set Page::Data(Canvas)  $Frame.page.canvas
    set Page::Data(Scale)   $Page::Data(Scale$Frame)
    set Page::Data(Full)    $Page::Data(Full$Frame)
    set Page::Data(Width)   $Page::Data(Width$Frame)
    set Page::Data(Height)  $Page::Data(Height$Frame)
+   
+   catch { set Viewport::Map(Draw) $Viewport::Map(Draw$Frame) }
 
    if { $own } {
       set SPI::Param(Layout)  $SPI::Data(Layout$Frame)
@@ -1727,7 +1729,7 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
       } else {
          set page $frame.page[incr Data(Page)]
  #        wm protocol $frame WM_DELETE_WINDOW "SPI::PageDel $page False"
-      }
+      }      
    } else {
       set frame [join [lrange [split $Page::Data(Frame) .] 0 1] .]
       if { $frame==".pan" } {
@@ -1741,6 +1743,9 @@ proc SPI::PageNew { New { Label "" } { Geom { 600x600+[winfo rootx .]+[winfo roo
       }
       set page [TabFrame::Add $frame 1 $Label True].frame
    }
+
+   set ::Viewport::Map(Draw) 1
+   set ::Viewport::Map(Draw$page) 1
 
    set Data(Layout$page)  ""
 
