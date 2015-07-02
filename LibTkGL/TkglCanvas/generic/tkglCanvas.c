@@ -2633,7 +2633,8 @@ static int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X
                 Tk_3DBorderColor(canvasPtr->bgBorder)->green/65535.0f,
                 Tk_3DBorderColor(canvasPtr->bgBorder)->blue/65535.0f,1.0f);
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-      DisplayCanvasItems((ClientData)canvasPtr,X,Y,Width,Height);
+//      DisplayCanvasItems((ClientData)canvasPtr,X,Y,Width,Height);
+      DisplayCanvasItems((ClientData)canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
 
       res=trBuffer(Interp,Img,GL_BACK,X,Y,Width,Height,GLRender->TRCon);
    } while (trEndTile(GLRender->TRCon));
