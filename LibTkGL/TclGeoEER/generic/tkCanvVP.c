@@ -1544,15 +1544,18 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 static void ViewportLicense(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj) {
 
    Tk_TextLayout text;
-   int           width,height;
+   int           width,height,dx,dy;
 
    if (Proj->License) {
       text=Tk_ComputeTextLayout(VP->tkfont,Proj->License,Tcl_NumUtfChars(Proj->License,strlen(Proj->License)),0,TK_JUSTIFY_CENTER,0,&width,&height);
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),VP->tkfont);
+      
+      dx=VP->header.x1+(VP->Width/2-width/2)-((TkCanvas*)VP->canvas)->xOrigin;
+      dy=VP->header.y2-height-10-((TkCanvas*)VP->canvas)->yOrigin;
       if (Interp) {
-         glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,VP->header.x2/2-width/2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-height-10-((TkCanvas*)VP->canvas)->yOrigin,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
+         glPostscripTextLayout(Interp,VP->canvas,text,VP->FGColor,NULL,0,dx,dy,TK_ANCHOR_NW,TK_JUSTIFY_CENTER);
       } else {
-         glDisplayTextLayout(text,0,VP->header.x2/2-width/2-((TkCanvas*)VP->canvas)->xOrigin,VP->header.y2-height-10-((TkCanvas*)VP->canvas)->yOrigin,0,-1,1);
+         glDisplayTextLayout(text,0,dx,dy,0,-1,1);
       }
       Tk_FreeTextLayout(text);
    }
