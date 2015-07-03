@@ -544,7 +544,7 @@ int trBuffer(Tcl_Interp *Interp,char* Img,int Buffer,int X,int Y,int Width,int H
             }
             
             /* Envoyer le data dans l'image Tk */
-            result=Tk_PhotoPutBlock(Interp,handle,&data,(ix<0?0:ix),(iy<0?0):iy,data.width,data.height,TK_PHOTO_COMPOSITE_SET);
+            result=Tk_PhotoPutBlock(Interp,handle,&data,(ix<0?0:ix),(iy<0?0:iy),data.width,data.height,TK_PHOTO_COMPOSITE_SET);
             free(data.pixelPtr);
          }
       }
