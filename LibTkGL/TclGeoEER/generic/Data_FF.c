@@ -1721,7 +1721,7 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
    ds=Step*0.001;
    dr=10000.0;
    Z=ZDim<0?0:Z;
-   
+
    do {
       // Check for mask
       if (Def->Mask && !Def->Mask[lrint(Y)*Def->NI+lrint(X)]) {
@@ -1746,7 +1746,7 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
                                break;
 
                case REF_PROJ : VertexLoc(Ref,Def,Stream[idx],X,Y,Z);
-                               break;
+                             break;
 
                case REF_GRID : Vect_Init(Stream[idx],X,Y,Z);
                                break;
@@ -1801,7 +1801,11 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
 
       // Use Runge Kutta method (2nd order) to find the next particle position
       RK(rk1,step,v)
-      d[0]=X+rk1[0];d[1]=Y+rk1[1];d[2]=Z+rk1[2];
+      
+      d[0]=X+rk1[0];
+      d[1]=Y+rk1[1]; 
+      d[2]=(ZDim>0)?Z+rk1[2]:Z;
+      
       if (Ref->Grid[0]=='V') {
          rk2[0]=VertexVal(Ref,Def,0,d[0],d[1],Z);
          rk2[1]=VertexVal(Ref,Def,2,d[0],d[1],Z);
@@ -1832,7 +1836,8 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
       dr+=dn;
       X+=d[0];
       Y+=d[1];
-      Z+=d[2];
+
+      if (ZDim>0) Z+=d[2];
 
    } while (iter<MaxIter-1);
 

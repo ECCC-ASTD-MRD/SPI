@@ -939,7 +939,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
-            
+
             /*Get the streamline */
             b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
             f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
