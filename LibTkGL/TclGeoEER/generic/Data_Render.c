@@ -1785,6 +1785,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
       case 'X':
       case 'Y':
       case 'W':
+         size=VP->Ratio*VECTORSIZE(Field->Spec,Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5);
+
          for(i=0;i<Field->Def->NI;i+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
             for(j=0;j<Field->Def->NJ;j+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
                idx=j*Field->Def->NI+i;
@@ -1810,8 +1812,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         dir=Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v));
                      } else {
                         Def_Get(Field->Def,0,idx,u);
-                        size=1.0;
-                        dir=v;
+                        dir=u;
                      }
                      if (Interp) glFeedbackInit(256,GL_2D);
                      Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
