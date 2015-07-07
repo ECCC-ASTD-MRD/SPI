@@ -1431,7 +1431,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          Projection_Render(NULL,vp,proj,GL_ALL);
          ProjCam_Render(vp->Cam,proj);
 
-        /*Rendue des donnees raster*/
+         /*Rendue des donnees raster*/
          for (i=0;i<vp->DataItem.Nb;i++) {
             fld=Data_Get(vp->DataItem.Array[i]);
             if (fld) {
@@ -1725,7 +1725,7 @@ void ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,
       Height=GLRender->MagY+GLRender->MagD/GLRender->MagScale;
 
    x=(VP->header.x1-((TkCanvas*)Canvas)->xOrigin-GLRender->MagX)*GLRender->MagScale+GLRender->MagD/2.0;
-   y=(Height-(VP->header.y1-((TkCanvas*)Canvas)->yOrigin+VP->Height))*GLRender->MagScale-GLRender->MagD/2.0;
+   y=(Height-(VP->header.y2-((TkCanvas*)Canvas)->yOrigin))*GLRender->MagScale-GLRender->MagD/2.0;
 
    glDepthFunc(GL_LESS);
    glDepthMask(GL_TRUE);
