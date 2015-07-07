@@ -396,9 +396,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    extern const char *TDef_InterpRString[];
 
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
-   static CONST char *sopt[]   = { "version","ip1mode","autountile","vector","hide","read","readcube","head","find","write","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
+   static CONST char *sopt[]   = { "version","ip1mode","autountile","hide","read","readcube","head","find","write","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp",NULL };
-   enum                opt { VERSION,IP1MODE,AUTOUNTILE,VECTOR,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
 
    Tcl_ResetResult(Interp);
 
