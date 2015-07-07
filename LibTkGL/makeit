@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/usr/bin/env bash
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
 
