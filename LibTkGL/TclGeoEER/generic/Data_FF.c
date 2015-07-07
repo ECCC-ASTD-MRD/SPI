@@ -1697,7 +1697,7 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
 
    int npos=0;         /*Number of position in a particular streamline/fieldline*/
    int iter=0;         /*Keep track of the number of iteration of a numerical method*/
-   int back,c=0;            /*Keep track of the number of iteration before a check in stencil buffer*/
+   int back,c=0;       /*Keep track of the number of iteration before a check in stencil buffer*/
    int idx,n;          /*Current stream index*/
    Vect3d v,p;
    Vect3d rk1,rk2;     /*Keep track of Runge Kutta steps (1 to 2)*/

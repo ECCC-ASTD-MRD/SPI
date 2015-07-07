@@ -1696,7 +1696,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    int     n=0,mem,i,j,idx,idc,dz,dn,nn;
    char    buf[32];
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline)
+   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || !Field->Spec->Outline)
       return;
 
    /*Calculer la dimension generale*/
@@ -1802,12 +1802,19 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                            glColor4ubv(Field->Spec->Map->Color[idc]);
                         }
                      }
-                     Def_Get(Field->Def,0,idx,u);
-                     Def_Get(Field->Def,1,idx,v);
-
-                     size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                     
+                     if (Field->Def->Data[1]) {
+                        Def_Get(Field->Def,0,idx,u);
+                        Def_Get(Field->Def,1,idx,v);
+                        size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                        dir=Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v));
+                     } else {
+                        Def_Get(Field->Def,0,idx,u);
+                        size=1.0;
+                        dir=v;
+                     }
                      if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),(Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v))),size,Proj);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
                      if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
@@ -1900,13 +1907,21 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
 //         RPN_IntLock();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
-         if (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE) {
-            c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
-         } else {        
-            c_gdllvval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+         
+         if (Field->Def->Data[1]) {
+            if (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE) {
+               c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+            } else {        
+               c_gdllvval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+            }
+            // We have to get the speed from the modulus in case of 3 component vector
+            c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
+         } else {
+            c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[n],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n); 
+            size=Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5;
+            while (dn--) xy[dn+nn]=size;
+            dn=n;
          }
-         // We have to get the speed from the modulus in case of 3 component vector
-         c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
 //         RPN_IntUnlock();
 
          while (dn--) {
