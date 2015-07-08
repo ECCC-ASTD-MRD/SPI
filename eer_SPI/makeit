@@ -6,7 +6,7 @@ arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.9.0"
+VERSION="7.9.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_all
@@ -28,7 +28,7 @@ if [[ $arg = "-ssm" ]]; then
 
    rm -f -r ${SSM_DEV}/workspace/${SSM_NAME} ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d ${SSM_DEV}/workspace/${SSM_NAME}/lib
-   cp -r  bin tcl share data .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
+   cp -r  bin tcl share data/ .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -prune -exec rm -f -r {} \;
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -delete
