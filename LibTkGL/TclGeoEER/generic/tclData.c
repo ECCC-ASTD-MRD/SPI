@@ -499,6 +499,43 @@ TData* Data_Get(char *Name) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Data_UnlinkFSTDFile>
+ * Creation : Juillet 2015 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Nullify file link of field using this file.
+ *
+ * Parametres     :
+ *  <File>        : RPN File closed
+ *
+ * Retour:
+ *  <File>  : char)
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+
+int Data_UnlinkFSTDFile(TRPNFile *File) {
+   
+   Tcl_HashEntry *entry=NULL;
+   Tcl_HashSearch ptr;
+   TData         *data;
+   int            n=0;
+   
+   entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
+
+   while (entry) {
+      data=Tcl_GetHashValue(entry);
+      if (data->Type==TD_RPN && ((TRPNHeader*)data->Head)->File && ((TRPNHeader*)data->Head)->File==File) {
+         ((TRPNHeader*)data->Head)->File=NULL;
+         n++;
+      }
+      entry=Tcl_NextHashEntry(&ptr);
+   }
+   return(n);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_GetShell>
  * Creation : Decembre 2002 - J.P. Gauthier - CMC/CMOE
  *

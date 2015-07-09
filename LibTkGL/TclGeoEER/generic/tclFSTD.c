@@ -1333,16 +1333,21 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  *----------------------------------------------------------------------------
 */
+extern int Data_UnlinkFSTDFile(TRPNFile *File);
+
 int FSTD_FileClose(Tcl_Interp *Interp,char *Id) {
 
    TRPNFile *file;
-
+   
    if ((file=(TRPNFile*)TclY_HashDel(&FSTD_FileTable,Id))) {
       if (!(--file->NRef)) {
          file->Open=file->Open>0?1:file->Open;
          FSTD_FileUnset(Interp,file);
          cs_fstunlockid(file->Id);
 
+         // Nullify file link of field using this file
+         Data_UnlinkFSTDFile(file);
+         
          free(file->Name);
          free(file->CId);
          free(file);
