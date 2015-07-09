@@ -888,7 +888,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
          case VALTYPE_INT8:
          case VALTYPE_INT32:
             ival=bufr_value_get_int32(V);
-            if (ival==-1) {
+            if (bufr_is_missing_int(ival)) {
                obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewIntObj(ival);
@@ -897,7 +897,7 @@ Tcl_Obj* MetDataset_Value2Obj(BufrValue *V) {
 
          case VALTYPE_INT64  :
             lval=bufr_value_get_int64(V);
-            if (lval==-1) {
+            if (bufr_is_missing_int(lval)) {
                obj=Tcl_NewStringObj("MSNG",-1);
             } else {
                obj=Tcl_NewLongObj(lval);
@@ -1002,7 +1002,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
          case VALTYPE_INT32 :
          case VALTYPE_INT64 :
             if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
-               bufr_descriptor_set_ivalue(BCV,-1);
+               bufr_descriptor_set_ivalue(BCV,bufr_missing_int());
             } else if (TclY_Get0DoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                bufr_descriptor_set_ivalue(BCV,(int)dval);
             }
@@ -1010,7 +1010,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
          case VALTYPE_FLT64  :
             if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
-               bufr_descriptor_set_dvalue(BCV,bufr_get_max_double());
+               bufr_value_set_double(BCV->value,bufr_missing_double()); 
             } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_double(dval)) {
                   bufr_descriptor_set_dvalue(BCV,dval);
@@ -1020,7 +1020,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
 
          case VALTYPE_FLT32  :
             if (strcmp(Tcl_GetString(obj),"MSNG")==0) {
-               bufr_descriptor_set_fvalue(BCV,bufr_get_max_float());
+               bufr_value_set_float(BCV->value,bufr_missing_float()); 
             } else if (Tcl_GetDoubleFromObj(Interp,obj,&dval)==TCL_OK) {
                if (!bufr_is_missing_float(dval)) {
                   bufr_descriptor_set_fvalue(BCV,dval);
