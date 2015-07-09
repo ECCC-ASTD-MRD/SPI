@@ -1566,7 +1566,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   if (!Field->Ref->Ids)
                      Field->Ref->Ids=(int*)malloc(1*sizeof(int));
 
-                  Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->Ref->Lon,Field->Ref->Lat);
+                  Field->Ref->Ids[Field->Ref->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->Ref->Grid,fieldAX->Ref->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->Ref->AX,Field->Ref->AY);
                   RPN_IntUnlock();
                }
                if (Field->Stat) { Data_StatFree(Field->Stat); Field->Stat=NULL; }
@@ -1777,8 +1777,10 @@ void FSTD_FieldFree(TData *Field){
 
    TRPNHeader *head=(TRPNHeader*)Field->Head;
 
-   if (Field && head)
+   if (Field && head) {
+//      if (head->File) __sync_sub_and_fetch(&(head->File->NRef),1);
       free(head);
+   }
  }
 
 /*----------------------------------------------------------------------------

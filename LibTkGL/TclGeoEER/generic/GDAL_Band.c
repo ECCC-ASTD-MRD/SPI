@@ -757,8 +757,8 @@ int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double A
 */
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
-   double    lat,lon,i,j;
-   double    val,dir;
+   double    lat,lon,latd,lond,i,j;
+   double    val,dir,ddir;
    int       n,x,y,z=0,idx,dy;
    TGeoScan  scan;
    TList    *list;
@@ -926,6 +926,15 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
                      m.Color[3]=Field->Spec->Map->Color[m.Idx][3];
                   }
 
+                  // Reproject vector orientation by adding destination projection's north difference
+                  if (Band->Ref->Type&GRID_NUNORTH) {                     
+                     Band->Ref->Project(Band->Ref,x,y+1,&latd,&lond,1,1);
+
+                     lat=DEG2RAD(lat);   lon=DEG2RAD(lon);
+                     latd=DEG2RAD(latd); lond=DEG2RAD(lond);
+                     ddir=COURSE(lat,lon,latd,lond);
+                     dir+=RAD2DEG(ddir)+180;
+                  }
                   Murphy_Polygon(&m,IconList[13].Co,IconList[13].Nb,x,y,VECTORSIZE(Field->Spec,val),dir,TRUE);
                }
             }
@@ -1850,6 +1859,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   band->Ref=ref;
                   GeoRef_Incr(band->Ref);
                   GeoRef_Size(ref,ref->BD,ref->BD,0,band->Def->NI-1-ref->BD,band->Def->NJ-1-ref->BD,band->Def->NK-1,ref->BD);
+                  GeoRef_Qualify(ref);
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }

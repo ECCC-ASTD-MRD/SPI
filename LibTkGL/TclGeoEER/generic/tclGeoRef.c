@@ -468,8 +468,17 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                if (ref->Type&GRID_RADIAL) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("RADIAL",-1));
                }
+               if (ref->Type&GRID_REPEAT) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("REPEAT",-1));
+               }
                if (ref->Type&GRID_PSEUDO) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("PSEUDO",-1));
+               }
+               if (ref->Type&GRID_NOXNEG) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NOXNEG",-1));
+               }
+               if (ref->Type&GRID_NUNORTH) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NUNORTH",-1));
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
@@ -501,8 +510,17 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   if (strcmp(Tcl_GetString(obj),"RADIAL")==0) {
                      ref->Type|=GRID_RADIAL;
                   }
+                  if (strcmp(Tcl_GetString(obj),"REPEAT")==0) {
+                     ref->Type|=GRID_REPEAT;
+                  }
                   if (strcmp(Tcl_GetString(obj),"PSEUDO")==0) {
                      ref->Type|=GRID_PSEUDO;
+                  }
+                  if (strcmp(Tcl_GetString(obj),"NOXNEG")==0) {
+                     ref->Type|=GRID_NOXNEG;
+                  }
+                  if (strcmp(Tcl_GetString(obj),"NUNORTH")==0) {
+                     ref->Type|=GRID_NUNORTH;
                   }
                }
             }
