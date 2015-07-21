@@ -259,6 +259,7 @@ proc VectorBox::Draw     { Frame VP } {
 proc VectorBox::DrawDone { Frame VP } {
 
    FSTD::ParamSet
+   FSTD::ParamUpdate
    Page::Update $Page::Data(Frame)
    Page::UpdateCommand $Page::Data(Frame)
 }

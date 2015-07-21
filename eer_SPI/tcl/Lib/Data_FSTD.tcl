@@ -1197,16 +1197,14 @@ proc FSTD::ParamUpdate { { Fields { } } } {
    variable Param
    variable Data
 
-   if { ![llength $Fields] } {
-      set Fields [concat $Data(List) $Data(ListTool)]
-   }
-
    set current $Param(Spec)
    set exist 0
    set var   ""
 
-   #----- Inserer les items dans la liste de configuration
-   ComboBox::DelAll $Data(Frame).var.sel
+   if { ![llength $Fields] } {
+      set Fields [concat $Data(List) $Data(ListTool)]
+      ComboBox::DelAll $Data(Frame).var.sel
+   } 
 
    foreach fld $Fields {
 
