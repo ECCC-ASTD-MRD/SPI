@@ -789,7 +789,7 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
          fstdfield write ${ID}MTRX $FILE -32 True
       }
       default {
-         fstdfield define ${ID}    -DATEO $dateo
+         fstdfield define ${ID}    -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
       }
    }
 
