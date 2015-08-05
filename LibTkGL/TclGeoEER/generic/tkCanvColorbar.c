@@ -499,6 +499,7 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
          OGR_LayerPreInit(layer);
          spec=layer->Spec;
       } else if ((band=GDAL_BandGet(cb->Data[i]))) {
+         GDAL_BandPreInit(band);
          spec=band->Spec;
       } else {
          spec=DataSpec_Get(cb->Data[i]);
@@ -840,7 +841,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
    float    jps,jan;
    char     buf[128],*lbl;
    Tcl_Obj *obj;
-
+   
    if ((!Spec->RenderTexture && !Spec->RenderParticle && !Spec->MapAll) || !Spec->Map)
       return;
 

@@ -94,25 +94,28 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
    int        i,j,idx;
 
    /*Verifier la validite de la grille*/
-   if (!Field->Ref || Field->Ref->Type==GRID_NONE)
+   if (!Field->GRef || Field->GRef->Type==GRID_NONE)
       return(NULL);
 
-   if (Field->Ref->Pos && Field->Ref->Pos[Level])
-      return(Field->Ref->Pos[Level]);
+   if (Field->GPos && Field->GPos->Pos[Level])
+      return(Field->GPos->Pos[Level]);
 
-   /*Allocate memory for various levels*/
-   if (!Field->Ref->Pos)
-      Field->Ref->Pos=(Vect3d**)calloc(Field->Ref->ZRef.LevelNb,sizeof(Vect3d*));
+   // Allocate memory for gridpoint positions
+   if (!Field->GPos)
+      Field->GPos=GeoPos_Find(Field->GRef,Field->ZRef);
 
-   if (!Field->Ref->Pos[Level]) {
-      Field->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
-      if (!Field->Ref->Pos[Level]) {
+   if (!Field->GPos)
+      return(NULL);
+
+   if (!Field->GPos->Pos[Level]) {
+      Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
+      if (!Field->GPos->Pos[Level]) {
          fprintf(stderr,"(ERROR) GRIB_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);
       }
    }
 
-   z=ZRef_Level2Meter(Field->Ref->ZRef.Levels[Level],Field->Ref->ZRef.Type);
+   z=ZRef_Level2Meter(Field->ZRef->Levels[Level],Field->ZRef->Type);
    for (i=0;i<Field->Def->NI;i++) {
       for (j=0;j<Field->Def->NJ;j++) {
 
@@ -120,10 +123,10 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
          coord.Elev=0.0;
 
          /*Reproject coordinates if needed*/
-         Field->Ref->Project(Field->Ref,i,j,&coord.Lat,&coord.Lon,1,1);
+         Field->GRef->Project(Field->GRef,i,j,&coord.Lat,&coord.Lon,1,1);
 
-         if (Field->Ref->Hgt) {
-            coord.Elev+=ZRef_Level2Meter(Field->Ref->Hgt[idx],Field->Ref->ZRef.Type);
+         if (Field->GRef->Hgt) {
+            coord.Elev+=ZRef_Level2Meter(Field->GRef->Hgt[idx],Field->ZRef->Type);
          } else {
             coord.Elev+=z;
          }
@@ -133,12 +136,12 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
          if (coord.Lat<-900.0 || coord.Lon<-900.0) {
             coord.Elev=1e32;
          }
-         Vect_Init(Field->Ref->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
+         Vect_Init(Field->GPos->Pos[Level][idx],coord.Lon,coord.Lat,coord.Elev);
       }
    }
-   ((Projection*)Proj)->Type->Project(Proj,(GeoVect*)Field->Ref->Pos[Level],NULL,FSIZE2D(Field->Def));
+   ((Projection*)Proj)->Type->Project(Proj,(GeoVect*)Field->GPos->Pos[Level],NULL,FSIZE2D(Field->Def));
 
-   return(Field->Ref->Pos[Level]);
+   return(Field->GPos->Pos[Level]);
 }
 
 static int GRIB_KeySet(Tcl_Interp *Interp,grib_handle *Handle,char *Key,Tcl_Obj *Val) {
@@ -272,10 +275,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(head->IP1));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&head->IP1);
-               if (!Field->Ref) {
-                  //                  Field->Ref=GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),(Field->Ref?Field->Ref->ZRef.Levels:NULL),"X",head->IG1,head->IG2,head->IG3,head->IG4,head->FID?head->FID->Id:-1);
-               }
-               Field->Ref->ZRef.Levels[Field->Def->Level]=ZRef_IP2Level(head->IP1,&Field->Ref->ZRef.Type);
+               Field->ZRef->Levels[Field->Def->Level]=ZRef_IP2Level(head->IP1,&Field->ZRef->Type);
             }
             break;
 
@@ -291,27 +291,27 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case GRTYP:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Grid,-1));
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->GRef->Grid,-1));
             } else {
             }
             break;
             
          case PROJECTION:
             if (Objc==1) {
-               if (Field->Ref && Field->Ref->String)  {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->String,-1));
+               if (Field->GRef && Field->GRef->String)  {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->GRef->String,-1));
                }
             } else {
                ++i;
-               if (Field->Ref && Field->Ref->String && strlen(Field->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),Field->Ref->String)==0) {
+               if (Field->GRef && Field->GRef->String && strlen(Field->GRef->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),Field->GRef->String)==0) {
               } else {
-                  ref=Field->Ref;
+                  ref=Field->GRef;
                   if (ref) {
-                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
-                     Field->Ref->Grid[1]=ref->Grid[1];
+                     Field->GRef=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,ref->Grid,ref->IG1,ref->IG2,ref->IG3,ref->IG4,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
+                     Field->GRef->Grid[1]=ref->Grid[1];
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
+                     Field->GRef=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -319,10 +319,10 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             break;
 
          case TRANSFORM:
-            if (Objc==1 && Field->Ref && Field->Ref->Transform) {
+            if (Objc==1 && Field->GRef && Field->GRef->Transform) {
                obj=Tcl_NewListObj(0,NULL);
                for(j=0;j<6;j++) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Transform[j]));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Transform[j]));
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
@@ -345,13 +345,13 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                } else {
                   im=inv;
                }
-               if (!Field->Ref || !Field->Ref->Transform || memcmp(tm,Field->Ref->Transform,6*sizeof(double))!=0) {
-                  ref=Field->Ref;
+               if (!Field->GRef || !Field->GRef->Transform || memcmp(tm,Field->GRef->Transform,6*sizeof(double))!=0) {
+                  ref=Field->GRef;
                   if (ref) {
-                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,ref->ZRef.Type,ref->ZRef.Levels,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
+                     Field->GRef=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
                      GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     Field->Ref=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,Field->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL));
+                     Field->GRef=GeoRef_Find(GeoRef_WKTSetup(Field->Def->NI,Field->Def->NJ,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
                   Data_Clean(Field,1,1,1);
                }
@@ -360,8 +360,8 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
          case GEOREF:
             if (Objc==1) {
-               if (Field->Ref) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->Ref->Name,-1));
+               if (Field->GRef) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->GRef->Name,-1));
                }
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
@@ -369,12 +369,12 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   Tcl_AppendResult(Interp,"GRIB_FieldDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
                   return(TCL_ERROR);
                }
-               if (Field->Ref && ref!=Field->Ref) {
-                  GeoRef_Destroy(Interp,Field->Ref->Name);
+               if (Field->GRef && ref!=Field->GRef) {
+                  GeoRef_Destroy(Interp,Field->GRef->Name);
                   Data_Clean(Field,1,1,1);
                }
-               Field->Ref=ref;
-               GeoRef_Incr(Field->Ref);
+               Field->GRef=ref;
+               GeoRef_Incr(Field->GRef);
             }
             break;
 
@@ -874,13 +874,15 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       if (!GDALInvGeoTransform(mtx,inv)) {
          fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create inverse transform function\n");
       }
-      Field->Ref=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NK,LVL_MASL,NULL,NULL,0,0,0,0,NULL,mtx,inv,ref));
-      GeoRef_Qualify(Field->Ref);
-      Field->Ref->ZRef.Levels[0]=ZRef_IP2Level(head->IP1,&Field->Ref->ZRef.Type);
+      Field->GRef=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NULL,0,0,0,0,NULL,mtx,inv,ref));
+      Field->ZRef=ZRef_Define(LVL_MASL,NK,NULL);
+      Field->ZRef->Levels[0]=ZRef_IP2Level(head->IP1,&Field->ZRef->Type);
 
-//      if (OSRIsGeographic(ref))  Field->Ref->Type|=GRID_NOXNEG;
+      GeoRef_Qualify(Field->GRef);
+
+//      if (OSRIsGeographic(ref))  Field->GRef->Type|=GRID_NOXNEG;
 #ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTString: '%s'\n",Field->Ref->String);
+      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTString: '%s'\n",Field->GRef->String);
       fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
 #endif
    } else {
@@ -1058,13 +1060,13 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    grib_set_long(head->Handle,"earthIsOblate",0);
    grib_set_long(head->Handle,"uvRelativeToGrid",1);
          
-   switch(RPN->Ref->Grid[0]) {
+   switch(RPN->GRef->Grid[0]) {
       case 'N':
       case 'S':
-         f77name(cigaxg)(RPN->Ref->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
-         RPN->Ref->Project(RPN->Ref,0,0,&co.Lat,&co.Lon,0,1);
+         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+         RPN->GRef->Project(RPN->GRef,0,0,&co.Lat,&co.Lon,0,1);
         
-         xg[3]=RPN->Ref->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
+         xg[3]=RPN->GRef->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
          while(xg[3]<0)    xg[3]+=360;
          while(xg[3]>360 ) xg[3]-=360;
          
@@ -1081,9 +1083,9 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          break;   
          
       case 'L':
-         f77name(cigaxg)(RPN->Ref->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
         
-         xg[3]=RPN->Ref->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
+         xg[3]=RPN->GRef->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
          while(xg[3]<0)    xg[3]+=360;
          while(xg[3]>360 ) xg[3]-=360;
          

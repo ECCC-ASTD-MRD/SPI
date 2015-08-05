@@ -82,12 +82,12 @@ float         FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3
 int           FFCellProcess(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1,Vect3d G2,Vect3d G3,Vect3d Dim);
 void          FFCellQuadLinear(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,double V0,double V1,double V2,double V3,int Depth,int Base);
 void          FFCellQuadNearest(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,int Base);
-int           FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit);
-unsigned int  FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit);
+int           FFContour(int Mode,TGeoPos *Pos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit);
+unsigned int  FFContour_Quad(TGeoPos *Pos,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit);
 float        *FFStreamMapSetup1D(double Delta);
-int           FFMarchingCube(TGeoRef *Ref,TDef *Def,Projection *Proj,double Level);
+int           FFMarchingCube(TGeoPos *Pos,TDef *Def,Projection *Proj,double Level);
 float        *FFStreamMapSetup1D(double Delta);
-int           FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+int           FFStreamLine(TGeoPos *Pos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 int           FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode);
 double        FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Error);
 

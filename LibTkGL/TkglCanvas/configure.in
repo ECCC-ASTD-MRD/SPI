@@ -86,6 +86,7 @@ TEA_ADD_SOURCES([generic/glFont.c \
                  generic/tkglCanvText.c \
                  generic/tkglRectOval.c \
                  generic/tkTrig.c \
+                 generic/tkImgSVG.c \
                  generic/tr.c ])
 TEA_ADD_HEADERS([generic/tkglCanvas.h generic/tkglCanvText.h generic/glStuff.h generic/tr.h])
 TEA_ADD_INCLUDES([])

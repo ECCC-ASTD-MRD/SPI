@@ -266,8 +266,8 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
 
          case GEOREF:
             if (Objc==1) {
-               if (mdl->Ref) {
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Ref->Name,-1));
+               if (mdl->GRef) {
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->GRef->Name,-1));
                }
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
@@ -275,36 +275,36 @@ static int Model_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                   Tcl_AppendResult(Interp,"\n   Model_Define: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
                   return(TCL_ERROR);
                }
-               if (ref!=mdl->Ref) {
-                  if (mdl->Ref)
-                     GeoRef_Destroy(Interp,mdl->Ref->Name);
+               if (ref!=mdl->GRef) {
+                  if (mdl->GRef)
+                     GeoRef_Destroy(Interp,mdl->GRef->Name);
 
-                  mdl->Ref=ref;
-                  GeoRef_Incr(mdl->Ref);
+                  mdl->GRef=ref;
+                  GeoRef_Incr(mdl->GRef);
                   Model_Clean(mdl);
-                  GeoRef_Size(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],0,mdl->Extent[1][0],mdl->Extent[1][1],1000,0);
+                  GeoRef_Size(mdl->GRef,mdl->Extent[0][0],mdl->Extent[0][1],mdl->Extent[1][0],mdl->Extent[1][1],0);
               }
             }
             break;
 
         case PROJECTION:
             if (Objc==1) {
-               if (mdl->Ref && mdl->Ref->String)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->Ref->String,-1));
+               if (mdl->GRef && mdl->GRef->String)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(mdl->GRef->String,-1));
             } else {
                ++i;
                if (strlen(Tcl_GetString(Objv[i]))==0) {
-                  if (mdl->Ref) {
-                      GeoRef_Destroy(Interp,mdl->Ref->Name);
-                      mdl->Ref=NULL;
+                  if (mdl->GRef) {
+                      GeoRef_Destroy(Interp,mdl->GRef->Name);
+                      mdl->GRef=NULL;
                       Model_Clean(mdl);
                   }
                } else {
-                  if (mdl->Ref && mdl->Ref->String && strlen(mdl->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),mdl->Ref->String)==0) {
+                  if (mdl->GRef && mdl->GRef->String && strlen(mdl->GRef->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),mdl->GRef->String)==0) {
                   } else {
-                     GeoRef_Destroy(Interp,mdl->Ref->Name);
-                     mdl->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
-                     GeoRef_Size(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],0,mdl->Extent[1][0],mdl->Extent[1][1],1000,0);
+                     GeoRef_Destroy(Interp,mdl->GRef->Name);
+                     mdl->GRef=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
+                     GeoRef_Size(mdl->GRef,mdl->Extent[0][0],mdl->Extent[0][1],mdl->Extent[1][0],mdl->Extent[1][1],0);
                      Model_Clean(mdl);
                   }
                }
@@ -373,8 +373,8 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
       case PROJECT:
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
-         if (mdl->Ref) {
-            mdl->Ref->Project(mdl->Ref,x,y,&lat,&lon,1,1);
+         if (mdl->GRef) {
+            mdl->GRef->Project(mdl->GRef,x,y,&lat,&lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
          } else {
@@ -388,8 +388,8 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
       case UNPROJECT:
          Tcl_GetDoubleFromObj(Interp,Objv[1],&lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&lon);
-         if (mdl->Ref) {
-            mdl->Ref->UnProject(mdl->Ref,&x,&y,lat,lon,1,1);
+         if (mdl->GRef) {
+            mdl->GRef->UnProject(mdl->GRef,&x,&y,lat,lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
          }
@@ -404,15 +404,15 @@ static int Model_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv
 
       case LLEXTENT:
          /*If not calculated yet, get latlon extent*/
-         if (mdl->Ref) {
-            if (mdl->Ref->LLExtent.MinY==1e32) {
-               mdl->Ref->Project(mdl->Ref,mdl->Extent[0][0],mdl->Extent[0][1],&mdl->Ref->LLExtent.MinY,&mdl->Ref->LLExtent.MinX,1,1);
-               mdl->Ref->Project(mdl->Ref,mdl->Extent[1][0],mdl->Extent[1][1],&mdl->Ref->LLExtent.MaxY,&mdl->Ref->LLExtent.MaxX,1,1);
+         if (mdl->GRef) {
+            if (mdl->GRef->LLExtent.MinY==1e32) {
+               mdl->GRef->Project(mdl->GRef,mdl->Extent[0][0],mdl->Extent[0][1],&mdl->GRef->LLExtent.MinY,&mdl->GRef->LLExtent.MinX,1,1);
+               mdl->GRef->Project(mdl->GRef,mdl->Extent[1][0],mdl->Extent[1][1],&mdl->GRef->LLExtent.MaxY,&mdl->GRef->LLExtent.MaxX,1,1);
             }
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinY));
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MinX));
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxY));
-            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->Ref->LLExtent.MaxX));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->GRef->LLExtent.MinY));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->GRef->LLExtent.MinX));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->GRef->LLExtent.MaxY));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(mdl->GRef->LLExtent.MaxX));
          }
          break;
    }
@@ -697,7 +697,7 @@ int Model_Create(Tcl_Interp *Interp,char *Name) {
 
    mdl->Name=NULL;
    mdl->Path=NULL;
-   mdl->Ref=NULL;
+   mdl->GRef=NULL;
    mdl->Co.Lat=mdl->Co.Lon=-999.0;
    mdl->NObj=0;
    mdl->Obj=NULL;
@@ -1296,8 +1296,8 @@ void Model_Free(T3DModel *M) {
    Model_SceneFree(M->Scn);
 
    /*Free projection*/
-   if (M->Ref) {
-      GeoRef_Destroy(NULL,M->Ref->Name);
+   if (M->GRef) {
+      GeoRef_Destroy(NULL,M->GRef->Name);
    }
 
    if (M->Name) free(M->Name);
@@ -1439,7 +1439,7 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
 
    Vect3d ex[4],lim,min,max;
 
-   if (!M->Ref) {
+   if (!M->GRef) {
       return(1);
    }
 
@@ -1449,10 +1449,10 @@ int Model_LOD(Projection *Proj,ViewportItem *VP,T3DModel *M,Vect3d *Extent) {
    ex[3][0]=Extent[1][0];ex[3][1]=Extent[1][1];ex[3][2]=Extent[1][2];
 
 
-   M->Ref->Project(M->Ref,ex[0][0],ex[0][1],&ex[0][1],&ex[0][0],1,0);
-   M->Ref->Project(M->Ref,ex[1][0],ex[1][1],&ex[1][1],&ex[1][0],1,0);
-   M->Ref->Project(M->Ref,ex[2][0],ex[2][1],&ex[2][1],&ex[2][0],1,0);
-   M->Ref->Project(M->Ref,ex[3][0],ex[3][1],&ex[3][1],&ex[3][0],1,0);
+   M->GRef->Project(M->GRef,ex[0][0],ex[0][1],&ex[0][1],&ex[0][0],1,0);
+   M->GRef->Project(M->GRef,ex[1][0],ex[1][1],&ex[1][1],&ex[1][0],1,0);
+   M->GRef->Project(M->GRef,ex[2][0],ex[2][1],&ex[2][1],&ex[2][0],1,0);
+   M->GRef->Project(M->GRef,ex[3][0],ex[3][1],&ex[3][1],&ex[3][0],1,0);
    Proj->Type->Project(Proj,(GeoVect*)ex,NULL,4);
 
    gluProject(ex[0][0],ex[0][1],ex[0][2],VP->GLModR,VP->GLProj,VP->GLView,&lim[0],&lim[1],&lim[2]);
@@ -1574,8 +1574,8 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 // TODO: Necessary ?                 if (obj->Cl)                    glColor4fv(obj->Cl[idx]);
 
                   /*Projection to georef*/
-                  if (M->Ref) {
-                     M->Ref->Project(M->Ref,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
+                  if (M->GRef) {
+                     M->GRef->Project(M->GRef,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
                      M->Co.Elev=obj->Vr[idx][2];
                      Proj->Type->Project(Proj,(GeoVect*)&M->Co,(GeoVect*)&vr,1);
                      Vect_Assign(vrf,vr);
@@ -1595,7 +1595,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    glPushMatrix();
 
    /*Position the model within geography*/
-   if (!M->Ref) {
+   if (!M->GRef) {
       Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
       /*Positionner le modele*/
       glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
@@ -1826,15 +1826,15 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
                break;
             }
             /*Projection to georef*/
-            if (M->Ref) {
-               M->Ref->Project(M->Ref,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
+            if (M->GRef) {
+               M->GRef->Project(M->GRef,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
             } else {
                co.Lat=M->Pos[0]+M2DEG(Obj->Vr[idx][1]*M->Meter);
                co.Lon=M->Pos[1]+M2DEG(Obj->Vr[idx][0]*M->Meter);
             }
             co.Elev=Obj->Vr[idx][2];
 
-            Data->Ref->UnProject(Data->Ref,&v[n][0],&v[n][1],co.Lat,co.Lon,1,1);
+            Data->GRef->UnProject(Data->GRef,&v[n][0],&v[n][1],co.Lat,co.Lon,1,1);
 
             Vect_Min(extent[0],extent[0],v[n]);
             Vect_Max(extent[1],extent[1],v[n]);
@@ -1843,7 +1843,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
          }
 
          /*Process the face*/
-         Model_Rasterize(Data->Def,Data->Ref,v,n,extent,0.0);
+         Model_Rasterize(Data->Def,Data->GRef,v,n,extent,0.0);
       }
    }
    return(1);

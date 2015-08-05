@@ -91,7 +91,10 @@ typedef struct TData {
    Tcl_Obj      *Tag;
    void         *Head;       // Entete de l'enregistrement (metadata)
 
-   TGeoRef      *Ref;        // Reference geographique horizontale
+   TGeoPos      *GPos;       // Reference des points de grilles
+   TGeoRef      *GRef;       // Reference geographique horizontale
+   TZRef        *ZRef;       // Reference geographique verticale
+
    TDef         *Def,**SDef; // Definition des donnees
    TDataSpec    *Spec;       // Specification des donnees (pour l'affichage)
    TDataStat    *Stat;       // Statistiques de l'enregistrement

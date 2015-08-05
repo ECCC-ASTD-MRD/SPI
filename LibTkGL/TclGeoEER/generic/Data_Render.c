@@ -99,9 +99,9 @@ void Data_MapColor(TData *Field,int Idx) {
    if ((Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float)))) {
 
       if (Idx) {
-         if (Field->Ref->Idx) free(Field->Ref->Idx);
-         Field->Ref->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
-         Field->Ref->NIdx=0;
+         if (Field->GRef->Idx) free(Field->GRef->Idx);
+         Field->GRef->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
+         Field->GRef->NIdx=0;
       }
 
       for (i=0;i<FSIZE2D(Field->Def);i++) {
@@ -109,8 +109,8 @@ void Data_MapColor(TData *Field,int Idx) {
          VAL2COL(Field->Map[i],Field->Spec,v);
          Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
 
-         if (Idx && Field->Ref->Idx && Field->Map[i]>=0) {
-            Field->Ref->Idx[Field->Ref->NIdx++]=i;
+         if (Idx && Field->GRef->Idx && Field->Map[i]>=0) {
+            Field->GRef->Idx[Field->GRef->NIdx++]=i;
          }
       }
    }
@@ -141,14 +141,14 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 
    int k,nk;
 
-   if (Field->Ref->ZRef.LevelNb==1) {
+   if (Field->ZRef->LevelNb==1) {
       if (Field->ReadCube) Field->ReadCube(NULL,Field,0,0.0,0.0,NULL);
       Data_PreInit(Field);
    }
 
    nk=0;
-   for(k=0;k<Field->Ref->ZRef.LevelNb;k++) {
-      if (Field->Ref->Pos && Field->Ref->Pos[k]) {
+   for(k=0;k<Field->ZRef->LevelNb;k++) {
+      if (Field->GPos && Field->GPos->Pos[k]) {
          nk++;
       } else {
          if (Field->Grid(Field,Proj,k)) {
@@ -156,7 +156,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
          }
       }
    }
-   return(nk==Field->Ref->ZRef.LevelNb);
+   return(nk==Field->ZRef->LevelNb);
 }
 
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
@@ -164,21 +164,21 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    int    nras=0,u,u0,u1,udef;
 
    /*Verifier l'existence du champs*/
-   if (!Field || !Field->Ref || !Field->Spec || !Field->Def->Data[0]) {
+   if (!Field || !Field->GRef || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
    }
 
    // Check for U grid (grid index 0=loop on sub grid)
-   if (Field->Ref->NbId>1) {
-      if (Field->Ref->NId==0) {
-         u0=1; u1=Field->Ref->NbId;
+   if (Field->GRef->NbId>1) {
+      if (Field->GRef->NId==0) {
+         u0=1; u1=Field->GRef->NbId;
       } else {
-         u0=u1=Field->Ref->NId;
+         u0=u1=Field->GRef->NId;
       }
    } else {
       u0=u1=0;
    }
-   udef=Field->Ref->NId;
+   udef=Field->GRef->NId;
 
    Data_PreInit(Field);
 
@@ -186,19 +186,20 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       return(0);
    }
 
-   if (!Field->Ref->Pos || !Field->Ref->Pos[Field->Def->Level])
-      if (!Field->Grid(Field,Proj,Field->Def->Level))
+   if (!Field->GPos || !Field->GPos->Pos[Field->Def->Level]) {
+       if (!Field->Grid(Field,Proj,Field->Def->Level))
          return(0);
+   }
 
-   if (GLRender->GLZBuf) {
+  if (GLRender->GLZBuf) {
       glEnable(GL_DEPTH_TEST);
    }
 
    for(u=u0;u<=u1;u++) {
       // Point to subgrid data within global data array
       if (Field->SDef) {
-         Field->Ref->NId=u;
-         Field->Def=Field->SDef[Field->Ref->NId];
+         Field->GRef->NId=u;
+         Field->Def=Field->SDef[Field->GRef->NId];
       }
 
       glPushName(PICK_FSTDFIELD);
@@ -226,8 +227,8 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
          /*Verifier la presence d'une palette de couleur si elle est necessaire*/
          if (Field->Spec->Map) {
-            if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->Ref->Grid[0]=='V')) {
-               if (Field->Ref->Grid[0]!='Y' && Field->Ref->Grid[1]!='Y') {
+            if (Field->Spec->RenderTexture && (!Field->Spec->RenderVol || Field->GRef->Grid[0]=='V')) {
+               if (Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y') {
                   if (GLRender->ShaderAvailable) {
                      nras+=Data_RenderShaderTexture(Field,VP,(Projection*)Proj);
                   } else {
@@ -248,7 +249,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
             }
 
             if (Field->Spec->RenderVol) {
-               if (Field->Ref->Grid[0]!='V') {
+               if (Field->GRef->Grid[0]!='V') {
                   /*Recuperer les niveaux disponibles*/
                   if (Data_Grid3D(Field,Proj)) {
                      nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
@@ -279,8 +280,8 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
    // Put back default grid
    if (Field->SDef) {
-      Field->Ref->NId=udef;
-      Field->Def=Field->SDef[Field->Ref->NId];
+      Field->GRef->NId=udef;
+      Field->Def=Field->SDef[Field->GRef->NId];
    }
 
    glDisable(GL_POLYGON_OFFSET_FILL);
@@ -450,12 +451,12 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    TList   *list;
    T3DArray *array;
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
+   if (!Field->GRef || !Field->GPos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
    /*Les contours sont-ils definit*/
    if (Field->Spec->InterNb && !Field->Def->Segments) {
-      FFContour(REF_PROJ,Field->Ref,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,4-Field->Spec->RenderContour,0);
+      FFContour(REF_PROJ,Field->GPos,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,4-Field->Spec->RenderContour,0);
    }
 
    /* Render the contours */
@@ -579,7 +580,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    T3DArray *array;
    Vect3d  p1,p0;
 
-   if (GLRender->Resolution>1 || !Field->Ref || !Field->Spec->Font || (!Field->Spec->Outline && !Field->Spec->MapAll) || !Field->Spec->InterNb) {
+   if (GLRender->Resolution>1 || !Field->GRef || !Field->Spec->Font || (!Field->Spec->Outline && !Field->Spec->MapAll) || !Field->Spec->InterNb) {
       return;
    }
 
@@ -734,7 +735,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
 
    char buf[128];
    
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Outline)
+   if (!Field->GRef || !Field->GPos || !Field->Spec->Outline)
       return;
 
    /*Do we need transparency*/
@@ -754,15 +755,15 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
 
    /*Afficher les points*/
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),1,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],NULL,NULL,NULL,GL_POINTS,FSIZE2D(Field->Def),1,NULL,NULL);
 
    if (Interp)
       glFeedbackProcess(Interp,GL_2D);
 
-   if (Field->Ref->Grid[0]=='M') {
+   if (Field->GRef->Grid[0]=='M') {
       glPolygonMode(GL_FRONT,GL_LINE);
       glLineWidth(1.0);
-      Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],Field->Ref->Idx,NULL,NULL,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
+      Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->GRef->Idx,NULL,NULL,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
    }
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_BLEND);
@@ -831,7 +832,7 @@ void Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,i
 */
 int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   if (!Field->Ref || !Field->Ref->Pos) {
+   if (!Field->GRef || !Field->GPos) {
       return(0);
    }
 
@@ -854,7 +855,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glPointSize(Field->Spec->RenderParticle+0.1);
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx],Field->Ref->Idx,NULL,Field->Map,GL_POINTS,Field->Ref->NIdx,0,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->GRef->Idx,NULL,Field->Map,GL_POINTS,Field->GRef->NIdx,0,NULL,NULL);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_BLEND);
@@ -891,7 +892,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
+   if (!Field->GRef || !Field->GPos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -925,7 +926,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    len=512;
    
    /*Get the cell resolution, to use as step size for a constant spacing*/
-   step=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
+   step=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
 
    vbuf=VBuffer_Alloc(len*2+1);
 
@@ -938,11 +939,11 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
             continue;
          }
 
-         if (Field->Ref->UnProject(Field->Ref,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
+         if (Field->GRef->UnProject(Field->GRef,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
 
             /*Get the streamline */
-            b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
-            f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
+            b=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
+            f=FFStreamLine(Field->GPos,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
 
             /* If we have at least some part of it */
             glPushMatrix();
@@ -990,7 +991,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
+   if (!Field->GRef || !Field->GPos || !Field->Def->Data[1] || !Field->Spec->Width || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -1037,8 +1038,8 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
          k=Field->Spec->Pos[n][2];
 
          /*Get the streamline */
-         b=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
-         f=FFStreamLine(Field->Ref,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
+         b=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
+         f=FFStreamLine(Field->GPos,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
          /* If we have at least some part of it */
          if (b+f>2) {
             glPushMatrix();
@@ -1065,9 +1066,8 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       for(i=Field->Spec->Cube[0];i<=Field->Spec->Cube[3];i+=dz) {
          for(j=Field->Spec->Cube[1];j<=Field->Spec->Cube[4];j+=dz) {
             for(k=Field->Spec->Cube[2];k<=Field->Spec->Cube[5];k+=dz) {
-
                /*Get the streamline */
-               f=FFStreamLine(Field->Ref,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
+               f=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
 
                /* If we have at least some part of it */
                if (f>2) {
@@ -1102,12 +1102,13 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,7500);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-   Field->Spec->Cube[0]=Field->Spec->Cube[0]<Field->Ref->X0?Field->Ref->X0:Field->Spec->Cube[0]>Field->Ref->X1?Field->Ref->X1:Field->Spec->Cube[0];
-   Field->Spec->Cube[3]=Field->Spec->Cube[3]<Field->Ref->X0?Field->Ref->X0:Field->Spec->Cube[3]>Field->Ref->X1?Field->Ref->X1:Field->Spec->Cube[3];
-   Field->Spec->Cube[1]=Field->Spec->Cube[1]<Field->Ref->Y0?Field->Ref->Y0:Field->Spec->Cube[1]>Field->Ref->Y1?Field->Ref->Y1:Field->Spec->Cube[1];
-   Field->Spec->Cube[4]=Field->Spec->Cube[4]<Field->Ref->Y0?Field->Ref->Y0:Field->Spec->Cube[4]>Field->Ref->Y1?Field->Ref->Y1:Field->Spec->Cube[4];
-   Field->Spec->Cube[2]=Field->Spec->Cube[2]<Field->Ref->Z0?Field->Ref->Z0:Field->Spec->Cube[2]>Field->Ref->Z1?Field->Ref->Z1:Field->Spec->Cube[2];
-   Field->Spec->Cube[5]=Field->Spec->Cube[5]<Field->Ref->Z0?Field->Ref->Z0:Field->Spec->Cube[5]>Field->Ref->Z1?Field->Ref->Z1:Field->Spec->Cube[5];
+   Field->Spec->Cube[0]=Field->Spec->Cube[0]<Field->GRef->X0?Field->GRef->X0:Field->Spec->Cube[0]>Field->GRef->X1?Field->GRef->X1:Field->Spec->Cube[0];
+   Field->Spec->Cube[3]=Field->Spec->Cube[3]<Field->GRef->X0?Field->GRef->X0:Field->Spec->Cube[3]>Field->GRef->X1?Field->GRef->X1:Field->Spec->Cube[3];
+   Field->Spec->Cube[1]=Field->Spec->Cube[1]<Field->GRef->Y0?Field->GRef->Y0:Field->Spec->Cube[1]>Field->GRef->Y1?Field->GRef->Y1:Field->Spec->Cube[1];
+   Field->Spec->Cube[4]=Field->Spec->Cube[4]<Field->GRef->Y0?Field->GRef->Y0:Field->Spec->Cube[4]>Field->GRef->Y1?Field->GRef->Y1:Field->Spec->Cube[4];
+   
+   Field->Spec->Cube[2]=Field->Spec->Cube[2]<0?0:Field->Spec->Cube[2]>Field->ZRef->LevelNb-1?Field->ZRef->LevelNb-1:Field->Spec->Cube[2];
+   Field->Spec->Cube[5]=Field->Spec->Cube[5]<0?0:Field->Spec->Cube[5]>Field->ZRef->LevelNb-1?Field->ZRef->LevelNb-1:Field->Spec->Cube[5];
 
    k0=Field->Spec->Cube[2];
    k1=Field->Spec->Cube[5];
@@ -1115,70 +1116,70 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
       /*Bottom*/
       idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      glVertex3dv(Field->GPos->Pos[k0][idx]);
       idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      glVertex3dv(Field->GPos->Pos[k0][idx]);
       idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      glVertex3dv(Field->GPos->Pos[k0][idx]);
       idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-      glVertex3dv(Field->Ref->Pos[k0][idx]);
+      glVertex3dv(Field->GPos->Pos[k0][idx]);
 
       if (k0!=k1) {
          if (Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
             /*Left*/
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
 
             /*Right*/
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
          }
 
 
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3]) {
             /*Up*/
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
 
             /*Down*/
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k0][idx]);
+            glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
          }
 
          /*Top*/
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3] && Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
-            glVertex3dv(Field->Ref->Pos[k1][idx]);
+            glVertex3dv(Field->GPos->Pos[k1][idx]);
          }
       }
    glEnd();
@@ -1211,7 +1212,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    Vect3d  b,p,p0,p1,p2;
    Vect3d *pos;
 
-   if (!Field->Ref || !Field->Ref->Pos) {
+   if (!Field->GRef || !Field->GPos) {
       return;
    }
 
@@ -1227,7 +1228,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    glEnable(GL_TEXTURE_1D);
 
-   pos=Field->Ref->Pos[Field->Def->Level];
+   pos=Field->GPos->Pos[Field->Def->Level];
 
    if (!Field->Map)
       Data_MapColor(Field,False);
@@ -1235,41 +1236,41 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glLineWidth(1.0);
    if (Field->Spec->InterpDegree[0]=='L') {
       glEnableClientState(GL_VERTEX_ARRAY);
-      Proj->Type->Render(Proj,0,pos,Field->Ref->Idx,NULL,Field->Map,GL_TRIANGLES,Field->Ref->NIdx,0,NULL,NULL);
+      Proj->Type->Render(Proj,0,pos,Field->GRef->Idx,NULL,Field->Map,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
       glDisableClientState(GL_VERTEX_ARRAY);
    } else {
       glBegin(GL_TRIANGLES);
-      for(n=0;n<Field->Ref->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
          Vect_Init(b,1.0/3.0,1.0/3.0,1.0/3.0);
-         Bary_Interp(b,p,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.0,0.5,0.5);
-         Bary_Interp(b,p0,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p0,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.5,0.0,0.5);
-         Bary_Interp(b,p1,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p1,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.5,0.5,0.0);
-         Bary_Interp(b,p2,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p2,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
 
-         glTexCoord1f(Field->Map[Field->Ref->Idx[n]]);
-         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glTexCoord1f(Field->Map[Field->GRef->Idx[n]]);
+         glVertex3dv(pos[Field->GRef->Idx[n]]);
          glVertex3dv(p);
          glVertex3dv(p1);
-         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(pos[Field->GRef->Idx[n]]);
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         glTexCoord1f(Field->Map[Field->Ref->Idx[n+1]]);
-         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glTexCoord1f(Field->Map[Field->GRef->Idx[n+1]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
          glVertex3dv(p);
          glVertex3dv(p0);
-         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         glTexCoord1f(Field->Map[Field->Ref->Idx[n+2]]);
-         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glTexCoord1f(Field->Map[Field->GRef->Idx[n+2]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
          glVertex3dv(p);
          glVertex3dv(p0);
-         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
          glVertex3dv(p);
          glVertex3dv(p1);
       }
@@ -1311,11 +1312,11 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
+   if (!Field->GRef || !Field->GPos || Field->GRef->Grid[0]=='Y') {
       return(0);
    }
 
-   if ((Proj->Type->Def!=PROJGLOBE) && Field->Ref->Grid[0]!='V') {
+   if ((Proj->Type->Def!=PROJGLOBE) && Field->GRef->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
    } else {
@@ -1323,7 +1324,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    }
 
    /*Afficher les points*/
-   if (Field->Ref->Grid[0]=='M') {
+   if (Field->GRef->Grid[0]=='M') {
       Data_RenderMesh(Field,VP,Proj);
       return(1);
    }
@@ -1339,18 +1340,18 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    /*Process gridpoints*/
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   pos=&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
+   pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
 
    /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
-   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
+   dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
    
    if (Field->Spec->InterNb) 
       dp>>=2;
    
-   dp=(dp<1 || Field->Ref->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+   dp=(dp<1 || Field->GRef->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
 
    /*Grille avec loop sur la longitude*/
-   if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
+   if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
       dp=dp>10?10:dp;
    }
@@ -1561,7 +1562,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    Vect3d pos,g,*posa;
    char   lbl[10];
 
-   if (GLRender->Resolution>1 || !Field->Ref->Pos || !Field->Spec->Font || !Field->Spec->Outline) {
+   if (GLRender->Resolution>1 || !Field->GRef || !Field->GPos || !Field->Spec->Font || !Field->Spec->Outline) {
       return;
    }
 
@@ -1584,7 +1585,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
    glDisable(GL_STENCIL_TEST);
 
-   posa=Field->Ref->Pos[Field->Def->Level];
+   posa=Field->GPos->Pos[Field->Def->Level];
    zm=zmm=zn=zv=0.0;
 
    /*Min Max case*/
@@ -1694,9 +1695,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    Vect3d  pix;
    Coord   coo;
    int     n=0,mem,i,j,idx,idc,dz,dn,nn;
-   char    buf[32];
+   char    buf[32],grtyp;
 
-   if (!Field->Ref || !Field->Ref->Pos || !Field->Spec->Width || !Field->Spec->Outline)
+   if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
       return;
 
    /*Calculer la dimension generale*/
@@ -1722,21 +1723,21 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
 
-   switch(Field->Ref->Grid[0]) {
+   switch(Field->GRef->Grid[0]) {
 
       case 'V':
          if (Field->Def->Data[2]) {
             for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
                if (i+1<Field->Def->NI) {
                   /*We calculat the section orientation for rotate the vector accordingly*/
-                  if (Field->Ref->RefFrom) {
+                  if (Field->GRef->RefFrom) {
                      /*If we have the georef it's coming from*/
-                     Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i0,&j0,Field->Ref->Lat[i],Field->Ref->Lon[i],1,1);
-                     Field->Ref->RefFrom->UnProject(Field->Ref->RefFrom,&i1,&j1,Field->Ref->Lat[i+1],Field->Ref->Lon[i+1],1,1);
+                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i0,&j0,Field->GRef->Lat[i],Field->GRef->Lon[i],1,1);
+                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i1,&j1,Field->GRef->Lat[i+1],Field->GRef->Lon[i+1],1,1);
                      theta=atan2(i1-i0,j1-j0);
                   } else {
                      /*Otherwise, use the cut orientation*/
-                     theta=-COURSE(DEG2RAD(Field->Ref->Lat[i]),DEG2RAD(Field->Ref->Lon[i]),DEG2RAD(Field->Ref->Lat[i+1]),DEG2RAD(Field->Ref->Lon[i+1]));
+                     theta=-COURSE(DEG2RAD(Field->GRef->Lat[i]),DEG2RAD(Field->GRef->Lon[i]),DEG2RAD(Field->GRef->Lat[i+1]),DEG2RAD(Field->GRef->Lon[i+1]));
 //                     theta=0.0;
                   }
                   thetad=90.0+RAD2DEG(theta);
@@ -1773,7 +1774,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         /*Resize the arrow on the speed*/
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                         if (Interp) glFeedbackInit(256,GL_2D);
-                        Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->Ref->Lat[i],Field->Ref->Lon[i],ZRef_Level2Meter(Field->Ref->ZRef.Levels[j],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
+                        Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->GRef->Lat[i],Field->GRef->Lon[i],ZRef_Level2Meter(Field->ZRef->Levels[j],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
                         if (Interp) glFeedbackProcess(Interp,GL_2D);
                      }
                   }
@@ -1784,17 +1785,19 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
       case 'X':
       case 'Y':
+      case 'M':
       case 'W':
+         grtyp=Field->GRef->Grid[0];
          size=VP->Ratio*VECTORSIZE(Field->Spec,Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5);
 
-         for(i=0;i<Field->Def->NI;i+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
-            for(j=0;j<Field->Def->NJ;j+=(Field->Ref->Grid[0]=='Y'?1:Field->Spec->Sample)) {
+         for(i=0;i<Field->Def->NI;i+=(grtyp=='Y'?1:Field->Spec->Sample)) {
+            for(j=0;j<Field->Def->NJ;j+=(grtyp=='Y'?1:Field->Spec->Sample)) {
                idx=j*Field->Def->NI+i;
                
                // Check for mask
                if (!Field->Def->Mask || Field->Def->Mask[idx]) {
                   Def_GetMod(Field->Def,idx,len);
-                  Field->Ref->Project(Field->Ref,i,j,&coo.Lat,&coo.Lon,1,1);
+                  Field->GRef->Project(Field->GRef,i,j,&coo.Lat,&coo.Lon,1,1);
                   if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
                      if (Field->Spec->MapAll && Field->Spec->Map) {
                         VAL2COL(idc,Field->Spec,len);
@@ -1809,13 +1812,13 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         Def_Get(Field->Def,0,idx,u);
                         Def_Get(Field->Def,1,idx,v);
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
-                        dir=Field->Ref->Grid[0]=='Y'?v:180+RAD2DEG(atan2(u,v));
+                        dir=(grtyp=='Y' || grtyp=='W')?v:180+RAD2DEG(atan2(u,v));
                      } else {
                         Def_Get(Field->Def,0,idx,u);
                         dir=u;
                      }
                      if (Interp) glFeedbackInit(256,GL_2D);
-                     Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
+                     Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
                      if (Interp) glFeedbackProcess(Interp,GL_2D);
                   }
                }
@@ -1859,7 +1862,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             }
 
             //Recuperer les informations sur les vents et leurs localisations
-            c_gdxyfll(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],ll,&ll[mem],n);
+            c_gdxyfll(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],ll,&ll[mem],n);
             
             dz=0;i=0;
             while (dz<n) {
@@ -1883,7 +1886,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                fprintf(stderr,"(ERROR) Unable to allocate temporary coordinate buffer\n");
                return;
             }
-            c_gdll(Field->Ref->Ids[Field->Ref->NId],ll,&ll[mem]);
+            c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
@@ -1911,14 +1914,14 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          
          if (Field->Def->Data[1]) {
             if (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE) {
-               c_gdllwdval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+               c_gdllwdval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
             } else {        
-               c_gdllvval(Field->Ref->Ids[Field->Ref->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+               c_gdllvval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
             }
             // We have to get the speed from the modulus in case of 3 component vector
-            c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
+            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
          } else {
-            c_gdllsval(Field->Ref->Ids[Field->Ref->NId],&xy[n],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n); 
+            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[n],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n); 
             size=Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5;
             while (dn--) xy[dn+nn]=size;
             dn=n;
@@ -1938,7 +1941,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                size=VP->Ratio*VECTORSIZE(Field->Spec,xy[dn+nn]);
                dir=(Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE)?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
                if (Interp) glFeedbackInit(256,GL_2D);
-               Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->Ref->ZRef.Levels[Field->Def->Level],Field->Ref->ZRef.Type),VAL2SPEC(Field->Spec,xy[dn+nn]),dir,size,Proj);
+               Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,xy[dn+nn]),dir,size,Proj);
                if (Interp) glFeedbackProcess(Interp,GL_2D);
             }
          }
@@ -1978,7 +1981,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
    TList  *list,*end;
    T3DArray *array;
 
-   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
+   if (!Field->GRef || !Field->GPos || Field->GRef->Grid[0]=='Y') {
       return(0);
    }
 
@@ -1991,7 +1994,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
    /*Creer la liste de vertex par niveaux*/
    if (!Field->Def->Segments) {
       for (i=0;i<Field->Spec->InterNb;i++) {
-         len=FFMarchingCube(Field->Ref,Field->Def,Proj,Field->Spec->Inter[i]);
+         len=FFMarchingCube(Field->GPos,Field->Def,Proj,Field->Spec->Inter[i]);
          if (len>6) {
             array=T3DArray_Alloc(Field->Spec->Inter[i],len);
             if (array) {
@@ -2118,7 +2121,7 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
    double  h;
    Coord   loc;
 
-   if (Field->Ref->Grid[0]!='R' || !Field->Spec->Outline) {
+   if (Field->GRef->Grid[0]!='R' || !Field->Spec->Outline) {
       return(0);
    }
 
@@ -2143,10 +2146,10 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
       glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
       for(r=0;r<Field->Spec->RangeNb;r++) {
          glPushMatrix();
-         Field->Ref->Project(Field->Ref,1,Field->Spec->Range[r]/Field->Ref->ResR,&loc.Lat,&loc.Lon,1,1);
+         Field->GRef->Project(Field->GRef,1,Field->Spec->Range[r]/Field->GRef->ResR,&loc.Lat,&loc.Lon,1,1);
          Proj->Type->Locate(Proj,loc.Lat,loc.Lon,1);
 
-         h=sin(DEG2RAD(Field->Ref->ZRef.Levels[0]))*Field->Spec->Range[r];
+         h=sin(DEG2RAD(Field->ZRef->Levels[0]))*Field->Spec->Range[r];
 
          glTranslated(0.0,0.0,ZM(Proj,h));
          glScalef(VP->Ratio,VP->Ratio,1.0);
@@ -2159,22 +2162,22 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
 
    /*Affichage des cercles de ranges*/
    for(r=0;r<Field->Spec->RangeNb;r++) {
-      j=Field->Spec->Range[r]/Field->Ref->ResR;
+      j=Field->Spec->Range[r]/Field->GRef->ResR;
 
       glDisable(GL_BLEND);
       glBegin(GL_LINE_STRIP);
       for(i=0;i<Field->Def->NI;i++) {
-         glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
+         glVertex3dv(Field->GPos->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
       }
-      glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
+      glVertex3dv(Field->GPos->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
       glEnd();
 
       if (Field->Spec->RenderVol) {
          glBegin(GL_LINE_STRIP);
          for(i=0;i<Field->Def->NI;i++) {
-            glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,i,j)]);
+            glVertex3dv(Field->GPos->Pos[0][FIDX2D(Field->Def,i,j)]);
          }
-         glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,0,j)]);
+         glVertex3dv(Field->GPos->Pos[0][FIDX2D(Field->Def,0,j)]);
          glEnd();
 
          glEnable(GL_BLEND);
@@ -2182,11 +2185,11 @@ int Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj){
 
          glBegin(GL_QUAD_STRIP);
          for(i=0;i<Field->Def->NI;i++) {
-            glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
-            glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,i,j)]);
+            glVertex3dv(Field->GPos->Pos[Field->Def->Level][FIDX2D(Field->Def,i,j)]);
+            glVertex3dv(Field->GPos->Pos[0][FIDX2D(Field->Def,i,j)]);
          }
-         glVertex3dv(Field->Ref->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
-         glVertex3dv(Field->Ref->Pos[0][FIDX2D(Field->Def,0,j)]);
+         glVertex3dv(Field->GPos->Pos[Field->Def->Level][FIDX2D(Field->Def,0,j)]);
+         glVertex3dv(Field->GPos->Pos[0][FIDX2D(Field->Def,0,j)]);
          glEnd();
       }
    }

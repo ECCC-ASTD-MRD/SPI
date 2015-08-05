@@ -32,6 +32,7 @@
  *==============================================================================
 */
 #include "tclSystem.h"
+#include "tclUtils.h"
 
 static Tcl_Obj    *System_SignalTable[128];    // Tcl Command to call on each signal
 static Tcl_Interp *System_Interp[128];         // Interpreter on which to call the command

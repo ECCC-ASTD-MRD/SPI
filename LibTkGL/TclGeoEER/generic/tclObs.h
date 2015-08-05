@@ -68,7 +68,7 @@ TObs* Obs_Get(char *Name);
 TObs*   Obs_Copy(Tcl_Interp *Interp,TObs *Obs,char *Name,int Def);
 int     Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field);
 void    Obs_Free(TObs *Obs);
-Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap);
+Vect3d *Obs_Grid(TGeoRef *Ref,TZRef *ZRef,TObs *Obs,int *NObs,int Extrap);
 void    Obs_GetStat(TObs *Obs);
 int     Obs_LoadASCII(Tcl_Interp* Interp,char* File,char *Token);
 int     Obs_WriteASCII(Tcl_Interp *Interp,char *File,Tcl_Obj *List,char *Title);

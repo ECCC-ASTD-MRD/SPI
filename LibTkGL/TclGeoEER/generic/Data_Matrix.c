@@ -266,12 +266,12 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
          n++;
       }
    } else {
-      if (!GField || !GFieldP || GField->Ref->Type&GRID_VERTICAL || GFieldP->Ref->Type&GRID_VERTICAL) {
+      if (!GField || !GFieldP || GField->GRef->Type&GRID_VERTICAL || GFieldP->GRef->Type&GRID_VERTICAL) {
          return(NULL);
       }
 
-      if (GField->Ref->Ids[GField->Ref->NId]<=-1 || GFieldP->Ref->Ids[GFieldP->Ref->NId]<=-1) {
-         if (!Def_GridInterp(GField->Ref,GData[GDataN],GFieldP->Ref,B,'L')) {
+      if (GField->GRef->Ids[GField->GRef->NId]<=-1 || GFieldP->GRef->Ids[GFieldP->GRef->NId]<=-1) {
+         if (!Def_GridInterp(GField->GRef,GData[GDataN],GFieldP->GRef,B,'L')) {
             return(NULL);
           }
       } else {
@@ -281,7 +281,7 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
             case 3:c_ezsetopt("INTERP_DEGREE","CUBIC");break;
          }
          c_ezsetopt("EXTRAP_DEGREE","NEUTRAL");
-         n=c_ezdefset(GField->Ref->Ids[GField->Ref->NId],GFieldP->Ref->Ids[GFieldP->Ref->NId]);
+         n=c_ezdefset(GField->GRef->Ids[GField->GRef->NId],GFieldP->GRef->Ids[GFieldP->GRef->NId]);
 
          for(k=0;k<B->NK;k++) {
             /*Interpolation vectorielle*/
@@ -298,7 +298,7 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
             }
          }
       }
-      GeoRef_Incr(GField->Ref);
+      GeoRef_Incr(GField->GRef);
    }
 
 #endif
@@ -540,7 +540,7 @@ TDef* Calc_Dir(TDef* A) {
 #endif
 
 #ifdef HAVE_RMN
-   if (!GField || GField->Ref->Grid[0]=='V') {
+   if (!GField || GField->GRef->Grid[0]=='V') {
       fprintf(stderr,"(ERROR) Invalid grid while calculating direction\n");
       return(NULL);
    }
@@ -573,7 +573,7 @@ TDef* Calc_Dir(TDef* A) {
          Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
-         c_gdxywdval(GField->Ref->Ids[GField->Ref->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
+         c_gdxywdval(GField->GRef->Ids[GField->GRef->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
 //      RPN_IntUnlock();
 

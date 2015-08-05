@@ -523,10 +523,9 @@ int Data_UnlinkFSTDFile(TRPNFile *File) {
    int            n=0;
    
    entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
-
    while (entry) {
       data=Tcl_GetHashValue(entry);
-      if (data->Type==TD_RPN && ((TRPNHeader*)data->Head)->File && ((TRPNHeader*)data->Head)->File==File) {
+      if (data->Type==TD_RPN && data->Head && ((TRPNHeader*)data->Head)->File && ((TRPNHeader*)data->Head)->File==File) {
          ((TRPNHeader*)data->Head)->File=NULL;
          n++;
       }
@@ -597,12 +596,12 @@ void Data_GetStat(TData *Field){
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
 #ifdef HAVE_RMN
-   if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
+   if (Field->GRef && Field->GRef->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 #endif
 
    /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
-   if (def->NC>1 && Field->Ref->Grid[0]!='Y') {
+   if (def->NC>1 && Field->GRef->Grid[0]!='Y') {
       if (!def->Mode || def->Mode==def->Data[0]) {
          def->Mode=(char*)malloc(FSIZE3D(def)*TDef_Size[def->Type]);
       } else {
@@ -630,7 +629,7 @@ void Data_GetStat(TData *Field){
 
    // For supergrids, point the subgrids mode to the right place
    if (Field->SDef) {
-      for(i=1;i<=Field->Ref->NbId;i++) {
+      for(i=1;i<=Field->GRef->NbId;i++) {
          // Point to subgrid data within global data array
          Field->SDef[i]->Mode=def->Mode+(Field->SDef[i]->Data[0]-def->Data[0]);
       }
@@ -691,22 +690,22 @@ void Data_GetStat(TData *Field){
       Field->Stat->MaxLoc.Lon=0;
       Field->Stat->MaxLoc.Elev=0;
 
-      if (Field->Ref && Field->Ref->Grid[0]!='V') {
-         if (Field->Ref->Lat && Field->Ref->Lon) {
-            Field->Stat->MinLoc.Lat=Field->Ref->Lat[FIDX2D(def,imin,jmin)];
-            Field->Stat->MinLoc.Lon=Field->Ref->Lon[FIDX2D(def,imin,jmin)];
-            Field->Stat->MaxLoc.Lat=Field->Ref->Lat[FIDX2D(def,imax,jmax)];
-            Field->Stat->MaxLoc.Lon=Field->Ref->Lon[FIDX2D(def,imax,jmax)];
-         } else if (Field->Ref->Project) {
-            Field->Ref->Project(Field->Ref,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
-            Field->Ref->Project(Field->Ref,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
+      if (Field->GRef && Field->GRef->Grid[0]!='V') {
+         if (Field->GRef->Lat && Field->GRef->Lon) {
+            Field->Stat->MinLoc.Lat=Field->GRef->Lat[FIDX2D(def,imin,jmin)];
+            Field->Stat->MinLoc.Lon=Field->GRef->Lon[FIDX2D(def,imin,jmin)];
+            Field->Stat->MaxLoc.Lat=Field->GRef->Lat[FIDX2D(def,imax,jmax)];
+            Field->Stat->MaxLoc.Lon=Field->GRef->Lon[FIDX2D(def,imax,jmax)];
+         } else if (Field->GRef->Project) {
+            Field->GRef->Project(Field->GRef,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
+            Field->GRef->Project(Field->GRef,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
          }
-         if (Field->Ref->Hgt) {
-            Field->Stat->MinLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imin,jmin)];
-            Field->Stat->MaxLoc.Elev=Field->Ref->Hgt[FIDX2D(def,imax,jmax)];
-         }  else if (Field->Ref->ZRef.Levels) {
-            Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmin],Field->Ref->ZRef.Type);
-            Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->Ref->ZRef.Levels[kmax],Field->Ref->ZRef.Type);
+         if (Field->GRef->Hgt) {
+            Field->Stat->MinLoc.Elev=Field->GRef->Hgt[FIDX2D(def,imin,jmin)];
+            Field->Stat->MaxLoc.Elev=Field->GRef->Hgt[FIDX2D(def,imax,jmax)];
+         }  else if (Field->ZRef->Levels) {
+            Field->Stat->MinLoc.Elev=ZRef_Level2Meter(Field->ZRef->Levels[kmin],Field->ZRef->Type);
+            Field->Stat->MaxLoc.Elev=ZRef_Level2Meter(Field->ZRef->Levels[kmax],Field->ZRef->Type);
          }
       }
    }
@@ -730,7 +729,7 @@ int Data_Free(TData *Field) {
 
      /*Free subgrids but make sure it was not freed above*/
       if (Field->SDef) {
-         for(i=0;i<Field->Ref->NbId+1;i++) {
+         for(i=0;i<Field->GRef->NbId+1;i++) {
            Def_Free(Field->SDef[i]);
          }
          free(Field->SDef);
@@ -740,7 +739,9 @@ int Data_Free(TData *Field) {
 
       /*Liberer l'espace du descriptif*/
       if (Field->Stat) Data_StatFree(Field->Stat);
-      if (Field->Ref)  GeoRef_Destroy(NULL,Field->Ref->Name);
+      if (Field->GPos)  GeoPos_Free(Field->GPos);
+      if (Field->GRef)  GeoRef_Destroy(NULL,Field->GRef->Name);
+      if (Field->ZRef)  ZRef_Free(Field->ZRef);
       if (Field->Tag)  Tcl_DecrRefCount(Field->Tag);
 
       free(Field);
@@ -797,8 +798,8 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    // Copy basic information
    Field->Set(field);
    Field->Copy(field->Head,Field->Head);
-
-   field->Ref=GeoRef_Copy(Field->Ref);
+   field->GRef=GeoRef_Copy(Field->GRef);
+   field->ZRef=ZRef_Copy(Field->ZRef);
 
    if (field->Spec && Field->Spec) {
 
@@ -827,7 +828,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    }
 
 #ifdef HAVE_RMN
-   if (field->Ref->Grid[0]=='U') {
+   if (field->GRef->Grid[0]=='U') {
       FSTD_FieldSubBuild(field);
    }
 #endif
@@ -864,11 +865,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0;
    float   *fp;
 
-
    /*Recuperer la grille dans l'espace des champs de base*/
    p=1;g=0;
    for(f=0;f<NbF;f++) {
-      if (!Field[f] || Field[f]->Ref->Grid[0]=='V') {
+      if (!Field[f] || Field[f]->GRef->Grid[0]=='V') {
          Tcl_AppendResult(Interp,"Data_Cut:  Invalid Field or Grid",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -881,7 +881,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
 
          /*Check if we need to get the pressure levels*/
-         if (Field[f]->Ref->ZRef.Type==LVL_ANGLE || Field[f]->Ref->ZRef.Type==LVL_GALCHEN || Field[f]->Ref->ZRef.Type==LVL_MASL || Field[f]->Ref->ZRef.Type==LVL_MAGL || Field[f]->Ref->ZRef.Type==LVL_UNDEF) {
+         if (Field[f]->ZRef->Type==LVL_ANGLE || Field[f]->ZRef->Type==LVL_GALCHEN || Field[f]->ZRef->Type==LVL_MASL || Field[f]->ZRef->Type==LVL_MAGL || Field[f]->ZRef->Type==LVL_UNDEF) {
             p=0;
          }
       } else {
@@ -904,50 +904,46 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    Field[0]->Copy(cut->Head,Field[0]->Head);
    ((TRPNHeader*)cut->Head)->File=NULL;
 
-   cut->Ref=GeoRef_Reference(Field[0]->Ref);
-//TODO:EER   GeoRef_Put(Interp,NULL,cut->Ref);
+   cut->GRef=GeoRef_Reference(Field[0]->GRef);
+//TODO:EER   GeoRef_Put(Interp,NULL,cut->GRef);
+   cut->GRef->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
+ 
+   cut->ZRef=ZRef_Define(Field[0]->ZRef->Type,Field[0]->ZRef->LevelNb,Field[0]->ZRef->Levels);
+   cut->ZRef->ETop=Field[0]->ZRef->ETop;
+   cut->ZRef->PTop=Field[0]->ZRef->PTop;
+   cut->ZRef->PRef=Field[0]->ZRef->PRef;
+   cut->ZRef->RCoef[0]=Field[0]->ZRef->RCoef[0];
+   cut->ZRef->RCoef[1]=Field[0]->ZRef->RCoef[1];
 
-   cut->Ref->Grid[0]=(Field[0]->Def->NK>1?'V':'X');
-   cut->Ref->ZRef.Type=Field[0]->Ref->ZRef.Type;
-   cut->Ref->ZRef.ETop=Field[0]->Ref->ZRef.ETop;
-   cut->Ref->ZRef.PTop=Field[0]->Ref->ZRef.PTop;
-   cut->Ref->ZRef.PRef=Field[0]->Ref->ZRef.PRef;
-   cut->Ref->ZRef.RCoef[0]=Field[0]->Ref->ZRef.RCoef[0];
-   cut->Ref->ZRef.RCoef[1]=Field[0]->Ref->ZRef.RCoef[1];
-
-   if (!(cut->Ref->ZRef.Levels=(float*)malloc(Field[0]->Ref->ZRef.LevelNb*sizeof(float)))) {
-      Tcl_AppendResult(Interp,"Data_Cut:  Unable to allocate memory for levels",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   memcpy(cut->Ref->ZRef.Levels,Field[0]->Ref->ZRef.Levels,Field[0]->Ref->ZRef.LevelNb*sizeof(float));
-
+   cut->GPos=GeoPos_Find(cut->GRef,cut->ZRef);
+   
    if (Field[0]->Spec) {
       if (Field[0]->Spec->Desc) cut->Spec->Desc=strdup(Field[0]->Spec->Desc);
       if (Field[0]->Spec->Topo) cut->Spec->Topo=strdup(Field[0]->Spec->Topo);
    }
 
    if (Field[0]->Def->NK>1) {
-      GeoRef_Size(cut->Ref,0,0,0,NbF*NbC-1,Field[0]->Def->NK-1,0,0);
+      GeoRef_Size(cut->GRef,0,0,NbF*NbC-1,Field[0]->Def->NK-1,0);
    } else {
-      GeoRef_Size(cut->Ref,0,0,0,NbC-1,NbF-1,0,0);
+      GeoRef_Size(cut->GRef,0,0,NbC-1,NbF-1,0);
    }
-   GeoRef_Qualify(cut->Ref);
+   GeoRef_Qualify(cut->GRef);
 
    if (!NbC || !NbF)
       return(TCL_OK);
 
-   cut->Ref->Lat=(float*)malloc(NbC*sizeof(float));
-   cut->Ref->Lon=(float*)malloc(NbC*sizeof(float));
+   cut->GRef->Lat=(float*)malloc(NbC*sizeof(float));
+   cut->GRef->Lon=(float*)malloc(NbC*sizeof(float));
 
-   if (!cut->Ref->Lat || !cut->Ref->Lon) {
+   if (!cut->GRef->Lat || !cut->GRef->Lon) {
       Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for coordinate caching",(char*)NULL);
       return(TCL_ERROR);
    }
 
    /*If we are in pressure or magl coordinates, allocate height array*/
    if (p || g) {
-      cut->Ref->Hgt=(float*)malloc(NbF*NbC*Field[0]->Ref->ZRef.LevelNb*sizeof(float));
-      if (!cut->Ref->Hgt) {
+      cut->GRef->Hgt=(float*)malloc(NbF*NbC*Field[0]->ZRef->LevelNb*sizeof(float));
+      if (!cut->GRef->Hgt) {
          Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for pressure correspondance",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -960,19 +956,19 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       if (Lat[n]!=-999.0 && Lon[n]!=-999.0) {
 
          /*Keep coordinate for later use*/
-         cut->Ref->Lat[n]=Lat[n];
-         cut->Ref->Lon[n]=Lon[n];
+         cut->GRef->Lat[n]=Lat[n];
+         cut->GRef->Lon[n]=Lon[n];
 
          /*Loop on fields*/
          for(f=0;f<NbF;f++) {
 
             /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
-            if (p && !Field[f]->Def->Pres && cut->Ref->Hgt) {
+            if (p && !Field[f]->Def->Pres && cut->GRef->Hgt) {
                if (FSTD_FileSet(NULL,((TRPNHeader*)Field[f]->Head)->File)>=0) {
                  if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1,0))) {
                      /*We won't be able to calculate pressure levels*/
-                     free(cut->Ref->Hgt);
-                     cut->Ref->Hgt=NULL;
+                     free(cut->GRef->Hgt);
+                     cut->GRef->Hgt=NULL;
                      p=0;
                   }
                   FSTD_FileUnset(NULL,((TRPNHeader*)Field[f]->Head)->File);
@@ -980,14 +976,14 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             }
 
             /*Get the grid coordinate*/
-            if (!Field[f]->Ref->UnProject(Field[f]->Ref,&i,&j,Lat[n],Lon[n],0,1)) {
+            if (!Field[f]->GRef->UnProject(Field[f]->GRef,&i,&j,Lat[n],Lon[n],0,1)) {
                continue;
             }
 
             /*Vectorial data needs to be referenced along the cut so calculate angle*/
             if (cut->Def->Data[1] && NbC>1) {
                if (i0==-1.0) {
-                  Field[f]->Ref->UnProject(Field[f]->Ref,&i0,&j0,Lat[n+1],Lon[n+1],0,1);
+                  Field[f]->GRef->UnProject(Field[f]->GRef,&i0,&j0,Lat[n+1],Lon[n+1],0,1);
                   theta=atan2(j0-j,i0-i);
                } else {
                   theta=atan2(j-j0,i-i0);
@@ -1000,19 +996,19 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                j=ROUND(j);
             }
 
-            /*Loop on vertical levels*/
+           /*Loop on vertical levels*/
             for(k=0;k<Field[0]->Def->NK;k++) {
 
                idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
                /*Convert level to pressure*/
-               if (p && cut->Ref->Hgt) {
+               if (p && cut->GRef->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
-                  cut->Ref->Hgt[idx]=ZRef_K2Pressure(&Field[f]->Ref->ZRef,p0,k);
+                  cut->GRef->Hgt[idx]=ZRef_K2Pressure(Field[f]->ZRef,p0,k);
                }
 
                /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
-               if (g && cut->Ref->Hgt) {
+               if (g && cut->GRef->Hgt) {
                   if (!Field[f]->Def->Height) {
                      if ((Field[f]->Def->Height=(float*)malloc(FSIZE3D(Field[f]->Def)*sizeof(float)))) {
                         for(idxp=0;idxp<Field[f]->Def->NK;idxp++) {
@@ -1025,27 +1021,27 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      if (FSTD_FileSet(NULL,((TRPNHeader*)Field[f]->Head)->File)>=0) {
                         ip1=((TRPNHeader*)Field[f]->Head)->IP1;
                         fp=&Field[f]->Def->Height[idxp];
-                        ((TRPNHeader*)Field[f]->Head)->IP1=ZRef_Level2IP(Field[f]->Ref->ZRef.Levels[k],Field[f]->Ref->ZRef.Type,DEFAULT);
+                        ((TRPNHeader*)Field[f]->Head)->IP1=ZRef_Level2IP(Field[f]->ZRef->Levels[k],Field[f]->ZRef->Type,DEFAULT);
                         if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&fp,"GZ",0,1))) {
                            /*We won't be able to calculate pressure levels*/
-                           free(cut->Ref->Hgt);
-                           cut->Ref->Hgt=NULL;
+                           free(cut->GRef->Hgt);
+                           cut->GRef->Hgt=NULL;
                            p=0;
                         }
                         ((TRPNHeader*)Field[f]->Head)->IP1=ip1;
                         FSTD_FileUnset(NULL,((TRPNHeader*)Field[f]->Head)->File);
                      }
                   }
-                  if (cut->Ref->Hgt) {
-                     cut->Ref->Hgt[idx]=Field[f]->Def->Height[idxp+ROUND(j)*Field[f]->Def->NI+ROUND(i)]*10.0;
+                  if (cut->GRef->Hgt) {
+                     cut->GRef->Hgt[idx]=Field[f]->Def->Height[idxp+ROUND(j)*Field[f]->Def->NI+ROUND(i)]*10.0;
                   }
                }
 
                /*If it is vectors*/
                if (cut->Def->Data[1] && NbC>1) {
 
-                  vi=VertexVal(Field[f]->Ref,Field[f]->Def,0,i,j,k);
-                  vj=VertexVal(Field[f]->Ref,Field[f]->Def,1,i,j,k);
+                  vi=VertexVal(Field[f]->Def,0,i,j,k);
+                  vj=VertexVal(Field[f]->Def,1,i,j,k);
                   vij=hypot(vi,vj);
 
                   /*If it is an xsection, reproject along xsection axis*/
@@ -1055,7 +1051,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   Def_Set(cut->Def,1,idx,vij*sin(zeta));
 
                   if (cut->Def->Data[2]) {
-                     vi=VertexVal(Field[f]->Ref,Field[f]->Def,2,i,j,k);
+                     vi=VertexVal(Field[f]->Def,2,i,j,k);
                      Def_Set(cut->Def,2,idx,vi);
                   }
 #ifdef DEBUG
@@ -1063,7 +1059,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
 #endif
                } else {
-                  Field[f]->Ref->Value(Field[f]->Ref,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
+                  Field[f]->GRef->Value(Field[f]->GRef,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
                   Def_Set(cut->Def,0,idx,vi);
                   if (cut->Def->Data[1]) {
                      Def_Set(cut->Def,1,idx,vj);
@@ -1148,7 +1144,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
          Def_Free(field->Def);
          field->Def=NULL;
       } else {
-         /* Si les dimensions sont correctes et les composantes sont ls memes*/
+         // Si les dimensions sont correctes et les composantes sont ls memes
          if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
             Def_Free(field->Def);
             if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
@@ -1173,18 +1169,16 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
          field->Def->Type=Type;
       }
 
-      /*Liberer les donnees secondaires*/
+      // Liberer les donnees secondaires
       Data_Clean(field,1,1,1);
-      field->Free(field);                                   field->Head=NULL;
-      if (field->Tag)         Tcl_DecrRefCount(field->Tag); field->Tag=NULL;
-      if (field->Stat)        Data_StatFree(field->Stat);   field->Stat=NULL;
-
-      /*Normally we would free the georef but if the field is being overwritten, chances are it's the same grid so we just keep
-        the object alive to be reused if needed*/
-      if (field->Ref) GeoRef_Destroy(NULL,field->Ref->Name); field->Ref=NULL;
+      field->Free(field);                                      field->Head=NULL;
+      if (field->Tag)  Tcl_DecrRefCount(field->Tag);           field->Tag=NULL;
+      if (field->Stat) Data_StatFree(field->Stat);             field->Stat=NULL;
+      if (field->GRef) GeoRef_Destroy(NULL,field->GRef->Name); field->GRef=NULL;
+      if (field->ZRef) ZRef_Free(field->ZRef);                 field->ZRef=NULL;
    }
 
-   /*Allouer la memoire pour les structures*/
+   // Allouer la memoire pour les structures
    if (!field) {
        if (!(field=(TData*)malloc(sizeof(TData)))) {
          Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate field",(char *)NULL);
@@ -1198,7 +1192,9 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       field->Def=NULL;
       field->SDef=NULL;
       field->Stat=NULL;
-      field->Ref=NULL;
+      field->GPos=NULL;
+      field->GRef=NULL;
+      field->ZRef=NULL;
       field->Head=NULL;
       field->Free=NULL;
       field->ReadCube=NULL;
@@ -1324,22 +1320,12 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
 */
 void Data_Clean(TData *Data,int Map,int Pos,int Seg){
 
-   int n;
+   int n=0;
 
    if (Data) {
-      if (Pos && Data->Ref && Data->Ref->Pos) {
-         for(n=0;n<Data->Ref->ZRef.LevelNb;n++) {
-            if (Data->Ref->Pos[n]) {
-               free(Data->Ref->Pos[n]);
-               Data->Ref->Pos[n]=NULL;
-            }
-            /*Vertical grids only have 1 Pos array*/
-            if (Data->Ref->Grid[0]=='V') {
-               break;
-            }
-         }
-         free(Data->Ref->Pos);
-         Data->Ref->Pos=NULL;
+      if (Pos && Data->GPos) {
+         GeoPos_Free(Data->GPos);
+         Data->GPos=NULL;
 
          if (Data->Def) {
             if (Data->Def->Pres)  {
@@ -1361,7 +1347,7 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
       if (Seg) {
          if (Data->SDef) {
             // Loop on subgrids (U grids)
-            for(n=1;n<=Data->Ref->NbId;n++) {
+            for(n=1;n<=Data->GRef->NbId;n++) {
                TList_Clear(Data->SDef[n]->Segments,(TList_FreeProc*)T3DArray_Free);
                Data->SDef[n]->Segments=NULL;
             }
@@ -1658,6 +1644,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj    *obj,*sub;
    TData       *fld;
+   TZRef       *zref;
    TList       *list;
    T3DArray    *array;
    Vect3d      *vbuf;
@@ -1669,7 +1656,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    char         buf[32],mode='L';
    const char **lvls;
 
-   extern int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+   extern int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
@@ -1683,7 +1670,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    ex=Field->Spec->ExtrapDegree[0]!='N'?1:0;
 
 #ifdef HAVE_RMN
-   if (Field->Ref && Field->Ref->Type&GRID_SPARSE)
+   if (Field->GRef && Field->GRef->Type&GRID_SPARSE)
       FSTD_FieldReadMesh(Field);
 #endif
 
@@ -1717,8 +1704,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Def->NoData));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Field->Def->NoData);
-               if (Field->Ref && Field->Ref->NId==0 && Field->Ref->NbId>1) {
-                  for(nb=1;nb<=Field->Ref->NbId;nb++)
+               if (Field->GRef && Field->GRef->NId==0 && Field->GRef->NbId>1) {
+                  for(nb=1;nb<=Field->GRef->NbId;nb++)
                      Field->SDef[nb]->NoData=Field->Def->NoData;
                }
 
@@ -1808,7 +1795,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRID:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1824,8 +1811,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
-                     if (Field->Ref->Grid[0]!='V') {
-                        Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                     if (Field->GRef->Grid[0]!='V') {
+                        Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
 
@@ -1833,36 +1820,36 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                         }
                      } else {
-                        if (Field->Ref->Lat && Field->Ref->Lon) {
+                        if (Field->GRef->Lat && Field->GRef->Lon) {
                            index=FIDX2D(Field->Def,ni,nj);
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[index]));
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[index]));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lat[index]));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lon[index]));
                          }
                      }
                      if (!(--npt)) break;
                   }
-                  if (Field->Ref->Grid[0]=='V' || !npt) break;
+                  if (Field->GRef->Grid[0]=='V' || !npt) break;
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
-               if (Field->Ref->Grid[0]=='V') {
+               if (Field->GRef->Grid[0]=='V') {
                   if ((nobj>>1)!=Field->Def->NI) {
                      Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates",(char*)NULL);
                      return(TCL_ERROR);
                   }
-                  if (!Field->Ref->Lat) {
-                     Field->Ref->Lat=(float*)malloc(Field->Def->NI*sizeof(float));
-                     Field->Ref->Lon=(float*)malloc(Field->Def->NI*sizeof(float));
+                  if (!Field->GRef->Lat) {
+                     Field->GRef->Lat=(float*)malloc(Field->Def->NI*sizeof(float));
+                     Field->GRef->Lon=(float*)malloc(Field->Def->NI*sizeof(float));
                   }
 
-                  if (Field->Ref->Lat && Field->Ref->Lon) {
+                  if (Field->GRef->Lat && Field->GRef->Lon) {
                      for (index=0,n=0;index<nobj;index+=2,n++) {
                         Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
                         Tcl_GetDoubleFromObj(Interp,obj,&dlat);
                         Tcl_ListObjIndex(Interp,Objv[i],index+1,&obj);
                         Tcl_GetDoubleFromObj(Interp,obj,&dlon);
-                        Field->Ref->Lat[n]=dlat;
-                        Field->Ref->Lon[n]=dlon;
+                        Field->GRef->Lat[n]=dlat;
+                        Field->GRef->Lon[n]=dlon;
                      }
                   } else {
                      Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate memory for coordinate buffer",(char*)NULL);
@@ -1873,7 +1860,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDCELL:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1884,17 +1871,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
-                  if (Field->Ref->Grid[0]!='V') {
-                     Field->Ref->Project(Field->Ref,ni-0.5,nj-0.5,&dlat,&dlon,0,1);
+                  if (Field->GRef->Grid[0]!='V') {
+                     Field->GRef->Project(Field->GRef,ni-0.5,nj-0.5,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
-                     Field->Ref->Project(Field->Ref,ni+0.5,nj-0.5,&dlat,&dlon,0,1);
+                     Field->GRef->Project(Field->GRef,ni+0.5,nj-0.5,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
-                     Field->Ref->Project(Field->Ref,ni+0.5,nj+0.5,&dlat,&dlon,0,1);
+                     Field->GRef->Project(Field->GRef,ni+0.5,nj+0.5,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
-                     Field->Ref->Project(Field->Ref,ni-0.5,nj+0.5,&dlat,&dlon,0,1);
+                     Field->GRef->Project(Field->GRef,ni-0.5,nj+0.5,&dlat,&dlon,0,1);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                   }
@@ -1906,7 +1893,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDLAT:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1919,24 +1906,24 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
-                  if (Field->Ref->Grid[0]!='V') {
-                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                  if (Field->GRef->Grid[0]!='V') {
+                     Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
                      if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                          dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      }
                   } else {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lat[FIDX2D(Field->Def,ni,nj)]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lat[FIDX2D(Field->Def,ni,nj)]));
                   }
                   if (!(--npt)) break;
                }
-               if (Field->Ref->Grid[0]=='V' || !npt) break;
+               if (Field->GRef->Grid[0]=='V' || !npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
 
          case GRIDLON:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1948,18 +1935,18 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             obj=Tcl_NewListObj(0,NULL);
             for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
-                  if (Field->Ref->Grid[0]!='V') {
-                     Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                  if (Field->GRef->Grid[0]!='V') {
+                     Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
                      if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                          dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                      }
                   } else {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Lon[FIDX2D(Field->Def,ni,nj)]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lon[FIDX2D(Field->Def,ni,nj)]));
                   }
                   if (!(--npt)) break;
                }
-               if (Field->Ref->Grid[0]=='V' || !npt) break;
+               if (Field->GRef->Grid[0]=='V' || !npt) break;
             }
             Tcl_SetObjResult(Interp,obj);
             break;
@@ -1968,22 +1955,22 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             tr=0;
             ex=1;
          case GRIDPOINT:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
-            if (Field->Ref->Grid[0]=='Y') {
-               if (!Field->Ref->Lat || !Field->Ref->Lon) {
+            if (Field->GRef->Grid[0]=='Y') {
+               if (!Field->GRef->Lat || !Field->GRef->Lon) {
                   Tcl_AppendResult(Interp,"Data_Stat: No positional information",(char*)NULL);
                   return(TCL_ERROR);
                }
                index=FIDX2D(Field->Def,lrint(dx),lrint(dy));
-               dlat=Field->Ref->Lat[index];
-               dlon=Field->Ref->Lon[index];
+               dlat=Field->GRef->Lat[index];
+               dlon=Field->GRef->Lon[index];
             } else {
-               Field->Ref->Project(Field->Ref,dx,dy,&dlat,&dlon,ex,tr);
+               Field->GRef->Project(Field->GRef,dx,dy,&dlat,&dlon,ex,tr);
             }
             obj=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
@@ -1992,7 +1979,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDBOX:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -2002,48 +1989,48 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat1);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon1);
 
-            if (!Field->Ref->UnProject(Field->Ref,&dx0,&dy0,dlat0,dlon0,1,1)) {
+            if (!Field->GRef->UnProject(Field->GRef,&dx0,&dy0,dlat0,dlon0,1,1)) {
                break;
             }
-            if (!Field->Ref->UnProject(Field->Ref,&dx1,&dy1,dlat1,dlon1,1,1)) {
+            if (!Field->GRef->UnProject(Field->GRef,&dx1,&dy1,dlat1,dlon1,1,1)) {
                break;
             }
 
             obj=Tcl_NewListObj(0,NULL);
 
             for(dx=dx0;dx<dx1-dl;dx+=dl) {
-               Field->Ref->Project(Field->Ref,dx,dy0,&dlat,&dlon,0,1);
+               Field->GRef->Project(Field->GRef,dx,dy0,&dlat,&dlon,0,1);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
             }
-            Field->Ref->Project(Field->Ref,dx1,dy0,&dlat,&dlon,0,1);
+            Field->GRef->Project(Field->GRef,dx1,dy0,&dlat,&dlon,0,1);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
 
             for(dy=dy0;dy<dy1-dl;dy+=dl) {
-               Field->Ref->Project(Field->Ref,dx1,dy,&dlat,&dlon,0,1);
+               Field->GRef->Project(Field->GRef,dx1,dy,&dlat,&dlon,0,1);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
             }
-            Field->Ref->Project(Field->Ref,dx1,dy1,&dlat,&dlon,0,1);
+            Field->GRef->Project(Field->GRef,dx1,dy1,&dlat,&dlon,0,1);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
 
             for(dx=dx1;dx>dx0+dl;dx-=dl) {
-               Field->Ref->Project(Field->Ref,dx,dy1,&dlat,&dlon,0,1);
+               Field->GRef->Project(Field->GRef,dx,dy1,&dlat,&dlon,0,1);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
             }
-            Field->Ref->Project(Field->Ref,dx0,dy1,&dlat,&dlon,0,1);
+            Field->GRef->Project(Field->GRef,dx0,dy1,&dlat,&dlon,0,1);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
 
             for(dy=dy1;dy>dy0+dl;dy-=dl) {
-               Field->Ref->Project(Field->Ref,dx0,dy,&dlat,&dlon,0,1);
+               Field->GRef->Project(Field->GRef,dx0,dy,&dlat,&dlon,0,1);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
             }
-            Field->Ref->Project(Field->Ref,dx0,dy0,&dlat,&dlon,0,1);
+            Field->GRef->Project(Field->GRef,dx0,dy0,&dlat,&dlon,0,1);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
 
@@ -2051,7 +2038,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case WITHIN:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -2063,7 +2050,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case WITHINVALUE:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -2078,13 +2065,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
            tr=0;
            ex=1;
          case COORDPOINT:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon);
-            Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,ex,tr);
+            Field->GRef->UnProject(Field->GRef,&dx,&dy,dlat,dlon,ex,tr);
             obj=Tcl_NewListObj(0,NULL);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dx));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dy));
@@ -2105,8 +2092,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                obj=Tcl_NewListObj(0,NULL);
                for(nj=Field->Def->Limits[1][0];nj<=Field->Def->Limits[1][1];nj+=Field->Def->Sample) {
                   for(ni=Field->Def->Limits[0][0];ni<=Field->Def->Limits[0][1];ni+=Field->Def->Sample) {
-                     if (Field->Ref->Grid[0]!='V') {
-                        Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+                     if (Field->GRef->Grid[0]!='V') {
+                        Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
                         if (dlat>=Field->Def->CoordLimits[1][0] && dlat<=Field->Def->CoordLimits[1][1] &&
                            dlon>=Field->Def->CoordLimits[0][0] && dlon<=Field->Def->CoordLimits[0][1]) {
                            if (Field->Def->NC==1) {
@@ -2114,14 +2101,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                            } else if (Field->Def->NC==2) {
                               sub=Tcl_NewListObj(0,NULL);
-                              Field->Ref->Value(Field->Ref,Field->Def,'N',0,ni,nj,Field->Def->Level,&val,&val1);
+                              Field->GRef->Value(Field->GRef,Field->Def,'N',0,ni,nj,Field->Def->Level,&val,&val1);
                               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                               Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(val1));
                               Tcl_ListObjAppendElement(Interp,obj,sub);
                            } else {
                               sub=Tcl_NewListObj(0,NULL);
                               for(n=0;n<Field->Def->NC;n++) {
-                                 Field->Ref->Value(Field->Ref,Field->Def,'N',n,ni,nj,Field->Def->Level,&val,&val1);
+                                 Field->GRef->Value(Field->GRef,Field->Def,'N',n,ni,nj,Field->Def->Level,&val,&val1);
                                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                               }
                               Tcl_ListObjAppendElement(Interp,obj,sub);
@@ -2149,7 +2136,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 #endif
                   obj=Tcl_NewListObj(0,NULL);
                   if (Field->Def->NC==2) {
-                     if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
+                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val1));
                      } else {
@@ -2157,7 +2144,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      }
                   } else {
                      for(n=0;n<Field->Def->NC;n++) {
-                        if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
+                        if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                         } else {
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
@@ -2170,14 +2157,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDVALUE:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlat);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dlon);
 
-            Field->Ref->UnProject(Field->Ref,&dx,&dy,dlat,dlon,1,1);
+            Field->GRef->UnProject(Field->GRef,&dx,&dy,dlat,dlon,1,1);
 
             if (!Field->Stat && Objc!=4)
                Data_GetStat(Field);
@@ -2191,7 +2178,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 #endif
                obj=Tcl_NewListObj(0,NULL);
                if (Field->Def->NC==2) {
-                 if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
+                 if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,dx,dy,Field->Def->Level,&val,&val1)) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val1));
                   } else {
@@ -2199,7 +2186,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
                } else {
                   for(n=0;n<Field->Def->NC;n++) {
-                     if (Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
+                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],n,dx,dy,Field->Def->Level,&val,&val1)) {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
                      } else {
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
@@ -2224,8 +2211,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Field->Def->Data[1]) {
                vbuf=VBuffer_Alloc(len*2+1);
 
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
+               b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
+               f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
@@ -2251,7 +2238,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDSTREAM:
-            if (!Field->Ref) {
+            if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -2268,8 +2255,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Field->Def->Data[1]) {
                vbuf=VBuffer_Alloc(len*2+1);
 
-               b=FFStreamLine(Field->Ref,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
-               f=FFStreamLine(Field->Ref,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);
+               b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
+               f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);
                obj=Tcl_NewListObj(0,NULL);
                ex=0;
 
@@ -2308,7 +2295,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_GRID,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
+               FFContour(REF_GRID,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
 
                list=Field->Def->Segments;
                obj=Tcl_NewListObj(0,NULL);
@@ -2364,7 +2351,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_COOR,Field->Ref,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
+               FFContour(REF_COOR,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
 
                list=Field->Def->Segments;
 
@@ -2528,8 +2515,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
 
                val=0.0;
-               if (Field->Ref->Height) {
-                  val=Field->Ref->Height(Field->Ref,dx,dy,dv);
+               if (Field->GRef->Height) {
+                  val=Field->GRef->Height(Field->GRef,Field->ZRef,dx,dy,dv);
                }
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(val));
             }
@@ -2537,10 +2524,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case LEVELS:
             if (Objc==1) {
-                if (Field->Ref) {
+                if (Field->GRef) {
                  // If xsection/profile, reload vertical descriptor (COLUMN model)
 #ifdef HAVE_RMN
-                  if (Field->Ref->Grid[0]=='V' && Field->Spec->Extrude && strlen(Field->Spec->Extrude)) {
+                  if (Field->GRef->Grid[0]=='V' && Field->Spec->Extrude && strlen(Field->Spec->Extrude)) {
                      if (FSTD_FileSet(NULL,((TRPNHeader*)Field->Head)->File)>=0) {
                         FSTD_FieldReadVLevels(Field);
                         FSTD_FileUnset(NULL,((TRPNHeader*)Field->Head)->File);
@@ -2548,16 +2535,16 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   }
 #endif
                   // Use NJ for xsection since NK and ZRefs levelnb are not set
-                  nb=(Field->Ref && Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
+                  nb=(Field->GRef && Field->GRef->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
 
                   obj=Tcl_NewListObj(0,NULL);
                   for (index=0;index<nb;index++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels?Field->Ref->ZRef.Levels[index]:index));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->ZRef->Levels?Field->ZRef->Levels[index]:index));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
             } else {
-               nb=(Field->Ref && Field->Ref->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
+               nb=(Field->GRef && Field->GRef->Grid[0]=='V')?Field->Def->NJ:Field->Def->NK;
 
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
 
@@ -2577,17 +2564,19 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 #ifdef HAVE_RMN
                ((TRPNHeader*)Field->Head)->IP1=-1;
 #endif
-               Field->Ref=GeoRef_Find(GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,(Field->Ref?Field->Ref->ZRef.Type:LVL_UNDEF),levels));
+               zref=Field->ZRef;
+               Field->ZRef=ZRef_Define(Field->ZRef->Type,Field->Def->NK,levels);
+               ZRef_Free(zref);
                free(levels);
             }
             break;
 
          case LEVEL:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.Levels[Field->Def->Level]));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->ZRef->Levels[Field->Def->Level]));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
-               Field->Ref->ZRef.Levels[Field->Def->Level]=dv;
+               Field->ZRef->Levels[Field->Def->Level]=dv;
 #ifdef HAVE_RMN
                ((TRPNHeader*)Field->Head)->IP1=-1;
 #endif
@@ -2599,14 +2588,14 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->Level));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&n);
-               if (n<0 || n>=Field->Ref->ZRef.LevelNb) {
+               if (n<0 || n>=Field->ZRef->LevelNb) {
                   Tcl_AppendResult(Interp,"Data_Stat: Invalid level index",(char*)NULL);
                   return(TCL_ERROR);
                }
                if (n!=Field->Def->Level) {
-                  if (Field->Ref->ZRef.Type==LVL_ANGLE) {
-                     Field->Ref->CTH=cos(DEG2RAD(Field->Ref->ZRef.Levels[n]));
-                     Field->Ref->STH=sin(DEG2RAD(Field->Ref->ZRef.Levels[n]));
+                  if (Field->ZRef->Type==LVL_ANGLE) {
+                     Field->GRef->CTH=cos(DEG2RAD(Field->ZRef->Levels[n]));
+                     Field->GRef->STH=sin(DEG2RAD(Field->ZRef->Levels[n]));
                   }
                   Field->Def->Level=n;
 
@@ -2621,35 +2610,37 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             lvls=ZRef_LevelNames();
 
             if (Objc==1) {
-               if (Field->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Field->Ref->ZRef.Type],-1));
+               if (Field->GRef)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(lvls[Field->ZRef->Type],-1));
             } else {
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],lvls,"type",0,&index)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               Field->Ref=GeoRef_Find(GeoRef_Resize(Field->Ref,Field->Def->NI,Field->Def->NJ,Field->Def->NK,index,(Field->Ref?Field->Ref->ZRef.Levels:NULL)));
+               zref=Field->ZRef;
+               Field->ZRef=ZRef_Define(index,Field->ZRef->LevelNb,Field->ZRef->Levels);
+               ZRef_Free(zref);
             }
             break;
 
          case PRESSURELEVELS:
             if (Objc==1) {
-               if (Field->Ref && Field->Ref->Hgt) {
+               if (Field->GRef && Field->GRef->Hgt) {
                   obj=Tcl_NewListObj(0,NULL);
-                  if (Field->Ref->Grid[0]=='V') {
+                  if (Field->GRef->Grid[0]=='V') {
                      min=1e32;
                      max=-1e32;
                      for (index=0;index<Field->Def->NI*Field->Def->NJ;index++) {
-                        min=min<Field->Ref->Hgt[index]?min:Field->Ref->Hgt[index];
-                        max=max>Field->Ref->Hgt[index]?max:Field->Ref->Hgt[index];
+                        min=min<Field->GRef->Hgt[index]?min:Field->GRef->Hgt[index];
+                        max=max>Field->GRef->Hgt[index]?max:Field->GRef->Hgt[index];
                      }
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
                      for (index=Field->Def->NI;index<Field->Def->NI*(Field->Def->NJ-1);index+=Field->Def->NI) {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Hgt[index]));
                      }
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                   } else {
                      for (index=0;index<Field->Def->NK;index++) {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Hgt[index]));
                      }
                   }
                   Tcl_SetObjResult(Interp,obj);
@@ -2659,23 +2650,23 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case METERLEVELS:
             if (Objc==1) {
-               if (Field->Ref && Field->Ref->Hgt) {
+               if (Field->GRef && Field->GRef->Hgt) {
                   obj=Tcl_NewListObj(0,NULL);
-                  if (Field->Ref->Grid[0]=='V') {
+                  if (Field->GRef->Grid[0]=='V') {
                      min=1e32;
                      max=-1e32;
                      for (index=0;index<Field->Def->NI*Field->Def->NJ;index++) {
-                        min=min<Field->Ref->Hgt[index]?min:Field->Ref->Hgt[index];
-                        max=max>Field->Ref->Hgt[index]?max:Field->Ref->Hgt[index];
+                        min=min<Field->GRef->Hgt[index]?min:Field->GRef->Hgt[index];
+                        max=max>Field->GRef->Hgt[index]?max:Field->GRef->Hgt[index];
                      }
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                      for (index=Field->Def->NI;index<Field->Def->NI*(Field->Def->NJ-1);index+=Field->Def->NI) {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Hgt[index]));
                      }
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
                   } else {
                      for (index=0;index<Field->Def->NK;index++) {
-                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->Hgt[index]));
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Hgt[index]));
                      }
                   }
                   Tcl_SetObjResult(Interp,obj);
@@ -2759,55 +2750,55 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 #ifdef HAVE_RMN
          case TOP:
             if (Objc==1) {
-               if (Field->Ref->ZRef.Version==-1) {
+               if (Field->ZRef->Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PTop));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->ZRef->PTop));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->ZRef.PTop=tmpd;
+               Field->ZRef->PTop=tmpd;
 
                // If 0, force ZRef refresh
-               Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
+               Field->ZRef->Version=(tmpd==0.0)?-1:0;
             }
             break;
 
          case REF:
             if (Objc==1) {
-               if (Field->Ref->ZRef.Version==-1) {
+               if (Field->ZRef->Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
                }
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Ref->ZRef.PRef));
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->ZRef->PRef));
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
-               Field->Ref->ZRef.PRef=tmpd;
+               Field->ZRef->PRef=tmpd;
 
                // If 0, force ZRef refresh
-               Field->Ref->ZRef.Version=(tmpd==0.0)?-1:0;
+               Field->ZRef->Version=(tmpd==0.0)?-1:0;
             }
             break;
 
          case COEF:
             if (Objc==1) {
-               if (Field->Ref->ZRef.Version==-1) {
+               if (Field->ZRef->Version==-1) {
                   FSTD_DecodeRPNLevelParams(Field);
                }
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[0]));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->Ref->ZRef.RCoef[1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->ZRef->RCoef[0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->ZRef->RCoef[1]));
                Tcl_SetObjResult(Interp,obj);
             } else {
                Tcl_ListObjLength(Interp,Objv[++i],&nobj);
                if (nobj>1) {
                   Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
                   Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
-                  Field->Ref->ZRef.RCoef[0]=tmpd;
+                  Field->ZRef->RCoef[0]=tmpd;
                   Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
                   Tcl_GetDoubleFromObj(Interp,obj,&tmpd);
-                  Field->Ref->ZRef.RCoef[1]=tmpd;
+                  Field->ZRef->RCoef[1]=tmpd;
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&tmpd);
-                  Field->Ref->ZRef.RCoef[0]=tmpd;
+                  Field->ZRef->RCoef[0]=tmpd;
                }
             }
             break;
@@ -2865,12 +2856,12 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
 
       // Get ij bounding box
-      GeoRef_BoundingBox(Field->Ref,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
+      GeoRef_BoundingBox(Field->GRef,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
 
       // If Wrapover 180/-180, need to check all gridpoint along longitude
-      if (Field->Ref->Type&GRID_WRAP) {
-         i0=Field->Ref->X0;
-         i1=Field->Ref->X1;
+      if (Field->GRef->Type&GRID_WRAP) {
+         i0=Field->GRef->X0;
+         i1=Field->GRef->X1;
       }
    } else {
       vnb=nc>>1;
@@ -2892,7 +2883,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&dlon);
 
-         Field->Ref->UnProject(Field->Ref,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
+         Field->GRef->UnProject(Field->GRef,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
          vn[n][2]=0.0;
          i0=i0<vn[n][0]?i0:vn[n][0];
          j0=j0<vn[n][1]?j0:vn[n][1];
@@ -2912,14 +2903,14 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
 
    n=0;
 
-   if (Field->Ref->Grid[0]!='V') {
+   if (Field->GRef->Grid[0]!='V') {
 
       // Loop on ij bounding box
       for (ni=floor(i0);ni<=ceil(i1);ni++) {
          for (nj=floor(j0);nj<=ceil(j1);nj++) {
             if (nc==4) {
                // Range case
-               Field->Ref->Project(Field->Ref,ni,nj,&dlat,&dlon,0,1);
+               Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
                if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+360.0:dlon;
 
                f=0;
@@ -2975,13 +2966,13 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          f=0;
          if (nc==4) {
             //Range case
-            if (Field->Ref->Lat[ni]>=dlat0 && Field->Ref->Lat[ni]<=dlat1) {
+            if (Field->GRef->Lat[ni]>=dlat0 && Field->GRef->Lat[ni]<=dlat1) {
                if (dlon0<dlon1) {
-                  if (Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=dlon1) {
+                  if (Field->GRef->Lon[ni]>=dlon0 && Field->GRef->Lon[ni]<=dlon1) {
                      f=1;
                   }
                } else {
-                  if ((Field->Ref->Lon[ni]>=dlon0 && Field->Ref->Lon[ni]<=180) || (Field->Ref->Lon[ni]<=dlon1 && Field->Ref->Lon[ni]>=-180)) {
+                  if ((Field->GRef->Lon[ni]>=dlon0 && Field->GRef->Lon[ni]<=180) || (Field->GRef->Lon[ni]<=dlon1 && Field->GRef->Lon[ni]>=-180)) {
                      f=1;
                   }
                }

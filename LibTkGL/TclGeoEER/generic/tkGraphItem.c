@@ -38,13 +38,11 @@ static CONST char *GraphTypeName[] = { "NONE","LINE","SPLINE","BAR","WIDEBAR","H
 static CONST char *GraphDataName[] = { "False","True","data","xdata","ydata","zdata","speed","dir","error","high","low","median","min","max","pressure","drybulb","wetbulb","dewpoint",
    "SPREAD","HEIGHT","RELATIVEHUMIDITY" };
 
-#define STREAMLEN 2048
-extern unsigned char StreamMap[256][4];
 extern CONST  char *ICONS[];
 extern TIcon  IconList[];
 extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
-extern int    FFStreamLine(TGeoRef *Ref,TDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
-extern int    FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
+extern int    FFStreamLine(TGeoRef *Ref,TZRef *ZRef,TDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
+extern int    FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
 extern float *FFStreamMapSetup1D(double Delta);
 
 extern void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
@@ -145,18 +143,18 @@ static inline void GraphItem_VectorPlace(TData *Data,TGraphAxis *AxisX,TGraphAxi
    d[0]=floor(VIn[0]);
    d[1]=floor(VIn[1]);
 
-   if (Data->Ref->Grid[0]=='V') {
-      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
-         h[0]=Data->Ref->Hgt[d[1]*Data->Def->NI+d[0]];
-         h[1]=Data->Ref->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
+   if (Data->GRef->Grid[0]=='V') {
+      if (Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt) {
+         h[0]=Data->GRef->Hgt[d[1]*Data->Def->NI+d[0]];
+         h[1]=Data->GRef->Hgt[d[1]*Data->Def->NI+(d[0]+1)];
          v[0]=ILIN(h[0],h[1],VIn[0]-d[0]);
 
-         h[0]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+d[0]];
-         h[1]=Data->Ref->Hgt[(d[1]+1)*Data->Def->NI+(d[0]+1)];
+         h[0]=Data->GRef->Hgt[(d[1]+1)*Data->Def->NI+d[0]];
+         h[1]=Data->GRef->Hgt[(d[1]+1)*Data->Def->NI+(d[0]+1)];
          v[1]=ILIN(h[0],h[1],VIn[0]-d[0]);
       } else {
-         v[0]=Data->Ref->ZRef.Levels[d[1]];
-         v[1]=Data->Ref->ZRef.Levels[d[1]+1];
+         v[0]=Data->ZRef->Levels[d[1]];
+         v[1]=Data->ZRef->Levels[d[1]+1];
       }
    } else {
       v[0]=d[1];
@@ -1022,7 +1020,7 @@ void GraphItem_Wipe() {
 void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode) {
 
    TData      *data;
-   TVector    *vecx,*vecy,*vecz;
+   TVector    *vecx,*vecy;
    TGraphAxis *axisx,*axisy,*axisz,*axisw;
 
    axisx=GraphAxis_Get(Item->XAxis);
@@ -1067,7 +1065,6 @@ void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int 
 
       vecx=Vector_Get(Item->XData);
       vecy=Vector_Get(Item->YData);
-      vecz=Vector_Get(Item->ZData);
 
       if (vecx && vecx->N)
          GraphAxis_Define(axisx,vecx,X1-X0);
@@ -2134,11 +2131,11 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
          VAL2COL(c0,Data->Spec,v0);
          VAL2COL(c3,Data->Spec,v3);
 
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[idx0]:Data->Ref->ZRef.Levels[j]):j;
+         vf=Data->GRef->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt)?Data->GRef->Hgt[idx0]:Data->ZRef->Levels[j]):j;
          g0[0]=X0+AXISVALUE(AxisX,(i));
          g0[1]=Y0+AXISVALUE(AxisY,vf);
          g0[2]=0.0;
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[idx3]:Data->Ref->ZRef.Levels[j+1]):j+1;
+         vf=Data->GRef->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt)?Data->GRef->Hgt[idx3]:Data->ZRef->Levels[j+1]):j+1;
          g3[0]=X0+AXISVALUE(AxisX,(i));
          g3[1]=Y0+AXISVALUE(AxisY,vf);
          g3[2]=0.0;
@@ -2288,12 +2285,12 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    for(j=0;j<Data->Def->NJ-1;j++) {
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<Data->Def->NI;i++) {
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[j*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j]):j;
+         vf=Data->GRef->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt)?Data->GRef->Hgt[j*Data->Def->NI+i]:Data->ZRef->Levels[j]):j;
          g0[0]=X0+AXISVALUE(AxisX,(i));
          g0[1]=Y0+AXISVALUE(AxisY,vf);
          g0[2]=0.0;
 
-         vf=Data->Ref->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt)?Data->Ref->Hgt[(j+1)*Data->Def->NI+i]:Data->Ref->ZRef.Levels[j+1]):j+1;
+         vf=Data->GRef->Grid[0]=='V'?((Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt)?Data->GRef->Hgt[(j+1)*Data->Def->NI+i]:Data->ZRef->Levels[j+1]):j+1;
          g1[0]=X0+AXISVALUE(AxisX,(i));
          g1[1]=Y0+AXISVALUE(AxisY,vf);
          g1[2]=0.0;
@@ -2351,7 +2348,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 
    /*Les contours sont-ils definit*/
    if (Data->Spec->InterNb && (!Data->Def->Segments || Data->Def->NK==1)) {
-      FFContour(REF_GRID,Data->Ref,Data->Def,Data->Stat,NULL,Data->Spec->InterNb,Data->Spec->Inter,3,0);
+      FFContour(REF_GRID,Data->GPos,Data->Def,Data->Stat,NULL,Data->Spec->InterNb,Data->Spec->Inter,3,0);
    }
 
    if (Data->Spec->RenderLabel && Interp)
@@ -2568,8 +2565,8 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
          
          /*Get the streamline */
          if ((j=Graph_Pixel2Grid(Data,i,j))>=0) {
-            b=FFStreamLine(Data->Ref,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
-            f=FFStreamLine(Data->Ref,Data->Def,NULL,&vbuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
+            b=FFStreamLine(Data->GRef,Data->ZRef,Data->Def,NULL,vbuf,NULL,i,j,Data->Def->Level,len,-step,Data->Spec->Min,0,REF_GRID,0);
+            f=FFStreamLine(Data->GRef,Data->ZRef,Data->Def,NULL,&vbuf[len],NULL,i,j,Data->Def->Level,len,step,Data->Spec->Min,0,REF_GRID,0);
 
             /* If we have at least some part of it */
             if (b+f>10) {
@@ -2763,10 +2760,6 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    double u,w,len,da=0.0;
    Vect3d pin,pout;
 
-   if (!Data->Def->Data[2]) {
-      return;
-   }
-
    if (Interp) {
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n1 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
@@ -2786,7 +2779,14 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
       for(j=0;j<Data->Def->NJ;j+=Data->Spec->Sample) {
          idx=j*Data->Def->NI+i;
          Def_Get(Data->Def,0,idx,u);
-         Def_Get(Data->Def,2,idx,w);
+         
+         if (Data->Def->Data[2]) {
+            // 3D vector
+            Def_Get(Data->Def,2,idx,w);
+         } else {
+            // 2D vector (no vertical component)
+            Def_Get(Data->Def,1,idx,w);            
+         }
          Def_GetMod(Data->Def,idx,len);
          if (len<=Data->Spec->Max && len>=Data->Spec->Min) {
             if (Data->Spec->MapAll) {
@@ -2804,7 +2804,7 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
             GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,pin,pout);
 
             // Calculate topo angle when using reprojected height (pressure or magl)
-/*            if (Data->Ref->Grid[0]=='V' && Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
+/*            if (Data->GRef->Grid[0]=='V' && Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt) {
                Vect3d ppout;
                pin[0]=i-1;
                pin[1]=j;
@@ -2985,7 +2985,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       /*We have to flip the image data along the Y axis*/
       if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
          fprintf(stderr,"(ERROR) Memory allocation error");
-         return;
+         return(0);
       }
          
       memcpy(pixel,data.pixelPtr,data.width*data.height*data.pixelSize);
@@ -3769,6 +3769,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          case 11: val=Vector_Get(Item->MedianData); break;
          case 12: val=Vector_Get(Item->MinData); break;
          case 13: val=Vector_Get(Item->MaxData); break;
+         default: val=NULL;
       }
       if (val) {
          px=py=pw=0;
@@ -3792,6 +3793,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
                case TK_ANCHOR_NE:
                case TK_ANCHOR_SE:
                case TK_ANCHOR_E:      x=v[i][0]-j-j/strlen(buf);   break;
+               default: x=v[i][0];
             }
             if (!((y>=py && y<=py+tkm.linespace) || (y+tkm.linespace>=py && y<=py)) || !((x>=px && x<=px+pw) ||  (x+j>=px && x+j<=px+pw))) {
                px=x;py=y;pw=j;

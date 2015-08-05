@@ -55,10 +55,10 @@ int                OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Laye
 OGRFieldDefnH      OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
 
 OGR_Layer*         OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
-OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref);
+OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef);
 void               OGR_LayerClean(OGR_Layer *Layer,int Index);
 void               OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
-void               OGR_LayerUpdate(OGR_Layer *Layer);
+int                OGR_LayerUpdate(OGR_Layer *Layer);
 int                OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value);
 int                OGR_LayerDestroy(Tcl_Interp *Interp,char *Name);
 int                OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
@@ -76,7 +76,7 @@ int                OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);
 int                OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);
 void               OGR_LayerLimit(OGR_Layer *Layer);
 int                OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid);
-int                OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List);
+int                OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,float *Index);
 int                OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 void               OGR_LayerPreInit(OGR_Layer *Layer);
 int                OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg);
@@ -87,8 +87,8 @@ OGRwkbGeometryType OGR_GeometryNameToType(char *Name);
 OGRGeometryH*      OGR_GeometryGet(char *Name);
 int                OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc);
 int                OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name);
-int                OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size);
-void               OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude);
+int                OGR_GeometryProject(Projection *Proj,TGeoRef *GRef,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size);
+void               OGR_GeometryRender(Projection *Proj,TGeoRef *GRef,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude);
 Tcl_Obj*           OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom);
 Tcl_Obj*           OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geom);
 

@@ -69,7 +69,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    GLhandleARB prog;
    Tk_PhotoImageBlock img;
 
-   if (!Field->Ref || !Field->Ref->Pos) {
+   if (!Field->GRef || !Field->GPos || !Field->GPos->Pos[Field->Def->Level]) {
       return(0);
    }
 
@@ -81,7 +81,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos[Field->Def->Level];
+   pos=Field->GPos->Pos[Field->Def->Level];
    prog=GLRender->Prog[PROG_FIELD];
 
    glUseProgramObjectARB(prog);
@@ -187,7 +187,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    GLuint      tx[2],att0;
    GLhandleARB prog;
 
-   if (!Field->Ref || !Field->Ref->Pos) {
+   if (!Field->GRef || !Field->GPos || !Field->GPos->Pos[Field->Def->Level]) {
       return(0);
    }
 
@@ -199,7 +199,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=Field->Ref->Pos[Field->Def->Level];
+   pos=Field->GPos->Pos[Field->Def->Level];
    prog=GLRender->Prog[PROG_FIELD];
 
    glUseProgramObjectARB(prog);
@@ -233,46 +233,46 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    glBegin(GL_TRIANGLES);
    if (Field->Spec->InterpDegree[0]=='L') {
-      for(n=0;n<Field->Ref->NIdx;n++) {
-         Def_Get(Field->Def,0,Field->Ref->Idx[n],val);
+      for(n=0;n<Field->GRef->NIdx;n++) {
+         Def_Get(Field->Def,0,Field->GRef->Idx[n],val);
          glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(pos[Field->GRef->Idx[n]]);
       }
    } else {
-      for(n=0;n<Field->Ref->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
          Vect_Init(b,1.0/3.0,1.0/3.0,1.0/3.0);
-         Bary_Interp(b,p,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.0,0.5,0.5);
-         Bary_Interp(b,p0,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p0,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.5,0.0,0.5);
-         Bary_Interp(b,p1,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p1,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
          Vect_Init(b,0.5,0.5,0.0);
-         Bary_Interp(b,p2,pos[Field->Ref->Idx[n]],pos[Field->Ref->Idx[n+1]],pos[Field->Ref->Idx[n+2]]);
+         Bary_InterpPos(b,p2,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
 
-         Def_Get(Field->Def,0,Field->Ref->Idx[n],val);
+         Def_Get(Field->Def,0,Field->GRef->Idx[n],val);
          glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(pos[Field->GRef->Idx[n]]);
          glVertex3dv(p);
          glVertex3dv(p1);
-         glVertex3dv(pos[Field->Ref->Idx[n]]);
+         glVertex3dv(pos[Field->GRef->Idx[n]]);
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         Def_Get(Field->Def,0,Field->Ref->Idx[n+1],val);
+         Def_Get(Field->Def,0,Field->GRef->Idx[n+1],val);
          glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
          glVertex3dv(p);
          glVertex3dv(p0);
-         glVertex3dv(pos[Field->Ref->Idx[n+1]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         Def_Get(Field->Def,0,Field->Ref->Idx[n+2],val);
+         Def_Get(Field->Def,0,Field->GRef->Idx[n+2],val);
          glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
          glVertex3dv(p);
          glVertex3dv(p0);
-         glVertex3dv(pos[Field->Ref->Idx[n+2]]);
+         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
          glVertex3dv(p);
          glVertex3dv(p1);
       }
@@ -319,16 +319,16 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
    
-   if (!Field->Ref || !Field->Ref->Pos || Field->Ref->Grid[0]=='Y') {
+   if (!Field->GRef || !Field->GPos || Field->GRef->Grid[0]=='Y') {
       return(0);
    }
 
-   if (Field->Ref->Grid[0]=='M') {
+   if (Field->GRef->Grid[0]=='M') {
       Data_RenderShaderMesh(Field,VP,Proj);
       return(1);
    }
 
-   if ((Proj->Type->Def!=PROJGLOBE) && Field->Ref->Grid[0]!='V') {
+   if ((Proj->Type->Def!=PROJGLOBE) && Field->GRef->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
    } else {
       glDisable(GL_CULL_FACE);
@@ -342,7 +342,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
-   pos=&Field->Ref->Pos[Field->Def->Level][Field->Def->Idx];
+   pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    Def_PointerMode(Field->Def,idxk,ptr);
 
@@ -429,14 +429,14 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
 
    // Grille avec loop sur la longitude
-   if (Field->Ref->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
+   if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
    }
 
    // Resolution selon la dimension des cellules (mid-grid) et la vue
-   dp=Proj->PixDist/Field->Ref->Distance(Field->Ref,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
+   dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
 
-   dp=(dp<1 || Field->Ref->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+   dp=(dp<1 || Field->GRef->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
    
    if (Proj->Type->Def==PROJCYLIN) {
       dp=CLAMP(dp,1,2);

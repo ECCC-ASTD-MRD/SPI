@@ -57,11 +57,14 @@ int MetObs_LoadASCII(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    FILE    *stream;
    char    buf[256];
    char    *bytes=NULL;
-   int     sz,sk,nb,n,hd,k,sec;
-   int     ntok,gntok,nltok;
-   char    **tok,**gtok,**ltok;
+   int     sz,nb,n,hd,sec;
+   int     ntok,gntok;
+   char    **tok,**gtok;
    int     err=TCL_OK,date,time;
    time_t  *gtime;
+
+//   int      k,nltok;
+//   char  **ltok;
 
    stream=fopen(File,"r");
 

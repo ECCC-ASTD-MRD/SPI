@@ -2635,8 +2635,8 @@ static int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X
       glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 //      DisplayCanvasItems((ClientData)canvasPtr,X,Y,Width,Height);
 //      DisplayCanvasItems((ClientData)canvasPtr,0,0,Tk_Width(canvasPtr->tkwin),Tk_Height(canvasPtr->tkwin));
-      DisplayCanvasItems((ClientData)canvasPtr,0,0,canvasPtr->width,canvasPtr->height);
-
+      DisplayCanvasItems((ClientData)canvasPtr,0,0,canvasPtr->width,canvasPtr->height?canvasPtr->height:Tk_Height(canvasPtr->tkwin));
+      
       res=trBuffer(Interp,Img,GL_BACK,X,Y,Width,Height,GLRender->TRCon);
    } while (trEndTile(GLRender->TRCon));
 
@@ -6046,6 +6046,10 @@ int Tkglcanvas_Init(Tcl_Interp* Interp) {
    // Create hermite smoothing method
    extern const Tk_SmoothMethod tkHermiteSmoothMethod;
    Tk_CreateSmoothMethod(Interp,&tkHermiteSmoothMethod);
+   
+   // Create SVG photo image format
+   extern const Tk_PhotoImageFormat tkImgFmtSVG;
+   Tk_CreatePhotoImageFormat(&tkImgFmtSVG);
    
    return(TCL_OK);
 }

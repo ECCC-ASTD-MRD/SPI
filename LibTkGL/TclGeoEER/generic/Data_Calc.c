@@ -115,7 +115,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
                }
                GField->Def= needcopy ? Def_Copy(Data) : Data;
 #ifdef HAVE_RMN
-               if (GField->Ref && GField->Ref->Grid[0]=='U') {
+               if (GField->GRef && GField->GRef->Grid[0]=='U') {
                   FSTD_FieldSubBuild(GField);
                }
 #endif

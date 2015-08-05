@@ -79,8 +79,8 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
       if (strcmp(Elem,"gml:Envelope")==0) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"srsName")==0) {
-               gml->Model->Ref=GeoRef_New();
-               GeoRef_WKTSet(gml->Model->Ref,(char*)Attr[i+1],NULL,NULL,NULL);
+               gml->Model->GRef=GeoRef_New();
+               GeoRef_WKTSet(gml->Model->GRef,(char*)Attr[i+1],NULL,NULL,NULL);
             }
          }
          data->Bloc=GML_ENVELOPE;

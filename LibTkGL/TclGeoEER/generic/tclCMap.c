@@ -116,7 +116,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
    char      buf[64];
    int       i;
 
-   cmap=(CMap_Rec*)malloc(sizeof(CMap_Rec));
+   cmap=(CMap_Rec*)calloc(1,sizeof(CMap_Rec));
 
    if (cmap) {
       cmap->NRef=1;

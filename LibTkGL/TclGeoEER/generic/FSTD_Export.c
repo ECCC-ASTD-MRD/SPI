@@ -37,10 +37,8 @@
 #include "tclFSTD.h"
 #include "tclGDAL.h"
 
-int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *File,double Factor,char *Mode,char *Type,int I0,int J0,int I1,int J1);
 int HIRLAM_WriteData(TData *Field,FILE *FID,float *Data,double Factor,char *Mode,int I0,int J0,int I1,int J1);
 int HIRLAM_WriteHead(FILE *FID,char *Desc,char *Info,double Factor);
-int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I1,int J1);
 
 /*----------------------------------------------------------------------------
  * Nom      : <HIRLAM_Export>
@@ -102,7 +100,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
          return(TCL_ERROR);
       }
 //      RPN_IntLock();
-      c_gdll(Field->Ref->Ids[Field->Ref->NId],fy,fx);
+      c_gdll(Field->GRef->Ids[Field->GRef->NId],fy,fx);
 //      RPN_IntUnlock();
 
       /* Output grid longitude*/
@@ -146,7 +144,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
          }
       }
 //      RPN_IntLock();
-      c_gdxywdval(Field->Ref->Ids[Field->Ref->NId],spd,dir,(float*)(Field->Def->Data[0]),(float*)(Field->Def->Data[1]),fx,fy,sz);
+      c_gdxywdval(Field->GRef->Ids[Field->GRef->NId],spd,dir,(float*)(Field->Def->Data[0]),(float*)(Field->Def->Data[1]),fx,fy,sz);
 //      RPN_IntUnlock();
 
       if (Type[1]=='P') {
@@ -327,14 +325,14 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    tmps=fld->Def->NJ;                     SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
 
    /*DLat, DLon, Lat0 and Lon0*/
-   if (fld->Ref->Grid[0]=='Z') {
-      GeoRef_Expand(fld->Ref);
-      dx=fld->Ref->AX[1]-fld->Ref->AX[0];
-      dy=fld->Ref->AY[1]-fld->Ref->AY[0];
-      lo0=fld->Ref->AX[0];
-      la0=fld->Ref->AY[0];
+   if (fld->GRef->Grid[0]=='Z') {
+      GeoRef_Expand(fld->GRef);
+      dx=fld->GRef->AX[1]-fld->GRef->AX[0];
+      dy=fld->GRef->AY[1]-fld->GRef->AY[0];
+      lo0=fld->GRef->AX[0];
+      la0=fld->GRef->AY[0];
    } else {
-      f77name(cigaxg)(&fld->Ref->Grid[0],&la0,&lo0,&dx,&dy,&((TRPNHeader*)fld->Head)->IG1,&((TRPNHeader*)fld->Head)->IG2,&((TRPNHeader*)fld->Head)->IG3,&((TRPNHeader*)fld->Head)->IG4);
+      f77name(cigaxg)(&fld->GRef->Grid[0],&la0,&lo0,&dx,&dy,&((TRPNHeader*)fld->Head)->IG1,&((TRPNHeader*)fld->Head)->IG2,&((TRPNHeader*)fld->Head)->IG3,&((TRPNHeader*)fld->Head)->IG4);
    }
 
    lo0-=0.5*dx;

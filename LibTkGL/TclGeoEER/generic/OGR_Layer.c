@@ -96,18 +96,18 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case GEOREF:
             if (Objc==1) {
-               if (layer->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->Ref->Name,-1));
+               if (layer->GRef)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->GRef->Name,-1));
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
                   return(TCL_ERROR);
                }
-               if (ref!=layer->Ref) {
-                  GeoRef_Destroy(Interp,layer->Ref->Name);
-                  layer->Ref=ref;
-                  GeoRef_Incr(layer->Ref);
+               if (ref!=layer->GRef) {
+                  GeoRef_Destroy(Interp,layer->GRef->Name);
+                  layer->GRef=ref;
+                  GeoRef_Incr(layer->GRef);
                   OGR_LayerClean(layer,-1);
                   layer->Changed=1;
                }
@@ -116,14 +116,14 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
         case PROJECTION:
             if (Objc==1) {
-               if (layer->Ref && layer->Ref->String)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->Ref->String,-1));
+               if (layer->GRef && layer->GRef->String)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(layer->GRef->String,-1));
             } else {
                ++i;
-               if (layer->Ref && layer->Ref->String && strlen(layer->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),layer->Ref->String)==0) {
+               if (layer->GRef && layer->GRef->String && strlen(layer->GRef->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),layer->GRef->String)==0) {
                } else {
-                  GeoRef_Destroy(Interp,layer->Ref->Name);
-                  layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
+                  GeoRef_Destroy(Interp,layer->GRef->Name);
+                  layer->GRef=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   OGR_LayerClean(layer,-1);
                   layer->Changed=1;
                }
@@ -192,7 +192,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   i++;
                }
                
-               // pdate the current structure if we need to
+               // Update the current structure if we need to
                OGR_LayerUpdate(layer);
 
                for(f=0;f<layer->NFeature;f++) {
@@ -385,7 +385,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
                   if (!t) {
                      if ((geom=OGR_G_Clone(geom))) {
-                        OGR_G_AssignSpatialReference(geom,layer->Ref->Spatial);
+                        OGR_G_AssignSpatialReference(geom,layer->GRef->Spatial);
                      }
                   }
                   Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,geom));
@@ -488,7 +488,7 @@ static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,
       return(NULL);
    }
  
-   layerres->Ref=GeoRef_Copy(From->Ref);
+   layerres->GRef=GeoRef_Copy(From->GRef);
    layerres->Def=From->Def;         
    layerres->NFeature=0;
    layerres->Changed=1;
@@ -597,7 +597,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Georef name unknown or invalid spatial reference: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
                return(TCL_ERROR);
             }
-            tr=OCTNewCoordinateTransformation(layer->Ref->Spatial,ref->Spatial);
+            tr=OCTNewCoordinateTransformation(layer->GRef->Spatial,ref->Spatial);
          }
 
          if (!tr) {
@@ -609,8 +609,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   OGR_G_Transform(geom,tr);
                }
             }
-            layer->Ref=ref;
-            layer->Ref->NRef++;
+            layer->GRef=ref;
+            layer->GRef->NRef++;
             layer->Changed=1;
             OCTDestroyCoordinateTransformation(tr);
          }
@@ -620,7 +620,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          lst=Tcl_NewListObj(0,NULL);
          Tcl_GetDoubleFromObj(Interp,Objv[1],&x);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&y);
-         layer->Ref->Project(layer->Ref,x,y,&lat,&lon,1,1);
+         layer->GRef->Project(layer->GRef,x,y,&lat,&lon,1,1);
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
          Tcl_SetObjResult(Interp,lst);
@@ -630,7 +630,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          lst=Tcl_NewListObj(0,NULL);
          Tcl_GetDoubleFromObj(Interp,Objv[1],&lat);
          Tcl_GetDoubleFromObj(Interp,Objv[2],&lon);
-         layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
+         layer->GRef->UnProject(layer->GRef,&x,&y,lat,lon,1,1);
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
          Tcl_SetObjResult(Interp,lst);
@@ -659,20 +659,20 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
                Tcl_GetWideIntFromObj(Interp,Objv[1],&f);
                if (f>=0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  area=GPC_Centroid2D(geom,&x,&y);
+                  area=OGM_Centroid2D(geom,&x,&y);
                   if (n>1) OGR_G_AddPoint_2D(new,x,y);
                }
             }
-            if (n>1) f=GPC_Centroid2D(new,&x,&y);
+            if (n>1) f=OGM_Centroid2D(new,&x,&y);
             
          } else {
             for(f=0;f<layer->NFeature;f++) {
                if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  area+=GPC_Centroid2D(geom,&x,&y);
+                  area+=OGM_Centroid2D(geom,&x,&y);
                   OGR_G_AddPoint_2D(new,x,y);
                }
             }
-            f=GPC_Centroid2D(new,&x,&y);
+            f=OGM_Centroid2D(new,&x,&y);
          }
          OGR_G_DestroyGeometry(new);
          
@@ -778,10 +778,10 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   env.MaxY=lim.MaxY>env.MaxY?lim.MaxY:env.MaxY;
                }
             }
-            layer->Ref->Project(layer->Ref,env.MinX,env.MinY,&lat,&lon,1,1);
+            layer->GRef->Project(layer->GRef,env.MinX,env.MinY,&lat,&lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
-            layer->Ref->Project(layer->Ref,env.MaxX,env.MaxY,&lat,&lon,1,1);
+            layer->GRef->Project(layer->GRef,env.MaxX,env.MaxY,&lat,&lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));           
          } else {
@@ -803,17 +803,17 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                      env.MaxY=lim.MaxY>env.MaxY?lim.MaxY:env.MaxY;
                   }
                }
-               layer->Ref->Project(layer->Ref,env.MinX,env.MinY,&lat,&lon,1,1);
+               layer->GRef->Project(layer->GRef,env.MinX,env.MinY,&lat,&lon,1,1);
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
-               layer->Ref->Project(layer->Ref,env.MaxX,env.MaxY,&lat,&lon,1,1);
+               layer->GRef->Project(layer->GRef,env.MaxX,env.MaxY,&lat,&lon,1,1);
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
                Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));           
             } else {
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MinY));
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MinX));
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MaxY));
-               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->Ref->LLExtent.MaxX));
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->GRef->LLExtent.MinY));
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->GRef->LLExtent.MinX));
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->GRef->LLExtent.MaxY));
+               Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(layer->GRef->LLExtent.MaxX));
             }
          }
          Tcl_SetObjResult(Interp,lst);
@@ -871,7 +871,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             return(TCL_ERROR);
          }
          
-         new=GPC_OnOGRLayer(GPC_UNION,layer);
+         new=OGM_GPCOnOGRLayer(GPC_UNION,layer);
 
          layerres->Feature[0]=OGR_F_Clone(layer->Feature[0]);                        
          layerres->NFeature++;
@@ -939,12 +939,12 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
 
-         uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
+         uni=OGM_GPCOnOGRLayer(GPC_UNION,layerop); 
          
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  new=GPC_OnOGR(GPC_DIFF,geom,uni);
+                  new=OGM_GPCOnOGR(GPC_DIFF,geom,uni);
                   if  (new) {
                      if (layerres && !OGR_G_IsEmpty(new)) {
                         layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
@@ -977,12 +977,12 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
 
-         uni=GPC_OnOGRLayer(GPC_UNION,layerop); 
+         uni=OGM_GPCOnOGRLayer(GPC_UNION,layerop); 
 
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  new=GPC_OnOGR(GPC_INT,geom,uni);
+                  new=OGM_GPCOnOGR(GPC_INT,geom,uni);
                   if  (new) {
                      if (layerres && !OGR_G_IsEmpty(new)) {
                         layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
@@ -1013,7 +1013,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          for(f=0;f<layer->NFeature;f++) {
             if (layer->Select[f] && layer->Feature[f]) {
                if ((geom=OGR_G_Clone(OGR_F_GetGeometryRef(layer->Feature[f])))) {
-                  GPC_Simplify(tol,geom);
+                  OGM_Simplify(tol,geom);
                   if (layerres) {
                      layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
                      OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geom);
@@ -1803,17 +1803,21 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-void OGR_LayerUpdate(OGR_Layer *Layer) {
+int OGR_LayerUpdate(OGR_Layer *Layer) {
 
    unsigned int f;
 
    if (Layer->Update) {
       for(f=0;f<Layer->NFeature;f++) {
-         if (Layer->Feature[f])
-            OGR_L_SetFeature(Layer->Layer,Layer->Feature[f]);
+         if (Layer->Feature[f]) {
+            if (OGR_L_SetFeature(Layer->Layer,Layer->Feature[f])!=OGRERR_NONE) {
+               return(FALSE);
+            }
+         }
       }
       Layer->Update=0;
    }
+   return(TRUE);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1909,9 +1913,9 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    }
    
    layer->File=file;
-   layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
+   layer->GRef=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
    OGR_L_GetExtent(layer->Layer,&env,1);
-   GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
+   GeoRef_Size(layer->GRef,env.MinX,env.MinY,env.MaxX,env.MaxY,0);
    return(TCL_OK);
 }
 
@@ -1954,7 +1958,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
       return(TCL_ERROR);
    }
  
-   to->Ref=GeoRef_Copy(from->Ref);
+   to->GRef=GeoRef_Copy(from->GRef);
    to->Def=from->Def;
    to->Changed=1;
    OGR_FD_Reference(to->Def);
@@ -2027,7 +2031,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    }
 
    if (OGR_DS_TestCapability(file->Data,ODsCCreateLayer)) {
-      olayer=OGR_DS_CreateLayer(file->Data,OGR_FD_GetName(layer->Def),layer->Ref->Spatial,wkbUnknown,opt);
+      olayer=OGR_DS_CreateLayer(file->Data,OGR_FD_GetName(layer->Def),layer->GRef->Spatial,wkbUnknown,opt);
       defn=OGR_L_GetLayerDefn(olayer);
    } else {
       Tcl_AppendResult(Interp,"OGR_LayerWrite: Write operation not supported for this file type",(char*)NULL);
@@ -2141,98 +2145,11 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
          }
       }
 
-      layer->Ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
+      layer->GRef=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
       OGR_L_GetExtent(layer->Layer,&env,1);
-      GeoRef_Size(layer->Ref,env.MinX,env.MinY,0,env.MaxX,env.MaxY,0,0);
+      GeoRef_Size(layer->GRef,env.MinX,env.MinY,env.MaxX,env.MaxY,0);
    }
    return(TCL_OK);
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <OGR_GridCell>
- * Creation     : Mars 2006 J.P. Gauthier - CMC/CMOE
- *
- * But          : Projecter une cellule de grille dans le referentiel d'une autre
- *
- * Parametres   :
- *   <Geom>     : Polygone a initialiser
- *   <RefTo>    : GeoReference destination
- *   <RefFrom>  : GeoReference source
- *   <I>        : Coordonnee X
- *   <J>        : Coordonnee Y
- *   <Seg>      : Facteur de sectionnement des segments
- *
- * Retour       : Code d'erreur standard TCL
- *   <Nb>       : Nombre de points (negatif si ca passe le wrap)
- *
- * Remarques    :
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-int OGR_GridCell(OGRGeometryH Geom,TGeoRef *RefTo,TGeoRef *RefFrom,int I,int J,int Seg) {
-
-   double n,dn,df;
-   double x0,x1,x,y,la,lo;
-   int    pt=0;
-
-   dn=1.0/Seg;
-   df=dn*0.5;
-
-   x0=1e32;
-   x1=-1e32;
-
-   /*Top Left*/
-   for(n=-0.5;n<(0.5+df);n+=dn) {
-      RefFrom->Project(RefFrom,I-0.5,J+n,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
-      x0=FMIN(x0,x);
-      x1=FMAX(x1,x);
-      OGR_G_SetPoint_2D(Geom,pt++,x,y);
-   }
-
-   /*Top right*/
-   for(n=-0.5;n<(0.5+df);n+=dn) {
-      RefFrom->Project(RefFrom,I+n,J+0.5,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
-      x0=FMIN(x0,x);
-      x1=FMAX(x1,x);
-      OGR_G_SetPoint_2D(Geom,pt++,x,y);
-   }
-
-   /*Right bottom*/
-   for(n=0.5;n>-(0.5+df);n-=dn) {
-      RefFrom->Project(RefFrom,I+0.5,J+n,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
-      x0=FMIN(x0,x);
-      x1=FMAX(x1,x);
-      OGR_G_SetPoint_2D(Geom,pt++,x,y);
-   }
-
-   /*Bottom Left*/
-   for(n=0.5;n>-(0.5+df);n-=dn) {
-      RefFrom->Project(RefFrom,I+n,J-0.5,&la,&lo,1,1);
-      RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
-      x0=FMIN(x0,x);
-      x1=FMAX(x1,x);
-      OGR_G_SetPoint_2D(Geom,pt++,x,y);
-   }
-
-   /*Close the polygon*/
-   RefFrom->Project(RefFrom,I-0.5,J-0.5,&la,&lo,1,1);
-   RefTo->UnProject(RefTo,&x,&y,la,lo,1,1);
-   OGR_G_SetPoint_2D(Geom,pt++,x,y);
-
-   /*If the cell is outside the destination limits*/
-   if (x0<RefTo->X0 && x1>RefTo->X1) {
-      return(0);
-   }
-
-   /*If we are on the wrap boundary*/
-   if ((x1-x0)>((RefTo->X1-RefTo->X0)>>1) && RefTo->Type&GRID_WRAP ) {
-      return(-pt);
-   }
-
-   return(pt);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -2325,7 +2242,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          }
 
          Data_Clean(field[0],0,0,1);
-         FFContour(Grid?REF_GRID:REF_COOR,field[0]->Ref,field[0]->Def,field[0]->Stat,NULL,1,&spec->Inter[n],3,1);
+         FFContour(Grid?REF_GRID:REF_COOR,field[0]->GPos,field[0]->Def,field[0]->Stat,NULL,1,&spec->Inter[n],3,1);
          cont=OGR_G_CreateGeometry(wkbMultiLineString);
 
          list=field[0]->Def->Segments;
@@ -2334,7 +2251,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
             geom=OGR_G_CreateGeometry(wkbLineString);
             for(k=0;k<array->Size;k++) {
-               Layer->Ref->UnProject(Layer->Ref,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
+               Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
                OGR_G_AddPoint_2D(geom,x,y);
             }
             OGR_G_AddGeometryDirectly(cont,geom);
@@ -2389,7 +2306,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                df=0;
                for(f=0;f<nf;f++) {
                   if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
-                     field[f]->Ref->Value(field[f]->Ref,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
+                     field[f]->GRef->Value(field[f]->GRef,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
                      OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
                      df++;
                      OGR_F_SetFieldDouble(Layer->Feature[n],f+df,dir);
@@ -2413,10 +2330,10 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
                   geom=OGR_G_CreateGeometry(wkbPoint25D);
                   if (Grid) {
-                     OGR_G_AddPoint(geom,i,j,(field[0]->Ref->Hgt?field[0]->Ref->Hgt[idx]:0.0)); 
+                     OGR_G_AddPoint(geom,i,j,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0)); 
                   } else {
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,field[0]->Ref->Lat[idx],field[0]->Ref->Lon[idx],1,1);
-                     OGR_G_AddPoint(geom,x,y,(field[0]->Ref->Hgt?field[0]->Ref->Hgt[idx]:0.0));
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,field[0]->GRef->Lat[idx],field[0]->GRef->Lon[idx],1,1);
+                     OGR_G_AddPoint(geom,x,y,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   }
                } else if (spec->RenderTexture) {
                   if (cidx>-1) {
@@ -2433,20 +2350,20 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                      OGR_G_AddPoint_2D(poly,i+0.5,j-0.5);
                      OGR_G_AddPoint_2D(poly,i-0.5,j-0.5);
                   } else {                     
-                     field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i-0.5,j-0.5,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
-                     field[0]->Ref->Project(field[0]->Ref,i-0.5,j+0.5,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i-0.5,j+0.5,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
-                     field[0]->Ref->Project(field[0]->Ref,i+0.5,j+0.5,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i+0.5,j+0.5,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
-                     field[0]->Ref->Project(field[0]->Ref,i+0.5,j-0.5,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i+0.5,j-0.5,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
-                     field[0]->Ref->Project(field[0]->Ref,i-0.5,j-0.5,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,CLAMPLAT(lat),lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i-0.5,j-0.5,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
                   }
                   OGR_G_AddGeometryDirectly(geom,poly);
@@ -2462,8 +2379,8 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   if (Grid) {
                      OGR_G_AddPoint_2D(geom,i,j);
                   } else {
-                     field[0]->Ref->Project(field[0]->Ref,i,j,&lat,&lon,1,1);
-                     Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+                     field[0]->GRef->Project(field[0]->GRef,i,j,&lat,&lon,1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,lat,lon,1,1);
                      OGR_G_AddPoint_2D(geom,x,y);
                   }
                }
@@ -2550,28 +2467,25 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,Tcl_Obj *List) {
+int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,float *Index) {
 
-   int           i,j,n=0,p=0,pt,len=-1,rw;
+   int           i,j,n=0,nt=0,rw=0;
    unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
-   char          buf[64];
    OGRGeometryH  cell,ring,inter,geom;
    OGREnvelope   env0,*env1=NULL;
-   Tcl_Obj      *obji,*objj,*lst,*item=NULL;
-   Tcl_Channel   chan=NULL;
-   Tcl_WideInt   w;
    Vect3d        vr;
    Coord         co;
+   float       *ip=NULL;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
-      return(TCL_ERROR);
+      return(0);
    }
 
    if (Field<0 || Field>=OGR_FD_GetFieldCount(Layer->Def)) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid Field",(char*)NULL);
-      return(TCL_ERROR);
+      return(0);
    }
 
    cell=OGR_G_CreateGeometry(wkbPolygon);
@@ -2582,83 +2496,34 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       accum=(double*)calloc(Layer->NFeature,sizeof(double));
       if (!accum) {
          Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate accumulation buffer",(char*)NULL);
-         return(TCL_ERROR);
+         return(0);
       }
    }
 
-   /*Check for included channel or list containing index*/
-   if (List) {
-      if ((chan=Tcl_GetChannel(Interp,Tcl_GetString(List),&rw))) {
+   // Do we have and index
+   if (Index && Index[0]!=DEF_INDEX_EMPTY) {
+      // As long as the file or the list is not empty
+      ip=Index;
+      while(*ip!=DEF_INDEX_END) {
 
-         /*Make sure its flushed and reset in case were on the second pass or more (k)*/
-         Tcl_Seek(chan,0,SEEK_SET);
-         obji=Tcl_NewObj();
-         objj=Tcl_NewObj();
-         lst=Tcl_NewObj();
-
-         p=Tcl_GetsObj(chan,obji);
-         p=Tcl_GetsObj(chan,objj);
-         if (p>0) {
-            p=1;
-         } else {
-            p=0;
-            if (!(rw&TCL_WRITABLE)) {
-               Tcl_AppendResult(Interp,"OGR_LayerInterp: Channel is not writable",(char*)NULL);
-               return(TCL_ERROR);
-            }
-         }
-      } else {
-         lst=Tcl_ObjGetVar2(Interp,List,NULL,0x0);
-         if (!lst) {
-            item=Tcl_NewListObj(0,NULL);
-            List=Tcl_ObjSetVar2(Interp,List,NULL,item,0x0);
-         } else {
-            List=lst;
-         }
-         Tcl_ListObjLength(Interp,List,&len);
-         p=len;
-      }
-   }
-
-   /*Wouou we have the index*/
-   if (p) {
-
-      /*As long as the file or the list is not empty*/
-      while((chan && !Tcl_Eof(chan)) || n<len) {
-
-         /*Get the gridpoint*/
-         if (!chan) {
-            Tcl_ListObjIndex(Interp,List,n++,&obji);
-            Tcl_ListObjIndex(Interp,List,n++,&objj);
-         }
-         Tcl_GetIntFromObj(Interp,obji,&i);
-         Tcl_GetIntFromObj(Interp,objj,&j);
-
+         // Get the gridpoint
+         i=*(ip++);
+         j=*(ip++);
+         
          if (!FIN2D(FromDef,i,j)) {
             Tcl_AppendResult(Interp,"OGR_LayerInterp: Wrong index, index coordinates are greater than field size",(char*)NULL);
-            return(TCL_ERROR);
+            return(0);
          }
-
+         
+         // Get this gridpoint value
          Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
 
-         /*Get the geometry intersections*/
-         if (chan) {
-            Tcl_SetObjLength(lst,0);
-            Tcl_GetsObj(chan,lst);
-         } else {
-            Tcl_ListObjIndex(Interp,List,n++,&lst);
-         }
+         // Get the geometry intersections
+         while(*ip!=DEF_INDEX_SEPARATOR) {
+            f=*(ip++);
+            area=*(ip++);
 
-         /*Loop on the intersections*/
-         Tcl_ListObjLength(Interp,lst,&pt);
-         for(p=0;p<pt;p+=2) {
-            Tcl_ListObjIndex(Interp,lst,p,&item);
-            Tcl_GetWideIntFromObj(Interp,item,&w);
-            Tcl_ListObjIndex(Interp,lst,p+1,&item);
-            Tcl_GetDoubleFromObj(Interp,item,&area);
-
-            f=w;
-            /*Check for nodata value*/
+            // Check for nodata value
             if (!isnan(val1) && val1!=FromDef->NoData && Layer->Feature[f]) {
                val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
 
@@ -2677,97 +2542,110 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
             }
          }
-         if (chan) {
-            Tcl_SetObjLength(obji,0);
-            Tcl_SetObjLength(objj,0);
-            Tcl_GetsObj(chan,obji);
-            Tcl_GetsObj(chan,objj);
-         }
-      }
+         // Skip separator
+         ip++;
+      } 
    } else {
 
-      /*Damn, we dont have the index*/
-      if (!(env1=(OGREnvelope*)calloc(Layer->NFeature,sizeof(OGREnvelope)))) {
-         Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate envelope buffer",(char*)NULL);
-         return(TCL_ERROR);
+      // Damn, we dont have the index
+      if (Index && Index[0]==DEF_INDEX_EMPTY) {
+         ip=Index;
       }
 
+      // Allocate enveloppe array to speedup intersection test
+      if (!(env1=(OGREnvelope*)calloc(Layer->NFeature,sizeof(OGREnvelope)))) {
+         Tcl_AppendResult(Interp,"OGR_LayerInterp: Unable to allocate envelope buffer",(char*)NULL);
+         return(0);
+      }
+
+      // Loop on gridpoints
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
 
-            OGR_GridCell(ring,Layer->Ref,FromRef,i,j,Prec);
+            // Tranform gridpoint into OGR quad projected into layer's referential
+            if (Def_GridCell2OGR(ring,Layer->GRef,FromRef,i,j,Prec)<=0) {
+               continue;
+            }
             rt=n=rw=0;
 
+            // If this cell's area is valid
             if ((area=OGR_G_Area(cell))>0.0) {
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
-               if (isnan(val1) || val1==FromDef->NoData) {
-                  continue;
-               }
-
                OGR_G_GetEnvelope(ring,&env0);
 
-               if (List || chan)
-                  item=Tcl_NewListObj(0,NULL);
+               // Append gridpoint to the index
+               if (ip) {
+                  *(ip++)=i;
+                  *(ip++)=j;
+               }
 
-               /*Check which feature intersects with the cell*/
+               // Check which feature intersects with the cell
                for(f=0;f<Layer->NFeature;f++) {
                   if (Layer->Feature[f]) {
                      geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
                      r=0.0;
 
-                     /* If it's a point, do simple interpolation */
+                     // If it's a point, do simple interpolation 
                      if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
                         if (Mode!='N' && Mode!='L') {
                            Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
-                           return(TCL_ERROR);
+                           return(0);
                         }
 
                         OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
-                        Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
+                        Layer->GRef->Project(Layer->GRef,vr[0],vr[1],&co.Lat,&co.Lon,1,0);
                         FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
                         FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
                         OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                         rw++;
+                        nt++;
                      } else {
 
-                        /*If layer envelope is not yet calculated*/
+                        // If this feature envelope is not yet calculated
                         if (env1[f].MinX==0 && env1[f].MaxX==0 && env1[f].MinY==0 && env1[f].MaxY==0)
                            OGR_G_GetEnvelope(geom,&env1[f]);
 
-                        if (GPC_Intersect(cell,geom,&env0,&env1[f])) {
-                           inter=GPC_OnOGR(GPC_INT,cell,geom);
+                        // Do the grid cell intersect this feature
+                        if (OGM_Intersect(cell,geom,&env0,&env1[f])) {
+                           
+                           // Get fraction of cell in intersection
+                           inter=OGM_GPCOnOGR(GPC_INT,cell,geom);
                            dp=OGR_G_Area(inter);
                            r=dp/area;
                            rt+=r;
-                           val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
-                           switch(Mode) {
-                              case 'N': accum[f]+=r;
-                              case 'C': val0+=val1*r;
-                                       break;
-                              case 'W': if (r>0.999) {
-                                          val0+=val1;
-                                       } else {
-                                          r=0.0;
-                                       }
-                                       break;
-                              case 'A': accum[f]+=1.0;
-                              case 'I': val0+=val1;
-                                       break;
-                              default:
-                                 Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
-                                 return(TCL_ERROR);
+                           nt++;
+                           
+                           if (!isnan(val1) && val1!=FromDef->NoData) {
+                              val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
+                              switch(Mode) {
+                                 case 'N': accum[f]+=r;
+                                 case 'C': val0+=val1*r;
+                                          break;
+                                 case 'W': if (r>0.999) {
+                                             val0+=val1;
+                                          } else {
+                                             r=0.0;
+                                          }
+                                          break;
+                                 case 'A': accum[f]+=1.0;
+                                 case 'I': val0+=val1;
+                                          break;
+                                 default:
+                                    Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
+                                    return(0);
+                              }
+                              OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                            }
-                           OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                         }
 
-                        /*Append intersection info to the list*/
-                        if ((List || chan) && r>0.0) {
+                        // Append intersection info to the list
+                        if (ip && r>0.0) {
                            n++;
-                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewIntObj(f));
-                           Tcl_ListObjAppendElement(Interp,item,Tcl_NewDoubleObj(r));
+                           *(ip++)=f;
+                           *(ip++)=r;
                         }
 
-                        /*If its full, select next cell*/
+                        // If this model gridcell is fully distributed, select next cell
                         if (rt>0.999) {
                            break;
                         }
@@ -2775,18 +2653,12 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                   }
                }
 
-               /*Append this gridpoint intersections to the index*/
-               if (n) {
-                  if (chan) {
-                     sprintf(buf,"%i\n%i\n",i,j);
-                     Tcl_WriteChars(chan,buf,strlen(buf));
-                     Tcl_WriteObj(chan,item);
-                     Tcl_WriteChars(chan,"\n",1);
-                     Tcl_DecrRefCount(item);
-                  } else if (List) {
-                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(i));
-                     Tcl_ListObjAppendElement(Interp,List,Tcl_NewIntObj(j));
-                     Tcl_ListObjAppendElement(Interp,List,item);
+               // Append this gridpoint intersections to the index
+               if (ip) {
+                  if (n) {
+                     *(ip++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
+                  } else {
+                     ip-=2;                       // No intersection found, removed previously inserted gridpoint
                   }
                }
             }
@@ -2794,10 +2666,11 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          }
          if (rw==Layer->NFeature) break;
       }
+      if (ip) *(ip++)=DEF_INDEX_END;
       free(env1);
   }
 
-   /*Finalize and reassign*/
+   // Finalize and reassign
    if (Final && (Mode=='N' || Mode=='A')) {
       for(f=0;f<Layer->NFeature;f++) {
          if (Layer->Feature[f]) {
@@ -2818,7 +2691,9 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    Layer->Update=1;
    Layer->Changed=1;
 
-   return(TCL_OK);
+   // Return size of index or number of hits, or 1 if nothing found
+   nt=Index?(ip-Index)+1:nt;
+   return(nt==0?1:nt);
 }
 
 /*----------------------------------------------------------------------------
@@ -2882,9 +2757,9 @@ int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
          if (Layer->Extrude!=-1)
             extr=OGR_F_GetFieldAsDouble(Layer->Feature[Index],Layer->Extrude);
 
-         OGR_GeometryRender(Proj,Layer->Ref,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
-         GPC_Centroid2D(geom,&vr[0],&vr[1]);
-         Layer->Ref->Project(Layer->Ref,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
+         OGR_GeometryRender(Proj,Layer->GRef,Layer,geom,elev*Layer->Spec->TopoFactor,extr*Layer->Spec->ExtrudeFactor);
+         OGM_Centroid2D(geom,&vr[0],&vr[1]);
+         Layer->GRef->Project(Layer->GRef,vr[0],vr[1],&Layer->Loc[Index].Lat,&Layer->Loc[Index].Lon,1,1);
          Layer->Loc[Index].Elev=extr*Layer->Spec->ExtrudeFactor;
       }
    }
@@ -2924,10 +2799,10 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
    /*Make sure we reset the loading flag*/
    if (Layer->GFeature==Layer->NFeature) {
-      co[0].Lat=Layer->Ref->LLExtent.MinY;
-      co[0].Lon=Layer->Ref->LLExtent.MinX;
-      co[1].Lat=Layer->Ref->LLExtent.MaxY;
-      co[1].Lon=Layer->Ref->LLExtent.MaxX;
+      co[0].Lat=Layer->GRef->LLExtent.MinY;
+      co[0].Lon=Layer->GRef->LLExtent.MinX;
+      co[1].Lat=Layer->GRef->LLExtent.MaxY;
+      co[1].Lon=Layer->GRef->LLExtent.MaxX;
 
       Proj->Type->Project(Proj,(GeoVect*)co,(GeoVect*)Layer->Vr,2);
       t=0;
@@ -2983,7 +2858,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    }
 
    /*Check for invalid georeference*/
-   if (!GeoRef_Valid(Layer->Ref)) {
+   if (!GeoRef_Valid(Layer->GRef)) {
       fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid georeference\n");
       return(0);
    }
@@ -3439,7 +3314,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
          if (Tcl_GetDoubleFromObj(Interp,obj,&lon)==TCL_ERROR) {
             return(TCL_ERROR);
          }
-         Layer->Ref->UnProject(Layer->Ref,&x,&y,lat,lon,1,1);
+         Layer->GRef->UnProject(Layer->GRef,&x,&y,lat,lon,1,1);
          OGR_G_AddPoint_2D(pick,x,y);
       }
    }
@@ -3455,9 +3330,9 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
             OGR_G_GetEnvelope(geom,&envg);
             /*Test delon le mode*/
             switch(Mode) {
-               case 0: n=GPC_Intersect(geom,pick,&envg,&envp); break;   //INTERSECT
-               case 1: n=GPC_Within(geom,pick,&envg,&envp); break;      //INSIDE
-               case 2: n=!GPC_Intersect(geom,pick,&envg,&envp); break;  //OUTSIDE
+               case 0: n=OGM_Intersect(geom,pick,&envg,&envp); break;   //INTERSECT
+               case 1: n=OGM_Within(geom,pick,&envg,&envp); break;      //INSIDE
+               case 2: n=!OGM_Intersect(geom,pick,&envg,&envp); break;  //OUTSIDE
                case 3: x=OGR_G_Distance(geom,pick);                     //NEAREST
                        if (x<d) {
                           d=x;
@@ -3479,13 +3354,13 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 
    // Dans le cas d'un vertex, trouver le plus proche
    if (All==-1) {
-      if (geom && GPC_PointInside(geom,pick,vr)!=-1) {
+      if (geom && OGM_PointInside(geom,pick,vr)!=-1) {
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[0]));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[1]));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[2]));         
       }
            
-//      GPC_Closest(geom,pick,vr);
+//      OGM_Closest(geom,pick,vr);
 //      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[0]));
 //      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[1]));
 //      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vr[2]));

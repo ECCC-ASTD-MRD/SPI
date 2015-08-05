@@ -71,7 +71,8 @@ typedef struct Radar_File {
    char *Name;             /*Path complet du fichier*/
    char Mode;              /*Mode d'ouverture du fichier (r,w,a)*/
 
-   TGeoRef   *Ref;         /*GeoReference commmune a tout les scans*/
+   TGeoRef   *GRef;        /*Reference horizontale commmune a tout les scans*/
+   TZRef     *ZRef;        /*Reference verticale commmune a tout les scans*/
    RADAR_DATA Data;        /*Donnees du radar*/
 } Radar_File;
 

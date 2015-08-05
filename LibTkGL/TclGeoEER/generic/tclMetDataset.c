@@ -1192,6 +1192,8 @@ static int MetTemplate_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
             Tcl_WrongNumArgs(Interp,1,Objv,"template");
             return(TCL_ERROR);
          }
+         
+         return(MetTemplate_FreeHash(Interp,Tcl_GetString(Objv[2])));
          break;
 
       case READ:

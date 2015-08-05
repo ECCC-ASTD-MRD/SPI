@@ -104,6 +104,8 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
       "-SWEEPANGLE","-DATE","-NOMVAR","-PRODUCT","-NOISE","-FILTER","-ZCAL","-NYQUIST","-NBSWEEP","-NBAZIMUTH","-NBBIN","-GEOREF",NULL };
    enum                opt { TYPE,SCAN,AZRES,BNRES,SITEID,SITENAME,LOCATION,SWEEPANGLE,DATE,NOMVAR,PRODUCT,NOISE,FILTER,ZCAL,NYQUIST,NBSWEEP,NBAZIMUTH,NBBIN,GEOREF };
 
+   extern double getVNyquist(RADAR_DATA *Data);
+ 
    for (i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
@@ -113,18 +115,18 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
       switch ((enum opt)idx) {
          case GEOREF:
             if (Objc==1) {
-               if (Rad->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Rad->Ref->Name,-1));
+               if (Rad->GRef)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Rad->GRef->Name,-1));
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
                   Tcl_AppendResult(Interp,"\n   Radar_ScanDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
                   return TCL_ERROR;
                }
-               if (ref!=Rad->Ref) {
-                  GeoRef_Destroy(Interp,Rad->Ref->Name);
-                  Rad->Ref=ref;
-                  GeoRef_Incr(Rad->Ref);
+               if (ref!=Rad->GRef) {
+                  GeoRef_Destroy(Interp,Rad->GRef->Name);
+                  Rad->GRef=ref;
+                  GeoRef_Incr(Rad->GRef);
                   Data_Clean(Rad,1,1,1);
                }
             }
@@ -218,7 +220,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
             } else {
             }
             break;
-
+            
          case NYQUIST:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(getVNyquist(head->Data)));
@@ -257,9 +259,9 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Lat));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Lon));
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->Ref->Loc.Elev));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->GRef->Loc.Lat));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->GRef->Loc.Lon));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Rad->GRef->Loc.Elev));
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Objc!=4) {
@@ -270,14 +272,14 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.Lon);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&loc.Elev);
 
-               if (loc.Lat!=Rad->Ref->Loc.Lat || loc.Lon!=Rad->Ref->Loc.Lon  || loc.Elev!=Rad->Ref->Loc.Elev) {
-                  ref=Rad->Ref;
-                  Rad->Ref=GeoRef_Find(GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->Ref->R,Rad->Ref->ResR,Rad->Ref->ResA,Rad->Def->NK,Rad->Ref->ZRef.Levels));
+               if (loc.Lat!=Rad->GRef->Loc.Lat || loc.Lon!=Rad->GRef->Loc.Lon  || loc.Elev!=Rad->GRef->Loc.Elev) {
+                  ref=Rad->GRef;
+                  Rad->GRef=GeoRef_Find(GeoRef_RDRSetup(loc.Lat,loc.Lon,loc.Elev,Rad->GRef->R,Rad->GRef->ResR,Rad->GRef->ResA));
                   GeoRef_Destroy(Interp,ref->Name);
                   Data_Clean(Rad,1,1,1);
                   th=DEG2RAD(head->Data->volScan[head->Scan]->sweep[Rad->Def->Level]->elevationAngle);
-                  Rad->Ref->CTH=cos(th);
-                  Rad->Ref->STH=sin(th);
+                  Rad->GRef->CTH=cos(th);
+                  Rad->GRef->STH=sin(th);
                }
             }
             break;
@@ -356,7 +358,8 @@ int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
    Radar_Set(rad);
    ((Radar_Head*)rad->Head)->Data=&file->Data;
    ((Radar_Head*)rad->Head)->Scan=Scan;
-   rad->Ref=GeoRef_Copy(file->Ref);
+   rad->GRef=GeoRef_Copy(file->GRef);
+   rad->ZRef=ZRef_Copy(file->ZRef);
 
    rad->Spec->Desc=strdup(Radar_GetTypeString(file->Data.volScan[Scan]->dataType));
 
@@ -412,8 +415,8 @@ int Radar_Parse(TData *Rad) {
    }
 
    th=DEG2RAD(vol->sweep[Rad->Def->Level]->elevationAngle);
-   Rad->Ref->CTH=cos(th);
-   Rad->Ref->STH=sin(th);
+   Rad->GRef->CTH=cos(th);
+   Rad->GRef->STH=sin(th);
    return(TCL_OK);
 }
 
@@ -443,36 +446,40 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    double     az,dt,th,sth;
    int        i,j,idxi;
 
-   if (Rad->Ref->Pos && Rad->Ref->Pos[Level])
-      return(Rad->Ref->Pos[Level]);
+   if (Rad->GPos && Rad->GPos->Pos[Level])
+      return(Rad->GPos->Pos[Level]);
 
-   /*Allocate memory for various levels*/
-   if (!Rad->Ref->Pos)
-      Rad->Ref->Pos=(Vect3d**)calloc(Rad->Ref->ZRef.LevelNb,sizeof(Vect3d*));
+   // Allocate memory for gridpoint positions
+   if (!Rad->GPos)
+      Rad->GPos=GeoPos_Find(Rad->GRef,Rad->ZRef);
 
-   if (!Rad->Ref->Pos[Level]) {
-      Rad->Ref->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Rad->Def)*sizeof(Vect3d));
-      if (!Rad->Ref->Pos[Level]) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+   if (!Rad->GPos)
+      return(NULL);
+
+   if (!Rad->GPos->Pos[Level]) {
+      Rad->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Rad->Def)*sizeof(Vect3d));
+      if (!Rad->GPos->Pos[Level]) {
+         fprintf(stderr,"(ERROR) Radar_Grid: Not enough memory to calculate gridpoint location");
          return(NULL);
       }
    }
+
    vol=head->Data->volScan[0];
 
-   if (Rad->Ref->Grid[0]=='V') {
+   if (Rad->GRef->Grid[0]=='V') {
       for (j=0;j<Rad->Def->NJ;j++) {
          idxi=j*Rad->Def->NI;
-         th=DEG2RAD(Rad->Ref->ZRef.Levels[j]);
+         th=DEG2RAD(Rad->ZRef->Levels[j]);
          sth=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
-            coord.Lat=Rad->Ref->Lat[i];
-            coord.Lon=CLAMPLON(Rad->Ref->Lon[i]);
-            Rad->Ref->RefFrom->UnProject(Rad->Ref->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
-            coord.Elev=Rad->Ref->Loc.Elev+sth*dt;
+            coord.Lat=Rad->GRef->Lat[i];
+            coord.Lon=CLAMPLON(Rad->GRef->Lon[i]);
+            Rad->GRef->RefFrom->UnProject(Rad->GRef->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
+            coord.Elev=Rad->GRef->Loc.Elev+sth*dt;
             if (Proj) {
-               ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)&coord,(GeoVect*)&Rad->Ref->Pos[Level][idxi],1);
+               ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)&coord,(GeoVect*)&Rad->GPos->Pos[Level][idxi],1);
             } else {
-               Vect_Init(Rad->Ref->Pos[Level][idxi],Rad->Ref->Lat[i],Rad->Ref->Lon[i],coord.Elev);
+               Vect_Init(Rad->GPos->Pos[Level][idxi],Rad->GRef->Lat[i],Rad->GRef->Lon[i],coord.Elev);
             }
             idxi++;
          }
@@ -480,22 +487,22 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    } else {
       th=DEG2RAD(vol->sweep[Level]->elevationAngle);
       sth=sin(th);
-      for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
+      for (j=0;j<Rad->Def->NJ;j++) {              // Loop on the Bins
          idxi=j*Rad->Def->NI;
-         for (i=0;i<Rad->Def->NI;i++,idxi++) {           /*Loop on the Azimuths*/
+         for (i=0;i<Rad->Def->NI;i++,idxi++) {    // Loop on the Azimuths
 
-            /*Figure out table plane indexes*/
+            // Figure out table plane indexes
             if (i==Rad->Def->NI-1) {
-               Vect_Assign(Rad->Ref->Pos[Level][idxi],Rad->Ref->Pos[Level][j*Rad->Def->NI]);
+               Vect_Assign(Rad->GPos->Pos[Level][idxi],Rad->GPos->Pos[Level][j*Rad->Def->NI]);
             } else {
                dt=j*head->Data->binResolutionKM*1000;
-               Rad->Ref->Pos[Level][idxi][2]=Rad->Ref->Loc.Elev+sth*dt;
-               Rad->Ref->Project(Rad->Ref,i,j,&Rad->Ref->Pos[Level][idxi][1],&Rad->Ref->Pos[Level][idxi][0],0,1);
+               Rad->GPos->Pos[Level][idxi][2]=Rad->GRef->Loc.Elev+sth*dt;
+               Rad->GRef->Project(Rad->GRef,i,j,&Rad->GPos->Pos[Level][idxi][1],&Rad->GPos->Pos[Level][idxi][0],0,1);
             }
          }
       }
-      ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Rad->Ref->Pos[Level],NULL,FSIZE2D(Rad->Def));
+      ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)Rad->GPos->Pos[Level],NULL,FSIZE2D(Rad->Def));
    }
-   return(Rad->Ref->Pos[Level]);
+   return(Rad->GPos->Pos[Level]);
 }
 #endif

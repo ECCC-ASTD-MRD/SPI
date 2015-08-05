@@ -46,4 +46,6 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref);
 int      GeoRef_Destroy(Tcl_Interp *Interp,char *Name);
 TGeoRef* GeoRef_Find(TGeoRef *Ref);
 
+int      GeoPos_Free(TGeoPos *GPos);
+TGeoPos* GeoPos_Find(TGeoRef *GRef,TZRef *ZRef);
 #endif

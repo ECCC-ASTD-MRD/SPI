@@ -319,6 +319,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    double             x,y,lat,lon;
+   float             *index;
    int                idx,idxfi,all,n;
    char               mode;
    unsigned int       f;
@@ -330,7 +331,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TGeoRef           *ref=NULL;
    TDef          *def=NULL;
    TDataSpec         *spec=NULL;
-   Tcl_Obj           *lst,*obj;
+   Tcl_Obj           *lst,*obj,*item=NULL;
    Tcl_WideInt        w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
@@ -362,7 +363,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
+            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
          if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3]),NULL,wkbNone),Tcl_GetString(Objv[4]),ref)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);
@@ -383,7 +384,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                return(TCL_ERROR);
             }
          } else {
-            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,0,0,NULL,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
+            ref=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[4]));
          if (t==wkbNone) {
@@ -398,7 +399,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 //         layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
 //         layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
          layer->Def=OGR_L_GetLayerDefn(layer->Layer);             
-         layer->Ref=ref;             
+         layer->GRef=ref;             
          layer->Changed=1;
          OGR_FD_Reference(layer->Def);
          GeoRef_Incr(ref);
@@ -427,7 +428,11 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid layer",(char*)NULL);
             return(TCL_ERROR);
          }
-         OGR_LayerUpdate(layer);
+         if (!OGR_LayerUpdate(layer)) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to synchronize layer",(char*)NULL);
+            return(TCL_ERROR);
+         } 
+
          break;
 
       case IMPORT:
@@ -449,12 +454,12 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          field=Data_Get(Tcl_GetString(Objv[3]));
          if (field) {
-            ref=field->Ref;
+            ref=field->GRef;
             def=field->Def;
          } else {
             band=GDAL_BandGet(Tcl_GetString(Objv[3]));
             if (band) {
-               ref=band->Ref;
+               ref=band->GRef;
                def=band->Def;
             } else {
                Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : invalid data",(char*)NULL);
@@ -491,7 +496,31 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          if (Objc>8) {
             obj=Objv[8];
          }
-         return(OGR_LayerInterp(Interp,layer,f,ref,def,Tcl_GetString(Objv[5])[0],all,n,obj));
+         
+         // Check for index array
+         index=NULL;
+         if (obj) {
+            item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
+            if (!item) {
+               // Got an empty variable, will fill it with index
+               item=Tcl_NewByteArrayObj(NULL,def->NIJ*100*sizeof(float));
+               index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+               index[0]=DEF_INDEX_EMPTY;
+               obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+            } else {
+               // Got a filled variable, will use it's index
+               obj=NULL;
+               index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+            }
+         }
+         if (!(n=OGR_LayerInterp(Interp,layer,f,ref,def,Tcl_GetString(Objv[5])[0],all,n,index))) {
+            return(TCL_ERROR);
+         }
+         
+         // Make index object persistent and of the right size
+         if (obj) { Tcl_SetByteArrayLength(item,n*sizeof(float)); Tcl_IncrRefCount(obj); }
+         return(TCL_OK);
+         
          break;
 
       case FREE:
@@ -581,7 +610,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          } else {
             lst=Tcl_NewListObj(0,NULL);
-            layer->Ref->Project(layer->Ref,x,y,&lat,&lon,1,1);
+            layer->GRef->Project(layer->GRef,x,y,&lat,&lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(lon));
             Tcl_SetObjResult(Interp,lst);
@@ -603,7 +632,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          } else {
             lst=Tcl_NewListObj(0,NULL);
-            layer->Ref->UnProject(layer->Ref,&x,&y,lat,lon,1,1);
+            layer->GRef->UnProject(layer->GRef,&x,&y,lat,lon,1,1);
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
             Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
             Tcl_SetObjResult(Interp,lst);
@@ -798,7 +827,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
    layer->File       = NULL;
    layer->Feature    = NULL;
    layer->Def        = NULL;
-   layer->Ref        = NULL;
+   layer->GRef       = NULL;
    layer->Tag        = NULL;
 
    layer->Sort.Field = -1;
@@ -829,7 +858,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *Ref){
+OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef){
 
    char **opt=NULL;
 
@@ -838,13 +867,13 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
    }
 
    if (OGR_DS_TestCapability(File->Data,ODsCCreateLayer)) {
-      if (Ref) {
-         Layer->Ref=Ref;
-         GeoRef_Incr(Ref);
+      if (GRef) {
+         Layer->GRef=GRef;
+         GeoRef_Incr(GRef);
       } else {
-         Layer->Ref=GeoRef_New();
+         Layer->GRef=GeoRef_New();
       }
-      Layer->Layer=OGR_DS_CreateLayer(File->Data,Name,Layer->Ref->Spatial,wkbUnknown,opt);
+      Layer->Layer=OGR_DS_CreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,opt);
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }
    return(Layer->Layer);
@@ -906,7 +935,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->SFeature)   free(Layer->SFeature);
    if (Layer->Select)     free(Layer->Select);
    if (Layer->Loc)        free(Layer->Loc);
-   if (Layer->Ref)        GeoRef_Destroy(NULL,Layer->Ref->Name);
+   if (Layer->GRef)       GeoRef_Destroy(NULL,Layer->GRef->Name);
    if (Layer->Def)        OGR_FD_Dereference(Layer->Def);
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);

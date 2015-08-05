@@ -370,14 +370,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
-                                 "-intervalmode","-val2map","-map2val","-colormap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
+                                 "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
-                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
+                     INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
                      INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK };
 
@@ -705,8 +705,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   if (Spec->Sprite) free(Spec->Sprite);
                   Spec->SpriteImg=NULL;
                }
-               Spec->Sprite=strdup(Tcl_GetString(Objv[i]));
-               Spec->SpriteImg=Tk_FindPhoto(Interp,Spec->Sprite);
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  Spec->Sprite=strdup(Tcl_GetString(Objv[i]));
+                  if (!(Spec->SpriteImg=Tk_FindPhoto(Interp,Spec->Sprite))) {
+                     Tcl_AppendResult(Interp,"DataSpec_Config: Invalid image ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+               }
             }
             break;
 
@@ -715,8 +720,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                DashPrint(buf,&Spec->Dash);
                Tcl_AppendResult(Interp,buf,(char*)NULL);
             } else {
-               if (Tk_GetDash(Interp,Tcl_GetString(Objv[++i]),&Spec->Dash)!=TCL_OK) {
-                  return(TCL_ERROR);
+               i++;
+               Spec->Dash.number=0;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  if (Tk_GetDash(Interp,Tcl_GetString(Objv[i]),&Spec->Dash)!=TCL_OK) {
+                     Tcl_AppendResult(Interp,"DataSpec_Config: Invalid dash ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                }
             }
             break;
@@ -729,7 +739,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_AppendResult(Interp,"",(char*)NULL);
                }
             } else {
-               glBitmapParseProc(NULL,Interp,Tk_MainWindow(Interp),Tcl_GetString(Objv[++i]),(char*)&Spec->Stipple,0);
+               i++;
+               Spec->Stipple=NULL;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  glBitmapParseProc(NULL,Interp,Tk_MainWindow(Interp),Tcl_GetString(Objv[i]),(char*)&Spec->Stipple,0);
+               }
             }
             break;
 
@@ -740,6 +754,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (!strlen(Tcl_GetString(Objv[++i]))) {
                   Spec->Icon=0;
                } else if (Tcl_GetIndexFromObj(Interp,Objv[i],ICONS,"icon",TCL_EXACT,&Spec->Icon)!=TCL_OK) {
+                  Tcl_AppendResult(Interp,"DataSpec_Config: Invalid icon ",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
             }
@@ -806,9 +821,15 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Tk_NameOfFont(Spec->Font),-1));
             } else {
                if (Spec->Font) Tk_FreeFont(Spec->Font);
-               Spec->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Objv[++i]);
-               if (Spec->Font)
+               i++;
+               Spec->Font=NULL;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  if (!(Spec->Font=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Objv[i]))) {
+                    Tcl_AppendResult(Interp,"DataSpec_Config: Invalid font ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
                   Tk_GetFontMetrics(Spec->Font,&Spec->TKM);
+               }
             }
             break;
 
@@ -1127,13 +1148,28 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Map->Name,-1));
                }
             } else {
-               map=CMap_Get(Tcl_GetString(Objv[++i]));
+               i++;
+               map=NULL;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  if (!(map=CMap_Get(Tcl_GetString(Objv[i])))) {
+                     Tcl_AppendResult(Interp,"DataSpec_Config: Invalid colormap ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+               }
                if (map!=Spec->Map) {
                   CMap_Free(Spec->Map);
-                  CMap_Incr(map);
+                  if (map) CMap_Incr(map);
                   Spec->Map=map;
                   cmap=1;
                }
+            }
+            break;
+
+         case SHOWMAP:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->ShowMap));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->ShowMap);               
             }
             break;
 

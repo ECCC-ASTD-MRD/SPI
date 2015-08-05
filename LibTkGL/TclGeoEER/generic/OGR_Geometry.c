@@ -277,7 +277,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                OGR_G_GetPoint(geom,0,&pt[0],&pt[1],&pt[2]);
                for (n=1;n<OGR_G_GetPointCount(geom);n++) {
                   OGR_G_GetPoint(geom,n,&ptp[0],&ptp[1],&ptp[2]);
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(GPC_SegmentDist(pt,ptp,vr)));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(OGM_SegmentDist(pt,ptp,vr)));
                   Vect_Assign(pt,ptp);
                }
 
@@ -644,7 +644,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case LENGTH:
-         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(GPC_Length(g0)));
+         Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGM_Length(g0)));
          break;
 
       case BUFFER:
@@ -696,7 +696,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,GPC_OnOGR(GPC_INT,g0,g1)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_INT,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Intersection(g0,g1)));
          break;
 
@@ -709,7 +709,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,GPC_OnOGR(GPC_UNION,g0,g1)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_UNION,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Union(g0,g1)));
          break;
 
@@ -722,7 +722,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,GPC_OnOGR(GPC_DIFF,g0,g1)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_DIFF,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_Difference(g0,g1)));
          break;
 
@@ -735,7 +735,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,GPC_OnOGR(GPC_XOR,g0,g1)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_XOR,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_SymmetricDifference(g0,g1)));
          break;
 
@@ -748,7 +748,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry",(char*)NULL);
             return(TCL_ERROR);
          }
-         if (GPC_Intersect(g0,g1,NULL,NULL)) {
+         if (OGM_Intersect(g0,g1,NULL,NULL)) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
@@ -882,7 +882,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
-         GPC_Simplify(dist,g0);
+         OGM_Simplify(dist,g0);
 //         OGR_G_Simplify(g0,dist);
          break;
 
@@ -1381,9 +1381,9 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
 
    if ((nv=OGR_G_GetPointCount(Geom))) {
 
-      OGR_ArrayVr=GPC_GetVect3d(nv+Size,GPC_ARRAY0);
-      OGR_ArrayEx=GPC_GetVect3d(nv+Size,GPC_ARRAY1);
-      OGR_ArrayNr=(Vect3d**)GPC_GetVect3d(nv+Size,GPC_ARRAYPTR);
+      OGR_ArrayVr=OGM_GetVect3d(nv+Size,OGM_ARRAY0);
+      OGR_ArrayEx=OGM_GetVect3d(nv+Size,OGM_ARRAY1);
+      OGR_ArrayNr=(Vect3d**)OGM_GetVect3d(nv+Size,OGM_ARRAYPTR);
 
       if (!OGR_ArrayVr || !OGR_ArrayNr || !OGR_ArrayEx) {
          return(0);

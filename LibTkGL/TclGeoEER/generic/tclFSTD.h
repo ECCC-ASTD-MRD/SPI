@@ -95,4 +95,7 @@ Vect3d*   FSTD_Grid(TData *Field,void *Proj,int Level);
 void      FSTD_HeadCopy(void *To,void *From);
 TDef_Type FSTD_TypeCheck(int Type,int Size);
 
+int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I1,int J1);
+int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *File,double Factor,char *Mode,char *Type,int I0,int J0,int I1,int J1);
+
 #endif

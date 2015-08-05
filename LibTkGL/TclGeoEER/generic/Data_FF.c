@@ -808,7 +808,7 @@ double FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Er
  *            l'algorithme de krigging
  *
  * Parametres :
- *  <Ref>     : GeoReference
+ *  <GRef>    : GeoReference
  *  <Def>     : Definitions des donnees
  *  <Pos>     : Positions connues (observations)
  *  <NPos>    : Nombre de positions connues (observations)
@@ -824,7 +824,7 @@ double FFKrigging_Value(TKrigging *Krig,Vect3d *Pos,double X,double Y,double *Er
  *       http://www.nbb.cornell.edu/neurobio/land/oldstudentprojects/cs490-94to95/clang/kriging.html
  *----------------------------------------------------------------------------
  */
-int FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
+int FFKrigging(TGeoRef *GRef,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,double A,int Mode) {
 
    TKrigging krig;
 
@@ -837,7 +837,7 @@ int FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,d
       krig.C1=C1;
       krig.A=(A<=0?1:A);
       krig.Mode=Mode;
-      krig.Wrap=(Ref->Type&GRID_WRAP)?Ref->X1:0;
+      krig.Wrap=(GRef->Type&GRID_WRAP)?GRef->X1:0;
 //      krig.Wrap=0.0;
 
       krig.Matrix=(double*)malloc(krig.N*krig.N*sizeof(double));
@@ -935,7 +935,7 @@ int FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,d
  *
  * Parametres :
  *  <Mode>    : Type de referenciel (REF_COOR,REF_GRID,REF_PROJ)
- *  <Ref>     : Reference geographique horizontale
+ *  <GPos>    : Reference geographique
  *  <Def>     : Definition des donnees
  *  <Stat>    : Statistiques de l'enregistrement
  *  <Field>   : Champs
@@ -951,7 +951,7 @@ int FFKrigging(TGeoRef *Ref,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,d
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
+int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
 
    int            n,ci,cj;
    unsigned int   len,i0,i1,j0,j1,i,j;
@@ -960,7 +960,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,Projection *Proj,i
    TList         *list;
    
    /*If we asked for geo coordinates and we don't have a geo-reference, do nothing*/
-   if ((Mode==REF_COOR && !Ref) || Ref->Grid[0]=='M' || Ref->Grid[0]=='Y' )
+   if (!GPos || (Mode==REF_COOR && !GPos->GRef) || GPos->GRef->Grid[0]=='M' || GPos->GRef->Grid[0]=='Y' )
       return(0);
 
    for (n=0;n<NbInter;n++) {
@@ -998,7 +998,7 @@ int FFContour(int Mode,TGeoRef *Ref,TDef *Def,TDataStat *Stat,Projection *Proj,i
 
          /*If this gridpoint has'nt yet been visited*/
          if (!buf[Def->NI*j+i]) {
-            len=FFContour_Quad(Ref,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth,Limit);
+            len=FFContour_Quad(GPos,Def,buf,i,j,Def->Level,Inter[n]==0?-1e-32:Inter[n],Mode,side,Depth,Limit);
 
             /*If we found a least 1 segment, keep it*/
             if (len>1) {
@@ -1213,7 +1213,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  * But      : Produire le ligne de contours
  *
  * Parametres :
- *  <Ref>     : GeoReference
+ *  <GPos>    : GeoReference position
  *  <Def>     : Definitions des donnees
  *  <Line>    : Contour resultant (NULL -> Prepass)
  *  <PMatrix> : Matrice contenant les drapeaux de proximite des lignes de champs
@@ -1247,7 +1247,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *----------------------------------------------------------------------------
  */
-unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
+unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
 
    double        vox[4],pvox[4],mid=0,x,y,d;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;
@@ -1299,8 +1299,8 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
 
             if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
-                  case REF_COOR : Ref->Project(Ref,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
-                  case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
+                  case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+                  case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
                   case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
                n++;
@@ -1349,8 +1349,8 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
       if ((side=FFContour_QuadCross(d,side,vox,Inter,&x,&y))) {
          if ((vbuf=VBuffer_Alloc(n+1))) {
             switch(Mode) {
-               case REF_COOR : Ref->Project(Ref,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
-               case REF_PROJ : VertexLoc(Ref,Def,vbuf[n],x,y,Z);break;
+               case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+               case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
                case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
             n++;
@@ -1405,8 +1405,8 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
             while (px || py) {
                if ((X!=x0 || Y!=y0) && (vbuf=VBuffer_Alloc(n+1))) {
                   switch(Mode) {
-                     case REF_COOR : Ref->Project(Ref,X,Y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
-                     case REF_PROJ : Vect_Assign(vbuf[n],Ref->Pos[dz][idx]);break;
+                     case REF_COOR : GPos->GRef->Project(GPos->GRef,X,Y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+                     case REF_PROJ : Vect_Assign(vbuf[n],GPos->Pos[dz][idx]);break;
                      case REF_GRID : Vect_Init(vbuf[n],X,Y,Z);break;
                   }
                   n++;
@@ -1472,7 +1472,7 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
  * But      : Effectue le rendue du volume du champ.
  *
  * Parametres :
- *  <Ref>     : GeoReference
+ *  <GPos>    : GeoReference position
  *  <Def>     : Definitions des donnees
  *  <Proj>    : Parametres de la projection
  *  <Value>   : Valeur de l'isosurface
@@ -1483,7 +1483,7 @@ unsigned int FFContour_Quad(TGeoRef *Ref,TDef *Def,unsigned char *PMatrix,int X,
  *
  *----------------------------------------------------------------------------
 */
-int FFMarchingCube(TGeoRef *Ref,TDef *Def,Projection *Proj,double Value) {
+int FFMarchingCube(TGeoPos *GPos,TDef *Def,Projection *Proj,double Value) {
 
    int    n,i,j,k;
    int    cubeidx,vridx=0;
@@ -1591,18 +1591,18 @@ int FFMarchingCube(TGeoRef *Ref,TDef *Def,Projection *Proj,double Value) {
             /* Create the triangle */
             for (n=0;TriTable[cubeidx][n]!=-1;n+=3) {
                if ((vbuf=VBuffer_Alloc(vridx+6))) {
-                  VertexLoc(Ref,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
-                  VertexLoc(Ref,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
-                  VertexLoc(Ref,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
 
                   /*Find normals from gradient within a single voxel*/
                   Vect_Assign(vbuf[vridx]  ,vrlist[TriTable[cubeidx][n]]);
                   Vect_Assign(vbuf[vridx+2],vrlist[TriTable[cubeidx][n+1]]);
                   Vect_Assign(vbuf[vridx+4],vrlist[TriTable[cubeidx][n+2]]);
 
-                  VertexGradient(Ref,Def,vbuf[vridx])  ;Vect_Mul(vbuf[vridx],  vbuf[vridx]  ,Proj->LightPos);  Vect_Normalize(vbuf[vridx]);
-                  VertexGradient(Ref,Def,vbuf[vridx+2]);Vect_Mul(vbuf[vridx+2],vbuf[vridx+2],Proj->LightPos);  Vect_Normalize(vbuf[vridx+2]);
-                  VertexGradient(Ref,Def,vbuf[vridx+4]);Vect_Mul(vbuf[vridx+4],vbuf[vridx+4],Proj->LightPos);  Vect_Normalize(vbuf[vridx+4]);
+                  VertexGradient(Def,vbuf[vridx])  ;Vect_Mul(vbuf[vridx],  vbuf[vridx]  ,Proj->LightPos);  Vect_Normalize(vbuf[vridx]);
+                  VertexGradient(Def,vbuf[vridx+2]);Vect_Mul(vbuf[vridx+2],vbuf[vridx+2],Proj->LightPos);  Vect_Normalize(vbuf[vridx+2]);
+                  VertexGradient(Def,vbuf[vridx+4]);Vect_Mul(vbuf[vridx+4],vbuf[vridx+4],Proj->LightPos);  Vect_Normalize(vbuf[vridx+4]);
                   vridx+=6;
                }
             }
@@ -1664,7 +1664,7 @@ float *FFStreamMapSetup1D(double Delta) {
  * But      : Produire les lignes de champs d'un champ vectoriel
  *
  * Parametres :
- *  <Ref>     : GeoReference
+ *  <GPos>    : GeoReference position
  *  <Def>     : Definitions des donnees
  *  <VP>      : Viewport
  *  <Stream>  : Ligne de champs courante
@@ -1693,7 +1693,7 @@ float *FFStreamMapSetup1D(double Delta) {
  *
  *----------------------------------------------------------------------------
 */
-int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim) {
+int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim) {
 
    int npos=0;         /*Number of position in a particular streamline/fieldline*/
    int iter=0;         /*Keep track of the number of iteration of a numerical method*/
@@ -1740,12 +1740,12 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
                Map[idx]=dv;
 
             switch(Mode) {
-               case REF_COOR : Ref->Project(Ref,X,Y,&Stream[idx][0],&Stream[idx][1],0,1);
+               case REF_COOR : GPos->GRef->Project(GPos->GRef,X,Y,&Stream[idx][0],&Stream[idx][1],0,1);
                                n=floor(Z);
-                               Stream[idx][2]=ZRef_Level2Meter(ILIN(Ref->ZRef.Levels[n],Ref->ZRef.Levels[n+1],Z-n),Ref->ZRef.Type);
+                               Stream[idx][2]=ZRef_Level2Meter(ILIN(GPos->ZRef->Levels[n],GPos->ZRef->Levels[n+1],Z-n),GPos->ZRef->Type);
                                break;
 
-               case REF_PROJ : VertexLoc(Ref,Def,Stream[idx],X,Y,Z);
+               case REF_PROJ : VertexLoc(GPos->Pos,Def,Stream[idx],X,Y,Z);
                              break;
 
                case REF_GRID : Vect_Init(Stream[idx],X,Y,Z);
@@ -1774,12 +1774,12 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
       }
 
       // Next vector
-      if (Ref->Grid[0]=='V') {
-         v[0]=VertexVal(Ref,Def,0,X,Y,Z);
-         v[1]=VertexVal(Ref,Def,2,X,Y,Z);
+      if (GPos->GRef->Grid[0]=='V') {
+         v[0]=VertexVal(Def,0,X,Y,Z);
+         v[1]=VertexVal(Def,2,X,Y,Z);
          v[2]=0.0;
       } else {
-         VertexValV(Ref,Def,X,Y,Z,v);
+         VertexValV(Def,X,Y,Z,v);
       }
       // Get vector norm
       dv=Vect_Norm(v);
@@ -1806,12 +1806,12 @@ int FFStreamLine(TGeoRef *Ref,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *M
       d[1]=Y+rk1[1]; 
       d[2]=(ZDim>0)?Z+rk1[2]:Z;
       
-      if (Ref->Grid[0]=='V') {
-         rk2[0]=VertexVal(Ref,Def,0,d[0],d[1],Z);
-         rk2[1]=VertexVal(Ref,Def,2,d[0],d[1],Z);
+      if (GPos->GRef->Grid[0]=='V') {
+         rk2[0]=VertexVal(Def,0,d[0],d[1],Z);
+         rk2[1]=VertexVal(Def,2,d[0],d[1],Z);
          rk2[2]=0.0;
       } else {
-         VertexValV(Ref,Def,d[0],d[1],d[2],rk2);
+         VertexValV(Def,d[0],d[1],d[2],rk2);
       }
       
       // Check for 0 length vector

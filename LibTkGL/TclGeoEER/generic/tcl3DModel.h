@@ -99,7 +99,7 @@ typedef struct T3DScene {
 typedef struct T3DModel {
    char         *Name;
    char         *Path;
-   TGeoRef      *Ref;                 /*GeoReference*/
+   TGeoRef      *GRef;                /*GeoReference*/
    TDataSpec    *Spec;                /*Specification des donnees*/
 
    Vect3d        Extent[2];          /*Extent*/

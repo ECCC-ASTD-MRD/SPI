@@ -234,7 +234,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
          head=((TRPNHeader*)(field->Head));
-         f77name(cigaxg)(field->Ref->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
+         f77name(cigaxg)(field->GRef->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
          f77name(mscale)((float*)field->Def->Data[0],&xg3,&xg1,&xg2,&field->Def->NI,&field->Def->NJ);
          break;
 
@@ -254,7 +254,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
 
-         if (field->Ref->ZRef.PTop==0.0 && field->Ref->ZRef.PRef==0.0) {
+         if (field->ZRef->PTop==0.0 && field->ZRef->PRef==0.0) {
             if (!FSTD_DecodeRPNLevelParams(field)) {
                Tcl_AppendResult(Interp,"Could not find level parameters from file",(char*)NULL);
                return(TCL_ERROR);
@@ -266,7 +266,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             for(j=0;j<field->Def->NJ;j++) {
                for(i=0;i<field->Def->NI;i++) {
                   Def_Get(p0->Def,0,idx,tmp);
-                  tmp=ZRef_K2Pressure(&field->Ref->ZRef,tmp,k);
+                  tmp=ZRef_K2Pressure(field->ZRef,tmp,k);
                   Def_Set(field->Def,0,idxk+idx,tmp);
                   idx++;
                }
@@ -733,14 +733,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_AppendResult(Interp,"invalid field :",Tcl_GetString(Objv[2]),(char*)NULL);
             return(TCL_ERROR);
          }
-         if (field0->Ref && field0->Ref->Type|GRID_SPARSE)
+         if (field0->GRef && field0->GRef->Type|GRID_SPARSE)
             FSTD_FieldReadMesh(field0);
 
          // Process each sub grids independently
-         pnid=field0->Ref->NId;
+         pnid=field0->GRef->NId;
          ok=TCL_OK;
 
-         for(nid=(pnid?pnid:(field0->Ref->NbId>1?1:0));nid<=(pnid?pnid:(field0->Ref->NbId>1?field0->Ref->NbId:0));nid++) {
+         for(nid=(pnid?pnid:(field0->GRef->NbId>1?1:0));nid<=(pnid?pnid:(field0->GRef->NbId>1?field0->GRef->NbId:0));nid++) {
             FSTD_FieldSubSelect(field0,nid);
 
             imode=-1;
@@ -752,12 +752,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
 
-               if (field1->Ref && field1->Ref->Type|GRID_SPARSE) {
+               if (field1->GRef && field1->GRef->Type|GRID_SPARSE) {
                   FSTD_FieldReadMesh(field1);
                }
 
                /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
-               if (imode<IR_NOP && field0->Ref->Ids && field1->Ref->Ids && field0->Ref->Ids[field0->Ref->NId]==field1->Ref->Ids[field1->Ref->NId]) {
+               if (imode<IR_NOP && field0->GRef->Ids && field1->GRef->Ids && field0->GRef->Ids[field0->GRef->NId]==field1->GRef->Ids[field1->GRef->NId]) {
                   if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1,0)) {
                      ok=TCL_ERROR; break;
                   } else {
@@ -805,11 +805,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
                   /*Check compatibility between source and destination*/
                   if (!Def_Compat(field0->Def,field1->Def)) {
-                     field0->Ref=GeoRef_Find(GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,field0->Def->NK,field1->Ref->ZRef.Type,field1->Ref->ZRef.Levels));
+                     field0->GRef=GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
                   }
-                  field0->Ref->ZRef.Type=field1->Ref->ZRef.Type;
+                  ZRef_Free(field0->ZRef);
+                  field0->ZRef=ZRef_Define(field1->ZRef->Type,field1->ZRef->LevelNb,field1->ZRef->Levels);
                   FSTD_FieldSetTo(field0,field1);
-                  if (!(nk=Def_GridInterpConservative(field0->Ref,field0->Def,field1->Ref,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
+                  if (!(nk=Def_GridInterpConservative(field0->GRef,field0->Def,field1->GRef,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
@@ -843,7 +844,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                               for(key=0;key<FSIZE3D(field0->Def);key++) {
                                  Def_Set(field0->Def,0,key,0);
                               }
-                              GeoRef_Find(GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels));
+                              GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
+                              ZRef_Free(field0->ZRef);
+                              field0->ZRef=ZRef_Define(field0->ZRef->Type,nk,field0->ZRef->Levels);
                            }
                         }
                      }
@@ -851,7 +854,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if(Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
-                  if (!Def_GridInterpAverage(field0->Ref,field0->Def,field1->Ref,field1->Def,table,fieldt?fieldt->Def:NULL,imode,ni)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,field1->GRef,field1->Def,table,fieldt?fieldt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
@@ -868,14 +871,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      free(field0->Def->Sub); field0->Def->Sub=NULL;
                   }
                   field0->Def->SubSample=ni;
-                  if (!Def_GridInterpSub(field0->Ref,field0->Def,field1->Ref,field1->Def,IR_SUBNEAREST?'N':'L')) {
+                  if (!Def_GridInterpSub(field0->GRef,field0->Def,field1->GRef,field1->Def,IR_SUBNEAREST?'N':'L')) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
                   }
                } else {
                   ok=FSTD_FieldGridInterpolate(Interp,field0,field1,n);
-               }
+              }
                if (ok==TCL_ERROR) break;
             } else if ((band=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
 
@@ -924,7 +927,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      }
                   }
 
-                  if (!(nk=Def_GridInterpConservative(field0->Ref,field0->Def,band->Ref,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
+                  if (!(nk=Def_GridInterpConservative(field0->GRef,field0->Def,band->GRef,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
@@ -962,7 +965,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                               for(dk=0;dk<FSIZE3D(field0->Def);dk++) {
                                  Def_Set(field0->Def,0,dk,0);
                               }
-                              GeoRef_Find(GeoRef_Resize(field0->Ref,field0->Def->NI,field0->Def->NJ,nk,field0->Ref->ZRef.Type,field0->Ref->ZRef.Levels));
+                              GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
+                              ZRef_Free(field0->ZRef);
+                              field0->ZRef=ZRef_Define(field0->ZRef->Type,nk,field0->ZRef->Levels);
                            }
                         }
                      }
@@ -970,13 +975,13 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
-                  if (!Def_GridInterpAverage(field0->Ref,field0->Def,band->Ref,band->Def,table,bandt?bandt->Def:NULL,imode,ni)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,band->GRef,band->Def,table,bandt?bandt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
                   }
                } else {
-                  if (!Def_GridInterp(field0->Ref,field0->Def,band->Ref,band->Def,Objv[4]?Tcl_GetString(Objv[4])[0]:'L')) {
+                  if (!Def_GridInterp(field0->GRef,field0->Def,band->GRef,band->Def,Objv[4]?Tcl_GetString(Objv[4])[0]:'L')) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
@@ -1025,7 +1030,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
 
-               if (!(nk=Def_GridInterpOGR(field0->Def,field0->Ref,layer,layer->Ref,imode,1,field,x,m,index))) {
+               if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   ok=TCL_ERROR;
                   break;
@@ -1075,8 +1080,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   case 'G':id=3;break;
                   case 'L':id=4;break;
                }
-               if ((pos=Obs_Grid(field0->Ref,obs,&npos,n))) {
-                  ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
+               if ((pos=Obs_Grid(field0->GRef,field0->ZRef,obs,&npos,n))) {
+                  ok=FFKrigging(field0->GRef,field0->Def,pos,npos,c0,c1,a,id);
                   free(pos);
                } else {
                   Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
@@ -1116,8 +1121,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                }
 
 
-               if ((pos=MetObs_Grid(Interp,field0->Ref,metobs,time,Objv[5],&npos,n))) {
-                  ok=FFKrigging(field0->Ref,field0->Def,pos,npos,c0,c1,a,id);
+               if ((pos=MetObs_Grid(Interp,field0->GRef,metobs,time,Objv[5],&npos,n))) {
+                  ok=FFKrigging(field0->GRef,field0->Def,pos,npos,c0,c1,a,id);
                   free(pos);
                } else {
                   Tcl_AppendResult(Interp,"Unable to calculate position vector",(char*)NULL);
@@ -1139,7 +1144,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
                if (n==IR_NOP || n==IR_ACCUM || n==IR_BUFFER) {
-                  if (!Def_GridInterpAverage(field0->Ref,field0->Def,NULL,NULL,NULL,NULL,n,1)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,NULL,NULL,NULL,NULL,n,1)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
@@ -1340,18 +1345,16 @@ int FSTD_FileClose(Tcl_Interp *Interp,char *Id) {
    TRPNFile *file;
    
    if ((file=(TRPNFile*)TclY_HashDel(&FSTD_FileTable,Id))) {
-      if (!(--file->NRef)) {
-         file->Open=file->Open>0?1:file->Open;
-         FSTD_FileUnset(Interp,file);
-         cs_fstunlockid(file->Id);
+      file->Open=file->Open>0?1:file->Open;
+      FSTD_FileUnset(Interp,file);
+      cs_fstunlockid(file->Id);
 
-         // Nullify file link of field using this file
-         Data_UnlinkFSTDFile(file);
-         
-         free(file->Name);
-         free(file->CId);
-         free(file);
-      }
+      // Nullify file link of field using this file
+      Data_UnlinkFSTDFile(file);
+     
+      free(file->Name);
+      free(file->CId);
+      free(file);
    }
    return(TCL_OK);
 }
@@ -1605,11 +1608,12 @@ int FSTD_FileSet(Tcl_Interp *Interp,TRPNFile *File){
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O",0);
          }
       }
-
+      
       if (ok<0) {
          snprintf(err,8,"%i",ok);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to link standard file name, ",File->Name," (c_fnom failed = ",err,")",(char *)NULL);
          RPN_FileUnlock();
+         File->Open++;
          return(-1);
       }
 
@@ -1620,6 +1624,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,TRPNFile *File){
          snprintf(err,8,"%i",ok);
          if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: Unable to open standard file, ",File->Name," (c_fstouv failed = ",err,")",(char *)NULL);
          RPN_FileUnlock();
+         File->Open++;
          return(-1);
       }
    }

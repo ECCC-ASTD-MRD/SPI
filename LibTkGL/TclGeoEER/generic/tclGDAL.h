@@ -57,7 +57,7 @@ typedef struct GDAL_File {
    GDALDatasetH    Set;
    GDALColorInterp ColorInterp;
 
-   TGeoRef     *Ref;       /*GeoReference*/
+   TGeoRef     *GRef;      /*GeoReference*/
    char        *Name;
    char       **Meta;
    char        *Id;
@@ -73,13 +73,15 @@ typedef struct GDAL_Band {
    GDAL_GCP     *GCPs;
    int           NbGCPs;
    int           Approx;
-   TGeoTex      Tex;                  /* Tiled texture info */
+   TGeoTex      Tex;                  // Tiled texture info 
 
-   time_t        Date;                /* Valid time */
-   TGeoRef      *Ref;                 /* GeoReference */
-   TDef         *Def;                 /* Data definition */
-   TDataSpec    *Spec;                /* Specification des donnees*/
-   TDataStat    *Stat;                /* Data stats */
+   time_t        Date;                // Valid time
+   TGeoPos      *GPos;                // Geo position
+   TGeoRef      *GRef;                // GeoReference
+   TZRef        *ZRef;                // Reference Verticale
+   TDef         *Def;                 // Data definition
+   TDataSpec    *Spec;                // Specification des donnees
+   TDataStat    *Stat;                // Data stats 
 } GDAL_Band;
 
 GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id);
@@ -100,6 +102,7 @@ GDAL_Band* GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def);
 int        GDAL_BandDestroy(Tcl_Interp *Interp,char *Name);
 GDAL_Band* GDAL_BandGet(char *Name);
 void       GDAL_BandGetStat(GDAL_Band *Band);
+void       GDAL_BandPreInit(GDAL_Band *Band);
 int        GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int NIdx,int X0,int Y0,int X1,int Y1,int BD,int Full);
 int        GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band);
 int        GDAL_BandRenderTile(Projection *Proj,ViewportItem *VP,GDAL_Band *Band,TGeoTexTile *Tile,int Resolution);

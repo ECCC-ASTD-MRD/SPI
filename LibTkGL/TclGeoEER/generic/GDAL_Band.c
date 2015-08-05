@@ -73,7 +73,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALDataType    type=GDT_Unknown;
    int             c;
    int             i,nx,ny,rx,ry;
-   double          dval;
+   double          dval,minmax[2];
 
    if (!NIdx) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: No valid band specified",(char*)NULL);
@@ -150,9 +150,11 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       memcpy(band->GCPs,GDALGetGCPs(file->Set),band->NbGCPs*sizeof(GDAL_GCP));
    }
 
-   band->Ref=GDAL_GeoRef(file->Set,hband,band->GCPs,band->NbGCPs,nx,ny);
-   GeoRef_Size(band->Ref,X0+BD,Y0+BD,0,X1-BD,Y1-BD,0,BD);
-   GeoRef_Qualify(band->Ref);
+   band->GRef=GDAL_GeoRef(file->Set,hband,band->GCPs,band->NbGCPs,nx,ny);
+   band->ZRef=ZRef_Define(LVL_UNDEF,1,NULL);
+   band->GPos=GeoPos_Find(band->GRef,band->ZRef);
+   GeoRef_Size(band->GRef,X0+BD,Y0+BD,X1-BD,Y1-BD,BD);
+   GeoRef_Qualify(band->GRef);
 
    /*Get the No Data Value*/
    dval=GDALGetRasterNoDataValue(hband,&i);
@@ -195,12 +197,16 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       CMap_Free(band->Spec->Map);
 
    if ((hTable=GDALGetRasterColorTable(hband))) {
-//      printf( "Color Table (%s with %d entries)\n",GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
-
+      printf( "Color Table (%s with %d entries)\n",GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
+      
       if (GDALGetRasterColorInterpretation(hband)==GCI_PaletteIndex) {
+         //  palette is always 256 colors so in color index mode get max value as nb colors
          band->Tex.Indexed=1;
+         GDALComputeRasterMinMax(hband,TRUE,minmax);
+         band->Spec->Map=CMap_New(NULL,minmax[1]);
+      } else {
+         band->Spec->Map=CMap_New(NULL,GDALGetColorEntryCount(hTable));
       }
-      band->Spec->Map=CMap_New(NULL,GDALGetColorEntryCount(hTable));
       for (c=0;c<band->Spec->Map->NbPixels;c++) {
           GDALGetColorEntryAsRGB(hTable,c,&entry);
           band->Spec->Map->Control[c][0]=entry.c1;
@@ -276,12 +282,12 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
       }
    }
 
-   if (!Field->Ref) {
+   if (!Field->GRef) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing GeoRef",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   if (!Field->Ref->ZRef.Levels) {
+   if (!Field->ZRef->Levels) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDCopy: Missing Levels",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -290,7 +296,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
    if (Scale) {
       levels=(float*)malloc(Field->Def->NJ * sizeof(float));
       for(z=0; z<Field->Def->NJ; ++z) {
-         levels[z] = SCALEVALUE(Field->Ref->ZRef.Levels[0], Field->Ref->ZRef.Levels[Field->Def->NJ-1], Field->Ref->ZRef.Levels[z]);
+         levels[z] = SCALEVALUE(Field->ZRef->Levels[0], Field->ZRef->Levels[Field->Def->NJ-1], Field->ZRef->Levels[z]);
       }
    }
 
@@ -313,7 +319,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
          posX=(double)x*incri;
 
          // Get interpolated value for that point (pixel)
-         if (!Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,posX,posY,0,&val,&dir)) {
+         if (!Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,posX,posY,0,&val,&dir)) {
             val=Field->Def->NoData;
          }
 
@@ -803,7 +809,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    for(y=0;y<Band->Def->NJ;y+=dy) {
 
       /*Reproject*/
-      if (!GeoScan_Get(&scan,Field->Ref,Field->Def,Band->Ref,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,Field->Spec->InterpDegree)) {
+      if (!GeoScan_Get(&scan,Field->GRef,Field->Def,Band->GRef,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,Field->Spec->InterpDegree)) {
          Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
@@ -849,7 +855,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    /* Check for contouring */
    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
-      FFContour(REF_GRID,Band->Ref,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1,0);
+      FFContour(REF_GRID,Band->GPos,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1,0);
 
       /*Initialize murphy line object*/
       m.Def=Band->Def;
@@ -912,11 +918,11 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       // Loop on raster and place arrows at specified interval
       for(x=0;x<Band->Def->NI;x+=Field->Spec->Sample) {
          for(y=0;y<Band->Def->NJ;y+=Field->Spec->Sample) {
-            Band->Ref->Project(Band->Ref,x,y,&lat,&lon,0,1);
+            Band->GRef->Project(Band->GRef,x,y,&lat,&lon,0,1);
 
-            if (Field->Ref->UnProject(Field->Ref,&i,&j,lat,lon,0,1)) {
+            if (Field->GRef->UnProject(Field->GRef,&i,&j,lat,lon,0,1)) {
                idx=FIDX2D(Field->Def,(int)i,(int)j);
-               Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,i,j,0,&val,&dir);
+               Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i,j,0,&val,&dir);
                if (val<=Field->Spec->Max && val>=Field->Spec->Min) {
                   if (Field->Spec->MapAll && Field->Spec->Map) {
                      VAL2COL(m.Idx,Field->Spec,val);
@@ -927,8 +933,8 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
                   }
 
                   // Reproject vector orientation by adding destination projection's north difference
-                  if (Band->Ref->Type&GRID_NUNORTH) {                     
-                     Band->Ref->Project(Band->Ref,x,y+1,&latd,&lond,1,1);
+                  if (Band->GRef->Type&GRID_NUNORTH) {                     
+                     Band->GRef->Project(Band->GRef,x,y+1,&latd,&lond,1,1);
 
                      lat=DEG2RAD(lat);   lon=DEG2RAD(lon);
                      latd=DEG2RAD(latd); lond=DEG2RAD(lond);
@@ -1003,15 +1009,15 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
       /*Write the georeference stuff*/
       if (band->NbGCPs) {
          /*Write GCPS*/
-         GDALSetGCPs(file->Set,band->NbGCPs,band->GCPs,band->Ref->String);
+         GDALSetGCPs(file->Set,band->NbGCPs,band->GCPs,band->GRef->String);
       } else {
          /*Write Transform*/
-         if (band->Ref) {
-            if (band->Ref->Transform)
-               GDALSetGeoTransform(file->Set,band->Ref->Transform);
+         if (band->GRef) {
+            if (band->GRef->Transform)
+               GDALSetGeoTransform(file->Set,band->GRef->Transform);
 
-            if (band->Ref->Spatial) {
-               OSRExportToWkt(band->Ref->Spatial,&str);
+            if (band->GRef->Spatial) {
+               OSRExportToWkt(band->GRef->Spatial,&str);
                GDALSetProjection(file->Set,str);
                OGRFree(str);
             }
@@ -1406,14 +1412,14 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRID:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
-                  band->Ref->Project(band->Ref,w,h,&lat,&lon,0,1);
+                  band->GRef->Project(band->GRef,w,h,&lat,&lon,0,1);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lat));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lon));
                }
@@ -1422,14 +1428,14 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDLAT:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
              obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
-                  band->Ref->Project(band->Ref,w,h,&lat,&lon,0,1);
+                  band->GRef->Project(band->GRef,w,h,&lat,&lon,0,1);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lat));
                }
             }
@@ -1437,14 +1443,14 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDLON:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             obj=Tcl_NewListObj(0,NULL);
             for (w=0;w<band->Def->NI;w++) {
                for (h=0;h<band->Def->NJ;h++) {
-                  band->Ref->Project(band->Ref,w,h,&lat,&lon,0,1);
+                  band->GRef->Project(band->GRef,w,h,&lat,&lon,0,1);
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lon));
                }
             }
@@ -1455,7 +1461,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             tr=0;
             ex=1;
          case GRIDPOINT:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1465,7 +1471,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==4) {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
-            band->Ref->Project(band->Ref,x0,y0,&lat,&lon,ex,tr);
+            band->GRef->Project(band->GRef,x0,y0,&lat,&lon,ex,tr);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lat));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(lon));
             Tcl_SetObjResult(Interp,obj);
@@ -1475,7 +1481,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             tr=0;
             ex=1;
          case COORDPOINT:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1485,7 +1491,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             if (Objc==4) {
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
-            band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,ex,tr);
+            band->GRef->UnProject(band->GRef,&x0,&y0,lat,lon,ex,tr);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(x0));
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(y0));
             Tcl_SetObjResult(Interp,obj);
@@ -1501,19 +1507,19 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case LLEXTENT:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
             /*If not calculated yet, get latlon extent*/
-            if (band->Ref->LLExtent.MinY==1e32) {
-               GeoRef_Limits(band->Ref,&band->Ref->LLExtent.MinY,&band->Ref->LLExtent.MinX,&band->Ref->LLExtent.MaxY,&band->Ref->LLExtent.MaxX);
+            if (band->GRef->LLExtent.MinY==1e32) {
+               GeoRef_Limits(band->GRef,&band->GRef->LLExtent.MinY,&band->GRef->LLExtent.MinX,&band->GRef->LLExtent.MaxY,&band->GRef->LLExtent.MaxX);
             }
             obj=Tcl_NewListObj(0,NULL);
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MinY));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MinX));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MaxY));
-            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->LLExtent.MaxX));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->LLExtent.MinY));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->LLExtent.MinX));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->LLExtent.MaxY));
+            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->LLExtent.MaxX));
             Tcl_SetObjResult(Interp,obj);
             break;
 
@@ -1562,7 +1568,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDVALUE:
-            if (!band->Ref) {
+            if (!band->GRef) {
                Tcl_AppendResult(Interp,"GDAL_BandStat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1573,7 +1579,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                 Tcl_SetObjResult(Interp,Tcl_NewStringObj("-",-1));
                 return(TCL_OK);
             }
-            if (band->Ref->UnProject(band->Ref,&x0,&y0,lat,lon,0,1)) {
+            if (band->GRef->UnProject(band->GRef,&x0,&y0,lat,lon,0,1)) {
                DEFCLAMP(band->Def,x0,y0);
                x0=ROUND(x0);
                y0=ROUND(y0);
@@ -1784,56 +1790,56 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_GetBooleanFromObj(Interp,Objv[++i],&order);
                }
 
-               if (band->Ref->GCPTransform) {
-                  GDALDestroyGCPTransformer(band->Ref->GCPTransform);
-                  band->Ref->GCPTransform=NULL;
+               if (band->GRef->GCPTransform) {
+                  GDALDestroyGCPTransformer(band->GRef->GCPTransform);
+                  band->GRef->GCPTransform=NULL;
                }
-               if (band->Ref->TPSTransform) {
-                  GDALDestroyTPSTransformer(band->Ref->TPSTransform);
-                  band->Ref->TPSTransform=NULL;
+               if (band->GRef->TPSTransform) {
+                  GDALDestroyTPSTransformer(band->GRef->TPSTransform);
+                  band->GRef->TPSTransform=NULL;
                }
 
                switch(order) {
                   case 0:
-                     if (!band->Ref->Transform) {
-                        band->Ref->Transform=(double*)calloc(6,sizeof(double));
+                     if (!band->GRef->Transform) {
+                        band->GRef->Transform=(double*)calloc(6,sizeof(double));
                      }
-                     if (!band->Ref->InvTransform) {
-                        band->Ref->InvTransform=(double*)calloc(6,sizeof(double));
+                     if (!band->GRef->InvTransform) {
+                        band->GRef->InvTransform=(double*)calloc(6,sizeof(double));
                      }
-                     if (!(GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,band->Ref->Transform,1))) {
+                     if (!(GDALGCPsToGeoTransform(band->NbGCPs,band->GCPs,band->GRef->Transform,1))) {
                         Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: () Unable to fit control points",(char*)NULL);
                         return(TCL_ERROR);
                      }
-                     c=GDALInvGeoTransform(band->Ref->Transform,band->Ref->InvTransform);
+                     c=GDALInvGeoTransform(band->GRef->Transform,band->GRef->InvTransform);
                      break;
                   case 1:
                   case 2:
                   case 3:
-                     if (band->Ref->Transform) {
-                        free(band->Ref->Transform);
-                        band->Ref->Transform=NULL;
+                     if (band->GRef->Transform) {
+                        free(band->GRef->Transform);
+                        band->GRef->Transform=NULL;
                      }
-                     if (band->Ref->InvTransform) {
-                        free(band->Ref->InvTransform);
-                        band->Ref->InvTransform=NULL;
+                     if (band->GRef->InvTransform) {
+                        free(band->GRef->InvTransform);
+                        band->GRef->InvTransform=NULL;
                      }
-                     if (!(band->Ref->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,order,FALSE))) {
+                     if (!(band->GRef->GCPTransform=(void*)GDALCreateGCPTransformer(band->NbGCPs,band->GCPs,order,FALSE))) {
                         Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: (GPC) Unable to fit control points",(char*)NULL);
                         return(TCL_ERROR);
                      }
                      break;
 
                   case 4:
-                     if (band->Ref->Transform) {
-                        free(band->Ref->Transform);
-                        band->Ref->Transform=NULL;
+                     if (band->GRef->Transform) {
+                        free(band->GRef->Transform);
+                        band->GRef->Transform=NULL;
                      }
-                     if (band->Ref->InvTransform) {
-                        free(band->Ref->InvTransform);
-                        band->Ref->InvTransform=NULL;
+                     if (band->GRef->InvTransform) {
+                        free(band->GRef->InvTransform);
+                        band->GRef->InvTransform=NULL;
                      }
-                     if (!(band->Ref->TPSTransform=(void*)GDALCreateTPSTransformer(band->NbGCPs,band->GCPs,FALSE))) {
+                     if (!(band->GRef->TPSTransform=(void*)GDALCreateTPSTransformer(band->NbGCPs,band->GCPs,FALSE))) {
                         Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: (TPS) Unable to fit control points",(char*)NULL);
                         return(TCL_ERROR);
                      }
@@ -1845,20 +1851,20 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case GEOREF:
             if (Objc==1) {
-               if (band->Ref)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(band->Ref->Name,-1));
+               if (band->GRef)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(band->GRef->Name,-1));
             } else {
                ref=GeoRef_Get(Tcl_GetString(Objv[++i]));
                if (!ref) {
                   Tcl_AppendResult(Interp,"\n   GDAL_BandDefine: Georef name unknown: \"",Tcl_GetString(Objv[i]),"\"",(char *)NULL);
                   return(TCL_ERROR);
                }
-               if (ref!=band->Ref) {
-                  if (band->Ref)
-                     GeoRef_Destroy(Interp,band->Ref->Name);
-                  band->Ref=ref;
-                  GeoRef_Incr(band->Ref);
-                  GeoRef_Size(ref,ref->BD,ref->BD,0,band->Def->NI-1-ref->BD,band->Def->NJ-1-ref->BD,band->Def->NK-1,ref->BD);
+               if (ref!=band->GRef) {
+                  if (band->GRef)
+                     GeoRef_Destroy(Interp,band->GRef->Name);
+                  band->GRef=ref;
+                  GeoRef_Incr(band->GRef);
+                  GeoRef_Size(ref,ref->BD,ref->BD,band->Def->NI-1-ref->BD,band->Def->NJ-1-ref->BD,ref->BD);
                   GeoRef_Qualify(ref);
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
@@ -1880,35 +1886,35 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"invalid Y Axis field :",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
-               if (!GeoRef_Positional(band->Ref,xband->Def,yband->Def)) {
+               if (!GeoRef_Positional(band->GRef,xband->Def,yband->Def)) {
                   Tcl_AppendResult(Interp,"unable to initialize positional data",(char*)NULL);
                   return(TCL_ERROR);
                }
                if (band->Stat) { Data_StatFree(band->Stat); band->Stat=NULL; }
 
-               GeoRef_Qualify(band->Ref);
+               GeoRef_Qualify(band->GRef);
                GDAL_BandClean(band,1,1,1);
             }
             break;
 
          case PROJECTION:
              if (Objc==1) {
-               if (band->Ref && band->Ref->String)
-                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(band->Ref->String,-1));
+               if (band->GRef && band->GRef->String)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(band->GRef->String,-1));
             } else {
                ++i;
-               if (band->Ref && !band->Ref->String && strlen(Tcl_GetString(Objv[i]))==0)
+               if (band->GRef && !band->GRef->String && strlen(Tcl_GetString(Objv[i]))==0)
                   break;
 
-               if (band->Ref && band->Ref->String && strlen(band->Ref->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),band->Ref->String)==0) {
+               if (band->GRef && band->GRef->String && strlen(band->GRef->String)==strlen(Tcl_GetString(Objv[i])) && strcmp(Tcl_GetString(Objv[i]),band->GRef->String)==0) {
                } else {
-                  ref=band->Ref;
+                  ref=band->GRef;
                   if (ref) {
                      GeoRef_WKTSet(ref,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL);
-//                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
+//                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,Tcl_GetString(Objv[i]),ref->Transform,ref->InvTransform,NULL));
 //                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
+                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,NULL,0,0,0,0,Tcl_GetString(Objv[i]),NULL,NULL,NULL));
                   }
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
@@ -1917,10 +1923,10 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case TRANSFORM:
             if (Objc==1) {
-               if (band->Ref && band->Ref->Transform) {
+               if (band->GRef && band->GRef->Transform) {
                   obj=Tcl_NewListObj(0,NULL);
                   for(j=0;j<6;j++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->Transform[j]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->Transform[j]));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
@@ -1948,15 +1954,15 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      im=inv;
                   }
                }
-               if (!band->Ref || !band->Ref->Transform || !tm || memcmp(tm,band->Ref->Transform,6*sizeof(double))!=0) {
-                  ref=band->Ref;
+               if (!band->GRef || !band->GRef->Transform || !tm || memcmp(tm,band->GRef->Transform,6*sizeof(double))!=0) {
+                  ref=band->GRef;
                   if (ref) {
                      GeoRef_WKTSet(ref,ref->String,tm,im,NULL);
-//                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
-//                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
+//                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
+//                     GeoRef_Size(band->GRef,0,0,band->Def->NI-1,band->Def->NJ-1,ref->BD);
 //                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL));
+                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
                }
             }
@@ -1964,10 +1970,10 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
          case INVTRANSFORM:
             if (Objc==1) {
-               if (band->Ref && band->Ref->InvTransform) {
+               if (band->GRef && band->GRef->InvTransform) {
                   obj=Tcl_NewListObj(0,NULL);
                   for(j=0;j<6;j++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->Ref->InvTransform[j]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(band->GRef->InvTransform[j]));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
@@ -1995,15 +2001,15 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                      tm=tra;
                   }
                }
-               if (!band->Ref || !band->Ref->InvTransform || !tm || memcmp(tm,band->Ref->InvTransform,6*sizeof(double))!=0) {
-                  ref=band->Ref;
+               if (!band->GRef || !band->GRef->InvTransform || !tm || memcmp(tm,band->GRef->InvTransform,6*sizeof(double))!=0) {
+                  ref=band->GRef;
                   if (ref) {
                      GeoRef_WKTSet(ref,ref->String,tm,im,NULL);
-//                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
-//                     GeoRef_Size(band->Ref,0,0,0,band->Def->NI-1,band->Def->NJ-1,band->Def->NK-1,ref->BD);
+//                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,LVL_UNDEF,NULL,ref->Grid,0,0,0,0,ref->String,tm,im,NULL));
+//                     GeoRef_Size(band->GRef,0,0,band->Def->NI-1,band->Def->NJ-1,ref->BD);
 //                     GeoRef_Destroy(Interp,ref->Name);
                   } else {
-                     band->Ref=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,band->Def->NK,LVL_UNDEF,NULL,NULL,0,0,0,0,NULL,tm,im,NULL));
+                     band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
@@ -2062,7 +2068,7 @@ int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List) {
       if (Tcl_GetDoubleFromObj(Interp,obj,&lon)==TCL_ERROR) {
          return(TCL_ERROR);
       }
-      Band->Ref->UnProject(Band->Ref,&x,&y,lat,lon,1,1);
+      Band->GRef->UnProject(Band->GRef,&x,&y,lat,lon,1,1);
       snprintf(buf,32,"Pixel_%li_%li",lrint(x),lrint(y));
       str=GDALGetMetadataItem(Band->Band[0],buf,"LocationInfo");
       Tcl_AppendElement(Interp,str);
@@ -2149,14 +2155,49 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
             if (n)
                Band->Stat[c].Avg/=n;
 
-            if (Band->Ref && Band->Ref->Project) {
+            if (Band->GRef && Band->GRef->Project) {
                /*Recuperer les coordonnees latlon des min max*/
-               Band->Ref->Project(Band->Ref,pts[0],pts[1],&Band->Stat[c].MinLoc.Lat,&Band->Stat[c].MinLoc.Lon,0,1);
-               Band->Ref->Project(Band->Ref,pts[2],pts[3],&Band->Stat[c].MaxLoc.Lat,&Band->Stat[c].MaxLoc.Lon,0,1);
+               Band->GRef->Project(Band->GRef,pts[0],pts[1],&Band->Stat[c].MinLoc.Lat,&Band->Stat[c].MinLoc.Lon,0,1);
+               Band->GRef->Project(Band->GRef,pts[2],pts[3],&Band->Stat[c].MaxLoc.Lat,&Band->Stat[c].MaxLoc.Lon,0,1);
             }
          }
       }
    }
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GDAL_BandPreIni>
+ * Creation : Juillet 2006 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue la pre-initialisation des parametres avant le rendue.
+ *
+ * Parametres :
+ *  <Data>    : Champs
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void GDAL_BandPreInit(GDAL_Band *Band) {
+
+   if (!Band->Stat)
+      GDAL_BandGetStat(Band);
+
+//   if (!(Band->Spec->MinMax&DATASPEC_MINSET)) Band->Spec->Min=Band->Stat->Min;
+//   if (!(Band->Spec->MinMax&DATASPEC_MAXSET)) Band->Spec->Max=Band->Stat->Max;
+//   if (!(Band->Spec->MinMax&DATASPEC_MINSET)) Band->Spec->Min=Band->Spec->Max<Band->Spec->Min?Band->Spec->Max:Band->Spec->Min;
+
+   if (Band->Tex.Indexed) {
+      Band->Spec->Min=0;
+      Band->Spec->Max=Band->Spec->Map->NbPixels-1;
+   } else {
+      Band->Spec->Min=Band->Spec->Map->Min[0];
+      Band->Spec->Max=Band->Spec->Map->Max[0];
+   }
+
+   DataSpec_Define(Band->Spec);
 }
 
 /*----------------------------------------------------------------------------
@@ -2233,7 +2274,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    }
 
    /*Check for invalid georeference*/
-   if (!GeoRef_Valid(Band->Ref)) {
+   if (!GeoRef_Valid(Band->GRef)) {
       fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid georeference\n");
       return(0);
    }
@@ -2268,7 +2309,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glStencilFunc(GL_ALWAYS,0x4,0x4);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
       if ((geom=OGR_GeometryGet(Tcl_GetString(Band->Spec->OGRMask)))) {
-         OGR_GeometryRender(Proj,Band->Ref,NULL,geom,0.0,0.0);
+         OGR_GeometryRender(Proj,Band->GRef,NULL,geom,0.0,0.0);
       } else if ((layer=OGR_LayerGet(Tcl_GetString(Band->Spec->OGRMask)))) {
          OGR_LayerRender(NULL,Proj,Proj->VP,layer,1);
       }

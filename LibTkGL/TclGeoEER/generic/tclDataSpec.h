@@ -142,6 +142,7 @@ typedef struct TDataSpec {
    double          ValFactor;           /*Facteur multiplicatif d'ajustement des valeurs*/
    double          ValDelta;            /*Facteur delta d'ajustement des valeurs*/
    double          MapFactor;           /*Facteur d'index dans la palette*/
+   int             ShowMap;             /*Display colormap*/
    int             MapAll;              /*Applique la palette aux vectoriel*/
    int             MapAbove,MapBellow;  /*Applique la palette en dehors des limites min max*/
    int             GridVector;          /*Orientation des donnees vectorielles*/

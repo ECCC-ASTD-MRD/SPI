@@ -610,11 +610,11 @@ double Graph_Pixel2Grid(TData *Data,double X,double Y) {
    double dx,h[2],y[2];
    
    // If this is an xsection
-   if (Data->Ref->Grid[0]=='V') {
+   if (Data->GRef->Grid[0]=='V') {
       
       // If it is mapped in pressure or MAGL
-      if (Data->Spec->ZType!=LVL_UNDEF && Data->Ref->Hgt) {
-         inc=Data->Ref->Hgt[0]<Data->Ref->Hgt[Data->Def->NI]?1:0;
+      if (Data->Spec->ZType!=LVL_UNDEF && Data->GRef->Hgt) {
+         inc=Data->GRef->Hgt[0]<Data->GRef->Hgt[Data->Def->NI]?1:0;
          x=floor(X);
          dx=X-x;
          y[1]=inc?-1e32:1e32;
@@ -622,31 +622,31 @@ double Graph_Pixel2Grid(TData *Data,double X,double Y) {
          
          // Find correct level
          while((inc?y[1]<=Y:y[1]>=Y)) {
-            h[0]=Data->Ref->Hgt[n*Data->Def->NI+x];
-            h[1]=Data->Ref->Hgt[n*Data->Def->NI+x+1];
+            h[0]=Data->GRef->Hgt[n*Data->Def->NI+x];
+            h[1]=Data->GRef->Hgt[n*Data->Def->NI+x+1];
             y[1]=ILIN(h[0],h[1],dx);
             n++;
          }
          
          n-=2;
-         h[0]=Data->Ref->Hgt[n*Data->Def->NI+x];
-         h[1]=Data->Ref->Hgt[n*Data->Def->NI+x+1];
+         h[0]=Data->GRef->Hgt[n*Data->Def->NI+x];
+         h[1]=Data->GRef->Hgt[n*Data->Def->NI+x+1];
          y[0]=ILIN(h[0],h[1],dx);
      } else {
-        inc=Data->Ref->ZRef.Levels[0]<Data->Ref->ZRef.Levels[1]?1:0;
+        inc=Data->ZRef->Levels[0]<Data->ZRef->Levels[1]?1:0;
         for(n=0;n<Data->Def->NJ;n++) {
             if (inc) {
-               if (Y<=Data->Ref->ZRef.Levels[n]) {
+               if (Y<=Data->ZRef->Levels[n]) {
                   break;
                }
             } else {
-               if (Y>=Data->Ref->ZRef.Levels[n]) {
+               if (Y>=Data->ZRef->Levels[n]) {
                   break;
                }
             }
          }
-         y[0]=Data->Ref->ZRef.Levels[n-1];
-         y[1]=Data->Ref->ZRef.Levels[n];
+         y[0]=Data->ZRef->Levels[n-1];
+         y[1]=Data->ZRef->Levels[n];
          n--;
       }
       // Find Y grid coordinate
@@ -714,7 +714,7 @@ Tcl_Obj *Graph_ProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double Y
 
       if (Item->Data) {
          if ((data=Data_Get(Item->Data))) {
-            spd=VertexVal(data->Ref,data->Def,-1,X,Y,0.0);
+            spd=VertexVal(data->Def,-1,X,Y,0.0);
             Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
          }
       }
@@ -802,7 +802,7 @@ Tcl_Obj *Graph_UnProjectItem(Tcl_Interp *Interp,TGraphItem *Item,double X,double
                   x=ROUND(x);
                   y=ROUND(y);
                }
-               spd=VertexVal(data->Ref,data->Def,-1,x,y,0.0);
+               spd=VertexVal(data->Def,-1,x,y,0.0);
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(spd));
             }
          }

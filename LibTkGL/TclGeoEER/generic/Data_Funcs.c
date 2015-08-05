@@ -605,26 +605,26 @@ double darea(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        mx,my;
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         mx=ref->Distance(ref,i-0.5,j,i+0.5,j);
-         my=ref->Distance(ref,i,j-0.5,i,j+0.5);
+         mx=gref->Distance(gref,i-0.5,j,i+0.5,j);
+         my=gref->Distance(gref,i,j-0.5,i,j+0.5);
          Def_Set(Res,0,idx+i,mx*my);
       }
    }
@@ -635,26 +635,26 @@ double dangle(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d,lat[2],lon[2];
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         ref->Project(ref,i,j-0.5,&lat[0],&lon[0],1,1);
-         ref->Project(ref,i,j+0.5,&lat[1],&lon[1],1,1);
+         gref->Project(gref,i,j-0.5,&lat[0],&lon[0],1,1);
+         gref->Project(gref,i,j+0.5,&lat[1],&lon[1],1,1);
          lat[0]=DEG2RAD(lat[0]); lon[0]=DEG2RAD(lon[0]);
          lat[1]=DEG2RAD(lat[1]); lon[1]=DEG2RAD(lon[1]);
 
@@ -670,25 +670,25 @@ double dlat(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         ref->Project(ref,i,j,&lat,&lon,0,1);
+         gref->Project(gref,i,j,&lat,&lon,0,1);
          Def_Set(Res,0,idx+i,lat);
       }
    }
@@ -699,25 +699,25 @@ double dlon(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         ref->Project(ref,i,j,&lat,&lon,0,1);
+         gref->Project(gref,i,j,&lat,&lon,0,1);
          Def_Set(Res,0,idx+i,lon);
       }
    }
@@ -728,25 +728,25 @@ double ddx(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d;
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         d=ref->Distance(ref,i-0.5,j,i+0.5,j);
+         d=gref->Distance(gref,i-0.5,j,i+0.5,j);
          Def_Set(Res,0,idx+i,d);
       }
    }
@@ -757,25 +757,25 @@ double ddy(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d;
-   TGeoRef      *ref=NULL;
+   TGeoRef      *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
-         d=ref->Distance(ref,i,j-0.5,i,j+0.5);
+         d=gref->Distance(gref,i,j-0.5,i,j+0.5);
          Def_Set(Res,0,idx+i,d);
       }
    }
@@ -788,23 +788,23 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
    unsigned long i,j,idx,d;
    double  b[9]={ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
    double  mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv;
-   TGeoRef *ref=NULL;
+   TGeoRef *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
    extern int        GMode;
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!ref) {
+   if (!gref) {
       return(0.0);
    }
 
    /*check for wrap around*/
-   d=ref->Type&GRID_WRAP?0:1;
+   d=gref->Type&GRID_WRAP?0:1;
 
    for(j=1;j<Def->NJ-1;j++) {
       for(i=d;i<Def->NI-d;i++) {
@@ -847,8 +847,8 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
          }
 
          /*Distances*/
-         mx=ref->Distance(ref,i-1,j,i+1,j)*4;
-         my=ref->Distance(ref,i,j-1,i,j+1)*4;
+         mx=gref->Distance(gref,i-1,j,i+1,j)*4;
+         my=gref->Distance(gref,i,j-1,i,j+1)*4;
 
          /*Slope*/
          dx=((b[0]+b[3]+b[3]+b[6])-(b[2]+b[5]+b[5]+b[8]))/mx;
@@ -964,7 +964,7 @@ void stat_core(TDef *MA,TDef *MB) {
    unsigned long i,n,nx=0,ny=0,d=0,gi,gj;
    double *vx,*vy;
    unsigned int *cx,*cy;
-   TGeoRef *ref=NULL;
+   TGeoRef *gref=NULL;
 
    extern TData     *GField;
    extern GDAL_Band *GBand;
@@ -982,8 +982,8 @@ void stat_core(TDef *MA,TDef *MB) {
    }
 
    switch (GMode) {
-      case T_BAND: ref=GBand->Ref; break;
-      case T_FLD : ref=GField->Ref; break;
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
    }
 
    // Init fields that will be used later on for ksp
@@ -1053,10 +1053,10 @@ void stat_core(TDef *MA,TDef *MB) {
          else if (vb>va) Vnbgt++;
          else Vnblt++;
 
-         if (ref && (va!=0.0 || vb!=0.0)) {
+         if (gref && (va!=0.0 || vb!=0.0)) {
             gi=i%MA->NI;
             gj=i/MA->NI;
-            t=ref->Distance(ref,gi-0.5,gj,gi+0.5,gj) * ref->Distance(ref,gi,gj-0.5,gi,gj+0.5);
+            t=gref->Distance(gref,gi-0.5,gj,gi+0.5,gj) * gref->Distance(gref,gi,gj-0.5,gi,gj+0.5);
             Vfms+=t;
 
             if (va!=0 && vb!=0) {

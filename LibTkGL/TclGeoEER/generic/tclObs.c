@@ -736,7 +736,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
       return TCL_ERROR;
    }
 
-   if (!Field->Ref) {
+   if (!Field->GRef) {
       Tcl_AppendResult(Interp,"\n   Obs_Extract: Invalid field geographic reference",(char*)NULL);
       return TCL_ERROR;
    }
@@ -748,10 +748,10 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
 #endif
    for(i=0;i<Obs->Loc->Nb;i++) {
 
-      if (!Field->Ref->UnProject(Field->Ref,&x,&y,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,0,1)) {
+      if (!Field->GRef->UnProject(Field->GRef,&x,&y,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,0,1)) {
          ((float*)Obs->Def->Data[0])[i]=Obs->Def->NoData;
       } else {
-         Field->Ref->Value(Field->Ref,Field->Def,Field->Spec->InterpDegree[0],0,x,y,Field->Def->Level,&val,&tmp);
+         Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,x,y,Field->Def->Level,&val,&tmp);
          ((float*)Obs->Def->Data[0])[i]=val;
       }
    }
@@ -780,7 +780,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
  *---------------------------------------------------------------------------------------------------------------
 */
 
-Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
+Vect3d *Obs_Grid(TGeoRef *Ref,TZRef *ZRef,TObs *Obs,int *NObs,int Extrap) {
 
    int     i,j,k,skip,idx,n;
    double  dk,d;
@@ -796,18 +796,18 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TObs *Obs,int *NObs,int Extrap) {
             COORD_CLEAR(c0);
 
             /* Get the right level*/
-            for(k=Ref->ZRef.LevelNb-1;k>=0;k--) {
-              if (Obs->Loc->Coord[i].Elev>Ref->ZRef.Levels[k])
+            for(k=ZRef->LevelNb-1;k>=0;k--) {
+              if (Obs->Loc->Coord[i].Elev>ZRef->Levels[k])
                   break;
             }
             k=k<0?0:k;
-            if (k==Ref->ZRef.LevelNb-1) {
-               dk=Ref->ZRef.Levels[k]-Ref->ZRef.Levels[k-1];
-               pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-Ref->ZRef.Levels[k])/dk);
+            if (k==ZRef->LevelNb-1) {
+               dk=ZRef->Levels[k]-ZRef->Levels[k-1];
+               pos[*NObs][1]=ILIN(k-1,k,(Obs->Loc->Coord[i].Elev-ZRef->Levels[k])/dk);
                j=0;
             } else {
-               dk=Ref->ZRef.Levels[k+1]-Ref->ZRef.Levels[k];
-               pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-Ref->ZRef.Levels[k])/dk);
+               dk=ZRef->Levels[k+1]-ZRef->Levels[k];
+               pos[*NObs][1]=ILIN(k,k+1,(Obs->Loc->Coord[i].Elev-ZRef->Levels[k])/dk);
             }
 
             /*Get the horizontal position*/
