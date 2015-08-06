@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tclData.h"
 #include "tclOGR.h"
 #include "Projection.h"
@@ -600,8 +601,8 @@ void Data_GetStat(TData *Field){
       FSTD_FieldReadMesh(Field);
 #endif
 
-   /*Calculate vector module if needed (On Y grid, components are speed/dir)*/
-   if (def->NC>1 && Field->GRef->Grid[0]!='Y') {
+   // Calculate vector module if needed (On Y grid, components are speed/dir)
+   if (def->NC>1 && !def->Dir && Field->GRef->Grid[0]!='Y') {
       if (!def->Mode || def->Mode==def->Data[0]) {
          def->Mode=(char*)malloc(FSIZE3D(def)*TDef_Size[def->Type]);
       } else {
@@ -635,7 +636,7 @@ void Data_GetStat(TData *Field){
       }
    }
 
-  /*Initialiser la structure*/
+   // Initialiser la structure
    if (!Field->Stat)
       Field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
 
@@ -682,7 +683,7 @@ void Data_GetStat(TData *Field){
 
       if (Field->Stat->Min==1e200 || Field->Stat->Min==Field->Stat->Max) Field->Stat->Min=0.0;
 
-      /*Recuperer les coordonnees latlon des min max*/
+      // Recuperer les coordonnees latlon des min max
       Field->Stat->MinLoc.Lat=0;
       Field->Stat->MinLoc.Lon=0;
       Field->Stat->MinLoc.Elev=0;
@@ -848,7 +849,9 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
  *  <Cut>     : Identificateur du champs de coupe
  *  <Lat>     : Stream de Latitude
  *  <Lon>     : Stream de Longitude
- *  <Nb>      : Nombre de coordonnees
+ *  <NbF>     : Nombre de champs
+ *  <NbC>     : Nombre de coordonnees
+ *  <SD>      : For vector, Get speed direction instead of reproject components along xsection
  *
  * Retour:
  *
@@ -856,7 +859,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
  *
  *----------------------------------------------------------------------------
 */
-int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC) {
+int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC,int SD) {
 
 #ifdef HAVE_RMN
    TData *cut;
@@ -865,7 +868,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0;
    float   *fp;
 
-   /*Recuperer la grille dans l'espace des champs de base*/
+   // Recuperer la grille dans l'espace des champs de base
    p=1;g=0;
    for(f=0;f<NbF;f++) {
       if (!Field[f] || Field[f]->GRef->Grid[0]=='V') {
@@ -940,7 +943,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       return(TCL_ERROR);
    }
 
-   /*If we are in pressure or magl coordinates, allocate height array*/
+   // If we are in pressure or magl coordinates, allocate height array
    if (p || g) {
       cut->GRef->Hgt=(float*)malloc(NbF*NbC*Field[0]->ZRef->LevelNb*sizeof(float));
       if (!cut->GRef->Hgt) {
@@ -949,20 +952,20 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       }
    }
 
-   /*Loop on coordinates*/
+   // Loop on coordinates
    for(n=0;n<NbC;n++) {
 
-      /*If coordinates are valid*/
+      // If coordinates are valid
       if (Lat[n]!=-999.0 && Lon[n]!=-999.0) {
 
-         /*Keep coordinate for later use*/
+         // Keep coordinate for later use
          cut->GRef->Lat[n]=Lat[n];
          cut->GRef->Lon[n]=Lon[n];
 
-         /*Loop on fields*/
+         // Loop on fields
          for(f=0;f<NbF;f++) {
 
-            /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
+            // Read the corresponding ground pressure for level conversion, if already read, nothing will be done
             if (p && !Field[f]->Def->Pres && cut->GRef->Hgt) {
                if (FSTD_FileSet(NULL,((TRPNHeader*)Field[f]->Head)->File)>=0) {
                  if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1,0))) {
@@ -975,13 +978,13 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                }
             }
 
-            /*Get the grid coordinate*/
+            // Get the grid coordinate
             if (!Field[f]->GRef->UnProject(Field[f]->GRef,&i,&j,Lat[n],Lon[n],0,1)) {
                continue;
             }
 
-            /*Vectorial data needs to be referenced along the cut so calculate angle*/
-            if (cut->Def->Data[1] && NbC>1) {
+            // Vectorial data needs to be referenced along the cut so calculate angle
+            if (cut->Def->Data[1]&& NbC>1 && !SD) {
                if (i0==-1.0) {
                   Field[f]->GRef->UnProject(Field[f]->GRef,&i0,&j0,Lat[n+1],Lon[n+1],0,1);
                   theta=atan2(j0-j,i0-i);
@@ -990,24 +993,24 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                }
             }
 
-            /*if we're in nearest mode*/
+            // if we're in nearest mode
             if (Field[f]->Spec->InterpDegree[0]=='N') {
                i=ROUND(i);
                j=ROUND(j);
             }
 
-           /*Loop on vertical levels*/
+            // Loop on vertical levels
             for(k=0;k<Field[0]->Def->NK;k++) {
 
                idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
-               /*Convert level to pressure*/
+               // Convert level to pressure
                if (p && cut->GRef->Hgt) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->GRef->Hgt[idx]=ZRef_K2Pressure(Field[f]->ZRef,p0,k);
                }
 
-               /*Read the corresponding ground pressure for level conversion, if already read, nothing will be done*/
+               // Read the corresponding ground pressure for level conversion, if already read, nothing will be done
                if (g && cut->GRef->Hgt) {
                   if (!Field[f]->Def->Height) {
                      if ((Field[f]->Def->Height=(float*)malloc(FSIZE3D(Field[f]->Def)*sizeof(float)))) {
@@ -1037,33 +1040,44 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                   }
                }
 
-               /*If it is vectors*/
-               if (cut->Def->Data[1] && NbC>1) {
+               // If it is vectors and components are asked
+               if (cut->Def->Data[1] && !SD) {
 
+                  // Get vector component
                   vi=VertexVal(Field[f]->Def,0,i,j,k);
                   vj=VertexVal(Field[f]->Def,1,i,j,k);
-                  vij=hypot(vi,vj);
 
-                  /*If it is an xsection, reproject along xsection axis*/
-                  zeta=atan2(vj,vi)-theta;
+                  // If it is xsection, reproject along xsection axis
+                  if (NbC>1) {
+                     
+                     // Get reprojection angle
+                    zeta=atan2(vj,vi)-theta;
 
-                  Def_Set(cut->Def,0,idx,vij*cos(zeta));
-                  Def_Set(cut->Def,1,idx,vij*sin(zeta));
-
-                  if (cut->Def->Data[2]) {
-                     vi=VertexVal(Field[f]->Def,2,i,j,k);
-                     Def_Set(cut->Def,2,idx,vi);
-                  }
-#ifdef DEBUG
-                  fprintf(stdout,"(DEBUG) %f (%f,%f) [%f,%f] =%f %f (%f) v=%f %f (%f)\n",theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
-                     vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
-#endif
+                     // Reproject along xsection axis
+                     vij=hypot(vi,vj);
+                     Def_Set(cut->Def,0,idx,vij*cos(zeta));
+                     Def_Set(cut->Def,1,idx,vij*sin(zeta));
+                     
+                     App_Log(DEBUG,"%s: Reprojected angle=%f ll=(%f,%f) ij=[%f,%f] orig=%f %f (%f) project=%f %f (%f)\n",__func__,theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
+                        vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
+                  } else {
+                     // This is a profile
+                     Def_Set(cut->Def,0,idx,vi);
+                     Def_Set(cut->Def,1,idx,vj);
+                  }                    
                } else {
                   Field[f]->GRef->Value(Field[f]->GRef,Field[f]->Def,Field[f]->Spec->InterpDegree[0],0,i,j,k,&vi,&vj);
                   Def_Set(cut->Def,0,idx,vi);
                   if (cut->Def->Data[1]) {
                      Def_Set(cut->Def,1,idx,vj);
+                     cut->Def->Dir=cut->Def->Data[1];
                   }
+               }
+               
+               // If we have vertical component
+               if (cut->Def->Data[2]) {
+                  vi=VertexVal(Field[f]->Def,2,i,j,k);
+                  Def_Set(cut->Def,2,idx,vi);
                }
             }
             i0=i;
@@ -1071,9 +1085,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
          }
       }
    }
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) FSTD_FieldCut: Vertical grid size (%i,%i)\n",cut->Def->NI,cut->Def->NJ);
-#endif
+   
+   App_Log(DEBUG,"%s: Vertical grid size (%i,%i)\n",__func__,cut->Def->NI,cut->Def->NJ);
 
 #endif
   return(TCL_OK);

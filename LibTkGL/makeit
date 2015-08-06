@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.9.1"
+VERSION="7.10.0"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_${ORDENV_PLAT}
@@ -337,8 +337,8 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${NETCDF}/build.log"
    mkdir ${TMP_PATH}/${NETCDF}
    cd ${TMP_PATH}/${NETCDF}
-   CFLAGS="$CFLAGS -I${LIB_PATH}/include"
-   LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib"
+   export CFLAGS="$CFLAGS -I${LIB_PATH}/include"
+   export LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib"
    (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples
    mv man4/Makefile man4/Makefile.ori
    printf 'install:\n\n' > man4/Makefile

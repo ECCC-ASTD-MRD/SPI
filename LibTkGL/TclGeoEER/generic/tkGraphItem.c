@@ -2757,9 +2757,13 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
    int    i,j,idx,f;
-   double u,w,len,da=0.0;
+   double u,w,len,dir;
    Vect3d pin,pout;
 
+   if (!Data->Def->Dir && !Data->Def->Data[2]) {
+      return;
+   }
+            
    if (Interp) {
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n1 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
@@ -2780,14 +2784,16 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
          idx=j*Data->Def->NI+i;
          Def_Get(Data->Def,0,idx,u);
          
-         if (Data->Def->Data[2]) {
+         if (Data->Def->Dir) {
+            // 2D vector (no vertical component)
+            len=u;
+            Def_Get(Data->Def,1,idx,dir);            
+         } else {
             // 3D vector
             Def_Get(Data->Def,2,idx,w);
-         } else {
-            // 2D vector (no vertical component)
-            Def_Get(Data->Def,1,idx,w);            
+            Def_GetMod(Data->Def,idx,len);
+            dir=-RAD2DEG(atan2(u,w));
          }
-         Def_GetMod(Data->Def,idx,len);
          if (len<=Data->Spec->Max && len>=Data->Spec->Min) {
             if (Data->Spec->MapAll) {
                VAL2COL(idx,Data->Spec,len);
@@ -2816,7 +2822,7 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
                glFeedbackInit(256,GL_2D);
                pout[1]=Tk_CanvasPsY(Graph->canvas,pout[1]);
             }
-            Data_RenderBarbule(Data->Spec->RenderVector,f,0.0,pout[0],pout[1],0.0,len,-RAD2DEG(atan2(u,w)+da),VECTORSIZE(Data->Spec,len),NULL);
+            Data_RenderBarbule(Data->Spec->RenderVector,1,0.0,pout[0],pout[1],0.0,len,dir,VECTORSIZE(Data->Spec,len),NULL);
             if (Interp) {
                glFeedbackProcess(Interp,GL_2D);
             }

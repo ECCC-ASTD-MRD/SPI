@@ -792,13 +792,13 @@ void GraphAxis_Define(TGraphAxis *Axis,TVector *Vec,int Delta) {
       return;
 
    if (Axis->Min==Axis->Max) {
-      if (Axis->InterNb) {
-         Axis->Min=Axis->Inter[0];
-         Axis->Max=Axis->Inter[Axis->InterNb-1];
-      }
       if (Vec) {
          VECTORMIN(Vec,Axis->Min)
          VECTORMAX(Vec,Axis->Max)
+      }
+      if (Axis->InterNb) {
+         Axis->Min=Axis->Inter[0];
+         Axis->Max=Axis->Inter[Axis->InterNb-1];
       }
    }
 

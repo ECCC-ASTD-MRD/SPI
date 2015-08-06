@@ -672,8 +672,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case VERTICAL:
-         if(Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fld { fldfrom1 fldfrom2 ... } { lat lon lat lon ... ... }");
+         if(Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fld { fldfrom1 fldfrom2 ... } { lat lon lat lon ... ... } [speed/dir]");
             return TCL_ERROR;
          } else {
             Tcl_Obj *obj;
@@ -709,7 +709,13 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      }
                   }
                }
-               ok=Data_Cut(Interp,fields,Tcl_GetString(Objv[2]),lat,lon,nbf,nbc/2);
+               
+               // Default it to reproject
+               nc=FALSE;
+               if (Objc==6) {
+                  Tcl_GetBooleanFromObj(Interp,Objv[5],&nc);
+               }
+               ok=Data_Cut(Interp,fields,Tcl_GetString(Objv[2]),lat,lon,nbf,nbc/2,nc);
             } else {
                Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
                return(TCL_ERROR);

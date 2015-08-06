@@ -2607,7 +2607,7 @@ static int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X
 
    SetupglCanvas(canvasPtr,0,0,w,h);
 
-   /* Setup the tile rendering engine */
+   // Setup the tile rendering engine 
    GLRender->TRCon=trNew();
    if (wt==w && ht==h) {
       trTileSize(GLRender->TRCon,wt,ht,0);
@@ -2622,11 +2622,11 @@ static int BufferglCanvas(Tcl_Interp *Interp,TkCanvas *canvasPtr,char* Img,int X
    canvasPtr->xOrigin=0;
    canvasPtr->yOrigin=0;
 
-   /* Render the tiles */
+   // Render the tiles 
    do {
       trBeginTile(GLRender->TRCon);
 
-      /* Cleanup the screen before drawing the TkItems */
+      // Cleanup the screen before drawing the TkItems
       glStencilMask(0xFF);
       glClearStencil(0x00);
       glClearColor(Tk_3DBorderColor(canvasPtr->bgBorder)->red/65535.0f,
