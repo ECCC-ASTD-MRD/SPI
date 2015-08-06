@@ -515,12 +515,12 @@ proc ColorBar::Update { Frame { State -1 } } {
 
       foreach field [projection configure $Frame -data] {
          if { [ogrlayer is $field] } {
-            if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -mapvar]!="" } {
+            if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -mapvar]!="" } {
                lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
             }
          } elseif { [gdalband is $field] } {
-            if { [gdalband configure $field -colormap]!="" && [gdalband define $field -nb]==1 } {
-#               lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+            if { [gdalband configure $field -colormap]!="" && [gdalband configure $field -showmap] && [gdalband define $field -nb]==1  } {
+               lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
             }
          }
       }

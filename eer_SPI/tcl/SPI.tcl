@@ -399,6 +399,14 @@ proc Page::Activate { Frame { Force 0 } } {
    }
 }
 
+proc ColorBar::Activate { Frame } {
+   variable Data
+   
+   set SPI::Data(ShowColorBar) 1
+   set Data(Active$Frame) 1
+   ColorBar::Update $Frame 1
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Page::UpdateCommand>
 # Creation : Octobre 2002 - J.P. Gauthier - CMC/CMOE
