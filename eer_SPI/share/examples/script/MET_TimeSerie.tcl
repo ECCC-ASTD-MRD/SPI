@@ -33,25 +33,29 @@ namespace eval Met {
 
    #----- General parameters
    set Param(Job)     [info script]   ;#Job name
-   set Param(Version) 0.1             ;#Job version
+   set Param(Version) 0.2             ;#Job version
 
-   set Param(Out)   /tmp/met.csv
-   set Param(Lat)    25
-   set Param(Lon)   -100
-   set Param(Hours) 24
-   set Param(Run)   r112
-   set Param(Vars)  { UU }
-   set Param(IP1s)  { "1.0 ETA" }
+   set Param(Out)     /tmp/met.csv
+   set Param(Lat)     25
+   set Param(Lon)     -100
+   set Param(Hours)   24
+   set Param(Run)     r112
+   set Param(Path)    ""
+   set Param(Vars)    { UU }
+   set Param(IP1s)    { "1.0 ETA" }
+   set Param(Interp)  LINEAR
 
    set Param(CommandInfo) "   Extract timeseries for variables through a model run"
 
    set Param(CommandLine) "   Command line otions:\n
-\t-run    : Model run or path to data (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET})
+\t-run    : Model run (if not using -path) (${APP_COLOR_GREEN}$Param(Run)${APP_COLOR_RESET})
+\t-path   : Path to data (if not using -run) (${APP_COLOR_GREEN}$Param(Path)${APP_COLOR_RESET})
 \t-hours  : Nb hours from start of model run (${APP_COLOR_GREEN}$Param(Hours)${APP_COLOR_RESET})
 \t-lat    : Latitude
 \t-lon    : Longitude
 \t-vars   : Variables (${APP_COLOR_GREEN}$Param(Vars)${APP_COLOR_RESET})
 \t-ip1s   : IP1(s) or level(s) and unit(s) (${APP_COLOR_GREEN}$Param(IP1s)${APP_COLOR_RESET})
+\t-interp : Interpolation degree (NEAREST,${APP_COLOR_GREEN}$Param(Interp)${APP_COLOR_RESET},CUBIC)
 \t-out    : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET})
 
    Information parameters:\n
@@ -80,8 +84,12 @@ proc Met::Process { } {
    }
    puts $f "$head"
    
-   if { [file isdirectory $Param(Run)] } {
-      set files [glob $Param(Run)/*_???]
+   if { $Param(Path)!="" } {
+      if { [file isdirectory $Param(Path)] } {
+         set files [glob $Param(Path)/*]
+      } else {
+         set files $Param(Path) 
+      }
    } else {
       set run [string range [exec r.date $Param(Run)] 0 9]
       switch [string index $Param(Run) 0] {
@@ -110,6 +118,8 @@ proc Met::Process { } {
             foreach ip1 $Param(IP1s) {
                fstdfield read FLD METFILE [fstdstamp fromseconds $datev] "" $ip1 -1 -1 "" "$var"
                
+               fstdfield configure FLD -interpdegree $Param(Interp)
+               
                #----- Get initial date
                if { !$date0 } {
                   set date0 [fstdfield define FLD -DATEV]
@@ -117,14 +127,14 @@ proc Met::Process { } {
                
                set val [fstdfield stats FLD -coordvalue $Param(Lat) $Param(Lon)]
                if { [llength $val]>1 } {
-                  lappend vals [format "%.3f" [lindex $val 1]]
-                  lappend vals [format "%.3f" [expr [lindex $val 0]*1.8519969184024652]]
+                  lappend vals [format "%.4e" [lindex $val 1]]
+                  lappend vals [format "%.4e" [expr [lindex $val 0]*1.8519969184024652]]
                } else {
-                  lappend vals [format "%.3f" [lindex $val 0]]
+                  lappend vals [format "%.4e" [lindex $val 0]]
                }
             }
          }
-         puts $f "[clock format $datev -format "%Y%m%d,%H:%M" -gmt True],[join $vals ,]"   
+         puts $f "[clock format $datev -format "%Y%m%d,%H:%M" -gmt True],[join $vals ,]"
       }
       
       fstdfile close METFILE
@@ -147,11 +157,13 @@ proc Met::ParseCommandLine { } {
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          run        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Run)] }
+         path       { set i [Args::Parse $gargv $gargc $i LIST  Met::Param(Path)] }
          lat        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Lat)] }
          lon        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Lon)] }
          hours      { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Hours)] }
-         ip1s       { set i [Args::Parse $gargv $gargc $i LIST Met::Param(IP1s)] }
-         vars       { set i [Args::Parse $gargv $gargc $i LIST Met::Param(Vars)] }
+         ip1s       { set i [Args::Parse $gargv $gargc $i LIST  Met::Param(IP1s)] }
+         interp     { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Interp)] }
+         vars       { set i [Args::Parse $gargv $gargc $i LIST  Met::Param(Vars)] }
          out        { set i [Args::Parse $gargv $gargc $i VALUE Met::Param(Out)] }
          help       { puts $Met::Param(CommandLine); Log::End 0 }
          
