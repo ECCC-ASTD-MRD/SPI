@@ -111,7 +111,8 @@ namespace eval Mapper { } {
    set Lbl(GCP)           { "Point" "Point" }
    set Lbl(Forward)       { "Avant" "Forward" }
    set Lbl(Backward)      { "Arrière" "Backward" }
-   set Lbl(Show)          { "Polygone" "Polygon" }
+   set Lbl(Poly)          { "Polygone" "Polygon" }
+   set Lbl(Show)          { "Afficher" "Display" }
    set Lbl(NoData)        { "Valeur NIL" "No data value" }
    set Lbl(Histo)         { "Histogramme" "Histogram" }
    set Lbl(Burn)          { "Persistance" "Persistance" }
@@ -209,6 +210,7 @@ namespace eval Mapper { } {
    set Bubble(Projection)    { "Description du système de coordonnées géographiques (WKT)" "Geographical coordinate system description (WKT)" }
    set Bubble(Transform)     { "Matrice de transformation avant et inverse (dx sx rx dy ry sy)" "Transform matrix and inverse (dx sx rx dy ry sy)" }
    set Bubble(CurveBand)     { "Sélection du canal/bande pour lequel vous soulez modifier la courbe" "Select the channel/band for which you want to change the curve" }
+   set Bubble(LockBand)      { "Sélection de tous les canaux/bandes à modifier en même temps" "Select all of the channels/bands to change together" }
    set Bubble(PosArray)      { "Sélection des canaux/bandes contenant les positions des pixels" "Select the channels/bands containing pixel locations" }
    set Bubble(Curve)         { "Sélection de la courbe a appliquer" "Sélect which curve to apply" }
    set Bubble(Transparency)  { "Facteur de transparence" "Transparency factor" }
@@ -219,6 +221,7 @@ namespace eval Mapper { } {
    set Bubble(CurveNow)      { "Valeur courant au curseur" "Current cursor value" }
    set Bubble(CurveNb)       { "Nombre de valeur à la position de l'histogramme" "Number of values at histogram position" }
    set Bubble(CurveMax)      { "Maximum de la courbe" "Curve maximum" }
+   set Bubble(ShowMap)       { "Afficher l'échelle de couleur" "Display colorbar" }
    set Bubble(ColorMap)      { "Palette de couleur" "Colormap selection" }
    set Bubble(CurveLimitMin) { "Minimum de la bande" "Band minimum" }
    set Bubble(CurveLimitMax) { "Maximum de la bande" "Band maximum" }

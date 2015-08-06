@@ -208,7 +208,7 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                radiobutton  $Data(Frame2).col.sel.alpha -relief sunken -bd 1 -overrelief raised -offrelief flat -width 2 -bg white \
                   -value alpha -variable Mapper::GDAL::Data(Band) -selectcolor white -indicatoron False \
                   -command { Mapper::GDAL::CurveSelect $Mapper::GDAL::Data(Frame2).col.curve.cv $Mapper::Data(Object) $Mapper::GDAL::Data(Band) }
-               pack  $Data(Frame2).col.sel.lock -side top -padx 5 -fill x
+               pack $Data(Frame2).col.sel.lock -side top -padx 5 -fill x
                pack $Data(Frame2).col.sel.red $Data(Frame2).col.sel.green $Data(Frame2).col.sel.blue \
                   $Data(Frame2).col.sel.alpha -side top -fill y -expand true -padx 5 -pady 5
 
@@ -263,6 +263,12 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                   ComboBox::Create $Data(Frame2).col.def.style.sel Mapper::GDAL::Data(Style) noedit unsorted nodouble -1 $Data(Styles) 1 8 { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) }
                   pack $Data(Frame2).col.def.style.lbl -side left
                   pack $Data(Frame2).col.def.style.sel -side left -fill x -expand True
+                  
+               checkbutton $Data(Frame2).col.def.show -text [lindex $Mapper::Bubble(ShowMap) $GDefs(Lang)] -relief raised -bd 1\
+                  -variable Mapper::GDAL::Data(ShowMap) -indicatoron False -onvalue True -offvalue False \
+                  -command { Mapper::GDAL::ParamsSet $Mapper::Data(Object); ColorBar::Activate $Page::Data(Frame) } 
+               pack $Data(Frame2).col.def.show -side bottom -fill x -pady 5
+               
                pack $Data(Frame2).col.def.stretch $Data(Frame2).col.def.curve $Data(Frame2).col.def.invert $Data(Frame2).col.def.tran $Data(Frame2).col.def.res \
                    $Data(Frame2).col.def.interp $Data(Frame2).col.def.nodata -side top -fill x
             frame $Data(Frame2).col.curve
@@ -292,7 +298,7 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                pack $Data(Frame2).col.curve.info $Data(Frame2).col.curve.limit -side top -fill x
             pack $Data(Frame2).col.curve -side left -padx 5
             pack $Data(Frame2).col.sel -side left -fill y
-            pack $Data(Frame2).col.def -side left -padx 5 -fill x -anchor nw -expand True
+            pack $Data(Frame2).col.def -side left -padx 5 -fill both -anchor nw -expand True
          pack $Data(Frame2).col -side top -fill x -padx 5 -pady 5 -ipady 5
 
          labelframe $Data(Frame2).band -text [lindex $Mapper::Lbl(Band) $GDefs(Lang)]
@@ -342,7 +348,7 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
                checkbutton $Data(Frame2).pos.crop.active -text [lindex $Mapper::Lbl(Clip) $GDefs(Lang)] -width 1 -anchor w -indicatoron 0 \
                   -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -variable Mapper::GDAL::Data(Cut) \
                   -onvalue True -offvalue False -command { Mapper::GDAL::ParamsSet $Mapper::Data(Object) }
-               checkbutton $Data(Frame2).pos.crop.show -text [lindex $Mapper::Lbl(Show) $GDefs(Lang)] -anchor w -indicatoron 0 \
+               checkbutton $Data(Frame2).pos.crop.show -text [lindex $Mapper::Lbl(Poly) $GDefs(Lang)] -anchor w -indicatoron 0 \
                   -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -variable Mapper::GDAL::Data(CutShow) \
                   -onvalue True -offvalue False -command { Mapper::UpdateItems }
                checkbutton $Data(Frame2).pos.crop.mode -variable Page::Data(ToolMode) -onvalue Mapper::Cutter -offvalue SPI \
@@ -353,7 +359,9 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
             pack $Data(Frame2).pos.crop -side top -fill x -padx 5
          pack $Data(Frame2).pos -side top -fill x -padx 5 -pady 5 -ipady 2
 
+         Bubble::Create $Data(Frame2).col.def.show $Mapper::Bubble(ShowMap)
          Bubble::Create $Data(Frame2).col.curve.map $Mapper::Bubble(ColorMap)
+         Bubble::Create $Data(Frame2).col.sel.lock $Mapper::Bubble(LockBand)
          Bubble::Create $Data(Frame2).col.sel $Mapper::Bubble(CurveBand)
          Bubble::Create $Data(Frame2).col.def.curve $Mapper::Bubble(Curve)
          Bubble::Create $Data(Frame2).col.def.tran $Mapper::Bubble(Transparency)
@@ -626,6 +634,7 @@ proc Mapper::GDAL::ParamsGet { Object } {
    set Data(TopoFactor) [gdalband configure $Object -topographyfactor]
    set Data(Mask)       [gdalband configure $Object -mask]
    set Data(ColorMap)   [gdalband configure $Object -colormap]
+   set Data(ShowMap)    [gdalband configure $Object -showmap]
    set Data(Style)      [gdalband configure $Object -sizevar]
    set Data(Proj)       [gdalband define $Object -projection]
    set Data(Trans)      [gdalband define $Object -transform]
@@ -692,7 +701,7 @@ proc Mapper::GDAL::ParamsSet { Object { CheckData True } } {
    }
 
    gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
-      -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12 -sizevar $Data(Style)
+      -interpolation $Data(Interp) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -font XFont12 -sizevar $Data(Style) -showmap $Data(ShowMap)
    gdalband stats $Object -nodata $Data(NoData)
 
    if { $Data(Cut) && [ogrgeometry is MASK$Object] } {
@@ -1173,6 +1182,7 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
    }
 
    set Data(ColorMap) [gdalband configure $obj -colormap]
+   set Data(ShowMap)  False
   
    gdalband configure $obj -interpolation $Data(Interp)
 
@@ -1183,7 +1193,16 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
       colormap configure $Data(ColorMap) -max $band [lindex $max 0]
   }
 
-   set Mapper::Data(Job) ""
+  #----- In CI mode, define the intervals for the colorbar values
+  if { [gdalband define $obj -indexed] } {
+     #----- Weird, in CI mode, looks like the max is 1 to high (coming from GDAL)
+     for { set i [expr int([lindex $min 0])] } { $i <[expr int([lindex $max 0])] } { incr i } {
+        lappend lvls $i
+     }
+     gdalband configure $obj -intervals $lvls
+  }
+  
+  set Mapper::Data(Job) ""
 
    if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $obj]==-1 } {
       lappend Viewport::Data(Data$Page::Data(Frame)) $obj

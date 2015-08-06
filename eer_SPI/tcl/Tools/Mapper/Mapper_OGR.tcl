@@ -244,7 +244,10 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
                label $Data(Frame2).inter.map.lbl -text [lindex $Mapper::Lbl(Map) $GDefs(Lang)] -width 12 -anchor w
                button $Data(Frame2).inter.map.val -bd 1 -relief flat -image OGRMAPImg -command { MapBox::Create $Mapper::OGR::Data(Frame2).inter.map.val \
                    "Mapper::Apply \$Mapper::Data(Object)" $Mapper::OGR::Data(ColorMap) }
+               checkbutton $Data(Frame2).inter.map.show -relief raised -bd 1 -variable Mapper::OGR::Data(ShowMap) -text [lindex $Mapper::Lbl(Show) $GDefs(Lang)] -indicatoron False \
+                  -command { Mapper::OGR::ParamsSet $Mapper::Data(Object); ColorBar::Activate $Page::Data(Frame) }
                pack $Data(Frame2).inter.map.lbl $Data(Frame2).inter.map.val -side left -padx 5
+               pack $Data(Frame2).inter.map.show -fill x -expand True -side left -padx 5
 
             frame $Data(Frame2).inter.fld
                label $Data(Frame2).inter.fld.lbl -text [lindex $Mapper::Lbl(Field) $GDefs(Lang)] -width 12 -anchor w
@@ -262,6 +265,8 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
             pack $Data(Frame2).inter.order $Data(Frame2).inter.map $Data(Frame2).inter.fld $Data(Frame2).inter.desc \
                -side top -fill x -expand true
          pack $Data(Frame2).shape $Data(Frame2).pos $Data(Frame2).inter -side top -padx 5 -pady 5 -ipady 2 -fill both
+
+         Bubble::Create $Data(Frame2).inter.map.show $Mapper::Bubble(ShowMap)
 
       set Data(Frame1) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Ref) $GDefs(Lang)] False ""]
          frame $Data(Frame1).projhead
@@ -805,6 +810,7 @@ proc Mapper::OGR::ParamsGet { Object } {
    set Data(Extr)        [ogrlayer configure $Object -extrude]
    set Data(ExtrFactor)  [ogrlayer configure $Object -extrudefactor]
    set Data(ColorMap)    [ogrlayer configure $Object -colormap]
+   set Data(ShowMap)     [ogrlayer configure $Object -showmap]
    set Data(Color)       [ogrlayer configure $Object -outline]
    set Data(Highlight)   [ogrlayer configure $Object -activeoutline]
    set Data(Width)       [ogrlayer configure $Object -width]
@@ -910,7 +916,7 @@ proc Mapper::OGR::ParamsSet { Object } {
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
-      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
+      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -showmap $Data(ShowMap) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
       -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) \
       -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -labelvar $Data(LabelVar)
 
@@ -2064,7 +2070,8 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
       }
    }
    
-   set Data(Job)   [lindex $Mapper::Msg(Read) $GDefs(Lang)]
+   set Data(Job)     [lindex $Mapper::Msg(Read) $GDefs(Lang)]
+   set Data(ShowMap) False
    update idletasks;
 
    foreach idx $idxs {
