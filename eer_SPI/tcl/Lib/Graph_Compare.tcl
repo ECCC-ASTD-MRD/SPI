@@ -414,7 +414,7 @@ proc Graph::Compare::ItemDefault { GR Item } {
    set Graph::Item(FillColor)   #FFFFFF
    set Graph::Item(Tranparency) 100
    set Graph::Item(Width)       1
-   set Graph::Item(Size)        0
+   set Graph::Item(Size)        3
    set Graph::Item(Value)       False
    set Graph::Item(Dash)        ""
    set Graph::Item(Type)        BAR

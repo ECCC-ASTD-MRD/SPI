@@ -168,7 +168,7 @@ namespace eval Graph {
                         @$GDefs(Dir)/share/bitmap/rayhor16.xbm
                         @$GDefs(Dir)/share/bitmap/rayver16.xbm"
 
-   set Graph(Icons)    { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON }
+   set Graph(Icons)    { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON BARB }
    set Graph(Colors)   { #FF0000 #00FF00 #0000FF #FFF300 #00FFF3 #E600FF #FF8C00 #804F4F #8CFF40 #B5A36B #80F9FF #A66BFF }
 
    set Item(No)          0
@@ -176,7 +176,7 @@ namespace eval Graph {
    set Item(FillColor)   #FFFFFF
    set Item(Tranparency) 100
    set Item(Width)       1
-   set Item(Size)        0
+   set Item(Size)        1
    set Item(Value)       False
    set Item(Type)        LINE
    set Item(Dash)        ""
@@ -235,7 +235,10 @@ namespace eval Graph {
    set Lbl(Obs)        { "Observations" "Observations" }
    set Lbl(Points)     { "Points" "Vertex" }
    set Lbl(Pos)        { "Position" "Position" }
+   set Lbl(WindGeo)    { "Direction géographique des vents (Nord vers le haut)" "Geographical direction of winds (North is up)" }
+   set Lbl(Wind3D)     { "Direction vertical des vents" "Vertical direction of winds" }
    set Lbl(Proj)       { "Afficher dans la vue" "Display in viewport" }
+   set Lbl(Projected)  { "Projeté" "Projected" }
    set Lbl(Section)    { "Section" "Section" }
    set Lbl(Res)        { "Résolution (m)" "Resolution (m)" }
    set Lbl(Same)       { "Echelle Uniforme" "Uniform scale" }
@@ -440,6 +443,23 @@ proc Graph::Labels { Graph Type Title UnitX UnitY } {
    $data(Canvas) itemconfigure [lindex [$data(Canvas) itemconfigure $Graph -title] end] -text $Title
    $data(Canvas) itemconfigure [graphaxis configure axisx$Graph -unit] -text $UnitX
    $data(Canvas) itemconfigure [graphaxis configure axisy$Graph -unit] -text $UnitY
+}
+
+proc Graph::WindLabel { Field } {
+   global GDefs
+   variable Lbl
+   
+   set wlbl ""
+   
+   #----- Wind direction label
+   if { [fstdfield is $Field] && [fstdfield configure $Field -rendervector]!="NONE" } {
+      switch [fstdfield stats $Field -component] {
+         1 { set wlbl "" }
+         2 { set wlbl "\n\n[lindex $Lbl(WindGeo) $GDefs(Lang)]" }
+         3 { set wlbl "\n\n[lindex $Lbl(Wind3D) $GDefs(Lang)]" }
+      }
+   }
+   return $wlbl
 }
 
 #----------------------------------------------------------------------------
@@ -1238,16 +1258,16 @@ proc Graph::ParamsItem { Parent } {
             { -1 "" @$GDefs(Dir)/share/bitmap/stipple1-32.xbm @$GDefs(Dir)/share/bitmap/stipple2-32.xbm @$GDefs(Dir)/share/bitmap/stipple3-32.xbm @$GDefs(Dir)/share/bitmap/stipple4-32.xbm @$GDefs(Dir)/share/bitmap/stipple5-32.xbm @$GDefs(Dir)/share/bitmap/stipple6-32.xbm @$GDefs(Dir)/share/bitmap/stipple7-32.xbm @$GDefs(Dir)/share/bitmap/stipple8-32.xbm } \
              Graph::Item(Stipple) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Stipple) -relief groove -bd 2
          pack  $Parent.item.fill.lbl $Parent.item.fill.col $Parent.item.fill.stipple -side left
-                  frame $Parent.item.icon
+      frame $Parent.item.icon
          label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
          IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/share/bitmap \
-            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm } \
+            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm wind1.xbm } \
             $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } \
             0 -relief groove -bd 2
-         IcoMenu::Create $Parent.item.icon.size $GDefs(Dir)/share/bitmap \
-            "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 2 4 6 8 10" \
-             Graph::Item(Size) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } $Graph::Item(Size) -relief groove -bd 2
-         pack $Parent.item.icon.lbl $Parent.item.icon.sel $Parent.item.icon.size -side left
+         scale $Parent.item.icon.size -from 1 -to 20 -resolution 1 -variable Graph::Item(Size) -showvalue false \
+               -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item); catch }
+         pack $Parent.item.icon.lbl $Parent.item.icon.sel -side left
+         pack $Parent.item.icon.size -side left -fill x -expand True
       frame $Parent.item.value
          label $Parent.item.value.lbl -text [lindex $Lbl(Value) $GDefs(Lang)] -width 12 -anchor w
          checkbutton $Parent.item.value.sel -variable Graph::Item(Value) -relief raised -bd 1 -onvalue True -offvalue False  -selectcolor "" -relief groove -bd 1\
@@ -1617,12 +1637,17 @@ proc Graph::ItemConfigure { Graph Type Item } {
       set stipple ""
    }
 
+   if { $Graph::Item(Icon)!="BARB" } {
+      set icon $Graph::Item(Icon)
+   } else {
+      set icon ""
+   }
 #   set Graph::Item(Bitmap) @$GDefs(Dir)/share/bitmap/CLEAR.xbm
 #   set Graph::Item(Image)  MODEL
 
    graphitem configure $Item -outline $Graph::Item(Outline) -fill $fill -iconoutline $Graph::Item(Outline) -iconfill $fill -transparency $Graph::Item(Tranparency) \
       -width $Graph::Item(Width) -size $Graph::Item(Size) -value $Graph::Item(Value) -dash $Graph::Item(Dash) \
-      -type $Graph::Item(Type) -font $Graph::Item(Font) -icon $Graph::Item(Icon) \
+      -type $Graph::Item(Type) -font $Graph::Item(Font) -icon $icon \
       -bitmap $Graph::Item(Bitmap) -stipple $stipple -image $Graph::Item(Image)
 
    set item [graphitem configure $Item -desc]
@@ -1679,7 +1704,6 @@ proc Graph::ItemSelect { Item } {
 
    IcoMenu::Set $Data(Frame).item.fill.stipple $Graph::Item(Stipple)
    IcoMenu::Set $Data(Frame).item.line.width $Graph::Item(Width)
-   IcoMenu::Set $Data(Frame).item.icon.size $Graph::Item(Size)
    IcoMenu::Set $Data(Frame).item.icon.sel $Graph::Item(Icon)
 
 #   $Data(Frame).item.line.width configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $Graph(WidthBitmap) $Graph::Item(Width)]

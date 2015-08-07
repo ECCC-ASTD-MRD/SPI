@@ -239,8 +239,8 @@ proc Graph::Section::Graph { GR } {
    set data(Levels) {}
    set yincr  0
    set xincr  0
-   set mod True
-
+   set mod    True
+   
    #----- Extraire les limites des valeurs
    foreach item $data(Items) {
       if { [fstdfield is GRAPHSELECT$item True] } {
@@ -271,7 +271,7 @@ proc Graph::Section::Graph { GR } {
              }
          }
          set data(XMin)   0
-         set data(XMax)   [expr [fstdfield define GRAPHSELECT$item -NI]-1]
+         set data(XMax)   [expr [fstdfield define GRAPHSELECT$item -NI]-1]        
       }
    }
 
@@ -318,7 +318,7 @@ proc Graph::Section::Graph { GR } {
 
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
-      $data(Canvas) itemconfigure $id -text $graph(UnitX)
+      $data(Canvas) itemconfigure $id -text $graph(UnitX)[Graph::WindLabel GRAPHSELECT$item]
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -labels $graph(XLabel) \
@@ -714,7 +714,11 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
                fstdfield configure $Data -ztype $graph(ZType)
             }
 
-            fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos)
+            if { [fstdfield stats $Data -component]>2 } {
+               fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos) 
+            } else {
+               fstdfield vertical GRAPHSELECT$Item $Data $data(Pos$Pos) True
+            }
          }
          FSTD::Register GRAPHSELECT$Item
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item

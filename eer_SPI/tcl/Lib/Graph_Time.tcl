@@ -468,7 +468,7 @@ proc Graph::Time::ItemAdd { GR Item } {
    if { [lsearch -exact $data(Items) $Item]==-1 } {
       vector free   $Item
       vector create $Item
-      vector dim    $Item { X Y }
+      vector dim    $Item { X Y D }
 
       set id [$data(Canvas) create text -100 -100  -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
@@ -506,7 +506,7 @@ proc Graph::Time::ItemDefault { GR Item } {
    set Graph::Item(FillColor)   #FFFFFF
    set Graph::Item(Tranparency) 100
    set Graph::Item(Width)       1
-   set Graph::Item(Size)        0
+   set Graph::Item(Size)        3
    set Graph::Item(Value)       False
    set Graph::Item(Dash)        ""
    set Graph::Item(Type)        LINE
@@ -656,6 +656,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 
       vector set $Item.X {}
       vector set $Item.Y {}
+      vector set $Item.D {}
 
       set lat [lindex $data(Pos$Pos) 0]
       set lon [lindex $data(Pos$Pos) 1]
@@ -686,11 +687,20 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
             if { $spd!="-" } {
                vector append $Item.X [lindex $field 0]
                vector append $Item.Y $spd
+               if { $dir!="" } {
+                  vector append $Item.D $dir
+               }
             }
          }
          SPI::Progress 0
          if { [set graph(UnitY) [fstdfield configure $Data -unit]]=="" } {
             set graph(UnitY) UNDEFINED
+         }
+         
+         if { $Graph::Item(Icon)=="BARB" && $dir!="" } {
+            graphitem configure $Item -speed $Item.Y -dir $Item.D
+         } else {
+            graphitem configure $Item -speed "" -dir ""
          }
       } elseif { [observation is $Data] } {
 

@@ -249,8 +249,8 @@ proc Graph::Hovmoller::Graph { GR } {
    set data(Dates) {}
    set yincr 0
    set xincr 0
-   set mod True
-
+   set mod   True
+   
    #----- Afficher le graph
 
    foreach item $data(Items) {
@@ -341,7 +341,7 @@ proc Graph::Hovmoller::Graph { GR } {
 
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
-      $data(Canvas) itemconfigure $id -text $graph(UnitX)
+      $data(Canvas) itemconfigure $id -text $graph(UnitX)[Graph::WindLabel GRAPHSELECT$item]
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $graph(XInter) -labels $graph(XLabel) \
@@ -678,7 +678,11 @@ proc Graph::Hovmoller::ItemData { GR Pos Item Data } {
             lappend fields [lindex $field 1]
             vector append $Item.Y [fstdstamp toseconds [fstdfield define [lindex $field 1] -DATEV]]
          }
-         fstdfield vertical GRAPHSELECT$Item $fields $data(Pos$Pos)
+         if { [fstdfield stats $Data -component]>2 } {
+            fstdfield vertical GRAPHSELECT$Item $fields $data(Pos$Pos)
+         } else {
+             fstdfield vertical GRAPHSELECT$Item $fields $data(Pos$Pos) True
+         }
          FSTD::Register GRAPHSELECT$Item
          graphitem configure $Item -xaxis axisx$GR -yaxis axisy$GR -data GRAPHSELECT$Item
       } else {

@@ -248,8 +248,8 @@ proc Graph::TimeSection::Graph { GR } {
    set data(Levels) {}
    set yincr  0
    set xincr  0
-   set mod True
-
+   set mod    True
+   
    #----- Extraire les limites des valeurs
    foreach item $data(Items) {
       set data(Dates) [concat $data(Dates) [vector get $item.X]]
@@ -388,7 +388,7 @@ proc Graph::TimeSection::Graph { GR } {
 
    set id [graphaxis configure axisx$GR -unit]
    if { $Graph::Data(Update) } {
-      $data(Canvas) itemconfigure $id -text $graph(UnitX)
+      $data(Canvas) itemconfigure $id -text $graph(UnitX)[Graph::WindLabel TIMESECTION$item]
    }
    $data(Canvas) itemconfigure $id -font $Graph::Font(Axis) -fill $Graph::Color(Axis)
    graphaxis configure axisx$GR -type $graph(XScale) -modulo $mod -min $xmin -max $xmax -intervals $xinter -labels $xdates -angle $graph(XAngle) \
@@ -816,7 +816,11 @@ proc Graph::TimeSection::ItemData { GR Pos Item Data } {
          }
          SPI::Progress 0
       } else {
-         fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
+            if { [fstdfield stats $Data -component]>2 } {
+               fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos)
+            } else {
+               fstdfield vertical TIMESECTION$Item $fields $data(Pos$Pos) True
+            }
       }
       }
       FSTD::Register TIMESECTION$Item

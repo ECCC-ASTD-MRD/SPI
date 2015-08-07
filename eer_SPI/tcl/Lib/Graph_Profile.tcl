@@ -421,7 +421,7 @@ proc Graph::Profile::ItemAdd { GR Item } {
    if { [lsearch -exact $data(Items) $Item]==-1 } {
       vector free   $Item
       vector create $Item
-      vector dim    $Item { X Y }
+      vector dim    $Item { X Y D }
       set id [$data(Canvas) create text -100 -100 -tags "PAGE$GR CVTEXT GRAPHUPDATE$GR" -text $Item -anchor nw -justify left]
 
       graphitem free   $Item
@@ -458,7 +458,7 @@ proc Graph::Profile::ItemDefault { GR Item } {
    set Graph::Item(FillColor)   #FFFFFF
    set Graph::Item(Tranparency) 100
    set Graph::Item(Width)       1
-   set Graph::Item(Size)        0
+   set Graph::Item(Size)        3
    set Graph::Item(Value)       False
    set Graph::Item(Dash)        ""
    set Graph::Item(Type)        LINE
@@ -673,7 +673,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                fstdfield free GRAPHPROFILE
 
                foreach ij $ijs {
-                  fstdfield vertical GRAPHPROFILE_TMP $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]]
+                  fstdfield vertical GRAPHPROFILE_TMP $Data [fstdfield stats $Data -gridpoint [lindex $ij 0] [lindex $ij 1]] True
                   if { [fstdfield is GRAPHPROFILE] } {
                      switch $Graph::Param(SelectType) {
                         AVG { vexpr GRAPHPROFILE GRAPHPROFILE+GRAPHPROFILE_TMP }
@@ -698,7 +698,7 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
                }
                SPI::Progress 0
             } else {
-               fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos)
+               fstdfield vertical GRAPHPROFILE $Data $data(Pos$Pos) True
             }
             FSTD::ParamUpdate GRAPHPROFILE
          }
@@ -747,11 +747,20 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
          if { [set graph(UnitX) [fstdfield configure $Data -unit]]=="" } {
             set graph(UnitX) UNDEFINED
          }
+         
+         if { $Graph::Item(Icon)=="BARB" && [fstdfield stats GRAPHPROFILE -component]>1 } {
+            vector set $Item.D [fstdfield define GRAPHPROFILE -DATA 1]
+            graphitem configure $Item -speed $Item.X -dir $Item.D
+         } else {
+            graphitem configure $Item -speed "" -dir ""
+         }
+
       } elseif { [observation is $Data] } {
 
          set lst {}
          vector set $Item.X {}
          vector set $Item.Y {}
+         vector set $Item.D {}
 
          if { [info exists data(Obs$Pos)] } {
             foreach obs $data(Data$Data) {
