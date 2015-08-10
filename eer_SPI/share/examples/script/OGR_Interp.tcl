@@ -47,13 +47,14 @@ ogrlayer clear LAYER PRES 0.0
 #----- Open a file to save the index for future reuse for faster processing
 #      if the file is empty, it will be filled with the index
 #      otherwise, it will be used as an index
-#set f [open DataOut/OGR_InterpIdx.txt {RDWR CREAT}]
-set f [open DataOut/OGR_InterpIdx.txt r]
+#set f [open DataOut/OGR_InterpIdx.bin r]
+#fconfigure $f -encoding binary -translation binary
+#set index [read $f]
 #
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
 puts "   Interpolating field values into polygon layer"
 #ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f
-ogrlayer interp LAYER DATAFIELD PRES AVERAGE 1 True $f
+ogrlayer interp LAYER DATAFIELD PRES AVERAGE 1 True index
 
 puts "   Minimum: [ogrlayer stats LAYER -min PRES]"
 puts "   Maximum: [ogrlayer stats LAYER -max PRES]"
@@ -64,7 +65,11 @@ vexpr LAYER.ZONE log(LAYER.PRES+100)
 #puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
 #puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
 
-close $f
+#binary scan $index f* data
+#puts [llength $data]
+#puts $data
+#puts $f $index
+#close $f
 
 ogrfile open SHPFILE2 write DataOut/OGR_Interp2D.shp "ESRI Shapefile"
 ogrlayer write LAYER SHPFILE2
@@ -78,7 +83,6 @@ ogrfile close SHPFILE
 
 
 #----- Open the shapefile
-
 catch { eval file delete [glob DataOut/OGR_Interp1D.*] }
 
 file copy DataIn/TideStations.shp DataOut/OGR_Interp1D.shp
@@ -89,7 +93,6 @@ set layer [ogrfile open SHPFILE append DataOut/OGR_Interp1D.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Clear the file that will be used to sum the data
-
 ogrlayer define LAYER -field PRES Real
 ogrlayer clear LAYER PRES 0.0
 

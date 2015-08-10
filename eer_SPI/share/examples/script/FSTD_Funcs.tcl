@@ -79,7 +79,7 @@ fstdfile open HYB read DataIn/2006122900_000.hyb
 set lnk  [fstdfile link { ETA HYB }]
 
 fstdfield ip1mode OLD
-set idxs [fstdfield find $lnk -1 "" { 1.0 SIGMA } -1 -1 "" "TT"]
+set idxs [fstdfield find $lnk -1 "" -1 -1 -1 "" "TT"]
 puts "   Found [llength $idxs] fields from $lnk" 
 
 foreach idx $idxs {
@@ -101,7 +101,7 @@ puts "   level         : [fstdfield stat TT -level]"
 puts "   leveltype     : [fstdfield stat TT -leveltype]"
 
 fstdfield configure TT -intervals $inter
-fstdfield stats TT -limits { 10 10 0 100 100 0 }
+fstdfield stats TT -limits { 10 10 0 200 200 0 }
 
 set n 0
 foreach contour [fstdfield stats TT -coordcontour] {
@@ -161,9 +161,13 @@ fstdfield readcube UU
 
 vexpr WS (\[UU\] * 0.51444)
 vexpr WD @UU@
+
 fstdfield vertical PROFIL_WS WS [list 50.0 -150.0]
 fstdfield vertical PROFIL_WD WD [list 50.0 -150.0]
+puts "   Wind speed profile: [fstdfield define PROFIL_WS -DATA 0]"
+puts "   Wind dir   profile: [fstdfield define PROFIL_WD -DATA 0]"
 
+puts "\nTesting mask grid"
 #----- Teste la creation d'un masque de grille plus petite dans un grille plus grande
 fstdfile open 2 read DataIn/2006122900_000.eta
 fstdfield read GZ 2 -1 "" 12000 -1 -1 "" "GZ"
@@ -239,6 +243,7 @@ fstdfile open TRUNC read DataIn/truncated
 if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
    puts "\n   File is truncated: $msg"
 }
+
 fstdfile close TRUNC
 
 #----- Test l'ouverture de plus de 1000 fichiers

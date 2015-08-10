@@ -27,13 +27,13 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Ouverture du fichier
-set bands [gdalfile open GDAL read /data/goodenough/afsr005/Projects/Rick/2008-12-31_024723DH.00400.sar.nc]
+set bands [gdalfile open GDAL read DataIn/SAR.tif]
 puts "   found: \n\t[join $bands \n\t]"
 
 #----- Lecture des bandes
-gdalband read RASTER [list [lindex $bands 8]]
-gdalband read LAT [list [lindex $bands 11]]
-gdalband read LON [list [lindex $bands 12]]
+gdalband read RASTER [list [lindex $bands 0]]
+gdalband read LAT [list [lindex $bands 4]]
+gdalband read LON [list [lindex $bands 5]]
 
 #----- converions pixel-latlon et inverse
 set ll [gdalband stats RASTER -project 100 100]
@@ -44,7 +44,7 @@ puts "      Min    : [gdalband stats RASTER -min]"
 puts "      Max    : [gdalband stats RASTER -max]"
 
 #----- Assigner les latlon
-puts "\n   Corner latlon=[gdalband stats LAT -gridvalue 0 0] [gdalband stats LON -gridvalue 0 0]\n"
+puts "\n   Corner latlon (0,0)=[gdalband stats LAT -gridvalue 0 0] [gdalband stats LON -gridvalue 0 0]\n"
 gdalband define RASTER -positional LON LAT
 
 #----- converions pixel-latlon et inverse

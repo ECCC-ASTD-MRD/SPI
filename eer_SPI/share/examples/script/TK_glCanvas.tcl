@@ -92,6 +92,13 @@ button .canvas.test   -text "  Tk  " -highlightthickness 0 -bd 1
 
 #.glcanvas create viewport -x 50 -y 150 -width 150 -height 150 -anchor nw -tags VP -projection PROJ -camera CAM -command VP  -fg black  -colorcoast black  -font FONT2
 
+image create photo SVGTEST -width 150 -height 150
+SVGTEST read DataIn/tiger.svg 
+#SVGTEST read DataIn/yinyang.svg
+#SVGTEST read DataIn/ubuntu.svg
+#SVGTEST read DataIn/WeatherSymbol_WMO_CloudHigh_CH_1.svg
+#SVGTEST read /home/afsr/005/WeatherSymbol_WMO_WindArrowSH_25.svg
+
 proc draw { Canvas Act } {
 
    $Canvas create line 1 1 200 1 -fill blue -width 2
@@ -121,6 +128,9 @@ proc draw { Canvas Act } {
    Shape::BindMove $Canvas G $Act
 
    $Canvas create window 300 300 -window $Canvas.test -anchor se
+   
+   $Canvas create image 150 300 -image SVGTEST -anchor s -tag H
+   Shape::BindMove $Canvas H $Act
 }
 
 draw .glcanvas 1
@@ -135,7 +145,6 @@ package require Img
 image create photo TMPIMG
 .glcanvas buffer TMPIMG 1 1 300 300
 
-TMPIMG write "DataOut/TK_glCanvas.gif" -format gif
 TMPIMG write "DataOut/TK_glCanvas.png" -format png
 TMPIMG write "DataOut/TK_glCanvas.jpg" -format jpeg
 TMPIMG write "DataOut/TK_glCanvas.bmp" -format bmp
