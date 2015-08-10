@@ -2501,7 +2501,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          }
          grtyp[1]=t;
          field->GRef=GeoRef_Find(GeoRef_WKTSetup(ni,nj,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL));
-
          if (proj) free(proj);
       }
    }

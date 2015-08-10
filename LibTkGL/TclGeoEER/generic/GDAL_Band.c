@@ -1148,7 +1148,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
          case COMPONENT:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(DSIZE(band->Def->Data)));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(band->Def->NC));
             }
             break;
 

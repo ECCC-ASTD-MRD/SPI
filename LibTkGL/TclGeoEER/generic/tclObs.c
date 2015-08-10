@@ -961,7 +961,7 @@ int Obs_Intersection(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=Def_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=Def_New(loc->Nb,1,1,obs0->Def->NC,TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/
@@ -1094,7 +1094,7 @@ int Obs_Union(Tcl_Interp *Interp,Tcl_Obj *List,char *Token) {
       Tcl_ListObjIndex(Interp,List,i,&obj);
       obs0=Obs_Get(Tcl_GetString(obj));
       array0=Token[0]=='I'?obs0->Loc->Id:obs0->Loc->No;
-      def=Def_New(loc->Nb,1,1,DSIZE(obs0->Def->Data),TD_Float32);
+      def=Def_New(loc->Nb,1,1,obs0->Def->NC,TD_Float32);
       def->NoData=-999.0;
 
       /*Parse the locations*/

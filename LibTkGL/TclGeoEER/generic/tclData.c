@@ -775,7 +775,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 
     /* Est-ce que le champs existe et si oui, verifier les dimensions */
    if (Def) {
-      if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,alias?-1:DSIZE(def->Data),def->Type))) {
+      if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,alias?-1:def->NC,def->Type))) {
          return(NULL);
       }
       field->Def->Alias=alias;
@@ -898,9 +898,9 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    }
 
    if (Field[0]->Def->NK>1) {
-      cut=Data_Valid(Interp,Cut,NbF*NbC,Field[0]->Def->NK,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
+      cut=Data_Valid(Interp,Cut,NbF*NbC,Field[0]->Def->NK,1,Field[0]->Def->NC,Field[0]->Def->Type);
    } else {
-      cut=Data_Valid(Interp,Cut,NbC,NbF,1,DSIZE(Field[0]->Def->Data),Field[0]->Def->Type);
+      cut=Data_Valid(Interp,Cut,NbC,NbF,1,Field[0]->Def->NC,Field[0]->Def->Type);
    }
 
    Field[0]->Set(cut);
@@ -1146,7 +1146,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
 
    TData          *field=NULL;
    Tcl_HashEntry  *entry;
-   int             new,i;
+   int             new;
 
    entry=TclY_CreateHashEntry(&TData_Table,Name,&new);
 
@@ -1158,26 +1158,12 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
          field->Def=NULL;
       } else {
          // Si les dimensions sont correctes et les composantes sont ls memes
-         if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
+         if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || Dim!=field->Def->NC || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
             Def_Free(field->Def);
             if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
                Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data",(char *)NULL);
                return(NULL);
             }
-         } else if (Dim!=field->Def->NC) {
-           for(i=0;i<4;i++) {
-               if (i<Dim && !field->Def->Data[i]) {
-                  if (!(field->Def->Data[i]=(char*)calloc(NI*NJ*NK,TDef_Size[Type]))) {
-                     Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate complementary field",(char *)NULL);
-                     return(NULL);
-                  }
-               }
-               if (i>=Dim && field->Def->Data[i]) {
-                  if (Dim>0) free(field->Def->Data[i]);
-                  field->Def->Data[i]=NULL;
-               }
-            }
-            field->Def->NC=abs(Dim);
          }
          field->Def->Type=Type;
       }
@@ -1727,7 +1713,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case COMPONENT:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(DSIZE(Field->Def->Data)));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NC));
             }
             break;
 

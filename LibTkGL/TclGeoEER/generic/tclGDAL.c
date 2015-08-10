@@ -739,7 +739,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
          a=band->Def->NoData;
 
-         for(n=0;n<DSIZE(band->Def->Data);n++) {
+         for(n=0;n<band->Def->NC;n++) {
             /*If clearing values are specified*/
             if (Objc>(3+n)) {
                Tcl_GetDoubleFromObj(Interp,Objv[3+n],&a);

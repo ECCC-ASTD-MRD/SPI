@@ -1414,7 +1414,7 @@ void GraphItem_DisplayBox(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
                }
                glPushMatrix();
                glTranslated(x[0],y[0],0.0);
-               glScalef(Item->Size,Item->Size,1.0f);
+               glScalef(Item->Size*0.5,Item->Size*0.5,1.0f);
                if (Item->IconFill) {
                   glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
                } else {
@@ -1756,14 +1756,14 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       vecd=Vector_Get(Item->Dir);
       if (vecs && vecd) {
          for(i=0;i<vn;i++) {
-            Data_RenderBarbule(1,1,0.0,v[i][0],v[i][1],0.0,vecs->V[i],vecd->V[i],Item->Size,NULL);
+            Data_RenderBarbule(1,1,0.0,v[i][0],v[i][1],0.0,vecs->V[i],vecd->V[i],Item->Size*2,NULL);
          }
       }
    }
 
    /* Display Icons */
    if (Item->Icon && Item->Size>0.0) {
-      sz=Item->Size+Item->Width;
+      sz=(Item->Size+Item->Width)*0.5;
       glLineWidth(Item->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
@@ -2516,7 +2516,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    float  step;
    Vect3d pix,*vbuf;
 
-   if (!Data || !Data->Def->Data[1] || !Data->Spec->Width || !Data->Spec->Outline)
+   if (!Data || !Data->Def->Data[1] || Data->Def->Dir || !Data->Spec->Width || !Data->Spec->Outline)
       return;
 
    if (GLRender->Resolution>2) {
@@ -2955,8 +2955,8 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
       glPushMatrix();
       glTranslated(X1+20,y,0);
-      sz=Item->Size+Item->Width;
-      glScalef(sz,-sz,1.0f);
+      sz=(Item->Size+Item->Width)*0.5;
+      glScalef(sz,sz,1.0f);
       if (Item->IconFill) {
          glColor4us(Item->IconFill->red,Item->IconFill->green,Item->IconFill->blue,Item->Alpha*Graph->Alpha*0.01*655);
       } else {
@@ -3727,7 +3727,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    if (Item->Icon && Item->Size>0.0) {
       for(i=0;i<vn-hd;i++) {
          if (i==0 || i==(vn-hd-1) ||Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
-            sz=Item->Size+Item->Width;
+            sz=(Item->Size+Item->Width)*0.5;
 
             if (Item->Orient[0]=='X') {
                sprintf(buf,"gsave\n%.15g %.15g translate %f %f scale\n",v[i][0]-dh,v[i][1],sz,sz);

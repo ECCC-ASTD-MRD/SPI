@@ -251,7 +251,7 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
 #endif
 
    GDataN++;
-   GData[GDataN]=Def_New(A->NI,A->NJ,B->NK,DSIZE(B->Data),(GType?GType:A->Type));
+   GData[GDataN]=Def_New(A->NI,A->NJ,B->NK,B->NC,(GType?GType:A->Type));
 
 #ifdef HAVE_RMN
    if (FSIZE3D(GData[GDataN])==1) {
@@ -343,7 +343,7 @@ TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
 
    GDataN++;
 
-   GData[GDataN]=Def_New(1,1,1,DSIZE(A->Data),(GType?GType:A->Type));
+   GData[GDataN]=Def_New(1,1,1,A->NC,(GType?GType:A->Type));
 
    while(A->Data[n]) {
       Def_Get(A,n,(FSIZE2D(A)*K)+J*A->NI+I,v);
@@ -370,7 +370,7 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
       return(NULL);
 
    GDataN++;
-   GData[GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,DSIZE(A->Data),A->Type);
+   GData[GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,A->NC,A->Type);
 
    for(k=K0,kn=0;k<=K1;k++,kn++) {
 //      GData[GDataN]->GridLevels[kn]=A->GridLevels[k];
@@ -400,7 +400,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
    switch(D) {
       case 0:
          i=N;
-         GData[++GDataN]=Def_New(A->NJ,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NJ,A->NK,1,A->NC,(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -415,7 +415,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
 
       case 1:
          j=N;
-         GData[++GDataN]=Def_New(A->NI,A->NK,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NI,A->NK,1,A->NC,(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
@@ -431,7 +431,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
       case 2:
          k=N;
          n=0;
-         GData[++GDataN]=Def_New(A->NI,A->NJ,1,DSIZE(A->Data),(GType?GType:A->Type));
+         GData[++GDataN]=Def_New(A->NI,A->NJ,1,A->NC,(GType?GType:A->Type));
 //         GData[GDataN]->GridLevels[0]=A->GridLevels[k];
          while(A->Data[n]) {
             Def_Pointer(A,n,FSIZE2D(A)*k,p);

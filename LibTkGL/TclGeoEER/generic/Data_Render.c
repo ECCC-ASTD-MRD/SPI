@@ -105,7 +105,7 @@ void Data_MapColor(TData *Field,int Idx) {
       }
 
       for (i=0;i<FSIZE2D(Field->Def);i++) {
-         Def_Get(Field->Def,0,i,v);
+         Def_GetMod(Field->Def,i,v);
          VAL2COL(Field->Map[i],Field->Spec,v);
          Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
 
@@ -1807,14 +1807,13 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                            glColor4ubv(Field->Spec->Map->Color[idc]);
                         }
                      }
+                     Def_Get(Field->Def,0,idx,u);
                      
                      if (Field->Def->Data[1]) {
-                        Def_Get(Field->Def,0,idx,u);
                         Def_Get(Field->Def,1,idx,v);
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                         dir=(grtyp=='Y' || grtyp=='W')?v:180+RAD2DEG(atan2(u,v));
                      } else {
-                        Def_Get(Field->Def,0,idx,u);
                         dir=u;
                      }
                      if (Interp) glFeedbackInit(256,GL_2D);

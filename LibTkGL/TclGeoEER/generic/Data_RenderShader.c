@@ -234,7 +234,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glBegin(GL_TRIANGLES);
    if (Field->Spec->InterpDegree[0]=='L') {
       for(n=0;n<Field->GRef->NIdx;n++) {
-         Def_Get(Field->Def,0,Field->GRef->Idx[n],val);
+         Def_GetMod(Field->Def,Field->GRef->Idx[n],val);
          glVertexAttrib1fARB(att0,val);
          glVertex3dv(pos[Field->GRef->Idx[n]]);
       }
@@ -249,7 +249,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          Vect_Init(b,0.5,0.5,0.0);
          Bary_InterpPos(b,p2,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
 
-         Def_Get(Field->Def,0,Field->GRef->Idx[n],val);
+         Def_GetMod(Field->Def,Field->GRef->Idx[n],val);
          glVertexAttrib1fARB(att0,val);
          glVertex3dv(pos[Field->GRef->Idx[n]]);
          glVertex3dv(p);
@@ -258,7 +258,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         Def_Get(Field->Def,0,Field->GRef->Idx[n+1],val);
+         Def_GetMod(Field->Def,Field->GRef->Idx[n+1],val);
          glVertexAttrib1fARB(att0,val);
          glVertex3dv(pos[Field->GRef->Idx[n+1]]);
          glVertex3dv(p);
@@ -267,7 +267,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          glVertex3dv(p);
          glVertex3dv(p2);
 
-         Def_Get(Field->Def,0,Field->GRef->Idx[n+2],val);
+         Def_GetMod(Field->Def,Field->GRef->Idx[n+2],val);
          glVertexAttrib1fARB(att0,val);
          glVertex3dv(pos[Field->GRef->Idx[n+2]]);
          glVertex3dv(p);
