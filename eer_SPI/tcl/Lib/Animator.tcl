@@ -930,11 +930,12 @@ proc Animator::Play { } {
 
    #----- If no viewport is active in the active page, try for a graph
    if { ![llength [set Play(VPs) [Page::Registered $Play(Page) Viewport]]] } {
-      upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data
+      if { ![catch { upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data  data}] } {
 
-      set Play(Page)    $data(FrameData)
-      set Play(Canvas)  $data(FrameData).page.canvas
-      set Play(VPs)     [Page::Registered $Play(Page) Viewport]
+         set Play(Page)    $data(FrameData)
+         set Play(Canvas)  $data(FrameData).page.canvas
+         set Play(VPs)     [Page::Registered $Play(Page) Viewport]
+      }
    }
 
    if { ![llength $Play(Frames)] } {
