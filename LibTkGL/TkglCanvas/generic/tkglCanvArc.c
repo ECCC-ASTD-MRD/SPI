@@ -624,7 +624,7 @@ static void glDisplayArc(
 {
    glArcItem *arcPtr = (glArcItem *) itemPtr;
    short x1, y1, x2, y2;
-   int dashnumber;
+   Tk_Dash *dash;
    double lineWidth;
    Tk_State state = itemPtr->state;
    T_glBitmap *stipple;
@@ -636,14 +636,14 @@ static void glDisplayArc(
    if (lineWidth < 1.0) {
       lineWidth = 1.0;
    }
-   dashnumber = arcPtr->outline.dash.number;
+   dash = &arcPtr->outline.dash;
    stipple = arcPtr->fillStipple;
    if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
       if (arcPtr->outline.activeWidth>lineWidth) {
          lineWidth = arcPtr->outline.activeWidth;
       }
       if (arcPtr->outline.activeDash.number != 0) {
-         dashnumber = arcPtr->outline.activeDash.number;
+         dash = &arcPtr->outline.activeDash;
       }
       if (arcPtr->activeFillStipple) {
          stipple = arcPtr->activeFillStipple;
@@ -653,7 +653,7 @@ static void glDisplayArc(
          lineWidth = arcPtr->outline.disabledWidth;
       }
       if (arcPtr->outline.disabledDash.number != 0) {
-         dashnumber = arcPtr->outline.disabledDash.number;
+         dash = &arcPtr->outline.disabledDash;
       }
       if (arcPtr->disabledFillStipple) {
          stipple = arcPtr->disabledFillStipple;
@@ -697,7 +697,7 @@ static void glDisplayArc(
       }
 
       if (arcPtr->outline.color && arcPtr->outline.width>0) {
-         glDash(&arcPtr->outline.dash);
+         glDash(dash);
          glLineWidth(arcPtr->outline.width);
          glColor4us(arcPtr->outline.color->red,arcPtr->outline.color->green,arcPtr->outline.color->blue,arcPtr->alpha*655);
          glDrawArc(arcPtr->start,arcPtr->extent,64,GL_LINE_STRIP,arcPtr->style);

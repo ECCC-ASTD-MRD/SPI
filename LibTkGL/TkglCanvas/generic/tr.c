@@ -438,10 +438,6 @@ void trRasterPos3f(TRcontext *tr, GLfloat x, GLfloat y, GLfloat z)
          glMatrixMode(GL_MODELVIEW);
          glPopMatrix();
       }
-#ifdef DEBUG
-      if (glGetError())
-         printf("GL error!\n");
-#endif
    }
 }
 
