@@ -31,6 +31,7 @@
  *==============================================================================
  */
 
+#include "App.h"
 #include "tclUtils.h"
 #include "RPN.h"
 #include "Triangle.h"
@@ -456,7 +457,11 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 
    /*Les contours sont-ils definit*/
    if (Field->Spec->InterNb && !Field->Def->Segments) {
-      FFContour(REF_PROJ,Field->GPos,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,4-Field->Spec->RenderContour,0);
+      if (Field->GRef->Grid[0]=='M') {
+         FFContourM(REF_PROJ,Field->GPos,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter);
+      } else {
+         FFContour(REF_PROJ,Field->GPos,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter,4-Field->Spec->RenderContour,0);
+      }
    }
 
    /* Render the contours */
@@ -516,7 +521,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
                glColor4ubv(Field->Spec->Map->Color[c]);
             }
          }
-         Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,GL_LINE_STRIP,array->Size,0,NULL,NULL);
+         Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,Field->GRef->Grid[0]=='M'?GL_LINES:GL_LINE_STRIP,array->Size,0,NULL,NULL);
 
          if (Interp)
             glFeedbackProcess(Interp,GL_2D);
@@ -1835,7 +1840,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             ll=(float*)malloc(2*mem*sizeof(float));
 
             if (!ll) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary coordinate buffer\n");
+               App_Log(ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
                return;
             }
 
@@ -1856,7 +1861,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             xy=(float*)malloc(3*n*sizeof(float));
 
             if (!xy) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary projected buffer\n");
+               App_Log(ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
                return;
             }
 
@@ -1882,7 +1887,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             ll=(float*)malloc(2*mem*sizeof(float));
             
             if (!ll) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary coordinate buffer\n");
+               App_Log(ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
                return;
             }
             c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
@@ -1899,7 +1904,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             xy=(float*)malloc(n*3*sizeof(float));
 
             if (!xy) {
-               fprintf(stderr,"(ERROR) Unable to allocate temporary projected buffer\n");
+               App_Log(ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
                return;
             }
          }
@@ -2000,7 +2005,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
                Field->Def->Segments=TList_Add(Field->Def->Segments,array);
                VBuffer_Copy(array->Data,len);
             } else {
-               fprintf(stderr,"(ERROR) Data_RenderVolume: Unable to alloc memory for volume data %f",Field->Spec->Inter[i]);
+               App_Log(ERROR,"%s: Unable to alloc memory for volume data %f",__func__,Field->Spec->Inter[i]);
             }
          }
       }

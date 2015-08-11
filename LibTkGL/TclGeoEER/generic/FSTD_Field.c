@@ -33,6 +33,7 @@
 
 #ifdef HAVE_RMN
 
+#include "App.h"
 #include "tclFSTD.h"
 #include "tclGeoRef.h"
 #include "Projection.h"
@@ -71,7 +72,7 @@ TDef_Type FSTD_TypeCheck(int Type,int Size) {
       case 1:
       case 6:
       case 5:  Type=Size>32?TD_Float64:TD_Float32;                                      break;
-      default: fprintf(stderr,"(ERROR) Unknonw data type (DATYP=%i\n",Type);
+      default: App_Log(ERROR,"%s: Unknonw data type (DATYP=%i\n",__func__,Type);
    }
    return(Type);
 }
@@ -176,7 +177,7 @@ int FSTD_FieldSubBuild(TData *Field) {
             }
          }
       } else {
-         fprintf(stderr,"(ERROR) FSTD_FieldBuildSub: Unable to allocate subgrid array\n");
+         App_Log(ERROR,"%s: Unable to allocate subgrid array\n",__func__);
          return(0);
       }
    }
@@ -277,7 +278,7 @@ int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force
       } else {
          if (!*Ptr) {
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
-               fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
+               App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);
             }
          }
@@ -315,7 +316,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
    // If we don't find any level definition, use level index
    if (!Field->ZRef->Levels) {
       if (!(Field->ZRef->Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
-         fprintf(stderr,"(ERROR) FSTD_FieldReadComp: Not enough memory to read coordinates fields\n");
+         App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
       } else {
          for(nj=0;nj<Field->Def->NJ;nj++) {
             Field->ZRef->Levels[nj]=nj+1;
@@ -363,13 +364,13 @@ int FSTD_FieldReadMesh(TData *Field) {
             if (!Field->GRef->Idx) {
                key=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
                if (key < 0) {
-                  fprintf(stderr,"(ERROR) FSTD_ReadMesh: Could not find index field %s (c_fstinf failed)","##");
+                  App_Log(ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
                   FSTD_FileUnset(NULL,head->File);
                   return(0);
                } else {
                   Field->GRef->NIdx=ni*nj*nk;
                   if (!(Field->GRef->Idx=(unsigned int*)malloc(Field->GRef->NIdx*sizeof(unsigned int)))) {
-                     fprintf(stderr,"(ERROR) FSTD_ReadMesh: Not enough memory to read coordinates fields");
+                     App_Log(ERROR,"%s: Not enough memory to read coordinates fields",__func__);
                      FSTD_FileUnset(NULL,head->File);
                      return(0);
                   }
@@ -444,7 +445,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    float        *gz=NULL;
 
    if (!FSTD_FieldReadMesh(Field)) {
-      fprintf(stderr,"(Warning) FSTD_FieldGetMesh: Could not find grid definition components");
+      App_Log(WARNING,"%s: Could not find grid definition components",__func__);
       return(NULL);
    }
 
@@ -458,7 +459,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         fprintf(stderr,"(ERROR) FSTD_FieldGetMesh: Not enough memory to calculate gridpoint location");
+         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
          return(NULL);
       }
    }
@@ -582,7 +583,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to calculate gridpoint location");
+         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
          return(NULL);
       }
    }
@@ -594,7 +595,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       FSTD_FieldReadMesh(Field);
 
       if (!Field->GRef->Lat || !Field->GRef->Lon) {
-         fprintf(stderr,"(ERROR) FSTD_Grid: Section coordinates not defined");
+         App_Log(ERROR,"%s: Section coordinates not defined",__func__);
          return(NULL);
       }
 
@@ -642,7 +643,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          lon=(float*)malloc(FSIZE2D(def)*sizeof(float));
 
          if (!lat || !lon) {
-            fprintf(stderr,"(ERROR) FSTD_Grid: Not enough memory to process gridpoint location");
+            App_Log(ERROR,"%s: Not enough memory to process gridpoint location",__func__);
             free(Field->GPos->Pos[Level]);
             return(Field->GPos->Pos[Level]=NULL);
          }
@@ -2286,8 +2287,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    // have to boost nbit to 32 for nbit=1, not sure why (X32) ????
    if (h.NBITS==32 && datyp==0) datyp=5;
    dtype=FSTD_TypeCheck(datyp,h.NBITS==1?32:h.NBITS);
-//   fprintf(stderr,"---- %i\n",dtype);
-//dtype=TD_UInt32;
 
    // Calculer la date de validitee du champs
    if (h.DATEO!=0) {
