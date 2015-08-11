@@ -34,6 +34,7 @@
 
 #ifdef HAVE_URP
 
+#include "App.h"
 #include "tclRADAR.h"
 #include "tclGeoRef.h"
 #include "Projection.h"
@@ -459,7 +460,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
    if (!Rad->GPos->Pos[Level]) {
       Rad->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Rad->Def)*sizeof(Vect3d));
       if (!Rad->GPos->Pos[Level]) {
-         fprintf(stderr,"(ERROR) Radar_Grid: Not enough memory to calculate gridpoint location");
+         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
          return(NULL);
       }
    }

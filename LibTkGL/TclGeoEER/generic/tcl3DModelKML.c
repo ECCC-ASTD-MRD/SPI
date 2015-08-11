@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "tclXML.h"
 
@@ -111,9 +112,7 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
          strcpy(buf,kml->Path);
          if ((c=strrchr(buf,'/'))) {
             strcpy(c+1,data->Buf);
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) ModelKML_EndHandler: Found Collada external ref %s\n",buf);
-#endif
+            App_Log(DEBUG,"%s: Found Collada external ref %s\n",__func__,buf);
          }
          Model_LoadDAE(data->Interp,kml->Model,buf);
          free(buf);
@@ -146,7 +145,7 @@ void ModelKML_EndHandler(void *Data,const char *Elem) {
 
    /*Create expat XML parser*/
    if (!(parser=XML_ParserCreate(NULL))) {
-      fprintf(stderr,"(ERROR) Model_LoadKML: Couldn't initiate XML parser\n");
+      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 

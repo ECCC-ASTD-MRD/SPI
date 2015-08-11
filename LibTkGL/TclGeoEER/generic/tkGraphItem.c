@@ -30,6 +30,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tkGraphItem.h"
 #include "tkglCanvText.h"
 
@@ -1143,7 +1144,7 @@ void GraphItem_DisplayMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    if (vec0 && vec0->N<=vec->N && vec1 && vec1->N<=vec->N && Item->Outline) {
 
       if (!(v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d)))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
       }
       vn=0;
@@ -1487,13 +1488,13 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       hd=0;
    }
    if (!(v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
-      fprintf(stderr,"(ERROR) Memory allocation error");
+      App_Log(ERROR,"%s: Memory allocation error",__func__);
       return;
    }
 
    if (vecl) {
       if (!(vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
       }
    }
@@ -1875,7 +1876,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
 
       /*We have to flip the image data along the Y axis*/
       if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
       }
       memcpy(pixel,data.pixelPtr,data.width*data.height*data.pixelSize);
@@ -2990,7 +2991,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
 
       /*We have to flip the image data along the Y axis*/
       if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return(0);
       }
          
@@ -3050,12 +3051,12 @@ void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,i
             w=Graph->Width;
             h=Graph->Height;
             if (!(pbuf=glXGetPBuffer(Tk_CanvasTkwin(Graph->canvas),&w,&h))) {
-               fprintf(stderr,"GraphItem_Postscript: Unable to allocate rendering PBuffer");
+               App_Log(ERROR,"%s: Unable to allocate rendering PBuffer",__func__);
                return;
             }
 
             if (!glXMakeContextCurrent(GLRender->XDisplay,pbuf,pbuf,GLRender->GLCon)) {
-               fprintf(stderr,"GraphItem_Postscript: Unable to link the pbuffer to the GLXContext");
+               App_Log(ERROR,"%s: Unable to link the pbuffer to the GLXContext",__func__);
                glXFreePBuffer(pbuf);
                return;
             }
@@ -3154,7 +3155,7 @@ void GraphItem_PostscriptMinMax(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *
       Tcl_AppendResult(Interp,"% Postscript du graph MinMax\n",(char*)NULL);
 
       if (!(v=(Vect3d*)malloc(2*vec->N*sizeof(Vect3d)))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
       }
       vn=0;
@@ -3473,13 +3474,13 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
       hd=0;
    }
    if (!(v=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
-      fprintf(stderr,"(ERROR) Memory allocation error");
+      App_Log(ERROR,"%s: Memory allocation error",__func__);
       return;
    }
 
    if (vecl) {
       if (!(vl=(Vect3d*)malloc((n+hd)*sizeof(Vect3d)))) {
-         fprintf(stderr,"(ERROR) Memory allocation error");
+         App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
       }
    }

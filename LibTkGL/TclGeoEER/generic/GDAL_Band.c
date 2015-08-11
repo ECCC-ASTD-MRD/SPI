@@ -32,6 +32,7 @@
 
 #include <math.h>
 
+#include "App.h"
 #include "tclGDAL.h"
 #include "Data_FF.h"
 
@@ -177,10 +178,6 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
                Tcl_AppendResult(Interp,"GDAL_BandRead: Unable to read band data",(char*)NULL);
                return(TCL_ERROR);
             }
-         } else {
-#ifdef DEBUG
-           fprintf(stdout,"(DEBUG) GDAL_BandRead: Delaying read\n");
-#endif
          }
       } else if (Idxs[i]!=-1) {
          Tcl_AppendResult(Interp,"GDAL_BandRead: Invalid file handle",(char*)NULL);
@@ -197,7 +194,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       CMap_Free(band->Spec->Map);
 
    if ((hTable=GDALGetRasterColorTable(hband))) {
-      printf( "Color Table (%s with %d entries)\n",GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
+      App_Log(DEBUG,"%s: Color Table (%s with %d entries)\n",__func__,GDALGetPaletteInterpretationName(GDALGetPaletteInterpretation(hTable)),GDALGetColorEntryCount(hTable));
       
       if (GDALGetRasterColorInterpretation(hband)==GCI_PaletteIndex) {
          //  palette is always 256 colors so in color index mode get max value as nb colors
@@ -1948,7 +1945,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   tm=tra;
                   if (!GDALInvGeoTransform(tra,inv)) {
-                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to generate the inverse transform matrix\n");
+                     App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                      im=NULL;
                   } else {
                      im=inv;
@@ -1995,7 +1992,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   im=inv;
                   if (!GDALInvGeoTransform(inv,tra)) {
-                     fprintf(stdout,"(WARNING) GDAL_BandDefine: Unable to generate the transform matrix\n");
+                     App_Log(WARNING,"%s: Unable to generate the transform matrix\n",__func__);
                      tm=NULL;
                   } else {
                      tm=tra;
@@ -2265,7 +2262,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    GLuint    bc[]={ GL_RED_BIAS,  GL_GREEN_BIAS,  GL_BLUE_BIAS,  GL_ALPHA_BIAS  };
 
    if (!Band || !Band->Spec) {
-      fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid band object\n");
+      App_Log(ERROR,"%s: Invalid band object\n",__func__);
       return(0);
    }
 
@@ -2275,7 +2272,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
    /*Check for invalid georeference*/
    if (!GeoRef_Valid(Band->GRef)) {
-      fprintf(stderr,"(ERROR) GDAL_BandRender: Invalid georeference\n");
+      App_Log(ERROR,"%s: Invalid georeference\n",__func__);
       return(0);
    }
 
@@ -2297,7 +2294,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
          if (!Band->Tex.ThreadId) {
             //Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,SYS_IOTHREAD_STACKSIZE,TCL_THREAD_NOFLAGS);
             if (Tcl_CreateThread(&Band->Tex.ThreadId,GeoTex_ThreadProc,Band,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
-               fprintf(stderr,"(ERROR) GDAL_BandRender: Unable to initialize geotexture thread\n");
+               App_Log(ERROR,"%s: Unable to initialize geotexture thread\n",__func__);
             }
          }
       }
@@ -2382,7 +2379,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
                              break;
          }
          if (GLRender->GLDebug)
-            fprintf(stdout,"(DEBUG) GDAL_BandRender: Normalizing factor (%i) Sc=%f Bc=%f\n",n,Band->Tex.Scale[n],Band->Tex.Bias[n]);
+            App_Log(DEBUG,"%s: Normalizing factor (%i) Sc=%f Bc=%f\n",__func__,n,Band->Tex.Scale[n],Band->Tex.Bias[n]);
       }
 
       if (!GLRender->ShaderAvailable) {

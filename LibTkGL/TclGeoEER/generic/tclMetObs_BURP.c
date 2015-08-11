@@ -32,6 +32,7 @@
 #ifdef HAVE_ECBUFR
 #ifdef HAVE_RMN
 
+#include "App.h"
 #include "RPN.h"
 #include "tclMetObs.h"
 
@@ -177,7 +178,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          /*Skip if empty*/
          if ((nelem*nval*nt)==0) {
-            fprintf(stdout,"(WARNING) MetObs_LoadBURP: Found empty report\n");
+            App_Log(WARNING,"%s: Found empty report\n",__func__);
             continue;
          }
          /*Resize temporary buffers if needed*/
@@ -211,7 +212,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          /*Test for superobs ..... ta daaaaaaa*/
          if (stnid[0]=='^') {
             if (stnid[1]=='^') {
-               fprintf(stdout,"(DEBUG) MetObs_LoadBURP: Found super duper obs\n");
+               App_Log(DEBUG,"%s: MetObs_LoadBURP: Found super duper obs\n",__func__);
             } else {
 
             }
@@ -241,7 +242,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                }
                c=1;
             } else {
-               fprintf(stdout,"(WARNING) MetObs_LoadBURP: Found invalid code (%i)\n",c);
+               App_Log(WARNING,"%s: Found invalid code (%i)\n",__func__,c);
                c=0;
                break;
             }

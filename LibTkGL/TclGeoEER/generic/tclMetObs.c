@@ -31,6 +31,7 @@
  */
 #ifdef HAVE_ECBUFR
 
+#include "App.h"
 #include "tclMetObs.h"
 #include "Projection.h"
 #include <math.h>
@@ -1863,9 +1864,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    type=f77name(wkoffit)(File,strlen(File));
 #endif
 
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) MetObs_Load: File type is %i\n",type);
-#endif
+   App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
 
    switch (type) {
       case 6: res=MetObs_LoadBURP(Interp,File,Obs);  break;
@@ -2560,7 +2559,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
 
    if (GLRender->GLDebug)
-      fprintf(stdout,"(DEBUG) MetObs_Render: Nb Loc=%i NbObs=%i\n",n,nobs);
+      App_Log(DEBUG,"%s: Nb Loc=%i NbObs=%i\n",__func__,n,nobs);
 
    return(n);
 }

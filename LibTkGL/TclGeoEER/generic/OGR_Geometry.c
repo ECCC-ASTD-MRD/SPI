@@ -30,6 +30,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tclOGR.h"
 
 static Vect3d  **OGR_ArrayNr=NULL;
@@ -1496,7 +1497,7 @@ void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       case 0: mode=Extrude!=0.0?GL_LINES:GL_POINTS; break;
       case 1: mode=Extrude!=0.0?GL_QUAD_STRIP:GL_LINE_STRIP; break;
       case 2: mode=GL_POLYGON; break;
-      default: fprintf(stderr,"(ERROR) OGR_GeometryRender: Unable to render shape\n"); return; break;
+      default: App_Log(ERROR,"%s: Unable to render shape\n",__func__); return; break;
    }
 
    if (mode==GL_POLYGON) {

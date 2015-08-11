@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "tclXML.h"
 
@@ -95,9 +96,8 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
    XML_Check(Data,Elem,"COLLADA");
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelDAE_StartHandler: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
+
       /*Unit tag*/
       /*Get the unit reference more "meter", Collada uses meter as reference*/
       if (strcmp(Elem,"unit")==0) {
@@ -114,7 +114,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
       /*Create a new source with name "id" and add to sources list*/
       if (strcmp(Elem,"source")==0) {
          if (!(dae->Sources=TList_Add(dae->Sources,(DAESource*)malloc(sizeof(DAESource))))) {
-            fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not allocate memory for node\n");
+            App_Log(ERROR,"%s: Could not allocate memory for node\n",__func__);
          }
          src=(DAESource*)dae->Sources->Data;
          src->Alias=0;
@@ -203,7 +203,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
                   dae->Scene->Obj=(T3DObject**)realloc(dae->Scene->Obj,dae->Scene->NObj*sizeof(T3DObject*));
                   dae->Scene->Obj[dae->Scene->NObj-1]=obj;
                } else {
-                  fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Could not find object \"%s\"\n",Attr[i+1]);
+                  App_Log(ERROR,"%s: Could not find object \"%s\"\n",__func__,Attr[i+1]);
                }
             }
          }
@@ -218,7 +218,7 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
                   scn=Model_SceneAdd(dae->Model,dae->Scene,1);
                   memcpy(scn,child,sizeof(T3DScene));
                } else {
-                  fprintf(stdout,"(ERROR) ModelDAE_StartHandler: Could not find node \"%s\" in node library\n",Attr[i+1]);
+                  App_Log(ERROR,"%s: Could not find node \"%s\" in node library\n",__func__,Attr[i+1]);
                }
             }
          }
@@ -314,22 +314,22 @@ void ModelDAE_StartHandler(void *Data,const char *Elem,const char **Attr) {
             } else if (strcmp(Attr[i],"source")==0) {
                switch(dae->VrType) {
                   case F3V:   if (!(dae->VrSource=ModelDAE_SourceFind(dae,(char*)(Attr[i+1]+1)))) {
-                                 fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Vr source array %s\n",Attr[i+1]);
+                                 App_Log(ERROR,"%s: Can't find Vr source array %s\n",__func__,Attr[i+1]);
                               }
                               break;
 
                   case F3VN:  if (!(dae->NrSource=ModelDAE_SourceFind(dae,(char*)(Attr[i+1]+1)))) {
-                                 fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Nr source array %s\n",Attr[i+1]);
+                                 App_Log(ERROR,"%s: Can't find Nr source array %s\n",__func__,Attr[i+1]);
                               }
                               break;
 
                   case F3VNT: if (!(dae->TxSource=ModelDAE_SourceFind(dae,(char*)(Attr[i+1]+1)))) {
-                                 fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find Tx source array %s\n",Attr[i+1]);
+                                 App_Log(ERROR,"%s: Can't find Tx source array %s\n",__func__,Attr[i+1]);
                               }
                               break;
                   default:   src=(DAESource*)dae->Sources->Data;
                              if (!(tmp=ModelDAE_SourceFind(dae,(char*)(Attr[i+1]+1)))) {
-                                fprintf(stderr,"(ERROR) ModelDAE_StartHandler: Can't find position source array %s\n",Attr[i+1]);
+                                App_Log(ERROR,"%s: Can't find position source array %s\n",__func__,Attr[i+1]);
                               } else {
                                  src->Array=tmp->Array;
                                  src->Nb=tmp->Nb;
@@ -365,9 +365,8 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
    int        i,v,f,n;
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) ModelDAE_EndHandlerr: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
+
       if (strcmp(Elem,"float_array")==0 || strcmp(Elem,"matrix")==0 || strcmp(Elem,"p")==0) {
          s=(DAESource*)dae->Sources->Data;
          if ((n=XML_ArrayCheck(Data,' '))) {
@@ -399,9 +398,8 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
                }
             }
          }
-#ifdef DEBUG
-         fprintf(stderr,"(DEBUG) ModelDAE_EndHandler: Parsed %i vertices\n",i/(dae->VrDim*dae->NVr));
-#endif
+         App_Log(DEBUG,"%s: Parsed %i vertices\n",__func__,i/(dae->VrDim*dae->NVr));
+
          if (dae->VrSource) {
             if (!dae->Object->Vr) {
                n=dae->VrSource->Nb/dae->VrSource->Dim;
@@ -435,7 +433,7 @@ void ModelDAE_EndHandler(void *Data,const char *Elem) {
       /*matrix array tag*/
       if (strcmp(Elem,"matrix")==0) {
          if (!(s=ModelDAE_SourceFind(dae,"matrix"))) {
-            fprintf(stderr,"(ERROR) ModelDAE_EndHandler: Can't find matrix source array\n");
+            App_Log(ERROR,"%s: Can't find matrix source array\n",__func__);
          } else {
             dae->Scene->Mtx=(float*)malloc(16*sizeof(float));
             memcpy(dae->Scene->Mtx,s->Array,16*sizeof(float));
@@ -481,7 +479,7 @@ int Model_LoadDAE(Tcl_Interp* Interp,T3DModel *M,char *Path) {
 
    /*Create expat XML parser*/
    if (!(parser=XML_ParserCreate(NULL))) {
-      fprintf(stderr,"(ERROR) Model_LoadDAE: Couldn't initiate XML parser\n");
+      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 

@@ -37,6 +37,7 @@
 #include <math.h>
 #include <time.h>
 
+#include "App.h"
 #include "GeoData.h"
 #include "Projection.h"
 #include "gdal.h"
@@ -91,7 +92,7 @@ Vect3d* VBuffer_Copy(Vect3d *To,unsigned int Size) {
    if (vbuf->Buffer && Size<=vbuf->Size) {
       return((Vect3d*)memcpy(To,vbuf->Buffer,Size*sizeof(Vect3d)));
    } else {
-      fprintf(stderr,"(ERROR) VBuffer_Copy: Invalid size (%i>%i)\n",Size,vbuf->Size);
+      App_Log(ERROR,"%s: Invalid size (%i>%i)\n",__func__,Size,vbuf->Size);
       return(NULL);
    }
 }
@@ -115,14 +116,12 @@ Vect3d* VBuffer_Alloc(unsigned int Size) {
 
    if (vbuf->Size<Size) {
       Size=(Size/vbuf->Incr+1)*vbuf->Incr;
-#ifdef DEBUG
-      fprintf(stderr,"(DEBUG) VBuffer_Alloc: Reallocating VBuffer to %i\n",Size);
-#endif
+
       if ((buf=(Vect3d*)realloc(vbuf->Buffer,Size*sizeof(Vect3d)))) {
          vbuf->Buffer=buf;
          vbuf->Size=Size;
       } else {
-         fprintf(stderr,"(ERROR) VBuffer_Alloc: Could not allocate coordinate buffer VBuffer (%i)\n",Size);
+         App_Log(ERROR,"%s: Could not allocate coordinate buffer VBuffer (%i)\n",__func__,Size);
       }
    }
    return(buf);
@@ -901,7 +900,7 @@ void GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
          }
       }
    } else {
-      fprintf(stdout,"(WARNING) GDB_GeoTess: Unable to obtain valid tesselator\n");
+      App_Log(WARNING,"%s: Unable to obtain valid tesselator\n",__func__);
    }
 }
 
@@ -2134,9 +2133,7 @@ int GDB_TileResolution(GDB_Data *GDB,double Dist) {
       GDB->DegT=tile;
       GDB_TileFreeAll(GDB,GDB_FORCE);
    }
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) GDB_TileResolution: Current GDB resolution: (%i,%i)\n",GDB->DegT,res);
-#endif
+
    return(res);
 }
 /*----------------------------------------------------------------------------
@@ -2329,7 +2326,7 @@ GLuint Texture_Read(char *File) {
    char           *map=NULL;
 
    if (!(set=GDALOpen(File,GA_ReadOnly))) {
-      fprintf(stderr,"(ERROR) Texture_Read: Unable to open texture file %s\n",File);
+      App_Log(ERROR,"%s: Unable to open texture file %s\n",__func__,File);
       return(-1);
    }
 
@@ -2342,7 +2339,7 @@ GLuint Texture_Read(char *File) {
 
    n=n>3?3:n;
    if (!(buf=(char*)malloc(w*h*n*s))) {
-      fprintf(stderr,"(ERROR) Texture_Read: Unable to alocate system memory for texture\n");
+      App_Log(ERROR,"%s: Unable to alocate system memory for texture\n",__func__);
       GDALClose(set);
       return(-1);
    }

@@ -31,6 +31,7 @@
  *==============================================================================
  */
 
+#include "App.h"
 #include "RPN.h"
 #include "Data_Matrix.h"
 
@@ -541,7 +542,7 @@ TDef* Calc_Dir(TDef* A) {
 
 #ifdef HAVE_RMN
    if (!GField || GField->GRef->Grid[0]=='V') {
-      fprintf(stderr,"(ERROR) Invalid grid while calculating direction\n");
+      App_Log(ERROR,"%s: Invalid grid while calculating direction\n",__func__);
       return(NULL);
    }
 
@@ -557,7 +558,7 @@ TDef* Calc_Dir(TDef* A) {
       y=fy=(float*)malloc(FSIZE2D(A)*sizeof(float));
 
       if (!spd || !x || !y) {
-         fprintf(stderr,"(ERROR) Unable to allocate temporary arrays\n");
+         App_Log(ERROR,"%s: Unable to allocate temporary arrays\n",__func__);
          return(NULL);
       }
       for (j=1;j<=A->NJ;j++) {

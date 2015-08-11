@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tcl3DModel.h"
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -72,9 +73,7 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
       return(0);
    }
 
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NMt=%i\n",M->NMt);
-#endif
+   App_Log(DEBUG,"%s: M->NMt=%i\n",__func__,M->NMt);
 
    if (M->NMt<=0) {
       M->NMt=1;
@@ -107,18 +106,14 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    /*Vertex list*/
    /*Number of vertex*/
    f=fread(&obj->NVr,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->NVr=%i\n",obj->NVr);
-#endif
+   App_Log(DEBUG,"%s: M->NVr=%i\n",__func__,obj->NVr);
 
    /*Format of vertex*/
    f=fread(&obj->Format,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Model_LoadMDL: M->Format=%i\n",obj->Format);
-#endif
+   App_Log(DEBUG,"%s: M->Format=%i\n",__func__,obj->Format);
 
    if (obj->NVr<=0 || obj->Format<=0) {
-      fprintf(stderr,"\n(ERROR) Model_LoadMDL : Invalid vertex format or number");
+      App_Log(ERROR,"%s: Invalid vertex format or number\n",__func__);
       fclose(file);
       return(0);
    }
@@ -138,9 +133,8 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    /*Faces list*/
    /*Number of faces*/
    f=fread(&obj->NFc,sizeof(int),1,file);
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) Model_LoadMDL: M->NFc=%i\n",obj->NFc);
-#endif
+
+   App_Log(DEBUG,"%s: M->NFc=%i\n",__func__,obj->NFc);
 
    obj->Fc=(TFace*)malloc(obj->NFc*sizeof(TFace));
    for (i=0;i<obj->NFc;i++) {

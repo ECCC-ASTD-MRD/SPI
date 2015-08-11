@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "tcl3DModel3DS.h"
 
@@ -390,9 +391,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
       switch (currentChunk.ID) {
 
          case VERSION: // This holds the version of the file
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: VERSION\n");
-#endif
+            App_Log(DEBUG,"%s: Model3DS_ChunkProcessNext: VERSION\n",__func__);
+
             // If the file was made in 3D Studio Max, this chunk has an int that
             // holds the file version.  Since there might be new additions to the 3DS file
             // format in 4.0, we give a warning to that problem.
@@ -404,7 +404,7 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             if ((currentChunk.length-currentChunk.bytes==4)) {
                currentChunk.bytes+=fread(&ver,1,currentChunk.length-currentChunk.bytes,File);
                if (ver>0x03) {
-                  printf("(WARNING) Model3DS_ChunkProcessNext: This 3DS file is over version 3 so it may load incorrectly");
+                  App_Log(WARNING,"%s: This 3DS file is over version 3 so it may load incorrectly",__func__);
                }
             } else {
                fseek(File,currentChunk.length-currentChunk.bytes,SEEK_CUR);
@@ -413,9 +413,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             break;
 
          case OBJECTINFO: // This holds the version of the mesh
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: OBJECTINFO\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECTINFO\n",__func__);
+
             // This chunk holds the version of the mesh.  It is also the head of the MATERIAL
             // and OBJECT chunks.  From here on we start reading in the material and object info.
 
@@ -434,9 +433,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             break;
 
          case MATERIAL: // This holds the material information
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: MATERIAL\n");
-#endif
+            App_Log(DEBUG,"%s: MATERIAL\n",__func__);
+
             // This chunk is the header for the material info chunks
 
             // Increase the number of materials
@@ -452,9 +450,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             break;
 
          case OBJECT: // This holds the name of the object being read
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: OBJECT\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT\n",__func__);
+
             // This chunk is the header for the object info chunks.  It also
             // holds the name of the object.
 
@@ -468,9 +465,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             break;
 
          case EDITKEYFRAME:
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: EDITKEYFRAME\n");
-#endif
+            App_Log(DEBUG,"%s: EDITKEYFRAME\n",__func__);
+
             // Because I wanted to make this a SIMPLE tutorial as possible, I did not include
             // the key frame information.  This chunk is the header for all the animation info.
             // In a later tutorial this will be the subject and explained thoroughly.
@@ -483,9 +479,8 @@ void Model3DS_ChunkProcessNext(FILE *File,T3DModel *Model,T3DSChunk *PreviousChu
             break;
 
          default:
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNext: OTHER\n");
-#endif
+            App_Log(DEBUG,"%s: OTHER\n",__func__);
+
             // If we didn't care about a chunk, then we get here.  We still need
             // to read past the unknown or ignored chunk and add the bytes read to the byte counter.
             fseek(File,currentChunk.length-currentChunk.bytes,SEEK_CUR);
@@ -529,31 +524,27 @@ void Model3DS_ChunkProcessNextObject(FILE *File,T3DModel *Model,T3DObject *Obj,T
       switch (currentChunk.ID) {
 
          case OBJECT_MESH: // This lets us know that we are reading a new object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OBJECT_MESH\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT_MESH\n",__func__);
+
             // We found a new object, so let's read in it's info using recursion
             Model3DS_ChunkProcessNextObject(File,Model,Obj,&currentChunk);
             break;
 
          case OBJECT_VERTICES: // This is the objects vertices
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OBJECT_VERTICES\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT_VERTICES\n",__func__);
+
             Model3DS_ChunkReadVertices(File,Obj,&currentChunk);
             break;
 
          case OBJECT_FACES: // This is the objects face information
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OBJECT_FACES\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT_FACES\n",__func__);
+
             Model3DS_ChunkReadVertexIndices(File,Obj,&currentChunk);
             break;
 
          case OBJECT_MATERIAL: // This holds the material name that the object has
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OBJECT_MATERIAL\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT_MATERIAL\n",__func__);
+
             // This chunk holds the name of the material that the object has assigned to it.
             // This could either be just a color or a texture map.  This chunk also holds
             // the faces that the texture is assigned to (In the case that there is multiple
@@ -566,17 +557,15 @@ void Model3DS_ChunkProcessNextObject(FILE *File,T3DModel *Model,T3DObject *Obj,T
             break;
 
          case OBJECT_UV: // This holds the UV texture coordinates for the object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OBJECT_UV\n");
-#endif
+            App_Log(DEBUG,"%s: OBJECT_UV\n",__func__);
+
             // This chunk holds all of the UV coordinates for our object.  Let's read them in.
             Model3DS_ChunkReadUVCoordinates(File,Obj,&currentChunk);
             break;
 
          default:
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextObject: OTHER\n");
-#endif
+            App_Log(DEBUG,"%s: OTHER\n",__func__);
+
             // Read past the ignored or unknown chunks
             fseek(File,currentChunk.length-currentChunk.bytes,SEEK_CUR);
             currentChunk.bytes+=currentChunk.length-currentChunk.bytes;
@@ -618,61 +607,53 @@ void Model3DS_ChunkProcessNextMaterial(FILE *File,T3DModel *Model,T3DSChunk *Pre
       // Check which chunk we just read in
       switch (currentChunk.ID) {
          case MATNAME: // This chunk holds the name of the material
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATNAME\n");
- #endif
+            App_Log(DEBUG,"%s: MATNAME\n",__func__);
+
            // Here we read in the material name
             currentChunk.bytes+=fread(Model->Mt[Model->NMt-1].Name,1,currentChunk.length-currentChunk.bytes,File);
             break;
 
          case MATAMBIENT: // This holds the R G B color of our object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATAMBIENT\n");
-#endif
+            App_Log(DEBUG,"%s: MATAMBIENT\n",__func__);
+
             Model3DS_ChunkReadColor(File,Model->Mt[Model->NMt-1].Amb,&currentChunk);
             break;
 
          case MATDIFFUSE: // This holds the R G B color of our object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATDIFFUSE\n");
-#endif
+            App_Log(DEBUG,"%s: MATDIFFUSE\n",__func__);
+
             Model3DS_ChunkReadColor(File,Model->Mt[Model->NMt-1].Dif,&currentChunk);
             break;
 
           case MATSPECULAR: // This holds the R G B color of our object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATSPECULAR\n");
-#endif
+            App_Log(DEBUG,"%s: MATSPECULAR\n",__func__);
+
             Model3DS_ChunkReadColor(File,Model->Mt[Model->NMt-1].Spe,&currentChunk);
             break;
 
          case MATSHININESS: // This holds the R G B color of our object
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATSHININESS\n");
-#endif
+            App_Log(DEBUG,"%s: MATSHININESS\n",__func__);
+
             Model3DS_ChunkReadColor(File,&(Model->Mt[Model->NMt-1].Shi),&currentChunk);
             break;
 
          case MATMAP: // This is the header for the texture info
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATMAP\n");
-#endif
+            App_Log(DEBUG,"%s: MATMAP\n",__func__);
+
            // Proceed to read in the material information
             Model3DS_ChunkProcessNextMaterial(File,Model,&currentChunk);
             break;
 
          case MATMAPFILE: // This stores the file name of the material
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: MATMAPFILE\n");
-#endif
+            App_Log(DEBUG,"%s: MATMAPFILE\n",__func__);
+
             // Here we read in the material's file name
             currentChunk.bytes+=fread(Model->Mt[Model->NMt-1].Path,1,currentChunk.length-currentChunk.bytes,File);
             break;
 
          default:
-#ifdef DEBUG
-            printf("(DEBUG) Model3DS_ChunkProcessNextMaterial: OTHER\n");
-#endif
+            App_Log(DEBUG,"%s: OTHER\n",__func__);
+
             // Read past the ignored or unknown chunks
             fseek(File,currentChunk.length-currentChunk.bytes,SEEK_CUR);
             currentChunk.bytes+=currentChunk.length-currentChunk.bytes;

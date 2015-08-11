@@ -92,9 +92,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
       }
       /*Free the DataDef since it won't be passed to the script side*/
       Def_Free(Data);
-#ifdef DEBUG
-      fprintf(stderr,"(DEBUG) Calc_Update: Result is float\n");
-#endif
    } else {
       /*See if we need to copy the Data (when it's not resulted from computation)*/
       for(d=0;d<=GDataN;d++) {
@@ -124,9 +121,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
                   ((TRPNHeader*)GField->Head)->DATYP=-1;
                }
             }
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) Calc_Update: Result is field\n");
-#endif
             break;
 
          case T_BAND:
@@ -138,9 +132,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
                }
                GBand->Def= needcopy ? Def_Copy(Data) : Data;
             }
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) Calc_Update: Result is band\n");
-#endif
             break;
 
          case T_LAYER:
@@ -149,9 +140,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
             }
             /*For layers, we copy back the data so we don't need the Def anymore*/
             Def_Free(Data);
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) Calc_Update: Result is layer\n");
-#endif
             break;
 
          case T_OBS:
@@ -159,9 +147,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
                GObs=Obs_Copy(Interp,GObs,Name,0);
                GObs->Def= needcopy ? Def_Copy(Data) : Data;
             }
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) Calc_Update: Result is observation\n");
-#endif
             break;
 
          case T_VEC:
@@ -169,9 +154,6 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
             memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
             /*For vectors, we copy back the data so we don't need the Def anymore*/
             Def_Free(Data);
-#ifdef DEBUG
-            fprintf(stderr,"(DEBUG) Calc_Update: Result is vector\n");
-#endif
             break;
       }
 
@@ -262,16 +244,9 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TDef_Type Type,char* Exp
    /* Parse, return value in GResult */
    vexpr_parse();
 
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) Calc_Parse(Data:%p %s,GResult:%p)\n",(void*)Data,Data,(void*)GResult);
-#endif
-
    /* Update the upstream values */
    if (GError==TCL_OK)
       Calc_Update(Interp,Data,GResult);
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) Calc_Parse: freeing temp data\n");
-#endif
 
    /* Free temporary data */
    for(i=0;i<=GDataN;i++) {

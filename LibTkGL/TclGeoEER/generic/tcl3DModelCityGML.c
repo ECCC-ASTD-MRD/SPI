@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "tclXML.h"
 
@@ -55,9 +56,7 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
    XML_Check(Data,Elem,"CityModel");
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) ModelCityGML_StartHandler: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
 
       if (strcmp(Elem,"cityObjectMember")==0) {
 //         gml->Scene=Model_SceneAdd(gml->Model,gml->Scene,1);
@@ -88,7 +87,7 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
 
       if (strcmp(Elem,"gml:Polygon")==0 || strcmp(Elem,"gml:Triangle")==0) {
          if (!gml->Object) {
-            fprintf(stdout,"(ERROR) No object defined\n");
+            App_Log(ERROR,"%s: No object defined\n",__func__);
          }
          gml->Fc=Model_ObjectFaceAdd(gml->Object,1);
 
@@ -120,9 +119,7 @@ void ModelCityGML_StartHandler1(void *Data,const char *Elem,const char **Attr) {
    XML_Check(Data,Elem,"CityModel");
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) ModelCityGML_StartHandler: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
 
       if (strcmp(Elem,"app:target")==0) {
          for (i=0;Attr[i];i+=2) {
@@ -148,9 +145,8 @@ void ModelCityGML_EndHandler0(void *Data,const char *Elem) {
    int        n;
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) ModelCityGML_EndHandler: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
+      
       if (strcmp(Elem,"gml:Envelope")==0) {
          data->Bloc=XML_NIL;
       } else
@@ -181,9 +177,7 @@ void ModelCityGML_EndHandler1(void *Data,const char *Elem) {
    int        n,i;
 
    if (Elem && XML_Valid(Data)) {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) ModelCityGML_EndHandler: Token %s\n",Elem);
-#endif
+      App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
 
       if (strcmp(Elem,"app:diffuseColor")==0) {
          if (gml->Mt) {
@@ -277,7 +271,7 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
 
    /*Create expat XML parser*/
    if (!(parser=XML_ParserCreate(NULL))) {
-      fprintf(stderr,"(ERROR) Model_LoadCityGML: Couldn't initiate XML parser\n");
+      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 

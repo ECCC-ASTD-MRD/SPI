@@ -36,6 +36,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "tclGeoRef.h"
 
@@ -743,7 +744,7 @@ T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
    } else {
       if (!Parent) {
          if (Nb>1 || Model->Scn) {
-            fprintf(stderr,"(ERROR) Root scene count must be 0");
+            App_Log(ERROR,"%s: Root scene count must be 0",__func__);
          }
          if (!(Model->Scn=(T3DScene*)malloc(sizeof(T3DScene)))) {
             return(NULL);
@@ -1509,7 +1510,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    extern GLint Texture_Read(char *File);
 
    if (!M || !M->Spec) {
-      fprintf(stderr,"(ERROR) Model_Render: Invalid model object\n");
+      App_Log(ERROR,"%s: Invalid model object\n",__func__);
       return(0);
    }
 
@@ -1728,8 +1729,8 @@ void Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *S
    ModelSceneDepth++;
 
    if (GLRender->GLDebug) {
-     for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
-     fprintf(stderr,"(DEBUG) Rendering scene: %s\n",Scene->Name);
+      for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
+      fprintf(stderr,"(DEBUG) Rendering scene: %s\n",Scene->Name);
    }
 
    /*If a displacement matrix is specified*/
@@ -1764,10 +1765,10 @@ int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
 
    ModelSceneDepth++;
 
-#ifdef DEBUG
-   for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
-   fprintf(stderr,"(DEBUG) Processing scene: %s\n",scn->Name);
-#endif
+   if (GLRender->GLDebug) {
+      for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
+      fprintf(stderr,"(DEBUG) Processing scene: %s\n",scn->Name);
+   }
 
    /*If a displacement matrix is specified
    if (Scene->Mtx) {
@@ -1822,7 +1823,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
 
             /*Test for overflow, should not happend but I've seen it on some models*/
             if (idx>Obj->NVr) {
-               fprintf(stderr, "(WARNING) Wrong number of vertices (%i>%i)\n",idx,Obj->NVr);
+               App_Log(WARNING,"%s: Wrong number of vertices (%i>%i)\n",__func__,idx,Obj->NVr);
                break;
             }
             /*Projection to georef*/

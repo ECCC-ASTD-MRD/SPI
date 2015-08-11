@@ -273,7 +273,7 @@ int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force
 
       if (key<0) {
          // Too many warnings so we catch it later
-         // fprintf(stdout,"(WARNING) FSTD_FieldReadComp: Could not find component field %s (c_fstinf failed)\n",Var);
+         // App_Log(WARNING,"%s: Could not find component field %s (c_fstinf failed)\n",__func__,Var);
          return(0);
       } else {
          if (!*Ptr) {
@@ -471,11 +471,11 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       RPN_FieldLock();
       idx=c_fstinf(head->File->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
       if (idx<0) {
-         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Warning, Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+         App_Log(WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
          idx=c_fstinf(head->File->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
       }
       if (idx<0) {
-         fprintf(stdout,"(WARNING) FSTD_FieldGetMesh: Could not load corresponding modulator (%s)\n",Field->Spec->Topo);
+         App_Log(WARNING,"%s: Could not load corresponding modulator (%s)\n",__func__,Field->Spec->Topo);
       } else {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
          if (gz)  c_fstluk(gz,idx,&i,&j,&k);
@@ -609,7 +609,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
-               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->ZRef->Levels[j],ip1);
+               App_Log(WARNING,"%s:d: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[j],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                if (gz)  cs_fstluk(gz,idx,&ni,&nj,&nk);
@@ -659,7 +659,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          if (Field->Spec->Topo) {
             idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
-               fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding topo field, trying for any (%s)\n",Field->Spec->Topo);
+               App_Log(WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
                idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
             }
             if (!tile && (ni!=def->NI || nj!=def->NJ)) {
@@ -670,7 +670,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
          if (idx<0) {
             if (gz) { free(gz); gz=NULL; };
-            fprintf(stdout,"(WARNING) FSTD_Grid: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",Field->Spec->Topo,Field->ZRef->Levels[Level],ip1);
+            App_Log(WARNING,"%s: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[Level],ip1);
          } else {
             if (!gz) gz=(float*)malloc(def->NI*def->NJ*nk*sizeof(float));
             if (gz)  cs_fstlukt(gz,head->File->Id,idx,&tile,&ni,&nj,&nk);
@@ -1501,7 +1501,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_Free((char*)list);
                tm=tra;
                if (!GDALInvGeoTransform(tra,inv)) {
-                  fprintf(stdout,"(WARNING) FSTD_FieldDefine: Unable to generate the inverse transform matrix\n");
+                  App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                   im=NULL;
                } else {
                   im=inv;
@@ -2417,10 +2417,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
             } else {
                free(field->Def->Mask);
                field->Def->Mask=NULL;
-               fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory to read mask");
+               App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
             }
          } else {
-            fprintf(stdout,"(WARNING) FSTD_FieldRead: Could not allocate memory for mask");
+            App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
          }
       }
    }
@@ -2676,9 +2676,8 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       return(0);
    }
 
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) FSTD_FieldReadLevels: found %i levels\n",Field->Def->NK);
-#endif
+   App_Log(DEBUG,"%s: found %i levels\n",__func__,Field->Def->NK);
+
    val=0.0;
    uvw=Data_VectorTableCheck(head->NOMVAR,NULL);
 

@@ -31,6 +31,7 @@
  */
 #ifdef HAVE_ECBUFR
 
+#include "App.h"
 #include "tclMetObs.h"
 #include "tclXML.h"
 
@@ -215,7 +216,7 @@ int MetObs_LoadSWOB(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    /*Create expat XML parser*/
    if (!(parser=XML_ParserCreate(NULL))) {
-      fprintf(stderr,"(ERROR) MetObs_LoadSWOB: Couldn't initiate XML parser\n");
+      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 

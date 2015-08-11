@@ -1611,9 +1611,8 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 
    /*Is this an IOAPI file*/
    if (meta && CSLFetchNameValue(meta,"NC_GLOBAL#IOAPI_VERSION")) {
-#ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GDAL_GeoRef: Found IOAPI reference\n");
-#endif
+      App_Log(DEBUG,"%s: Found IOAPI reference\n",__func__);
+
       projdef=(char*)alloca(1024*sizeof(char));
 
       /*Extract needed info from metadata*/
@@ -1664,7 +1663,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       tran[0]=xorig;tran[1]=xcell;tran[2]=0.0;
       tran[3]=ny*ycell+yorig;tran[4]=0.0;tran[5]=-ycell;
       if (!GDALInvGeoTransform(tran,inv)) {
-         fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+         App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
       }
       ref=GeoRef_Find(GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),NULL,0,0,0,0,projdef,tran,inv,NULL));
    } else {
@@ -1676,13 +1675,11 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          projdef=(char*)GDALGetGCPProjection(Set);
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) GGDAL_GeoRef: Using GCPs to get transform\n");
-#endif
+         App_Log(DEBUG,"%s: Using GCPs to get transform\n",__func__);
 
          /*Try to create GPC trasnform*/
          if (!(ref->GCPTransform=(void*)GDALCreateGCPTransformer(NbGCPs,GCPs,3,FALSE))) {
-            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points with GDALCreateGCPTransformer\n");
+            App_Log(WARNING,"%s: Unable to fit control points with GDALCreateGCPTransformer\n",__func__);
 
             /*If does not work, try to get a simple transform*/
             if (GDALGCPsToGeoTransform(NbGCPs,GCPs,tran,TRUE)) {
@@ -1690,10 +1687,10 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
                ref->InvTransform=(double*)calloc(6,sizeof(double));
                memcpy(ref->Transform,tran,6*sizeof(double));
                if (!GDALInvGeoTransform(ref->Transform,ref->InvTransform)) {
-                  fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+                  App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
                }
             } else {
-               fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to fit control points with GDALGCPsToGeoTransform\n");
+               App_Log(WARNING,"%s: Unable to fit control points with GDALGCPsToGeoTransform\n",__func__);
             }
          }
       } else if (meta && 0) {
@@ -1701,16 +1698,15 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          /*Get the transform from RPCInfo*/
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) GDAL_GeoRef: Using RPC Info to get transform\n");
-#endif
+         App_Log(WARNING,"%s: Using RPC Info to get transform\n",__func__);
+
          if (!(ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
-            printf("(WARNING) GDAL_GeoRef: Unable to fit RPC\n");
+            App_Log(WARNING,"%s: Unable to fit RPC\n",__func__);
          }
       } else {
          GDALGetGeoTransform(Set,tran);
          if (!GDALInvGeoTransform(tran,inv)) {
-            fprintf(stdout,"(WARNING) GDAL_GeoRef: Unable to get inverse transform\n");
+            App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
          }
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,tran,inv,NULL));
       }

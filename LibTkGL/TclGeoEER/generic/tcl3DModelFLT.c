@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 
+#include "App.h"
 #include "tcl3DModel.h"
 #include "flt.h"
 
@@ -80,23 +81,22 @@ int Model_LoadFLT(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    NMT=0;
    GCOL[0]=GCOL[1]=GCOL[2]=GCOL[3]=0.0;
 
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Projection Type %i\n",flt->header->projectionType);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Ellipsoid Type %i\n",flt->header->earthEllipsoidModel);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Coordinates units %i\n",flt->header->coordUnits);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Origin %f,%f\n",flt->header->originDBLatitude,flt->header->originDBLongitude);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Extent %f,%f - %f,%f\n",flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
+   App_Log(DEBUG,"%s: Projection Type %i\n",__func__,flt->header->projectionType);
+   App_Log(DEBUG,"%s: Ellipsoid Type %i\n",__func__,flt->header->earthEllipsoidModel);
+   App_Log(DEBUG,"%s: Coordinates units %i\n",__func__,flt->header->coordUnits);
+   App_Log(DEBUG,"%s: Origin %f,%f\n",__func__,flt->header->originDBLatitude,flt->header->originDBLongitude);
+   App_Log(DEBUG,"%s: Extent %f,%f - %f,%f\n",__func__,flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
 
    nobj=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_OBJECT);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i object\n",nobj);
+   App_Log(DEBUG,"%s: Found %i object\n",__func__,nobj);
    Model_ObjectAdd(M,nobj);
 
    M->NMt=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_MATERIAL);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Found %i material\n",M->NMt);
+   App_Log(DEBUG,"%s: Found %i material\n",__func__,M->NMt);
    M->NMt=1024;
    M->Mt=(TMaterial*)calloc(M->NMt,sizeof(TMaterial));
 
    ModelFLT_NodeProcess(M,(FltNode*)(flt->header),flt);
-   fprintf(stdout,"(DEBUG) Model_LoadFLT: Processed\n");
 
    fltClose(flt);
    fltFileFree(flt);
@@ -139,16 +139,11 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    /*create instance definitions*/
    switch (Node->type) {
       case FLTRECORD_COMMENT:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_COMMENT\n");
-         printf("(DEBUG) ModelFLT_NodeProcess: Comment (%s)\n",((FltComment*)Node)->text);
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_COMMENT (%s)\n",__func__,((FltComment*)Node)->text);
          break;
 
       case FLTRECORD_EXTERNALREFERENCE:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_EXTERNALREFERENCE\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_EXTERNALREFERENCE\n",__func__);
          /*Check for older software that did not append ".flt" to the DB name*/
          path[0]=0;
          strcat(path,ext->path);
@@ -157,10 +152,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             strcat(path,".flt");
 
          if (fltFindFile(FLT,path,file)) {
-
-#ifdef DEBUG
-            printf("(DEBUG) ModelFLT_NodeProcess: External reference (%s)\n",file);
-#endif
+            App_Log(DEBUG,"%s: External reference (%s)\n",__func__,file);
 /*
             e = (sglNode *)loadModelFLT(filepath, 0 );
             if(!e)
@@ -213,15 +205,13 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
                parent->addChild(ext_group);
          } else {
             delete ext_group;
-            printf("(ERROR) ModelFLT_NodeProcess: External reference (%s) not found\n",file);
+            App_Log(ERROR,"%s: External reference (%s) not found\n",__func__,file);
 */
          }
          break;
 
       case FLTRECORD_MATRIX:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_MATRIX\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_MATRIX\n,__func__");
 /*
          glMatrixMode(GL_MODELVIEW);
          glPushMatrix();
@@ -230,9 +220,8 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_FACE:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_FACE\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_FACE\n",__func__);
+
          /*Skip hidden faces*/
          if (!GOBJ->Fc || (face->miscFlags & FLTFACEMF_HIDDEN)) {
             break;
@@ -296,9 +285,8 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_VERTEXLIST:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_VERTEXLIST (%i)\n",vert->numVerts);
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_VERTEXLIST (%i)\n",__func__,vert->numVerts);
+
          if (!GOBJ->Fc || !GOBJ->Vr || NSW) {
             break;
          }
@@ -326,11 +314,10 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             if (GOBJ->Vr) {
                GOBJ->Vr[i][0]=vert->list[v]->x;GOBJ->Vr[i][1]=vert->list[v]->y;GOBJ->Vr[i][2]=vert->list[v]->z;
             } else {
-               fprintf(stderr,"(ERROR) Object vertices list has not been initialized (%i)\n",GOBJ->NVr);
+               App_Log(ERROR,"%s: Object vertices list has not been initialized (%i)\n",__func__,GOBJ->NVr);
             }
-#ifdef DEBUG
-            printf("(DEBUG) ModelFLT_NodeProcess: Vertex(%i) (%f,%f,%f)\n",v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
-#endif
+            App_Log(DEBUG,"%s: Vertex(%i) (%f,%f,%f)\n",__func__,v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
+
 
             GOBJ->Fc[NFCE].Idx[v]=i;
          }
@@ -351,64 +338,44 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_INSTANCEDEFINITION:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_INSTANCEDEFINITION\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_INSTANCEDEFINITION\n",__func__);
          break;
       case FLTRECORD_INSTANCEREFERENCE:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_INSTANCEREFERENCE\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_INSTANCEREFERENCE\n",__func__);
          break;
       case FLTRECORD_LOD:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_LOD\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_LOD\n",__func__);
          break;
       case FLTRECORD_SWITCH:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_SWITCH\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_SWITCH\n",__func__);
          /*We have to bypass the switch (no clue what they're used for*/
          NSW=1;
          break;
       case FLTRECORD_DOF:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_DOF\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_DOF\n",__func__);
          break;
 
       case FLTRECORD_OBJECT:
          NOBJ++;
          NSW=0;
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_OBJECT (%i)\n",NOBJ);
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_OBJECT (%i)\n",__func__,NOBJ);
          GOBJ=&(M->Obj[NOBJ]);
 
          NFCE=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
          Model_ObjectFaceAdd(GOBJ,NFCE);
          NFCE=-1;
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Face\n",GOBJ->NFc);
-#endif
+         App_Log(DEBUG,"%s: Found %i Face\n",__func__,GOBJ->NFc);
          NVR=0;
          GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST);
          GOBJ->Vr=(Vect3f*)calloc(GOBJ->NVr,sizeof(Vect3f));
-#ifdef DEBUG
-         fprintf(stdout,"(DEBUG) ModelFLT_NodeProcess: Found %i Vertex\n",GOBJ->NVr);
-#endif
+         App_Log(DEBUG,"%s: Found %i Vertex\n",__func__,GOBJ->NVr);
          break;
 
       case FLTRECORD_GROUP:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_GROUP\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_GROUP\n",__func__);
          break;
       case FLTRECORD_BSP:
-#ifdef DEBUG
-         printf("(DEBUG) ModelFLT_NodeProcess: FLTRECORD_BSP\n");
-#endif
+         App_Log(DEBUG,"%s: FLTRECORD_BSP\n",__func__);
          break;
    }
 

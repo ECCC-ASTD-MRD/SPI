@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "RPN.h"
 #include "List.h"
 #include "tclGeoRef.h"
@@ -565,7 +566,7 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   tm=tra;
                   if (!GDALInvGeoTransform(tra,inv)) {
-                     fprintf(stdout,"(WARNING) GeoRef_Define: Unable to generate the inverse transform matrix\n");
+                     App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                      im=NULL;
                   } else {
                      im=inv;
@@ -602,7 +603,7 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   im=inv;
                   if (!GDALInvGeoTransform(inv,tra)) {
-                     fprintf(stdout,"(WARNING) GeoRef_Define: Unable to generate the transform matrix\n");
+                     App_Log(WARNING,"%s: Unable to generate the transform matrix\n",__func__);
                      tm=NULL;
                   } else {
                      tm=tra;

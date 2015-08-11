@@ -627,7 +627,7 @@ int LUDecompose(double *Matrix,int N,int *Perm,int *d) {
             amax=dum;
       }
       if (amax<TINY_VALUE) {
-         fprintf(stdout,"(WARNING) LUDecompose: Singular matrix");
+         App_Log(WARNING,"%s: Singular matrix",__func__);
          return(0);
       }
       vv[i]=1.0/amax;

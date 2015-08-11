@@ -30,6 +30,7 @@
  *=========================================================
  */
 
+#include "App.h"
 #include "tclOGR.h"
 #include "tclGeoRef.h"
 #include "Data_FF.h"
@@ -915,7 +916,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         layer->Changed=1; 
                      }
                   } else {
-                     fprintf(stderr,"OGR_LayerStats: Bad Buffer on feature %li\n",f);
+                     App_Log(ERROR,"%s: Bad Buffer on feature %li\n",__func__,f);
                   }
                }
             }
@@ -2845,7 +2846,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    extern TIcon IconList[];
 
    if (!Layer || !spec) {
-      fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid layer object\n");
+      App_Log(ERROR,"%s: Invalid layer object\n",__func__);
       return(0);
    }
 
@@ -2859,14 +2860,14 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Check for invalid georeference*/
    if (!GeoRef_Valid(Layer->GRef)) {
-      fprintf(stderr,"(ERROR) OGR_LayerRender: Invalid georeference\n");
+      App_Log(ERROR,"%s: Invalid georeference\n",__func__);
       return(0);
    }
 
    if (!Layer->LFeature) {
       Layer->LFeature=glGenLists(Layer->NFeature);
       if (!Layer->LFeature) {
-         fprintf(stderr,"(ERROR) OGR_LayerRender: Unable to allocate display list.\n");
+         App_Log(ERROR,"%s: Unable to allocate display list\n",__func__);
          return(0);
       }
    }

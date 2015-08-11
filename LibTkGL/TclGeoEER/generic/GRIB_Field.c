@@ -16,6 +16,7 @@
 */
 #ifdef HAVE_GRIB
 
+#include "App.h"
 #include "tclGRIB.h"
 #include "tclGeoRef.h"
 #include "Projection.h"
@@ -110,7 +111,7 @@ Vect3d* GRIB_Grid(TData *Field,void *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         fprintf(stderr,"(ERROR) GRIB_Grid: Not enough memory to calculate gridpoint location");
+         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
          return(NULL);
       }
    }
@@ -340,7 +341,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_Free((char*)list);
                tm=tra;
                if (!GDALInvGeoTransform(tra,inv)) {
-                  fprintf(stdout,"(WARNING) GRIB_FieldDefine: Unable to generate the inverse transform matrix\n");
+                  App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                   im=NULL;
                } else {
                   im=inv;
@@ -580,9 +581,8 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
    *Level=lvl;
    *LevelType=lval2;
 
-#ifdef DEBUG
-   fprintf(stderr,"(DEBUG) GRIB_GetLevel :%f %li\n",lvl,lval2);
-#endif
+   App_Log(DEBUG,"%s: %f %li\n",__func__,lvl,lval2);
+
    return(err==0);
 }
 
@@ -847,14 +847,14 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
          if ((llref=OSRCloneGeogCS(ref))) {
             if ((func=OCTNewCoordinateTransformation(llref,ref))) {
                if (!OCTTransform(func,1,&mtx[0],&mtx[3],NULL)) {
-                  fprintf(stderr,"(WARNING) GRIB_GridGet: unable to project transform origin\n");
+                  App_Log(WARNING,"%s: unable to project transform origin\n",__func__);
                }
             } else {
-               fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create transform function\n");
+               App_Log(WARNING,"%s: Unable to create transform function\n",__func__);
             }
             OSRDestroySpatialReference(llref);
          } else {
-            fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create latlon transform\n");
+            App_Log(WARNING,"%s: GRIB_GridGet: Unable to create latlon transform\n",__func__);
          }
          grib_get_double(head->Handle,"DxInMetres",&mtx[1]);
          grib_get_double(head->Handle,"DyInMetres",&mtx[5]);
@@ -872,7 +872,7 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       mtx[5]=incj?mtx[5]:-mtx[5];
 
       if (!GDALInvGeoTransform(mtx,inv)) {
-         fprintf(stderr,"(WARNING) GRIB_GridGet: Unable to create inverse transform function\n");
+         App_Log(WARNING,"%s: Unable to create inverse transform function\n",__func__);
       }
       Field->GRef=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NULL,0,0,0,0,NULL,mtx,inv,ref));
       Field->ZRef=ZRef_Define(LVL_MASL,NK,NULL);
@@ -881,10 +881,8 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       GeoRef_Qualify(Field->GRef);
 
 //      if (OSRIsGeographic(ref))  Field->GRef->Type|=GRID_NOXNEG;
-#ifdef DEBUG
-      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTString: '%s'\n",Field->GRef->String);
-      fprintf(stderr,"(DEBUG) GRIB_GridGet: WKTMatrix: %f %f %f %f %f %f\n",mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
-#endif
+      App_Log(DEBUG,"%s: WKTString: '%s'\n",__func__,Field->GRef->String);
+      App_Log(DEBUG,"%s: WKTMatrix: %f %f %f %f %f %f\n",__func__,mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
    } else {
       return(TCL_ERROR);
    }
@@ -1157,7 +1155,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
       File->Table=(TGRIBHeader*)calloc(GRIB_TABLESIZE,sizeof(TGRIBHeader));
    }
 //   grib_count_in_file(NULL,File->Handle,&err);
-//   fprintf(stderr,"----- %i messages\n",err);
+//   App_Log(DEBUG,"%s: %i messages\n",__func__,err);
 
    while((head.Handle=grib_handle_new_from_file(NULL,File->Handle,&err))) {
 
@@ -1273,7 +1271,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
 
       if (!table) {
          if (nb>=GRIB_TABLESIZE-1) {
-            fprintf(stderr,"(WARNING) Number of records higher than table size\n");
+            App_Log(WARNING,"%s: Number of records higher than table size\n",__func__);
          }
          memcpy(&File->Table[nb],&head,sizeof(TGRIBHeader));
          File->Table[nb+1].KEY=-1;
@@ -1281,7 +1279,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
       nb++;
    }
    if (err) {
-      fprintf(stderr,"--- %s\n",grib_get_error_message(err));
+      App_Log(ERROR,"%s: %s\n",__func__,grib_get_error_message(err));
    }
 
    File->Size=head.KEY;
