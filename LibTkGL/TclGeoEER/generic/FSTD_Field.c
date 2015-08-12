@@ -167,12 +167,14 @@ int FSTD_FieldSubBuild(TData *Field) {
 
                // Point to subgrid data within global data array
                for(c=0;c<Field->Def->NC;c++) {
-                  Field->SDef[i]->Idx=dij;
-                  Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
-                  Field->SDef[i]->Level=Field->Def->Level;
                   Field->SDef[i]->Data[c]=&Field->Def->Data[c][dij*TDef_Size[Field->Def->Type]];
                }
-               // Increment after global grid
+               Field->SDef[i]->Idx=dij;
+               Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
+               Field->SDef[i]->Level=Field->Def->Level;
+               Field->SDef[i]->Mode=Field->SDef[i]->Data[0];
+               
+              // Increment after global grid
                dij+=ni*nj;
             }
          }
