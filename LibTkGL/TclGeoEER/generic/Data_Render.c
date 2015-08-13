@@ -1328,6 +1328,11 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glDisable(GL_CULL_FACE);
    }
 
+   if (Field->Spec->Stipple) {
+      glEnable(GL_POLYGON_STIPPLE);
+      glPolygonStipple(Field->Spec->Stipple->Data);
+   }
+
    /*Afficher les points*/
    if (Field->GRef->Grid[0]=='M') {
       Data_RenderMesh(Field,VP,Proj);
@@ -1528,6 +1533,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glEnd();
    }
  
+   glDisable(GL_POLYGON_STIPPLE);
    glCullFace(GL_BACK);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);

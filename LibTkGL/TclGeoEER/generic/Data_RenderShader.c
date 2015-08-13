@@ -329,6 +329,11 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       return(1);
    }
 
+   if (Field->Spec->Stipple) {
+      glEnable(GL_POLYGON_STIPPLE);
+      glPolygonStipple(Field->Spec->Stipple->Data);
+   }
+   
    if ((Proj->Type->Def!=PROJGLOBE) && Field->GRef->Grid[0]!='V') {
       glEnable(GL_CULL_FACE);
    } else {
@@ -495,6 +500,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 //   GLShader_UnInstall(prog);
 
    glActiveTexture(GL_TEXTURE0);
+   glDisable(GL_POLYGON_STIPPLE);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
 

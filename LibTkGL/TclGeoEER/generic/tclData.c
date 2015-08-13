@@ -1148,7 +1148,10 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
    Tcl_HashEntry  *entry;
    int             new;
 
-   entry=TclY_CreateHashEntry(&TData_Table,Name,&new);
+   if (!(entry=TclY_CreateHashEntry(&TData_Table,Name,&new))) {
+      Tcl_AppendResult(Interp,"Data_Valid: Unable to create hash entry for field ",Name,(char *)NULL);
+      return(NULL);
+   }
 
    if (!new) {
       field=(TData*)Tcl_GetHashValue(entry);
@@ -1161,7 +1164,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
          if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || Dim!=field->Def->NC || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
             Def_Free(field->Def);
             if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
-               Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data",(char *)NULL);
+               Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data for field ",Name,(char *)NULL);
                return(NULL);
             }
          }
@@ -1180,11 +1183,11 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
    // Allouer la memoire pour les structures
    if (!field) {
        if (!(field=(TData*)malloc(sizeof(TData)))) {
-         Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate field",(char *)NULL);
+         Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate field ",Name,(char *)NULL);
          return(NULL);
       }
       if (!(field->Spec=DataSpec_Create(Interp,NULL))) {
-         Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate field",(char *)NULL);
+         Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate field ",Name,(char *)NULL);
          return(NULL);
       }
 
@@ -1203,7 +1206,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
 
       if (NI*NJ*NK) {
          if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
-            Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data",(char *)NULL);
+            Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data for field ",Name,(char *)NULL);
             return(NULL);
          }
       }

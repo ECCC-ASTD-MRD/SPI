@@ -2105,7 +2105,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    /* GLX Version */
    gl=glXQueryVersion(GLRender->XDisplay,&glmaj,&glmin);
    if (!gl) {
-      fprintf(stderr,"(ERROR) glXCanvasInit: Could not find GLX extensions\n");
+      Tcl_AppendResult(Interp,"glXCanvasInit: Could not find GLX extensionsr",(char*)NULL);
       return(TCL_ERROR);
    }
 
@@ -2115,7 +2115,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
          fprintf(stderr,"(WARNING) glXCanvasInit: Unable to select a standard configuration, trying for minimal\n");
          GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrMin,&GLRender->GLConfigNb);
          if (!GLRender->GLConfigNb) {
-            fprintf(stderr,"(ERROR) glXCanvasInit: Unable to select a minimal configuration\n");
+            Tcl_AppendResult(Interp,"glXCanvasInit: Unable to select a minimal configuration",(char*)NULL);
             return(TCL_ERROR);
          }
       }
@@ -2123,7 +2123,7 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
       GLRender->GLCon=glXCreateNewContext(GLRender->XDisplay,GLRender->GLConfig[0],GLX_RGBA_TYPE,NULL,GLRender->GLDirect);
       GLRender->GLVis=glXGetVisualFromFBConfig(GLRender->XDisplay,GLRender->GLConfig[0]);
       if (!GLRender->GLVis) {
-         fprintf(stderr,"(ERROR) glXCanvasInit: Could not get a valid visual\n");
+         Tcl_AppendResult(Interp,"glXCanvasInit: Could not get a valid visual",(char*)NULL);
          return(TCL_ERROR);
       }
 
