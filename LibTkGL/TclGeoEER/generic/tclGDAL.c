@@ -1018,9 +1018,9 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
       if (band->Tag)       Tcl_DecrRefCount(band->Tag);
       if (band->GCPs)      free(band->GCPs);
       if (band->Def)       Def_Free(band->Def);
+      if (band->GPos)      GeoPos_Free(band->GPos);
       if (band->ZRef)      ZRef_Free(band->ZRef);
       if (band->GRef)      GeoRef_Destroy(Interp,band->GRef->Name);
-      if (band->GPos)      GeoPos_Free(band->GPos);
  
       free(band);
    }

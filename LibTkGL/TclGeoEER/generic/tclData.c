@@ -740,9 +740,8 @@ int Data_Free(TData *Field) {
 
       /*Liberer l'espace du descriptif*/
       if (Field->Stat) Data_StatFree(Field->Stat);
-      if (Field->GPos)  GeoPos_Free(Field->GPos);
-      if (Field->GRef)  GeoRef_Destroy(NULL,Field->GRef->Name);
-      if (Field->ZRef)  ZRef_Free(Field->ZRef);
+      if (Field->GRef) GeoRef_Destroy(NULL,Field->GRef->Name);
+      if (Field->ZRef) ZRef_Free(Field->ZRef);
       if (Field->Tag)  Tcl_DecrRefCount(Field->Tag);
 
       free(Field);
@@ -759,7 +758,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    if (!Field || !Field->Def)
       return(NULL);
 
-   /* Verifier que le champs n'est pas lui-meme*/
+   // Verifier que le champs n'est pas lui-meme
    field=Data_Get(Name);
 
    if (field==Field) {
@@ -773,7 +772,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    def=Field->SDef?Field->SDef[0]:Field->Def;
    alias=Alias?1:def->Alias;
 
-    /* Est-ce que le champs existe et si oui, verifier les dimensions */
+   // Est-ce que le champs existe et si oui, verifier les dimensions 
    if (Def) {
       if (!(field=Data_Valid(Interp,Name,def->NI,def->NJ,def->NK,alias?-1:def->NC,def->Type))) {
          return(NULL);
@@ -801,6 +800,7 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    Field->Copy(field->Head,Field->Head);
    field->GRef=GeoRef_Copy(Field->GRef);
    field->ZRef=ZRef_Copy(Field->ZRef);
+   field->GPos=GeoPos_Copy(Field->GPos);
 
    if (field->Spec && Field->Spec) {
 
@@ -1161,7 +1161,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
          field->Def=NULL;
       } else {
          // Si les dimensions sont correctes et les composantes sont ls memes
-         if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || Dim!=field->Def->NC || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
+         if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || abs(Dim)!=field->Def->NC || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
             Def_Free(field->Def);
             if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
                Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data for field ",Name,(char *)NULL);
@@ -1176,8 +1176,8 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       field->Free(field);                                      field->Head=NULL;
       if (field->Tag)  Tcl_DecrRefCount(field->Tag);           field->Tag=NULL;
       if (field->Stat) Data_StatFree(field->Stat);             field->Stat=NULL;
-      if (field->GRef) GeoRef_Destroy(NULL,field->GRef->Name); field->GRef=NULL;
       if (field->ZRef) ZRef_Free(field->ZRef);                 field->ZRef=NULL;
+      if (field->GRef) GeoRef_Destroy(NULL,field->GRef->Name); field->GRef=NULL;
    }
 
    // Allouer la memoire pour les structures

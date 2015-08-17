@@ -805,11 +805,18 @@ TGeoRef* GeoRef_Find(TGeoRef *GRef) {
 #define GeoPos_Incr(GPOS) __sync_add_and_fetch(&GPOS->NRef,1)
 #define GeoPos_Decr(GPOS) __sync_sub_and_fetch(&GPOS->NRef,1)
 
+TGeoPos* GeoPos_Copy(TGeoPos *GPos) {
+
+   if (GPos) GeoPos_Incr(GPos);
+      
+   return(GPos);
+}
+
 int GeoPos_Free(TGeoPos *GPos) {
 
    int n=0;
    
-   if (GPos && GeoPos_Decr(GPos)<=0) {
+   if (GPos && !GeoPos_Decr(GPos)) {
       // Free reference components
       ZRef_Free(GPos->ZRef);
       GeoRef_Free(GPos->GRef);

@@ -48,4 +48,5 @@ TGeoRef* GeoRef_Find(TGeoRef *Ref);
 
 int      GeoPos_Free(TGeoPos *GPos);
 TGeoPos* GeoPos_Find(TGeoRef *GRef,TZRef *ZRef);
+TGeoPos* GeoPos_Copy(TGeoPos *GPos);
 #endif
