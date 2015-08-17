@@ -1949,7 +1949,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   }
                }
                size=VP->Ratio*VECTORSIZE(Field->Spec,xy[dn+nn]);
-               dir=(Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE)?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
+               dir=(!Field->Def->Data[1] || (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE))?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
                if (Interp) glFeedbackInit(256,GL_2D);
                Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,xy[dn+nn]),dir,size,Proj);
                if (Interp) glFeedbackProcess(Interp,GL_2D);
