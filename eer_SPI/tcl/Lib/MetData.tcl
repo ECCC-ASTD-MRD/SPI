@@ -807,14 +807,14 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
             set L [expr 1.0/$unsL]
          }
       } else {
-         Log::Print ERROR "Off grid localisation"
+         Log::Print WARNING "MetData::ObukhovCalculate: Off grid localisation, will use default value"
          set L 22856.0320937
       }
 
       fstdfield free OBVAR
    } else {
 
-      Log::Print ERROR "Missing fields"
+      Log::Print WARNING "MetData::ObukhovCalculate: Missing fields, will use default value"
 
       #----- Si on ne peut calculer, mettre un atmosphere neurtre
       set L 22856.0320937

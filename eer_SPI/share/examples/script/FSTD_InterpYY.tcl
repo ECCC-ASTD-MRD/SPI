@@ -39,6 +39,7 @@ fstdfield read TO 1 -1 "" -1 -1 -1 "" "EHG0"
 fstdfield stats TO -nodata 0.0
 
 fstdfield read FROM 2 -1 "" -1 -1 -1 "" "EHG0"
+
 #----- Test linear interpolation (ezscint knows how to work with U grids)
 fstdfield clear TO
 fstdfield gridinterp TO FROM LINEAR 1

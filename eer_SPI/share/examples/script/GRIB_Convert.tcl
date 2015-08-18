@@ -102,7 +102,6 @@ foreach var { CV CVI DW WI } id { 10 8 13 11 } nm { conc dose depot wetd } {
    foreach fld [fstdfield find FSTDIN -1 "" -1 -1 -1 "" $var] {
 
       fstdfield read FLD FSTDIN $fld
-
       gribfield import GRIB2NEW FLD    
       gribfield define GRIB2NEW -key parameterNumber $id 
       gribfield define GRIB2NEW -key constituentType $iso([fstdfield define FLD -ETIKET])
