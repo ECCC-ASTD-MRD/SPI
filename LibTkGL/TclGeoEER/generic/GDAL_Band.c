@@ -1088,8 +1088,8 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int          i,c,w,h,idx,ex=0,tr=1,i0,i1,b,c0,c1,cnt,s;
-   double       lat,lon,x0,y0,dval,min,max,mean,std;
+   int          i,c,w,h,idx,ex=0,tr=1,i0,i1,b,c0,c1,cnt,s,clamp;
+   double       lat,lon,x0,y0,dval,min,max,mean,std,dmin,dmax;
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
@@ -1286,15 +1286,25 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         break;
 
                      case 2: // STANDARD_DEV
-                        if (Objc!=4) {
-                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev");
+                        if (Objc!=4 && Objc!=5) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev [clamp]");
                            return(TCL_ERROR);
                         }
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
+                        
+                        clamp=0;
+                        if (Objc==5)
+                           Tcl_GetBooleanFromObj(Interp,Objv[++i],&clamp);
 
-                        GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&min,&max,&mean,&std);
+                        GDALGetRasterStatistics(band->Band[b],band->Approx,TRUE,&dmin,&dmax,&mean,&std);
+
                         min=mean-dval*std;
                         max=mean+dval*std;
+                        
+                        if (clamp) {
+                           min=min<dmin?dmin:min;
+                           max=max>dmax?dmax:max;
+                        }
                         break;
 
                      case 3: // RANGE
@@ -1307,7 +1317,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         break;
                   }
 
-                  if (band->Spec->Map) {
+                  if (band->Spec->Map) {                     
                      // In case of LUMINANCE or LUMINANCE_ALPHA, set all the same.
                      if (band->Def->NC<3) {
                         band->Spec->Map->Min[0]=band->Spec->Map->Min[1]=band->Spec->Map->Min[2]=band->Spec->Map->Min[3]=min;
@@ -1317,7 +1327,6 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         band->Spec->Map->Max[b]=max;
                      }
                   }
-
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
                }
@@ -1891,6 +1900,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 
                GeoRef_Qualify(band->GRef);
                GDAL_BandClean(band,1,1,1);
+               band->GPos=GeoPos_Find(band->GRef,band->ZRef);
             }
             break;
 
@@ -2393,7 +2403,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
         }
       }
    }
-
+   
    if (!GLRender->ShaderAvailable && Band->Spec->Map) {
       glEnable(GL_COLOR_TABLE);
       glColorTable(GL_COLOR_TABLE,GL_RGBA,256,GL_RGBA,GL_UNSIGNED_BYTE,(GLvoid*)Band->Spec->Map->Color);

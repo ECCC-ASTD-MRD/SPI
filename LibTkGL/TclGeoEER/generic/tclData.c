@@ -722,13 +722,13 @@ int Data_Free(TData *Field) {
 
    if (Field) {
 
-      /*Liberer l'espace specifique au type de donnees*/
+      // Liberer l'espace specifique au type de donnees
       Field->Free(Field);
 
-      /*Liberer l'espace de donnees*/
+      // Liberer l'espace de donnees
       Data_Clean(Field,1,1,1);
 
-     /*Free subgrids but make sure it was not freed above*/
+      // Free subgrids but make sure it was not freed above
       if (Field->SDef) {
          for(i=0;i<Field->GRef->NbId+1;i++) {
            Def_Free(Field->SDef[i]);
@@ -738,7 +738,7 @@ int Data_Free(TData *Field) {
          Def_Free(Field->Def);
       }
 
-      /*Liberer l'espace du descriptif*/
+      // Liberer l'espace du descriptif
       if (Field->Stat) Data_StatFree(Field->Stat);
       if (Field->GRef) GeoRef_Destroy(NULL,Field->GRef->Name);
       if (Field->ZRef) ZRef_Free(Field->ZRef);
@@ -1660,9 +1660,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
    extern int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
-   static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
+   static CONST char *sopt[] = { "-tag","-size","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
+   enum        opt {  TAG,SIZE,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
       GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVELINDEX,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF };
 
    if (!Field ) {
@@ -1701,7 +1701,15 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
-         case NODATA:
+          case SIZE:
+            if (Objc==1) {
+               if (Field->Tag) {
+                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NI*Field->Def->NJ*Field->Def->NK*Field->Def->NC*TDef_Size[Field->Def->Type]));
+               }
+            }
+            break;
+            
+        case NODATA:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Field->Def->NoData));
             } else {
