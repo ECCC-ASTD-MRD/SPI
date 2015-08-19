@@ -586,6 +586,10 @@ proc ISO8601::ToSeconds { ISO } {
    set iso [string map { T " " } $ISO]
 
    if { [llength $iso]==2 } {
+      #----- Get rid of decimal seconds
+      if { [string length $iso]>20 } {
+         set iso [string range $iso 0 18][string index $iso end]
+      }
       return [clock scan $iso -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
    } else {
       if { [string first : $iso]!=-1 } {
@@ -654,6 +658,11 @@ proc ISO8601::Decode { ISO T0 T1 P L } {
    upvar $P  p
    upvar $L  l
 
+   set t0 ""
+   set t1 ""
+   set p  ""
+   set l  {}
+   
    #----- Check for type of date range
    if { [string first , $ISO]!=-1 } {
       #----- This is a list type
@@ -662,19 +671,29 @@ proc ISO8601::Decode { ISO T0 T1 P L } {
       }
       set t0 [lindex $p 0]
       set t1 [lindex $p end]
-      set p {}
    } else {
       #----- This is a range type
       set i 0
-      set l {}
+      set s ""
+      
       foreach iso [split $ISO /] {
 
          #----- Decode period
          if { [string index $iso 0]=="P" } {
+            set s [Convert::PT2Sec $iso]
             set p [ISO8601::Period $iso]
          } else {
             set t$i [ISO8601::ToSeconds $iso]
             incr i
+         }
+      }
+      
+      #----- Build time list
+      if { $p!="" } {
+         set t $t0
+         while { $t<$t1 } {
+            lappend l $t
+            incr t $s
          }
       }
    }

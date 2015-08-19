@@ -285,7 +285,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          Name                     { set Data(Identifier)  [[$node firstChild] nodeValue] }
          Title                    { set Data(Title) [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] }
          Abstract                 { catch { set Data(Abstract) [encoding convertfrom utf-8 [[$node firstChild] nodeValue]] } }
-         Dimension                { set Data(Cache) 0 }
+         Dimension                { Mapper::DepotWare::WMS::ParseExtent $node; set Data(Cache) 0 }
          DataURL                  { }
          MetadataURL              { Mapper::DepotWare::WMS::ParseMeta $node }
          Style                    { Mapper::DepotWare::WMS::ParseStyle $node }
@@ -390,12 +390,14 @@ proc Mapper::DepotWare::WMS::ParseExtent { Node } {
    set p  ""
    set l  ""
 
-   switch $type {
-      "time" { set iso [[$Node firstChild] nodeValue]
-               ISO8601::Decode $iso t0 t1 p l
-               set Data(Times) [list $t0 $t1 $p $l]
-             }
-      "elevation" { }
+   if { [set node [$Node firstChild]]!="" } {  
+      switch $type {
+         "time" { set iso [$node nodeValue]
+                  ISO8601::Decode $iso t0 t1 p l
+                  set Data(Times) $l
+               }
+         "elevation" { }
+      }
    }
 }
 

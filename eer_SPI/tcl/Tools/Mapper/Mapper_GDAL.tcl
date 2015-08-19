@@ -399,8 +399,8 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
          pack  $Data(Frame1).proj -side top -fill both -expand true -padx 5 -pady 5
 
          labelframe $Data(Frame1).time -text [lindex $Mapper::Lbl(Time) $GDefs(Lang)]
-            scale $Data(Frame1).time.scale -from 0 -to 0 -resolution 1 -variable Mapper::GDAL::Data(Secs) -relief raised -bd 1 \
-               -relief flat -orient horizontal -width 15 -sliderlength 10 -command { set Mapper::GDAL::Data(Time) [clock format $Mapper::GDAL::Data(Secs) -gmt True]; catch } -showvalue False
+            scale $Data(Frame1).time.scale -from 0 -to 0 -resolution 1 -variable Mapper::GDAL::Data(Step) -relief raised -bd 1 \
+               -relief flat -orient horizontal -width 15 -sliderlength 10 -command { set Mapper::GDAL::Data(Time) [clock format [lindex $Mapper::GDAL::Data(Times) $Mapper::GDAL::Data(Step)] -gmt True]; catch } -showvalue False
             label $Data(Frame1).time.lbl -textvariable Mapper::GDAL::Data(Time)
             pack  $Data(Frame1).time.scale $Data(Frame1).time.lbl -side top -fill x -expand True
          pack $Data(Frame1).time -side top -fill x -padx 5 -pady 5 -ipady 2
@@ -544,21 +544,17 @@ proc Mapper::GDAL::Params { Object { Tabs {} } } {
       ComboBox::AddList $Data(Frame2).col.def.style.sel $Data(Styles)
       pack $Data(Frame2).col.def.style -after $Data(Frame2).col.def.nodata -side top -fill x
 
-      set time [lindex $Mapper::DepotWare::WMS::Data($wms) 10]
-      set Data(T0)    [lindex $time 0]
-      set Data(T1)    [lindex $time 1]
-
       #----- Time management
-      if { $Data(T0)=="" } {
+      if { [llength [set Data(Times) [lindex $Mapper::DepotWare::WMS::Data($wms) 10]]]<=1 } {
          pack forget $Data(Frame1).time
       } else {
-         eval set Data(TIncr) \[clock add 0 [lindex $time 2]\]
-         $Data(Frame1).time.scale configure -from $Data(T0) -to $Data(T1) -resolution $Data(TIncr)
-         set Data(Secs)  [gdalband define $Object -date]
+         $Data(Frame1).time.scale configure -from 0 -to [expr [llength $Data(Times)]-1] -resolution 1
+         set Data(Step) [lsearch -exact -integer $Data(Times) [gdalband define $Object -date]]
+         set Data(Time) [clock format [lindex $Data(Times) $Data(Step)] -gmt True]
 
          #----- Use bind instead of -command to activate only on button release
-         bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) $Mapper::GDAL::Data(Secs); update idletasks }
-         bind $Data(Frame1).time.scale <ButtonRelease-2>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) $Mapper::GDAL::Data(Secs); update idletasks }
+         bind $Data(Frame1).time.scale <ButtonRelease-1>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) [lindex $Mapper::GDAL::Data(Times) $Mapper::GDAL::Data(Step)]; update idletasks }
+         bind $Data(Frame1).time.scale <ButtonRelease-2>  { Mapper::DepotWare::WMS::ReLoad $Mapper::Data(Object) $Mapper::GDAL::Data(Style) [lindex $Mapper::GDAL::Data(Times) $Mapper::GDAL::Data(Step)]; update idletasks }
          pack $Data(Frame1).time -after $Data(Frame1).proj -side top -fill x -padx 5 -pady 5 -ipady 2
       }
     } else {
