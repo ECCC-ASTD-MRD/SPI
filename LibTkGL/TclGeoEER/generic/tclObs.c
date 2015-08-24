@@ -818,7 +818,7 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TZRef *ZRef,TObs *Obs,int *NObs,int Extrap) {
             c2.Lat=DEG2RAD(Obs->Loc->Coord[i].Lat);c2.Lon=DEG2RAD(Obs->Loc->Coord[i].Lon);
             n=Ref->X1-Ref->X0;
             for(k=0;k<=n;k++) {
-               c0.Lat=DEG2RAD(Ref->Lat[k]);c0.Lon=DEG2RAD(Ref->Lon[k]);
+               c0.Lat=DEG2RAD(Ref->AY[k]);c0.Lon=DEG2RAD(Ref->AX[k]);
                dk=DIST(0,c2.Lat,c2.Lon,c0.Lat,c0.Lon);
                if (d>dk) {
                   d=dk;
@@ -827,7 +827,7 @@ Vect3d *Obs_Grid(TGeoRef *Ref,TZRef *ZRef,TObs *Obs,int *NObs,int Extrap) {
             }
 
             /*Figure out right angle crossing point*/
-            c1.Lat=DEG2RAD(Ref->Lat[idx==n?idx-1:idx+1]);c1.Lon=DEG2RAD(Ref->Lon[idx==n?idx-1:idx+1]);
+            c1.Lat=DEG2RAD(Ref->AY[idx==n?idx-1:idx+1]);c1.Lon=DEG2RAD(Ref->AX[idx==n?idx-1:idx+1]);
             pos[*NObs][0]=idx+GeoFunc_RadialPointRatio(c0,c1,c2);
             if (pos[*NObs][0]<0 || pos[*NObs][0]>n) {
                j=0;

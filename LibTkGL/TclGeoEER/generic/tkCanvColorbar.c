@@ -655,9 +655,17 @@ int Colorbar_RenderId(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,int Y1
       if (Spec->Desc && Spec->Desc[0]!='\0') {
          y=CB->tkm.linespace;
          if (Interp) {
-            glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x1+5,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-0.0,1.0,1.0);
+            if (CB->BarSide==TK_JUSTIFY_RIGHT) {
+                glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x2-6,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-1.0,1.0,1.0);
+           } else {
+               glPostscriptText(Interp,CB->canvas,Spec->Desc,CB->header.x1+5,Tk_CanvasPsY(CB->canvas,Y1+y),0,CB->UColor,-0.0,1.0,1.0);
+            }
          } else {
-            Colorbar_RenderText(CB,CB->header.x1+5,Y1+y,TK_JUSTIFY_LEFT,Spec->Desc,Spec);
+            if (CB->BarSide==TK_JUSTIFY_RIGHT) {
+              Colorbar_RenderText(CB,CB->header.x2-6,Y1+y,TK_JUSTIFY_RIGHT,Spec->Desc,Spec);
+            } else {
+              Colorbar_RenderText(CB,CB->header.x1+5,Y1+y,TK_JUSTIFY_LEFT,Spec->Desc,Spec);
+            }
          }
       }
 

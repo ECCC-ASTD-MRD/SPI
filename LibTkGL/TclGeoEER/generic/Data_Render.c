@@ -1743,12 +1743,12 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   /*We calculat the section orientation for rotate the vector accordingly*/
                   if (Field->GRef->RefFrom) {
                      /*If we have the georef it's coming from*/
-                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i0,&j0,Field->GRef->Lat[i],Field->GRef->Lon[i],1,1);
-                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i1,&j1,Field->GRef->Lat[i+1],Field->GRef->Lon[i+1],1,1);
+                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i0,&j0,Field->GRef->AY[i],Field->GRef->AX[i],1,1);
+                     Field->GRef->RefFrom->UnProject(Field->GRef->RefFrom,&i1,&j1,Field->GRef->AY[i+1],Field->GRef->AX[i+1],1,1);
                      theta=atan2(i1-i0,j1-j0);
                   } else {
                      /*Otherwise, use the cut orientation*/
-                     theta=-COURSE(DEG2RAD(Field->GRef->Lat[i]),DEG2RAD(Field->GRef->Lon[i]),DEG2RAD(Field->GRef->Lat[i+1]),DEG2RAD(Field->GRef->Lon[i+1]));
+                     theta=-COURSE(DEG2RAD(Field->GRef->AY[i]),DEG2RAD(Field->GRef->AX[i]),DEG2RAD(Field->GRef->AY[i+1]),DEG2RAD(Field->GRef->AX[i+1]));
 //                     theta=0.0;
                   }
                   thetad=90.0+RAD2DEG(theta);
@@ -1785,7 +1785,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         /*Resize the arrow on the speed*/
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                         if (Interp) glFeedbackInit(256,GL_2D);
-                        Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->GRef->Lat[i],Field->GRef->Lon[i],ZRef_Level2Meter(Field->ZRef->Levels[j],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
+                        Data_RenderBarbule(Field->Spec->RenderVector,0,thetad,Field->GRef->AY[i],Field->GRef->AX[i],ZRef_Level2Meter(Field->ZRef->Levels[j],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),RAD2DEG(atan2(u,w)),size,Proj);
                         if (Interp) glFeedbackProcess(Interp,GL_2D);
                      }
                   }

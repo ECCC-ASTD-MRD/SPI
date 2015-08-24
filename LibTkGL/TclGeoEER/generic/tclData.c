@@ -692,11 +692,11 @@ void Data_GetStat(TData *Field){
       Field->Stat->MaxLoc.Elev=0;
 
       if (Field->GRef && Field->GRef->Grid[0]!='V') {
-         if (Field->GRef->Lat && Field->GRef->Lon) {
-            Field->Stat->MinLoc.Lat=Field->GRef->Lat[FIDX2D(def,imin,jmin)];
-            Field->Stat->MinLoc.Lon=Field->GRef->Lon[FIDX2D(def,imin,jmin)];
-            Field->Stat->MaxLoc.Lat=Field->GRef->Lat[FIDX2D(def,imax,jmax)];
-            Field->Stat->MaxLoc.Lon=Field->GRef->Lon[FIDX2D(def,imax,jmax)];
+         if (Field->GRef->AY && Field->GRef->AX) {
+            Field->Stat->MinLoc.Lat=Field->GRef->AY[FIDX2D(def,imin,jmin)];
+            Field->Stat->MinLoc.Lon=Field->GRef->AX[FIDX2D(def,imin,jmin)];
+            Field->Stat->MaxLoc.Lat=Field->GRef->AY[FIDX2D(def,imax,jmax)];
+            Field->Stat->MaxLoc.Lon=Field->GRef->AX[FIDX2D(def,imax,jmax)];
          } else if (Field->GRef->Project) {
             Field->GRef->Project(Field->GRef,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
             Field->GRef->Project(Field->GRef,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
@@ -935,10 +935,10 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    if (!NbC || !NbF)
       return(TCL_OK);
 
-   cut->GRef->Lat=(float*)malloc(NbC*sizeof(float));
-   cut->GRef->Lon=(float*)malloc(NbC*sizeof(float));
+   cut->GRef->AY=(float*)malloc(NbC*sizeof(float));
+   cut->GRef->AX=(float*)malloc(NbC*sizeof(float));
 
-   if (!cut->GRef->Lat || !cut->GRef->Lon) {
+   if (!cut->GRef->AY || !cut->GRef->AX) {
       Tcl_AppendResult(Interp,"Data_Cut: Unable to allocate memory for coordinate caching",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -959,8 +959,8 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       if (Lat[n]!=-999.0 && Lon[n]!=-999.0) {
 
          // Keep coordinate for later use
-         cut->GRef->Lat[n]=Lat[n];
-         cut->GRef->Lon[n]=Lon[n];
+         cut->GRef->AY[n]=Lat[n];
+         cut->GRef->AX[n]=Lon[n];
 
          // Loop on fields
          for(f=0;f<NbF;f++) {
@@ -1703,9 +1703,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
           case SIZE:
             if (Objc==1) {
-               if (Field->Tag) {
-                  Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NI*Field->Def->NJ*Field->Def->NK*Field->Def->NC*TDef_Size[Field->Def->Type]));
-               }
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Field->Def->NI*Field->Def->NJ*Field->Def->NK*Field->Def->NC*TDef_Size[Field->Def->Type]));
             }
             break;
             
@@ -1830,10 +1828,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                         }
                      } else {
-                        if (Field->GRef->Lat && Field->GRef->Lon) {
+                        if (Field->GRef->AY && Field->GRef->AX) {
                            index=FIDX2D(Field->Def,ni,nj);
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lat[index]));
-                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lon[index]));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->AY[index]));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->AX[index]));
                          }
                      }
                      if (!(--npt)) break;
@@ -1847,19 +1845,19 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                      Tcl_AppendResult(Interp,"Data_Stat: Invalid number of coordinates",(char*)NULL);
                      return(TCL_ERROR);
                   }
-                  if (!Field->GRef->Lat) {
-                     Field->GRef->Lat=(float*)malloc(Field->Def->NI*sizeof(float));
-                     Field->GRef->Lon=(float*)malloc(Field->Def->NI*sizeof(float));
+                  if (!Field->GRef->AY) {
+                     Field->GRef->AY=(float*)malloc(Field->Def->NI*sizeof(float));
+                     Field->GRef->AX=(float*)malloc(Field->Def->NI*sizeof(float));
                   }
 
-                  if (Field->GRef->Lat && Field->GRef->Lon) {
+                  if (Field->GRef->AY && Field->GRef->AX) {
                      for (index=0,n=0;index<nobj;index+=2,n++) {
                         Tcl_ListObjIndex(Interp,Objv[i],index,&obj);
                         Tcl_GetDoubleFromObj(Interp,obj,&dlat);
                         Tcl_ListObjIndex(Interp,Objv[i],index+1,&obj);
                         Tcl_GetDoubleFromObj(Interp,obj,&dlon);
-                        Field->GRef->Lat[n]=dlat;
-                        Field->GRef->Lon[n]=dlon;
+                        Field->GRef->AY[n]=dlat;
+                        Field->GRef->AX[n]=dlon;
                      }
                   } else {
                      Tcl_AppendResult(Interp,"Data_Stat: Unable to allocate memory for coordinate buffer",(char*)NULL);
@@ -1923,7 +1921,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
                      }
                   } else {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lat[FIDX2D(Field->Def,ni,nj)]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->AY[FIDX2D(Field->Def,ni,nj)]));
                   }
                   if (!(--npt)) break;
                }
@@ -1952,7 +1950,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon));
                      }
                   } else {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->Lon[FIDX2D(Field->Def,ni,nj)]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Field->GRef->AX[FIDX2D(Field->Def,ni,nj)]));
                   }
                   if (!(--npt)) break;
                }
@@ -1972,13 +1970,13 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
             if (Field->GRef->Grid[0]=='Y') {
-               if (!Field->GRef->Lat || !Field->GRef->Lon) {
+               if (!Field->GRef->AY || !Field->GRef->AX) {
                   Tcl_AppendResult(Interp,"Data_Stat: No positional information",(char*)NULL);
                   return(TCL_ERROR);
                }
                index=FIDX2D(Field->Def,lrint(dx),lrint(dy));
-               dlat=Field->GRef->Lat[index];
-               dlon=Field->GRef->Lon[index];
+               dlat=Field->GRef->AY[index];
+               dlon=Field->GRef->AX[index];
             } else {
                Field->GRef->Project(Field->GRef,dx,dy,&dlat,&dlon,ex,tr);
             }
@@ -2976,13 +2974,13 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          f=0;
          if (nc==4) {
             //Range case
-            if (Field->GRef->Lat[ni]>=dlat0 && Field->GRef->Lat[ni]<=dlat1) {
+            if (Field->GRef->AY[ni]>=dlat0 && Field->GRef->AY[ni]<=dlat1) {
                if (dlon0<dlon1) {
-                  if (Field->GRef->Lon[ni]>=dlon0 && Field->GRef->Lon[ni]<=dlon1) {
+                  if (Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=dlon1) {
                      f=1;
                   }
                } else {
-                  if ((Field->GRef->Lon[ni]>=dlon0 && Field->GRef->Lon[ni]<=180) || (Field->GRef->Lon[ni]<=dlon1 && Field->GRef->Lon[ni]>=-180)) {
+                  if ((Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=180) || (Field->GRef->AX[ni]<=dlon1 && Field->GRef->AX[ni]>=-180)) {
                      f=1;
                   }
                }

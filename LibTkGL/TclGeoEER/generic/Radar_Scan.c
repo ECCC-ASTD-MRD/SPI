@@ -473,14 +473,14 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
          th=DEG2RAD(Rad->ZRef->Levels[j]);
          sth=sin(th);
          for (i=0;i<Rad->Def->NI;i++) {
-            coord.Lat=Rad->GRef->Lat[i];
-            coord.Lon=CLAMPLON(Rad->GRef->Lon[i]);
+            coord.Lat=Rad->GRef->AY[i];
+            coord.Lon=CLAMPLON(Rad->GRef->AX[i]);
             Rad->GRef->RefFrom->UnProject(Rad->GRef->RefFrom,&az,&dt,coord.Lat,coord.Lon,1,0);
             coord.Elev=Rad->GRef->Loc.Elev+sth*dt;
             if (Proj) {
                ((Projection*)Proj)->Type->Project(((Projection*)Proj),(GeoVect*)&coord,(GeoVect*)&Rad->GPos->Pos[Level][idxi],1);
             } else {
-               Vect_Init(Rad->GPos->Pos[Level][idxi],Rad->GRef->Lat[i],Rad->GRef->Lon[i],coord.Elev);
+               Vect_Init(Rad->GPos->Pos[Level][idxi],Rad->GRef->AY[i],Rad->GRef->AX[i],coord.Elev);
             }
             idxi++;
          }

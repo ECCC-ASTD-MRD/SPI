@@ -964,8 +964,8 @@ static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,float Inter
       if ((vbuf=VBuffer_Alloc(*NV+1))) {
          d=(Inter-v0)/(v1-v0);
          switch(Mode) {
-            case REF_COOR : v0=GPos->GRef->Lat[Idx0]; v1=GPos->GRef->Lat[Idx1]; vbuf[*NV][0]=v0+(v1-v0)*d;
-                            v0=GPos->GRef->Lon[Idx0]; v1=GPos->GRef->Lon[Idx1]; vbuf[*NV][1]=v0+(v1-v0)*d;
+            case REF_COOR : v0=GPos->GRef->AY[Idx0]; v1=GPos->GRef->AY[Idx1]; vbuf[*NV][0]=v0+(v1-v0)*d;
+                            v0=GPos->GRef->AX[Idx0]; v1=GPos->GRef->AX[Idx1]; vbuf[*NV][1]=v0+(v1-v0)*d;
                             vbuf[*NV][2]=0.0;break;
             case REF_PROJ : Vect_Interp(vbuf[*NV],pos[Idx0],pos[Idx1],d);break;
             case REF_GRID : break;

@@ -2333,7 +2333,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   if (Grid) {
                      OGR_G_AddPoint(geom,i,j,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0)); 
                   } else {
-                     Layer->GRef->UnProject(Layer->GRef,&x,&y,field[0]->GRef->Lat[idx],field[0]->GRef->Lon[idx],1,1);
+                     Layer->GRef->UnProject(Layer->GRef,&x,&y,field[0]->GRef->AY[idx],field[0]->GRef->AX[idx],1,1);
                      OGR_G_AddPoint(geom,x,y,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   }
                } else if (spec->RenderTexture) {

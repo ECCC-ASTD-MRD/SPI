@@ -606,7 +606,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->TopoFactor));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+                  Spec->TopoFactor=1.0;
+               }
                if (tmp!=Spec->TopoFactor) {
                   cpos=1;
                   Spec->TopoFactor=tmp;
@@ -633,7 +635,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ExtrudeFactor));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+                  Spec->ExtrudeFactor=1.0;
+               }
                if (tmp!=Spec->ExtrudeFactor) {
                   cpos=1;
                   Spec->ExtrudeFactor=tmp;
@@ -1288,8 +1292,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Unit,-1));
             } else {
-               if (Spec->Unit) free(Spec->Unit);
-               Spec->Unit=strdup(Tcl_GetString(Objv[++i]));
+               if (Spec->Unit) free(Spec->Unit); Spec->Unit=NULL;
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  Spec->Unit=strdup(Tcl_GetString(Objv[i]));
+               }
             }
             break;
 

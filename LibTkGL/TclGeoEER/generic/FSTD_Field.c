@@ -352,15 +352,15 @@ int FSTD_FieldReadMesh(TData *Field) {
    if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
       return(0);
 
-   if ((!Field->GRef->Lat || !Field->GRef->Lon) && head->File) {
+   if ((!Field->GRef->AY || !Field->GRef->AX) && head->File) {
       if (FSTD_FileSet(NULL,head->File)<0) {
          return(0);
       }
 
       switch(Field->GRef->Grid[0]) {
          case 'M':
-            if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"^^",1,0);
-            if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,">>",1,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
+            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
 
             /* Lire le champs d'indexes*/
             if (!Field->GRef->Idx) {
@@ -383,28 +383,28 @@ int FSTD_FieldReadMesh(TData *Field) {
 
          case 'W':
             if (Field->GRef->Grid[1]=='X' || Field->GRef->Grid[1]=='Y' || Field->GRef->Grid[1]=='Z') {
-               if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"^^",1,0);
-               if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,">>",1,0);
+               if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
+               if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             }
 
             if (Field->GRef->Grid[1]=='Y') {
-               if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"LA",0,0);
-               if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,"LO",0,0);
+               if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
+               if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
                if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             }
             break;
 
          case 'Y':
-            if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"LA",0,0);
-            if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"^^",1,0);
-            if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,"LO",0,0);
-            if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,">>",1,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
+            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
+            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
          case 'V':
-            if (!Field->GRef->Lat) FSTD_FieldReadComp(head,&Field->GRef->Lat,"^^",1,0);
-            if (!Field->GRef->Lon) nijk=FSTD_FieldReadComp(head,&Field->GRef->Lon,">>",1,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
+            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             FSTD_FieldReadVLevels(Field);
             break;
       }
@@ -414,11 +414,11 @@ int FSTD_FieldReadMesh(TData *Field) {
    // Make sure longitude go from -180 - 180, unless WKT grid
    if (Field->GRef->Grid[0]!='W') {
       for(ni=0;ni<nijk;ni++) {
-         if (Field->GRef->Lon[ni]>180) Field->GRef->Lon[ni]-=360.0;
+         if (Field->GRef->AX[ni]>180) Field->GRef->AX[ni]-=360.0;
       }
    }
 
-   return(Field->GRef->Lat && Field->GRef->Lon);
+   return(Field->GRef->AY && Field->GRef->AX);
 }
 
 /*----------------------------------------------------------------------------
@@ -487,7 +487,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    }
 
    // Precalculer les tableaux de particules dans l'espace
-   if (Field->GRef->Lat && Field->GRef->Lon) {
+   if (Field->GRef->AY && Field->GRef->AX) {
       z=ZRef_Level2Meter(Field->ZRef->Levels[Level],Field->ZRef->Type);
       for (i=0;i<Field->Def->NI;i++) {
          for (j=0;j<Field->Def->NJ;j++) {
@@ -502,8 +502,8 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
             } else if (Field->GRef->Grid[1]=='Y') {
                Field->GRef->Project(Field->GRef,i,j,&coord.Lat,&coord.Lon,1,1);
             } else {
-               coord.Lat=Field->GRef->Lat[idx];
-               coord.Lon=Field->GRef->Lon[idx];
+               coord.Lat=Field->GRef->AY[idx];
+               coord.Lon=Field->GRef->AX[idx];
             }
 
             if (Field->GRef->Hgt) {
@@ -596,7 +596,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    if (Field->GRef->Grid[0]=='V') {
       FSTD_FieldReadMesh(Field);
 
-      if (!Field->GRef->Lat || !Field->GRef->Lon) {
+      if (!Field->GRef->AY || !Field->GRef->AX) {
          App_Log(ERROR,"%s: Section coordinates not defined",__func__);
          return(NULL);
       }
@@ -620,8 +620,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
          coord.Elev=ZRef_Level2Meter(Field->ZRef->Levels[j],Field->ZRef->Type)*Field->Spec->TopoFactor;
          for (i=0;i<def->NI;i++) {
-            flat=coord.Lat=Field->GRef->Lat[i];
-            flon=coord.Lon=CLAMPLON(Field->GRef->Lon[i]);
+            flat=coord.Lat=Field->GRef->AY[i];
+            flon=coord.Lon=CLAMPLON(Field->GRef->AX[i]);
             idx=j*def->NI+i;
             if (gz && Field->GRef->RefFrom && Field->GRef->RefFrom->Ids[0]>-1) {
 //               RPN_IntLock();
@@ -629,7 +629,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 //               RPN_IntUnlock();
                coord.Elev=fele*10.0*Field->Spec->TopoFactor;
             }
-            Vect_Init(Field->GPos->Pos[Level][idx],Field->GRef->Lon[i],Field->GRef->Lat[i],coord.Elev);
+            Vect_Init(Field->GPos->Pos[Level][idx],Field->GRef->AX[i],Field->GRef->AY[i],coord.Elev);
          }
       }
 
@@ -1033,6 +1033,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    }
 
    // Verifier la compatibilite entre source et destination
+   Def_Compat(FieldTo->Def,FieldFrom->Def);
    ZRef_Free(FieldTo->ZRef);
    FieldTo->ZRef=ZRef_Define(FieldFrom->ZRef->Type,FieldFrom->ZRef->LevelNb,FieldFrom->ZRef->Levels);
 
