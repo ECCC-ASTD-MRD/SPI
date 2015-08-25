@@ -1255,6 +1255,8 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { $set==0 || $set==2 } {
             dataspec copy $spec $var
          }
+         
+         #----- Release spec
          dataspec free $spec
 
          if { "$var"=="$current" } {

@@ -38,6 +38,8 @@ package provide Grid 1.0
 
 catch { SPI::Splash "Loading Package Grid 1.0" }
 
+package require Dialog
+
 namespace eval Grid {
    variable Lbl
    variable Msg
@@ -63,7 +65,7 @@ namespace eval Grid {
    set Param(PGSM)     ""                                                        ;# Grid description for PGSM
    set Param(GridInfo) ""                                                        ;# General grid description
    set Param(NIJWarn)  4000000                                                   ;# Warning grid size 2000x2000
-   set Param(SizeWarn) True                                                      ;# Warn for large grid
+   set Param(SizeWarn) [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mdoe
    set Param(LL2M)     [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
 
    set Lbl(Grid)       { "Type de grille    " "Grid type         " }
@@ -384,7 +386,7 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
 
       if { [info exists ::tk_version] } {
-         fstdfield configure $ID -rendergrid 1 -colormap FLDMAPDefault -color black -font XFont10
+         fstdfield configure $ID -rendergrid 1 -colormap FLDMAPDEFAULT -color black -font XFont10
 
          set Data(Frame) $Page::Data(Frame)
          set Data(VP)    $Viewport::Data(VP)
@@ -642,6 +644,7 @@ proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
       fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
       set lat [expr $lat+$Res]
    }
+   
    #----- Create the grid ans assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z
