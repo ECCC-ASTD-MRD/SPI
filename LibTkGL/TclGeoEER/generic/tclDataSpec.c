@@ -1008,7 +1008,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   return(TCL_ERROR);
                }
 
-               /*Determine si ils sont nouveaux*/
+               // Determine si ils sont nouveaux
                if (Spec->InterNb!=0 || nobj!=0) {
                   internew=1;
 
@@ -1022,7 +1022,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Spec->InterNb=nobj;
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
                Tcl_IncrRefCount(Spec->InterVals);
-
             }
             break;
 
@@ -1720,6 +1719,8 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->MapVar)
       to->MapVar=strdup(from->MapVar);
 
+   DataSpec_Clean(to,0,0,1);
+   
    return(TCL_OK);
 }
 

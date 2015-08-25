@@ -1372,7 +1372,6 @@ void Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    entry=Tcl_FirstHashEntry(&TData_Table,&ptr);
    while (entry) {
       data=Tcl_GetHashValue(entry);
-
       if (data && data->Spec && (data->Spec==Spec || data->Spec->Id==Spec->Id)) {
          Data_Clean(data,Map,Pos,Seg);
       }
