@@ -1759,7 +1759,7 @@ void Model_RenderScene(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DScene *S
    ModelSceneDepth--;
 }
 
-int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
+int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene,TDef_InterpV Mode) {
 
    int       i;
    T3DScene *scn;
@@ -1777,17 +1777,17 @@ int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
    if (scn) {
       // Process scene objects
       for(i=0;i<scn->NObj;i++) {
-         Model_GridObject(Data,M,scn->Obj[i]);
+         Model_GridObject(Data,M,scn->Obj[i],Mode);
       }
 
       // Recursive on sub-scenes
       for(i=0;i<scn->NScn;i++) {
-         Model_Grid(Interp,Data,M,&scn->Scn[i]);
+         Model_Grid(Interp,Data,M,&scn->Scn[i],Mode);
       }
    } else {
       // Process model objects
       for(i=0;i<M->NObj;i++) {
-         Model_GridObject(Data,M,&(M->Obj[i]));
+         Model_GridObject(Data,M,&(M->Obj[i]),Mode);
       }  
    }
 
@@ -1796,12 +1796,11 @@ int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
    return(TCL_OK);
 }
 
-int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
+int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj,TDef_InterpV Mode) {
 
    Vect3d *v,extent[2];
    Coord  co;
    int    f,p,idx,n=0;
-#define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)
 
    if (Obj->Vr) {
 
@@ -1824,6 +1823,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
                App_Log(WARNING,"%s: Wrong number of vertices (%i>%i)\n",__func__,idx,Obj->NVr);
                break;
             }
+            
             // Projection to georef
             if (M->GRef) {
                M->GRef->Project(M->GRef,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
@@ -1834,7 +1834,8 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
             co.Elev=Obj->Vr[idx][2];
 
             Data->GRef->UnProject(Data->GRef,&v[n][0],&v[n][1],co.Lat,co.Lon,1,1);
-
+            v[n][2]=Obj->Vr[idx][2];
+            
             Vect_Min(extent[0],extent[0],v[n]);
             Vect_Max(extent[1],extent[1],v[n]);
             extent[0][2]=extent[1][2]=0.0;
@@ -1896,38 +1897,42 @@ int PointInPoly(int NVr,Vect3d *Vr,double X,double Y) {
 
 void Model_Rasterize(TDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
 
-   Vect4d plane;
-   Vect3d v0,v1;
-   int    v,x,y,z;
+   double val,zmax=-1e32;
+   int    v,x,y,i;
+//   Vect4d plane;
+//   Vect3d v0,v1;
 
    if (!Vr || !Def || NVr<3)
       return;
 
-//    for(z=0;z<NVr;z++) {
-//       x=lrint(Vr[z][0]);
-//       y=lrint(Vr[z][1]);
-//       if (FIN2D(Def,x,y))
-//          Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-//    }
-
-   // Every cell 
+   // Vertex in cell 
    for(v=0;v<NVr;v++) {
       x=lrint(Vr[v][0]);
       y=lrint(Vr[v][1]);
-      Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+      zmax=FMAX(Vr[v][2],zmax);
+      
+      if (DEF2DIN(Def,x,y)) {
+         i=FIDX2D(Def,x,y);
+         Def_Get(Def,0,i,val);
+         if (Vr[v][2]>val)
+            Def_Set(Def,0,i,Vr[v][2]);
+      }
    }
-
-   // Cell center in polygon
+   
+   // Cell in polygon
    for(y=lrint(Ex[0][1]);y<=lrint(Ex[1][1]);y++) {
       for(x=lrint(Ex[0][0]);x<=lrint(Ex[1][0]);x++) {
-         if (PointInPoly(NVr,Vr,x-0.5,y-0.5))
-            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-         if (PointInPoly(NVr,Vr,x-0.5,y+0.5))
-            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-         if (PointInPoly(NVr,Vr,x+0.5,y+0.5))
-            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
-         if (PointInPoly(NVr,Vr,x+0.5,y-0.5))
-            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+         if (DEF2DIN(Def,x,y)) {
+            i=FIDX2D(Def,x,y);
+            Def_Get(Def,0,i,val);
+            if (zmax>val) {
+               if (PointInPoly(NVr,Vr,x,y))         { Def_Set(Def,0,i,zmax); continue; }
+               if (PointInPoly(NVr,Vr,x-0.5,y-0.5)) { Def_Set(Def,0,i,zmax); continue; }
+               if (PointInPoly(NVr,Vr,x-0.5,y+0.5)) { Def_Set(Def,0,i,zmax); continue; }
+               if (PointInPoly(NVr,Vr,x+0.5,y+0.5)) { Def_Set(Def,0,i,zmax); continue; }
+               if (PointInPoly(NVr,Vr,x+0.5,y-0.5)) { Def_Set(Def,0,i,zmax); continue; }
+            }
+         }
       }
    }
    

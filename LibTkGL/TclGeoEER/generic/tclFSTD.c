@@ -1052,7 +1052,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   Tcl_WrongNumArgs(Interp,2,Objv,"field model mode [field]");
                   ok=TCL_ERROR; break;
                }
-               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&n)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                   ok=TCL_ERROR; break;
                }
                x=1.0;
@@ -1062,7 +1062,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      field=Tcl_GetString(Objv[5]);
                   }
                }
-               ok=Model_Grid(Interp,field0,model,NULL);
+               ok=Model_Grid(Interp,field0,model,NULL,imode);
                if (ok==TCL_ERROR) break;
             } else if ((obs=Obs_Get(Tcl_GetString(Objv[3])))) {
 
