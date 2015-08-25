@@ -948,7 +948,7 @@ int FFKrigging(TGeoRef *GRef,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,float Inter,int Idx0,int Idx1,int *NV) {
+static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,double Inter,int Idx0,int Idx1,int *NV) {
 
    double  v0,v1,d;
    Vect3d *vbuf,*pos;
@@ -998,7 +998,7 @@ static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,float Inter
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter){
+int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,double *Inter){
 
    int            n,i,len;
    T3DArray      *array;
@@ -1068,7 +1068,7 @@ int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj
  *   On parcoure la grille de l'exterieur vers l'interieur en spirale.
  *----------------------------------------------------------------------------
 */
-int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,float *Inter,int Depth,int Limit){
+int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,double *Inter,int Depth,int Limit){
 
    int            n,ci,cj;
    unsigned int   len,i0,i1,j0,j1,i,j;
@@ -1364,7 +1364,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *----------------------------------------------------------------------------
  */
-unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,float Inter,int Mode,unsigned char Side,int Depth,int Limit) {
+unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,double Inter,int Mode,unsigned char Side,int Depth,int Limit) {
 
    double        vox[4],pvox[4],mid=0,x,y,d;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;

@@ -1518,7 +1518,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
       return(0);
    }
 
-   /*Parse material for texture setup*/
+   // Parse material for texture setup
    for(i=0;i<M->NMt;i++) {
       if (!M->Mt[i].Tex && strlen(M->Mt[i].Path)) {
          path=strpath(M->Path,M->Mt[i].Path);
@@ -1526,8 +1526,8 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
          if (path) free(path);path=NULL;
       }
    }
-
-   /*Create display lists*/
+   
+   // Create display lists
    if (!M->Obj[0].GLId) {
 
       for(o=0;o<M->NObj;o++) {
@@ -1566,7 +1566,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                for (j=0;j<obj->Fc[i].NIdx;j++) {
                   idx=obj->Fc[i].Idx[j];
 
-                  /*Test for overflow, should not happend but I've seen it on some models*/
+                  // Test for overflow, should not happend but I've seen it on some models
                   if (idx>obj->NVr) {
                      break;
                   }
@@ -1574,7 +1574,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                   if (obj->Nr)                    glNormal3fv(obj->Nr[idx]);
 // TODO: Necessary ?                 if (obj->Cl)                    glColor4fv(obj->Cl[idx]);
 
-                  /*Projection to georef*/
+                  // Projection to georef
                   if (M->GRef) {
                      M->GRef->Project(M->GRef,obj->Vr[idx][0],obj->Vr[idx][1],&M->Co.Lat,&M->Co.Lon,1,0);
                      M->Co.Elev=obj->Vr[idx][2];
@@ -1595,16 +1595,16 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    glMatrixMode(GL_MODELVIEW);
    glPushMatrix();
 
-   /*Position the model within geography*/
+   // Position the model within geography
    if (!M->GRef) {
       Proj->Type->Locate(Proj,M->Pos[0],M->Pos[1],1);
-      /*Positionner le modele*/
+      // Positionner le modele
       glTranslatef(0.0,0.0,(M->Pos[2]*Proj->Scale+EARTHRADIUS)/EARTHRADIUS);
-      /*On suppose que le modele est en metres alors on scale par rapport a la terre*/
+      // On suppose que le modele est en metres alors on scale par rapport a la terre
       glScalef(M->Meter/EARTHRADIUS,M->Meter/EARTHRADIUS,M->Meter/EARTHRADIUS);
    }
 
-   /*Local matrix manipulation*/
+   // Local matrix manipulation
    glTranslatef(M->MatrixT[0],M->MatrixT[1],M->MatrixT[2]);
    glScalef(M->MatrixS[0],M->MatrixS[1],M->MatrixS[2]);
    glRotatef(M->MatrixR[0],1.0,0.0,0.0);
@@ -1621,7 +1621,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
 
 
       if (M->Scn) {
-         Model_RenderScene(Proj,VP,M,M->Scn);
+        Model_RenderScene(Proj,VP,M,M->Scn);
       } else {
         for(o=0;o<M->NObj;o++) {
             Model_RenderObject(Proj,VP,M,&M->Obj[o]);
@@ -1663,17 +1663,20 @@ void Model_RenderObject(Projection *Proj,ViewportItem *VP,T3DModel *M,T3DObject 
    if (Obj && Obj->GLId && Model_LOD(Proj,VP,M,Obj->Extent)) {
       if (M->Spec->RenderFace) {
 
-         glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,M->Mt[0].Shi);
-         glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,M->Mt[0].Amb);
-         glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,M->Mt[0].Dif);
-         glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,M->Mt[0].Spe);
-         glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,M->Mt[0].Emi);
          glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-         if (M->Spec->RenderTexture) {
-//            glColor4f(1.0,1.0,1.0,M->Mt[0].Dif[3]);
-            glEnable(GL_TEXTURE_2D);
-         } else {
-            glColor4f(M->Mt[0].Dif[0],M->Mt[0].Dif[1],M->Mt[0].Dif[2],M->Mt[0].Dif[3]);
+         
+         if (M->Mt) {
+            glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,M->Mt[0].Shi);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,M->Mt[0].Amb);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,M->Mt[0].Dif);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,M->Mt[0].Spe);
+            glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,M->Mt[0].Emi);
+            if (M->Spec->RenderTexture) {
+   //            glColor4f(1.0,1.0,1.0,M->Mt[0].Dif[3]);
+               glEnable(GL_TEXTURE_2D);
+            } else {
+               glColor4f(M->Mt[0].Dif[0],M->Mt[0].Dif[1],M->Mt[0].Dif[2],M->Mt[0].Dif[3]);
+            }
          }
 
          if (M->Spec->Outline && M->Spec->Width) {
@@ -1765,30 +1768,24 @@ int Model_Grid(Tcl_Interp *Interp,TData *Data,T3DModel *M,T3DScene *Scene) {
 
    ModelSceneDepth++;
 
-   if (GLRender->GLDebug) {
-      for(i=0;i<ModelSceneDepth;i++) fprintf(stderr,"   ");
-      fprintf(stderr,"(DEBUG) Processing scene: %s\n",scn->Name);
-   }
-
    /*If a displacement matrix is specified
    if (Scene->Mtx) {
       glPushMatrix();
       glMultTransposeMatrixf(Scene->Mtx);
    }*/
 
-
    if (scn) {
-      /*Process scene objects*/
+      // Process scene objects
       for(i=0;i<scn->NObj;i++) {
          Model_GridObject(Data,M,scn->Obj[i]);
       }
 
-      /*Recursive on sub-scenes*/
+      // Recursive on sub-scenes
       for(i=0;i<scn->NScn;i++) {
          Model_Grid(Interp,Data,M,&scn->Scn[i]);
       }
    } else {
-      /*Process model objects*/
+      // Process model objects
       for(i=0;i<M->NObj;i++) {
          Model_GridObject(Data,M,&(M->Obj[i]));
       }  
@@ -1807,12 +1804,13 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
 #define M2DEG(M)             ((double)(M)*8.9992806450057884399546578634955e-06)
 
    if (Obj->Vr) {
+
       for (f=0;f<Obj->NFc;f++) {
 
          if (!Obj->Fc[f].NIdx)
             continue;
 
-         /*Project face in data space*/
+         // Project face in data space
          v=VBuffer_Alloc(Obj->Fc[f].NIdx);
          Vect_Init(extent[0],1e32,1e32,1e32);
          Vect_Init(extent[1],-1e32,-1e32,-1e32);
@@ -1821,12 +1819,12 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
          for (p=0;p<Obj->Fc[f].NIdx;p++) {
             idx=Obj->Fc[f].Idx[p];
 
-            /*Test for overflow, should not happend but I've seen it on some models*/
+            // Test for overflow, should not happend but I've seen it on some models
             if (idx>Obj->NVr) {
                App_Log(WARNING,"%s: Wrong number of vertices (%i>%i)\n",__func__,idx,Obj->NVr);
                break;
             }
-            /*Projection to georef*/
+            // Projection to georef
             if (M->GRef) {
                M->GRef->Project(M->GRef,Obj->Vr[idx][0],Obj->Vr[idx][1],&co.Lat,&co.Lon,1,1);
             } else {
@@ -1843,7 +1841,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj) {
             n++;
          }
 
-         /*Process the face*/
+         // Process the face
          Model_Rasterize(Data->Def,Data->GRef,v,n,extent,0.0);
       }
    }
@@ -1885,11 +1883,22 @@ int Vect_PlaneWithin(Vect3d Point,Vect3d V0,Vect3d V1,Vect3d V2) {
    return(abs(b+c+d-a)<TINY_VALUE);
 }
 
+int PointInPoly(int NVr,Vect3d *Vr,double X,double Y) {
+   
+  int i,j,c=0;
+  
+  for (i=0, j=NVr-1; i<NVr; j=i++) {
+    if (((Vr[i][1]>Y)!=(Vr[j][1]>Y)) && (X<(Vr[j][0]-Vr[i][0])*(Y-Vr[i][1])/(Vr[j][1]-Vr[i][1])+Vr[i][0]))
+       c = !c;
+  }
+  return(c);
+}
+
 void Model_Rasterize(TDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double Value) {
 
    Vect4d plane;
    Vect3d v0,v1;
-   int    x,y,z;
+   int    v,x,y,z;
 
    if (!Vr || !Def || NVr<3)
       return;
@@ -1901,12 +1910,34 @@ void Model_Rasterize(TDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double
 //          Def_Set(Def,0,FIDX2D(Def,x,y),Value);
 //    }
 
+   // Every cell 
+   for(v=0;v<NVr;v++) {
+      x=lrint(Vr[v][0]);
+      y=lrint(Vr[v][1]);
+      Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+   }
+
+   // Cell center in polygon
    for(y=lrint(Ex[0][1]);y<=lrint(Ex[1][1]);y++) {
       for(x=lrint(Ex[0][0]);x<=lrint(Ex[1][0]);x++) {
-         if (FIN2D(Def,x,y))
+         if (PointInPoly(NVr,Vr,x-0.5,y-0.5))
+            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+         if (PointInPoly(NVr,Vr,x-0.5,y+0.5))
+            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+         if (PointInPoly(NVr,Vr,x+0.5,y+0.5))
+            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+         if (PointInPoly(NVr,Vr,x+0.5,y-0.5))
             Def_Set(Def,0,FIDX2D(Def,x,y),Value);
       }
    }
+   
+   // Using extent
+//   for(y=lrint(Ex[0][1]);y<=lrint(Ex[1][1]);y++) {
+//      for(x=lrint(Ex[0][0]);x<=lrint(Ex[1][0]);x++) {
+//         if (FIN2D(Def,x,y))
+//            Def_Set(Def,0,FIDX2D(Def,x,y),Value);
+//      }
+//   }
 
 //    Vect_PlaneEquation(plane,Vr[0],Vr[1],Vr[2]);
 //    for(z=(Ex[0][2]<0?0:Ex[0][2]);z<=(Ex[1][2]>=Def->NK-1?Def->NK-1:Ex[1][2]);z++) {

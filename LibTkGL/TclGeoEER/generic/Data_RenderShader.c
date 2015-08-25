@@ -63,7 +63,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    int     n;
    double  val=0.0;
-   float   min,rng;
+   float   min,rng,inter[DATASPEC_MAX];
    Vect3d *pos;
 
    GLuint      tx[3],att0;
@@ -102,7 +102,8 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    if (Field->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Field->Spec->Inter);
+      for(n=0;n<Field->Spec->InterNb;n++) inter[n]=Field->Spec->Inter[n];
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,inter);
    }
 
    /*Setup point sprites*/
@@ -181,7 +182,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    int     n;
    double  val=0.0;
-   float   min,rng;
+   float   min,rng,inter[DATASPEC_MAX];
    Vect3d *pos;
    Vect3d b,p,p0,p1,p2;
 
@@ -220,7 +221,9 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    if (Field->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Field->Spec->Inter);
+      
+      for(n=0;n<Field->Spec->InterNb;n++) inter[n]=Field->Spec->Inter[n];
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,inter);
    }
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
    glUniform1iARB(GLShader_UniformGet(prog,"Interval"),1);
@@ -307,8 +310,8 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int     i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
-   float   min,rng,fi,fj,ti=0.0;
+   int     n,i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
+   float   min,rng,inter[DATASPEC_MAX],fi,fj,ti=0.0;
    Vect3d *pos;
    float  *buf=NULL;
    char   *ptr;
@@ -371,7 +374,9 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Field->Spec->Inter);
+      
+      for(n=0;n<Field->Spec->InterNb;n++) inter[n]=Field->Spec->Inter[n];
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,inter);
    }
 
    // Setup 2D Data Texture

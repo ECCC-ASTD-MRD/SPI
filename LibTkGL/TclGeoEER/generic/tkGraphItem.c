@@ -43,7 +43,7 @@ extern CONST  char *ICONS[];
 extern TIcon  IconList[];
 extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
 extern int    FFStreamLine(TGeoRef *Ref,TZRef *ZRef,TDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
-extern int    FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,float *Inter,int Depth,int Limit);
+extern int    FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,double *Inter,int Depth,int Limit);
 extern float *FFStreamMapSetup1D(double Delta);
 
 extern void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);

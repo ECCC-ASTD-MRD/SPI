@@ -1049,8 +1049,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_ListObjLength(Interp,Objv[++i],&Spec->RangeNb);
                for (ii=0;ii<Spec->RangeNb;ii++){
                   Tcl_ListObjIndex(Interp,Objv[i],ii,&obj);
-                  Tcl_GetDoubleFromObj(Interp,obj,&tmp);
-                  Spec->Range[ii]=tmp;
+                  Tcl_GetDoubleFromObj(Interp,obj,&Spec->Range[ii]);
                }
             }
             break;
@@ -1654,8 +1653,8 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Mark=from->Mark;
    to->Style=from->Style;
    memcpy(to->Cube,from->Cube,6*sizeof(int));
-   memcpy(to->Range,from->Range,from->RangeNb*sizeof(float));
-   memcpy(to->Inter,from->Inter,from->InterNb*sizeof(float));
+   memcpy(to->Range,from->Range,from->RangeNb*sizeof(double));
+   memcpy(to->Inter,from->Inter,from->InterNb*sizeof(double));
    memcpy(to->Pos,from->Pos,from->PosNb*sizeof(Vect3d));
 
    to->Outline=DataSpec_CopyColor(Interp,from->Outline);

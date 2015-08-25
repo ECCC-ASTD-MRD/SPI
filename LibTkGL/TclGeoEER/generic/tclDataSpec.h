@@ -114,7 +114,7 @@ typedef struct TDataSpec {
    char           *Extrude;             /*Modulateur 3D*/
    double          ExtrudeFactor;       /*Facteur du modulateur 3D*/
    int             Interp;              /*Interpolation GL*/
-   float           Inter[DATASPEC_MAX]; /*Intervalles de contours*/
+   double          Inter[DATASPEC_MAX]; /*Intervalles de contours*/
    Tcl_Obj        *InterLabels;         /*Libelle des intervalles*/
    Tcl_Obj        *InterVals;           /*Intervalles*/
    Tcl_Obj        *OGRMask;             /*Masque vectoriel*/
@@ -149,7 +149,7 @@ typedef struct TDataSpec {
    int             WMO;                 /*WMO plotting type*/
 
    int             RangeNb;             /*Nombre de range*/
-   float           Range[DATASPEC_MAX]; /*Liste des ranges*/
+   double          Range[DATASPEC_MAX]; /*Liste des ranges*/
 
    int             Cube[6];             /*Cube de selection*/
    char            Axis;                /*Axe*/
