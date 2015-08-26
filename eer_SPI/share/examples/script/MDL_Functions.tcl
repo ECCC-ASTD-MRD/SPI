@@ -8,7 +8,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Dorval, Quebec
 #
 # Projet     : Exemple de scripts.
-# Fichier    : MDL_TestDAE.tcl
+# Fichier    : MDL_Functions.tcl
 # Creation   : Janvier 2010 - J.P. Gauthier - CMC/CMOE
 # Description: Test de lecture de fichier Collada DAE
 #

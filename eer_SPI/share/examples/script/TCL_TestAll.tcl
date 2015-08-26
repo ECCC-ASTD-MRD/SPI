@@ -98,6 +98,7 @@ set tests {
    RADAR_Functions.tcl
    RADAR_EchoTop.tcl
    {RADAR_NUMERIC2FSTD.tcl DataIn/201306031850~NUMERIC_PRECIPET_USACDN_PS_4KM~PRECIPET,125,18,MPRATE_QPE,PRECIPET_QC_PARAMETERS_CMC:URP:USACDN_PS_4km_full:RADAR:NUMERIC}
+   MDL_Functions.tcl
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
    {TCL_System.tcl /tmp}
