@@ -42,7 +42,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 
-#define XMLBUFSIZE 8192
+#define XMLBUFSIZE    8192
+#define XMLSTRINGSIZE 256
 
 #define F3V     3
 #define F3VN    6
@@ -55,9 +56,9 @@ typedef struct TMaterial {
    float  Emi[4];
    float  Shi;
    float  Alpha;
-   char   Path[256];
-   char   Name[256];
-   char   Target[256];
+   char   Path[XMLSTRINGSIZE];
+   char   Name[XMLSTRINGSIZE];
+   char   Target[XMLSTRINGSIZE];
    GLuint Tex;
 } TMaterial;
 

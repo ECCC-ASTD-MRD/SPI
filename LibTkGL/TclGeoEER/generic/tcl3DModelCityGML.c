@@ -70,7 +70,7 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"gml:id")==0) {
-               gml->Object->Name=strndup(Attr[i+1],256);
+               gml->Object->Name=strndup(Attr[i+1],XMLSTRINGSIZE);
             }
          }
       } else
@@ -93,7 +93,7 @@ void ModelCityGML_StartHandler0(void *Data,const char *Elem,const char **Attr) {
 
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"gml:id")==0) {
-               gml->Fc->Name=strndup(Attr[i+1],256);
+               gml->Fc->Name=strndup(Attr[i+1],XMLSTRINGSIZE);
             }
          }
       } else
@@ -121,6 +121,10 @@ void ModelCityGML_StartHandler1(void *Data,const char *Elem,const char **Attr) {
    if (Elem && XML_Valid(Data)) {
       App_Log(DEBUG,"%s: Token %s\n",__func__,Elem);
 
+      if (strcmp(Elem,"app:surfaceDataMember")==0) {
+         gml->Mt=Model_MaterialAdd(gml->Model,1);
+      } else 
+         
       if (strcmp(Elem,"app:target")==0) {
          for (i=0;Attr[i];i+=2) {
             if (strcmp(Attr[i],"uri")==0) {
@@ -130,10 +134,6 @@ void ModelCityGML_StartHandler1(void *Data,const char *Elem,const char **Attr) {
                }
             }
          }
-      } else
-
-      if (strcmp(Elem,"app:surfaceDataMember")==0) {
-         gml->Mt=Model_MaterialAdd(gml->Model,1);
       }
    }
 }
@@ -222,11 +222,11 @@ void ModelCityGML_EndHandler1(void *Data,const char *Elem) {
          }
       } else
 
-         if (strcmp(Elem,"app:imageURI")==0) {
+      if (strcmp(Elem,"app:imageURI")==0) {
          if (gml->Mt) {
-            strncpy(gml->Mt->Path,data->Buf,256);
+            strncpy(gml->Mt->Path,data->Buf,XMLSTRINGSIZE);
          }
-      } else
+     } else
 
       if (strcmp(Elem,"app:textureCoordinates")==0) {
          if (gml->Fc) {
@@ -235,10 +235,14 @@ void ModelCityGML_EndHandler1(void *Data,const char *Elem) {
             }
             if (gml->Object->Tx) {
                if ((n=XML_ArrayCheck(Data,' '))) {
-                  n=XML_ArrayExpandVect(Data,' ',(float*)&gml->Object->Tx[gml->Fc->Idx[0]]);
-                  for(i=0;i<n;i++) {
-                     gml->Object->Tx[gml->Fc->Idx[0]+i][1]=1.0-gml->Object->Tx[gml->Fc->Idx[0]+i][1];
-                  }
+                  float *f=&gml->Object->Tx[gml->Fc->Idx[0]][0];
+                  
+                  n=XML_ArrayExpandVect(Data,' ',f);
+                  
+                  // Reorder texture coordinates Vect2d -> Vect3d
+                  for(i=(n>>1)-1;i>=0;i--) {
+                     f[i*3+2]=0.0;  f[i*3+1]=1.0-f[i*2+1]; f[i*3]=f[i*2];
+                 }
                }
             }
          }
@@ -269,13 +273,13 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
    GML_Data   *gml;
    int         state=1;
 
-   /*Create expat XML parser*/
+   // Create expat XML parser
    if (!(parser=XML_ParserCreate(NULL))) {
       App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 
-   /*Data to be used while parsing*/
+   // Data to be used while parsing
    gml=(GML_Data*)malloc(sizeof(GML_Data));
    gml->Model=M;
    gml->Scene=NULL;
@@ -283,27 +287,22 @@ int Model_LoadCityGML(Tcl_Interp *Interp,T3DModel *M,char *Path) {
    gml->Fc=NULL;
    gml->Mt=NULL;
 
-   /*Initialise expat XML parser*/
+   // Parse the XML for model objects
    XML_SetElementHandler(parser,ModelCityGML_StartHandler0,ModelCityGML_EndHandler0);
-
-   /*Parse the XML*/
    state=XML_ParseFile(Interp,parser,gml,Path);
-
-//   parser=XML_ParserCreate(NULL);
-//   XML_SetElementHandler(parser,ModelCityGML_StartHandler1,ModelCityGML_EndHandler1);
-//   state=XML_ParseFile(Interp,parser,gml,Path);
-
    XML_ParserFree(parser);
 
-   /*Parse materials
-   for (len=0;len<M->NMt;len++) {
-      gml->Mt=&M->Mt[len];
-      if ((gml->Fc=Model_FaceFind(gml->Model,&gml->Mt->Target[1],NULL))) {
-         gml->Fc->Mt=data->Mt;
-      }
-   }*/
+   // Parse XML for textures
+//   if (!(parser=XML_ParserCreate(NULL))) {
+//      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
+//      return(0);
+//   }
+   
+//   XML_SetElementHandler(parser,ModelCityGML_StartHandler1,ModelCityGML_EndHandler1);
+//   state=XML_ParseFile(Interp,parser,gml,Path);
+//   XML_ParserFree(parser);
 
-   /*Free associates parsing data structure*/
+   // Free associates parsing data structure
    free(gml);
 
    return(state);

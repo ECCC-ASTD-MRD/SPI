@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <malloc.h>
 
 #include "App.h"
 #include "tcl3DModel.h"
@@ -826,7 +827,7 @@ T3DScene *Model_SceneFind(T3DScene *Scene,char *Name) {
    T3DScene *scn=NULL;
    int       n;
 
-   if (Scene->Name && strcmp(Scene->Name,Name)==0) {
+   if (Scene->Name && strncmp(Scene->Name,Name,XMLSTRINGSIZE)==0) {
       return(Scene);
    }
 
@@ -943,7 +944,7 @@ T3DObject *Model_ObjectFind(T3DModel *Model,char *Name) {
    int       o;
 
    for(o=0;o<Model->NObj;o++) {
-      if (strcmp(Model->Obj[o].Name,Name)==0) {
+      if (strncmp(Model->Obj[o].Name,Name,XMLSTRINGSIZE)==0) {
          obj=&Model->Obj[o];
          break;
       }
@@ -1009,7 +1010,7 @@ TFace *Model_FaceFind(T3DModel *Model,char *Name,T3DObject **Obj) {
 
    for(o=0;o<Model->NObj;o++) {
       for(f=0;f<Model->Obj[o].NFc;f++) {
-         if (Model->Obj[o].Fc[f].Name && strcmp(Model->Obj[o].Fc[f].Name,Name)==0) {
+         if (Model->Obj[o].Fc[f].Name && strncmp(Model->Obj[o].Fc[f].Name,Name,XMLSTRINGSIZE)==0) {
             fc=&Model->Obj[o].Fc[f];
             break;
          }
@@ -1059,6 +1060,7 @@ TMaterial *Model_MaterialAdd(T3DModel *Model,int Nb) {
       mt->Tex=0;
       mt->Name[0]='\0';
       mt->Path[0]='\0';
+      mt->Target[0]='\0';
    }
    return(&Model->Mt[Model->NMt-Nb]);
 }
@@ -1352,7 +1354,7 @@ T3DModel* Model_Get(char *Name) {
  * Nom          : <Model_NormalCompute>
  * Creation     : Janvier 2003 J.P. Gauthier
  *
- * But          : Calculer les normales
+ * But          : Calculer les normales par vertex
   *
  * Parametres   :
  *   <M>        : Modele
@@ -1386,11 +1388,11 @@ void Model_NormalCompute(T3DModel *M,int Force) {
             Vect_Clear(obj->Nr[v]);
          }
 
-         /*Calculate face normal*/
+         // Calculate face normal
          for (f=0;f<obj->NFc;f++) {
             fc=&obj->Fc[f];
 
-            /* Calculate face normal*/
+            // Calculate face normal
             if (fc->NIdx>2) {
                Vect_Assign(vr[0],obj->Vr[fc->Idx[0]]);
                Vect_Assign(vr[1],obj->Vr[fc->Idx[1]]);
@@ -1404,13 +1406,13 @@ void Model_NormalCompute(T3DModel *M,int Force) {
                Vect_Init(nr,0.0,0.0,0.0);
             }
 
-            /*Add to vertex normal*/
+            // Add to vertex normal
             for (n=0;n<fc->NIdx;n++) {
                Vect_Add(obj->Nr[fc->Idx[n]],obj->Nr[fc->Idx[n]],nr);
             }
          }
 
-         /*Normalize normals*/
+         // Normalize per vertex normals
          for (v=0;v<obj->NVr;v++) {
             Vect3f_Normalize(obj->Nr[v]);
          }
@@ -1556,11 +1558,11 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
                }
 
                switch(obj->Fc[i].NIdx) {
-                  case 1:  glBegin(GL_POINTS); break;
-                  case 2:  glBegin(GL_LINES);break;
+                  case 1:  glBegin(GL_POINTS);    break;
+                  case 2:  glBegin(GL_LINES);     break;
                   case 3:  glBegin(GL_TRIANGLES); break;
-                  case 4:  glBegin(GL_QUADS); break;
-                  default: glBegin(GL_POLYGON); break;
+                  case 4:  glBegin(GL_QUADS);     break;
+                  default: glBegin(GL_POLYGON);   break;
                }
 
                for (j=0;j<obj->Fc[i].NIdx;j++) {
