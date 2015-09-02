@@ -89,7 +89,7 @@ printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
 
 if [[ $EXT -eq 1 ]]; then
 
-   printf -- "\n----- Making extenal dependencies -----\n"
+   printf -- "\n----- Making external dependencies -----\n"
 
    #----- Package to be compiled
    TCL_VERSION=8.6.3
@@ -337,11 +337,9 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${NETCDF}/build.log"
    mkdir ${TMP_PATH}/${NETCDF}
    cd ${TMP_PATH}/${NETCDF}
-   export CFLAGS="$CFLAGS -I${LIB_PATH}/include"
-   export LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib"
-   (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples
-   mv man4/Makefile man4/Makefile.ori
-   printf 'install:\n\n' > man4/Makefile
+   (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
+      CPPFLAGS="$CPPFLAGS -I${LIB_PATH}/include" LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib" "$(test "$ARCH" = "AIX" && echo "LIBS=$LIBS -lsz -ljpeg")"
+   test -d man4 && { mv man4/Makefile man4/Makefile.ori; printf 'install:\n\n' > man4/Makefile; }
    make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- grib
@@ -363,9 +361,9 @@ if [[ $EXT -eq 1 ]]; then
       make install) > ${TMP_PATH}/${GRIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
-   #----- ECBUFR
    if [[ $ARCH != "AIX" ]]; then
 
+      #----- ECBUFR
       #----- Gives error on install (/etc/ld.so.conf.d/libecbufr.conf: Permission denied)
       set +e
       echo "Building ${TMP_PATH}/${ECBUFR}/build.log"
@@ -410,7 +408,7 @@ if [[ $EXT -eq 1 ]]; then
     make install) > ${TMP_PATH}/${PROJ}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
-   #----- On AIX, have to wrap the int64 definition betweer ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmts/fit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
+   #----- On AIX, have to wrap the int64 definition between ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmts/fit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
    echo "Building ${TMP_PATH}/${GDAL}/build.log"
    mkdir ${TMP_PATH}/${GDAL}
    cd ${TMP_PATH}/${GDAL}
@@ -439,7 +437,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH} \
       --with-hide-internal-symbols=yes
-      CFLAGS="-Wl,-G $CFLAGS" CXXFLAGS="-Wl,-G $CXXFLAGS" LDFLAGS="-Wl,-G $LDFLAGS"
+      #CFLAGS="-Wl,-G $CFLAGS" CXXFLAGS="-Wl,-G $CXXFLAGS" LDFLAGS="-Wl,-G $LDFLAGS"
       #----- This is needed because tiff somehow tries to override int64, declared in /usr/include/sys/inttypes.h on AIX
       RmIntTypedef int64 frmts/gtiff/libtiff/tiff.h
       RmIntTypedef int64 frmts/fit/gstTypes.h
@@ -452,8 +450,8 @@ if [[ $EXT -eq 1 ]]; then
       sed 's|^\(#define  *\(M_PI\) .*\)$|// ELO: Might conflict with /usr/include/math.h on AIX\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif|' frmts/msg/reflectancecalculator.cpp.ori > frmts/msg/reflectancecalculator.cpp
       #----- Needed because AIX doesn't use the same defines as everybody else for its network structures (/usr/include/netdb.h)
       MkOriBckp apps/gdalserver.c
-      sed 's|^\(#if defined(__STDC_VERSION__)\)$|// ELO: Added _AIX defines because its AIX and nothing works as is...\'$'\n''#ifdef _AIX\'$'\n''#define _XOPEN_SOURCE_EXTENDED 1\'$'\n''#define _ALL_SOURCE\'$'\n''#endif\'$'\n''\'$'\n''\1|' apps/gdalserver.c.ori > apps/gdalserver.c
-      $MAKE install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      sed 's|^\(#if defined(__STDC_VERSION__)\)$|// ELO: Added _AIX defines because it is AIX and nothing works as is...\'$'\n''#ifdef _AIX\'$'\n''#define _XOPEN_SOURCE_EXTENDED 1\'$'\n''#define _ALL_SOURCE\'$'\n''#endif\'$'\n''\'$'\n''\1|' apps/gdalserver.c.ori > apps/gdalserver.c
+      gmake install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    else
       (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
       --with-libz=internal \
@@ -482,10 +480,10 @@ if [[ $EXT -eq 1 ]]; then
       make install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
+   cd $SRC_PATH
+
    rm -f -r ${TMP_PATH}
    set +e
-
-   cd $SRC_PATH
 fi
 
 if [[ $CLN -eq 1 ]]; then
@@ -511,6 +509,22 @@ if [[ $SPI -eq 1 ]]; then
 
    export CC=c99
    export CFLAGS="-D_TK_SOURCE -fopenmp"
+
+   printf -- "\n----- Making TclR Library -----\n"
+
+   cd ../TclR
+   if [[ $REC -eq 1 ]]; then
+         make distclean
+         autoconf2.50
+         ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-R=$(R RHOME)
+   fi
+   make install
 
    printf -- "\n----- Making TclSystem Library  -----\n"
 
@@ -569,6 +583,9 @@ if [[ $SPI -eq 1 ]]; then
    make install
 
    cd ${LIB_PATH}/lib
+   ln -fs ../TCL/lib/TclR0.1/libTclR0.1.so
+   ln -fs libTclR0.1.so libTclR.so
+
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
    ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
 
