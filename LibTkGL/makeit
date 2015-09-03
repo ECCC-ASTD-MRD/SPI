@@ -512,7 +512,7 @@ if [[ $SPI -eq 1 ]]; then
 
    printf -- "\n----- Making TclR Library -----\n"
 
-   cd ../TclR
+   cd TclR
    if [[ $REC -eq 1 ]]; then
          make distclean
          autoconf2.50
@@ -528,7 +528,7 @@ if [[ $SPI -eq 1 ]]; then
 
    printf -- "\n----- Making TclSystem Library  -----\n"
 
-   cd TclSystem
+   cd ../TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean
       autoconf2.50
