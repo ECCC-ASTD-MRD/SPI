@@ -368,8 +368,8 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             break;
         default:
             // Either unimplemented, unsupported or with no possible tcl equivalent
-            Tcl_AppendResult(Interp,"Invalid type to print :",TclR_RTypeName(RVar),NULL);
-            return TCL_ERROR;
+            CHAN_PRINTF("Object of type <%s>\n",TclR_RTypeName(RVar));
+            break;
     }
 
     return TCL_OK;
@@ -1067,7 +1067,9 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
 #define ENDERR(...)     {Tcl_AppendResult(Interp,__VA_ARGS__,NULL); status=TCL_ERROR; goto end;}
 #define CHKTCL(x,...)   if( (x) != TCL_OK ) ENDERR(__VA_ARGS__)
 #define CHKMEM(v,x)     if( !(v=(x)) ) ENDERR("Could not allocate memory for "#v)
-static int TclR_TclLsts2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,const char *RName,Tcl_Obj *Pattern) {
+#define FREEMEM(x)      if( (x) ) { free(x); x=NULL; }
+#define FREETCL(x)      if( (x) ) { Tcl_DecrRefCount(x); x=NULL; }
+static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,const char *RName,Tcl_Obj *Pattern) {
     enum e_ttype {TT_INT,TT_DOUBLE,TT_BOOLEAN,TT_STRING} *ttypes=NULL;
     SEXP        rdf,rtmp,*rcontent=NULL;
     Tcl_Obj     **members,**content;
@@ -1283,6 +1285,149 @@ end:
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclR_RDF2TclLst>
+ * Creation     : Septembre 2015 - E. Legault-Ouellet
+ *
+ * But          : Transforme un data.frame R en une liste Tcl du type {HEADER {ROW1 ROW2 ...}}
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Context>  : Contexte
+ *   <RVar>     : Variable R contenant le data.frame à transformer
+ *
+ * Retour       : L'objet Tcl en cas de succès, NULL sinon.
+ *
+ * Remarques    : Un message d'erreur est laissé dans l'interpréteur en cas d'erreur.
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static Tcl_Obj* TclR_RDF2TclLst(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
+    Tcl_Obj     *tres=NULL,*tobj=NULL,**trows=NULL,**data=NULL,**ptr,**decr=NULL;
+    SEXP        rattr,robj;
+    const char  *str;
+    int         nbdecr=0,cnt,col,row,nbrows=0,nbcols=0,i,status=TCL_OK;
+
+    // Make sure we have a generic vector (the container type of a data.frame)
+    if( TYPEOF(RVar) != VECSXP )
+        ENDERR("RVar is not a data.frame",NULL);
+
+    // Allocate memory based on the number of columns
+    nbcols = LENGTH(RVar);
+    CHKMEM(tres,Tcl_NewListObj(0,NULL));
+    if( !nbcols )
+        ENDOK;
+    CHKMEM(decr,malloc((nbcols+1)*sizeof(Tcl_Obj*)));
+
+    // Loop on the attributes to find the attributes we need and that must be present in a data.frame
+    for(i=3,rattr=ATTRIB(RVar); rattr!=R_NilValue&&i; rattr=CDR(rattr)) {
+        // Get the attribute name
+        str = CHAR(PRINTNAME(TAG(rattr)));
+
+        if( !strcmp(str,"names") ) {
+            robj = CAR(rattr);
+            if( robj==R_NilValue || !Rf_isString(robj) || nbcols!=LENGTH(robj) )
+                ENDERR("Invalid \"names\" attribute");
+
+            tobj = TclR_R2Tcl(Interp,Context,robj);
+            if( !tobj )
+                ENDERR("Could not get the \"names\" attribute");
+
+            // Add the HEADER part
+            CHKTCL(Tcl_ListObjAppendElement(Interp,tres,tobj),"Could not add HEADER to resulting list");
+            tobj = NULL;
+            --i;
+        } else if( !strcmp(str,"row.names") ) {
+            // Find out how many rows there is
+            nbrows = LENGTH(CAR(rattr));
+            --i;
+        } else if( !strcmp(str,"class") ) {
+            // Make sure the class is "data.frame"
+            robj = CAR(rattr);
+            if( robj==R_NilValue || !Rf_isString(robj) || LENGTH(robj)!=1 || strcmp(CHAR(STRING_ELT(robj,0)),"data.frame") )
+                ENDERR("Invalid \"class\" attribute : is this a data.frame?");
+            --i;
+        }
+    }
+
+    if( i )
+        ENDERR("At least one of the mandatory attributes is missing : is this a data.frame?");
+
+    // If we don't have any rows, we might as well stop here
+    if( !nbrows ) {
+        CHKMEM(tobj,Tcl_NewListObj(0,NULL));
+        CHKTCL(Tcl_ListObjAppendElement(Interp,tres,tobj),"Could not add empty ROWS to resulting list");
+        ENDOK;
+    }
+
+    // Allocate the pivot table memory
+    CHKMEM(data,malloc(nbrows*nbcols*sizeof(Tcl_Obj*)));
+
+    // Fill the pivot table
+    for(col=0; col<nbcols; ++col) {
+        // Get the column
+        robj = VECTOR_ELT(RVar,col);
+        if( LENGTH(robj) != nbrows )
+            ENDERR("Invalid data.frame : not all columns have the same length.");
+
+        // Convert into tcl objects
+        if( !(tobj=TclR_R2Tcl(Interp,Context,robj)) )
+            ENDERR("could not transform column into tcl objects");
+
+        // Add the objects to our data table
+        if( nbrows > 1 ) {
+            CHKTCL(Tcl_ListObjGetElements(Interp,tobj,&cnt,&ptr),"Could not get element from tcl obj");
+            if( cnt != nbrows )
+                ENDERR("The number of the items is not equal to the number of R items. This should NEVER happen...");
+
+            for(row=0,i=col; row<nbrows; i+=nbcols,++row)
+                data[i] = ptr[row];
+
+            // Add the list to our items to free
+            // Note that this is needed because lists increment the count on the object they contain
+            // (and any items in this list will be added in the resulting list)
+            decr[nbdecr++] = tobj;
+        } else {
+            data[col] = tobj;
+        }
+        tobj = NULL;
+    }
+
+    // Add the pivot table's data into our resulting tcl list
+    CHKMEM(trows,calloc(nbrows,sizeof(Tcl_Obj*)));
+    for(i=0,ptr=data; i<nbrows; ++i,ptr+=nbcols) {
+        CHKMEM(trows[i],Tcl_NewListObj(nbcols,ptr));
+    }
+    CHKMEM(tobj,Tcl_NewListObj(nbrows,trows));
+    trows[0] = NULL;
+    CHKTCL(Tcl_ListObjAppendElement(Interp,tres,tobj),"Could not add ROWS to resulting list");
+    tobj = NULL;
+
+end:
+    // Let go of the temporary tcl objects
+    // It is worth noting that, since all data from the pivot table come from data contained in lists
+    // referenced in "decr", this effectively cleans everything from a tcl standpoint
+    for(i=0; i<nbdecr; ++i) {
+        Tcl_DecrRefCount(decr[i]);
+    }
+
+    // Free the result memory only if things went south
+    if( status != TCL_OK ) {
+        FREETCL( tres );
+        FREETCL( tobj );
+
+        for(i=0; i<nbrows&&trows[i]; ++i)
+            FREETCL(trows[i]);
+    }
+
+    // Free the allocated memory
+    FREEMEM( decr );
+    FREEMEM( data );
+    FREEMEM( trows );
+
+    return tres;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclR_Configure>
  * Creation     : Août 2015 - E. Legault-Ouellet
  *
@@ -1333,7 +1478,12 @@ static int TclR_Configure(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Opti
             } else {
                 // Return the channel name
                 if( Context->Chan && (str=Tcl_GetChannelName(Context->Chan)) ) {
-                    Tcl_SetObjResult(Interp,Tcl_NewStringObj(str,-1));
+                    if( !strcmp(str,"serial1") )
+                        Tcl_SetObjResult(Interp,Tcl_NewStringObj("stdout",-1));
+                    else if( !strcmp(str,"serial2") )
+                        Tcl_SetObjResult(Interp,Tcl_NewStringObj("stderr",-1));
+                    else
+                        Tcl_SetObjResult(Interp,Tcl_NewStringObj(str,-1));
                 }
             }
             break;
@@ -1386,8 +1536,8 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
     int             idx,status=TCL_OK;
 
     // The list of available subcommands
-    static const char *sopt[] = {"exec","type","print","tcl2r","r2tcl","tcllst2rdf","waitondevices","configure"};
-    enum                opt {EXEC,TYPE,PRINT,TCL2R,R2TCL,TCLLST2RDF,WAIT_ON_DEVICES,CONFIGURE};
+    static const char *sopt[] = {"exec","type","print","tcl2r","r2tcl","tcllst2rdf","rdf2tcllst","waitondevices","configure"};
+    enum                opt {EXEC,TYPE,PRINT,TCL2R,R2TCL,TCLLST2RDF,RDF2TCLLST,WAIT_ON_DEVICES,CONFIGURE};
 
     Tcl_ResetResult(Interp);
 
@@ -1470,10 +1620,25 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             str = Tcl_GetString(Objv[3]);
-            if( !TclR_TclLsts2RDF(Interp,context,Objv[2],str,Objc==5?Objv[4]:NULL) ) {
+            if( !TclR_TclLst2RDF(Interp,context,Objv[2],str,Objc==5?Objv[4]:NULL) ) {
                 status = TCL_ERROR;
                 break;
             }
+            break;
+        case RDF2TCLLST:
+            // Make sure we have the name of a variable to tcl-ify
+            if( Objc != 3 ) {
+                Tcl_WrongNumArgs(Interp,2,Objv,"rvar");
+                status = TCL_ERROR;
+                break;
+            }
+            str = Tcl_GetString(Objv[2]);
+            tobj = TclR_RDF2TclLst(Interp,context,TclR_RObjFromName(context,str));
+            if( !tobj ) {
+                status = TCL_ERROR;
+                break;
+            }
+            Tcl_SetObjResult(Interp,tobj);
             break;
         case WAIT_ON_DEVICES:
             TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }") );
