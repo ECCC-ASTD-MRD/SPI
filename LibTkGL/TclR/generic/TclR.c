@@ -1582,7 +1582,7 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             str = Tcl_GetString(Objv[2]);
-            TclR_RPrint(Interp,context,TclR_RObjFromName(context,str));
+            TCL_ASRT( TclR_RPrint(Interp,context,TclR_RObjFromName(context,str)) );
             break;
         case TCL2R:
             // Make sure we have a tclvar and a name to transform to an rvar
@@ -1592,10 +1592,7 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             str = Tcl_GetString(Objv[3]);
-            if( !TclR_Tcl2R(Interp,context,Objv[2],str) ) {
-                status = TCL_ERROR;
-                break;
-            }
+            TCL_ASRT( TclR_Tcl2R(Interp,context,Objv[2],str) );
             break;
         case R2TCL:
             // Make sure we have the name of a variable to tcl-ify
@@ -1620,10 +1617,7 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             str = Tcl_GetString(Objv[3]);
-            if( !TclR_TclLst2RDF(Interp,context,Objv[2],str,Objc==5?Objv[4]:NULL) ) {
-                status = TCL_ERROR;
-                break;
-            }
+            TCL_ASRT( TclR_TclLst2RDF(Interp,context,Objv[2],str,Objc==5?Objv[4]:NULL) );
             break;
         case RDF2TCLLST:
             // Make sure we have the name of a variable to tcl-ify
@@ -1644,13 +1638,21 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
             TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }") );
             break;
         case CONFIGURE:
-            // Make sure we have something to configure
-            if( Objc<3 || Objc>4 ) {
-                Tcl_WrongNumArgs(Interp,2,Objv,"option ?value?");
+            if( Objc == 3 ) {
+                // We have one thing to return
+                TCL_ASRT( TclR_Configure(Interp,context,Objv[2],NULL) );
+            } else if( Objc&1 ) {
+                // We should have either one thing to return or one or more things to configure
+                Tcl_WrongNumArgs(Interp,2,Objv,"option ?value? ?[option value]? ?...?");
                 status = TCL_ERROR;
-                break;
+            } else {
+                // We have one or more things to configure
+                int i;
+
+                for(i=2; i<Objc; i+=2) {
+                    TCL_ASRT( TclR_Configure(Interp,context,Objv[i],Objv[i+1]) );
+                }
             }
-            TCL_ASRT( TclR_Configure(Interp,context,Objv[2],Objc==4?Objv[3]:NULL) );
             break;
         default:
             Tcl_AppendResult(Interp,"Unimplemented command",NULL);
