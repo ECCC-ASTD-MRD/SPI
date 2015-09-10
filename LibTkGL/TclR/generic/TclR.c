@@ -1592,7 +1592,9 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             str = Tcl_GetString(Objv[3]);
-            TCL_ASRT( TclR_Tcl2R(Interp,context,Objv[2],str) );
+            if( !TclR_Tcl2R(Interp,context,Objv[2],str) ) {
+                status = TCL_ERROR;
+            }
             break;
         case R2TCL:
             // Make sure we have the name of a variable to tcl-ify
