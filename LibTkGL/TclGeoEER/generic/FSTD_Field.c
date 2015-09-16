@@ -2285,7 +2285,11 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Projection description field does not exist (c_fstinf failed)",(char*)NULL);
       }
    }
-   datyp=h.DATYP>128?h.DATYP-128:h.DATYP>64?h.DATYP-64:h.DATYP;
+   
+   // Remove compression flag (128) and missing value flag (64)
+   datyp=h.DATYP;
+   if (datyp>128) datyp-=128;
+   if (datyp>64)  datyp-=64;
 
    // have to boost nbit to 32 for nbit=1, not sure why (X32) ????
    if (h.NBITS==32 && datyp==0) datyp=5;
