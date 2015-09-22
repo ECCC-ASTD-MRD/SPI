@@ -773,6 +773,13 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
 
    set dateo [fstdstamp fromseconds [clock seconds]]
 
+   #----- If no IP specified, use "unique" values take from current datestamp
+   if { !$IP1 && !$IP2 && !$IP3 } {
+      set IP1 [string range $dateo 0 2]
+      set IP2 [string range $dateo 3 5]
+      set IP3 [string range $dateo 6 9]
+   }
+   
    switch [fstdfield define $ID -GRTYP] {
       "Z" {
          fstdfield define ${ID}TIC -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
@@ -792,7 +799,7 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
          fstdfield write ${ID}MTRX $FILE -32 True
       }
       default {
-         fstdfield define ${ID}    -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
+         fstdfield define ${ID}     -DATEO $dateo 
       }
    }
 
