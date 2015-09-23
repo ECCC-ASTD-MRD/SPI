@@ -161,8 +161,8 @@ proc Drawing::Window { } {
 
       frame .drawing.params.angle
          label .drawing.params.angle.lbl -text [lindex $Lbl(Angle) $GDefs(Lang)] -anchor w
-         scale .drawing.params.angle.opt -from -90 -to 90 -resolution 10 -variable Drawing::Current(Angle) -showvalue false \
-            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command " Drawing::SetAngle $Page::Data(Frame) "
+         scale .drawing.params.angle.opt -from -90 -to 90 -resolution 1 -variable Drawing::Current(Angle) -showvalue false \
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 100 -command " Drawing::SetAngle $Page::Data(Frame) "
          pack .drawing.params.angle.lbl -side left
          pack .drawing.params.angle.opt -side right
 

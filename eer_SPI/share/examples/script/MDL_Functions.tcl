@@ -76,5 +76,4 @@ fstdfield define FLD -NOMVAR MASK
 fstdfield write FLD FILE 0 True
 fstdfile close FILE
 
-
 Log::End
