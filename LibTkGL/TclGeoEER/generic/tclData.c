@@ -802,6 +802,12 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
    field->ZRef=ZRef_Copy(Field->ZRef);
    field->GPos=GeoPos_Copy(Field->GPos);
 
+   if (Field->Stat) {
+      field->Stat=(TDataStat*)malloc(sizeof(TDataStat));
+      memcpy(field->Stat,Field->Stat,sizeof(TDataStat));
+      field->Stat->Histo=NULL;
+   }
+
    if (field->Spec && Field->Spec) {
 
       if (Field->Spec->Map)  {

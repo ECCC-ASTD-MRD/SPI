@@ -5,7 +5,7 @@
  * Dorval, Quebec
  *
  * Projet       : Lecture et traitements de fichiers raster
- * Fichier      : GeoRef.c
+ * Fichier      : tclGeoRef.c
  * Creation     : Mars 2005 - J.P. Gauthier
  *
  * Description  : Fonctions de manipulations de projections.
