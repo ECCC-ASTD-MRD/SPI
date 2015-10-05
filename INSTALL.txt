@@ -11,7 +11,6 @@ Documentation:
 Compatibility:
 - This package has been compiled on:
 
-   - gcc 4.4.3 (64bit) and tested on KUbuntu 10.0.4
    - gcc 4.6.3 (64bit) and tested on KUbuntu 12.0.4
    - gcc 4.8.2 (64bit) and tested on KUbuntu 14.0.4
 
@@ -124,31 +123,3 @@ Installation:
         The first time you run it SPI will create a setup directory called .spi in
         your home directory where the parameters are saved. You can edit theses files, primarily
         the one called ~/.spi/SPI, carefully to configure SPI to your likings.
-
-Developers:
-- Source code is available at http://subversion.cmc.ec.gc.ca/repos/eerSPI
-- The package comes with two distinct parts, the Tcl code (eer_SPI directory) and the Tcl extensions (LibTkGL directory)
-- To build the Tcl extensions, go in the LibTkGL directory and use the "makeit" script. The built libraries will be copied to the eer_SPI/Lib/$ARCH directory
-- SPI needs a lot of support libraries which have already been precompiled for you convenience in the eer_SPI/Lib/$ARCH directory
-- Should you want to try new versions of theses support librairies, you should place them in this eer_SPI/Lib/$ARCH directory
-- A script called make_dependencies.sh contains the build parameters for the various packages
-   
-     Tcl/Tk 8.6.3
-     Tktable2.10
-     tDOM-0.8.3
-     grib_api-1.12.0
-     libecbufr-0.8.6
-     
-     gdal-1.11.0
-         libxml2-2.9.2
-         expat-2.0.1
-         curl-7.21.3
-         geos-3.4.2
-         mysql-5.1
-         jasper-1.900.1
-         hdf-4.2.5
-         hdf5-1.8.11
-         postgresql-8.4.1
-         unixODBC-2.3.0
-         proj-4.9.1
-
