@@ -1892,20 +1892,23 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
 
    if (Band->Spec->InterNb) {
 
-      /*Get value increment*/
-      incry=(double)Band->Spec->InterNb/Band->Def->NJ;
+      // Get value increment
+      incry=(double)(Band->Spec->InterNb-!Band->Spec->MapAbove+Band->Spec->MapBellow)/Band->Def->NJ;
+      
       n=0;
       for(y=0;y<Band->Def->NJ;y++) {
 
-         /*Get color for this pixel*/
+         // Get color for this pixel
          n=y*incry;
-         VAL2COL(cidx,Band->Spec,Band->Spec->Inter[n]);
+         n-=Band->Spec->MapBellow;
+         val=n<0?Band->Spec->Inter[0]-1:Band->Spec->Inter[n];
+         VAL2COL(cidx,Band->Spec,val);
 
-         /*Add to the list of values*/
+         // Add to the list of values
          DataSpec_Format(Band->Spec,VAL2SPEC(Band->Spec,Band->Spec->Inter[n]),buf);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,-1));
 
-         /*Set the pixel value for the whole width*/
+         // Set the pixel value for the whole width
          for(x=0;x<Band->Def->NI;x++) {
             idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
             if (Band->Def->NC==1) {
@@ -1922,20 +1925,20 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
       }
 
    } else {
-      /*Get value increment*/
+      // Get value increment
       incry=(double)(Band->Spec->Max-Band->Spec->Min)/(Band->Def->NJ-1);
 
       for(y=0;y<Band->Def->NJ;y++) {
 
-         /*Get color for this pixel*/
+         // Get color for this pixel
          val=Band->Spec->Min+y*incry;
          VAL2COL(cidx,Band->Spec,val);
 
-         /*Add to the list of values*/
+         // Add to the list of values
          DataSpec_Format(Band->Spec,VAL2SPEC(Band->Spec,val),buf);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(buf,-1));
 
-         /*Set the pixel value for the whole width*/
+         // Set the pixel value for the whole width
          for(x=0;x<Band->Def->NI;x++) {
             idx=(Band->Def->NJ-y-1)*Band->Def->NI+x;
             if (Band->Def->NC==1) {
