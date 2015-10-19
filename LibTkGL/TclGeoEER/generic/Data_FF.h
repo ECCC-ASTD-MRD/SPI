@@ -66,7 +66,7 @@
 #define VRT(V,C,C0)  glTexCoord1f(C<0.0?C0:C);glVertex3dv(V)
 
 
-extern float *FFStreamMap;
+extern float FFStreamMap[FFSTREAMLEN];
 
 typedef struct TKrigging {
    double *Matrix;

@@ -887,13 +887,20 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   double i,j,dt;
+   double i,j;
    int    b,f,len,dz;
    float  step,*map;
    Vect3d pix,*vbuf;
    Coord  coo;
 
-   if (GLRender->Resolution>2) {
+   // If an update is needed by a viewpoint change
+   if ((Proj->Update || VP->Cam->Update) && Field->GLId) {
+      glDeleteLists(Field->GLId,1);
+      Field->GLId=0;
+   }
+
+   // If the viewport is being manipulated
+   if (GLRender->Resolution>1) {
       return(0);
    }
 
@@ -901,7 +908,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-  /*Setup 1D Texture*/
+   // Setup 1D Texture
    glEnable(GL_TEXTURE_1D);
    map=FFStreamMapSetup1D(0.025);
 
@@ -911,10 +918,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    glStencilFunc(GL_NOTEQUAL,0x20,0x20);
    glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
 
-   glReadBuffer(GL_BACK);
-   glEnableClientState(GL_VERTEX_ARRAY);
-
-   /*Do we need transparency*/
+   // Do we need transparency
    if (Field->Spec->Alpha<100) {
       glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
       glEnable(GL_BLEND);
@@ -925,61 +929,76 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    if (GLRender->Delay<GL_STOP) {
       Field->Spec->TexStep+=0.02;
    }
+      
+   glPushMatrix();
+   glScalef(10.0/Field->Spec->Size,1.0,1.0);
+   glTranslatef(Field->Spec->TexStep,0.0,0.0);
+  
+   if (!Field->GLId) {
+      if (!(Field->GLId=glGenLists(1))) {
+         App_Log(ERROR,"%s: Unable to allocate display list\n",__func__);
+         return(0);
+      }
+      glEnableClientState(GL_VERTEX_ARRAY);
+      glReadBuffer(GL_BACK);
+      glNewList(Field->GLId,GL_COMPILE_AND_EXECUTE);
 
-   dz=Field->Spec->Sample*10;
-   dt=0.0;
-   len=512;
-   
-   /*Get the cell resolution, to use as step size for a constant spacing*/
-   step=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
+      dz=Field->Spec->Sample*10;
+      len=512;
 
-   vbuf=VBuffer_Alloc(len*2+1);
+      // Get the cell resolution, to use as step size for a constant spacing
+      step=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*5;
 
-   /*Recuperer les latlon des pixels sujets*/
-   for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
-      for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
+      vbuf=VBuffer_Alloc(len*2+1);
 
-         Proj->Type->UnProject(VP,Proj,&coo,pix);
-         if (coo.Lat==-999.0) {
-            continue;
-         }
+      // Recuperer les latlon des pixels sujets
+      for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
+         for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
 
-         if (Field->GRef->UnProject(Field->GRef,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
-
-            /*Get the streamline */
-            b=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
-            f=FFStreamLine(Field->GPos,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
-
-            /* If we have at least some part of it */
-            glPushMatrix();
-            glScalef(10.0/Field->Spec->Size,1.0,1.0);
-            glTranslatef(Field->Spec->TexStep-(dt+=0.015),0.0,0.0);
-            if (b+f>2) {
-               glLineWidth(Field->Spec->Width);
-               glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-               Grid_ForceLI(Proj,0.01);
-               
-               Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
-
-               if (Field->Spec->SizeRange>1.0) {
-                  glLineWidth(Field->Spec->SizeRange*2*Field->Spec->Width);
-                  glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-                  Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
-               }
-               Grid_ResetLI(Proj);
+            Proj->Type->UnProject(VP,Proj,&coo,pix);
+            if (coo.Lat==-999.0) {
+               continue;
             }
-            glPopMatrix();
+
+            if (Field->GRef->UnProject(Field->GRef,&i,&j,coo.Lat,coo.Lon,0,1) && i<Field->Def->NI-2 && j<Field->Def->NJ-2) {
+
+               // Get the streamline
+               b=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,NULL,i,j,Field->Def->Level,len,-step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
+               f=FFStreamLine(Field->GPos,Field->Def,VP,&vbuf[len],NULL,i,j,Field->Def->Level,len,step,Field->Spec->Min,0,REF_PROJ,Field->Spec->SizeRange>1.0?0:-1);
+
+               // If we have at least some part of it
+               glTranslatef(0.015,0.0,0.0);
+               if (b+f>2) {
+                  glLineWidth(Field->Spec->Width);
+                  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+                  Grid_ForceLI(Proj,0.01);
+                  
+                  Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
+
+                  if (Field->Spec->SizeRange>1.0) {
+                     glLineWidth(Field->Spec->SizeRange*2*Field->Spec->Width);
+                     glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+                     Proj->Type->Render(Proj,0,&vbuf[len-b],NULL,NULL,NULL,GL_LINE_STRIP,b+f,0,NULL,NULL);
+                  }
+                  Grid_ResetLI(Proj);
+               }
+            }
          }
       }
-   }
 
+      glEndList();
+      glDisableClientState(GL_VERTEX_ARRAY);
+   } else {
+      glCallList(Field->GLId);
+   }
+   
+   glPopMatrix();
    glClear(GL_STENCIL_BUFFER_BIT);
    glStencilMask(0xf);
    glStencilFunc(GL_EQUAL,0x0,0xf);
    glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
    glDisable(GL_TEXTURE_1D);
-   glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_BLEND);
 
    return(1);
@@ -1000,7 +1019,12 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       return(0);
    }
 
-   /*Setup 1D Texture*/
+   len=FFSTREAMLEN;
+   dz=Field->Spec->Sample;
+   glLineWidth((float)Field->Spec->Width);
+   glMatrixMode(GL_TEXTURE);
+
+   // Setup 1D Texture
    if (Field->Spec->MapAll && Field->Spec->Map) {
       if (Field->Spec->Map->Alpha) {
          glEnable(GL_BLEND);
@@ -1015,12 +1039,20 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    } else {
       map=FFStreamMapSetup1D(1.0);
       
-      /*Do we need transparency*/
+      // Do we need transparency
       if (Field->Spec->Alpha<100) {
          glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
          glEnable(GL_BLEND);
       }
       glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+      
+      // Animation step
+      if (GLRender->Delay<GL_STOP) {
+         Field->Spec->TexStep+=0.001;
+      }
+      glPushMatrix();
+      glScalef(100*1.0/Field->Spec->Size+1,1.0,1.0);
+      glTranslatef(Field->Spec->TexStep,0.0,0.0);
    }
 
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -1028,38 +1060,28 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_TEXTURE_1D);
    glEnableClientState(GL_VERTEX_ARRAY);
 
-   len=FFSTREAMLEN;
-   dz=Field->Spec->Sample;
-   glLineWidth((float)Field->Spec->Width);
-   glMatrixMode(GL_TEXTURE);
+   vbuf=VBuffer_Alloc(len*2+1);
 
-    vbuf=VBuffer_Alloc(len*2+1);
-
-   /*Recuperer les latlon des pixels sujets*/
+   // Recuperer les latlon des pixels sujets
    if (Field->Spec->PosNb) {
       for(n=0;n<Field->Spec->PosNb;n++) {
          i=Field->Spec->Pos[n][0];
          j=Field->Spec->Pos[n][1];
          k=Field->Spec->Pos[n][2];
 
-         /*Get the streamline */
+         // Get the streamline 
          b=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,map,i,j,k,len,-Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
          f=FFStreamLine(Field->GPos,Field->Def,VP,&vbuf[len>>1],(map?&map[len>>1]:map),i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
-         /* If we have at least some part of it */
+         // If we have at least some part of it 
          if (b+f>2) {
             glPushMatrix();
-            if (Field->Spec->MapAll) {
+            if (Field->Spec->MapAll && Field->Spec->Map) {
                for(c=0;c<b+f;c++) {
                   VAL2COL(idx,Field->Spec,Field->Map[c]);
                   map[c]=idx/(float)Field->Spec->Map->NbPixels;
                }
             } else {
-               glScalef((float)(len)/(b+f),1.0,1.0);
-               // Animation step
-               if (GLRender->Delay<GL_STOP) {
-                  Field->Spec->TexStep+=0.00001;
-                  glTranslatef(Field->Spec->TexStep,0.0,0.0);
-               }
+//               glScalef((float)(len)/(b+f),1.0,1.0);
             }
             Grid_ForceLI(Proj,0.01);
             Proj->Type->Render(Proj,0,&vbuf[(len>>1)-b],NULL,NULL,map,GL_LINE_STRIP,b+f,0,NULL,NULL);
@@ -1071,35 +1093,30 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       for(i=Field->Spec->Cube[0];i<=Field->Spec->Cube[3];i+=dz) {
          for(j=Field->Spec->Cube[1];j<=Field->Spec->Cube[4];j+=dz) {
             for(k=Field->Spec->Cube[2];k<=Field->Spec->Cube[5];k+=dz) {
-               /*Get the streamline */
+               // Get the streamline 
                f=FFStreamLine(Field->GPos,Field->Def,VP,vbuf,Field->Map,i,j,k,len,Field->Spec->Step,Field->Spec->Min,0,REF_PROJ,Field->Def->Data[2]?1:-1);
 
-               /* If we have at least some part of it */
+               // If we have at least some part of it 
                if (f>2) {
-                  glPushMatrix();
-                  if (Field->Spec->MapAll) {
+                  if (Field->Spec->MapAll && Field->Spec->Map) {
                      for(c=0;c<f;c++) {
                         VAL2COL(idx,Field->Spec,Field->Map[c]);
                         map[c]=idx/(float)Field->Spec->Map->NbPixels;
-                     }
-                  } else {
-                     glScalef(100*1.0/Field->Spec->Size+1,1.0,1.0);
-                     // Animation step
-                     if (GLRender->Delay<GL_STOP) {
-                        Field->Spec->TexStep+=0.00001;
-                        glTranslatef(Field->Spec->TexStep,0.0,0.0);
                      }
                   }
                   Grid_ForceLI(Proj,0.01);
                   Proj->Type->Render(Proj,0,vbuf,NULL,NULL,map,GL_LINE_STRIP,f,0,NULL,NULL);
                   Grid_ResetLI(Proj);
-                  glPopMatrix();
                }
             }
          }
       }
    }
 
+   if (!(Field->Spec->MapAll && Field->Spec->Map)) {
+      glPopMatrix();
+   }
+   
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_CULL_FACE);
    glDisableClientState(GL_VERTEX_ARRAY);
@@ -1119,7 +1136,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
    k1=Field->Spec->Cube[5];
    glBegin(GL_QUADS);
 
-      /*Bottom*/
+      // Bottom
       idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
       glVertex3dv(Field->GPos->Pos[k0][idx]);
       idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
@@ -1131,7 +1148,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
       if (k0!=k1) {
          if (Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
-            /*Left*/
+            // Left
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
@@ -1141,7 +1158,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k1][idx]);
 
-            /*Right*/
+            // Right
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
             glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
@@ -1154,7 +1171,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 
 
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3]) {
-            /*Up*/
+            // Up
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[3];
@@ -1164,7 +1181,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k1][idx]);
 
-            /*Down*/
+            // Down
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k0][idx]);
             idx=Field->Spec->Cube[4]*Field->Def->NI+Field->Spec->Cube[3];
@@ -1175,7 +1192,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
             glVertex3dv(Field->GPos->Pos[k1][idx]);
          }
 
-         /*Top*/
+         // Top
          if (Field->Spec->Cube[0]!=Field->Spec->Cube[3] && Field->Spec->Cube[1]!=Field->Spec->Cube[4]) {
             idx=Field->Spec->Cube[1]*Field->Def->NI+Field->Spec->Cube[0];
             glVertex3dv(Field->GPos->Pos[k1][idx]);

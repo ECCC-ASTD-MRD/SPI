@@ -636,8 +636,6 @@ void Projection_Clean(Tcl_Interp *Interp,Projection *Proj,int Mode) {
    T3DModel  *mdl;
 
    GDB_TileFreeAll(Proj->Geo,Mode);
-   if (Proj->VP && Proj->VP->Cam)
-      Proj->VP->Cam->Update=1;
 
    for (i=0;i<Proj->NbData;i++) {
       Tcl_ListObjIndex(Interp,Proj->Data,i,&obj);
@@ -723,29 +721,34 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon);
 
-               if (proj->Geographic) {
-                  if ((lat>-90.0 && lat<90.0) || (lon>-360.0 && lon<360.0)) {
-                     proj->Lat=lat;
-                     proj->Lon=lon;
+               if (lat!=proj->Lat || lon!=proj->Lon) {
+                  proj->Update=TRUE;
+                  
+                  if (proj->Geographic) {
+                     if ((lat>-90.0 && lat<90.0) || (lon>-360.0 && lon<360.0)) {
+                        proj->Lat=lat;
+                        proj->Lon=lon;
 
-                     if (proj->Type && proj->Type->Def==PROJSPHERE) {
-                        ViewportClean(proj->VP,1,1);
-                        Projection_Clean(Interp,proj,GDB_FORCE);
+                        if (proj->Type && proj->Type->Def==PROJSPHERE) {
+                           ViewportClean(proj->VP,1,1);
+                           Projection_Clean(Interp,proj,GDB_FORCE);
+                        }
+                        if (proj->Ref) {
+                           proj->Ref->UnProject(proj->Ref,&ni,&nj,proj->Lat,proj->Lon,1,1);
+                           proj->I=ni;
+                           proj->J=nj;
+                        }
                      }
-                     if (proj->Ref) {
-                        proj->Ref->UnProject(proj->Ref,&ni,&nj,proj->Lat,proj->Lon,1,1);
-                        proj->I=ni;
-                        proj->J=nj;
-                     }
+                  } else {
+                     proj->I=proj->Lon=lon;
+                     proj->J=proj->Lat=lat;
                   }
-               } else {
-                  proj->I=proj->Lon=lon;
-                  proj->J=proj->Lat=lat;
+                  if (proj->VP) {
+                     ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
+                     Projection_Setup(proj->VP,proj,0);
+                  }
                }
-               if (proj->VP) {
-                  ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
-                  Projection_Setup(proj->VP,proj,0);
-              }
+               
             }
             break;
 
@@ -756,26 +759,32 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(proj->J));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->I);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&proj->J);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&ni);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&nj);
 
                /*Enforce limits*/
                if (proj->Ref) {
-                  proj->I=proj->I<proj->Ref->X0?proj->Ref->X0:(proj->I>proj->Ref->X1?proj->Ref->X1:proj->I);
-                  proj->J=proj->J<proj->Ref->Y0?proj->Ref->Y0:(proj->J>proj->Ref->Y1?proj->Ref->Y1:proj->J);
+                  ni=ni<proj->Ref->X0?proj->Ref->X0:(ni>proj->Ref->X1?proj->Ref->X1:ni);
+                  nj=nj<proj->Ref->Y0?proj->Ref->Y0:(nj>proj->Ref->Y1?proj->Ref->Y1:nj);
                }
 
-               if (proj->Ref && proj->Geographic) {
-                  proj->Ref->Project(proj->Ref,proj->I,proj->J,&lat,&lon,0,1);
-                  proj->Lat=lat;
-                  proj->Lon=lon;
-               } else {
-                  proj->Lat=proj->J;
-                  proj->Lon=proj->I;
-               }
-               if (proj->VP) {
-                  ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
-                  Projection_Setup(proj->VP,proj,0);
+               if (ni!=proj->I || nj!=proj->J) {
+                  proj->Update=TRUE;
+                  proj->I=ni;
+                  proj->J=nj;
+                  
+                  if (proj->Ref && proj->Geographic) {
+                     proj->Ref->Project(proj->Ref,proj->I,proj->J,&lat,&lon,0,1);
+                     proj->Lat=lat;
+                     proj->Lon=lon;
+                  } else {
+                     proj->Lat=proj->J;
+                     proj->Lon=proj->I;
+                  }
+                  if (proj->VP) {
+                     ViewportSetup(proj->VP->canvas,proj->VP,proj,Tk_Width(Tk_CanvasTkwin(proj->VP->canvas)),Tk_Height(Tk_CanvasTkwin(proj->VP->canvas)),0,1,0);
+                     Projection_Setup(proj->VP,proj,0);
+                  }
                }
             }
             break;
@@ -999,6 +1008,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
             } else {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
                if (tmp!=proj->Scale) {
+                  proj->Update=TRUE;
                   proj->Scale=tmp;
                   ViewportClean(proj->VP,1,1);
                   Projection_Clean(Interp,proj,GDB_RASTER);
@@ -1091,6 +1101,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                   if (proj->Ref)
                      GeoRef_Destroy(Interp,proj->Ref->Name);
                   proj->Ref=ref;
+                  proj->Update=TRUE;
                   GeoRef_Incr(proj->Ref);
                   ViewportClean(proj->VP,1,1);
                   Projection_Clean(Interp,proj,GDB_FORCE);
@@ -1127,6 +1138,7 @@ static int Projection_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      proj->Type=type;
                      proj->L=proj->LI=proj->LJ=1.0;
                      proj->Geographic=1;
+                     proj->Update=TRUE;
                      if (strcmp(Tcl_GetString(Objv[i]),"grid")==0) {
                         Grid_Setup(Interp,proj);
                       }
@@ -1188,6 +1200,7 @@ static int Projection_Create(Tcl_Interp *Interp,char *Name){
    proj->Sun         = 0;
    proj->Draw        = 1;
    proj->Loading     = 0;
+   proj->Update      = TRUE;
    proj->MinSize     = 5;
    proj->Perspective  = 0;
 
@@ -1769,10 +1782,6 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       }
       if (d>0.0) {
          Proj->PixDist=d;
-         if (VP->Cam->Update) {
-            VP->Cam->Pix=Proj->PixDist;
-            VP->Cam->Update=0;
-         }
       }
    }
 

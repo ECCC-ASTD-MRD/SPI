@@ -1208,7 +1208,9 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       field->ReadCube=NULL;
       field->Define=NULL;
       field->Tag=NULL;
+      
       field->Map=NULL;
+      field->GLId=0;
 
       if (NI*NJ*NK) {
          if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
@@ -1352,6 +1354,11 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          Data->Map=NULL;
       }
 
+      if (Map && Data->GLId) {
+         glDeleteLists(Data->GLId,1);
+         Data->GLId=0;
+      }
+      
       if (Seg) {
          if (Data->SDef) {
             // Loop on subgrids (U grids)

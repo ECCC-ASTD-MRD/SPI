@@ -1922,7 +1922,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
    if (!res)
       return(0);
 
-   res=GDB_TileResolution(GDB,Proj->VP->Cam->Pix);
+   res=GDB_TileResolution(GDB,Proj->PixDist);
 
    for(x=0;x<GDB->DegX;x++) {
       for(y=0;y<GDB->DegY;y++) {

@@ -410,8 +410,8 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Cam         = NULL;
    vp->CamStr      = NULL;
    vp->Projection  = NULL;
-   vp->Update      = 1;
-   vp->Realloc     = 1;
+   vp->Update      = TRUE;
+   vp->Realloc     = TRUE;
    vp->ForcePick   = 1;
    vp->Frame       = 0;
    vp->Ratio       = 0;
@@ -1032,7 +1032,7 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
    }
 
    if (width!=vp->Width || height!=vp->Height) {
-      vp->Realloc=1;
+      vp->Realloc=TRUE;
    }
 
    /*Liberation des frames*/
@@ -1054,7 +1054,7 @@ static int ViewportConfigure(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,i
 
 
    if (!vp->Frame || !vp->Frames[vp->Frame]) {
-      vp->Update=1;
+      vp->Update=TRUE;
    }
 
    /*Calculer le ratio*/
@@ -1275,7 +1275,7 @@ void ViewportClean(ViewportItem *VP,int Data,int Buff){
                VP->Frames[i]=NULL;
             }
          }
-         VP->Update=1;
+         VP->Update=TRUE;
       }
    }
 }
@@ -1315,12 +1315,12 @@ void ViewportRefresh(ClientData clientData,int Delay) {
          if (ViewportTable[i]==vp) d++;
 
          if (ViewportTable[i] && ViewportTable[i]->canvas==vp->canvas && strcmp(ViewportTable[i]->Projection,vp->Projection)==0) {
-            ViewportTable[i]->Update=1;
+            ViewportTable[i]->Update=TRUE;
          }
       }
 
       if (d && vp->canvas) {
-         vp->Update=1;
+         vp->Update=TRUE;
          ViewportRefresh_Canvas(vp->canvas);
       }
    }
@@ -1391,7 +1391,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          return;
       }
 
-      /*Take care of automated refresh handler*/
+      // Take care of automated refresh handler
       load=vp->Loading;
       Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
       if (GLRender->Delay<GL_STOP)
@@ -1399,41 +1399,41 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
       load+=(proj->Loading=proj->Loading<0?0:proj->Loading);
 
-      /*Force update if rendering within PBuffer*/
+      // Force update if rendering within PBuffer
       if (GLRender->TRCon) {
 
-         /*Wait for everything to be loaded*/
+         // Wait for everything to be loaded
          sec=clock();
          while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
          if ((clock()-sec)>=(60*CLOCKS_PER_SEC)) {
             App_Log(WARNING,"%s: Waited too long for data, rendering anyway\n",__func__);
          }
-         vp->Update=1;
+         vp->Update=TRUE;
       }
 
-      /*Force update on XExposure event (if in hardware mode) and backbuffer refresh*/
+      // Force update on XExposure event (if in hardware mode) and backbuffer refresh
       if ((GLRender->XExpose>0 && !GLRender->Soft) || !vp->Frames[vp->Frame] || load) {
-         vp->Update=1;
+         vp->Update=TRUE;
       }
 
-      /*If update is needed or the back buffer frame is not rendered yet*/
-      if (vp->Update || (!vp->Frames[vp->Frame])) {
+      // If update is needed or the back buffer frame is not rendered yet
+      if (vp->Update) {
 
          ViewportSet(vp,proj);
          ViewportSetup(Canvas,vp,proj,Width,Height,0,1,0);
          Projection_Setup(vp,proj,1);
          ViewportCrowdClear(vp);
 
-        /*Allouer les frames de retentions si ce n'est pas deja fait*/
+         // Allouer les frames de retentions si ce n'est pas deja fait
          if (!vp->Frames[vp->Frame]) {
             vp->Frames[vp->Frame]=(GLubyte*)malloc(vp->Width*vp->Height*4);
          }
 
-         /*Effectuer le rendue des champs*/
+         // Effectuer le rendue des champs
          Projection_Render(NULL,vp,proj,GL_ALL);
          ProjCam_Render(vp->Cam,proj);
 
-         /*Rendue des donnees raster*/
+         // Rendue des donnees raster
          for (i=0;i<vp->DataItem.Nb;i++) {
             fld=Data_Get(vp->DataItem.Array[i]);
             if (fld) {
@@ -1452,7 +1452,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
             }
          }
 
-         /*Rendue des donnees vectorielle*/
+         // Rendue des donnees vectorielle
          for (i=0;i<vp->DataItem.Nb;i++) {
             if (!GLRender->GLZBuf) {
                if ((fld=Data_Get(vp->DataItem.Array[i]))) {
@@ -1479,7 +1479,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          }
          ViewportUnset(vp);
       } else {
-         /*Copy the backbuffer*/
+         // Copy the backbuffer
          if (vp->Frames[vp->Frame]) {
             trRasterPos2i(vp->header.x1-((TkCanvas*)Canvas)->xOrigin,-(vp->header.y2-((TkCanvas*)Canvas)->yOrigin));
             glDrawPixels(vp->Width,vp->Height,GL_RGBA,GL_UNSIGNED_BYTE,vp->Frames[vp->Frame]);
@@ -1487,7 +1487,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       }
    }
 
-   /*Pourtour*/
+   // Pourtour
    if (vp->FGColor && vp->BDWidth) {
       glLineWidth(vp->BDWidth);
       glPolygonMode(GL_FRONT,GL_LINE);
@@ -1500,13 +1500,13 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          glVertex2i(vp->header.x2-((TkCanvas*)Canvas)->xOrigin,vp->header.y1-((TkCanvas*)Canvas)->yOrigin);
       glEnd();
 
-      /*Mask intrusions*/
+      // Mask intrusions
       ViewportIntrusion(NULL,Canvas,Item);
    }
 
    ViewportLicense(NULL,vp,proj);
 
-   /*Loading data*/
+   // Loading data
    if (load && !GLRender->TRCon) {
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
@@ -1522,8 +1522,10 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       glPopMatrix();
    }
 
-   vp->Update =0;
-   vp->Realloc=0;
+   proj->Update    = FALSE;   
+   vp->Cam->Update = FALSE;   
+   vp->Update      = FALSE;
+   vp->Realloc     = FALSE;
 }
 
 /*----------------------------------------------------------------------------
@@ -2021,8 +2023,8 @@ static void ViewportScale(Tk_Canvas Canvas,Tk_Item *Item,double OriginX,double O
    vp->Height= ScaleY*vp->Height;
    ViewportBBox(Canvas,vp);
 
-   vp->Update=1;
-   vp->Realloc=1;
+   vp->Update=TRUE;
+   vp->Realloc=TRUE;
    ViewportClean(vp,0,1);
 }
 

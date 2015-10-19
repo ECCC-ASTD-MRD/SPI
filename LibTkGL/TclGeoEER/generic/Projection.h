@@ -43,41 +43,42 @@
 #define PROJGLOBE  2
 #define PROJSPHERE 3
 
-#define MAXGEOSEG   2000                              /*Nombre maximal de segment par boite*/
+#define MAXGEOSEG   2000                              // Nombre maximal de segment par boite
 
-#define ZM(P,H)     (1.0+H*P->Scale*P->ZFactor) /*Projection de l'elevation*/
+#define ZM(P,H)     (1.0+H*P->Scale*P->ZFactor)       // Projection de l'elevation
 
 #define CYLCHECK(D,V)             (V=(D>2.0f)?V-4.0f:(D<-2.0f)?V+4.0f:V)
 #define PROJCHECK(P,V)            if (P->Type->Def==PROJCYLIN) { CYLCHECK((V-P->L),V); }
 #define CYLFLIP(D,V)              ((V-D)<-2.0f?4:((V-D)>2.0f?-4:0))
 
 typedef struct Projection {
-   struct ProjectionType *Type;       /*Type de projection*/
-   GDB_Data              *Geo;        /*Donnees geographiques*/
-   Tcl_Obj               *Data;       /*Liste des donnees associees*/
-   char                  *License;    /*Licenses des donnees associees*/
-   int                   NbData;      /*Nombre d'image*/
-   double                PixDist;     /*Distance en metres entre deux pixels*/
-   long                  Date,Late;   /*Date en secondes*/
-   Coord                 SunPos;      /*Position du soleil*/
-   Vect4f                LightPos;    /*Position du soleil dans l'espace GL*/
-   Vect3d                Nr;          /*Normale*/
-   int                   Sun;         /*Activation du soleil*/
-   int                   Draw;        /*Affichage de la geo*/
-   int                   Loading;     /*Indicateur de lecture en arriere plan*/
-   int                   MinSize;     /*Dimension minimale des features a afficher*/
-   float                 L,LI,LJ,TLI; /*Longueur des axes*/
-   double                Scale;       /*Facteur d'ajustement de l'elevation*/
-   int                   TAxis;       /*Axis Type*/
-   Coord                 ZAxis;       /*Activation de l'echelle 3D*/
-   double                ZFactor;     /*Facteur d'application de l'elevation*/
-   Vect3d                ZPos;        /*Position centrale*/
-   double                Lat,Lon,I,J; /*Coordonnees de positionement*/
-   double                SLat,CLat;   /*Sin et Cos des coordonnees en radians*/
-   ViewportItem         *VP;          /*Definitions des parametres d'affichages du Viewport*/
-   TGeoRef              *Ref;         /*GeoReference des donnees projection grille*/
-   int                   Geographic;  /*Indicateur de projection geographique*/
-   int                   Perspective; /*Affichage en perspective*/
+   struct ProjectionType *Type;       // Type de projection
+   GDB_Data              *Geo;        // Donnees geographiques
+   Tcl_Obj               *Data;       // Liste des donnees associees
+   char                  *License;    // Licenses des donnees associees
+   int                   NbData;      // Nombre d'image
+   double                PixDist;     // Distance en metres entre deux pixels
+   long                  Date,Late;   // Date en secondes
+   Coord                 SunPos;      // Position du soleil
+   Vect4f                LightPos;    // Position du soleil dans l'espace GL
+   Vect3d                Nr;          // Normale
+   int                   Sun;         // Activation du soleil
+   int                   Draw;        // Affichage de la geo
+   int                   Loading;     // Indicateur de lecture en arriere plan
+   int                   Update;      // Location updated
+   int                   MinSize;     // Dimension minimale des features a afficher
+   float                 L,LI,LJ,TLI; // Longueur des axes
+   double                Scale;       // Facteur d'ajustement de l'elevation
+   int                   TAxis;       // Axis Type
+   Coord                 ZAxis;       // Activation de l'echelle 3D
+   double                ZFactor;     // Facteur d'application de l'elevation
+   Vect3d                ZPos;        // Position centrale
+   double                Lat,Lon,I,J; // Coordonnees de positionement
+   double                SLat,CLat;   // Sin et Cos des coordonnees en radians
+   ViewportItem         *VP;          // Definitions des parametres d'affichages du Viewport
+   TGeoRef              *Ref;         // GeoReference des donnees projection grille
+   int                   Geographic;  // Indicateur de projection geographique
+   int                   Perspective; // Affichage en perspective
 } Projection;
 
 typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat,double Lon,int Undo);

@@ -360,10 +360,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
    Tcl_Obj     *obj,*lst;
    CMap_Rec    *map;
-   int          idx,i,ii,n,s=1,nobj,new,internew;
+   int          tmpi,idx,i,ii,n,s=1,nobj,internew;
    int          cminmax=0,cmap=0,cpos=0,cseg=0;
    char         buf[64];
-   double       tmp,val,min=0.0,max=0.0;
+   double       tmpd,val,min=0.0,max=0.0;
    const char **lvls;
 
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
@@ -606,12 +606,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->TopoFactor));
             } else {
-               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd)==TCL_ERROR) {
                   Spec->TopoFactor=1.0;
                }
-               if (tmp!=Spec->TopoFactor) {
+               if (tmpd!=Spec->TopoFactor) {
                   cpos=1;
-                  Spec->TopoFactor=tmp;
+                  Spec->TopoFactor=tmpd;
                }
             }
             break;
@@ -635,12 +635,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ExtrudeFactor));
             } else {
-               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd)==TCL_ERROR) {
                   Spec->ExtrudeFactor=1.0;
                }
-               if (tmp!=Spec->ExtrudeFactor) {
+               if (tmpd!=Spec->ExtrudeFactor) {
                   cpos=1;
-                  Spec->ExtrudeFactor=tmp;
+                  Spec->ExtrudeFactor=tmpd;
                }
             }
             break;
@@ -841,7 +841,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Width));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Width);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&tmpi);
+               if (tmpi!=Spec->Width) {
+                  Spec->Width=tmpi;
+                  cmap=1;
+               }
             }
             break;
 
@@ -890,10 +894,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->TexSample));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&new);
-               new=new<2?2:new>256?256:new;
-               if (Spec->TexSample!=new) {
-                  Spec->TexSample=new;
+               Tcl_GetIntFromObj(Interp,Objv[++i],&tmpi);
+               tmpi=tmpi<2?2:tmpi>256?256:tmpi;
+               if (Spec->TexSample!=tmpi) {
+                  Spec->TexSample=tmpi;
                   cpos=1;
                }
             }
@@ -903,13 +907,13 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->TexSize));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&new);
-               if (new!=32 && new!=64 && new!=128 && new!=256 && new!=512 && new!=1024 && new!=2048 && new!=4096) {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&tmpi);
+               if (tmpi!=32 && tmpi!=64 && tmpi!=128 && tmpi!=256 && tmpi!=512 && tmpi!=1024 && tmpi!=2048 && tmpi!=4096) {
                   Tcl_AppendResult(Interp,"DataSpec_Config: Invalid texture size must be 32,64,128,256,512,1024,2048 or 4096",(char*)NULL);
                   return(TCL_ERROR);
                }
-               if (Spec->TexSize!=new) {
-                  Spec->TexSize=new;
+               if (Spec->TexSize!=tmpi) {
+                  Spec->TexSize=tmpi;
                   cmap=cpos=cseg=1;
                }
             }
@@ -967,24 +971,24 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(Spec->InterModeParam));
                Tcl_SetObjResult(Interp,obj);
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERS,"mode",0,&new)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERS,"mode",0,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
                }
                if (i<Objc-1) {
-                  if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp)==TCL_ERROR) {
+                  if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd)==TCL_ERROR) {
                      i--;
-                     tmp=10.0;
+                     tmpd=10.0;
                   }
                }
-               if (Spec->InterVals && new>0 && new<5) {
+               if (Spec->InterVals && tmpi>0 && tmpi<5) {
                   Tcl_DecrRefCount(Spec->InterVals);
                   Spec->InterVals=NULL;
                   Spec->InterNb=0;
                }
 
-               if (new!=Spec->InterMode || tmp!=Spec->InterModeParam) {
-                  Spec->InterMode=new;
-                  Spec->InterModeParam=tmp;
+               if (tmpi!=Spec->InterMode || tmpd!=Spec->InterModeParam) {
+                  Spec->InterMode=tmpi;
+                  Spec->InterModeParam=tmpd;
                   cmap=cseg=1;
                }
             }
@@ -1128,10 +1132,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             break;
 
          case VAL2MAP:
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
             if (Spec->Map) {
-               tmp=SPEC2VAL(Spec,tmp);
-               VAL2COL(ii,Spec,tmp);
+               tmpd=SPEC2VAL(Spec,tmpd);
+               VAL2COL(ii,Spec,tmpd);
                CMap_GetColorString(Interp,Spec->Map,ii);
             }
             break;
@@ -1139,8 +1143,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
          case MAP2VAL:
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
             if (Spec->Map) {
-               COL2VAL(ii,Spec,tmp);
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Spec,tmp)));
+               COL2VAL(ii,Spec,tmpd);
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(VAL2SPEC(Spec,tmpd)));
             }
             break;
 
@@ -1179,7 +1183,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->Size));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Spec->Size);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               if (tmpd!=Spec->Size) {
+                  Spec->Size=tmpd;
+                  cmap=1;
+               }
             }
             break;
 
@@ -1187,7 +1195,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->SizeRange));
             } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&Spec->SizeRange);
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmpd);
+               if (tmpd!=Spec->SizeRange) {
+                  Spec->SizeRange=tmpd;
+                  cmap=1;
+               }
             }
             break;
 
@@ -1253,7 +1265,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Sample));
             } else {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->Sample);
+               Tcl_GetIntFromObj(Interp,Objv[++i],&tmpi);
+               if (tmpi!=Spec->Sample) {
+                  Spec->Sample=tmpi;
+                  cmap=1;
+               }
             }
             break;
 

@@ -34,7 +34,7 @@
 #include "App.h"
 #include "Data_FF.h"
 
-float *FFStreamMap;
+float FFStreamMap[FFSTREAMLEN];
 
 static unsigned char FFStreamTex[256][4] = {
    { 255, 255, 255 ,255},
@@ -1761,15 +1761,8 @@ float *FFStreamMapSetup1D(double Delta) {
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
 
    // Initialiser le tableau d'indices
-   if (!FFStreamMap) {
-      if (!(FFStreamMap=(float*)malloc(sizeof(float)*FFSTREAMLEN))) {
-         App_Log(ERROR,"%s: Could not allocate streamline texture map\n",__func__);
-      }
-   }
-   if (FFStreamMap) {
-      for(len=0;len<FFSTREAMLEN;len++) {
-         FFStreamMap[len]=1.0-(float)len/(FFSTREAMLEN*Delta);
-      }
+   for(len=0;len<FFSTREAMLEN;len++) {
+      FFStreamMap[len]=1.0-(float)len/(FFSTREAMLEN*Delta);
    }
    return(FFStreamMap);
 }

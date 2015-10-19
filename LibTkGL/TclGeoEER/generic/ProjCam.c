@@ -478,8 +478,6 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
       return(TCL_ERROR);
    }
 
-   /*Initialise les parametres de la camera*/
-
    Vect_Init(cam->From ,0.0,0.0,2.0);
    Vect_Init(cam->To   ,0.0,0.0,1.0);
    Vect_Init(cam->Up   ,0.0,1.0,0.0);
@@ -493,8 +491,7 @@ static int ProjCam_Create(Tcl_Interp *Interp,char *Name){
    cam->NbC          = 0;
    cam->Frame        = 0;
    cam->Show         = 0;
-   cam->Update       = 0;
-   cam->Pix          = 0.0;
+   cam->Update       = FALSE;
    cam->Controls     = NULL;
    cam->Focal.Lat=cam->Focal.Lon=-999;
 
@@ -567,7 +564,7 @@ void ProjCam_ParamsInit(ProjCam *Cam) {
 
    as=Cam->Aspect;
    Cam->Aspect=Cam->Dist/Cam->Lens;
-   Cam->Update=(as!=Cam->Aspect?1:Cam->Update);
+   Cam->Update=(as!=Cam->Aspect?TRUE:Cam->Update);
 
    Cam->Clip=sqrt(Cam->Up[0]*Cam->Up[0]+Cam->Up[1]*Cam->Up[1])+Cam->Dist;
 }
