@@ -44,7 +44,7 @@ namespace eval VectorBox {
    set Data(LockZ)    False
 
    set Lbl(GridVec)   { "Orienté grille" "Grid oriented" }
-   set Lbl(Params)    { "Parametres" "Parameters" }
+   set Lbl(Params)    { "Paramètres" "Parameters" }
    set Lbl(Size)      { "Dimension" "Dimension" }
    set Lbl(SizeRange) { "Écart" "Range" }
    set Lbl(Sample)    { "Echantillonage" "Sampling" }
@@ -63,7 +63,7 @@ namespace eval VectorBox {
    set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum\nÉcart entre les lignes de courants" "Dimension range factor of wind arrows between minimum and maximum values\nSpacing between streamlines" }
    set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
    set Bubble(Sample)     { "Espacement entre les flêches, barbules et lignes de courants\npixel(2D) / grille(3D)" "Wind bars, arrows and streamline sampling distance\npixel(2D) / gridpt(3D)" }
-   set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les grilles géographiques" "Pixel or gridpoint spzcing unit for geographical grids" }
+   set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les flêches et barbules" "Pixel or gridpoint spacing unit for arows and barbs" }
    set Bubble(GridVec)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
    set Bubble(Cube)       { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
    set Bubble(Select)     { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
@@ -109,6 +109,34 @@ proc VectorBox::Create { Parent Apply } {
    TabFrame::Create .vecbox.tab 1 ""
    pack .vecbox.tab -side top -fill both -expand true -padx 5 -pady 5
 
+   set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
+
+      labelframe $fr.size -text [lindex $Lbl(Size) $GDefs(Lang)]
+         scale $fr.size.sc -from 1 -to 30 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Size) -length 150 -relief flat -bd 1 -orient horizontal \
+            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
+         pack $fr.size.sc -fill x -padx 2 -expand true
+      labelframe $fr.range -text [lindex $Lbl(SizeRange) $GDefs(Lang)]
+         scale $fr.range.sc -from 1.0 -to 10.0 -resolution 0.1 -width 14 -sliderlength 8 -variable FSTD::Param(SizeRange) -length 150 -relief flat -bd 1 -orient horizontal \
+            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
+         pack $fr.range.sc -fill x -padx 2 -expand true
+      labelframe $fr.sample -text [lindex $Lbl(Sample) $GDefs(Lang)]
+         scale $fr.sample.sc -from 1 -to 25 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
+            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
+         frame $fr.sample.type -relief sunken -bd 1
+         radiobutton $fr.sample.type.pixel -text [lindex $Lbl(Pixel) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value PIXEL -relief raised -bd 1 -indicatoron false
+         radiobutton $fr.sample.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value GRID -relief raised -bd 1 -indicatoron false
+         pack $fr.sample.sc $fr.sample.type -fill x -side top -padx 2 -expand true
+         pack $fr.sample.type.pixel $fr.sample.type.grid -fill x -side left -expand true
+
+         checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
+      pack $fr.size $fr.range $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
+
+   Bubble::Create $fr.size.sc     $Bubble(Size)
+   Bubble::Create $fr.range.sc    $Bubble(SizeRange)
+   Bubble::Create $fr.sample.sc   $Bubble(Sample)
+   Bubble::Create $fr.sample.type $Bubble(SampleType)
+   Bubble::Create $fr.geo         $Bubble(GridVec)
+
    set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Stream) $GDefs(Lang)] False ""]
 
       labelframe $fr.plane -text [lindex $Lbl(Start) $GDefs(Lang)]
@@ -148,7 +176,7 @@ proc VectorBox::Create { Parent Apply } {
 #      pack $fr.step -side top -padx 5 -pady 5 -fill x
       labelframe $fr.speed -text [lindex $Lbl(Animate) $GDefs(Lang)]
          label $fr.speed.lbl -text [lindex $Lbl(Speed) $GDefs(Lang)]
-         scale $fr.speed.sc -from 1000 -to 0 -resolution 10 -width 14 -sliderlength 8  -variable OpenGL::Param(Delay) -length 150 -relief flat -bd 1 -orient horizontal -showvalue False \
+         scale $fr.speed.sc -from 1000 -to 10 -resolution 10 -width 14 -sliderlength 8  -variable OpenGL::Param(Delay) -length 150 -relief flat -bd 1 -orient horizontal -showvalue False \
             -command "glrender -delay \$OpenGL::Param(Delay);  catch"
          pack $fr.speed.lbl $fr.speed.sc -side top -fill x -padx 2 -expand true
       pack $fr.speed -side top -padx 5 -pady 5 -fill x
@@ -156,34 +184,6 @@ proc VectorBox::Create { Parent Apply } {
    Bubble::Create $fr.plane      $Bubble(Cube)
    Bubble::Create $fr.plane.mode $Bubble(Select)
    Bubble::Create $fr.speed      $Bubble(Animate)
-
-   set fr [TabFrame::Add .vecbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
-
-      labelframe $fr.size -text [lindex $Lbl(Size) $GDefs(Lang)]
-         scale $fr.size.sc -from 1 -to 30 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Size) -length 150 -relief flat -bd 1 -orient horizontal \
-            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
-         pack $fr.size.sc -fill x -padx 2 -expand true
-      labelframe $fr.range -text [lindex $Lbl(SizeRange) $GDefs(Lang)]
-         scale $fr.range.sc -from 1.0 -to 10.0 -resolution 0.1 -width 14 -sliderlength 8 -variable FSTD::Param(SizeRange) -length 150 -relief flat -bd 1 -orient horizontal \
-            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
-         pack $fr.range.sc -fill x -padx 2 -expand true
-      labelframe $fr.sample -text [lindex $Lbl(Sample) $GDefs(Lang)]
-         scale $fr.sample.sc -from 1 -to 25 -resolution 1 -width 14 -sliderlength 8 -variable FSTD::Param(Sample) -length 150 -relief flat -bd 1 -orient horizontal \
-            -command "if { \$VectorBox::Data(RealTime) } { $Apply }; catch "
-         frame $fr.sample.type -relief sunken -bd 1
-         radiobutton $fr.sample.type.pixel -text [lindex $Lbl(Pixel) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value PIXEL -relief raised -bd 1 -indicatoron false
-         radiobutton $fr.sample.type.grid -text [lindex $Lbl(Grid) $GDefs(Lang)] -variable FSTD::Param(SampleType) -value GRID -relief raised -bd 1 -indicatoron false
-         pack $fr.sample.sc $fr.sample.type -fill x -side top -padx 2 -expand true
-         pack $fr.sample.type.pixel $fr.sample.type.grid -fill x -side left -expand true
-
-         checkbutton $fr.geo -text [lindex $Lbl(GridVec) $GDefs(Lang)] -variable FSTD::Param(GridVec) -onvalue 1 -offvalue 0 -relief raised -bd 1 -indicatoron false
-      pack $fr.size $fr.range $fr.sample $fr.geo -side top -padx 5 -pady 5 -fill x
-
-   Bubble::Create $fr.size.sc     $Bubble(Size)
-   Bubble::Create $fr.range.sc    $Bubble(SizeRange)
-   Bubble::Create $fr.sample.sc   $Bubble(Sample)
-   Bubble::Create $fr.sample.type $Bubble(SampleType)
-   Bubble::Create $fr.geo         $Bubble(GridVec)
 
    #----- Commandes
 
@@ -199,6 +199,8 @@ proc VectorBox::Create { Parent Apply } {
    Bubble::Create .vecbox.cmd.real  $Bubble(Real)
    Bubble::Create .vecbox.cmd.apply $Bubble(Apply)
    Bubble::Create .vecbox.cmd.close $Bubble(Close)
+
+   TabFrame::Select .vecbox.tab 0
 }
 
 #----------------------------------------------------------------------------

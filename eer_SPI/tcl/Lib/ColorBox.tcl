@@ -181,6 +181,7 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
    wm resizable .colbox 0 0
    wm title     .colbox "ColorBox 2.0"
 
+   Page::Pause
    set pgrab [grab current]
    grab .colbox
 
@@ -330,6 +331,7 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
    #----- Attendre la selection
 
    tkwait variable ColorBox::Data(Result)
+   Page::Play
    destroy .colbox
    if { $pgrab!="" } {
       grab $pgrab

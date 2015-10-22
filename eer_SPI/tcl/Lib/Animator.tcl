@@ -686,6 +686,10 @@ proc Animator::GetPlayListField { } {
 
          set no 0
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+            #----- Do not use masks
+            if  { [string index [lindex $field 1] 0]=="@" } {
+               continue
+            }
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
             set type    [lindex $field end]
@@ -1210,7 +1214,7 @@ proc Animator::PlayWeb { } {
    update idletasks
    set err [catch { exec $env(EER_DIRSCRIPT)/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
    if { $err } {
-      Dialog::Error .anim $Error(WebAnimMake) "\n$msg"
+      Dialog::Error . $Error(WebAnimMake) "\n$msg"
       catch { file delete -force $base }
       catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
       return
@@ -1222,7 +1226,7 @@ proc Animator::PlayWeb { } {
    set err [catch { exec zip -r ${filename}/Animation.zip ${filename} 2>@1 } msg]
    cd $p
    if { $err } {
-      Dialog::Error .anim $Error(WebAnimZip) "\n$msg"
+      Dialog::Error . $Error(WebAnimZip) "\n$msg"
    }
 
    #----- Set permissions
@@ -1235,14 +1239,14 @@ proc Animator::PlayWeb { } {
    update idletasks
    set err [catch { exec scp -rp $base $Param(WebHost):$Param(WebDest) } msg]
    if { $err } {
-      Dialog::Error .anim $Error(WebAnimXfer) "\n$msg"
+      Dialog::Error . $Error(WebAnimXfer) "\n$msg"
       catch { file delete -force $base }
       catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
       return
    }
 
    #----- Give the user the url path
-   Dialog::Give .anim { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath)
+   Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath)
 
    catch { file delete -force $base }
    set Play(Label) "[lindex $Lbl(Done) $GDefs(Lang)]"

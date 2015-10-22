@@ -97,6 +97,8 @@
 #    Page::SnapGrid        { Frame }
 #    Page::Snap            { Frame X Y }
 #    Page::SnapRef         { Frame X Y }
+#    Page::Play            { }
+#    Page::Pause           { }
 #
 #    VertexAdd    { Frame VP X Y }
 #    VertexDelete { Frame VP }
@@ -1807,3 +1809,14 @@ proc Page::SnapRef { Frame X Y } {
    set Data(X) [$Frame.page.canvas canvasx $X $Param(Snap)]
    set Data(Y) [$Frame.page.canvas canvasy $Y $Param(Snap)]
 }
+
+proc Page::Pause { } {
+
+   set OpenGL::Param(PrevDelay) [glrender -delay 1000]
+   glrender -delay 1000
+}
+proc Page::Play { } {
+
+   glrender -delay $OpenGL::Param(PrevDelay)
+}
+

@@ -33,6 +33,7 @@ namespace eval OpenGL {
    #----- Parametres OpenGL
 
    set Param(Delay)       1000
+   set Param(PrevDelay)   1000
    set Param(Res)         0
    set Param(Debug)       0
    set Param(Alias)       0

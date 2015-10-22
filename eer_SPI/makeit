@@ -6,15 +6,10 @@ arg=$1
 
 NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
-VERSION="7.10.0"
+VERSION="7.10.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_all
-
-#----- Dependencies paths
-DEP_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}
-LIB_SPI=${SSM_DEV}/workspace/libSPI_${VERSION}_${ORDENV_PLAT}
-LIB_EER=${SSM_DEV}/workspace/eerUtils_2.0.0_${ORDENV_PLAT}
 
 echo ""
 echo "----- Building platform : ${ORDENV_PLAT} -----"

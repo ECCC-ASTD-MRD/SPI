@@ -882,6 +882,12 @@ proc FSTD::ParamSet { { Spec "" } } {
    set Param(GridNo) [lsearch -exact $Param(GridIds) $Param(GridId)]
    set alpha [expr int(0x$Param(Alpha)/255.0*100.0)]
 
+   if { [glrender -direct] && ($Param(Vector)=="STREAMLINE" || ($Param(Vector)=="STREAMLINE3D" && !$Param(MapAll))) } {
+      glrender -delay [set OpenGL::Param(Delay) 10]
+   } else {
+      glrender -delay [set OpenGL::Param(Delay) 1000]
+   }
+   
    #----- Set all params
    dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
