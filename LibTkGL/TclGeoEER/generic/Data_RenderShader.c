@@ -193,6 +193,9 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
       return(0);
    }
 
+   glDisable(GL_CULL_FACE);
+   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+   
    /*Do we need transparency*/
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
