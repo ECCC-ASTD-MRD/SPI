@@ -184,6 +184,16 @@ proc Option::Enable { Frame { Edit True } } {
    }
 }
 
+proc Option::Clear { Frame List } {
+   variable Data
+
+   set $Data(Var$Frame) {}
+
+   foreach item $List {
+      set Data(List$Frame$item) 0  
+   }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Option::Set>
 # Creation : Decembre 2003 - J.P. Gauthier - CMC/CMOE
