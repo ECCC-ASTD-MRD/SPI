@@ -845,12 +845,11 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                               Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
                               Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
                            }
-                           if (nk!=field0->Def->NK) {
+                          if (nk!=field0->Def->NK) {
                               field0->Def=Def_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
                               for(key=0;key<FSIZE3D(field0->Def);key++) {
                                  Def_Set(field0->Def,0,key,0);
                               }
-                              GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
                               ZRef_Free(field0->ZRef);
                               field0->ZRef=ZRef_Define(field0->ZRef->Type,nk,field0->ZRef->Levels);
                            }
@@ -971,7 +970,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                               for(dk=0;dk<FSIZE3D(field0->Def);dk++) {
                                  Def_Set(field0->Def,0,dk,0);
                               }
-                              GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
                               ZRef_Free(field0->ZRef);
                               field0->ZRef=ZRef_Define(field0->ZRef->Type,nk,field0->ZRef->Levels);
                            }
