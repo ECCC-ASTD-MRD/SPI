@@ -77,6 +77,7 @@ typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,T
 // R defines
 
 #define R_PROTECT(x)        {PROTECT(x); Context->ProtectCnt++;}
+#define R_UNPROTECT         {if( Context->ProtectCnt>0) {UNPROTECT(1); Context->ProtectCnt--;}}
 #define R_UNPROTECT_ALL     {if( Context->ProtectCnt>0 ) UNPROTECT(Context->ProtectCnt); Context->ProtectCnt=0;}
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -274,14 +275,8 @@ static SEXP TclR_RObjFromName(TclR_Context *Context,const char *Name) {
         Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL); \
         return TCL_ERROR; \
     }
-#define RPRINT(RVar,InternalType,RFct,Format) { \
-    R_len_t len = LENGTH(RVar); \
-    InternalType *ptr = RFct(RVar); \
-    if( len ) { CHAN_PRINTF(Format,*ptr++); --len; } \
-    while(len--) CHAN_PRINTF(" "Format,*ptr++); \
-    CHAN_PRINTF("\n"); \
-}
 static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
+    R_len_t len;
 
     if( !Context->Chan ) {
         Tcl_AppendResult(Interp,"A channel openned for writing is needed to print\n",NULL);
@@ -297,21 +292,58 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             CHAN_PRINTF("%s\n",CHAR(RVar));
             break;
         case LGLSXP:
-            // logical vectors
-            RPRINT(RVar,int,LOGICAL,"%d");
+            {
+                // logical vectors
+                int *ptr = LOGICAL(RVar);
+                len = LENGTH(RVar);
+
+                if( len-- )
+                    CHAN_PRINTF("%d",*ptr++);
+                while( len-- > 0 )
+                    CHAN_PRINTF(" %d",*ptr++);
+                CHAN_PRINTF("\n");
+            }
             break;
         case INTSXP:
-            // integer vectors
-            RPRINT(RVar,int,INTEGER,"%d");
+            {
+                // integer vectors
+                int *ptr = INTEGER(RVar);
+                len = LENGTH(RVar);
+
+                if( len-- )
+                    CHAN_PRINTF("%d",*ptr++);
+                while( len-- > 0 )
+                    CHAN_PRINTF(" %d",*ptr++);
+                CHAN_PRINTF("\n");
+            }
             break;
         case REALSXP:
-            // real variables
-            RPRINT(RVar,double,REAL,"%f");
+            {
+                // real variables
+                double *ptr = REAL(RVar);
+                len = LENGTH(RVar);
+
+                if( len-- ) {
+                    if( !isnan(*ptr) ) {
+                        CHAN_PRINTF("%f",*ptr++);
+                    } else {
+                        CHAN_PRINTF("NaN");
+                    }
+                }
+                while( len-- > 0 ) {
+                    if( !isnan(*ptr) ) {
+                        CHAN_PRINTF(" %f",*ptr++);
+                    } else {
+                        CHAN_PRINTF(" NaN");
+                    }
+                }
+                CHAN_PRINTF("\n");
+            }
             break;
         case STRSXP:
             {
                 // string vectors
-                R_len_t len = LENGTH(RVar);
+                len = LENGTH(RVar);
                 SEXP *ptr = STRING_PTR(RVar);
 
                 if( len ) {
@@ -327,7 +359,9 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             {
                 // generic vectors (Could be anything, we'll mostly let recursion sort it out)
                 SEXP        rattr,rnames=R_NilValue;
-                R_len_t     i,len=LENGTH(RVar);
+                R_len_t     i;
+                
+                len=LENGTH(RVar);
 
                 // Add all the attributes (if available)
                 for(rattr=ATTRIB(RVar),rnames=R_NilValue; rattr!=R_NilValue; rattr=CDR(rattr)) {
@@ -372,109 +406,6 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             break;
     }
 
-    return TCL_OK;
-}
-
-/*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclR_RExec>
- * Creation     : Août 2015 - E. Legault-Ouellet
- *
- * But          : Exécute une commande R
- *
- * Parametres   :
- *   <Interp>   : Interpreteur Tcl
- *   <Context>  : Contexte
- *   <RCmd>     : Commande R à exécuter
- *
- * Retour       : TCL_OK en cas de succès, TCL_ERROR sinon.
- *
- * Remarques    : Un message d'erreur est laissé dans l'interpréteur en cas d'erreur.
- *
- *---------------------------------------------------------------------------------------------------------------
-*/
-static int TclR_RExec(Tcl_Interp *Interp,TclR_Context *Context,const char* RCmd) {
-    SEXP rcmd,rexpr,res=R_NilValue;
-    ParseStatus pstatus;
-    R_len_t i;
-    int err;
-
-    // Put the string in an R vector string
-    R_PROTECT( rcmd=allocVector(STRSXP,1) );
-    SET_STRING_ELT(rcmd,0,mkChar(RCmd));
-
-    // Parse the string
-    // -1 is the max number of expr to parse; The null value indicates that this doesn't come from a source file (a filename would then have been given)
-    R_PROTECT( rexpr=R_ParseVector(rcmd,-1,&pstatus,R_NilValue) );
-    if( pstatus != PARSE_OK ) {
-        // Release our protected variables
-        R_UNPROTECT_ALL;
-
-        // Return a (hopefully) meaningful error
-        switch( pstatus ) {
-            case PARSE_INCOMPLETE:
-                Tcl_AppendResult(Interp,"Error while parsing the R expression : expression is incomplete\nExpression was : ",RCmd,NULL);
-                return TCL_ERROR;
-            case PARSE_ERROR:
-                Tcl_AppendResult(Interp,"Error while parsing the R expression : syntax error\nExpression was : ",RCmd,NULL);
-                return TCL_ERROR;
-            case PARSE_NULL:
-                Tcl_AppendResult(Interp,"Error while parsing the R expression : parsing returned PARSE_NULL\nExpression was : ",RCmd,NULL);
-                return TCL_ERROR;
-            case PARSE_EOF:
-                Tcl_AppendResult(Interp,"Error while parsing the R expression : parsing returned PARSE_EOF\nExpression was : ",RCmd,NULL);
-                return TCL_ERROR;
-            default:
-                Tcl_AppendResult(Interp,"Error while parsing the R expression\nExpression was : ",RCmd,NULL);
-                return TCL_ERROR;
-        }
-    }
-
-    // Print the command if necessary
-    if( Context->TraceCmd==TCLR_TRACE_ALL && Context->Chan ) {
-        if( Tcl_WriteChars(Context->Chan,"=== CMD ===\n",-1)==-1 || Tcl_WriteChars(Context->Chan,RCmd,-1)==-1 || Tcl_WriteChars(Context->Chan,"\n",-1)==-1) {
-            Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
-            R_UNPROTECT_ALL;
-            return TCL_ERROR;
-        }
-    }
-
-    // Execute the statements
-    for(i=0; i<length(rexpr); ++i) {
-        res = R_tryEval(VECTOR_ELT(rexpr,i),R_GlobalEnv,&err);
-        if( err ) {
-            Tcl_AppendResult(Interp,"Error while executing expression\nExpression was : ",RCmd,NULL);
-            R_UNPROTECT_ALL;
-            return TCL_ERROR;
-        }
-
-        // Print the intermediate result if necessary
-        if( Context->TraceRes==TCLR_TRACE_ALL && Context->Chan && res!=R_NilValue ) {
-            if( Tcl_WriteChars(Context->Chan,"=== RES ===\n",-1)==-1 ) {
-                Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
-                R_UNPROTECT_ALL;
-                return TCL_ERROR;
-            }
-            if( TclR_RPrint(Interp,Context,res) != TCL_OK ) {
-                R_UNPROTECT_ALL;
-                return TCL_ERROR;
-            }
-        }
-    }
-
-    // Print the last statement result if necessary
-    if( Context->TraceRes==TCLR_TRACE_LAST && Context->Chan && res!=R_NilValue ) {
-        if( Tcl_WriteChars(Context->Chan,"=== RES ===\n",-1)==-1 ) {
-            Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
-            R_UNPROTECT_ALL;
-            return TCL_ERROR;
-        }
-        if( TclR_RPrint(Interp,Context,res) != TCL_OK ) {
-            R_UNPROTECT_ALL;
-            return TCL_ERROR;
-        }
-    }
-
-    R_UNPROTECT_ALL;
     return TCL_OK;
 }
 
@@ -868,6 +799,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
             }
             break;
         case TCLY_DICT:
+            len = 1;
             break;
         default:
             len = 1;
@@ -1319,7 +1251,7 @@ static Tcl_Obj* TclR_RDF2TclLst(Tcl_Interp *Interp,TclR_Context *Context,SEXP RV
     CHKMEM(decr,malloc((nbcols+1)*sizeof(Tcl_Obj*)));
 
     // Loop on the attributes to find the attributes we need and that must be present in a data.frame
-    for(i=3,rattr=ATTRIB(RVar); rattr!=R_NilValue&&i; rattr=CDR(rattr)) {
+    for(i=2,rattr=ATTRIB(RVar); rattr!=R_NilValue&&i; rattr=CDR(rattr)) {
         // Get the attribute name
         str = CHAR(PRINTNAME(TAG(rattr)));
 
@@ -1336,10 +1268,6 @@ static Tcl_Obj* TclR_RDF2TclLst(Tcl_Interp *Interp,TclR_Context *Context,SEXP RV
             CHKTCL(Tcl_ListObjAppendElement(Interp,tres,tobj),"Could not add HEADER to resulting list");
             tobj = NULL;
             --i;
-        } else if( !strcmp(str,"row.names") ) {
-            // Find out how many rows there is
-            nbrows = LENGTH(CAR(rattr));
-            --i;
         } else if( !strcmp(str,"class") ) {
             // Make sure the class is "data.frame"
             robj = CAR(rattr);
@@ -1349,11 +1277,15 @@ static Tcl_Obj* TclR_RDF2TclLst(Tcl_Interp *Interp,TclR_Context *Context,SEXP RV
         }
     }
 
+    // Make sure we are not missing a mandatory attribute
     if( i )
         ENDERR("At least one of the mandatory attributes is missing : is this a data.frame?");
-
-    // If we don't have any rows, we might as well stop here
-    if( !nbrows ) {
+    
+    // Get the number of rows
+    if( !(robj=VECTOR_ELT(RVar,0)) )
+        ENDERR("Could not get the number of rows from the data.frame. This should NOT happen...");
+    if( !(nbrows=LENGTH(robj)) ) {
+        // If we don't have any rows, we might as well stop here
         CHKMEM(tobj,Tcl_NewListObj(0,NULL));
         CHKTCL(Tcl_ListObjAppendElement(Interp,tres,tobj),"Could not add empty ROWS to resulting list");
         ENDOK;
@@ -1425,6 +1357,125 @@ end:
     FREEMEM( trows );
 
     return tres;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclR_RExec>
+ * Creation     : Août 2015 - E. Legault-Ouellet
+ *
+ * But          : Exécute une commande R
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Context>  : Contexte
+ *   <RCmd>     : Commande R à exécuter
+ *   <Res2TclFct: La fonction à utiliser pour transformer le résultat sous forme Tcl. Mettre à NULL pour ne pas
+ *                retourner de résultat.
+ *
+ * Retour       : TCL_OK en cas de succès, TCL_ERROR sinon.
+ *
+ * Remarques    : Un message d'erreur est laissé dans l'interpréteur en cas d'erreur.
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static int TclR_RExec(Tcl_Interp *Interp,TclR_Context *Context,const char* RCmd,Tcl_Obj* (*Res2TclFct)(Tcl_Interp*,TclR_Context*,SEXP)) {
+    SEXP rcmd,rexpr,res=R_NilValue;
+    ParseStatus pstatus;
+    R_len_t i;
+    int err;
+
+    // Put the string in an R vector string
+    R_PROTECT( rcmd=allocVector(STRSXP,1) );
+    SET_STRING_ELT(rcmd,0,mkChar(RCmd));
+
+    // Parse the string
+    // -1 is the max number of expr to parse; The null value indicates that this doesn't come from a source file (a filename would then have been given)
+    R_PROTECT( rexpr=R_ParseVector(rcmd,-1,&pstatus,R_NilValue) );
+    if( pstatus != PARSE_OK ) {
+        // Release our protected variables
+        R_UNPROTECT_ALL;
+
+        // Return a (hopefully) meaningful error
+        switch( pstatus ) {
+            case PARSE_INCOMPLETE:
+                Tcl_AppendResult(Interp,"Error while parsing the R expression : expression is incomplete\nExpression was : ",RCmd,NULL);
+                return TCL_ERROR;
+            case PARSE_ERROR:
+                Tcl_AppendResult(Interp,"Error while parsing the R expression : syntax error\nExpression was : ",RCmd,NULL);
+                return TCL_ERROR;
+            case PARSE_NULL:
+                Tcl_AppendResult(Interp,"Error while parsing the R expression : parsing returned PARSE_NULL\nExpression was : ",RCmd,NULL);
+                return TCL_ERROR;
+            case PARSE_EOF:
+                Tcl_AppendResult(Interp,"Error while parsing the R expression : parsing returned PARSE_EOF\nExpression was : ",RCmd,NULL);
+                return TCL_ERROR;
+            default:
+                Tcl_AppendResult(Interp,"Error while parsing the R expression\nExpression was : ",RCmd,NULL);
+                return TCL_ERROR;
+        }
+    }
+
+    // Print the command if necessary
+    if( Context->TraceCmd==TCLR_TRACE_ALL && Context->Chan ) {
+        if( Tcl_WriteChars(Context->Chan,"=== CMD ===\n",-1)==-1 || Tcl_WriteChars(Context->Chan,RCmd,-1)==-1 || Tcl_WriteChars(Context->Chan,"\n",-1)==-1) {
+            Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
+            R_UNPROTECT_ALL;
+            return TCL_ERROR;
+        }
+    }
+
+    // Execute the statements
+    for(i=0; i<length(rexpr); ++i) {
+        // Unprotect the last "res"
+        if( i ) R_UNPROTECT;
+
+        // Execute the statement and protect the new "res"
+        R_PROTECT( res=R_tryEval(VECTOR_ELT(rexpr,i),R_GlobalEnv,&err) );
+        if( err ) {
+            Tcl_AppendResult(Interp,"Error while executing expression\nExpression was : ",RCmd,NULL);
+            R_UNPROTECT_ALL;
+            return TCL_ERROR;
+        }
+
+        // Print the intermediate result if necessary
+        if( Context->TraceRes==TCLR_TRACE_ALL && Context->Chan && res!=R_NilValue ) {
+            if( Tcl_WriteChars(Context->Chan,"=== RES ===\n",-1)==-1 ) {
+                Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
+                R_UNPROTECT_ALL;
+                return TCL_ERROR;
+            }
+            if( TclR_RPrint(Interp,Context,res) != TCL_OK ) {
+                R_UNPROTECT_ALL;
+                return TCL_ERROR;
+            }
+        }
+    }
+
+    // Print the last statement result if necessary
+    if( Context->TraceRes==TCLR_TRACE_LAST && Context->Chan && res!=R_NilValue ) {
+        if( Tcl_WriteChars(Context->Chan,"=== RES ===\n",-1)==-1 ) {
+            Tcl_AppendResult(Interp,"An error occured while writing to the channel",NULL);
+            R_UNPROTECT_ALL;
+            return TCL_ERROR;
+        }
+        if( TclR_RPrint(Interp,Context,res) != TCL_OK ) {
+            R_UNPROTECT_ALL;
+            return TCL_ERROR;
+        }
+    }
+
+    // Return the result in the interpreter if necessary
+    if( Res2TclFct && res!=R_NilValue ) {
+        Tcl_Obj* tobj = Res2TclFct(Interp,Context,res);
+        if( !tobj ) {
+            R_UNPROTECT_ALL;
+            return TCL_ERROR;
+        }
+        Tcl_SetObjResult(Interp,tobj);
+    }
+
+    R_UNPROTECT_ALL;
+    return TCL_OK;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1554,14 +1605,26 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
     switch( (enum opt)idx ) {
         case EXEC:
             // Make sure we have a command to execute
-            if( Objc != 3 ) {
-                Tcl_WrongNumArgs(Interp,2,Objv,"r_command");
+            if( Objc<3 || Objc>5 ) {
+                Tcl_WrongNumArgs(Interp,2,Objv,"?-get ?[r2tcl|rdf2tcllst]?? r_command");
                 status = TCL_ERROR;
                 break;
             }
             // Get the R command
-            str = Tcl_GetString(Objv[2]);
-            TCL_ASRT( TclR_RExec(Interp,context,str) );
+            if( Objc <= 4 ) {
+                TCL_ASRT( TclR_RExec(Interp,context,Tcl_GetString(Objv[Objc-1]),Objc==4?TclR_R2Tcl:NULL) );
+            } else {
+                str = Tcl_GetString(Objv[Objc-2]);
+                if( !strcmp(str,"r2tcl") ) {
+                    TCL_ASRT( TclR_RExec(Interp,context,Tcl_GetString(Objv[Objc-1]),TclR_R2Tcl) );
+                } else if( !strcmp(str,"rdf2tcllst") ) {
+                    TCL_ASRT( TclR_RExec(Interp,context,Tcl_GetString(Objv[Objc-1]),TclR_RDF2TclLst) );
+                } else {
+                    Tcl_AppendResult(Interp,"Not a valid transformation command for the -get option. Should be either r2tcl or rdf2tcllst.",NULL);
+                    status = TCL_ERROR;
+                    break;
+                }
+            }
             break;
         case TYPE:
             // Make sure we have the name of a variable to get the type from
@@ -1637,13 +1700,13 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
             Tcl_SetObjResult(Interp,tobj);
             break;
         case WAIT_ON_DEVICES:
-            TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }") );
+            TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }",0) );
             break;
         case CONFIGURE:
             if( Objc == 3 ) {
                 // We have one thing to return
                 TCL_ASRT( TclR_Configure(Interp,context,Objv[2],NULL) );
-            } else if( Objc&1 ) {
+            } else if( Objc<3 || Objc&1 ) {
                 // We should have either one thing to return or one or more things to configure
                 Tcl_WrongNumArgs(Interp,2,Objv,"option ?value? ?[option value]? ?...?");
                 status = TCL_ERROR;
