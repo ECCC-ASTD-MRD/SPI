@@ -5,7 +5,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 package require TclR
 package require Logger
 
-Log::Start [info script] 0.1
+Log::Start [info script] 0.2
 
 #----- Switch for R traces
 
@@ -15,6 +15,24 @@ switch $filename {
     stderr  { set fd stderr }
     ""      { set fd [open /dev/null w] }
     default { set fd [open $filename w] }
+}
+
+proc CheckDF { DF1 DF2 } {
+    if { [llength $DF1]!=[llength $DF2] } {
+        Log::Print ERROR "Wrong overall dimensions : [llength $DF1]!=[llength $DF2]"
+    } elseif { [llength [lindex $DF1 0]]!=[llength [lindex $DF2 0]] } {
+        Log::Print ERROR "Wrong header dimensions : [llength [lindex $DF1 0]]!=[llength [lindex $DF2 0]]"
+    } elseif { [llength [lindex $DF1 1]]!=[llength [lindex $DF2 1]] } {
+        Log::Print ERROR "Wrong row count : [llength [lindex $DF1 1]]!=[llength [lindex $DF2 1]]"
+    }
+
+    foreach r1 [lindex $DF1 1] r2 [lindex $DF2 1] {
+        if { [llength $r1] != [llength $r2] } {
+            Log::Print ERROR "Wrong row dimension [llength $r1]!=[llength $r2]"
+        } elseif { $r1 != $r2 } {
+            Log::Print ERROR "The rows differ \[$r1\]!=\[$r2\]"
+        }
+    }
 }
 
 #----- Test the configuration
@@ -71,21 +89,7 @@ if { $rdft != [list character character character integer double] } {
     Log::Print ERROR "Wrong vector types"
 }
 
-if { [llength $lst]!=[llength $rdf] } {
-    Log::Print ERROR "Wrong overall dimensions : [llength $lst]!=[llength $rdf]"
-} elseif { [llength [lindex $lst 0]]!=[llength [lindex $rdf 0]] } {
-    Log::Print ERROR "Wrong header dimensions : [llength [lindex $lst 0]]!=[llength [lindex $rdf 0]]"
-} elseif { [llength [lindex $lst 1]]!=[llength [lindex $rdf 1]] } {
-    Log::Print ERROR "Wrong row count : [llength [lindex $lst 1]]!=[llength [lindex $rdf 1]]"
-}
-
-foreach r1 [lindex $lst 1] r2 [lindex $lst 1] {
-    if { [llength $r1] != [llength $r2] } {
-        Log::Print ERROR "Wrong row dimension [llength $r1]!=[llength $r2]"
-    } elseif { $r1 != $r2 } {
-        Log::Print ERROR "The rows differ \[$r1\]!=\[$r2\]"
-    }
-}
+CheckDF $lst $rdf
 
 #----- With a forced type data.frame
 
@@ -100,22 +104,8 @@ if { $rdft != [list character character character double double] } {
     Log::Print ERROR "Wrong vector types"
 }
 
-
-if { [llength $lst]!=[llength $rdf] } {
-    Log::Print ERROR "Wrong overall dimensions : [llength $lst]!=[llength $rdf]"
-} elseif { [llength [lindex $lst 0]]!=[llength [lindex $rdf 0]] } {
-    Log::Print ERROR "Wrong header dimensions : [llength [lindex $lst 0]]!=[llength [lindex $rdf 0]]"
-} elseif { [llength [lindex $lst 1]]!=[llength [lindex $rdf 1]] } {
-    Log::Print ERROR "Wrong row count : [llength [lindex $lst 1]]!=[llength [lindex $rdf 1]]"
-}
-
-foreach r1 [lindex $lst 1] r2 [lindex $lst 1] {
-    if { [llength $r1] != [llength $r2] } {
-        Log::Print ERROR "Wrong row dimension [llength $r1]!=[llength $r2]"
-    } elseif { $r1 != $r2 } {
-        Log::Print ERROR "The rows differ \[$r1\]!=\[$r2\]"
-    }
-}
+set lst { {H1 H2 H3 H4 H5} {{r11 r12 r13 1.0 1.5} {r21 r22 r23 2.0 2.5} {r31 r32 r33 3.0 3.5}} }
+CheckDF $lst $rdf
 
 #----- Use R to modify the data and get it back into tcl
 
@@ -130,6 +120,33 @@ set rints [R r2tcl rints]
 if { $rints != $res } {
     Log::Print ERROR "The new list of number doesn't match \[$rints\] != \[$res\]"
 }
+
+#----- Test the -get option with the default
+
+Log::Print INFO "Testing \[-get\] option"
+
+if { [set res [R exec -get {as.integer(5+10)}]] != 15 } {
+    Log::Print ERROR "The result doesn't match \[$res\] != \[15\]"
+}
+
+#----- Test the -get option with r2tcl
+
+Log::Print INFO "Testing \[-get r2tcl\] option"
+
+if { [set res [R exec -get r2tcl {as.integer(5+10)}]] != 15 } {
+    Log::Print ERROR "The result doesn't match \[$res\] != \[15\]"
+}
+
+#----- Test the -get option with rdf2tcllst
+
+Log::Print INFO "Testing \[-get rdf2tcllst\] option"
+
+set lst { {H1 H2 H3 H4 H5} {{r11 r12 r13 1 1.5} {r21 r22 r23 2 2.5} {r31 r32 r33 3 3.5}} }
+set rdf [R exec -get rdf2tcllst {data.frame(H1=c('r11','r21','r31'),H2=c('r12','r22','r32'),H3=c('r13','r23','r33'),H4=as.integer(c(1,2,3)),H5=c(1.5,2.5,3.5),stringsAsFactors=FALSE)}]
+
+CheckDF $lst $rdf
+
+#----- Close any open channel
 
 if { $fd ni {stdout stderr} } {
     close $fd
