@@ -166,16 +166,16 @@ proc Graph::Section::Coord { Frame GR X Y } {
    set Page::Data(Value) ""
 
    if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
-      set coords [$GR -unproject $X $Y False [lindex $items 0]]
-
-      if { [llength $coords]>=2 } {
+      set coords [$GR -unproject $X $Y False]
+      
+      if { [llength [set coord [lindex $coords 0]]]>=2 } {
          catch {
-            set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]] [lindex $Graph::Lbl(Pos) $GDefs(Lang)]:[format "%.3f" [lindex $coords 0]]"
+            set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coord 1]] [lindex $Graph::Lbl(Pos) $GDefs(Lang)]:[format "%.3f" [lindex $coord 0]]"
 
-            foreach item $items {
+            foreach item $items coord $coords {
                set field [graphitem configure $item -data]
                if { [fstdfield is $field True] } {
-                  append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+                  append Page::Data(Value) "[fstdfield define $field -NOMVAR]:[FSTD::FieldFormat $field [lindex $coord 2]] "
                }
             }
          }

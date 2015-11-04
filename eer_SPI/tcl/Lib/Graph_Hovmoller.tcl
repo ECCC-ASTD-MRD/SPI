@@ -165,21 +165,21 @@ proc Graph::Hovmoller::Coord { Frame GR X Y } {
    set Page::Data(Value) ""
 
    if  { [llength [set items [lindex [$data(Canvas) itemconfigure $GR -item] end]]] } {
-      set coords [$GR -unproject $X $Y False [lindex $items 0]]
+      set coords [$GR -unproject $X $Y False]
 
-      if { [llength $data(Dates)] && [llength $coords]>=2 } {
+      if { [llength $data(Dates)] && [llength [set coord [lindex $coords 0]]]>=2 } {
          catch {
-            set idx  [lindex $coords 1]
+            set idx  [lindex $coord 1]
             set sec0 [lindex $data(Dates) [expr int($idx)]]
             set sec1 [lindex $data(Dates) [expr int($idx)+1]]
             set sec  [expr $sec0+($idx-int($idx))*($sec1-$sec0)]
             set date [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
             set Page::Data(Coord) "$date"
 
-            foreach item $items {
+            foreach item $items coord $coords {
                set field [graphitem configure $item -data]
                if { [fstdfield is $field] } {
-                  append Page::Data(Value) "[fstdfield configure $field -desc]:[FSTD::FieldFormat $field [lindex $coords 2]] "
+                  append Page::Data(Value) "[fstdfield define $field -NOMVAR]:[FSTD::FieldFormat $field [lindex $coord 2]] "
                }
             }
          }
