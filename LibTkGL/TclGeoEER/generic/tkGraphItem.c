@@ -2212,9 +2212,9 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
 */
 void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1){
 
-   int     i,j;
+   int     i,j,n;
    Vect3d  g0,g1;
-   float   min,rng;
+   float   min,rng,inter[DATASPEC_MAX];
    char   *ptr;
    double  vf;
 
@@ -2259,7 +2259,9 @@ void GraphItem_Display2DTextureShader(Tcl_Interp *Interp,GraphItem *Graph,TGraph
    if (Data->Spec->InterNb) {
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,Data->Spec->Inter);
+
+      for(n=0;n<Data->Spec->InterNb;n++) inter[n]=Data->Spec->Inter[n];
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Data->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,inter);
    }
 
    /*Setup 2D Data Texture*/
@@ -2757,7 +2759,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
 */
 void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
-   int    i,j,idx,f;
+   int    i,j,idx;
    double u,w,len,dir;
    Vect3d pin,pout;
 
@@ -2768,10 +2770,8 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
    if (Interp) {
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n1 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       Tk_CanvasPsColor(Interp,Graph->canvas,Data->Spec->Outline);
-      f=1;
    } else {
       glColor3us(Data->Spec->Outline->red,Data->Spec->Outline->green,Data->Spec->Outline->blue);
-      f=0;
    }
 
    u=w=len=0.0;

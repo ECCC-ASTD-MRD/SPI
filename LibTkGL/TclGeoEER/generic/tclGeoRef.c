@@ -694,7 +694,7 @@ Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *GRef) {
 
    if (GRef) {
       if (!Name) {
-         /*Check for non-existing name*/
+         // Check for non-existing name
          sprintf(buf,"GEOREF_____%li",GeoRef_TableNo++);
          while (TclY_HashGet(&GeoRef_Table,buf)) {
             sprintf(buf,"GEOREF_____%li",GeoRef_TableNo++);
@@ -778,7 +778,7 @@ TGeoRef* GeoRef_Find(TGeoRef *GRef) {
 
       TclY_LockHash();
 
-      /*Look for an already existing object that could match*/
+      // Look for an already existing object that could match
       entry=Tcl_FirstHashEntry(&GeoRef_Table,&ptr);
       while (entry) {
          gref=(TGeoRef*)Tcl_GetHashValue(entry);
@@ -794,7 +794,7 @@ TGeoRef* GeoRef_Find(TGeoRef *GRef) {
       TclY_UnlockHash();
    }
 
-   /*Otherwise, create a new one*/
+   // Otherwise, create a new one
    gref=GRef;
 
    GeoRef_Put(NULL,NULL,gref);

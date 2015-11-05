@@ -793,26 +793,26 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
    }
 
-   /*Initialize linescan object*/
+   // Initialize linescan object
    GeoScan_Init(&scan);
 
-   /*Check if we need contouring*/
+   // Check if we need contouring
    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
       def=Def_New(Band->Def->NI,Band->Def->NJ,1,1,TD_Float32);
    }
 
-   /*Check if we can reproject all in one shot, otherwise, do by scanline*/
+   // Check if we can reproject all in one shot, otherwise, do by scanline
    dy=(Band->Def->NI*Band->Def->NJ)>4194304?1:Band->Def->NJ;
    for(y=0;y<Band->Def->NJ;y+=dy) {
 
-      /*Reproject*/
+      // Reproject
       if (!GeoScan_Get(&scan,Field->GRef,Field->Def,Band->GRef,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,Field->Spec->InterpDegree)) {
          Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }
 
       for(n=0;n<scan.N;n++){
-         /*Get the value of the data field at this latlon coordinate*/
+         // Get the value of the data field at this latlon coordinate
          val=scan.D[n];
          if (!isnan(val) && val!=(float)Field->Def->NoData) {
 
@@ -850,11 +850,11 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
    GeoScan_Clear(&scan);
 
-   /* Check for contouring */
+   // Check for contouring 
    if (Field->Spec->RenderContour && Field->Spec->Width && Field->Spec->InterNb) {
       FFContour(REF_GRID,Band->GPos,def,NULL,NULL,Field->Spec->InterNb,Field->Spec->Inter,1,0);
 
-      /*Initialize murphy line object*/
+      // Initialize murphy line object
       m.Def=Band->Def;
       m.Idx=-1;
       m.Width=Field->Spec->Width;
@@ -867,7 +867,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       }
       m.Color[3]=255;
 
-      /*Loop on all contours*/
+      // Loop on all contours
       list=def->Segments;
       while(list) {
          array=(T3DArray*)list->Data;
@@ -881,10 +881,10 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
                m.Color[3]=Field->Spec->Map->Color[m.Idx][3];
             }
 
-            /*Loop on the contour points*/
+            // Loop on the contour points
             z=1;
             for (n=0;n<array->Size-1;n++) {
-               /*If length was not enough, keep fire segement point from previous*/
+               // If length was not enough, keep fire segement point from previous
                if (z) p0[0]=array->Data[n][0];p0[1]=array->Data[n][1];
                p1[0]=array->Data[n+1][0];p1[1]=array->Data[n+1][1];
 
