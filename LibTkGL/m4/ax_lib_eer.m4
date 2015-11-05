@@ -120,6 +120,7 @@ AC_DEFUN([AX_LIB_EER],
             AC_LANG_PROGRAM(
                 [[
 @%:@include <eerUtils.h>
+@%:@include <QTree.h>
                 ]],
                 [[]]
             )],
@@ -147,9 +148,10 @@ AC_DEFUN([AX_LIB_EER],
                 AC_LANG_PROGRAM(
                     [[
 @%:@include <eerUtils.h>
+@%:@include <QTree.h>
                     ]],
                     [[
-System_IsBigEndian();
+free(QTree_New(-1,-1,1,1,NULL));
                     ]]
                 )],
                 [
