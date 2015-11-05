@@ -1723,7 +1723,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    Vect3d  pix;
    Coord   coo;
    int     n=0,mem,i,j,idx,idc,dz,dn,nn;
-   char    buf[32],grtyp;
+   char    buf[32],grtyp,*uu,*vv,*mm;
 
    if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
       return;
@@ -1939,16 +1939,19 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 //         RPN_IntLock();
          c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
          
+         Def_Pointer(Field->Def,0,dz,uu);
+         Def_Pointer(Field->Def,1,dz,vv);
+         Def_PointerMode(Field->Def,dz,mm);
          if (Field->Def->Data[1]) {
             if (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE) {
-               c_gdllwdval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+               c_gdllwdval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)uu,(float*)vv,ll,&ll[mem],n);
             } else {        
-               c_gdllvval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)&Field->Def->Data[0][dz],(float*)&Field->Def->Data[1][dz],ll,&ll[mem],n);
+               c_gdllvval(Field->GRef->Ids[Field->GRef->NId],xy,&xy[n],(float*)uu,(float*)vv,ll,&ll[mem],n);
             }
             // We have to get the speed from the modulus in case of 3 component vector
-            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[nn],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n);
+            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[nn],(float*)mm,ll,&ll[mem],n);
          } else {
-            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[n],(float*)&Field->Def->Mode[dz],ll,&ll[mem],n); 
+            c_gdllsval(Field->GRef->Ids[Field->GRef->NId],&xy[n],(float*)mm,ll,&ll[mem],n); 
             size=Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5;
             while (dn--) xy[dn+nn]=size;
             dn=n;

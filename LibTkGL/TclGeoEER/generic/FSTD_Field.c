@@ -2696,7 +2696,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       // Recuperer les donnees du champs
       c_fst_data_length(TDef_Size[Field->Def->Type]);
       if (cs_fstlukt(p,head->File->Id,idxs[k],&tile,&ni,&nj,&idump)<0) {
-         Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not find read field data (c_fstluk failed)",(char*)NULL);
+         Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not read field data (c_fstluk failed) for ",head->NOMVAR,(char*)NULL);
          FSTD_FileUnset(Interp,head->File);
          return(0);
       }
@@ -2712,13 +2712,22 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
             Def_Pointer(Field->Def,1,idx,p);
             ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV);
             c_fst_data_length(TDef_Size[Field->Def->Type]);
-            cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump);
+            if (cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump)<0) {
+               Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not read field data (c_fstluk failed) for ",uvw->VV,(char*)NULL);
+               FSTD_FileUnset(Interp,head->File);
+               return(0);
+            }
          }
          if (uvw->WW) {
             Def_Pointer(Field->Def,2,idx,p);
             ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW);
             c_fst_data_length(TDef_Size[Field->Def->Type]);
-            cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump);
+            if (cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump)<0) {
+               Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Could not read field data (c_fstluk failed) for ",uvw->WW,(char*)NULL);
+               FSTD_FileUnset(Interp,head->File);
+               return(0);
+            }
+            
             if (uvw->WWFactor!=0.0) {
                for(i=0;i<FSIZE2D(Field->Def);i++) {
                   Def_Get(Field->Def,2,idx+i,val);
