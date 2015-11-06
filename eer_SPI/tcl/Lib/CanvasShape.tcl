@@ -395,9 +395,14 @@ proc CVCompass::Write { Frame File } {
 #----------------------------------------------------------------------------
 namespace eval CVClock {
    variable Param
+   variable Lbl
 
-   set Param(Size) 23
-   set Param(Zone) UTC           ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
+   set Param(Time)  True
+   set Param(Day)   True
+   set Param(Date)  True
+   set Param(Frame) True
+   set Param(Size)  23
+   set Param(Zone)  UTC           ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
 
    set Param(Zones) {
       { { UTC UTC }    { "Temps universel coordonné" "Coordinated Universal Time" }                    0 }
@@ -423,19 +428,37 @@ namespace eval CVClock {
       { { HNT NST }    { "Heure Normale de Terre-Neuve"          "Newfoundland Standard Time " }      -3.5 } 
       { { HNEG WGT }   { "Heure Normale de l'Ouest du Groenland" "West Greenland Time" }              -3 } 
       { { HNOG EGT }   { "Heure Normale de l'Est du Groenland"   "East Greenland Time" }              -1 } }
+
+   set Lbl(Zone)  { "Fuseau horaire" "Time zone" }
+   set Lbl(Time)  { "Afficher l'heure" "Display time" }
+   set Lbl(Day)   { "Afficher le jour" "Display day" }
+   set Lbl(Date)  { "Afficher la date" "Display date" }
+   set Lbl(Frame) { "Afficher le pourtour" "Display frame" }
 }
 
-proc CVClock::Create { Frame X Y } {
+proc CVClock::Create { Frame X Y { Refresh False } } {
    global GDefs
    variable Data
    variable Param
+   variable Lbl
+
+   set canvas $Frame.page.canvas
+
+   if { $Refresh } {
+      set coords [$canvas coords CVCLOCKLOC]
+      set X [lindex $coords 0]
+      set Y [lindex $coords 1]
+      
+      $Frame.page.canvas delete CVCLOCK
+   } else {
+      set Data(Sec$Frame)  0
+      set Data(Zone$Frame) 0
+   }
 
    set x0 [expr $X-27]
    set y0 [expr $Y-27]
    set x1 [expr $X+27]
    set y1 [expr $Y+27]
-
-   set canvas $Frame.page.canvas
 
    $canvas create line $X $Y $X $Y -width 0 -fill white -tag "CVCLOCK CVCLOCKLOC"
 
@@ -443,19 +466,27 @@ proc CVClock::Create { Frame X Y } {
    $canvas create arc [expr $x0+2] [expr $y0+2] [expr $x1-2] [expr $y1-2] -outline "" -fill #FFFF00 -transparency 75 -width 3 \
       -start 90 -extent 0 -style pieslice -tag "CVCLOCK CVCLOCKALPHA CVCLOCKTOTAL"
 
-   $canvas create image $X $Y -image CLOCKFRAME -tag CVCLOCK
+   if { $Param(Frame) } {
+      $canvas create image $X $Y -image CLOCKFRAME -tag CVCLOCK
+   }
 
-   $canvas create image $X [expr $Y+67] -image CLOCKDATE -tag "CVCLOCK CVCLOCKDATEFR"
-   $canvas create image $X [expr $Y+45] -image CLOCKTIME -tag "CVCLOCK CVCLOCKTIMEFR"
-   $canvas create text $X [expr $Y+67] -font XFont12 -tag "CVCLOCK CVCLOCKDATE"
-   $canvas create text $X [expr $Y+45] -font XFont12 -tag "CVCLOCK CVCLOCKTIME"
+   if { $Param(Day) || $Param(Date) } {
+      if { $Param(Frame) } {
+         $canvas create image $X [expr $Y+($Param(Time)?67:45)] -image CLOCKDATE -tag "CVCLOCK CVCLOCKDATEFR"
+      }
+      $canvas create text $X [expr $Y+($Param(Time)?67:45)] -font XFont12 -tag "CVCLOCK CVCLOCKDATE"
+   }
 
-   $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKMINUTE"
-   $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKHOUR"
+   if { $Param(Time) } {
+      $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKMINUTE"
+      $canvas create line $X $Y $X $y0  -fill black -width 3 -tag "CVCLOCK CVCLOCKHOUR"
+      if { $Param(Frame) } {
+         $canvas create image $X [expr $Y+45] -image CLOCKTIME -tag "CVCLOCK CVCLOCKTIMEFR"
+      }
+      $canvas create text $X [expr $Y+45] -font XFont12 -tag "CVCLOCK CVCLOCKTIME"
+   }
+   
    eval $canvas create rectangle [$canvas bbox CVCLOCK] -tag \"CVCLOCK CVCLOCKBBOX VPINTRUDE\" -width 0
-
-   set Data(Sec$Frame)  0
-   set Data(Zone$Frame) 0
 
    #----- Set zone to default
    if { [set zone [lsearch -index { 0 0 } $Param(Zones) $Param(Zone)]]!=-1 || [set zone [lsearch -index { 0 1 } $Param(Zones) $Param(Zone)]]!=-1 } {
@@ -466,19 +497,28 @@ proc CVClock::Create { Frame X Y } {
       menubutton $canvas.cvclock -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 \
          -relief raised -menu $canvas.cvclock.menu
       menu $canvas.cvclock.menu -tearoff 0 -bg $GDefs(ColorFrame)
+      $canvas.cvclock.menu add checkbutton -label [lindex $Lbl(Time) $GDefs(Lang)]  -variable CVClock::Param(Time)  -onvalue True -offvalue False -command "CVClock::Create $Frame 0 0 True; CVClock::Update $Frame"
+      $canvas.cvclock.menu add checkbutton -label [lindex $Lbl(Day) $GDefs(Lang)]   -variable CVClock::Param(Day)   -onvalue True -offvalue False -command "CVClock::Create $Frame 0 0 True; CVClock::Update $Frame"
+      $canvas.cvclock.menu add checkbutton -label [lindex $Lbl(Date) $GDefs(Lang)]  -variable CVClock::Param(Date)  -onvalue True -offvalue False -command "CVClock::Create $Frame 0 0 True; CVClock::Update $Frame"
+#      $canvas.cvclock.menu add checkbutton -label [lindex $Lbl(Frame) $GDefs(Lang)] -variable CVClock::Param(Frame) -onvalue True -offvalue False -command "CVClock::Create $Frame 0 0 True; CVClock::Update $Frame"
+      $canvas.cvclock.menu add separator
+      
+      $canvas.cvclock.menu add cascade -menu $canvas.cvclock.menu.zone -label [lindex $Lbl(Zone) $GDefs(Lang)]
+      
+      menu $canvas.cvclock.menu.zone -tearoff 0 -bg $GDefs(ColorFrame)
       set z 0
       foreach zone $Param(Zones) {
          if { [lindex $zone end]=="-" } {
-            $canvas.cvclock.menu add separator
+            $canvas.cvclock.menu.zone add separator
          } else {
-            $canvas.cvclock.menu add radiobutton -label "[lindex [lindex $zone 1] $GDefs(Lang)] ([lindex [lindex $zone 0] $GDefs(Lang)])" -variable CVClock::Data(Zone$Frame) -value $z \
-               -command "CVClock::Time $Frame \$CVClock::Data(Sec$Frame) -1"
+            $canvas.cvclock.menu.zone add radiobutton -label "[lindex [lindex $zone 1] $GDefs(Lang)] ([lindex [lindex $zone 0] $GDefs(Lang)])" -variable CVClock::Data(Zone$Frame) -value $z \
+               -command "CVClock::Update $Frame"
          }
          incr z
       }
    }
 
-   $canvas create window [expr $X-43] [expr $Y+50] -window $canvas.cvclock -anchor se -tags "CVCLOCK OPCVCLOCK NOPRINT"
+   $canvas create window [expr $X+43] [expr $Y+30] -window $canvas.cvclock -anchor se -tags "CVCLOCK OPCVCLOCK NOPRINT"
 
    Shape::BindAllMove $canvas CVCLOCK
    Shape::BindWidget  $canvas CVCLOCK
@@ -502,14 +542,14 @@ proc CVClock::Create { Frame X Y } {
 #
 #----------------------------------------------------------------------------
 
-proc CVClock::Update { Frame Data } {
+proc CVClock::Update { Frame { Data "" } } {
    global GDefs
 
    if { ![CVClock::Exist $Frame] } {
       return
    }
 
-   set sec 0
+   set sec $CVClock::Data(Sec$Frame)
    
    if { $Data!="" } {
       if { [fstdfield is $Data] } {
@@ -605,7 +645,6 @@ proc CVClock::Time { Frame Sec Total } {
    if { $Sec!="-1" } {
 
       #----- Ajustement pour le timezone
-
       set Data(Sec$Frame) $Sec
       set Sec [expr int($Sec+[lindex [lindex $Param(Zones) $Data(Zone$Frame)] 2]*3600)]
 
@@ -614,37 +653,46 @@ proc CVClock::Time { Frame Sec Total } {
       set jour [DateStuff::StringDay   [clock format $Sec -format "%w" -timezone :UTC] $GDefs(Lang)]
       set mois [DateStuff::StringMonth [clock format $Sec -format "%m" -timezone :UTC] $GDefs(Lang)]
 
-      #----- Positionner l'aiguille des heures
+      
+      if { $Param(Time) } {
+      
+         #----- Positionner l'aiguille des heures
+         set theta [expr (($hour>=12?$hour-12:$hour)-3)*0.52359876]
+         set co [$canvas coords CVCLOCKHOUR]
+         set x0 [lindex $co 0]
+         set y0 [lindex $co 1]
 
-      set theta [expr (($hour>=12?$hour-12:$hour)-3)*0.52359876]
-      set co [$canvas coords CVCLOCKHOUR]
-      set x0 [lindex $co 0]
-      set y0 [lindex $co 1]
+         set x [expr $x0+($Param(Size)-6)*cos($theta)]
+         set y [expr $y0+($Param(Size)-6)*sin($theta)]
 
-      set x [expr $x0+($Param(Size)-6)*cos($theta)]
-      set y [expr $y0+($Param(Size)-6)*sin($theta)]
+         $canvas coords CVCLOCKHOUR $x0 $y0 $x $y
 
-      $canvas coords CVCLOCKHOUR $x0 $y0 $x $y
+         #----- Positionner l'aiguille des minutes
+         set m [string trimleft $min 0]
+         if { $m=="" } {
+            set m 0
+         }
 
-      #----- Positionner l'aiguille des minutes
+         set theta [expr ($m-15)*0.10471976]
+         set co [$canvas coords CVCLOCKMINUTE]
+         set x0 [lindex $co 0]
+         set y0 [lindex $co 1]
 
-      set m [string trimleft $min 0]
-      if { $m=="" } {
-         set m 0
+         set x [expr $x0+$Param(Size)*cos($theta)]
+         set y [expr $y0+$Param(Size)*sin($theta)]
+
+         $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
+         
+         $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0] $GDefs(Lang)]"
       }
-
-      set theta [expr ($m-15)*0.10471976]
-      set co [$canvas coords CVCLOCKMINUTE]
-      set x0 [lindex $co 0]
-      set y0 [lindex $co 1]
-
-      set x [expr $x0+$Param(Size)*cos($theta)]
-      set y [expr $y0+$Param(Size)*sin($theta)]
-
-      $canvas coords CVCLOCKMINUTE $x0 $y0  $x $y
-
-      $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -timezone :UTC]
-      $canvas itemconf CVCLOCKTIME -text "${hour}:${min} [lindex [lindex [lindex $Param(Zones) $Data(Zone$Frame)] 0] $GDefs(Lang)]"
+      
+      if { $Param(Day) && $Param(Date) } {
+         $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour %d $mois %Y" -timezone :UTC]
+      } elseif { $Param(Day) } {
+         $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "$jour" -timezone :UTC]
+      } elseif { $Param(Date) } {
+         $canvas itemconf CVCLOCKDATE -text [clock format $Sec -format "%d $mois %Y" -timezone :UTC]      
+      }
    }
 
    $canvas raise CVCLOCK
@@ -669,8 +717,16 @@ proc CVClock::Write { Frame File } {
 
    puts $File ""
    puts $File "   #----- Affichage de l'horloge"
+     
+   puts $File "set CVClock::Param(Time)  $CVClock::Param(Time)"
+   puts $File "set CVClock::Param(Day)   $CVClock::Param(Day)"
+   puts $File "set CVClock::Param(Date)  $CVClock::Param(Date)"
+   puts $File "set CVClock::Param(Size)  $CVClock::Param(Size)"
+   puts $File "set CVClock::Param(Frame) $CVClock::Param(Frame)"
+   puts $File "set CVClock::Param(Zone)  $CVClock::Param(Zone)"
+
    set c [$Frame.page.canvas coords CVCLOCKLOC]
-   puts $File "   CVClock::Create \$Frame  [lindex $c 0]  [lindex $c 1]"
+   puts $File "   CVClock::Create \$Frame [lindex $c 0] [lindex $c 1]"
 }
 
 #----------------------------------------------------------------------------
@@ -811,22 +867,23 @@ proc CVGeoLegend::Write { Frame File } {
 #
 #----------------------------------------------------------------------------
 namespace eval CVScale { } {
-   variable Data
+   variable Param
    variable Lbl
 
-   set Data(BG)    False
-   set Data(Scale) 0
-
+   set Param(BG)    False
+   set Param(Scale) 0
+   set Param(Size)  0
+   
    set Lbl(BG) { "Arrière opaque" "White background" }
 }
 
 proc CVScale::Create { Frame X Y Size } {
    global GDefs
-   variable Data
+   variable Param
    variable Lbl
 
    set canvas $Frame.page.canvas
-   set Data(Size)   $Size
+   set Param(Size)   $Size
 
    set x0 [expr $X-$Size/2]
    set y0 [expr $Y]
@@ -857,11 +914,11 @@ proc CVScale::Create { Frame X Y Size } {
          -relief raised -menu $canvas.cvscale.menu
       menu $canvas.cvscale.menu -tearoff 0 -bg $GDefs(ColorFrame)
       foreach size {  10000000 1000000 500000 250000 100000 25000 24000 20000 10000 } {
-         $canvas.cvscale.menu add radiobutton -label "1:${size}" -variable CVScale::Data(Scale) -value ${size}.0 \
+         $canvas.cvscale.menu add radiobutton -label "1:${size}" -variable CVScale::Param(Scale) -value ${size}.0 \
             -command "CVScale::Set $Page::Data(Frame)" -indicatoron false
       }
       $canvas.cvscale.menu add separator
-      $canvas.cvscale.menu add checkbutton -label [lindex $Lbl(BG) $GDefs(Lang)] -variable CVScale::Data(BG) -onvalue True -offvalue False \
+      $canvas.cvscale.menu add checkbutton -label [lindex $Lbl(BG) $GDefs(Lang)] -variable CVScale::Param(BG) -onvalue True -offvalue False \
             -command { CVScale::Update $Page::Data(Frame) $Page::Data(VP) }
     }
 
@@ -912,9 +969,9 @@ proc CVScale::Destroy { Frame } {
 #----------------------------------------------------------------------------
 
 proc CVScale::Set { Frame } {
-   variable Data
+   variable Param
 
-   set dxy    [expr 2.8e-4*double($Data(Scale))]
+   set dxy    [expr 2.8e-4*double($Param(Scale))]
    set factor [$Page::Data(VP) -distpix $dxy]
 
    ProjCam::ZoomIn $Frame $Frame $Page::Data(VP) $factor
@@ -935,12 +992,16 @@ proc CVScale::Set { Frame } {
 #-------------------------------------------------------------------------------
 
 proc CVScale::Write { Frame File } {
-   variable Data
+   variable Param
 
    puts $File ""
    puts $File "   #----- Affichage de l'echelle"
+   puts $File " set CVScale::Param(BG)    $CVScale::Param(BG)"
+   puts $File " set CVScale::Param(Scale) $CVScale::Param(Scale)"
+   puts $File " set CVScale::Param(Size)  $CVScale::Param(Size)"
+   
    set c [$Frame.page.canvas coords CVSCLOC]
-   puts $File "   CVScale::Create \$Frame [lindex $c 0] [lindex $c 1] $Data(Size)"
+   puts $File "   CVScale::Create \$Frame [lindex $c 0] [lindex $c 1] $Param(Size)"
 }
 
 #----------------------------------------------------------------------------
@@ -961,7 +1022,7 @@ proc CVScale::Write { Frame File } {
 
 proc CVScale::Update { Frame VP } {
    global GDefs
-   variable Data
+   variable Param
    variable Lbl
 
    if { $VP=="" } {
@@ -980,7 +1041,7 @@ proc CVScale::Update { Frame VP } {
    #----- Determiner l'amplitude
    set xy [expr $o/$dxy]
 
-   set m  [expr int(($Data(Size)/5.0)/$xy)]
+   set m  [expr int(($Param(Size)/5.0)/$xy)]
    set m  [expr $m<=0?1:$m]
    set xy [expr $xy*$m]
 
@@ -1032,13 +1093,13 @@ proc CVScale::Update { Frame VP } {
    }
 
    #----- Update de l'echelle (1:???)
-   set Data(Scale) [expr wide($dxy/2.8e-4)]
+   set Param(Scale) [expr wide($dxy/2.8e-4)]
 
-   if ($Data(Scale)==0) {
-      set Data(Scale) [expr wide(2.8e-4/$dxy)]
-      $canvas itemconfigure CVSCTXT -text "$Data(Scale):1"
+   if ($Param(Scale)==0) {
+      set Param(Scale) [expr wide(2.8e-4/$dxy)]
+      $canvas itemconfigure CVSCTXT -text "$Param(Scale):1"
    } else {
-      $canvas itemconfigure CVSCTXT -text "1:$Data(Scale)"
+      $canvas itemconfigure CVSCTXT -text "1:$Param(Scale)"
    }
    $canvas coords CVSCUNI $x1 $y0
 
@@ -1051,7 +1112,7 @@ proc CVScale::Update { Frame VP } {
    $canvas coords CVSBBOX $x0 $y0 $x0 $y0
    set bbox [$canvas bbox CVSCALE]
    $canvas coords CVSBBOX [expr [lindex $bbox 0]-2] [expr [lindex $bbox 1]-4] [expr [lindex $bbox 2]+12] [expr [lindex $bbox 3]+2] 
-   if { $Data(BG) } {
+   if { $Param(BG) } {
       $canvas itemconfigure CVSBBOX -fill white -outline black -width 1
    } else {
       $canvas itemconfigure CVSBBOX -fill "" -outline "" -width 0

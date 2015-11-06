@@ -1020,7 +1020,7 @@ proc SPI::DrawClock { Frame } {
    set Data(ShowClock$Frame) $Data(ShowClock)
 
    if { $Data(ShowClock) } {
-      CVClock::Create $Frame [expr [winfo width $Frame.page.canvas]-30] 30
+      CVClock::Create $Frame [expr [winfo width $Frame.page.canvas]-110] 40
       CVClock::Update $Frame [lindex [Viewport::Assigned $Frame $Viewport::Data(VP)] 0]
    } else {
       CVClock::Destroy $Frame
