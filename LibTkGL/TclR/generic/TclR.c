@@ -1365,6 +1365,24 @@ end:
     return tres;
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclR_FSTD2R>
+ * Creation     : Novembre 2015 - E. Legault-Ouellet
+ *
+ * But          : Transforme les données d'un champ FSTD en une "matrix" R
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Context>  : Contexte
+ *   <FID>      : Field ID dont les données doivent être passés au monde R
+ *   <RVar>     : Nom de la variable R résultante
+ *
+ * Retour       : TCL_OK en cas de succès, TCL_ERROR sinon.
+ *
+ * Remarques    : Un message d'erreur est laissé dans l'interpréteur en cas d'erreur.
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
 #ifdef TCLR_FSTD_SUPPORT
     double  *dptr;
