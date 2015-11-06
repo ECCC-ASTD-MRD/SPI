@@ -146,6 +146,26 @@ set rdf [R exec -get rdf2tcllst {data.frame(H1=c('r11','r21','r31'),H2=c('r12','
 
 CheckDF $lst $rdf
 
+#----- Test the fstd2r function
+
+Log::Print INFO "Testing \[FSTD->R\] (fstd2r)"
+
+package require TclData
+
+fstdfile open FLE read DataIn/2005102612_012
+fstdfield read FLD FLE 131073 ;# TT at 1.000 sg (12000) for T+18
+
+R fstd2r FLD rfld
+set rsum [R exec -get {sum(rfld)}]
+set tsum [vexpr NIL ssum(FLD)]
+
+if { $rsum != $tsum } {
+    Log::Print ERROR "The result doesn't match \[$rsum\] != \[$tsum\]"
+}
+
+fstdfield free FLD
+fstdfile close FLE
+
 #----- Close any open channel
 
 if { $fd ni {stdout stderr} } {
