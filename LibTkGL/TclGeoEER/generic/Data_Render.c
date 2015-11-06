@@ -1836,11 +1836,10 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         }
                      }
                      Def_Get(Field->Def,0,idx,u);
-                     
                      if (Field->Def->Data[1]) {
                         Def_Get(Field->Def,1,idx,v);
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
-                        dir=(grtyp=='Y' || grtyp=='W')?v:180+RAD2DEG(atan2(u,v));
+                        dir=(grtyp=='Y')?v:180+RAD2DEG(atan2(u,v));
                      } else {
                         dir=u;
                      }
