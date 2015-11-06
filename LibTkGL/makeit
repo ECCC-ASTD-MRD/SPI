@@ -510,25 +510,9 @@ if [[ $SPI -eq 1 ]]; then
    export CC=c99
    export CFLAGS="-D_TK_SOURCE -fopenmp"
 
-   printf -- "\n----- Making TclR Library -----\n"
-
-   cd TclR
-   if [[ $REC -eq 1 ]]; then
-         make distclean
-         autoconf2.50
-         ./configure \
-      --prefix=${LIB_PATH}/TCL/ \
-      --exec-prefix=${LIB_PATH}/TCL \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-R=$(R RHOME)
-   fi
-   make install
-
    printf -- "\n----- Making TclSystem Library  -----\n"
 
-   cd ../TclSystem
+   cd TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean
       autoconf2.50
@@ -582,10 +566,27 @@ if [[ $SPI -eq 1 ]]; then
    fi
    make install
 
-   cd ${LIB_PATH}/lib
-   ln -fs ../TCL/lib/TclR0.1/libTclR0.1.so
-   ln -fs libTclR0.1.so libTclR.so
+   printf -- "\n----- Making TclR Library -----\n"
 
+   cd ../TclR
+   if [[ $REC -eq 1 ]]; then
+         make distclean
+         autoconf2.50
+         ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER} \
+      --with-gdal=${LIB_PATH}/bin/gdal-config \
+      --with-TclGeoEER-lib=${LIB_PATH}/lib \
+      --with-TclGeoEER-inc=${LIB_PATH}/TCL/include \
+      --with-R=$(R RHOME)
+   fi
+   make install
+
+   cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
    ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
 
@@ -594,6 +595,9 @@ if [[ $SPI -eq 1 ]]; then
 
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
+
+   ln -fs ../TCL/lib/TclR0.2/libTclR0.2.so
+   ln -fs libTclR0.2.so libTclR.so
 
    cd ${SRC_PATH}
 fi

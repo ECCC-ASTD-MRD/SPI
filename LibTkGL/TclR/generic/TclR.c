@@ -56,6 +56,12 @@
 // Tcl includes
 #include <tcl.h>
 
+// FSTD includes
+#ifdef TCLR_FSTD_SUPPORT
+#include <tclData.h>
+#include <Def.h>
+#endif // TCLR_FSTD_SUPPORT
+
 // Interface defines
 
 typedef enum TclR_TTrace {TCLR_TRACE_NONE,TCLR_TRACE_ALL,TCLR_TRACE_LAST} TclR_TTrace;
@@ -1359,6 +1365,135 @@ end:
     return tres;
 }
 
+static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
+#ifdef TCLR_FSTD_SUPPORT
+    double  *dptr;
+    int     i,j,ni,nj,n,rtype,*iptr,status=TCL_OK;
+    char    buf[sizeof(i)*3+1];
+    SEXP    rvar,rdim,rdimnames,rrownames,rcolnames,rclass;
+    TData   *fstdfld;
+    TDef    *def;
+
+    // Get the field
+    if( !(fstdfld=Data_Get((char*)FID)) ) {
+        ENDERR("Not a valid field");
+    }
+    if( !(def=fstdfld->Def) ) {
+        ENDERR("No valid data Def in the field");
+    }
+
+    // Calculate the dimensions
+    ni = def->Limits[0][1] - def->Limits[0][0] + 1;
+    nj = def->Limits[1][1] - def->Limits[1][0] + 1;
+    n = ni*nj;
+
+    if( n == 0 ) {
+        Rf_defineVar(Rf_install(RName),R_NilValue,R_GlobalEnv);
+        ENDOK;
+    } else if( n < 0 ) {
+        ENDERR("Negative number of values : there is something wrong with that field");
+    }
+
+    // Find the R Type
+    switch(def->Type) {
+        case TD_UInt64:
+        case TD_Int64:
+        case TD_Float32:
+        case TD_Float64: rtype=REALSXP; break;
+        case TD_UByte:
+        case TD_Byte:
+        case TD_UInt16:
+        case TD_Int16:
+        case TD_UInt32:
+        case TD_Int32:   rtype=INTSXP; break;
+        case TD_Unknown:
+        case TD_Binary:
+        default:
+            ENDERR("Unsupported field type");
+            break;
+    }
+
+    // Allocate the R memory
+    R_PROTECT( rvar=allocVector(rtype,n) );
+    R_PROTECT( rdim=allocVector(INTSXP,2) );
+    R_PROTECT( rdimnames=allocVector(VECSXP,2) );
+    R_PROTECT( rcolnames=allocVector(STRSXP,ni) );
+    R_PROTECT( rrownames=allocVector(STRSXP,nj) );
+    R_PROTECT( rclass=allocVector(STRSXP,1) );
+
+    // Dimensions (nrow,ncol)
+    iptr = INTEGER(rdim);
+    *iptr++ = nj;
+    *iptr = ni;
+
+    // Row names
+    for(j=0;j<nj;++j) {
+        sprintf(buf,"[%i,]",j+1);
+        SET_STRING_ELT(rrownames,j,Rf_mkChar(buf));
+    }
+    SET_VECTOR_ELT(rdimnames,0,rrownames);
+
+    // Column names
+    for(i=0;i<ni;++i) {
+        sprintf(buf,"[,%i]",i+1);
+        SET_STRING_ELT(rcolnames,i,Rf_mkChar(buf));
+    }
+    SET_VECTOR_ELT(rdimnames,1,rcolnames);
+
+    // Class
+    SET_STRING_ELT(rclass,0,Rf_mkChar("matrix"));
+
+    // Set the attributes
+    Rf_setAttrib(rvar,R_DimSymbol,rdim);
+    Rf_setAttrib(rvar,R_DimNamesSymbol,rdimnames);
+    Rf_setAttrib(rvar,R_ClassSymbol,rclass);
+
+    // Data
+    switch(def->Type) {
+        case TD_UInt64:
+        case TD_Int64:
+        case TD_Float32:
+        case TD_Float64:
+            dptr = REAL(rvar);
+            for(i=def->Limits[0][0]; i<=def->Limits[0][1]; ++i) {
+                for(j=def->Limits[1][0]; j<=def->Limits[1][1]; ++j) {
+                    Def_Get(def,0,FIDX2D(def,i,j),*dptr++);
+                }
+            }
+            break;
+        case TD_UByte:
+        case TD_Byte:
+        case TD_UInt16:
+        case TD_Int16:
+        case TD_UInt32:
+        case TD_Int32:
+            iptr = INTEGER(rvar);
+            for(i=def->Limits[0][0]; i<=def->Limits[0][1]; ++i) {
+                for(j=def->Limits[1][0]; j<=def->Limits[1][1]; ++j) {
+                    Def_Get(def,0,FIDX2D(def,i,j),*iptr++);
+                }
+            }
+            break;
+        case TD_Unknown:
+        case TD_Binary: 
+        default:
+            // This error would have been catched when deciding the type, but what the hell...
+            ENDERR("Unsupported field type");
+            break;
+    }
+
+    // Set the variable in the R environment
+    Rf_defineVar(Rf_install(RName),rvar,R_GlobalEnv);
+
+end:
+    R_UNPROTECT_ALL;
+    return status;
+#else // TCLR_FSTD_SUPPORT
+    Tcl_AppendResult(Interp,"Not available. You need to compile with the EER option set and have the libeerUtils for this function to work.",NULL); 
+    return TCL_ERROR;
+#endif // TCLR_FSTD_SUPPORT
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclR_RExec>
  * Creation     : Août 2015 - E. Legault-Ouellet
@@ -1587,8 +1722,8 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
     int             idx,status=TCL_OK;
 
     // The list of available subcommands
-    static const char *sopt[] = {"exec","type","print","tcl2r","r2tcl","tcllst2rdf","rdf2tcllst","waitondevices","configure"};
-    enum                opt {EXEC,TYPE,PRINT,TCL2R,R2TCL,TCLLST2RDF,RDF2TCLLST,WAIT_ON_DEVICES,CONFIGURE};
+    static const char *sopt[] = {"exec","type","print","tcl2r","r2tcl","tcllst2rdf","rdf2tcllst","fstd2r","waitondevices","configure"};
+    enum                opt {EXEC,TYPE,PRINT,TCL2R,R2TCL,TCLLST2RDF,RDF2TCLLST,FSTD2R,WAIT_ON_DEVICES,CONFIGURE};
 
     Tcl_ResetResult(Interp);
 
@@ -1675,7 +1810,7 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
             Tcl_SetObjResult(Interp,tobj);
             break;
         case TCLLST2RDF:
-            // Make sure we have the name of a variable to tcl-ify
+            // Make sure we have a tcl variable and the name of an R data.frame
             if( Objc<4 || Objc>5 ) {
                 Tcl_WrongNumArgs(Interp,2,Objv,"tcllist rdfname ?pattern?");
                 status = TCL_ERROR;
@@ -1698,6 +1833,15 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
                 break;
             }
             Tcl_SetObjResult(Interp,tobj);
+            break;
+        case FSTD2R:
+            // Make sure we have a field ID and the name of the resulting R variable
+            if( Objc != 4 ) {
+                Tcl_WrongNumArgs(Interp,2,Objv,"fieldID rname");
+                status = TCL_ERROR;
+                break;
+            }
+            TCL_ASRT( TclR_FSTD2R(Interp,context,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])) );
             break;
         case WAIT_ON_DEVICES:
             TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }",0) );

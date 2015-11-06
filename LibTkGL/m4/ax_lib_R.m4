@@ -10,8 +10,11 @@
 #       --with-R-lib - path the the R shared lib
 
 AC_DEFUN([AX_LIB_R],[
+    R_WANTED=0
+
     #----- Check for a path given by a --with-R option
     AC_ARG_WITH([R],[AC_HELP_STRING([--with-R=@<:@PATH@:>@],[Specify the R base directory])],[
+        R_WANTED=1
         R_RBASE=""
         if test -d "$withval"; then
             R_RBASE="$withval"
@@ -23,6 +26,7 @@ AC_DEFUN([AX_LIB_R],[
 
     #----- Check for a path given by a --with-R-home option
     AC_ARG_WITH([R-home],[AC_HELP_STRING([--with-R-home=@<:@PATH@:>@],[Specify the RHOME path])],[
+        R_WANTED=1
         R_RHOME=""
         if test -d "$withval"; then
             R_RHOME="$withval"
@@ -35,6 +39,7 @@ AC_DEFUN([AX_LIB_R],[
 
     #----- Check for a path given by a --with-R-inc option
     AC_ARG_WITH([R-inc],[AC_HELP_STRING([--with-R-inc=@<:@PATH@:>@],[Specify the R include path])],[
+        R_WANTED=1
         R_RINC=""
         if test -d "$withval"; then
             R_RINC="$withval"
@@ -47,6 +52,7 @@ AC_DEFUN([AX_LIB_R],[
 
     #----- Check for a path given by a --with-R-lib option
     AC_ARG_WITH([R-lib],[AC_HELP_STRING([--with-R-lib=@<:@PATH@:>@],[Specify the R library path])],[
+        R_WANTED=1
         R_RLIB=""
         if test -d "$withval"; then
             R_RLIB="$withval"
@@ -68,7 +74,7 @@ AC_DEFUN([AX_LIB_R],[
             R_RHOME="$(R RHOME)"
         elif test -d "/usr/lib/R"; then
             R_RHOME="/usr/lib/R"
-        else
+        elif test "$R_WANTED" -eq 1; then
             AC_MSG_ERROR([Could not find a valid RHOME. Either specify one via the --with-R option or the --with-R-home option.])
         fi
     fi
@@ -102,6 +108,8 @@ AC_DEFUN([AX_LIB_R],[
         fi
     fi
 
+    R_OK=1
+
     #----- Check for R Home
 
     AC_MSG_CHECKING([for valid R HOME ($R_RHOME)])
@@ -109,7 +117,11 @@ AC_DEFUN([AX_LIB_R],[
         AC_MSG_RESULT([valid])
     else
         AC_MSG_RESULT([invalid])
-        AC_MSG_ERROR([A valid RHOME is necessary. You can specify one by using the --with-R-home option])
+        if test "$R_WANTED" -eq 1; then
+            AC_MSG_ERROR([A valid RHOME is necessary. You can specify one by using the --with-R-home option])
+        else
+            R_OK=0
+        fi
     fi
     
 
@@ -136,7 +148,11 @@ AC_DEFUN([AX_LIB_R],[
         AC_MSG_RESULT([found])
     ],[
         AC_MSG_RESULT([not found])
-        AC_MSG_ERROR([One or more R include file can't be found. You can specify their directory by using the --with-R-inc option.])
+        if test "$R_WANTED" -eq 1; then
+            AC_MSG_ERROR([One or more R include file can't be found. You can specify their directory by using the --with-R-inc option.])
+        else
+            R_OK=0
+        fi
     ])
     AC_LANG_POP([C])
 
@@ -162,7 +178,11 @@ AC_DEFUN([AX_LIB_R],[
         [[Rf_initEmbeddedR]],
     [
     ],[
-        AC_MSG_ERROR([Could not link with the R lib. You can specify its directory by using the --with-R-lib option.])
+        if test "$R_WANTED" -eq 1; then
+            AC_MSG_ERROR([Could not link with the R lib. You can specify its directory by using the --with-R-lib option.])
+        else
+            R_OK=0
+        fi
     ])
 
     #----- Restore the env
@@ -172,8 +192,24 @@ AC_DEFUN([AX_LIB_R],[
 
     #----- Substitue the @VAR@ by the values
 
-    AC_SUBST([R_RHOME])
-    AC_SUBST([R_CFLAGS])
-    AC_SUBST([R_LDFLAGS])
+    AC_MSG_CHECKING([for R])
+    if test "$R_WANTED" -eq 1; then
+        if test "$R_OK" -eq 1; then
+            AC_MSG_RESULT([yes])
+            HAVE_R=yes
+
+            AC_SUBST([R_RHOME])
+            AC_SUBST([R_CFLAGS])
+            AC_SUBST([R_LDFLAGS])
+        else
+            HAVE_R=no
+            AC_MSG_RESULT([no])
+            AC_MSG_ERROR([R was requested and could not be provided])
+        fi
+    else
+        AC_MSG_RESULT([no])
+        HAVE_R=no
+        AC_MSG_NOTICE([R is available but was not requested. It will therefore not be provided])
+    fi
 ])
 
