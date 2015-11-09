@@ -49,6 +49,7 @@ set R_CMDS {
    maxre "maxre <- max(abs(1-y/x))"
    na    "na    <- length(xi)-length(x)"
    rna   "rna   <- length(x)/length(xi)"
+   mse   "mse   <- sum((y-x)^2) / length(x)"
    nmse  "nmse  <- sum((y-x)^2) / (mean(x)*mean(y)*length(x))"
    gmb   "t<-y/x>0; gmb <- exp( sum(log(y[t]/x[t])) / (length(which(t))+length(which( x==0 & y==0 ))) )"
    gmv   "t<-y/x>0; gmv <- exp( sum(log(y[t]/x[t])^2) / (length(which(t))+length(which( x==0 & y==0 ))) )"
@@ -85,7 +86,7 @@ set R_CMDS {
 set VARS_COMBO { nb medx medy sumx sumy minx miny maxx maxy avgx avgy
                  varx vary ssx ssy ssxy rmse sdev sdevx sdevy cor cov
                  regb rega errb erra mb nmb nme me mnb mne mfb mfe lmnb
-                 lmne mre maxb maxe maxre nrmse na rna nmse gmb gmv foex
+                 lmne mre maxb maxe maxre nrmse na rna mse nmse gmb gmv foex
                  fa2 fa5 fa10 fb nad fmsb fmsi osfb osfi ksp nbeq nbgt
                  nblt nbfa nbmi nbnp }
 set VARS_ALONE { med uniq sum min max avg var }
