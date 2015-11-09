@@ -48,7 +48,7 @@
 
 double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,Vmedx,Vmedy,
-       Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,Vfb,Vnad,
+       Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vmse,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,Vfb,Vnad,
        Vfms,Vfmsi,Vfmsb,Vosf,Vosfb,Vosfi,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
        Vaov,Vafn,Vafp,Vax,Vay;
 
@@ -136,6 +136,7 @@ TFuncDef FuncF[] = {
   { "snrmse", stat_nrmse  , 2 , TD_Float64 },
   { "sna"   , stat_na     , 2 , TD_Float64 },
   { "srna"  , stat_rna    , 2 , TD_Float64 },
+  { "smse"  , stat_mse    , 2 , TD_Float64 },
   { "snmse" , stat_nmse   , 2 , TD_Float64 },
   { "sgmb"  , stat_gmb    , 2 , TD_Float64 },
   { "sgmv"  , stat_gmv    , 2 , TD_Float64 },
@@ -972,7 +973,7 @@ void stat_core(TDef *MA,TDef *MB) {
    extern int        GMode;
 
    Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
-   Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
+   Vmse=Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
    Vminy=Vminx=HUGE_VAL;
    Vmaxy=Vmaxx=-HUGE_VAL;
    Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
@@ -1122,7 +1123,7 @@ void stat_core(TDef *MA,TDef *MB) {
 
    if (Vnb==0) {
       Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=0.0;
-      Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
+      Vmse=Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
 
       if( vx ) free(vx);
       if( vy ) free(vy);
@@ -1189,9 +1190,9 @@ void stat_core(TDef *MA,TDef *MB) {
 
    Vcorr=(Vvarx==0.0 || Vvary==0.0)?0.0:Vcovar/(sqrt(Vvarx*Vvary));
 
-   Vrmse=(Vssy-Vssxy*2.0+Vssx)/Vnb;
-   Vnmse=Vrmse/(Vavgx*Vavgy);
-   Vrmse=sqrt(Vrmse);
+   Vmse=(Vssy-Vssxy*2.0+Vssx)/Vnb;
+   Vnmse=Vmse/(Vavgx*Vavgy);
+   Vrmse=sqrt(Vmse);
    Vnrmse=Vrmse/Vavgx;
 
    Vregb=Vcovar/Vvarx;
@@ -1236,6 +1237,12 @@ double stat_all(TDef *MA,TDef *MB) {
    if (MA)
       stat_core(MA,MB);
    return(Vnb);
+}
+
+double stat_mse(TDef *MA,TDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+   return(Vmse);
 }
 
 double stat_nmse(TDef *MA,TDef *MB) {

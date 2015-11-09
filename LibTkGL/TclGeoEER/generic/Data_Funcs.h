@@ -149,6 +149,7 @@ double stat_minx(TDef *M,TDef *MB);   // Minimum X
 double stat_miny(TDef *M,TDef *MB);   // Minimum Y
 double stat_maxx(TDef *M,TDef *MB);   // Maximum X
 double stat_maxy(TDef *M,TDef *MB);   // Maximum Y
+double stat_mse(TDef *MA,TDef *MB);   // Mean square error 
 double stat_nmse(TDef *MA,TDef *MB);  // Normalized mean square error 
 double stat_gmb(TDef *MA,TDef *MB);   // Geometric mean bias 
 double stat_gmv(TDef *MA,TDef *MB);   // Geometric mean variance 
