@@ -882,8 +882,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      break;
                   }
                } else {
-                  ok=FSTD_FieldGridInterpolate(Interp,field0,field1,n);
-              }
+                  ok=FSTD_FieldGridInterpolate(Interp,field0,field1,imode);
+               }
                if (ok==TCL_ERROR) break;
             } else if ((band=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
 

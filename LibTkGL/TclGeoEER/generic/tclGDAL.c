@@ -323,7 +323,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
                return(Data_GridAverage(Interp,field0->GRef,field0->Def,field1->GRef,field1->Def,n,ni));
             } else {
-               return(FSTD_FieldGridInterpolate(Interp,field0,field1,n));
+               return(FSTD_FieldGridInterpolate(Interp,field0,field1,imode));
             }
             break;
          }
