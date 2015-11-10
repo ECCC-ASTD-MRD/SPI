@@ -2031,7 +2031,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    TMetElem     *elem;
    TMetElemData *data,*cdata;
    TDataSpec    *spec;
-   EntryTableB  *eb,*ea,*eo;
    int           ib,ia,io;
    Vect3d        pix;
    Coord         co;
@@ -2079,14 +2078,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    // Get height code definition pointer
    if (Obs->Model->Topo) {
       glEnable(GL_DEPTH_TEST);
-      eb=MetObs_BUFRFindTableCode(Obs->Model->Topo);
-   } else {
-      eb=NULL;
    }
-
-   // Get latlon displacement pointer
-   ea=MetObs_BUFRFindTableCode(5015);
-   eo=MetObs_BUFRFindTableCode(6015);
 
    io=ia=ib=0;
    data=cdata=NULL;
@@ -2170,23 +2162,24 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                continue;
             }
 
-            // For grouped data, find location record indexes
+            // Get displacement component indexes
             clat=clon=-1;
-            if (loc->Grid[0]!=0.0 && loc->Grid[1]!=0.0) {
-               for(d=0;d<elem->NData;d++) {
-                  cdata=elem->EData[d];
-                  for(e=0;e<cdata->Ne;e++) {
-                     if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)
-                        clat=e;
-                     else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)
-                        clon=e;
-                  }
-                  if (clat!=-1 && clon!=-1) {
-                     break;
-                  }
+            io=ia=ib=-1;
+            for(d=0;d<elem->NData;d++) {
+               cdata=elem->EData[d];
+               for(e=0;e<cdata->Ne;e++) {
+                  if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)       // Latitude coordinate
+                     clat=e;
+                  else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)  // Longitude coordinate
+                     clon=e;
+                  else if (cdata->Code[e]->descriptor==5015)                                   // Latitude displacement
+                     ia=e;
+                  else if (cdata->Code[e]->descriptor==6015)                                   // Longitude displacement
+                     io=e;
+                  else if (cdata->Code[e]->descriptor==Obs->Model->Topo)                       // Height
+                     ib=e;
                }
             }
-
             glPushName(n);
 
             // Get station height
@@ -2236,12 +2229,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   for(e=0;e<data->Ne;e++) {
                      if (data->Code[e]->descriptor==Obs->Model->Items[i].Code[0]) {
                         ne++;
-
-                        // Get component indexes
-                        if (eb) ib=TMetElem_Index(data,eb->descriptor,ne);
-                        if (ea) ia=TMetElem_Index(data,ea->descriptor,ne);
-                        if (eo) io=TMetElem_Index(data,eo->descriptor,ne);
-
+                        
                         id=0;
                         for(v=(Obs->NVal<=-1?0:Obs->NVal);v<(Obs->NVal<=-1?data->Nv:((Obs->NVal+1)>data->Nv?data->Nv:(Obs->NVal+1)));v++) {
                            for(t=0;t<data->Nt;t++) {
@@ -2267,7 +2255,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
 
                               // Get height if specified
-                              if (eb) {
+                              if (ib!=-1) {
                                  if ((k=TMetElem_ComponentFromIndex(data,ib,v,0))!=-999.0) {
                                     z=k;
                                  }
@@ -2277,8 +2265,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               co.Lat=loc->Coord.Lat;
                               co.Lon=loc->Coord.Lon;
                               co.Elev=loc->Coord.Elev;
+                              
                               dlat=dlon=0.0;
-                              if (ea && eb) {
+                              if (ia!=-1 && io!=-1) {
                                  if ((k=TMetElem_ComponentFromIndex(data,ia,v,0))!=-999.0) {
                                     co.Lat+=dlat=k;
                                  }
@@ -2289,8 +2278,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
                               // Check coordinates for grouped data
                               if (clat!=-1 && clon!=-1) {
-                                 co.Lat=MetObs_GetData(cdata,clat,0,t)+dlat;
-                                 co.Lon=MetObs_GetData(cdata,clon,0,t)+dlon;
+                                 co.Lat=MetObs_GetData(cdata,clat,loc->Grid[0]!=0.0?0:v,t)+dlat;
+                                 co.Lon=MetObs_GetData(cdata,clon,loc->Grid[0]!=0.0?0:v,t)+dlon;
                                  co.Elev=z;
 
                                  if (!Projection_Pixel(Proj,VP,co,pix)) {
@@ -2301,7 +2290,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                                  }
                               } else {
                                  // if there's displacement then reproject
-                                 if (ia && ib) Projection_Pixel(Proj,VP,co,pix);
+                                 if (ia!=-1 || io!=-1 || ib!=-1) Projection_Pixel(Proj,VP,co,pix);
                               }
 
                               skip=0;
@@ -2515,7 +2504,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            }
 
                            // If this is no grouped data, skip the rest if no height is specified, they'll all be overlapped anyway
-                           if (clat==-1 && !eb) {
+                           if (clat==-1 && ib==-1) {
                               break;
                            }
 
@@ -2525,7 +2514,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            break;
                      }
                      // Skip the rest if no height is specified, and one has been drawn, they'll all be overlapped anyway
-                     if (ne>=0 && (!eb || Proj->Scale==1.0)) {
+                     if (ne>=0 && ((ib==-1 && clat==-1 && ia==-1) || Proj->Scale==1.0)) {
                         break;
                      }
                   }
