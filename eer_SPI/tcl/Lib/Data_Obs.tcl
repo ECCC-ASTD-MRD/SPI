@@ -387,7 +387,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.vect
                label $Data(Frame).def.r.disp.vect.lbl -text " [lindex $Lbl(Vector) $GDefs(Lang)]"
                IcoMenu::Create $Data(Frame).def.r.disp.vect.sel $GDefs(Dir)/share/bitmap \
-                  "zeroth.xbm wind1.xbm wind2.xbm" "NONE BARBULE ARROW" Obs::Param(Vector) \
+                  "zeroth.xbm wind1.xbm wind2.xbm wind3.xbm" "NONE BARB SPEAR ARROW" Obs::Param(Vector) \
                   Obs::ParamSet 0 -relief groove -bd 2
                pack $Data(Frame).def.r.disp.vect.sel $Data(Frame).def.r.disp.vect.lbl -side left
 

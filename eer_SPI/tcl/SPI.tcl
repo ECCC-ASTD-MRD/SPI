@@ -54,7 +54,7 @@ proc SPI::Setup { { Force False } } {
 
       SPI::Splash "Setting up SPI $GDefs(Version) for the first time"
 
-      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Colormap $env(HOME)/.spi/Macro $env(HOME)/.spi/Style
+      file mkdir $env(HOME)/.spi $env(HOME)/.spi/Trace $env(HOME)/.spi/Tmp $env(HOME)/.spi/Layout $env(HOME)/.spi/Macro
 
       #----- Installer les fichiers de definitions
       if { ![file exists $env(HOME)/.spi/SPI] } {
@@ -63,7 +63,7 @@ proc SPI::Setup { { Force False } } {
 
       #----- Copy standard stuff
       foreach file { Colormap Style } {
-         exec cp -r $GDefs(Dir)/tcl/Setup/$file $env(HOME)/.spi
+         exec cp -r -u $GDefs(Dir)/tcl/Setup/$file $env(HOME)/.spi
       }
    }
 }
