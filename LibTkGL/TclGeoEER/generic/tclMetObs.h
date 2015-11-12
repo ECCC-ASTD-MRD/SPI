@@ -64,7 +64,7 @@ typedef struct TMetModelItem {
 
 typedef struct TMetModel {
    char *Name;
-   int   NItem,NRef,Space,Flat,Overspace,Topo;
+   int   NItem,NRef,Space,Flat,Overspace,Elev;
    TMetModelItem *Items;
 } TMetModel;
 

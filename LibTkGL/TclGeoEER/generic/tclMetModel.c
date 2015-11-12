@@ -226,8 +226,8 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
    EntryTableB *eb;
    int       i,j,n,d,k,idx;
 
-   static CONST char *sopt[] = { "-items","-spacing","-flat","-topography","-overspace",NULL };
-   enum                opt { ITEMS,SPACING,FLAT,TOPOGRAPHY,OVERSPACE };
+   static CONST char *sopt[] = { "-items","-spacing","-flat","-elevation","-overspace",NULL };
+   enum                opt { ITEMS,SPACING,FLAT,ELEVATION,OVERSPACE };
 
    mdl=MetModel_Get(Name);
    if (!mdl) {
@@ -334,20 +334,20 @@ static int MetModel_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST
             }
             break;
 
-         case TOPOGRAPHY:
+         case ELEVATION:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewIntObj(mdl->Topo));
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(mdl->Elev));
             } else {
                ++i;
                if (!strlen(Tcl_GetString(Objv[i]))) {
-                  mdl->Topo=0;
+                  mdl->Elev=0;
                } else {
                   if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[i]))) {
                   Tcl_AppendResult(Interp,"\n   MetModel_Define: Wrong element",(char*)NULL);
                   return(TCL_ERROR);
                   }
-                  if (!mdl->Topo || mdl->Topo!=eb->descriptor) {
-                     mdl->Topo=eb->descriptor;
+                  if (!mdl->Elev || mdl->Elev!=eb->descriptor) {
+                     mdl->Elev=eb->descriptor;
                   }
                }
             }
@@ -386,7 +386,7 @@ int MetModel_Create(Tcl_Interp *Interp,char *Name) {
    mdl->Space    = 25;
    mdl->Flat     = 1;
    mdl->Overspace= 0;
-   mdl->Topo     = 0;
+   mdl->Elev     = 0;
    mdl->Items    = NULL;
    mdl->Name     = strdup(Name);
 
