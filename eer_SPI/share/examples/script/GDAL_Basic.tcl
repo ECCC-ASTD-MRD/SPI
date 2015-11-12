@@ -32,6 +32,7 @@ catch { eval file delete [glob -nocomplain DataOut/GDAL_Basic.*] }
 puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier GTIF
+#set bands [gdalfile open GDAL read /fs/cetus/fs2/ops/cmoe/afsr002/DataIn/hrm_dsm_1m/z001003.adf]
 set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
 #set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
 #set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]

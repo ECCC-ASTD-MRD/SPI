@@ -26,6 +26,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
+fstdfield ip1mode NEW
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 file delete -force DataOut/FSTD_CalcES2HR.fstd
@@ -48,8 +50,8 @@ foreach field [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
 
    #----- Redifinir le NOMVAR en consequence
 
-   fstdfield define PV -NOMVAR "PV"
-   fstdfield define HR -NOMVAR "HR"
+   fstdfield define PV -NOMVAR "PV" -IP1 -1
+   fstdfield define HR -NOMVAR "HR" -IP1 -1
 
    #----- Ecrire les champs resultants
 

@@ -450,7 +450,7 @@ namespace eval NowCaster::Obs { } {
    set Data(ModelName)   ""
    set Data(Models)      { }
    set Data(Obs)         { }
-   set Data(Topo)        ""
+   set Data(Elev)        ""
    set Data(CurrentObs)  NONE
    set Data(NVal)        -1
    set Data(Marker)      0
@@ -460,6 +460,7 @@ namespace eval NowCaster::Obs { } {
    set Data(Spacing)     25
    set Data(Crowd)       0
    set Data(Flat)        0
+   set Data(Levels)      { }
    set Data(Elems)       { }
    set Data(Item)        ""
    set Data(InfoObs)     ""
@@ -481,7 +482,8 @@ namespace eval NowCaster::Obs { } {
    set Lbl(Var1)     { "Direction " "Direction " }
    set Lbl(Yes)      { "Oui" "Yes" }
    set Lbl(No)       { "Non" "No" }
-   set Lbl(Topo)     { "Élévation " "Elevation " }
+   set Lbl(Elev)     { "Élévation " "Elevation " }
+   set Lbl(Levels)   { "Niveaux   " "Levels    " }
    set Lbl(Data)     { "Données" "Data" }
    set Lbl(Model)    { "Modèle de pointage" "Plotting model" }
    set Lbl(ModelN)   { "Modèle" "Model" }
@@ -525,7 +527,8 @@ namespace eval NowCaster::Obs { } {
    set Bubble(ModelClear) { "Effacer le modèle de pointage courant" "Clear the current plotting model" }
    set Bubble(Variable0)  { "Element à affiche\n(Composante de vitesse en configuration vectorielle)" "Element to display\n(Speed component in vectorial configuration)" }
    set Bubble(Variable1)  { "Element à afficher comme composante\ndirection en configuration vectorielle" "Direction component when\nin vectorial configuration" }
-   set Bubble(Topo)       { "Variable definnisant l'élévation" "Variable definning the elevation" }
+   set Bubble(Elev)       { "Element definnisant l'élévation" "Element definning the elevation" }
+   set Bubble(Levels)     { "Selection des niveaux à afficher pour les profiles" "Select levels to display for profiles" }
    set Bubble(Spacing)    { "Espacement entre les éléments de pointage" "Spacing between the plotted elements" }
    set Bubble(Crowd)      { "Espacement entre les pointages (0, aucun)" "Spacing between the plottings (0, none)" }
    set Bubble(Grid)       { "Sélection du positionnement des élément\nrelativement à la position centrale en blanc" "Element position selection relative\not the central location in white" }
@@ -617,14 +620,22 @@ proc NowCaster::Obs::Window { Frame } {
          pack $Frame.elem.var1.sel -side left -fill x -expand True
       pack $Frame.elem.var1 -side top -fill x -padx 2 -pady 2 -expand True
 
-      frame $Frame.elem.topo
-         label $Frame.elem.topo.lbl -text [lindex $Lbl(Topo) $GDefs(Lang)] -width 11 -anchor w
-         ComboBox::Create $Frame.elem.topo.sel NowCaster::Obs::Data(Topo) edit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Topo\$NowCaster::Obs::Data(CurrentObs)) \[lindex \$NowCaster::Obs::Data(Topo) 0\]\; NowCaster::Obs::ModelApply
-         pack $Frame.elem.topo.lbl -side left
-         pack $Frame.elem.topo.sel -side left -fill x -expand True
-      pack $Frame.elem.topo -side top -fill x -padx 2 -pady 2 -expand True
+      frame $Frame.elem.elev
+         label $Frame.elem.elev.lbl -text [lindex $Lbl(Elev) $GDefs(Lang)] -width 11 -anchor w
+         ComboBox::Create $Frame.elem.elev.sel NowCaster::Obs::Data(Elev) edit sorted nodouble -1 { } 2 15 set NowCaster::Obs::Data(Elev\$NowCaster::Obs::Data(CurrentObs)) \[lindex \$NowCaster::Obs::Data(Elev) 0\]\; NowCaster::Obs::ModelApply
+         pack $Frame.elem.elev.lbl -side left
+         pack $Frame.elem.elev.sel -side left -fill x -expand True
+      pack $Frame.elem.elev -side top -fill x -padx 2 -pady 2 -expand True
 
-   labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
+      frame $Frame.elem.levels
+         label $Frame.elem.levels.lbl -text [lindex $Lbl(Levels) $GDefs(Lang)] -width 11 -anchor w
+         entry $Frame.elem.levels.sel -textvariable NowCaster::Obs::Data(Levels) -bg $GDefs(ColorLight) -bd 1
+         bind $Frame.elem.levels.sel <Return> { set NowCaster::Obs::Data(Levels$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Levels); NowCaster::Obs::ModelApply }
+         pack $Frame.elem.levels.lbl -side left
+         pack $Frame.elem.levels.sel -side left -fill x -expand True
+      pack $Frame.elem.levels -side top -fill x -padx 2 -pady 2 -expand True
+
+      labelframe $Frame.flags -text [lindex $Lbl(Flags) $GDefs(Lang)]
       frame $Frame.flags.codtyp
          label $Frame.flags.codtyp.lbl -text CODETYPE -width 11 -anchor w
          menubutton $Frame.flags.codtyp.sel -menu $Frame.flags.codtyp.sel.menu -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
@@ -787,7 +798,7 @@ proc NowCaster::Obs::Window { Frame } {
 
    Bubble::Create $Frame.elem.var0.sel  $Bubble(Variable0)
    Bubble::Create $Frame.elem.var1.sel  $Bubble(Variable1)
-   Bubble::Create $Frame.elem.topo.sel  $Bubble(Topo)
+   Bubble::Create $Frame.elem.elev.sel  $Bubble(Elev)
    Bubble::Create $Frame.elem.status    $Bubble(Flags)
 
    NowCaster::Obs::ModelLoad
@@ -1088,7 +1099,8 @@ proc NowCaster::Obs::Add { Path } {
    #----- Define default model
    set Data(Path$obs) $path
    set Data(ModelName$obs) ""
-   set Data(Topo$obs)      ""
+   set Data(Elev$obs)      ""
+   set Data(Levels$obs)    ""
    set Data(Param$obs)     {}
    set Data(Spacing$obs)   $Data(Spacing)
    set Data(Crowd$obs)     $Data(Crowd)
@@ -1279,8 +1291,8 @@ proc NowCaster::Obs::Update { { Obs {} } } {
 
    foreach obs $Obs {
       set model [metobs define $obs -MODEL]
-      metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -topography $Data(Topo$obs)
-      metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -FAMILY $Data(Family$obs) \
+      metmodel define $model -items $Data(Model$obs) -spacing $Data(Spacing$obs) -overspace $Data(Crowd$obs) -flat $Data(Flat$obs) -elevation $Data(Elev$obs)
+      metobs define $obs -VALID $NowCaster::Data(Sec) False -PERSISTANCE $NowCaster::Data(Persistance) -LEVELS  $Data(Levels$obs) -FAMILY $Data(Family$obs) \
          -CODETYPE $Data(Code$obs) -MARKER $Data(Marker$obs) -MARKEROP $Param(MarkerOp) -TYPE $Data(Type$Obs) -NVAL $Data(NVal$Obs)
 
       foreach item $Data(Model$obs) {
@@ -1330,21 +1342,22 @@ proc NowCaster::Obs::ObsSelect { Obs } {
       set Data(Marker)     $Data(Marker$Obs)
       set Data(Code)       $Data(Code$Obs)
       set Data(NVal)       $Data(NVal$Obs)
+      set Data(Levels)     $Data(Levels$Obs)
 
       if { [winfo exists .nowcaster] } {
          ComboBox::DelAll  $Data(Frame).elem.var0.sel
          ComboBox::DelAll  $Data(Frame).elem.var1.sel
-         ComboBox::DelAll  $Data(Frame).elem.topo.sel
+         ComboBox::DelAll  $Data(Frame).elem.elev.sel
           foreach elem  $Data(Elems$Obs) {
             set info "$elem [lindex [metobs table -desc $elem] 0]"
 
             ComboBox::Add $Data(Frame).elem.var0.sel $info
             ComboBox::Add $Data(Frame).elem.var1.sel $info
-            ComboBox::Add $Data(Frame).elem.topo.sel $info
+            ComboBox::Add $Data(Frame).elem.elev.sel $info
          }
          ComboBox::Add $Data(Frame).elem.var0.sel ""
          ComboBox::Add $Data(Frame).elem.var1.sel ""
-         ComboBox::Add $Data(Frame).elem.topo.sel ""
+         ComboBox::Add $Data(Frame).elem.elev.sel ""
       }
       NowCaster::Obs::ModelSelect $Obs $Data(Model$Obs)
    }
@@ -1440,10 +1453,10 @@ proc NowCaster::Obs::ModelSelect { Model { List { } } } {
       set Data(Var0) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 0]]
       set Data(Var1) [NowCaster::Obs::VarSet [lindex $Data(Model$Data(Item)) 1]]
 
-      if { [set topo [metmodel define [metobs define $Data(CurrentObs) -MODEL] -topography]] } {
-         set Data(Topo) "$topo [lindex [metobs table -desc $topo] 0]"
+      if { [set elev [metmodel define [metobs define $Data(CurrentObs) -MODEL] -elevation]] } {
+         set Data(Elev) "$elev [lindex [metobs table -desc $elev] 0]"
       } else {
-         set Data(Topo) ""
+         set Data(Elev) ""
       }
    }
 
@@ -1616,7 +1629,7 @@ proc NowCaster::Obs::ModelSave { } {
          Obs::ParamGet $code
          lappend mparam "dataspec configure $code -factor $Obs::Param(Factor)  -delta $Obs::Param(Delta) -value $Obs::Param(Order) $Obs::Param(Mantisse) \
             -width $Obs::Param(Width) -size $Obs::Param(Size) -style \"$Obs::Param(Style)\" -icon \"$Obs::Param(Icon)\" -color \"$Obs::Param(Color)\"\
-            -unit \"$Obs::Param(Unit)\" -desc \"$Obs::Param(Desc)\"  -mapall $Obs::Param(MapAll) -topography \"$Obs::Param(Topo)\" \
+            -unit \"$Obs::Param(Unit)\" -desc \"$Obs::Param(Desc)\"  -mapall $Obs::Param(MapAll) \
             -rendervector $Obs::Param(Vector) -rendertexture $Obs::Param(Texture) -rendervolume $Obs::Param(Volume)\
             -rendercoord $Obs::Param(Coord) -rendervalue $Obs::Param(Value) -renderlabel $Obs::Param(Label)\
             -min \"$Obs::Param(Min)\" -max \"$Obs::Param(Max)\" -intervals \"$Obs::Param(Inters)\" -interlabels \"$Obs::Param(Labels)\" \

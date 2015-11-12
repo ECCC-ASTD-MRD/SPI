@@ -28,6 +28,10 @@ package require Logger
 
 Log::Start [info script] 0.1
 
+#fstdfield ip1mode NEW
+
+file delete -force DataOut/FSTD_ETA2SIMGA.fstd
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
 fstdfile open 1 read  DataIn/2005102612_012
