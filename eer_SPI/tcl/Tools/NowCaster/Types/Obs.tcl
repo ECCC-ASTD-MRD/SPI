@@ -787,19 +787,20 @@ proc NowCaster::Obs::Window { Frame } {
    Bubble::Create $Frame.head.del    $Bubble(Del)
    Bubble::Create $Frame.find        $Bubble(Find)
 
-   Bubble::Create $Frame.model.sel.name $Bubble(Model)
-   Bubble::Create $Frame.model.sel.save $Bubble(ModelSave)
-   Bubble::Create $Frame.model.sel.del  $Bubble(ModelDel)
-   Bubble::Create $Frame.model.sel.new  $Bubble(ModelClear)
-   Bubble::Create $Frame.model.items    $Bubble(Grid)
-   Bubble::Create $Frame.model.spc      $Bubble(Spacing)
-   Bubble::Create $Frame.model.crowd    $Bubble(Crowd)
-   Bubble::Create $Frame.model.flat     $Bubble(Flat)
+   Bubble::Create $Frame.model.sel.name  $Bubble(Model)
+   Bubble::Create $Frame.model.sel.save  $Bubble(ModelSave)
+   Bubble::Create $Frame.model.sel.del   $Bubble(ModelDel)
+   Bubble::Create $Frame.model.sel.new   $Bubble(ModelClear)
+   Bubble::Create $Frame.model.items     $Bubble(Grid)
+   Bubble::Create $Frame.model.spc       $Bubble(Spacing)
+   Bubble::Create $Frame.model.crowd     $Bubble(Crowd)
+   Bubble::Create $Frame.model.flat      $Bubble(Flat)
 
-   Bubble::Create $Frame.elem.var0.sel  $Bubble(Variable0)
-   Bubble::Create $Frame.elem.var1.sel  $Bubble(Variable1)
-   Bubble::Create $Frame.elem.elev.sel  $Bubble(Elev)
-   Bubble::Create $Frame.elem.status    $Bubble(Flags)
+   Bubble::Create $Frame.elem.var0.sel   $Bubble(Variable0)
+   Bubble::Create $Frame.elem.var1.sel   $Bubble(Variable1)
+   Bubble::Create $Frame.elem.elev.sel   $Bubble(Elev)
+   Bubble::Create $Frame.elem.levels.sel $Bubble(Levels)
+   Bubble::Create $Frame.elem.status     $Bubble(Flags)
 
    NowCaster::Obs::ModelLoad
 }
