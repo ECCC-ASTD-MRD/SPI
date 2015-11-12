@@ -110,6 +110,7 @@ typedef struct TMetLoc {
 typedef struct TMetObs {
    Tcl_Obj *Tag;
    Tcl_Obj *Elems;
+   Tcl_Obj *Levels;
    char    *Desc;
 
    char    **Info;
@@ -169,7 +170,6 @@ void          TMetElem_Clean(TMetLoc *Loc,time_t Time);
 void          TMetElem_Free(TMetElem *Elem);
 int           TMetElem_Index(const TMetElemData* restrict const Data,const int Code,const int Ne);
 float         TMetElem_Value(const TMetElemData* restrict const Data,const int Code,int Ne,const int Nv,const int Nt);
-float         TMetElem_Component(const TMetElemData* restrict const Data,const int Code,const int Ne,const int Nv,const int Nt);
 int           TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float Hgt,time_t Time,char *Id,char *Multi);
 
 TMetElemData *TMetElemData_New(int Ne,int Nv,int Nt);
