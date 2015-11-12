@@ -2050,7 +2050,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       Tcl_AppendResult(Interp,"%% Postscript des observations meteorologiques\n",(char*)NULL);
 
    // Get height code definition pointer
-   if (Obs->Model->Topo) {
+   if (Obs->Model->Elev) {
       glEnable(GL_DEPTH_TEST);
    }
 
@@ -2128,6 +2128,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             }
          }
 
+         Projection_Pixel(Proj,VP,loc->Coord,pix);
          if (!loc->Grid[0] && Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
             loc=loc->Next;
             continue;
@@ -2147,7 +2148,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   ia=e;
                else if (cdata->Code[e]->descriptor==6015)                                      // Longitude displacement
                   io=e;
-               else if (cdata->Code[e]->descriptor==Obs->Model->Topo)                          // Height
+               else if (cdata->Code[e]->descriptor==Obs->Model->Elev)                          // Height
                   ib=e;
             }
          }
@@ -2264,23 +2265,20 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               co.Lat+=dlat=MetObs_GetData(data,ia,v,0);
                               co.Lon+=dlon=MetObs_GetData(data,io,v,0);
                            }
-
-                           // Check coordinates for grouped data
+                           
+                           // Get coordinates if per sample
                            if (clat!=-1 && clon!=-1) {
                               co.Lat=MetObs_GetData(cdata,clat,loc->Grid[0]?0:v,t)+dlat;
                               co.Lon=MetObs_GetData(cdata,clon,loc->Grid[0]?0:v,t)+dlon;
-
-                              if (!Projection_Pixel(Proj,VP,co,pix)) {
-                                 continue;
-                              }
-                              if (Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
-                                 continue;
-                              }
-                           } else {
-                              if (!Projection_Pixel(Proj,VP,co,pix)) {
-                                 continue;
-                              }
                            }
+                           
+                           if (!Projection_Pixel(Proj,VP,co,pix)) {
+                              continue;
+                           }
+                           
+//                           if (Obs->Model->Overspace && !ViewportCrowdPush(VP,pix[0]+min[0],pix[1]+min[1],pix[0]+max[0],pix[1]+max[1],Obs->Model->Overspace)) {
+//                              continue;
+//                           }
 
                            skip=0;
 
