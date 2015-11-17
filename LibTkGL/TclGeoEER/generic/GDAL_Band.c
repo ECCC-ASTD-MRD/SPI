@@ -920,7 +920,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
             if (Field->GRef->UnProject(Field->GRef,&i,&j,lat,lon,0,1)) {
                idx=FIDX2D(Field->Def,(int)i,(int)j);
                Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i,j,0,&val,&dir);
-               if (val<=Field->Spec->Max && val>=Field->Spec->Min) {
+               if ((val<=Field->Spec->Max || Field->Spec->MapAbove) && (val>=Field->Spec->Min || Field->Spec->MapBellow)) {
                   if (Field->Spec->MapAll && Field->Spec->Map) {
                      VAL2COL(m.Idx,Field->Spec,val);
                      m.Color[0]=Field->Spec->Map->Color[m.Idx][0];
