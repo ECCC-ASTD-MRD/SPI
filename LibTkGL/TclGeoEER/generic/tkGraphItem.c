@@ -1824,11 +1824,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          px=py=pw=0;
          Tk_GetFontMetrics(Item->Font,&tkm);
          for(i=0;i<vn-hd;i++) {
-            if (Item->Value==4) {
-               GraphAxis_Print(AxisY,buf,val->V[i],-2);
-            } else {
-               GraphAxis_Print(AxisX,buf,val->V[i],-2);
-            }
+            GraphAxis_Print(Item->Orient[0]=='X'?AxisY:AxisX,buf,val->V[i],-2);
             j=Item->Width+2+(Item->Icon?Item->Size:0);
             y=v[i][1]+j;
             j=Tk_TextWidth(Item->Font,buf,strlen(buf));
@@ -3782,11 +3778,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
          px=py=pw=0;
          Tk_GetFontMetrics(Item->Font,&tkm);
          for(i=0;i<vn-hd;i++) {
-            if (Item->Value==4) {
-               GraphAxis_Print(AxisY,buf,val->V[i],-2);
-            } else {
-               GraphAxis_Print(AxisX,buf,val->V[i],-2);
-            }
+            GraphAxis_Print(Item->Orient[0]=='X'?AxisY:AxisX,buf,val->V[i],-2);
             j=Item->Width+2+(Item->Icon?Item->Size:0);
             y=v[i][1]+j;
             j=Tk_TextWidth(Item->Font,buf,strlen(buf));
