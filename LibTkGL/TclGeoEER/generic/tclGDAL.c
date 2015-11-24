@@ -120,8 +120,8 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    extern const char *TDef_InterpRString[];
 
    static CONST char *modemul[] = { "REPLACE","MIN","MAX","AVERAGE",NULL };
-   static CONST char *sopt[] = { "create","copy","free","read","write","tile","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
-   enum                opt { CREATE,COPY,FREE,READ,WRITE,TILE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
+   static CONST char *sopt[] = { "create","copy","free","read","write","paste","gridinterp","import","configure","define","stats","clean","clear","combine","mapimage","is","project","unproject","pick","all","wipe",NULL };
+   enum                opt { CREATE,COPY,FREE,READ,WRITE,PASTE,GRIDINTERP,IMPORT,CONFIGURE,DEFINE,STATS,CLEAN,CLEAR,COMBINE,MAPIMAGE,IS,PROJECT,UNPROJECT,PICK,ALL,WIPE };
 
    Tcl_ResetResult(Interp);
 
@@ -551,9 +551,9 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          return(code);
          break;
 
-      case TILE:
+      case PASTE:
          if (Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"band bandtile x y");
+            Tcl_WrongNumArgs(Interp,2,Objv,"band bandpaste x y");
             return(TCL_ERROR);
          }
 
@@ -562,13 +562,13 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
          if (!(comb=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
-            Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : invalid tile band",(char*)NULL);
+            Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : invalid paste band",(char*)NULL);
             return(TCL_ERROR);
          }
          Tcl_GetIntFromObj(Interp,Objv[4],&x0);
          Tcl_GetIntFromObj(Interp,Objv[5],&y0);
 
-         Def_Tile(band->Def,comb->Def,x0,y0);
+         Def_Paste(band->Def,comb->Def,x0,y0);
          return(TCL_OK);
          break;
 
@@ -740,7 +740,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          a=band->Def->NoData;
 
          for(n=0;n<band->Def->NC;n++) {
-            /*If clearing values are specified*/
+            // If clearing values are specified
             if (Objc>(3+n)) {
                Tcl_GetDoubleFromObj(Interp,Objv[3+n],&a);
             }
