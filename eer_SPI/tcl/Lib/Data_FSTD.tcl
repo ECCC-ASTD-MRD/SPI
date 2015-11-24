@@ -27,6 +27,8 @@
 #   FSTD::Register        { FieldId { Update True } }
 #   FSTD::UnRegister      { FieldId { Update True } }
 #   FSTD::Params          { Id Map args }
+#   FSTD::ParamGetMode    { Field } 
+#   FSTD::ParamSetDefault { Field args }
 #   FSTD::ParamUpdate     { { Fields { } } }
 #   FSTD::VarMode         { Mode }
 #
@@ -751,13 +753,8 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(IntervalMode)  [lindex $mode 0]
    set Param(IntervalParam) [lindex $mode 1]
 
-   if { [dataspec configure $spec -desc]!="" || $Spec=="" } {
-      set Param(Desc)       [dataspec configure $spec -desc]
-   }
-   if { [dataspec configure $spec -unit]!="" || $Spec=="" } {
-      set Param(Unit)       [dataspec configure $spec -unit]
-   }
-
+   set Param(Desc)       [dataspec configure $spec -desc]
+   set Param(Unit)       [dataspec configure $spec -unit]
    set Param(Factor)     [dataspec configure $spec -factor]
    set Param(Delta)      [dataspec configure $spec -delta]
    set Param(Font)       [dataspec configure $spec -font]
@@ -1012,13 +1009,12 @@ proc FSTD::ParamInit { Field { Spec "" } } {
    if { [dataspec is $Spec] } {
       set var  [fstdfield define $Field -NOMVAR]
 #      set etik [fstdfield define $Field -ETIKET]
-#      set var [dataspec configure $Spec -desc]
-      set desc [dataspec configure $Spec -desc]
-      set unit [dataspec configure $Spec -unit]
       set ip1  -1
 
-      dataspec copy $Spec FLDDEFAULT
-
+      if { [fstdfield configure $Field -set]==0 } {
+         dataspec copy $Spec FLDDEFAULT
+      }
+      
       #----- Set a colormap if not done
       set map [dataspec configure $Spec -colormap]
       if { $map=="" } {
@@ -1185,6 +1181,66 @@ proc FSTD::ParamOwnership { { Fields { } } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <FSTD::ParamGetMode>
+# Creation : Novemnre 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Recuperer l'identificateur des parametres selon le mode
+#
+# Parametres :
+#   <Field>  : Champs dont on recupere l'identificateur
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FSTD::ParamGetMode { Field } {
+   variable Param
+
+   switch $Param(Mode) {
+      "FLD"    { set var $Field }
+      "VAR"    { set var [fstdfield define $Field -NOMVAR] }
+      "TYPVAR" { set var [fstdfield define $Field -TYPVAR] }
+      "LEVEL"  { set var [fstdfield stats  $Field -level] }
+      "IP1"    { set var [fstdfield define $Field -IP1] }
+      "IP2"    { set var [fstdfield define $Field -IP2] }
+      "IP3"    { set var [fstdfield define $Field -IP3] }
+      "ETIKET" { set var [fstdfield define $Field -ETIKET] }
+      "DATEO"  { set var [fstdfield define $Field -DATEO] }
+      "FILE"   { set var [fstdfield define $Field -FID] }
+   }
+   
+   return $var
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FSTD::ParamSetDefault>
+# Creation : Novemnre 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Definir les parametres par defaut pour un champ
+#
+# Parametres :
+#   <Field>  : Champ
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FSTD::ParamSetDefault { Field args } {
+   variable Data
+   
+   set var [FSTD::ParamGetMode $Field]
+
+   eval dataspec configure $var $args
+   FSTD::ParamUpdate $Field
+   FSTD::ParamGet $var
+   FSTD::ParamPut False
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <FSTD::ParamUpdate>
 # Creation : Mai 2006 - J.P. Gauthier - CMC/CMOE
 #
@@ -1220,19 +1276,8 @@ proc FSTD::ParamUpdate { { Fields { } } } {
 
          catch { fstdfield define $fld -grid $Param(GridNo) }
 
-         #----- Get the name of the configuration object
-         switch $Param(Mode) {
-            "FLD"    { set var $fld }
-            "VAR"    { set var [fstdfield define $fld -NOMVAR] }
-            "TYPVAR" { set var [fstdfield define $fld -TYPVAR] }
-            "LEVEL"  { set var [fstdfield stats  $fld -level] }
-            "IP1"    { set var [fstdfield define $fld -IP1] }
-            "IP2"    { set var [fstdfield define $fld -IP2] }
-            "IP3"    { set var [fstdfield define $fld -IP3] }
-            "ETIKET" { set var [fstdfield define $fld -ETIKET] }
-            "DATEO"  { set var [fstdfield define $fld -DATEO] }
-            "FILE"   { set var [fstdfield define $fld -FID] }
-         }
+         #----- Get configuration mode
+         set var [FSTD::ParamGetMode $fld]
 
          #----- Do not process animator fields
          if { [string match ANI.* $var] } {

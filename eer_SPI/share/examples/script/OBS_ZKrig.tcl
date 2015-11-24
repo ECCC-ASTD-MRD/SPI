@@ -69,6 +69,8 @@ fstdfield create TZH $nj 1 1 Float32
 fstdfield define TZH -NOMVAR ^> -TYPVAR X -GRTYP X -ETIKET XSECTION -IP1 [lindex $gdesc 0] -IP2 [lindex $gdesc 1] -IP3 [lindex $gdesc 2]
 fstdfield define TZH -DATA 0 [list $elevs]
 
+Log::Print INFO "Check values: $elevs == [fstdfield define TZH -DATA 0]"
+
 for { set i 0 } { $i < $ni } { incr i } {
    fstdfield stats TIC -gridvalue $i 0 [lindex $coords [expr $i*2]]
    fstdfield stats TAC -gridvalue 0 $i [lindex $coords [expr $i*2+1]]
