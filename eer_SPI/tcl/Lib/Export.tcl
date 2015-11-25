@@ -309,7 +309,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       return False
    }
 
-   set f 0
+   set f    ""
    set file [file rootname $Path]
    set ext  [file extension $Path]
      
@@ -331,7 +331,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       #----- Create filename 
       set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $file]
 
-      if { $Format=="KMZ" && !$f } {
+      if { $Format=="KMZ" && $f=="" } {
          set file $name     
          set f [open ${file}.kml w]
          
