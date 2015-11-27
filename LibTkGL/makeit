@@ -271,11 +271,17 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/${EXPAT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- curl
-   echo "Building ${TMP_PATH}/${CURL}/build.log"
-   mkdir ${TMP_PATH}/${CURL}
-   cd ${TMP_PATH}/${CURL}
-   (${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
-   make install) > ${TMP_PATH}/${CURL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   if [ -x /usr/bin/curl-config ]; then
+      echo "Found curl, using system version `/usr/bin/curl-config --version`"
+      LIBCURL_PATH=/usr
+   else
+      echo "Building ${TMP_PATH}/${CURL}/build.log"
+      LIBCURL_PATH=${TMP_PATH}
+      mkdir ${TMP_PATH}/${CURL}
+      cd ${TMP_PATH}/${CURL}
+      (${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
+      make install) > ${TMP_PATH}/${CURL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
 
    #----- sqlite
 #   if [[ $ARCH != "AIX" ]]; then
@@ -432,7 +438,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
       --with-expat=${LIB_PATH} \
-      --with-curl=${LIB_PATH}/bin/curl-config \
+      --with-curl=${LIBCURL_PATH}/bin/curl-config \
       --with-xml2=${LIBXML_PATH}/bin/xml2-config \
       --with-hdf4=${LIB_PATH} \
       --with-netcdf=${LIB_PATH} \
@@ -469,7 +475,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-mysql=${LIB_PATH_OPS}/${MYSQL}/bin/mysql_config \
       --with-sqlite3=no \
       --with-expat=${LIB_PATH} \
-      --with-curl=${LIB_PATH}/bin/curl-config \
+      --with-curl=${LIBCURL_PATH}/bin/curl-config \
       --with-geos=${LIB_PATH}/bin/geos-config \
       --with-hdf4=${LIB_PATH} \
       --with-hdf5=${LIB_PATH} \
