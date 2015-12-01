@@ -83,6 +83,13 @@ fstdfield write TAC FILEOUT 0 True
 fstdfield define TTETA -NOMVAR PRES
 fstdfield write TTETA FILEOUT 0 True
 
+#----- Testing pressure offset fo 10mb
+fstdfield stats TTETA -poff 10 
+fstdgrid pressure TTETA P0
+
+fstdfield define TTETA -NOMVAR P10
+fstdfield write TTETA FILEOUT 0 True
+
 fstdfield free TTHYB P0 TIC TAC
 fstdfile close FILEIN FILEOUT
 

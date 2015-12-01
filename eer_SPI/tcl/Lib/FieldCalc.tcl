@@ -881,7 +881,14 @@ proc FieldCalc::Operand { VP Fields { Result "" }} {
    }
 
    catch { .fieldcalc.expr.param configure -state disabled }
-
+   
+   #----- Re-enable all fields
+   catch {
+      foreach fld $Data(Fields$VP) {
+         fstdfield configure $fld -active True        
+      }
+   }
+   
    #----- If no operand available, do nothing
    if { ![FieldCalc::IsOperand $VP] } {
       return

@@ -60,6 +60,8 @@ fstdfield create OUT [fstdfield define P0 -NI] [fstdfield define P0 -NJ] [llengt
 fstdfield stats OUT -leveltype HYBRID -levels $levels -top 0.1 -ref 800.0 -coef 1.6
 fstdfield configure OUT -interpdegree LINEAR
 
+#fstdfield stats OUT -poff -100
+
 #----- Interpolate3D fields
 foreach var $vars {
    Log::Print INFO "Interpolating $var"
