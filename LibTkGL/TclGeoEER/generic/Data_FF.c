@@ -1348,7 +1348,7 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  * Remarques :
  *
- *   La numerotation interne des vertex et des cotes/divisions d'un voxel est:
+ *   La numerotation interne des vertex et des cotes/divisions d'une cellule est:
  *
  *           4
  *       3 ----- 2

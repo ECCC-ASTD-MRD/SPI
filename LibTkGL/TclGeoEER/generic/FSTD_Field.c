@@ -190,11 +190,11 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
 
    int ni,nj,ig;
    char grtyp[2];
-
+   
    // If the subgrid index is different from thte current
    if (Field->GRef->Grid[0]=='U' && N!=Field->GRef->NId && N<=Field->GRef->NbId) {
       // Clean positionnal data
-      Data_Clean(Field,1,1,1);
+      Data_Clean(Field,1,0,1);
 
       Field->GRef->NId=N;
 
@@ -842,7 +842,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
    }
 
-   /*Recuperer tout les niveaux disponibles*/
+   // Recuperer tout les niveaux disponibles
    if (FieldFrom->ReadCube)
       FieldFrom->ReadCube(Interp,FieldFrom,0,0.0,0.0,NULL);
 
@@ -896,7 +896,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       return(TCL_ERROR);
    }
 
-   /* Inter ET/OU Extrapolation */
+   // Inter ET/OU Extrapolation 
    for(i=0;i<3;i++) {
       if (FieldFrom->Def->Data[i]) {
          if (!FieldTo->Def->Data[i]) {

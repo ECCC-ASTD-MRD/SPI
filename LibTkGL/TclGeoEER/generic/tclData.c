@@ -1333,9 +1333,11 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
    int n=0;
 
    if (Data) {
-      if (Pos && Data->GPos) {
-         GeoPos_Free(Data->GPos);
-         Data->GPos=NULL;
+      if (Pos) {
+         if (Data->GPos) {
+            GeoPos_Free(Data->GPos);
+            Data->GPos=NULL;
+         }
 
          if (Data->Def) {
             if (Data->Def->Pres)  {

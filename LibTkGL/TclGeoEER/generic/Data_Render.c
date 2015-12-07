@@ -197,12 +197,13 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    }
 
    for(u=u0;u<=u1;u++) {
+
       // Point to subgrid data within global data array
       if (Field->SDef) {
          Field->GRef->NId=u;
          Field->Def=Field->SDef[Field->GRef->NId];
       }
-
+      
       glPushName(PICK_FSTDFIELD);
       if (Mode==GL_ALL || Mode==GL_VECTOR) {
 

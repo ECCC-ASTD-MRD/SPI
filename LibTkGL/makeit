@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.10.2"
+VERSION="7.10.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_${ORDENV_PLAT}
