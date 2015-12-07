@@ -33,10 +33,10 @@ proc Macro::ModelQuebec::Execute { } {
    variable Error
 
    Macro::Doing "Reading model data"
-   model read Ground    /local/disk1/afsr005/3DModel/Quebec/terrain.mdl
-   model read Building1 /local/disk1/afsr005/3DModel/Quebec/public.mdl
-   model read Building2 /local/disk1/afsr005/3DModel/Quebec/maison.mdl
-   model read Building3 /local/disk1/afsr005/3DModel/Quebec/mur.mdl
+   model read Ground    /cnfs/ops/production/cmoe/geo/3DModel/Quebec/terrain.mdl
+   model read Building1 /cnfs/ops/production/cmoe/geo/3DModel/Quebec/public.mdl
+   model read Building2 /cnfs/ops/production/cmoe/geo/3DModel/Quebec/maison.mdl
+   model read Building3 /cnfs/ops/production/cmoe/geo/3DModel/Quebec/mur.mdl
 
    model material Ground -transparency  0.9
    model material Ground -emissive #0F1E00
@@ -49,9 +49,9 @@ proc Macro::ModelQuebec::Execute { } {
    model define Building3 -georef 3DREF
    model define Ground    -georef 3DREF
 
-   model read Helico /local/disk1/afsr005/3DModel/Quebec/hughe500.mdl
-   model read F18    /local/disk1/afsr005/3DModel/Quebec/F18.mdl
-   model read 747    /local/disk1/afsr005/3DModel/Quebec/747.mdl
+   model read Helico /cnfs/ops/production/cmoe/geo/3DModel/Quebec/hughe500.mdl
+   model read F18    /cnfs/ops/production/cmoe/geo/3DModel/Quebec/F18.mdl
+   model read 747    /cnfs/ops/production/cmoe/geo/3DModel/Quebec/747.mdl
 
    model matrix Helico -locate 46.8086773762 -71.2179046536 125
    model matrix Helico -rotate -90.0 0.0 80.0
@@ -71,13 +71,13 @@ proc Macro::ModelQuebec::Execute { } {
    model material Helico -shininess 0.9
    model material Helico -transparency  1.0
 
-   model read 911 /local/disk1/afsr005/3DModel/Quebec/747.mdl
+   model read 911 /cnfs/ops/production/cmoe/geo/3DModel/Quebec/747.mdl
    model matrix 911 -locate 46.80794262 -71.217946 175
    model matrix 911 -rotate 70.0 0.0 0.0
    model matrix 911 -scale 0.3 0.3 0.3
 
-#   model read TST3DS /local/disk1/afsr005/3DModel/breguet/breguet.3DS
-#   model read TST3DS /local/disk1/afsr005/3DModel/Semi/a3dsemi.3ds
+#   model read TST3DS /cnfs/ops/production/cmoe/geo/3DModel/breguet/breguet.3DS
+#   model read TST3DS /cnfs/ops/production/cmoe/geo/3DModel/Semi/a3dsemi.3ds
 #   model matrix TST3DS -scale 10000 10000 10000
 
    Mapper::UpdateData $Page::Data(Frame) Ground Building1 Building2 Building3 Helico F18 747 911
