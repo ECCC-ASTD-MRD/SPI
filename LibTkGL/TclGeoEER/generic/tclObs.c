@@ -1886,13 +1886,13 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    double val;
    int    i,idx;
 
-   glEnable(GL_DEPTH_TEST);
    glLineWidth(Obs->Spec->Width+1);
+   glEnable(GL_DEPTH_TEST);
    if (Obs->Spec->Map && Obs->Spec->Map->Alpha) {
       glEnable(GL_BLEND);
    }
 
-   /*Height markers*/
+   // Height markers
    glColor3us(0x00,0x00,0x00);
    if (Obs->Spec->Style==2 || Obs->Spec->Style==4) {
       glBegin(GL_LINES);
@@ -1909,7 +1909,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       glEnd();
    }
 
-   /*Shadow (Ground zero)*/
+   // Shadow (Ground zero)
    if (Obs->Spec->Style==3 || Obs->Spec->Style==4) {
       glBegin(GL_LINE_STRIP);
       for (i=0;i<Obs->Loc->Nb;i++) {
@@ -1926,7 +1926,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       glEnd();
    }
 
-   /*Ribbon*/
+   // Ribbon
    if (Obs->Spec->Style==5) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
       glDisable(GL_CULL_FACE);
@@ -1951,7 +1951,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       glEnd();
    }
 
-   /*3D Line*/
+   // 3D Line
    glBegin(GL_LINE_STRIP);
    for (i=0;i<Obs->Loc->Nb;i++) {
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
@@ -1966,8 +1966,8 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    }
    glEnd();
 
-   glDisable(GL_DEPTH_TEST);
    glDisable(GL_BLEND);
+   if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
 }
 
 int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
@@ -2044,7 +2044,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
       }
    }
 
-   if (Obs->Spec->RenderVol) {
+   if (GLRender->GLZBuf || Obs->Spec->RenderVol) {
       glEnable(GL_DEPTH_TEST);
    }
 
@@ -2096,7 +2096,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
                continue;
             }
             glPushMatrix();
-            glTranslated(pix[0],pix[1],0.0);
+            glTranslated(pix[0],pix[1],-pix[2]);
          } else {
             glPushMatrix();
             Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
@@ -2142,9 +2142,10 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
    glPopName();
 
+   if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
+
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
-   glDisable(GL_DEPTH_TEST);
    glDisableClientState(GL_VERTEX_ARRAY);
 
    return(1);
@@ -2179,6 +2180,8 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    if (!Obs->Def->Data[1])
       return;
 
+   if (GLRender->GLZBuf) glEnable(GL_DEPTH_TEST);
+   
    // Afficher toutes les barbules
    glMatrixMode(GL_MODELVIEW);
    glPolygonMode(GL_FRONT,GL_FILL);
@@ -2216,7 +2219,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
          }
          glPushMatrix();
          glPushName(i);
-         glTranslated(pix[0],pix[1],0.0);
+         glTranslated(pix[0],pix[1],-pix[2]);
          Data_RenderBarbule(Obs->Spec->RenderVector,1,0.0,0.0,0.0,0.0,((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),NULL);
          glPopMatrix();
       } else {
@@ -2231,6 +2234,8 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
       Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
    }
    glPopName();
+   
+   if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
 }
 
 /*----------------------------------------------------------------------------
