@@ -160,7 +160,15 @@ set rsum [R exec -get {sum(rfld)}]
 set tsum [vexpr NIL ssum(FLD)]
 
 if { $rsum != $tsum } {
-    Log::Print ERROR "The result doesn't match \[$rsum\] != \[$tsum\]"
+    Log::Print ERROR "Sum of the field : the result doesn't match \[$rsum\] != \[$tsum\]"
+}
+
+fstdfield stats FLD -matrix mtx
+#----- Note: mtx is j,i instead of i,j
+set v1 $mtx(45,22)
+set v2 [R exec -get {rfld[22,45]}]
+if { $v1 != $v2 } {
+    Log::Print ERROR "Index \[22,45\] of the field differs : \[$v1\] != \[$v2\]"
 }
 
 fstdfield free FLD
