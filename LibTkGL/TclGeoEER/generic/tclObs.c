@@ -1842,11 +1842,36 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->Style)
       Obs_RenderPath(Interp,Obs,VP,Proj);
 
+   if (Obs->Spec->Flat) {
+      Projection_UnClip(Proj);
+      glMatrixMode(GL_PROJECTION);
+      glPushMatrix();
+      if (GLMode==GL_SELECT) {
+         glLoadMatrixd(VP->GLPick);
+      } else {
+        glLoadIdentity();
+      }
+      gluOrtho2D(0,VP->Width,0,VP->Height);
+
+      glMatrixMode(GL_MODELVIEW);
+      glPushMatrix();
+      glLoadIdentity();
+   } else {
+      glMatrixMode(GL_MODELVIEW);
+   }
+
    if (Obs->Spec->Icon)
       Obs_RenderIcon(Interp,Obs,VP,Proj);
 
    if (Obs->Spec->RenderVector)
       Obs_RenderVector(Interp,Obs,VP,Proj);
+
+   if (Obs->Spec->Flat) {
+      glPopMatrix();
+      glMatrixMode(GL_PROJECTION);
+      glPopMatrix();
+      Projection_Clip(Proj);
+   }
 
    if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord))
       Obs_RenderInfo(Interp,Obs,VP,Proj);
@@ -1950,6 +1975,10 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    int    i,idx=0,n;
    float  sz,z;
    float  val;
+   Vect3d pix;
+
+   if (!Obs->Spec->Icon)
+      return(0);
 
    if (Interp) {
       Tk_CanvasPsColor(Interp,VP->canvas,Obs->Spec->Outline);
@@ -1962,23 +1991,21 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
       }
    }
 
-   glMatrixMode(GL_MODELVIEW);
    glLineWidth(2.0);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    glDisable(GL_CULL_FACE);
    glPushName(PICK_OBS);
 
-   if (Obs->Spec->Icon) {
-      glEnableClientState(GL_VERTEX_ARRAY);
-      glVertexPointer(2,GL_DOUBLE,0,IconList[Obs->Spec->Icon].Co);
-   }
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glVertexPointer(2,GL_DOUBLE,0,IconList[Obs->Spec->Icon].Co);
 
    if (Obs->Spec->Map && Obs->Spec->Map->Alpha) {
       glEnable(GL_BLEND);
    }
 
-   /*Outline mode*/
-   if (Obs->Spec->Width && Obs->Spec->Icon && Obs->Spec->RenderTexture) {
+   // Outline mode
+   sz=(Obs->Spec->Flat?1.0:VP->Ratio)*(Obs->Spec->Size*0.5+Obs->Spec->Width);
+   if (Obs->Spec->Width && Obs->Spec->RenderTexture) {
       for (i=0;i<Obs->Loc->Nb;i++) {
          if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
             continue;
@@ -1987,13 +2014,19 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          VAL2COL(idx,Obs->Spec,val);
 
          if (idx>=0) {
+            if (Obs->Spec->Flat) {
+               if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
+                  continue;
+               }
+               glPushMatrix();
+               glTranslated(pix[0],pix[1],0.0);
+            } else {
+               glPushMatrix();
+               Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
+               z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
+               glTranslated(0.0,0.0,z);
+            }
             glPushName(i);
-            glPushMatrix();
-            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
-            z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
-            glTranslated(0.0,0.0,z);
-
-            sz=VP->Ratio*(Obs->Spec->Size*0.5+Obs->Spec->Width);
 
             if (Interp) {
                glFeedbackInit(IconList[Obs->Spec->Icon].Nb*8,GL_2D);
@@ -2015,7 +2048,8 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
       glEnable(GL_DEPTH_TEST);
    }
 
-   /*Display icons*/
+   // Display icons
+   sz=(Obs->Spec->Flat?1.0:VP->Ratio)*Obs->Spec->Size*0.5;
    for (i=0;i<Obs->Loc->Nb;i++) {
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
@@ -2039,8 +2073,6 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
       if (idx>=0 || (!OBSVALID(val) && (!Obs->Spec->InterNb && Obs->Spec->Max==((float*)Obs->Def->Data[0])[Obs->Max] && Obs->Spec->Min==((float*)Obs->Def->Data[0])[Obs->Min]))) {
 
-         sz=Obs->Spec->Size*0.5*VP->Ratio;
-
          if (OBSVALID(val)) {
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             if (Obs->Spec->RenderTexture && Obs->Spec->Map) {
@@ -2059,47 +2091,52 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             }
          }
 
-         if (Obs->Spec->Icon) {
-
-            glPushName(i);
+         if (Obs->Spec->Flat) {
+            if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
+               continue;
+            }
+            glPushMatrix();
+            glTranslated(pix[0],pix[1],0.0);
+         } else {
             glPushMatrix();
             Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
             z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
             glTranslated(0.0,0.0,z);
-
-            if (Interp) {
-               glFeedbackInit(IconList[Obs->Spec->Icon].Nb*40,GL_2D);
-            }
-            glScalef(sz,sz,1.0);
-            glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
-
-            if (Obs->Spec->RenderVol && OBSVALID(val)) {
-               if (Obs->Spec->RenderVol==-1) {
-                  z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
-               } else {
-                  z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
-               }
-               glDisable(GL_STENCIL_TEST);
-               glBegin(GL_QUAD_STRIP);
-               for (n=0;n<IconList[Obs->Spec->Icon].Nb*2;n+=2) {
-                  glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],0);
-                  glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],z);
-               }
-               glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],0);
-               glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],z);
-               glEnd();
-               glTranslated(0.0,0.0,z);
-               glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
-               glEnable(GL_STENCIL_TEST);
-            }
-
-            if (Interp) {
-               glFeedbackProcess(Interp,GL_2D);
-            }
-
-            glPopMatrix();
-            glPopName();
          }
+         glPushName(i);
+         
+         if (Interp) {
+            glFeedbackInit(IconList[Obs->Spec->Icon].Nb*40,GL_2D);
+         }
+         glScalef(sz,sz,1.0);
+         glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
+
+         if (Obs->Spec->RenderVol && OBSVALID(val)) {
+            if (Obs->Spec->RenderVol==-1) {
+               z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
+            } else {
+               z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
+            }
+            glDisable(GL_STENCIL_TEST);
+            glBegin(GL_QUAD_STRIP);
+            for (n=0;n<IconList[Obs->Spec->Icon].Nb*2;n+=2) {
+               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],0);
+               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],z);
+            }
+            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],0);
+            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],z);
+            glEnd();
+            glTranslated(0.0,0.0,z);
+            glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
+            glEnable(GL_STENCIL_TEST);
+         }
+
+         if (Interp) {
+            glFeedbackProcess(Interp,GL_2D);
+         }
+
+         glPopMatrix();
+         glPopName();
       }
    }
 
@@ -2111,6 +2148,89 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    glDisableClientState(GL_VERTEX_ARRAY);
 
    return(1);
+}
+
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Obs_RenderVector>
+ * Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectuer le rendu vectoriel
+ *
+ * Parametres :
+ *   <Interp> : L'interpreteur Tcl
+ *   <Obs>    : Observations
+ *   <VP>     : Le viewport ou le rendu doit etre fait
+ *   <Proj>   : La projection courante
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
+
+   int i,idc;
+   Vect3d pix;
+
+   extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
+
+   if (!Obs->Def->Data[1])
+      return;
+
+   // Afficher toutes les barbules
+   glMatrixMode(GL_MODELVIEW);
+   glPolygonMode(GL_FRONT,GL_FILL);
+   glLineWidth(Obs->Spec->Width);
+   glPushName(PICK_OBS);
+
+   if (Obs->Spec->Outline) {
+      glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
+   } else {
+      glColor3us(0,0,0);
+   }
+
+   if (Interp) {
+      glFeedbackInit(Obs->Loc->Nb*200,GL_2D);
+      Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n0 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
+      Tk_CanvasPsColor(Interp,VP->canvas,Obs->Spec->Outline);
+   }
+
+   for(i=0;i<Obs->Loc->Nb;i++) {
+      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
+         continue;
+      }
+      if (Obs->Spec->MapAll && Obs->Spec->Map) {
+         VAL2COL(idc,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
+         if (Interp) {
+            CMap_PostscriptColor(Interp,Obs->Spec->Map,idc);
+         } else {
+            glColor4ubv(Obs->Spec->Map->Color[idc]);
+         }
+      }
+
+      if (Obs->Spec->Flat) {
+         if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
+            continue;
+         }
+         glPushMatrix();
+         glPushName(i);
+         glTranslated(pix[0],pix[1],0.0);
+         Data_RenderBarbule(Obs->Spec->RenderVector,1,0.0,0.0,0.0,0.0,((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),NULL);
+         glPopMatrix();
+      } else {
+         glPushName(i);
+         Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
+      }
+      glPopName();
+   }
+
+   if (Interp) {
+      i=glFeedbackProcess(Interp,GL_2D);
+      Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
+   }
+   glPopName();
 }
 
 /*----------------------------------------------------------------------------
@@ -2241,76 +2361,6 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    glPopMatrix();
 
    Projection_Clip(Proj);
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <Obs_RenderVector>
- * Creation : Fevrier 2003 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Effectuer le rendu vectoriel
- *
- * Parametres :
- *   <Interp> : L'interpreteur Tcl
- *   <Obs>    : Observations
- *   <VP>     : Le viewport ou le rendu doit etre fait
- *   <Proj>   : La projection courante
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
-
-   int i,idc;
-
-   extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
-
-   if (!Obs->Def->Data[1])
-      return;
-
-   /*Afficher toutes les barbules*/
-   glMatrixMode(GL_MODELVIEW);
-   glPolygonMode(GL_FRONT,GL_FILL);
-   glLineWidth(Obs->Spec->Width);
-   glPushName(PICK_OBS);
-
-   if (Obs->Spec->Outline) {
-      glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
-   } else {
-      glColor3us(0,0,0);
-   }
-
-   if (Interp) {
-      glFeedbackInit(Obs->Loc->Nb*200,GL_2D);
-      Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n0 setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
-      Tk_CanvasPsColor(Interp,VP->canvas,Obs->Spec->Outline);
-   }
-
-   for(i=0;i<Obs->Loc->Nb;i++) {
-      if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
-         continue;
-      }
-      if (Obs->Spec->MapAll && Obs->Spec->Map) {
-         VAL2COL(idc,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
-         if (Interp) {
-            CMap_PostscriptColor(Interp,Obs->Spec->Map,idc);
-         } else {
-            glColor4ubv(Obs->Spec->Map->Color[idc]);
-         }
-      }
-
-      glPushName(i);
-      Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
-      glPopName();
-   }
-
-   if (Interp) {
-      i=glFeedbackProcess(Interp,GL_2D);
-      Tcl_AppendResult(Interp,"stroke\n",(char*)NULL);
-   }
-   glPopName();
 }
 
 /*----------------------------------------------------------------------------

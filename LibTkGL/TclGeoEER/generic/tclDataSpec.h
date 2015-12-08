@@ -133,6 +133,7 @@ typedef struct TDataSpec {
    int             Icon;                /*Icone*/
    int             Mark;                /*Marquage*/
    int             Style;               /*Style*/
+   int             Flat;                /*Flatten (2D)*/
    char           *LabelVar;            /*Variable pour les libelles*/
    char           *SizeVar;             /*Variable pour les dimensions*/
    double          Size,SizeRange,SizeMin,SizeMax;/*Dimension*/

@@ -48,7 +48,7 @@ namespace eval Obs {
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
    dataspec create OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT \
-      -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
+      -flat 0 -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
    #----- Lecture des tables BUFR
@@ -107,6 +107,7 @@ namespace eval Obs {
    set Param(Coord)         0                                      ;#Coordonnees
    set Param(Value)         0                                      ;#Affichage des valeurs
    set Param(Volume)        0                                      ;#Affichage 3D
+   set Param(Flat)          0                                      ;#Affichage 2D flat
    set Param(Unit)          ""                                     ;#Type d'unite
    set Param(Desc)          ""                                     ;#Description
    set Param(Mantisse)      0                                      ;#Format d'affichage des valeurs
@@ -133,6 +134,7 @@ namespace eval Obs {
    set Lbl(Vector)         { "Vecteur " "Vector " }
    set Lbl(Topo)           { "Var 3D " "Var 3D " }
    set Lbl(Volume)         { "Volume" "Volume" }
+   set Lbl(Flat)           { "Plat 2D" "Flatten 2D" }
    set Lbl(Coord)          { "Coord" "Coord" }
    set Lbl(Info)           { "Info" "Info" }
    set Lbl(Format)         { "Format" "Format" }
@@ -169,6 +171,8 @@ namespace eval Obs {
                           "Relative pixel size of the icons" }
    set Bubble(Volume)   { "Afficher en 3D"
                           "Display in 3D" }
+   set Bubble(Flat)     { "Afficher plat 2D, les icônes ne seront pas apposé à la projection"
+                          "Display in flattened 2D, icons will not be flattened onton the projection" }
    set Bubble(Vector)   { "Type d'affichage vectoriel"
                           "Vectorial rendering type" }
    set Bubble(Map)      { "Palette utilisée pour les valeurs"
@@ -407,6 +411,14 @@ proc Obs::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.r.disp.vol.sel -side left
                pack $Data(Frame).def.r.disp.vol.lbl -side left
 
+            frame $Data(Frame).def.r.disp.flat
+               label $Data(Frame).def.r.disp.flat.lbl -text " [lindex $Lbl(Flat) $GDefs(Lang)]"
+               checkbutton $Data(Frame).def.r.disp.flat.sel -variable Obs::Param(Flat) -relief raised -bd 1 \
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0\
+                  -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
+               pack $Data(Frame).def.r.disp.flat.sel -side left
+               pack $Data(Frame).def.r.disp.flat.lbl -side left
+               
             frame $Data(Frame).def.r.disp.info
                label $Data(Frame).def.r.disp.info.lbl -text " [lindex $Lbl(Info) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.info.sel -variable Obs::Param(Label) -relief raised -bd 1 \
@@ -431,9 +443,9 @@ proc Obs::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.r.disp.value.sel -side left
                pack $Data(Frame).def.r.disp.value.lbl -side left
 
-            pack  $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.tex $Data(Frame).def.r.disp.vol \
+            pack  $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.tex \
                $Data(Frame).def.r.disp.value $Data(Frame).def.r.disp.info $Data(Frame).def.r.disp.coord \
-               $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.traj -side top -padx 5 -anchor w
+               $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.traj $Data(Frame).def.r.disp.vol $Data(Frame).def.r.disp.flat -side top -padx 5 -anchor w
          pack $Data(Frame).def.r.disp -side top -fill x
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
 
@@ -491,6 +503,7 @@ proc Obs::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.r.disp.p.col     $Bubble(Color)
    Bubble::Create $Data(Frame).def.r.disp.tex.sel   $Bubble(Texture)
    Bubble::Create $Data(Frame).def.r.disp.vol.sel   $Bubble(Volume)
+   Bubble::Create $Data(Frame).def.r.disp.flat.sel  $Bubble(Flat)
    Bubble::Create $Data(Frame).def.r.disp.info.sel  $Bubble(Info)
    Bubble::Create $Data(Frame).def.r.disp.coord.sel $Bubble(Coord)
    Bubble::Create $Data(Frame).def.r.disp.traj.sel  $Bubble(Traj)
@@ -548,6 +561,7 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Topo)      [dataspec configure $Spec -topography]
    set Param(Texture)   [dataspec configure $Spec -rendertexture]
    set Param(Volume)    [dataspec configure $Spec -rendervolume]
+   set Param(Flat)      [dataspec configure $Spec -flat]
    set Param(Coord)     [dataspec configure $Spec -rendercoord]
    set Param(Value)     [dataspec configure $Spec -rendervalue]
    set Param(Label)     [dataspec configure $Spec -renderlabel]
@@ -638,7 +652,7 @@ proc Obs::ParamSet { { Spec "" } } {
 
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
       -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
-      -rendervolume $Param(Volume) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
+      -rendervolume $Param(Volume) -flat $Param(Flat) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
       -min $min -max $max -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
