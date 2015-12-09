@@ -1402,7 +1402,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    FILE    *stream;
    char    title[256],name[256];
    char    *bytes=NULL,*head=NULL;
-   int     sz,sk,nb,n,hd,k,sec,dt,hh,ms;
+   int     sz,sk,nb,n,hd,k,min,sec,dt,hh,ms,ns;
    int     ntok,gntok,nltok;
    char    **tok,**gtok,**ltok;
    int     err=TCL_OK;
@@ -1589,11 +1589,15 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                /*Patch temporaire car le postscript niaise avec les paranthese non uniforme*/
                strrep(loc->Id[nb],'(',' ');
                strrep(loc->Id[nb],')',' ');
-            } else if (strcmp(gtok[n],"DATETIME")==0) {            /*Identificateur*/
-               hd=0;sec=0;dt=0;hh=0;
-               sscanf(tok[n],"%8d%02d%02d%02d%d",&dt,&hh,&hd,&sec,&ms);
-               hh=hh*10000+hd*100+sec;
-               loc->Date[nb]=System_DateTime2Seconds(dt,hh,1);
+            } else if (strcmp(gtok[n],"DATETIME")==0) {            /*date/time for location*/
+               min=0;sec=0;dt=0;hh=0;
+               ns=sscanf(tok[n],"%8d%02d%02d%02d%d",&dt,&hh,&min,&sec,&ms);
+               if (ns==1) {
+                  loc->Date[nb]=dt;
+               } else {
+                  hh=hh*10000+min*100+sec;
+                  loc->Date[nb]=System_DateTime2Seconds(dt,hh,1);
+               }
             } else if (strncmp(gtok[n],"DATA",4)==0) {       /*Values*/
                sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
                obs=Obs_Get(name);
