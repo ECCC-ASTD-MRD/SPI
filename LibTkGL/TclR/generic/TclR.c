@@ -56,21 +56,20 @@
 // Tcl includes
 #include <tcl.h>
 
-// FSTD includes
-#ifdef TCLR_FSTD_SUPPORT
-#include <tclData.h>
-#include <Def.h>
-#endif // TCLR_FSTD_SUPPORT
+// To load FSTD functions
+#include <dlfcn.h>
 
 // Interface defines
 
 typedef enum TclR_TTrace {TCLR_TRACE_NONE,TCLR_TRACE_ALL,TCLR_TRACE_LAST} TclR_TTrace;
 
 typedef struct TclR_Context {
-    int ProtectCnt;
-    TclR_TTrace TraceCmd;
-    TclR_TTrace TraceRes;
-    Tcl_Channel Chan;
+    int             ProtectCnt;
+    TclR_TTrace     TraceCmd;
+    TclR_TTrace     TraceRes;
+    Tcl_Channel     Chan;
+    int             (*EXT_DataStat)(Tcl_Interp*,char*,char*,int,int*,int*);
+    int             (*EXT_DataCopy)(Tcl_Interp*,char*,const char*,void*,int,int*);
 } TclR_Context;
 
 // Tcl defines
@@ -1384,25 +1383,22 @@ end:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
-#ifdef TCLR_FSTD_SUPPORT
-    double  *dptr;
-    int     i,j,ni,nj,n,rtype,*iptr,status=TCL_OK;
+    int     i,j,ni,nj,n,*iptr,status=TCL_OK;
     char    buf[sizeof(i)*3+1];
     SEXP    rvar,rdim,rdimnames,rrownames,rcolnames,rclass;
-    TData   *fstdfld;
-    TDef    *def;
 
-    // Get the field
-    if( !(fstdfld=Data_Get((char*)FID)) ) {
-        ENDERR("Not a valid field");
-    }
-    if( !(def=fstdfld->Def) ) {
-        ENDERR("No valid data Def in the field");
-    }
+    char    typebuf[19]; // The longest name we support is "unsigned long long"
 
-    // Calculate the dimensions
-    ni = def->Limits[0][1] - def->Limits[0][0] + 1;
-    nj = def->Limits[1][1] - def->Limits[1][0] + 1;
+    // Check if we have access to the library functions
+    if( !Context->EXT_DataStat && !(Context->EXT_DataStat=dlsym(NULL,"EXT_DataStat")) )
+        ENDERR("Symbol EXT_DataStat is not loaded. Is the TclGeoEER library loaded?");
+    if( !Context->EXT_DataCopy && !(Context->EXT_DataCopy = dlsym(NULL,"EXT_DataCopy")) )
+        ENDERR("Symbol EXT_DataCopy is not loaded. Is the TclGeoEER library loaded?");
+
+    // Get the type and size of the buffer we need to allocate
+    if( Context->EXT_DataStat(Interp,(char*)FID,typebuf,19,&ni,&nj) != TCL_OK ) {
+        ENDERR("\nCould not stat the field");
+    }
     n = ni*nj;
 
     if( n == 0 ) {
@@ -1412,27 +1408,30 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
         ENDERR("Negative number of values : there is something wrong with that field");
     }
 
-    // Find the R Type
-    switch(def->Type) {
-        case TD_UInt64:
-        case TD_Int64:
-        case TD_Float32:
-        case TD_Float64: rtype=REALSXP; break;
-        case TD_UByte:
-        case TD_Byte:
-        case TD_UInt16:
-        case TD_Int16:
-        case TD_UInt32:
-        case TD_Int32:   rtype=INTSXP; break;
-        case TD_Unknown:
-        case TD_Binary:
-        default:
-            ENDERR("Unsupported field type");
-            break;
-    }
+    // Allocate the memory for the data and copy it
+    if( !strcmp(typebuf,"float")
+            || !strcmp(typebuf,"double")
+            || !strcmp(typebuf,"unsigned long long") 
+            || !strcmp(typebuf,"long long")
+            || !strcmp(typebuf,"unsigned int") ) {
+        R_PROTECT( rvar=allocVector(REALSXP,n) );
+        if( Context->EXT_DataCopy(Interp,(char*)FID,"double",REAL(rvar),n,NULL) != TCL_OK ) {
+            ENDERR("\nCould not copy data");
+        }
+    } else if( !strcmp(typebuf,"char")
+            || !strcmp(typebuf,"short")
+            || !strcmp(typebuf,"int")
+            || !strcmp(typebuf,"unsigned char")
+            || !strcmp(typebuf,"unsigned short") ) {
+        R_PROTECT( rvar=allocVector(INTSXP,n) );
+        if( Context->EXT_DataCopy(Interp,(char*)FID,"int",INTEGER(rvar),n,NULL) != TCL_OK ) {
+            ENDERR("\nCould not copy data");
+        }
+    } else {
+        ENDERR("Unsupported type : [",typebuf,"]");
+    } 
 
-    // Allocate the R memory
-    R_PROTECT( rvar=allocVector(rtype,n) );
+    // Allocate the rest of the R memory
     R_PROTECT( rdim=allocVector(INTSXP,2) );
     R_PROTECT( rdimnames=allocVector(VECSXP,2) );
     R_PROTECT( rcolnames=allocVector(STRSXP,ni) );
@@ -1466,50 +1465,12 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     Rf_setAttrib(rvar,R_DimNamesSymbol,rdimnames);
     Rf_setAttrib(rvar,R_ClassSymbol,rclass);
 
-    // Data
-    switch(def->Type) {
-        case TD_UInt64:
-        case TD_Int64:
-        case TD_Float32:
-        case TD_Float64:
-            dptr = REAL(rvar);
-            for(i=def->Limits[0][0]; i<=def->Limits[0][1]; ++i) {
-                for(j=def->Limits[1][0]; j<=def->Limits[1][1]; ++j) {
-                    Def_Get(def,0,FIDX2D(def,i,j),*dptr++);
-                }
-            }
-            break;
-        case TD_UByte:
-        case TD_Byte:
-        case TD_UInt16:
-        case TD_Int16:
-        case TD_UInt32:
-        case TD_Int32:
-            iptr = INTEGER(rvar);
-            for(i=def->Limits[0][0]; i<=def->Limits[0][1]; ++i) {
-                for(j=def->Limits[1][0]; j<=def->Limits[1][1]; ++j) {
-                    Def_Get(def,0,FIDX2D(def,i,j),*iptr++);
-                }
-            }
-            break;
-        case TD_Unknown:
-        case TD_Binary: 
-        default:
-            // This error would have been catched when deciding the type, but what the hell...
-            ENDERR("Unsupported field type");
-            break;
-    }
-
     // Set the variable in the R environment
     Rf_defineVar(Rf_install(RName),rvar,R_GlobalEnv);
 
 end:
     R_UNPROTECT_ALL;
     return status;
-#else // TCLR_FSTD_SUPPORT
-    Tcl_AppendResult(Interp,"Not available. You need to compile with the EER option set and have the libeerUtils for this function to work.",NULL); 
-    return TCL_ERROR;
-#endif // TCLR_FSTD_SUPPORT
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1940,7 +1901,7 @@ int Tclr_Init(Tcl_Interp *Interp) {
         Tcl_AppendResult(Interp,"Could not allocate context memory",NULL);
         return TCL_ERROR;
     }
-    *context = (TclR_Context){0,TCLR_TRACE_NONE,TCLR_TRACE_NONE,Tcl_GetChannel(Interp,"stdout",NULL)};
+    *context = (TclR_Context){0,TCLR_TRACE_NONE,TCLR_TRACE_NONE,Tcl_GetChannel(Interp,"stdout",NULL),NULL,NULL};
 
     // Create the internal command used to access this extension
     Tcl_CreateObjCommand(Interp,"R",TclR_Cmd,(ClientData)context,TclR_CmdDelete);

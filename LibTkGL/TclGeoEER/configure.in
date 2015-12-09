@@ -214,7 +214,8 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tkCanvVP.c \
                  generic/tkGraphAxis.c \
                  generic/tkGraphItem.c \
-                 generic/tkGraphTephi.c])
+                 generic/tkGraphTephi.c \
+                 generic/Data_External.c])
 
 TEA_ADD_HEADERS([generic/Data_Calc.h
                  generic/Data_FF.h \

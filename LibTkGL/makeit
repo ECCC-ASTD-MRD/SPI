@@ -584,10 +584,6 @@ if [[ $SPI -eq 1 ]]; then
       --enable-threads \
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-eer=${LIB_EER} \
-      --with-gdal=${LIB_PATH}/bin/gdal-config \
-      --with-TclGeoEER-lib=${LIB_PATH}/lib \
-      --with-TclGeoEER-inc=${LIB_PATH}/TCL/include \
       --with-R=$(R RHOME)
    fi
    make install
@@ -602,8 +598,8 @@ if [[ $SPI -eq 1 ]]; then
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
 
-   ln -fs ../TCL/lib/TclR0.2/libTclR0.2.so
-   ln -fs libTclR0.2.so libTclR.so
+   ln -fs ../TCL/lib/TclR0.3/libTclR0.3.so
+   ln -fs libTclR0.3.so libTclR.so
 
    cd ${SRC_PATH}
 fi
