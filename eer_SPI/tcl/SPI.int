@@ -653,7 +653,7 @@ proc SPI::WindowMenu { } {
       .menu.file.menu.type add command -label "[lindex $Lbl(MetObs) $GDefs(Lang)] ..." \
          -command { NowCaster::Window Obs; NowCaster::Obs::Add [FileBox::Create . "" Load ""] } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(Radar) $GDefs(Lang)] ..." \
-         -command { NowCaster::Window Radar; NowCaster::Radar::Add [FileBox::Create . "" Load ""] } -underline 0
+         -command { NowCaster::Window Radar; NowCaster::Radar::Add [FileBox::Create . "" LoadPath ""] } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(GeoOGR) $GDefs(Lang)] ..." \
          -command { Mapper::Window; Mapper::Read [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::OGR::Data(Formats)]] False OGR } -underline 0
       .menu.file.menu.type add command -label "[lindex $Lbl(GeoGDAL) $GDefs(Lang)] ..." \
