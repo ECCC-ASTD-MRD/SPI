@@ -43,7 +43,7 @@ namespace eval NowCaster { } {
    set Data(Persistance) 0
    set Data(Sec)         [clock seconds]    ;#Date active
    set Data(Date)        [clock format $Data(Sec) -format "%Y%m%d %H:%M" -gmt true]
-   set Data(Sec0)        1e32
+   set Data(Sec0)        1e16
    set Data(Sec1)        $Data(Sec)
    set Data(Now)         False
 
