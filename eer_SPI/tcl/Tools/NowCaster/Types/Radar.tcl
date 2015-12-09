@@ -283,7 +283,12 @@ proc NowCaster::Radar::Available { Site } {
 
    set secs {}
    foreach file [lsort -dictionary [glob -nocomplain $Data(Path$Site)/*]] {
-      set date [lindex [split [file tail $file] :] 0]
+      set file [file tail $file]
+      
+      switch [string index $file 13] {
+         "~" {  set date [lindex [split $file :] 0]            ;#----- CMC format }
+         "." {  set date [join [lrange [split $file .] 0 2] .] ;#----- Archive format }
+      }        
       lappend secs [clock scan "[string range $date 0 7] [string range $date 8 11]" -gmt True]
    }
 
@@ -368,7 +373,9 @@ proc NowCaster::Radar::Now { Sec { Check False } } {
       if { ![radarscan is SCAN$site$Data(Sec)] } {
 
          set date [clock format $Data(Sec) -format "%Y%m%d%H%M" -gmt True]
-         set file [glob -nocomplain $Data(Path$site)/$date~~CONVOL:URP:$site:RADAR:*]
+         if { [set file [glob -nocomplain $Data(Path$site)/$date~~CONVOL:URP:$site:RADAR:*]]=="" } {
+            set file [glob -nocomplain $Data(Path$site)/$date..CONVOL.URP.$site.RADAR.*]
+         }
 
          if { [file exist $file] } {
             if { [catch { set Data(Scans$site) [radarfile open RADAR${site}$Data(Sec) read $file]} ] } {
@@ -461,7 +468,6 @@ proc NowCaster::Radar::Add { Path } {
    }
 
    #----- Read in the data
-
    if { [file isdirectory $Path] } {
       set site [file tail $Path]
       if { [lsearch -exact $Data(Sites) $site]==-1 } {

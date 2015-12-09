@@ -189,7 +189,7 @@ proc NowCaster::SetTimeScale { Sec0 { Sec1 0 } } {
    variable Data
 
    if { $Sec1 } {
-      if { $Data(Sec0)==1e32 } {
+      if { $Data(Sec0)==1e16 } {
          set Data(Sec1) $Sec1
       } else {
          set Data(Sec1) [expr $Data(Sec1)>$Sec1?$Data(Sec1):$Sec1]
