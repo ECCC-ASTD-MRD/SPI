@@ -459,7 +459,7 @@ namespace eval NowCaster::Obs { } {
    set Data(Type)        -1
    set Data(Spacing)     25
    set Data(Crowd)       0
-   set Data(Flat)        0
+   set Data(Flat)        1
    set Data(Levels)      { }
    set Data(Elems)       { }
    set Data(Item)        ""
@@ -747,7 +747,7 @@ proc NowCaster::Obs::Window { Frame } {
       frame $Frame.model.flat
          label $Frame.model.flat.lbl -text [lindex $Lbl(Flat) $GDefs(Lang)] -width 11 -anchor w
          checkbutton $Frame.model.flat.sel -variable NowCaster::Obs::Data(Flat) -relief sunken -bd 1 -overrelief raised -offrelief flat \
-            -selectcolor $GDefs(ColorFrame) -onvalue 0 -offvalue 1 -indicatoron False \
+            -selectcolor $GDefs(ColorFrame) -onvalue 1 -offvalue 0 -indicatoron False \
             -command { set NowCaster::Obs::Data(Flat$NowCaster::Obs::Data(CurrentObs)) $NowCaster::Obs::Data(Flat); NowCaster::Obs::ModelApply }
          pack $Frame.model.flat.lbl -side left
          pack $Frame.model.flat.sel -side left -fill x -expand True

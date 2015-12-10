@@ -2024,7 +2024,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
       return(0);
    }
 
-   if (Obs->Model->Flat) {
+   if (!Obs->Model->Flat) {
       Projection_UnClip(Proj);
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
@@ -2300,19 +2300,19 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            glPushName(nv);
 
                            if (Obs->Model->Flat) {
+                              Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
+                              glTranslated(0.0,0.0,ZM(Proj,co.Elev));
+                              glScalef(VP->Ratio,VP->Ratio,1.0);
+                           } else {
                               if (loc->Pix[0]!=0.0 && loc->Pix[1]!=0.0) {
                                  glTranslated(loc->Pix[0],ViewportY(VP)+VP->Height-loc->Pix[1],0.0);
                               } else {
                                  glTranslated(pix[0],pix[1],0.0);
                               }
-                           } else {
-                              Proj->Type->Locate(Proj,co.Lat,co.Lon,1);
-                              glTranslated(0.0,0.0,ZM(Proj,co.Elev));
-                              glScalef(VP->Ratio,VP->Ratio,1.0);
                            }
 
-                           dx=Obs->Model->Items[i].X*Obs->Model->Space+(Obs->Model->Flat?0:loc->Pix[0]);
-                           dy=-Obs->Model->Items[i].Y*Obs->Model->Space+(Obs->Model->Flat?0:-loc->Pix[1]);
+                           dx=Obs->Model->Items[i].X*Obs->Model->Space+(Obs->Model->Flat?loc->Pix[0]:0);
+                           dy=-Obs->Model->Items[i].Y*Obs->Model->Space+(Obs->Model->Flat?-loc->Pix[1]:0);
 
                            // Draw the position line if needed
                            if ((loc->Pix[0]!=0.0 || loc->Pix[1]!=0.0) && !line) {
@@ -2322,9 +2322,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               glBegin(GL_LINES);
                                  glVertex3d(0,0,0);
                                  if (Obs->Model->Flat) {
-                                    glVertex3d(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)+VP->Height-loc->Pix[1]),0.0);
-                                 } else {
                                     glVertex3d(dx,dy,0.0);
+                                 } else {
+                                    glVertex3d(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)+VP->Height-loc->Pix[1]),0.0);
                                  }
                               glEnd();
 
@@ -2337,7 +2337,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               v=spec->Width<<1;
                               glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
                               glPushMatrix();
-                              if (Obs->Model->Flat)
+                              if (!Obs->Model->Flat)
                                  glTranslated(pix[0]-loc->Pix[0],pix[1]-(ViewportY(VP)+VP->Height-loc->Pix[1]),0.0);
                               glScalef(v,v,1.0);
                               glDrawCircle(64,GL_POLYGON);
@@ -2521,7 +2521,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    }
 
 
-   if (Obs->Model->Flat) {
+   if (!Obs->Model->Flat) {
       glPopMatrix();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();

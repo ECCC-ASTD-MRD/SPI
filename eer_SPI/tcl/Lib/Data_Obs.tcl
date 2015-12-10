@@ -48,7 +48,7 @@ namespace eval Obs {
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
    dataspec create OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT \
-      -flat 0 -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
+      -flat True -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
    #----- Lecture des tables BUFR
@@ -134,7 +134,7 @@ namespace eval Obs {
    set Lbl(Vector)         { "Vecteur " "Vector " }
    set Lbl(Topo)           { "Var 3D " "Var 3D " }
    set Lbl(Volume)         { "Volume" "Volume" }
-   set Lbl(Flat)           { "Plat 2D" "Flatten 2D" }
+   set Lbl(Flat)           { "Projeté" "Projected" }
    set Lbl(Coord)          { "Coord" "Coord" }
    set Lbl(Info)           { "Info" "Info" }
    set Lbl(Format)         { "Format" "Format" }
@@ -414,7 +414,7 @@ proc Obs::ParamFrame { Frame Apply } {
             frame $Data(Frame).def.r.disp.flat
                label $Data(Frame).def.r.disp.flat.lbl -text " [lindex $Lbl(Flat) $GDefs(Lang)]"
                checkbutton $Data(Frame).def.r.disp.flat.sel -variable Obs::Param(Flat) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0\
+                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0 \
                   -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
                pack $Data(Frame).def.r.disp.flat.sel -side left
                pack $Data(Frame).def.r.disp.flat.lbl -side left

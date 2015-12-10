@@ -1846,7 +1846,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->Style)
       Obs_RenderPath(Interp,Obs,VP,Proj);
 
-   if (Obs->Spec->Flat) {
+   if (!Obs->Spec->Flat) {
       Projection_UnClip(Proj);
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
@@ -1870,7 +1870,7 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->RenderVector)
       Obs_RenderVector(Interp,Obs,VP,Proj);
 
-   if (Obs->Spec->Flat) {
+   if (!Obs->Spec->Flat) {
       glPopMatrix();
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
@@ -2008,7 +2008,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    }
 
    // Outline mode
-   sz=(Obs->Spec->Flat?1.0:VP->Ratio)*(Obs->Spec->Size*0.5+Obs->Spec->Width);
+   sz=(Obs->Spec->Flat?VP->Ratio:1.0)*(Obs->Spec->Size*0.5+Obs->Spec->Width);
    if (Obs->Spec->Width && Obs->Spec->RenderTexture) {
       for (i=0;i<Obs->Loc->Nb;i++) {
          if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
@@ -2019,16 +2019,16 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
          if (idx>=0) {
             if (Obs->Spec->Flat) {
+               glPushMatrix();
+               Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
+               z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
+               glTranslated(0.0,0.0,z);
+            } else {
                if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
                   continue;
                }
                glPushMatrix();
                glTranslated(pix[0],pix[1],0.0);
-            } else {
-               glPushMatrix();
-               Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
-               z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
-               glTranslated(0.0,0.0,z);
             }
             glPushName(i);
 
@@ -2053,7 +2053,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    }
 
    // Display icons
-   sz=(Obs->Spec->Flat?1.0:VP->Ratio)*Obs->Spec->Size*0.5;
+   sz=(Obs->Spec->Flat?VP->Ratio:1.0)*Obs->Spec->Size*0.5;
    for (i=0;i<Obs->Loc->Nb;i++) {
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
@@ -2096,16 +2096,16 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          }
 
          if (Obs->Spec->Flat) {
+            glPushMatrix();
+            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
+            z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
+            glTranslated(0.0,0.0,z);
+         } else {
             if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
                continue;
             }
             glPushMatrix();
             glTranslated(pix[0],pix[1],-pix[2]);
-         } else {
-            glPushMatrix();
-            Proj->Type->Locate(Proj,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,1);
-            z=ZM(Proj,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType));
-            glTranslated(0.0,0.0,z);
          }
          glPushName(i);
          
@@ -2218,6 +2218,9 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
       }
 
       if (Obs->Spec->Flat) {
+         glPushName(i);
+         Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
+      } else {
          if (!Projection_Pixel(Proj,VP,Obs->Loc->Coord[i],pix)) {
             continue;
          }
@@ -2226,9 +2229,6 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
          glTranslated(pix[0],pix[1],-pix[2]);
          Data_RenderBarbule(Obs->Spec->RenderVector,1,0.0,0.0,0.0,0.0,((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),NULL);
          glPopMatrix();
-      } else {
-         glPushName(i);
-         Data_RenderBarbule(Obs->Spec->RenderVector,0,0.0,Obs->Loc->Coord[i].Lat,Obs->Loc->Coord[i].Lon,ZRef_Level2Meter(Obs->Loc->Coord[i].Elev,Obs->LevelType),((float*)Obs->Def->Data[0])[i],((float*)Obs->Def->Data[1])[i],VP->Ratio*VECTORSIZE(Obs->Spec,((float*)Obs->Def->Data[0])[i]),Proj);
       }
       glPopName();
    }

@@ -1790,7 +1790,7 @@ TDataSpec *DataSpec_New(){
       spec->Icon=0;
       spec->Mark=0;
       spec->Style=0;
-      spec->Flat=0;
+      spec->Flat=1;
       spec->Stipple=NULL;
       spec->RangeNb=0;
       spec->PosNb=0;
