@@ -716,6 +716,10 @@ proc ProjCam::XYInit { Cam Frame VP X Y } {
    variable Data
 
    set Viewport::Map(Grabbed) [clock click -milliseconds]
+   
+   #----- Stop Flybys
+   set Animator::Fly(Length) 0
+   set Animator::Fly(Path)   ""
 
    set Data(TmpX) $X
    set Data(TmpY) $Y
@@ -962,6 +966,11 @@ proc ProjCam::ZoomBox { Canvas X0 Y0 X1 Y1 Width Height } {
 proc ProjCam::ZoomInit { Frame VP X Y } {
 
    set Viewport::Map(Grabbed) [clock click -milliseconds]
+   
+   #----- Stop Flybys
+   set Animator::Fly(Length) 0
+   set Animator::Fly(Path)   ""
+   
    set c $Frame.page.canvas
 
    $c create rectangle $X $Y $X $Y -tags RECTZOOM -outline red -width 2

@@ -962,12 +962,10 @@ proc Animator::Play { } {
    while (1) {
 
       #----- Calculer les frame de data et flyby
-
       if { $Play(Length) } { set Play(Frame) [expr $Play(Idx)%($Play(Length)+1)] }
       if { $Fly(Length)  } { set Fly(Frame)  [expr $Play(Idx)%($Fly(Length)+1)] }
 
       #----- Fly around
-
       if { $Fly(Length) } {
          set frame [expr $Play(Idx)*$Fly(Speed)]
          set coords [projcam define $Play(Page) -fly $frame]
@@ -983,7 +981,6 @@ proc Animator::Play { } {
       set info [lindex $Play(Frames) $Play(Frame)]
 
       #----- Recuperer l'information
-
       foreach vp $Play(VPs) {
          if { [info exists Play($vp$info)] } {
 
@@ -1014,7 +1011,6 @@ proc Animator::Play { } {
       Page::UpdateCommand $Play(Page)
 
       #----- Modifier les indicateurs
-
       if { $Play(Type)=="DATE" && $info!="" } {
          projection configure $Play(Page) -date $info
          set label [clock format $info -format "%T, %a %b %d %Y" -timezone :UTC]
@@ -1028,7 +1024,6 @@ proc Animator::Play { } {
       set Play(Label) "$label"
 
       #----- Imprimer dans un fichier
-
       if { $Play(File) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
@@ -1046,7 +1041,6 @@ proc Animator::Play { } {
          incr no
 
          #----- En impression on clean apres chaque frame
-
          foreach field $Play(Data) {
             if { [fstdfield is $field True] } {
                fstdfield clean $field
@@ -1055,15 +1049,13 @@ proc Animator::Play { } {
       }
 
       #----- On verifie les demandes d'arret
-
       update
-      if { $Play(Stop) } {
+      if { $Play(Stop) || (!$Play(Length) && !$Fly(Length)) } {
          set Play(Web) 0
          break
       }
 
       #----- Incrementer le frame
-
       if { $Play(Dir)==1 } {
          if { $Play(Idx)>=$Play(Idx1) } {
             if { $Play(Cycle) } {
@@ -1091,8 +1083,8 @@ proc Animator::Play { } {
             incr Play(Idx) $Play(Dir)
          }
       }
+      
       #----- Attendre le delai specifie
-
       after $Play(Delai)
    }
 
@@ -1327,7 +1319,7 @@ proc Animator::FlyPath { Cam Type } {
    set Fly(From)     ""
    set Fly(Up)       ""
    set Fly(Length)   0
-
+   
    switch $Type {
       "CIRCLE" {
          projcam configure $Cam -from $cam(From) -up $cam(Up)

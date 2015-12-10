@@ -2229,7 +2229,11 @@ proc Viewport::Resolution { Frame Res } {
 proc Viewport::Rotate { Frame { Lat -999 } { Lon -999 } { Zoom 0 } { From {} } { To {} } { Up {} } { Update True } } {
    variable Map
    variable Data
-
+  
+   #----- Stop Flybys
+   set Animator::Fly(Length) 0
+   set Animator::Fly(Path)   ""
+   
    if { [winfo exists $Frame] } {
 
       upvar #0 ProjCam::Data${Frame}::Cam cam
@@ -2424,6 +2428,10 @@ proc Viewport::RotateInit { Frame VP X Y } {
    variable Map
 
    set Map(Grabbed) [clock click -milliseconds]
+   
+   #----- Stop Flybys
+   set Animator::Fly(Length) 0
+   set Animator::Fly(Path)   ""
 
    if { [string range $VP 0 3]=="MINI" } {
       set ll [projection configure $VP -location]
@@ -2610,7 +2618,11 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 
    upvar #0 ProjCam::Data${Frame}::Cam  cam
 
-   set ProjCam::Data(Name)  ""
+   set ProjCam::Data(Name)   ""
+   
+   #----- Stop Flybys
+   set Animator::Fly(Length) 0
+   set Animator::Fly(Path)   ""
 
    #----- if we zoom, insert the previous zoom in the zoom back list
    if { $Zoom } {
