@@ -138,7 +138,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    variable Data
    variable Param
 
-   for { set no 0 } { $no < 20 } { incr no } {
+   for { set no 0 } { $no < 100 } { incr no } {
       if { $no ni $Data(BoxList) } {
          lappend Data(BoxList) $no
          break
