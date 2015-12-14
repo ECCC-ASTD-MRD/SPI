@@ -74,6 +74,7 @@ namespace eval FieldBox {
    set Data(Current)  ""               ;#Numero de boite ayant le focus
    set Data(BoxList)  ""               ;#Liste des numeros de boite FieldBox
    set Data(FIDList)  ""               ;#Liste des numeros de fichiers
+   set Data(No)       0                ;#FieldBox number
    
    set Param(ShowDesc)  False          ;#Afficher les descripteurs
    set Param(Desc)      { ^* >> ## !! HY }
@@ -171,12 +172,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
    variable Data
    variable Param
 
-   for { set no 0 } { $no < 100 } { incr no } {
-      if { $no ni $Data(BoxList) } {
-         lappend Data(BoxList) $no
-         break
-      }
-   }
+   lappend Data(BoxList) [set no [incr Data(No)]]
 
    set id  .fieldbox$no
    set spc Data$no

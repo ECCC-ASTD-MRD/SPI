@@ -56,6 +56,7 @@ namespace eval TrajBox {
 
    set Data(Current)  ""               ;#Numero de boite ayant le focus
    set Data(BoxList)  ""               ;#Liste des numeros de boite TrajBox
+   set Data(No)       0                ;#TrajBox number
 
    #----- Textes et labels
 
@@ -136,12 +137,7 @@ proc TrajBox::Create { Parent Title { Geom "" } } {
    variable Data
    variable Param
 
-   for { set no 0 } { $no < 20 } { incr no } {
-      if { $no ni $Data(BoxList) } {
-         lappend Data(BoxList) $no
-         break
-      }
-   }
+   lappend Data(BoxList) [set no [incr Data(No)]]
 
    set id  .trajbox$no
    set spc Data$no

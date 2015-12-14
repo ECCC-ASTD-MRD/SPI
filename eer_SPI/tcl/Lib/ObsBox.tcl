@@ -58,6 +58,7 @@ namespace eval ObsBox {
 
    set Data(Current)  ""               ;#Numero de boite ayant le focus
    set Data(BoxList)  ""               ;#Liste des numeros de boite ObsBox
+   set Data(No)       0                ;#ObsBox number
 
    #----- Textes et labels
 
@@ -138,12 +139,7 @@ proc ObsBox::Create { Parent Title { Geom "" } } {
    variable Data
    variable Param
 
-   for { set no 0 } { $no < 100 } { incr no } {
-      if { $no ni $Data(BoxList) } {
-         lappend Data(BoxList) $no
-         break
-      }
-   }
+   lappend Data(BoxList) [set no [incr Data(No)]]
 
    set id  .obsbox$no
    set spc Data$no
