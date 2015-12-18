@@ -622,8 +622,9 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
 
                if (Objc==2) {
                   obj=Tcl_NewListObj(0,NULL);
+                  if (index==4) index=0;
                   for(ii=0;ii<CMap->NbPixels;ii++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Curve[ii][index==4?0:index]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Curve[ii][index]));
                   }
                   Tcl_SetObjResult(Interp,obj);
                } else {

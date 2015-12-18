@@ -1093,7 +1093,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    GDAL_Band   *band;
    Tcl_Obj     *obj,*lst;
 
-   static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","STANDARD_DEV","RANGE",NULL };
+   static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","HISTOGRAM_EQUALIZED","STANDARD_DEV","RANGE",NULL };
    static CONST char *bands[] = { "red","green","blue","alpha",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
       "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch","-approx",NULL };
@@ -1204,6 +1204,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"index type [params]");
                return(TCL_ERROR);
             } else {
+               if (!band->Spec || !band->Spec->Map) { 
+                  Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Band must have a colormap assigned",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+
                if (Tcl_GetIntFromObj(Interp,Objv[++i],&b)==TCL_ERROR) {
                   if (Tcl_GetIndexFromObj(Interp,Objv[i],bands,"type",TCL_EXACT,&b)!=TCL_OK) {
                      return(TCL_ERROR);
@@ -1285,7 +1290,47 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
                         break;
 
-                     case 2: // STANDARD_DEV
+                     case 2: // HISTOGRAM-EQUALIZED
+                        if (Objc!=3 && Objc!=5) {
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type [min] [max]");
+                           return(TCL_ERROR);
+                        }
+                        if (!band->Stat)
+                           GDAL_BandGetStat(band);
+                        min=band->Stat[b].Min;
+                        max=band->Stat[b].Max;
+                        h=band->Spec->Map->NbPixels;
+
+                       if (Objc==4) 
+                           Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
+                        if (Objc==5) 
+                           Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
+
+                        if (!GDAL_BandGetHisto(band,b,h,min,max)) {
+                           Tcl_AppendResult(Interp,"\n   GDAL_BandStat: Unable to allocate histogram array",(char*)NULL);
+                           return(TCL_ERROR);
+                        }
+
+                        band->Spec->Map->Type[0][b]='\0';
+                        
+                        // Get stretching range
+                        i0=band->Stat[b].Histo[0];
+                        i1=0;
+                        for(c=0;c<h;c++) {
+                           i1+=band->Stat[b].Histo[c];
+                        }
+                        i1-=i0;
+
+                        // Apply equalized stretching
+                        cnt=0;
+                        for(c=0;c<h;c++) {
+                           cnt+=band->Stat[b].Histo[c];                             
+                           band->Spec->Map->Curve[c][0]=band->Spec->Map->Curve[c][1]=band->Spec->Map->Curve[c][2]=band->Spec->Map->Curve[c][3]=(float)(cnt-i0)*(h-1)/i1;
+                        }
+                        CMap_RatioDefine(band->Spec->Map);
+                        break;
+
+                     case 3: // STANDARD_DEV
                         if (Objc!=4 && Objc!=5) {
                            Tcl_WrongNumArgs(Interp,2,Objv,"band index type nb_stdev [clamp]");
                            return(TCL_ERROR);
@@ -1307,25 +1352,23 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         }
                         break;
 
-                     case 3: // RANGE
+                     case 4: // RANGE
                         if (Objc!=5) {
-                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type low high");
+                           Tcl_WrongNumArgs(Interp,2,Objv,"band index type min max");
                            return(TCL_ERROR);
                         }
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&min);
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&max);
-                        break;
+                        break;                       
                   }
 
-                  if (band->Spec->Map) {                     
-                     // In case of LUMINANCE or LUMINANCE_ALPHA, set all the same.
-                     if (band->Def->NC<3) {
-                        band->Spec->Map->Min[0]=band->Spec->Map->Min[1]=band->Spec->Map->Min[2]=band->Spec->Map->Min[3]=min;
-                        band->Spec->Map->Max[0]=band->Spec->Map->Max[1]=band->Spec->Map->Max[2]=band->Spec->Map->Max[3]=max;
-                     } else {
-                        band->Spec->Map->Min[b]=min;
-                        band->Spec->Map->Max[b]=max;
-                     }
+                  // In case of LUMINANCE or LUMINANCE_ALPHA, set all the same.
+                  if (band->Def->NC<3) {
+                     band->Spec->Map->Min[0]=band->Spec->Map->Min[1]=band->Spec->Map->Min[2]=band->Spec->Map->Min[3]=min;
+                     band->Spec->Map->Max[0]=band->Spec->Map->Max[1]=band->Spec->Map->Max[2]=band->Spec->Map->Max[3]=max;
+                  } else {
+                     band->Spec->Map->Min[b]=min;
+                     band->Spec->Map->Max[b]=max;
                   }
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(min));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(max));
