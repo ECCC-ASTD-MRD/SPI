@@ -998,17 +998,20 @@ void OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
    Tcl_HashSearch  ptr;
    Tcl_HashEntry  *entry=NULL;
 
-   TclY_LockHash();
-   entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
-   while (entry) {
-      layer=Tcl_GetHashValue(entry);
+   // Refresh only on position changes
+   if (Pos) {
+      TclY_LockHash();
+      entry=Tcl_FirstHashEntry(&OGR_LayerTable,&ptr);
+      while (entry) {
+         layer=Tcl_GetHashValue(entry);
 
-      if (layer && layer->Spec && layer->Spec==Spec) {
-         OGR_LayerClean(layer,-1);
+         if (layer && layer->Spec && layer->Spec==Spec) {
+            OGR_LayerClean(layer,-1);
+         }
+         entry=Tcl_NextHashEntry(&ptr);
       }
-      entry=Tcl_NextHashEntry(&ptr);
+      TclY_UnlockHash();
    }
-   TclY_UnlockHash();
 }
 
 /*--------------------------------------------------------------------------------------------------------------

@@ -64,14 +64,15 @@ Tcl_Obj *FSTD_HIDELIST=NULL;
 TDef_Type FSTD_TypeCheck(int Type,int Size) {
 
    switch(Type) {
-//      case 0: Type=TD_Binary;                                                          break;
+//      case 0: Type=TD_Binary;                                                                          break;
       case 0: Type=Size>1?(Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte):TD_Binary; break;
-      case 7: Type=TD_UByte;                                                           break;
-      case 2: Type=Size<8?TD_UInt32:(Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte);  break;
-      case 4: Type=Size<8?TD_UInt32:(Size>8?(Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int16):TD_Byte);      break;
+      case 7: Type=TD_UByte;                                                                             break;
+      case 3: 
+      case 2: Type=Size<8?TD_UInt32:(Size>8?(Size>16?(Size>32?TD_UInt64:TD_UInt32):TD_UInt16):TD_UByte); break;
+      case 4: Type=Size<8?TD_UInt32:(Size>8?(Size>16?(Size>32?TD_Int64:TD_Int32):TD_Int16):TD_Byte);     break;
       case 1:
       case 6:
-      case 5:  Type=Size>32?TD_Float64:TD_Float32;                                      break;
+      case 5:  Type=Size>32?TD_Float64:TD_Float32;                                                       break;
       default: App_Log(ERROR,"%s: Unknonw data type (DATYP=%i\n",__func__,Type);
    }
    return(Type);
