@@ -483,6 +483,7 @@ proc ColorBar::Update { Frame { State -1 } } {
    }
 
    if { $Data(Active$Frame) } {
+      #----- Check for data assigned to viewports
       foreach vp [Page::Registered $Frame Viewport] {
          set i -1
          foreach field [lindex [$Frame.page.canvas itemconfigure $vp -data] 4] {
@@ -509,10 +510,19 @@ proc ColorBar::Update { Frame { State -1 } } {
                if { [llength $specs] } {
                   lappend lst [ColorBar::Set $Frame $vp [incr i] $id $specs]
                }
+            } elseif { [ogrlayer is $field] } {
+               if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -mapvar]!="" } {
+                  lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+               }
+            } elseif { [gdalband is $field] } {
+               if { [gdalband configure $field -colormap]!="" && [gdalband configure $field -showmap] && [gdalband define $field -nb]==1  } {
+                  lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+               }
             }
          }
       }
 
+      #----- Check for data assigned directly to projection
       foreach field [projection configure $Frame -data] {
          if { [ogrlayer is $field] } {
             if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -mapvar]!="" } {
