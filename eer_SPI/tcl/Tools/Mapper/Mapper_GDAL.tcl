@@ -25,7 +25,7 @@ namespace eval Mapper::GDAL { } {
    set Data(Curve)       LINEAR
    set Data(Curves)      { EXPONENTIAL CUBIC SQUARE LINEAR SQUAREROOT CUBICROOT LOGARITHMIC QUADRATIC STEP16 STEP32 STEP64 STEP128 }
    set Data(Stretch)     ""
-   set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 2 98" "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90" "STANDARD_DEV 1" "STANDARD_DEV 2" }
+   set Data(Stretchs)    { MIN_MAX "PERCENT_CLIP 2 98" "PERCENT_CLIP 5 95" "PERCENT_CLIP 10 90" "STANDARD_DEV 1" "STANDARD_DEV 2" "HISTOGRAM_EQUALIZED" }
    set Data(Interp)      NEAREST
    set Data(Interps)     { NEAREST LINEAR }
    set Data(Mask)        False
@@ -694,6 +694,10 @@ proc Mapper::GDAL::ParamsSet { Object { CheckData True } } {
       if { $Data(BandX$Object)!=$Data(BandX) || $Data(BandY$Object)!=$Data(BandY) } {
          Mapper::GDAL::ReadPos $Object $Data(BandX) $Data(BandY)
       }
+      catch { unset Data(Histo${Object}0) }
+      catch { unset Data(Histo${Object}1) }
+      catch { unset Data(Histo${Object}2) }
+      catch { unset Data(Histo${Object}3) }
    }
 
    gdalband configure $Object -texsample $Data(Sample) -texres $Data(Resolution) -texsize $Data(Texture) -transparency $Data(Tran) \
@@ -1049,14 +1053,12 @@ proc Mapper::GDAL::Curve { Canvas Object Bands } {
       set max [colormap configure $map -max $band]
 
       #----- Calculate offset and scaling on range
-
       if { $Data(CurveMax)!=$Data(CurveMin) } {
          set d  [expr ($Data(CurveMax)-$Data(CurveMin))]
          set dx [expr ($min-$Data(CurveMin))*$ny/$d]
          set fx [expr ($max-$min)/$d]
 
          #----- Set curve coordinate
-
          set coords ""
          for { set i 0 } { $i < $ny } { incr i } {
             append coords "[expr $i*$fx+$dx] [expr 128.0-[lindex $ys $i]/2.0] "

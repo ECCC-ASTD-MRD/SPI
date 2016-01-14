@@ -786,9 +786,10 @@ proc PrintBox::Save { Frame X Y Width Height File Device } {
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
    
    #----- PNGs sometime are corrupt, I raised a tocket for this, GIF need color resampling to have <=256 colors
-   if { $device == "png" || $device == "gif" } {
+   #----- !@$@#$@# TkImg has problem with many format so force through ppm for all
+   if { True || $device == "png" || $device == "gif" } {
       TMPIMG write "$File.ppm" -format ppm
-      exec convert $File.ppm $File.$device
+      exec convert $File.ppm $File.$Device
       file delete $File.ppm
    } else {
       eval TMPIMG write "$File.$Device " -format \{$device $opt\}
