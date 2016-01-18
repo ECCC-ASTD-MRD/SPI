@@ -76,7 +76,7 @@ namespace eval Trajectory {
    set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
    set Param(Style)     1                                                           ;#Type d'affichage
-   set Param(Size)      3                                                           ;#Grandeur des icones
+   set Param(Size)      8                                                           ;#Grandeur des icones
    set Param(SizeVar)   ""                                                          ;#Variable de redimenssionement
    set Param(Width)     1                                                           ;#Grandeur des icones
    set Param(Mark)      24                                                          ;#Remplir les icones

@@ -423,8 +423,13 @@ proc ColorBar::Activate { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc Page::UpdateCommand { Frame } {
-
+proc Page::UpdateCommand { { Frame "" } } {
+   variable Data
+   
+   if { $Frame=="" } {
+      set Frame $Data(Frame)
+   }
+   
    ColorBar::Update $Frame
    DataBar::Update  $Frame
    Graph::Update    $Frame
@@ -468,8 +473,13 @@ proc Page::UpdateCommand { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc Page::UpdateItems { Frame } {
+proc Page::UpdateItems { { Frame "" } } {
    global GDefs
+   variable Data
+   
+   if { $Frame=="" } {
+      set Frame $Data(Frame)
+   }
 
    if { ![winfo exists $Frame]} {
       return
