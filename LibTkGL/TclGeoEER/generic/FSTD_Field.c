@@ -1071,7 +1071,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ok=c_ezdefset(FieldTo->GRef->Ids[FieldTo->GRef->NId],FieldFrom->GRef->Ids[FieldFrom->GRef->NId]);
 
       if (ok<0) {
-         Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate:  EZSCINT internal error, could not define gridset",(char*)NULL);
+         Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, could not define gridset",(char*)NULL);
          RPN_IntUnlock();
          return(TCL_ERROR);
       }

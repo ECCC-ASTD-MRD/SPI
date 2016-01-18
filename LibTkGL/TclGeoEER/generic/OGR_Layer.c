@@ -2933,10 +2933,6 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    /*Check for color mapping value*/
    if (spec->MapVar) {
       if ((fmap=OGR_FD_GetFieldIndex(Layer->Def,spec->MapVar))>-1) {
-         if (spec->Desc) {
-            free(spec->Desc);
-         }
-         spec->Desc=strdup(spec->MapVar);
          Layer->Min=1e32;
          Layer->Max=-1e32;
 

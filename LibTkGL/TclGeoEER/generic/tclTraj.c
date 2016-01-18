@@ -772,7 +772,7 @@ int Traj_LoadCMC(Tcl_Interp *Interp,FILE *Stream,char *File,TTraj **Traj) {
          if (Interp) {
             if ((sub=Traj_Put(Interp,NULL,traj))) {
                spec=traj->Spec;
-               spec->Size=3;
+               spec->Size=8;
                spec->Mark=24*3600;
                spec->InterNb=1;
                spec->Inter[0]=3*3600;
@@ -1005,7 +1005,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
    }
 
    vbuf=VBuffer_Alloc(Traj->NPr*2+1);
-   sz=VP->Ratio*(spec->Size+spec->Width);
+   sz=VP->Ratio*(spec->Size+spec->Width)*0.5;
 
    glLineWidth(spec->Width);
    glEnable(GL_DEPTH_TEST);
@@ -1122,7 +1122,7 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                      case 5: val=Traj->Pr[i].Speed;  break;
                   }
                   val=val/(spec->SizeMax-spec->SizeMin)*spec->Size;
-                  sz=VP->Ratio*(spec->Size+val+spec->Width);
+                  sz=VP->Ratio*(spec->Size+val+spec->Width)*0.5;
                }
                glScalef(sz,sz,1.0);
 

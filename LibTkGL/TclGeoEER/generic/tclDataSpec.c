@@ -1236,8 +1236,15 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Spec->MapVar=NULL;
                }
                ++i;
-               if (strlen(Tcl_GetString(Objv[i])))
+               if (strlen(Tcl_GetString(Objv[i]))) {
                   Spec->MapVar=strdup(Tcl_GetString(Objv[i]));
+                  
+                  // Set description to mapped var
+                  if (Spec->Desc) {
+                     free(Spec->Desc);
+                  }
+                  Spec->Desc=strdup(Spec->MapVar);         
+               }
             }
             break;
 
