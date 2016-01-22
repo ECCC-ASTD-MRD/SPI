@@ -518,6 +518,7 @@ proc CVClock::Create { Frame X Y { Refresh False } } {
       }
    }
 
+   $Frame.page.canvas bind CVCLOCK <Button-3> "tk_popup $canvas.cvclock.menu %X %Y 0"
    $canvas create window [expr $X+43] [expr $Y+30] -window $canvas.cvclock -anchor se -tags "CVCLOCK OPCVCLOCK NOPRINT"
 
    Shape::BindAllMove $canvas CVCLOCK
@@ -923,6 +924,7 @@ proc CVScale::Create { Frame X Y Size } {
     }
 
    $canvas create window [expr $x0+10] [expr $y0-1] -window $canvas.cvscale -anchor ne -tags "CVSCALE OPCVSCALE NOPRINT"
+   $Frame.page.canvas bind CVSCALE <Button-3> "tk_popup $canvas.cvscale.menu %X %Y 0"
 
    Shape::BindAllMove $canvas CVSCALE
    Shape::BindWidget  $canvas CVSCALE
@@ -1228,6 +1230,7 @@ proc CVText::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text ""
          $canvas.bo$tag.menu add checkbutton -label [lindex $Lbl(Update) $GDefs(Lang)] -variable CVText::Data(Update$tag) -onvalue 1 -offvalue 0
    }      
    $canvas create window [expr $x1-22] $y1 -window $canvas.bo$tag -anchor se -tags "BO$tag NOPRINT"
+   $Frame.page.canvas bind CVTEXTBOX$tag <Button-3> "tk_popup $canvas.bo$tag.menu %X %Y 0"
   
    incr Data(TagNo)
    

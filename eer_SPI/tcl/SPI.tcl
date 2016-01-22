@@ -219,6 +219,9 @@ for { set i 0 } { $i < $argc } { incr i } {
 
 SPI::Splash "Sourcing packages"
 
+#----- Set verbose level of C librairies
+set env(APP_VERBOSE) $Log::Param(Level)
+
 #----- Try for threads
 catch { package require Thread }
 

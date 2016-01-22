@@ -271,6 +271,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarFactor) $GDefs(Lang)] -variable ColorBar::Data(Factor$tag) -onvalue True -offvalue False \
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
       $Frame.page.canvas create window [expr $x+$w-22] [expr $y+$h] -window $Frame.bo$tag -anchor se -tags "BO$tag NOPRINT"
+      $Frame.page.canvas bind $tag <Button-3> "tk_popup $Frame.bo$tag.menu %X %Y 0"
 
       Shape::BindAllMove $Frame.page.canvas $tag "ColorBar::Move $Frame.page.canvas $tag"
       Shape::BindScale   $Frame.page.canvas $tag "ColorBar::Scale $Frame.page.canvas $tag"

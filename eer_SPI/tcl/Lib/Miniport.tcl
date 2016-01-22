@@ -210,7 +210,7 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
       Shape::BindWidget $Frame.page.canvas $mini
    }
 
-   $Frame.page.canvas bind $mini <Button-3> "tk_popup .mapmenu %X %Y 0"
+   $Frame.page.canvas bind $mini <Button-3> "tk_popup $Frame.bf$tag.menu %X %Y 0"
 
    Page::MaskItem $Frame
    Page::ModeZoom $Frame $mini
