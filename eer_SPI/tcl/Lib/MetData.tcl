@@ -484,8 +484,8 @@ proc MetData::GridDefineLL { Lat0 Lon0 Lat1 Lon1 DLat DLon { ETIKET GRID } { ID 
       set ID GRIDLL
    }
    
-   set ni [expr int(ceil(($Lon1-$Lon0)/$DLon))]
-   set nj [expr int(ceil(($Lat1-$Lat0)/$DLat))]
+   set ni [expr int(ceil(($Lon1-$Lon0)/$DLon))+1]
+   set nj [expr int(ceil(($Lat1-$Lat0)/$DLat))+1]
    
    fstdfield create ${ID}TIC $ni 1 1
    fstdfield create ${ID}TAC 1 $nj 1

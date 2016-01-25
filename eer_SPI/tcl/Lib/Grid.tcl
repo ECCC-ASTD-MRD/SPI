@@ -561,8 +561,8 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 
    Grid::BBoxOrder
 
-   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))]
-   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))]
+   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
+   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
 
    if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
       if { ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
@@ -611,8 +611,8 @@ proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 
    Grid::BBoxOrder
 
-   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))]
-   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))]
+   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
+   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
 
    if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
       if { ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
@@ -708,8 +708,8 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    set xy0 [georef unproject $ID $Lat0 $Lon0]
    set xy1 [georef unproject $ID $Lat1 $Lon1]
 
-   set ni [expr int(ceil(([lindex $xy1 0] - [lindex $xy0 0])/$Res))]
-   set nj [expr int(ceil(([lindex $xy1 1] - [lindex $xy0 1])/$Res))]
+   set ni [expr int(ceil(([lindex $xy1 0] - [lindex $xy0 0])/$Res))+1]
+   set nj [expr int(ceil(([lindex $xy1 1] - [lindex $xy0 1])/$Res))+1]
 
    if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
       if { ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
