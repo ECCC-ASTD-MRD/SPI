@@ -50,6 +50,7 @@ proc SPI::Splash { { Msg "" } } {
 
             canvas .splash.c -bg white
             .splash.c create image 0 0 -image SPLASH -anchor nw
+            .splash.c create image 5 5 -image LOGO   -anchor nw
             .splash.c create text 5 35  -tag LOADING -font "-*-helvetica-bold-*-*-*-18-*-*-*-*-*" -fill #666666 -anchor nw
             .splash.c create text 5 [expr $ih+5] -tag VERSION -font "-*-helvetica-bold-*-*-*-64-*-*-*-*-*" -fill #FFFFFF -anchor sw -text "SPI $GDefs(Version)"
 
