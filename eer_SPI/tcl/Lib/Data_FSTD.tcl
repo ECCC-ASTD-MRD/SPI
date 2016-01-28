@@ -1294,7 +1294,8 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { ![dataspec is $var] } {
             if { $spec!=$var } {
                dataspec copy $var $spec
-
+               dataspec configure $var -colormap ""
+               
                #----- If field has not been configured yet or is owned by SPI
                if { $set==0 || $set==2 } {
                   FSTD::ParamInit $fld $var

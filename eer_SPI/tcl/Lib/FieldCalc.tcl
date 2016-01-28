@@ -737,6 +737,8 @@ proc FieldCalc::FormulaSave { Name } {
 proc FieldCalc::FormulaSet { Formula { VP "" } } {
    variable Data
 
+   set Animator::Play(Stop) 1
+   
    catch {
       set Data(Formula) $Formula
       if { $Formula!="" } {

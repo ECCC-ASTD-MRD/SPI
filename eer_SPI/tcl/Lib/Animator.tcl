@@ -643,7 +643,6 @@ proc Animator::GetPlayListField { } {
          if { [fstdfield is $fld] } {
 
             set tags [fstdfield stats $fld -tag]
-            set act  [fstdfield configure $fld -active]
             set box  [lindex $tags 2]
 
             #----- On recupere les parametres du champs selectionne
@@ -657,7 +656,6 @@ proc Animator::GetPlayListField { } {
          } elseif { [gribfield is $fld] } {
 
             set tags [gribfield stats $fld -tag]
-            set act  [gribfield configure $fld -active]
             set box  [lindex $tags 2]
 
             #----- On recupere les parametres du champs selectionne
@@ -700,9 +698,8 @@ proc Animator::GetPlayListField { } {
             eval $type read ANI.$f.$no $fid $idx
             eval $type stats ANI.$f.$no -tag \$tags
 
-            lappend FSTD::Data(ListTool) ANI.$f.$no
-            FSTD::ParamUpdate ANI.$f.$no
-            fstdfield configure ANI.$f.$no -active $act
+            #----- copy configuration object
+            fstdfield configure ANI.$f.$no -dataspec [fstdfield configure $fld -dataspec]
 
             switch $Play(Type) {
                "IP1"     { set info [lrange $field 2 3] }
