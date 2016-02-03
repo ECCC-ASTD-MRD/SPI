@@ -304,7 +304,7 @@ proc FieldBox::Create { Parent Title { Geom "" } } {
             -command ".fieldbox\$FieldBox::Data(Current).data.list selection set 0 end"
          .fieldmenu add separator
          .fieldmenu add command -label "[lindex $Lbl(Params) $GDefs(Lang)] ..." \
-            -command { FieldParams::Window; FieldBox::Select  }
+            -command { FieldParams::Window; FieldBox::Select }
          .fieldmenu add command -label "[lindex $Lbl(Copy) $GDefs(Lang)] ..."\
             -command { FieldBox::FieldCopy [FileBox::Create .fieldbox$FieldBox::Data(Current) "" Save ""] }
          .fieldmenu add separator
@@ -944,13 +944,13 @@ proc FieldBox::InfoCommand { No Index } {
    #----- Pour contourner l'erreur des date de descripteur de grille (date: 19010101..)
    catch { set date [DateStuff::StringDateFromSeconds [clock scan "[string range $date 0 7] [string range $date 8 end]" -timezone :UTC] $GDefs(Lang)] }
 
-   if { [fstddict isvar $nv] } {
+   if { [lindex $line end]=="fstdfield" && [fstddict isvar $nv] } {
       eval set info \[format \"%s  (%s)\" [fstddict varinfo $nv -lang $GDefs(Lang) -short -units]\]
    } else {
       set info  "$nv ??? (???)"
    }   
    
-   if { [fstddict istype $tv] } {
+   if { [lindex $line end]=="fstdfield" && [fstddict istype $tv] } {
       append info  "\n[fstddict typeinfo $tv -lang $GDefs(Lang) -short]"
    } else {
       append info  "\n???"

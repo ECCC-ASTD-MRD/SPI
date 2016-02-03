@@ -47,7 +47,7 @@ namespace eval Obs {
    colormap create OBSMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  OBSMAPDEFAULT OBSMAPImg
 
-   dataspec create OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -width 1 -font OBSFONTDEFAULT \
+   dataspec create OBSDEFAULT -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -width 1 -font OBSFONTDEFAULT \
       -flat True -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
@@ -110,7 +110,7 @@ namespace eval Obs {
    set Param(Flat)          0                                      ;#Affichage 2D flat
    set Param(Unit)          ""                                     ;#Type d'unite
    set Param(Desc)          ""                                     ;#Description
-   set Param(Mantisse)      0                                      ;#Format d'affichage des valeurs
+   set Param(Mantisse)      -1                                      ;#Format d'affichage des valeurs
    set Param(Order)         AUTO                                   ;#Format d'affichage des valeurs
    set Param(Width)         1                                      ;#Largeur des segments
 

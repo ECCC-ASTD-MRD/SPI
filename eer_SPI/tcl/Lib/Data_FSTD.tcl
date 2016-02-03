@@ -60,7 +60,7 @@ namespace eval FSTD {
    colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
-   dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO 0 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT \
+    dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100
@@ -109,7 +109,7 @@ namespace eval FSTD {
    set Param(Label)         0              ;#Affichage des labels
    set Param(Value)         0              ;#Affichage des valeurs (centrales,min,max)
    set Param(Order)         AUTO           ;#Type d'affichage de valeur
-   set Param(Mantisse)      0              ;#Dimension de la mantisse
+   set Param(Mantisse)      -1             ;#Dimension de la mantisse
    set Param(Color)         #000000        ;#Couleur des items vectoriels
    set Param(Dash)          ""             ;#Pattern des items vectoriels
    set Param(Topo)          ""             ;#Modulation 3D
@@ -295,7 +295,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                label $Data(Frame).def.l.val.order.lbl -text [lindex $Lbl(Value) $GDefs(Lang)]
                ComboBox::Create $Data(Frame).def.l.val.order.sel FSTD::Param(Order) noedit unsorted nodouble -1 \
                   $FSTD::Param(Orders) 6 4 { FSTD::ParamSet }
-               spinbox $Data(Frame).def.l.val.order.prec -textvariable FSTD::Param(Mantisse) -width 1 -from 0 -to 10 -wrap 1 -bd 1 \
+               spinbox $Data(Frame).def.l.val.order.prec -textvariable FSTD::Param(Mantisse) -width 1 -from -1 -to 10 -wrap 1 -bd 1 \
                   -command { FSTD::ParamSet } -bg $GDefs(ColorLight)
                button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font FSTD::ParamSet \$FSTD::Param(Font)"
@@ -972,7 +972,7 @@ proc FSTD::ParamPut { { Update False } } {
                -command "FSTD::IntervalSetMode INTERVAL $inter"
          }
       }
-      if { $Update && [fstddict isvar $var] } {
+      if {  $Update && [fstddict isvar $var] } {
          if { $Update } {
             set Param(Unit)   [fstddict varinfo $var -lang $GDefs(Lang) -units]
             set Param(Factor) [fstddict varinfo $var -lang $GDefs(Lang) -factor]
@@ -1012,7 +1012,12 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       set ip1  -1
 
       if { [fstdfield configure $Field -set]==0 } {
+         #----- Copy default configuration but keep unit and description
+         set unit [fstdfield configure $Field -unit]
+         set desc [fstdfield configure $Field -desc]
          dataspec copy $Spec FLDDEFAULT
+         dataspec configure $Spec -unit $unit
+         dataspec configure $Spec -desc $desc
       }
       
       #----- Set a colormap if not done
@@ -1020,7 +1025,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       if { $map=="" } {
          set map FLDMAP$Spec
       }
-
+ 
       if { ![colormap is $map] } {
          colormap create FLDMAP$Spec
          colormap copy   FLDMAP$Spec FLDMAPDEFAULT
@@ -1049,7 +1054,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short -units -factor -delta]]] } {
 #         dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
 #      }
-      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -units -factor -delta]]] } {
+      if { [fstdfield is $Field] && [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -units -factor -delta]]] } {
          dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
       }
    }
