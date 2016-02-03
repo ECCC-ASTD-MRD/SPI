@@ -104,7 +104,7 @@ AC_DEFUN([AX_LIB_FLT],
         CPPFLAGS="$CPPFLAGS -I$flt_include_dir -Dlinux"
 
         saved_LIBS="$LIBS"
-        LIBS="$LIBS $flt_lib_flags"
+        LIBS="$LIBS $flt_lib_flags -lm"
 
         #
         # Check headers
@@ -143,6 +143,7 @@ AC_DEFUN([AX_LIB_FLT],
                 AC_LANG_PROGRAM(
                     [[
 @%:@include <flt.h>
+@%:@include <math.h>
                     ]],
                     [[
 fltOpen("test");

@@ -180,11 +180,12 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   int     n;
-   double  val=0.0;
-   float   min,rng,inter[DATASPEC_MAX];
-   Vect3d *pos;
-   Vect3d b,p,p0,p1,p2;
+   int          n;
+   unsigned int idx[3];
+   double       val=0.0;
+   float        min,rng,inter[DATASPEC_MAX];
+   Vect3d      *pos;
+   Vect3d       b,p,p0,p1,p2;
 
    GLuint      tx[2],att0;
    GLhandleARB prog;
@@ -196,7 +197,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glDisable(GL_CULL_FACE);
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    
-   /*Do we need transparency*/
+   // Do we need transparency
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
@@ -210,7 +211,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glUseProgramObjectARB(prog);
    glGenTextures(2,tx);
 
-   /*Setup 1D Colormap Texture*/
+   // Setup 1D Colormap Texture
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_1D,tx[0]);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -218,7 +219,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
 
-   /*Setup 1D Interval Texture*/
+   // Setup 1D Interval Texture
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[1]);
    if (Field->Spec->InterNb) {
@@ -240,48 +241,72 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    glBegin(GL_TRIANGLES);
    if (Field->Spec->InterpDegree[0]=='L') {
-      for(n=0;n<Field->GRef->NIdx;n++) {
-         Def_GetMod(Field->Def,Field->GRef->Idx[n],val);
+      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+         idx[0]=Field->GRef->Idx[n];
+         idx[1]=Field->GRef->Idx[n+1];
+         idx[2]=Field->GRef->Idx[n+2];
+         
+         // Check for mask
+         if (Field->Def->Mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
+            continue;
+         }
+         Def_GetMod(Field->Def,idx[0],val);
          glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->GRef->Idx[n]]);
+         glVertex3dv(pos[idx[0]]);
+         Def_GetMod(Field->Def,idx[1],val);
+         glVertexAttrib1fARB(att0,val);
+         glVertex3dv(pos[idx[1]]);
+         Def_GetMod(Field->Def,idx[2],val);
+         glVertexAttrib1fARB(att0,val);
+         glVertex3dv(pos[idx[2]]);
       }
    } else {
       for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+         idx[0]=Field->GRef->Idx[n];
+         idx[1]=Field->GRef->Idx[n+1];
+         idx[2]=Field->GRef->Idx[n+2];
+         
          Vect_Init(b,1.0/3.0,1.0/3.0,1.0/3.0);
-         Bary_InterpPos(b,p,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.0,0.5,0.5);
-         Bary_InterpPos(b,p0,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p0,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.5,0.0,0.5);
-         Bary_InterpPos(b,p1,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p1,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.5,0.5,0.0);
-         Bary_InterpPos(b,p2,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p2,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
 
-         Def_GetMod(Field->Def,Field->GRef->Idx[n],val);
-         glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->GRef->Idx[n]]);
-         glVertex3dv(p);
-         glVertex3dv(p1);
-         glVertex3dv(pos[Field->GRef->Idx[n]]);
-         glVertex3dv(p);
-         glVertex3dv(p2);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[0]]) {         
+            Def_GetMod(Field->Def,idx[0],val);
+            glVertexAttrib1fARB(att0,val);
+            glVertex3dv(pos[idx[0]]);
+            glVertex3dv(p);
+            glVertex3dv(p1);
+            glVertex3dv(pos[idx[0]]);
+            glVertex3dv(p);
+            glVertex3dv(p2);
+         }
 
-         Def_GetMod(Field->Def,Field->GRef->Idx[n+1],val);
-         glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
-         glVertex3dv(p);
-         glVertex3dv(p0);
-         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
-         glVertex3dv(p);
-         glVertex3dv(p2);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[1]]) {         
+            Def_GetMod(Field->Def,idx[1],val);
+            glVertexAttrib1fARB(att0,val);
+            glVertex3dv(pos[idx[1]]);
+            glVertex3dv(p);
+            glVertex3dv(p0);
+            glVertex3dv(pos[idx[1]]);
+            glVertex3dv(p);
+            glVertex3dv(p2);
+         }
 
-         Def_GetMod(Field->Def,Field->GRef->Idx[n+2],val);
-         glVertexAttrib1fARB(att0,val);
-         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
-         glVertex3dv(p);
-         glVertex3dv(p0);
-         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
-         glVertex3dv(p);
-         glVertex3dv(p1);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[2]]) {         
+            Def_GetMod(Field->Def,idx[2],val);
+            glVertexAttrib1fARB(att0,val);
+            glVertex3dv(pos[idx[2]]);
+            glVertex3dv(p);
+            glVertex3dv(p0);
+            glVertex3dv(pos[idx[2]]);
+            glVertex3dv(p);
+            glVertex3dv(p1);
+         }
       }
    }
    glEnd();

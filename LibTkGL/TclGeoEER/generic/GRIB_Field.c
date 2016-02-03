@@ -764,10 +764,6 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
       }
    }
 
-//   len=GRIB_STRLEN;
-//   grib_get_string(head->Handle,"parameterName",sval,&len);
-//   field->Spec->Desc=strdup(sval);
-
    GRIB_FieldSet(field);
    
    memcpy(field->Head,head,sizeof(TGRIBHeader));
@@ -778,9 +774,12 @@ int GRIB_FieldRead(Tcl_Interp *Interp,char *Name,char *File,long Key) {
    GRIB_GridGet(Interp,field,ni,nj,nk);
 
    len=GRIB_STRLEN;
-   grib_get_string(head->Handle,"name",sval,&len);
+   grib_get_string(head->Handle,"parameterName",sval,&len);
    field->Spec->Desc=strdup(sval);
-//   field->Spec->Desc=strdup(head->NOMVAR);
+
+   len=GRIB_STRLEN;
+   grib_get_string(head->Handle,"parameterUnits",sval,&len);
+   field->Spec->Unit=strdup(sval);
 
 #ifdef DEBUG
 /*

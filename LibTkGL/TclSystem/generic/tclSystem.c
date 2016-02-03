@@ -82,143 +82,6 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <System_Daemonize>
- * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Effectue les operations standards afin de mettre un process en deamon.
- *
- * Parametres     :
- *  <Interp>      : Interpreteur TCL
- *  <ForkOff>     : Fork le process
- *  <Respawn>     : Watch and respawn if dead
- *  <LockFile>    : Fidhier lock du process
- *
- * Retour:
- *  <TCL_...> : Code d'erreur de TCL.
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/    
-int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile) {
-   
-   pid_t pid,sid,child;
-   int   lfp=-1,status,init=1;
-   char  buf[32];
-
-   /*Fork off the parent process*/
-   if (ForkOff) {
-      /*already a daemon*/
-      if (getppid()==1)
-         return(TCL_OK);
-
-      while (init-->0 || Respawn) {
-         pid=fork();
-         switch (pid) {
-            case -1: // Failed fork
-                     Tcl_AppendResult(Interp,"System_Daemonize: Unable to fork off parent process",(char*)NULL);
-                     return(TCL_ERROR);
-                     break;
-                     
-            case  0: // We're the child
-                     Respawn=0;
-                     break;
-                     
-            default: // We're the parent and the child is runnning
-                     if (Respawn) {
-                        // Keep master process to check for respawn
-                        child = wait(&status);
-                        if (child==pid);
-                           // If child's exit status is error, respawn process
-                           Respawn=(status!=0);
-                     } else {
-                        // No respawn check, exit master process
-                        exit(0);
-                     }
-
-         }
-      }
-     
-      /*Create a new SID for the child process*/
-      sid=setsid();
-      if (sid<0) {
-         Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
-         return(TCL_ERROR);
-      }
-   }
-   /*At this point we are executing as the child process*/
-
-   /*Create the lock file as the current user*/
-   if (LockFile && LockFile[0]) {
-      if ((lfp=open(LockFile,O_RDONLY))<0) {
-         /*There is no lock file so try to create one*/
-         if ((lfp=open(LockFile,O_RDWR|O_CREAT,0640))<0) {
-            Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
-            return(TCL_ERROR);
-         }
-         /*Try to lock the file
-         if (lockf(lfp,F_TLOCK,0)<0) {
-            Tcl_AppendResult(Interp,"System_Daemonize: Unable to lock file ",LockFile,",(char*)NULL);
-            return(TCL_ERROR);
-         }*/
-      } else {
-         if (read(lfp,buf,32)) {
-            pid=atoi(buf);
-            if (!kill(pid,0)) {
-               sprintf(buf,"%i",pid);
-               Tcl_AppendResult(Interp,"System_Daemonize: Process already exists with pid ",buf,(char*)NULL);
-               return(TCL_ERROR);
-            } else {
-               if ((lfp=open(LockFile,O_RDWR|O_TRUNC,0640))<0) {
-                  Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-            }
-         }
-      }
-      sprintf(buf,"%i",getpid());
-      if (!write(lfp,buf,strlen(buf))) {
-         Tcl_AppendResult(Interp,"System_Daemonize: Could not write pid to lock file",buf,(char*)NULL);
-         return(TCL_ERROR);
-      }
-      close(lfp);
-   }
-
-   /* Cancel certain signals */
-//    signal(SIGCHLD,SIG_DFL); /* A child process dies */
-   signal(SIGTSTP,SIG_IGN); /* Various TTY signals */
-   signal(SIGTTOU,SIG_IGN);
-   signal(SIGTTIN,SIG_IGN);
-   signal(SIGHUP, SIG_IGN); /* Ignore hangup signal */
-   signal(SIGTERM,SIG_DFL); /* Die on SIGTERM */
-
-   /*Change the file mode mask*/
-   umask(0);
-
-   /*Change the current working directory*/
-   if ((chdir("/"))<0) {
-      Tcl_AppendResult(Interp,"System_Daemonize: Unable to change directory to /",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
-   /*Redirect standard files to /dev/null*/
-   if (!freopen("/dev/null","r",stdin)) {
-      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdin",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   if (!freopen("/dev/null","w",stdout)) {
-      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdout",(char*)NULL);
-      return(TCL_ERROR);
-   }
-   if (!freopen("/dev/null","w",stderr)) {
-      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stderr",(char*)NULL);
-      return(TCL_ERROR);
-   }
-
-   return(TCL_OK);
-}
-
-/*----------------------------------------------------------------------------
  * Nom      : <System_Cmd>
  * Creation : Mai 2009 - J.P. Gauthier - CMC/CMOE
  *
@@ -256,6 +119,7 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    }
 
    switch ((enum opt)idx) {
+         
       case PROCESS:
          return(System_Process(Interp,Objc-2,Objv+2));
          break;
@@ -1179,3 +1043,141 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_SetObjResult(Interp,obj);
    return(TCL_OK);
 }
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_Daemonize>
+ * Creation : Mai 1009 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue les operations standards afin de mettre un process en deamon.
+ *
+ * Parametres     :
+ *  <Interp>      : Interpreteur TCL
+ *  <ForkOff>     : Fork le process
+ *  <Respawn>     : Watch and respawn if dead
+ *  <LockFile>    : Fidhier lock du process
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/    
+int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile) {
+   
+   pid_t pid,sid,child;
+   int   lfp=-1,status,init=1;
+   char  buf[32];
+
+   /*Fork off the parent process*/
+   if (ForkOff) {
+      /*already a daemon*/
+      if (getppid()==1)
+         return(TCL_OK);
+
+      while (init-->0 || Respawn) {
+         pid=fork();
+         switch (pid) {
+            case -1: // Failed fork
+                     Tcl_AppendResult(Interp,"System_Daemonize: Unable to fork off parent process",(char*)NULL);
+                     return(TCL_ERROR);
+                     break;
+                     
+            case  0: // We're the child
+                     Respawn=0;
+                     break;
+                     
+            default: // We're the parent and the child is runnning
+                     if (Respawn) {
+                        // Keep master process to check for respawn
+                        child = wait(&status);
+                        if (child==pid);
+                           // If child's exit status is error, respawn process
+                           Respawn=(status!=0);
+                     } else {
+                        // No respawn check, exit master process
+                        exit(0);
+                     }
+
+         }
+      }
+     
+      /*Create a new SID for the child process*/
+      sid=setsid();
+      if (sid<0) {
+         Tcl_AppendResult(Interp,"System_Daemonize: Unable to create forked process SID",(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+   /*At this point we are executing as the child process*/
+
+   /*Create the lock file as the current user*/
+   if (LockFile && LockFile[0]) {
+      if ((lfp=open(LockFile,O_RDONLY))<0) {
+         /*There is no lock file so try to create one*/
+         if ((lfp=open(LockFile,O_RDWR|O_CREAT,0640))<0) {
+            Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         /*Try to lock the file
+         if (lockf(lfp,F_TLOCK,0)<0) {
+            Tcl_AppendResult(Interp,"System_Daemonize: Unable to lock file ",LockFile,",(char*)NULL);
+            return(TCL_ERROR);
+         }*/
+      } else {
+         if (read(lfp,buf,32)) {
+            pid=atoi(buf);
+            if (!kill(pid,0)) {
+               sprintf(buf,"%i",pid);
+               Tcl_AppendResult(Interp,"System_Daemonize: Process already exists with pid ",buf,(char*)NULL);
+               return(TCL_ERROR);
+            } else {
+               if ((lfp=open(LockFile,O_RDWR|O_TRUNC,0640))<0) {
+                  Tcl_AppendResult(Interp,"System_Daemonize: Unable to create lock file ",LockFile," (",strerror(errno),")",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+         }
+      }
+      sprintf(buf,"%i",getpid());
+      if (!write(lfp,buf,strlen(buf))) {
+         Tcl_AppendResult(Interp,"System_Daemonize: Could not write pid to lock file",buf,(char*)NULL);
+         return(TCL_ERROR);
+      }
+      close(lfp);
+   }
+
+   /* Cancel certain signals */
+//    signal(SIGCHLD,SIG_DFL); /* A child process dies */
+   signal(SIGTSTP,SIG_IGN); /* Various TTY signals */
+   signal(SIGTTOU,SIG_IGN);
+   signal(SIGTTIN,SIG_IGN);
+   signal(SIGHUP, SIG_IGN); /* Ignore hangup signal */
+   signal(SIGTERM,SIG_DFL); /* Die on SIGTERM */
+
+   /*Change the file mode mask*/
+   umask(0);
+
+   /*Change the current working directory*/
+   if ((chdir("/"))<0) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Unable to change directory to /",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   /*Redirect standard files to /dev/null*/
+   if (!freopen("/dev/null","r",stdin)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdin",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (!freopen("/dev/null","w",stdout)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stdout",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   if (!freopen("/dev/null","w",stderr)) {
+      Tcl_AppendResult(Interp,"System_Daemonize: Could not close stderr",(char*)NULL);
+      return(TCL_ERROR);
+   }
+
+   return(TCL_OK);
+}
+

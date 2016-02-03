@@ -42,8 +42,8 @@ static T3DObject *GOBJ=NULL;
 static int        NVR,NFCE,NOBJ,NMT,NSW;
 static float      GCOL[4]={ 0.0,0.0,0.0,0.0 };
 
-int ModelFLT_NodeCount(FltNode *Node,int Type);
-int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
+unsigned int ModelFLT_NodeCount(FltNode *Node,int Type);
+int          ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Model_LoadFLT>
@@ -104,7 +104,7 @@ int Model_LoadFLT(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    return(1);
 }
 
-int ModelFLT_NodeCount(FltNode *Node,int Type) {
+unsigned int ModelFLT_NodeCount(FltNode *Node,int Type) {
 
    unsigned int i,n=0;
 
@@ -127,7 +127,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    FltMaterial          *mat;
 //   FltMultiTexture      *tex,*mtex=(FltMultiTexture*)Node;
    char                  path[MAX_PATHLEN],file[MAX_PATHLEN];
-   unsigned int          i,v,m;
+   unsigned int          i,v,m,ok=1;
    TMaterial             tmat;
 
    attr=Node->attr;
@@ -219,6 +219,10 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 */
          break;
 
+      case FLTRECORD_MESH:
+         App_Log(DEBUG,"%s: FLTRECORD_MESH\n",__func__);
+         break;
+
       case FLTRECORD_FACE:
          App_Log(DEBUG,"%s: FLTRECORD_FACE\n",__func__);
 
@@ -229,6 +233,12 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 
          NFCE++;
 
+         if (NFCE>GOBJ->NFc) {
+            App_Log(ERROR,"%s: Too many faces (%i>%i)\n",__func__,NFCE,GOBJ->NFc);
+            ok=0;
+            break;
+         }
+         
          /*Face Color*/
          if (face->textureWhite) {
             GCOL[0]=GCOL[1]=GCOL[2]=GCOL[3]=1.0;
@@ -291,6 +301,12 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             break;
          }
 
+         if (NVR+vert->numVerts>GOBJ->NVr) {
+            App_Log(ERROR,"%s: Too many vertices (%i>%i)\n",__func__,NVR+vert->numVerts,GOBJ->NVr);
+            ok=0;
+            break;
+         }
+         
          GOBJ->Fc[NFCE].NIdx=vert->numVerts;
          GOBJ->Fc[NFCE].Idx=(unsigned int*)calloc(GOBJ->Fc[NFCE].NIdx,sizeof(unsigned int));
          if (!GOBJ->Nr && (vert->list[0]->localFlags & FVHAS_NORMAL))  GOBJ->Nr=(Vect3f*)malloc(GOBJ->NVr*sizeof(Vect3f));
@@ -318,7 +334,6 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             }
             App_Log(DEBUG,"%s: Vertex(%i) (%f,%f,%f)\n",__func__,v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
 
-
             GOBJ->Fc[NFCE].Idx[v]=i;
          }
          NVR+=vert->numVerts;
@@ -339,7 +354,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
 
       case FLTRECORD_INSTANCEDEFINITION:
          App_Log(DEBUG,"%s: FLTRECORD_INSTANCEDEFINITION\n",__func__);
-         break;
+        break;
       case FLTRECORD_INSTANCEREFERENCE:
          App_Log(DEBUG,"%s: FLTRECORD_INSTANCEREFERENCE\n",__func__);
          break;
@@ -361,6 +376,11 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          App_Log(DEBUG,"%s: FLTRECORD_OBJECT (%i)\n",__func__,NOBJ);
          GOBJ=&(M->Obj[NOBJ]);
 
+         if (NOBJ>M->NObj) {
+            ok=0;
+            App_Log(ERROR,"%s: Too many objects (%i>%i)\n",__func__,NOBJ,M->NObj);    
+            break;
+         }
          NFCE=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
          Model_ObjectFaceAdd(GOBJ,NFCE);
          NFCE=-1;
@@ -379,11 +399,15 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
    }
 
-   /*Parse tree children*/
-   for (i=0;i<Node->numChildren;i++)
-      ModelFLT_NodeProcess(M,Node->child[i],FLT);
+   // Parse tree children
+   if (ok) {
+      for (i=0;i<Node->numChildren;i++)
+         if (!(ok=ModelFLT_NodeProcess(M,Node->child[i],FLT))) {
+            break;
+         }
+   }
 
-   return(1);
+   return(ok);
 }
 
 #endif

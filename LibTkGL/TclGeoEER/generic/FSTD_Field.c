@@ -379,6 +379,7 @@ int FSTD_FieldReadMesh(TData *Field) {
                   }
                   cs_fstluk((float*)Field->GRef->Idx,key,&ni,&nj,&nk);
                }
+               GeoRef_BuildIndex(Field->GRef);
             }
             break;
 

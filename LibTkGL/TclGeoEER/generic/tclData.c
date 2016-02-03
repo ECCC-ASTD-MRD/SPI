@@ -180,6 +180,9 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       DataVectorTableSize++;
    }
 
+   // Check the log parameters in the environment 
+   App_LogLevel(getenv("APP_VERBOSE"));
+
    return(TCL_OK);
 }
 
@@ -1210,6 +1213,8 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       field->Tag=NULL;
       
       field->Map=NULL;
+      field->MapIdx=NULL;
+      field->MapIdxNb=0;
       field->GLId=0;
 
       if (NI*NJ*NK) {
@@ -1351,14 +1356,20 @@ void Data_Clean(TData *Data,int Map,int Pos,int Seg){
          }
       }
 
-      if (Map && Data->Map) {
-         free(Data->Map);
-         Data->Map=NULL;
-      }
-
-      if (Map && Data->GLId) {
-         glDeleteLists(Data->GLId,1);
-         Data->GLId=0;
+      if (Map) {
+         if (Data->Map) {
+            free(Data->Map);
+            Data->Map=NULL;
+         }
+         if (Data->MapIdx) {
+            free(Data->MapIdx);
+            Data->MapIdx=NULL;
+            Data->MapIdxNb=0;
+         }
+         if (Data->GLId) {
+            glDeleteLists(Data->GLId,1);
+            Data->GLId=0;
+         }
       }
       
       if (Seg) {

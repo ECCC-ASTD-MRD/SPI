@@ -99,10 +99,9 @@ void Data_MapColor(TData *Field,int Idx) {
 
    if ((Field->Map=(float*)malloc(FSIZE2D(Field->Def)*sizeof(float)))) {
 
-      if (Idx) {
-         if (Field->GRef->Idx) free(Field->GRef->Idx);
-         Field->GRef->Idx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
-         Field->GRef->NIdx=0;
+     if (!Field->MapIdx) {
+        Field->MapIdx=(unsigned int*)malloc(FSIZE2D(Field->Def)*sizeof(unsigned int));
+        Field->MapIdxNb=0;
       }
 
       for (i=0;i<FSIZE2D(Field->Def);i++) {
@@ -110,8 +109,8 @@ void Data_MapColor(TData *Field,int Idx) {
          VAL2COL(Field->Map[i],Field->Spec,v);
          Field->Map[i]/=(float)Field->Spec->Map->NbPixels;
 
-         if (Idx && Field->GRef->Idx && Field->Map[i]>=0) {
-            Field->GRef->Idx[Field->GRef->NIdx++]=i;
+         if (Idx && Field->MapIdx && Field->Map[i]>=0) {
+            Field->MapIdx[Field->MapIdxNb++]=i;
          }
       }
    }
@@ -861,7 +860,7 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Projeter les particules*/
    glPointSize(Field->Spec->RenderParticle+0.1);
    glEnableClientState(GL_VERTEX_ARRAY);
-   Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->GRef->Idx,NULL,Field->Map,GL_POINTS,Field->GRef->NIdx,0,NULL,NULL);
+   Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->MapIdx,NULL,Field->Map,GL_POINTS,Field->MapIdxNb,0,NULL,NULL);
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_TEXTURE_1D);
    glDisable(GL_BLEND);
@@ -1231,13 +1230,17 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 */
 void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   int     n;
-   Vect3d  b,p,p0,p1,p2;
-   Vect3d *pos;
+   int          n;
+   unsigned int idx[3];
+   Vect3d       b,p,p0,p1,p2;
+   Vect3d      *pos;
 
    if (!Field->GRef || !Field->GPos) {
       return;
    }
+
+   glDisable(GL_CULL_FACE);
+   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    /*Do we need transparency*/
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
@@ -1258,44 +1261,72 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    glLineWidth(1.0);
    if (Field->Spec->InterpDegree[0]=='L') {
-      glEnableClientState(GL_VERTEX_ARRAY);
-      Proj->Type->Render(Proj,0,pos,Field->GRef->Idx,NULL,Field->Map,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
-      glDisableClientState(GL_VERTEX_ARRAY);
+//      glEnableClientState(GL_VERTEX_ARRAY);
+//      Proj->Type->Render(Proj,0,pos,Field->GRef->Idx,NULL,Field->Map,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
+//      glDisableClientState(GL_VERTEX_ARRAY);
+      glBegin(GL_TRIANGLES);
+      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+         idx[0]=Field->GRef->Idx[n];
+         idx[1]=Field->GRef->Idx[n+1];
+         idx[2]=Field->GRef->Idx[n+2];
+         
+         // Check for mask
+         if (Field->Def->Mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
+            continue;
+         }
+         glTexCoord1f(Field->Map[idx[0]]);
+         glVertex3dv(pos[idx[0]]);
+         glTexCoord1f(Field->Map[idx[1]]);
+         glVertex3dv(pos[idx[1]]);
+         glTexCoord1f(Field->Map[idx[2]]);
+         glVertex3dv(pos[idx[2]]);
+      }
+      glEnd();
    } else {
       glBegin(GL_TRIANGLES);
       for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+         idx[0]=Field->GRef->Idx[n];
+         idx[1]=Field->GRef->Idx[n+1];
+         idx[2]=Field->GRef->Idx[n+2];
+
          Vect_Init(b,1.0/3.0,1.0/3.0,1.0/3.0);
-         Bary_InterpPos(b,p,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.0,0.5,0.5);
-         Bary_InterpPos(b,p0,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p0,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.5,0.0,0.5);
-         Bary_InterpPos(b,p1,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p1,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
          Vect_Init(b,0.5,0.5,0.0);
-         Bary_InterpPos(b,p2,pos[Field->GRef->Idx[n]],pos[Field->GRef->Idx[n+1]],pos[Field->GRef->Idx[n+2]]);
+         Bary_InterpPos(b,p2,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
 
-         glTexCoord1f(Field->Map[Field->GRef->Idx[n]]);
-         glVertex3dv(pos[Field->GRef->Idx[n]]);
-         glVertex3dv(p);
-         glVertex3dv(p1);
-         glVertex3dv(pos[Field->GRef->Idx[n]]);
-         glVertex3dv(p);
-         glVertex3dv(p2);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[0]]) {         
+            glTexCoord1f(Field->Map[idx[0]]);
+            glVertex3dv(pos[idx[0]]);
+            glVertex3dv(p);
+            glVertex3dv(p1);
+            glVertex3dv(pos[idx[0]]);
+            glVertex3dv(p);
+            glVertex3dv(p2);
+         }
 
-         glTexCoord1f(Field->Map[Field->GRef->Idx[n+1]]);
-         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
-         glVertex3dv(p);
-         glVertex3dv(p0);
-         glVertex3dv(pos[Field->GRef->Idx[n+1]]);
-         glVertex3dv(p);
-         glVertex3dv(p2);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[1]]) {         
+            glTexCoord1f(Field->Map[idx[1]]);
+            glVertex3dv(pos[idx[1]]);
+            glVertex3dv(p);
+            glVertex3dv(p0);
+            glVertex3dv(pos[idx[1]]);
+            glVertex3dv(p);
+            glVertex3dv(p2);
+         }
 
-         glTexCoord1f(Field->Map[Field->GRef->Idx[n+2]]);
-         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
-         glVertex3dv(p);
-         glVertex3dv(p0);
-         glVertex3dv(pos[Field->GRef->Idx[n+2]]);
-         glVertex3dv(p);
-         glVertex3dv(p1);
+         if (!Field->Def->Mask || Field->Def->Mask[idx[2]]) {         
+            glTexCoord1f(Field->Map[idx[2]]);
+            glVertex3dv(pos[idx[2]]);
+            glVertex3dv(p);
+            glVertex3dv(p0);
+            glVertex3dv(pos[idx[2]]);
+            glVertex3dv(p);
+            glVertex3dv(p1);
+         }
       }
       glEnd();
    }

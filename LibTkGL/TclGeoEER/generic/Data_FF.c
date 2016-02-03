@@ -953,13 +953,18 @@ static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,double Inte
    double  v0,v1,d;
    Vect3d *vbuf,*pos;
 
+   // Check for mask
+   if (Def->Mask && (!Def->Mask[Idx0] || !Def->Mask[Idx1])) {
+      return(0);
+   }
+   
    // Get segment values
    Def_GetMod(Def,Idx0,v0);
    Def_GetMod(Def,Idx1,v1);
 
    pos=GPos->Pos[Def->Level];
 
-   // If interval in within segment
+   // If interval isn within segment
    if ((Inter>=v0 && Inter<=v1) || (Inter<=v0 && Inter>=v1)) {
       if ((vbuf=VBuffer_Alloc(*NV+1))) {
          d=(Inter-v0)/(v1-v0);
@@ -1000,7 +1005,7 @@ static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,double Inte
 */
 int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,int NbInter,double *Inter){
 
-   int            n,i,len;
+   int            n,i,len,t;
    T3DArray      *array;
    TList         *list;
    
@@ -1018,9 +1023,13 @@ int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj
       
       // Loop on triangles
       for(i=0;i<GPos->GRef->NIdx-3;i+=3) {
-         FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i]  ,GPos->GRef->Idx[i+1],&len);
-         FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+1],GPos->GRef->Idx[i+2],&len);
-         FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+2],GPos->GRef->Idx[i]  ,&len);
+         t=0;
+         t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i]  ,GPos->GRef->Idx[i+1],&len);
+         t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+1],GPos->GRef->Idx[i+2],&len);
+         t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+2],GPos->GRef->Idx[i]  ,&len);
+         
+         // If only 1 point found (due to masking), remove it
+         if (t<2) len-=t;
       }      
          
       // If we found a least 1 segment, keep it

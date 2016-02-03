@@ -287,7 +287,7 @@ static int DataSpec_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case COPY:
-         if(Objc!=4) {
+         if(Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id");
             return(TCL_ERROR);
          }
@@ -940,7 +940,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("AUTO",-1));
                }
                if (Spec->InterM<100) {
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(0));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(-1));
                } else {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(Spec->InterM-100));
                }
@@ -962,12 +962,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
                // Check for number of decimals
                ii=i;
-               if (++ii<Objc && Tcl_GetString(Objv[ii])[0]!='-') {
+               if (++ii<Objc && (Tcl_GetString(Objv[ii])[0]!='-' || Tcl_GetString(Objv[ii])[1]=='1')) {
                   Tcl_GetIntFromObj(Interp,Objv[ii],&Spec->InterM);
                   i=ii;
                }
 
-               if (Spec->InterM>0)
+               if (Spec->InterM>=0)
                   Spec->InterM+=100;
             }
             break;
@@ -1732,12 +1732,12 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    if (from->Extrude)
       to->Extrude=strdup(from->Extrude);
 
-   if (from->Desc)
-      to->Desc=strdup(from->Desc);
-
-   if (from->Unit)
-      to->Unit=strdup(from->Unit);
-
+    if (from->Desc)
+       to->Desc=strdup(from->Desc);
+ 
+    if (from->Unit)
+       to->Unit=strdup(from->Unit);
+   
    if (from->Sprite)
       to->Sprite=strdup(from->Sprite);
 
@@ -1807,7 +1807,7 @@ TDataSpec *DataSpec_New(){
       spec->InterVals=NULL;
       spec->InterModeParam=0.0;
       spec->InterO=0;
-      spec->InterM=0;
+      spec->InterM=-1;
       spec->Interp=GL_NEAREST;
       spec->TexRes=1;
       spec->TexStep=0.0;
@@ -2011,7 +2011,7 @@ void DataSpec_Define(TDataSpec *Spec){
          }
          if (Spec->InterM<100) {
             if (Spec->Max==Spec->Min) {
-               Spec->InterM=0;
+               Spec->InterM=-1;
             } else {
               Spec->InterM=-(floor(log10(fabs((Spec->Max-Spec->Min)/100.0))));
             }
@@ -2180,7 +2180,7 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
             case  3: snprintf(Str,32,"%.3f",Val);break;
             case  2: snprintf(Str,32,"%.2f",Val);break;
             case  1: snprintf(Str,32,"%.1f",Val);break;
-            default: snprintf(Str,32,"%.0f",nearbyint(Val));
+            default: snprintf(Str,32,"%.1f",nearbyint(Val));
          }
          break;
       case 2: switch(m) {
@@ -2193,6 +2193,8 @@ void DataSpec_Format(TDataSpec *Spec,double Val,char *Str){
             case  4: snprintf(Str,32,"%.4e",Val);break;
             case  3: snprintf(Str,32,"%.3e",Val);break;
             case  2: snprintf(Str,32,"%.2e",Val);break;
+            case  1: snprintf(Str,32,"%.1e",Val);break;
+            case  0: snprintf(Str,32,"%.0e",Val);break;
             default: snprintf(Str,32,"%.1e",Val);break;
          }
          break;

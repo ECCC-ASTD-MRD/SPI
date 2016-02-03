@@ -108,6 +108,7 @@ typedef struct TData {
    TData_Define   *Define;   // Fonction de recuperation/definition des parametres
    
    float  *Map;              // Texture du champs
+   unsigned int *MapIdx,MapIdxNb;
    int    GLId;              // GL display list id
 } TData;
 

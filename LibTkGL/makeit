@@ -98,6 +98,7 @@ if [[ $EXT -eq 1 ]]; then
    TKTABLE=Tktable2.10
    TKDND=tkdnd2.7
 
+   FLT=fltlib-1.0.0
    XML=libxml2-2.9.2
    TDOM=tdom-master
    EXPAT=expat-2.0.1
@@ -125,7 +126,6 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- not recompiled yet
    KKDU=kakadu-6.3
-   FLT=fltlib-0.5.1
    RMN=librmn-15.2
 
    #----- Define the list of items we won't compile but will link with
@@ -190,6 +190,15 @@ if [[ $EXT -eq 1 ]]; then
       make
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
+   
+   #----- OpenFlight
+   echo "Building ${TMP_PATH}/${FLT}/build.log"
+   cp -r -p ${ARCH_PATH}/${FLT} ${TMP_PATH}/
+   cd ${TMP_PATH}/${FLT}
+   (make
+   cp *.h ${LIB_PATH}/include
+   cp *.so ${LIB_PATH}/lib) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   
    #----- Tcl Specifics
 
    #----- Tcl
@@ -528,7 +537,8 @@ if [[ $SPI -eq 1 ]]; then
       --enable-threads \
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-eer=${LIB_EER}
+      --with-eer=${LIB_EER} \
+      --with-rmn=${LIB_PATH}
    fi
    make install
 
@@ -567,7 +577,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-gdal=${LIB_PATH}/bin/gdal-config  \
       --with-grib=${LIB_PATH} \
       --with-ecbufr=${LIB_PATH} \
-      --with-flt=${LIB_PATH_OPS}/fltlib-0.5.1 \
+      --with-flt=${LIB_PATH} \
       --with-urp=${LIB_PATH_OPS}/URP
    fi
    make install

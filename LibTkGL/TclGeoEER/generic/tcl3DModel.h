@@ -66,33 +66,33 @@ typedef struct TFace {
    char         *Name;
    unsigned int NIdx;
    unsigned int *Idx;
-   TMaterial    *Mt;                  /*Material*/
+   TMaterial    *Mt;                  // Material
 } TFace;
 
 typedef struct T3DObject {
    char         *Name;
-   GLuint        GLId;                /*Identificateur de list d'affichage*/
+   GLuint        GLId;                // Identificateur de liste d'affichage
 
-   GLuint        NVr;                 /*Nombre de Vertex*/
-   GLuint        NFc;                 /*Nombre de Face*/
-   Vect3d        Extent[2];           /*Extent*/
-   int           Format;              /*Format de Vertex*/
+   GLuint        NVr;                 // Nombre de Vertex
+   GLuint        NFc;                 // Nombre de Face
+   Vect3d        Extent[2];           // Extent
+   int           Format;              // Format de Vertex
 
-   Vect4f        *Cl;                 /*Color list*/
-   Vect3f        *Vr;                 /*Vertex list*/
-   Vect3f        *Nr;                 /*Normal list*/
-   Vect3f        *Tx;                 /*Texture coordinate list*/
-   TFace         *Fc;                 /*Face list*/
+   Vect4f        *Cl;                 // Color list
+   Vect3f        *Vr;                 // Vertex list
+   Vect3f        *Nr;                 // Normal list
+   Vect3f        *Tx;                 // Texture coordinate list
+   TFace         *Fc;                 // Face list
 } T3DObject;
 
 typedef struct T3DScene {
    char         *Name;
-   float        *Mtx;                /*Transformation matrix*/
+   float        *Mtx;                 // Transformation matrix
 
-   unsigned int  NObj;                /*Number of object*/
-   T3DObject    **Obj;                /*Object list*/
+   unsigned int  NObj;                // Number of object
+   T3DObject    **Obj;                // Object list
 
-   unsigned int  NScn;                /*Number of scene items*/
+   unsigned int  NScn;                // Number of scene items
    struct T3DScene *Scn;
    struct T3DScene *Parent;
 } T3DScene;
@@ -100,25 +100,25 @@ typedef struct T3DScene {
 typedef struct T3DModel {
    char         *Name;
    char         *Path;
-   TGeoRef      *GRef;                /*GeoReference*/
-   TDataSpec    *Spec;                /*Specification des donnees*/
+   TGeoRef      *GRef;                // GeoReference
+   TDataSpec    *Spec;                // Specification des donnees
 
-   Vect3d        Extent[2];          /*Extent*/
-   double        Meter;              /*Meter value (Meter is reference)*/
+   Vect3d        Extent[2];           // Extent
+   double        Meter;               // Meter value (Meter is reference)
 
    Coord         Co;
-   Vect3f        Pos;                 /*Position*/
-   Vect3f        MatrixT;             /*Translation*/
-   Vect3f        MatrixS;             /*Scaling*/
-   Vect3f        MatrixR;             /*Rotation*/
+   Vect3f        Pos;                 // Position
+   Vect3f        MatrixT;             // Translation
+   Vect3f        MatrixS;             // Scaling
+   Vect3f        MatrixR;             // Rotation
 
-   unsigned int  NMt;                 /*Number of materials*/
-   TMaterial    *Mt;                  /*Material list*/
+   unsigned int  NMt;                 // Number of materials
+   TMaterial    *Mt;                  // Material list
 
-   unsigned int  NObj;                /*Number of object*/
-   T3DObject    *Obj;                 /*Object list*/
+   unsigned int  NObj;                // Number of object
+   T3DObject    *Obj;                 // Object list
 
-   T3DScene     *Scn;                 /*Scene items*/
+   T3DScene     *Scn;                 // Scene items
 } T3DModel;
 
 void Model_Free(T3DModel *M);
