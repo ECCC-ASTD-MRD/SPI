@@ -2965,8 +2965,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glPushMatrix();
             glLoadIdentity();
 
-            glStencilFunc(GL_ALWAYS,0x2,0xff);
-            glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+            glStencilFunc(GL_EQUAL,0x2,0x01);
+            glStencilOp(GL_KEEP,GL_REPLACE,GL_REPLACE);
             glDisable(GL_DEPTH_TEST);
 
             glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);

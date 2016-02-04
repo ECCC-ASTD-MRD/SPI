@@ -1597,7 +1597,7 @@ static void ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item)
    double        vps[4];
    int           i,j,n,nbclips,c0,c1;
 
-   /*Mask inslusions*/
+   //Mask intrusions
    if (vp->MaskWidth && vp->MaskItem.Array) {
 
       obj=Tcl_NewObj();
@@ -1629,7 +1629,7 @@ static void ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item)
             Vect_Init(v[3],item->x1-vp->MaskWidth,item->y2+vp->MaskWidth,0.0);
             Vect_Init(v[4],item->x1-vp->MaskWidth,item->y1-vp->MaskWidth,0.0);
 
-            /*Clip the polygon interior to define the intrusion*/
+            // Clip the polygon interior to define the intrusion
             if (LiangBarsky_PolygonClip2D(v,n,clips,&nbclips,vps[0],vps[1],vps[2],vps[3])) {
 
                if (Interp) {
@@ -1656,7 +1656,7 @@ static void ViewportIntrusion(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item)
                   glEnd();
                }
 
-               /*Clip the coutour per line segment so as to only drwa the intrusion*/
+               // Clip the coutour per line segment so as to only drwa the intrusion
                glLineWidth(vp->BDWidth);
                glColor3us(vp->FGColor->red,vp->FGColor->green,vp->FGColor->blue);
                glBegin(GL_LINES);
@@ -1854,7 +1854,7 @@ void ViewportSet(ViewportItem *VP,Projection *Proj) {
    glEnable(GL_STENCIL_TEST);
    glStencilMask(0xff);
 
-   /*Dans le cas d'un mask terre, clear avec 0x2*/
+   // Dans le cas d'un mask terre, clear avec 0x2
    if (Proj->Geo->Params.Mask==1 || Proj->Geo->Params.Mask==-1) {
       glStencilFunc(GL_ALWAYS,0x2,0xf);
    } else {
