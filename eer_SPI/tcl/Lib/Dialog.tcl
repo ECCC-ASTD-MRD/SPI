@@ -48,6 +48,8 @@ namespace eval Dialog { } {
    set Lbl(Continue) { "Continuer" "Continue" }
    set Lbl(Cancel)   { "Annuler" "Cancel" }
    set Lbl(Clip)     { "Copier vers le presse-papier" "Copy to clipboard" }
+   set Lbl(Mail)     { "Envoyer par courriel" "Mail to" }
+   set Lbl(Adress)   { "Adresse d'envoie" "Mail adress" }
 
    set Lbl(WARNING)  { "Avertissement" "Warning" }
    set Lbl(INFO)     { "Information" "Information" }
@@ -583,6 +585,7 @@ proc Dialog::Get { Master Title Text { Var "" } { File False } } {
 #    <Title>  : Titre de la fenetre
 #    <Text>   : Texte a afficher.
 #    <Info>   : Information
+#    <Mail>   : Email adress to send to
 #
 # Retour      :
 #
@@ -591,7 +594,7 @@ proc Dialog::Get { Master Title Text { Var "" } { File False } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Give { Master Title Text Info } {
+proc Dialog::Give { Master Title Text Info { Mail "" } } {
    global GDefs
    global gettervalue
    variable Lbl
@@ -612,9 +615,14 @@ proc Dialog::Give { Master Title Text Info } {
       pack .dlggive.out -side top -fill both -ipady 2
 
       frame .dlggive.cmd
-         button .dlggive.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
+         button .dlggive.ok -text [lindex $Lbl(Continue) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
          button .dlggive.copy -text [lindex $Lbl(Clip) $GDefs(Lang)] -command { clipboard clear; clipboard append [string range [.dlggive.out get 0.0 end] 0 end-1] } -bd 1
-         pack .dlggive.copy .dlggive.ok -side left -fill x  -expand True
+         button .dlggive.mail -text [lindex $Lbl(Mail) $GDefs(Lang)]  -bd 1 -command " 
+            if { \[set mail \[Dialog::Get .dlggive \[lindex \$Dialog::Lbl(Mail) \$GDefs(Lang)\] \$Dialog::Lbl(Adress) $Mail\]\]!=\"\" } {
+               exec echo \"$Info\" | mail -s \"From SPI\" \$mail
+            }
+            destroy .dlggive"
+         pack .dlggive.copy .dlggive.mail .dlggive.ok -side left -fill x  -expand True
       pack .dlggive.cmd -side top -fill x
    }
    

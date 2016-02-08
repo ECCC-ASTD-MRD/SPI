@@ -89,6 +89,7 @@ namespace eval Animator {
    set Play(Mini)         {}              ;#Active miniplayer
 
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
+   set Play(Mail)         ""              ;#Mail to adress for link info
 
    set Fly(Speed)         0.01            ;#Vitesse du vol
    set Fly(List)          {}              ;#Liste des pointrs de controles
@@ -1235,7 +1236,7 @@ proc Animator::PlayWeb { } {
    }
 
    #----- Give the user the url path
-   Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath)
+   Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath) $Animator::Play(Mail)
 
    catch { file delete -force $base }
    set Play(Label) "[lindex $Lbl(Done) $GDefs(Lang)]"
