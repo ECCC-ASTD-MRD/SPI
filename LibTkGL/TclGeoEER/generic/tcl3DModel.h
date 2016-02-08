@@ -127,6 +127,7 @@ int  Model_Init(Tcl_Interp*);
 int  Model_Load(Tcl_Interp* Interp,char* Name,char *Path);
 int  Model_LoadFLT(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path);
+int  Model_LoadOBJ(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_Load3DS(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_LoadDAE(Tcl_Interp* Interp,T3DModel *M,char *Path);
 int  Model_LoadKML(Tcl_Interp* Interp,T3DModel *M,char *Path);

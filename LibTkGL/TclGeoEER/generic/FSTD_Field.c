@@ -1022,7 +1022,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
 int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode){
 
    double     val,lat,lon,di,dj;
-   int        ez=1,ok=-1,idx,n,i,j,k,idxt;
+   int        ezto=1,ezfrom=1,ok=-1,idx,n,i,j,k,idxt;
    void      *pf0,*pt0,*pf1,*pt1;
 
    if (!FieldFrom || !FieldFrom->GRef) {
@@ -1039,21 +1039,24 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    ZRef_Free(FieldTo->ZRef);
    FieldTo->ZRef=ZRef_Define(FieldFrom->ZRef->Type,FieldFrom->ZRef->LevelNb,FieldFrom->ZRef->Levels);
 
+   // Checl for ezscint capability
    if (FieldFrom->Def->Type!=TD_Float32) {
-      ez=0;
+      ezfrom=0;
    }
 
-   if (FieldFrom->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Hgt) {
-      ez=0;
+   if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='M') {
+      ezfrom=0;
+   }
+
+   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
+      ezto=0;
    }
 
    if (FieldFrom->GRef->Grid[0]!='R' && FieldTo->GRef->Grid[0]!='R') {
       FSTD_FieldSetTo(FieldTo,FieldFrom);
    }
-
-   /*Use ezscint*/
-   if (ez) {
-      RPN_IntLock();
+   
+   if (ezto || ezfrom) {
       if (Mode==0) {
          c_ezsetopt("INTERP_DEGREE","NEAREST");
       } else if (Mode==1) {
@@ -1063,11 +1066,15 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       } else {
          c_ezsetopt("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
       }
-
       if (FieldTo->Spec->ExtrapDegree[0]=='V') {
          c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
       }
       c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
+   }
+   
+   // Use ezscint
+   if (ezto && ezfrom) {
+      RPN_IntLock();
 
       ok=c_ezdefset(FieldTo->GRef->Ids[FieldTo->GRef->NId],FieldFrom->GRef->Ids[FieldFrom->GRef->NId]);
 
@@ -1078,7 +1085,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
 
       for(k=0;k<FieldTo->Def->NK;k++) {
-         /*Effectuer l'interpolation selon le type de champs*/
+         // Effectuer l'interpolation selon le type de champs
          if (FieldTo->Def->Data[1]) {
             /*Interpolation vectorielle*/
             Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
@@ -1086,15 +1093,15 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             Def_Pointer(FieldTo->Def,1,k*FSIZE2D(FieldTo->Def),pt1);
             Def_Pointer(FieldFrom->Def,1,k*FSIZE2D(FieldFrom->Def),pf1);
 
-            /*In case of Y grid, get the speed and dir instead of wind components
-              since grid oriented components dont mean much*/
+            // In case of Y grid, get the speed and dir instead of wind components
+            // since grid oriented components dont mean much
             if (FieldTo->GRef->Grid[0]=='Y') {
                ok=c_ezwdint(pt0,pt1,pf0,pf1);
             } else {
                ok=c_ezuvint(pt0,pt1,pf0,pf1);
            }
         } else{
-            /*Interpolation scalaire*/
+            // Interpolation scalaire
             Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
             Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
             ok=c_ezsint(pt0,pf0);

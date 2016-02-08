@@ -478,6 +478,7 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);mdl->MatrixT[2]=tmp;
             }
             break;
+            
          case ROTATE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -491,6 +492,7 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);mdl->MatrixR[2]=tmp;
             }
             break;
+            
          case SCALE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -504,6 +506,7 @@ static int Model_Matrix(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Ob
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&tmp);mdl->MatrixS[2]=tmp;
             }
             break;
+            
          case LOCATE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -1097,18 +1100,21 @@ int Model_Load(Tcl_Interp *Interp,char *Name,char *Path) {
    mdl->Path=strdup(Path);
 
    if (!(c=Model_LoadMDL(Interp,mdl,Path))) {
-      if (!(c=Model_LoadCityGML(Interp,mdl,Path))) {
-         if (!(c=Model_LoadKML(Interp,mdl,Path))) {
-            if (!(c=Model_LoadDAE(Interp,mdl,Path))) {
-               if (!(c=Model_Load3DS(Interp,mdl,Path))) {
+      if (!(c=Model_LoadOBJ(Interp,mdl,Path))) {
+         if (!(c=Model_LoadCityGML(Interp,mdl,Path))) {
+            if (!(c=Model_LoadKML(Interp,mdl,Path))) {
+               if (!(c=Model_LoadDAE(Interp,mdl,Path))) {
+                  if (!(c=Model_Load3DS(Interp,mdl,Path))) {
 #ifdef HAVE_FLT
-                  c=Model_LoadFLT(Interp,mdl,Path);
+                     c=Model_LoadFLT(Interp,mdl,Path);
 #endif
+                  }
                }
             }
          }
       }
    }
+   
    if (c) Model_NormalCompute(mdl,0);
 
    Model_Extent(mdl);
@@ -1200,6 +1206,7 @@ void Model_ExtentObj(T3DModel *Model) {
 
             /*Test for overflow, should not happend but I've seen it on some models*/
             if (idx>obj->NVr) {
+               App_Log(WARNING,"%s: Vertex overflow\n",__func__);
                break;
             }
 

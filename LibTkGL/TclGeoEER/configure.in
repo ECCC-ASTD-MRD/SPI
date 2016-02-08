@@ -182,6 +182,7 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tcl3DModelFLT.c \
                  generic/tcl3DModelKML.c \
                  generic/tcl3DModelMDL.c \
+                 generic/tcl3DModelOBJ.c \
                  generic/tclCMap.c \
                  generic/tclData.c \
                  generic/tclDataSpec.c \
