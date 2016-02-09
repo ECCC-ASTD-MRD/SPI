@@ -49,7 +49,7 @@ namespace eval Dialog { } {
    set Lbl(Cancel)   { "Annuler" "Cancel" }
    set Lbl(Clip)     { "Copier vers le presse-papier" "Copy to clipboard" }
    set Lbl(Mail)     { "Envoyer par courriel" "Mail to" }
-   set Lbl(Adress)   { "Adresse d'envoi" "Mail adress" }
+   set Lbl(Adress)   { "Adresse d'envoi" "Mail address" }
 
    set Lbl(WARNING)  { "Avertissement" "Warning" }
    set Lbl(INFO)     { "Information" "Information" }

@@ -323,6 +323,7 @@ proc Obs::ParamFrame { Frame Apply } {
                   -command { Obs::ParamSet } -bg $GDefs(ColorLight)
                button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font Obs::ParamSet \$Obs::Param(Font)"
+               bind $Data(Frame).def.l.val.order.prec <Any-KeyRelease> { Obs::ParamSet }
                pack $Data(Frame).def.l.val.order.lbl -side left
                pack $Data(Frame).def.l.val.order.font $Data(Frame).def.l.val.order.prec -side left -fill x -expand true
                pack $Data(Frame).def.l.val.order.sel -side left -fill x -expand true

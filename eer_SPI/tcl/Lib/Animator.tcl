@@ -415,6 +415,8 @@ proc Animator::MiniWindow { Parent Frame } {
    Bubble::Create $Parent.anim.playweb     $Bubble(PlayWeb)
    Bubble::Create $Parent.anim.frame       $Bubble(Scroll)
 
+   Animator::MiniSelect $Parent $Frame
+   
    return $Parent.anim
 }
 
@@ -715,7 +717,6 @@ proc Animator::GetPlayListField { } {
                set Play($vp$info) ""
                lappend Play(Frames) $info
             }
-
             lappend Play($vp$info) ANI.$f.$no
             incr no
 

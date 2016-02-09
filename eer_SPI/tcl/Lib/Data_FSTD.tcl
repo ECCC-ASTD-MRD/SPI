@@ -299,6 +299,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                   -command { FSTD::ParamSet } -bg $GDefs(ColorLight)
                button $Data(Frame).def.l.val.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame).def.l.val.order.font FSTD::ParamSet \$FSTD::Param(Font)"
+               bind $Data(Frame).def.l.val.order.prec <Any-KeyRelease> "FSTD::ParamSet"
                pack $Data(Frame).def.l.val.order.lbl -side left
                pack $Data(Frame).def.l.val.order.font $Data(Frame).def.l.val.order.prec -side left -fill x -expand true
                pack $Data(Frame).def.l.val.order.sel -side left -fill x -expand true
