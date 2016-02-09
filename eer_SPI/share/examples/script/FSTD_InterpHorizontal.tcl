@@ -30,8 +30,8 @@ Log::Start [info script] 0.1
 file delete DataOut/FSTD_InterpHorizontal.fstd
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  DataIn/2005102612_012
-fstdfile open 2 write DataOut/FSTD_InterpHorizontal.fstd
+fstdfile open FILEIN read  DataIn/2005102612_012
+fstdfile open FILEOUT write DataOut/FSTD_InterpHorizontal.fstd
 
 #----- Creer un champs sur grille PS de 229x229 en specifiant les IG1 IG2 IG3 et IG4
 fstdfield create GRID 229 229 1
@@ -39,9 +39,9 @@ fstdfield define GRID -GRTYP N 115.0 300.0 25000.0 350.0
 
 #----- Boucler sur les champs a interpoler
 foreach var { TT UU GZ } {
-   fstdfield read FROM 1 -1 "" -1 -1 -1  "" $var
+   fstdfield read FROM FILEIN -1 "" -1 -1 -1  "" $var
    fstdfield gridinterp GRID FROM
-   fstdfield write GRID 2 -16 True
+   fstdfield write GRID FILEOUT -16 True
 }
 
 #----- Teste l'extrapolation
@@ -49,8 +49,16 @@ fstdfield stats FROM -nodata 10.0
 fstdfield clear FROM
 fstdfield configure FROM -extrapdegree VALUE
 fstdfield gridinterp FROM GRID
-fstdfield write FROM 2 -32 False
+fstdfield write FROM FILEOUT -32 False
 
-fstdfile close 1 2
+
+#----- Test l'interpolation dans une grille M
+fstdfile open FILEMSH read  DataIn/shop.fst
+fstdfield read MESHE FILEMSH -1 "" -1 -1 -1 "" WVMD
+fstdfield copydesc MESHE FILEOUT
+fstdfield gridinterp MESHE FROM
+fstdfield write MESHE FILEOUT -16 True
+
+fstdfile close FILEIN FILEOUT FILEMSH
 
 Log::End
