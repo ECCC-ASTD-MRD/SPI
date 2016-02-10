@@ -816,7 +816,7 @@ proc FSTD::ParamGet { { Spec "" } } {
       set inters $Param(Intervals)
       set Param(Intervals) ""
       foreach label $interlabels inter $inters {
-         append Param(Intervals) "${inter}($label) "
+         append Param(Intervals) "[string trim ${inter}($label)] "
       }
    }
 
