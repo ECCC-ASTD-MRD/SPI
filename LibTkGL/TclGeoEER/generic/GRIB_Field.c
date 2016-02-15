@@ -936,7 +936,7 @@ int GRIB_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Compr
       Def_Get(Field->Def,0,i,data[i]);
    }
    grib_set_double_array(head->Handle,"values",data,size);
-//   grib_set_long(head->Handle,"bitsPerValue",NPack);
+   grib_set_long(head->Handle,"bitsPerValue",NPack);
    free(data);
 
    /* write the buffer to a file */

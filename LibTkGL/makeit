@@ -102,7 +102,7 @@ if [[ $EXT -eq 1 ]]; then
    XML=libxml2-2.9.2
    TDOM=tdom-master
    EXPAT=expat-2.0.1
-   CURL=curl-7.21.3
+   CURL=curl-7.47.1
    SQLITE=sqlite-3.6.23
    GEOS=geos-3.4.0
    GDAL=gdal-1.11.0
