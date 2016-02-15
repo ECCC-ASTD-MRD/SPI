@@ -1,6 +1,0 @@
-Package: NAME
-Version: VERSION
-Platform: PLATFORM
-Maintainer: MAINTAINER
-BuildInfo: From SVN $Id: control 854 2013-08-27 18:16:38Z afsr005 $
-Description:  DESC
