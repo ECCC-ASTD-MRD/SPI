@@ -1,0 +1,66 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection de source.
+# Fichier   : Locator.ctes
+# Creation  : Juin 1997 - J.P. Gauthier - CMC/CMOE
+#
+# Description:
+#
+#       Cette interface permet de rechercher et de selectionne une source de type
+#       Volcan, Nucleaire ou CTBT grace a une interface.
+#
+# Remarques :
+#
+#===============================================================================
+
+namespace eval Locator {
+   global   GDefs
+   variable Data
+   variable Param
+
+   set Param(Title)   { "Localisations" "Locations" }
+   set Param(Version) 2.1
+   set Param(Icon)    LOCATION                                    ;#Icone
+   set Param(Geom)    { +[winfo rootx .]+[winfo rooty .] }        ;#Geometry
+   set Param(Dock)    False                                       ;#Docking
+
+   set Data(Job)    ""                    ;#Texte de processus
+   set Data(Active) 0                     ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                    ;#Canvas Actif
+   set Data(Frame)  ""                    ;#Frame actif
+   set Data(VP)     ""                    ;#Viewport actif
+
+   #----- Donnees utilisees
+
+   set Data(0)         ""
+   set Data(1)         ""
+   set Data(2)         ""
+   set Data(3)         ""
+   set Data(4)         ""
+   set Data(5)         ""
+   set Data(Coo)       ""
+   set Data(Current)   0
+   set Data(Icons)     [list SEL_VOLC SEL_NUCL SEL_CTBT SEL_STAT SEL_CITY SEL_PLANE]
+   set Data(Files)     [list "$GDefs(Dir)/data/Volcano.src" "$GDefs(Dir)/data/Nuclear.src" "$GDefs(Dir)/data/CTBT.src" "$GDefs(Dir)/data/Meteo.src" "$GDefs(Dir)/data/City.src" "$GDefs(Dir)/data/NavAid.src"]
+
+   #----- Variable de restriction et de selection
+
+   set Data(Sort)    ""
+
+   set Data(Inst)    0
+   set Data(No)      ""
+   set Data(Name)    ""
+   set Data(Area)    ""
+   set Data(Lat0)    ""
+   set Data(Lat1)    ""
+   set Data(Lon0)    ""
+   set Data(Lon1)    ""
+
+   set Data(Nb)        0
+}
+
+

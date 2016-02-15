@@ -1,0 +1,644 @@
+#!/usr/bin/env bash
+#----- On version change:
+#-----    Change version in TclGeoEER/configure.in
+
+#----- SSM specifics
+NAME="libSPI"
+DESC="EER-SPI library dependencies"
+VERSION="7.10.2"
+MAINTAINER="Jean-Philippe Gauthier"
+
+SSM_NAME=${NAME}_${VERSION}_${ORDENV_PLAT}
+
+SPI=0
+EXT=0
+SSM=0
+SRC=0
+REC=0
+CLN=0
+
+HELP="Arguments must be:\n\n   Information parameters:
+\t-help        : This information
+\t-version     : Version
+
+   Commands:
+\t-spi         : Build SPI libraries
+\t-clean       : Clean SPI libraries
+\t-reconf      : Reconfigure SPI libraries
+\t-ssm         : Build SSM package
+\t-src         : Build source package
+\t-ext         : Build external libraries
+\t-all         : Build and packages everything\n"
+
+#----- Get arguments.
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -spi)     SPI=1;;
+        -ext)     EXT=1;;
+        -ssm)     SSM=1;;
+        -src)     SRC=1;;
+        -reconf)  REC=1;;
+        -clean)   CLN=1;;
+        -all)     SPI=1;EXT=1;SSM=1;SRC=1;REC=1; printf -- "\n\nYou can go for a coffee, ... make it 2 coffee\n\n";;
+
+        -h|-help)     printf -- "$HELP\n"; exit 0;;
+        -v|-version)  printf -- "$VERSION\n"; exit 0;;
+        --)        shift; break;;
+        *)         printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
+    esac
+    shift
+done
+
+ARCH=`uname -s`
+PROC=`uname -m | tr _ -`
+
+#----- Dependencies paths
+
+SRC_PATH=`pwd`
+#TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
+TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
+ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code
+LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
+#LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
+LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.0_${ORDENV_PLAT}                #----- Location of eer library
+
+export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
+
+if [[ $PROC == "x86_64" ]]; then
+   x64=yes
+   export CFLAGS=-m64
+   export CXXFLAGS=-m64
+else
+   x64=no
+fi
+
+if [[ $ARCH == "AIX" ]]; then
+   export CC=xlc
+   export CXX=xlc++
+   export make=gmake
+   export LIBPATH=$LD_LIBRARY_PATH
+fi
+
+DEF_PWD=$PWD
+
+#export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
+
+printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
+
+if [[ $EXT -eq 1 ]]; then
+
+   printf -- "\n----- Making external dependencies -----\n"
+
+   #----- Package to be compiled
+   TCL_VERSION=8.6.3
+   TCLLIB=1.16
+   TKIMG=tkimg1.4
+   TKTABLE=Tktable2.10
+   TKDND=tkdnd2.7
+
+   FLT=fltlib-1.0.0
+   XML=libxml2-2.9.2
+   TDOM=tdom-master
+   EXPAT=expat-2.0.1
+   CURL=curl-7.47.1
+   SQLITE=sqlite-3.6.23
+   GEOS=geos-3.4.0
+   GDAL=gdal-1.11.0
+   MYSQL=mysql-5.1
+   JASPER=jasper-1.900.1
+   JPEG=jpeg-6b
+   HDF4=hdf-4.2.5
+   SZIP=szip-2.1
+   HDF5=hdf5-1.8.11
+   POSTGRESQL=postgresql-8.4.1
+   ODBC=unixODBC-2.3.0
+   GRIB=grib_api-1.12.0
+   ECBUFR=libecbufr0.8.6
+   OCI=instantclient_11_2
+   FGDB=FileGDB_API
+   PROJ=proj-4.9.1
+   MESA=Mesa-7.9.2
+   NETCDF=netcdf-4.3.3.1
+   EZIV=cezinterpv-15.2
+   EZSCINT=ezscint
+
+   #----- not recompiled yet
+   KKDU=kakadu-6.3
+   RMN=librmn-15.2
+
+   #----- Define the list of items we won't compile but will link with
+   if [[ $ARCH != "AIX" ]]; then
+      SLINK_LIBS="$FGDB $MYSQL $OCI"
+   fi
+
+   #----- Create output directories (link to SSM workspace)
+   rm -f -r ${LIB_PATH}
+   mkdir -p ${LIB_PATH}/lib ${LIB_PATH}/include
+
+   [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
+   mkdir -p "${TMP_PATH}"
+   echo "Temporary directory is : $TMP_PATH"
+   echo "Install diectory is    : $LIB_PATH"
+
+   #----- The library we don't compile doesn't need to be copied, so link them to the original dir
+
+   if [[ $LIB_PATH_OPS != $LIB_PATH ]]; then
+      for l in $SLINK_LIBS; do
+         if [[ -e $LIB_PATH_OPS/$l ]]; then
+            echo "Copying precompiled $l"
+            cp -frd $LIB_PATH_OPS/$l/lib/*.so* $LIB_PATH/lib
+            if [[ -e $LIB_PATH_OPS/$l/include ]]; then
+               cp -frd $LIB_PATH_OPS/$l/include/* $LIB_PATH/include
+            fi
+         else
+            echo "Library $l could not be found : symlink failed."
+            exit 1
+         fi
+      done
+   fi
+
+   #----- RMN, copies libs and BUFR and RPN dictionnaries
+   echo "Copying precompiled $RMN"
+   cp -frd $LIB_PATH_OPS/$RMN/lib/* $LIB_PATH/lib
+   cp -frd $LIB_PATH_OPS/$RMN/include/* $LIB_PATH/include
+   mkdir -p $LIB_PATH/share/rmn
+   cd $AFSISIO/datafiles/constants/
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.0.dtd iso-lat1.ent $LIB_PATH/share/rmn
+
+   #----- EZSCINT, copies libs
+   echo "Copying precompiled $EZSCINT"
+   cp -frd $LIB_PATH_OPS/$EZSCINT/lib/* $LIB_PATH/lib
+   cp -frd $LIB_PATH_OPS/$EZSCINT/include/* $LIB_PATH/include
+
+   set -e
+
+   #----- cezinterpv
+   echo "Building ${TMP_PATH}/$EZIV/build.log"
+   mkdir ${TMP_PATH}/$EZIV
+   cd ${TMP_PATH}/$EZIV
+   (${ARCH_PATH}/$EZIV/makeit --prefix=${LIB_PATH}) > ${TMP_PATH}/$EZIV/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Mesa
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${MESA}/build.log"
+      mkdir ${TMP_PATH}/${MESA}
+      cd ${TMP_PATH}/${MESA}
+      cp -r -p ${ARCH_PATH}/${MESA}/ ${TMP_PATH}/
+      (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
+      make
+      make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+   
+   #----- OpenFlight
+   echo "Building ${TMP_PATH}/${FLT}/build.log"
+   cp -r -p ${ARCH_PATH}/${FLT} ${TMP_PATH}/
+   cd ${TMP_PATH}/${FLT}
+   (make
+   cp *.h ${LIB_PATH}/include
+   cp *.so ${LIB_PATH}/lib) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   
+   #----- Tcl Specifics
+
+   #----- Tcl
+   echo "Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
+   mkdir ${TMP_PATH}/tcl${TCL_VERSION}
+   cd ${TMP_PATH}/tcl${TCL_VERSION}
+   (${ARCH_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
+   make install) > ${TMP_PATH}/tcl${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tk
+   echo "Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
+   mkdir ${TMP_PATH}/tk${TCL_VERSION}
+   cd ${TMP_PATH}/tk${TCL_VERSION}
+   (${ARCH_PATH}/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
+
+   #----- Remove visibility-hidden flag from makefile for glCanvas to work
+   mv Makefile Makefile.hidden
+   sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
+   make install) > ${TMP_PATH}/tk${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tcllib
+   cd ${ARCH_PATH}/Tcllib-${TCLLIB}
+   ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/tcllib${TCLLIB} || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- TkImg
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${TKIMG}/build.log"
+      mkdir ${TMP_PATH}/${TKIMG}
+      cd ${TMP_PATH}/${TKIMG}
+      (${ARCH_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
+      #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
+      TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
+      make install) > ${TMP_PATH}/${TKIMG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   #----- TkTable
+   echo "Building ${TMP_PATH}/${TKTABLE}/build.log"
+   mkdir ${TMP_PATH}/${TKTABLE}
+   cd ${TMP_PATH}/${TKTABLE}
+   (${ARCH_PATH}/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TKTABLE}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tkdnd
+   echo "Building ${TMP_PATH}/${TKDND}/build.log"
+   mkdir ${TMP_PATH}/${TKDND}
+   cd ${TMP_PATH}/${TKDND}
+   (${ARCH_PATH}/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- libxml2
+   if [ -x /usr/bin/xml2-config ]; then
+      echo "Found libxml2, using system version `/usr/bin/xml2-config --version`"
+      LIBXML_PATH=/usr
+   else
+      echo "Building ${TMP_PATH}/${XML}/build.log"
+      LIBXML_PATH=${LIB_PATH}
+      mkdir ${TMP_PATH}/${XML}
+      cd ${TMP_PATH}/${XML}
+      (${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
+      make install) > ${TMP_PATH}/${XML}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+   
+   #----- tDOM
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${TDOM}/build.log"
+      mkdir ${TMP_PATH}/${TDOM}
+      cd ${TMP_PATH}/${TDOM}
+      (${ARCH_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
+      make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   #----- GDAL Specifics
+
+   #----- expat
+   echo "Building ${TMP_PATH}/${EXPAT}/build.log"
+   mkdir ${TMP_PATH}/${EXPAT}
+   cd ${TMP_PATH}/${EXPAT}
+   (${ARCH_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   make install) > ${TMP_PATH}/${EXPAT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- curl
+   if [ -x /usr/bin/curl-config ]; then
+      echo "Found curl, using system version `/usr/bin/curl-config --version`"
+      LIBCURL_PATH=/usr
+   else
+      echo "Building ${TMP_PATH}/${CURL}/build.log"
+      LIBCURL_PATH=${TMP_PATH}
+      mkdir ${TMP_PATH}/${CURL}
+      cd ${TMP_PATH}/${CURL}
+      (${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
+      make install) > ${TMP_PATH}/${CURL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   #----- sqlite
+#   if [[ $ARCH != "AIX" ]]; then
+#      echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
+#      mkdir ${TMP_PATH}/${SQLITE}.1
+#      cd ${TMP_PATH}/${SQLITE}.1
+#      (${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
+#      make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+#   fi
+
+   #----- geos
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${GEOS}/build.log"
+      mkdir ${TMP_PATH}/${GEOS}
+      cd ${TMP_PATH}/${GEOS}
+      (${ARCH_PATH}/${GEOS}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-python=no --enable-ruby=no --with-gnu-ld=yes
+      make install) > ${TMP_PATH}/${GEOS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   #----- JPEG
+   echo "Building ${TMP_PATH}/${JPEG}/build.log"
+   mkdir ${TMP_PATH}/${JPEG}
+   cd ${TMP_PATH}/${JPEG}
+   (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   #----- This is needed because the defines in jconfig.h causes conflicts with cpl_config.h (GDAL)
+   mv jconfig.h jconfig.h.ori
+   sed 's/^\(#define \(HAVE_STDLIB_H\) *\)$/\/\/ ELO: HAVE_STDLIB_H may already be defined elsewhere\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif/' jconfig.h.ori > jconfig.h
+   make install) > ${TMP_PATH}/${JPEG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- jasper
+   echo "Building ${TMP_PATH}/${JASPER}/build.log"
+   mkdir ${TMP_PATH}/${JASPER}
+   cd ${TMP_PATH}/${JASPER}
+   (${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS"
+   make install) > ${TMP_PATH}/${JASPER}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- HDF-4
+   echo "Building ${TMP_PATH}/${HDF4}/build.log"
+   mkdir ${TMP_PATH}/${HDF4}
+   cd ${TMP_PATH}/${HDF4}
+   (${ARCH_PATH}/${HDF4}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}
+   make install) > ${TMP_PATH}/${HDF4}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- SZIP
+   echo "Building ${TMP_PATH}/${SZIP}/build.log"
+   mkdir ${TMP_PATH}/${SZIP}
+   cd ${TMP_PATH}/${SZIP}
+   (${ARCH_PATH}/${SZIP}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   make install) > ${TMP_PATH}/${SZIP}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- HDF-5
+   echo "Building ${TMP_PATH}/${HDF5}/build.log"
+   mkdir ${TMP_PATH}/${HDF5}
+   cd ${TMP_PATH}/${HDF5}
+   (${ARCH_PATH}/${HDF5}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --with-szlib=${LIB_PATH} --disable-fortran
+   make install) > ${TMP_PATH}/${HDF5}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- netCDF (Man path on AIX)
+   echo "Building ${TMP_PATH}/${NETCDF}/build.log"
+   mkdir ${TMP_PATH}/${NETCDF}
+   cd ${TMP_PATH}/${NETCDF}
+   (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
+      CPPFLAGS="$CPPFLAGS -I${LIB_PATH}/include" LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib" "$(test "$ARCH" = "AIX" && echo "LIBS=$LIBS -lsz -ljpeg")"
+   test -d man4 && { mv man4/Makefile man4/Makefile.ori; printf 'install:\n\n' > man4/Makefile; }
+   make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- grib
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${GRIB}/build.log"
+      mkdir ${TMP_PATH}/${GRIB}
+      cd ${TMP_PATH}/${GRIB}
+      (${ARCH_PATH}/${GRIB}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-pthread --with-png-support --with-jasper=${LIB_PATH} \
+         FCFLAGS="-I${ARCH_PATH}/${GRIB}/src -I${ARCH_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${ARCH_PATH}/${GRIB}/src $CFLAGS"
+
+      #----- Because the genius who developped the DEVEL_RULES mechanism never build outside his tree
+      touch ${TMP_PATH}/${GRIB}/{src,definitions}/dummy.am
+
+      #----- Because using variables to locate executables and source files instead of just hoping they magically appear in the current directory is just too difficult
+      cp -p ${ARCH_PATH}/${GRIB}/tools/grib1to2.txt ${TMP_PATH}/${GRIB}/tools/
+      cp -p ${ARCH_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
+      cp -p ${ARCH_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
+
+      make install) > ${TMP_PATH}/${GRIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   if [[ $ARCH != "AIX" ]]; then
+
+      #----- ECBUFR
+      #----- Gives error on install (/etc/ld.so.conf.d/libecbufr.conf: Permission denied)
+      set +e
+      echo "Building ${TMP_PATH}/${ECBUFR}/build.log"
+      cp -r -p ${ARCH_PATH}/${ECBUFR} ${TMP_PATH}
+      cd ${TMP_PATH}/${ECBUFR}
+      (./configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
+      #----- Because the headers won't be copied by the install directive if we don't do that
+      cp ${ARCH_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
+      make install) > ${TMP_PATH}/${ECBUFR}/build.log 2>&1
+      #|| { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      set -e
+
+      #----- Because ecbufr can't help himself and creates the wrong directory tree by adding an intermediary directory
+      mv ${LIB_PATH}/lib/${ECBUFR}/* ${LIB_PATH}/lib/
+      mv ${LIB_PATH}/include/${ECBUFR}/* ${LIB_PATH}/include
+      rm -f -r ${LIB_PATH}/lib/${ECBUFR} ${LIB_PATH}/include/${ECBUFR}
+
+      #----- PostgreSQL
+      echo "Building ${TMP_PATH}/${POSTGRESQL}/build.log"
+      mkdir ${TMP_PATH}/${POSTGRESQL}
+      cd ${TMP_PATH}/${POSTGRESQL}
+      (${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIBXML_PATH}/include/libxml2
+      make install) > ${TMP_PATH}/${POSTGRESQL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+      #----- ODBC
+      echo "Building ${TMP_PATH}/${ODBC}/build.log"
+      mkdir ${TMP_PATH}/${ODBC}
+      cd ${TMP_PATH}/${ODBC}
+      (${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+      make install) > ${TMP_PATH}/${ODBC}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   #----- PROJ 4
+   echo "Building ${TMP_PATH}/${PROJ}/build.log"
+   mkdir ${TMP_PATH}/${PROJ}
+   cd ${TMP_PATH}/${PROJ}
+   (if [[ $ARCH != "AIX" ]]; then
+        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+    else
+        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no LDFLAGS="-lpthread $LDFLAGS"
+    fi
+    make install) > ${TMP_PATH}/${PROJ}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- gdal (Don't forget to add stdio.h to frmts/msg/msgcommand.h)
+   #----- On AIX, have to wrap the int64 definition between ifndef _AIX in frmts/gtiff/libtiff/tiff.h, frmts/fit/gstTypes.h, ogr/ogrsf_frmts/shape/shpopen.c
+   echo "Building ${TMP_PATH}/${GDAL}/build.log"
+   mkdir ${TMP_PATH}/${GDAL}
+   cd ${TMP_PATH}/${GDAL}
+   cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}
+   if [[ $ARCH = "AIX" ]]; then
+      (MkOriBckp() { test ! -e "$1".ori && mv "$1" "$1".ori; }
+      RmIntTypedef() { MkOriBckp "$2"; sed 's|^\([ '$'\t'']*\)\(typedef[ '$'\t''].*[ '$'\t'']\('"$1"'\);\)$|\1// ELO: Conflicts with \3 declared in /usr/include/sys/inttypes.h on AIX\'$'\n''\1//ELO//\2|' "$2".ori > "$2"; }
+      #----- Because -f in xlc has a totally different meaning...
+      MkOriBckp configure && sed 's/-fvisibility=hidden/-qvisibility=hidden/g' configure.ori > configure && chmod 755 configure
+      ./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
+      --with-libz=internal \
+      --with-liblzma=yes \
+      --with-pcidsk=internal \
+      --with-pcraster=no \
+      --with-png=internal \
+      --with-libtiff=internal \
+      --with-geotiff=internal \
+      --with-jpeg=internal \
+      --with-gif=internal \
+      --with-static-proj4=${LIB_PATH} \
+      --with-msg=yes \
+      --with-jasper=${LIB_PATH} \
+      --with-expat=${LIB_PATH} \
+      --with-curl=${LIBCURL_PATH}/bin/curl-config \
+      --with-xml2=${LIBXML_PATH}/bin/xml2-config \
+      --with-hdf4=${LIB_PATH} \
+      --with-netcdf=${LIB_PATH} \
+      --with-hide-internal-symbols=yes
+      #CFLAGS="-Wl,-G $CFLAGS" CXXFLAGS="-Wl,-G $CXXFLAGS" LDFLAGS="-Wl,-G $LDFLAGS"
+      #----- This is needed because tiff somehow tries to override int64, declared in /usr/include/sys/inttypes.h on AIX
+      RmIntTypedef int64 frmts/gtiff/libtiff/tiff.h
+      RmIntTypedef int64 frmts/fit/gstTypes.h
+      #----- Still int64, but for pcidsk
+      RmIntTypedef int64 frmts/pcidsk/sdk/pcidsk_config.h
+      #----- This is needed because int32 is declared in /usr/include/sys/inttypes.h on AIX
+      RmIntTypedef int32 ogr/ogrsf_frmts/shape/shpopen.c
+      #----- This is needed because M_PI is declared in /usr/include/math.h on AIX
+      MkOriBckp frmts/msg/reflectancecalculator.cpp
+      sed 's|^\(#define  *\(M_PI\) .*\)$|// ELO: Might conflict with /usr/include/math.h on AIX\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif|' frmts/msg/reflectancecalculator.cpp.ori > frmts/msg/reflectancecalculator.cpp
+      #----- Needed because AIX doesn't use the same defines as everybody else for its network structures (/usr/include/netdb.h)
+      MkOriBckp apps/gdalserver.c
+      sed 's|^\(#if defined(__STDC_VERSION__)\)$|// ELO: Added _AIX defines because it is AIX and nothing works as is...\'$'\n''#ifdef _AIX\'$'\n''#define _XOPEN_SOURCE_EXTENDED 1\'$'\n''#define _ALL_SOURCE\'$'\n''#endif\'$'\n''\'$'\n''\1|' apps/gdalserver.c.ori > apps/gdalserver.c
+      gmake install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   else
+      (./configure --prefix=${LIB_PATH} --with-threads=yes --disable-rpath --enable-shared=yes --enable-static=no \
+      --with-libz=internal \
+      --with-liblzma=yes \
+      --with-xml2=${LIBXML_PATH}/bin/xml2-config \
+      --with-pcidsk=internal \
+      --with-pcraster=internal \
+      --with-png=internal \
+      --with-libtiff=internal \
+      --with-geotiff=internal \
+      --with-jpeg=internal \
+      --with-gif=internal \
+      --with-msg=yes \
+      --with-jasper=${LIB_PATH} \
+      --with-mysql=${LIB_PATH_OPS}/${MYSQL}/bin/mysql_config \
+      --with-sqlite3=no \
+      --with-expat=${LIB_PATH} \
+      --with-curl=${LIBCURL_PATH}/bin/curl-config \
+      --with-geos=${LIB_PATH}/bin/geos-config \
+      --with-hdf4=${LIB_PATH} \
+      --with-hdf5=${LIB_PATH} \
+      --with-pg=${LIB_PATH}/bin/pg_config \
+      --with-odbc=${LIB_PATH} \
+      --with-netcdf=${LIB_PATH} \
+      --with-fgdb=${LIB_PATH}
+      make install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   cd $SRC_PATH
+
+   rm -f -r ${TMP_PATH}
+   set +e
+fi
+
+if [[ $CLN -eq 1 ]]; then
+   cd $DEF_PWD
+
+   printf -- "\n----- Cleaning TclSystem Library -----\n"
+   cd TclSystem
+   make distclean
+
+   printf -- "\n----- Cleaning TkglCanvas Library -----\n"
+   cd ../TkglCanvas
+   make distclean
+
+   printf -- "\n----- Cleaning TclGeoEER Library -----\n"
+   cd ../TclGeoEER
+   make distclean
+
+   cd ..
+fi
+
+if [[ $SPI -eq 1 ]]; then
+   cd $DEF_PWD
+
+   export CC=c99
+   export CFLAGS="-D_TK_SOURCE -fopenmp"
+
+   printf -- "\n----- Making TclSystem Library  -----\n"
+
+   cd TclSystem
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      autoconf2.50
+      ./configure \
+      --prefix=${LIB_PATH}/TCL \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER} \
+      --with-rmn=${LIB_PATH}
+   fi
+   make install
+
+   printf -- "\n----- Making TkglCanvas Library -----\n"
+
+   cd ../TkglCanvas
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      autoconf2.50
+      ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL/ \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib
+   fi
+   make install
+
+   printf -- "\n----- Making TclGeoEER Library -----\n"
+
+   cd ../TclGeoEER
+   if [[ $REC -eq 1 ]]; then
+         make distclean
+         autoconf2.50
+         ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER}\
+      --with-rmn=${LIB_PATH} \
+      --with-gdb=${LIB_PATH_OPS}/gdb \
+      --with-gdal=${LIB_PATH}/bin/gdal-config  \
+      --with-grib=${LIB_PATH} \
+      --with-ecbufr=${LIB_PATH} \
+      --with-flt=${LIB_PATH} \
+      --with-urp=${LIB_PATH_OPS}/URP
+   fi
+   make install
+
+   printf -- "\n----- Making TclR Library -----\n"
+
+   cd ../TclR
+   if [[ $REC -eq 1 ]]; then
+         make distclean
+         autoconf2.50
+         ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-R=$(R RHOME)
+   fi
+   make install
+
+   cd ${LIB_PATH}/lib
+   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
+   ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
+
+   ln -fs ../TCL/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
+   ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+
+   ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
+   ln -fs libTclSystem1.2.so libTclSystem.so
+
+   ln -fs ../TCL/lib/TclR0.3/libTclR0.3.so
+   ln -fs libTclR0.3.so libTclR.so
+
+   cd ${SRC_PATH}
+fi
+
+if [[ $SSM -eq 1 ]]; then
+
+   printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
+
+   rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm
+   mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
+   cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
+   cp .ssm.d/libSPI.sh ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d/${SSM_NAME}.sh
+   
+   find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   cd ${SSM_DEV}/workspace; tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+#   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
+
+   cd ${SRC_PATH}
+fi
+
+if [[ $SRC -eq 1 ]]; then
+
+   printf -- "\n----- Building source package : ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz  -----\n"
+
+   ./makeit -clean
+   rm -f -r ${SSM_DEV}/workspace/libSPI-${VERSION}
+   cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -prune -exec rm -f -r {} \+
+   find ${SSM_DEV}/workspace/libSPI-${VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
+fi

@@ -1,0 +1,97 @@
+#============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadien
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet     : Interface pour la gestion des experiences.
+# Fichier    : <SPI.ctes>
+# Creation   : Mai 2000 - J.P. Gauthier - CMC/CMOE
+#
+# Description: Interface de visualisation et de manipulation des champs et
+#              autres types de donnees.
+#
+# Remarques  :
+#
+#============================================================================
+
+#----- Definition des constantes generale aux experiences
+
+namespace eval SPI {
+   global   env
+   global   GDefs
+   variable Data
+   variable Ico
+   variable Src
+   variable Project
+   variable Resources
+   variable Param
+
+   #----- Definitions des variables parametres
+
+   set Param(FullScreen)     0            ;#Fullscreen mode
+   set Param(Geom)           1024x768     ;#Geometrie de l'interface
+   set Param(Pages)          { "Page 1" } ;#Liste des pages
+   set Param(PaneSide)       right        ;#Position des secondary pane
+   set Param(Panes)          {}           ;#Liste des dimensions des secondary pane
+   set Param(Exp)            False        ;#Affichage des experiences
+   set Param(EER)            False        ;#Mode EER
+   set Param(Window)         True         ;#Affichage de la fenetre principale
+   set Param(Args)           ""           ;#Parametres pour le script en cours d'execution
+   set Param(Default)        $env(HOME)/.spi/SPI
+   set Param(Script)         ""           ;#Script en cours d'execution
+   set Param(Layout)         SPI          ;#Layout courant
+   set Param(Tool)           ""           ;#Outils courant
+   set Param(ToolPath)       ""           ;#Path des outils
+   set Param(ToolMode)       Draw         ;#Mode de l'outils courant
+   set Param(Tools)          ""           ;#Liste des outils disponibles
+   set Param(Layouts)        { SPI }      ;#Liste des layouts
+   set Param(Project)        ""           ;#Projet courant
+   set Param(Geos)           {}           ;#Georeferenced data to load at startup
+   set Param(Loading)        "Loading"    ;#Load en cours
+   set Param(Batch)          False        ;#Mode batch
+   set Param(Threads)        True         ;#Use threads
+   set Param(Bubble)         True         ;#Mode batch
+   set Param(Icons)          {}           ;#Fichiers icones
+   set Param(IconId)         False        ;#Affichage des descriptifs des icones
+   set Param(IconImage)      True         ;#Affichage des icones des icones
+   set Param(IconCircle)     0            ;#Affichage d'un rayou autour d'une icone (en metres)
+   set Param(IconDX)         10           ;#Delta en X pour l'id de l'icone
+   set Param(IconDY)        -10           ;#Delta en Y pour l'id de l'icone
+   set Param(IconAnchor)     sw           ;#Point d'ancrage de l'id de l'icone
+   set Param(Help)           False        ;#Print information
+   
+   #----- Definitions des variables internes
+
+   set Data(Items)          { ColorBar DataBar Mini LOGO TEST Clock Compass Flyer Scale GeoLegend DataLegend TrajGraph TrajHeight TrajLegend  }
+   set Data(Page)           1
+   set Data(LayoutCam)      0            ;#Sauvegarde de la camera associe au layout
+   set Data(LayoutNew)      ""           ;#Nom du nouveau layout
+   set Data(Percent)        0            ;#Pourcentage du travail
+
+   set Ico(Groups)          ""            ;#Liste des icones affichees
+
+   set Src(Area)            ""
+   set Src(Name)            ""
+   set Src(No)              ""
+   set Src(Lat)             ""
+   set Src(Lon)             ""
+   set Src(Elev)            ""
+   set Src(Type)            ""
+   set Src(Info)            ""
+
+   set Project(File)        ""
+   set Project(Window)      True
+   set Project(Layout)      True
+   set Project(Data)        True
+   set Project(Params)      True
+   set Project(Camera)      True
+
+   #----- Defintions des items graphiques
+
+   image create photo LOGO -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_SMC.gif
+   image create photo TEST -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_TEST.gif
+
+   set Resources(IcoLOGO) "@$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm"
+   set Resources(IcoTHER) "@$GDefs(Dir)/share/bitmap/there.ico"
+}

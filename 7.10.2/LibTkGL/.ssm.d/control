@@ -1,0 +1,6 @@
+Package: NAME
+Version: VERSION
+Platform: PLATFORM
+Maintainer: MAINTAINER
+BuildInfo: From SVN $Id: control 859 2014-05-30 17:18:53Z gauthierjp $
+Description:  DESC
