@@ -76,6 +76,7 @@ proc RPN2OGR::Run { } {
 
    set n 0
 
+   fstdfield ip1mode NEW
    colormap create MAP -file $Param(Map)
 
    if { [file exists $Param(ProjFile)] } {
@@ -105,7 +106,7 @@ proc RPN2OGR::Run { } {
          set v 0
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) $Param(IP2) $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
@@ -149,6 +150,7 @@ proc RPN2OGR::Run { } {
             eval file delete -force $files
          }
       }
+      fstdfile close FILEIN
    }
 
    if { $Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" } {

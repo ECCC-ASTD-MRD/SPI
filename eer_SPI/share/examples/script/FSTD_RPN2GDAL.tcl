@@ -100,6 +100,7 @@ proc RPN2GDAL::Run { } {
       set Param(Lon1) [lindex $Param(BBox) 3]
    }
 
+   fstdfield ip1mode NEW
    colormap create MAP -file $Param(Map)
 
    foreach file $Param(Files) {
@@ -117,7 +118,7 @@ proc RPN2GDAL::Run { } {
 
             Log::Print DEBUG "   Checking for variable $var"
 
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) $Param(IP1) $Param(IP2) $Param(IP3) "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                if { [llength $Param(BBox)]!=4 } {
@@ -141,6 +142,7 @@ proc RPN2GDAL::Run { } {
             }
          }
       }
+      fstdfile close FILEIN
    }
    
    if { [llength $fields]>0 } {
