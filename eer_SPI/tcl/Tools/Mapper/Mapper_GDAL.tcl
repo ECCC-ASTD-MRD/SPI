@@ -628,7 +628,7 @@ proc Mapper::GDAL::ParamsGet { Object } {
    set Data(Interp)     [gdalband configure $Object -interpolation]
    set Data(Topo)       [gdalband configure $Object -topography]
    set Data(TopoFactor) [gdalband configure $Object -topographyfactor]
-   set Data(Mask)       [gdalband configure $Object -mask]
+   set Data(Mask)       [gdalband configure $Object -ogrmask]
    set Data(ColorMap)   [gdalband configure $Object -colormap]
    set Data(ShowMap)    [gdalband configure $Object -showmap]
    set Data(Style)      [gdalband configure $Object -sizevar]
@@ -705,9 +705,9 @@ proc Mapper::GDAL::ParamsSet { Object { CheckData True } } {
    gdalband stats $Object -nodata $Data(NoData)
 
    if { $Data(Cut) && [ogrgeometry is MASK$Object] } {
-      gdalband configure $Object -mask MASK$Object
+      gdalband configure $Object -ogrmask MASK$Object
    } else {
-      gdalband configure $Object -mask ""
+      gdalband configure $Object -ogrmask ""
    }
 
    if { [winfo exists .mapper] } {

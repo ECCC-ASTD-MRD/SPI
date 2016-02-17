@@ -1451,19 +1451,19 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
    glEnable(GL_STENCIL_TEST);
 
    if (MaskIn==0x0) {
-      /*Clear before mask*/
-      glStencilFunc(GL_EQUAL,0x2,0xf);
+      // Clear before mask
+      glStencilFunc(GL_EQUAL,0x2,0x3);
       glStencilOp(GL_KEEP,GL_ZERO,GL_ZERO);
    } else if (MaskIn==0x1) {
-      /*Clear latlon from continent*/
+      // Clear latlon from continent
       glStencilFunc(GL_ALWAYS,0x1,0xf);
       glStencilOp(GL_ZERO,GL_ZERO,GL_ZERO);
    } else if (MaskIn==0x2) {
-      /*Mask */
-      glStencilFunc(GL_ALWAYS,0x2,0xf);
+      // Mask 
+      glStencilFunc(GL_ALWAYS,0x2,0x2);
       glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
    } else {
-      /*No mask*/
+      // No mask
       glStencilFunc(GL_NOTEQUAL,0x1,0xf);
       glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
    }
@@ -1497,7 +1497,7 @@ void GDB_FillRender(Tcl_Interp *Interp,Projection *Proj,GDB_Geo *Geo,XColor *Col
          }
          Geo=Geo->Next;
 
-         /*After some tesselation, give back control to application*/
+         // After some tesselation, give back control to application
          if (!GLRender->XBatch && n>10) {
             ViewportRefresh_Canvas(Proj->VP->canvas);
             break;

@@ -372,14 +372,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
-                                 "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask",NULL };
+                                 "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,FLAT,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
-                     INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK };
+                     INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK,OGRMASK };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -1402,6 +1402,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case MASK:
             if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(Spec->Mask));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&Spec->Mask);
+            }
+            break;
+            
+         case OGRMASK:
+            if (Objc==1) {
                if (Spec->OGRMask)
                   Tcl_SetObjResult(Interp,Spec->OGRMask);
             } else {
@@ -1684,6 +1692,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->Mark=from->Mark;
    to->Style=from->Style;
    to->Flat=from->Flat;
+   to->Mask=from->Mask;
    memcpy(to->Cube,from->Cube,6*sizeof(int));
    memcpy(to->Range,from->Range,from->RangeNb*sizeof(double));
    memcpy(to->Inter,from->Inter,from->InterNb*sizeof(double));
@@ -1838,6 +1847,7 @@ TDataSpec *DataSpec_New(){
       spec->Cube[3]=1;spec->Cube[4]=1;spec->Cube[5]=1;
       spec->Axis='X';
 
+      spec->Mask=1;
       spec->OGRMask=NULL;
       spec->ZType=LVL_UNDEF;
       spec->Topo=NULL;

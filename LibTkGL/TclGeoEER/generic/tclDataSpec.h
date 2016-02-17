@@ -90,83 +90,84 @@ typedef struct TIcon {
 } TIcon;
 
 typedef struct TDataSpec {
-   char           *Name;                /*Identificateur information*/
-   int             Set;                 /*Flag de configuration*/
-   int             NRef;                /*Compteur de reference*/
-   unsigned long   Id;                  /*Identificateur de reference*/
+   char           *Name;                // Identificateur information
+   int             Set;                 // Flag de configuration
+   int             NRef;                // Compteur de reference
+   unsigned long   Id;                  // Identificateur de reference
 
-   int             Active;              /*Flag d'activation de l'affichage*/
-   CMap_Rec       *Map;                 /*Palette Associee*/
-   XColor         *Outline,*HighLine;   /*Couleur des segments*/
-   XColor         *Fill,*HighFill;      /*Couleur de remplissage*/
-   int             Alpha,NoSelectAlpha; /*Transparence globale*/
-   Tk_Font         Font;                /*Font for drawing text*/
-   Tk_FontMetrics  TKM;                 /*Font Metrics*/
-   Tk_Dash         Dash;                /*Pointille*/
-   T_glBitmap     *Stipple;             /*Stipple bitmap for filling item*/
-   char           *Sprite;              /*Sprite image*/
+   int             Active;              // Flag d'activation de l'affichage
+   CMap_Rec       *Map;                 // Palette Associee
+   XColor         *Outline,*HighLine;   // Couleur des segments
+   XColor         *Fill,*HighFill;      // Couleur de remplissage
+   int             Alpha,NoSelectAlpha; // Transparence globale
+   Tk_Font         Font;                // Font for drawing text
+   Tk_FontMetrics  TKM;                 // Font Metrics
+   Tk_Dash         Dash;                // Pointille
+   T_glBitmap     *Stipple;             // Stipple bitmap for filling item
+   char           *Sprite;              // Sprite image
    Tk_PhotoHandle SpriteImg;
-   char           *Desc;                /*Descripteur des donnees*/
-   char           *Unit;                /*Unite des donnees*/
-   int             ZType;               /*Type de coordonnees verticale*/
-   char           *Topo;                /*Modulateur 3D*/
-   double          TopoFactor;          /*Facteur du modulateur 3D*/
-   char           *Extrude;             /*Modulateur 3D*/
-   double          ExtrudeFactor;       /*Facteur du modulateur 3D*/
-   int             Interp;              /*Interpolation GL*/
-   double          Inter[DATASPEC_MAX]; /*Intervalles de contours*/
-   Tcl_Obj        *InterLabels;         /*Libelle des intervalles*/
-   Tcl_Obj        *InterVals;           /*Intervalles*/
-   Tcl_Obj        *OGRMask;             /*Masque vectoriel*/
-   int             InterNb;             /*Nombre d'intervalles de contour*/
-   int             InterMode;           /*Mode de calcul des intervalles de contour*/
-   double          InterModeParam;      /*Parameter du mode de calcul des intervalles de contours*/
-   int             InterO;              /*Ordre de grandeur du max des intervalles*/
-   int             InterM;              /*Ordre de grandeur de la mantisse*/
-   int             Light;               /*Illumination*/
-   int             Sample;              /*Distance de sampling des valeurs*/
-   char            SampleType;          /*Type de sampling des valeurs*/
-   int             TexSample,TexSize,TexRes; /*Parametres des textures*/
+   char           *Desc;                // Descripteur des donnees
+   char           *Unit;                // Unite des donnees
+   int             ZType;               // Type de coordonnees verticale
+   char           *Topo;                // Modulateur 3D
+   double          TopoFactor;          // Facteur du modulateur 3D
+   char           *Extrude;             // Modulateur 3D
+   double          ExtrudeFactor;       // Facteur du modulateur 3D
+   int             Interp;              // Interpolation GL
+   double          Inter[DATASPEC_MAX]; // Intervalles de contours
+   Tcl_Obj        *InterLabels;         // Libelle des intervalles
+   Tcl_Obj        *InterVals;           // Intervalles
+   Tcl_Obj        *OGRMask;             // Masque vectoriel
+   int             Mask;                // Masque binaire
+   int             InterNb;             // Nombre d'intervalles de contour
+   int             InterMode;           // Mode de calcul des intervalles de contour
+   double          InterModeParam;      // Parameter du mode de calcul des intervalles de contours
+   int             InterO;              // Ordre de grandeur du max des intervalles
+   int             InterM;              // Ordre de grandeur de la mantisse
+   int             Light;               // Illumination
+   int             Sample;              // Distance de sampling des valeurs
+   char            SampleType;          // Type de sampling des valeurs
+   int             TexSample,TexSize,TexRes; // Parametres des textures
    double          TexStep;
-   double          Step;                /*Step de calcul*/
-   int             Width,HighWidth;     /*Largeur*/
-   int             Icon;                /*Icone*/
-   int             Mark;                /*Marquage*/
-   int             Style;               /*Style*/
-   int             Flat;                /*Flatten (2D)*/
-   char           *LabelVar;            /*Variable pour les libelles*/
-   char           *SizeVar;             /*Variable pour les dimensions*/
-   double          Size,SizeRange,SizeMin,SizeMax;/*Dimension*/
-   char           *MapVar;              /*Variable pour appliquer la palette*/
-   double          Min,Max;             /*Minimum et Maximum des valeurs*/
-   int             MinMax;              /*Indicateur de selection des min max*/
-   double          ValFactor;           /*Facteur multiplicatif d'ajustement des valeurs*/
-   double          ValDelta;            /*Facteur delta d'ajustement des valeurs*/
-   double          MapFactor;           /*Facteur d'index dans la palette*/
-   int             ShowMap;             /*Display colormap*/
-   int             MapAll;              /*Applique la palette aux vectoriel*/
-   int             MapAbove,MapBellow;  /*Applique la palette en dehors des limites min max*/
-   int             GridVector;          /*Orientation des donnees vectorielles*/
-   int             WMO;                 /*WMO plotting type*/
+   double          Step;                // Step de calcul
+   int             Width,HighWidth;     // Largeur
+   int             Icon;                // Icone
+   int             Mark;                // Marquage
+   int             Style;               // Style
+   int             Flat;                // Flatten (2D)
+   char           *LabelVar;            // Variable pour les libelles
+   char           *SizeVar;             // Variable pour les dimensions
+   double          Size,SizeRange,SizeMin,SizeMax;// Dimension
+   char           *MapVar;              // Variable pour appliquer la palette
+   double          Min,Max;             // Minimum et Maximum des valeurs
+   int             MinMax;              // Indicateur de selection des min max
+   double          ValFactor;           // Facteur multiplicatif d'ajustement des valeurs
+   double          ValDelta;            // Facteur delta d'ajustement des valeurs
+   double          MapFactor;           // Facteur d'index dans la palette
+   int             ShowMap;             // Display colormap
+   int             MapAll;              // Applique la palette aux vectoriel
+   int             MapAbove,MapBellow;  // Applique la palette en dehors des limites min max
+   int             GridVector;          // Orientation des donnees vectorielles
+   int             WMO;                 // WMO plotting type
 
-   int             RangeNb;             /*Nombre de range*/
-   double          Range[DATASPEC_MAX]; /*Liste des ranges*/
+   int             RangeNb;             // Nombre de range
+   double          Range[DATASPEC_MAX]; // Liste des ranges
 
-   int             Cube[6];             /*Cube de selection*/
-   char            Axis;                /*Axe*/
+   int             Cube[6];             // Cube de selection
+   char            Axis;                // Axe
 
-   char*           InterpDegree;    /*Degree d'interpolation*/
-   char*           ExtrapDegree;    /*Degree d'extrapolation*/
-   int             RenderTexture;   /*Effectuer le rendue de la texture du champs*/
-   int             RenderFace;      /*Effectuer le rendue des faces*/
-   int             RenderGrid;      /*Effectuer le rendue de la grille*/
-   int             RenderCoord;     /*Effectuer le rendue des coordonnees*/
-   int             RenderContour;   /*Effectuer le rendue des contours*/
-   int             RenderLabel;     /*Effectuer le rendue des labels des niveaux*/
-   int             RenderParticle;  /*Effectuer le rendue de champs lagrangien*/
-   TDataSpecVECTOR RenderVector;    /*Effectuer le rendue de champs vectoriel*/
-   int             RenderValue;     /*Effectuer le rendue des valeurs*/
-   int             RenderVol;       /*Effectuer le rendue du volume*/
+   char*           InterpDegree;        // Degree d'interpolation
+   char*           ExtrapDegree;        // Degree d'extrapolation
+   int             RenderTexture;       // Effectuer le rendue de la texture du champs
+   int             RenderFace;          // Effectuer le rendue des faces
+   int             RenderGrid;          // Effectuer le rendue de la grille
+   int             RenderCoord;         // Effectuer le rendue des coordonnees
+   int             RenderContour;       // Effectuer le rendue des contours
+   int             RenderLabel;         // Effectuer le rendue des labels des niveaux
+   int             RenderParticle;      // Effectuer le rendue de champs lagrangien
+   TDataSpecVECTOR RenderVector;        // Effectuer le rendue de champs vectoriel
+   int             RenderValue;         // Effectuer le rendue des valeurs
+   int             RenderVol;           // Effectuer le rendue du volume
 
    Vect3d          Pos[DATASPEC_MAX];
    int             PosNb;

@@ -1230,7 +1230,7 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
 */
 void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   int          n;
+   int          n,mask;
    unsigned int idx[3];
    Vect3d       b,p,p0,p1,p2;
    Vect3d      *pos;
@@ -1255,7 +1255,8 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glEnable(GL_TEXTURE_1D);
 
    pos=Field->GPos->Pos[Field->Def->Level];
-
+   mask=Field->Spec->Mask && Field->Def->Mask;
+   
    if (!Field->Map)
       Data_MapColor(Field,False);
 
@@ -1271,7 +1272,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          idx[2]=Field->GRef->Idx[n+2];
          
          // Check for mask
-         if (Field->Def->Mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
+         if (mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
             continue;
          }
          glTexCoord1f(Field->Map[idx[0]]);
@@ -1298,7 +1299,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          Vect_Init(b,0.5,0.5,0.0);
          Bary_InterpPos(b,p2,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[0]]) {         
+         if (!mask || Field->Def->Mask[idx[0]]) {         
             glTexCoord1f(Field->Map[idx[0]]);
             glVertex3dv(pos[idx[0]]);
             glVertex3dv(p);
@@ -1308,7 +1309,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[1]]) {         
+         if (!mask || Field->Def->Mask[idx[1]]) {         
             glTexCoord1f(Field->Map[idx[1]]);
             glVertex3dv(pos[idx[1]]);
             glVertex3dv(p);
@@ -1318,7 +1319,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[2]]) {         
+         if (!mask || Field->Def->Mask[idx[2]]) {         
             glTexCoord1f(Field->Map[idx[2]]);
             glVertex3dv(pos[idx[2]]);
             glVertex3dv(p);
@@ -1357,7 +1358,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int          i,j,c0,c1,c2,c3,idxk,idx0,idx1,idx2,idx3;
    int          ox=0,base=0,dp;
-   int          depth;
+   int          depth,mask;
    double       v0,v1,v2,v3;
    Vect3d       g0,g1,g2,g3,dim,*pos;
    unsigned int dx,dy;
@@ -1418,7 +1419,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    idx0=idx1=idx2=idx3=0;
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
-
+   mask=Field->Spec->Mask && Field->Def->Mask;
+   
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -1460,7 +1462,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
                /*Check for mask value*/
-               if (Field->Def->Mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
+               if (mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
                   glEnd();
                   glBegin(GL_QUADS);
                   continue;
@@ -1544,7 +1546,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             /*Check for mask value*/
-            if (Field->Def->Mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
+            if (mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
                glEnd();
                glBegin(GL_QUADS);
                continue;
@@ -1754,7 +1756,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    double  len,dir,u,v,uv,w,i0,j0,i1,j1;
    Vect3d  pix;
    Coord   coo;
-   int     n=0,mem,i,j,idx,idc,dz,dn,nn;
+   int     n=0,mem,i,j,idx,idc,dz,dn,nn,mask;
    char    buf[32],grtyp,*uu,*vv,*mm;
 
    if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
@@ -1764,6 +1766,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
    size=VP->Ratio*Field->Spec->Size;
    theta=thetad=0.0f;
    u=v=w=len=0.0;
+   mask=Field->Spec->Mask && Field->Def->Mask;
    
    /*Do we need transparency*/
    if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
@@ -1807,7 +1810,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   idx=j*Field->Def->NI+i;
 
                   // Check for mask
-                  if (!Field->Def->Mask || Field->Def->Mask[idx]) {
+                  if (!mask || Field->Def->Mask[idx]) {
                      /*If the speed if between the defined range*/
                      Def_GetMod(Field->Def,idx,len);
                      if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
@@ -1855,7 +1858,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                idx=j*Field->Def->NI+i;
                
                // Check for mask
-               if (!Field->Def->Mask || Field->Def->Mask[idx]) {
+               if (!mask || Field->Def->Mask[idx]) {
                   Def_GetMod(Field->Def,idx,len);
                   Field->GRef->Project(Field->GRef,i,j,&coo.Lat,&coo.Lon,1,1);
                   if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
@@ -1925,7 +1928,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             dz=0;i=0;
             while (dz<n) {
                if (xy[dz]<=Field->Def->NI && xy[n+dz]<=Field->Def->NJ && xy[dz]>=1 && xy[n+dz]>=1) {
-                  if (!Field->Def->Mask || Field->Def->Mask[FIDX2D(Field->Def,(int)xy[dz],(int)xy[n+dz])]) {
+                  if (!mask || Field->Def->Mask[FIDX2D(Field->Def,(int)xy[dz],(int)xy[n+dz])]) {
                      ll[i]=ll[dz];
                      ll[mem+i]=ll[mem+dz];
                      i++;
@@ -1948,7 +1951,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
             n=0;
             for(i=0;i<mem;i+=Field->Spec->Sample) {
-               if (!Field->Def->Mask || Field->Def->Mask[i]) {
+               if (!mask || Field->Def->Mask[i]) {
                   ll[n]=ll[i];
                   ll[mem+n]=ll[mem+i];
                   n++;

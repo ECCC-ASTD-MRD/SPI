@@ -180,7 +180,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
 */
 int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
-   int          n;
+   int          n,mask;
    unsigned int idx[3];
    double       val=0.0;
    float        min,rng,inter[DATASPEC_MAX];
@@ -239,6 +239,8 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
    att0=GLShader_AttribGet(prog,"Vd");
 
+   mask=Field->Spec->Mask && Field->Def->Mask;
+
    glBegin(GL_TRIANGLES);
    if (Field->Spec->InterpDegree[0]=='L') {
       for(n=0;n<Field->GRef->NIdx-3;n+=3) {
@@ -247,7 +249,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          idx[2]=Field->GRef->Idx[n+2];
          
          // Check for mask
-         if (Field->Def->Mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
+         if (mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
             continue;
          }
          Def_GetMod(Field->Def,idx[0],val);
@@ -275,7 +277,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          Vect_Init(b,0.5,0.5,0.0);
          Bary_InterpPos(b,p2,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[0]]) {         
+         if (!mask || Field->Def->Mask[idx[0]]) {         
             Def_GetMod(Field->Def,idx[0],val);
             glVertexAttrib1fARB(att0,val);
             glVertex3dv(pos[idx[0]]);
@@ -286,7 +288,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[1]]) {         
+         if (!mask || Field->Def->Mask[idx[1]]) {         
             Def_GetMod(Field->Def,idx[1],val);
             glVertexAttrib1fARB(att0,val);
             glVertex3dv(pos[idx[1]]);
@@ -297,7 +299,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!Field->Def->Mask || Field->Def->Mask[idx[2]]) {         
+         if (!mask || Field->Def->Mask[idx[2]]) {         
             Def_GetMod(Field->Def,idx[2],val);
             glVertexAttrib1fARB(att0,val);
             glVertex3dv(pos[idx[2]]);
@@ -432,7 +434,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       if (buf) free(buf);
    
       // Setup 2D Mask Texture
-      if (Field->Def->Mask) {
+      if (Field->Spec->Mask && Field->Def->Mask) {
          mask=1;
          glActiveTexture(GL_TEXTURE3);
          glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[3]);

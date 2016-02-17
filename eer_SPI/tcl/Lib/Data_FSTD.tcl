@@ -63,7 +63,7 @@ namespace eval FSTD {
     dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbelow False -mapabove True -transparency 100
+      -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
       
    geodata vector { UU VV }
    geodata vector { UP VP }
@@ -123,6 +123,7 @@ namespace eval FSTD {
    set Param(GridNo)        0              ;#Grid to display no (grid/subgrid)
    set Param(GridId)        SUPER          ;#Grid to display name (grid/subgrid)
    set Param(Alpha)         FF             ;#Global transparency
+   set Param(Mask)          True           ;#Grid space mask
 
    set Param(Inters)        {}
    set Param(Labels)        {}
@@ -171,11 +172,38 @@ namespace eval FSTD {
    set Lbl(Warning)       { "Attention" "Warning" }
    set Lbl(Yes)           { "Oui" "Yes" }
    set Lbl(UnTile)        { "Dé #" "Un #" }
+   set Lbl(Mask)          { "Masque" "Mask" }
 
    #----- Definitions des bulles
 
-   set Bubble(Format)    { "Sélection des paramêtres du format de l'affichage"
-                           "Select the display parameters" }
+   set Bubble(Format)    { "Sélection du format de l'affichage des valeurs"
+                           "Select the display format of values" }
+   set Bubble(MapAll)    { "Appliquer la palette aux vecteurs, contours et points"
+                           "Apply colormap to vectors, contours and points" }
+   set Bubble(Color)     { "Sélection de la couleur des contours, points et libelles"
+                           "Select color for contour, points and labels" }
+   set Bubble(Width)     { "Sélection de la largeur des contours et lignes de courants"
+                           "Select width of contour and streamline" }
+   set Bubble(Dash)      { "Sélection du pointillé des countours"
+                           "Selec contour dash type" }
+   set Bubble(Contour)   { "Affichage de contour selon la précision sélectionnée"
+                           "Display contours based on selected precision" }
+   set Bubble(Texture)   { "Affichage du remplissage des cellules selon la palette"
+                           "Display cell filling based on colormap" }
+   set Bubble(Volume)    { "Affichage en iso-surface 3D des intervalles spécifiés"
+                           "Display 3D isosurface of the selected intervals" }
+   set Bubble(Grid)      { "Affichage des points de grilles selon la dimension sélectionnée"
+                           "Display gridpoints based on selected dimension" }
+   set Bubble(Vector)    { "Afichage des vecteurs selon le mode sélectionné (champs vectoriels)"
+                           "Display vectors based on selected mode (vectorial fields)" }
+   set Bubble(Particle)  { "Affichage des parcelles selon la dimension sélectionnée (nuages de points)"
+                           "Display parcels based on selected dimension" }
+   set Bubble(Label)     { "Affichage de libelle sur les contours"
+                           "Display contour labels" }
+   set Bubble(Value)     { "Affichage du min/max ou valeur centrales"
+                           "Display min/max or central values" }
+   set Bubble(Mask)      { "Appliquer le masque si existant (TYPVAR @@)"
+                           "Apply mask if found (TYPVAR @@)" }                        
    set Bubble(Unit)      { "Unitées de la variable specifie"
                            "Specified variable units" }
    set Bubble(Desc)      { "Description de la donnnée"
@@ -200,10 +228,10 @@ namespace eval FSTD {
                            "Colormap used for values bellow minimum specified" }
    set Bubble(Interp)    { "Méthode d'interpolation des données (Lissage)"
                            "Interpolation method (Smoothing)" }
-   set Bubble(Grid)      { "Sélection de sous-grilles ou grille maitre"
-                           "Sub-grid or master grid selection" }
-   set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (#) en une seule grille"
-                           "Select to rebuild tiled grids (#) into one" }
+   set Bubble(Grid)      { "Sélection de sous-grilles ou grille maitre (GRTYP=U)"
+                           "Sub-grid or master grid selection (GRTYP=U)" }
+   set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (GRTYP=#) en une seule grille"
+                           "Select to rebuild tiled grids (GRTYP=#) into one" }
 
 }
 
@@ -433,9 +461,17 @@ proc FSTD::ParamFrame { Frame Apply } {
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 1 2 3 4 5" \
                FSTD::Param(Particle) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.part.sel $Data(Frame).def.r.disp.part.lbl -side left
+
+         frame $Data(Frame).def.r.disp.mask
+            label $Data(Frame).def.r.disp.mask.lbl -text " [lindex $Lbl(Mask) $GDefs(Lang)]"
+            checkbutton $Data(Frame).def.r.disp.mask.sel -variable FSTD::Param(Mask) -relief raised -bd 1 \
+               -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
+               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            pack $Data(Frame).def.r.disp.mask.sel $Data(Frame).def.r.disp.mask.lbl -side left -ipadx 1
+            
          pack $Data(Frame).def.r.disp.p $Data(Frame).def.r.disp.cont $Data(Frame).def.r.disp.tex $Data(Frame).def.r.disp.vol \
             $Data(Frame).def.r.disp.grid $Data(Frame).def.r.disp.vect $Data(Frame).def.r.disp.part $Data(Frame).def.r.disp.label \
-            $Data(Frame).def.r.disp.val -side top -anchor w -padx 2 -fill x -expand true
+            $Data(Frame).def.r.disp.val $Data(Frame).def.r.disp.mask -side top -anchor w -padx 2 -fill x -expand true
 
          pack $Data(Frame).def.r.disp -side top -fill x
       pack $Data(Frame).def.l $Data(Frame).def.r -side left -padx 5 -pady 5 -fill x -anchor n
@@ -518,13 +554,26 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.l.val.desc       $Bubble(Desc)
    Bubble::Create $Data(Frame).def.l.pal.cmap       $Bubble(Map)
    Bubble::Create $Data(Frame).def.l.val.fac        $Bubble(Conv)
-   Bubble::Create $Data(Frame).def.r.disp           $Bubble(Format)
    Bubble::Create $Data(Frame).var.sel              $Bubble(NomVar)
    Bubble::Create $Data(Frame).lev.select.mode      $Bubble(Mode)
    Bubble::Create $Data(Frame).lev.select.number    $Bubble(Nb)
    Bubble::Create $Data(Frame).lev.edit             $Bubble(Intervals)
    Bubble::Create $Data(Frame).lev.desc.bellow      $Bubble(MapBelow)
    Bubble::Create $Data(Frame).lev.desc.above       $Bubble(MapAbove)
+
+   Bubble::Create $Data(Frame).def.r.disp.p.map   $Bubble(MapAll) 
+   Bubble::Create $Data(Frame).def.r.disp.p.col   $Bubble(Color)
+   Bubble::Create $Data(Frame).def.r.disp.p.width $Bubble(Width) 
+   Bubble::Create $Data(Frame).def.r.disp.p.st    $Bubble(Dash) 
+   Bubble::Create $Data(Frame).def.r.disp.cont    $Bubble(Contour) 
+   Bubble::Create $Data(Frame).def.r.disp.tex     $Bubble(Texture) 
+   Bubble::Create $Data(Frame).def.r.disp.vol     $Bubble(Volume)  
+   Bubble::Create $Data(Frame).def.r.disp.grid    $Bubble(Grid)  
+   Bubble::Create $Data(Frame).def.r.disp.vect    $Bubble(Vector) 
+   Bubble::Create $Data(Frame).def.r.disp.part    $Bubble(Particle)  
+   Bubble::Create $Data(Frame).def.r.disp.label   $Bubble(Label) 
+   Bubble::Create $Data(Frame).def.r.disp.val     $Bubble(Value)  
+   Bubble::Create $Data(Frame).def.r.disp.mask    $Bubble(Mask)
 }
 
 #----------------------------------------------------------------------------
@@ -790,6 +839,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(GridVec)    [dataspec configure $spec -gridvector]
    set Param(Vector)     [dataspec configure $spec -rendervector]
    set Param(Axis)       [dataspec configure $spec -axis]
+   set Param(Mask)       [dataspec configure $spec -mask]
 
    set plane             [dataspec configure $spec -cube]
    set Param(X0)         [lindex $plane 0]
@@ -893,7 +943,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow)
+      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -mask $Param(Mask)
 
    #----- Set intervals depending on interval mode
    if  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
