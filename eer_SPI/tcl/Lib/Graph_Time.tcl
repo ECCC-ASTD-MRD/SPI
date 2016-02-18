@@ -749,6 +749,11 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
 proc Graph::Time::Update { Frame { GR {} } } {
    variable Data
 
+   #----- Check if we're animating on time
+   if { [namespace exists ::Animator] && ($Animator::Play(Now)=="DATE" || $Animator::Play(Now)=="IP2") } {
+     return
+   }
+
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Time]
    }
@@ -805,6 +810,11 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
    variable Data
    variable Lbl
 
+   #----- Check if we're animating on time
+   if { [namespace exists ::Animator] && ($Animator::Play(Now)=="DATE" || $Animator::Play(Now)=="IP2") } {
+      return
+   }
+  
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Time]
    }

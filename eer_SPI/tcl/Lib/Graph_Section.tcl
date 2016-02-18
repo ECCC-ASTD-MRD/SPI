@@ -746,6 +746,11 @@ proc Graph::Section::ItemData { GR Pos Item Data } {
 proc Graph::Section::Update { Frame { GR {} } } {
    variable Data
 
+   #----- Check if we're animating on vertical
+   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+      return
+   }
+   
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Section]
    }
@@ -809,6 +814,11 @@ proc Graph::Section::UpdateItems { Frame { GR { } } } {
    global GDefs
    variable Data
    variable Lbl
+
+   #----- Check if we're animating on vertical
+   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+      return
+   }
 
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Section]

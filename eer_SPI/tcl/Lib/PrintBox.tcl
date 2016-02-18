@@ -789,8 +789,11 @@ proc PrintBox::Save { Frame X Y Width Height File Device } {
    #----- !@$@#$@# TkImg has problem with many format so force through ppm for all
    if { True || $device == "png" || $device == "gif" } {
       TMPIMG write "$File.ppm" -format ppm
-      exec convert $File.ppm $File.$Device
-      file delete $File.ppm
+      
+      if { $device != "ppm" } {
+         exec convert $File.ppm $File.$Device
+         file delete $File.ppm
+      }
    } else {
       eval TMPIMG write "$File.$Device " -format \{$device $opt\}
    }

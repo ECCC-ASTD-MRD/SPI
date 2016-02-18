@@ -65,6 +65,7 @@ namespace eval Animator {
 
    #----- Variable relative au playback
 
+   set Play(Now)          ""              ;#Current mode of animation, empty if not animating
    set Play(Cache)        0               ;#Cache des pixmaps de frame
    set Play(IP3)          1               ;#Validation du IP3 en recherche de champs
    set Play(Cycle)        0               ;#Bouclage de l'animation
@@ -1002,6 +1003,8 @@ proc Animator::Play { } {
          }
       }
 
+      set Play(Now) $Play(Type)
+      
       #----- Appeler la fonction de mises a jour des informations
       foreach mini $Miniport::Data(Mini$Play(Page)) {
          Miniport::UpdateData $Play(Page) $mini
@@ -1087,6 +1090,7 @@ proc Animator::Play { } {
       after $Play(Delai)
    }
 
+   set Play(Now)  ""
    set Play(File) 0
    set Play(Dir)  0
    set Play(Stop) 1

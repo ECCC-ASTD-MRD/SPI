@@ -797,6 +797,11 @@ proc Graph::Profile::ItemData { GR Pos Item Data  } {
 proc Graph::Profile::Update { Frame { GR {} } } {
    variable Data
 
+   #----- Check if we're animating on vertical
+   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+      return
+   }
+
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Profile]
    }
@@ -856,6 +861,11 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
    global GDefs
    variable Data
    variable Lbl
+
+   #----- Check if we're animating on vertical
+   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+      return
+   }
 
    if { ![llength $GR] } {
       set GR [Page::Registered All Graph::Profile]
