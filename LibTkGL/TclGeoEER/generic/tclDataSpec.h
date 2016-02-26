@@ -102,7 +102,7 @@ typedef struct TDataSpec {
    int             Alpha,NoSelectAlpha; // Transparence globale
    Tk_Font         Font;                // Font for drawing text
    Tk_FontMetrics  TKM;                 // Font Metrics
-   Tk_Dash         Dash;                // Pointille
+   Tk_Dash         Dash,HighDash;       // Pointille
    T_glBitmap     *Stipple;             // Stipple bitmap for filling item
    char           *Sprite;              // Sprite image
    Tk_PhotoHandle SpriteImg;

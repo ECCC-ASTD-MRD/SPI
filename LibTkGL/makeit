@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.10.2"
+VERSION="BETA"
 MAINTAINER="Jean-Philippe Gauthier"
 
 SSM_NAME=${NAME}_${VERSION}_${ORDENV_PLAT}
@@ -496,6 +496,9 @@ if [[ $EXT -eq 1 ]]; then
    fi
 
    cd $SRC_PATH
+
+   #----- Copy local share definitions 
+   cp -rp share ${LIB_PATH}
 
    rm -f -r ${TMP_PATH}
    set +e

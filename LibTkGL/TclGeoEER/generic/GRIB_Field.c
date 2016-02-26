@@ -1030,17 +1030,14 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    TRPNHeader  *rhead=(TRPNHeader*)RPN->Head;
    TCoord co;
    float  xg[4];
-   int    yyyy,mm,dd,h,m,s;
+   int    yyyy,mm,dd,h,m,s,tmp;
    size_t len;
 
    // Copy data
    Def_Free(Field->Def);
    Field->Def=Def_Copy(RPN->Def);
   
-   // Set some parameters
-   grib_set_long(head->Handle,"Ni",RPN->Def->NI);
-   grib_set_long(head->Handle,"Nj",RPN->Def->NJ);
-   
+   // Define time parameters   
    System_StampDecode(rhead->DATEO,&yyyy,&mm,&dd,&h,&m,&s);
    grib_set_long(head->Handle,"dataDate",yyyy*10000+mm*100+dd);
    grib_set_long(head->Handle,"dataTime",h*100+m);
@@ -1048,8 +1045,31 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    grib_set_long(head->Handle,"stepRange",rhead->IP2);
    grib_set_long(head->Handle,"startStep",rhead->IP2);
    grib_set_long(head->Handle,"endStep",rhead->IP2);
+   grib_set_long(head->Handle,"timeRangeIndicator",10); 
+
+   // Define vertical parameters   
+   switch(RPN->ZRef->Type) {
+      case LVL_MASL:         tmp=103; break;  //  Meters above sea level
+      case LVL_SIGMA:        tmp=107; break;  //  P/Ps
+      case LVL_PRES:         tmp=100; break;  //  Pressure mb
+      case LVL_MAGL:         tmp=105; break;  //  Meters above ground level
+      case LVL_HYBRID:       tmp=109; break;  //  Hybrid levels
+      case LVL_THETA:        tmp=113; break;  //  ?
+      case LVL_ETA:          tmp=119; break;  //  (Pt-P)/(Pt-Ps) -not in convip
+      case LVL_GALCHEN:      tmp=105; break;  //  Original Gal-Chen -not in convip (JP Defined)
+          
+      case LVL_UNDEF:        tmp=255; break;  //  units are user defined
+      case LVL_ANGLE:        tmp=255; break;  //  Radar angles (JP defined)
+      case LVL_MPRES:        tmp=255; break;  //  Metres-pression   
+      default:               tmp=255; break;
+   }
+   
+   grib_set_long(head->Handle,"indicatorOfTypeOfLevel",tmp); 
+   grib_set_double(head->Handle,"level",Field->ZRef->Levels[Field->Def->Level]); 
    
    // Define grid parameters
+   grib_set_long(head->Handle,"Ni",RPN->Def->NI);
+   grib_set_long(head->Handle,"Nj",RPN->Def->NJ);
    grib_set_long(head->Handle,"projectionCentreFlag",0);
    grib_set_long(head->Handle,"iScansNegatively",0);
    grib_set_long(head->Handle,"jScansPositively",1);

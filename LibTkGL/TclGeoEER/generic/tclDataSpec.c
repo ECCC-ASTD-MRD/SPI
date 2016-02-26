@@ -368,14 +368,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
-                                 "-interpdegree","-extrapdegree","-factor","-delta","-dash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
+                                 "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
-                     INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
+                     INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,HIGHDASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,FLAT,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
@@ -735,6 +735,22 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case HIGHDASH:
+            if (Objc==1) {
+               DashPrint(buf,&Spec->HighDash);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+            } else {
+               i++;
+               Spec->HighDash.number=0;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  if (Tk_GetDash(Interp,Tcl_GetString(Objv[i]),&Spec->HighDash)!=TCL_OK) {
+                     Tcl_AppendResult(Interp,"DataSpec_Config: Invalid dash ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+               }
+            }
+            break;
+            
          case STIPPLE:
             if (Objc==1) {
                if (Spec->Stipple) {
@@ -1725,6 +1741,13 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
          return(TCL_ERROR);
       }
    }
+   to->HighDash.number=0;
+   if (from->HighDash.number) {
+      DashPrint(buf,&from->HighDash);
+      if (Tk_GetDash(Interp,buf,&to->HighDash)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+   }
 
    to->Stipple=NULL;
    if (from->Stipple)
@@ -1857,6 +1880,7 @@ TDataSpec *DataSpec_New(){
       spec->InterpDegree=(char*)strdup("LINEAR");
       spec->ExtrapDegree=(char*)strdup("NEUTRAL");
       spec->Dash.number=0;
+      spec->HighDash.number=0;
       spec->RenderTexture=0;
       spec->RenderFace=1;
       spec->RenderGrid=0;
