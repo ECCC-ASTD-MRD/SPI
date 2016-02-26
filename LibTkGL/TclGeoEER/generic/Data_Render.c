@@ -455,7 +455,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
    if (!Field->GRef || !Field->GPos || !Field->Spec->Width || (!Field->Spec->Outline && !Field->Spec->MapAll))
       return;
 
-   /*Les contours sont-ils definit*/
+   // Les contours sont-ils definit
    if (Field->Spec->InterNb && !Field->Def->Segments) {
       if (Field->GRef->Grid[0]=='M') {
          FFContourM(REF_PROJ,Field->GPos,Field->Def,Field->Stat,Proj,Field->Spec->InterNb,Field->Spec->Inter);
@@ -464,7 +464,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       }
    }
 
-   /* Render the contours */
+   // Render the contours
    if (Field->Def->Segments && Field->Spec->Width && Field->Spec->Outline) {
 
       if (Field->Spec->RenderLabel && Interp)
@@ -493,15 +493,14 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
       } else {
          glDash(&Field->Spec->Dash);
       }
+      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+      glLineWidth(Field->Spec->Width);
 
-      /*Do we need transparency*/
+      // Do we need transparency
       if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
          glEnable(GL_BLEND);
       }
       
-      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
-      glLineWidth(Field->Spec->Width);
-
       list=Field->Def->Segments;
 
       // For PseudoCylindric projection, keep depth to 1
@@ -521,6 +520,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
                glColor4ubv(Field->Spec->Map->Color[c]);
             }
          }
+                
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,Field->GRef->Grid[0]=='M'?GL_LINES:GL_LINE_STRIP,array->Size,0,NULL,NULL);
 
          if (Interp)
@@ -1617,10 +1617,10 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    double zm,zmm,zn,zv;
    int    high;
    int    ichk,jchk;
-   int    is,js,jt,it;
+   int    i0,j0,i1,j1;
    int    ip,jp,ik,jk;
 
-   int    idx;
+   int    idx,idxp;
    Vect3d pos,g,*posa;
    char   lbl[10];
 
@@ -1639,7 +1639,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    glPushMatrix();
    glLoadIdentity();
    
-   /*Do we need transparency*/
+   // Do we need transparency
    if (Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
@@ -1650,7 +1650,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
    posa=Field->GPos->Pos[Field->Def->Level];
    zm=zmm=zn=zv=0.0;
 
-   /*Min Max case*/
+   // Min Max case
    if (Tile==1) {
      if (Projection_Pixel(Proj,VP,Field->Stat->MaxLoc,pos)) {
          DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,Field->Stat->Max),lbl);
@@ -1665,49 +1665,48 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
       Tile-=1;
 
-      /* ichk and jchk indicates the covering area under which the extrema is to be evaluated */
+      // ichk and jchk indicates the covering area under which the extrema is to be evaluated 
       ichk=Field->Def->NI/Tile;ichk=(2>=ichk?2:(2*Tile-1<=ichk?2*Tile-1:ichk));
       jchk=Field->Def->NJ/Tile;jchk=(2>=jchk?2:(2*Tile-1<=jchk?2*Tile-1:jchk));
 
-      /* loop in all the lines */
-      for (ip=0;ip<Field->Def->NI;ip++) {
+      // loop in all the lines
+      for (ip=0;ip<Field->Def->NI-1;ip++) {
 
-         /* as long as the function is increasing or decreasing move along the y axe */
+         // as long as the function is increasing or decreasing move along the y axe
          Def_GetMod(Field->Def,ip,zm);
-         idx=ip+1*Field->Def->NI;
+         idx=ip+Field->Def->NI;
          Def_GetMod(Field->Def,idx,zmm);
          high=(zm<=zmm);
          for (jp=0;jp<Field->Def->NJ-1;jp++) {
-            if (jp!=Field->Def->NJ-1) {
-               idx=ip+(jp+1)*Field->Def->NI;
-               Def_GetMod(Field->Def,idx,zn);
-               if (zm==zn || ((zm<zn) && high) || ((zm>zn) && !high)) {
-                  zm=zn;
-                  continue;
-               }
+            idxp=jp*Field->Def->NI+ip;
+            idx=idxp+Field->Def->NI;
+            Def_GetMod(Field->Def,idx,zn);
+            if (zm==zn || ((zm<zn) && high) || ((zm>zn) && !high)) {
+               zm=zn;
+               continue;
             }
 
-            /* check if it is really a max or a min over the area */
-            js=(0>=jp-jchk?0:jp-jchk);
-            jt=(Field->Def->NJ-1<=jp+jchk?Field->Def->NJ-1:jp+jchk);
-            is=(0>=ip-ichk?0:ip-ichk);
-            it=(Field->Def->NI-1<=ip+ichk?Field->Def->NI-1:ip+ichk);
+            // check if it is really a max or a min over the chunk area
+            j0=(jp-jchk<=0?0:jp-jchk);
+            j1=(jp+jchk>=Field->Def->NJ-1?Field->Def->NJ-1:jp+jchk);
+            i0=(ip-ichk<=0?0:ip-ichk);
+            i1=(ip+ichk>=Field->Def->NI-1?Field->Def->NI-1:ip+ichk);
 
-            for (jk=js;jk<=jt;jk++) {
-               for (ik=is;ik<=it;ik++) {
+            for (jk=j0;jk<=j1;jk++) {
+               for (ik=i0;ik<=i1;ik++) {
                   if (ik!=ip || jk!=jp) {
                      idx=ik+jk*Field->Def->NI;
                      Def_GetMod(Field->Def,idx,zv);
-                     if (((zv>=zm) && high) || ((zv<=zm) && !high)) goto nexty;
+                     if (zv==zm &&idx<idxp) idxp=idx;
+                     if (((zv>zm) && high) || ((zv<zm) && !high)) goto nexty;
                   }
                }
             }
 
-            /* an extrema was found */
-            idx=jp*Field->Def->NI+ip;
-            Vect_Assign(g,posa[idx]);
+            // an extrema was found           
+            Vect_Assign(g,posa[idxp]);
             PROJCHECK(Proj,g[0]);
-            gluProject(g[0],posa[idx][1],posa[idx][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
+            gluProject(g[0],posa[idxp][1],posa[idxp][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
             if (VIN(pos[0],1,Proj->VP->Width) && VIN(pos[1],1,Proj->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
                if (high) {
@@ -1716,7 +1715,8 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"L",lbl);
                }
             }
-            /* continues the search */
+            
+            // continues the search 
             nexty: high=!high;
             zm=zn;
          }
