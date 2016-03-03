@@ -524,7 +524,7 @@ proc Page::ActiveFull { Type Frame Id Full } {
    variable Map
 
    if { $Full } {
-      #----- We've 1 pixel offset ???? and it's in X axis for GW mode ans Y for Mesa ???
+      #----- We've 1 pixel offset ???? and it's in X axis for HW mode and Y for Mesa ???
       if { [glrender -direct] } {
          bind $Frame.page.canvas <Configure> "update idletasks; ${Type}::Resize $Frame $Id 1 0 \[Page::CanvasWidth $Frame\] \[expr \[Page::CanvasHeight $Frame\]-1\] 0"
          eval ${Type}::Resize $Frame $Id 1 0 [Page::CanvasWidth $Frame] [expr [Page::CanvasHeight $Frame]-1] 0
@@ -738,7 +738,7 @@ proc Page::Create { Frame Width Height { Active True } } {
    }
 
    #----- For some misterious reasons, we have to force aliasing once cause FSAA does not
-   #      always kick in. We then remove it at the end cause it's too slow in software mode
+   #      always kicks in. We then remove it at the end cause it's too slow in software mode
    glrender -fsaa $OpenGL::Param(FSAA)
    glrender -aliasing 1
 
@@ -1602,7 +1602,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
          $Frame.page.canvas xview moveto 0
          destroy $Frame.page.v $Frame.page.h
          pack $Frame.page.canvas -side top -fill both -expand true
-         bind $Frame <Configure> ""
+         bind $Frame <Configure> "update idletasks; SPI::LayoutFit $Frame"
       } else {
          $Frame.page.canvas configure -yscrollcommand "$Frame.page.v set" -xscrollcommand "$Frame.page.h set"
          pack $Frame.page.canvas -side top -anchor nw -expand false -fill none
@@ -1611,7 +1611,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
             scrollbar $Frame.page.v -orient vertical   -bd 1 -width 10 -command "$Frame.page.canvas yview"
             scrollbar $Frame.page.h -orient horizontal -bd 1 -width 10 -command "$Frame.page.canvas xview"
          }
-         bind $Frame <Configure> "update idletasks ; if { \$Page::Data(Full$Frame) } { Page::ScaleSet $Frame } ; Page::Resize $Frame"
+         bind $Frame <Configure> "update idletasks; if { \$Page::Data(Full$Frame) } { Page::ScaleSet $Frame } ; Page::Resize $Frame"
          Page::Scale $Frame
       }
 

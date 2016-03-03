@@ -17,7 +17,9 @@
 #   MetData::Duration         { List Idx0 Idx1 }
 #   MetData::GetLatestRun     { Path }
 #   MetData::GetLatestStamp   { Path }
-#   MetData::GetStampFromFile { File }
+#   MetData::GetClosestFile   { Path Sec { Max 3600 } }
+#   MetData::StampFromFile    { File }
+#   MetData::SecFromFile      { File }
 #   MetData::StampModulo      { Stamp Sec }
 #   MetData::File2Sec         { File }
 #   MetData::Find             { FLD FID DATEV ETIKET IP1 IP2 IP3 TYPVAR NOMVAR }
@@ -195,11 +197,11 @@ proc MetData::GetLatestRun { Path } {
 proc MetData::GetLatestStamp { Path } {
 
    set file  [lindex [lsort -dictionary [glob -tails -directory $Path \[1-2\]*_???]] end]
-   return [MetData::GetStampFromFile $file]
+   return [MetData::StampFromFile $file]
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <MetData::GetStampFromFile>
+# Nom      : <MetData::StampFromFile>
 # Creation : Mars 2010 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Recuperer le stamp d'un fichier
@@ -214,13 +216,45 @@ proc MetData::GetLatestStamp { Path } {
 #
 #----------------------------------------------------------------------------
 
-proc MetData::GetStampFromFile { File } {
+proc MetData::StampFromFile { File } {
 
    set File [file tail $File]
    set stamp [fstdstamp fromseconds [clock scan "[string range $File 0 7] [string range $File 8 9]"]]
    return $stamp
 }
 
+proc MetData::SecFromFile { File } {
+   set File [file tail $File]
+   scan [string range $File 11 13] %d hours 
+   
+   return [clock add [clock scan "[string range $File 0 7] [string range $File 8 9]"] $hours hour]
+}
+
+proc MetData::GetClosestFile { Path Sec { Max 3600 } } {
+   variable Data
+   
+   if { ![info exists ::EERWetDB::Data($Path)] } {
+      foreach file [lsort -dictionary -decreasing [glob $Path/??????????_\[0-9\]\[0-9\]\[0-9\]]] {
+         lappend Data($Path) [list $file [SecFromFile $file]]
+      }
+#      set Data($Path) [lsort -decreasing -index 1 $Data($Path)]
+   }
+   set dmin 1e32
+   set file ""
+   foreach data $Data($Path) {
+      set dt [expr abs($Sec-[lindex $data 1])]
+
+      if { $dt<$dmin } {
+         set dmin $dt
+         set file [lindex $data 0]
+      }
+   }
+   
+   if { $dmin>=$Max } {
+      set file ""
+   }
+   return $file
+}
 #----------------------------------------------------------------------------
 # Nom      : <MetData::StampModulo>
 # Creation : Juin 2006 - J.P. Gauthier - CMC/CMOE

@@ -11,10 +11,19 @@
 # Description: Definitions de fonctions relative aux manipulations de dates.
 #
 # Fonctions:
-#      DateStuff::CompareDDMMMYYYY { Date1 Date2 }
-#      DateStuff::CheckYear        { Year }
-#      DateStuff::StringMonth      { NoMois Lang }
-#      DateStuff::MonthLength      { Month Year }
+#      DateStuff::CompareDDMMMYYYY               { Date1 Date2 }
+#      DateStuff::CompareMMM_YYYY                { Date1 Date2 }
+#      DateStuff::IsLeapYear                     { Year }
+#      DateStuff::StringDay                      { No Lang }
+#      DateStuff::StringMonth                    { No Lang }
+#      DateStuff::MonthLength                    { Month Year }
+#      DateStuff::StringDateFromSeconds          { Seconds Lang { Zone Z } }
+#      DateStuff::StringDateOnlyFromSeconds      { Seconds Lang { Zone Z } }
+#      DateStuff::StringShortDateFromSeconds     { Seconds Lang { Zone Z } }
+#      DateStuff::StringShortDateOnlyFromSeconds { Seconds Lang { Zone Z } }
+#      DateStuff::StringTimeFromSeconds          { Seconds { Zone Z } }
+#      DateStuff::SecsToHours                    { Secs }
+#      DateStuff::MinsToHours                    { Mins }
 #
 # Remarques :
 #   Aucune
@@ -35,7 +44,10 @@ namespace eval DateStuff {
    variable Data
    variable Day
    variable Month
+   variable Const
 
+   set Const(MonthLength) { "" 31 29 31 30 31 30 31 31 30 31 30 31 }
+   
    set Day(0) { "Dimanche" "Sunday"    }
    set Day(1) { "Lundi"    "Monday"    }
    set Day(2) { "Mardi"    "Tuesday"   }
@@ -46,17 +58,17 @@ namespace eval DateStuff {
 
 
    set Month(01) { "Janvier"   "January"  }
-   set Month(02) { "F√©vrier"   "February"  }
+   set Month(02) { "FÈvrier"   "February"  }
    set Month(03) { "Mars"      "March"     }
    set Month(04) { "Avril"     "April"     }
    set Month(05) { "Mai"       "May"       }
    set Month(06) { "Juin"      "June"      }
    set Month(07) { "Juillet"   "July"      }
-   set Month(08) { "Ao√ªt"      "August"    }
+   set Month(08) { "Aout"      "August"    }
    set Month(09) { "Septembre" "September" }
    set Month(10) { "Octobre"   "October"   }
    set Month(11) { "Novembre"  "November"  }
-   set Month(12) { "D√©cembre"  "December"  }
+   set Month(12) { "DÈcembre"  "December"  }
 
    set Data(Jan) 01
    set Data(Feb) 02
@@ -128,7 +140,7 @@ proc DateStuff::CompareDDMMMYYYY { Date1 Date2 } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <DateStuff::CompareMMMYYYY>
+# Nom      : <DateStuff::CompareMMM_YYYY>
 # Creation : Juin 97 - J.P. Gauthier - CMC/CMOE -
 #
 # But      : Compare deux date de format MMMYYYY (ex: Jan1998)
@@ -181,30 +193,25 @@ proc DateStuff::CompareMMM_YYYY { Date1 Date2 } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <DateStuff::CheckYear>
+# Nom      : <DateStuff::IsLeapYear>
 # Creation : Juillet 1996 - E. Bilodeau - CMC/CMOE -
 #
-# But      : verifier si l'annee selectionnee est bissectile ou pas, et de
-#            retourner le nombre de jour du mois de fevrier selon le cas.
+# But      : Verifier si l'annee selectionnee est bissectile ou pas.
 #
 # Parametres :
 #    <Year>  : annee.
 #
 # Retour :
-#    Le nombre de jour du mois de fevrier.
+#    <Bool>  : Booleen.
 #
 # Remarques :
 #    Aucune.
 #
 #-------------------------------------------------------------------------------
 
-proc DateStuff::CheckYear { Year } {
+proc DateStuff::IsLeapYear { Year } {
 
-   if {(($Year % 4 == 0) && ($Year % 100 != 0)) || ($Year % 400 == 0)} {
-      return 29
-   } else {
-      return 28
-   }
+   return [expr (($Year%4==0) && ($Year%100!=0)) || ($Year%400==0)]
 }
 
 #----------------------------------------------------------------------------
@@ -263,21 +270,12 @@ proc DateStuff::StringMonth { No Lang } {
 #-------------------------------------------------------------------------------
 
 proc DateStuff::MonthLength { Month Year } {
-
-   set nb_jour 0
-   switch $Month {
-      1   {set nb_jour 31}
-      2   {set nb_jour [DateStuff::CheckYear $Year]}
-      3   {set nb_jour 31}
-      4   {set nb_jour 30}
-      5   {set nb_jour 31}
-      6   {set nb_jour 30}
-      7   {set nb_jour 31}
-      8   {set nb_jour 31}
-      9   {set nb_jour 30}
-     10   {set nb_jour 31}
-     11   {set nb_jour 30}
-     12   {set nb_jour 31}
+   variable Const   
+   
+   if { $Month==2 } {
+      set nb_jour [expr [DateStuff::IsLeapYear $Year]?29:28]
+   } else {
+      set nb_jour [lindex $Const(MonthLength) $Month]   
    }
    return $nb_jour
 }

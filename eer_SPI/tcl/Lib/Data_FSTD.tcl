@@ -451,7 +451,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.val
             label $Data(Frame).def.r.disp.val.lbl -text " [lindex $Lbl(Value) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.val.sel $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm valmm.xbm valhl.xbm valhls.xbm " "0 1 9 2" \
+               "zeroth.xbm valmm.xbm valhl.xbm valhls.xbm " "0 1 20 2" \
                FSTD::Param(Value) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.val.sel $Data(Frame).def.r.disp.val.lbl -side left
 

@@ -32,6 +32,8 @@ namespace eval Macro::JetMapper { } {
    variable Icon
    variable Lbl
 
+   set Param(Version)   2.1
+   set Param(SPI)       7.10.2
    set Param(Info)      { "Produit WXO JetMap" "WXO JetMap product" }
    set Param(InfoArgs)  { { "Run" "Heure" "Repertoire de sortie" } { "Run" "Hour" "Output directory" } }
 
@@ -450,15 +452,16 @@ proc Macro::JetMapper::Print { } {
 
    #----- Francais
    Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 0 True
-   PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
-   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
+   PrintBox::Image $Page::Data(Frame) png $Param(Dir)/$file
+   puts stderr  $Param(Dir)/$file
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.png png:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.png gif:$Param(Dir)/${file}_fr@wxoffice_0$Param(Hour).gif
 
    #----- English
    Macro::JetMapper::LegendPlot TTI CMAPWXO $Param(Intervals) 1 True
-   PrintBox::Image $Page::Data(Frame) ppm $Param(Dir)/$file
-   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
-   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.ppm gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
+   PrintBox::Image $Page::Data(Frame) png $Param(Dir)/$file
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.png png:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).png
+   exec convert -antialias -resize 720x600+! $Param(Dir)/$file.png gif:$Param(Dir)/${file}_en@wxoffice_0$Param(Hour).gif
 }
 
 #----------------------------------------------------------------------------

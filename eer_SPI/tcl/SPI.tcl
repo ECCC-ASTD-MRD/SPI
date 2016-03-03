@@ -983,6 +983,16 @@ proc SPI::LayoutUpdate { Frame } {
    }
 }
 
+proc SPI::LayoutFit { Frame } {
+
+   if { [info exists SPI::Data(Layout$Frame)] } {
+      eval set proc \[info procs ::$SPI::Data(Layout$Frame)::LayoutFit\]
+      if { $proc!="" &&  $Frame!="" } {
+         eval $SPI::Data(Layout$Frame)::LayoutFit $Frame
+      }
+   }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <SPI::Locate>
 # Creation : Aout 2001 - J.P. Gauthier - CMC/CMOE
