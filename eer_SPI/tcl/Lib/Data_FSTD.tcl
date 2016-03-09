@@ -1329,7 +1329,6 @@ proc FSTD::ParamUpdate { { Fields { } } } {
       if { [fstdfield is $fld True] } {
 
          set set [fstdfield configure $fld -set]
-
          catch { fstdfield define $fld -grid $Param(GridNo) }
 
          #----- Get configuration mode

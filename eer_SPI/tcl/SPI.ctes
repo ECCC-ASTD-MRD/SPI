@@ -65,10 +65,11 @@ namespace eval SPI {
 
    set Data(Items)          { ColorBar DataBar Mini LOGO TEST Clock Compass Flyer Scale GeoLegend DataLegend TrajGraph TrajHeight TrajLegend  }
    set Data(Page)           1
-   set Data(LayoutCam)      0            ;#Sauvegarde de la camera associe au layout
-   set Data(LayoutNew)      ""           ;#Nom du nouveau layout
-   set Data(Percent)        0            ;#Pourcentage du travail
-
+   set Data(LayoutCam)      0             ;#Sauvegarde de la camera associe au layout
+   set Data(LayoutNew)      ""            ;#Nom du nouveau layout
+   set Data(Percent)        0             ;#Pourcentage du travail
+   set Data(Fiting)         False         ;#Page fiting nested check
+   
    set Ico(Groups)          ""            ;#Liste des icones affichees
 
    set Src(Area)            ""

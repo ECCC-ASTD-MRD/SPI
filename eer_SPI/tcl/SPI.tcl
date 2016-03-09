@@ -984,12 +984,15 @@ proc SPI::LayoutUpdate { Frame } {
 }
 
 proc SPI::LayoutFit { Frame } {
+   variable Data
 
-   if { [info exists SPI::Data(Layout$Frame)] } {
+   if { !$Data(Fiting) && [info exists SPI::Data(Layout$Frame)] } {
       eval set proc \[info procs ::$SPI::Data(Layout$Frame)::LayoutFit\]
       if { $proc!="" &&  $Frame!="" } {
+         set Data(Fiting) True
          eval $SPI::Data(Layout$Frame)::LayoutFit $Frame
       }
+      set Data(Fiting) False
    }
 }
 
