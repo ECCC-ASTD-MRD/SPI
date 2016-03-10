@@ -116,7 +116,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
    uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
-      return True
+      return -1
    }
    
    set oldFocus [focus]
