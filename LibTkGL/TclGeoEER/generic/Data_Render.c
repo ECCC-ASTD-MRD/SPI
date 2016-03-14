@@ -196,13 +196,12 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
    }
 
    for(u=u0;u<=u1;u++) {
-
       // Point to subgrid data within global data array
       if (Field->SDef) {
          Field->GRef->NId=u;
          Field->Def=Field->SDef[Field->GRef->NId];
       }
-      
+     
       glPushName(PICK_FSTDFIELD);
       if (Mode==GL_ALL || Mode==GL_VECTOR) {
 
@@ -1785,6 +1784,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
       Tcl_AppendResult(Interp,"%% Postscript des donnees vectorielles\n",buf," setlinewidth 0 setlinecap 0 setlinejoin\n",(char*)NULL);
       Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
    }
+   
+   dz=Field->Spec->Sample*10;
 
    switch(Field->GRef->Grid[0]) {
 
@@ -1849,7 +1850,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
       case 'X':
       case 'Y':
       case 'M':
-      case 'W':
          grtyp=Field->GRef->Grid[0];
          size=VP->Ratio*VECTORSIZE(Field->Spec,Field->Spec->Min+(Field->Spec->Max-Field->Spec->Min)*0.5);
 
@@ -1887,10 +1887,68 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
+      case 'W':
+         if (Field->Spec->SampleType=='P') {
+            for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {
+               for (pix[1]=0;pix[1]<VP->Height;pix[1]+=dz) {
+
+                  Proj->Type->UnProject(VP,Proj,&coo,pix);
+                  if (coo.Lat==-999.0) {
+                     continue;
+                  }
+                        
+                  if (Field->GRef->UnProject(Field->GRef,&i0,&j0,coo.Lat,coo.Lon,1,1)) {
+                  
+                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
+                        if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                           if (Field->Spec->MapAll && Field->Spec->Map) {
+                              VAL2COL(idc,Field->Spec,len);
+                              if (Interp) {
+                                 CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
+                              } else {
+                                 glColor4ubv(Field->Spec->Map->Color[idc]);
+                              }
+                           }
+                           size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                           if (Interp) glFeedbackInit(256,GL_2D);
+                           Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
+                           if (Interp) glFeedbackProcess(Interp,GL_2D);
+                        }
+                     }
+                  }
+               }
+            }
+         } else {
+            for (j0=0;j0<Field->Def->NJ;j0+=Field->Spec->Sample) {
+               for (i0=0;i0<Field->Def->NI;i0+=Field->Spec->Sample) {
+
+                  if (Field->GRef->Project(Field->GRef,i0,j0,&coo.Lat,&coo.Lon,1,1)) {
+                  
+                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
+                        if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                           if (Field->Spec->MapAll && Field->Spec->Map) {
+                              VAL2COL(idc,Field->Spec,len);
+                              if (Interp) {
+                                 CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
+                              } else {
+                                 glColor4ubv(Field->Spec->Map->Color[idc]);
+                              }
+                           }
+                           size=VP->Ratio*VECTORSIZE(Field->Spec,len);
+                           if (Interp) glFeedbackInit(256,GL_2D);
+                           Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
+                           if (Interp) glFeedbackProcess(Interp,GL_2D);
+                        }
+                     }
+                  }
+               }
+            }           
+         }
+         break;
+         
       default:
 #ifdef HAVE_RMN
          if (Field->Spec->SampleType=='P') {
-            dz=Field->Spec->Sample*10;
 
             // Allouer la memoire pour les donnees
             mem=(VP->Width*VP->Height)/dz;

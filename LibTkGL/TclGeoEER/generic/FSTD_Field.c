@@ -580,7 +580,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    // Allocate memory for gridpoint positions
    if (!Field->GPos)
       Field->GPos=GeoPos_Find(Field->GRef,Field->ZRef);
-
+   
    if (!Field->GPos)
       return(NULL);
 
@@ -640,9 +640,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
       FSTD_FileUnset(NULL,head->File);
    } else {
-
       if (Field->GRef->Ids && Field->GRef->Ids[0]>-1) {
-         /*Recuperer les coordonnees des points de grille*/
+         // Recuperer les coordonnees des points de grille
          lat=(float*)malloc(FSIZE2D(def)*sizeof(float));
          lon=(float*)malloc(FSIZE2D(def)*sizeof(float));
 
@@ -656,7 +655,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 //         RPN_IntUnlock();
       }
 
-      /*Essayer de recuperer le GZ*/
+      // Essayer de recuperer le GZ
       if (Field->Spec->Topo && head->File && FSTD_FileSet(NULL,head->File)>=0) {
 
          ip1=ZRef_Level2IP(Field->ZRef->Levels[Level],Field->ZRef->Type,DEFAULT);
@@ -683,14 +682,14 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
 
       coord.Elev=ZRef_Level2Meter(Field->ZRef->Levels[Level],Field->ZRef->Type)*Field->Spec->TopoFactor;
-      /*For every gridpoints*/
+      // For every gridpoints
       for (j=0;j<def->NJ;j++) {
          for (i=0;i<def->NI;i++) {
 
-            /*Figure out table plane indexes*/
+            // Figure out table plane indexes
             idxi=j*def->NI+i;
 
-            /*Get height from topographic field*/
+            // Get height from topographic field
             if (gz) {
                coord.Elev=gz[idxi]*Field->Spec->TopoFactor;
                if (Field->Spec->Topo[0]=='G' && Field->Spec->Topo[1]=='Z' ) {

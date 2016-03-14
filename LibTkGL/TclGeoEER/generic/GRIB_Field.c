@@ -835,12 +835,15 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
    long        i,inci,incj;
    double      mtx[6],inv[6];
    
-  /*Create grid definition*/   
+   // Create grid definition
    grib_get_long(head->Handle,"gridDefinition",&i);
    mtx[0]=mtx[1]=mtx[2]=mtx[3]=mtx[4]=mtx[5]=0.0;
    grib_get_double(head->Handle,"latitudeOfFirstGridPointInDegrees",&mtx[3]);
    grib_get_double(head->Handle,"longitudeOfFirstGridPointInDegrees",&mtx[0]);
 
+   // Fix for matrix transformation to work correclty
+   if (mtx[0]==180.0) mtx[0]=-180;
+   
    if ((ref=GRIB_WKTProjCS(Interp,head->Handle))) {
       if (OSRIsProjected(ref)) {
          if ((llref=OSRCloneGeogCS(ref))) {
@@ -877,11 +880,13 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       Field->ZRef=ZRef_Define(LVL_MASL,NK,NULL);
       Field->ZRef->Levels[0]=ZRef_IP2Level(head->IP1,&Field->ZRef->Type);
 
+      GeoRef_Size(Field->GRef,0,0,NI-1,NJ-1,0);
       GeoRef_Qualify(Field->GRef);
+      Field->GRef->Type|=GRID_NUNORTH;
 
 //      if (OSRIsGeographic(ref))  Field->GRef->Type|=GRID_NOXNEG;
       App_Log(DEBUG,"%s: WKTString: '%s'\n",__func__,Field->GRef->String);
-      App_Log(DEBUG,"%s: WKTMatrix: %f %f %f %f %f %f\n",__func__,mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
+      App_Log(INFO,"%s: WKTMatrix: %f %f %f %f %f %f\n",__func__,mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
    } else {
       return(TCL_ERROR);
    }
@@ -1456,7 +1461,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          }
          scale=scale==1?-90:90;
          OSRSetPS(ref,lat,lon,scale,0.0,0.0);
-         break;
+      break;
 
       case ALBERS :
       case REGULAR_GG :

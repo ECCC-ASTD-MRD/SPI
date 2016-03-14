@@ -1645,7 +1645,7 @@ int Projection_Render(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,int M
             Proj->Type->DrawGlobe(Interp,VP,Proj);
 
          if (Proj->Geographic) {
-   //      GDB_StarRender(Interp,Proj);
+//            GDB_StarRender(Interp,Proj);
 
             if (Proj->Type->DrawFirst) {
                glDisable(GL_LIGHTING);

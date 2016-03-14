@@ -61,7 +61,7 @@ ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #-----
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.0_${ORDENV_PLAT}                #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.1_${ORDENV_PLAT}                #----- Location of eer library
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH

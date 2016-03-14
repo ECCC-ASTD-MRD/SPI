@@ -184,7 +184,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          }
          break;
 
-         case PROJECT:
+      case PROJECT:
          if (Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"georef X Y");
             return(TCL_ERROR);

@@ -2283,13 +2283,17 @@ void GDB_StarRender(Tcl_Interp *Interp,Projection *Proj) {
 
    int i;
 
+   Projection_UnClip(Proj);
    glPointSize(2.0);
+   glScalef(0.01,0.01,0.01);
    glBegin(GL_POINTS);
    for (i=0;i<500;i++) {
       glColor3d(StarCat[i].r,StarCat[i].g,StarCat[i].b);
-      glVertex3d(StarCat[i].x*0.1,StarCat[i].y*0.1,StarCat[i].z*0.1);
+      glVertex3d(StarCat[i].x,StarCat[i].y,StarCat[i].z);
    }
    glEnd();
+   glScalef(100.0,100.0,100.0);
+   Projection_Clip(Proj);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
