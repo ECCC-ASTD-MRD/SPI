@@ -36,9 +36,9 @@
 #
 #=============================================================================
 
-package provide DateStuff 1.0
+package provide DateStuff 1.1
 
-catch { SPI::Splash "Loading Package DateStuff 1.0" }
+catch { SPI::Splash "Loading Package DateStuff 1.1" }
 
 namespace eval DateStuff {
    variable Data

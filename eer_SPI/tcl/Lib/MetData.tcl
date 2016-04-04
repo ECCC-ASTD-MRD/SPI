@@ -219,7 +219,7 @@ proc MetData::GetLatestStamp { Path } {
 proc MetData::StampFromFile { File } {
 
    set File [file tail $File]
-   set stamp [fstdstamp fromseconds [clock scan "[string range $File 0 7] [string range $File 8 9]"]]
+   set stamp [fstdstamp fromseconds [clock scan "[string range $File 0 7] [string range $File 8 9]" -timezone :UTC]]
    return $stamp
 }
 
@@ -227,7 +227,7 @@ proc MetData::SecFromFile { File } {
    set File [file tail $File]
    scan [string range $File 11 13] %d hours 
    
-   return [clock add [clock scan "[string range $File 0 7] [string range $File 8 9]"] $hours hour]
+   return [clock add [clock scan "[string range $File 0 7] [string range $File 8 9]" -timezone :UTC] $hours hour]
 }
 
 proc MetData::GetClosestFile { Path Sec { Max 3600 } } {

@@ -407,7 +407,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
       }
       gdalband free BAND
 
-      if { $Mode=="INDEX" } {
+      if { $Mode=="DATA" } {
          fstdfield configure $field -colormap $map
       }
    }
