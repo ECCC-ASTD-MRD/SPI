@@ -551,14 +551,14 @@ proc CVClock::Update { Frame { Data "" } } {
    }
 
    set sec $CVClock::Data(Sec$Frame)
-   
+
    if { $Data!="" } {
       if { [fstdfield is $Data] } {
          set sec [fstdstamp toseconds [fstdfield define $Data -DATEV]]
       } elseif { [gribfield is $Data] } {
          set sec [gribfield define $Data -DATEV]
       } elseif { [observation is $Data] } {
-         set sec [observation define $Data -DATE]
+         set sec [lindex [observation define $Data -DATE] 0]
       }
    }
    CVClock::Time $Frame $sec -1
