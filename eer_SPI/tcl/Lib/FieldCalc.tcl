@@ -72,17 +72,17 @@ namespace eval FieldCalc {
       { darea(A)      "Aire des cellules"                                         "Area of grid cells" }
       { dlat(A)       "Latitudes de chaque points de grilles"                     "Latitudes of grid cells" }
       { dlon(A)       "Longitudes de chaque points de grilles"                    "Longitudes of grid cells" }
-      { ddx(A)        "Longueur des cellules selon X en mètres"                   "Length of grid cells in meters along X axis" }
-      { ddy(A)        "Longueur des cellules selon Y en mètres"                   "Length of grid cells in meters along Y axis" }
-      { dangle(A)     "Orientation des cellules par rapport au nord géographique" "Grid cell orientation in relation to geographical north" }
-      { dslopedeg(A)  "Pente en dégrée"                                           "Slope in degrees" }
-      { dslope100(A)  "Pente en pourcentage (90º = 100%)"                         "Slope in percentage (90º = 100%)" }
+      { ddx(A)        "Longueur des cellules selon X en mÃ¨tres"                   "Length of grid cells in meters along X axis" }
+      { ddy(A)        "Longueur des cellules selon Y en mÃ¨tres"                   "Length of grid cells in meters along Y axis" }
+      { dangle(A)     "Orientation des cellules par rapport au nord gÃ©ographique" "Grid cell orientation in relation to geographical north" }
+      { dslopedeg(A)  "Pente en dÃ©grÃ©e"                                           "Slope in degrees" }
+      { dslope100(A)  "Pente en pourcentage (90Âº = 100%)"                         "Slope in percentage (90Âº = 100%)" }
       { daspect(A)    "Angle azimutale de la pente"                               "Azimuthal angel of the slope" }
-      { ddxfirst(A)   "Dérivée en x du premier degré"                             "First degree derivate along x" }
-      { ddyfirst(A)   "Dérivée en y du premier degré"                             "First degree derivate along y" }
-      { ddxsecond(A)  "Dérivée en x du second degré"                              "Second degree derivate along x" }
-      { ddysecond(A)  "Dérivée en y du second degré"                              "Second degree derivate along y" }
-      { ddxysecond(A) "Dérivée en xy du second degré"                             "Second degree derivate along xy"  }
+      { ddxfirst(A)   "DÃ©rivÃ©e en x du premier degrÃ©"                             "First degree derivate along x" }
+      { ddyfirst(A)   "DÃ©rivÃ©e en y du premier degrÃ©"                             "First degree derivate along y" }
+      { ddxsecond(A)  "DÃ©rivÃ©e en x du second degrÃ©"                              "Second degree derivate along x" }
+      { ddysecond(A)  "DÃ©rivÃ©e en y du second degrÃ©"                              "Second degree derivate along y" }
+      { ddxysecond(A) "DÃ©rivÃ©e en xy du second degrÃ©"                             "Second degree derivate along xy"  }
       { dprofcurve(A) "Calcul de la courbature du profil"                         "Profile curvature" }
       { dtangcurve(A) "Calcul de la courbature tangentielle "                     "Tangential profile curvature" }
    }
@@ -91,16 +91,16 @@ namespace eval FieldCalc {
       { win(A,B,C)      "Nombre d'occurence de valeur de C entre A et B"                                                                    "Number of occurence of C value between A and B" }
       { tcount(A,B)     "Compte le nombre d'indices de A apparaissant dans B"                                                               "Number of occurence of A in B" }
       { lut(A,B,C)      "Assigne a A la valeur correspondante de B dans C (lookup table)"                                                   "Assigns to A the corresponding value of B in C (lookup table)" }
-      { slut(A,B,C)     "Assigne a A la valeur correspondante de B dans C, pour les tables de correspondances triées (sorted lookup table)" "Assigns to A the corresponding value of B in C for sorted tables (sorted lookup table)" }
+      { slut(A,B,C)     "Assigne a A la valeur correspondante de B dans C, pour les tables de correspondances triÃ©es (sorted lookup table)" "Assigns to A the corresponding value of B in C for sorted tables (sorted lookup table)" }
       { fkernel(A,B)    "filtre (convolution) la matrice A en utilisant le kernel B"                                                        "Filter (convolution) matrix A using kernel B" }
-      { fcentile(A,B,C) "filtre centile de la matrice A en utilisant le kernel de dimension B en sélectionnant le centile C"                "Centile filter matrix A using kernel of dimension B while selecting centile C" }
+      { fcentile(A,B,C) "filtre centile de la matrice A en utilisant le kernel de dimension B en sÃ©lectionnant le centile C"                "Centile filter matrix A using kernel of dimension B while selecting centile C" }
    }
 
    set Param(Mathematical) {
       { log(A)       "Logarithme base 10"                             "Logarithm" }
       { logn(A)      "Logarithme naturel"                             "Natural logarithm" }
       { exp(A)       "Exponentielle"                                  "Exponential" }
-      { sqrt(A)      "Racine carré"                                   "Square" }
+      { sqrt(A)      "Racine carrÃ©"                                   "Square" }
       { cbrt(A)      "Racine cubique"                                 "Cubic" }
       { abs(A)       "Valeur absolue"                                 "Aboslute value" }
       { ceil(A)      "Valeur entiere plafond"                         "Higher integer value" }
@@ -108,17 +108,17 @@ namespace eval FieldCalc {
       { round(A)     "Valeur entiere arondie"                         "Round to nearest integer" }
       { rem(A,n)     "Reste point flottant"                           "Remainder value" }
       { mod(A,n)     "Module point flottant"                          "Modulo value" }
-      { min(A,n)     "Définir le minium"                              "Set minimum to n" }
-      { max(A,n)     "Définir le maximum"                             "set maximum to n" }
-      { clamp(A,m,n) "Définir le minimum et le maximum"               "Set minimum to m and maximum value to n" }
-      { frand(A,m,n) "Nombre aléatoire entre m et n"                  "Random number between m and n" }
+      { min(A,n)     "DÃ©finir le minium"                              "Set minimum to n" }
+      { max(A,n)     "DÃ©finir le maximum"                             "set maximum to n" }
+      { clamp(A,m,n) "DÃ©finir le minimum et le maximum"               "Set minimum to m and maximum value to n" }
+      { frand(A,m,n) "Nombre alÃ©atoire entre m et n"                  "Random number between m and n" }
       { sin(A)       "Sinus"                                          "Sinus" }
       { cos(A)       "Cosinus"                                        "Cosinus" }
       { tan(A)       "Tangente"                                       "Tangent" }
       { asin(A)      "Arc sinus"                                      "Arc sinus" }
       { acos(A)      "Arc cosinus"                                    "Arc cosinus" }
       { atan(A)      "Arc tangente"                                   "Arc tangent" }
-      { atan2(A,B)   "Arc tangente de X sur Y (résultat de -PI a PI)" "Arc tangent of X over Y (results fromt -PI to PI)" }
+      { atan2(A,B)   "Arc tangente de X sur Y (rÃ©sultat de -PI a PI)" "Arc tangent of X over Y (results fromt -PI to PI)" }
       { sinh(A)      "Sinus hyperbolique"                             "Sinus hyperbolic" }
       { cosh(A)      "Cosinus hyperbolique"                           "Cosinus hyperbolic" }
       { tanh(A)      "Tangente hyperbolique"                          "Tangent hyperbolic" }
@@ -130,12 +130,12 @@ namespace eval FieldCalc {
    set Param(Statistical) {
       { smb(A,B)    "Biais moyen" "Mean bias" }
       { sme(A,B)    "Erreur moyenne" "Mean error" }
-      { snmb(A,B)   "Biais moyen normalisé" "Normalized mean bias" }
-      { snme(A,B)   "Erreur moyenne normalisée" "Normalized mean error" }
-      { smnb(A,B)   "Moyenne du biais normalisé" "Mean normalized bias" }
-      { smne(A,B)   "Moyenne de l'erreur normalisée" "Mean normalized error" }
-      { slmnb(A,B)  "Biais moyen logarithmique normalisé" "Logarithmic mean normalized bias" }
-      { slmne(A,B)  "Erreur moyenne logarithmique normalisée" "Logarithmic mean normalized error" }
+      { snmb(A,B)   "Biais moyen normalisÃ©" "Normalized mean bias" }
+      { snme(A,B)   "Erreur moyenne normalisÃ©e" "Normalized mean error" }
+      { smnb(A,B)   "Moyenne du biais normalisÃ©" "Mean normalized bias" }
+      { smne(A,B)   "Moyenne de l'erreur normalisÃ©e" "Mean normalized error" }
+      { slmnb(A,B)  "Biais moyen logarithmique normalisÃ©" "Logarithmic mean normalized bias" }
+      { slmne(A,B)  "Erreur moyenne logarithmique normalisÃ©e" "Logarithmic mean normalized error" }
       { sfb(A,B)    "Biais fractionnel" "Fractionnal bias" }
       { smfb(A,B)   "Biais fractionel moyen" "Mean fractional bias" }
       { smfe(A,B)   "Erreur fractionelle moyenne" "Mean fractional error" }
@@ -144,97 +144,97 @@ namespace eval FieldCalc {
       { smaxe(A,B)  "Erreur maximale" "Maximum error" }
       { smaxre(A,B) "Erreur maximale relative" "Maximum relative error" }
       { srmse(A,B)  "Erreur moyenne quadratique" "Root mean square error" }
-      { snrmse(A,B) "Erreur moyenne quadratique normalisée" "Normalized Root mean square error" }
-      { snmse(A,B)  "Erreur moyenne au carré normalisée" "Normalized mean square error" }
-      { sgmb(A,B)   "Biais géométrique moyen" "Geometric mean bias" }
-      { sgmv(A,B)   "Variance géométrique moyenne" "Geometric mean variance" }
-      { scor(A,B)   "Coefficient de corrélation" "Correlation coeficient" }
+      { snrmse(A,B) "Erreur moyenne quadratique normalisÃ©e" "Normalized Root mean square error" }
+      { snmse(A,B)  "Erreur moyenne au carrÃ© normalisÃ©e" "Normalized mean square error" }
+      { sgmb(A,B)   "Biais gÃ©omÃ©trique moyen" "Geometric mean bias" }
+      { sgmv(A,B)   "Variance gÃ©omÃ©trique moyenne" "Geometric mean variance" }
+      { scor(A,B)   "Coefficient de corrÃ©lation" "Correlation coeficient" }
       { scov(A,B)   "Covariance" "Covariance" }
       { svar(A)     "Variance" "Variance" }
-      { sregb(A,B)  "Coefficient de régression (Pente de la courbe)" "Regression coefficient (Slope of curve fitting)" }
-      { srega(A,B)  "Coefficient de régression (Interscetion de la courbe)" "Regression coefficient (Intercept of curve fitting)" }
+      { sregb(A,B)  "Coefficient de rÃ©gression (Pente de la courbe)" "Regression coefficient (Slope of curve fitting)" }
+      { srega(A,B)  "Coefficient de rÃ©gression (Interscetion de la courbe)" "Regression coefficient (Intercept of curve fitting)" }
       { serra(A,B)  "Erreur standard pour a" "Standard Error for a" }
       { serrb(A,B)  "Erreut standard pour b" "Standard Error for b" }
-      { sssx(A,B)   "Somme des carrés en X" "Sum of squared values X" }
-      { sssy(A,B)   "Somme des carrés en Y" "Sum of squared values Y" }
-      { sssxy(A,B)  "Somme des carrés en XY" "Sum of squared values XY" }
-      { snb(A)      "Nombre d'échantillon" "Number of sample" }
-      { ssdev(A)    "Déviation standard" "Standard deviation" }
-      { ssdevx(A,B) "Déviation standard en X" "Standard deviation X" }
-      { ssdevy(A,B) "Déviation standard en Y" "Standard deviation Y" }
-      { smed(A)     "Médianne" "Median" }
-      { smedx(A,B)  "Médianne en X" "Median X" }
-      { smedy(A,B)  "Médianne en Y" "Median Y" }
+      { sssx(A,B)   "Somme des carrÃ©s en X" "Sum of squared values X" }
+      { sssy(A,B)   "Somme des carrÃ©s en Y" "Sum of squared values Y" }
+      { sssxy(A,B)  "Somme des carrÃ©s en XY" "Sum of squared values XY" }
+      { snb(A)      "Nombre d'Ã©chantillon" "Number of sample" }
+      { ssdev(A)    "DÃ©viation standard" "Standard deviation" }
+      { ssdevx(A,B) "DÃ©viation standard en X" "Standard deviation X" }
+      { ssdevy(A,B) "DÃ©viation standard en Y" "Standard deviation Y" }
+      { smed(A)     "MÃ©dianne" "Median" }
+      { smedx(A,B)  "MÃ©dianne en X" "Median X" }
+      { smedy(A,B)  "MÃ©dianne en Y" "Median Y" }
       { suniq(A)    "Nombre de valeur unique" "Number of unique values" }
       { ssum(A)     "Somme" "Sum" }
       { smin(A)     "Minimum" "Minimum" }
       { smax(A)     "Maximum" "Maximum" }
       { savg(A)     "Moyenne" "Average" }
-      { na(A,B)     "Nombre de valeurs rejetées (NoData)" "Number of rejected values (NoData)" }
-      { srna(A,B)   "Ratio de valeurs rejetées (NoData)" "Ratio of rejected values (NoData)" }
-      { sfoex(A,B)  "Facteur d'excédance" "Factor of excedance" }
+      { na(A,B)     "Nombre de valeurs rejetÃ©es (NoData)" "Number of rejected values (NoData)" }
+      { srna(A,B)   "Ratio de valeurs rejetÃ©es (NoData)" "Ratio of rejected values (NoData)" }
+      { sfoex(A,B)  "Facteur d'excÃ©dance" "Factor of excedance" }
       { sfa2(A,B)   "Facteur 2" "Factor of 2" }
       { sfa5(A,B)   "Facteur 5" "Factor of 5" }
       { sfa10(A,B)  "Facteur 10" "Factor of 10" }
-      { snad(A,B)   "Différence absolue normalisée" "Normalized absolute difference" }
-      { sfms(A,B)   "Figure de mérite dans l'espace" "Figure of merit in space" }
-      { fmsb(A,B)   "Figure de mérite dans l'espace (binaire)" "Figure of merit in space (binary)" }
-      { sfmsi(A,B)  "Figure de mérite dans l'espace (intégré)" "Figure of merit in space (integrated)" }
+      { snad(A,B)   "DiffÃ©rence absolue normalisÃ©e" "Normalized absolute difference" }
+      { sfms(A,B)   "Figure de mÃ©rite dans l'espace" "Figure of merit in space" }
+      { fmsb(A,B)   "Figure de mÃ©rite dans l'espace (binaire)" "Figure of merit in space (binary)" }
+      { sfmsi(A,B)  "Figure de mÃ©rite dans l'espace (intÃ©grÃ©)" "Figure of merit in space (integrated)" }
       { osf(A,B)    "Fonction de score objectif" "Objective scoring function" }
       { sosfb(A,B)  "Fonction de score objectif (binaire)" "Objective scoring function (binary)" }
-      { sosfi(A,B)  "Fonction de score objectif (intégré)" "Objective scoring function (integrated)" }
-      { spcc(A,B)   "Coefficient de corrélationde Pearson" "Pearson's correlation coefficient" }
-      { sksp(A,B)   "Paramètre de Kolmogorov-Smirnov" "Kolmogorov-Smirnov parameter" }
-      { srank(A,B)  "Rang calculaté avec une combinaison de fb, fms, fa2, ksp et nad" "Rank calculated with a combination of fb, fms, fa2, ksp and nad" }
-      { snbeq(A,B)  "Nombre de valeur égale" "Number of equal values" }
+      { sosfi(A,B)  "Fonction de score objectif (intÃ©grÃ©)" "Objective scoring function (integrated)" }
+      { spcc(A,B)   "Coefficient de corrÃ©lationde Pearson" "Pearson's correlation coefficient" }
+      { sksp(A,B)   "ParamÃ¨tre de Kolmogorov-Smirnov" "Kolmogorov-Smirnov parameter" }
+      { srank(A,B)  "Rang calculatÃ© avec une combinaison de fb, fms, fa2, ksp et nad" "Rank calculated with a combination of fb, fms, fa2, ksp and nad" }
+      { snbeq(A,B)  "Nombre de valeur Ã©gale" "Number of equal values" }
       { snbgt(A,B)  "Nombre de valeur de B plus grande que A"  "Number of values of B greater than A" }
       { snblt(A,B)  "Nombre de valeur de B plus petite que A" "Number of values of B smaller than A" }
       { snbfa(A,B)  "Nombre de fausse alarmes (A=0, B!=0)" "Number of false alarms (A=0, B!=0)" }
-      { snbmi(A,B)  "Nombre de d'échec (A!=0, B=0)" "Number of misses (A!=0, B=0)" }
+      { snbmi(A,B)  "Nombre de d'Ã©chec (A!=0, B=0)" "Number of misses (A!=0, B=0)" }
       { snbnp(A,B)  "Nombre de paire nulles (A=0, B=0)" "Number of null pairs (A=0, B=0)" }
-      { saov(A,B)   "Région de superposition (A!=0 B!=0)" "Overlap area (A!=0, B!=0)" }
-      { safn(A,B)   "Région de faux négatifs (A!=0, B=0)" "False negative area (A!=0, B=0)" }
-      { safp(A,B)   "Région de faux positifs (A=0, B!=0)" "False positive area (A=0, B!=0)" }
-      { sax(A,B)    "Région de valeurs no-bulle pour A" "Area covered by non-null values in field A" }
-      { say(A,B)    "Région de valeurs no-bulle pour B" "Area covered by non-null values in field B" }
+      { saov(A,B)   "RÃ©gion de superposition (A!=0 B!=0)" "Overlap area (A!=0, B!=0)" }
+      { safn(A,B)   "RÃ©gion de faux nÃ©gatifs (A!=0, B=0)" "False negative area (A!=0, B=0)" }
+      { safp(A,B)   "RÃ©gion de faux positifs (A=0, B!=0)" "False positive area (A=0, B!=0)" }
+      { sax(A,B)    "RÃ©gion de valeurs no-bulle pour A" "Area covered by non-null values in field A" }
+      { say(A,B)    "RÃ©gion de valeurs no-bulle pour B" "Area covered by non-null values in field B" }
    }
 
    set Param(Distance) {
-      { m    1.0           "mètre"              "meter" }
+      { m    1.0           "mÃ¨tre"              "meter" }
       { in   0.0254        "pouce"              "inch" }
       { A    1e-10         "angstrom"           "angstrom" }
-      { km   1000.0        "kilomètre"          "kilometer" }
+      { km   1000.0        "kilomÃ¨tre"          "kilometer" }
       { ft   0.3048        "pied"               "foot" }
       { yd   0.9144        "verge"              "yard" }
       { nm   1852          "mile nautique"      "nautical mile" }
-      { au   1.49597870e11 "unité astronomique" "astronomical unit" }
+      { au   1.49597870e11 "unitÃ© astronomique" "astronomical unit" }
       { pc   3.0857e16     "parsec"             "parsec" }
-      { ly   9.4607e15     "anneé lumière"      "lightyear" }
+      { ly   9.4607e15     "anneÃ© lumiÃ¨re"      "lightyear" }
       { fg   201.168       "furlong"            "furlong" }
       { fa   1.8288        "brasse"             "fathom" }
       { ch   20.1168       "chaine"             "chain" }
       { mile 1609.344      "mile"               "mile" }
-      { cb   182.88        "câble"              "cable" }
+      { cb   182.88        "cÃ¢ble"              "cable" }
    }
 
    set Param(Area) {
-      { m²    1.0            "mètre carré" "square meter" }
+      { mÂ²    1.0            "mÃ¨tre carrÃ©" "square meter" }
       { hc    10000.0        "hectare"     "hectare" }
       { hi    485000.0       "hide"        "hide" }
-      { in²   6.4516e-4      "pouce carré" "square inch" }
-      { ft²   9.290304e-2    "pied carré"  "square foot" }
-      { yd²   8.3612736e-1   "verge carré" "square yard" }
+      { inÂ²   6.4516e-4      "pouce carrÃ©" "square inch" }
+      { ftÂ²   9.290304e-2    "pied carrÃ©"  "square foot" }
+      { ydÂ²   8.3612736e-1   "verge carrÃ©" "square yard" }
       { rood  1.01171e3      "rood"        "rood" }
       { acre  4.0468564224e3 "acre"        "acre" }
-      { mile² 2.58998811e6   "mile carré"  "square mile" }
+      { mileÂ² 2.58998811e6   "mile carrÃ©"  "square mile" }
    }
 
    set Param(Volume) {
-      { m³     1.0            "mètre cube"    "cubic meter" }
-      { in³    1.6387064e-5   "pouce cube"    "cubic inch" }
-      { ft³    2.8316846e-2   "pied cube"     "cubic foot" }
-      { yd³    7.64554858e-1  "verge cube"    "cubic yard" }
-      { mile³  4.168181825e9  "mile cube"     "cubic mile" }
+      { mÂ³     1.0            "mÃ¨tre cube"    "cubic meter" }
+      { inÂ³    1.6387064e-5   "pouce cube"    "cubic inch" }
+      { ftÂ³    2.8316846e-2   "pied cube"     "cubic foot" }
+      { ydÂ³    7.64554858e-1  "verge cube"    "cubic yard" }
+      { mileÂ³  4.168181825e9  "mile cube"     "cubic mile" }
       { min    6.16115e-8     "minim"         "minim" }
       { dram   3.69669e-6     "dram liquide"  "fluid dram" }
       { liqoz  2.95735e-5     "once liquide"  "liquid ounce" }
@@ -242,12 +242,13 @@ namespace eval FieldCalc {
       { liqpt  4.73176e-4     "pinte liquide" "liquid pint" }
       { liqqt  9.46353e-4     "quart liquide" "liquid quart" }
       { gal    3.785411784e-3 "gallon"        "gallon" }
-      { drypt  5.50610e-4     "pinte sèche"   "dry pint" }
+      { drypt  5.50610e-4     "pinte sÃ¨che"   "dry pint" }
       { dryqt  1.10122e-3     "quart sec"     "dry quart" }
       { pk     8.80977e-3     "peck"          "peck" }
       { bu     3.52391e-2     "bushel"        "bushel" }
       { bbl    1.58987e-1     "baril"         "barrel" }
       { drybbl 1.15627e-1     "baril sec"     "dry barrel" }
+      { L      1.0e-3         "litre"         "litre" }
    }
 
    set Param(Mass) {
@@ -255,15 +256,15 @@ namespace eval FieldCalc {
       { dr    1.77185e-3 "dram"       "dram" }
       { oz    2.83495e-2 "once"       "ounce" }
       { lb    0.45359237 "livre"      "pound" }
-      { shcwt 4.53592e1  "centième"   "short hundredweight" }
+      { shcwt 4.53592e1  "centiÃ¨me"   "short hundredweight" }
       { shtn  9.07185e2  "tonne"      "short ton" }
       { ca    0.0002     "carat"      "carat" }
       { gr    0.000065   "grain"      "grain" }
    }
 
    set Param(Speed) {
-      { ms    1.0        "mètre par seconde"     "meter second" }
-      { kmh   2.77778e-1 "kilomètre heure"       "kilometer per hour" }
+      { ms    1.0        "mÃ¨tre par seconde"     "meter second" }
+      { kmh   2.77778e-1 "kilomÃ¨tre heure"       "kilometer per hour" }
       { mph   4.4704e-1  "mile a l'heure"        "mile per hour" }
       { knot  5.14444e-1 "noeud"                 "knot" }
       { Mach  340.2933   "Vitesse du son"        "Sound speed" }
@@ -272,12 +273,12 @@ namespace eval FieldCalc {
 
   set Param(Pressure) {
       { Pa      1.0       "pascal"                      "pascal" }
-      { lbf/ft² 4.78803e1 "livre-force par pied carré"  "pound-force per square foot" }
-      { lbf/in² 6.89476e3 "livre-force par pouce carré" "pound-force per square inch" }
-      { mmHg    1.33322e2 "millimètre de mercure"       "millimeter of mercury" }
+      { lbf/ftÂ² 4.78803e1 "livre-force par pied carrÃ©"  "pound-force per square foot" }
+      { lbf/inÂ² 6.89476e3 "livre-force par pouce carrÃ©" "pound-force per square inch" }
+      { mmHg    1.33322e2 "millimÃ¨tre de mercure"       "millimeter of mercury" }
       { inH2O   2.49089e2 "pouce d'eau"                 "inch of water" }
       { inHg    3.38639e3 "pouce de mercure"            "inch of mercury" }
-      { atm     1.01325e5 "atmosphère standard"         "standard atmosphere" }
+      { atm     1.01325e5 "atmosphÃ¨re standard"         "standard atmosphere" }
       { torr    1.33322e2 "torr"                        "torr" }
       { bar     1e5       "bar"                         "bar" }
    }
@@ -298,7 +299,7 @@ namespace eval FieldCalc {
   set Param(Power) {
       { W   1.0       "watt"                "watt" }
       { hp  7.45700e2 "horsepower"          "horsepower" }
-      { hpm 7.35499e2 "horsepower métrique" "horsepower metric" }
+      { hpm 7.35499e2 "horsepower mÃ©trique" "horsepower metric" }
    }
 
   set Param(Force) {
@@ -322,7 +323,7 @@ namespace eval FieldCalc {
    set Param(Const) {
       { Pi  3.14159265358979323846264338327 "Pi"                                                                      "Pi" }
       { Re  6.37e6                          "Rayon moyen de la Terre (m)"                                             "Average radius of Earth (m)" }
-      { g   9.81                            "Gravite moyenne de la Terre (m/s²)"                                      "Mean gravity of Earth (m/s²)" }
+      { g   9.81                            "Gravite moyenne de la Terre (m/sÂ²)"                                      "Mean gravity of Earth (m/sÂ²)" }
       { W   7.292e-5                        "Velocitee angulaire de la Terre (rad/s)"                                 "Angular velocity of Earth (rad/s)" }
       { c   2.998e8                         "Vitesse de la lumiere (m/s)"                                             "Velocity of light (m/s)" }
       { Rx  8.3143e3                        "Constante des gaz universel (J/K/mol)"                                   "Universal gas constant (J/K/mol)" }
@@ -334,15 +335,15 @@ namespace eval FieldCalc {
       { Md  28.97                           "Poid moyen de l'air sec"                                                 "Average molecule weight of dry air" }
       { Rd  287                             "Constante des gas de l'air sec (J K-1 kg-1)"                             "Gas constant of dry air (J K-1 kg-1)" }
       { Rv  461                             "Constante des gaz de la vapeur d'eau (J K-1 kg-1)"                       "Gas constant of water vapor (J K-1 kg-1)" }
-      { rd  1.275                           "Densite de l'air sec a 0ºC et 1000mb (kg/m³)"                            "Density of dry air at 0ºC and 1000mb (kg/m³)" }
-      { rw  1.0e3                           "Densite de l'eau liquide a 0ºC (kgm³)"                                   "Density of liquid water at 0ºC (kg/m³)" }
-      { ri  0.917e3                         "Densite de la glace a 0ºC (kg/m³)"                                       "Density of ice at 0ºC (kg/m³)" }
+      { rd  1.275                           "Densite de l'air sec a 0ÂºC et 1000mb (kg/mÂ³)"                            "Density of dry air at 0ÂºC and 1000mb (kg/mÂ³)" }
+      { rw  1.0e3                           "Densite de l'eau liquide a 0ÂºC (kgmÂ³)"                                   "Density of liquid water at 0ÂºC (kg/mÂ³)" }
+      { ri  0.917e3                         "Densite de la glace a 0ÂºC (kg/mÂ³)"                                       "Density of ice at 0ÂºC (kg/mÂ³)" }
       { cpd 1004                            "Chaleur specifique de l'air sec a pression constante (J K-1 kg-1)"       "Specific dry air heat at constant pressure (J K-1 kg-1)" }
       { cvd 717                             "Chaleur specifique de l'air a volume constant volume (J K-1 kg-1)"       "Specific dry air heat at constant volume (J K-1 kg-1)" }
       { cpv 1952                            "Chaleur specifique de la vapeur d'eau a pression constante (J K-1 kg-1)" "Specific water vapor heat at constant pressure (J K-1 kg-1)" }
       { cvv 1463                            "Chaleur specifique de la vapeur d'eau a volume constant(J K-1 kg-1)"     "Specific water vapor heat at constant volume (J K-1 kg-1)" }
-      { cw  4218                            "Chaleur specifique de la vapeur d'eau a 0ºC (J K-1 kg-1)"                "Specific water vapor heat at 0ºC (J K-1 kg-1)" }
-      { ci  2106                            "Chaleur specifique de la glace a 0ºC (J K-1 kg-1)"                       "Specific ice heat at 0ºC (J K-1 kg-1)" }
+      { cw  4218                            "Chaleur specifique de la vapeur d'eau a 0ÂºC (J K-1 kg-1)"                "Specific water vapor heat at 0ÂºC (J K-1 kg-1)" }
+      { ci  2106                            "Chaleur specifique de la glace a 0ÂºC (J K-1 kg-1)"                       "Specific ice heat at 0ÂºC (J K-1 kg-1)" }
    }
 
    #----- Textes et labels
@@ -356,15 +357,15 @@ namespace eval FieldCalc {
 
    set Lbl(Operators) {
       { "Tous"          "All" }
-      { "Mathématiques" "Mathematical" }
+      { "MathÃ©matiques" "Mathematical" }
       { "Logiques"      "Logical" }
-      { "Dérivatifs"    "Derivative" }
+      { "DÃ©rivatifs"    "Derivative" }
       { "Satistiques"   "Statistical" }
       { "Tables"        "Table" } }
 
    set Lbl(Converts) {
       { "Distance"  "Distance" }
-      { "Région"    "Area" }
+      { "RÃ©gion"    "Area" }
       { "Volume"    "Volume" }
       { "Masse"     "Mass" }
       { "Vitesse"   "Speed" }
@@ -377,12 +378,12 @@ namespace eval FieldCalc {
    #----- Messagess
    set Msg(Del)     { "Voulez-vous vraiment supprimer cette fonction ?" "Do you really want to suppress this function ?" }
    set Msg(Exist)   { "Cette fonction existe deja, voulez-vous la remplacer ?" "This function is already defined, do you want to replace it ?" }
-   set Msg(Name)    { "Veuillez spéfifier le nom de la formule." "Please enter the formula name." }
+   set Msg(Name)    { "Veuillez spÃ©fifier le nom de la formule." "Please enter the formula name." }
    set Msg(Saved)   { "Formule sauvegardee." "Formula saved." }
-   set Msg(Operand)  { "L'opérande n'est pas un champs.\n\n\tRésultat: " "Operand is not a field.\n\n\tResult: " }
+   set Msg(Operand)  { "L'opÃ©rande n'est pas un champs.\n\n\tRÃ©sultat: " "Operand is not a field.\n\n\tResult: " }
 
    #----- Bulles d'aides
-   set Bubble(Param)      { "Définir/Sauvegader les paramêtres du champs résultant" "Define/Save the result field parameters" }
+   set Bubble(Param)      { "DÃ©finir/Sauvegader les paramÃªtres du champs rÃ©sultant" "Define/Save the result field parameters" }
    set Bubble(Formula)    { "Nom de la formule courante" "Current formula name" }
    set Bubble(Save)       { "Sauvegarde de la formule courante" "Save the current formula" }
    set Bubble(Del)        { "Suppression de la formule courante de la liste des formules sauvegardees" "Suppress the current formula from the saved list" }
@@ -398,7 +399,7 @@ namespace eval FieldCalc {
                            "Conversion factor\nPress to apply to mantissa" }
    set Bubble(FuncType)   { "Selection du type de fonctions" "Select the function type" }
    set Bubble(FuncSearch) { "Recherche une fonction" "Search functions" }
-   set Bubble(FuncList)   { "Liste des fonctions, cliquez pour insérer" "List of functions, click one to insert" }
+   set Bubble(FuncList)   { "Liste des fonctions, cliquez pour insÃ©rer" "List of functions, click one to insert" }
    set Bubble(NOT)        { "Negation logique" "Logical negation" }
    set Bubble(AND)        { "ET logique" "Logical AND" }
    set Bubble(OR)         { "OU logique" "Logical OR" }
@@ -406,7 +407,7 @@ namespace eval FieldCalc {
    set Bubble(Int3)       { "Interpolation cubique"  "cubic interpolation" }
    set Bubble(Idx)        { "Indexation vectorielle ou norme du vecteur"  "Vectorial indexation or vector length" }
    set Bubble(Prime)      { "Afficher / ne pas afficher les champs participant au calcul"  "Display / do not display fields used in the calculus" }
-   set Bubble(Equal)      { "Appliquer la formule à la vue active"  "Apply formula to the active viewport" }
+   set Bubble(Equal)      { "Appliquer la formule Ã  la vue active"  "Apply formula to the active viewport" }
    set Bubble(Clear)      { "Effacer la formule de la vue active"  "Clear formula from active viewport" }
 }
 
@@ -414,7 +415,7 @@ namespace eval FieldCalc {
 # Nom      : <FieldCalc::Apply>
 # Creation : Mai 2015 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Appliquer le changement à l'opérande.
+# But      : Appliquer le changement Ã  l'opÃ©rande.
 #
 # Parametres  :
 #   <Clear<   : Clear operand
@@ -489,6 +490,33 @@ proc FieldCalc::ConvertFactor { } {
    } else {
       set Data(ConvFactor) ""
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <FieldCalc::QuickConvert>
+# Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Convertir rapidement une donnÃ©e
+#
+# Parametres   :
+#  <Type>   : Type d'unitÃ© Ã  convertir (Distance, Volume, etc.)
+#  <From>   : UnitÃ© de la valeur Ã  convertir (m, L, etc.)
+#  <To>     : UnitÃ© de la valeur finale (m, L, etc.)
+#  <Val>    : La valeur Ã  convertir
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc FieldCalc::QuickConvert { Type From To Val } {
+   variable Param
+
+   set from [lindex [lsearch -index 0 -inline $Param($Type) $From] 1]
+   set to   [lindex [lsearch -index 0 -inline $Param($Type) $To] 1]
+
+   return [expr {$Val*$from/$to}]
 }
 
 #----------------------------------------------------------------------------
