@@ -450,6 +450,14 @@ proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
    set x1 [$Node getAttribute maxx]
    set y1 [$Node getAttribute maxy]
 
+   if { [$Node hasAttribute resx] } {
+      set rx [$Node getAttribute resx]
+      set ry [$Node getAttribute resy]
+   } else {
+     set rx ""
+     set ry ""
+   }
+   
    set epsg ""
    
    if { [$Node hasAttribute SRS] } {
@@ -462,12 +470,12 @@ proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
 
    set Data(BBox)  [list $x0 $y0 $x1 $y1]
 
-   if { $epsg=="EPSG:4326" || $epsg=="EPSG:4269" || $epsg=="CRS:84" } {
+   if { $rx!="" && $ry!="" } {
+      set Data(SizeX) [expr ($x1-$x0)/$rx]
+      set Data(SizeY) [expr ($y1-$y0)/$ry]
+   } else {
       set Data(SizeX) 864000
       set Data(SizeY) 432000
-   } else {
-      set Data(SizeX) [expr $x1-$x0]
-      set Data(SizeY) [expr $y1-$y0]
    }
 }
 

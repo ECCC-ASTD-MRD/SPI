@@ -80,13 +80,13 @@ proc GRIB::EncodeIso { FieldId Iso Date Time NProg NAnal } {
    set b08 [expr $Date%256]
    set Date [expr ($Date-$b08)>>8]
    set b07 [expr $Date%256]
-   puts stderr "$Time.."
+#   puts stderr "$Time.."
    #----- Calculate time related bytes
    set b12 [expr $Time%256]
    set Time [expr ($Time-$b12)>>8]
    set b11 [expr $Time%256]
 
-   puts stderr "$b11 $b12"
+#   puts stderr "$b11 $b12"
    #----- Get the bynary encoding of theses bytes
    set bytes [binary format a4ccccccccccc EMER 1 [expr ($ARGOSId($Iso)&0x03ff)>>8] [expr $ARGOSId($Iso)] $b07 $b08 $b09 $b10 $b11 $b12 $NAnal $NProg]
    binary scan $bytes cu* t
@@ -111,8 +111,10 @@ foreach var { CV CVI DW WI } id { 200 202 201 205 } nm { conc dose depot wetd } 
       gribfield define GRIB1NEW -key indicatorOfParameter $id
       GRIB::EncodeIso GRIB1NEW [fstdfield define FLD -ETIKET] 20160208 1000 1 2
       gribfield write GRIB1NEW GRIBOUT 16
+      break
    }
    gribfile close GRIBOUT
+   break
 }
 
 exit
