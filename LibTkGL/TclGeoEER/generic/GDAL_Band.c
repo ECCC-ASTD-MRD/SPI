@@ -1594,12 +1594,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                y0=ROUND(y0);
 
                if (Objc>3) {
-                  Tcl_GetIntFromObj(Interp,Objv[++i],&h);
-               } else {
-                  h=0;
-               }
-
-               if (Objc>3) {
+                  if (Objc>4) {
+                     Tcl_GetIntFromObj(Interp,Objv[++i],&h);
+                  } else {
+                     h=0;
+                  }
                   Tcl_GetDoubleFromObj(Interp,Objv[++i],&dval);
                   Def_Set(band->Def,h,FIDX2D(band->Def,(int)x0,(int)y0),dval);
                } else {
