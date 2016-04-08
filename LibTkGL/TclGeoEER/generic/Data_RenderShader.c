@@ -477,9 +477,9 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    // Resolution selon la dimension des cellules (mid-grid) et la vue
    dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
 
-   dp=(dp<1 || Field->GRef->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+   dp=(dp<1 || Field->GRef->Grid[0]=='V'|| (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
    
-   if (Proj->Type->Def==PROJCYLIN) {
+   if (Proj->Type->Def==PROJCYLIN || Field->GRef->Grid[0]=='X') {
       dp=CLAMP(dp,1,2);
    } else {      
       dp=CLAMP(dp,1,20);

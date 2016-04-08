@@ -189,15 +189,15 @@ if [[ $EXT -eq 1 ]]; then
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
       make
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-   fi
    
-   #----- OpenFlight
-   echo "Building ${TMP_PATH}/${FLT}/build.log"
-   cp -r -p ${ARCH_PATH}/${FLT} ${TMP_PATH}/
-   cd ${TMP_PATH}/${FLT}
-   (make
-   cp *.h ${LIB_PATH}/include
-   cp *.so ${LIB_PATH}/lib) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+      #----- OpenFlight
+      echo "Building ${TMP_PATH}/${FLT}/build.log"
+      cp -r -p ${ARCH_PATH}/${FLT} ${TMP_PATH}/
+      cd ${TMP_PATH}/${FLT}
+      (make
+      cp *.h ${LIB_PATH}/include
+      cp *.so ${LIB_PATH}/lib) > ${TMP_PATH}/${FLT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
    
    #----- Tcl Specifics
 

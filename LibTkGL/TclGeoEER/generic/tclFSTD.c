@@ -750,7 +750,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             FSTD_FieldSubSelect(field0,nid);
 
             imode=-1;
-            /*Interpolate a field*/
+            // Interpolate a field
             if ((field1=Data_Get(Tcl_GetString(Objv[3])))) {
                if (Objc>4) {
                   if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
@@ -762,7 +762,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   FSTD_FieldReadMesh(field1);
                }
 
-               /*If grids are the same and this is not a NOP,ACCUM or BUFFER call*/
+               // If grids are the same and this is not a NOP,ACCUM or BUFFER call
                if (imode<IR_NOP && field0->GRef->Ids && field1->GRef->Ids && field0->GRef->Ids[field0->GRef->NId]==field1->GRef->Ids[field1->GRef->NId]) {
                   if (!Data_Copy(Interp,field1,Tcl_GetString(Objv[2]),1,0)) {
                      ok=TCL_ERROR; break;
@@ -882,12 +882,32 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      break;
                   }
                } else {
-                  ok=FSTD_FieldGridInterpolate(Interp,field0,field1,imode);
+                
+                  // Check for index array
+                  index=NULL;
+                  if (Objc==6) {
+
+                     obj=Objv[5];
+                     item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
+
+                     if (!item) {
+                        // Got an empty variable, will fill it with index
+                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*2*sizeof(float));
+                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                        index[0]=DEF_INDEX_EMPTY;
+                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                        Tcl_IncrRefCount(obj);
+                     } else {
+                        // Got a filled variable, will use it's index
+                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                     }
+                  }
+                  ok=FSTD_FieldGridInterpolate(Interp,field0,field1,imode,index);
                }
                if (ok==TCL_ERROR) break;
             } else if ((band=GDAL_BandGet(Tcl_GetString(Objv[3])))) {
 
-               /*Interpolate a band*/
+               // Interpolate a band
                if (Objc>4) {
                   if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpRString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
                      ok=TCL_ERROR; break;

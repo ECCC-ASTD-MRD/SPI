@@ -366,6 +366,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    double       tmpd,val,min=0.0,max=0.0;
    const char **lvls;
 
+   static CONST char *interp[] = { "NEAREST","LINEAR","CUBIC",NULL };
+   static CONST char *extrap[] = { "NEUTRAL","MAXIMUM","MINIMUM","VALUE",NULL };
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
@@ -649,12 +651,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->InterpDegree,-1));
             } else {
-               if (strlen(Tcl_GetString(Objv[++i])) > 0) {
-                  free(Spec->InterpDegree);
-                  Spec->InterpDegree=(char*)strdup(Tcl_GetString(Objv[i]));
-               } else {
-                  Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-interpdegree) wrong value, must be \" NEAREST | LINEAR | CUBIC \" ",(char*)NULL);
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],interp,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
+               }
+               if (strcmp(Spec->InterpDegree,interp[tmpi])) {
+                  free(Spec->InterpDegree);
+                  Spec->InterpDegree=(char*)strdup(interp[tmpi]);
                }
             }
             break;
@@ -663,12 +665,12 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->ExtrapDegree,-1));
             } else {
-               if (strlen(Tcl_GetString(Objv[++i])) > 0) {
-                  free(Spec->ExtrapDegree);
-                  Spec->ExtrapDegree=(char*)strdup(Tcl_GetString(Objv[i]));
-               } else {
-                  Tcl_AppendResult(Interp,Interp,"DataSpec_Config: (-extrapdegree) wrong value, must be \" NEUTRAL | MAXIMUM | MINIMUM | VALUE \" ",(char*)NULL);
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],extrap,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
+               }
+               if (strcmp(Spec->ExtrapDegree,extrap[tmpi])) {
+                  free(Spec->ExtrapDegree);
+                  Spec->ExtrapDegree=(char*)strdup(extrap[tmpi]);
                }
             }
             break;

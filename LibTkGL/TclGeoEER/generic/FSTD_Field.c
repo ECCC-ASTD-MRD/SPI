@@ -388,7 +388,7 @@ int FSTD_FieldReadMesh(TData *Field) {
                if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
                if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             }
-
+            
             if (Field->GRef->Grid[1]=='Y') {
                if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
                if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
@@ -404,7 +404,13 @@ int FSTD_FieldReadMesh(TData *Field) {
             if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
-         case 'V':
+         case 'X':
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
+            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            GeoRef_BuildIndex(Field->GRef);          
+            break;
+
+          case 'V':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
             if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             FSTD_FieldReadVLevels(Field);
@@ -565,9 +571,9 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    if (!Field->GRef)
       return(NULL);
 
-  // Verifier la validite de grille non geographique*
-   if (Field->GRef->Grid[0]=='X' && ((Projection*)Proj)->Type->Def!=PROJPLANE)
-      return(NULL);
+  // TODO: Verifier la validite de grille non geographique*
+//   if (Field->GRef->Grid[0]=='X' && ((Projection*)Proj)->Type->Def!=PROJPLANE)
+//      return(NULL);
 
    if (Field->GPos && Field->GPos->Pos[Level])
       return(Field->GPos->Pos[Level]);
@@ -1018,12 +1024,14 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode){
+int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode,float *Index){
 
-   double     val,lat,lon,di,dj;
-   int        ezto=1,ezfrom=1,ok=-1,idx,n,i,j,k,idxt;
+   double     val,dir,lat,lon,di,dj,dval;
+   int        ezto=1,ezfrom=1,ok=-1,idx,i,j,k,gotidx;
    void      *pf0,*pt0,*pf1,*pt1;
-
+   float     *ip=NULL;
+   char      *mask=NULL;
+   
    if (!FieldFrom || !FieldFrom->GRef) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Origin field not valid",(char*)NULL);
       return(TCL_ERROR);
@@ -1043,11 +1051,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ezfrom=0;
    }
 
-   if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='M') {
+   if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='X' || FieldFrom->GRef->Grid[0]=='M') {
       ezfrom=0;
    }
 
-   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
+   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
       ezto=0;
    }
 
@@ -1112,35 +1120,67 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
          return(TCL_ERROR);
       }
-  } else {
-      for(i=0;i<FieldTo->Def->NI;i++) {
-         for(j=0;j<FieldTo->Def->NJ;j++) {
-            for(k=0;k<FieldTo->Def->NK;k++) {
-               idx=FIDX3D(FieldTo->Def,i,j,k);
+  } else { 
+      idx=0;  
+      
+      // Cancel mask for interpolation
+      mask=FieldFrom->Def->Mask;FieldFrom->Def->Mask=NULL;
 
-               FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
-               ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
-               n=0;
-               while(FieldTo->Def->Data[n]) {
-                  if (ok) {
-                     if (Mode==0) {
-                        idxt=ROUND(dj)*FieldFrom->Def->NI+ROUND(di);
-                        Def_GetMod(FieldFrom->Def,idxt,val);
-                     } else {
-                        val=VertexVal(FieldFrom->Def,n,di,dj,k);
-                     }
-                  } else {
-                     val=FieldTo->Def->NoData;
+      for(k=0;k<FieldTo->Def->NK;k++) {
+         ip=Index;
+         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
+
+         for(j=0;j<FieldTo->Def->NJ;j++) {
+            for(i=0;i<FieldTo->Def->NI;i++,idx++) {
+
+               if (gotidx) {
+
+                  // Got the index, use coordinates from it
+                  di=*(ip++);
+                  dj=*(ip++);
+
+//                  if (di>=0.0 && !FIN2D(FieldFrom->Def,di,dj)) {
+//                     App_Log(ERROR,"%s: Wrong index, index coordinates (%f,%f)\n",__func__,di,dj);
+//                     return(TCL_ERROR);
+//                  }
+               } else {
+
+                  // No index, project coordinate and store in index if provided
+                  FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
+                  ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
+                  if (ip) {
+                     *(ip++)=di;
+                     *(ip++)=dj;
                   }
-                  Def_Set(FieldTo->Def,n,idx,val);
-                  n++;
                }
+               if (di>=0.0 && FieldFrom->GRef->Value(FieldFrom->GRef,FieldFrom->Def,Mode==0?'N':'L',0,di,dj,k,&val,&dir)) {
+                  if (FieldTo->Def->Data[1]) {
+                     // Have to reproject vector
+                     dir=DEG2RAD(dir-180.0)+GeoRef_GeoDir(FieldTo->GRef,i,j);
+                     dval=sin(dir)*val;
+                     Def_Set(FieldTo->Def,0,idx,dval);
+                     dval=cos(dir)*val;
+                     Def_Set(FieldTo->Def,1,idx,dval); 
+                  } else {
+                     Def_Set(FieldTo->Def,0,idx,val);
+                  }
+               } else {  
+                  Def_Set(FieldTo->Def,0,idx,FieldTo->Def->NoData);
+                  if (FieldTo->Def->Data[1]) {
+                     Def_Set(FieldTo->Def,1,idx,FieldTo->Def->NoData); 
+                  }
+               } 
             }
          }
+         
+         // Mark end of index
+//         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
       }
+      // Put back cancelled mask
+      FieldFrom->Def->Mask=mask;
    }
 
-   /*In case of vectorial field, we have to recalculate the module*/
+   // In case of vectorial field, we have to recalculate the module
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
    }
@@ -2475,11 +2515,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
                   &pni,&pni,&pni,&pni);
          }
 
-         // This is an X grid but with associated >> ^^, so we force it to W for proper processing
-         if (ok>=0 && t=='X') {
-            grtyp[0]='W';
-         }
-
          // This is no W grid so keep previous grtyp
          if (grtyp[0]!='W') {
             grtyp[0]=t;
@@ -2516,7 +2551,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          grtyp[1]=t;
          field->GRef=GeoRef_Find(GeoRef_WKTSetup(ni,nj,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL));
          if (proj) free(proj);
-      }
+      } 
    }
 
    if (tile) {
@@ -2529,7 +2564,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    field->GPos=GeoPos_Find(field->GRef,field->ZRef);
-   
    if (grtyp[0]=='U') {
       FSTD_FieldSubBuild(field);
    }

@@ -1847,7 +1847,6 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
-      case 'X':
       case 'Y':
       case 'M':
          grtyp=Field->GRef->Grid[0];
@@ -1887,6 +1886,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
+      case 'X':
       case 'W':
          if (Field->Spec->SampleType=='P') {
             for (pix[0]=0;pix[0]<VP->Width;pix[0]+=dz) {

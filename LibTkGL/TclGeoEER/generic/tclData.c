@@ -1186,7 +1186,7 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       if (field->Tag)  Tcl_DecrRefCount(field->Tag);           field->Tag=NULL;
       if (field->Stat) Data_StatFree(field->Stat);             field->Stat=NULL;
       if (field->ZRef) ZRef_Free(field->ZRef);                 field->ZRef=NULL;
-      if (field->GRef) GeoRef_Destroy(NULL,field->GRef->Name); field->GRef=NULL;
+//TODO: Check if ok not to free ->  if (field->GRef) GeoRef_Destroy(NULL,field->GRef->Name); field->GRef=NULL;
    }
 
    // Allouer la memoire pour les structures
