@@ -1916,7 +1916,9 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    layer->File=file;
    layer->GRef=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,OGR_L_GetSpatialRef(layer->Layer)));
    OGR_L_GetExtent(layer->Layer,&env,1);
-   GeoRef_Size(layer->GRef,env.MinX,env.MinY,env.MaxX,env.MaxY,0);
+   
+   // Size the georef for grid interpolation
+   GeoRef_Size(layer->GRef,env.MinX-1.0,env.MinY-1.0,env.MaxX+1.0,env.MaxY+1.0,0);
    return(TCL_OK);
 }
 
