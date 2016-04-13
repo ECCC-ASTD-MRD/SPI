@@ -2012,10 +2012,9 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
    TRPNHeader    head;
    Tcl_Obj     *list,*obj,*tmp;
    int          nobj,nb,ni,nj,nk;
-   int          yyyy,mm,dd,h,m,s,type;
+   int          yyyy,mm,dd,h,m,s;
    char         buf[1024],grtyp[2];
-   double       nhour,lvl;
-   const char **units;
+   double       nhour;
 
    if((nb=FSTD_FileSet(Interp,File))<0)
       return(TCL_ERROR);
@@ -2030,8 +2029,6 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
 
    RPN_FieldLock();
    head.KEY=c_fstinf(File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"","");
-
-   units=ZRef_LevelUnits();
 
    /* Boucle sur tout les enregistrements */
    while (head.KEY>=0) {
@@ -2090,49 +2087,10 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                }
 
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
-               lvl=ZRef_IP2Level(head.IP1,&type);
-               switch(type) {
-                  case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                  case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  case LVL_UNDEF : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
-                  case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                  case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-               }
-
-               if (head.IP2>32000) {
-                  lvl=ZRef_IP2Level(head.IP2,&type);
-                  switch(type) {
-                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,units[type]); break;
-                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
-                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  }
-               } else {
-                  sprintf(buf,"%s %8i %-2s",buf,head.IP2,units[LVL_UNDEF]);
-               }
-
-               if (head.IP3>32000) {
-                  lvl=ZRef_IP2Level(head.IP3,&type);
-                  switch(type) {
-                     case LVL_MASL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_SIGMA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                     case LVL_PRES  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_UNDEF : sprintf(buf,"%s %8.0f %-2s",buf,lvl,units[type]); break;
-                     case LVL_MAGL  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                     case LVL_HYBRID: sprintf(buf,"%s %8.6f %-2s",buf,lvl,units[type]); break;
-                     case LVL_THETA : sprintf(buf,"%s %8.4f %-2s",buf,lvl,units[type]); break;
-                     case LVL_HOUR  : sprintf(buf,"%s %8.1f %-2s",buf,lvl,units[type]); break;
-                  }
-               } else {
-                  sprintf(buf,"%s %8i %-2s",buf,head.IP3,units[LVL_UNDEF]);
-               }
+               
+               ZRef_IPFormat(&buf[strlen(buf)],head.IP1,False);
+               ZRef_IPFormat(&buf[strlen(buf)],head.IP2,True);
+               ZRef_IPFormat(&buf[strlen(buf)],head.IP3,True);
 
                System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);
                sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
@@ -2185,17 +2143,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                break;
 
             case FSTD_LISTLEVEL:
-               lvl=ZRef_IP2Level(head.IP1,&type);
-               switch(type) {
-                  case LVL_MASL  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
-                  case LVL_SIGMA : sprintf(buf,"%8.4f %-2s",lvl,units[type]); break;
-                  case LVL_PRES  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
-                  case LVL_UNDEF : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
-                  case LVL_MAGL  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
-                  case LVL_HYBRID: sprintf(buf,"%8.6f %-2s",lvl,units[type]); break;
-                  case LVL_THETA : sprintf(buf,"%8.4f %-2s",lvl,units[type]); break;
-                  case LVL_HOUR  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
-               }
+               ZRef_IPFormat(buf,head.IP1,False);
                Tcl_SetStringObj(obj,buf,-1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
                   Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
@@ -2370,7 +2318,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strtrim(h.ETIKET,' ');
 
    // Champs vectoriel ???
-   if ((uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
+   if (h.TYPVAR[0]!='@' && (uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,mni,mnj,mnk,(uvw->WW?3:2),dtype);
       if (!field) {
          FSTD_FileUnset(Interp,file);
