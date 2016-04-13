@@ -350,7 +350,7 @@ int FSTD_FieldReadMesh(TData *Field) {
    TRPNHeader *head=(TRPNHeader*)Field->Head;
    int        key,ni,nj,nk,nijk=0;
 
-   if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)))
+   if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y'))
       return(0);
 
    if ((!Field->GRef->AY || !Field->GRef->AX) && head->File) {
