@@ -2564,9 +2564,9 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       // Loop on gridpoints
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
-
+            
             // Tranform gridpoint into OGR quad projected into layer's referential
-            if (Def_GridCell2OGR(ring,Layer->GRef,FromRef,i,j,Prec)<=0) {
+            if (!Def_GridCell2OGR(ring,Layer->GRef,FromRef,i,j,Prec)) {
                continue;
             }
             rt=n=rw=0;

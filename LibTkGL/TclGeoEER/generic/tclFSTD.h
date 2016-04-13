@@ -45,15 +45,16 @@
 #define FSTD_LISTVAR      3
 #define FSTD_LISTTYPVAR   4
 #define FSTD_LISTDATEV    5
-#define FSTD_LISTIP1      6
-#define FSTD_LISTIP2      7
-#define FSTD_LISTIP3      8
-#define FSTD_LISTETIKET   9
-#define FSTD_LISTIG1      10
-#define FSTD_LISTIG2      11
-#define FSTD_LISTIG3      12
-#define FSTD_LISTIG4      13
-#define FSTD_LISTEXTENDED 14
+#define FSTD_LISTLEVEL    6
+#define FSTD_LISTIP1      7
+#define FSTD_LISTIP2      8
+#define FSTD_LISTIP3      9
+#define FSTD_LISTETIKET   10
+#define FSTD_LISTIG1      11
+#define FSTD_LISTIG2      12
+#define FSTD_LISTIG3      13
+#define FSTD_LISTIG4      14
+#define FSTD_LISTEXTENDED 15
 
 int  TclFSTD_Init(Tcl_Interp *Interp);
 

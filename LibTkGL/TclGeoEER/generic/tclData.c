@@ -831,6 +831,9 @@ TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
             }
          }
       }
+      if (alias && Field->Stat)
+         field->Def->Mode=def->Mode;
+
       if (def->Mask) {
          field->Def->Mask=(char*)malloc(field->Def->NIJ);
          memcpy(field->Def->Mask,def->Mask,field->Def->NIJ);

@@ -1928,7 +1928,7 @@ int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *
       if (GPos->GRef->Grid[0]=='V') {
          rk2[0]=VertexVal(Def,0,d[0],d[1],Z);
          rk2[1]=VertexVal(Def,2,d[0],d[1],Z);
-         rk2[2]=0.0;
+         rk2[2]=0.0; 
       } else {
          VertexValV(Def,d[0],d[1],d[2],rk2);
       }

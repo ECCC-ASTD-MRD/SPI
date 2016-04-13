@@ -1030,7 +1030,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    int        ezto=1,ezfrom=1,ok=-1,idx,i,j,k,gotidx;
    void      *pf0,*pt0,*pf1,*pt1;
    float     *ip=NULL;
-   char      *mask=NULL;
    
    if (!FieldFrom || !FieldFrom->GRef) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Origin field not valid",(char*)NULL);
@@ -1055,7 +1054,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       ezfrom=0;
    }
 
-   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
+   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='Y' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
       ezto=0;
    }
 
@@ -1123,9 +1122,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
   } else { 
       idx=0;  
       
-      // Cancel mask for interpolation
-      mask=FieldFrom->Def->Mask;FieldFrom->Def->Mask=NULL;
-
       for(k=0;k<FieldTo->Def->NK;k++) {
          ip=Index;
          gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
@@ -1176,8 +1172,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          // Mark end of index
 //         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
       }
-      // Put back cancelled mask
-      FieldFrom->Def->Mask=mask;
    }
 
    // In case of vectorial field, we have to recalculate the module
@@ -2190,6 +2184,24 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                }
                break;
 
+            case FSTD_LISTLEVEL:
+               lvl=ZRef_IP2Level(head.IP1,&type);
+               switch(type) {
+                  case LVL_MASL  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
+                  case LVL_SIGMA : sprintf(buf,"%8.4f %-2s",lvl,units[type]); break;
+                  case LVL_PRES  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
+                  case LVL_UNDEF : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
+                  case LVL_MAGL  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
+                  case LVL_HYBRID: sprintf(buf,"%8.6f %-2s",lvl,units[type]); break;
+                  case LVL_THETA : sprintf(buf,"%8.4f %-2s",lvl,units[type]); break;
+                  case LVL_HOUR  : sprintf(buf,"%8.1f %-2s",lvl,units[type]); break;
+               }
+               Tcl_SetStringObj(obj,buf,-1);
+               if (TclY_ListObjFind(Interp,list,obj)==-1) {
+                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+               }
+               break;
+               
             case FSTD_LISTIP1:
                Tcl_SetIntObj(obj,head.IP1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
