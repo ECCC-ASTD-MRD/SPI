@@ -292,7 +292,7 @@ proc Mapper::DepotWare::WMS::ParseLayer { URL Node Tree Branch { First True } } 
          Extent                   { Mapper::DepotWare::WMS::ParseExtent $node }
       }
    }
-
+   
    if { $Data(Identifier)!="" } {
       set Data($Data(Title)) [list $URL $Data(Title) $Data(Abstract) $Data(Identifier) $Data(BBox) $Data(Geographic) $Data(SizeX) $Data(SizeY) $Data(Format) $Data(Styles) $Data(Times) $Data(Opaque) $Data(Cache) $Data(Meta)]
       lappend Data(Layers) $Data(Title)

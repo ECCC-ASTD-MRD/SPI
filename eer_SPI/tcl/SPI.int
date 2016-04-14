@@ -94,7 +94,7 @@ proc SPI::Splash { { Msg "" } } {
 #-------------------------------------------------------------------------------
 
 proc SPI::About { } {
-   global GDefs
+   global GDefs env
    variable Lbl
    variable Msg
 
@@ -117,7 +117,7 @@ proc SPI::About { } {
    pack .about.info -fill both -side top -expand true
    pack .about.close -fill x -side top
 
-   .about.info.list.l insert end "SPI version $GDefs(Version) (2016/02/23)\n\n"
+   .about.info.list.l insert end "SPI version $GDefs(Version) $env(SPI_DATE)\n\n"
    .about.info.list.l insert end "[lindex $Msg(Id) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Adress) $GDefs(Lang)]\n"
    .about.info.list.l insert end "[lindex $Msg(Mail) $GDefs(Lang)]\n"
