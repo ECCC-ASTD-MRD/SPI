@@ -349,14 +349,16 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/${HDF5}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- netCDF (Man path on AIX)
-   echo "Building ${TMP_PATH}/${NETCDF}/build.log"
-   mkdir ${TMP_PATH}/${NETCDF}
-   cd ${TMP_PATH}/${NETCDF}
-   (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
-      CPPFLAGS="$CPPFLAGS -I${LIB_PATH}/include" LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib" "$(test "$ARCH" = "AIX" && echo "LIBS=$LIBS -lsz -ljpeg")"
-   test -d man4 && { mv man4/Makefile man4/Makefile.ori; printf 'install:\n\n' > man4/Makefile; }
-   make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-
+   if [[ $ARCH != "AIX" ]]; then
+      echo "Building ${TMP_PATH}/${NETCDF}/build.log"
+      mkdir ${TMP_PATH}/${NETCDF}
+      cd ${TMP_PATH}/${NETCDF}
+      (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
+         CPPFLAGS="$CPPFLAGS -I${LIB_PATH}/include" LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib" "$(test "$ARCH" = "AIX" && echo "LIBS=$LIBS -lsz -ljpeg")"
+      test -d man4 && { mv man4/Makefile man4/Makefile.ori; printf 'install:\n\n' > man4/Makefile; }
+      make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+   
    #----- grib
    if [[ $ARCH != "AIX" ]]; then
       echo "Building ${TMP_PATH}/${GRIB}/build.log"

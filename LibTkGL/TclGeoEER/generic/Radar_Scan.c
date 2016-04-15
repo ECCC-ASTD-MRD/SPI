@@ -389,7 +389,7 @@ int Radar_Parse(TData *Rad) {
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
    RAY        *ray;
-   int         i,j,k,bin;
+   int         i,j,k;
    double      val,th;
 
    vol=head->Data->volScan[head->Scan];
@@ -403,11 +403,7 @@ int Radar_Parse(TData *Rad) {
                Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
             } else {
                ray=vol->sweep[k]->rays[i];
-               bin=(ray->endRange-ray->startRange)/ray->numBins;
-               bin=j*head->Data->binResolutionKM;
-               bin=bin>ray->numBins?-1:bin;
-
-               val=((unsigned char*)ray->rangeBin)[bin];
+               val=((unsigned char*)ray->rangeBin)[j];
                val=N_DBZ(val);
                Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
             }

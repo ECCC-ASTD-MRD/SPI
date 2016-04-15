@@ -315,7 +315,6 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            /*Loop on the Sweeps*/
       th[v]=file->Data.volScan[0]->sweep[v]->elevationAngle;
    }
-
    file->GRef=GeoRef_Find(GeoRef_RDRSetup(getLatitude(&file->Data),getLongitude(&file->Data),getGroundHeight(&file->Data)+getHornHeight(&file->Data),
        file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep,file->Data.binResolutionKM*1000,file->Data.azimuthResolutionDegree));
    file->ZRef=ZRef_Define(LVL_ANGLE,file->Data.volScan[0]->numSweeps,th);
