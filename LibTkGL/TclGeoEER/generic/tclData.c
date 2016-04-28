@@ -2094,7 +2094,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Data_GetAreaValue(Interp,5,Field,Objc-1,Objv+1)==TCL_ERROR) {
                return(TCL_ERROR);
             }
-            i++;
+            i+=2;
             break;
 
          case UNPROJECT:
@@ -2865,7 +2865,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
  *  <Field>    : Pointeur sur le champs
- *  <Mode>     : Type d'extraction (0:Average,1:Somme,1:Minimum,2:Maximum,4:Points de grilles)
+ *  <Mode>     : Type d'extraction (0:Average,1:Somme,1:Minimum,2:Maximum,4:Points de grilles,5:Values)
  *  <Objc>     : Nombre d'arguments
  *  <Objv>     : Liste des arguments
  *
@@ -2882,12 +2882,24 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    int      f,n=0,ni,nj,nc,vnb=0,vn0,vn1;
    double   v,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
+   TVector *vec=NULL;
 
-   if (Objc!=1) {
-      Tcl_WrongNumArgs(Interp,1,Objv,"[lat0 lon0 lat1 lon1] | [coords]");
+   if (Objc!=1 && Objc!=2) {
+      Tcl_WrongNumArgs(Interp,2,Objv,"{ lat0 lon0 lat1 lon1 } | { coords } [vector]");
       return(TCL_ERROR);
    }
 
+   // Get result vector if passed in (for use in values mode)
+   if (Objc==2 && Mode==5) {
+      vec=Vector_Get(Tcl_GetString(Objv[1]));
+      if (!vec) {
+         Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
+         return(TCL_ERROR);
+      }
+      Vector_Clear(Interp,vec);
+   }
+   
+   // Get coordinate list
    Tcl_ListObjLength(Interp,Objv[0],&nc);
    if (nc==4) {
       // This is a latlon bounding box defined by 2 corners
@@ -2946,7 +2958,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 2: tot=1e38; break;
       case 3: tot=-1e38; break;
       case 4:
-      case 5: obj=Tcl_NewListObj(0,NULL); break;
+      case 5: if (!vec) obj=Tcl_NewListObj(0,NULL); break;
    }
 
    n=0;
@@ -2959,6 +2971,8 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
             if (nc==4) {
                // Range case
                Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
+               
+               // Adjust for 0-360 if needed
                if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+360.0:dlon;
 
                f=0;
@@ -3003,7 +3017,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                      Tcl_ListObjAppendElement(Interp,obj,sub);
                      break;
                   case 5:
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                     if (vec) {
+                        Vector_AppendData(Interp,vec,NULL,v);
+                     } else {
+                        Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                     }
                      break;
                }
             }
@@ -3045,7 +3063,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                   Tcl_ListObjAppendElement(Interp,obj,sub);
                   break;
                case 5:
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                  if (vec) {
+                     Vector_AppendData(Interp,vec,NULL,v);
+                  } else {
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                  }
                   break;
            }
          }
@@ -3058,7 +3080,8 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 2:
       case 3: obj=Tcl_NewDoubleObj(tot);
    }
-   Tcl_SetObjResult(Interp,obj);
+   if (!vec)
+      Tcl_SetObjResult(Interp,obj);
 
    if (vn) free(vn);
 

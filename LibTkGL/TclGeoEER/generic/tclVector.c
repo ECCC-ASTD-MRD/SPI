@@ -217,7 +217,7 @@ static int Vector_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             Tcl_AppendResult(Interp,"Invalid vector",(char*)NULL);
             return(TCL_ERROR);
          } else {
-            return Vector_AppendData(Interp,vec,Objv[3]);
+            return Vector_AppendData(Interp,vec,Objv[3],0.0);
          }
          break;
 
@@ -1221,7 +1221,8 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
  * Parametres   :
  *   <Interp>   : Interpreteur Tcl
  *   <Vec>      : Vecteur
- *   <Data>     : Liste des valeurs
+ *   <List>     : Liste des valeurs
+ *   <Value>    : Valeur simple (Si pas de liste)
  *
  * Retour       : Code de retour standard TCL
  *
@@ -1229,7 +1230,7 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
+int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,double Value) {
 
    Tcl_Obj *obj,*sub;
    int      n,nobj;
@@ -1240,9 +1241,14 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
       return(TCL_ERROR);
    }
 
-   if ((vec=Vector_Get(Tcl_GetString(List)))) {
+   if (!List) {
+      // Use a single Value
+      nobj=1;
+   } else if ((vec=Vector_Get(Tcl_GetString(List)))) {
+      // Use a vector object
       nobj=vec->N;
    } else {
+      // Use a list object
       Tcl_ListObjLength(Interp,List,&nobj);
    }
 
@@ -1256,10 +1262,10 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
             Tcl_ListObjIndex(Interp,vec->Cn,n,&sub);
             obj=Tcl_DuplicateObj(List);
             Tcl_AppendStringsToObj(obj,".",Tcl_GetString(sub),(char*)NULL);
-            Vector_AppendData(Interp,Vec->Cp[n],obj);
+            Vector_AppendData(Interp,Vec->Cp[n],obj,Value);
          } else {
             Tcl_ListObjIndex(Interp,List,n,&obj);
-            Vector_AppendData(Interp,Vec->Cp[n],obj);
+            Vector_AppendData(Interp,Vec->Cp[n],obj,Value);
          }
       }
    } else {
@@ -1273,13 +1279,17 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List) {
          Vec->V=realloc(Vec->V,Vec->Nr*sizeof(double));
       }
 
-      if (vec) {
-         memcpy(&Vec->V[Vec->N],vec->V,nobj*sizeof(double));
+      if (!List) {
+         Vec->V[Vec->N]=Value;
       } else {
-         for(n=0;n<nobj;n++) {
-            Tcl_ListObjIndex(Interp,List,n,&obj);
-            if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Vec->N+n])==TCL_ERROR) {
-               Vec->V[Vec->N+n]=Vec->NoData;
+         if (vec) {
+            memcpy(&Vec->V[Vec->N],vec->V,nobj*sizeof(double));
+         } else {
+            for(n=0;n<nobj;n++) {
+               Tcl_ListObjIndex(Interp,List,n,&obj);
+               if (Tcl_GetDoubleFromObj(Interp,obj,&Vec->V[Vec->N+n])==TCL_ERROR) {
+                  Vec->V[Vec->N+n]=Vec->NoData;
+               }
             }
          }
       }
