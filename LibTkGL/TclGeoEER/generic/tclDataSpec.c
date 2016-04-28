@@ -655,9 +655,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERP_OPTS,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               if (strcmp(Spec->InterpDegree,INTERP_OPTS[tmpi])) {
-                  Spec->InterpDegree=INTERP_OPTS[tmpi];
-               }
+               Spec->InterpDegree=INTERP_OPTS[tmpi];
             }
             break;
 
@@ -668,9 +666,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                if (Tcl_GetIndexFromObj(Interp,Objv[++i],EXTRAP_OPTS,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               if (strcmp(Spec->ExtrapDegree,EXTRAP_OPTS[tmpi])) {
-                  Spec->ExtrapDegree=EXTRAP_OPTS[tmpi];
-               }
+               Spec->ExtrapDegree=EXTRAP_OPTS[tmpi];
             }
             break;
 
