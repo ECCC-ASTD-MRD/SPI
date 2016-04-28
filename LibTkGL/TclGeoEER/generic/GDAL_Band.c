@@ -806,7 +806,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    for(y=0;y<Band->Def->NJ;y+=dy) {
 
       // Reproject
-      if (!GeoScan_Get(&scan,Field->GRef,Field->Def,Band->GRef,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,Field->Spec->InterpDegree)) {
+      if (!GeoScan_Get(&scan,Field->GRef,Field->Def,Band->GRef,Band->Def,0,y,Band->Def->NI-1,y+(dy-1),1,(char*)Field->Spec->InterpDegree)) {
          Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Unable to allocate coordinate scanning buffer",(char*)NULL);
          return(TCL_ERROR);
       }

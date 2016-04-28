@@ -744,7 +744,7 @@ int Obs_Extract(Tcl_Interp *Interp,TObs *Obs,TData *Field) {
 #ifdef HAVE_RMN
    i=-3;
    f77name(newdate)(&((TRPNHeader*)(Field->Head))->DATEV,&Obs->Date,&Obs->Time,&i);
-   c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
+   c_ezsetopt("INTERP_DEGREE",(char*)Field->Spec->InterpDegree);
 #endif
    for(i=0;i<Obs->Loc->Nb;i++) {
 

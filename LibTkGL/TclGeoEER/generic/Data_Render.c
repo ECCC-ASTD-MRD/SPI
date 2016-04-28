@@ -2029,7 +2029,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          nn=n+n;
 
 //         RPN_IntLock();
-         c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
+         c_ezsetopt("INTERP_DEGREE",(char*)Field->Spec->InterpDegree);
          
          Def_Pointer(Field->Def,0,dz,uu);
          Def_Pointer(Field->Def,1,dz,vv);

@@ -1070,12 +1070,12 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       } else if (Mode==2) {
          c_ezsetopt("INTERP_DEGREE","CUBIC");
       } else {
-         c_ezsetopt("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
+         c_ezsetopt("INTERP_DEGREE",(char*)FieldTo->Spec->InterpDegree);
       }
       if (FieldTo->Spec->ExtrapDegree[0]=='V') {
          c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
       }
-      c_ezsetopt("EXTRAP_DEGREE",FieldTo->Spec->ExtrapDegree);
+      c_ezsetopt("EXTRAP_DEGREE",(char*)FieldTo->Spec->ExtrapDegree);
    }
    
    // Use ezscint

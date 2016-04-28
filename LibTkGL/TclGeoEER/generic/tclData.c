@@ -2168,7 +2168,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   Data_ValSet(Field,dx,dy,val);
                } else {
 #ifdef HAVE_RMN
-                  c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
+                  c_ezsetopt("INTERP_DEGREE",(char*)Field->Spec->InterpDegree);
 #endif
                   obj=Tcl_NewListObj(0,NULL);
                   if (Field->Def->NC==2) {
@@ -2210,7 +2210,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Data_ValSet(Field,dx,dy,val);
             } else {
 #ifdef HAVE_RMN
-               c_ezsetopt("INTERP_DEGREE",Field->Spec->InterpDegree);
+               c_ezsetopt("INTERP_DEGREE",(char*)Field->Spec->InterpDegree);
 #endif
                obj=Tcl_NewListObj(0,NULL);
                if (Field->Def->NC==2) {
@@ -2879,7 +2879,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
 
    Tcl_Obj *obj,*sub;
-   int      f,n=0,ni,nj,nc,vnb=0,vn0,vn1;
+   int      f,nt,n=0,ni,nj,nc,vnb=0,vn0,vn1,nid,pnid;
    double   v,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
    TVector *vec=NULL;
@@ -2901,57 +2901,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    
    // Get coordinate list
    Tcl_ListObjLength(Interp,Objv[0],&nc);
-   if (nc==4) {
-      // This is a latlon bounding box defined by 2 corners
-      Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
-      Tcl_ListObjIndex(Interp,Objv[0],1,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
-      Tcl_ListObjIndex(Interp,Objv[0],2,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
-      Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
-      Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
-
-      // Order values in latitude only since longitude order gives the selection orientation
-      if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
-
-      // Get ij bounding box
-      GeoRef_BoundingBox(Field->GRef,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
-
-      // If Wrapover 180/-180, need to check all gridpoint along longitude
-      if (Field->GRef->Type&GRID_WRAP) {
-         i0=Field->GRef->X0;
-         i1=Field->GRef->X1;
-      }
-   } else {
-      vnb=nc>>1;
-      if (!vnb || nc%2) {
-         Tcl_AppendResult(Interp,"Data_GetAreaValue: Invalid number of coordinates",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      i0=j0=1000000;
-      i1=j1=-1000000;
-
-      if (!(vn=(Vect3d*)malloc(vnb*sizeof(Vect3d)))) {
-         Tcl_AppendResult(Interp,"Data_GetAreaValue: Unable to allocate memory for temporary buffer",(char*)NULL);
-         return(TCL_ERROR);
-      }
-
-      for(n=0,ni=0;n<vnb;n++) {
-         Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlat);
-         Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlon);
-
-         Field->GRef->UnProject(Field->GRef,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
-         vn[n][2]=0.0;
-         i0=i0<vn[n][0]?i0:vn[n][0];
-         j0=j0<vn[n][1]?j0:vn[n][1];
-         i1=i1>vn[n][0]?i1:vn[n][0];
-         j1=j1>vn[n][1]?j1:vn[n][1];
-      }
-   }
-
+   
+   // Initialise counter
+   nt=0;
    switch(Mode) {
       case 0:
       case 1: tot=0.0; break;
@@ -2961,50 +2913,151 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
       case 5: if (!vec) obj=Tcl_NewListObj(0,NULL); break;
    }
 
-   n=0;
+   pnid=Field->GRef->NId;
 
-   if (Field->GRef->Grid[0]!='V') {
+   for(nid=(pnid?pnid:(Field->GRef->NbId>1?1:0));nid<=(pnid?pnid:(Field->GRef->NbId>1?Field->GRef->NbId:0));nid++) {
+      FSTD_FieldSubSelect(Field,nid);
+   
+      if (nc==4) {
+         // This is a latlon bounding box defined by 2 corners
+         Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
+         Tcl_ListObjIndex(Interp,Objv[0],1,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
+         Tcl_ListObjIndex(Interp,Objv[0],2,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
+         Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
+         Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
 
-      // Loop on ij bounding box
-      for (ni=floor(i0);ni<=ceil(i1);ni++) {
-         for (nj=floor(j0);nj<=ceil(j1);nj++) {
+         // Order values in latitude only since longitude order gives the selection orientation
+         if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
+
+         // Get ij bounding box
+         GeoRef_BoundingBox(Field->GRef,dlat0,dlon0,dlat1,dlon1,&i0,&j0,&i1,&j1);
+
+         // If Wrapover 180/-180, need to check all gridpoint along longitude
+         if (Field->GRef->Type&GRID_WRAP) {
+            i0=Field->GRef->X0;
+            i1=Field->GRef->X1;
+         }
+      } else {
+         vnb=nc>>1;
+         if (!vnb || nc%2) {
+            Tcl_AppendResult(Interp,"Data_GetAreaValue: Invalid number of coordinates",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         i0=j0=1000000;
+         i1=j1=-1000000;
+
+         if (!vn && !(vn=(Vect3d*)malloc(vnb*sizeof(Vect3d)))) {
+            Tcl_AppendResult(Interp,"Data_GetAreaValue: Unable to allocate memory for temporary buffer",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         for(n=0,ni=0;n<vnb;n++) {
+            Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&dlat);
+            Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
+            Tcl_GetDoubleFromObj(Interp,obj,&dlon);
+
+            Field->GRef->UnProject(Field->GRef,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
+            vn[n][2]=0.0;
+            i0=i0<vn[n][0]?i0:vn[n][0];
+            j0=j0<vn[n][1]?j0:vn[n][1];
+            i1=i1>vn[n][0]?i1:vn[n][0];
+            j1=j1>vn[n][1]?j1:vn[n][1];
+         }
+      }
+
+
+      if (Field->GRef->Grid[0]!='V') {
+
+         // Loop on ij bounding box
+         for (ni=floor(i0);ni<=ceil(i1);ni++) {
+            for (nj=floor(j0);nj<=ceil(j1);nj++) {
+               if (nc==4) {
+                  // Range case
+                  Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
+                  
+                  // Adjust for 0-360 if needed
+                  if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+360.0:dlon;
+
+                  f=0;
+                  if (dlat>=dlat0 && dlat<=dlat1) {
+                     if (dlon0<dlon1) {
+                        if (dlon>=dlon0 && dlon<=dlon1) {
+                           f=1;
+                        }
+                     } else {
+                        if ((dlon>=dlon0 && dlon<=180) || (dlon<=dlon1 && dlon>=-180)) {
+                           f=1;
+                        }
+                     }
+                  }
+               } else {
+                  // Polygon case
+                  Vect_Init(vp,ni,nj,0.0);
+
+                  f=0;
+                  for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
+                     /*Check for point insidness*/
+                     if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
+                        f=!f;
+                     }
+                  }
+               }
+
+               // Point is inside
+               if (f) {
+                  f=FIDX2D(Field->Def,ni,nj);
+                  Def_GetMod(Field->Def,f,v);
+                  nt++;
+                  switch(Mode) {
+                     case 0:
+                     case 1: tot+=v; break;
+                     case 2: tot=tot>v?v:tot; break;
+                     case 3: tot=tot<v?v:tot; break;
+                     case 4:
+                        sub=Tcl_NewListObj(0,NULL);
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
+                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(nj));
+                        Tcl_ListObjAppendElement(Interp,obj,sub);
+                        break;
+                     case 5:
+                        if (vec) {
+                           Vector_AppendData(Interp,vec,NULL,v);
+                        } else {
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
+                        }
+                        break;
+                  }
+               }
+            }
+         }
+      } else {
+         for (ni=0;ni<Field->Def->NI;ni++) {
+            f=0;
             if (nc==4) {
-               // Range case
-               Field->GRef->Project(Field->GRef,ni,nj,&dlat,&dlon,0,1);
-               
-               // Adjust for 0-360 if needed
-               if (dlon0>180 || dlon1>180) dlon=dlon<0?dlon+360.0:dlon;
-
-               f=0;
-               if (dlat>=dlat0 && dlat<=dlat1) {
+               //Range case
+               if (Field->GRef->AY[ni]>=dlat0 && Field->GRef->AY[ni]<=dlat1) {
                   if (dlon0<dlon1) {
-                     if (dlon>=dlon0 && dlon<=dlon1) {
+                     if (Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=dlon1) {
                         f=1;
                      }
                   } else {
-                     if ((dlon>=dlon0 && dlon<=180) || (dlon<=dlon1 && dlon>=-180)) {
+                     if ((Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=180) || (Field->GRef->AX[ni]<=dlon1 && Field->GRef->AX[ni]>=-180)) {
                         f=1;
                      }
                   }
                }
-             } else {
-                // Polygon case
-                Vect_Init(vp,ni,nj,0.0);
-
-                f=0;
-                for(vn0=0,vn1=vnb-1;vn0<vnb;vn1=vn0++) {
-                   /*Check for point insidness*/
-                   if (OGR_PointInside(vp,vn[vn0],vn[vn1])) {
-                      f=!f;
-                   }
-                }
+            } else {
+               //Polygon case
             }
 
             // Point is inside
             if (f) {
-               f=FIDX2D(Field->Def,ni,nj);
-               Def_GetMod(Field->Def,f,v);
-               n++;
+               Def_GetMod(Field->Def,ni,v);
+               nt++;
                switch(Mode) {
                   case 0:
                   case 1: tot+=v; break;
@@ -3013,7 +3066,7 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                   case 4:
                      sub=Tcl_NewListObj(0,NULL);
                      Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
-                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(nj));
+                     Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
                      Tcl_ListObjAppendElement(Interp,obj,sub);
                      break;
                   case 5:
@@ -3027,55 +3080,12 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
             }
          }
       }
-   } else {
-      for (ni=0;ni<Field->Def->NI;ni++) {
-         f=0;
-         if (nc==4) {
-            //Range case
-            if (Field->GRef->AY[ni]>=dlat0 && Field->GRef->AY[ni]<=dlat1) {
-               if (dlon0<dlon1) {
-                  if (Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=dlon1) {
-                     f=1;
-                  }
-               } else {
-                  if ((Field->GRef->AX[ni]>=dlon0 && Field->GRef->AX[ni]<=180) || (Field->GRef->AX[ni]<=dlon1 && Field->GRef->AX[ni]>=-180)) {
-                     f=1;
-                  }
-               }
-            }
-         } else {
-            //Polygon case
-         }
-
-         // Point is inside
-         if (f) {
-            Def_GetMod(Field->Def,ni,v);
-            n++;
-            switch(Mode) {
-               case 0:
-               case 1: tot+=v; break;
-               case 2: tot=tot>v?v:tot; break;
-               case 3: tot=tot<v?v:tot; break;
-               case 4:
-                  sub=Tcl_NewListObj(0,NULL);
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(ni));
-                  Tcl_ListObjAppendElement(Interp,sub,Tcl_NewIntObj(0));
-                  Tcl_ListObjAppendElement(Interp,obj,sub);
-                  break;
-               case 5:
-                  if (vec) {
-                     Vector_AppendData(Interp,vec,NULL,v);
-                  } else {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(v));
-                  }
-                  break;
-           }
-         }
-      }
    }
-
+   FSTD_FieldSubSelect(Field,pnid);
+   
+   // Finalize calculations
    switch(Mode) {
-      case 0: tot/=n;
+      case 0: tot/=nt;
       case 1:
       case 2:
       case 3: obj=Tcl_NewDoubleObj(tot);
