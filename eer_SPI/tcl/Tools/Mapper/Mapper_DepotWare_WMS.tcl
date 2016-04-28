@@ -471,8 +471,8 @@ proc Mapper::DepotWare::WMS::ParseBoundingBox { Node } {
    set Data(BBox)  [list $x0 $y0 $x1 $y1]
 
    if { $rx!="" && $ry!="" } {
-      set Data(SizeX) [expr ($x1-$x0)/$rx]
-      set Data(SizeY) [expr ($y1-$y0)/$ry]
+      set Data(SizeX) [expr int(($x1-$x0)/$rx)]
+      set Data(SizeY) [expr int(($y1-$y0)/$ry)]
    } else {
       set Data(SizeX) 864000
       set Data(SizeY) 432000

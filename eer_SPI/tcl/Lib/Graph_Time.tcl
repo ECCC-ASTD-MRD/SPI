@@ -669,7 +669,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
                set n 0
 
                catch { vector create VALVEC }
-               vector set VALVEC [fstdfield stats [lindex $field 1] -withinvalue $data(Pos$Pos)]
+               fstdfield stats [lindex $field 1] -withinvalue $data(Pos$Pos) VALVEC
                switch $Graph::Param(SelectType) {
                   AVG { set val [vexpr NIL savg(VALVEC)] }
                   MIN { set val [vexpr NIL smin(VALVEC)] }

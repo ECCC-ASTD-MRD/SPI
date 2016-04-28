@@ -143,6 +143,7 @@ namespace eval Graph {
    set Data(ToolMode)     Data
    set Data(Update)       True
    set Data(IP3)          False                  ;#Valider les IP3
+   set Data(Item)         ""
    set Data(Pos)          ""
    set Data(PosNo)        -1
    set Data(Frame)        ""
@@ -1551,7 +1552,7 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
                set lo0 [lindex $Coords 1]
                set la1 [lindex $Coords 2]
                set lo1 [lindex $Coords 3]
-               Viewport::DrawLine $Frame $VP "$la0 $lo0 0 $la1 $lo0 0 $la1 $lo1 0 $la0 $lo1 0 $la0 $lo0 0" $Tag  $Graph::Color(Select) 2
+               Viewport::DrawLine $Frame $VP "$la0 $lo0 0 $la1 $lo0 0 $la1 $lo1 0 $la0 $lo1 0 $la0 $lo0 0" $Tag $Graph::Color(Select) 2
 
                if { [set xy [$VP -project $la0 $lo1 0]]!= "" && [lindex $xy 2]>0 } {
                   set x [lindex $xy 0]
@@ -2804,6 +2805,7 @@ proc Graph::DrawDone { Frame VP } {
 
    upvar #0 Graph::${Graph::Data(Type)}::${Graph::Data(Type)}${Graph::Data(Graph)}::Data data
 
+   #----- Sort corners (lowerleft/upperright)
    if { $data(Lat0)>$data(Lat1) } {
       set tmp $data(Lat1)
       set data(Lat1) $data(Lat0)
@@ -2815,6 +2817,13 @@ proc Graph::DrawDone { Frame VP } {
       set data(Lon1) $data(Lon0)
       set data(Lon0) $tmp
    }
+   
+   #----- If length>180, invert longitude to register as -180,180 wrapover
+   if { [expr abs($data(Lon1)-$data(Lon0))]>180 } {
+       set tmp $data(Lon1)
+       set data(Lon1) $data(Lon0)
+       set data(Lon0) $tmp  
+   }  
 
    if { $data(Lat0)==$data(Lat1) || $data(Lon0)==$data(Lon1) } {
       set data(Lat0) 0
@@ -3076,6 +3085,7 @@ proc Graph::VertexFollow { Frame VP X Y Scan } {
       set smpl [Graph::VertexSample $Graph::Data(Type) $Graph::Data(Graph) $coords]
       set id   [graphitem configure [lindex $data(Items$Graph::Data(Pos)) 0] -desc]
       set desc [lindex [$data(Canvas) itemconfigure $id -text] end]
+
       Graph::ItemPos $Frame $VP $smpl "[lindex $Lbl(Title) $GDefs(Lang)]\n$desc" GRAPHSELECT$Graph::Data(Graph) $Param(SelectMode) $coords
 
       if { $Scan && [llength $coords]>2 } {
