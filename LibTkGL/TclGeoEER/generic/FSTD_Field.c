@@ -73,7 +73,7 @@ TDef_Type FSTD_TypeCheck(int Type,int Size) {
       case 1:
       case 6:
       case 5:  Type=Size>32?TD_Float64:TD_Float32;                                                       break;
-      default: App_Log(ERROR,"%s: Unknonw data type (DATYP=%i\n",__func__,Type);
+      default: App_Log(ERROR,"%s: Unknown data type (DATYP=%i)\n",__func__,Type);
    }
    return(Type);
 }

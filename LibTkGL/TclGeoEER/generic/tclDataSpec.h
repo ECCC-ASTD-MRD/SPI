@@ -156,8 +156,8 @@ typedef struct TDataSpec {
    int             Cube[6];             // Cube de selection
    char            Axis;                // Axe
 
-   char*           InterpDegree;        // Degree d'interpolation
-   char*           ExtrapDegree;        // Degree d'extrapolation
+   CONST char*     InterpDegree;        // Degree d'interpolation
+   CONST char*     ExtrapDegree;        // Degree d'extrapolation
    int             RenderTexture;       // Effectuer le rendue de la texture du champs
    int             RenderFace;          // Effectuer le rendue des faces
    int             RenderGrid;          // Effectuer le rendue de la grille

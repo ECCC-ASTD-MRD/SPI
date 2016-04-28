@@ -50,6 +50,9 @@ CONST char *INTERS[]  = { "NONE","INTERVAL","LINEAR","LOGARITHMIC","RSMC","AEGL(
 CONST char *VECTORS[] = { "NONE","BARB","SPEAR","ARROW","STREAMLINE","STREAMLINE3D","BARBULE" };
 CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
+static CONST char *INTERP_OPTS[] = { "LINEAR","NEAREST","CUBIC",NULL };
+static CONST char *EXTRAP_OPTS[] = { "NEUTRAL","MAXIMUM","MINIMUM","VALUE",NULL };
+
 // If you add icons here, look in GDAL_Band.c for references to this array
 TIcon IconList[]={
  { GL_POINT,     1, { 0.0,0.0 } },
@@ -366,8 +369,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    double       tmpd,val,min=0.0,max=0.0;
    const char **lvls;
 
-   static CONST char *interp[] = { "NEAREST","LINEAR","CUBIC",NULL };
-   static CONST char *extrap[] = { "NEUTRAL","MAXIMUM","MINIMUM","VALUE",NULL };
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
@@ -651,12 +652,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->InterpDegree,-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],interp,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],INTERP_OPTS,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               if (strcmp(Spec->InterpDegree,interp[tmpi])) {
-                  free(Spec->InterpDegree);
-                  Spec->InterpDegree=(char*)strdup(interp[tmpi]);
+               if (strcmp(Spec->InterpDegree,INTERP_OPTS[tmpi])) {
+                  Spec->InterpDegree=INTERP_OPTS[tmpi];
                }
             }
             break;
@@ -665,12 +665,11 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->ExtrapDegree,-1));
             } else {
-               if (Tcl_GetIndexFromObj(Interp,Objv[++i],extrap,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],EXTRAP_OPTS,"type",TCL_EXACT,&tmpi)!=TCL_OK) {
                   return(TCL_ERROR);
                }
-               if (strcmp(Spec->ExtrapDegree,extrap[tmpi])) {
-                  free(Spec->ExtrapDegree);
-                  Spec->ExtrapDegree=(char*)strdup(extrap[tmpi]);
+               if (strcmp(Spec->ExtrapDegree,EXTRAP_OPTS[tmpi])) {
+                  Spec->ExtrapDegree=EXTRAP_OPTS[tmpi];
                }
             }
             break;
@@ -1687,8 +1686,8 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->MinMax=from->MinMax;
    to->ValFactor=from->ValFactor;
    to->ValDelta=from->ValDelta;
-   to->InterpDegree=strdup(from->InterpDegree);
-   to->ExtrapDegree=strdup(from->ExtrapDegree);
+   to->InterpDegree=from->InterpDegree;
+   to->ExtrapDegree=from->ExtrapDegree;
    to->RenderTexture=from->RenderTexture;
    to->RenderFace=from->RenderFace;
    to->RenderGrid=from->RenderGrid;
@@ -1879,8 +1878,8 @@ TDataSpec *DataSpec_New(){
       spec->TopoFactor=1.0;
       spec->Extrude=NULL;
       spec->ExtrudeFactor=1.0;
-      spec->InterpDegree=(char*)strdup("LINEAR");
-      spec->ExtrapDegree=(char*)strdup("NEUTRAL");
+      spec->InterpDegree=INTERP_OPTS[0];
+      spec->ExtrapDegree=EXTRAP_OPTS[0];
       spec->Dash.number=0;
       spec->HighDash.number=0;
       spec->RenderTexture=0;
@@ -1968,8 +1967,6 @@ void DataSpec_Clear(TDataSpec *Spec) {
       if (Spec->SizeVar)      free(Spec->SizeVar);                               Spec->SizeVar=NULL;
       if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
       if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
-      if (Spec->InterpDegree) free(Spec->InterpDegree);                          Spec->InterpDegree=NULL;
-      if (Spec->ExtrapDegree) free(Spec->ExtrapDegree);                          Spec->ExtrapDegree=NULL;
 
       if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
       if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
