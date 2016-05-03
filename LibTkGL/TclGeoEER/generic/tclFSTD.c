@@ -1848,11 +1848,7 @@ static int FSTD_StampCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_
             return(TCL_ERROR);
          }
          TclY_Get0IntFromObj(Interp,Objv[2],&stamp);
-         if (TclY_Get0IntFromObj(Interp,Objv[3],&hh)==TCL_ERROR) {
-            Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpd);
-         } else {
-            tmpd=hh;
-         }
+         Tcl_GetDoubleFromObj(Interp,Objv[3],&tmpd);
          f77name(incdatr)(&op,&stamp,&tmpd);
 
          sprintf(buf,"%09i",op);
