@@ -1193,6 +1193,8 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
 
   #----- In CI mode, define the intervals for the colorbar values
   if { [gdalband define $obj -indexed] } {
+     set lvls {}
+     
      #----- Weird, in CI mode, looks like the max is 1 too high (coming from GDAL)
      for { set i [expr int([lindex $min 0])] } { $i <[expr int([lindex $max 0])] } { incr i } {
         lappend lvls $i
