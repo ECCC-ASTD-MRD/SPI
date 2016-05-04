@@ -117,7 +117,7 @@ foreach var { CV CVI DW WI } id { 200 202 201 205 } nm { conc dose depot wetd } 
    break
 }
 
-exit
+Log::End
 
 Log::Print INFO "Producing GRIB2"
  

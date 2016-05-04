@@ -45,11 +45,13 @@ fstdfield write TAC FSTDOUT -32 False
 #----- Lire le champs de la grille de calcul
 fstdfield read FLD FSTDIN -1 "" -1 -1 -1  "" "ELEV"
 
+puts "Global extent    :[ogrlayer stats LAYER -extent]"
+puts "XFT extent       :[ogrlayer stats LAYER -extent 175]"
+
 #----- Selectionner le radar XFT
 ogrlayer define LAYER -featureselect { { ID == XFT } }
 
-puts "Global extent    :[ogrlayer stats LAYER -extent]"
-puts "Selection extent :[ogrlayer stats LAYER -extent True]"
+puts "Selection extent :[ogrlayer stats LAYER -extent]"
 foreach mode { FAST WITHIN INTERSECT CONSERVATIVE NORMALIZED_CONSERVATIVE ALIASED POINT_CONSERVATIVE LENGTH_CONSERVATIVE LENGTH_NORMALIZED_CONSERVATIVE LENGTH_ALIASED } {
    puts "Testing mode $mode."
    vexpr FLD FLD<<0

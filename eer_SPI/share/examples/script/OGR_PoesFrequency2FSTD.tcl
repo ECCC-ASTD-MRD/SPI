@@ -68,12 +68,12 @@ vexpr POES GRID<<0
 #----- Redifinir le NOMVAR en consequence
 fstdfield define POES -NOMVAR "POES"
 
+Log::Print INFO "Global extent    : [ogrlayer stats LAYER -extent]"
+
 #----- Selectionner la couverture des POES
 set features [ogrlayer define LAYER -featureselect { { NAME == avhrr_ch1 } }]
-
 Log::Print INFO "Found Features   : $features"
-Log::Print INFO "Global extent    : [ogrlayer stats LAYER -extent]"
-Log::Print INFO "Selection extent : [ogrlayer stats LAYER -extent True]"
+Log::Print INFO "Selection extent : [ogrlayer stats LAYER -extent]"
 
 foreach feature $features {
 

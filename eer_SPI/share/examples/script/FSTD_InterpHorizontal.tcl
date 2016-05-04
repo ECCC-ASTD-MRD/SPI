@@ -51,9 +51,9 @@ fstdfield configure FROM -extrapdegree VALUE
 fstdfield gridinterp FROM GRID
 fstdfield write FROM FILEOUT -32 False
 
-
 #----- Test l'interpolation dans une grille M
-fstdfile open FILEMSH read  DataIn/shop.fst
+fstdfield read FROM FILEIN -1 "" -1 -1 -1  "" TT
+fstdfile open FILEMSH read DataIn/shop.fst
 fstdfield read MESHE FILEMSH -1 "" -1 -1 -1 "" WVMD
 fstdfield copydesc MESHE FILEOUT
 fstdfield gridinterp MESHE FROM

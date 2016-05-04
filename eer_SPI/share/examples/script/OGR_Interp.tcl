@@ -60,7 +60,7 @@ puts "   Minimum: [ogrlayer stats LAYER -min PRES]"
 puts "   Maximum: [ogrlayer stats LAYER -max PRES]"
 
 puts "   Applying calculus log(LAYER.PRES+100)"
-vexpr LAYER.ZONE log(LAYER.PRES+100)
+vexpr LAYER.HECTARES log(LAYER.PRES+100)
 
 #puts "   Minimum: [ogrlayer stats LAYER -min ZONE]"
 #puts "   Maximum: [ogrlayer stats LAYER -max ZONE]"
@@ -73,10 +73,9 @@ vexpr LAYER.ZONE log(LAYER.PRES+100)
 
 ogrfile open SHPFILE2 write DataOut/OGR_Interp2D.shp "ESRI Shapefile"
 ogrlayer write LAYER SHPFILE2
-ogrfile close SHPFILE2
 
 #ogrlayer sync LAYER
-ogrfile close SHPFILE
+ogrfile close SHPFILE SHPFILE2
 
 
 #----- Test Point interpolation
@@ -85,11 +84,7 @@ ogrfile close SHPFILE
 #----- Open the shapefile
 catch { eval file delete [glob DataOut/OGR_Interp1D.*] }
 
-file copy DataIn/TideStations.shp DataOut/OGR_Interp1D.shp
-file copy DataIn/TideStations.dbf DataOut/OGR_Interp1D.dbf
-file copy DataIn/TideStations.shx DataOut/OGR_Interp1D.shx
-
-set layer [ogrfile open SHPFILE append DataOut/OGR_Interp1D.shp]
+set layer [ogrfile open SHPFILE read DataIn/TideStations.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Clear the file that will be used to sum the data
@@ -100,7 +95,9 @@ ogrlayer clear LAYER PRES 0.0
 puts "   Interpolating field values into point layer"
 ogrlayer interp LAYER DATAFIELD PRES LINEAR
 
-ogrlayer sync LAYER
-ogrfile close SHPFILE
+ogrfile open SHPFILE2 write DataOut/OGR_Interp1D.shp "ESRI Shapefile"
+ogrlayer write LAYER SHPFILE2
+#ogrlayer sync LAYER
+ogrfile close SHPFILE SHPFILE2
 
 Log::End

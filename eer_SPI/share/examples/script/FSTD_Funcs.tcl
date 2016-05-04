@@ -83,7 +83,6 @@ set idxs [fstdfield find $lnk -1 "" -1 -1 -1 "" "TT"]
 puts "   Found [llength $idxs] fields from $lnk" 
 
 puts "   TT Levels found: [fstdfile info $lnk LEVEL TT]"
-exit
 foreach idx $idxs {
    fstdfield read FLD $lnk $idx
    puts "     Level [fstdfield stats FLD -level] [fstdfield stats FLD -leveltype]"

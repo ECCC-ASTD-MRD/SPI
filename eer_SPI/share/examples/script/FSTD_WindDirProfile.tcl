@@ -44,7 +44,7 @@ for { set k 0 } { $k < [fstdfield define UU -NK] } { incr k } {
    fstdfield stats WD -levelindex $k
    lappend listeWD [fstdfield stats WD -coordvalue $lat $lon]
 }
-puts "   $listeWD"
+puts "([fstdfield define UU -NK])   $listeWD"
 
 fstdfile close FILE
 

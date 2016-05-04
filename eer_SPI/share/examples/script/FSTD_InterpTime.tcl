@@ -26,6 +26,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
+file delete DataOut/FSTD_InterpTime.fstd
+
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 fstdfile open 1 read  DataIn/2005102612_012
 fstdfile open 2 write DataOut/FSTD_InterpTime.fstd
@@ -38,9 +40,10 @@ fstdfield read T1 1 -1 "" 12000 24 -1  "" ES
 set stamp0 [fstdfield define T0 -DATEV]
 
 #----- Interpoler a toute les demi-heure sur 3 heures
-for { set hour 0.1 } { $hour < 3 } { set hour [expr $hour+0.1] } {
+for { set hour 0.1 } { $hour < 3.0 } { set hour [expr $hour+0.1] } {
 
    set stamp [fstdstamp incr $stamp0 $hour]
+   puts stderr $hour=$stamp
    fstdfield timeinterp TX T0 T1 $stamp
    fstdfield write TX 2 -32 False
 }
