@@ -162,6 +162,7 @@ static int GRIB_KeySet(Tcl_Interp *Interp,grib_handle *Handle,char *Key,Tcl_Obj 
       Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(dval));
    } else {
       grib_set_string(Handle,Key,Tcl_GetString(Val),&len);
+      len=1024;
       grib_get_string(Handle,Key,sval,&len);
       Tcl_SetObjResult(Interp,Tcl_NewStringObj(sval,-1));                  
    }
