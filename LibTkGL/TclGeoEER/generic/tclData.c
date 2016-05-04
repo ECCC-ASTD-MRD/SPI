@@ -2920,14 +2920,14 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    
       if (nc==4) {
          // This is a latlon bounding box defined by 2 corners
-         Tcl_ListObjIndex(Interp,Objv[0],0,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlat0);
-         Tcl_ListObjIndex(Interp,Objv[0],1,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlon0);
-         Tcl_ListObjIndex(Interp,Objv[0],2,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlat1);
-         Tcl_ListObjIndex(Interp,Objv[0],3,&obj);
-         Tcl_GetDoubleFromObj(Interp,obj,&dlon1);
+         Tcl_ListObjIndex(Interp,Objv[0],0,&sub);
+         Tcl_GetDoubleFromObj(Interp,sub,&dlat0);
+         Tcl_ListObjIndex(Interp,Objv[0],1,&sub);
+         Tcl_GetDoubleFromObj(Interp,sub,&dlon0);
+         Tcl_ListObjIndex(Interp,Objv[0],2,&sub);
+         Tcl_GetDoubleFromObj(Interp,sub,&dlat1);
+         Tcl_ListObjIndex(Interp,Objv[0],3,&sub);
+         Tcl_GetDoubleFromObj(Interp,sub,&dlon1);
 
          // Order values in latitude only since longitude order gives the selection orientation
          if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
@@ -2955,10 +2955,10 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          }
 
          for(n=0,ni=0;n<vnb;n++) {
-            Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
-            Tcl_GetDoubleFromObj(Interp,obj,&dlat);
-            Tcl_ListObjIndex(Interp,Objv[0],ni++,&obj);
-            Tcl_GetDoubleFromObj(Interp,obj,&dlon);
+            Tcl_ListObjIndex(Interp,Objv[0],ni++,&sub);
+            Tcl_GetDoubleFromObj(Interp,sub,&dlat);
+            Tcl_ListObjIndex(Interp,Objv[0],ni++,&sub);
+            Tcl_GetDoubleFromObj(Interp,sub,&dlon);
 
             Field->GRef->UnProject(Field->GRef,&vn[n][0],&vn[n][1],dlat,dlon,1,1);
             vn[n][2]=0.0;

@@ -964,7 +964,7 @@ static inline int FFContourMSegment(int Mode,TGeoPos *GPos,TDef *Def,double Inte
 
    pos=GPos->Pos[Def->Level];
 
-   // If interval isn within segment
+   // If interval is within segment
    if ((Inter>=v0 && Inter<=v1) || (Inter<=v0 && Inter>=v1)) {
       if ((vbuf=VBuffer_Alloc(*NV+1))) {
          d=(Inter-v0)/(v1-v0);
@@ -1008,6 +1008,7 @@ int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj
    int            n,i,len,t;
    T3DArray      *array;
    TList         *list;
+   Vect3d        *vbuf;
    
    // If we asked for geo coordinates and we don't have a geo-reference, do nothing
    if (!GPos || (Mode==REF_COOR && !GPos->GRef) || GPos->GRef->Grid[0]!='M')
@@ -1027,6 +1028,21 @@ int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj
          t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i]  ,GPos->GRef->Idx[i+1],&len);
          t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+1],GPos->GRef->Idx[i+2],&len);
          t+=FFContourMSegment(Mode,GPos,Def,Inter[n],GPos->GRef->Idx[i+2],GPos->GRef->Idx[i]  ,&len);
+
+         // If we habe 3 points, it means a vertex was right on the value and we have to remove it
+         if (t==3) {
+            // Get the vertex buffer
+            vbuf=VBuffer_Get()->Buffer;
+            
+            //if the 2 first one are equal, move the 2 last 1 place backward
+            if (Vect_Equal(vbuf[len-2],vbuf[len-3])) {
+               memcpy(vbuf[len-3],vbuf[len-2],2*sizeof(Vect3d));
+            }
+            
+            // Decrement indices
+            len--;
+            t=2;
+         }
          
          // If only 1 point found (due to masking), remove it
          if (t<2) len-=t;
