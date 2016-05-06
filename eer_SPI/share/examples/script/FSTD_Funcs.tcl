@@ -33,12 +33,15 @@ fstdfile open OUT write DataOut/FSTD_Funcs.fstd
 
 set secs [clock seconds]
 puts "Testing stamp functions for [clock format $secs]"
-puts "   seconds: $secs"
-puts "   stamp  : [set stamp [fstdstamp fromseconds $secs]]"
-puts "   incr 24: [set stamp [fstdstamp incr $stamp 024]]"
-puts "   r.date : [exec r.date $stamp]"
-puts "   date   : [clock format [fstdstamp toseconds $stamp]]"
-
+puts "   seconds : $secs"
+puts "   stamp   : [set stamp [fstdstamp fromseconds $secs]]"
+puts "   incr 24 : [set stamp [fstdstamp incr $stamp 024]]"
+puts "   r.date  : [exec r.date $stamp]"
+puts "   date    : [clock format [fstdstamp toseconds $stamp]]"
+puts "   incr 0.1: [set stamp [fstdstamp incr $stamp 0.1]]"
+puts "   r.date  : [exec r.date $stamp]"
+puts "   date    : [clock format [fstdstamp toseconds $stamp]]"
+exit
 puts "\nTesting ip conversion :"
 puts "   ip 12000        : [fstdgrid convip 12000]"
 puts "   ip 176260768    : [fstdgrid convip 176260768]"

@@ -60,7 +60,7 @@ namespace eval RPN2OGR { } {
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
 \t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
 \t-out         : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET}). 
-\t                  Wildcards : %d date, %t time
+\t                  Wildcards : %n nomvar, %l level, %h level type, %e etiket, %d date, %t time, %1 ip1, %2 ip2, %3 ip3
       
    Information parameters:\n
 \t-help        : This information
@@ -92,12 +92,21 @@ proc RPN2OGR::Run { } {
       foreach datev [fstdfile info FILEIN DATEV] {
 
          set fields {}
-         set date [clock format $datev -format "%Y%m%d" -gmt True]
-         set time [clock format $datev -format "%H%M" -gmt True]
-         Log::Print INFO "   Found date $date $time"
+         set nv      [fstdfield define $field -NOMVAR]
+         set etiket  [fstdfield define $field -ETIKET]
+         set ip1     [fstdfield define $field -IP1]
+         set ip2     [fstdfield define $field -IP2]
+         set ip3     [fstdfield define $field -IP3]
+         set lvl     [fstdfield stats $field -level]
+         set lvltype [fstdfield stats $field -leveltype]
+         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+         set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
+         set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
+          Log::Print INFO "   Found date $date $time"
          
          #----- Create filename 
-         set name [string map [list %d $date %t $time] $Param(Out)]
+         set name [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $Param(Out)]
+      set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $file]
 
          if  { [set nb [llength [glob -nocomplain ${name}*.*]]] } {
             set name $name.[incr nb]
