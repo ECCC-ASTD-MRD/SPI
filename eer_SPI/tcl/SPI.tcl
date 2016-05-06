@@ -830,7 +830,7 @@ proc SPI::LayoutSave { Frame Name } {
    SPI::LayoutSaveItems $Frame $file
 
    #----- Activation du layout
-   puts $file "   Page::UpdateItems \$Frame"
+   puts $file "\n   Page::UpdateItems \$Frame"
    puts $file "}"
    puts $file ""
    puts $file "proc $Param(Layout)::LayoutUpdate { Frame } {"

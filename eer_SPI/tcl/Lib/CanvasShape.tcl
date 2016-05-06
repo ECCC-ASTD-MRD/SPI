@@ -719,12 +719,12 @@ proc CVClock::Write { Frame File } {
    puts $File ""
    puts $File "   #----- Affichage de l'horloge"
      
-   puts $File "set CVClock::Param(Time)  $CVClock::Param(Time)"
-   puts $File "set CVClock::Param(Day)   $CVClock::Param(Day)"
-   puts $File "set CVClock::Param(Date)  $CVClock::Param(Date)"
-   puts $File "set CVClock::Param(Size)  $CVClock::Param(Size)"
-   puts $File "set CVClock::Param(Frame) $CVClock::Param(Frame)"
-   puts $File "set CVClock::Param(Zone)  $CVClock::Param(Zone)"
+   puts $File "   set CVClock::Param(Time)  $CVClock::Param(Time)"
+   puts $File "   set CVClock::Param(Day)   $CVClock::Param(Day)"
+   puts $File "   set CVClock::Param(Date)  $CVClock::Param(Date)"
+   puts $File "   set CVClock::Param(Size)  $CVClock::Param(Size)"
+   puts $File "   set CVClock::Param(Frame) $CVClock::Param(Frame)"
+   puts $File "   set CVClock::Param(Zone)  $CVClock::Param(Zone)"
 
    set c [$Frame.page.canvas coords CVCLOCKLOC]
    puts $File "   CVClock::Create \$Frame [lindex $c 0] [lindex $c 1]"
