@@ -761,6 +761,8 @@ proc SPI::LayoutLoad { Frame Layout } {
    Page::Activate $Frame True
    Page::ModeSelect $Page::Data(Mode) $Frame
 
+   DataBar::Update $Frame
+   
    $Frame.page.canvas config -cursor left_ptr
    . config -cursor left_ptr
    return 1

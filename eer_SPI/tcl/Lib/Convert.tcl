@@ -585,19 +585,23 @@ proc ISO8601::ToSeconds { ISO } {
 
    set iso [string map { T " " } $ISO]
 
-   if { [llength $iso]==2 } {
-      #----- Get rid of decimal seconds
-      if { [string length $iso]>20 } {
-         set iso [string range $iso 0 18][string index $iso end]
-      }
-      return [clock scan $iso -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
-   } else {
-      if { [string first : $iso]!=-1 } {
-         return [clock scan $iso -format "%H:%M:%S%Z" -timezone :UTC]
+   catch {
+      if { [llength $iso]==2 } {
+         #----- Get rid of decimal seconds
+         if { [string length $iso]>20 } {
+            set iso [string range $iso 0 18][string index $iso end]
+         }
+         return [clock scan $iso -format "%Y-%m-%d %H:%M:%S%Z" -timezone :UTC]
       } else {
-         return [clock scan $iso -format "%Y-%m-%d" -timezone :UTC]
+         if { [string first : $iso]!=-1 } {
+            return [clock scan $iso -format "%H:%M:%S%Z" -timezone :UTC]
+         } else {
+            return [clock scan $iso -format "%Y-%m-%d" -timezone :UTC]
+         }
       }
    }
+   
+   return 0
 }
 
 #-------------------------------------------------------------------------------
