@@ -38,6 +38,7 @@ namespace eval RPN2OGR { } {
    set Param(IP1)       -1
    set Param(IP2)       -1
    set Param(IP3)       -1
+   set Param(Zip)       False
    set Param(ProjFile)  ""
    set Param(Intervals) {}
    set Param(Vars)      {}
@@ -59,6 +60,7 @@ namespace eval RPN2OGR { } {
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
 \t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+\t-zip         : zip results into a single file
 \t-out         : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET}). 
 \t                  Wildcards : %n nomvar, %l level, %h level type, %e etiket, %d date, %t time, %1 ip1, %2 ip2, %3 ip3
       
@@ -75,7 +77,8 @@ proc RPN2OGR::Run { } {
    variable Param
 
    set n 0
-
+   set outs {}
+   
    fstdfield ip1mode NEW
    colormap create MAP -file $Param(Map)
 
@@ -92,22 +95,12 @@ proc RPN2OGR::Run { } {
       foreach datev [fstdfile info FILEIN DATEV] {
 
          set fields {}
-         set nv      [fstdfield define $field -NOMVAR]
-         set etiket  [fstdfield define $field -ETIKET]
-         set ip1     [fstdfield define $field -IP1]
-         set ip2     [fstdfield define $field -IP2]
-         set ip3     [fstdfield define $field -IP3]
-         set lvl     [fstdfield stats $field -level]
-         set lvltype [fstdfield stats $field -leveltype]
-         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-         set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
-         set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
-          Log::Print INFO "   Found date $date $time"
+         set date [clock format $datev -format "%Y%m%d" -gmt True]
+         set time [clock format $datev -format "%H%M" -gmt True]
+         Log::Print INFO "   Found date $date $time"
          
          #----- Create filename 
-         set name [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $Param(Out)]
-      set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $file]
-
+         set name [string map [list %d $date %t $time] $Param(Out)]
          if  { [set nb [llength [glob -nocomplain ${name}*.*]]] } {
             set name $name.[incr nb]
          }
@@ -116,8 +109,8 @@ proc RPN2OGR::Run { } {
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
             foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
-               fstdfield read DATA$n FILEIN $field
 
+               fstdfield read DATA$n FILEIN $field
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
                
                if { [llength $Param(Factors)] } {
@@ -154,9 +147,7 @@ proc RPN2OGR::Run { } {
             ogrlayer free LAYER
             eval fstdfield free $fields
 
-            set files [glob $name*]
-            eval exec zip -j -r $name.zip $files
-            eval file delete -force $files
+            set outs [concat $outs [glob $name*]]
          }
       }
       fstdfile close FILEIN
@@ -165,6 +156,14 @@ proc RPN2OGR::Run { } {
    if { $Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" } {
       Export::Vector::Export $Param(Out) $Param(Format) $kmlfields
       eval fstdfield free $kmlfields
+      set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]
+   }
+   
+   if { $Param(Zip) &&  $Param(Format)!="KMZ" } {
+     set name [string map [list %n "" %l "" %h "" %e "" %d "" %t "" %1 "" %2 "" %3 ""] $Param(Out)]
+     Log::Print INFO "Zipping results to $name"
+     eval exec zip -j -r $name.zip $outs
+     eval file delete -force $outs
    }
 }
 
@@ -183,13 +182,14 @@ proc RPN2OGR::ParseCommandLine { } {
    for { set i 0 } { $i < $gargc } { incr i } {
       switch -exact [string trimleft [lindex $gargv $i] "-"] {
          "format"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Format)] }
-         "var"      { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Vars)] }
-         "factor"   { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Factors)] }
+         "var"      { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Vars)] }
+         "factor"   { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Factors)] }
          "map"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Map)] }
          "mode"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Mode) $Export::Vector::Param(Modes)] }
-         "inter"    { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Intervals)] }
-         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2OGR::Param(Files)] }
+         "inter"    { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Intervals)] }
+         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Files)] }
          "prj"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(ProjFile)] }
+         "zip"      { set i [Args::Parse $gargv $gargc $i FLAG  RPN2OGR::Param(Zip)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }
          "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP2)] }

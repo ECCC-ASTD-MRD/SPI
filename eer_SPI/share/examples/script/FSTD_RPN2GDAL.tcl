@@ -176,14 +176,14 @@ proc RPN2GDAL::ParseCommandLine { } {
          "mode"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Mode) $Export::Raster::Param(Modes)] }
          "map"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Map)] }
          "res"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Res)] }
-         "bbox"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(BBox)] }
-         "var"      { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Vars)] }
-         "factor"   { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Factors)] }
-         "inter"    { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Intervals)] }
+         "bbox"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(BBox)] }
+         "var"      { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(Vars)] }
+         "factor"   { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(Factors)] }
+         "inter"    { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(Intervals)] }
          "interp"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Interp)] }
          "min"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Min)] }
          "max"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Max)] }
-         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST RPN2GDAL::Param(Files)] }
+         "fstd"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(Files)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP1)] }
          "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP2)] }
