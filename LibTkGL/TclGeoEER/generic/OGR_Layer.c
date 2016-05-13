@@ -1765,12 +1765,12 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
       } else if (strcmp(Type,"WideStringList")==0) {
          field=OGR_Fld_Create(name,OFTWideStringList);
          if (Width) OGR_Fld_SetWidth(field,Width);
-      } else if (strcmp(Type,"Time")==0) {
-         field=OGR_Fld_Create(name,OFTTime);
-      } else if (strcmp(Type,"Date")==0) {
-         field=OGR_Fld_Create(name,OFTDate);
       } else if (strcmp(Type,"DateTime")==0) {
          field=OGR_Fld_Create(name,OFTDateTime);
+      } else if (strcmp(Type,"Date")==0) {
+         field=OGR_Fld_Create(name,OFTDate);
+      } else if (strcmp(Type,"Time")==0) {
+         field=OGR_Fld_Create(name,OFTTime);
       } else if (strcmp(Type,"Binary")==0) {
          field=OGR_Fld_Create(name,OFTBinary);
       }
@@ -2175,7 +2175,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid) {
 
-   int       i,j,k,n,idx=0,cidx=-1,df,f,nf;
+   int       i,j,k,n,idx=0,cidx=-1,df,f,nf,yyyy,mm,dd,h,m,s;
    double    lat,lon,x,y,spd,dir;
    char      buf[64],*mask=NULL,style[256];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
@@ -2226,42 +2226,61 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
    if (spec->RenderContour) {
 
-      OGR_FieldCreate(Layer,"Interval","Real",32);
-
-      Layer->NFeature=spec->InterNb;
+      // Check for how many features
+      Layer->NFeature=0;
+      for(f=0;f<nf;f++) {
+         spec=field[f]->Spec;
+         strtrim(spec->Desc,' ');
+         Layer->NFeature+=spec->InterNb;
+      }
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
-      
-      for(n=0;n<spec->InterNb;n++) {
-         Layer->Feature[n]=OGR_F_Create(Layer->Def);
-         OGR_F_SetFieldDouble(Layer->Feature[n],0,VAL2SPEC(spec,spec->Inter[n]));
 
-         if (spec->MapAll && spec->Map) {
-            VAL2COL(cidx,spec,spec->Inter[n]);
-            sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
-            OGR_F_SetStyleString(Layer->Feature[n],style);
-         } else if (spec->Outline) {
-            sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
-            OGR_F_SetStyleString(Layer->Feature[n],style);
-         }
+      OGR_FieldCreate(Layer,"Desc","String",32);
+      OGR_FieldCreate(Layer,"Interval","Real",32);
+      OGR_FieldCreate(Layer,"Height","Real",16);
+      OGR_FieldCreate(Layer,"HeightUnit","String",32);
+//TODO:Time does not work with current GDAL      OGR_FieldCreate(Layer,"ValidDate","DateTime",0);
 
-         Data_Clean(field[0],0,0,1);
-         FFContour(Grid?REF_GRID:REF_COOR,field[0]->GPos,field[0]->Def,field[0]->Stat,NULL,1,&spec->Inter[n],3,1);
-         cont=OGR_G_CreateGeometry(wkbMultiLineString);
+      for(f=0;f<nf;f++) {
+         spec=field[f]->Spec;
+         System_StampDecode(((TRPNHeader*)field[0]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
 
-         list=field[0]->Def->Segments;
-         while(list) {
-            array=(T3DArray*)list->Data;
+         for(n=0;n<spec->InterNb;n++) {
+            Layer->Feature[n]=OGR_F_Create(Layer->Def);
+            OGR_F_SetFieldString(Layer->Feature[n],0,spec->Desc);
+            OGR_F_SetFieldDouble(Layer->Feature[n],1,VAL2SPEC(spec,spec->Inter[n]));
+            OGR_F_SetFieldDouble(Layer->Feature[n],2,field[f]->ZRef->Levels[0]);
+            OGR_F_SetFieldString(Layer->Feature[n],3,(char*)ZRef_LevelNames()[field[f]->ZRef->Type]);
+//TODO:Time does not work with current GDAL            OGR_F_SetFieldDateTime(Layer->Feature[n],4,yyyy,mm,dd,h,m,s,100);
 
-            geom=OGR_G_CreateGeometry(wkbLineString);
-            for(k=0;k<array->Size;k++) {
-               Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
-               OGR_G_AddPoint_2D(geom,x,y);
+            if (spec->MapAll && spec->Map) {
+               VAL2COL(cidx,spec,spec->Inter[n]);
+               sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
+               OGR_F_SetStyleString(Layer->Feature[n],style);
+            } else if (spec->Outline) {
+               sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
+               OGR_F_SetStyleString(Layer->Feature[n],style);
             }
-            OGR_G_AddGeometryDirectly(cont,geom);
-            list=list->Next;
+
+            Data_Clean(field[f],0,0,1);
+            FFContour(Grid?REF_GRID:REF_COOR,field[f]->GPos,field[f]->Def,field[f]->Stat,NULL,1,&spec->Inter[n],3,1);
+            cont=OGR_G_CreateGeometry(wkbMultiLineString);
+
+            list=field[f]->Def->Segments;
+            while(list) {
+               array=(T3DArray*)list->Data;
+
+               geom=OGR_G_CreateGeometry(wkbLineString);
+               for(k=0;k<array->Size;k++) {
+                  Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
+                  OGR_G_AddPoint_2D(geom,x,y);
+               }
+               OGR_G_AddGeometryDirectly(cont,geom);
+               list=list->Next;
+            }
+            OGR_F_SetGeometryDirectly(Layer->Feature[n],cont);
+            OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
          }
-         OGR_F_SetGeometryDirectly(Layer->Feature[n],cont);
-         OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
       }
    } else {
       for(f=0;f<nf;f++) {
@@ -3058,7 +3077,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glDisable(GL_COLOR_MATERIAL);
          }
 
-          if (Layer->Space!=3 && Layer->Extrude==-1) {
+         if (Layer->Space!=3 && Layer->Extrude==-1) {
             if (spec->Outline && spec->Width) {
                glEnable(GL_CULL_FACE);
                if (spec->Width<0) {
@@ -3402,6 +3421,9 @@ int QSort_OGR(const void *A,const void *B){
    const char *fas,*fbs;
 
    switch (QSort_Layer->Sort.Type) {
+      case OFTTime:
+      case OFTDate:
+      case OFTDateTime:
       case OFTInteger:
          fai=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)A],QSort_Layer->Sort.Field);
          fbi=OGR_F_GetFieldAsInteger(QSort_Layer->Feature[*(const int*)B],QSort_Layer->Sort.Field);
@@ -3420,9 +3442,6 @@ int QSort_OGR(const void *A,const void *B){
          }
          break;
 
-      case OFTTime:
-      case OFTDate:
-      case OFTDateTime:
       case OFTString:
          fas=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)A],QSort_Layer->Sort.Field);
          fbs=OGR_F_GetFieldAsString(QSort_Layer->Feature[*(const int*)B],QSort_Layer->Sort.Field);
