@@ -2299,8 +2299,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                /*Loop on all streamline points*/
                for (nb=0;nb<b+f-1;nb++) {
                   /*Clip to extent limits*/
-                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
-                     Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1]))) {
+                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][1],Field->Def->CoordLimits[1][1]))) {
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
@@ -2402,7 +2401,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
                   for (n=0;n<array->Size-1;n++) {
                      /*Clip to extent limits*/
-                     if ((ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][1],Field->Def->CoordLimits[0][1]))) {
+                     if ((ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][1],Field->Def->CoordLimits[1][1]))) {
                         if (mode=='G' || mode=='K') {
                            if (!f) {
                               switch(mode) {

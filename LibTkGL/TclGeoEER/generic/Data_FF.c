@@ -1100,7 +1100,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
    unsigned char  side,*buf=NULL;
    T3DArray      *array;
    TList         *list;
-   
+
    // If we asked for geo coordinates and we don't have a geo-reference, do nothing
    if (Mode!=REF_GRID && (!GPos || (Mode==REF_COOR && !GPos->GRef) || GPos->GRef->Grid[0]=='M' || GPos->GRef->Grid[0]=='Y' ))
       return(0);
