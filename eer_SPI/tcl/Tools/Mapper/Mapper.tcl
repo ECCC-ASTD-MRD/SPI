@@ -914,7 +914,7 @@ proc Mapper::AsProject { File } {
    if { [winfo exists .mapper] } {
       puts $File "#----- Tool: Mapper\n"
       puts $File "set Mapper::Param(Dock)   $Param(Dock)"
-      puts $File "set Mapper::Param(Geom)   [winfo geometry .mapper]"
+      puts $File "set Mapper::Param(Geom)   [winfo geometry .mapper]"      
       puts $File "Mapper::Window\n"
 
       if { [winfo exists .mapperparams] } {
@@ -952,6 +952,14 @@ proc Mapper::AsProjectPerPage { File Page { Params True } } {
 
          if { $Params } {
             puts $File "   ogrlayer configure \$layer -dataspec [ogrlayer configure $id -dataspec]"
+            
+            foreach name [array names Mapper::OGR::Select -glob Val$id*] {
+               puts $File "   set Mapper::OGR::Select($name) \"$Mapper::OGR::Select($name)\""
+            }
+            foreach name [array names Mapper::OGR::Select -glob Op$id*] {
+               puts $File "   set Mapper::OGR::Select($name) \"$Mapper::OGR::Select($name)\""
+            }
+            puts $File "   Mapper::OGR::SelectApply $id"
          }
       }
    }

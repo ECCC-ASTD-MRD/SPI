@@ -17,6 +17,7 @@
 
 namespace eval Mapper::OGR { } {
    variable Data
+   variable Select
    
    set Data(Geom) ""
    set Data(Ops)      { dissolve boundary convexhull buffer difference intersection simplify segmentize close flatten }
@@ -971,7 +972,9 @@ proc Mapper::OGR::SelectApply { Object } {
       set Select(String$Object) $select
       ogrlayer define $Object -featureselect $select
       ogrlayer define $Object -featurehighlight {}
-      Mapper::OGR::Table $Object True
+      
+      #----- On project load, window might not be visible yet
+      catch { Mapper::OGR::Table $Object True }
    }
 }
 
