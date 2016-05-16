@@ -41,7 +41,7 @@ puts "   date    : [clock format [fstdstamp toseconds $stamp]]"
 puts "   incr 0.1: [set stamp [fstdstamp incr $stamp 0.1]]"
 puts "   r.date  : [exec r.date $stamp]"
 puts "   date    : [clock format [fstdstamp toseconds $stamp]]"
-exit
+
 puts "\nTesting ip conversion :"
 puts "   ip 12000        : [fstdgrid convip 12000]"
 puts "   ip 176260768    : [fstdgrid convip 176260768]"
