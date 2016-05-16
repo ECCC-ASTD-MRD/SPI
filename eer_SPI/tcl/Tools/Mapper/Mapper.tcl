@@ -930,16 +930,20 @@ proc Mapper::AsProjectPerPage { File Page { Params True } } {
 
    foreach id $Viewport::Data(Data$Page) {
       if { [gdalband is $id] } {
-         set bands {}
-         foreach band { 0 1 2 3 } {
-            if  { $Data(Band$band$id)!="" } {
-               lappend bands [list "" [lindex $Data(Band$band$id) 1] [lindex $Data(Band$band$id) 2] [lindex $Data(Band$band$id) 3] [lindex $Data(Band$band$id) 4]]
-            } else {
-               break
+      
+         if { [lsearch -exact -index 0 $Mapper::DepotWare::TMS::Param(Depots) $id]!=-1 } {
+            puts $File "   set band \[Mapper::DepotWare::TMS::Load $id [gdalband configure $id -texres]\]"
+         } else {
+            set bands {}
+            foreach band { 0 1 2 3 } {
+               if  { $Mapper::GDAL::Data(Bands$band$id)!="" } {
+                  lappend bands [list "" [lindex $Mapper::GDAL::Data(Bands$band$id) 1] [lindex $Mapper::GDAL::Data(Bands$band$id) 2] [lindex $Mapper::GDAL::Data(Bands$band$id) 3] [lindex $Mapper::GDAL::Data(Bands$band$id) 4]]
+               } else {
+                  break
+               }
             }
+            puts $File "   set band \[Mapper::GDAL::Read [gdalfile filename [gdalband define $id -fid]] \{ $bands \}\]"
          }
-         puts $File "   set band \[Mapper::GDAL::Read [gdalfile filename [gdalband define $id -fid]] \{ $bands \}\]"
-
          if { $Params } {
             puts $File "   gdalband configure \$band -dataspec [gdalband configure $id -dataspec]"
          }
