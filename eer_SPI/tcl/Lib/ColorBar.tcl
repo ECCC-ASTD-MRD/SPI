@@ -38,6 +38,7 @@ namespace eval ColorBar {
 
    set Lbl(BarFrame)  { "Cadre" "Frame" }
    set Lbl(BarAlpha)  { "Transparence" "Transparency" }
+   set Lbl(BarSingle) { "Une seule échelle" "Single colorbar" }
    set Lbl(BarSplit)  { "Séparation des intervalles" "Split intervals" }
    set Lbl(BarFactor) { "Afficher les facteurs" "Show factors" }
    set Lbl(BarBorder) { "Bordure des intervalles" "Border intervals" }
@@ -54,6 +55,7 @@ namespace eval ColorBar {
    set Param(Factor) True
    set Param(Border) 0
    set Param(Width)  15
+   set Param(Single) False
    set Param(Side)   right
 }
 
@@ -184,7 +186,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
    if { !$Data(Active$Frame) } {
       return
    }
-
+   
    set tag [ColorBar::Tag $VP $Id]:$VP$No
 
    if { ![info exists Data(List$Frame)] } {
@@ -250,6 +252,8 @@ proc ColorBar::Set { Frame VP No Id Field } {
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarAlpha) $GDefs(Lang)] -variable ColorBar::Data(Alpha$tag) -onvalue 50 -offvalue 100 \
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
+         $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSingle) $GDefs(Lang)] -variable ColorBar::Param(Single) -onvalue True -offvalue False \
+            -command "ColorBar::Update $Frame"
          $Frame.bo$tag.menu add separator
          $Frame.bo$tag.menu add checkbutton -label [lindex $Lbl(BarSplit) $GDefs(Lang)] -variable ColorBar::Data(Split$tag) -onvalue 5 -offvalue 0 \
             -command "ColorBar::SetParams $Frame $VP $No $tag; Page::Update $Frame"
@@ -472,9 +476,11 @@ proc ColorBar::Scale { Canvas Tag X Y } {
 #-------------------------------------------------------------------------------
 
 proc ColorBar::Update { Frame { State -1 } } {
+   variable Param
    variable Data
 
-   set lst ""
+   set lst    ""
+   
    if { ![info exists Data(Active$Frame)] } {
       set Data(Active$Frame) 0
    }
@@ -486,17 +492,24 @@ proc ColorBar::Update { Frame { State -1 } } {
    if { $Data(Active$Frame) } {
       #----- Check for data assigned to viewports
       foreach vp [Page::Registered $Frame Viewport] {
+         set fields ""
          set i -1
          foreach field [lindex [$Frame.page.canvas itemconfigure $vp -data] 4] {
             if { [fstdfield is $field True] } {
                if { [fstdfield configure $field -active] && ([fstdfield configure $field -rendertexture] || [fstdfield configure $field -mapall] || [fstdfield configure $field -rendervector]!="NONE" || [fstdfield configure $field -renderparticle]) } {
                   set id [fstdfield configure $field -dataspec]
-                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
+                  lappend fields $field
+                  if { !$Param(Single) } {
+                     lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
+                  }
                }
             } elseif { [observation is $field] } {
                if { [observation configure $field -rendertexture] || [observation configure $field -rendervector]!="NONE" } {
                   set id [observation configure $field -dataspec]
-                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
+                  lappend fields $field
+                  if { !$Param(Single) } {
+                     lappend lst [ColorBar::Set $Frame $vp [incr i] $id $field]
+                  }
                }
             } elseif { [metobs is $field] } {
                set model [metobs define $field -MODEL]
@@ -509,17 +522,29 @@ proc ColorBar::Update { Frame { State -1 } } {
                   }
                }
                if { [llength $specs] } {
-                  lappend lst [ColorBar::Set $Frame $vp [incr i] $id $specs]
+                  lappend fields $field
+                  if { !$Param(Single) } {
+                     lappend lst [ColorBar::Set $Frame $vp [incr i] $id $specs]
+                  }
                }
             } elseif { [ogrlayer is $field] } {
                if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -mapvar]!="" } {
-                  lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+                  lappend fields $field
+                  if { !$Param(Single) } {
+                     lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+                  }
                }
             } elseif { [gdalband is $field] } {
                if { [gdalband configure $field -colormap]!="" && [gdalband configure $field -showmap] && [gdalband define $field -nb]==1  } {
-                  lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+                  lappend fields $field
+                  if { !$Param(Single) } {
+                     lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
+                  }
                }
             }
+         }
+         if { $Param(Single) && [llength $fields] } {
+            lappend lst [ColorBar::Set $Frame $vp [incr i] 0 $fields]
          }
       }
 
@@ -603,10 +628,20 @@ proc ColorBar::UpdateVP { Frame VP List } {
 #-------------------------------------------------------------------------------
 
 proc ColorBar::Write { Frame File } {
+   variable Param
    variable Data
 
    puts $File "   #-----  Positionnement des ColorBars"
    puts $File ""
+   puts $File "   set ColorBar::Param(Full)   $Param(Full)"
+   puts $File "   set ColorBar::Param(BG)     $Param(BG)"
+   puts $File "   set ColorBar::Param(Alpha)  $Param(Alpha)"
+   puts $File "   set ColorBar::Param(Split)  $Param(Split)"
+   puts $File "   set ColorBar::Param(Factor) $Param(Factor)"
+   puts $File "   set ColorBar::Param(Border) $Param(Border)"
+   puts $File "   set ColorBar::Param(Width)  $Param(Width)"
+   puts $File "   set ColorBar::Param(Single) $Param(Single)"
+   puts $File "   set ColorBar::Param(Side)   $Param(Side)"
    puts $File "   set ColorBar::Data(Active\$Frame) 1"
 
    foreach vp [Page::Registered $Frame Viewport] {
