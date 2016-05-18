@@ -825,7 +825,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                }
                              
                if (Objc==2) {
-                  if (index>3) {
+                  if (index>=3) {
                      obj=Tcl_NewListObj(0,NULL);
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[0]));
                      Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[1]));
@@ -835,7 +835,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Gamma[index]));
                   }
                } else {
-                 if (index>3) {
+                 if (index>=3) {
                      Tcl_GetDoubleFromObj(Interp,Objv[++i],&CMap->Gamma[0]);
                      CMap->Gamma[1]=CMap->Gamma[2]=CMap->Gamma[0];
                   } else {
@@ -1614,8 +1614,10 @@ void CMap_RatioDefine(CMap_Rec *CMap){
          CMap->Color[i][c] = (int)((float)CMap->Table[mmcell][c] * CMap->Ratio[c]/100.0);
 
          /*Appliquer la correction Gamma*/
-         if (c<4) CMap->Color[i][c] = pow(CMap->Color[i][c]/255.0,1.0/CMap->Gamma[c])*255.0;
-         CMap->Color[i][c]=CLAMP(CMap->Color[i][c],0,255);
+         if (c<3 && CMap->Gamma[c]!=1.0) {
+            CMap->Color[i][c] = pow(CMap->Color[i][c]/255.0,1.0/CMap->Gamma[c])*255.0;
+            CMap->Color[i][c]=CLAMP(CMap->Color[i][c],0,255);
+         }
          
          /*Flag de transparence*/
          if (c==3 && CMap->Color[i][c]<255) {
