@@ -146,6 +146,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
       cmap->Ratio[0]=cmap->Ratio[1]=cmap->Ratio[2]=cmap->Ratio[3]=100;
       cmap->Min[0]=cmap->Min[1]=cmap->Min[2]=cmap->Min[3]=0.0;
       cmap->Max[0]=cmap->Max[1]=cmap->Max[2]=255.0;cmap->Max[3]=0.0;
+      cmap->Gamma[0]=cmap->Gamma[1]=cmap->Gamma[2]=1.0;
       cmap->InvertX[0]=cmap->InvertX[1]=cmap->InvertX[2]=cmap->InvertX[3]=0;
       cmap->InvertY[0]=cmap->InvertY[1]=cmap->InvertY[2]=cmap->InvertY[3]=0;
 
@@ -514,8 +515,8 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
    double   val;
 
    static CONST char *channels[] = { "red","green","blue","alpha","rgba",NULL };
-   static CONST char *sopt[] = { "-file","-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-invertx","-inverty","-interp",NULL };
-   enum                opt { FILE,RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,INVERTX,INVERTY,INTERP };
+   static CONST char *sopt[] = { "-file","-RGBAratio","-MMratio","-curve","-curvepoint","-index","-min","-max","-gamma","-invertx","-inverty","-interp",NULL };
+   enum                opt { FILE,RGBARATIO,MMRATIO,CURVE,CURVEPOINT,INDEX,MIN,MAX,GAMMA,INVERTX,INVERTY,INTERP };
 
    if (!CMap) {
       return(TCL_ERROR);
@@ -806,6 +807,44 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                }
             }
             break;
+            
+          case GAMMA:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[2]));
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               ++i;
+               index=-1;
+               if (Tcl_GetIntFromObj(Interp,Objv[i],&index)==TCL_ERROR) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[i],channels,"channel",TCL_EXACT,&index)!=TCL_OK) {
+                     return(TCL_ERROR);
+                  }
+               }
+                             
+               if (Objc==2) {
+                  if (index>3) {
+                     obj=Tcl_NewListObj(0,NULL);
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[0]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[1]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(CMap->Gamma[2]));
+                     Tcl_SetObjResult(Interp,obj);
+                  } else {
+                     Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(CMap->Gamma[index]));
+                  }
+               } else {
+                 if (index>3) {
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&CMap->Gamma[0]);
+                     CMap->Gamma[1]=CMap->Gamma[2]=CMap->Gamma[0];
+                  } else {
+                     Tcl_GetDoubleFromObj(Interp,Objv[++i],&CMap->Gamma[index]);
+                  }
+               }
+            }
+            break;
+
           case INDEX:
             if (Objc!=2 && Objc!=6) {
                Tcl_WrongNumArgs(Interp,2,Objv,"index [red green blue alpha]");
@@ -1574,6 +1613,10 @@ void CMap_RatioDefine(CMap_Rec *CMap){
          /*Appliquer le ratio*/
          CMap->Color[i][c] = (int)((float)CMap->Table[mmcell][c] * CMap->Ratio[c]/100.0);
 
+         /*Appliquer la correction Gamma*/
+         if (c<4) CMap->Color[i][c] = pow(CMap->Color[i][c]/255.0,1.0/CMap->Gamma[c])*255.0;
+         CMap->Color[i][c]=CLAMP(CMap->Color[i][c],0,255);
+         
          /*Flag de transparence*/
          if (c==3 && CMap->Color[i][c]<255) {
             CMap->Alpha=1;

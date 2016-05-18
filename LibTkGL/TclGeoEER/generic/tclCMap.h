@@ -51,7 +51,7 @@ typedef struct CMap_Rec {
    unsigned char Color[CR_MAX][4];
    float         Curve[CR_MAX][4];
    int           NbPixels;
-   double        Min[4],Max[4];
+   double        Min[4],Max[4],Gamma[3];
 } CMap_Rec;
 
 CMap_Rec* CMap_Get(char *Name);
