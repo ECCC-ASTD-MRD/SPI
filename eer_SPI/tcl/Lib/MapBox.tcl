@@ -53,6 +53,7 @@ namespace eval MapBox {
    set Data(Green)    100      ;#Pourcentage de vert dans la palette
    set Data(Blue)     100      ;#Pourcentage de bleue dans la palette
    set Data(Alpha)    100      ;#Pourcentage d'opacite
+   set Data(Gamma)    1.0      ;#Correction Gamma
    set Data(Min)      0        ;#Minimum dans la palette
    set Data(Max)      100      ;#Maximum dans la palette
    set Data(Curve)    LINEAR   ;#Courbe d'etendue des couleurs
@@ -123,6 +124,9 @@ namespace eval MapBox {
    set Bubble(Alpha) { "Ajustement du ratio d'opacité"
                        "Adjust opacity ratio" }
 
+   set Bubble(Gamma) { "Éclaircir ou foncer la palette"
+                       "Lighten or darken colormap" }
+
    set Bubble(Save)  { "Sauvegarder la définition de palette courante"
                        "Save the current colormap definition" }
 
@@ -167,7 +171,7 @@ proc MapBox::Config { args } {
    variable Data
 
    colormap configure $Data(Map) -MMratio $Data(Min) $Data(Max) -curve rgba $Data(Curve) \
-      -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp) -invertx rgba $Data(Invert)
+      -RGBAratio $Data(Red) $Data(Green) $Data(Blue) $Data(Alpha) -interp $Data(Interp) -gamma rgba $Data(Gamma) -invertx rgba $Data(Invert)
    MapBox::Update
 }
 
@@ -509,7 +513,7 @@ proc MapBox::Create { Parent Apply Map args } {
    #----- Creer une fenetre sans frame en bas a gauche du parent
 
    toplevel     .mapbox
-   wm geom      .mapbox =300x350+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm geom      .mapbox =300x370+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
    wm transient .mapbox .
    wm resizable .mapbox 0 0
    wm title     .mapbox "MapBox 3.0"
@@ -594,6 +598,13 @@ proc MapBox::Create { Parent Apply Map args } {
             -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
          pack $fr.alpha.lbl $fr.alpha.ent -side left
          pack $fr.alpha.sc -side left -fill both -expand true
+      frame $fr.gamma
+         label $fr.gamma.lbl -text "Gamma" -width 7 -anchor w
+         label $fr.gamma.ent -width 3 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Gamma) -anchor w
+         scale $fr.gamma.sc -from 0.1 -to 3.0 -resolution 0.1 -variable MapBox::Data(Gamma) -showvalue false \
+            -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -command "MapBox::Config"
+         pack $fr.gamma.lbl $fr.gamma.ent -side left
+         pack $fr.gamma.sc -side left -fill both -expand true
       frame $fr.curve
          label $fr.curve.lbl -text [lindex $Lbl(Curve) $GDefs(Lang)] -width 7 -anchor w
          label $fr.curve.ent -width 11 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable MapBox::Data(Curve) -anchor w
@@ -602,7 +613,7 @@ proc MapBox::Create { Parent Apply Map args } {
             -command { set MapBox::Data(Curve) [lindex $MapBox::Data(Curves) $MapBox::Data(CurveIdx)] ; MapBox::Config }
          pack $fr.curve.lbl $fr.curve.ent -side left
          pack $fr.curve.sc -side left -fill both -expand true
-      pack $fr.interp $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha -fill x -padx 2
+      pack $fr.interp $fr.curve $fr.min $fr.max $fr.red $fr.green $fr.blue $fr.alpha $fr.gamma -fill x -padx 2
    pack .mapbox.fr.params -side top -fill both -padx 5 -pady 5 -ipady 2
 
    Bubble::Create $fr.min   $Bubble(Min)
@@ -611,6 +622,7 @@ proc MapBox::Create { Parent Apply Map args } {
    Bubble::Create $fr.green $Bubble(Green)
    Bubble::Create $fr.blue  $Bubble(Blue)
    Bubble::Create $fr.alpha $Bubble(Alpha)
+   Bubble::Create $fr.gamma $Bubble(Gamma)
    Bubble::Create $fr.curve $Bubble(Curve)
 
    #----- Edition de palette
@@ -896,6 +908,7 @@ proc MapBox::Select { Name { Map "" } } {
       set Data(CurveIdx) [lsearch -exact $Data(Curves) $Data(Curve)]
       set Data(Interp)   [colormap configure $Data(Map) -interp]
       set Data(Invert)   [lindex [colormap configure $Data(Map) -invertx] 0]
+      set Data(Gamma)    1.0
 
       MapBox::Update
    }
