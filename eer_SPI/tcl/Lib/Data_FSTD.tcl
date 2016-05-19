@@ -1108,7 +1108,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 #      if { [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -searchip1 $ip1 -short -units -factor -delta]]] } {
 #         dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
 #      }
-      if { [fstdfield is $Field] && [llength [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -units -factor -delta]]] } {
+      if { [fstdfield is $Field] && [lindex [set info [fstddict varinfo $var -lang $GDefs(Lang) -short -units -factor -delta]] 0]!="" } {
          dataspec configure $Spec -desc [lindex $info 0] -unit [lindex $info 1] -factor [lindex $info 2] -delta [lindex $info 3]
       }
    }
