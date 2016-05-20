@@ -1696,8 +1696,8 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                   if (ik!=ip || jk!=jp) {
                      idx=ik+jk*Field->Def->NI;
                      Def_GetMod(Field->Def,idx,zv);
-                     if (zv==zm &&idx<idxp) idxp=idx;
-                     if (((zv>zm) && high) || ((zv<zm) && !high)) goto nexty;
+//                     if (zv==zm && idx<idxp) idxp=idx;
+                     if (((zv>=zm) && high) || ((zv<=zm) && !high)) goto nexty;
                   }
                }
             }

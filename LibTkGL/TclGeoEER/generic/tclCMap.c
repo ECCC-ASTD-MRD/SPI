@@ -1615,7 +1615,7 @@ void CMap_RatioDefine(CMap_Rec *CMap){
 
          /*Appliquer la correction Gamma*/
          if (c<3 && CMap->Gamma[c]!=1.0) {
-            CMap->Color[i][c] = pow(CMap->Color[i][c]/255.0,1.0/CMap->Gamma[c])*255.0;
+            CMap->Color[i][c]=pow(CMap->Color[i][c]/255.0,1.0/CMap->Gamma[c])*255.0;
             CMap->Color[i][c]=CLAMP(CMap->Color[i][c],0,255);
          }
          

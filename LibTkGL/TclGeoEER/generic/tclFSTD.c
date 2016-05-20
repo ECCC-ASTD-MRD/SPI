@@ -2231,7 +2231,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
          case MIN:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Var->Min);
             } else {
                if (Var->Min!=DICT_NOTSET)
@@ -2241,7 +2241,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
          case MAX:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Var->Max);
             } else {
                if (Var->Max!=DICT_NOTSET)
@@ -2251,7 +2251,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
          case MAGNITUDE:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Var->Magnitude);
             } else {
                if (Var->Magnitude!=DICT_NOTSET)
@@ -2261,7 +2261,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
          case FACTOR:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Var->Factor);
             } else {
                if (Var->Factor!=DICT_NOTSET)
@@ -2271,7 +2271,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
          case DELTA:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&Var->Delta);
             } else {
                if (Var->Delta!=DICT_NOTSET)
@@ -2281,7 +2281,7 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
 
           case ORIGIN:
             n++;
-            if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+            if (i+1<Objc && (Tcl_GetString(Objv[i+1])[0]!='-' || isdigit(Tcl_GetString(Objv[i+1])[1]))) {
                strncpy(Var->Origin,Tcl_GetString(Objv[++i]),32);
             } else {
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(Var->Origin,-1));
