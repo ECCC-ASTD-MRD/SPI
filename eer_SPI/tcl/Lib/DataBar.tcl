@@ -87,6 +87,7 @@ proc DataBar::Active { Frame } {
 #   <Width>  : Largeur du Viewport
 #   <Height> : Hauteur du Viewport
 #   <Title>  : Titre
+#   <Full>   : Make it full width of the viewport
 #
 # Retour     :
 #
@@ -94,7 +95,7 @@ proc DataBar::Active { Frame } {
 #
 #-------------------------------------------------------------------------------
 
-proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
+proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
    variable Data
    variable Param
 
@@ -111,7 +112,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
 
    set Data(Active$Frame) 1
    set Data($VP)          [list $x0 $y0 $x1 $y1]
-   set Data(Full$VP)      $Param(Full)
+   set Data(Full$VP)      [expr $Full!=""?$Full:$Param(Full)]
 
    if { ![info exists Data(List$Frame)] } {
       set Data(List$Frame) {}
@@ -132,6 +133,8 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } } {
    Shape::BindWidget  $Frame.page.canvas DB$VP
 
    Page::MaskItem $Frame
+   
+   return DB$VP
 }
 
 #------------------------------------------------------------------------------
@@ -662,8 +665,7 @@ proc DataBar::Update { Frame { State -1 } } {
             set w [$Frame.page.canvas itemcget $vp -width]
             set h 50
          }
-         DataBar::Create $Frame $vp $x $y $w $h
-         lappend lst DB$vp
+         lappend lst [DataBar::Create $Frame $vp $x $y $w $h]
       }
    }
 
@@ -712,7 +714,7 @@ proc DataBar::UpdateVP { Frame VP } {
             set w [$Frame.page.canvas itemcget $VP -width]
             set h 50
          }
-         DataBar::Create $Frame $VP
+         DataBar::Create $Frame $VP $x $y $w $h
       }
    }
 }

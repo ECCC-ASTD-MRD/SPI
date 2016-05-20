@@ -342,8 +342,8 @@ proc MetStat::RECRCEval { Cmd } {
 
    set var [string toupper [lindex $arg 0]]
 
-   set desc   [string trim [lindex $arg 1]]
-   set unit   [string trim [lindex $arg 2]]
+   set desc   [string trimleft [string trim [lindex $arg 1]] -]
+   set unit   [string trimleft [string trim [lindex $arg 2]] -]
    set factor [expr double(1.0/[lindex $arg 4])]
    set Rec(Level$var)  ""
    set Rec(Inter$var)  ""
