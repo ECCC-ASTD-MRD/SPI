@@ -2115,6 +2115,7 @@ proc SPI::ProjectRead { File { Force False } } {
    }
 
    if { $file=="" } {
+      Dialog::Error . $Error(Project) ":\n\n\t$File"
       return
    }
 

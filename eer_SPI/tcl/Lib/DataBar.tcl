@@ -100,9 +100,15 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
    variable Param
 
    if { $Title!="" } {
-      set Data(Title$Frame) $Title
+      set Data(Title$VP) $Title
    } else {
-      set Data(Title$Frame) $Param(Title)
+      set Data(Title$VP) $Param(Title)
+   }
+
+   if { $Full!="" } {
+      set Data(Full$VP) $Full
+   } else {
+      set Data(Full$VP) $Param(Full)
    }
 
    set x0  $X0
@@ -111,8 +117,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
    set y1  [expr $Y0+$Height]
 
    set Data(Active$Frame) 1
-   set Data($VP)          [list $x0 $y0 $x1 $y1]
-   set Data(Full$VP)      [expr $Full!=""?$Full:$Param(Full)]
+   set Data($VP)          [list $x0 $y0 $x1 $y1 $Data(Title$VP) $Data(Full$VP)]
 
    if { ![info exists Data(List$Frame)] } {
       set Data(List$Frame) {}
@@ -157,9 +162,10 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
 proc DataBar::SetTitle { Frame VP Title } {
    variable Data
 
-   set Data(Title$Frame) $Title
+   set Data(Title$VP) $Title
+   lset Data($VP) 3 $Data(Title$VP)
 
-   $Frame.page.canvas itemconfigure TXTDB$VP -text $Data(Title$Frame)
+   $Frame.page.canvas itemconfigure TXTDB$VP -text $Data(Title$VP)
 }
 
 #------------------------------------------------------------------------------
@@ -182,13 +188,21 @@ proc DataBar::SetTitle { Frame VP Title } {
 #
 #-------------------------------------------------------------------------------
 
-proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
+proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 { Title "" } { Full "" } } {
    global GDefs
    variable Param
    variable Data
 
+   if { $Title!="" } {
+      set Data(Title$VP) $Title
+   }
+
+   if { $Full!="" } {
+      set Data(Full$VP) $Full
+   }
+   
    if { [llength [$Frame.page.canvas find withtag TXTDB$VP]] } {
-      set Data(Title$Frame) [$Frame.page.canvas itemcget TXTDB$VP -text]
+      set Data(Title$VP) [$Frame.page.canvas itemcget TXTDB$VP -text]
    }
 
    $Frame.page.canvas delete DB$VP
@@ -201,7 +215,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 } {
 
    $Frame.page.canvas create line [expr $X0+20] [expr $Y0+20] [expr $X0+20] $Y1 -tags "PAGE DB$VP" -fill #CCCCCC
    $Frame.page.canvas create image [expr $X0+2] [expr $Y0+2] -image DATABARLOGO -anchor nw -tags "PAGE DB$VP"
-   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$Frame) -anchor nw -font XFont16 -tags "PAGE DB$VP TXTDB$VP CVTEXT"
+   $Frame.page.canvas create text [expr $X0+50] [expr $Y0+1] -text $Data(Title$VP) -anchor nw -font XFont16 -tags "PAGE DB$VP TXTDB$VP CVTEXT"
 
    set h [font metrics $Param(Font) -linespace]
    set y [expr $Y0+21]
@@ -552,8 +566,8 @@ proc DataBar::Full { Frame Tag VP { Pix 0 } } {
       set yc [expr $yc-$Pix]
    }
 
-   set Data($VP) [list $xv $yc [expr $xv+$wv] [expr $yc+$hc]]
-   eval DataBar::Draw $Frame $VP $Data($VP)
+   set Data($VP) [list $xv $yc [expr $xv+$wv] [expr $yc+$hc] $Data(Title$VP) $Data(Full$VP)]
+   DataBar::Draw $Frame $VP $xv $yc [expr $xv+$wv] [expr $yc+$hc]
 
    return [list [expr $xv+$wv] [expr $yc+$hc]]
 }
@@ -579,7 +593,7 @@ proc DataBar::Move { Frame VP Tag } {
    variable Data
 
    set Data(Full$VP) False
-   set Data($VP) [$Frame.page.canvas coords FR$Tag]
+   set Data($VP) [concat [$Frame.page.canvas coords FR$Tag] $Data(Title$VP) $Data(Full$VP)]
 }
 
 #------------------------------------------------------------------------------
@@ -613,10 +627,10 @@ proc DataBar::Scale { Frame VP Tag X Y } {
       set dx [expr (double($X)-$x0)/(double($x1)-$x0)]
       set dy [expr (double($Y)-$y0)/(double($y1)-$y0)]
 
-      $Frame.page.canvas scale $Tag $x0 $y0 $dx $dy
-      set Data($VP) [$Frame.page.canvas coords FR$Tag]
       set Data(Full$VP) False
-      eval DataBar::Draw $Frame $VP $Data($VP)
+      $Frame.page.canvas scale $Tag $x0 $y0 $dx $dy
+      set Data($VP) [concat [$Frame.page.canvas coords FR$Tag] $Data(Title$VP) $Data(Full$VP)]
+      eval DataBar::Draw $Frame $VP [$Frame.page.canvas coords FR$Tag]
       return True
    } else {
       return False
@@ -641,6 +655,7 @@ proc DataBar::Scale { Frame VP Tag X Y } {
 
 proc DataBar::Update { Frame { State -1 } } {
    variable Data
+   variable Param
 
    set lst ""
 
@@ -659,13 +674,17 @@ proc DataBar::Update { Frame { State -1 } } {
             set y [lindex $Data($vp) 1]
             set w  [expr [lindex $Data($vp) 2]-[lindex $Data($vp) 0]]
             set h  [expr [lindex $Data($vp) 3]-[lindex $Data($vp) 1]]
+            set t  [lindex $Data($vp) 4]
+            set f  [lindex $Data($vp) 5]
          } else {
             set x [$Frame.page.canvas itemcget $vp -x]
             set y [$Frame.page.canvas itemcget $vp -y]
             set w [$Frame.page.canvas itemcget $vp -width]
             set h 50
+            set t $Param(Title)
+            set f $Param(Full)
          }
-         lappend lst [DataBar::Create $Frame $vp $x $y $w $h]
+         lappend lst [DataBar::Create $Frame $vp $x $y $w $h $t $f]
       }
    }
 
@@ -744,7 +763,7 @@ proc DataBar::Write { Frame File } {
 
    foreach vp [Page::Registered $Frame Viewport] {
       if { [info exists DataBar::Data($vp)] } {
-         puts $File "   set DataBar::Data(\$$Viewport::Data(Alias$vp)) \[list $DataBar::Data($vp)\]"
+         puts $File "   set DataBar::Data(\$$Viewport::Data(Alias$vp)) \[list [lindex $DataBar::Data($vp) 0] [lindex $DataBar::Data($vp) 1] [lindex $DataBar::Data($vp) 2] [lindex $DataBar::Data($vp) 3] \"[lindex $DataBar::Data($vp) 4]\" [lindex $DataBar::Data($vp) 5]\]"
       }
    }
    puts $File ""
