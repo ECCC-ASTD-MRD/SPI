@@ -691,7 +691,7 @@ proc Viewport::ConfigSet { Frame } {
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
       -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
-      -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] $Map(ZAxisZ)
+      -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] [lindex $Map(ZAxisZ) 0]
 
    set ll       [projection configure $Frame -location]
    set Map(Lat) [lindex $ll 0]
@@ -1884,6 +1884,7 @@ proc Viewport::ParamFrame { Frame Apply } {
       pack $Data(Frame).left.axis.on -side left -padx 2 -pady 2
       pack $Data(Frame).left.axis.z -side left -fill x -expand true -padx 2 -pady 2
       pack $Data(Frame).left.axis.pick -side left -padx 2 -pady 2
+      bind $Data(Frame).left.axis.z <Any-KeyRelease> "$Apply configure -state normal"
 
    labelframe $Data(Frame).left.scale -text "Elevation"
       scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 200 \
