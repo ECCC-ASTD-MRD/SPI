@@ -1126,7 +1126,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
 
       i=i0;j=j0;
       ci=1;cj=0;
-      side=0xF^FF_BOTTOM;
+      side=FF_BOTTOM;
 
       // As long as we did not check all gridpoint (Worse case)
       while(1) {
@@ -1159,10 +1159,10 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
             }
          }
          // We loop on the gridpoints by going around the grid limits in smaller and smaller square
-         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=0xF^FF_RIGHT; }  // Check lower right corner 
-         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=0xF^FF_TOP; }    // Check upper right corner 
-         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=0xF^FF_LEFT; }   // Check upper left corner
-         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=0xF^FF_BOTTOM; } // Check lower left corner
+         if (i==i1 && ci>0) { ci=0;  cj=1;  i1--; side=FF_RIGHT; }  // Check lower right corner 
+         if (j==j1 && cj>0) { ci=-1; cj=0;  j1--; side=FF_TOP; }    // Check upper right corner 
+         if (i==i0 && ci<0) { ci=0;  cj=-1; i0++; side=FF_LEFT; }   // Check upper left corner
+         if (j==j0 && cj<0) { ci=1;  cj=0;  j0++; side=FF_BOTTOM; } // Check lower left corner
 
          i+=ci;
          j+=cj;
@@ -1197,28 +1197,94 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
+static inline unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
 
-   unsigned char out=FF_NONE;
-
-   if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
-      *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
-      out=FF_TOP;
-   } else if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
-      *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
-      out=FF_RIGHT;
-   } else if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
-      *X+=Depth;
-      *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
-      out=FF_LEFT;
-   } else if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
-      *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
-      *Y+=Depth;
-      out=FF_BOTTOM;
+   unsigned char aside[4]={ FF_BOTTOM, FF_RIGHT, FF_TOP, FF_LEFT };
+   unsigned char s,t,out=FF_NONE;
+   
+   s=Side==FF_LEFT?3:Side>>1;
+   t=0;
+   
+   while(t++<3) {
+      switch(aside[(s+t)%4]) {
+         case FF_BOTTOM: 
+            if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
+               *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
+               out=FF_TOP;
+            }
+            break;
+         case FF_LEFT: 
+            if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
+               *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
+               out=FF_RIGHT;
+            }
+            break;
+         case FF_RIGHT: 
+            if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
+               *X+=Depth;
+               *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
+                out=FF_LEFT;
+            }
+            break;
+         case FF_TOP: 
+            if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
+               *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
+               *Y+=Depth;
+               out=FF_BOTTOM;
+            }
+            break;
+      }
+      if (out!=FF_NONE) break;
    }
-
+   
    return(out);
 }
+
+// static inline unsigned char FFContour_QuadCross(double Depth,unsigned char Side,unsigned char Mtx,double *Quad,double Inter,double *X,double *Y) {
+// 
+//    unsigned char aside[4]={ FF_BOTTOM, FF_RIGHT, FF_TOP, FF_LEFT };
+//    unsigned char s,t,out=FF_NONE;
+//    double dx=*X-floor(*X);
+//    double dy=*Y-floor(*Y);
+//    double dd=1.0-Depth;
+//    
+//    s=Side==FF_LEFT?3:Side>>1;
+//    t=0;
+//    
+//    while(t++<3) {
+//       switch(aside[(s+t)%4]) {
+//          case FF_BOTTOM: 
+//             if ((dy>0.0 || !(Mtx&FF_BOTTOM)) && !(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
+//                *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
+//                out=FF_TOP;
+//             }
+//             break;
+//          case FF_LEFT: 
+//             if ((dx>0.0 || !(Mtx&FF_LEFT)) && !(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
+//                *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
+//                out=FF_RIGHT;
+//             }
+//             break;
+//          case FF_RIGHT: 
+//             if ((dx<dd || !(Mtx&FF_RIGHT)) && !(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
+//                *X+=Depth;
+//                *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
+//                 out=FF_LEFT;
+//             }
+//             break;
+//          case FF_TOP: 
+//             if ((dy<dd || !(Mtx&FF_TOP)) && !(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
+//                *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
+//                *Y+=Depth;
+//                out=FF_BOTTOM;
+//             }
+//             break;
+//       }
+//       if (out!=FF_NONE) break;
+//    }
+//    
+//    return(out);
+// }
 
 /*----------------------------------------------------------------------------
  * Nom      : <FFContour_QuadIndex>
@@ -1239,73 +1305,51 @@ static unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double 
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,int *X,int *Y,unsigned int *N) {
+static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,unsigned char *Mtx,int *X,int *Y,unsigned int *N) {
 
    unsigned char m;
 
    *N=0;
-
    m=(Index&0xF);
    Index>>=4;
+   
    if (m&0x1) {
-      if (Side&FF_BOTTOM) {
-         Index=(Index<<4)|0x8;
-      } else if (Side&FF_LEFT) {
-         Index=(Index<<4)|0x2;
-      } else if (Side&FF_TOP) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x8;
-      } else if (Side&FF_RIGHT) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x2;
+      switch(Side) {
+         case FF_BOTTOM:                                                  Index=(Index<<4)|0x8; break;
+         case FF_LEFT:                                                    Index=(Index<<4)|0x2; break;
+         case FF_TOP:    Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x8; break;
+         case FF_RIGHT:  Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x2; break; 
       }
    } else if (m&0x2) {
-      if (Side&FF_BOTTOM) {
-         Index=(Index<<4)|0x4;
-      } else if (Side&FF_LEFT) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x1;
-      } else if (Side&FF_TOP) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x4;
-      } else if (Side&FF_RIGHT) {
-         Index=(Index<<4)|0x1;
+      switch(Side) {
+         case FF_BOTTOM:                                                  Index=(Index<<4)|0x4; break;
+         case FF_LEFT:   Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x1; break;
+         case FF_TOP:    Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x4; break;
+         case FF_RIGHT:                                                   Index=(Index<<4)|0x1; break;
       }
    } else if (m&0x4) {
-      if (Side&FF_BOTTOM) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x2;
-      } else if (Side&FF_LEFT) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x8;
-      } else if (Side&FF_TOP) {
-         Index=(Index<<4)|0x2;
-      } else if (Side&FF_RIGHT) {
-         Index=(Index<<4)|0x8;
+      switch(Side) {
+         case FF_BOTTOM: Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x2; break;
+         case FF_LEFT:   Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x8; break;
+         case FF_TOP:                                                     Index=(Index<<4)|0x2; break;
+         case FF_RIGHT:                                                   Index=(Index<<4)|0x8; break;
       }
    } else if (m&0x8) {
-      if (Side&FF_BOTTOM) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x1;
-      } else if (Side&FF_LEFT) {
-         Index=(Index<<4)|0x4;
-      } else if (Side&FF_TOP) {
-         Index=(Index<<4)|0x1;
-      } else if (Side&FF_RIGHT) {
-         Index=FFContour_QuadIndex(Index,Side,X,Y,N);
-         Index=(Index<<4)|0x4;
+      switch(Side) {
+         case FF_BOTTOM: Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x1; break;
+         case FF_LEFT:                                                    Index=(Index<<4)|0x4; break;
+         case FF_TOP:                                                     Index=(Index<<4)|0x1; break;
+         case FF_RIGHT:  Index=FFContour_QuadIndex(Index,Side,Mtx,X,Y,N); Index=(Index<<4)|0x4; break;
       }
    } else {
+      // Exit from grid cell
       *N=1;
-      if (Side&FF_BOTTOM) {
-         (*Y)++;
-      } else if (Side&FF_LEFT) {
-         (*X)++;
-      } else if  (Side&FF_TOP) {
-         (*Y)--;
-      } else if (Side&FF_RIGHT) {
-         (*X)--;
-      }
+      switch(Side) {
+         case FF_BOTTOM: *Mtx|=FF_TOP;    (*Y)++; break;
+         case FF_LEFT:   *Mtx|=FF_RIGHT;  (*X)++; break;
+         case FF_TOP:    *Mtx|=FF_BOTTOM; (*Y)--; break;
+         case FF_RIGHT:  *Mtx|=FF_LEFT;   (*X)--; break;
+      }  
    }
 
    return(Index);
@@ -1331,7 +1375,7 @@ static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,in
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int Y,double CX,double CY) {
+static inline unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int Y,double CX,double CY) {
 
    unsigned int index,md;
    double       d,dx,dy;
@@ -1385,17 +1429,17 @@ static unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,int X,int
  *
  *   Le deplacement se fait par un index d'une profondeur maximale de 8 pour que la valeur puisse
  *   etre represente dans entier (8*4=32 bit), cependant une profondeur de 4 est amplement suffisante;
- *   PMatrix    Permet de savoir si un voxel a deja ete visite
+ *   PMatrix    Permet de savoir si un voxel a deja ete visite et par quel coté
  *
  *----------------------------------------------------------------------------
  */
 unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X,int Y,int Z,double Inter,int Mode,unsigned char Side,int Depth,int Limit) {
 
-   double        vox[4],pvox[4],mid=0,x,y,d;
+   double        vox[4],pvox[4]={0.0,0.0,0.0,0.0},mid=0,x,y,d;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;
    int           px,py;
    unsigned char side=0;
-   unsigned long idx,pidx[4],dz;
+   unsigned long idx=0,pidx[4],dz;
    Vect3d        *vbuf;
 
    // Check for grid insidness
@@ -1498,7 +1542,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
             n++;
          }
          // Move the index to the nearby voxel
-         index=FFContour_QuadIndex(index,side,&X,&Y,&next);
+         index=FFContour_QuadIndex(index,side,&PMatrix[idx],&X,&Y,&next);
       } else {
          break;
       }
