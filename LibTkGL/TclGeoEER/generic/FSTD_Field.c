@@ -2763,6 +2763,11 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    Data_Clean(Field,1,1,1);
    Data_GetStat(Field);
 
+   if (Field->GRef->Grid[0]=='U') {
+      FSTD_FieldSubBuild(Field);
+   }
+//   FSTD_FieldSubSelect(Field,k2);
+   
    return(1);
 }
 

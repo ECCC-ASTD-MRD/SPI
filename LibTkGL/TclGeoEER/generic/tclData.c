@@ -2877,7 +2877,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 */
 int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]) {
 
-   Tcl_Obj *obj,*sub;
+   Tcl_Obj *obj=NULL,*sub=NULL;
    int      f,nt,n=0,ni,nj,nc,vnb=0,vn0,vn1,nid,pnid;
    double   v,dlat,dlon=0.0,dlat0,dlat1,dlon0,dlon1,tot=0.0,i0,j0,i1,j1;
    Vect3d   vp,*vn=NULL;
