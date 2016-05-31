@@ -2320,7 +2320,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution]");
                return(TCL_ERROR);
             }
-            len=3;
+            len=1;
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
@@ -2371,7 +2371,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [GML|KML]");
                return(TCL_ERROR);
             }
-            len=3;
+            len=1;
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
