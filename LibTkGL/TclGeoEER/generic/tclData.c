@@ -2864,7 +2864,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
  *  <Field>    : Pointeur sur le champs
- *  <Mode>     : Type d'extraction (0:Average,1:Somme,1:Minimum,2:Maximum,4:Points de grilles,5:Values)
+ *  <Mode>     : Type d'extraction (0:Average,1:Somme,2:Minimum,3:Maximum,4:Points de grilles,5:Values)
  *  <Objc>     : Nombre d'arguments
  *  <Objv>     : Liste des arguments
  *
@@ -2967,7 +2967,6 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
             j1=j1>vn[n][1]?j1:vn[n][1];
          }
       }
-
 
       if (Field->GRef->Grid[0]!='V') {
 

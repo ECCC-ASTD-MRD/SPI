@@ -2488,6 +2488,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (Key<0) {
             Tcl_AppendResult(Interp,"FSTD_FieldRead: Projection description field does not exist (c_fstinf failed)",(char*)NULL);
          } else {
+            c_fst_data_length(1);
             if ((proj=(char*)malloc(pni*pnj*4))) {
                cs_fstluk(proj,Key,&pni,&pnj,&nk);
             }
