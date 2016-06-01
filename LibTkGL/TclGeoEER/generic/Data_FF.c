@@ -1478,6 +1478,9 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          // If it's the first point, get it's voxel instersection to start with
          if (!side) {
             x=X;y=Y;
+            
+            // Rotate left to check for right entry point on initial cell
+            Side=Side==FF_BOTTOM?FF_LEFT:Side<<1;
             if (!(side=FFContour_QuadCross(1.0,Side,pvox,Inter,&x,&y))) {
                break;
             }
@@ -1550,15 +1553,15 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          break;
       }
 
-      // Check grid limits
+      // Check grid limits (In projection mode check for > instead of >= to avoid interpolation overflow)
       pidx[0]=X<Def->Limits[0][0];
       pidx[1]=Y<Def->Limits[1][0];
-      pidx[2]=X>=Def->Limits[0][1];
-      pidx[3]=Y>=Def->Limits[1][1];
+      pidx[2]=Mode==REF_PROJ?X>=Def->Limits[0][1]:X>Def->Limits[0][1];
+      pidx[3]=Mode==REF_PROJ?Y>=Def->Limits[1][1]:Y>Def->Limits[1][1];
 
       // If we're out of grid, contour around the grid limits
       if (pidx[0] || pidx[1] || pidx[2] || pidx[3]) {
-
+         
          // If we have to close with the grid limits, check for grid limits to close polygon
          if (Limit && n>2) {
 
