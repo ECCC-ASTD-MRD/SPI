@@ -1384,7 +1384,7 @@ end:
 */
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
     int     i,j,ni,nj,n,*iptr,status=TCL_OK;
-    char    buf[sizeof(i)*3+1];
+    char    buf[sizeof(i)*3+4]; // Since log10(2^8)=2.41, any binary number of x bytes can be represented with 3x decimal characters. +4 is for the "[,]" and the null characters
     SEXP    rvar,rdim,rdimnames,rrownames,rcolnames,rclass;
 
     char    typebuf[19]; // The longest name we support is "unsigned long long"
@@ -1434,26 +1434,26 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     // Allocate the rest of the R memory
     R_PROTECT( rdim=allocVector(INTSXP,2) );
     R_PROTECT( rdimnames=allocVector(VECSXP,2) );
-    R_PROTECT( rcolnames=allocVector(STRSXP,ni) );
-    R_PROTECT( rrownames=allocVector(STRSXP,nj) );
+    R_PROTECT( rrownames=allocVector(STRSXP,ni) );
+    R_PROTECT( rcolnames=allocVector(STRSXP,nj) );
     R_PROTECT( rclass=allocVector(STRSXP,1) );
 
     // Dimensions (nrow,ncol)
     iptr = INTEGER(rdim);
-    *iptr++ = nj;
-    *iptr = ni;
+    *iptr++ = ni;
+    *iptr = nj;
 
     // Row names
-    for(j=0;j<nj;++j) {
-        sprintf(buf,"[%i,]",j+1);
-        SET_STRING_ELT(rrownames,j,Rf_mkChar(buf));
+    for(i=0;i<ni;++i) {
+        sprintf(buf,"[%d,]",i+1);
+        SET_STRING_ELT(rrownames,i,Rf_mkChar(buf));
     }
     SET_VECTOR_ELT(rdimnames,0,rrownames);
 
     // Column names
-    for(i=0;i<ni;++i) {
-        sprintf(buf,"[,%i]",i+1);
-        SET_STRING_ELT(rcolnames,i,Rf_mkChar(buf));
+    for(j=0;j<nj;++j) {
+        sprintf(buf,"[,%d]",j+1);
+        SET_STRING_ELT(rcolnames,j,Rf_mkChar(buf));
     }
     SET_VECTOR_ELT(rdimnames,1,rcolnames);
 
@@ -1815,12 +1815,13 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
             break;
         case FSTD2R:
             // Make sure we have a field ID and the name of the resulting R variable
-            if( Objc != 4 ) {
-                Tcl_WrongNumArgs(Interp,2,Objv,"fieldID rname");
+            if( Objc!=3 && Objc!=4 ) {
+                Tcl_WrongNumArgs(Interp,2,Objv,"fieldID ?rname?");
                 status = TCL_ERROR;
                 break;
             }
-            TCL_ASRT( TclR_FSTD2R(Interp,context,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])) );
+            str = Tcl_GetString(Objv[2]);
+            TCL_ASRT( TclR_FSTD2R(Interp,context,str,Objc==4?Tcl_GetString(Objv[3]):str) );
             break;
         case WAIT_ON_DEVICES:
             TCL_ASRT( TclR_RExec(Interp,context,"while( length(dev.list()) > 0 ) { Sys.sleep(0.25) }",0) );
