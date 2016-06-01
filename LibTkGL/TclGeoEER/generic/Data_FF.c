@@ -1482,6 +1482,9 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
                break;
             }
             index=FFContour_BuildIndex(Depth,&side,X,Y,x,y);
+            
+            // Mask entry point
+            PMatrix[idx]|=side;
 
             if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
