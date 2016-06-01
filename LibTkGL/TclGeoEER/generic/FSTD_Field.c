@@ -1772,16 +1772,14 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             obj=NULL;
 
             if (Objc>1) {
-               Tcl_GetIntFromObj(Interp,Objv[++i],&nidx);
-
-               if (strcmp(Objv[i]->typePtr->name,"bytearray")==0) {
+               i++;
+               if (Tcl_GetIntFromObj(Interp,Objv[i],&nidx)==TCL_OK) {
+                  if (Objc>2) {
+                     obj=Objv[++i];
+                  }
+               } else {
                   obj=Objv[i];
-                  nidx=-1;
                }
-            }
-
-            if (Objc>2) {
-               obj=Objv[++i];
             }
 
             if (obj) {

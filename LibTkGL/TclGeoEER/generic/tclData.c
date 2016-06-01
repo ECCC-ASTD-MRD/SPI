@@ -3174,11 +3174,11 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
  *
  * But      : Inserer une liste de valeur dans un champs.
  *
- * Parametres :
- *  <Interp>  : Interpreteur TCL
- *  <Data>    : Pointeur sur les donnees du champs
+ * Parametres  :
+ *  <Interp>   : Interpreteur TCL
+ *  <Field>    : Pointeur sur les donnees du champs
  *  <Component>: Composante
- *  <List>    : Matrice de valeurs
+ *  <Data>     : Matrice de valeurs (Liste ou binaire)
  *
  * Retour:
  *  <TCL_...> : Code d'erreur de TCL.
@@ -3189,7 +3189,7 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
  *
  *----------------------------------------------------------------------------
 */
-int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *List){
+int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Data){
 
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
@@ -3200,18 +3200,19 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Lis
       Tcl_AppendResult(Interp,"Data_ValPutMatrix: Invalid component index",(char*)NULL);
       return(TCL_ERROR);
    }
-
-   if (Component<0) {
-      data=Tcl_GetByteArrayFromObj(List,&nobjj);
-      memcpy(Field->Def->Data[0],data,nobjj);
+   if (Component<0) Component=0;
+   
+   if (strcmp(Data->typePtr->name,"bytearray")==0) {
+      data=Tcl_GetByteArrayFromObj(Data,&nobjj);
+      memcpy(Field->Def->Data[Component],data,nobjj);
    } else {
       // Extraire les nj lignes de donnees de la liste bidimensionnelle
-      Tcl_ListObjLength(Interp,List,&nobjj);
+      Tcl_ListObjLength(Interp,Data,&nobjj);
 
       for (j=0;j<nobjj;j++){
 
          // Extraire les ni points de la nj ieme ligne
-         Tcl_ListObjIndex(Interp,List,j,&objj);
+         Tcl_ListObjIndex(Interp,Data,j,&objj);
          Tcl_ListObjLength(Interp,objj,&nobji);
 
          // Assigner les valeurs ni de la nj ieme ligne
