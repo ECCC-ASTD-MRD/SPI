@@ -1541,7 +1541,12 @@ proc SPI::IcoDraw { Frame args } {
 
                   #----- Affichage de l'icone
                   if { $Param(IconImage) } {
-                     $Frame.page.canvas create image $x $y -image $ico -tags "$group $tag"
+                     if { [string is integer $ico] } {
+                        set di [expr $ico*0.5]
+                        $Frame.page.canvas create oval [expr $x-$di]  [expr $y-$di]  [expr $x+$di]  [expr $y+$di] -tags "$group $tag" -fill $col
+                     } else {
+                        $Frame.page.canvas create image $x $y -image $ico -tags "$group $tag"
+                     }
                   }
 
                   if { $Param(IconCircle) } {
@@ -1610,11 +1615,18 @@ proc SPI::IcoOpen { Files } {
 
       regsub -all "\[^a-zA-Z0-9\]"  $group _ group
 
-      #----- Si on n'as pas de couleur, on est en presence d'une image plutot que d'un gif
-      if { $group ni [image names] } {
-         eval image create photo $group -file $icon
+      #----- Si l'icone n'est pa un rayon en pixels
+      if { ![string is integer $icon] } {      
+         if { [file readable $icon] } {
+            if { $group ni [image names] } {
+               eval image create photo $group -file $icon
+            }
+            set icon $group
+         } else {
+            Log::Print ERROR "Unable to read icon image file $icon"
+            set icon 5
+         }
       }
-      set icon $group
 
       #----- Lire la liste d'icones
       set ico ""
