@@ -63,7 +63,6 @@ proc extract { Field File } {
 
 #----- Composante UU du vent en metre/s
 fstdfield vector { UU VV }
-
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" "UU"
 vexpr FLDUU FLD\[0\]*.5144
 extract FLDUU DataOut/UU.0.dat
