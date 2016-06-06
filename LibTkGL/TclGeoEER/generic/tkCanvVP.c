@@ -601,7 +601,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             pt1[0]=pt0[0]-=vp->x;
             pt1[1]=pt0[1]-=vp->y;
 
-            if (Objc==6) {
+            if (Objc>=6) {
                Tcl_GetDoubleFromObj(Interp,Objv[4],&pt1[0]);
                Tcl_GetDoubleFromObj(Interp,Objv[5],&pt1[1]);
                pt1[0]-=vp->x;
