@@ -1527,6 +1527,11 @@ proc SPI::IcoDraw { Frame args } {
             set lon    [lindex $coords 1]
             set elev   [lindex $coords 2]
 
+            #----- Icon might be disabled if no image
+            if { $ico=="" } {
+               continue
+            }
+            
             foreach vp [Page::Registered $Frame Viewport] {
 
               if { [llength $coords]>=4 } {
