@@ -136,8 +136,7 @@ ogrlayer copy LAYER1 LAYER0
 ogrlayer write LAYER1 RESULT
 ogrfile close RESULT
 
-ogrlayer free LAYER0
-ogrlayer free LAYERRESULT
+ogrlayer free LAYER0 LAYERRESULT
 ogrfile close FILE0
 
 Log::End

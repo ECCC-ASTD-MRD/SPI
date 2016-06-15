@@ -385,6 +385,7 @@ proc Log::Start { Job Version { Input "" } } {
    Log::Print MUST "-------------------------------------------------------------------------------"
    Log::Print MUST "App/Script          : $Job"
    Log::Print MUST "Version             : $Version"
+   catch { Log::Print MUST "SPI library         : [package version TclGeoEER]" }
    Log::Print MUST "Hostname            : [system info -name]"
    Log::Print MUST "Architecture        : [expr {[info exists env(ORDENV_PLAT)] ? $env(ORDENV_PLAT) : [exec uname -s -m]}]"
    Log::Print MUST "Run ID              : $Param(JobId)"
