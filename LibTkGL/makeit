@@ -5,10 +5,14 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.11.0"
+VERSION="7.11.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
-SSM_NAME=${NAME}_${VERSION}_${ORDENV_PLAT}
+if [[ -n $COMP_ARCH ]]; then
+   COMP=-${COMP_ARCH}
+fi
+
+SSM_NAME=${NAME}_${VERSION}${COMP}_${ORDENV_PLAT}
 
 SPI=0
 EXT=0
@@ -61,7 +65,7 @@ ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #-----
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.1_${ORDENV_PLAT}                #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.1${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -72,6 +76,11 @@ if [[ $PROC == "x86_64" ]]; then
    export CXXFLAGS=-m64
 else
    x64=no
+fi
+
+if [[ -n $INTELCOMP_HOME ]]; then
+   export CC=icc
+   export CXX=icpc
 fi
 
 if [[ $ARCH == "AIX" ]]; then
@@ -91,21 +100,21 @@ if [[ $EXT -eq 1 ]]; then
 
    printf -- "\n----- Making external dependencies -----\n"
 
-   #----- Package to be compiled
-   TCL_VERSION=8.6.3
-   TCLLIB=1.16
-   TKIMG=tkimg1.4
+   #----- Package to be compiled / installed
+   TCL_VERSION=8.6.5
+   TCLLIB=1.18
+   TKIMG=tkimg1.4.6
    TKTABLE=Tktable2.10
-   TKDND=tkdnd2.7
+   TKDND=tkdnd2.8
 
    FLT=fltlib-1.0.0
    XML=libxml2-2.9.2
    TDOM=tdom-master
-   EXPAT=expat-2.0.1
-   CURL=curl-7.47.1
+   EXPAT=expat-2.1.1
+   CURL=curl-7.49.1
    SQLITE=sqlite-3.6.23
-   GEOS=geos-3.4.0
-   GDAL=gdal-1.11.0
+   GEOS=geos-3.5.0
+   GDAL=gdal-2.1.0
    MYSQL=mysql-5.1
    JASPER=jasper-1.900.1
    JPEG=jpeg-6b
@@ -114,14 +123,13 @@ if [[ $EXT -eq 1 ]]; then
    HDF5=hdf5-1.8.11
    POSTGRESQL=postgresql-8.4.1
    ODBC=unixODBC-2.3.0
-   GRIB=grib_api-1.12.0
+   GRIB=grib_api-1.15.0
    ECBUFR=libecbufr0.8.6
    OCI=instantclient_11_2
    FGDB=FileGDB_API
-   PROJ=proj-4.9.1
+   PROJ=proj-4.9.2
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.3.3.1
-   EZIV=cezinterpv-15.2
    EZSCINT=ezscint
 
    #----- not recompiled yet
@@ -174,12 +182,6 @@ if [[ $EXT -eq 1 ]]; then
 
    set -e
 
-   #----- cezinterpv
-   echo "Building ${TMP_PATH}/$EZIV/build.log"
-   mkdir ${TMP_PATH}/$EZIV
-   cd ${TMP_PATH}/$EZIV
-   (${ARCH_PATH}/$EZIV/makeit --prefix=${LIB_PATH}) > ${TMP_PATH}/$EZIV/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-
    #----- Mesa
    if [[ $ARCH != "AIX" ]]; then
       echo "Building ${TMP_PATH}/${MESA}/build.log"
@@ -187,7 +189,7 @@ if [[ $EXT -eq 1 ]]; then
       cd ${TMP_PATH}/${MESA}
       cp -r -p ${ARCH_PATH}/${MESA}/ ${TMP_PATH}/
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
-      make
+      make 
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    
       #----- OpenFlight
@@ -228,6 +230,8 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${TKIMG}/build.log"
       mkdir ${TMP_PATH}/${TKIMG}
       cd ${TMP_PATH}/${TKIMG}
+      
+      #----- Because some setup enable jbig without the big stuff
       (${ARCH_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
@@ -371,9 +375,10 @@ if [[ $EXT -eq 1 ]]; then
       touch ${TMP_PATH}/${GRIB}/{src,definitions}/dummy.am
 
       #----- Because using variables to locate executables and source files instead of just hoping they magically appear in the current directory is just too difficult
-      cp -p ${ARCH_PATH}/${GRIB}/tools/grib1to2.txt ${TMP_PATH}/${GRIB}/tools/
+      cp -p ${ARCH_PATH}/${GRIB}/tools/grib1to2.in ${TMP_PATH}/${GRIB}/tools/
       cp -p ${ARCH_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
       cp -p ${ARCH_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
+      cp -rp ${ARCH_PATH}/${GRIB}/samples ${TMP_PATH}/${GRIB}
 
       make install) > ${TMP_PATH}/${GRIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
@@ -527,8 +532,8 @@ fi
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
-   export CC=c99
-   export CFLAGS="-D_TK_SOURCE -fopenmp"
+   export CFLAGS="-std=c99 -D_TK_SOURCE -fopenmp"
+#System with no OpenGL   export LDFLAGS="-L$LIB_PATH/GL/lib"
 
    printf -- "\n----- Making TclSystem Library  -----\n"
 
@@ -542,8 +547,7 @@ if [[ $SPI -eq 1 ]]; then
       --enable-threads \
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-eer=${LIB_EER} \
-      --with-rmn=${LIB_PATH}
+      --with-eer=${LIB_EER}
    fi
    make install
 
@@ -647,3 +651,4 @@ if [[ $SRC -eq 1 ]]; then
    find ${SSM_DEV}/workspace/libSPI-${VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
 fi
+

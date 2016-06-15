@@ -1062,7 +1062,10 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FSTD_FieldSetTo(FieldTo,FieldFrom);
    }
    
-   if (ezto || ezfrom) {
+   // Use ezscint
+   if (ezto && ezfrom) {
+      RPN_IntLock();
+
       if (Mode==0) {
          c_ezsetopt("INTERP_DEGREE","NEAREST");
       } else if (Mode==1) {
@@ -1076,11 +1079,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
       }
       c_ezsetopt("EXTRAP_DEGREE",(char*)FieldTo->Spec->ExtrapDegree);
-   }
-   
-   // Use ezscint
-   if (ezto && ezfrom) {
-      RPN_IntLock();
 
       ok=c_ezdefset(FieldTo->GRef->Ids[FieldTo->GRef->NId],FieldFrom->GRef->Ids[FieldFrom->GRef->NId]);
 

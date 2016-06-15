@@ -940,7 +940,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);
 
-   if (Layer->Data)       OGR_DS_ReleaseResultSet(Layer->Data,Layer->Layer);
+   if (Layer->Data)       OGR_DS_Destroy(Layer->Data);
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
 
    OGR_LayerClean(Layer,-1);
