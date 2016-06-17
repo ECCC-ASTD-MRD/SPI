@@ -366,7 +366,7 @@ proc Styles::Write { Channel Spec { Style "" } } {
       set dfont "-font \"FONT$Style\""
    }
 
-   puts $Channel "\ndataspec create \"$Style\" -factor [dataspec configure $Spec -factor] -value [dataspec configure $Spec -value]\
+   puts $Channel "\ndataspec create \"$Style\" -set 2 -factor [dataspec configure $Spec -factor] -value [dataspec configure $Spec -value]\
       -size [dataspec configure $Spec -size] -width [dataspec configure $Spec -width] -unit \"[dataspec configure $Spec -unit]\"\
       -desc \"[dataspec configure $Spec -desc]\" -icon \"[dataspec configure $Spec -icon]\" -mark \"[dataspec configure $Spec -mark]\"\
       -color \"[dataspec configure $Spec -color]\" -fill \"[dataspec configure $Spec -fill]\" -activefill \"[dataspec configure $Spec -activefill]\"\
