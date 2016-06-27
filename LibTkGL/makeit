@@ -131,6 +131,7 @@ if [[ $EXT -eq 1 ]]; then
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.3.3.1
    EZSCINT=ezscint
+   EZINTERPV=cezinterpv
 
    #----- not recompiled yet
    KKDU=kakadu-6.3
@@ -180,6 +181,10 @@ if [[ $EXT -eq 1 ]]; then
    cp -frd $LIB_PATH_OPS/$EZSCINT/lib/* $LIB_PATH/lib
    cp -frd $LIB_PATH_OPS/$EZSCINT/include/* $LIB_PATH/include
 
+   #----- EZINTERPV, copies libs
+   echo "Copying precompiled $EZINTERPV"
+   cp -frd $LIB_PATH_OPS/$EZINTERPV/lib/* $LIB_PATH/lib
+   cp -frd $LIB_PATH_OPS/$EZINTERPV/include/* $LIB_PATH/include
    set -e
 
    #----- Mesa

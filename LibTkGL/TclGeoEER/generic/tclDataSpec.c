@@ -1701,6 +1701,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->MapAll=from->MapAll;
    to->MapAbove=from->MapAbove;
    to->MapBellow=from->MapBellow;
+   to->ShowMap=from->ShowMap;
    to->Icon=from->Icon;
    to->Mark=from->Mark;
    to->Style=from->Style;
@@ -1814,6 +1815,7 @@ TDataSpec *DataSpec_New(){
       spec->MapAll=0;
       spec->MapAbove=1;
       spec->MapBellow=0;
+      spec->ShowMap=1;
       spec->Outline=NULL;
       spec->Fill=NULL;
       spec->HighFill=NULL;

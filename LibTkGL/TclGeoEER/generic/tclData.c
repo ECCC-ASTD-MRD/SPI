@@ -2234,6 +2234,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDSTREAM:
+            if(Objc!=7) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"dx dy len min dv dl");
+               return(TCL_ERROR);
+            }
+            
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
             Tcl_GetIntFromObj(Interp,Objv[++i],&len);
@@ -2241,78 +2246,90 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
             Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
 
+            if (!Field->Def->Data[1]) {
+               Tcl_AppendResult(Interp,"Data_Stat: Field is not vectorial",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            
             if (!Field->Stat)
                Data_GetStat(Field);
 
-            if (Field->Def->Data[1]) {
-               vbuf=VBuffer_Alloc(len*2+1);
+            vbuf=VBuffer_Alloc(len*2+1);
 
-               b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
-               f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
-               obj=Tcl_NewListObj(0,NULL);
-               ex=0;
+            b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_GRID,0);
+            f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,0,dy,len,val,dv,dl,REF_GRID,0);
+            obj=Tcl_NewListObj(0,NULL);
+            ex=0;
 
-               /*Loop on all streamline points*/
-               for (nb=0;nb<b+f-1;nb++) {
-                  /*Clip to extent limits*/
-                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
-                     Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1]))) {
+            /*Loop on all streamline points*/
+            for (nb=0;nb<b+f-1;nb++) {
+               /*Clip to extent limits*/
+               if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,
+                  Field->Def->Limits[0][0],Field->Def->Limits[1][0],Field->Def->Limits[0][1],Field->Def->Limits[1][1]))) {
 
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
-                  }
-               }
-               /*If last segment was visible, add its end point*/
-               if (ex){
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                }
-               Tcl_SetObjResult(Interp,obj);
             }
+            /*If last segment was visible, add its end point*/
+            if (ex){
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
+            }
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case COORDSTREAM:
+            if(Objc!=7) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"dx dy len min dv dl");
+               return(TCL_ERROR);
+            }
+            
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
+            Tcl_GetIntFromObj(Interp,Objv[++i],&len);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
+
+            if (!Field->Def->Data[1]) {
+               Tcl_AppendResult(Interp,"Data_Stat: Field is not vectorial",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            
             if (!Field->GRef) {
                Tcl_AppendResult(Interp,"Data_Stat: No geographic reference defined",(char*)NULL);
                return(TCL_ERROR);
             }
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
-            Tcl_GetIntFromObj(Interp,Objv[++i],&len);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dv);
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dl);
-
+            
             if (!Field->Stat)
                Data_GetStat(Field);
 
-            if (Field->Def->Data[1]) {
-               vbuf=VBuffer_Alloc(len*2+1);
+            vbuf=VBuffer_Alloc(len*2+1);
 
-               b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
-               f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);
-               obj=Tcl_NewListObj(0,NULL);
-               ex=0;
+            b=FFStreamLine(Field->GPos,Field->Def,NULL,vbuf,NULL,dx,dy,0,len,-val,dv,dl,REF_COOR,0);
+            f=FFStreamLine(Field->GPos,Field->Def,NULL,&vbuf[len],NULL,dx,dy,0,len,val,dv,dl,REF_COOR,0);
+            obj=Tcl_NewListObj(0,NULL);
+            ex=0;
 
-               /*Loop on all streamline points*/
-               for (nb=0;nb<b+f-1;nb++) {
-                  /*Clip to extent limits*/
-                  if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][1],Field->Def->CoordLimits[1][1]))) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
-                  }
-               }
-               /*If last segment was visible, add its end point*/
-               if (ex) {
+            /*Loop on all streamline points*/
+            for (nb=0;nb<b+f-1;nb++) {
+               /*Clip to extent limits*/
+               if ((ex=LiangBarsky_LineClip2D(vbuf[len-b+nb],vbuf[len-b+nb+1],&c1,&c2,Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][1],Field->Def->CoordLimits[1][1]))) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
                }
-               Tcl_SetObjResult(Interp,obj);
             }
+            /*If last segment was visible, add its end point*/
+            if (ex) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][0]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][1]));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(vbuf[len-b+nb][2]));
+            }
+            Tcl_SetObjResult(Interp,obj);
             break;
 
          case GRIDCONTOUR:
