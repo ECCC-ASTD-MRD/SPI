@@ -496,7 +496,7 @@ proc ColorBar::Update { Frame { State -1 } } {
          set i -1
          foreach field [lindex [$Frame.page.canvas itemconfigure $vp -data] 4] {
             if { [fstdfield is $field True] } {
-               if { [fstdfield configure $field -active] && ([fstdfield configure $field -rendertexture] || [fstdfield configure $field -mapall] || [fstdfield configure $field -rendervector]!="NONE" || [fstdfield configure $field -renderparticle]) } {
+               if { [fstdfield configure $field -active] && [fstdfield configure $field -showmap] && ([fstdfield configure $field -rendertexture] || [fstdfield configure $field -mapall] || [fstdfield configure $field -rendervector]!="NONE" || [fstdfield configure $field -renderparticle]) } {
                   set id [fstdfield configure $field -dataspec]
                   lappend fields $field
                   if { !$Param(Single) } {
@@ -504,7 +504,7 @@ proc ColorBar::Update { Frame { State -1 } } {
                   }
                }
             } elseif { [observation is $field] } {
-               if { [observation configure $field -rendertexture] || [observation configure $field -rendervector]!="NONE" } {
+               if { [observation configure $field -active] && [observation configure $field -showmap] && ([observation configure $field -rendertexture] || [observation configure $field -mapall] || [observation configure $field -rendervector]!="NONE") } {
                   set id [observation configure $field -dataspec]
                   lappend fields $field
                   if { !$Param(Single) } {
@@ -517,7 +517,7 @@ proc ColorBar::Update { Frame { State -1 } } {
                set specs {}
                foreach item [metmodel define $model -items] {
                   set spec [metmodel configure $model [lindex $item 2] -dataspec]
-                  if { [lsearch -exact $lst $id]==-1 && ([dataspec configure $spec -rendertexture] || [dataspec configure $spec -rendervector]!="NONE" ) } {
+                  if { [lsearch -exact $lst $id]==-1 && [dataspec configure $field -showmap] && ([dataspec configure $spec -rendertexture] || [dataspec configure $spec -rendervector]!="NONE" ) } {
                      lappend specs $spec
                   }
                }
@@ -528,14 +528,14 @@ proc ColorBar::Update { Frame { State -1 } } {
                   }
                }
             } elseif { [ogrlayer is $field] } {
-               if { [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -mapvar]!="" } {
+               if { [ogrlayer configure $field -active] && [ogrlayer configure $field -showmap] && [ogrlayer configure $field -colormap]!="" && [ogrlayer configure $field -mapvar]!="" } {
                   lappend fields $field
                   if { !$Param(Single) } {
                      lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
                   }
                }
             } elseif { [gdalband is $field] } {
-               if { [gdalband configure $field -colormap]!="" && [gdalband configure $field -showmap] && [gdalband define $field -nb]==1  } {
+               if { [gdalbandr configure $field -active] && [gdalband configure $field -showmap] && [gdalband configure $field -colormap]!="" && [gdalband define $field -nb]==1  } {
                   lappend fields $field
                   if { !$Param(Single) } {
                      lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]

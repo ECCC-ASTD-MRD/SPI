@@ -685,7 +685,7 @@ proc FSTD::FieldFormat { Field Val } {
    set order    [lindex $val 0]
    set mantisse [lindex $val 1]
 
-   if { $mantisse==0 } {
+   if { $mantisse==-1 } {
       set dec 2
    } else {
       set dec $mantisse
@@ -939,8 +939,14 @@ proc FSTD::ParamSet { { Spec "" } } {
       glrender -delay [set OpenGL::Param(Delay) 1000]
    }
    
+   if { [string is int $Param(Mantisse)] } {
+      set mantisse $Param(Mantisse)
+   } else {
+      set mantisse -1   
+   }
+      
    #----- Set all params
-   dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -font $Param(Font) -colormap $Param(Map) \
+   dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $mantisse -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
