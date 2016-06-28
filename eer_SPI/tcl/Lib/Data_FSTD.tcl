@@ -905,8 +905,8 @@ proc FSTD::ParamSet { { Spec "" } } {
 
    set inter $Param(Intervals)
    set label {}
-   set min   ""
-   set max   ""
+   set min   [dataspec configure $Spec -min]
+   set max   [dataspec configure $Spec -max]
 
    #----- Verifier pour un range plutot que des niveaux
 
@@ -958,6 +958,7 @@ proc FSTD::ParamSet { { Spec "" } } {
    if  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
       dataspec configure $Spec -intervalmode $Param(IntervalMode) $Param(IntervalParam)
       set Param(Intervals) [dataspec configure $Spec -intervals]
+   puts stderr .$Param(Intervals).$min.$max
    } else {
       dataspec configure $Spec -intervals $inter -interlabels $label -intervalmode $Param(IntervalMode) $Param(IntervalParam)
    }
