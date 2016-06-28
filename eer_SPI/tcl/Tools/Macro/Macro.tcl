@@ -269,7 +269,7 @@ proc Macro::Check { Macro } {
    #----- Make sure we have the minimum version of SPI
    if { [info exists param(SPI)] } {     
       if { ![package vsatisfies $env(SPI_VERSION) $param(SPI)] } {
-         Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($param(SPI))"
+         Dialog::Error . [list "Cette version de SPI ($env(SPI_VERSION)) ne satisfait pas le besoin minimal ($param(SPI))" "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($param(SPI))"]
          return False
       }
     }
