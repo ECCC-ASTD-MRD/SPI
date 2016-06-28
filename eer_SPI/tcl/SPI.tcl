@@ -174,8 +174,10 @@ proc SPI::CommandLine { { Args {} }} {
    \[-help\]                             : Help information (about SPI and macro)
    \[-verbose ERROR,WARNING,INFO,DEBUG\] : Verbose level\n"
 
-   foreach script $SPI::Param(Script) {
-      SPI::Execute $script
+   catch {
+      foreach script $SPI::Param(Script) {
+         SPI::Execute $script
+      }
    }
 
    exit [llength $Args]
