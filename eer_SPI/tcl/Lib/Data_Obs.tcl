@@ -230,7 +230,7 @@ proc Obs::InfoGraph { Obs Tag Elem } {
    #----- If we have enough elements to create a graph
    if { [llength [lindex [lindex $items 0] 1]]>1 } {
       #----- Is it a profile ?
-      if { [set elem [metmodel define [metobs define $Obs -MODEL] -topography]] } {
+      if { [set elem [metmodel define [metobs define $Obs -MODEL] -elevation]] } {
          set elevs [metobs define $Obs -ELEMENT $Tag $elem]
 
          #----- If the number of values = numner of elevs (good z axis values)

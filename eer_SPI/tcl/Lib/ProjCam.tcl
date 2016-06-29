@@ -1186,6 +1186,8 @@ proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
 
    set t0 [set Viewport::Map(Grabbed) [clock click -milliseconds]]
 
+   Viewport::Resolution $Frame 2
+
    if { $Centered } {
       set lens [projcam configure $Frame -lens]
 
@@ -1217,6 +1219,9 @@ proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
    } else {
       ProjCam::Zoom $Cam $Frame $Lens
    }
+   
+   #----- Put back labels if no more scrolling
+   after 1000 "puts stderr toto;  if { \$Viewport::Map(Grabbed)<=$t0 } { Viewport::Resolution $Frame 1 }"
 }
 
 #------------------------------------------------------------------------------
