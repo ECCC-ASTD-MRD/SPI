@@ -2333,8 +2333,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case GRIDCONTOUR:
-            if (Objc>2) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution]");
+            if (Objc>3) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [Polygon]");
                return(TCL_ERROR);
             }
             len=1;
@@ -2342,12 +2342,17 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
 
+            ex=0;
+            if (Objc>2) {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
+            }
+            
             if (!Field->Stat)
                Data_GetStat(Field);
 
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_GRID,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
+               FFContour(REF_GRID,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,ex);
 
                list=Field->Def->Segments;
                obj=Tcl_NewListObj(0,NULL);
@@ -2384,16 +2389,22 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case COORDCONTOUR:
-            if (Objc>3) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [GML|KML]");
+            if (Objc>4) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [Polygon] [GML|KML]");
                return(TCL_ERROR);
             }
             len=1;
             if (Objc>1) {
                Tcl_GetIntFromObj(Interp,Objv[++i],&len);
             }
-            mode='L';
+            
+            ex=0;
             if (Objc>2) {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
+            }
+
+            mode='L';
+            if (Objc>3) {
                mode=Tcl_GetString(Objv[++i])[0];
                i++;
             }
@@ -2403,7 +2414,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
             if (Field->Spec->InterNb) {
                Data_Clean(Field,0,0,1);
-               FFContour(REF_COOR,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,0);
+               FFContour(REF_COOR,Field->GPos,Field->Def,Field->Stat,NULL,Field->Spec->InterNb,Field->Spec->Inter,len,ex);
 
                list=Field->Def->Segments;
 

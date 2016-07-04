@@ -1121,8 +1121,8 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
       // Calculate contours within the specified coverage limits
       i0=Def->Limits[0][0];
       j0=Def->Limits[1][0];
-      i1=Def->Limits[0][1];
-      j1=Def->Limits[1][1];
+      i1=Def->Limits[0][1]-1;
+      j1=Def->Limits[1][1]-1;
 
       i=i0;j=j0;
       ci=1;cj=0;
@@ -1135,8 +1135,6 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
          if (i1<i0 || j1<j0) {
             break;
          }
-         i1=i1<i0?i0:i1;
-         j1=j1<j0?j0:j1;
 
          // If this gridpoint has'nt yet been visited
          if (!buf[Def->NI*j+i]) {
@@ -1190,6 +1188,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
  *  <Inter>   : Intervalle du contour
  *  <X>       : Position X en point de grille
  *  <Y>       : Position Y en point de grille
+ *  <Top>     : Top gridcell initial start
  *
  * Retour:
  *   <Side>   : Cote d<entree dans le prochain voxel
@@ -1197,94 +1196,49 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
  * Remarques :
  *----------------------------------------------------------------------------
  */
-static inline unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y) {
+static inline unsigned char FFContour_QuadCross(double Depth,unsigned char Side,double *Quad,double Inter,double *X,double *Y,int Top) {
 
    unsigned char aside[4]={ FF_BOTTOM, FF_RIGHT, FF_TOP, FF_LEFT };
    unsigned char s,t,out=FF_NONE;
    
    s=Side==FF_LEFT?3:Side>>1;
    t=0;
-   
-   while(t++<3) {
+  
+   while(t<4) {
       switch(aside[(s+t)%4]) {
          case FF_BOTTOM: 
-            if (!(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
+            if ((Top || !(Side&FF_BOTTOM)) && ILVIN(Inter,Quad[0],Quad[1])) {
                *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
                out=FF_TOP;
             }
             break;
          case FF_LEFT: 
-            if (!(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
+            if ((Top || !(Side&FF_LEFT)) && ILVIN(Inter,Quad[0],Quad[3])) {
                *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
                out=FF_RIGHT;
             }
             break;
          case FF_RIGHT: 
-            if (!(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
+            if ((Top || !(Side&FF_RIGHT)) && ILVIN(Inter,Quad[1],Quad[2])) {
                *X+=Depth;
                *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
                 out=FF_LEFT;
             }
             break;
          case FF_TOP: 
-            if (!(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
+            if ((Top || !(Side&FF_TOP)) && ILVIN(Inter,Quad[3],Quad[2])) {
                *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
                *Y+=Depth;
                out=FF_BOTTOM;
             }
             break;
       }
+      t++;
       if (out!=FF_NONE) break;
    }
    
    return(out);
 }
-
-// static inline unsigned char FFContour_QuadCross(double Depth,unsigned char Side,unsigned char Mtx,double *Quad,double Inter,double *X,double *Y) {
-// 
-//    unsigned char aside[4]={ FF_BOTTOM, FF_RIGHT, FF_TOP, FF_LEFT };
-//    unsigned char s,t,out=FF_NONE;
-//    double dx=*X-floor(*X);
-//    double dy=*Y-floor(*Y);
-//    double dd=1.0-Depth;
-//    
-//    s=Side==FF_LEFT?3:Side>>1;
-//    t=0;
-//    
-//    while(t++<3) {
-//       switch(aside[(s+t)%4]) {
-//          case FF_BOTTOM: 
-//             if ((dy>0.0 || !(Mtx&FF_BOTTOM)) && !(Side&FF_BOTTOM) && ILVIN(Inter,Quad[0],Quad[1])) {
-//                *X+=Depth*ILDF(Inter,Quad[0],Quad[1]);
-//                out=FF_TOP;
-//             }
-//             break;
-//          case FF_LEFT: 
-//             if ((dx>0.0 || !(Mtx&FF_LEFT)) && !(Side&FF_LEFT) && ILVIN(Inter,Quad[0],Quad[3])) {
-//                *Y+=Depth*ILDF(Inter,Quad[0],Quad[3]);
-//                out=FF_RIGHT;
-//             }
-//             break;
-//          case FF_RIGHT: 
-//             if ((dx<dd || !(Mtx&FF_RIGHT)) && !(Side&FF_RIGHT) && ILVIN(Inter,Quad[1],Quad[2])) {
-//                *X+=Depth;
-//                *Y+=Depth*ILDF(Inter,Quad[1],Quad[2]);
-//                 out=FF_LEFT;
-//             }
-//             break;
-//          case FF_TOP: 
-//             if ((dy<dd || !(Mtx&FF_TOP)) && !(Side&FF_TOP) && ILVIN(Inter,Quad[3],Quad[2])) {
-//                *X+=Depth*ILDF(Inter,Quad[3],Quad[2]);
-//                *Y+=Depth;
-//                out=FF_BOTTOM;
-//             }
-//             break;
-//       }
-//       if (out!=FF_NONE) break;
-//    }
-//    
-//    return(out);
-// }
 
 /*----------------------------------------------------------------------------
  * Nom      : <FFContour_QuadIndex>
@@ -1359,7 +1313,8 @@ static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,un
  * Nom      : <FFContour_BuildIndex>
  * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
  *
- * But      : Construire l'index de la premiere intersection d'un voxel
+ * But      :    fprintf(stderr,"-- out >> %i\n",out);
+Construire l'index de la premiere intersection d'un voxel
  *
  * Parametres :
  *  <Depth>   : Profondeur de subdivision
@@ -1429,7 +1384,7 @@ static inline unsigned int FFContour_BuildIndex(int Depth,unsigned char *Side,in
  *
  *   Le deplacement se fait par un index d'une profondeur maximale de 8 pour que la valeur puisse
  *   etre represente dans entier (8*4=32 bit), cependant une profondeur de 4 est amplement suffisante;
- *   PMatrix    Permet de savoir si un voxel a deja ete visite et par quel coté
+ *   PMatrix permet de savoir si un voxel a deja ete visite et par quel coté
  *
  *----------------------------------------------------------------------------
  */
@@ -1461,7 +1416,6 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          
          // Check if we've already parsed this voxel from this side
          if (PMatrix[idx]&side) break;
-         PMatrix[idx]|=side;
 
          // Get the voxel values
          pidx[0]=idx+dz;
@@ -1479,25 +1433,24 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          if (!side) {
             x=X;y=Y;
             
-            // Rotate left to check for right entry point on initial cell
-            Side=Side==FF_BOTTOM?FF_LEFT:Side<<1;
-            if (!(side=FFContour_QuadCross(1.0,Side,pvox,Inter,&x,&y))) {
+            if (!(side=FFContour_QuadCross(1.0,Side,pvox,Inter,&x,&y,TRUE))) {
                break;
             }
+            // First point entry is same as exit for next vertex
             index=FFContour_BuildIndex(Depth,&side,X,Y,x,y);
             
-            // Mask entry point
-            PMatrix[idx]|=side;
-
             if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
-                  case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+                  case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],1,1);vbuf[n][2]=0.0;break;
                   case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
                   case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
                n++;
             }
          }
+         
+         // Mask entry point
+         PMatrix[idx]|=side;
       }
 
       // Find the sub-voxel in a quad tree way to the needed splitting resolution
@@ -1538,10 +1491,10 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
       if (Inter==vox[3]) vox[3]+=mid*0.001;
 
       // Get the segment intersection coordinate within the voxel
-      if ((side=FFContour_QuadCross(d,side,vox,Inter,&x,&y))) {
+      if ((side=FFContour_QuadCross(d,side,vox,Inter,&x,&y,FALSE))) {
          if ((vbuf=VBuffer_Alloc(n+1))) {
             switch(Mode) {
-               case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+               case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],1,1);vbuf[n][2]=0.0;break;
                case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
                case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
@@ -1563,7 +1516,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
       if (pidx[0] || pidx[1] || pidx[2] || pidx[3]) {
          
          // If we have to close with the grid limits, check for grid limits to close polygon
-         if (Limit && n>2) {
+         if (Limit) {
 
             x0=X+pidx[0];
             y0=Y+pidx[1];
@@ -1597,7 +1550,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
             while (px || py) {
                if ((X!=x0 || Y!=y0) && (vbuf=VBuffer_Alloc(n+1))) {
                   switch(Mode) {
-                     case REF_COOR : GPos->GRef->Project(GPos->GRef,X,Y,&vbuf[n][1],&vbuf[n][0],0,1);vbuf[n][2]=0.0;break;
+                     case REF_COOR : GPos->GRef->Project(GPos->GRef,X,Y,&vbuf[n][1],&vbuf[n][0],1,1);vbuf[n][2]=0.0;break;
                      case REF_PROJ : Vect_Assign(vbuf[n],GPos->Pos[dz][idx]);break;
                      case REF_GRID : Vect_Init(vbuf[n],X,Y,Z);break;
                   }
@@ -1644,9 +1597,9 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
                if (px>0) X-=px;
                if (py>0) Y-=py;
 
-               // Setup next voxel processsing
+               // Setup entrance point for next voxel processsing
                next=1;
-               Side=0xF^side;
+               Side=side;
             }
             side=0;
          } else {
