@@ -2438,7 +2438,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                               }
                               f=1;
                            }
-                           snprintf(buf,32,"%.5f,%.5f ",array->Data[n][1],array->Data[n][0]);
+                           snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]);
                            Tcl_AppendResult(Interp,buf,(char*)NULL);
                         } else {
                            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
@@ -2450,7 +2450,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   /*If last segment was visible, add its end point*/
                   if (ex){
                      if (mode=='G' || mode=='K') {
-                        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][1],array->Data[n][0]);
+                        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]);
                         Tcl_AppendResult(Interp,buf,(char*)NULL);
                      } else {
                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));

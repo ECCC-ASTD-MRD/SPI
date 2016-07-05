@@ -1313,8 +1313,7 @@ static unsigned int FFContour_QuadIndex(unsigned int Index,unsigned char Side,un
  * Nom      : <FFContour_BuildIndex>
  * Creation : Decembre 2009 - J.P. Gauthier - CMC/CMOE
  *
- * But      :    fprintf(stderr,"-- out >> %i\n",out);
-Construire l'index de la premiere intersection d'un voxel
+ * But      :   Construire l'index de la premiere intersection d'un voxel
  *
  * Parametres :
  *  <Depth>   : Profondeur de subdivision
