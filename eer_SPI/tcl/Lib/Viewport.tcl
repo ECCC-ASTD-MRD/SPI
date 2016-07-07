@@ -47,7 +47,7 @@
 #    Viewport::ParamFrame     { Frame Apply }
 #    Viewport::ParamSet       { }
 #    Viewport::Reset          { Frame { Fast False } }
-#    Viewport::Resolution     { Frame Res }
+#    Viewport::Resolution     { Frame Res { Grab 0 } }
 #    Viewport::Rotate         { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
 #    Viewport::RotateDo       { Frame VP X Y }
 #    Viewport::RotateDone     { Frame VP }
@@ -2174,6 +2174,7 @@ proc Viewport::Reset { Frame { Fast False } } {
 # Parametres   :
 #  <Frame>     : Identificateur de Page
 #  <Res>       : Resolution
+#  <Grab>      : Grabbed time
 #
 # Retour:
 #
@@ -2181,11 +2182,11 @@ proc Viewport::Reset { Frame { Fast False } } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Resolution { Frame Res } {
+proc Viewport::Resolution { Frame Res { Grab 0 } } {
    variable Map
    variable Data
 
-   if { $Res!=[glrender -resolution] } {
+   if { (!$Grab || $Map(Grabbed)<=$Grab) && $Res!=[glrender -resolution] } {         
 
       glrender -resolution $Res -delay 1000
 
@@ -2760,10 +2761,10 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
                set cam(CFZ)    1
                projcam define  $Frame -circlefrom $cam(CFX) $cam(CFY) $cam(CFZ)
             }
-            Viewport::Rotate $Frame $Lat $Lon $Zoom $From $To $Up
+            Viewport::Rotate $Frame $Lat $Lon $Zoom $From $To $Up False
          }
          set Map(Speed) 0.0
-         Viewport::Resolution $Frame 1
+         Viewport::Resolution $Frame 1 $t0
          Page::Update $Frame
       }
    } else {

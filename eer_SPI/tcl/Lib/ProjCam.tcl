@@ -1221,7 +1221,7 @@ proc ProjCam::ZoomScroll { Cam Frame VP X Y Lens { Centered True } } {
    }
    
    #----- Put back labels if no more scrolling
-   after 1000 "if { \$Viewport::Map(Grabbed)<=$t0 } { Viewport::Resolution $Frame 1 }"
+   after 1000 "Viewport::Resolution $Frame 1 $t0"
 }
 
 #------------------------------------------------------------------------------
