@@ -52,6 +52,10 @@
 #define MET_TYPENO   0x1
 #define MET_TYPETG   0x2
 
+#define MET_BURP     6
+#define MET_BUFR     8
+#define MET_OTHER   -1
+
 #define fgetskip(BYTES,LEN,STREAM)   BYTES[0]='\0';while (fgets(BYTES,LEN,STREAM) && BYTES[0]=='#')
 
 struct TMetObs;
@@ -111,6 +115,7 @@ typedef struct TMetObs {
    Tcl_Obj *Tag;
    Tcl_Obj *Elems;
    Tcl_Obj *Levels;
+   char     Format;
    char    *Desc;
 
    char    **Info;

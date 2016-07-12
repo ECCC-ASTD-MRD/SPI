@@ -73,7 +73,8 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBUFR :  Unable to open file ",File,(char*)NULL);
       return(TCL_ERROR);
    }
-
+   Obs->Format=MET_BUFR;
+   
    master=MetObs_GetTables();
 
    while ((bufr_read_message(fpBufr,&msg))>0) {

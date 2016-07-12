@@ -1159,6 +1159,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
       return(TCL_ERROR);
    }
 
+   obs->Format   = MET_OTHER;
    obs->Tag      = NULL;
    obs->Levels   = NULL;
    obs->FId      = -1;
@@ -1840,10 +1841,10 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
 
    switch (type) {
-      case 6: res=MetObs_LoadBURP(Interp,File,Obs);  break;
-      case 8: res=MetObs_LoadBUFR(Interp,File,Obs); break;
+      case MET_BURP: res=MetObs_LoadBURP(Interp,File,Obs);  break;
+      case MET_BUFR: res=MetObs_LoadBUFR(Interp,File,Obs); break;
 //Not recognized      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
-      case -1: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
+      case MET_OTHER: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
                   res=MetObs_LoadASCII(Interp,File,Obs);
                }
                break;
@@ -1859,10 +1860,10 @@ int TMetElem_BUFRAdd(TMetObs *Obs,TMetElemData *Data,float Lat,float Lon,float H
 
    TMetLoc *loc=NULL;
 
-   /*Insert station in list if not already done*/
+   // Insert station in list if not already done
    if (Data->Ne && Lat!=-999.0 && Lon!=-999.0) {
 
-      /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
+      // Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before
  //     if (!Multi || strcmp(PrevId,Id)!=0)
       loc=TMetLoc_FindWithCoord(Obs,NULL,Id,Lat,Lon,-999.0,MET_TYPEID,Multi);
 
@@ -2137,19 +2138,21 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
          // Get displacement component indexes
          clat=clon=-1;
          io=ia=ib=-1;
-         for(d=0;d<elem->NData;d++) {
-            cdata=elem->EData[d];
-            for(e=0;e<cdata->Ne;e++) {
-               if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)       // Latitude coordinate
-                  clat=e;
-               else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)  // Longitude coordinate
-                  clon=e;
-               else if (cdata->Code[e]->descriptor==5015)                                      // Latitude displacement
-                  ia=e;
-               else if (cdata->Code[e]->descriptor==6015)                                      // Longitude displacement
-                  io=e;
-               else if (cdata->Code[e]->descriptor==Obs->Model->Elev)                          // Height
-                  ib=e;
+         if (Obs->Format==MET_BURP) {
+            for(d=0;d<elem->NData;d++) {
+               cdata=elem->EData[d];
+               for(e=0;e<cdata->Ne;e++) {
+                  if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)       // Latitude coordinate
+                     clat=e;
+                  else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)  // Longitude coordinate
+                     clon=e;
+                  else if (cdata->Code[e]->descriptor==5015)                                      // Latitude displacement
+                     ia=e;
+                  else if (cdata->Code[e]->descriptor==6015)                                      // Longitude displacement
+                     io=e;
+                  else if (cdata->Code[e]->descriptor==Obs->Model->Elev)                          // Height
+                     ib=e;
+               }
             }
          }
          glPushName(n);
@@ -2258,7 +2261,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                               }
                               co.Elev=k;
                            }
-                           
+                          
                            // Get latlon displacement
                            dlat=dlon=0.0;
                            if (ia!=-1 && io!=-1) {

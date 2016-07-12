@@ -77,6 +77,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    Tcl_MutexLock(&MUTEX_BURPFILE);
 
+   Obs->Format=MET_BURP;
+   
    if (Obs->FId==-1)
       Obs->FId=cs_fstlockid();
 
