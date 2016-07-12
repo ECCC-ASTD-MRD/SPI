@@ -734,7 +734,7 @@ proc MapBox::List { Widget } {
       }
    }
 
-   set Data(Maps) [lsort -unique -index 1 $Data(Maps)]
+   set Data(Maps) [lsort -unique -index 0 $Data(Maps)]
    
    ComboBox::DelAll  $Widget False
    ComboBox::AddList $Widget [lsort $maps]

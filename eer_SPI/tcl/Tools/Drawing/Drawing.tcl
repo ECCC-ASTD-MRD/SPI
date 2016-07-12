@@ -1129,7 +1129,7 @@ proc Drawing::DrawValu { Frame VP Vertex Color Date Font Grid Coord Tag } {
 
                   if { $spd != "-" && $spd != "" } {
 
-                     if { $FSTD::Param(Mantisse) == 0 } {
+                     if { $FSTD::Param(Mantisse) == -1 } {
                         set p 2
                      } else {
                         set p $FSTD::Param(Mantisse)
