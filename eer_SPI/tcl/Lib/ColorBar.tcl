@@ -517,7 +517,7 @@ proc ColorBar::Update { Frame { State -1 } } {
                set specs {}
                foreach item [metmodel define $model -items] {
                   set spec [metmodel configure $model [lindex $item 2] -dataspec]
-                  if { [lsearch -exact $lst $id]==-1 && [dataspec configure $field -showmap] && ([dataspec configure $spec -rendertexture] || [dataspec configure $spec -rendervector]!="NONE" ) } {
+                  if { [lsearch -exact $lst $id]==-1 && [dataspec configure $spec -showmap] && ([dataspec configure $spec -rendertexture] || [dataspec configure $spec -rendervector]!="NONE" ) } {
                      lappend specs $spec
                   }
                }
