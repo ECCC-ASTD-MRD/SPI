@@ -719,9 +719,24 @@ void Data_StatFree(TDataStat *Stat) {
    if (Stat->Histo) free(Stat->Histo);
 }
 
-int Data_Free(TData *Field) {
-
+void Data_DefFree(TData *Field) {
+   
    int i;
+   
+   // Free subgrids but make sure it was not freed above
+   if (Field->SDef) {
+      for(i=0;i<Field->GRef->NbId+1;i++) {
+         Def_Free(Field->SDef[i]);
+      }
+      free(Field->SDef);
+      Field->SDef=NULL;
+   } else {
+      Def_Free(Field->Def);
+      Field->Def=NULL;
+   }
+}
+
+int Data_Free(TData *Field) {
 
    if (Field) {
 
@@ -730,16 +745,7 @@ int Data_Free(TData *Field) {
 
       // Liberer l'espace de donnees
       Data_Clean(Field,1,1,1);
-
-      // Free subgrids but make sure it was not freed above
-      if (Field->SDef) {
-         for(i=0;i<Field->GRef->NbId+1;i++) {
-           Def_Free(Field->SDef[i]);
-         }
-         free(Field->SDef);
-      } else {
-         Def_Free(Field->Def);
-      }
+      Data_DefFree(Field);
 
       // Liberer l'espace du descriptif
       if (Field->Stat) Data_StatFree(Field->Stat);
@@ -751,6 +757,7 @@ int Data_Free(TData *Field) {
    }
    return(TCL_OK);
 }
+
 
 TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 
@@ -1169,12 +1176,11 @@ TData *Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDe
       field=(TData*)Tcl_GetHashValue(entry);
 
       if (NI*NJ*NK==0) {
-         Def_Free(field->Def);
-         field->Def=NULL;
+         Data_DefFree(field);
       } else {
          // Si les dimensions sont correctes et les composantes sont ls memes
          if (NI!=field->Def->NI || NJ!=field->Def->NJ || NK!=field->Def->NK || abs(Dim)!=field->Def->NC || TDef_Size[field->Def->Type]!=TDef_Size[Type]) {
-            Def_Free(field->Def);
+            Data_DefFree(field);
             if (!(field->Def=Def_New(NI,NJ,NK,Dim,Type))) {
                Tcl_AppendResult(Interp,"Data_Valid: Not enough memory to allocate data for field ",Name,(char *)NULL);
                return(NULL);

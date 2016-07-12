@@ -161,7 +161,7 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
 static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj    *obj;
-   TData      *field,*p0;
+   TData      *field,*p0=NULL;
    TRPNHeader *head;
    float       dlat,dlon,dd60,dgrw,x,y,level=0.0;
    int         ip,n,kind;
@@ -240,8 +240,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 
       case PRESSURE:
 
-         if(Objc!=4) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"field p0(mb)");
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"field");
             return(TCL_ERROR);
          }
 
@@ -249,26 +249,39 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_AppendResult(Interp,"invalid field :",Tcl_GetString(Objv[2]),(char*)NULL);
             return(TCL_ERROR);
          }
-         if (!(p0=Data_Get(Tcl_GetString(Objv[3])))) {
-            Tcl_AppendResult(Interp,"invalid pressure field :",Tcl_GetString(Objv[3]),(char*)NULL);
-            return(TCL_ERROR);
-         }
-
+         
          if (field->ZRef->PTop==0.0 && field->ZRef->PRef==0.0) {
             if (!FSTD_DecodeRPNLevelParams(field)) {
                Tcl_AppendResult(Interp,"Could not find level parameters from file",(char*)NULL);
                return(TCL_ERROR);
             }
          }
-         for(k=0;k<field->Def->NK;k++) {
-            idxk=k*FSIZE2D(field->Def);
-            idx=0;
-            for(j=0;j<field->Def->NJ;j++) {
-               for(i=0;i<field->Def->NI;i++) {
-                  Def_Get(p0->Def,0,idx,tmp);
-                  tmp=ZRef_K2Pressure(field->ZRef,tmp,k);
-                  Def_Set(field->Def,0,idxk+idx,tmp);
-                  idx++;
+         
+         if (field->ZRef->Type!=LVL_PRES) {
+            if (Objc!=4) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"field p0(mb)");
+               return(TCL_ERROR);
+            }
+            
+            if (!(p0=Data_Get(Tcl_GetString(Objv[3])))) {
+               Tcl_AppendResult(Interp,"invalid pressure field :",Tcl_GetString(Objv[3]),(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+
+         if (field->Def->Type==TD_Float32 && (!p0 || p0->Def->Type==TD_Float32)) {
+            ZRef_KCube2Pressure(field->ZRef,p0?(float*)(p0->Def->Data[0]):NULL,FSIZE2D(field->Def),FALSE,(float*)(field->Def->Data[0])); 
+         } else {
+            for(k=0;k<field->Def->NK;k++) {
+               idxk=k*FSIZE2D(field->Def);
+               idx=0;
+               for(j=0;j<field->Def->NJ;j++) {
+                  for(i=0;i<field->Def->NI;i++) {
+                     if (p0) Def_Get(p0->Def,0,idx,tmp);
+                     tmp=ZRef_K2Pressure(field->ZRef,tmp,k);
+                     Def_Set(field->Def,0,idxk+idx,tmp);
+                     idx++;
+                  }
                }
             }
          }

@@ -350,7 +350,8 @@ int FSTD_FieldReadMesh(TData *Field) {
    TRPNHeader *head=(TRPNHeader*)Field->Head;
    int        key,ni,nj,nk,nijk=0;
 
-   if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
+   // !! -> NI==3
+   if (!Field->GRef || Field->Def->NI<4 || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
       return(0);
 
    if ((!Field->GRef->AY || !Field->GRef->AX) && head->File) {
@@ -564,7 +565,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    int        i,j,idx,ni,nj,nk,ip1;
    int        idxi;
    char       tile;
-   
+
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
    // Verifier la validite de la grille
@@ -1062,23 +1063,23 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       FSTD_FieldSetTo(FieldTo,FieldFrom);
    }
    
+   if (Mode==0) {
+      c_ezsetopt("INTERP_DEGREE","NEAREST");
+   } else if (Mode==1) {
+      c_ezsetopt("INTERP_DEGREE","LINEAR");
+   } else if (Mode==2) {
+      c_ezsetopt("INTERP_DEGREE","CUBIC");
+   } else {
+      c_ezsetopt("INTERP_DEGREE",(char*)FieldTo->Spec->InterpDegree);
+   }
+   if (FieldTo->Spec->ExtrapDegree[0]=='V') {
+      c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
+   }
+   c_ezsetopt("EXTRAP_DEGREE",(char*)FieldTo->Spec->ExtrapDegree);
+   
    // Use ezscint
    if (ezto && ezfrom) {
       RPN_IntLock();
-
-      if (Mode==0) {
-         c_ezsetopt("INTERP_DEGREE","NEAREST");
-      } else if (Mode==1) {
-         c_ezsetopt("INTERP_DEGREE","LINEAR");
-      } else if (Mode==2) {
-         c_ezsetopt("INTERP_DEGREE","CUBIC");
-      } else {
-         c_ezsetopt("INTERP_DEGREE",(char*)FieldTo->Spec->InterpDegree);
-      }
-      if (FieldTo->Spec->ExtrapDegree[0]=='V') {
-         c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
-      }
-      c_ezsetopt("EXTRAP_DEGREE",(char*)FieldTo->Spec->ExtrapDegree);
 
       ok=c_ezdefset(FieldTo->GRef->Ids[FieldTo->GRef->NId],FieldFrom->GRef->Ids[FieldFrom->GRef->NId]);
 
@@ -1150,14 +1151,14 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                if (di>=0.0 && FieldFrom->GRef->Value(FieldFrom->GRef,FieldFrom->Def,Mode==0?'N':'L',0,di,dj,k,&val,&dir)) {
                   if (FieldTo->Def->Data[1]) {
                      // Have to reproject vector
-                     dir=DEG2RAD(dir-180.0)+GeoRef_GeoDir(FieldTo->GRef,i,j);
-                     dval=sin(dir)*val;
+                     dir=DEG2RAD(dir)+GeoRef_GeoDir(FieldTo->GRef,i,j);
+                     dval=-val*sin(dir);
                      Def_Set(FieldTo->Def,0,idx,dval);
-                     dval=cos(dir)*val;
+                     dval=-val*cos(dir);
                      Def_Set(FieldTo->Def,1,idx,dval); 
                   } else {
                      Def_Set(FieldTo->Def,0,idx,val);
-                  }
+                  } 
                } else {  
                   Def_Set(FieldTo->Def,0,idx,FieldTo->Def->NoData);
                   if (FieldTo->Def->Data[1]) {
@@ -2405,16 +2406,16 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          return(TCL_ERROR);
       }
 
-      // Recuperer les donnees du champs
+      // Recuperer les donnees du champs 
       c_fst_data_length(TDef_Size[field->Def->Type]);
       if ((ok=cs_fstlukt(field->Def->Data[0],h.File->Id,h.KEY,&tile,&ni,&nj,&nk))<0) {
          Tcl_AppendResult(Interp,"FSTD_FieldRead: Could not read field data (c_fstluk failed)",(char*)NULL);
          FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
-      }
+      } 
    }
 
-   // Check for mask (TYPVAR==@@)
+   // Check for mask (TYPVAR==@@) 
    if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
       ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
       if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
@@ -2543,6 +2544,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    FSTD_FileUnset(Interp,file);
+
    return(TCL_OK);
 }
 

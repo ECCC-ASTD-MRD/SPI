@@ -65,7 +65,7 @@ ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #-----
 LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
 #LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.0.1${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.1.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -537,7 +537,7 @@ fi
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
-   export CFLAGS="-std=c99 -D_TK_SOURCE -fopenmp"
+   export CFLAGS="-std=c99 -D_TK_SOURCE -fopenmp"   
 #System with no OpenGL   export LDFLAGS="-L$LIB_PATH/GL/lib"
 
    printf -- "\n----- Making TclSystem Library  -----\n"
