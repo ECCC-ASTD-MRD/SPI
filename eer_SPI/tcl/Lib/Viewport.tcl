@@ -254,29 +254,24 @@ proc Viewport::Activate { Frame { VP "" } } {
    variable Data
 
    #----- Si le viewport actif est le courant, out
-
-   if { $Frame=="" || [string range $VP 0 3]=="MINI" } {
+   if { $Frame=="" || [string range $VP 0 3]=="MINI" || $Data(VP)==$VP } {
       return
    }
 
    #----- Desactiver le viewport precedent
-
    Page::ActiveUnWrap $Frame $Data(VP)
 
    #----- Si pas de viewport, selectionner celui defaut du frame
-
    if { $VP!="" } {
       set Data(VP$Frame) $VP
    }
 
    #----- Definir les objects courants
-
    set Data(VP)                 $Data(VP$Frame)
    set Page::Data(VP)           $Data(VP$Frame)
    set Data(Data)               $Data(Data$Frame)
 
    #----- Activer le viewport courant
-
    Page::ActiveWrap $Frame $Data(VP)
 
    if { $Data(VP)!="" && [llength [$Frame.page.canvas find withtag $Data(VP)]] } {

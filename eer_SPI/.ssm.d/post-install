@@ -19,5 +19,7 @@ cat > ${profilePath} << EOF
 export SPI_PATH=${packageHome}
 
 #----- If within CMC environment and SPI_LIB not loaded, load only the profile
-[[ -n \${ORDENV_VERSION} && -z \${SPI_LIB} && -d ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT} ]] && . ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT}/etc/profile.d/libSPI_${packageVersion}_\${ORDENV_PLAT}.sh || exit
+if [[ -n \${ORDENV_VERSION} && -z \${SPI_LIB} && -d ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT} ]]; then
+   . ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT}/etc/profile.d/libSPI_${packageVersion}_\${ORDENV_PLAT}.sh
+fi
 EOF

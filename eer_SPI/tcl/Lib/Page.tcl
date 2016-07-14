@@ -938,10 +938,7 @@ proc Page::ModeCam { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind PAGE$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-
    #----- Evenements de rotation
-
    $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
@@ -949,7 +946,6 @@ proc Page::ModeCam { Frame VP } {
    $c bind PAGE$VP <Double-ButtonRelease-1> "set Viewport::Map(Grabbed) \[clock click -milliseconds\]; $c config -cursor left_ptr; Viewport::GoTo $Frame \$Viewport::Map(LatCursor) \$Viewport::Map(LonCursor) -2"
 
    #----- Evenements de manipulation sur l'axe X-Y
-
    $c bind PAGE$VP <ButtonPress-2>       "$c config -cursor exchange; Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <B2-Motion>           "ProjCam::XYDo $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <ButtonRelease-2>     "$c config -cursor left_ptr; ProjCam::XYDone $Frame $Frame True"
@@ -977,8 +973,6 @@ proc Page::ModeFly { Frame VP } {
    variable Data
 
    set c $Frame.page.canvas
-
-   $c bind PAGE$VP <Motion>              "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de manipulation sur l'axe X-Y
    $c bind PAGE$VP <ButtonPress-1>       "Viewport::Activate $Frame $VP; ProjCam::XYInit $Frame $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]; $c config -cursor fleur"
@@ -1025,8 +1019,6 @@ proc Page::ModeData { Frame VP } {
    variable Data
 
    set c $Frame.page.canvas
-
-   $c bind PAGE$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
 
    #----- Evenements de selection de region
    $c bind PAGE$VP <ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP"
@@ -1134,7 +1126,7 @@ proc Page::ModeSelect { Mode { Frames {} } } {
 
          foreach vp [Page::Registered $frame Viewport] {
 
-            $c bind PAGE$vp <Motion>                 ""
+            $c bind PAGE$vp <Motion>                 "Viewport::Activate $frame $vp; Viewport::Follow $frame $vp \[$c canvasx %x\] \[$c canvasy %y\]"
             $c bind PAGE$vp <B1-Motion>              ""
             $c bind PAGE$vp <ButtonPress-1>          ""
             $c bind PAGE$vp <ButtonRelease-1>        ""
@@ -1229,15 +1221,11 @@ proc Page::ModeZoom { Frame VP } {
 
    set c $Frame.page.canvas
 
-   $c bind PAGE$VP <Motion>          "Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
-
    #----- Evenements de zoom
-
    $c bind PAGE$VP <ButtonPress-2>   "$c config -cursor crosshair; Viewport::Activate $Frame $VP; ProjCam::ZoomInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <ButtonRelease-2> " ProjCam::ZoomIn $Frame $Frame $VP; $c config -cursor left_ptr"
 
    #----- Evenements de rotation
-
    $c bind PAGE$VP <ButtonPress-1>   "$c config -cursor hand1; Viewport::Activate $Frame $VP; Viewport::RotateInit $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <B1-Motion>       "Viewport::RotateDo $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]"
    $c bind PAGE$VP <ButtonRelease-1> " $c config -cursor left_ptr; Viewport::RotateDone $Frame $VP True"
