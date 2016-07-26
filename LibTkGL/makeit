@@ -59,11 +59,7 @@ PROC=`uname -m | tr _ -`
 #----- Dependencies paths
 
 SRC_PATH=`pwd`
-#TMP_PATH=${TMPBASE-/tmp/$USER}/$$/${ORDENV_PLAT}                          #----- Temporary directory where the external libraries will be compiled
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
-ARCH_PATH=/users/dor/afsr/ops/Links/devfs/Archive                         #----- Location of external library source code
-LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs/Lib/${ORDENV_PLAT}           #----- Location of external libraries we won't compile
-#LIB_PATH_OPS=/users/dor/afsr/ops/Links/devfs_cnfs/Lib/${ORDENV_PLAT}
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_3.1.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 
@@ -114,7 +110,7 @@ if [[ $EXT -eq 1 ]]; then
    CURL=curl-7.49.1
    SQLITE=sqlite-3.6.23
    GEOS=geos-3.5.0
-   GDAL=gdal-2.1.0
+   GDAL=gdal-2.1.1
    MYSQL=mysql-5.1
    JASPER=jasper-1.900.1
    JPEG=jpeg-6b
@@ -144,7 +140,7 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- Create output directories (link to SSM workspace)
    rm -f -r ${LIB_PATH}
-   mkdir -p ${LIB_PATH}/lib ${LIB_PATH}/include
+   mkdir -p ${LIB_PATH}/lib ${LIB_PATH}/include ${LIB_PATH}/man/man1
 
    [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
    mkdir -p "${TMP_PATH}"
@@ -153,13 +149,13 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- The library we don't compile doesn't need to be copied, so link them to the original dir
 
-   if [[ $LIB_PATH_OPS != $LIB_PATH ]]; then
+   if [[ $EXT_LIB_PATH != $LIB_PATH ]]; then
       for l in $SLINK_LIBS; do
-         if [[ -e $LIB_PATH_OPS/$l ]]; then
+         if [[ -e $EXT_LIB_PATH/$l ]]; then
             echo "Copying precompiled $l"
-            cp -frd $LIB_PATH_OPS/$l/lib/*.so* $LIB_PATH/lib
-            if [[ -e $LIB_PATH_OPS/$l/include ]]; then
-               cp -frd $LIB_PATH_OPS/$l/include/* $LIB_PATH/include
+            cp -frd $EXT_LIB_PATH/$l/lib/*.so* $LIB_PATH/lib
+            if [[ -e $EXT_LIB_PATH/$l/include ]]; then
+               cp -frd $EXT_LIB_PATH/$l/include/* $LIB_PATH/include
             fi
          else
             echo "Library $l could not be found : symlink failed."
@@ -170,21 +166,21 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- RMN, copies libs and BUFR and RPN dictionnaries
    echo "Copying precompiled $RMN"
-   cp -frd $LIB_PATH_OPS/$RMN/lib/* $LIB_PATH/lib
-   cp -frd $LIB_PATH_OPS/$RMN/include/* $LIB_PATH/include
+   cp -frd $EXT_LIB_PATH/$RMN/lib/* $LIB_PATH/lib
+   cp -frd $EXT_LIB_PATH/$RMN/include/* $LIB_PATH/include
    mkdir -p $LIB_PATH/share/rmn
    cd $AFSISIO/datafiles/constants/
    cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.0.dtd iso-lat1.ent $LIB_PATH/share/rmn
 
    #----- EZSCINT, copies libs
    echo "Copying precompiled $EZSCINT"
-   cp -frd $LIB_PATH_OPS/$EZSCINT/lib/* $LIB_PATH/lib
-   cp -frd $LIB_PATH_OPS/$EZSCINT/include/* $LIB_PATH/include
+   cp -frd $EXT_LIB_PATH/$EZSCINT/lib/* $LIB_PATH/lib
+   cp -frd $EXT_LIB_PATH/$EZSCINT/include/* $LIB_PATH/include
 
    #----- EZINTERPV, copies libs
    echo "Copying precompiled $EZINTERPV"
-   cp -frd $LIB_PATH_OPS/$EZINTERPV/lib/* $LIB_PATH/lib
-   cp -frd $LIB_PATH_OPS/$EZINTERPV/include/* $LIB_PATH/include
+   cp -frd $EXT_LIB_PATH/$EZINTERPV/lib/* $LIB_PATH/lib
+   cp -frd $EXT_LIB_PATH/$EZINTERPV/include/* $LIB_PATH/include
    set -e
 
    #----- Mesa
@@ -192,14 +188,14 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${MESA}/build.log"
       mkdir ${TMP_PATH}/${MESA}
       cd ${TMP_PATH}/${MESA}
-      cp -r -p ${ARCH_PATH}/${MESA}/ ${TMP_PATH}/
+      cp -r -p ${EXT_SRC_PATH}/${MESA}/ ${TMP_PATH}/
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct
       make 
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    
       #----- OpenFlight
       echo "Building ${TMP_PATH}/${FLT}/build.log"
-      cp -r -p ${ARCH_PATH}/${FLT} ${TMP_PATH}/
+      cp -r -p ${EXT_SRC_PATH}/${FLT} ${TMP_PATH}/
       cd ${TMP_PATH}/${FLT}
       (make
       cp *.h ${LIB_PATH}/include
@@ -212,14 +208,14 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tcl${TCL_VERSION}
    cd ${TMP_PATH}/tcl${TCL_VERSION}
-   (${ARCH_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
+   (${EXT_SRC_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
    make install) > ${TMP_PATH}/tcl${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tk
    echo "Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tk${TCL_VERSION}
    cd ${TMP_PATH}/tk${TCL_VERSION}
-   (${ARCH_PATH}/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
+   (${EXT_SRC_PATH}/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
 
    #----- Remove visibility-hidden flag from makefile for glCanvas to work
    mv Makefile Makefile.hidden
@@ -227,7 +223,7 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/tk${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tcllib
-   cd ${ARCH_PATH}/Tcllib-${TCLLIB}
+   cd ${EXT_SRC_PATH}/Tcllib-${TCLLIB}
    ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/tcllib${TCLLIB} || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- TkImg
@@ -237,7 +233,7 @@ if [[ $EXT -eq 1 ]]; then
       cd ${TMP_PATH}/${TKIMG}
       
       #----- Because some setup enable jbig without the big stuff
-      (${ARCH_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
+      (${EXT_SRC_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
       make install) > ${TMP_PATH}/${TKIMG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
@@ -247,14 +243,14 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${TKTABLE}/build.log"
    mkdir ${TMP_PATH}/${TKTABLE}
    cd ${TMP_PATH}/${TKTABLE}
-   (${ARCH_PATH}/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${EXT_SRC_PATH}/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKTABLE}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tkdnd
    echo "Building ${TMP_PATH}/${TKDND}/build.log"
    mkdir ${TMP_PATH}/${TKDND}
    cd ${TMP_PATH}/${TKDND}
-   (${ARCH_PATH}/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${EXT_SRC_PATH}/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- libxml2
@@ -266,7 +262,7 @@ if [[ $EXT -eq 1 ]]; then
       LIBXML_PATH=${LIB_PATH}
       mkdir ${TMP_PATH}/${XML}
       cd ${TMP_PATH}/${XML}
-      (${ARCH_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
+      (${EXT_SRC_PATH}/${XML}/configure --prefix=${LIB_PATH} --enable-64bit=${x64} --without-python --enable-shared=yes --enable-static=no
       make install) > ${TMP_PATH}/${XML}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
    
@@ -275,7 +271,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${TDOM}/build.log"
       mkdir ${TMP_PATH}/${TDOM}
       cd ${TMP_PATH}/${TDOM}
-      (${ARCH_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
+      (${EXT_SRC_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
       make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -285,7 +281,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${EXPAT}/build.log"
    mkdir ${TMP_PATH}/${EXPAT}
    cd ${TMP_PATH}/${EXPAT}
-   (${ARCH_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   (${EXT_SRC_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
    make install) > ${TMP_PATH}/${EXPAT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- curl
@@ -297,7 +293,7 @@ if [[ $EXT -eq 1 ]]; then
       LIBCURL_PATH=${TMP_PATH}
       mkdir ${TMP_PATH}/${CURL}
       cd ${TMP_PATH}/${CURL}
-      (${ARCH_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
+      (${EXT_SRC_PATH}/${CURL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --without-libssh2 --without-ssl
       make install) > ${TMP_PATH}/${CURL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -306,7 +302,7 @@ if [[ $EXT -eq 1 ]]; then
 #      echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
 #      mkdir ${TMP_PATH}/${SQLITE}.1
 #      cd ${TMP_PATH}/${SQLITE}.1
-#      (${ARCH_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
+#      (${EXT_SRC_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
 #      make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 #   fi
 
@@ -315,7 +311,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${GEOS}/build.log"
       mkdir ${TMP_PATH}/${GEOS}
       cd ${TMP_PATH}/${GEOS}
-      (${ARCH_PATH}/${GEOS}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-python=no --enable-ruby=no --with-gnu-ld=yes
+      (${EXT_SRC_PATH}/${GEOS}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-python=no --enable-ruby=no --with-gnu-ld=yes
       make install) > ${TMP_PATH}/${GEOS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -323,7 +319,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${JPEG}/build.log"
    mkdir ${TMP_PATH}/${JPEG}
    cd ${TMP_PATH}/${JPEG}
-   (${ARCH_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   (${EXT_SRC_PATH}/${JPEG}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
    #----- This is needed because the defines in jconfig.h causes conflicts with cpl_config.h (GDAL)
    mv jconfig.h jconfig.h.ori
    sed 's/^\(#define \(HAVE_STDLIB_H\) *\)$/\/\/ ELO: HAVE_STDLIB_H may already be defined elsewhere\'$'\n''#ifndef \2\'$'\n''\1\'$'\n''#endif/' jconfig.h.ori > jconfig.h
@@ -333,28 +329,28 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${JASPER}/build.log"
    mkdir ${TMP_PATH}/${JASPER}
    cd ${TMP_PATH}/${JASPER}
-   (${ARCH_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS"
+   (${EXT_SRC_PATH}/${JASPER}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${TMP_PATH}/${JASPER}/src/libjasper/include $CFLAGS"
    make install) > ${TMP_PATH}/${JASPER}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- HDF-4
    echo "Building ${TMP_PATH}/${HDF4}/build.log"
    mkdir ${TMP_PATH}/${HDF4}
    cd ${TMP_PATH}/${HDF4}
-   (${ARCH_PATH}/${HDF4}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}
+   (${EXT_SRC_PATH}/${HDF4}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-netcdf --disable-fortran --with-jpeg=${LIB_PATH}
    make install) > ${TMP_PATH}/${HDF4}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- SZIP
    echo "Building ${TMP_PATH}/${SZIP}/build.log"
    mkdir ${TMP_PATH}/${SZIP}
    cd ${TMP_PATH}/${SZIP}
-   (${ARCH_PATH}/${SZIP}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   (${EXT_SRC_PATH}/${SZIP}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
    make install) > ${TMP_PATH}/${SZIP}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- HDF-5
    echo "Building ${TMP_PATH}/${HDF5}/build.log"
    mkdir ${TMP_PATH}/${HDF5}
    cd ${TMP_PATH}/${HDF5}
-   (${ARCH_PATH}/${HDF5}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --with-szlib=${LIB_PATH} --disable-fortran
+   (${EXT_SRC_PATH}/${HDF5}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --with-szlib=${LIB_PATH} --disable-fortran
    make install) > ${TMP_PATH}/${HDF5}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- netCDF (Man path on AIX)
@@ -362,7 +358,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${NETCDF}/build.log"
       mkdir ${TMP_PATH}/${NETCDF}
       cd ${TMP_PATH}/${NETCDF}
-      (${ARCH_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
+      (${EXT_SRC_PATH}/${NETCDF}/configure --prefix=${LIB_PATH} --enable-netcdf4 --enable-hdf4 --enable-shared=yes --enable-static=no --enable-c-only --disable-examples \
          CPPFLAGS="$CPPFLAGS -I${LIB_PATH}/include" LDFLAGS="$LDFLAGS -L${LIB_PATH}/lib" "$(test "$ARCH" = "AIX" && echo "LIBS=$LIBS -lsz -ljpeg")"
       test -d man4 && { mv man4/Makefile man4/Makefile.ori; printf 'install:\n\n' > man4/Makefile; }
       make install) > ${TMP_PATH}/${NETCDF}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
@@ -373,17 +369,17 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${GRIB}/build.log"
       mkdir ${TMP_PATH}/${GRIB}
       cd ${TMP_PATH}/${GRIB}
-      (${ARCH_PATH}/${GRIB}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-pthread --with-png-support --with-jasper=${LIB_PATH} \
-         FCFLAGS="-I${ARCH_PATH}/${GRIB}/src -I${ARCH_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${ARCH_PATH}/${GRIB}/src $CFLAGS"
+      (${EXT_SRC_PATH}/${GRIB}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-pthread --with-png-support --with-jasper=${LIB_PATH} \
+         FCFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src -I${EXT_SRC_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src $CFLAGS"
 
       #----- Because the genius who developped the DEVEL_RULES mechanism never build outside his tree
       touch ${TMP_PATH}/${GRIB}/{src,definitions}/dummy.am
 
       #----- Because using variables to locate executables and source files instead of just hoping they magically appear in the current directory is just too difficult
-      cp -p ${ARCH_PATH}/${GRIB}/tools/grib1to2.in ${TMP_PATH}/${GRIB}/tools/
-      cp -p ${ARCH_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
-      cp -p ${ARCH_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
-      cp -rp ${ARCH_PATH}/${GRIB}/samples ${TMP_PATH}/${GRIB}
+      cp -p ${EXT_SRC_PATH}/${GRIB}/tools/grib1to2.in ${TMP_PATH}/${GRIB}/tools/
+      cp -p ${EXT_SRC_PATH}/${GRIB}/fortran/create_grib_f90.sh ${TMP_PATH}/${GRIB}/fortran/
+      cp -p ${EXT_SRC_PATH}/${GRIB}/fortran/grib_f90_*.f90 ${TMP_PATH}/${GRIB}/fortran/
+      cp -rp ${EXT_SRC_PATH}/${GRIB}/samples ${TMP_PATH}/${GRIB}
 
       make install) > ${TMP_PATH}/${GRIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
@@ -394,11 +390,11 @@ if [[ $EXT -eq 1 ]]; then
       #----- Gives error on install (/etc/ld.so.conf.d/libecbufr.conf: Permission denied)
       set +e
       echo "Building ${TMP_PATH}/${ECBUFR}/build.log"
-      cp -r -p ${ARCH_PATH}/${ECBUFR} ${TMP_PATH}
+      cp -r -p ${EXT_SRC_PATH}/${ECBUFR} ${TMP_PATH}
       cd ${TMP_PATH}/${ECBUFR}
-      (./configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${ARCH_PATH}/${ECBUFR}/API/Headers $CFLAGS"
+      (./configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no CFLAGS="-I${EXT_SRC_PATH}/${ECBUFR}/API/Headers $CFLAGS"
       #----- Because the headers won't be copied by the install directive if we don't do that
-      cp ${ARCH_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
+      cp ${EXT_SRC_PATH}/${ECBUFR}/API/Headers/*.h ${TMP_PATH}/${ECBUFR}/API/Headers/
       make install) > ${TMP_PATH}/${ECBUFR}/build.log 2>&1
       #|| { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
       set -e
@@ -412,14 +408,14 @@ if [[ $EXT -eq 1 ]]; then
       echo "Building ${TMP_PATH}/${POSTGRESQL}/build.log"
       mkdir ${TMP_PATH}/${POSTGRESQL}
       cd ${TMP_PATH}/${POSTGRESQL}
-      (${ARCH_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIBXML_PATH}/include/libxml2
+      (${EXT_SRC_PATH}/${POSTGRESQL}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --disable-rpath --without-readline --enable-thread-safety --with-openssl --with-libxml --with-includes=${LIBXML_PATH}/include/libxml2
       make install) > ${TMP_PATH}/${POSTGRESQL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
       #----- ODBC
       echo "Building ${TMP_PATH}/${ODBC}/build.log"
       mkdir ${TMP_PATH}/${ODBC}
       cd ${TMP_PATH}/${ODBC}
-      (${ARCH_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+      (${EXT_SRC_PATH}/${ODBC}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
       make install) > ${TMP_PATH}/${ODBC}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -428,9 +424,9 @@ if [[ $EXT -eq 1 ]]; then
    mkdir ${TMP_PATH}/${PROJ}
    cd ${TMP_PATH}/${PROJ}
    (if [[ $ARCH != "AIX" ]]; then
-        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+        ${EXT_SRC_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
     else
-        ${ARCH_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no LDFLAGS="-lpthread $LDFLAGS"
+        ${EXT_SRC_PATH}/${PROJ}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no LDFLAGS="-lpthread $LDFLAGS"
     fi
     make install) > ${TMP_PATH}/${PROJ}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
@@ -439,7 +435,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${GDAL}/build.log"
    mkdir ${TMP_PATH}/${GDAL}
    cd ${TMP_PATH}/${GDAL}
-   cp -r -p ${ARCH_PATH}/${GDAL} ${TMP_PATH}
+   cp -r -p ${EXT_SRC_PATH}/${GDAL} ${TMP_PATH}
    if [[ $ARCH = "AIX" ]]; then
       (MkOriBckp() { test ! -e "$1".ori && mv "$1" "$1".ori; }
       RmIntTypedef() { MkOriBckp "$2"; sed 's|^\([ '$'\t'']*\)\(typedef[ '$'\t''].*[ '$'\t'']\('"$1"'\);\)$|\1// ELO: Conflicts with \3 declared in /usr/include/sys/inttypes.h on AIX\'$'\n''\1//ELO//\2|' "$2".ori > "$2"; }
@@ -493,7 +489,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-gif=internal \
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
-      --with-mysql=${LIB_PATH_OPS}/${MYSQL}/bin/mysql_config \
+      --with-mysql=${EXT_LIB_PATH}/${MYSQL}/bin/mysql_config \
       --with-sqlite3=no \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIBCURL_PATH}/bin/curl-config \
@@ -538,7 +534,10 @@ if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
    export CFLAGS="-std=c99 -D_TK_SOURCE -fopenmp"   
-#System with no OpenGL   export LDFLAGS="-L$LIB_PATH/GL/lib"
+   
+   #System with no OpenGL
+   #export LDFLAGS="-L$LIB_PATH/GL/lib"
+
 
    printf -- "\n----- Making TclSystem Library  -----\n"
 
@@ -587,12 +586,12 @@ if [[ $SPI -eq 1 ]]; then
       --with-tk=${LIB_PATH}/TCL/lib \
       --with-eer=${LIB_EER}\
       --with-rmn=${LIB_PATH} \
-      --with-gdb=${LIB_PATH_OPS}/gdb \
+      --with-gdb=${EXT_LIB_PATH}/gdb \
       --with-gdal=${LIB_PATH}/bin/gdal-config  \
       --with-grib=${LIB_PATH} \
       --with-ecbufr=${LIB_PATH} \
       --with-flt=${LIB_PATH} \
-      --with-urp=${LIB_PATH_OPS}/URP
+      --with-urp=${EXT_LIB_PATH}/URP
    fi
    make install
 

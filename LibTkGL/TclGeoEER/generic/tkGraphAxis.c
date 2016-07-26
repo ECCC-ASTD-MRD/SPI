@@ -1008,7 +1008,7 @@ int GraphAxis_Layout(TGraphAxis *Axis,int Side,int Width,int Height,int *X0,int 
          dx -= Width*0.5;
       }
    } else {
-      if (Axis->Pos[0]=='L') {
+      if (Axis->Pos[1]=='L') {
          dx -= Width;
          dxl = -15;
       } else {

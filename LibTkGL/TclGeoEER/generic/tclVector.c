@@ -1164,7 +1164,7 @@ int Vector_SetData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,int Idx) {
 
    if (Vec->Cp) {
       if (nobj!=Vec->N) {
-         Tcl_AppendResult(Interp,"Vector_SetData: Composant number invalid",(char*)NULL);
+         Tcl_AppendResult(Interp,"Vector_SetData: Component number invalid",(char*)NULL);
          return(TCL_ERROR);
       }
      for(n=0;n<Vec->N;n++) {
