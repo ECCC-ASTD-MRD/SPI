@@ -1256,7 +1256,7 @@ proc SPI::DrawTrajGraph { Frame } {
    if { $Data(ShowTrajGraph) } {
       Trajectory::Graph $Frame 0 0 300 200 $Trajectory::Data(List)
       Shape::BindAllMove $Frame.page.canvas TRAJGRAPH
-      Shape::BindScale   $Frame.page.canvas TRAJGRAPH "Trajectory::GraphScale $Frame \"\$Trajectory::Data(List)\""
+      Shape::BindScale   $Frame.page.canvas TRAJGRAPH
       Shape::BindWidget  $Frame.page.canvas TRAJGRAPH
 
    } else {

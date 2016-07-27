@@ -26,7 +26,6 @@
 #    Trajectory::VarMode     { Mode }
 #    Trajectory::Graph       { Frame X0 Y0 X1 Y1 TrajId }
 #    Trajectory::GraphPlot   { Frame TrajId }
-#    Trajectory::GraphScale  { Frame TrajId X Y }
 #    Trajectory::GraphFollow { Frame X Y }
 #    Trajectory::Height      { Frame X0 Y0 X1 Y1 TrajId }
 #    Trajectory::HeightScale { Frame TrajId X Y }
@@ -863,17 +862,6 @@ proc Trajectory::GraphPlot { Frame TrajId } {
 
    }
    $Frame.page.canvas itemconfigure TRAJGRAPH -item $items
-}
-
-proc Trajectory::GraphScale { Frame TrajId X Y } {
-
-   set x [$Frame.page.canvas itemcget TRAJGRAPH -x]
-   set y [$Frame.page.canvas itemcget TRAJGRAPH -y]
-   set w [expr $X-$x]
-   set h [expr $Y-$y]
-
-   $Frame.page.canvas itemconfigure TRAJGRAPH -width $w -height $h
-   return 1
 }
 
 #----------------------------------------------------------------------------

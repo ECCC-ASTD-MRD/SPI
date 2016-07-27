@@ -134,7 +134,7 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
 
    Shape::BindAllMove $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
    Shape::BindScale   $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
-   Shape::BindFull    $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame DB$VP $VP"
+   Shape::BindFull    $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame FRDB$VP $VP"
    Shape::BindWidget  $Frame.page.canvas DB$VP
 
    Page::MaskItem $Frame
@@ -273,7 +273,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 { Title "" } { Full "" } } {
 
       $Frame.page.canvas create text $x $y -text $lbl -tags "PAGE DB$VP" -anchor sw -font $Param(Font) -fill $col
       $Frame.page.canvas create text [expr $X0+10] $y -text $id -tags "PAGE DB$VP" -anchor s -font $Param(Font)
-      $Frame.page.canvas create line $X0 $y $X1 $y -tags "PAGE DB$VP" -fill #CCCCCC
+      $Frame.page.canvas create line $X0 [expr $y-1] $X1 [expr $y-1] -tags "PAGE DB$VP" -fill #CCCCCC
 
       if { ![winfo exists $Frame.page.canvas.up$n] } {
          checkbutton $Frame.page.canvas.on$n -bg $GDefs(ColorFrame) -variable DataBar::Data(OnOff$n) -indicatoron False -cursor hand1 -bd 1 -activeforeground yellow -relief raised -image OPT_CHECK -selectimage "" -onvalue 1 -offvalue 0

@@ -2948,7 +2948,7 @@ proc Shape::Widget { Canvas Tag X Y Visible } {
       if { !$Visible && !$Page::Param(WidgetOpt) } {
          #----- Disable the options for the widget we just left
          set coords [$Canvas bbox $Tag]
-         if { !($X>0 && $X>[lindex $coords 0] && $X<[lindex $coords 2] && $Y>[lindex $coords 1] && $Y<[lindex $coords 3]) } {
+         if { !($X>0 && $X>=[lindex $coords 0] && $X<=[lindex $coords 2] && $Y>=[lindex $coords 1] && $Y<=[lindex $coords 3]) } {
             glrender -xexpose -1
             
             $Canvas itemconfigure SCPAGE$Tag -state hidden
@@ -3101,13 +3101,26 @@ proc Shape::Scale { Canvas Tag X Y args } {
    set X [$Canvas canvasx [expr $X-$x] $Page::Param(Snap)]
    set Y [$Canvas canvasy [expr $Y-$y] $Page::Param(Snap)]
 
-   if { [eval $args $X $Y] } {
-      $Canvas coords BS$Tag $X $Y
-      $Canvas coords BF$Tag [expr $X-11] $Y
-      $Canvas coords BM$Tag [expr $X-11] $Y
-      $Canvas coords BO$Tag [expr $X-22] $Y
-      $Canvas coords BD$Tag $X [lindex [$Canvas coords $Tag] 1]
+   if { [llength $args] } {
+      #----- If a scale command is provided
+      if { ![eval $args $X $Y] } {
+         return
+      }
+   } else {
+      #----- Otherwise scale a la Tk
+      set x [$Canvas itemcget $Tag -x]
+      set y [$Canvas itemcget $Tag -y]
+      set w [expr $X-$x]
+      set h [expr $Y-$y]
+
+      $Canvas itemconfigure $Tag -width $w -height $h
    }
+
+   $Canvas coords BS$Tag $X $Y
+   $Canvas coords BF$Tag [expr $X-11] $Y
+   $Canvas coords BM$Tag [expr $X-11] $Y
+   $Canvas coords BO$Tag [expr $X-22] $Y
+   $Canvas coords BD$Tag $X [lindex [$Canvas coords $Tag] 1]
 }
 
 #----------------------------------------------------------------------------
