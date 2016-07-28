@@ -22,7 +22,7 @@ namespace eval Mapper::DepotWare::WFS {
 
    set Lbl(URL) { "Addresse URL" "URL Address" }
 
-   set Msg(Request) { "Problème dans la requète de capacitées WFS (GetCapabilities)" "Problem requesting capabilities WFS (GetCapabilities)" }
+   set Msg(Request) { "ProblÃ¨me dans la requÃ¨te de capacitÃ©es WFS (GetCapabilities)" "Problem requesting capabilities WFS (GetCapabilities)" }
 }
 
 #-------------------------------------------------------------------------------

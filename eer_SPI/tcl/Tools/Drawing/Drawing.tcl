@@ -617,7 +617,7 @@ proc Drawing::DrawHead { Frame VP Vertex Color Width Font Tag } {
          set vr0 [lindex $vr 0]
          set vr1 [lindex $vr 1]
          if { [llength $vr0]>2 } {
-            $Frame.page.canvas create text [lindex $vr0 end-1] [lindex $vr0 end] -text [format " %.2f°" $h] \
+            $Frame.page.canvas create text [lindex $vr0 end-1] [lindex $vr0 end] -text [format " %.2fÂ°" $h] \
                -tags "PAGE$VP $Data(Tag) $Tag" -fill $Color -font $Font -anchor w
             eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -arrow last -tags \"PAGE$VP $Data(Tag) $Tag\"
          }

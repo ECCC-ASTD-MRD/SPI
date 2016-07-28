@@ -19,7 +19,7 @@ namespace eval Mapper::DepotWare::DIR {
    variable Data
    variable Lbl
 
-   set Lbl(Path) { "Répertoire" "Directory" }
+   set Lbl(Path) { "RÃ©pertoire" "Directory" }
 
    set Data(Path) ""
 

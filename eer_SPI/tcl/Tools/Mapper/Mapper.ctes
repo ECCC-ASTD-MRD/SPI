@@ -23,7 +23,7 @@ namespace eval Mapper { } {
    variable License
 
    set License(MapQuest)          "Data, imagery and map information provided by MapQuest, Open Street Map"
-   set License(OpenStreetMap)     "© OpenStreetMap contributors"
+   set License(OpenStreetMap)     "Â© OpenStreetMap contributors"
    set License(Stamen-Toner)      "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL"
    set License(Stamen-Watercolor) "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
    set License(Stamen-Terrain)    "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
@@ -38,7 +38,7 @@ namespace eval Mapper { } {
    set License(ESRI-WorldStreet)       "Data, imagery and map information provided by ESRI"
    set License(ESRI-WorldTopo)         "Data, imagery and map information provided by ESRI"
 
-   set Param(Title)     { "Données Geographiques" "Geographical data" }
+   set Param(Title)     { "DonnÃ©es Geographiques" "Geographical data" }
    set Param(Version)   2.1
    set Param(Icon)      BINOCULAR                                   ;#Icone
    set Param(Geom)      { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
@@ -79,6 +79,6 @@ namespace eval Mapper { } {
    set Data(CutShow)     False
    set Data(PickSize)    2
         
-   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Dock)    { "Attacher/DÃ©tacher l'interface de la fenÃªtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
 }

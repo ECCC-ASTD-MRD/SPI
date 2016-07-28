@@ -26,12 +26,12 @@ namespace eval Mapper { } {
    set Lbl(Close)         { "Fermer" "Close" }
    set Lbl(Ok)            { "Ok" "Ok" }
    set Lbl(Cancel)        { "Annuler" "Cancel" }
-   set Lbl(GeoRef)        { "Utiliser la projection de cette donnée" "Use this data's projection" }
+   set Lbl(GeoRef)        { "Utiliser la projection de cette donnÃ©e" "Use this data's projection" }
    set Lbl(Curve)         { "Courbe" "Curve" }
-   set Lbl(Stretch)       { "Étendue" "Stretch" }
+   set Lbl(Stretch)       { "Ã‰tendue" "Stretch" }
    set Lbl(Style)         { "Style" "Style" }
-   set Lbl(Data)          { "Données" "Data" }
-   set Lbl(Dig)           { "Dépots de données" "Data digging" }
+   set Lbl(Data)          { "DonnÃ©es" "Data" }
+   set Lbl(Dig)           { "DÃ©pots de donnÃ©es" "Data digging" }
    set Lbl(Display)       { "Affichage" "Display" }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(ColorRef)      { "Distribution couleur" "Color distribution" }
@@ -44,26 +44,26 @@ namespace eval Mapper { } {
    set Lbl(Table)         { "Table" "Table" }
    set Lbl(Extrude)       { "Extrusion   " "Extrude     " }
    set Lbl(Field)         { "Champ" "Field" }
-   set Lbl(FieldExpr)     { "Champ résultant" "Result field" }
+   set Lbl(FieldExpr)     { "Champ rÃ©sultant" "Result field" }
    set Lbl(Max)           { "Nombre maximum de colone" "Maximum numbre of column" }
    set Lbl(Font)          { "Police" "Font" }
-   set Lbl(Meta)          { "Méta-données" "Metadata" }
-   set Lbl(GeoLoc)        { "Géoréférencer" "Georeference" }
+   set Lbl(Meta)          { "MÃ©ta-donnÃ©es" "Metadata" }
+   set Lbl(GeoLoc)        { "GÃ©orÃ©fÃ©rencer" "Georeference" }
    set Lbl(Calcul)        { "Calculer" "Calculate" }
    set Lbl(Map)           { "Palette" "Colormap" }
    set Lbl(Del)           { "Supprimer" "Delete" }
-   set Lbl(Params)        { "Paramètres" "Parameters" }
+   set Lbl(Params)        { "ParamÃ¨tres" "Parameters" }
    set Lbl(GDAL)          { "Matriciel" "Raster" }
    set Lbl(OGR)           { "Vectoriel" "Vectorial" }
-   set Lbl(Model)         { "Modèle" "Model" }
+   set Lbl(Model)         { "ModÃ¨le" "Model" }
    set Lbl(Projection)    { "Projection" "Projection" }
    set Lbl(Translate)     { "Translation" "Translation" }
    set Lbl(Position)      { "Position" "Position" }
    set Lbl(Rotation)      { "Rotation" "Rotation" }
-   set Lbl(Resolution)    { "Résolution" "Resolution" }
-   set Lbl(Scale)         { "Échelle" "Scaling" }
+   set Lbl(Resolution)    { "RÃ©solution" "Resolution" }
+   set Lbl(Scale)         { "Ã‰chelle" "Scaling" }
    set Lbl(Invert)        { "Inversion" "Invert" }
-   set Lbl(Material)      { "Matériel" "Material" }
+   set Lbl(Material)      { "MatÃ©riel" "Material" }
    set Lbl(Red)           { "Rouge" "Red" }
    set Lbl(Green)         { "Vert" "Green" }
    set Lbl(Blue)          { "Bleue" "Blue" }
@@ -72,7 +72,7 @@ namespace eval Mapper { } {
    set Lbl(Emis)          { "Emissive" "Emissive" }
    set Lbl(Diff)          { "Diffuse" "Diffuse" }
    set Lbl(Spec)          { "Specular" "Specular" }
-   set Lbl(Shin)          { "Réflection" "Shininess" }
+   set Lbl(Shin)          { "RÃ©flection" "Shininess" }
    set Lbl(Tran)          { "Transparence" "Transparency" }
    set Lbl(Texture)       { "Texture" "Texture" }
    set Lbl(Light)         { "Illumination" "Illuminate" }
@@ -83,13 +83,13 @@ namespace eval Mapper { } {
    set Lbl(Index)         { "Index" "Index" }
    set Lbl(Label)         { "Annotation" "Label" }
    set Lbl(Fill)          { "Remplissage" "Fill" }
-   set Lbl(Layers)        { "Couches / Données" "Layers / Data" }
+   set Lbl(Layers)        { "Couches / DonnÃ©es" "Layers / Data" }
    set Lbl(Layer)         { "Couche" "Layer" }
    set Lbl(Out)           { "Contour" "Outline" }
    set Lbl(Identify)      { "Identifier" "Identify" }
    set Lbl(Trans)         { "Transformation" "Transformation" }
    set Lbl(InvTrans)      { "Inverse" "Inverse" }
-   set Lbl(Shape)         { "Géometrie" "Geometry" }
+   set Lbl(Shape)         { "GÃ©ometrie" "Geometry" }
    set Lbl(Interval)      { "Intervals" "Intervals" }
    set Lbl(Interp)        { "Interpolation" "Interpolation" }
    set Lbl(Value)         { "Valeur" "Values" }
@@ -98,19 +98,19 @@ namespace eval Mapper { } {
    set Lbl(No)            { "Non" "No" }
    set Lbl(Zoom)          { "Zoom aux limites" "Zoom to extent" }
    set Lbl(ZoomAll)       { "Zoom aux limites globales" "Zoom to global extent" }
-   set Lbl(ZoomFull)      { "Zoom pleine résolution" "Zoom to full resolution" }
+   set Lbl(ZoomFull)      { "Zoom pleine rÃ©solution" "Zoom to full resolution" }
    set Lbl(Sample)        { "Attaches" "Sampling" }
-   set Lbl(Select)        { "Sélection" "Select" }
-   set Lbl(SelectClear)   { "Annuler la sélection" "Clear selection" }
-   set Lbl(Cut)           { "Découper" "Crop" }
+   set Lbl(Select)        { "SÃ©lection" "Select" }
+   set Lbl(SelectClear)   { "Annuler la sÃ©lection" "Clear selection" }
+   set Lbl(Cut)           { "DÃ©couper" "Crop" }
    set Lbl(Clip)          { "Appliquer la coupe" "Clip to polygon" }
    set Lbl(Image)         { "Image" "Raster" }
-   set Lbl(Ref)           { "Référenciel" "Referencial" }
-   set Lbl(Coord)         { "Coordonnées" "Coordinates" }
+   set Lbl(Ref)           { "RÃ©fÃ©renciel" "Referencial" }
+   set Lbl(Coord)         { "CoordonnÃ©es" "Coordinates" }
    set Lbl(Warning)       { "Attention" "Warning" }
    set Lbl(GCP)           { "Point" "Point" }
    set Lbl(Forward)       { "Avant" "Forward" }
-   set Lbl(Backward)      { "Arrière" "Backward" }
+   set Lbl(Backward)      { "ArriÃ¨re" "Backward" }
    set Lbl(Poly)          { "Polygone" "Polygon" }
    set Lbl(Show)          { "Afficher" "Display" }
    set Lbl(NoData)        { "Valeur NIL" "No data value" }
@@ -119,32 +119,32 @@ namespace eval Mapper { } {
    set Lbl(Time)          { "Temps" "Time" }
    set Lbl(Pick)          { "Information sur l'object" "Feature info" }
    set Lbl(Project)       { "Reprojection" "Reprojecting" }
-   set Lbl(GeoProcess)    { "Géotraitement" "Geoprocessing" }
-   set Lbl(Op)            { "Opérateur" "Operator" }
+   set Lbl(GeoProcess)    { "GÃ©otraitement" "Geoprocessing" }
+   set Lbl(Op)            { "OpÃ©rateur" "Operator" }
    set Lbl(SaveAs)        { "Enregistrer sous" "Save as" }
-   set Lbl(Tolerance)     { "Tolérance" "Tolerance" }
+   set Lbl(Tolerance)     { "TolÃ©rance" "Tolerance" }
    set Lbl(SegmentLength) { "Longueur des segments" "Segment length" }
    set Lbl(Distance)      { "Distance" "Distance" }
    set Lbl(WithLayer)     { "Avec la couche" "With layer" }
    set Lbl(SegmentCurve)  { "Segments de courbes" "Curvature segments" }
    set Lbl(Invalid)       { "Rehausser les items invalides" "Highlight invalid features" }
 
-   set Lbl(Icon)         { "Icône" "Icon" }
+   set Lbl(Icon)         { "IcÃ´ne" "Icon" }
    set Lbl(Name)         { "Nom" "Name" }
-   set Lbl(SysCoord)     { "Système de coordonnées" "Coordinate system" }
-   set Lbl(MeridianPM)   { "Méridien" "Meridian" }
-   set Lbl(Unit)         { "Unité" "Unit" }
+   set Lbl(SysCoord)     { "SystÃ¨me de coordonnÃ©es" "Coordinate system" }
+   set Lbl(MeridianPM)   { "MÃ©ridien" "Meridian" }
+   set Lbl(Unit)         { "UnitÃ©" "Unit" }
    set Lbl(Axis)         { "Axe" "Axis" }
    set Lbl(Datum)        { "Nom du datum" "Datum's name" }
    set Lbl(SpheroidSMA)  { "Axe semi-majeur" "Semi-major axis" }
    set Lbl(SpheroidIF)   { "Aplatissement inverse" "Inverse flattening" }
    set Lbl(TOWGS84)      { "Conversion vers WGS84" "Convert to WGS84" }
-   set Lbl(MeridianLon)  { "Longitude à partir de Greenwich" "Longitude from Greenwich" }
+   set Lbl(MeridianLon)  { "Longitude Ã  partir de Greenwich" "Longitude from Greenwich" }
    set Lbl(UnitConvert)  { "Facteur de conversion" "Converter factor" }
    set Lbl(Proj)         { "Nom de la projection" "Projection's name" }
-   set Lbl(Spheroid)     { "Nom du sphéroïde" "Spheroid's name" }
+   set Lbl(Spheroid)     { "Nom du sphÃ©roÃ¯de" "Spheroid's name" }
 
-   set Lbl(SnapOff)      { "Snap désactivé" "Snap deactivated" }
+   set Lbl(SnapOff)      { "Snap dÃ©sactivÃ©" "Snap deactivated" }
    set Lbl(Snap10)       { "Snap 10 pixel" "Snap 10 pixel" }
    set Lbl(Snap20)       { "Snap 20 pixel" "Snap 20 pixel" }
    set Lbl(Type)         { "Type" "Type" }
@@ -162,90 +162,90 @@ namespace eval Mapper { } {
    set Lbl(DelGeom)      { "Supprimer une geometrie" "Delete geometry" }
    set Lbl(ColAdd)       { "Ajouter une colonne" "Add column" }
    set Lbl(Expr)         { "Expression" "Expression" }
-   set Lbl(LayerSelect)  { "Sélection des couches" "Select layers" }
+   set Lbl(LayerSelect)  { "SÃ©lection des couches" "Select layers" }
 
-   set Msg(GeoProcessInfo) { "Le géotraitement ne vas utiliser\nque les items sélectionné des couches" "Geoprocessing will only use\nselected features of the layers" }
+   set Msg(GeoProcessInfo) { "Le gÃ©otraitement ne vas utiliser\nque les items sÃ©lectionnÃ© des couches" "Geoprocessing will only use\nselected features of the layers" }
    set Msg(NoFeature)      { "La couche ne continent aucun item" "The layer contains no features" }
-   set Msg(GeoRef)         { "La géo-référence est invalide" "Invalid geo-reference" }
-   set Msg(File)           { "Impossible d'ouvrir le fichier spécifié" "Unable to open the specified file" }
-   set Msg(Read)           { "Lecture des données ..." "Reading data ..." }
-   set Msg(Save)           { "Cette couche à été modifiée, voulez-vous la sauvegarder ?" "This layer has benn modified, do you want to save it ?" }
+   set Msg(GeoRef)         { "La gÃ©o-rÃ©fÃ©rence est invalide" "Invalid geo-reference" }
+   set Msg(File)           { "Impossible d'ouvrir le fichier spÃ©cifiÃ©" "Unable to open the specified file" }
+   set Msg(Read)           { "Lecture des donnÃ©es ..." "Reading data ..." }
+   set Msg(Save)           { "Cette couche Ã  Ã©tÃ© modifiÃ©e, voulez-vous la sauvegarder ?" "This layer has benn modified, do you want to save it ?" }
    set Msg(Render)         { "Allocation ..." "Allocating ..." }
-   set Msg(Index)          { "Une donnée est associée a cet géometrie. Désirez-vous l'afficher ?"
+   set Msg(Index)          { "Une donnÃ©e est associÃ©e a cet gÃ©ometrie. DÃ©sirez-vous l'afficher ?"
                              "Data is associated with this geometrie. Would you like to display it ?" }
    set Msg(BadFile)        { "Impossible d'ouvrir le fichier. Type de fichier non reconnu" "Unable to open file. Unknown file type" }
-   set Msg(Deep)           { "L'arborescence contient beaucoup de fichier, le processus peut être long.\n\n\tVoulez vous continuer ?"
+   set Msg(Deep)           { "L'arborescence contient beaucoup de fichier, le processus peut Ãªtre long.\n\n\tVoulez vous continuer ?"
                              "The directory tree contains many files, the process might take some time.\n\n\tDo you want to continue ?" }
    set Msg(LayerName)      { "Le nom de la couche est invalide." "Invalid layer name" }
    set Msg(FieldDel)       { "Voulez vous vraiment supprimer le champs/colonne suivant de la couche ?" "Do you really want to delete the folowing field/column from the layer ?" }
 
-   set Bubble(ProjLoad)  { "Lire un fichier de géoréférence (WKT)" "Load a georeference file (WKT)" }
-   set Bubble(ProjRef)   { "Affichage / Modification de la géoréférence (WKT)" "Display / modify georeference (WKT)" }
-   set Bubble(Mode)      { "Activer le mode de sélection des objets" "Activate feature selection mode" }
-   set Bubble(Params)    { "Activer la boite de paramètres"  "Activate the parameter interface" }
-   set Bubble(Locate)    { "Centrer la projection sur la donnée"  "Center projection on the data" }
-   set Bubble(LocateSel) { "Centrer la projection sur la sélection"  "Center projection on the selection" }
-   set Bubble(Zoom)      { "Zoom sur les limites de la donnée"  "Zoom on data extent" }
-   set Bubble(ZoomSel)   { "Zoom sur les limites de la sélection"  "Zoom on selection extent" }
-   set Bubble(Front)     { "Monte la donnée sélectionnée à l'avant plan de la liste d'affichage" "Bring the selected data to the front of the display list" }
-   set Bubble(Back)      { "Recule la donnée sélectionnée à l'arrière plan de la liste d'affichage" "Bring the selected data to the back of the display list" }
-   set Bubble(Up)        { "Monte la donnée sélectionnée dans la liste d'affichage" "Bring the selected data up in the display list" }
-   set Bubble(Down)      { "Descend la donnée sélectionnée dans la liste d'affichage" "Bring the selected data down in the display list" }
-   set Bubble(Del)       { "Supprime la donnée selectionnée de la liste d'affichage" "Delete the selected data from the display list" }
-   set Bubble(File)      { "Ouvrir un fichier de données géographiques" "Open a file of geographic data" }
-   set Bubble(Op)        { "Opérateur de sélection:\n\n~= Expression régulière\n== Égal à\n!= Différent de\n<  Plus petit que\n<= Plus petit ou égal\n>  Plus grand\n>= Plus grand ou égal\n<> Entre\n\[\] Parmi"
+   set Bubble(ProjLoad)  { "Lire un fichier de gÃ©orÃ©fÃ©rence (WKT)" "Load a georeference file (WKT)" }
+   set Bubble(ProjRef)   { "Affichage / Modification de la gÃ©orÃ©fÃ©rence (WKT)" "Display / modify georeference (WKT)" }
+   set Bubble(Mode)      { "Activer le mode de sÃ©lection des objets" "Activate feature selection mode" }
+   set Bubble(Params)    { "Activer la boite de paramÃ¨tres"  "Activate the parameter interface" }
+   set Bubble(Locate)    { "Centrer la projection sur la donnÃ©e"  "Center projection on the data" }
+   set Bubble(LocateSel) { "Centrer la projection sur la sÃ©lection"  "Center projection on the selection" }
+   set Bubble(Zoom)      { "Zoom sur les limites de la donnÃ©e"  "Zoom on data extent" }
+   set Bubble(ZoomSel)   { "Zoom sur les limites de la sÃ©lection"  "Zoom on selection extent" }
+   set Bubble(Front)     { "Monte la donnÃ©e sÃ©lectionnÃ©e Ã  l'avant plan de la liste d'affichage" "Bring the selected data to the front of the display list" }
+   set Bubble(Back)      { "Recule la donnÃ©e sÃ©lectionnÃ©e Ã  l'arriÃ¨re plan de la liste d'affichage" "Bring the selected data to the back of the display list" }
+   set Bubble(Up)        { "Monte la donnÃ©e sÃ©lectionnÃ©e dans la liste d'affichage" "Bring the selected data up in the display list" }
+   set Bubble(Down)      { "Descend la donnÃ©e sÃ©lectionnÃ©e dans la liste d'affichage" "Bring the selected data down in the display list" }
+   set Bubble(Del)       { "Supprime la donnÃ©e selectionnÃ©e de la liste d'affichage" "Delete the selected data from the display list" }
+   set Bubble(File)      { "Ouvrir un fichier de donnÃ©es gÃ©ographiques" "Open a file of geographic data" }
+   set Bubble(Op)        { "OpÃ©rateur de sÃ©lection:\n\n~= Expression rÃ©guliÃ¨re\n== Ã‰gal Ã \n!= DiffÃ©rent de\n<  Plus petit que\n<= Plus petit ou Ã©gal\n>  Plus grand\n>= Plus grand ou Ã©gal\n<> Entre\n\[\] Parmi"
                            "Selection operator:\n\n~= Regular expression\n== Equal to\n!= Different from\n<  Smaller than\n<= Smaller or equal to\n>  Greather than\n>= Greather or equal to\n<> From - to\n\[\] Within" }
-   set Bubble(Histo)     { "Extraire l'histogramme de la bande sélectionnée" "Extract selected band histogram" }
+   set Bubble(Histo)     { "Extraire l'histogramme de la bande sÃ©lectionnÃ©e" "Extract selected band histogram" }
    set Bubble(ColAdd)    { "Ajouter une colonne" "Add column" }
    set Bubble(ColDel)    { "Supprimer la colonne active" "Delete active column" }
    set Bubble(ColCalc)   { "Effectuer un calcul sur les champs/colonne" "Perform a calculus on the fields/columns" }
-   set Bubble(Calc)      { "Entrez une expression utilisant les noms de champs/colonnes\nprécédé de . ainsi que les fonctions de la calculatrice.\n\n\tex: .area*10.0/.population" "Enter an expresion using the fields/columns names\npreceded by . and the calculator functions.\n\n\tex: .area*10.0/.population" }
-   set Bubble(CalcRes)   { "Champ/colonne ou seront inscrit les résultats de l'expression. Si le champs/colonne existe,\nses valeurs seront changées, sinon un nouveau champ/colonne sera créée" 
+   set Bubble(Calc)      { "Entrez une expression utilisant les noms de champs/colonnes\nprÃ©cÃ©dÃ© de . ainsi que les fonctions de la calculatrice.\n\n\tex: .area*10.0/.population" "Enter an expresion using the fields/columns names\npreceded by . and the calculator functions.\n\n\tex: .area*10.0/.population" }
+   set Bubble(CalcRes)   { "Champ/colonne ou seront inscrit les rÃ©sultats de l'expression. Si le champs/colonne existe,\nses valeurs seront changÃ©es, sinon un nouveau champ/colonne sera crÃ©Ã©e" 
                            "Field/column where to save the result. If the field/column exists\nit's values will be overwritten, otherwise a new field/column will be created" }
    set Bubble(OGRAdd)    { "Ajouter un objet" "Add a feature" }
    set Bubble(OGRDel)    { "Supprimet un objet" "Delete a feature" }
-   set Bubble(OGREdit)   { "Edition des vertices\n\nBouton Gauche      : Déplacer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : Insérer un point"
+   set Bubble(OGREdit)   { "Edition des vertices\n\nBouton Gauche      : DÃ©placer un point\nBouton Centre      : Supprimer un point\nShift-Bouton Gauche: Ajouter un point\nCtrl-Bouton Gauche : InsÃ©rer un point"
                            "Vertices edition\nLeft Button      : Move vertices\nMiddle Button    : Delete vertices\nShift-Left Button: Add vertices\nCtrl-Left Button : Insert vertices" }
 
-   set Bubble(Projection)    { "Description du système de coordonnées géographiques (WKT)" "Geographical coordinate system description (WKT)" }
+   set Bubble(Projection)    { "Description du systÃ¨me de coordonnÃ©es gÃ©ographiques (WKT)" "Geographical coordinate system description (WKT)" }
    set Bubble(Transform)     { "Matrice de transformation avant et inverse (dx sx rx dy ry sy)" "Transform matrix and inverse (dx sx rx dy ry sy)" }
-   set Bubble(CurveBand)     { "Sélection du canal/bande pour lequel vous soulez modifier la courbe" "Select the channel/band for which you want to change the curve" }
-   set Bubble(LockBand)      { "Sélection de tous les canaux/bandes à modifier en même temps" "Select all of the channels/bands to change together" }
-   set Bubble(PosArray)      { "Sélection des canaux/bandes contenant les positions des pixels" "Select the channels/bands containing pixel locations" }
-   set Bubble(Curve)         { "Sélection de la courbe a appliquer" "Sélect which curve to apply" }
+   set Bubble(CurveBand)     { "SÃ©lection du canal/bande pour lequel vous soulez modifier la courbe" "Select the channel/band for which you want to change the curve" }
+   set Bubble(LockBand)      { "SÃ©lection de tous les canaux/bandes Ã  modifier en mÃªme temps" "Select all of the channels/bands to change together" }
+   set Bubble(PosArray)      { "SÃ©lection des canaux/bandes contenant les positions des pixels" "Select the channels/bands containing pixel locations" }
+   set Bubble(Curve)         { "SÃ©lection de la courbe a appliquer" "SÃ©lect which curve to apply" }
    set Bubble(Transparency)  { "Facteur de transparence" "Transparency factor" }
-   set Bubble(Resolution)    { "Facteur de diminution de la résolution" "Diminutive resolution factor" }
-   set Bubble(Interp)        { "Degrée d'interpolation" "Interpolation degree" }
+   set Bubble(Resolution)    { "Facteur de diminution de la rÃ©solution" "Diminutive resolution factor" }
+   set Bubble(Interp)        { "DegrÃ©e d'interpolation" "Interpolation degree" }
    set Bubble(CurveTool)     { "Outil de modification de la courbe" "Curve modification tool" }
    set Bubble(CurveMin)      { "Minimum de la courbe" "Curve minimum" }
    set Bubble(CurveNow)      { "Valeur courant au curseur" "Current cursor value" }
-   set Bubble(CurveNb)       { "Nombre de valeur à la position de l'histogramme" "Number of values at histogram position" }
+   set Bubble(CurveNb)       { "Nombre de valeur Ã  la position de l'histogramme" "Number of values at histogram position" }
    set Bubble(CurveMax)      { "Maximum de la courbe" "Curve maximum" }
-   set Bubble(ShowMap)       { "Afficher l'échelle de couleur" "Display colorbar" }
+   set Bubble(ShowMap)       { "Afficher l'Ã©chelle de couleur" "Display colorbar" }
    set Bubble(ColorMap)      { "Palette de couleur" "Colormap selection" }
    set Bubble(CurveLimitMin) { "Minimum de la bande" "Band minimum" }
    set Bubble(CurveLimitMax) { "Maximum de la bande" "Band maximum" }
    set Bubble(Band)          { "Assignation des bandes aux canaux RGBA" "RGBA band to channel assignation" }
-   set Bubble(TopoFactor)    { "Facteur a appliquer à la topographie" "Factor to apply to topography" }
-   set Bubble(Topo)          { "Sélection de la topographie a appliquer à la bande" "Select topography to apply to band" }
-   set Bubble(Sample)        { "Échantillonage des points d'attache géographiques" "Geographical tie point sampling" }
-   set Bubble(CropTool)      { "Mode de sélection du polygone de coupe" "Clipping mode selection" }
+   set Bubble(TopoFactor)    { "Facteur a appliquer Ã  la topographie" "Factor to apply to topography" }
+   set Bubble(Topo)          { "SÃ©lection de la topographie a appliquer Ã  la bande" "Select topography to apply to band" }
+   set Bubble(Sample)        { "Ã‰chantillonage des points d'attache gÃ©ographiques" "Geographical tie point sampling" }
+   set Bubble(CropTool)      { "Mode de sÃ©lection du polygone de coupe" "Clipping mode selection" }
    set Bubble(CropShow)      { "Afficher le polygone de coupe" "Show clipping polygon" }
    set Bubble(CropDo)        { "Appliquer la coupe" "Apply polygon clipping" }
-   set Bubble(NoData)        { "Valeur des données manquantes" "Value of missing data" }
+   set Bubble(NoData)        { "Valeur des donnÃ©es manquantes" "Value of missing data" }
 
-   set Bubble(ItemIndex)     { "Index de l'item dans la base de données" "Item index within the database" }
-   set Bubble(ItemData)      { "Données des champs de l'item" "Item's field data" }
+   set Bubble(ItemIndex)     { "Index de l'item dans la base de donnÃ©es" "Item index within the database" }
+   set Bubble(ItemData)      { "DonnÃ©es des champs de l'item" "Item's field data" }
 
-   set Bubble(RefAdd)        { "Ajouter un point de contrôle" "Add new control point" }
-   set Bubble(RefDel)        { "Supprimer le point de contrôle courant" "Delete current control point" }
-   set Bubble(RefMode)       { "Activer le mode de positionnement des point de contrôle" "Activate control point positionning mode" }
-   set Bubble(RefCalcul)     { "Calculer la transformation à partir des points de contrôle" "Calculate transform from control points" }
-   set Bubble(RefFit)        { "Méthode de calcul de la transformation" "Tramsform fitting method" }
+   set Bubble(RefAdd)        { "Ajouter un point de contrÃ´le" "Add new control point" }
+   set Bubble(RefDel)        { "Supprimer le point de contrÃ´le courant" "Delete current control point" }
+   set Bubble(RefMode)       { "Activer le mode de positionnement des point de contrÃ´le" "Activate control point positionning mode" }
+   set Bubble(RefCalcul)     { "Calculer la transformation Ã  partir des points de contrÃ´le" "Calculate transform from control points" }
+   set Bubble(RefFit)        { "MÃ©thode de calcul de la transformation" "Tramsform fitting method" }
 
-   set Bubble(DepotAdd)      { "Ajouter un dépot de données à la liste des dépots" "Add data repository to known repository list"}
-   set Bubble(DepotDel)      { "Supprimer le dépot de données de la liste" "Remove repository from list"}
-   set Bubble(DepotReset)    { "Annuler la region d'intérêt" "Cancel area of interest" }
-   set Bubble(DepotSelect)   { "Sélection d'une région d'intérêt" "Select an area of interest" }
-   set Bubble(DepotParams)   { "Paramètres du dépot de données" "Data repository parameters" }
+   set Bubble(DepotAdd)      { "Ajouter un dÃ©pot de donnÃ©es Ã  la liste des dÃ©pots" "Add data repository to known repository list"}
+   set Bubble(DepotDel)      { "Supprimer le dÃ©pot de donnÃ©es de la liste" "Remove repository from list"}
+   set Bubble(DepotReset)    { "Annuler la region d'intÃ©rÃªt" "Cancel area of interest" }
+   set Bubble(DepotSelect)   { "SÃ©lection d'une rÃ©gion d'intÃ©rÃªt" "Select an area of interest" }
+   set Bubble(DepotParams)   { "ParamÃ¨tres du dÃ©pot de donnÃ©es" "Data repository parameters" }
 }

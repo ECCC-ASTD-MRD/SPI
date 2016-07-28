@@ -45,14 +45,14 @@ namespace eval Mapper::Geo { } {
    set Lbl(Locate)      { "Centrer sur la localisation" "Zoom to localisation" }
    set Lbl(NoAddress)   { "Aucune adresse" "No address" }
 
-   set Msg(Request)     { "Requète de geo-localisation en cours ..." "Sending geocoding request ..." }
+   set Msg(Request)     { "RequÃ¨te de geo-localisation en cours ..." "Sending geocoding request ..." }
 
-   set Error(Request)   { "Problème dans la requète de geo-localisation." "Problem requesting geocoding information." }
+   set Error(Request)   { "ProblÃ¨me dans la requÃ¨te de geo-localisation." "Problem requesting geocoding information." }
    set Error(NoneFound) { "Aucune information disponible sur cette localisation." "No information available for this localisation." }
 
    set Bubble(Code)     { "Recherche la localisation d'un endroit ou d'une adresse" "Look for location of a place or specific adress" }
    set Bubble(ICode)    { "Recherce de l'endroit ou l'adresse a une localisation" "Look for place or specific adress at a location" }
-   set Bubble(API)      { "Sélection du service à utiliser" "Select service to use" }
+   set Bubble(API)      { "SÃ©lection du service Ã  utiliser" "Select service to use" }
 
    array set Accuracy {
       0  "Unknown accuracy"

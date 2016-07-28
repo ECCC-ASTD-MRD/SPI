@@ -47,7 +47,7 @@ namespace eval NowCaster { } {
    set Data(Sec1)        $Data(Sec)
    set Data(Now)         False
 
-   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Dock)    { "Attacher/DÃ©tacher l'interface de la fenÃªtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
 }
 

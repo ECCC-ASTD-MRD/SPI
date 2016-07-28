@@ -62,7 +62,7 @@ proc Mapper::WKT::Param { Proj } {
       set Data(Files) {}
    }
 
-   #----- Charger les listes des valeur possibles des différents combobox
+   #----- Charger les listes des valeur possibles des diffÃ©rents combobox
    if { ![info exists Mapper::WKT::Data(Proj)] } {
       Mapper::WKT::List Data(CoordRefList)   Data(CoordRefs)   1
       Mapper::WKT::List Data(DatumList)      Data(Datums)      1
@@ -278,16 +278,16 @@ proc Mapper::WKT::ParamProj { { Frame "" } } {
       labelframe ${prefix} -labelwidget ${prefix}epsg
       pack ${prefix} -side top -padx 5 -pady 5 -fill x
 
-      #----- Positionnement au prochain élément, après PROJECTION
+      #----- Positionnement au prochain Ã©lÃ©ment, aprÃ¨s PROJECTION
       set indextitre [Mapper::WKT::Find $Data(Proj) PROJECTION]
       lset indextitre end [expr [lindex $indextitre end] + 2]
       set iparams 0
       set prefix "${prefix}.bidon"
 
       while { [set curparam [lindex $Data(Proj) $indextitre]] != {} && $curparam != "AUTHORITY" } {
-         #----- Si le type de paramètre courant n'est pas égale au précédent, on crée une autre section
+         #----- Si le type de paramÃ¨tre courant n'est pas Ã©gale au prÃ©cÃ©dent, on crÃ©e une autre section
          if { $curparam != [lindex $Data(Proj) [lreplace $indextitre end end [expr [lindex $indextitre end] - 2]]] } {
-            #----- On redéfinie la variable Data(ProjIntPrefix) pour inclure les prochains widgets dans le labelframe
+            #----- On redÃ©finie la variable Data(ProjIntPrefix) pour inclure les prochains widgets dans le labelframe
             set prefix [string range ${prefix} 0 [expr [string last "." ${prefix}] - 1]]
             set prefix "${prefix}.flparams$iparams"
             labelframe ${prefix} -text $curparam
@@ -321,14 +321,14 @@ proc Mapper::WKT::ParamProj { { Frame "" } } {
 # Nom      : <Mapper::WKT::Item>
 # Creation : Fevrier 2007 - Maxime Samuel - CMC/CMOE
 #
-# But      : Cherche une valeur dans une liste de sous-liste. La valeur recherchée
-#            se trouve à la position "Colonne" et on retourne la valeur à "RIndex".
-#            Si RIndex n'existe pas, la position dans la liste principale est retounée.
+# But      : Cherche une valeur dans une liste de sous-liste. La valeur recherchÃ©e
+#            se trouve Ã  la position "Colonne" et on retourne la valeur Ã  "RIndex".
+#            Si RIndex n'existe pas, la position dans la liste principale est retounÃ©e.
 #
 # Parametres :
-#   <List>   : La liste à rechercher. Généralement une liste de sous-liste.
-#   <Value>  : La valeur recherché.
-#   <Index>  : La position de la valeur recherchée dans la sous-liste.
+#   <List>   : La liste Ã  rechercher. GÃ©nÃ©ralement une liste de sous-liste.
+#   <Value>  : La valeur recherchÃ©.
+#   <Index>  : La position de la valeur recherchÃ©e dans la sous-liste.
 #
 # Retour   :
 #  <List>  :  Sous-liste
@@ -351,17 +351,17 @@ proc Mapper::WKT::Item { List Value Index } {
 # Nom      : <Mapper::WKT::List>
 # Creation : Fevrier 2007 - Maxime Samuel - CMC/CMOE
 #
-# But      : Crée une liste d'une seule colonne d'une liste de sous-listes.
+# But      : CrÃ©e une liste d'une seule colonne d'une liste de sous-listes.
 #
 # Parametres :
 #   <List>   : Nom de la variable liste de sous-listes
 #   <Result> : Nom de la variable liste de sous-listes
-#   <Index>  : Index de la colonne à conserver
+#   <Index>  : Index de la colonne Ã  conserver
 #
 # Retour   :
-#  <List>  : Le nom de la variable liste des éléments créés
+#  <List>  : Le nom de la variable liste des Ã©lÃ©ments crÃ©Ã©s
 #
-# Remarques : Utilisé pour les listes des combobox
+# Remarques : UtilisÃ© pour les listes des combobox
 #
 #-------------------------------------------------------------------------------
 
@@ -381,11 +381,11 @@ proc Mapper::WKT::List { List Result Index } {
 # Nom      : <Mapper::WKT::BuildList>
 # Creation : Fevrier 2007 - Maxime Samuel - CMC/CMOE
 #
-# But      : Remplace les valeurs changées de l'interface
+# But      : Remplace les valeurs changÃ©es de l'interface
 #
 # Parametres :
-#   <WKTList>   : La liste courante traitée. Cette liste est quelque fois un seul
-#                 élément lors des appels récurrents de la fonction
+#   <WKTList>   : La liste courante traitÃ©e. Cette liste est quelque fois un seul
+#                 Ã©lÃ©ment lors des appels rÃ©currents de la fonction
 #
 # Retour   :
 #  <NewWKTList> : La liste WKT avec les nouvelles valeurs de l'interface
@@ -441,8 +441,8 @@ proc Mapper::WKT::BuildList { WKTList {Index 0}} {
 
          "GEOGCS" {
             set tmp ""
-            # Si la section AXIS existe, on l'ajoute à la chaîne finale
-            # Même test pour le no epsg
+            # Si la section AXIS existe, on l'ajoute Ã  la chaÃ®ne finale
+            # MÃªme test pour le no epsg
             if { [llength [Mapper::WKT::Find $Data(Proj) AXIS]] } {
                set tmpaxis " AXIS \{\"$Data(Axis1Name)\" $Data(Axis1Value)\} AXIS \{\"$Data(Axis2Name)\" $Data(Axis2Value)\}"
             } else {
@@ -462,8 +462,8 @@ proc Mapper::WKT::BuildList { WKTList {Index 0}} {
          }
 
          "PROJCS" {
-            # Si la section PROJECTION existe, on définit la variable "proj" pour assigner les différentes sections
-            # et l'ajouter à la chaîne finale
+            # Si la section PROJECTION existe, on dÃ©finit la variable "proj" pour assigner les diffÃ©rentes sections
+            # et l'ajouter Ã  la chaÃ®ne finale
             if { [llength $Data(ProjRefEPSG)] && $Data(ProjRefEPSG)!="" } {
                set epsg " AUTHORITY \{\"EPSG\" \"$Data(ProjRefEPSG)\"\}"
             } else {
@@ -503,10 +503,10 @@ proc Mapper::WKT::BuildList { WKTList {Index 0}} {
 # But      : Transformer une variable WKT (Well-known Text) en une liste
 #
 # Parametres :
-#   <WKT>   : Chaine de caractères du standard WKT
+#   <WKT>   : Chaine de caractÃ¨res du standard WKT
 #
 # Retour   :
-#  <list> : Liste formé par le WKT. Chaque partie de string sous la forme:
+#  <list> : Liste formÃ© par le WKT. Chaque partie de string sous la forme:
 #           ELEMENT[ "un sous-element",2,3,4 ] sont convertie en liste:
 #           { ELEMENT {"un sous-element" 2 3 4}}
 #           Donc, en une liste de l'entete et d'une sous-liste des elements.
@@ -526,10 +526,10 @@ proc Mapper::WKT::ToList { WKT } {
 # But      : Transformer une liste en une variable de type WKT (Well Known Text)
 #
 # Parametres :
-#   <Liste>   : Liste à transformer en WKT
+#   <Liste>   : Liste Ã  transformer en WKT
 #
 # Retour   :
-#  <String> : Chaîne WKT créé à partir de la liste
+#  <String> : ChaÃ®ne WKT crÃ©Ã© Ã  partir de la liste
 #
 # Remarques :
 #
@@ -537,11 +537,11 @@ proc Mapper::WKT::ToList { WKT } {
 
 proc Mapper::WKT::FromList     { Liste } {
 
-   #----- Éliminer les virgules dans les éléments de la liste
+   #----- Ã‰liminer les virgules dans les Ã©lÃ©ments de la liste
 
    set str [string map {\, ""} $Liste]
 
-   #----- Tranformer la liste en chaîne WKT
+   #----- Tranformer la liste en chaÃ®ne WKT
 
    set str [string map { " \{" \[ \} \] " " \,} $str]
    set index1 0
@@ -558,13 +558,13 @@ proc Mapper::WKT::FromList     { Liste } {
 # Nom      : <Mapper::WKT::GetEPSG>
 # Creation : Fevrier 2007 - Maxime Samuel - CMC/CMOE
 #
-# But      : Cherche la liste et retourne le premier EPSG trouvé
+# But      : Cherche la liste et retourne le premier EPSG trouvÃ©
 #
 # Parametres :
 #   <Liste>   : Rechercher dans la liste "Liste"
 #
 # Retour   :
-#  <EPSG> : Entier EPSG. Retourne -1 si non trouvé.
+#  <EPSG> : Entier EPSG. Retourne -1 si non trouvÃ©.
 #
 # Remarques :
 #
@@ -590,17 +590,17 @@ proc Mapper::WKT::GetEPSG { Liste } {
 # Parametres :
 #   <Liste>   : Rechercher dans la liste "Liste"
 #   <Element> : Element a trouver l'indice
-#   <NextSublist> : Détermine le retour selon le paramètre recu :
-#      "sublist" : Envoie l'index de l'élément suivant, qui est généralement une sous-liste
-#      "none" : Par défaut. Envoie l'index de l'élément trouvé
-#      *autres* : Utilise NextSubList comme un index (avec lindex) dans l'élément suivant
-#   <Prefix>  : Prefix d'une autre liste à concatener
+#   <NextSublist> : DÃ©termine le retour selon le paramÃ¨tre recu :
+#      "sublist" : Envoie l'index de l'Ã©lÃ©ment suivant, qui est gÃ©nÃ©ralement une sous-liste
+#      "none" : Par dÃ©faut. Envoie l'index de l'Ã©lÃ©ment trouvÃ©
+#      *autres* : Utilise NextSubList comme un index (avec lindex) dans l'Ã©lÃ©ment suivant
+#   <Prefix>  : Prefix d'une autre liste Ã  concatener
 #
 # Retour   :
-#  <Index> : Index nesté (ex: {0 1 0 2} ). Retourne -1 si non trouvé.
+#  <Index> : Index nestÃ© (ex: {0 1 0 2} ). Retourne -1 si non trouvÃ©.
 #
 # Remarques :
-#    - Fonction légèrement modifié de http://wiki.tcl.tk/3726
+#    - Fonction lÃ©gÃ¨rement modifiÃ© de http://wiki.tcl.tk/3726
 #    - Data(UNITn) sert a "fourre" le systeme puisque il y a 2 UNIT et on dans ce cas
 #         on veur le deuxieme recursivement
 #
@@ -612,14 +612,14 @@ proc Mapper::WKT::Find {Liste Element {NextSublist "none"} {Prefix {}} } {
     set pos [lsearch $Liste $Element]
     if { $pos!=-1 && ($Element!="UNIT" || [incr Data(UNITn)]>1) } {
       if { $NextSublist == "sublist" } {
-         #----- Renvoie de la supposée sous-liste après Element, en ajoutant 1 à la position trouvé de Element
+         #----- Renvoie de la supposÃ©e sous-liste aprÃ¨s Element, en ajoutant 1 Ã  la position trouvÃ© de Element
          lset pos end [expr [lindex $pos end] + 1]
          return [concat $Prefix $pos]
       } elseif { $NextSublist == "none" } {
          #----- Renvoie de la position directe de Element
          return [concat $Prefix $pos]
       } else {
-         #----- Renvoie de l'élément de la sous-liste à la position spécifié par NextSubList
+         #----- Renvoie de l'Ã©lÃ©ment de la sous-liste Ã  la position spÃ©cifiÃ© par NextSubList
          lset pos end [expr [lindex $pos end] + 1]
          lappend pos $NextSublist
          return [concat $Prefix $pos]
@@ -669,7 +669,7 @@ proc Mapper::WKT::Init  { Proj } {
 
    set Data(Proj) [Mapper::WKT::ToList $Proj]
 
-   #----- Assigner les valeurs de sélections des combobox et des entry
+   #----- Assigner les valeurs de sÃ©lections des combobox et des entry
 
    if { [llength [set index [Mapper::WKT::Find $Data(Proj) PROJCS sublist]]] } {
       set Data(ProjRef)     [lindex [lindex $Data(Proj) $index] 0]
@@ -722,11 +722,11 @@ proc Mapper::WKT::Init  { Proj } {
 # Nom      : <Mapper::WKT::UpdateWidget>
 # Creation : Mars 2007 - Maxime Samuel - CMC/CMOE
 #
-# But      : Mettre à jour certains widgets de l'interface WKT.
+# But      : Mettre Ã  jour certains widgets de l'interface WKT.
 #
 # Parametres :
 #   <Section> : Nom de la section de l'interface (e.g. DATUM, SPHEROID)
-#   <EPSG>  : Optionnel. Spécifie un no EPSG pour la section en cours. Par défaut, 0.
+#   <EPSG>  : Optionnel. SpÃ©cifie un no EPSG pour la section en cours. Par dÃ©faut, 0.
 #
 # Retour   :
 #
@@ -866,11 +866,11 @@ proc Mapper::WKT::UpdateWidget { Section { EPSG 0 } } {
 
       "PROJCS" {
          # On prend pour acquis que PROJCS ne recevra jamais de no EPSG
-         # Puisque le CRS choisi n'est peut-être pas celui de base, on cherche avec le no epsg à la position
-         # 4 dans la sous-liste (sublist) tant qu'il y a un chiffre à cette position.
+         # Puisque le CRS choisi n'est peut-Ãªtre pas celui de base, on cherche avec le no epsg Ã  la position
+         # 4 dans la sous-liste (sublist) tant qu'il y a un chiffre Ã  cette position.
          set sublist [Mapper::WKT::Item $Data(CoordRefList) $Data(ProjRef) 1]
          set epsgtmp [lindex $sublist 0]
-         # variable pour éviter une boucle infinie
+         # variable pour Ã©viter une boucle infinie
          set i 0
          while { $epsgtmp != "" || $i >= 30 } {
             set sublisttmp [Mapper::WKT::Item $Data(CoordRefList) $epsgtmp 0]
@@ -890,7 +890,7 @@ proc Mapper::WKT::UpdateWidget { Section { EPSG 0 } } {
       }
 
       default {
-         Log::Print ERROR "Paramètre de section invalide."
+         Log::Print ERROR "ParamÃ¨tre de section invalide."
       }
    }
 }

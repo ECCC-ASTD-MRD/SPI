@@ -68,12 +68,12 @@ namespace eval NowCaster::Radar { } {
    set Lbl(ZCal)    { "ZCal" "ZCal" }
    set Lbl(Nyquist) { "Nyquist" "Nyquist" }
 
-   set Msg(Read)    { "Lecture des données radar" "Reading radar data" }
+   set Msg(Read)    { "Lecture des donnÃ©es radar" "Reading radar data" }
    set Msg(Loc)     { "Impossible de trouver la localisation du radar" "Unable to find radar location" }
-   set Msg(FileBad) { "Impossible d'ouvrir ce fichier de données radar" "Unable to open this radar file" }
+   set Msg(FileBad) { "Impossible d'ouvrir ce fichier de donnÃ©es radar" "Unable to open this radar file" }
 
-   set Bubble(Mode)   { "Sélection interactive des radars" "Interactive selection of radars" }
-   set Bubble(Params) { "Paramêtres d'affichage" "Display parameters" }
+   set Bubble(Mode)   { "SÃ©lection interactive des radars" "Interactive selection of radars" }
+   set Bubble(Params) { "ParamÃªtres d'affichage" "Display parameters" }
    set Bubble(Ranges) { "Cercle des distances" "Distance ranges" }
    set Bubble(Areas)  { "Affichage de la couverture des radars" "Toggle radar footprint display" }
    set Bubble(Add)    { "Ajouter un radar" "Add a radar" }

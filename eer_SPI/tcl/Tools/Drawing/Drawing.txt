@@ -25,7 +25,7 @@ namespace eval Drawing {
 
    #----- Definitions des labels
 
-   set Lbl(3D)       { "Marques d'élévation" "Elevation markers" }
+   set Lbl(3D)       { "Marques d'Ã©lÃ©vation" "Elevation markers" }
    set Lbl(New)      { "Nouveau" "New" }
    set Lbl(Open)     { "Ouvrir" "Open" }
    set Lbl(Load)     { "Ouvrir ..." "Load ..." }
@@ -56,19 +56,19 @@ namespace eval Drawing {
 
    #----- Definition des bulles d'aides
 
-   set Bubble(GeoRef)  { "Dessin de primitives référencée géographiquement" "Draw geographically referenced items" }
-   set Bubble(Add)     { "Ajouter les coordonnees spécifiées" "Add specified coordinates" }
+   set Bubble(GeoRef)  { "Dessin de primitives rÃ©fÃ©rencÃ©e gÃ©ographiquement" "Draw geographically referenced items" }
+   set Bubble(Add)     { "Ajouter les coordonnees spÃ©cifiÃ©es" "Add specified coordinates" }
    set Bubble(Lat)     { "Latitude du point" "Vertex latitude" }
    set Bubble(Lon)     { "Longitude du point" "Vertex longitude" }
-   set Bubble(Ele)     { "Élévation du point en mêtres" "Vertex elevation in meters" }
-   set Bubble(Del)     { "Efface l'item sélectionné" "Delete the selected item" }
+   set Bubble(Ele)     { "Ã‰lÃ©vation du point en mÃªtres" "Vertex elevation in meters" }
+   set Bubble(Del)     { "Efface l'item sÃ©lectionnÃ©" "Delete the selected item" }
    set Bubble(Down)    { "Abbaisse la primitive dans la liste d'affichage" "Lower primitive in the display list" }
    set Bubble(Up)      { "Hausse la primitive dans la liste d'affichage" "Raise primitive in the display list" }
-   set Bubble(List)    { "Liste des items affichés" "List of the drawned items" }
-   set Bubble(Front)   { "Monte l'objet sélectionné à l'avant plan de la liste d'affichage" "Bring the selected object to the front of the display list" }
-   set Bubble(Back)    { "Recule l'objet sélectionné à l'arrière plan de la liste d'affichage" "Bring the selected object to the back of the display list" }
-   set Bubble(Up)      { "Monte l'objet sélectionné dans la liste d'affichage" "Bring the selected object up in the display list" }
-   set Bubble(Down)    { "Descend l'objet sélectionné dans la liste d'affichage" "Bring the selected object down in the display list" }
+   set Bubble(List)    { "Liste des items affichÃ©s" "List of the drawned items" }
+   set Bubble(Front)   { "Monte l'objet sÃ©lectionnÃ© Ã  l'avant plan de la liste d'affichage" "Bring the selected object to the front of the display list" }
+   set Bubble(Back)    { "Recule l'objet sÃ©lectionnÃ© Ã  l'arriÃ¨re plan de la liste d'affichage" "Bring the selected object to the back of the display list" }
+   set Bubble(Up)      { "Monte l'objet sÃ©lectionnÃ© dans la liste d'affichage" "Bring the selected object up in the display list" }
+   set Bubble(Down)    { "Descend l'objet sÃ©lectionnÃ© dans la liste d'affichage" "Bring the selected object down in the display list" }
    set Bubble(Mode)    { "Mode de dessin de primitives" "Select the drawing mode" }
    set Bubble(Mark)    { "Afficher les marqueurs dimensionnel" "Displays third dimension markers" }
    set Bubble(Grid)    { "Activer le collage a la grille de page" "Activate page grid snap" }
@@ -77,7 +77,7 @@ namespace eval Drawing {
    set Bubble(bitm)   { "Dessiner un bitmap" "Draw a bitmap" }
    set Bubble(imag)   { "Dessiner une image" "Draw an image" }
    set Bubble(dist)   { "Dessiner une mesure (Km)" "Draw a distance (Km)" }
-   set Bubble(vert)   { "Dessiner une échelle verticale (m)" "Draw a vertical scale (m)" }
+   set Bubble(vert)   { "Dessiner une Ã©chelle verticale (m)" "Draw a vertical scale (m)" }
    set Bubble(head)   { "Dessiner un compas avec direction" "Draw a compass with direction" }
    set Bubble(line)   { "Dessiner une ligne" "Draw a line" }
    set Bubble(poly)   { "Dessiner un polygone" "Draw a polygon" }
@@ -86,7 +86,7 @@ namespace eval Drawing {
    set Bubble(circ)   { "Dessiner un cercle" "Draw a circle" }
    set Bubble(text)   { "Dessiner du texte" "Draw text" }
    set Bubble(valu)   { "Pointage de valeur" "Value pointing" }
-   set Bubble(strk)   { "Dessin a main levée" "Stroke lines" }
+   set Bubble(strk)   { "Dessin a main levÃ©e" "Stroke lines" }
    set Bubble(strm)   { "Ligne de courants" "Streamlines" }
 }
 

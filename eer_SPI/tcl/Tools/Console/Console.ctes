@@ -38,6 +38,6 @@ namespace eval Console { } {
    set Data(History)      { }
    set Data(HistoryIndex)  0
 
-   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Dock)    { "Attacher/DÃ©tacher l'interface de la fenÃªtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
 }

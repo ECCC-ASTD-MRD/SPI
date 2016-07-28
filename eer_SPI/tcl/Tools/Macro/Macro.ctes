@@ -39,7 +39,7 @@ namespace eval Macro { } {
    set Data(Current) ""                   ;#Derniere macro activee
    set Data(Edit)    ""                   ;#Macro en cours d'edition
 
-   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Dock)    { "Attacher/DÃ©tacher l'interface de la fenÃªtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
 }
 

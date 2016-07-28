@@ -46,8 +46,8 @@ namespace eval Mapper::DepotWare {
    set Data(Lon0)   -180.0
    set Data(Lon1)   -180.0
 
-   set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
-   set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
+   set Lbl(Title)       { "Ajout d'un dÃ©pot de donnÃ©es" "Add data repository" }
+   set Lbl(TitleParams) { "ParamÃªtres du dÃ©pot de donnÃ©es" "Data repository parameters" }
    set Lbl(Types)       { "TMS - Tileb Mapping Service" "PGS - PostGIS database" "WMS - Web Mapping Service"  "WFS - Web Feature Service" "WCS - Web Coverage Service" "DIR - Data directory" }
    set Lbl(Path)        { "Localisation" "Localisation" }
    set Lbl(Type)        { "Type" "Type" }
@@ -61,7 +61,7 @@ namespace eval Mapper::DepotWare {
    set Lbl(Display)     { "Afficher" "Display" }
    set Lbl(Index)       { "Afficher l'index" "Display index" }
    set Lbl(Name)        { "Identification" "Identification" }
-   set Lbl(Params)      { "Paramêtres" "Parameters" }
+   set Lbl(Params)      { "ParamÃªtres" "Parameters" }
    set Lbl(Save)        { "Sauvegarder" "Save" }
    set Lbl(Cancel)      { "Annuler" "Cancel" }
    set Lbl(Desc)        { "Description" "Description" }
@@ -70,11 +70,11 @@ namespace eval Mapper::DepotWare {
    set Msg(Search)     { "Recherche ..." "Searching ..." }
    set Msg(Clean)      { "Nettoyage du cache ..." "Cleaning cache ..." }
    set Msg(Clear)      { "Suppression du cache ..." "Deleting cache ..." }
-   set Msg(Del)        { "Voulez-vous vraiment supprimer ce dépot de la liste ?" "Do you really want to remove this repository from the list ?" }
-   set Msg(Cache)      { "Ce répertoire sera nettoyé dès que le volume de données dépassera la limite permise, êtes-vous sûr de vouloir le changer ?"
+   set Msg(Del)        { "Voulez-vous vraiment supprimer ce dÃ©pot de la liste ?" "Do you really want to remove this repository from the list ?" }
+   set Msg(Cache)      { "Ce rÃ©pertoire sera nettoyÃ© dÃ¨s que le volume de donnÃ©es dÃ©passera la limite permise, Ãªtes-vous sÃ»r de vouloir le changer ?"
                          "This directory will be cleaned when it's size passes the limit. Are you sure you want to chenge it ?" }
 
-   set Error(Depot)    { "Aucun nom ou type spécifié pour le dépot" "No name or type has been specified for the data repository." }
+   set Error(Depot)    { "Aucun nom ou type spÃ©cifiÃ© pour le dÃ©pot" "No name or type has been specified for the data repository." }
 
    set Bubble(Clear)   { "Supprimer le cache" "Erase cache" }
    set Bubble(Size)    { "Taille courante du cache" "Current cache size" }

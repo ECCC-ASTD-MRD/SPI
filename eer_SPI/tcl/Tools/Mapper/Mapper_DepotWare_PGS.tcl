@@ -28,15 +28,15 @@ namespace eval Mapper::DepotWare::PGS {
    set Data(Request)  ""
    set Data(SQL)     ""
 
-   set Lbl(DBase)    { "Base de données" "Database" }
-   set Lbl(Host)     { "Hôte" "Host" }
+   set Lbl(DBase)    { "Base de donnÃ©es" "Database" }
+   set Lbl(Host)     { "HÃ´te" "Host" }
    set Lbl(Port)     { "Port" "Port" }
    set Lbl(User)     { "Usager" "User" }
    set Lbl(Password) { "Mot de passe" "Password" }
    set Lbl(Name)     { "DBase" "DBase" }
-   set Lbl(Request)  { "Requète SQL" "SQL request" }
+   set Lbl(Request)  { "RequÃ¨te SQL" "SQL request" }
 
-   set Msg(Request) { "Problème dans la requète, Il n'y a aucune donnée disponible dans cette base de données" "Problem with request, there is no data available in this database" }
+   set Msg(Request) { "ProblÃ¨me dans la requÃ¨te, Il n'y a aucune donnÃ©e disponible dans cette base de donnÃ©es" "Problem with request, there is no data available in this database" }
 }
 
 #-------------------------------------------------------------------------------

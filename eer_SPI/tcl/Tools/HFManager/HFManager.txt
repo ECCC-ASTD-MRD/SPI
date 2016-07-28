@@ -20,12 +20,12 @@ namespace eval HFManager { } {
 
    #----- Definition des labels
 
-   set Lbl(Do)      { "Exécuter" "Execute" }
+   set Lbl(Do)      { "ExÃ©cuter" "Execute" }
    set Lbl(Dont)    { "Annuler" "Cancel" }
    set Lbl(Title)   { "HFManager" "HFManager" }
    set Lbl(File)    { "Fichier" "File " }
-   set Lbl(Host)    { "Hôte   " "Host " }
-   set Lbl(Path)    { "Réper  " "Path " }
+   set Lbl(Host)    { "HÃ´te   " "Host " }
+   set Lbl(Path)    { "RÃ©per  " "Path " }
    set Lbl(Mode)    { "Nouveau mode " "New mode" }
    set Lbl(ModeT)   { "Changement de mode" "Change mode" }
    set Lbl(Name)    { "Nouveau nom " "New name" }
@@ -35,38 +35,38 @@ namespace eval HFManager { } {
    set Lbl(Group)   { "Nouveau groupe " "New group" }
    set Lbl(GroupT)  { "Changement de groupe" "Change group" }
    set Lbl(MkDir)   { "Nom" "Name" }
-   set Lbl(MkDirT)  { "Créer un répertoire" "Create directory" }
+   set Lbl(MkDirT)  { "CrÃ©er un rÃ©pertoire" "Create directory" }
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
-   set Lbl(Open)    { "Nouvel hôte" "New host" }
-   set Lbl(Close)   { "Fermer l'hôte" "Close host" }
-   set Lbl(Refresh) { "Réafficher" "Update host" }
-   set Lbl(RefAll)  { "Réafficher tous" "Update all host" }
+   set Lbl(Open)    { "Nouvel hÃ´te" "New host" }
+   set Lbl(Close)   { "Fermer l'hÃ´te" "Close host" }
+   set Lbl(Refresh) { "RÃ©afficher" "Update host" }
+   set Lbl(RefAll)  { "RÃ©afficher tous" "Update all host" }
    set Lbl(Copy)    { "Copier" "Copy" }
    set Lbl(Paste)   { "Coller" "Paste" }
    set Lbl(Quit)    { "Quitter" "Quit" }
 
    #----- Definitions des textes
 
-   set Txt(Delete)  { "Êtes-vous certain de vouloir supprimer définitivement ce(s) fichier(s) ???"
+   set Txt(Delete)  { "ÃŠtes-vous certain de vouloir supprimer dÃ©finitivement ce(s) fichier(s) ???"
                      "Do you really want to delete these files ???" }
 
-   set Txt(DeleteD) { "Êtes-vous certain de vouloir supprimer définitivement ce(s) répertoire(s) ???"
+   set Txt(DeleteD) { "ÃŠtes-vous certain de vouloir supprimer dÃ©finitivement ce(s) rÃ©pertoire(s) ???"
                      "Do you really want to delete these directories ???" }
 
    #----- Definition des messages d'erreurs
 
-   set Error(Host)  { "Hôte inconnu" "Unknowk host" }
-   set Error(SSH)   { "L'accès a ce répertoire est restreint" "Restricted acces to this directory" }
+   set Error(Host)  { "HÃ´te inconnu" "Unknowk host" }
+   set Error(SSH)   { "L'accÃ¨s a ce rÃ©pertoire est restreint" "Restricted acces to this directory" }
 
    #----- Definition des bulles d'aides
 
-   set Bubble(Host) { "Sélection de l'hôte" "Host selection" }
-   set Bubble(Wild) { "Patron de sélection" "Wildcard specifier" }
-   set Bubble(Path) { "Sélection du répertoire" "Path selection" }
-   set Bubble(Save) { "Sauvegarde du répertoire dans la liste des répertoires courant"
+   set Bubble(Host) { "SÃ©lection de l'hÃ´te" "Host selection" }
+   set Bubble(Wild) { "Patron de sÃ©lection" "Wildcard specifier" }
+   set Bubble(Path) { "SÃ©lection du rÃ©pertoire" "Path selection" }
+   set Bubble(Save) { "Sauvegarde du rÃ©pertoire dans la liste des rÃ©pertoires courant"
                      "Save the current path in the most used path list" }
-   set Bubble(Del)  { "Supprimer le répertoire de la liste des répertoires courant"
+   set Bubble(Del)  { "Supprimer le rÃ©pertoire de la liste des rÃ©pertoires courant"
                      "Delete the current path in the most used path list" }
    set Bubble(File) { "Liste des fichiers (Boutton droit pour le menu contextuel)"
                      "File list (Right mouse button brings up contextual menu)" }

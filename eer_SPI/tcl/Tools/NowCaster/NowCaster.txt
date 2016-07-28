@@ -27,21 +27,21 @@ namespace eval NowCaster { } {
    set Lbl(Day)      { "Jour" "Day" }
    set Lbl(Week)     { "Semaine" "Week" }
    set Lbl(Month)    { "Mois" "Month" }
-   set Lbl(Year)     { "Année" "Year" }
+   set Lbl(Year)     { "AnnÃ©e" "Year" }
    set Lbl(Sec)      { "Sec" "Sec" }
    set Lbl(Min)      { "Min" "Min" }
    set Lbl(Hr)       { "Hr" "Hr" }
    set Lbl(Day)      { "Jour" "Day" }
    set Lbl(Week)     { "Semaine" "Week" }
    set Lbl(Month)    { "Mois" "Month" }
-   set Lbl(Year)     { "Année" "Year" }
+   set Lbl(Year)     { "AnnÃ©e" "Year" }
    set Lbl(Interval) { "Interval" "Interval" }
    set Lbl(Range)    { "Couverture" "Range" }
 
    set Bubble(Now)   { "Mode de rafraichissement automatique" "Automatic refresh mode" }
    set Bubble(Opt)   { "Option relatives aux fonctions temporelles" "Temporal functions options" }
-   set Bubble(Scale) { "Sélection de la date et de l'heure courante" "Selection of the current date and time" }
-   set Bubble(Play)  { "Animation selon le pas de temps spécifié" "Animation along the specified time step" }
+   set Bubble(Scale) { "SÃ©lection de la date et de l'heure courante" "Selection of the current date and time" }
+   set Bubble(Play)  { "Animation selon le pas de temps spÃ©cifiÃ©" "Animation along the specified time step" }
 
-   set Msg(Check)    { "Vérification de mise-à-jour" "Checking for updates" }
+   set Msg(Check)    { "VÃ©rification de mise-Ã -jour" "Checking for updates" }
 }

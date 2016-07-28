@@ -22,8 +22,8 @@ namespace eval Mapper::DepotWare::WCS {
 
    set Lbl(URL) { "Addresse URL" "URL Address" }
 
-   set Msg(Request) { "Problème dans la requète de capacitées WCS (GetCapabilities)" "Problem requesting capabilities WCS (GetCapabilities)" }
-   set Msg(Version) { "Version non supportée" "Version not supported" }
+   set Msg(Request) { "ProblÃ¨me dans la requÃ¨te de capacitÃ©es WCS (GetCapabilities)" "Problem requesting capabilities WCS (GetCapabilities)" }
+   set Msg(Version) { "Version non supportÃ©e" "Version not supported" }
 
    set Data(URL) ""
    set Data(Version) 1.0.0

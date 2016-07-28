@@ -22,7 +22,7 @@ namespace eval Mapper::DepotWare::WMS {
 
    set Lbl(URL) { "Addresse URL" "URL Address" }
 
-   set Msg(Request) { "Problème dans la requète de capacitées WMS (GetCapabilities)" "Problem requesting capabilities WMS (GetCapabilities)" }
+   set Msg(Request) { "ProblÃ¨me dans la requÃ¨te de capacitÃ©es WMS (GetCapabilities)" "Problem requesting capabilities WMS (GetCapabilities)" }
 
    set Data(URL) ""
    set Data(BlockSize) 512

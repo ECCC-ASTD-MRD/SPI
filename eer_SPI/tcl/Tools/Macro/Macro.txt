@@ -26,26 +26,26 @@ namespace eval Macro { } {
    set Lbl(No)           { "Non" "No" }
    set Lbl(Args)         { "Arguments" "Arguments" }
 
-   set Lbl(SPI)          { "SPI pré-requis" "SPI requirements" }
+   set Lbl(SPI)          { "SPI prÃ©-requis" "SPI requirements" }
    set Lbl(Version)      { "Version       " "Version         " }
    set Lbl(Info)         { "Description   " "Description     " }
    set Lbl(InfoArgs)     { "Arguments     " "Arguments       " }
 
-   set Error(Execute)    { "La fonction \"Execute\" n'est pas définie" "The \"Execute\" function is not defined" }
-   set Error(Info)       { "La description (Info) de la macro n'est pas définie" "The macro description (Info) is no defined" }
+   set Error(Execute)    { "La fonction \"Execute\" n'est pas dÃ©finie" "The \"Execute\" function is not defined" }
+   set Error(Info)       { "La description (Info) de la macro n'est pas dÃ©finie" "The macro description (Info) is no defined" }
    set Error(Fault)      { "Macro fautive" "Faulty macro" }
-   set Error(Args)       { "Nombre d'arguments invalide, ils doivent être:" "Invalid number of arguments, must be:" }
+   set Error(Args)       { "Nombre d'arguments invalide, ils doivent Ãªtre:" "Invalid number of arguments, must be:" }
 
-   set Bubble(Start)     { "Exécution de la macro sélectionnée" "Exectute selected macro" }
-   set Bubble(New)       { "Créer une nouvelle macro" "Create a new macro" }
+   set Bubble(Start)     { "ExÃ©cution de la macro sÃ©lectionnÃ©e" "Exectute selected macro" }
+   set Bubble(New)       { "CrÃ©er une nouvelle macro" "Create a new macro" }
    set Bubble(Load)      { "Lire un fichier de macro" "Read a macro file" }
    set Bubble(Save)      { "Sauvegarder la macro courante" "Save the current macro" }
    set Bubble(Del)       { "Supprimer la macro courante de la liste de macros" "Remove the current macro from the list" }
-   set Bubble(Clean)     { "Réinitialisation de la macro courante (Appel a la fonction Clean)" "Clean up current macro (Call Clean function" }
+   set Bubble(Clean)     { "RÃ©initialisation de la macro courante (Appel a la fonction Clean)" "Clean up current macro (Call Clean function" }
 
    set Msg(Args)         { "Veuillez enter les arguments:" "Please type in the arguments:" }
-   set Msg(Save)         { "La macro suivante n'a pas été sauvegardée, désirez-vous la sauvegarder ?" "The following macro has not been saved, do you wish to do so ?" }
-   set Msg(Delete)       { "La macro suivante va être supprimée définitivement, désirez-vous la supprimer ?" "The following macro will be erased definitely, do you wish to do so ?" }
-   set Msg(Modified)     { "La macro suivante a été modifiée par une autre application, désirez-vous la réouvrir ?" "The following macro has been modified by another application, do you wish to reopen it ?" }
-   set Msg(Overwrite)    { "La macro suivante a été modifiée par une autre application, désirez-vous l'écraser ?" "The following macro has been modified by another application, do you wish to overwrite it ?" }
+   set Msg(Save)         { "La macro suivante n'a pas Ã©tÃ© sauvegardÃ©e, dÃ©sirez-vous la sauvegarder ?" "The following macro has not been saved, do you wish to do so ?" }
+   set Msg(Delete)       { "La macro suivante va Ãªtre supprimÃ©e dÃ©finitivement, dÃ©sirez-vous la supprimer ?" "The following macro will be erased definitely, do you wish to do so ?" }
+   set Msg(Modified)     { "La macro suivante a Ã©tÃ© modifiÃ©e par une autre application, dÃ©sirez-vous la rÃ©ouvrir ?" "The following macro has been modified by another application, do you wish to reopen it ?" }
+   set Msg(Overwrite)    { "La macro suivante a Ã©tÃ© modifiÃ©e par une autre application, dÃ©sirez-vous l'Ã©craser ?" "The following macro has been modified by another application, do you wish to overwrite it ?" }
 }

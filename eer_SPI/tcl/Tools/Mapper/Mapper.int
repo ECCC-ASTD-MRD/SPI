@@ -432,7 +432,7 @@ proc Mapper::Toggler { Var1 Var2 Op } {
 # Nom      : <Mapper::ParamsClose>
 # Creation :  2007 - Maxime Samuel - CMC/CMOE -
 #
-# But      : Détruire la fenetre des paramètres
+# But      : DÃ©truire la fenetre des paramÃ¨tres
 #
 # Parametres :
 #

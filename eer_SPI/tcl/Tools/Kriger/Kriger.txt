@@ -23,29 +23,29 @@ namespace eval Kriger {
 
    set Lbl(Grid)    { "Grille" "Grid" }
    set Lbl(Krig)    { "Krigage" "Kriging" }
-   set Lbl(Result)  { "Résultats" "Results" }
+   set Lbl(Result)  { "RÃ©sultats" "Results" }
    set Lbl(Yes)     { "Oui" "Yes" }
    set Lbl(No)      { "Non" "No" }
    set Lbl(Out)     { "Hors grille" "Out of grid" }
-   set Lbl(Data)    { "Données" "Data" }
+   set Lbl(Data)    { "DonnÃ©es" "Data" }
 
    #----- Messages
 
    set Msg(Grid)      { "Calcul de la grille ..." "Calculating grid ..." }
    set Msg(Krig)      { "Krigage en cours ..." "Kriging ..." }
-   set Msg(KrigSize)  { "Les dimensions de la grille sont grandes et le krigage pourrais être long. Voulez-vous continuer ?"
+   set Msg(KrigSize)  { "Les dimensions de la grille sont grandes et le krigage pourrais Ãªtre long. Voulez-vous continuer ?"
                         "The grid size is large and the kriging could take long. Do you wish to continue anyway ?" }
-   set Msg(GridSize)  { "La grille est trop grande, veuillez changer la résolution ou la couverture."
-                        "The grid is to lagre, please change résolution or coverage." }
-   set Msg(GridExist) { "La grille de destination n'est pas définie."
+   set Msg(GridSize)  { "La grille est trop grande, veuillez changer la rÃ©solution ou la couverture."
+                        "The grid is to lagre, please change rÃ©solution or coverage." }
+   set Msg(GridExist) { "La grille de destination n'est pas dÃ©finie."
                         "The destination grid is not defined." }
-   set Msg(ObsExist)  { "Les données d'observations sont invalides."
+   set Msg(ObsExist)  { "Les donnÃ©es d'observations sont invalides."
                         "Invalid observation data." }
 
    #----- Bulles d'aides
 
-   set Bubble(Mode)    { "Sélection interactive de la grille de krigage" "Interactive kriging grid selection" }
+   set Bubble(Mode)    { "SÃ©lection interactive de la grille de krigage" "Interactive kriging grid selection" }
    set Bubble(Krig)    { "Lancer le calcul de krigage" "Launc kriging calculus" }
-   set Bubble(Save)    { "Sauvegarder le résultat du dernier krigage" "Save last kriging result" }
-   set Bubble(Del)     { "Supprimer/Réinitialiser la grille destination courante" "Delete/Reset current destination grid" }
+   set Bubble(Save)    { "Sauvegarder le rÃ©sultat du dernier krigage" "Save last kriging result" }
+   set Bubble(Del)     { "Supprimer/RÃ©initialiser la grille destination courante" "Delete/Reset current destination grid" }
 }
