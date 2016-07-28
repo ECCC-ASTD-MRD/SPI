@@ -27,36 +27,36 @@ namespace eval SPI {
    set Lbl(About)          { "Apropos ..." "About ..." }
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Animator)       { "Animation ..." "Animation ..." }
-   set Lbl(Model)          { "Modélisation ..." "Modeling ..." }
-   set Lbl(Area)           { "Région" "Area" }
-   set Lbl(Areas)          { "Régions" "Areas" }
+   set Lbl(Model)          { "ModÃ©lisation ..." "Modeling ..." }
+   set Lbl(Area)           { "RÃ©gion" "Area" }
+   set Lbl(Areas)          { "RÃ©gions" "Areas" }
    set Lbl(Bubble)         { "Bulles d'aides" "Help bubbles" }
    set Lbl(Calculator)     { "Calculatrice ..." "Calculator ..." }
    set Lbl(Camera)         { "Positionnement et zoom" "Position and zoom" }
    set Lbl(Cancel)         { "Annuler" "Cancel" }
    set Lbl(Clock)          { "Horloge" "Clock" }
    set Lbl(Close)          { "Fermer" "Close" }
-   set Lbl(Colorbar)       { "Échelle de couleur" "Colorbar scale" }
+   set Lbl(Colorbar)       { "Ã‰chelle de couleur" "Colorbar scale" }
    set Lbl(Compass)        { "Compas" "Compass" }
-   set Lbl(Data)           { "Données" "Data" }
+   set Lbl(Data)           { "DonnÃ©es" "Data" }
    set Lbl(Del)            { "Supprimer" "Delete" }
-   set Lbl(Deg)            { "Degrée decimal" "Decimal degrees" }
-   set Lbl(Follower)       { "Détails de position" "Position details" }
-   set Lbl(Min)            { "Degrée minutes" "Degrees and minutes" }
+   set Lbl(Deg)            { "DegrÃ©e decimal" "Decimal degrees" }
+   set Lbl(Follower)       { "DÃ©tails de position" "Position details" }
+   set Lbl(Min)            { "DegrÃ©e minutes" "Degrees and minutes" }
    set Lbl(Display)        { "Affichage" "Display" }
-   set Lbl(Execute)        { "Exécuter un script ..." "Run script ..." }
+   set Lbl(Execute)        { "ExÃ©cuter un script ..." "Run script ..." }
    set Lbl(Export)         { "Exporter ..." "Export ..." }
    set Lbl(Field)          { "Champs" "Fields" }
    set Lbl(File)           { "Fichier" "File" }
    set Lbl(Font)           { "Police" "Font" }
    set Lbl(Graph)          { "Graphiques" "Graphs" }
    set Lbl(Help)           { "Aide" "Help" }
-   set Lbl(Icon)           { "Icône" "Icon" }
-   set Lbl(Icons)          { "Icônes" "Icons" }
+   set Lbl(Icon)           { "IcÃ´ne" "Icon" }
+   set Lbl(Icons)          { "IcÃ´nes" "Icons" }
    set Lbl(Id)             { "Identifications" "Identifications" }
    set Lbl(Layout)         { "Page" "Layout" }
-   set Lbl(GeoLegend)      { "Légende géographique" "Geographical legend" }
-   set Lbl(DataBar)        { "Légende des données" "Data legend" }
+   set Lbl(GeoLegend)      { "LÃ©gende gÃ©ographique" "Geographical legend" }
+   set Lbl(DataBar)        { "LÃ©gende des donnÃ©es" "Data legend" }
    set Lbl(Logo)           { "Logo" "Logo" }
    set Lbl(Link)           { "Pointeur commun" "Cursor link" }
    set Lbl(Miniport)       { "Ajouter un Encart" "Add Inset" }
@@ -64,7 +64,7 @@ namespace eval SPI {
    set Lbl(New)            { "Nouveau" "New" }
    set Lbl(No)             { "Non" "No" }
    set Lbl(Obs)            { "Observations (OBS)" "Observations (OBS)" }
-   set Lbl(MetObs)         { "Observations météo (BURP/BUFR)" "Met Observations (BURP/BUFR)" }
+   set Lbl(MetObs)         { "Observations mÃ©tÃ©o (BURP/BUFR)" "Met Observations (BURP/BUFR)" }
    set Lbl(Radar)          { "Volume radar (IRIS)" "Radar volume scan (IRIS)" }
    set Lbl(GeoOGR)         { "Couches vectorielles (OGR)" "Vectorial layers (OGR)" }
    set Lbl(GeoGDAL)        { "Couches matricielles (GDAL)" "Raster layers (GDAL)" }
@@ -73,7 +73,7 @@ namespace eval SPI {
    set Lbl(PageNew)        { "Nouvelle page" "New page" }
    set Lbl(PageDel)        { "Supprimer la page" "Delete page" }
    set Lbl(PageOut)        { "Page externe" "External page" }
-   set Lbl(Params)         { "Paramètres" "Parameters" }
+   set Lbl(Params)         { "ParamÃ¨tres" "Parameters" }
    set Lbl(Print)          { "Impression ..." "Print ..." }
    set Lbl(Image)          { "Sauvegarde image ..." "Save image ..." }
    set Lbl(ProjectLoad)    { "Ouvrir un projet ..." "Open project ..." }
@@ -83,28 +83,28 @@ namespace eval SPI {
    set Lbl(LayoutSave)     { "Sauvegarder la mise-en-page ..." "Save layout ..." }
    set Lbl(Quit)           { "Quitter" "Quit" }
    set Lbl(Save)           { "Sauvegarder" "Save" }
-   set Lbl(Scale)          { "Échelle" "Scale" }
+   set Lbl(Scale)          { "Ã‰chelle" "Scale" }
    set Lbl(FileRPN)        { "Standard (RPN)" "Standard (RPN)" }
    set Lbl(FileGRIB)       { "GRIB (Edition 1-2)" "GRIB (Edition 1-2)" }
    set Lbl(Test)           { "Chaine \"Test\"" "String \"Test\"" }
    set Lbl(Tools)          { "Outils" "Tools" }
    set Lbl(Traj)           { "Trajectoire" "Trajectory" }
    set Lbl(Trajectory)     { "Trajectoire" "Trajectory" }
-   set Lbl(TrajGraph)      { "Graphique d'élévation" "Elevations graph" }
-   set Lbl(TrajHeight)     { "Liste d'élévation" "Elevations list" }
-   set Lbl(TrajLegend)     { "Légende de trajectoire" "Trajectory legend" }
+   set Lbl(TrajGraph)      { "Graphique d'Ã©lÃ©vation" "Elevations graph" }
+   set Lbl(TrajHeight)     { "Liste d'Ã©lÃ©vation" "Elevations list" }
+   set Lbl(TrajLegend)     { "LÃ©gende de trajectoire" "Trajectory legend" }
    set Lbl(User)           { "Autres" "User defined" }
    set Lbl(Viewport)       { "Ajouter une vue" "Add Viewport" }
    set Lbl(TextBox)        { "Ajouter une boite de texte" "Add a text box" }
    set Lbl(Warning)        { "Attention" "Warning" }
-   set Lbl(Window)         { "Fenêtre" "Window" }
-   set Lbl(WindowLayout)   { "Arrangement des fenêtres" "Window layout" }
-   set Lbl(PageLayout)     { "Modèles de pages" "Page layout" }
+   set Lbl(Window)         { "FenÃªtre" "Window" }
+   set Lbl(WindowLayout)   { "Arrangement des fenÃªtres" "Window layout" }
+   set Lbl(PageLayout)     { "ModÃ¨les de pages" "Page layout" }
    set Lbl(Yes)            { "Oui" "Yes" }
-   set Lbl(Zoom_Back)      { "Zoom arrière" "Zoom back" }
+   set Lbl(Zoom_Back)      { "Zoom arriÃ¨re" "Zoom back" }
    set Lbl(Zoom_Reset)     { "Annuler zoom" "Reset zoom" }
    set Lbl(LinkView)       { "Liaison de vues" "Link viewports" }
-   set Lbl(LinkSrc)        { "Définir comme source du lien" "Set as link source" }
+   set Lbl(LinkSrc)        { "DÃ©finir comme source du lien" "Set as link source" }
    set Lbl(LinkDest)       { "Lier a la vue source" "Link to source viewport" }
    set Lbl(LinkUn)         { "Annuler le lien" "Cancel Link" }
    set Lbl(Lock)           { "Fixer l'encart" "Lock inset" }
@@ -114,8 +114,8 @@ namespace eval SPI {
    set Lbl(ModeCam)        { "Point de vue" "View point" }
    set Lbl(ModeTool)       { "Outils courant" "Current Tool" }
    set Lbl(ModeMag)        { "Loupe" "Magnifier" }
-   set Lbl(FullScreen)     { "Mode plein écran" "Fullscreen mode" }
-   set Lbl(Referential)    { "Référentiel" "Referential" }
+   set Lbl(FullScreen)     { "Mode plein Ã©cran" "Fullscreen mode" }
+   set Lbl(Referential)    { "RÃ©fÃ©rentiel" "Referential" }
 
    set Lbl(Frame0)         { "0 page secondaire" "0 secondary page" }
    set Lbl(Frame1)         { "1 page secondaire" "1 secondary page" }
@@ -126,81 +126,81 @@ namespace eval SPI {
    set Lbl(Left)           { "Gauche" "Left" }
    set Lbl(Top)            { "Haut" "Bas" }
    set Lbl(Bottom)         { "Bas" "Bottom" }
-   set Lbl(FrameSave)      { "Définir comme défaut" "Set as default" }
+   set Lbl(FrameSave)      { "DÃ©finir comme dÃ©faut" "Set as default" }
 
    #----- Definition des bulles d'aides
 
-   set Bubble(Model)       { "Modélisation" "Modeling" }
-   set Bubble(Graph)       { "Ajout et paramètres des graphs" "Add and parameterize graphs" }
-   set Bubble(Params)      { "Paramètres des données" "Data parameters" }
+   set Bubble(Model)       { "ModÃ©lisation" "Modeling" }
+   set Bubble(Graph)       { "Ajout et paramÃ¨tres des graphs" "Add and parameterize graphs" }
+   set Bubble(Params)      { "ParamÃ¨tres des donnÃ©es" "Data parameters" }
    set Bubble(Print)       { "Impression de la page courante" "Print current page" }
    set Bubble(Image)       { "Sauvegarde l'image de la page courante" "Save current page image" }
    set Bubble(PageScale)   { "Facteur d'agrandissement de la page" "Page's zoom factor" }
    set Bubble(PageIn)      { "Agrandir la page de 10%" "Zoom page in 10%" }
-   set Bubble(PageOut)     { "Réduire la page de 10%" "Zoom page out 10%" }
-   set Bubble(PageFull)    { "Mode page complète" "Full page mode" }
+   set Bubble(PageOut)     { "RÃ©duire la page de 10%" "Zoom page out 10%" }
+   set Bubble(PageFull)    { "Mode page complÃ¨te" "Full page mode" }
    set Bubble(LayoutName)  { "Nom de la mise-en-page courante" "Current page layout name" }
-   set Bubble(LayoutQck)   { "Appliquer une mise-en-page rapide\n\nPermet de créer une mise en page avec\nplusieurs vues en toute simplicité"
+   set Bubble(LayoutQck)   { "Appliquer une mise-en-page rapide\n\nPermet de crÃ©er une mise en page avec\nplusieurs vues en toute simplicitÃ©"
                              "Apply a quick layout\n\nCreate a multi-viewport layout\nin just a few clicks" }
    set Bubble(LayoutSave)  { "Sauvegarder la mise-en-page courante" "Save the current page layout" }
    set Bubble(LayoutDel)   { "Supprimer la mise-en-page courante" "Delete the current page layout" }
-   set Bubble(LayoutRun)   { "Exécuter un script sur la page courante" "Execute a script on the current page" }
-   set Bubble(LayoutMag)   { "Loupe de page, permet de visualiser un agrandissement localisé.\n\nBouton gauche: Loupe\nRoulette     : Augmenter/diminuer le zoom"
+   set Bubble(LayoutRun)   { "ExÃ©cuter un script sur la page courante" "Execute a script on the current page" }
+   set Bubble(LayoutMag)   { "Loupe de page, permet de visualiser un agrandissement localisÃ©.\n\nBouton gauche: Loupe\nRoulette     : Augmenter/diminuer le zoom"
                              "Page Magnifier. Use to mangify local spot\n\nLeft button: Loupe\nScroll     : Augmenter/diminuer le zoom" }
-   set Bubble(ZoomBack)    { "Zoom arrière" "Zoom back" }
+   set Bubble(ZoomBack)    { "Zoom arriÃ¨re" "Zoom back" }
    set Bubble(ZoomClear)   { "Annuler le zoom" "Cancel zoom" }
-   set Bubble(Rotate)      { "Rotation de 90 degrées" "Rotate 90 degrees" }
-   set Bubble(DataClear)   { "Réinitialiser les données" "Reinitialize data" }
-   set Bubble(GeoClear)    { "Activer/Désactiver la géographie" "Activate/Deactivate geography" }
-   set Bubble(CamClear)    { "Réinitialiser la camera" "Reinitialize camera" }
-   set Bubble(CamName)     { "Nom de la caméra courante" "Current camera name" }
-   set Bubble(CamSave)     { "Sauvegarder les paramètres de caméra courants" "Save the current camera parameters" }
-   set Bubble(CamDel)      { "Supprimer la caméra courante" "Delete the current camera" }
-   set Bubble(CamFly)      { "Paramètres de survol" "Flight parameters" }
+   set Bubble(Rotate)      { "Rotation de 90 degrÃ©es" "Rotate 90 degrees" }
+   set Bubble(DataClear)   { "RÃ©initialiser les donnÃ©es" "Reinitialize data" }
+   set Bubble(GeoClear)    { "Activer/DÃ©sactiver la gÃ©ographie" "Activate/Deactivate geography" }
+   set Bubble(CamClear)    { "RÃ©initialiser la camera" "Reinitialize camera" }
+   set Bubble(CamName)     { "Nom de la camÃ©ra courante" "Current camera name" }
+   set Bubble(CamSave)     { "Sauvegarder les paramÃ¨tres de camÃ©ra courants" "Save the current camera parameters" }
+   set Bubble(CamDel)      { "Supprimer la camÃ©ra courante" "Delete the current camera" }
+   set Bubble(CamFly)      { "ParamÃ¨tres de survol" "Flight parameters" }
    set Bubble(CamDown)     { "Annuler l'angle de vue" "Cancel view angle" }
    set Bubble(Alt)         { "Altitude a la localisation du curseur\nsur la projection"
                              "Altitude at the cursor location\non the projection" }
-   set Bubble(Coords)      { "Coordonnées a la localisation du curseur\nsur la projection"
+   set Bubble(Coords)      { "CoordonnÃ©es a la localisation du curseur\nsur la projection"
                              "Coordinates at the cursor location\non the projection" }
-   set Bubble(CoordsOpt)   { "Paramètres des coordonnees de position"
+   set Bubble(CoordsOpt)   { "ParamÃ¨tres des coordonnees de position"
                              "Coordinates info parameters" }
-   set Bubble(Val)         { "Valeur du champs aux coordonnées\npointees par le curseur"
+   set Bubble(Val)         { "Valeur du champs aux coordonnÃ©es\npointees par le curseur"
                              "Field value at the\ncursor coodinates" }
-   set Bubble(Zoom)        { "Mode de manipulation Positionnement\n\nBouton gauche: Déplacement\nBouton centre: Agrandissement par boite\nRoulette     : Agrandissement par increment"
+   set Bubble(Zoom)        { "Mode de manipulation Positionnement\n\nBouton gauche: DÃ©placement\nBouton centre: Agrandissement par boite\nRoulette     : Agrandissement par increment"
                              "Positionning mode\n\nLeft button : Move\nMiddle button: Zoom box\nScroll      : Zoom in/out" }
-   set Bubble(Cam)         { "Mode de manipulation Camera\n\nBouton gauche: Déplacement\nBouton centre: Rotation 3D\nRoulette     : Agrandissement par increment"
+   set Bubble(Cam)         { "Mode de manipulation Camera\n\nBouton gauche: DÃ©placement\nBouton centre: Rotation 3D\nRoulette     : Agrandissement par increment"
                              "Camera mode\n\nLeft button : Move\nMiddle button: 3D Rotation\nScroll      : Zoom in/out" }
-   set Bubble(WinNew)      { "Créer une nouvelle page externe" "Create a new external page" }
+   set Bubble(WinNew)      { "CrÃ©er une nouvelle page externe" "Create a new external page" }
    set Bubble(WinAdd)      { "Ajouter une page dans l'onglet actif" "Add a page within the active pane" }
    set Bubble(WinDel)      { "Supprimer la page active" "Delete the current page" }
 
    #----- Definition des erreurs
 
-   set Error(Project)      { "Problème lors de la lecture du projet" "Problem while reading project" }
+   set Error(Project)      { "ProblÃ¨me lors de la lecture du projet" "Problem while reading project" }
    set Error(Traj)         { "Fichier de trajectoire invalide" "Invalid trajectory file" }
    set Error(Icon)         { "Fichier d'icones invalide" "Invalid icon file" }
-   set Error(LayoutDel)    { "Vous ne pouvez pas supprimer ce modèle de page." "You cannot delete this page layout." }
-   set Error(Page)         { "Page inexistante.\n\nCréée une page avant d'y insérer des objets." "Invalid page.\n\nCreate a page before inserting new objects." }
+   set Error(LayoutDel)    { "Vous ne pouvez pas supprimer ce modÃ¨le de page." "You cannot delete this page layout." }
+   set Error(Page)         { "Page inexistante.\n\nCrÃ©Ã©e une page avant d'y insÃ©rer des objets." "Invalid page.\n\nCreate a page before inserting new objects." }
    set Error(Source)       { "Erreur en incluant l'extension:" "Error sourcing extension:" }
 
    #----- Definition des messages
 
-   set Msg(LayoutName)     { "Veuillez spécifier le nom de la mise-en-page." "Please enter the page layout name." }
-   set Msg(CamName)        { "Veuillez spécifier le nom de la caméra." "Please enter the camera name." }
-   set Msg(CamSave)        { "Voulez-vous inclure les paramètres de caméra dans de modèle de page ?" "Do you want to include the camera parameters in this page layout ?" }
-   set Msg(LayoutErase)    { "Êtes-vous certain de vouloir supprimer ce modèle de page ?" "Do you really want to delete this page layout ?" }
-   set Msg(LayoutOver)     { "Ce modèle de page existe déja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
-   set Msg(LayoutSaved)    { "Définition de mise-en-page sauvegardée." "Page layout saved." }
-   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModélisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnées Géographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          Réal D'Amours" }
-   set Msg(Id)             { "Développé au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n"
+   set Msg(LayoutName)     { "Veuillez spÃ©cifier le nom de la mise-en-page." "Please enter the page layout name." }
+   set Msg(CamName)        { "Veuillez spÃ©cifier le nom de la camÃ©ra." "Please enter the camera name." }
+   set Msg(CamSave)        { "Voulez-vous inclure les paramÃ¨tres de camÃ©ra dans de modÃ¨le de page ?" "Do you want to include the camera parameters in this page layout ?" }
+   set Msg(LayoutErase)    { "ÃŠtes-vous certain de vouloir supprimer ce modÃ¨le de page ?" "Do you really want to delete this page layout ?" }
+   set Msg(LayoutOver)     { "Ce modÃ¨le de page existe dÃ©ja. Voulez-vous le remplacer ?" "This page layout exists. Do you want to overwrite it ?" }
+   set Msg(LayoutSaved)    { "DÃ©finition de mise-en-page sauvegardÃ©e." "Page layout saved." }
+   set Msg(Authors)        { "Conception/Programmation: Jean-Philippe Gauthier\n\nModÃ©lisation/Interfaces : Serge Trudel\n                          Alain Malo\n\nDonnÃ©es GÃ©ographiques   : Michel Grenier\n\nTests et ...            : Rene Servranckx\n                          Serge Trudel\n                          Alain Malo\n                          RÃ©al D'Amours" }
+   set Msg(Id)             { "DÃ©veloppÃ© au Centre Meteorologique Canadien\npar le groupe des urgences (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n"
                              "Developped at the Canadian Meteorological Center\nby the emergency division (CMOE)\n\nhttp://eer.cmc.ec.gc.ca\n" }
    set Msg(Adress)         { "2121 Voie de service nord\nRoute transcanadienne\nMontreal, Quebec\nH9P 1J3\n"
                              "2121 North service road\nHighway 40\nMontreal, Quebec\nH9P 1J3\n" }
    set Msg(Mail)           { "Liste de distribution: spi-users@cmc.ec.gc.ca\n" "Mailing list: spi-users@cmc.ec.gc.ca" }
-   set Msg(ProjectRead)    { "Toutes les pages existantes seront détruite et le travail courant sera perdu.\n\nVoulez-vous continuer ?"
+   set Msg(ProjectRead)    { "Toutes les pages existantes seront dÃ©truite et le travail courant sera perdu.\n\nVoulez-vous continuer ?"
                              "Every existing pages will be destroyed and you will loos you current work.\n\nDo you wish to continue ?" }
-   set Msg(Page)           { "Ajouter cet item dans une nouvelle fênetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
-   set Msg(Locked)         { "La mise-en-page de la page courante ne peut être changée, que voulez-vous faire ?"
+   set Msg(Page)           { "Ajouter cet item dans une nouvelle fÃªnetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
+   set Msg(Locked)         { "La mise-en-page de la page courante ne peut Ãªtre changÃ©e, que voulez-vous faire ?"
                              "Current page layout cannot be changed, what do you want to do ?" }
 
    #----- Definitions des titres

@@ -1540,7 +1540,7 @@ proc SPI::IcoDraw { Frame args } {
                   Viewport::DrawArea $Frame $vp $coords "PAGE$vp $group $tag" "" "" $col "" False 2
                }
 
-               #----- Projection des coordonnées
+               #----- Projection des coordonnÃ©es
                if { [set xy [$vp -project $lat $lon $elev]]!="" && [lindex $xy 2]>=0 } {
 
                   set x [lindex $xy 0]
