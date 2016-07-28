@@ -82,7 +82,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
          #pack [label $h.$key.title -bd 1 -text $lbl -height 5 -relief raised -width $w] -side top -fill y
          pack [radiobutton $h.$key.title -bd 1 -text $lbl -height 5 -relief raised -width $w -indicatoron 0 -variable DBBox::Param(Sort) -value $key -command [list DBBox::Sort $DB .dbbox.body.box]] -side top -fill y
          pack [entry $h.$key.search -relief sunken -bd 1 -width $w -bg $GDefs(ColorLight) -textvariable DBBox::Search($DB$key)] -side top -fill x
-         bind $h.$key.search <KeyRelease-Return> [list DBBox::Update $DB .dbbox.body.box]
+         bind $h.$key.search <KeyRelease> [list DBBox::Update $DB .dbbox.body.box]
       }
       pack {*}$hlst -side left -fill both -expand true
    pack $h -side top -anchor w -fill x
