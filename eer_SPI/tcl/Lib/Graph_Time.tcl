@@ -750,7 +750,7 @@ proc Graph::Time::Update { Frame { GR {} } } {
    variable Data
 
    #----- Check if we're animating on time
-   if { [namespace exists ::Animator] && ($Animator::Play(Now)=="DATE" || $Animator::Play(Now)=="IP2") } {
+   if { [namespace exists ::Animator] && ($Animator::Play(Mode)=="DATE" || $Animator::Play(Mode)=="IP2") } {
      return
    }
 
@@ -811,7 +811,7 @@ proc Graph::Time::UpdateItems { Frame { GR { } } } {
    variable Lbl
 
    #----- Check if we're animating on time
-   if { [namespace exists ::Animator] && ($Animator::Play(Now)=="DATE" || $Animator::Play(Now)=="IP2") } {
+   if { [namespace exists ::Animator] && ($Animator::Play(Mode)=="DATE" || $Animator::Play(Mode)=="IP2") } {
       return
    }
   

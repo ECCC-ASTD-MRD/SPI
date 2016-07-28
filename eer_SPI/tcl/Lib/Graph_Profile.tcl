@@ -798,7 +798,7 @@ proc Graph::Profile::Update { Frame { GR {} } } {
    variable Data
 
    #----- Check if we're animating on vertical
-   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+   if { [namespace exists ::Animator] && $Animator::Play(Mode)=="IP1" } {
       return
    }
 
@@ -863,7 +863,7 @@ proc Graph::Profile::UpdateItems { Frame { GR  { } } } {
    variable Lbl
 
    #----- Check if we're animating on vertical
-   if { [namespace exists ::Animator] && $Animator::Play(Now)=="IP1" } {
+   if { [namespace exists ::Animator] && $Animator::Play(Mode)=="IP1" } {
       return
    }
 

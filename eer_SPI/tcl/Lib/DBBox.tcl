@@ -14,14 +14,14 @@
 #     de données textuelle
 #
 # Fonctions:
-#     DBBox::Create { Parent DB {Command ""} }
-#     DBBox::CheckDB { DB }
-#     DBBox::ReadDB { DB }
-#     DBBox::Search { DB Column Pattern }
+#     DBBox::Create      { Parent DB {Command ""} }
+#     DBBox::CheckDB     { DB }
+#     DBBox::ReadDB      { DB }
+#     DBBox::Search      { DB Column Pattern }
 #     DBBox::SearchClear { DB {Columns {}} }
-#     DBBox::Sort { DB W }
-#     DBBox::GetFmt { DB W }
-#     DBBox::Update { DB W }
+#     DBBox::Sort        { DB W }
+#     DBBox::GetFmt      { DB W }
+#     DBBox::Update      { DB W }
 #
 #
 #===============================================================================
