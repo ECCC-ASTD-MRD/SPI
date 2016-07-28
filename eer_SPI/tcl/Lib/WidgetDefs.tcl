@@ -321,7 +321,7 @@ proc EntryVar::Trace { Type Var Format args } {
       }
 
       "coordinate"  {
-         set lst [split [string map { "°" " " \' " " \" " "} $evar]]
+         set lst [split [string map { "Â°" " " \' " " \" " "} $evar]]
          if { [string is double $evar] || ([string is integer [lindex $lst 0]] && [string is integer [lindex $lst 1]] && ([llength $lst]<3 || [string is double [lindex $lst 2]])) } {
             set evar_tmp $evar
          } else {

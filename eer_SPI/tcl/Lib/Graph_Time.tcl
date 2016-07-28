@@ -34,7 +34,7 @@
 namespace eval Graph::Time { } {
    variable Lbl
 
-   set Lbl(Title)     { "Série temporelle" "Time serie" }
+   set Lbl(Title)     { "SÃ©rie temporelle" "Time serie" }
 }
 
 #----------------------------------------------------------------------------

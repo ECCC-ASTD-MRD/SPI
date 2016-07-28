@@ -350,7 +350,7 @@ proc CVCompass::Update { Frame Bearing Angle Distance { Speed 0 } } {
    set y  [expr $Data(Size)*cos($Angle*0.01745329)]
    set d  [expr $Data(Size)*0.5]
 
-   $canvas itemconfigure CVCOMPANGLE -text [format "%.2f°" $Angle]
+   $canvas itemconfigure CVCOMPANGLE -text [format "%.2fÂ°" $Angle]
    $canvas itemconfigure CVCOMPDIST  -text [Convert::FormatDist $Distance]
 }
 
@@ -405,20 +405,20 @@ namespace eval CVClock {
    set Param(Zone)  UTC           ;#Default time zone (UTC,HADT,HAST,AKDT,AKST,PDT,PST,MDT,MST,CDT,CST,EDT,EST,ADT,AST,NDT,NST)
 
    set Param(Zones) {
-      { { UTC UTC }    { "Temps universel coordonné" "Coordinated Universal Time" }                    0 }
+      { { UTC UTC }    { "Temps universel coordonnÃ©" "Coordinated Universal Time" }                    0 }
       { { -  - }       -                                                                               - }  
-      { { HAHA HADT }  { "Heure Avancée d'Hawaï-Aléoutiennes"     "Hawaii-Aleutian Daylight Time" }   -9 }
-      { { HAA AKDT }   { "Heure Avancée de l'Alaska"              "Alaska Daylight Time" }            -8 }
-      { { HAP PDT }    { "Heure Avancée du Pacifique"             "Pacific Daylight Time" }           -7 }
-      { { HAR MDT }    { "Heure Avancée des Rocheuses"            "Mountain Daylight Time" }          -6 }
-      { { HAC CDT }    { "Heure Avancée du Centre"                "Central Daylight Time" }           -5 }
-      { { HAE EDT }    { "Heure Avancée de l'Est"                 "Eastern Daylight Time" }           -4 }
-      { { HAA ADT }    { "Heure Avancée de l'Atlantique"          "Atlantic Daylight Time"  }         -3 }
-      { { HAT NDT }    { "Heure Avancée de Terre-Neuve"           "Newfoundland Daylight Time" }      -2.5 }
-      { { HAEG WGST }  { "Heure Avancée de l'Ouest du Groenland"  "Western Greenland Summer Time" }   -2 }
-      { { HAOG EGST }  { "Heure Avancée de l'Est du Groenland"    "Eastern Greenland Summer Time" }   -1 } 
+      { { HAHA HADT }  { "Heure AvancÃ©e d'HawaÃ¯-AlÃ©outiennes"     "Hawaii-Aleutian Daylight Time" }   -9 }
+      { { HAA AKDT }   { "Heure AvancÃ©e de l'Alaska"              "Alaska Daylight Time" }            -8 }
+      { { HAP PDT }    { "Heure AvancÃ©e du Pacifique"             "Pacific Daylight Time" }           -7 }
+      { { HAR MDT }    { "Heure AvancÃ©e des Rocheuses"            "Mountain Daylight Time" }          -6 }
+      { { HAC CDT }    { "Heure AvancÃ©e du Centre"                "Central Daylight Time" }           -5 }
+      { { HAE EDT }    { "Heure AvancÃ©e de l'Est"                 "Eastern Daylight Time" }           -4 }
+      { { HAA ADT }    { "Heure AvancÃ©e de l'Atlantique"          "Atlantic Daylight Time"  }         -3 }
+      { { HAT NDT }    { "Heure AvancÃ©e de Terre-Neuve"           "Newfoundland Daylight Time" }      -2.5 }
+      { { HAEG WGST }  { "Heure AvancÃ©e de l'Ouest du Groenland"  "Western Greenland Summer Time" }   -2 }
+      { { HAOG EGST }  { "Heure AvancÃ©e de l'Est du Groenland"    "Eastern Greenland Summer Time" }   -1 } 
       { { - - }        -                                                                               - }  
-      { { HNHA HAST }  { "Heure Normale d'Hawaï-Aléoutiennes"    "Hawaii-Aleutian Standard Time" }   -10 } 
+      { { HNHA HAST }  { "Heure Normale d'HawaÃ¯-AlÃ©outiennes"    "Hawaii-Aleutian Standard Time" }   -10 } 
       { { HNA AKST }   { "Heure Normale de l'Alaska"             "Alaska Standard Time" }             -9 } 
       { { HNP PST }    { "Heure Normale du Pacifique"            "Pacific Standard Time"  }           -8 } 
       { { HNR MST }    { "Heure Normale des Rocheuses"           "Mountain Standard Time"  }          -7 } 
@@ -875,7 +875,7 @@ namespace eval CVScale { } {
    set Param(Scale) 0
    set Param(Size)  0
    
-   set Lbl(BG) { "Arrière opaque" "White background" }
+   set Lbl(BG) { "ArriÃ¨re opaque" "White background" }
 }
 
 proc CVScale::Create { Frame X Y Size } {
@@ -1138,10 +1138,10 @@ namespace eval CVText { } {
 
    set Data(TagNo)   0
    
-   set Lbl(Update)        { "Mise-à-jour automatique" "Auto update" }
-   set Lbl(JustifyLeft)   { "Justification à gauche" "Justify left" }
+   set Lbl(Update)        { "Mise-Ã -jour automatique" "Auto update" }
+   set Lbl(JustifyLeft)   { "Justification Ã  gauche" "Justify left" }
    set Lbl(JustifyCenter) { "Justification au centre" "Justify center" }
-   set Lbl(JustifyRight)  { "Justification à droitre" "Justify right" }
+   set Lbl(JustifyRight)  { "Justification Ã  droitre" "Justify right" }
    set Lbl(Font)          { "Police ..." "Font ..." }
    set Lbl(FG)            { "Couleur de la police ..." "Font color ..." }
    set Lbl(BG)            { "Couleur de fond ..." "Background color ..." }
@@ -1949,62 +1949,62 @@ proc CVMagnifier::Move { Canvas X Y } {
 #  <Tree>        : Arbre a afficher
 #  <args>        : Tous les autres arguments qui seront lu en paire {Param Value}
 #
-#                  Les params peuvent être :
+#                  Les params peuvent Ãªtre :
 #
 #                  <IdCmd> <Fct> Fct est la fonction identitaire appelee lors du
 #                       rendering de l'arbre
-#                  <ParseCmd> <Fct> Fonction appellée lors de l'ouverture d'une
+#                  <ParseCmd> <Fct> Fonction appellÃ©e lors de l'ouverture d'une
 #                       branche parent)
-#                  <PopUpCmd> <Fct> Fonction appellée lors d'un click droit sur
+#                  <PopUpCmd> <Fct> Fonction appellÃ©e lors d'un click droit sur
 #                       l'arbre)
-#                  <SelectCmd> <Fct> Fonction appellée lors de la sélection d'une
+#                  <SelectCmd> <Fct> Fonction appellÃ©e lors de la sÃ©lection d'une
 #                       branche de l'arbre
-#                  <SingleSelectCmd> <Fct> Fonction appellée lors de la sélection d'une
-#                       et une seule feuille de l'arbre --> même chose que SelectCmd en
+#                  <SingleSelectCmd> <Fct> Fonction appellÃ©e lors de la sÃ©lection d'une
+#                       et une seule feuille de l'arbre --> mÃªme chose que SelectCmd en
 #                       SingleSelectMode.
 #                  <AllowMultSelect> <True|False> Option permettant la selection
 #                       multiple de branches dans l'arbre. (Defaut : False) Cette
 #                       option est incompatible avec l'option "DblClickSelect".
-#                  <DblClickSelect> <True|False> Option déterminant si la sélection
+#                  <DblClickSelect> <True|False> Option dÃ©terminant si la sÃ©lection
 #                       se fait en un simple ou un double click de la souris.
-#                       (Défaut : True). Sera forcé à false si l'option
-#                       "AllowMultSelect" est à "True".
-#                  <AllowParentSelect> <True|False> Option déterminant si la
-#                       sélection d'une branche ayant des enfants est possible.
-#                       (Défaut : False). Sera forcé à false si l'option
-#                       "AllowMultSelect" est à False
-#                  <ColorBorder> <Color> Détermine la couleur de la bordure du
-#                       rectangle de sélection. (Défaut : "black")
-#                  <HighlightFullWidth> <True|False> Détermine si le retangle de
-#                       sélection couvrira ou non la pleine largeure du canvas.
-#                       (Défaut : False) Attention : si la taille du canvas change,
-#                       le rectangle de sélection ne se mettra à jour qu'au prochain
-#                       rafraîchissement de la sélection.
-#                  <VariableTextColor> <True|False> Détermine s'il y aura des couleurs
-#                       différentes pour chaque noeud. Si mis à True, le paramètre 
-#                       "color" doit aussi être présent lors de l'appel à IdCmd.
-#                       (Défaut : False)
-#                  <VariableIcon> <True|False> Détermine s'il y aura des icones
-#                       différentes pour chaque noeud. Si mis à True, le paramètre 
-#                       "icon" doit aussi être présent lors de l'appel à IdCmd. Si
-#                       l'option "VariableTextColor" est aussi mis à True, alors
-#                       le paramètre "icon" apparaîtra après le paramètre color.
-#                       L'appel ressemblera alors à "IdCmd Tree Branch IsLeaf Color Icon"
-#                       (Défaut : False)
-#                  <AllowHiddenBranch> <True|False> Détermine s'il peut y avoir des
-#                       branches cachées. Si mis à True, le paramètre "hidden" doit aussi
-#                       être présent lors de l'appel à IdCmd. Le paramètre "hidden"
-#                       apparaîtra après les paramètre VariableColor et VariableIcon, le
-#                       cas échéant.
+#                       (DÃ©faut : True). Sera forcÃ© Ã  false si l'option
+#                       "AllowMultSelect" est Ã  "True".
+#                  <AllowParentSelect> <True|False> Option dÃ©terminant si la
+#                       sÃ©lection d'une branche ayant des enfants est possible.
+#                       (DÃ©faut : False). Sera forcÃ© Ã  false si l'option
+#                       "AllowMultSelect" est Ã  False
+#                  <ColorBorder> <Color> DÃ©termine la couleur de la bordure du
+#                       rectangle de sÃ©lection. (DÃ©faut : "black")
+#                  <HighlightFullWidth> <True|False> DÃ©termine si le retangle de
+#                       sÃ©lection couvrira ou non la pleine largeure du canvas.
+#                       (DÃ©faut : False) Attention : si la taille du canvas change,
+#                       le rectangle de sÃ©lection ne se mettra Ã  jour qu'au prochain
+#                       rafraÃ®chissement de la sÃ©lection.
+#                  <VariableTextColor> <True|False> DÃ©termine s'il y aura des couleurs
+#                       diffÃ©rentes pour chaque noeud. Si mis Ã  True, le paramÃ¨tre 
+#                       "color" doit aussi Ãªtre prÃ©sent lors de l'appel Ã  IdCmd.
+#                       (DÃ©faut : False)
+#                  <VariableIcon> <True|False> DÃ©termine s'il y aura des icones
+#                       diffÃ©rentes pour chaque noeud. Si mis Ã  True, le paramÃ¨tre 
+#                       "icon" doit aussi Ãªtre prÃ©sent lors de l'appel Ã  IdCmd. Si
+#                       l'option "VariableTextColor" est aussi mis Ã  True, alors
+#                       le paramÃ¨tre "icon" apparaÃ®tra aprÃ¨s le paramÃ¨tre color.
+#                       L'appel ressemblera alors Ã  "IdCmd Tree Branch IsLeaf Color Icon"
+#                       (DÃ©faut : False)
+#                  <AllowHiddenBranch> <True|False> DÃ©termine s'il peut y avoir des
+#                       branches cachÃ©es. Si mis Ã  True, le paramÃ¨tre "hidden" doit aussi
+#                       Ãªtre prÃ©sent lors de l'appel Ã  IdCmd. Le paramÃ¨tre "hidden"
+#                       apparaÃ®tra aprÃ¨s les paramÃ¨tre VariableColor et VariableIcon, le
+#                       cas Ã©chÃ©ant.
 #
 #                  Notes:
-#                   - Seul le paramètre IdCmd est obligatoire.
-#                   - Les callbacks autre que PopUpCmd recevront les paramètres <Tree>,
-#                     <Branch> et <Open> lors de leur appel. (Tree étant le nom de l'arbre
-#                     de données, Branch étant la branche faisant l'objet du callback
-#                     et Open étant un indicateur de l'état d'ouverture de la branche.)
-#                     Le callback PopUpCmd recevra <Canvas> <X> <Y> <Branch> oû
-#                     X et Y sont les coordonnées relativement à la fenêtre root
+#                   - Seul le paramÃ¨tre IdCmd est obligatoire.
+#                   - Les callbacks autre que PopUpCmd recevront les paramÃ¨tres <Tree>,
+#                     <Branch> et <Open> lors de leur appel. (Tree Ã©tant le nom de l'arbre
+#                     de donnÃ©es, Branch Ã©tant la branche faisant l'objet du callback
+#                     et Open Ã©tant un indicateur de l'Ã©tat d'ouverture de la branche.)
+#                     Le callback PopUpCmd recevra <Canvas> <X> <Y> <Branch> oÃ»
+#                     X et Y sont les coordonnÃ©es relativement Ã  la fenÃªtre root
 #                     (root window).
 #
 # Retour    :
@@ -2072,14 +2072,14 @@ proc CVTree::Create { Canvas Tree args } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::ExecCallback>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Exécute le callback enregistré si ce dernier a été fourni.
+# But      : ExÃ©cute le callback enregistrÃ© si ce dernier a Ã©tÃ© fourni.
 #
 # Parametres :
-#  <Callback>    : La fonction à exécuter
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Callback>    : La fonction Ã  exÃ©cuter
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche qui fait l'objet du callback
 #  <Open>        : Statut d'ouverture de la branche
 #
@@ -2100,14 +2100,14 @@ proc CVTree::ExecCallback { Callback Canvas Tree Branch Open } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::Highlight>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Illumine les données sélectionnées
+# But      : Illumine les donnÃ©es sÃ©lectionnÃ©es
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
-#  <Branch>      : Branche à illuminer (Utilisé en SingleSelectMode seulement)
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
+#  <Branch>      : Branche Ã  illuminer (UtilisÃ© en SingleSelectMode seulement)
 #
 # Retour    :
 #
@@ -2182,13 +2182,13 @@ proc CVTree::Highlight { Canvas Tree {Branch ""} } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::OnBoxClick>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Callback pour une action effectuée sur les checkbox
+# But      : Callback pour une action effectuÃ©e sur les checkbox
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche qui fait l'objet du callback
 #  <Open>        : Statut d'ouverture de la branche
 #
@@ -2217,18 +2217,18 @@ proc CVTree::OnBoxClick { Canvas Tree Branch Open } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::OnClick>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Callback lors d'un click sur une branche
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche qui fait l'objet du click
 #  <Open>        : Statut d'ouverture de la branche
 #  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
-#  <Ctrl>        : Si la touche "Control" était enfoncée au moment du click
-#  <Shift>       : Si la touche "Shift" était enfoncée au moment du click
+#  <Ctrl>        : Si la touche "Control" Ã©tait enfoncÃ©e au moment du click
+#  <Shift>       : Si la touche "Shift" Ã©tait enfoncÃ©e au moment du click
 #
 # Retour    :
 #
@@ -2366,13 +2366,13 @@ proc CVTree::OnClick { Canvas Tree Branch Open IsLeaf {Ctrl False} {Shift False}
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::OnDblClick>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Callback pour les double-click.
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche qui fait l'objet du double-click
 #  <Open>        : Statut d'ouverture de la branche
 #  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
@@ -2576,13 +2576,13 @@ proc CVTree::RenderBranch { Canvas Tree Branch X Y } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::SelectBranch>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Ouvre et sélectionne un noeud (simule un click utilisateur)
+# But      : Ouvre et sÃ©lectionne un noeud (simule un click utilisateur)
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche a afficher
 #
 # Retour    :
@@ -2603,17 +2603,17 @@ proc CVTree::SelectBranch { Canvas Tree Branch } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::SelectSetState>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Change le statut de sélection d'un branche en mode "multiselect"
+# But      : Change le statut de sÃ©lection d'un branche en mode "multiselect"
 #
 # Parametres :
-#  <Selected>    : Si la branche doit être marquée comme sélectionnée (True) ou non (False)
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Selected>    : Si la branche doit Ãªtre marquÃ©e comme sÃ©lectionnÃ©e (True) ou non (False)
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #  <Branch>      : Branche a afficher
 #  <IsLeaf>      : Si la branche est une feuille (True) ou pas (False)
-#  <Persistent>  : Si la branche sélectionnée doit être marquée comme la dernière activée
+#  <Persistent>  : Si la branche sÃ©lectionnÃ©e doit Ãªtre marquÃ©e comme la derniÃ¨re activÃ©e
 #
 # Retour    :
 #
@@ -2655,13 +2655,13 @@ proc CVTree::SelectSetState { Selected Canvas Tree Branch {IsLeaf False} {Persis
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::SelectionClear>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Désélectionne toutes les branches sélectionnées.
+# But      : DÃ©sÃ©lectionne toutes les branches sÃ©lectionnÃ©es.
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #
 # Retour    :
 #
@@ -2684,14 +2684,14 @@ proc CVTree::SelectionClear { Canvas Tree } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <CVTree::SelectionGet>
-# Creation : Février 2014 - E. Legault-Ouellet - CMC/CMOE
+# Creation : FÃ©vrier 2014 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Retourne une liste de toutes les branches sélectionnés. Ne
-#            fonctionne qu'en mode sélection multiple (AllowMultSelect=True)
+# But      : Retourne une liste de toutes les branches sÃ©lectionnÃ©s. Ne
+#            fonctionne qu'en mode sÃ©lection multiple (AllowMultSelect=True)
 #
 # Parametres :
-#  <Canvas>      : Canvas où est affiché l'arbre
-#  <Tree>        : Arbre des données
+#  <Canvas>      : Canvas oÃ¹ est affichÃ© l'arbre
+#  <Tree>        : Arbre des donnÃ©es
 #
 # Retour    :
 #

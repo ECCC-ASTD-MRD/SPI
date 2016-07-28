@@ -45,30 +45,30 @@ namespace eval Export {
    set Lbl(Cancel)   { "Annuler" "Cancel" }
    set Lbl(Vector)   { "Vectoriel" "Vectorial" }
    set Lbl(Raster)   { "Matriciel" "Raster" }
-   set Lbl(Host)     { "Hôte" "Hostname" }
+   set Lbl(Host)     { "HÃ´te" "Hostname" }
    set Lbl(Port)     { "Port" "Port" }
-   set Lbl(DBase)    { "Base de donnée" "Database" }
+   set Lbl(DBase)    { "Base de donnÃ©e" "Database" }
    set Lbl(User)     { "Usager" "User" }
    set Lbl(Password) { "Mot de passe" "Password" }
    set Lbl(Format)   { "Format" "Format" }
    set Lbl(Loc)      { "Localisation" "Localisation" }
    set Lbl(What)     { "Quoi" "What" }
    set Lbl(How)      { "Comment" "How" }
-   set Lbl(Where)    { "Où" "Where" }
+   set Lbl(Where)    { "OÃ¹" "Where" }
    set Lbl(Info)     { "Information" "Information" }
    set Lbl(RPN)      { "Champs FSTD RPN" "RPN FSTD fields" }
 
-   set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
-   set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
-   set Bubble(Data)   { "Sélection des données a exporter" "Select data to export" }
+   set Bubble(Type)   { "Type d'exportation des donnÃ©es" "Export Type of data" }
+   set Bubble(Format) { "Formats des donnÃ©es exportÃ©es" "Format of exported data" }
+   set Bubble(Data)   { "SÃ©lection des donnÃ©es a exporter" "Select data to export" }
    set Bubble(File)   { "Nom du fichier d'exportation. Peut inclure des wildcards:\n\t%n nomvar\n\t%l level\n\t%h level type\n\t%e etiket\n\t%d date\n\t%t time\n\t%1 ip1\n\t%2 ip2\n\t%3 ip3" "Export filename. Can include wildcards:\n\t%n nomvar\n\t%l level\n\t%h level type\n\t%e etiket\n\t%d date\n\t%t time\n\t%1 ip1\n\t%2 ip2\n\t%3 ip3" }
-   set Bubble(DBase)  { "Paramêtres de connection a la base de donnée" "Database connexion parameters" }
+   set Bubble(DBase)  { "ParamÃªtres de connection a la base de donnÃ©e" "Database connexion parameters" }
 
    set Msg(Export)    { "Exportation de " "Exporting data " }
 
-   set Error(Legend)  { "Problème lors de la création de la légende (convert)" "Problem creating legend (convert)" }
-   set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
-   set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
+   set Error(Legend)  { "ProblÃ¨me lors de la crÃ©ation de la lÃ©gende (convert)" "Problem creating legend (convert)" }
+   set Error(Path)    { "Le fichier d'exportation n'est pas spÃ©cifiÃ©" "Output file not specified" }
+   set Error(Data)    { "Il n'y a aucune donnÃ©e RPN a exporter. Vous devez afficher les champs Ã  exporter dans la vue active afin de pouvoir les exporter"
                         "No RPN data to export. You have to display the fields on the active viewport to be able to export them." }
 
    georef create EXPORT_PROJ { GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]] }
@@ -136,22 +136,22 @@ namespace eval Export::Raster {
                        {ZMap Plus Grid "ZMap" {*.zmap}}
                        {VTP .bt (Binary Terrain) 1.3 Format "BT" {*.bt}}}
 
-   set Lbl(Area)     { "Région" "Area" }
+   set Lbl(Area)     { "RÃ©gion" "Area" }
    set Lbl(Type)     { "Type" "Type" }
    set Lbl(Values)   { "Valeurs" "Values" }
-   set Lbl(Res)      { "Résolution" "Resolution" }
-   set Lbl(Data)     { "Données" "Data" }
+   set Lbl(Res)      { "RÃ©solution" "Resolution" }
+   set Lbl(Data)     { "DonnÃ©es" "Data" }
    set Lbl(ImageRGB) { "RGBA" "RGBA" }
    set Lbl(ImageIDX) { "Palette" "Color index" }
 
-   set Error(Size)    { "Les dimensions sont invalides, vérifié la résolution ou les coordonées." "Dimension is invalid, check resolution or coordinates." }
+   set Error(Size)    { "Les dimensions sont invalides, vÃ©rifiÃ© la rÃ©solution ou les coordonÃ©es." "Dimension is invalid, check resolution or coordinates." }
 
-   set Bubble(Lat0)   { "Latitude du coin inférieur gauche" "Lower left corner latitude" }
-   set Bubble(Lon0)   { "Longitude  du coin inférieur gauche" "Lower left corner longitude" }
-   set Bubble(Lat1)   { "Latitude du coin supérieur droit" "Upper right corner latitude" }
-   set Bubble(Lon1)   { "Longitude du coin supérieur droit" "Upper right corner longitude" }
-   set Bubble(Res)    { "Résolution en degrés" "Resolution in degrees" }
-   set Bubble(Values) { "Méthode d'exportation des valeurs" "Values exportation method" }
+   set Bubble(Lat0)   { "Latitude du coin infÃ©rieur gauche" "Lower left corner latitude" }
+   set Bubble(Lon0)   { "Longitude  du coin infÃ©rieur gauche" "Lower left corner longitude" }
+   set Bubble(Lat1)   { "Latitude du coin supÃ©rieur droit" "Upper right corner latitude" }
+   set Bubble(Lon1)   { "Longitude du coin supÃ©rieur droit" "Upper right corner longitude" }
+   set Bubble(Res)    { "RÃ©solution en degrÃ©s" "Resolution in degrees" }
+   set Bubble(Values) { "MÃ©thode d'exportation des valeurs" "Values exportation method" }
 }
 
 namespace eval Export::Vector {
@@ -161,7 +161,7 @@ namespace eval Export::Vector {
    set Param(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
                        {GeoJSON  "GeoJSON" {*.json}}
                        {KML "KMZ" {*.kml}}
-                       {Géoconcept Export "Geoconcept" {*.gxt}}
+                       {GÃ©oconcept Export "Geoconcept" {*.gxt}}
                        {Geography Markup Language "GML" {*.gml}}
                        {GMT ASCII Vectors "GMT" {*.gmt}}
                        {GPS Exchange Format "GPX" {*.gpx}}

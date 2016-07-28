@@ -38,15 +38,15 @@ namespace eval ColorBar {
 
    set Lbl(BarFrame)  { "Cadre" "Frame" }
    set Lbl(BarAlpha)  { "Transparence" "Transparency" }
-   set Lbl(BarSingle) { "Une seule échelle" "Single colorbar" }
-   set Lbl(BarSplit)  { "Séparation des intervalles" "Split intervals" }
+   set Lbl(BarSingle) { "Une seule Ã©chelle" "Single colorbar" }
+   set Lbl(BarSplit)  { "SÃ©paration des intervalles" "Split intervals" }
    set Lbl(BarFactor) { "Afficher les facteurs" "Show factors" }
    set Lbl(BarBorder) { "Bordure des intervalles" "Border intervals" }
    set Lbl(BarThin)   { "Barre mince" "Thin bar" }
    set Lbl(BarMedium) { "Barre moyenne" "Medium bar" }
    set Lbl(BarWide)   { "Barre large" "Wide bar" }
-   set Lbl(BarLeft)   { "Barre à gauche/bas" "Bar to the left/bottom" }
-   set Lbl(BarRight)  { "Barre à droite/haut" "Bar to the right/top" }
+   set Lbl(BarLeft)   { "Barre Ã  gauche/bas" "Bar to the left/bottom" }
+   set Lbl(BarRight)  { "Barre Ã  droite/haut" "Bar to the right/top" }
 
    set Param(Full)   0
    set Param(BG)     white

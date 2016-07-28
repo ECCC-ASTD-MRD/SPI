@@ -147,23 +147,23 @@ namespace eval FSTD {
 
    #----- Definitions des labels
 
-   set Lbl(Params)        { "Paramètres..." "Parameters..." }
+   set Lbl(Params)        { "ParamÃ¨tres..." "Parameters..." }
    set Lbl(Alpha)         { "Transparence" "Transparency" }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(Contour)       { "Contour" "Contour" }
-   set Lbl(Data)          { "Données" "Data" }
+   set Lbl(Data)          { "DonnÃ©es" "Data" }
    set Lbl(Texture)       { "Texture" "Texture" }
    set Lbl(Volume)        { "Volume" "Volume" }
    set Lbl(Display)       { "Affichage" "Display" }
    set Lbl(Conv)          { "Conv  " "Conv  " }
    set Lbl(Interp)        { "Interp " "Interp " }
    set Lbl(Value)         { "Valeur " "Values " }
-   set Lbl(Unit)          { "Unité  " "Units  " }
+   set Lbl(Unit)          { "UnitÃ©  " "Units  " }
    set Lbl(Desc)          { "Desc   " "Desc   " }
    set Lbl(Field)         { "Champs" "Field" }
    set Lbl(Grid)          { "Grille " "Grid   " }
    set Lbl(Particle)      { "Particule" "Particle" }
-   set Lbl(Label)         { "Étiquette" "Labels" }
+   set Lbl(Label)         { "Ã‰tiquette" "Labels" }
    set Lbl(Intervals)     { "Intervalles" "Intervals" }
    set Lbl(No)            { "Non" "No" }
    set Lbl(Map)           { "Palette" "Colormap" }
@@ -171,32 +171,32 @@ namespace eval FSTD {
    set Lbl(Vector)        { "Vecteur" "Vector" }
    set Lbl(Warning)       { "Attention" "Warning" }
    set Lbl(Yes)           { "Oui" "Yes" }
-   set Lbl(UnTile)        { "Dé #" "Un #" }
+   set Lbl(UnTile)        { "DÃ© #" "Un #" }
    set Lbl(Mask)          { "Masque" "Mask" }
 
    #----- Definitions des bulles
 
-   set Bubble(Format)    { "Sélection du format de l'affichage des valeurs"
+   set Bubble(Format)    { "SÃ©lection du format de l'affichage des valeurs"
                            "Select the display format of values" }
    set Bubble(MapAll)    { "Appliquer la palette aux vecteurs, contours et points"
                            "Apply colormap to vectors, contours and points" }
-   set Bubble(Color)     { "Sélection de la couleur des contours, points et libelles"
+   set Bubble(Color)     { "SÃ©lection de la couleur des contours, points et libelles"
                            "Select color for contour, points and labels" }
-   set Bubble(Width)     { "Sélection de la largeur des contours et lignes de courants"
+   set Bubble(Width)     { "SÃ©lection de la largeur des contours et lignes de courants"
                            "Select width of contour and streamline" }
-   set Bubble(Dash)      { "Sélection du pointillé des countours"
+   set Bubble(Dash)      { "SÃ©lection du pointillÃ© des countours"
                            "Selec contour dash type" }
-   set Bubble(Contour)   { "Affichage de contour selon la précision sélectionnée"
+   set Bubble(Contour)   { "Affichage de contour selon la prÃ©cision sÃ©lectionnÃ©e"
                            "Display contours based on selected precision" }
    set Bubble(Texture)   { "Affichage du remplissage des cellules selon la palette"
                            "Display cell filling based on colormap" }
-   set Bubble(Volume)    { "Affichage en iso-surface 3D des intervalles spécifiés"
+   set Bubble(Volume)    { "Affichage en iso-surface 3D des intervalles spÃ©cifiÃ©s"
                            "Display 3D isosurface of the selected intervals" }
-   set Bubble(Grid)      { "Affichage des points de grilles selon la dimension sélectionnée"
+   set Bubble(Grid)      { "Affichage des points de grilles selon la dimension sÃ©lectionnÃ©e"
                            "Display gridpoints based on selected dimension" }
-   set Bubble(Vector)    { "Afichage des vecteurs selon le mode sélectionné (champs vectoriels)"
+   set Bubble(Vector)    { "Afichage des vecteurs selon le mode sÃ©lectionnÃ© (champs vectoriels)"
                            "Display vectors based on selected mode (vectorial fields)" }
-   set Bubble(Particle)  { "Affichage des parcelles selon la dimension sélectionnée (nuages de points)"
+   set Bubble(Particle)  { "Affichage des parcelles selon la dimension sÃ©lectionnÃ©e (nuages de points)"
                            "Display parcels based on selected dimension" }
    set Bubble(Label)     { "Affichage de libelle sur les contours"
                            "Display contour labels" }
@@ -204,33 +204,33 @@ namespace eval FSTD {
                            "Display min/max or central values" }
    set Bubble(Mask)      { "Appliquer le masque si existant (TYPVAR @@)"
                            "Apply mask if found (TYPVAR @@)" }                        
-   set Bubble(Unit)      { "Unitées de la variable specifie"
+   set Bubble(Unit)      { "UnitÃ©es de la variable specifie"
                            "Specified variable units" }
-   set Bubble(Desc)      { "Description de la donnnée"
+   set Bubble(Desc)      { "Description de la donnnÃ©e"
                            "Data description" }
-   set Bubble(NomVar)    { "Sélection du champs dont\nvous désirez modifier les paramêtres"
+   set Bubble(NomVar)    { "SÃ©lection du champs dont\nvous dÃ©sirez modifier les paramÃªtres"
                            "Select the field which you want to change the parameters" }
-   set Bubble(Mode)      { "Méthode de sélection des niveaux"
+   set Bubble(Mode)      { "MÃ©thode de sÃ©lection des niveaux"
                            "Level selection method" }
-   set Bubble(Nb)        { "Nombre de niveaux déterminés"
+   set Bubble(Nb)        { "Nombre de niveaux dÃ©terminÃ©s"
                            "Number of levels" }
-   set Bubble(Conv)      { "Conversion appliquée aux valeurs du champs (+ Delta x Facteur)"
+   set Bubble(Conv)      { "Conversion appliquÃ©e aux valeurs du champs (+ Delta x Facteur)"
                            "Conversion applied to the field values (+ Delta x Factor)" }
    set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
                            "Intervals description (1 2 3 ... ou [0 1])" }
-   set Bubble(Font)      { "Police de caractères pour l'information"
+   set Bubble(Font)      { "Police de caractÃ¨res pour l'information"
                            "Font used to display information" }
-   set Bubble(Map)       { "Palette utilisée pour les valeurs"
+   set Bubble(Map)       { "Palette utilisÃ©e pour les valeurs"
                            "Colormap used for values" }
-   set Bubble(MapAbove)  { "Palette utilisée pour les valeurs haut dessus du maximum spécifié"
+   set Bubble(MapAbove)  { "Palette utilisÃ©e pour les valeurs haut dessus du maximum spÃ©cifiÃ©"
                            "Colormap used for values above maximum specified" }
-   set Bubble(MapBelow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
+   set Bubble(MapBelow) { "Palette utilisÃ©e pour les valeurs sous le minimum spÃ©cifiÃ©"
                            "Colormap used for values bellow minimum specified" }
-   set Bubble(Interp)    { "Méthode d'interpolation des données (Lissage)"
+   set Bubble(Interp)    { "MÃ©thode d'interpolation des donnÃ©es (Lissage)"
                            "Interpolation method (Smoothing)" }
-   set Bubble(Grid)      { "Sélection de sous-grilles ou grille maitre (GRTYP=U)"
+   set Bubble(Grid)      { "SÃ©lection de sous-grilles ou grille maitre (GRTYP=U)"
                            "Sub-grid or master grid selection (GRTYP=U)" }
-   set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (GRTYP=#) en une seule grille"
+   set Bubble(Tile)      { "SÃ©lectionnez pour reconstruire les grilles\ntuilÃ©es (GRTYP=#) en une seule grille"
                            "Select to rebuild tiled grids (GRTYP=#) into one" }
 
 }

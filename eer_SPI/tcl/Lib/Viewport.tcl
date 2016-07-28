@@ -171,9 +171,9 @@ namespace eval Viewport {
    #----- Definitions des labels relatives a la projection
 
    set Lbl(Background)     { "Fond"     "Background" }
-   set Lbl(Coast)          { "Côtes"    "Coast" }
+   set Lbl(Coast)          { "CÃ´tes"    "Coast" }
    set Lbl(Lake)           { "Lac"      "Lake" }
-   set Lbl(River)          { "Rivière"  "River" }
+   set Lbl(River)          { "RiviÃ¨re"  "River" }
    set Lbl(Polit)          { "Pays"     "State" }
    set Lbl(Place)          { "Endroit" "Place" }
    set Lbl(Admin)          { "Province" "Province" }
@@ -188,48 +188,48 @@ namespace eval Viewport {
    set Lbl(Name)           { "Nom"    "Name" }
    set Lbl(Color)          { "Couleurs" "Colors" }
    set Lbl(Vector)         { "Vectoriel" "Vectorial" }
-   set Lbl(Degrees)        { "Degrés" "Degrees" }
-   set Lbl(HighRes)        { "Haute résolution" "High resolution" }
+   set Lbl(Degrees)        { "DegrÃ©s" "Degrees" }
+   set Lbl(HighRes)        { "Haute rÃ©solution" "High resolution" }
    set Lbl(Raster)         { "Matriciel" "Raster" }
    set Lbl(Mask)           { "Masque"   "Mask" }
    set Lbl(Topo)           { "Topographie" "Topography" }
-   set Lbl(Bath)           { "Bathymétrie" "Bathymetry" }
+   set Lbl(Bath)           { "BathymÃ©trie" "Bathymetry" }
    set Lbl(Land)           { "Terre/Mer" "Land/Sea" }
-   set Lbl(Numbered)       { "Numérotation" "Numbered" }
-   set Lbl(Geo)            { "Géographie" "Geographic" }
+   set Lbl(Numbered)       { "NumÃ©rotation" "Numbered" }
+   set Lbl(Geo)            { "GÃ©ographie" "Geographic" }
    set Lbl(Proj)           { "Projection" "Projection" }
    set Lbl(Factor)         { "Facteurs d'expansion" "Expension factors" }
    set Lbl(Sea)            { "Mer" "Sea" }
    set Lbl(Show)           { "Afficher" "Show" }
    set Lbl(Text)           { "Texture" "Texture" }
-   set Lbl(MinSize)        { "Détails" "Details" }
+   set Lbl(MinSize)        { "DÃ©tails" "Details" }
 
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Close)          { "Fermer" "Close" }
-   set Lbl(Extent)         { "Étendue" "Extent" }
+   set Lbl(Extent)         { "Ã‰tendue" "Extent" }
    set Lbl(Min)            { "Minimum" "Minimum" }
    set Lbl(Max)            { "Maximum" "Maximum" }
    set Lbl(Transform)      { "Transformation" "Transform" }
    set Lbl(Translation)    { "Translation" "Translation" }
    set Lbl(Rotation)       { "Rotation" "Rotation" }
-   set Lbl(Scaling)        { "Échelle" "Scaling" }
+   set Lbl(Scaling)        { "Ã‰chelle" "Scaling" }
    set Lbl(Ident)          { "Identification" "Identification" }
    set Lbl(CoordLoc)       { "Local" "Local" }
-   set Lbl(CoordRef)       { "Référence" "Reference" }
+   set Lbl(CoordRef)       { "RÃ©fÃ©rence" "Reference" }
    set Lbl(Value)          { "Valeur" "Value" }
    set Lbl(Viewport)       { "Vue" "Viewport" }
 
    #----- Definitions des bulles d'aides
 
-   set Bubble(Lat)     { "Sélecteur/Indicateur de latitude/j" "Latitude/j Selector/Indicator" }
-   set Bubble(Lon)     { "Sélecteur/Indicateur de longitude/i" "Longitude/i Selector/Indicator" }
+   set Bubble(Lat)     { "SÃ©lecteur/Indicateur de latitude/j" "Latitude/j Selector/Indicator" }
+   set Bubble(Lon)     { "SÃ©lecteur/Indicateur de longitude/i" "Longitude/i Selector/Indicator" }
    set Bubble(Reset)   { "Recentrage de la projection" "Recenter the projection" }
-   set Bubble(Proj)    { "Sélection du type de projection" "Select thr projection type" }
+   set Bubble(Proj)    { "SÃ©lection du type de projection" "Select thr projection type" }
    set Bubble(Topo)    { "Topographie" "Global Topography" }
-   set Bubble(Bath)    { "Bathymétrie" "Global Bathymetry" }
-   set Bubble(Texture) { "Texture apliquée a la topographie" "Textured applied to the topography" }
-   set Bubble(Elev)    { "Facteur multiplicatif appliqué aux élévations" "Mutlipicative factor applied to the elevations" }
-   set Bubble(Vector)  { "Paramètres d'affichage des données\nvectorielles (couleur et largeur)" "Vectorial data parameters (Color and line width)" }
+   set Bubble(Bath)    { "BathymÃ©trie" "Global Bathymetry" }
+   set Bubble(Texture) { "Texture apliquÃ©e a la topographie" "Textured applied to the topography" }
+   set Bubble(Elev)    { "Facteur multiplicatif appliquÃ© aux Ã©lÃ©vations" "Mutlipicative factor applied to the elevations" }
+   set Bubble(Vector)  { "ParamÃ¨tres d'affichage des donnÃ©es\nvectorielles (couleur et largeur)" "Vectorial data parameters (Color and line width)" }
    set Bubble(Sun)     { "Illumination selon la position du soleil" "Light based on sun position" }
 }
 

@@ -41,10 +41,10 @@ namespace eval Miniport { } {
 
    set Lbl(Zoom)       { "Zoom ..." "Zoom ..." }
    set Lbl(Location)   { "Afficher la localisation" "Display location" }
-   set Lbl(Data)       { "Afficher les données" "Display data" }
+   set Lbl(Data)       { "Afficher les donnÃ©es" "Display data" }
    set Lbl(Relative)   { "Relatif" "Relative" }
    set Lbl(Cursor)     { "Suivre le curseur" "Follow mouse" }
-   set Lbl(Color)      { "Couleur de la région visible" "Color of view area" }
+   set Lbl(Color)      { "Couleur de la rÃ©gion visible" "Color of view area" }
    set Lbl(Ortho)      { "Projection Orthographique" "Orthographic projection" }
    set Lbl(Cylin)      { "Projection Cylindrique" "Cylindric projection" }
    set Lbl(Same)       { "Projection maitre" "Master projection" }

@@ -112,34 +112,34 @@ namespace eval PrintBox {
    set Lbl(Orient)     { "Orientation" "Orientation" }
    set Lbl(Dim)        { "Dimension" "Dimension" }
    set Lbl(Portrait)   { "Portrait" "Portrait" }
-   set Lbl(PrintDev)   { "Méthode" "Device" }
+   set Lbl(PrintDev)   { "MÃ©thode" "Device" }
    set Lbl(Printer)    { "Imprimante" "Printer" }
    set Lbl(Print)      { "Imprimer" "Print" }
    set Lbl(Save)       { "Sauvegarder" "Save" }
    set Lbl(SendTo)     { "Envoyer vers" "Send to" }
-   set Lbl(Quality)    { "Qualité" "Quality" }
+   set Lbl(Quality)    { "QualitÃ©" "Quality" }
    set Lbl(Smooth)     { "Lissage" "Smooth" }
    set Lbl(Compress)   { "Compression" "Compress" }
    set Lbl(Version)    "3.1"
 
    #----- Definitions des titres
-   set Titre(PrintBoxPrint) { "Paramêtres d'impression" "Printing parameters" }
-   set Titre(PrintBoxSave)  { "Paramêtres de sauvegarde" "Saving parameters" }
+   set Titre(PrintBoxPrint) { "ParamÃªtres d'impression" "Printing parameters" }
+   set Titre(PrintBoxSave)  { "ParamÃªtres de sauvegarde" "Saving parameters" }
 
    #----- Definitions des bulles d'aides
-   set Bubble(Quality)  { "Spécifie le niveau de compression an pourcentage de qualité. Meilleure est la qualité, mon de compression il y aura.\nLes valeurs utiles sont de 5...95. Le défaut est 75." "Specifies the compression level as a quality percentage. The higher the quality, the less the compression.\nUseful values are in the range 5...95. The default value is 75." }
-   set Bubble(Smooth)   { "Lissage de l'image avant la compression.\nDes valeurs entre 10...30 sont habituellement correcte. Le défaut est 0, pas de lissage." "Smooth the image before performing the compression.\nValues in the 10...30 are usually enough. The default is 0, i.e no smoothing." }
-   set Bubble(Compress) { "Type de compression utilisée.\nLe défaut est none." "Type of compression to use.\nThe default is none." }
+   set Bubble(Quality)  { "SpÃ©cifie le niveau de compression an pourcentage de qualitÃ©. Meilleure est la qualitÃ©, mon de compression il y aura.\nLes valeurs utiles sont de 5...95. Le dÃ©faut est 75." "Specifies the compression level as a quality percentage. The higher the quality, the less the compression.\nUseful values are in the range 5...95. The default value is 75." }
+   set Bubble(Smooth)   { "Lissage de l'image avant la compression.\nDes valeurs entre 10...30 sont habituellement correcte. Le dÃ©faut est 0, pas de lissage." "Smooth the image before performing the compression.\nValues in the 10...30 are usually enough. The default is 0, i.e no smoothing." }
+   set Bubble(Compress) { "Type de compression utilisÃ©e.\nLe dÃ©faut est none." "Type of compression to use.\nThe default is none." }
 
     #----- Definitions des textes
-   set Txt(Postscript) { "Génération du postscript pour le canvas" "Generating postscript for canvas" }
+   set Txt(Postscript) { "GÃ©nÃ©ration du postscript pour le canvas" "Generating postscript for canvas" }
    set Txt(Print)      { "Impression" "Printing" }
-   set Txt(Image)      { "Génération de l'image" "Generating image file" }
+   set Txt(Image)      { "GÃ©nÃ©ration de l'image" "Generating image file" }
 
    #----- Definition des erreurs
-   set Error(Convert)  { "Il semble y avoir un problème avec le fichier postscript ou la conversion de celui-ci"
+   set Error(Convert)  { "Il semble y avoir un problÃ¨me avec le fichier postscript ou la conversion de celui-ci"
                          "There seems to be an error within the postscript file or while converting the file" }
-   set Error(Path)     { "Ce répertoire n'est pas accessible" "This directory is not accessible" }
+   set Error(Path)     { "Ce rÃ©pertoire n'est pas accessible" "This directory is not accessible" }
 }
 
 #----------------------------------------------------------------------------

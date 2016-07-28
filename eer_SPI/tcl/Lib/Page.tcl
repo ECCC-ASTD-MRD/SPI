@@ -179,7 +179,7 @@ namespace eval Page {
    set Lbl(Display)        { "Afficher"  "Display" }
    set Lbl(Size)           { "Dimensions" "Size" }
    set Lbl(Intrusion)      { "Intrusion dans les vues" "Allow viewport intrusions" }
-   set Lbl(Widget)         { "Affichage des boutons de contrôle" "Display control widgets" }
+   set Lbl(Widget)         { "Affichage des boutons de contrÃ´le" "Display control widgets" }
    set Lbl(Others)         { "Autres" "Others" }
 }
 

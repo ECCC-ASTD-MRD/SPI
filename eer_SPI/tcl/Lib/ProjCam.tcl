@@ -88,13 +88,13 @@ namespace eval ProjCam {
 
    #----- Definitions des textes
 
-   set Msg(Del)   { "Voulez-vous vraiment supprimer cette définition de caméra ?"
+   set Msg(Del)   { "Voulez-vous vraiment supprimer cette dÃ©finition de camÃ©ra ?"
                     "Do you really want to delete this camera definition ? " }
 
-   set Msg(Saved) { "Définition de caméra sauvegardée."
+   set Msg(Saved) { "DÃ©finition de camÃ©ra sauvegardÃ©e."
                     "Camera definition saved." }
 
-   set Msg(Exist) { "Ce nom de caméra existe déja, voulez-vous l'écraser ?"
+   set Msg(Exist) { "Ce nom de camÃ©ra existe dÃ©ja, voulez-vous l'Ã©craser ?"
                     "This camera name exists do you wish to overwrite it ?" }
 }
 

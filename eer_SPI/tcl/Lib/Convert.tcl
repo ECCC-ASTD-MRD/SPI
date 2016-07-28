@@ -62,8 +62,8 @@ namespace eval Convert { } {
 
    set Lbl(1852)  "Nautical mile"
 
-   set Lbl(DistL)   { "mètres" "meters" }
-   set Lbl(DistU)   { "Mètres" "Meters" }
+   set Lbl(DistL)   { "mÃ¨tres" "meters" }
+   set Lbl(DistU)   { "MÃ¨tres" "Meters" }
 
    set Unit(1e24)  "Y"
    set Unit(1e21)  "Z"
@@ -249,7 +249,7 @@ proc Convert::FormatArea { Area { Prec 2 } } {
 
    eval set dist \[format \"%.${Prec}f\" [expr $Area/$f]\]
 
-   return "$dist $Unit($u)m²"
+   return "$dist $Unit($u)mÂ²"
 }
 
 #----------------------------------------------------------------------------
@@ -361,7 +361,7 @@ proc Convert::Decimal2Minute { Value { Prec 3 } { List False } } {
    if { $List } {
       return "$deg $min $sec"
    } else {
-      return "$deg°$min'$sec\""
+      return "$degÂ°$min'$sec\""
    }
 }
 
@@ -390,7 +390,7 @@ proc Convert::Minute2Decimal { Value { Prec 10 } } {
 
    #----- Extraire les deux parties
 
-   set Value [split [string map { "°" " " \' " " \" " " "," " " "d" " " "m" " " "s" " " } $Value]]
+   set Value [split [string map { "Â°" " " \' " " \" " " "," " " "d" " " "m" " " "s" " " } $Value]]
    set deg [string trimleft [lindex $Value 0] 0]
    set min [string trimleft [lindex $Value 1] 0]
    set sec [string trimleft [lindex $Value 2] 0]

@@ -84,16 +84,16 @@ namespace eval FileBox {
 
    set Title(Save)       { "Enregistrer sous :" "Save as :" }
    set Title(Load)       { "Lire :" "Load :" }
-   set Title(Path)       { "Répertoire :" "Path :" }
+   set Title(Path)       { "RÃ©pertoire :" "Path :" }
 
    #----- Definitionse des Labels
 
    set Lbl(Cancel)       { "Annuler" "Cancel" }
    set Lbl(Byte)         { "o" "b" }
-   set Lbl(Dir)          { "Répertoire" "Directory" }
+   set Lbl(Dir)          { "RÃ©pertoire" "Directory" }
    set Lbl(File)         { "Fichier" "Filename" }
    set Lbl(Type)         { "Type" "Type" }
-   set Lbl(Create)       { "Créer" "Create" }
+   set Lbl(Create)       { "CrÃ©er" "Create" }
    set Lbl(Del)          { "Effacer" "Delete" }
    set Lbl(File)         { "Fichier(s)" "File(s)" }
    set Lbl(Name)         { "Nom" "Name" }
@@ -109,27 +109,27 @@ namespace eval FileBox {
    set Bubble(Back)      { "Remonte dans l'arborescence"
                            "Go up into the tree" }
 
-   set Bubble(Mem)       { "Liste des répertoires usuels"
+   set Bubble(Mem)       { "Liste des rÃ©pertoires usuels"
                            "Usual directory list" }
 
-   set Bubble(Del)       { "Suppression du répertoire de\nla liste des répertoires usuels"
+   set Bubble(Del)       { "Suppression du rÃ©pertoire de\nla liste des rÃ©pertoires usuels"
                            "Delete the current directory\nfrom the usual directory list" }
 
-   set Bubble(Add)       { "Sauvegarde du répertoire dans\nla liste des répertoires usuels"
+   set Bubble(Add)       { "Sauvegarde du rÃ©pertoire dans\nla liste des rÃ©pertoires usuels"
                            "Save the current directory\ninto the usual directory list" }
 
-   set Bubble(Pattern)   { "Spécification de la chaine de restriction" "Specify the restriction pattern" }
+   set Bubble(Pattern)   { "SpÃ©cification de la chaine de restriction" "Specify the restriction pattern" }
 
    #----- Definitions des Messages
 
-   set Msg(MemAdd)       { "Le répertoire/fichier suivant a été sauvegardé"
+   set Msg(MemAdd)       { "Le rÃ©pertoire/fichier suivant a Ã©tÃ© sauvegardÃ©"
                            "The following path/file has been saved" }
-   set Msg(MemDel)       { "Le répertoire/fichier suivant a été supprimé de la liste"
+   set Msg(MemDel)       { "Le rÃ©pertoire/fichier suivant a Ã©tÃ© supprimÃ© de la liste"
                            "the followin path/file has been removed from list" }
-   set Msg(Right)        { "Vous n'avez pas la permission d'accéder a ce répertoire:"
+   set Msg(Right)        { "Vous n'avez pas la permission d'accÃ©der a ce rÃ©pertoire:"
                            "You do not have the right to access this path:" }
    set Msg(Del)          { "Voulez-vous vraiment supprimer ces fichiers ?" "Do you really want to suppress these files ?" }
-   set Msg(Overwrite)    { "Un fichier avec ne nom existe déja, voulez-vous écraser ce fichier ?" "A file by this name already exists, Do you want to overwrite this file ?" }
+   set Msg(Overwrite)    { "Un fichier avec ne nom existe dÃ©ja, voulez-vous Ã©craser ce fichier ?" "A file by this name already exists, Do you want to overwrite this file ?" }
 
    #----- Definitions des Erreurs
 

@@ -43,13 +43,13 @@ namespace eval VectorBox {
    set Data(LockY)    False
    set Data(LockZ)    False
 
-   set Lbl(GridVec)   { "Orienté grille" "Grid oriented" }
-   set Lbl(Params)    { "Paramètres" "Parameters" }
+   set Lbl(GridVec)   { "OrientÃ© grille" "Grid oriented" }
+   set Lbl(Params)    { "ParamÃ¨tres" "Parameters" }
    set Lbl(Size)      { "Dimension" "Dimension" }
-   set Lbl(SizeRange) { "Écart" "Range" }
+   set Lbl(SizeRange) { "Ã‰cart" "Range" }
    set Lbl(Sample)    { "Echantillonage" "Sampling" }
    set Lbl(Step)      { "Pas" "Step" }
-   set Lbl(Start)     { "Départ" "Start" }
+   set Lbl(Start)     { "DÃ©part" "Start" }
    set Lbl(Close)     { "Fermer" "Close" }
    set Lbl(Apply)     { "Appliquer" "Apply" }
    set Lbl(Stream)    { "Ligne de courant" "Streamline" }
@@ -59,17 +59,17 @@ namespace eval VectorBox {
    set Lbl(Speed)     { "Stop Lent              Rapide"
                         "Stop Slow              Fast" }
 
-   set Bubble(Size)       { "Dimension des barbules et flêches / Longueur des lignes de courants" "Wind barbs and arrow size / Streamline length" }
-   set Bubble(SizeRange)  { "Facteur d'écart de dimension des flêches entre les mimimum et maximum\nÉcart entre les lignes de courants" "Dimension range factor of wind arrows between minimum and maximum values\nSpacing between streamlines" }
+   set Bubble(Size)       { "Dimension des barbules et flÃªches / Longueur des lignes de courants" "Wind barbs and arrow size / Streamline length" }
+   set Bubble(SizeRange)  { "Facteur d'Ã©cart de dimension des flÃªches entre les mimimum et maximum\nÃ‰cart entre les lignes de courants" "Dimension range factor of wind arrows between minimum and maximum values\nSpacing between streamlines" }
    set Bubble(Step)       { "Pas de temps du deplacment des lignes de courants" "Streamline displacement step" }
-   set Bubble(Sample)     { "Espacement entre les flêches, barbules et lignes de courants\npixel(2D) / grille(3D)" "Wind bars, arrows and streamline sampling distance\npixel(2D) / gridpt(3D)" }
-   set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les flêches et barbules" "Pixel or gridpoint spacing unit for arows and barbs" }
-   set Bubble(GridVec)    { "Orientation des vecteurs\ngéographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
-   set Bubble(Cube)       { "Point de départ du plan des lignes de courants" "Streamline plane starting point" }
-   set Bubble(Select)     { "Sélection interactive du cube de départ\nBoutton Gauche: Sélection du cube\nBoutton Centre: Déplacement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
-   set Bubble(Real)       { "Applique les paramêtres interactivement" "Apply parameters interactively" }
-   set Bubble(Apply)      { "Appliquer les paramêtres" "Apply the parameters" }
-   set Bubble(Close)      { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
+   set Bubble(Sample)     { "Espacement entre les flÃªches, barbules et lignes de courants\npixel(2D) / grille(3D)" "Wind bars, arrows and streamline sampling distance\npixel(2D) / gridpt(3D)" }
+   set Bubble(SampleType) { "Espacement en pixel ou point de grille pour les flÃªches et barbules" "Pixel or gridpoint spacing unit for arows and barbs" }
+   set Bubble(GridVec)    { "Orientation des vecteurs\ngÃ©ographique (N-S,E,W) ou grille (X-Y)" "Vector orientation\ngeographic (N-S,E,W) ou grid (X-Y)" }
+   set Bubble(Cube)       { "Point de dÃ©part du plan des lignes de courants" "Streamline plane starting point" }
+   set Bubble(Select)     { "SÃ©lection interactive du cube de dÃ©part\nBoutton Gauche: SÃ©lection du cube\nBoutton Centre: DÃ©placement du cube" "Interactive starting cube selection\nLeft button  : Select cube\nMiddle button: Move cube" }
+   set Bubble(Real)       { "Applique les paramÃªtres interactivement" "Apply parameters interactively" }
+   set Bubble(Apply)      { "Appliquer les paramÃªtres" "Apply the parameters" }
+   set Bubble(Close)      { "Fermer sans appliquer les paramÃªtres"  "Close without applying the parameters" }
    set Bubble(Animate)    { "Animation des lignes de courants"  "Animate streamlines" }
 }
 

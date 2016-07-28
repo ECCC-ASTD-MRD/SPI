@@ -114,13 +114,13 @@ namespace eval Animator {
    set Lbl(Print)          { "Impression" "Printing" }
    set Lbl(Read)           { "Lecture" "Reading" }
    set Lbl(IP3)            { "Valider IP3" "Validate IP3" }
-   set Lbl(Data)           { "Données" "Data" }
+   set Lbl(Data)           { "DonnÃ©es" "Data" }
    set Lbl(Fly)            { "Survol" "Flyby" }
    set Lbl(On)             { "Animer selon" "Animate on" }
    set Lbl(Copy)           { "Copie des images" "Copying images" }
    set Lbl(Web)            { "Creation de la page" "Creating page" }
 
-   set Lbl(FileNameEnter)  { "Entrer le nom de base des fichiers images qui seront générés :" \
+   set Lbl(FileNameEnter)  { "Entrer le nom de base des fichiers images qui seront gÃ©nÃ©rÃ©s :" \
                              "Enter image files base name :" }
    set Lbl(FileNameTitle)  { "Nom du fichier" "File name" }
    set Lbl(WebURL)         { "L'url de l'animation web est le suivant :" "The web animation url is :" }
@@ -146,10 +146,10 @@ namespace eval Animator {
    set Bubble(Scroll)      { "Deroulement de l'animation" "Animation scroller" }
    set Bubble(Type)        { "Selection du type d'animation" "Animation type selection" }
 
-   set Bubble(FlyPreset) { "Sélection de vol prédéfini" "Selection of predefined flybys" }
-   set Bubble(FlyDel)    { "Supprimer le point de contrôle courant" "Delete the current control point" }
-   set Bubble(FlyIns)    { "Insérer un nouveau point de contrôle" "Insert a new control point" }
-   set Bubble(FlyRep)    { "Remplacer le point de contrôle courant" "Replace the current control point" }
+   set Bubble(FlyPreset) { "SÃ©lection de vol prÃ©dÃ©fini" "Selection of predefined flybys" }
+   set Bubble(FlyDel)    { "Supprimer le point de contrÃ´le courant" "Delete the current control point" }
+   set Bubble(FlyIns)    { "InsÃ©rer un nouveau point de contrÃ´le" "Insert a new control point" }
+   set Bubble(FlyRep)    { "Remplacer le point de contrÃ´le courant" "Replace the current control point" }
    set Bubble(FlyOff)    { "Fermer la boite de survol" "Close the flyby window" }
    set Bubble(FlyShow)   { "Afficher le chemin de vol" "Display the flyby path" }
    set Bubble(FlyFly)    { "Animer le survol" "Animate the flyby" }
@@ -159,8 +159,8 @@ namespace eval Animator {
 
    #----- Messages d'erreur
 
-   set Error(WebAnimMake)  { "Une erreur est survenue lors de la génération de l'animation web." "An error occured while generating web animation." }
-   set Error(WebAnimZip)   { "Une erreur est survenue lors de la création du fichier zip, le zip ne sera pas transféré." "An error occured while generating the zipped animation. The zipped animation will not be transfered." }
+   set Error(WebAnimMake)  { "Une erreur est survenue lors de la gÃ©nÃ©ration de l'animation web." "An error occured while generating web animation." }
+   set Error(WebAnimZip)   { "Une erreur est survenue lors de la crÃ©ation du fichier zip, le zip ne sera pas transfÃ©rÃ©." "An error occured while generating the zipped animation. The zipped animation will not be transfered." }
    set Error(WebAnimXfer)  { "Une erreur est survenue lors du transfert de l'animation web." "An error occured during web animation transmission." }
 }
 
@@ -555,7 +555,7 @@ proc Animator::GetPlayList { } {
    set Play(Length) [llength $Play(Frames)]
    set Play(Length) [expr $Play(Length)>0?$Play(Length)-1:0]
 
-   #----- Ajouter les données aux pas de temps intermédiaire le plus petit
+   #----- Ajouter les donnÃ©es aux pas de temps intermÃ©diaire le plus petit
    foreach vp $Play(VPs) {
       set pframe [lindex $Play(Frames) 0]
       foreach frame [lrange $Play(Frames) 1 end] {

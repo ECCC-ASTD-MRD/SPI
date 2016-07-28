@@ -65,135 +65,135 @@ namespace eval Info {
    set Lbl(SimSecs)              { "Date de simulation" "Simulation date" }
    set Lbl(Sim0Secs)             { "Date de simulation initiale" "Initial simulation date" }
    set Lbl(Click)                { "Date de lancement" "Launch date" }
-   set Lbl(Blame)                { "Lancé par" "Launch by" }
+   set Lbl(Blame)                { "LancÃ© par" "Launch by" }
 
-   set Lbl(Method)               { "Méthode" "Method" }
-   set Lbl(Backward)             { "Mode arrière" "Backward mode" }
+   set Lbl(Method)               { "MÃ©thode" "Method" }
+   set Lbl(Backward)             { "Mode arriÃ¨re" "Backward mode" }
    set Lbl(Mode)                 { "Mode" "Mode" }
-   set Lbl(Meteo)                { "Modèle météorologique" "Meteorological model" }
-   set Lbl(Delta)                { "Interval de temps des fichiers météo (h)" "Time interval of meteo files (h)" }
-   set Lbl(Start)                { "Départ" "Start" }
-   set Lbl(Arrival)              { "Arrivée" "Arrival" }
+   set Lbl(Meteo)                { "ModÃ¨le mÃ©tÃ©orologique" "Meteorological model" }
+   set Lbl(Delta)                { "Interval de temps des fichiers mÃ©tÃ©o (h)" "Time interval of meteo files (h)" }
+   set Lbl(Start)                { "DÃ©part" "Start" }
+   set Lbl(Arrival)              { "ArrivÃ©e" "Arrival" }
    set Lbl(Level)                { "Niveau" "Level" }
-   set Lbl(LevelUnit)            { "Unité" "Unit" }
-   set Lbl(BatchStart)           { "Délai de démarrage (h)" "Batch start delay (h)" }
-   set Lbl(Duration)             { "Durée de simulation (h)" "Simulation duration (h)" }
-   set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
+   set Lbl(LevelUnit)            { "UnitÃ©" "Unit" }
+   set Lbl(BatchStart)           { "DÃ©lai de dÃ©marrage (h)" "Batch start delay (h)" }
+   set Lbl(Duration)             { "DurÃ©e de simulation (h)" "Simulation duration (h)" }
+   set Lbl(DurMin)               { "DurÃ©e de simulation (min)" "Simulation duration (min)" }
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
    set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
    set Lbl(Seed)                 { "Semence initiale" "Initial seed" }
-   set Lbl(Aerosol)              { "Type d'aérosol" "Aerosol type" }
+   set Lbl(Aerosol)              { "Type d'aÃ©rosol" "Aerosol type" }
    set Lbl(WetScaMode)           { "Mode de lessivage humide" "Wet scavenging mode" }
-   set Lbl(DryDepMode)           { "Mode de dépot sec" "Dry deposition mode" }
+   set Lbl(DryDepMode)           { "Mode de dÃ©pot sec" "Dry deposition mode" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
-   set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }
+   set Lbl(ObsRough)             { "RugositÃ© (m)" "Roughness (m)" }
    set Lbl(ObsObukhov)           { "Obukhov (m)" "Obukhov (m)" }
-   set Lbl(ObsPrecip)            { "Précipitation (mm/h)" "Precipitation (mm/h)" }
+   set Lbl(ObsPrecip)            { "PrÃ©cipitation (mm/h)" "Precipitation (mm/h)" }
    set Lbl(Obs)                  { "Profil des vents" "Wind Profile" }
    set Lbl(ObsNbLevels)          { "Nb niveaux" "Nb of levels" }
 
-   set Lbl(Model)                { "Modèle" "Model" }
-   set Lbl(State)                { "État de la simulation" "Simulation state" }
-   set Lbl(NoExp)                { "Numéro de l'expérience" "Experience number" }
-   set Lbl(NoSim)                { "Numéro de la simulation" "Simulation number" }
-   set Lbl(NoPrev)               { "Simulation précédente" "Previous simulation" }
+   set Lbl(Model)                { "ModÃ¨le" "Model" }
+   set Lbl(State)                { "Ã‰tat de la simulation" "Simulation state" }
+   set Lbl(NoExp)                { "NumÃ©ro de l'expÃ©rience" "Experience number" }
+   set Lbl(NoSim)                { "NumÃ©ro de la simulation" "Simulation number" }
+   set Lbl(NoPrev)               { "Simulation prÃ©cÃ©dente" "Previous simulation" }
    set Lbl(NameExp)              { "Nom de l'experience" "Experiment name" }
    set Lbl(Name)                 { "Nom de l'emplacement" "Location name" }
    set Lbl(Lat)                  { "Latitude" "Latitude" }
    set Lbl(Lon)                  { "Longitude" "Longitude" }
-   set Lbl(Coords)               { "Coordonnées" "Coordinates" }
-   set Lbl(Elev)                 { "Élévation" "Elevation" }
+   set Lbl(Coords)               { "CoordonnÃ©es" "Coordinates" }
+   set Lbl(Elev)                 { "Ã‰lÃ©vation" "Elevation" }
    set Lbl(Height)               { "Altitude" "Altitude" }
-   set Lbl(AccYear)              { "Année de l'accident" "Accident year" }
+   set Lbl(AccYear)              { "AnnÃ©e de l'accident" "Accident year" }
    set Lbl(AccMonth)             { "Mois de l'accident" "Accident month" }
    set Lbl(AccDay)               { "Jour de l'accident" "Accident day" }
    set Lbl(AccHour)              { "Heure de l'accident" "Accident hour" }
    set Lbl(AccMin)               { "Minute de l'accident" "Accident minute" }
-   set Lbl(SimYear)              { "Année de simulation" "Simulation year" }
+   set Lbl(SimYear)              { "AnnÃ©e de simulation" "Simulation year" }
    set Lbl(SimMonth)             { "Mois de simulation" "Simulation month" }
    set Lbl(SimDay)               { "Jour de simulation" "Simulation day" }
    set Lbl(SimHour)              { "Heure de simulation" "Simulation hour" }
    set Lbl(Scale)                { "Nom de la grille" "Grid name" }
-   set Lbl(GridResolution)       { "Résolution de la grille (km)" "Grid resolution (km)" }
+   set Lbl(GridResolution)       { "RÃ©solution de la grille (km)" "Grid resolution (km)" }
    set Lbl(GridSize)             { "Taille de la grille (NIxNJ)" "Grid size (NIxNJ)" }
-   set Lbl(Grid)                 { "Définition de grille" "Grid definition" }
+   set Lbl(Grid)                 { "DÃ©finition de grille" "Grid definition" }
 
    set Lbl(IsConc)               { "Calcul des concentrations" "Concentrations calculations" }
    set Lbl(GridType)             { "Type de grille" "Type of grid" }
    set Lbl(GridAlgo)             { "Type d'algorithme" "Type of algorithm" }
    set Lbl(GridDomain)           { "Domaine (km)" "Domain (km)" }
    set Lbl(VerticalLevels)       { "Niveaux verticaux (m)" "Vertical Levels (m)" }
-   set Lbl(OutVar)               { "Variables à sauvegarder" "Variables to save" }
+   set Lbl(OutVar)               { "Variables Ã  sauvegarder" "Variables to save" }
    set Lbl(OutCV)                { "Niveaux verticaux concentrations (m)" "Concentration vertical Levels (m)" }
    set Lbl(OutAV)                { "Niveaux verticaux aviation (ft)" "Aviations vertical Levels (ft)" }
-   set Lbl(IsSigma)              { "Fluctuations des vitesses à méso-échelle" "Mesoscale velocity fluctuations" }
+   set Lbl(IsSigma)              { "Fluctuations des vitesses Ã  mÃ©so-Ã©chelle" "Mesoscale velocity fluctuations" }
 
-   set Lbl(FreqOut)              { "Fréquence des fichiers" "File frequency" }
+   set Lbl(FreqOut)              { "FrÃ©quence des fichiers" "File frequency" }
    set Lbl(SrcType)              { "Type de source" "Type of source" }
    set Lbl(VirusName)            { "Nom du virus" "Virus name" }
-   set Lbl(Event)                { "Type d'événement" "Type of event" }
-   set Lbl(By)                   { "Requête par" "Request by" }
-   set Lbl(Scenario)             { "Scénario" "Scenario" }
-   set Lbl(NbPer)                { "Nombre de période" "Number of period" }
-   set Lbl(Dt)                   { "Délai entre les périodes" "Delay between periods" }
+   set Lbl(Event)                { "Type d'Ã©vÃ©nement" "Type of event" }
+   set Lbl(By)                   { "RequÃªte par" "Request by" }
+   set Lbl(Scenario)             { "ScÃ©nario" "Scenario" }
+   set Lbl(NbPer)                { "Nombre de pÃ©riode" "Number of period" }
+   set Lbl(Dt)                   { "DÃ©lai entre les pÃ©riodes" "Delay between periods" }
    set Lbl(ISauve)               { "Intervalle de sortie" "Output interval" }
    set Lbl(DTIN)                 { "DTIN" "DTIN" }
    set Lbl(DTIS)                 { "DTIS" "DTIS" }
    set Lbl(FnVert)               { "Distribution verticale" "Vertical distribution" }
    set Lbl(FnTime)               { "Distribution temporelle" "Time distribution" }
-   set Lbl(Delai)                { "Délai d'emission" "Emission delai" }
+   set Lbl(Delai)                { "DÃ©lai d'emission" "Emission delai" }
    set Lbl(IType1)               { "IType1" "IType1" }
    set Lbl(IType2)               { "IType2" "IType2" }
 
    set Lbl(IsoNb)                { "Nombre d'isotopes" "Number of isotopes" }
    set Lbl(IsoName)              { "Isotope" "Isotope" }
-   set Lbl(IsoHalf)              { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
+   set Lbl(IsoHalf)              { "PÃ©riode de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
    set Lbl(IsoDry)               { "Taux de lessivage sec (s -1)" "Dry scavenging rate (s -1)" }
    set Lbl(IsoWet)               { "Taux de lessivage humide (s -1)" "Wet scavenging rate (s -1)" }
-   set Lbl(IsoRelease)           { "Quantité totale relâchée" "Total released quantity" }
-   set Lbl(IsoChain)             { "Chaine de décomposition" "Decay chain" }
+   set Lbl(IsoRelease)           { "QuantitÃ© totale relÃ¢chÃ©e" "Total released quantity" }
+   set Lbl(IsoChain)             { "Chaine de dÃ©composition" "Decay chain" }
 
-   set Lbl(NbSpecies)            { "Nombre d'espèces" "Number of species" }
-   set Lbl(Species)              { "Espèces" "Species" }
+   set Lbl(NbSpecies)            { "Nombre d'espÃ¨ces" "Number of species" }
+   set Lbl(Species)              { "EspÃ¨ces" "Species" }
    set Lbl(OutputTimeStepMin)    { "Pas de temps de sortie (min)" "Output time step (min)" }
-   set Lbl(ModelTimeStepMin)     { "Pas de temps du modèle (min)" "Model time step (min)" }
-   set Lbl(ModelTimeStep)        { "Pas de temps du modèle (s)" "Model time step (s)" }
+   set Lbl(ModelTimeStepMin)     { "Pas de temps du modÃ¨le (min)" "Model time step (min)" }
+   set Lbl(ModelTimeStep)        { "Pas de temps du modÃ¨le (s)" "Model time step (s)" }
    set Lbl(VerticalLevels)       { "Niveaux verticaux (m)" "Vertical levels (m)" }
-   set Lbl(VarMesoscale)         { "Variance des vitesses horiz. des vents (m²/s²)" "Horiz. wind velocity variance (m²/s²)" }
-   set Lbl(Timescale)            { "Échelle de temps lagrangienne (s)" "Lagrangian time scale (s)" }
-   set Lbl(ReflectionLevel)      { "Niveau inférieur de réflexion (hyb|eta|sig)" "Bottom reflection level (hyb|eta|sig)" }
+   set Lbl(VarMesoscale)         { "Variance des vitesses horiz. des vents (mÂ²/sÂ²)" "Horiz. wind velocity variance (mÂ²/sÂ²)" }
+   set Lbl(Timescale)            { "Ã‰chelle de temps lagrangienne (s)" "Lagrangian time scale (s)" }
+   set Lbl(ReflectionLevel)      { "Niveau infÃ©rieur de rÃ©flexion (hyb|eta|sig)" "Bottom reflection level (hyb|eta|sig)" }
 
-   set Lbl(EmMass)               { "Masse totale relâchée (unité)" "Total released mass (unit)" }
+   set Lbl(EmMass)               { "Masse totale relÃ¢chÃ©e (unitÃ©)" "Total released mass (unit)" }
    set Lbl(EmIsoName)            { "Nom de l'isotope radioactif" "Name of the radionuclide" }
-   set Lbl(EmDepVel)             { "Vitesse de dépôt (m/s)" "Deposition velocity (m/s)" }
-   set Lbl(EmHalfLife)           { "Période de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
+   set Lbl(EmDepVel)             { "Vitesse de dÃ©pÃ´t (m/s)" "Deposition velocity (m/s)" }
+   set Lbl(EmHalfLife)           { "PÃ©riode de demi-vie radioactive (s)" "Radioactive half-life period (s)" }
    set Lbl(EmWetScav)            { "Facteur de lessivage humide" "Wet scavenging coefficient" }
-   set Lbl(EmDuration)           { "Durée (s)" "Duration (s)" }
-   set Lbl(EmDurationMin)        { "Durée d'émission (min)" "Release duration (min)" }
+   set Lbl(EmDuration)           { "DurÃ©e (s)" "Duration (s)" }
+   set Lbl(EmDurationMin)        { "DurÃ©e d'Ã©mission (min)" "Release duration (min)" }
    set Lbl(EmBottom)             { "Bas de la colonne (m)" "Column bottom (m)" }
    set Lbl(EmTop)                { "Haut de la colonne (m)" "Column top (m)" }
    set Lbl(EmRadius)             { "Rayon de la colonne (m)" "Column radius (m)" }
 
    set Lbl(EmNumberParticles)    { "Nombre de particules" "Number of particles" }
-   set Lbl(EmDensity)            { "Densité d'une particule (µg/m³)" "Density of a particle (µg/m³)" }
+   set Lbl(EmDensity)            { "DensitÃ© d'une particule (Âµg/mÂ³)" "Density of a particle (Âµg/mÂ³)" }
    set Lbl(EmHeight)             { "Hauteur maximale du panache (m)" "Maximum plume height (m)" }
    set Lbl(EmSizeDist)           { "Distribution de la taille des particules" "Size distribution of the particles" }
    set Lbl(EmVerticalDist)       { "Distribution verticale du panache" "Vertical plume distribution" }
 
-   set Lbl(Scenario)             { "Scénario d'émission" "Release scenario" }
-   set Lbl(EmScenario)           { "Nom du scénario d'émission" "Name of the release scenario" }
+   set Lbl(Scenario)             { "ScÃ©nario d'Ã©mission" "Release scenario" }
+   set Lbl(EmScenario)           { "Nom du scÃ©nario d'Ã©mission" "Name of the release scenario" }
    set Lbl(EmNbIntervals)        { "Nombre d'intervalles" "Number of intervals" }
    set Lbl(EmNbIso)              { "Nombre d'isotopes" "Number of isotopes" }
    set Lbl(EmIsoSymbol)          { "Isotopes" "Isotopes" }
-   set Lbl(EmIsoQuantity)        { "Quantité totale relâchée" "Total release quantity" }
-   set Lbl(EmTotalDuration)      { "Durée totale d'émission (s)" "Total release duration (s)" }
-   set Lbl(EmEffectiveDuration)  { "Durée effective d'émission (s)" "Effective release duration (s)" }
+   set Lbl(EmIsoQuantity)        { "QuantitÃ© totale relÃ¢chÃ©e" "Total release quantity" }
+   set Lbl(EmTotalDuration)      { "DurÃ©e totale d'Ã©mission (s)" "Total release duration (s)" }
+   set Lbl(EmEffectiveDuration)  { "DurÃ©e effective d'Ã©mission (s)" "Effective release duration (s)" }
    set Lbl(EmMaxAge)             { "Age maximum (s)" "Maximum age (s)" }
-   set Lbl(EmMinMass)            { "Masse minimale (unité)" "Minimum mass (unit)" }
+   set Lbl(EmMinMass)            { "Masse minimale (unitÃ©)" "Minimum mass (unit)" }
 
-   set Lbl(EmLabel)              { "Type de période" "Type of period" }
-   set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }
+   set Lbl(EmLabel)              { "Type de pÃ©riode" "Type of period" }
+   set Lbl(EmReleaseRates)       { "Taux de relÃ¢chement (unitÃ©/h)" "Release rate (unit/h)" }
 }
 
 #----------------------------------------------------------------------------

@@ -55,17 +55,17 @@ namespace eval OpenGL {
 
    set Lbl(Info)        { "Information" "Information" }
    set Lbl(Resources)   { "Ressources" "Resources" }
-   set Lbl(Params)      { "Paramètres" "Parameters" }
+   set Lbl(Params)      { "ParamÃ¨tres" "Parameters" }
    set Lbl(Alias)       { "Anti-aliasing" "Anti-aliasing" }
-   set Lbl(ZBuf)        { "Cohérence de profondeur (ZBuffer)" "Depth coherence (ZBuffer)" }
-   set Lbl(Low)         { "Interactivité dynamique" "Dynamic interactivity" }
+   set Lbl(ZBuf)        { "CohÃ©rence de profondeur (ZBuffer)" "Depth coherence (ZBuffer)" }
+   set Lbl(Low)         { "InteractivitÃ© dynamique" "Dynamic interactivity" }
    set Lbl(Time)        { "Temps du rendue" "Render time" }
    set Lbl(Frame)       { "Images par secondes" "Frame per second" }
-   set Lbl(Memory)      { "Mémoire utilisée" "Memory usage" }
-   set Lbl(Movement)    { "Déplacement" "Movement" }
+   set Lbl(Memory)      { "MÃ©moire utilisÃ©e" "Memory usage" }
+   set Lbl(Movement)    { "DÃ©placement" "Movement" }
    set Lbl(Fast)        { "Vite" "Fast" }
    set Lbl(Slow)        { "Lent" "Slow" }
-   set Lbl(Delay)       { "Délai" "Delay" }
+   set Lbl(Delay)       { "DÃ©lai" "Delay" }
    set Lbl(Damping)     { "Amortissement" "Damping" }
    set Lbl(Dynamic)     { "Dynamique" "Dynamics" }
 

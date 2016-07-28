@@ -121,19 +121,19 @@ namespace eval MapBox {
    set Bubble(Blue)  { "Ajustement du ratio de bleue"
                        "Adjust blue ratio" }
 
-   set Bubble(Alpha) { "Ajustement du ratio d'opacité"
+   set Bubble(Alpha) { "Ajustement du ratio d'opacitÃ©"
                        "Adjust opacity ratio" }
 
-   set Bubble(Gamma) { "Éclaircir ou foncer la palette"
+   set Bubble(Gamma) { "Ã‰claircir ou foncer la palette"
                        "Lighten or darken colormap" }
 
-   set Bubble(Save)  { "Sauvegarder la définition de palette courante"
+   set Bubble(Save)  { "Sauvegarder la dÃ©finition de palette courante"
                        "Save the current colormap definition" }
 
-   set Bubble(Del)   { "Supprimer définitivement la palette sélectionnée de la liste des palettes"
+   set Bubble(Del)   { "Supprimer dÃ©finitivement la palette sÃ©lectionnÃ©e de la liste des palettes"
                        "Definitively removes the selected colormap from the colormap list" }
 
-   set Bubble(Name)  { "Nom de la définition de palette courante"
+   set Bubble(Name)  { "Nom de la dÃ©finition de palette courante"
                        "Name of the current colormap definition" }
 
    set Bubble(Map)   { "Echantillonage de la palette courante"

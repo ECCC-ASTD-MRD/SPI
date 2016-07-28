@@ -96,7 +96,7 @@ namespace eval FieldBox {
    set Lbl(Open)           { "Ouvrir fichier" "Open file" }
    set Lbl(ReOpen)         { "Re-ouvrir fichier" "Re-open file" }
    set Lbl(Level)          { "NIVEAU" "LEVEL" }
-   set Lbl(Params)         { "Détails du champ" "Field details" }
+   set Lbl(Params)         { "DÃ©tails du champ" "Field details" }
    set Lbl(Desc)           { "Afficher les descripteurs" "Show descriptors" }
 
    #----- Erreurs
@@ -1575,7 +1575,7 @@ namespace eval FieldParams {
    variable Data
 
    set Param(Geom)     { 250x570+[winfo rootx .]+[winfo rooty .] }
-   set Param(Title)    { "Détails du champs" "Field details" }
+   set Param(Title)    { "DÃ©tails du champs" "Field details" }
 
    set Lbl(Close)      { "Fermer" "Close" }
    set Lbl(Apply)      { "Appliquer" "Apply" }

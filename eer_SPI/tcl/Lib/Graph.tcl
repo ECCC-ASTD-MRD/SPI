@@ -197,7 +197,7 @@ namespace eval Graph {
    set Lbl(Graph)      { "Graphique" "Graph" }
    set Lbl(Outline)    { "Ligne" "Line" }
    set Lbl(Fill)       { "Remplissage" "Fill" }
-   set Lbl(Icon)       { "Icône" "Icon" }
+   set Lbl(Icon)       { "IcÃ´ne" "Icon" }
    set Lbl(Type)       { "Type        " "Type        " }
    set Lbl(Title)      { "Titre" "Title" }
    set Lbl(Value)      { "Valeurs" "Values" }
@@ -211,17 +211,17 @@ namespace eval Graph {
    set Lbl(Info)       { "Info" "Info" }
    set Lbl(Axis)       { "Axe" "Axis" }
    set Lbl(Grid)       { "Marqueurs" "Markers" }
-   set Lbl(Unit)       { "Unité" "Unit" }
+   set Lbl(Unit)       { "UnitÃ©" "Unit" }
    set Lbl(Since)      { "Depuis" "Since" }
-   set Lbl(FitLinear)  { "Régression Linéaire" "Linear regression" }
+   set Lbl(FitLinear)  { "RÃ©gression LinÃ©aire" "Linear regression" }
    set Lbl(Params)     { "Parametres" "Parameters" }
 
-   set Lbl(Background) { "Arrière" "Background" }
+   set Lbl(Background) { "ArriÃ¨re" "Background" }
    set Lbl(Frame)      { "Pourtour" "Frame" }
    set Lbl(Color)      { "Couleur" "Color" }
    set Lbl(Count)      { "Nombre" "Count" }
    set Lbl(Cut)        { "Coupes" "Cuts" }
-   set Lbl(Data)       { "Données"  "Data" }
+   set Lbl(Data)       { "DonnÃ©es"  "Data" }
    set Lbl(Date)       { "Date"  "Date" }
    set Lbl(Day)        { "Jour"  "Day" }
    set Lbl(Disp)       { "Affichage" "Display" }
@@ -229,23 +229,23 @@ namespace eval Graph {
    set Lbl(Hour)       { "Heure" "Hour" }
    set Lbl(IP3)        { "Valider IP3" "Validate IP3" }
    set Lbl(Level)      { "Niveau" "Level" }
-   set Lbl(Limit)      { "Délimitation" "Limiting range" }
-   set Lbl(Lin)        { "Linéaire" "Linear" }
+   set Lbl(Limit)      { "DÃ©limitation" "Limiting range" }
+   set Lbl(Lin)        { "LinÃ©aire" "Linear" }
    set Lbl(Log)        { "Logarithmique" "Logarithmic" }
    set Lbl(Min)        { "Min"   "Min" }
    set Lbl(Obs)        { "Observations" "Observations" }
    set Lbl(Points)     { "Points" "Vertex" }
    set Lbl(Pos)        { "Position" "Position" }
-   set Lbl(WindGeo)    { "Direction géographique des vents (Nord vers le haut)" "Geographical direction of winds (North is up)" }
+   set Lbl(WindGeo)    { "Direction gÃ©ographique des vents (Nord vers le haut)" "Geographical direction of winds (North is up)" }
    set Lbl(Wind3D)     { "Direction vertical des vents" "Vertical direction of winds" }
    set Lbl(Proj)       { "Afficher dans la vue" "Display in viewport" }
-   set Lbl(Projected)  { "Projeté" "Projected" }
+   set Lbl(Projected)  { "ProjetÃ©" "Projected" }
    set Lbl(Section)    { "Section" "Section" }
-   set Lbl(Res)        { "Résolution (m)" "Resolution (m)" }
+   set Lbl(Res)        { "RÃ©solution (m)" "Resolution (m)" }
    set Lbl(Same)       { "Echelle Uniforme" "Uniform scale" }
-   set Lbl(Scale)      { "Échelle" "Scale" }
+   set Lbl(Scale)      { "Ã‰chelle" "Scale" }
    set Lbl(Sec)        { "Sec"   "Sec" }
-   set Lbl(Select)     { "Sélection" "Select" }
+   set Lbl(Select)     { "SÃ©lection" "Select" }
    set Lbl(Stat)       { "Statistiques" "Statistics" }
    set Lbl(To)         { "A " "To  " }
    set Lbl(Val)        { "Valeur" "Value" }
@@ -253,8 +253,8 @@ namespace eval Graph {
    set Lbl(TimeMatch)  { "Valider les temps" "Validate time" }
    set Lbl(Inter)      { "Intervalles" "Intervals" }
    set Lbl(Format)     { "Format" "Format" }
-   set Lbl(Decimals)   { "Décimales" "Decimals" }
-   set Lbl(ZType)      { "Elévation" "Height" }
+   set Lbl(Decimals)   { "DÃ©cimales" "Decimals" }
+   set Lbl(ZType)      { "ElÃ©vation" "Height" }
    set Lbl(Angle)      { "Angle" "Angle" }
    set Lbl(PRESSURE)   { "Pression" "Pressure" }
    set Lbl(MASL)       { "Metres au dessus du niveaux de la mer" "Meters above sea level" }
@@ -267,57 +267,57 @@ namespace eval Graph {
 
    #----- Messages
 
-   set Msg(Reading)    { "Lecture des données" "Reading data" }
-   set Msg(Extracting) { "Extraction des données" "Extracting data" }
-   set Msg(PosSave)    { "Veuillez spécifier le nom de la position" "Please enter the position name" }
-   set Msg(PosExist)   { "Cette position existe déja, voulez-vous la remplacer ?" "This position already exist, do you want to replace it" }
+   set Msg(Reading)    { "Lecture des donnÃ©es" "Reading data" }
+   set Msg(Extracting) { "Extraction des donnÃ©es" "Extracting data" }
+   set Msg(PosSave)    { "Veuillez spÃ©cifier le nom de la position" "Please enter the position name" }
+   set Msg(PosExist)   { "Cette position existe dÃ©ja, voulez-vous la remplacer ?" "This position already exist, do you want to replace it" }
    set Msg(PosDel)     { "Voulez-vous vraiment supprimer la position ?" "Do you really want to delete this position ?" }
 
    #----- Bulles d'aides
 
-   set Bubble(Back)      { "Paramêtres de l'arrière plan du graph" "Graph background parameters" }
-   set Bubble(Frame)     { "Paramêtres du contour du graph" "Graph frame parameters" }
-   set Bubble(Pick)      { "Paramêtres de la sélection interactive" "Interactive selection parameters" }
-   set Bubble(Mode)      { "Mode de sélection de coordonées dans la projection" "Coordinate selection mode" }
-   set Bubble(Reset)     { "Réinitialiser le graph" "Reinitialize the graph" }
-   set Bubble(Sheet)     { "Affichage des données du graph" "Display graph data" }
-   set Bubble(Save)      { "Sauvegarde des données en format RPN" "Save the data in RPN format" }
-   set Bubble(Update)    { "Mise-à-jour automatique des unités et information à partir des données" "Automatic update of graph units and information from data source" }
+   set Bubble(Back)      { "ParamÃªtres de l'arriÃ¨re plan du graph" "Graph background parameters" }
+   set Bubble(Frame)     { "ParamÃªtres du contour du graph" "Graph frame parameters" }
+   set Bubble(Pick)      { "ParamÃªtres de la sÃ©lection interactive" "Interactive selection parameters" }
+   set Bubble(Mode)      { "Mode de sÃ©lection de coordonÃ©es dans la projection" "Coordinate selection mode" }
+   set Bubble(Reset)     { "RÃ©initialiser le graph" "Reinitialize the graph" }
+   set Bubble(Sheet)     { "Affichage des donnÃ©es du graph" "Display graph data" }
+   set Bubble(Save)      { "Sauvegarde des donnÃ©es en format RPN" "Save the data in RPN format" }
+   set Bubble(Update)    { "Mise-Ã -jour automatique des unitÃ©s et information Ã  partir des donnÃ©es" "Automatic update of graph units and information from data source" }
 
-   set Bubble(ItemList)  { "Liste des items par sélection de position" "List of itmes per position selection" }
-   set Bubble(ItemLine)  { "Paramêtres d'affichage des lignes" "Line parameters" }
-   set Bubble(ItemFill)  { "Paramêtres de remplissage" "Polygon filling parameters" }
-   set Bubble(ItemIcon)  { "Paramêtres des icônes" "Icon parameters" }
+   set Bubble(ItemList)  { "Liste des items par sÃ©lection de position" "List of itmes per position selection" }
+   set Bubble(ItemLine)  { "ParamÃªtres d'affichage des lignes" "Line parameters" }
+   set Bubble(ItemFill)  { "ParamÃªtres de remplissage" "Polygon filling parameters" }
+   set Bubble(ItemIcon)  { "ParamÃªtres des icÃ´nes" "Icon parameters" }
    set Bubble(ItemType)  { "Type d'affichage de l'item" "Item display type" }
    set Bubble(ObsList)   { "Liste des stations d'observations disponibles" "List of available observation stations" }
    set Bubble(ObsSearch) { "Recherche d'une station dans la liste" "Station search through the list" }
-   set Bubble(PosList)   { "Liste des sélections de position" "Position selection list" }
-   set Bubble(PosAdd)    { "Ajout d'une sélection de position" "Add a position selection" }
-   set Bubble(PosDel)    { "Suppression de la sélection de position courante" "Delete the current position sélection" }
-   set Bubble(Info)      { "Paramêtres de l'entête" "Header parameters" }
-   set Bubble(Viewport)  { "Affichage des données sur la projection active" "Display the data on the active viewport" }
-   set Bubble(Sample)    { "Sélection de la distance entre les profils" "Select the sampling distance in km" }
-   set Bubble(Fit)       { "Affichage de la courbe de régression" "Displays the fitting curve" }
-   set Bubble(Select)    { "Affichage d'un interval de sélection" "Displays an interval of selection" }
+   set Bubble(PosList)   { "Liste des sÃ©lections de position" "Position selection list" }
+   set Bubble(PosAdd)    { "Ajout d'une sÃ©lection de position" "Add a position selection" }
+   set Bubble(PosDel)    { "Suppression de la sÃ©lection de position courante" "Delete the current position sÃ©lection" }
+   set Bubble(Info)      { "ParamÃªtres de l'entÃªte" "Header parameters" }
+   set Bubble(Viewport)  { "Affichage des donnÃ©es sur la projection active" "Display the data on the active viewport" }
+   set Bubble(Sample)    { "SÃ©lection de la distance entre les profils" "Select the sampling distance in km" }
+   set Bubble(Fit)       { "Affichage de la courbe de rÃ©gression" "Displays the fitting curve" }
+   set Bubble(Select)    { "Affichage d'un interval de sÃ©lection" "Displays an interval of selection" }
    set Bubble(Stat)      { "Affichage de statistiques relatives au graph" "Displays graph statistics" }
    set Bubble(IP3)       { "Validation du IP3 lors de la recherche des champs temporels" "Validate IP3 when looking ro temporal fields" }
-   set Bubble(Date0)     { "Spécification de la date de début\nformat: YYYMMDD HHMMSS" "Specify the start date\nformat: YYYMMDD HHMMSS" }
-   set Bubble(Date1)     { "Spécification de la date de fin\nformat: YYYMMDD HHMMSS" "Specify the end date\nformat: YYYMMDD HHMMSS" }
-   set Bubble(Uniform)   { "Permet de fixer l'échelle des deux axes aux mêmes intervals" "Fix the two scales to the same intervals" }
-   set Bubble(TimeMatch) { "Vérification de la concordandes des temps entre les paires de données" "Make sure time is matching between sets" }
+   set Bubble(Date0)     { "SpÃ©cification de la date de dÃ©but\nformat: YYYMMDD HHMMSS" "Specify the start date\nformat: YYYMMDD HHMMSS" }
+   set Bubble(Date1)     { "SpÃ©cification de la date de fin\nformat: YYYMMDD HHMMSS" "Specify the end date\nformat: YYYMMDD HHMMSS" }
+   set Bubble(Uniform)   { "Permet de fixer l'Ã©chelle des deux axes aux mÃªmes intervals" "Fix the two scales to the same intervals" }
+   set Bubble(TimeMatch) { "VÃ©rification de la concordandes des temps entre les paires de donnÃ©es" "Make sure time is matching between sets" }
 
-   set Bubble(AxisInter)     { "Spécification des intervals de l'axe" "Specify the axis intervals" }
+   set Bubble(AxisInter)     { "SpÃ©cification des intervals de l'axe" "Specify the axis intervals" }
    set Bubble(AxisType)      { "Fonction de distribution des valeurs de l'axe" "Axis value distribution function" }
-   set Bubble(AxisZType)     { "Type de coordonnée verticale" "Vertical coordinate type" }
+   set Bubble(AxisZType)     { "Type de coordonnÃ©e verticale" "Vertical coordinate type" }
    set Bubble(AxisFormat)    { "Format des valeurs de l'axe" "Axis value format" }
-   set Bubble(AxisDecimals)  { "Nombre de décimales des valeurs de l'axe" "Number of decimals for axis values" }
-   set Bubble(AxisMark)      { "Paramêtres de marquage des axes" "Axis markers parameters" }
+   set Bubble(AxisDecimals)  { "Nombre de dÃ©cimales des valeurs de l'axe" "Number of decimals for axis values" }
+   set Bubble(AxisMark)      { "ParamÃªtres de marquage des axes" "Axis markers parameters" }
    set Bubble(AxisAngle)     { "Angle des libelles" "Labels angle" }
 
    #----- Erreurs
 
-   set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. Vérifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
-   set Error(Meter)     { "Impossible de calculer les niveaux MASL. Vérifiez que les champs GZ sont bien dans le fichier." "Impossible to calculate MASL levels. Make sure GZ fields are in the file." }
+   set Error(Pressure)  { "Impossible de calculer les niveaux de pressions. VÃ©rifiez que les descripteurs verticaux sont bien dans le fichier." "Impossible to calculate pressure levels. Make sure vertical descriptors are in the file." }
+   set Error(Meter)     { "Impossible de calculer les niveaux MASL. VÃ©rifiez que les champs GZ sont bien dans le fichier." "Impossible to calculate MASL levels. Make sure GZ fields are in the file." }
    set Error(NbData)    { "Les pas de temps entre les items pour le calcul ne correspondent pas" "Time step don't correspond for calculus" }
 }
 

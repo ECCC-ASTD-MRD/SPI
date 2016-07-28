@@ -58,7 +58,7 @@ namespace eval DateStuff {
 
 
    set Month(01) { "Janvier"   "January"  }
-   set Month(02) { "Février"   "February"  }
+   set Month(02) { "FÃ©vrier"   "February"  }
    set Month(03) { "Mars"      "March"     }
    set Month(04) { "Avril"     "April"     }
    set Month(05) { "Mai"       "May"       }
@@ -68,7 +68,7 @@ namespace eval DateStuff {
    set Month(09) { "Septembre" "September" }
    set Month(10) { "Octobre"   "October"   }
    set Month(11) { "Novembre"  "November"  }
-   set Month(12) { "Décembre"  "December"  }
+   set Month(12) { "DÃ©cembre"  "December"  }
 
    set Data(Jan) 01
    set Data(Feb) 02
@@ -303,7 +303,7 @@ proc DateStuff::StringDateFromSeconds { Seconds Lang { Zone Z } } {
    set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "$jour %d $mois %Y à %H:%M$Zone" -timezone :UTC]"
+      set date "[clock format $Seconds -format "$jour %d $mois %Y Ã  %H:%M$Zone" -timezone :UTC]"
       set date [string totitle $date 0 end-[string length $Zone]]
    } else {
       set date "[clock format $Seconds -format "$jour $mois %d %Y at %H:%M$Zone" -timezone :UTC]"
@@ -337,7 +337,7 @@ proc DateStuff::StringShortDateFromSeconds { Seconds Lang { Zone Z } } {
    set mois [DateStuff::StringMonth [clock format $Seconds -format "%m" -timezone :UTC] $Lang]
 
    if { $Lang==0 } {
-      set date "[clock format $Seconds -format "%d $mois %Y à %H:%M$Zone" -timezone :UTC]"
+      set date "[clock format $Seconds -format "%d $mois %Y Ã  %H:%M$Zone" -timezone :UTC]"
       set date [string totitle $date 0 end-[string length $Zone]]
    } else {
       set date "[clock format $Seconds -format "$mois %d %Y at %H:%M$Zone" -timezone :UTC]"
