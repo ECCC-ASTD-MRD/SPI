@@ -230,25 +230,30 @@ namespace eval FieldCalc {
    }
 
    set Param(Volume) {
-      { m³     1.0            "mètre cube"    "cubic meter" }
-      { in³    1.6387064e-5   "pouce cube"    "cubic inch" }
-      { ft³    2.8316846e-2   "pied cube"     "cubic foot" }
-      { yd³    7.64554858e-1  "verge cube"    "cubic yard" }
-      { mile³  4.168181825e9  "mile cube"     "cubic mile" }
-      { min    6.16115e-8     "minim"         "minim" }
-      { dram   3.69669e-6     "dram liquide"  "fluid dram" }
-      { liqoz  2.95735e-5     "once liquide"  "liquid ounce" }
-      { gi     1.18294e-4     "gill"          "gill" }
-      { liqpt  4.73176e-4     "pinte liquide" "liquid pint" }
-      { liqqt  9.46353e-4     "quart liquide" "liquid quart" }
-      { gal    3.785411784e-3 "gallon"        "gallon" }
-      { drypt  5.50610e-4     "pinte sèche"   "dry pint" }
-      { dryqt  1.10122e-3     "quart sec"     "dry quart" }
-      { pk     8.80977e-3     "peck"          "peck" }
-      { bu     3.52391e-2     "bushel"        "bushel" }
-      { bbl    1.58987e-1     "baril"         "barrel" }
-      { drybbl 1.15627e-1     "baril sec"     "dry barrel" }
-      { L      1.0e-3         "litre"         "litre" }
+      { m³        1.0            "mètre cube"         "cubic meter" }
+      { in³       1.6387064e-5   "pouce cube"         "cubic inch" }
+      { ft³       2.8316846e-2   "pied cube"          "cubic foot" }
+      { yd³       7.64554858e-1  "verge cube"         "cubic yard" }
+      { mile³     4.168181825e9  "mile cube"          "cubic mile" }
+      { min       6.16115e-8     "minim"              "minim" }
+      { dram      3.69669e-6     "dram liquide"       "fluid dram" }
+      { liqoz     2.95735e-5     "once liquide"       "liquid ounce" }
+      { gi        1.18294e-4     "gill"               "gill" }
+      { liqpt     4.73176e-4     "pinte liquide"      "liquid pint" }
+      { liqqt     9.46353e-4     "quart liquide"      "liquid quart" }
+      { gal       3.785411784e-3 "gallon"             "gallon" }
+      { drypt     5.50610e-4     "pinte sèche"        "dry pint" }
+      { dryqt     1.10122e-3     "quart sec"          "dry quart" }
+      { pk        8.80977e-3     "peck"               "peck" }
+      { bu        3.52391e-2     "bushel"             "bushel" }
+      { bbl       1.58987e-1     "baril"              "barrel" }
+      { drybbl    1.15627e-1     "baril sec"          "dry barrel" }
+      { L         1.0e-3         "litre"              "litre" }
+      { DOT111    130.59671      "DOT-111"            "DOT-111" }
+      { wagon     105.0          "wagon"              "wagon" }
+      { halfwagon 52.5           "wagon (½)"          "wagon (½)" }
+      { truck     50.0           "camion-citerne"     "tank-truck" }
+      { halftruck 25.0           "camion-citerne (½)" "tank-truck (½)" }
    }
 
    set Param(Mass) {
@@ -512,6 +517,10 @@ proc FieldCalc::ConvertFactor { } {
 
 proc FieldCalc::QuickConvert { Type From To Val } {
    variable Param
+
+   if { $From == $To } {
+      return $Val
+   }
 
    set from [lindex [lsearch -index 0 -inline $Param($Type) $From] 1]
    set to   [lindex [lsearch -index 0 -inline $Param($Type) $To] 1]
