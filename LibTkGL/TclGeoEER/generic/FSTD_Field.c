@@ -2601,6 +2601,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       for(k=0;k<nk;k++) {
          Tcl_ListObjIndex(Interp,List,k,&obj);
          Tcl_GetDoubleFromObj(Interp,obj,&level);
+      
          ip1=ZRef_Level2IP(level,Field->ZRef->Type,DEFAULT);
          cs_fstinl(head->File->Id,&ni,&nj,&k2,head->DATEV,head->ETIKET,ip1,head->IP2,(tile?head->IP3:-1),head->TYPVAR,head->NOMVAR,&idxs[Invert?nk-k-1:k],&k2,1);
 

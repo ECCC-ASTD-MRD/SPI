@@ -8,6 +8,11 @@ DESC="EER-SPI library dependencies"
 VERSION="7.11.1"
 MAINTAINER="Jean-Philippe Gauthier"
 
+if [[ (-z $EXT_SRC_PATH) || (-z $EXT_LIB_PATH) ]]; then
+   echo "(ERROR) Variables EXT_SRC_PATH and EXT_LIB_PATH not defined."
+   exit 1
+fi
+
 if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}
 fi
