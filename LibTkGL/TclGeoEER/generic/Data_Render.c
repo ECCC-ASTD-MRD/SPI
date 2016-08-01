@@ -1392,6 +1392,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
    }
+   glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);
 
    if (Field->Spec->InterNb) {
       VAL2COL(base,Field->Spec,Field->Spec->Inter[0]);
