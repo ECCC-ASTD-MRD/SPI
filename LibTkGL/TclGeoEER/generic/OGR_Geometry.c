@@ -1237,9 +1237,10 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
          pnv+=nv;
       }
    }
+   
 // OGR_GeomNURBS(Geom);
    /*Tessellate polygon*/
-   if (Layer->Space==3) {
+   if (Layer && Layer->Space==3) {
       glTessInitNr();
       gluTessBeginPolygon(GLRender->GLTess,NULL);
       for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {

@@ -1787,7 +1787,7 @@ proc FieldParams::SetInfo { { Field "" } { Write False } } {
          fstdfield define $Field -$param $Data($param)
       }
       if { $Write } {
-         if { [set file [FileBox::Create .fieldboxparams "" Save [list $FileBox::Type(FSTD)]]]!="" } {
+         if { [set file [FileBox::Create .fieldboxparams "" Save ""]]!="" } {
             fstdfile open FIELDPARAMS write $file
             fstdfield write $Field FIELDPARAMS 0 True
             fstdfile close FIELDPARAMS

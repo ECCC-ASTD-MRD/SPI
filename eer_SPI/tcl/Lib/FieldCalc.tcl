@@ -26,7 +26,6 @@
 #   FieldCalc::InsertOperator { Op }
 #   FieldCalc::Operand        { VP Id Fields }
 #   FieldCalc::Paste          { Text }
-#   FieldCalc::Save           { File }
 #   FieldCalc::WidgetConst    { Frame }
 #   FieldCalc::WidgetConvert  { Frame }
 #   FieldCalc::WidgetOps      { Frame }
