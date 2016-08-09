@@ -406,8 +406,9 @@ proc Info::Find { Path Set args } {
 #
 # But      : Format une ligne info pour affichage.
 #
-# Parametres :
-#    <Info>  : Ligne info dont il faut extraire quelque chose
+# Parametres  :
+#    <Info>   : Ligne info dont il faut extraire quelque chose
+#    <Length> : Longeur max des lignes (0= no limit)
 #
 # Retour:
 #    <ligne> : ligne formatee
@@ -417,7 +418,7 @@ proc Info::Find { Path Set args } {
 #
 #----------------------------------------------------------------------------
 
-proc Info::Format { Info } {
+proc Info::Format { Info { Length 0 } } {
    global GDefs
    variable Lbl
 
@@ -449,9 +450,12 @@ proc Info::Format { Info } {
          "AccSecs" { set val [clock format $val -timezone :UTC] }
       }
 
-      #----- For scenario, only show then name (1st item)
+      #----- For scenario, only show the name (1st item)
       if { $tok=="Scenario" } {
          set val [lindex [split $val |] 0]
+      }
+      if { $Length && [string length $val]>$Length } {
+         set val "[string range $val 0 $Length] ..."
       }
       set text "$text[format "%-${l}s" $lbl] = $val\n"
    }
