@@ -53,7 +53,7 @@ namespace eval Info {
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
-                        ReflectionLevel EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius }
+                        ReflectionLevel EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius FFModule }
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
    set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD)]]
@@ -194,6 +194,8 @@ namespace eval Info {
 
    set Lbl(EmLabel)              { "Type de période" "Type of period" }
    set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }
+
+   set Lbl(FFModule)             { "Scénario Incendie/Carburant" "Fire/Fuel Scenario" }
 }
 
 #----------------------------------------------------------------------------
