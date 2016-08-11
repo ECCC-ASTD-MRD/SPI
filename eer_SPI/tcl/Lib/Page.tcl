@@ -1126,7 +1126,7 @@ proc Page::ModeSelect { Mode { Frames {} } } {
 
          foreach vp [Page::Registered $frame Viewport] {
 
-            $c bind PAGE$vp <Motion>                 "Viewport::Activate $frame $vp; Viewport::Follow $frame $vp \[$c canvasx %x\] \[$c canvasy %y\]"
+            $c bind PAGE$vp <Motion>                 "Viewport::Follow $frame $vp \[$c canvasx %x\] \[$c canvasy %y\]"
             $c bind PAGE$vp <B1-Motion>              ""
             $c bind PAGE$vp <ButtonPress-1>          ""
             $c bind PAGE$vp <ButtonRelease-1>        ""
