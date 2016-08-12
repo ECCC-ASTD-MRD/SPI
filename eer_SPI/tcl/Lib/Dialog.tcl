@@ -14,7 +14,6 @@
 # Fonctions:
 #    Dialog::Default      { Master Width Type Text Extra Default args }
 #    Dialog::Info         { Master Text { Extra "" } }
-#    Dialog::Job          { Master Text { Extra "" } { Percent 0 } { CancelCommand "" } }
 #    Dialog::Wait         { Master Text { Extra "" } }
 #    Dialog::WaitDestroy  { { Ask False } }
 #    Dialog::Error        { Master Text { Extra "" } }
@@ -22,6 +21,7 @@
 #    Dialog::Message      { Master Text { Extra "" } }
 #    Dialog::Get          { Master Title Text { Var "" } }
 #    Dialog::Give         { Master Title Text Info }
+#    Dialog::Job          { Id Text { Extra "" } { Percent 0 } { CancelCommand "" } }
 #    Dialog::Text         { Id Title File Width Height }
 #    Dialog::TextSave     { Text File }
 #    Dialog::TextSearch   { Widget String Tag args }
@@ -371,7 +371,6 @@ proc Dialog::Info { Master Text { Extra "" } } {
 # But      : Afficher un message d'information sur le travail en cours.
 #
 # Parametres :
-#    <Master> : Fenetre toplevel auquel l'aide est reliee.
 #    <Id>     : Identificateue de la fenetre de job.
 #    <Text>   : Texte bilingue a afficher.
 #    <Extra>  : Texte supplementaire.
@@ -384,7 +383,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Dialog::Job { Master Id Text { Extra "" } { Percent 0 } { CancelCommand "" } } {
+proc Dialog::Job { Id Text { Extra "" } { Percent 0 } { CancelCommand "" } } {
    global GDefs
    variable Lbl
 
@@ -407,10 +406,8 @@ proc Dialog::Job { Master Id Text { Extra "" } { Percent 0 } { CancelCommand "" 
       toplevel .dlgjob$Id -class Dialog
       wm title .dlgjob$Id Info
       wm protocol .dlgjob$Id WM_DELETE_WINDOW { }
-      if { [winfo exists $Master] } {
-         wm transient .dlgjob$Id $Master
-         wm geom .dlgjob$Id +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
-      }
+      wm transient .dlgjob$Id .
+      wm geom .dlgjob$Id +[expr [winfo rootx .]+50]+[expr [winfo rooty .]+50]
 
       # ----- Afficher le frame du haut qui va contenir le message
 
