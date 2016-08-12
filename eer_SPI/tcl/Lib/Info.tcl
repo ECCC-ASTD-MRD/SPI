@@ -268,10 +268,10 @@ proc Info::Decode { Var Info } {
    set model [string trimright [lindex [split [lindex $infos 0] =] 1] 01]
 
    #----- Force unset on coords for aftercheck (not all modesl have Coords array)
-   unset -nocomplain var(Coords)
-   unset -nocomplain var(Lat)
-   unset -nocomplain var(Lon)
-
+   set var(Coords) {}
+   set var(Lat)    {}
+   set var(Lon)    {}
+   
    foreach info $infos {
       set list  [split $info =]
       set token [lindex $list 0]
@@ -299,12 +299,12 @@ proc Info::Decode { Var Info } {
    }
 
    #----- Fill up missing variables
-   if { ![info exists var(Coords)] } {
+   if { ![llength $var(Coords)] } {
       foreach lat $var(Lat) lon $var(Lon) {
          lappend var(Coords) [list $lat $lon]
       }
    }
-   if { ![info exists var(Lat)] } {
+   if { [llength $var(Lat)]<[llength $var(Coords)] } {
       foreach coord $var(Coords) {
          lappend var(Lat) [lindex $coord 0]
          lappend var(Lon) [lindex $coord 1]
