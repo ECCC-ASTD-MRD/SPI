@@ -462,7 +462,7 @@ void Grid_Render(Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,cha
          glBegin(Mode);
             for(i=0;i<n;i+=Stride) {
               if (Tex) glTexCoord1f(Tex[i]);
-              Grid_Vertex(Data[i],prev,Proj->Ref->Type&GRID_PSEUDO?-Proj->LI:Proj->LI,Mode);
+              Grid_Vertex(Data[Idx?Idx[i]:i],prev,Proj->Ref->Type&GRID_PSEUDO?-Proj->LI:Proj->LI,Mode);
             }
          glEnd();
       } else {

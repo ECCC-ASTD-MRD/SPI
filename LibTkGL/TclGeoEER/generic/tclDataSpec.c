@@ -369,14 +369,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    double       tmpd,val,min=0.0,max=0.0;
    const char **lvls;
 
-   static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-rendercontour","-renderlabel","-rendercoord","-rendervector",
+   static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-renderboundary","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask",NULL };
-   enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
+   enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERBOUNDARY,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,HIGHDASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
@@ -443,6 +443,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderGrid));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderGrid);
+            }
+            break;
+
+         case RENDERBOUNDARY:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderBoundary));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderBoundary);
             }
             break;
 
@@ -1687,6 +1695,7 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
    to->RenderTexture=from->RenderTexture;
    to->RenderFace=from->RenderFace;
    to->RenderGrid=from->RenderGrid;
+   to->RenderBoundary=from->RenderBoundary;
    to->RenderContour=from->RenderContour;
    to->RenderCoord=from->RenderCoord;
    to->RenderLabel=from->RenderLabel;
@@ -1883,6 +1892,7 @@ TDataSpec *DataSpec_New(){
       spec->RenderTexture=0;
       spec->RenderFace=1;
       spec->RenderGrid=0;
+      spec->RenderBoundary=0;
       spec->RenderContour=0;
       spec->RenderCoord=0;
       spec->RenderLabel=0;

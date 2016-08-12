@@ -163,6 +163,7 @@ typedef struct TDataSpec {
    int             RenderGrid;          // Effectuer le rendue de la grille
    int             RenderCoord;         // Effectuer le rendue des coordonnees
    int             RenderContour;       // Effectuer le rendue des contours
+   int             RenderBoundary;      // Effectuer le rendue des limites
    int             RenderLabel;         // Effectuer le rendue des labels des niveaux
    int             RenderParticle;      // Effectuer le rendue de champs lagrangien
    TDataSpecVECTOR RenderVector;        // Effectuer le rendue de champs vectoriel

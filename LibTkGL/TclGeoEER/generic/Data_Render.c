@@ -43,6 +43,7 @@ void  Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,
 
 void  Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 void  Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
+void  Data_RenderBoundary(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 void  Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj);
@@ -207,6 +208,9 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
 
          if (Field->Spec->RenderGrid)
             Data_RenderGrid(Interp,Field,VP,(Projection*)Proj);
+         
+         if (Field->Spec->RenderBoundary)
+            Data_RenderBoundary(Interp,Field,VP,(Projection*)Proj);
 
          if (Field->Spec->RenderContour && !Field->Spec->RenderVol)
             Data_RenderContour(Interp,Field,VP,(Projection*)Proj);
@@ -772,6 +776,98 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
    glDisableClientState(GL_VERTEX_ARRAY);
    glDisable(GL_BLEND);
 
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Data_RenderBoundary>
+ * Creation : Aout 2016 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Effectue l'affichage des limites de la grille.
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <Field>   : Champs
+ *  <VP>      : Parametres du viewport
+ *  <Proj>    : Parametres de la projection
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void Data_RenderBoundary(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
+
+   unsigned int *idx,i,j,sz;
+   char buf[128];
+
+   if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
+      return;
+
+   // Allocate index buffer
+   sz=(Field->Def->NI+Field->Def->NJ)*2-4;
+   idx=(unsigned int*)malloc(sz*sizeof(unsigned int));
+
+   // Calculate grid boundary index
+   for(i=0;i<Field->Def->NI;i++) {
+      idx[i]=i;
+      idx[Field->Def->NI+Field->Def->NJ-2+i]=Field->Def->NJ*Field->Def->NI-i-1;
+   }
+   for(j=0;j<Field->Def->NJ-2;j++) {   
+      idx[Field->Def->NI+j]=(j+2)*Field->Def->NI-1;
+      idx[2*Field->Def->NI+Field->Def->NJ-3+j]=(Field->Def->NJ-j-1)*Field->Def->NI;
+   }
+   idx[sz-1]=0;
+   
+   glEnableClientState(GL_VERTEX_ARRAY);
+//      glEnable(GL_LINE_SMOOTH);
+
+   glStencilMask(0x10);
+//      glStencilFunc(GL_NOTEQUAL,0x31,0x20);
+   glStencilFunc(GL_EQUAL,0x00,0xff);
+   glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+
+   if (Interp) {
+      sprintf(buf,"%% Postscript des limites\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->Width-1);
+      Tcl_AppendResult(Interp,buf,(char*)NULL);
+      Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
+   }
+
+   if (Interp) {
+      glPostscriptDash(Interp,&Field->Spec->Dash,Field->Spec->Width);
+   } else {
+      glDash(&Field->Spec->Dash);
+   }
+   glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+   glLineWidth(Field->Spec->Width);
+
+   // Do we need transparency
+   if (Field->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+   
+   glEnableClientState(GL_VERTEX_ARRAY);
+   Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],idx,NULL,NULL,GL_LINE_STRIP,sz,1,Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->GPos->Pos[Field->Def->Level][Field->Def->Idx+Field->Def->NI*Field->Def->NJ-1]);     
+   glDisableClientState(GL_VERTEX_ARRAY);
+   glDisable(GL_LINE_STIPPLE);
+   glDisable(GL_LINE_SMOOTH);
+   glDisable(GL_BLEND);
+
+   if (GLRender->GLZBuf) {
+      glStencilMask(0x10);
+      glStencilFunc(GL_ALWAYS,0x10,0x10);
+      glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+   } else {
+      glStencilMask(0xf);
+      glStencilFunc(GL_EQUAL,0x0,0xf);
+      glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+   }
+
+   if (Interp) {
+      glPostscriptDash(Interp,NULL,Field->Spec->Width);
+   }
+   
+   free(idx);
 }
 
 /*----------------------------------------------------------------------------
