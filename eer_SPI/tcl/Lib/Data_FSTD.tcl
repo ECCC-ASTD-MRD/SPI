@@ -61,7 +61,7 @@ namespace eval FSTD {
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
     dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT \
-      -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 \
+      -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 -renderboundary 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
       
@@ -102,6 +102,7 @@ namespace eval FSTD {
    set Param(MapAbove)      1              ;#Affichage de couleur au dessus du dernier interval
    set Param(MapBelow)      0              ;#Affichage de coule en dessous du premier interval
    set Param(Grid)          0              ;#Affichage de la grille
+   set Param(Boundary)      0              ;#Affichage des limites géographiques
    set Param(Vector)        NONE           ;#Affichage vectorise
    set Param(Texture)       1              ;#Affichage des donnees
    set Param(Volume)        0              ;#Affichage des donnees volumetriques
@@ -427,9 +428,9 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.grid
             label $Data(Frame).def.r.disp.grid.lbl -text " [lindex $Lbl(Grid) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.grid.sel $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm" "0 1 2 3 4 5" \
+               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm" "0 1 2 3 4 5 6" \
                FSTD::Param(Grid) "FSTD::ParamSet" 0 -relief groove -bd 2
-            pack $Data(Frame).def.r.disp.grid.sel $Data(Frame).def.r.disp.grid.lbl -side left
+             pack $Data(Frame).def.r.disp.grid.sel $Data(Frame).def.r.disp.grid.lbl -side left
 
          frame $Data(Frame).def.r.disp.label
             label $Data(Frame).def.r.disp.label.lbl -text " [lindex $Lbl(Label) $GDefs(Lang)]"
@@ -828,6 +829,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Value)      [dataspec configure $spec -rendervalue]
    set Param(Label)      [dataspec configure $spec -renderlabel]
    set Param(Grid)       [dataspec configure $spec -rendergrid]
+   set Param(Boundary)   [dataspec configure $spec -renderboundary]
    set Param(Particle)   [dataspec configure $spec -renderparticle]
    set Param(Intervals)  [dataspec configure $spec -intervals]
    set Param(Interp)     [dataspec configure $spec -interpdegree]
@@ -844,6 +846,10 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Axis)       [dataspec configure $spec -axis]
    set Param(Mask)       [dataspec configure $spec -mask]
 
+   if { $Param(Boundary) } {
+      set Param(Grid) 6
+   }
+   
    set plane             [dataspec configure $spec -cube]
    set Param(X0)         [lindex $plane 0]
    set Param(Y0)         [lindex $plane 1]
@@ -951,11 +957,18 @@ proc FSTD::ParamSet { { Spec "" } } {
       set mantisse -1   
    }
       
+   if { $Param(Grid)==6 } {
+      set Param(Boundary) 1
+      set grid 0
+   } else {
+      set Param(Boundary) 0
+      set grid $Param(Grid)
+   }
    #----- Set all params
    dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $mantisse -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
-      -renderparticle $Param(Particle) -rendergrid $Param(Grid) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
+      -renderparticle $Param(Particle) -rendergrid $grid -renderboundary $Param(Boundary) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
       -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -mask $Param(Mask)
