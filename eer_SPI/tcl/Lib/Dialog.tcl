@@ -14,6 +14,7 @@
 # Fonctions:
 #    Dialog::Default      { Master Width Type Text Extra Default args }
 #    Dialog::Info         { Master Text { Extra "" } }
+#    Dialog::Job          { Master Text { Extra "" } { Percent 0 } { CancelCommand "" } }
 #    Dialog::Wait         { Master Text { Extra "" } }
 #    Dialog::WaitDestroy  { { Ask False } }
 #    Dialog::Error        { Master Text { Extra "" } }
@@ -361,6 +362,78 @@ proc Dialog::Info { Master Text { Extra "" } } {
       update idletasks
       grab .dlginfo
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::Job>
+# Creation : Aout 2016 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Afficher un message d'information sur le travail en cours.
+#
+# Parametres :
+#    <Master> : Fenetre toplevel auquel l'aide est reliee.
+#    <Id>     : Identificateue de la fenetre de job.
+#    <Text>   : Texte bilingue a afficher.
+#    <Extra>  : Texte supplementaire.
+#    <Percent>: Pourcentage effectué.
+#    <CancelCommand> : Commande de cancelation
+#
+# Remarques :
+#    Si aucune commande de cancellation n'est spécifiée, le bouton "Cancel" 
+#    n'apparaitras pas.
+#
+#----------------------------------------------------------------------------
+
+proc Dialog::Job { Master Id Text { Extra "" } { Percent 0 } { CancelCommand "" } } {
+   global GDefs
+   variable Lbl
+
+   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+
+   if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
+      return
+   }
+
+   set Dialog::Data(Percent) $Percent
+   
+   if { [winfo exists .dlgjob$Id] == 1} {
+
+      set oldtext [lindex [.dlgjob$Id.haut.txt configure -text] 4]
+      .dlgjob$Id.haut.txt configure -text "[lindex $Text $GDefs(Lang)]$Extra"
+      update idletasks
+
+   } else {
+
+      toplevel .dlgjob$Id -class Dialog
+      wm title .dlgjob$Id Info
+      wm protocol .dlgjob$Id WM_DELETE_WINDOW { }
+      if { [winfo exists $Master] } {
+         wm transient .dlgjob$Id $Master
+         wm geom .dlgjob$Id +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+      }
+
+      # ----- Afficher le frame du haut qui va contenir le message
+
+      frame .dlgjob$Id.haut -relief raised -bd 1
+      pack .dlgjob$Id.haut -side top -expand true -fill x
+
+      label .dlgjob$Id.haut.bitmap -image DIALOG_INFO
+      label .dlgjob$Id.haut.txt -justify left -text "[lindex $Text $GDefs(Lang)]$Extra"
+      ttk::progressbar .dlgjob$Id.haut.bar -variable Dialog::Data(Percent) -orient horizontal -length 100 -maximum 100
+      pack .dlgjob$Id.haut.bitmap .dlgjob$Id.haut.txt .dlgjob$Id.haut.bar -side left -padx 5 -pady 5
+
+      # ----- Afficher le frame du bas qui va contenir le bouton retour
+
+      if { $CancelCommand!="" } {
+         button .dlgjob$Id.ok -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command "$CancelCommand; destroy .dlgjob$Id" -bd 1
+         pack .dlgjob$Id.ok -side bottom -ipadx 10 -fill x
+      }      
+   }
+}
+
+proc Dialog::JobDestroy { Id } {
+
+   destroy .dlgjob$Id
 }
 
 #----------------------------------------------------------------------------
