@@ -68,9 +68,10 @@ typedef enum {
 } TDataType;
 
 typedef struct TDataStat {
-   int   *Histo,HistoBin;   // Histogramme des valeurs
-   double Min,Max,Avg;      // Minimum maximum et moyenne de l'enregistrement
-   Coord  MinLoc,MaxLoc;    // Coordonnees des minimums et maximums
+   unsigned long long *Histo;            // Histogramme des valeurs
+   int                 HistoBin;         // Histogramme des valeurs
+   double              Min,Max,Avg;      // Minimum maximum et moyenne de l'enregistrement
+   Coord               MinLoc,MaxLoc;    // Coordonnees des minimums et maximums
 } TDataStat;
 
 typedef struct TDataVector {

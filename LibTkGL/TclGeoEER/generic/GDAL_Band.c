@@ -174,7 +174,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
          band->Spec->Desc=strdup(GDALGetDescription(band->Band[i]));
          if (Full) {
-            if (GDALRasterIO(band->Band[i],GF_Read,X0,Y0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,type,0,0)==CE_Failure) {
+            if (GDALRasterIOEx(band->Band[i],GF_Read,X0,Y0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,type,0,0,NULL)==CE_Failure) {
                Tcl_AppendResult(Interp,"GDAL_BandRead: Unable to read band data",(char*)NULL);
                return(TCL_ERROR);
             }
@@ -1057,7 +1057,9 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
          if (band->Spec->Desc)
             GDALSetDescription(band->Band[i],band->Spec->Desc);
 
-         GDALRasterIO(band->Band[i],GF_Write,0,0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,TD2GDAL[band->Def->Type],0,0);
+         if (GDALRasterIOEx(band->Band[i],GF_Write,0,0,band->Def->NI,band->Def->NJ,band->Def->Data[i],band->Def->NI,band->Def->NJ,TD2GDAL[band->Def->Type],0,0,NULL)==CE_Failure) {
+            return(TCL_ERROR);
+         }
          nc++;
       }
    }
@@ -1192,7 +1194,7 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
                   obj=Tcl_NewListObj(0,NULL);
                   for(c=0;c<h;c++) {
-                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(band->Stat[b].Histo[c]));
+                     Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(band->Stat[b].Histo[c]));
                   }
                   Tcl_SetObjResult(Interp,obj);
                }
@@ -2277,11 +2279,11 @@ int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max) {
    }
 
    if (!Band->Stat[Index].Histo) {
-      if (!(Band->Stat[Index].Histo=(int*)malloc(Bin*sizeof(int)))) {
+      if (!(Band->Stat[Index].Histo=(unsigned long long*)malloc(Bin*sizeof(unsigned long long)))) {
          return(0);
       }
       Band->Stat[Index].HistoBin=Bin;
-      GDALGetRasterHistogram(Band->Band[Index],Min,Max,Band->Stat[Index].HistoBin,Band->Stat[Index].Histo,FALSE,Band->Approx,GDALDummyProgress,NULL);
+      GDALGetRasterHistogramEx(Band->Band[Index],Min,Max,Band->Stat[Index].HistoBin,Band->Stat[Index].Histo,FALSE,Band->Approx,GDALDummyProgress,NULL);
    }
    return(1);
 }

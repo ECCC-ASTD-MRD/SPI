@@ -589,13 +589,13 @@ if [[ $SPI -eq 1 ]]; then
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-tk=${LIB_PATH}/TCL/lib \
-      --with-eer=${LIB_EER}\
-      --with-rmn=${LIB_PATH} \
-      --with-gdb=${EXT_LIB_PATH}/gdb \
       --with-gdal=${LIB_PATH}/bin/gdal-config  \
       --with-grib=${LIB_PATH} \
       --with-ecbufr=${LIB_PATH} \
       --with-flt=${LIB_PATH} \
+      --with-eer=${LIB_EER}\
+      --with-rmn=${LIB_PATH} \
+      --with-gdb=${EXT_LIB_PATH}/gdb \
       --with-urp=${EXT_LIB_PATH}/URP
    fi
    make install

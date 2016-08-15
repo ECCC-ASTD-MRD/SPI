@@ -2351,7 +2351,10 @@ GLuint Texture_Read(char *File) {
 
    for(i=0;i<n;i++) {
       hband=GDALGetRasterBand(set,i+1);
-      GDALRasterIO(hband,GF_Read,0,0,w,h,buf+i*s,w,h,t,s*n,0);
+      if (GDALRasterIOEx(hband,GF_Read,0,0,w,h,buf+i*s,w,h,t,s*n,0,NULL)==CE_Failure) {
+         App_Log(ERROR,"%s: Unable to read texture data\n",__func__);
+         return(-1);
+      }
    }
 
    /* La texture n'est pas initialisee */

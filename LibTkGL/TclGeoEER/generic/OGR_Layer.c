@@ -406,7 +406,10 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unsupported geometry",(char*)NULL);
                   return(TCL_ERROR);
                }
-               OGR_L_CreateFeature(layer->Layer,layer->Feature[f]);
+               if (OGR_L_CreateFeature(layer->Layer,layer->Feature[f])!=OGRERR_NONE) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Problems creating feature",(char*)NULL);
+                  return(TCL_ERROR);  
+               }
                layer->Changed=1;
             }
             break;
@@ -1499,12 +1502,13 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 */
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
-   int          n,nb,year,month,day,hour,min,sec,tz;
-   time_t       time;
-   char         **clist;
-   const int    *ilist;
-   const double *dlist;
-   Tcl_Obj       *obj;
+   int             n,nb,year,month,day,hour,min,sec,tz;
+   time_t          time;
+   char            **clist;
+   const int       *ilist;
+   const long long *llist;
+   const double    *dlist;
+   Tcl_Obj         *obj;
 
    obj=Tcl_NewObj();
 
@@ -1521,6 +1525,17 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
             }
             break;
 
+         case OFTInteger64:
+            Tcl_SetWideIntObj(obj,OGR_F_GetFieldAsInteger64(Feature,Index));
+            break;
+
+         case OFTInteger64List:
+            llist=OGR_F_GetFieldAsInteger64List(Feature,Index,&nb);
+            for(n=0;n<nb;n++) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(llist[n]));
+            }
+            break;
+            
          case OFTReal:
             Tcl_SetDoubleObj(obj,OGR_F_GetFieldAsDouble(Feature,Index));
             break;
@@ -1573,11 +1588,12 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
 
 int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
-   int      year,month,day,hour,min,sec,tz,dt,tm,n,nobj,*ival;
-   double   *dval;
-   time_t   time;
-   Tcl_Obj *obj;
-   char   **list;
+   int       year,month,day,hour,min,sec,tz,dt,tm,n,nobj,*ival;
+   long long *lval;
+   double    *dval;
+   time_t    time;
+   Tcl_Obj  *obj;
+   char    **list;
 
    switch (OGR_Fld_GetType(Field)) {
       case OFTInteger:
@@ -1595,6 +1611,23 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
             Tcl_GetIntFromObj(Interp,obj,&ival[n]);
          }
          OGR_F_SetFieldIntegerList(Feature,Index,n,ival);
+         break;
+
+      case OFTInteger64:
+         OGR_F_SetFieldString(Feature,Index,Tcl_GetString(Obj));
+         break;
+
+      case OFTInteger64List:
+         Tcl_ListObjLength(Interp,Obj,&nobj);
+         if (!(lval=(long long*)calloc(nobj,sizeof(long long)))) {
+            Tcl_AppendResult(Interp,"\n   OGR_SetTypeObj: Unable to allocate list array",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         for(n=0;n<nobj;n++) {
+            Tcl_ListObjIndex(Interp,Obj,n,&obj);
+            Tcl_GetWideIntFromObj(Interp,obj,(Tcl_WideInt*)&lval[n]);
+         }
+         OGR_F_SetFieldInteger64List(Feature,Index,n,lval);
          break;
 
       case OFTReal:
@@ -1679,6 +1712,10 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
          sprintf(Buf,"%i",OGR_F_GetFieldAsInteger(Feature,Index));
          break;
 
+      case OFTInteger64:
+         sprintf(Buf,"%lli",OGR_F_GetFieldAsInteger64(Feature,Index));
+         break;
+         
       case OFTReal:
          DataSpec_Format(Spec,VAL2SPEC(Spec,OGR_F_GetFieldAsDouble(Feature,Index)),Buf);
 //         sprintf(Buf,"%f",OGR_F_GetFieldAsDouble(Feature,Index));
@@ -1704,6 +1741,7 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
          break;
 
       case OFTIntegerList:
+      case OFTInteger64List:
       case OFTRealList:
       case OFTStringList:
       case OFTWideString:
@@ -1876,10 +1914,10 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    }
 
    // Copy layer in memory using Memory driver to be able to do whatever we want with it
-   layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
-   layer->Layer=OGR_DS_CopyLayer(layer->Data,OGR_DS_GetLayer(file->Data,Idx),Name,NULL);   
+   layer->Data=GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,NULL);
+   layer->Layer=GDALDatasetCopyLayer(layer->Data,GDALDatasetGetLayer(file->Data,Idx),Name,NULL);   
    
-//   layer->Layer=OGR_DS_GetLayer(file->Data,Idx);
+//   layer->Layer=GDALDatasetGetLayer(file->Data,Idx);
    if (!layer->Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerRead: Unable to read layer",(char*)NULL);
       return(TCL_ERROR);
@@ -2033,8 +2071,8 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       return(TCL_ERROR);
    }
 
-   if (OGR_DS_TestCapability(file->Data,ODsCCreateLayer)) {
-      olayer=OGR_DS_CreateLayer(file->Data,OGR_FD_GetName(layer->Def),layer->GRef->Spatial,wkbUnknown,opt);
+   if (GDALDatasetTestCapability(file->Data,ODsCCreateLayer)) {
+      olayer=GDALDatasetCreateLayer(file->Data,OGR_FD_GetName(layer->Def),layer->GRef->Spatial,wkbUnknown,opt);
       defn=OGR_L_GetLayerDefn(olayer);
    } else {
       Tcl_AppendResult(Interp,"OGR_LayerWrite: Write operation not supported for this file type",(char*)NULL);
@@ -2049,7 +2087,10 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       if (layer->Feature[f]) {
          feature=OGR_F_Create(defn);
          OGR_F_SetFrom(feature,layer->Feature[f],True);
-         OGR_L_CreateFeature(olayer,feature);
+         if (OGR_L_CreateFeature(olayer,feature)!=OGRERR_NONE) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerWrite: Problems creating feature",(char*)NULL);
+            return(TCL_ERROR);  
+         }
       }
    }
 
@@ -2109,13 +2150,13 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
    }
 
-   srcl=OGR_DS_ExecuteSQL(file->Data,Statement,geom,NULL);
+   srcl=GDALDatasetExecuteSQL(file->Data,Statement,geom,NULL);
    
    // Copy layer in memory using Memory driver to be able to do whatever we want with it
-   layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
-   layer->Layer=OGR_DS_CopyLayer(layer->Data,srcl,Name,NULL);   
+   layer->Data=GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,NULL);
+   layer->Layer=GDALDatasetCopyLayer(layer->Data,srcl,Name,NULL);   
 
-   OGR_DS_ReleaseResultSet(file->Data,srcl);
+   GDALDatasetReleaseResultSet(file->Data,srcl);
    
    if (layer->Layer) {
       layer->Def=OGR_L_GetLayerDefn(layer->Layer);
@@ -2279,7 +2320,10 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                list=list->Next;
             }
             OGR_F_SetGeometryDirectly(Layer->Feature[n],cont);
-            OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
+            if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
+               return(TCL_ERROR);  
+            }
          }
       }
    } else {
@@ -2407,7 +2451,10 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   }
                }
                OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
-               OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n]);
+               if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
+                  return(TCL_ERROR);  
+               }
                n++;
             }
          }
@@ -2418,13 +2465,13 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
    Layer->Changed=1;
 
    if (!(Layer->Select=malloc(Layer->NFeature*sizeof(char)))) {
-      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate feature buffer",(char*)NULL);
+      Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate feature buffer",(char*)NULL);
       return(TCL_ERROR);
    }
    memset(Layer->Select,0x1,Layer->NFeature);
    
    if (!(Layer->Loc=(Coord*)malloc(Layer->NFeature*sizeof(Coord)))) {
-      Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate location buffer",(char*)NULL);
+      Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate location buffer",(char*)NULL);
       return(TCL_ERROR);
    }
       
@@ -3362,7 +3409,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
             if (n) {
                nd=f;
                if (All!=-1) 
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(nd));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(nd));
                if (All!=1)
                   break;
             }
@@ -3386,7 +3433,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    } else {  
       // Dans le cas NEAREST, retourner le plus proche
       if (Mode==3) {
-         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(nd));
+         Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(nd));
       }
    }
 

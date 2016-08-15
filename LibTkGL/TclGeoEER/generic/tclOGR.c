@@ -817,8 +817,8 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
    layer->Select     = NULL;
 
    if (Desc) {
-      layer->Data    = OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Name,NULL);
-      layer->Layer   = OGR_DS_CreateLayer(layer->Data,Desc,NULL,Type,NULL);
+      layer->Data    = GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,NULL);
+      layer->Layer   = GDALDatasetCreateLayer(layer->Data,Desc,NULL,Type,NULL);
    } else {
       layer->Layer   = NULL;
       layer->Data    = NULL;  
@@ -866,14 +866,14 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
       return(NULL);
    }
 
-   if (OGR_DS_TestCapability(File->Data,ODsCCreateLayer)) {
+   if (GDALDatasetTestCapability(File->Data,ODsCCreateLayer)) {
       if (GRef) {
          Layer->GRef=GRef;
          GeoRef_Incr(GRef);
       } else {
          Layer->GRef=GeoRef_New();
       }
-      Layer->Layer=OGR_DS_CreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,opt);
+      Layer->Layer=GDALDatasetCreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,opt);
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }
    return(Layer->Layer);
@@ -940,7 +940,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Tag)        Tcl_DecrRefCount(Layer->Tag);
    if (Layer->Sort.Table) free(Layer->Sort.Table);
 
-   if (Layer->Data)       OGR_DS_Destroy(Layer->Data);
+   if (Layer->Data)       GDALClose(Layer->Data);
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
 
    OGR_LayerClean(Layer,-1);
@@ -1164,9 +1164,9 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
    OGR_File  *file;
    Tcl_Obj   *obj;
 
-   int          n,idx,nidx,i,code;
+   int          n,idx,nidx=0,i,code;
    char        *driver=NULL;
-   const char **list=NULL;
+   const char **list=NULL,*opts[256];
 
    static CONST char *sopt[] = { "open","close","format","driver","filename",NULL };
    enum                opt { OPEN,CLOSE,FORMAT,DRIVER,FILENAME};
@@ -1191,14 +1191,18 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          if (Objc>=6)
             driver=Tcl_GetString(Objv[5]);
 
+         opts[0]=NULL;
          if (Objc==7) {
             if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&nidx,&list)==TCL_ERROR) {
                Tcl_AppendResult(Interp,"\n   OGR_FileCmd : Invalid list of creation options",(char*)NULL);
                return(TCL_ERROR);
             }
+            fprintf(stderr,"----%i\n",nidx);
+            for(n=0;n<nidx;n++) opts[n]=list[n];
+            opts[n]=NULL;
          }
 
-         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)list);
+         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)opts);
          Tcl_Free((char*)list);
          return(code);
          break;
@@ -1271,8 +1275,8 @@ int OGR_FileClose(Tcl_Interp *Interp,char *Id) {
    OGR_File *file=NULL;
 
    if ((file=(OGR_File*)TclY_HashDel(&OGR_FileTable,Id))) {
-      OGR_DS_SyncToDisk(file->Data);
-      OGR_DS_Destroy(file->Data);
+      GDALFlushCache(file->Data);
+      GDALClose(file->Data);
 
       free(file->Id);
       free(file);
@@ -1350,8 +1354,8 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
 */
 int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options) {
 
-   OGRDataSourceH *source=NULL;
-   OGRSFDriverH    driver=NULL;
+   GDALDatasetH   *source=NULL;
+   GDALDriverH     driver=NULL;
    OGRLayerH       layer;
    OGRFeatureDefnH defn=NULL;
    OGR_File       *file;
@@ -1375,8 +1379,8 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
          }
 
          /* Look for the specified driver */
-         for(i=0;i<OGRGetDriverCount();i++) {
-            driver=OGRGetDriver(i);
+         for(i=0;i<GDALGetDriverCount();i++) {
+            driver=GDALGetDriver(i);
             if (EQUAL(Driver,OGR_Dr_GetName(driver))) break;
          }
 
@@ -1384,22 +1388,22 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
             Tcl_AppendResult(Interp," OGR_FileOpen: Invalid driver ",Driver,(char*)NULL);
             return(TCL_ERROR);
          } else if (!OGR_Dr_TestCapability(driver,ODrCCreateDataSource)) {
-            Tcl_AppendResult(Interp," OGR_FileOpen: This driver cannot create data sources ",Driver,(char*)NULL);
+            Tcl_AppendResult(Interp," OGR_FileOpen: This driver cannot create dOptionsata sources ",Driver,(char*)NULL);
             return(TCL_ERROR);
          }
 
-         source=OGR_Dr_CreateDataSource(driver,Name,Options);
+         source=GDALCreate(driver,Name,0,0,0,GDT_Unknown,Options);
          if (!source) {
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file for writing, it probably already exist",Name,(char*)NULL);
             return(TCL_ERROR);
          }
       } else if (Mode=='a' ||  Mode=='A') {    /*Append Mode*/
-         if (!(source=OGROpen(Name,TRUE,&driver))) {
+         if (!(source=GDALOpenEx(Name,GDAL_OF_VECTOR|GDAL_OF_UPDATE,NULL,(const char *const *)Options,NULL))) {
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file ",Name,(char*)NULL);
             return(TCL_ERROR);
          }
       } else {                                 /*ReadOnly Mode*/
-         if (!(source=OGROpen(Name,FALSE,&driver))) {;
+         if (!(source=GDALOpenEx(Name,GDAL_OF_VECTOR|GDAL_OF_READONLY,NULL,(const char *const *)Options,NULL))) {;
             Tcl_AppendResult(Interp," OGR_FileOpen: Cannot open OGR file ",Name,(char*)NULL);
             return(TCL_ERROR);
          }
@@ -1409,7 +1413,7 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
         file->Mode=Mode;
         file->Id=strdup(Id);
         file->Name=strdup(Name);
-        file->Driver=driver;
+        file->Driver=GDALGetDatasetDriver(source);
         file->Data=source;
 
         OGR_FilePut(Interp,file);
@@ -1421,8 +1425,8 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
 
    /* Loop over layers */
    lst=Tcl_NewListObj(0,NULL);
-   for(i=0;i<OGR_DS_GetLayerCount(source);i++) {
-       layer=OGR_DS_GetLayer(source,i);
+   for(i=0;i<GDALDatasetGetLayerCount(source);i++) {
+       layer=GDALDatasetGetLayer(source,i);
 
        /* Get info about this layer */
        defn=OGR_L_GetLayerDefn(layer);
