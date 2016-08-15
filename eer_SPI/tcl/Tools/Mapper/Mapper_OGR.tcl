@@ -17,8 +17,11 @@
 
 namespace eval Mapper::OGR { } {
    variable Data
+   variable Params
    variable Select
    
+   set Params(.csv) { X_POSSIBLE_NAMES=lon* Y_POSSIBLE_NAMES=lat* }
+
    set Data(Geom) ""
    set Data(Ops)      { dissolve boundary convexhull buffer difference intersection simplify segmentize close flatten }
   
@@ -2036,6 +2039,7 @@ proc Mapper::OGR::VertexMove { Frame VP Id X Y } {
 proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    global GDefs
    variable Data
+   variable Params
 
    #----- If canceled by SQL
    if { $SQL=="NIL" } {
@@ -2045,8 +2049,15 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    }
    
    set id OGR[incr Data(IdNo)]
-  
-   eval set bad [catch { set idxs [ogrfile open $id read $File] } msg]
+   set ext [file extension $File]
+   
+   #----- Check for read options.
+   set opt {}
+   if { [info exists ::Mapper::OGR::Params($ext)] } {
+      set opt $Params($ext)
+   }
+   
+   eval set bad [catch { set idxs [ogrfile open $id read $File "" $opt] } msg]
    if { $bad } {
       Log::Print ERROR $msg
       return ""
