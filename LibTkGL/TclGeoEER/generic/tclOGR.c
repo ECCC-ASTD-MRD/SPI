@@ -1166,7 +1166,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    int          n,idx,nidx=0,i,code;
    char        *driver=NULL;
-   const char **list=NULL,*opts[256];
+   const char **list=NULL;
 
    static CONST char *sopt[] = { "open","close","format","driver","filename",NULL };
    enum                opt { OPEN,CLOSE,FORMAT,DRIVER,FILENAME};
@@ -1191,18 +1191,14 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          if (Objc>=6)
             driver=Tcl_GetString(Objv[5]);
 
-         opts[0]=NULL;
          if (Objc==7) {
             if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&nidx,&list)==TCL_ERROR) {
                Tcl_AppendResult(Interp,"\n   OGR_FileCmd : Invalid list of creation options",(char*)NULL);
                return(TCL_ERROR);
             }
-            fprintf(stderr,"----%i\n",nidx);
-            for(n=0;n<nidx;n++) opts[n]=list[n];
-            opts[n]=NULL;
          }
 
-         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)opts);
+         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)list);
          Tcl_Free((char*)list);
          return(code);
          break;
