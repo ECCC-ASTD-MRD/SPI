@@ -127,7 +127,7 @@ if [[ $EXT -eq 1 ]]; then
    GRIB=grib_api-1.15.0
    ECBUFR=libecbufr0.8.6
    OCI=instantclient_11_2
-   FGDB=FileGDB_API
+#   FGDB=FileGDB_API
    PROJ=proj-4.9.2
    MESA=Mesa-7.9.2
    NETCDF=netcdf-4.3.3.1
@@ -140,7 +140,7 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- Define the list of items we won't compile but will link with
    if [[ $ARCH != "AIX" ]]; then
-      SLINK_LIBS="$FGDB $MYSQL $OCI"
+      SLINK_LIBS="$MYSQL $OCI"
    fi
 
    #----- Create output directories (link to SSM workspace)
@@ -503,8 +503,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-hdf5=${LIB_PATH} \
       --with-pg=${LIB_PATH}/bin/pg_config \
       --with-odbc=${LIB_PATH} \
-      --with-netcdf=${LIB_PATH} \
-      --with-fgdb=${LIB_PATH}
+      --with-netcdf=${LIB_PATH}
       make install) > ${TMP_PATH}/${GDAL}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
