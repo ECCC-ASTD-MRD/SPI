@@ -294,7 +294,7 @@ proc Mapper::DepotWare::WCS::BuildXMLDef { Layer } {
    } else {
       set url $url
    }
-puts stderr .$file.
+
    set xml "<WCS_GDAL>\n"
    append xml "   <ServiceURL>${url}</ServiceURL>\n"
    append xml "   <Version>$Data(Version)</Version>\n"
