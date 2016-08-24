@@ -72,6 +72,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GDALColorTableH hTable;
    GDALColorEntry  entry;
    GDALDataType    type=GDT_Unknown;
+   int             signedByte=0;
    int             c;
    int             i,nx,ny,rx,ry;
    double          dval,minmax[2];
@@ -90,6 +91,12 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
          /*Get the band type and promote to higher type among all*/
          hband=GDALGetRasterBand(file->Set,Idxs[i]);
          type=GDALGetRasterDataType(hband)>type?GDALGetRasterDataType(hband):type;
+         if (type == GDT_Byte)
+            {
+            const char *strPixelType=GDALGetMetadataItem(hband,"PIXELTYPE", "IMAGE_STRUCTURE");
+            signedByte = strPixelType ? (strcmp( strPixelType, "SIGNEDBYTE" )==0) : 0 ;
+            }
+
 
          /*Check for size compatibility*/
          nx=GDALGetRasterBandXSize(hband);
@@ -140,7 +147,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
       rx=ry=1;
    }
 
-   if (!(band->Def=Def_New(nx,ny,1,(Full?NIdx:-NIdx),GDAL_Type[type]))) {
+   if (!(band->Def=Def_New(nx,ny,1,(Full?NIdx:-NIdx),(type==GDT_Byte&&signedByte)?TD_Byte:GDAL_Type[type]))) {
       Tcl_AppendResult(Interp,"GDAL_BandRead: Could not allocate memory",(char*)NULL);
       return(TCL_ERROR);
    }
