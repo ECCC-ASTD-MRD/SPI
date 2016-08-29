@@ -66,8 +66,6 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 int TclOGR_Init(Tcl_Interp *Interp) {
 
    if (!OGRInit++) {
-      OGRRegisterAll();
-
       Tcl_InitHashTable(&OGR_FileTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&OGR_LayerTable,TCL_STRING_KEYS);
       Tcl_InitHashTable(&OGR_GeometryTable,TCL_STRING_KEYS);

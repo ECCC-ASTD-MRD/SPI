@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.11.1"
+VERSION="7.11.2"
 MAINTAINER="Jean-Philippe Gauthier"
 
 if [[ (-z $EXT_SRC_PATH) || (-z $EXT_LIB_PATH) ]]; then
@@ -102,7 +102,7 @@ if [[ $EXT -eq 1 ]]; then
    printf -- "\n----- Making external dependencies -----\n"
 
    #----- Package to be compiled / installed
-   TCL_VERSION=8.6.5
+   TCL_VERSION=8.6.6
    TCLLIB=1.18
    TKIMG=tkimg1.4.6
    TKTABLE=Tktable2.10
@@ -111,7 +111,7 @@ if [[ $EXT -eq 1 ]]; then
    FLT=fltlib-1.0.0
    XML=libxml2-2.9.2
    TDOM=tdom-master
-   EXPAT=expat-2.1.1
+   EXPAT=expat-2.2.0
    CURL=curl-7.49.1
    SQLITE=sqlite-3.6.23
    GEOS=geos-3.5.0
