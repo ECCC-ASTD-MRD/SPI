@@ -1107,7 +1107,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
 
    for (n=0;n<NbInter;n++) {
 
-     // If the interval is not within the value limits, skip
+      // If the interval is not within the value limits, skip
       if (Stat && (Inter[n]>=Stat->Max || Inter[n]<Stat->Min))
          continue;
 
@@ -1508,8 +1508,8 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
       // Check grid limits (In projection or closing mode check for > instead of >= to avoid interpolation overflow)
       pidx[0]=X<Def->Limits[0][0];
       pidx[1]=Y<Def->Limits[1][0];
-      pidx[2]=(Limit || Mode==REF_PROJ)?X>=Def->Limits[0][1]:X>Def->Limits[0][1];
-      pidx[3]=(Limit || Mode==REF_PROJ)?Y>=Def->Limits[1][1]:Y>Def->Limits[1][1];
+      pidx[2]=(Limit || Mode!=REF_COOR)?X>=Def->Limits[0][1]:X>Def->Limits[0][1];
+      pidx[3]=(Limit || Mode!=REF_COOR)?Y>=Def->Limits[1][1]:Y>Def->Limits[1][1];
 
       // If we're out of grid, contour around the grid limits
       if (pidx[0] || pidx[1] || pidx[2] || pidx[3]) {
