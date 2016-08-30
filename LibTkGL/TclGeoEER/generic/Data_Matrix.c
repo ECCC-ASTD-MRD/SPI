@@ -446,7 +446,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
 
 TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
 
-   unsigned int  n=0,i,j,k,bi,bj,bk,uni=0;
+   unsigned int  n=0,i,j,k,bidx,uni=0;
    double  v=0.0;
 
 #ifdef DEBUG
@@ -474,6 +474,9 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
       if (FSIZE3D(B)==1) {
          Def_Get(B,0,0,v);
          uni=1;
+      } else if( (I1-I0+1)*(J1-J0+1)*(K1-K0+1) != FSIZE3D(B) ) {
+         App_Log(ERROR,"%s: Dimension to assign in grid A (%d) is different from number of values in grid B (%d)\n",__func__,(I1-I0+1)*(J1-J0+1)*(K1-K0+1),(int)FSIZE3D(B));
+         return(NULL);
       }
 
       n=0;
@@ -481,11 +484,13 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
          if (!B->Data[n] && FSIZE3D(B)!=1) {
             return(NULL);
          }
-         for(k=K0,bk=0;k<=K1;k++,bk++) {
-            for(j=J0,bj=0;j<=J1;j++,bj++) {
-               for(i=I0,bi=0;i<=I1;i++,bi++) {
-                  if (!uni)
-                     Def_Get(B,n,bk*FSIZE2D(B)+bj*B->NI+bi,v);
+         for(k=K0,bidx=0;k<=K1;k++) {
+            for(j=J0;j<=J1;j++) {
+               for(i=I0;i<=I1;i++) {
+                  if (!uni) {
+                     Def_Get(B,n,bidx,v);
+                     ++bidx;
+                  }
                   Def_Set(A,n,k*FSIZE2D(A)+j*A->NI+i,v);
                }
             }
