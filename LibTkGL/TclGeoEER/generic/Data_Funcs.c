@@ -49,7 +49,7 @@
 double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,Vmedx,Vmedy,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vmse,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,Vfb,Vnad,
-       Vfms,Vfmsi,Vfmsb,Vosf,Vosfb,Vosfi,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
+       Vfms,Vfmsi,Vfmsb,Vfmsn,Vosf,Vosfb,Vosfi,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
        Vaov,Vafn,Vafp,Vax,Vay;
 
 /*Matrix Derivative Functions*/
@@ -149,6 +149,7 @@ TFuncDef FuncF[] = {
   { "sfms"  , stat_fms    , 2 , TD_Float64 },
   { "sfmsb" , stat_fmsb   , 2 , TD_Float64 },
   { "sfmsi" , stat_fmsi   , 2 , TD_Float64 },
+  { "sfmsn" , stat_fmsn   , 2 , TD_Float64 },
   { "sosf"  , stat_osf    , 2 , TD_Float64 },
   { "sosfb" , stat_osfb   , 2 , TD_Float64 },
   { "sosfi" , stat_osfi   , 2 , TD_Float64 },
@@ -1170,6 +1171,8 @@ void stat_core(TDef *MA,TDef *MB) {
          Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
    }
 
+   Vfmsn=Vsumx==0.0?0.0:100.0*0.5*(1.0+(Vsumy-Vme)/Vsumx);
+
    Vafn  = Vax-Vaov;
    Vafp  = Vay-Vaov;
 
@@ -1315,6 +1318,12 @@ double stat_fmsi(TDef *MA,TDef *MB) {
    if (MA&&MB)
       stat_core(MA,MB);
    return(Vfmsi);
+}
+
+double stat_fmsn(TDef *MA,TDef *MB) {
+   if (MA&&MB)
+      stat_core(MA,MB);
+   return(Vfmsn);
 }
 
 double stat_osf(TDef *MA,TDef *MB) {

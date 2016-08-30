@@ -162,6 +162,7 @@ double stat_nad(TDef *MA,TDef *MB);   // Normalized absolute difference
 double stat_fms(TDef *MA,TDef *MB);   // Figure of merit in space (area) 
 double stat_fmsb(TDef *MA,TDef *MB);  // Figure of merit in space (binary) 
 double stat_fmsi(TDef *MA,TDef *MB);  // Figure of merit in space (integrated) 
+double stat_fmsn(TDef *MA,TDef *MB);  // Figure of merit in space (integrated) 
 double stat_osf(TDef *MA,TDef *MB);   // Objective scoring function (area) 
 double stat_osfb(TDef *MA,TDef *MB);  // Objective scoring function (binary) 
 double stat_osfi(TDef *MA,TDef *MB);  // Objective scoring function (integrated) 
