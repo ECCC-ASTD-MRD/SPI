@@ -102,7 +102,7 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
    set mini MINI$Frame[incr Params(MiniNo)]
 
    lappend Data(Mini$Frame)          $mini        ;#Miniport
-   set Data(VP$Frame)                ""           ;#Viewport
+   set Data(VP$mini)                 ""           ;#Viewport
 
    set Viewport::Data(X$mini)        $X0          ;#Offset en x
    set Viewport::Data(Y$mini)        $Y0          ;#Offset en y
@@ -145,7 +145,7 @@ proc Miniport::Create { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Activ
    $Frame.page.canvas create line $x0 $y0 $x0 $y0 -fill black -width 2 -tags "AREA$mini"
 
    if { [info exists Viewport::Data(Data$Frame)] } {
-      set Data(VP$Frame) [lindex $Viewport::Data(Data$Frame) 0]
+      set Data(VP$mini) [lindex $Viewport::Data(Data$Frame) 0]
    }
 
    #----- Centrer sur les coordonnees specifies
@@ -287,7 +287,7 @@ proc Miniport::Coverage { Frame Mini { VP "" } } {
    if { $Viewport::Data(Location$Mini) } {
 
       if { $VP=="" } {
-         set VP $Miniport::Data(VP$Frame)
+         set VP $Miniport::Data(VP$Mini)
       }
 
       #----- Make sure viewport is well initialiazed
@@ -421,9 +421,9 @@ proc Miniport::UpdateData { Frame Mini { VP "" } } {
 
    if { $Viewport::Data(Data$Mini) } {
       if { $VP=="" } {
-         set VP $Data(VP$Frame)
+         set VP $Data(VP$Mini)
       } else {
-         set Data(VP$Frame) $VP
+         set Data(VP$Mini) $VP
       }
       projection configure $Mini -data [projection configure $Frame -data]
       if { $VP!="" } {
@@ -472,7 +472,7 @@ proc Miniport::Destroy { Frame { Mini {} } } {
       projcam destroy $mini
       projection destroy $mini
 
-      unset Data(VP$Frame)
+      unset Data(VP$mini)
       unset Viewport::Data(X$mini)
       unset Viewport::Data(Y$mini)
       unset Viewport::Data(Z$mini)
