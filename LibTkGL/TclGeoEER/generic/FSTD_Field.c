@@ -2241,8 +2241,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    TDef_Type    dtype;
    TRPNHeader    h;
    int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
-   int          pni,pnj,ig1,ig2,ig3,ig4;
-   float        lvl,*tmp;
+   int          pni,pnj,ig1,ig2,ig3,ig4,*tmpi;
+   float        lvl;
    char         nomvar[5],typvar[2],grtyp[3],tile,etik[13],*proj=NULL;
    double       nhour,val=0.0;
 
@@ -2315,7 +2315,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strtrim(h.ETIKET,' ');
 
    // Champs vectoriel ???
-   if (h.TYPVAR[0]!='@' && (uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
+   if ((uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,mni,mnj,mnk,(uvw->WW?3:2),dtype);
       if (!field) {
          FSTD_FileUnset(Interp,file);
@@ -2416,16 +2416,16 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    // Check for mask (TYPVAR==@@) 
-   if (!(h.TYPVAR[0]=='@' && h.TYPVAR[1]=='@')) {
+   if (h.TYPVAR[0]!='@' && h.TYPVAR[1]=='@') {
       ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
       if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
          if ((field->Def->Mask=(char*)malloc(ni*nj))) {
-            if ((tmp=(float*)malloc(ni*nj*sizeof(float)))) {
-               cs_fstlukt(tmp,h.File->Id,ok,&tile,&ni,&nj,&nk);
+            if ((tmpi=(int*)malloc(ni*nj*sizeof(int)))) {
+               cs_fstlukt(tmpi,h.File->Id,ok,&tile,&ni,&nj,&nk);
                for(i=0;i<ni*nj;i++) {
-                  field->Def->Mask[i]=tmp[i]!=0.0;
+                  field->Def->Mask[i]=tmpi[i]!=0x0;
                }
-               free(tmp);
+               free(tmpi);
             } else {
                free(field->Def->Mask);
                field->Def->Mask=NULL;

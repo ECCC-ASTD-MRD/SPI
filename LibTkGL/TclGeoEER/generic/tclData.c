@@ -695,14 +695,14 @@ void Data_GetStat(TData *Field){
       Field->Stat->MaxLoc.Elev=0;
 
       if (Field->GRef && Field->GRef->Grid[0]!='V') {
-         if (Field->GRef->AY && Field->GRef->AX) {
+         if (Field->GRef->Project) {
+            Field->GRef->Project(Field->GRef,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
+            Field->GRef->Project(Field->GRef,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
+         } else if (Field->GRef->AY && Field->GRef->AX) {
             Field->Stat->MinLoc.Lat=Field->GRef->AY[FIDX2D(def,imin,jmin)];
             Field->Stat->MinLoc.Lon=Field->GRef->AX[FIDX2D(def,imin,jmin)];
             Field->Stat->MaxLoc.Lat=Field->GRef->AY[FIDX2D(def,imax,jmax)];
             Field->Stat->MaxLoc.Lon=Field->GRef->AX[FIDX2D(def,imax,jmax)];
-         } else if (Field->GRef->Project) {
-            Field->GRef->Project(Field->GRef,imin,jmin,&Field->Stat->MinLoc.Lat,&Field->Stat->MinLoc.Lon,1,1);
-            Field->GRef->Project(Field->GRef,imax,jmax,&Field->Stat->MaxLoc.Lat,&Field->Stat->MaxLoc.Lon,1,1);
          }
          if (Field->GRef->Hgt) {
             Field->Stat->MinLoc.Elev=Field->GRef->Hgt[FIDX2D(def,imin,jmin)];

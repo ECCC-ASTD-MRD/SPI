@@ -91,12 +91,10 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
          /*Get the band type and promote to higher type among all*/
          hband=GDALGetRasterBand(file->Set,Idxs[i]);
          type=GDALGetRasterDataType(hband)>type?GDALGetRasterDataType(hband):type;
-         if (type == GDT_Byte)
-            {
+         if (type == GDT_Byte) {
             const char *strPixelType=GDALGetMetadataItem(hband,"PIXELTYPE", "IMAGE_STRUCTURE");
             signedByte = strPixelType ? (strcmp( strPixelType, "SIGNEDBYTE" )==0) : 0 ;
-            }
-
+         }
 
          /*Check for size compatibility*/
          nx=GDALGetRasterBandXSize(hband);
@@ -789,8 +787,9 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       return(TCL_ERROR);
    }
 
+   Data_PreInit(Field);
+   
    if (Field->Spec->Map) {
-      Data_PreInit(Field);
       if (Band->Def->NC==1) {
          if (Band->Spec->Map)
             CMap_Free(Band->Spec->Map);
