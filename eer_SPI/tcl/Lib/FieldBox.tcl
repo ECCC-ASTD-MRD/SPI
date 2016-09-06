@@ -564,7 +564,7 @@ proc FieldBox::FileOpen { No File } {
       }
 
       if { $index=="" } {
-         Dialog::Error .fieldbox$No $Error(Empty) "\n\n$file"
+#         Dialog::Error .fieldbox$No $Error(Empty) "\n\n$file"
       } else {
          lappend data(FileList)  $file
          lappend data(FIDList)   $fid

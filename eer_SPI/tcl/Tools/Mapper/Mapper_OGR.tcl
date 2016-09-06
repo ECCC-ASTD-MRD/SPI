@@ -40,6 +40,8 @@ namespace eval Mapper::OGR { } {
    set Data(Color)       black
    set Data(Width)       0
    set Data(Burn)        1
+   set Data(MapAbove)      1              ;#Affichage de couleur au dessus du dernier interval
+   set Data(MapBelow)      0              ;#Affichage de coule en dessous du premier interval
    set Data(Extr)        ""
    set Data(ExtrFactor)  1.0
    set Data(Dash)        ""
@@ -156,14 +158,14 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       set Data(Frame2) [TabFrame::Add .mapperparams.tab 1 [lindex $Mapper::Lbl(Display) $GDefs(Lang)] False ""]
          labelframe $Data(Frame2).pos -text [lindex $Mapper::Lbl(Position) $GDefs(Lang)]
             frame  $Data(Frame2).pos.extr
-               label $Data(Frame2).pos.extr.lbl -text  [lindex $Mapper::Lbl(Extrude) $GDefs(Lang)] -width 14 -anchor nw
+               label $Data(Frame2).pos.extr.lbl -text  [lindex $Mapper::Lbl(Extrude) $GDefs(Lang)] -width 13 -anchor nw
                label $Data(Frame2).pos.extr.x -text "x" -width 1 -anchor nw
                ComboBox::Create $Data(Frame2).pos.extr.sel Mapper::OGR::Data(Extr) noedit unsorted nodouble -1 "" 1 8 ""
                entry  $Data(Frame2).pos.extr.fac -bg $GDefs(ColorLight) -textvariable Mapper::OGR::Data(ExtrFactor) -bd 1 -width 5
                pack  $Data(Frame2).pos.extr.lbl $Data(Frame2).pos.extr.fac $Data(Frame2).pos.extr.x -side left -fill y
                pack  $Data(Frame2).pos.extr.sel -side left -fill both -expand true
             frame  $Data(Frame2).pos.topo
-               label $Data(Frame2).pos.topo.lbl -text  [lindex $Mapper::Lbl(Topo) $GDefs(Lang)] -width 14 -anchor nw
+               label $Data(Frame2).pos.topo.lbl -text  [lindex $Mapper::Lbl(Topo) $GDefs(Lang)] -width 13 -anchor nw
                label $Data(Frame2).pos.topo.x -text "x" -width 1 -anchor nw
                entry  $Data(Frame2).pos.topo.fac  -bg $GDefs(ColorLight) -textvariable Mapper::OGR::Data(TopoFactor) -bd 1 -width 5
                ComboBox::Create $Data(Frame2).pos.topo.sel Mapper::OGR::Data(Topo) noedit unsorted nodouble -1 "" 1 8 ""
@@ -240,34 +242,40 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
                   -command "" -bg $GDefs(ColorLight)
                button $Data(Frame2).inter.order.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
                   -command "FontBox::Create $Data(Frame2).inter.order.font \"Mapper::OGR::ParamsSet \$Mapper::Data(Object)\" OGRFONT"
-               pack $Data(Frame2).inter.order.lbl -side left -padx 5
+               pack $Data(Frame2).inter.order.lbl -side left 
                pack $Data(Frame2).inter.order.font $Data(Frame2).inter.order.prec -side left
-               pack $Data(Frame2).inter.order.val -side left -fill x -expand True -padx 5
+               pack $Data(Frame2).inter.order.val -side left -fill x -expand True 
 
             frame $Data(Frame2).inter.map
-               label $Data(Frame2).inter.map.lbl -text [lindex $Mapper::Lbl(Map) $GDefs(Lang)] -width 12 -anchor w
+               label $Data(Frame2).inter.map.lbl -text [lindex $Mapper::Lbl(Map) $GDefs(Lang)] -width 13 -anchor w
                button $Data(Frame2).inter.map.val -bd 1 -relief flat -image OGRMAPImg -command { MapBox::Create $Mapper::OGR::Data(Frame2).inter.map.val \
                    "Mapper::Apply \$Mapper::Data(Object)" $Mapper::OGR::Data(ColorMap) }
                checkbutton $Data(Frame2).inter.map.show -relief raised -bd 1 -variable Mapper::OGR::Data(ShowMap) -text [lindex $Mapper::Lbl(Show) $GDefs(Lang)] -indicatoron False \
                   -command { Mapper::OGR::ParamsSet $Mapper::Data(Object); ColorBar::Activate $Page::Data(Frame) }
-               pack $Data(Frame2).inter.map.lbl $Data(Frame2).inter.map.val -side left -padx 5
-               pack $Data(Frame2).inter.map.show -fill x -expand True -side left -padx 5
+               pack $Data(Frame2).inter.map.lbl $Data(Frame2).inter.map.val -side left
+               pack $Data(Frame2).inter.map.show -fill x -expand True -side left
 
             frame $Data(Frame2).inter.fld
-               label $Data(Frame2).inter.fld.lbl -text [lindex $Mapper::Lbl(Field) $GDefs(Lang)] -width 12 -anchor w
+               label $Data(Frame2).inter.fld.lbl -text [lindex $Mapper::Lbl(Field) $GDefs(Lang)] -width 13 -anchor w
                ComboBox::Create $Data(Frame2).inter.fld.val Mapper::OGR::Data(MapVar) noedit sorted nodouble -1 "" 1 8 ""
-               pack $Data(Frame2).inter.fld.lbl -side left -padx 5
-               pack $Data(Frame2).inter.fld.val -side left -fill x -padx 5 -expand true
+               pack $Data(Frame2).inter.fld.lbl -side left 
+               pack $Data(Frame2).inter.fld.val -side left -fill x -expand true
 
             frame $Data(Frame2).inter.desc
-              label $Data(Frame2).inter.desc.lbl -text [lindex $Mapper::Lbl(Interval) $GDefs(Lang)] -width 12 -anchor w
-              ComboBox::Create $Data(Frame2).inter.desc.val Mapper::OGR::Data(Intervals) edit sorted nodouble -1 \
+               label $Data(Frame2).inter.desc.lbl -text [lindex $Mapper::Lbl(Interval) $GDefs(Lang)] -width 13 -anchor w
+               checkbutton $Data(Frame2).inter.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable Mapper::OGR::Data(MapBelow) -onvalue 1 -offvalue 0 \
+                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor "" -width 10
+               checkbutton $Data(Frame2).inter.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable Mapper::OGR::Data(MapAbove) -onvalue 1 -offvalue 0 \
+                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor ""  -width 10
+               ComboBox::Create $Data(Frame2).inter.desc.val Mapper::OGR::Data(Intervals) edit sorted nodouble -1 \
                   "" 1 6 "Mapper::OGR::ParamsSet \$Mapper::Data(Object)"
-              pack $Data(Frame2).inter.desc.lbl -side left -padx 5
-              pack $Data(Frame2).inter.desc.val -side left -padx 5 -fill x -expand true
+               pack $Data(Frame2).inter.desc.lbl -side left 
+               pack $Data(Frame2).inter.desc.bellow -side left -fill y
+               pack $Data(Frame2).inter.desc.val -side left -fill x -expand true
+               pack $Data(Frame2).inter.desc.above -side left  -fill y
 
             pack $Data(Frame2).inter.order $Data(Frame2).inter.map $Data(Frame2).inter.fld $Data(Frame2).inter.desc \
-               -side top -fill x -expand true
+               -side top -fill x -expand true -padx 5
          pack $Data(Frame2).shape $Data(Frame2).pos $Data(Frame2).inter -side top -padx 5 -pady 5 -ipady 2 -fill both
 
          Bubble::Create $Data(Frame2).inter.map.show $Mapper::Bubble(ShowMap)
@@ -809,6 +817,8 @@ proc Mapper::OGR::ParamsGet { Object } {
    set Data(LabelVar)    [ogrlayer configure $Object -labelvar]
    set Data(SizeVar)     [ogrlayer configure $Object -sizevar]
    set Data(MapVar)      [ogrlayer configure $Object -mapvar]
+   set Data(MapAbove)    [ogrlayer configure $Object -mapabove]
+   set Data(MapBelow)    [ogrlayer configure $Object -mapbelow]
    set Data(Topo)        [ogrlayer configure $Object -topography]
    set Data(TopoFactor)  [ogrlayer configure $Object -topographyfactor]
    set Data(Extr)        [ogrlayer configure $Object -extrude]
@@ -920,9 +930,9 @@ proc Mapper::OGR::ParamsSet { Object } {
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
-      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -showmap $Data(ShowMap) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) \
-      -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) -topography $Data(Topo) -topographyfactor $Data(TopoFactor) \
-      -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -labelvar $Data(LabelVar)
+      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -showmap $Data(ShowMap) -mapabove $Data(MapAbove) -mapbelow $Data(MapBelow) \
+      -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) \
+      -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -labelvar $Data(LabelVar)
 
    if { $Data(FillSel) } {
       ogrlayer configure $Object -fill $Data(Fill)

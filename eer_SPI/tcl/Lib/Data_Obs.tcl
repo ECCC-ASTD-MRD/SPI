@@ -90,6 +90,8 @@ namespace eval Obs {
    set Param(Font)          OBSFONTDEFAULT                         ;#Police
    set Param(Map)           OBSDMAPEFAULT                          ;#Palette de couleur
    set Param(MapAll)        0                                      ;#Palette de couleur applique au vecteurs
+   set Param(MapAbove)      1                                      ;#Affichage de couleur au dessus du dernier interval
+   set Param(MapBelow)      0                                      ;#Affichage de coule en dessous du premier interval
    set Param(Size)          10                                     ;#Grandeur des icones
    set Param(Style)         0                                      ;#Affichage de la trajectoire
    set Param(IntervalMode)  NONE                                   ;#Type de selection de niveaux
@@ -179,6 +181,10 @@ namespace eval Obs {
                           "Colormap used for values" }
    set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
                           "Intervals description (1 2 3 ... ou [0 1])" }
+   set Bubble(MapAbove)  { "Palette utilisée pour les valeurs haut dessus du maximum spécifié"
+                           "Colormap used for values above maximum specified" }
+   set Bubble(MapBelow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
+                           "Colormap used for values bellow minimum specified" }
 }
 
 #-------------------------------------------------------------------------------
@@ -458,9 +464,15 @@ proc Obs::ParamFrame { Frame Apply } {
       pack $Data(Frame).lev.select -side top -fill x -padx 2
 
       frame $Data(Frame).lev.desc
+         checkbutton $Data(Frame).lev.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable Obs::Param(MapBelow) -onvalue 1 -offvalue 0 \
+               -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Obs::ParamSet } -indicatoron false -selectcolor "" -width 10
+         checkbutton $Data(Frame).lev.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable Obs::Param(MapAbove) -onvalue 1 -offvalue 0 \
+               -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Obs::ParamSet } -indicatoron false -selectcolor ""  -width 10
          ComboBox::Create $Data(Frame).lev.desc.edit Obs::Param(Intervals) editclose sorted nodouble -1 \
             "" 17 6 "set Obs::Param(IntervalMode) NONE; Obs::ParamSet"
+         pack $Data(Frame).lev.desc.bellow -side left -fill y
          pack $Data(Frame).lev.desc.edit -side left -fill both -expand true
+         pack $Data(Frame).lev.desc.above -side left  -fill y
       pack $Data(Frame).lev.desc -side top -fill x -padx 2 -pady 2 -expand true
 
    pack $Data(Frame).var -side top -fill x -anchor n -padx 5 -pady 5
@@ -554,6 +566,8 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Desc)      [dataspec configure $Spec -desc]
    set Param(Map)       [dataspec configure $Spec -colormap]
    set Param(MapAll)    [dataspec configure $Spec -mapall]
+   set Param(MapAbove)  [dataspec configure $Spec -mapabove]
+   set Param(MapBelow)  [dataspec configure $Spec -mapbelow]
    set Param(Size)      [dataspec configure $Spec -size]
    set Param(Icon)      [dataspec configure $Spec -icon]
    set Param(Style)     [dataspec configure $Spec -style]
@@ -654,7 +668,7 @@ proc Obs::ParamSet { { Spec "" } } {
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
       -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
       -rendervolume $Param(Volume) -flat $Param(Flat) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
-      -min $min -max $max -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam)
+      -min $min -max $max -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam)
 
    catch { $Data(ApplyButton) configure -state normal }
 }
