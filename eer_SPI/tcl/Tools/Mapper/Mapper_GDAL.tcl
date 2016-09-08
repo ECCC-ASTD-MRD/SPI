@@ -38,107 +38,106 @@ namespace eval Mapper::GDAL { } {
    set Data(Ops)     { }
 
    set Data(Formats) {
-      {WMO GRIdded Binary GRIB1/GRIB2 {*.grb}}
+      {ACE2 {*.dem}}
+      {ARC Digitized Raster Graphics {*.gen *.thf}}
+      {Arc/Info ASCII Grid {*}}
+      {Arc/Info Binary Grid {*.adf}}
+      {Arc/Info Export E00 GRID {*.e00}}
+      {ASCII Gridded XYZ {*.xyz}}
+      {Atlantis MFF and MFF2 Raster {*.mff}}
+      {Azavea Raster Grid format {*.arg}}
+      {Bathymetry Attributed Grid {*.bag}}
+      {CEOS SAR Image {*}}
+      {Convair PolGASP {*.cpg}}
+      {DTED Elevation Raster {*.dem}}
+      {EarthWatch {*.til}}
+      {ECRG Table Of Contents format {*.xml}}
+      {ENVI .hdr Labelled {*.hdr}}
+      {Erdas 7.x {*.lan *.gis}}
+      {Erdas Imagine Images {*.img}}
+      {Erdas Imagine Raw {*.raw}}
+      {ERMapper {*.ers}}
+      {ESRI .hdr Labelled {*.hdr}}
+      {EOSAT FAST Format {*.fst}}
+      {EUMETSAT Archive native {*.nat}}
+      {FARSITE v.4 Landscape File {*.lcp}}
+      {GeoSoft Grid Exchange Format {*.gxf}}
+      {GeoTIFF {*.tif *.gtif}}
+      {Golden Software ASCII and binary Grid File Format {*.gsag *.gsbg *.gs7bg}}
+      {Graphics Interchange Format {*.gif}}
+      {GRASS ASCII Grid {*}}
+      {HDF 4-5 Dataset {*.hdf}}
+      {HF2/HFZ heightfield raster {*.hf2,*.hfz}}
+      {Idrisi Raster {*.rst}}
+      {ILWIS Raster Map {*.mpr}}
+      {Intergraph Raster {*}}
+      {Image Display and Analysis {*.ida}}
+      {IRIS data {*.ppi *.cappi *.rain1 *.rainn *.tops *.vil *.max}}
+      {Japanese DEM {*.mem}}
+      {JPEG and JPEG2000 {*.jpg *.jp2 *.j2k}}
+      {Kml Super Overlay {*.kml}}
+      {Leveller heightfield {*.ter}}
+      {Magellan BLX Topo {*.blx *.xlb}}
+      {Maptech/NOAA BSB Nautical Chart Format {*.kap}}
+      {MBTiles {*.mbtile}}
+      {MS Windows Device Independent Bitmap {*.bmp}}
+      {MSG HRIT Data {*.msg}}
+      {NADCON Datum Grid Shift {*.los *.las}}
+      {National Imagery Transmission Format {*.nitf}}
+      {Netpbm {*.pgm *.ppm}}
+      {Network Common Data Format {*.cdf}}
+      {NLAPS Data Format {*.h1 *.h2 *.hd}}
+      {NOAA NGS Geoid Height Grids {*.bin}}
+      {NOAA Polar Orbiter Level 1b Data Set {*.l1b}}
+      {NOAA Vertical Datum {*.gtx}}
+      {Northwood Numeric/Classified Grid Format {*.grc *.grd *.tab}}
+      {NTv2 Datum Grid Shift {*}}
+      {OziExplorer {*.map}}
+      {PCIDSK Database File {*.pci}}
+      {PCRaster Raster File {*.map}}
+      {Portable Network Graphics {*.png}}
+      {R Object Data Store {*.r}}
+      {RadarSat2 XML {*.xml}}
+      {Raster Matrix Format {*.rsw *.mtw}}
+      {Raster Product Format/RPF {*.toc}}
+      {Rasterlite {*.sqlite}}
+      {SAGA GIS Binary Grid {*.sdat}}
+      {SGI Image File Format 1.0 {*.sgi}}
+      {SDTS Raster {*.ddf}}
+      {Snow Data Assimilation System {*.hdr}}
+      {SPOT DIMAP {*.dim}}
+      {SRTM HGT Format {*.hgt}}
+      {Standard Raster Product (ASRP/USRP) {*.img}}
+      {Swedish Grid {*.rik}}
+      {Terragen Heightfield {*.ter}}
+      {TerraSAR-X Product {*.tsx}}
       {USGS DOQ 1 & 2 {*.doq}}
       {USGS SDTS DEM {*.catd *.ddf}}
       {USGS ASCII DEM {*.dem}}
       {USGS LULC Composite Theme Grid {*.gz}}
       {USGS Astrogeology ISIS cube (Version 2 and 3) {*.lbl *.cub}}
       {Virtual Raster {*.vrt}}
-      {GeoTIFF {*.tif *.gtif}}
-      {Graphics Interchange Format {*.gif}}
-      {National Imagery Transmission Format {*.nitf}}
-      {Raster Product Format/RPF {*.toc}}
-      {ECRG Table Of Contents format {*.xml}}
-      {Erdas Imagine Images {*.img}}
-      {Erdas 7.x {*.lan *.gis}}
-      {Erdas Imagine Raw {*.raw}}
-      {CEOS SAR Image {*}}
-      {Arc/Info Binary Grid {*.adf}}
-      {Arc/Info ASCII Grid {*}}
-      {GRASS ASCII Grid {*}}
-      {SDTS Raster {*.ddf}}
-      {DTED Elevation Raster {*.dem}}
-      {Portable Network Graphics {*.png}}
-      {JPEG and JPEG2000 {*.jpg *.jp2 *.j2k}}
-      {Netpbm {*.pgm *.ppm}}
-      {Japanese DEM {*.mem}}
-      {Maptech/NOAA BSB Nautical Chart Format {*.kap}}
-      {X11 Pixmap {*.xpm}}
-      {MS Windows Device Independent Bitmap {*.bmp}}
-      {SPOT DIMAP {*.dim}}
-      {RadarSat2 XML {*.xml}}
-      {PCIDSK Database File {*.pci}}
-      {PCRaster Raster File {*.map}}
-      {ILWIS Raster Map {*.mpr}}
-      {SGI Image File Format 1.0 {*.sgi}}
-      {SRTM HGT Format {*.hgt}}
-      {Leveller heightfield {*.ter}}
-      {Terragen Heightfield {*.ter}}
-      {Network Common Data Format {*.cdf}}
-      {EarthWatch {*.til}}
-      {ERMapper {*.ers}}
-      {NOAA Polar Orbiter Level 1b Data Set {*.l1b}}
-      {Raster Matrix Format {*.rsw *.mtw}}
-      {EUMETSAT Archive native {*.nat}}
-      {MSG HRIT Data {*.msg}}
-      {Idrisi Raster {*.rst}}
-      {Intergraph Raster {*}}
-      {Golden Software ASCII and binary Grid File Format {*.gsag *.gsbg *.gs7bg}}
-      {TerraSAR-X Product {*.tsx}}
-      {R Object Data Store {*.r}}
-      {OziExplorer {*.map}}
-      {ENVI .hdr Labelled {*.hdr}}
-      {ESRI .hdr Labelled {*.hdr}}
-      {Atlantis MFF and MFF2 Raster {*.mff}}
-      {EOSAT FAST Format {*.fst}}
       {VTP Binary Terrain Format {*.bt}}
-      {Convair PolGASP {*.cpg}}
-      {Image Display and Analysis {*.ida}}
-      {NLAPS Data Format {*.h1 *.h2 *.hd}}
-      {FARSITE v.4 Landscape File {*.lcp}}
-      {NOAA Vertical Datum {*.gtx}}
-      {NADCON Datum Grid Shift {*.los *.las}}
-      {NTv2 Datum Grid Shift {*}}
-      {ACE2 {*.dem}}
-      {Snow Data Assimilation System {*.hdr}}
-      {Azavea Raster Grid format {*.arg}}
-      {Swedish Grid {*.rik}}
-      {GeoSoft Grid Exchange Format {*.gxf}}
-      {Bathymetry Attributed Grid {*.bag}}
-      {HDF 4-5 Dataset {*.hdf}}
-      {Northwood Numeric/Classified Grid Format {*.grc *.grd *.tab}}
-      {ARC Digitized Raster Graphics {*.gen *.thf}}
-      {Standard Raster Product (ASRP/USRP) {*.img}}
-      {Magellan BLX Topo {*.blx *.xlb}}
-      {Rasterlite {*.sqlite}}
-      {SAGA GIS Binary Grid {*.sdat}}
-      {Kml Super Overlay {*.kml}}
-      {ASCII Gridded XYZ {*.xyz}}
-      {HF2/HFZ heightfield raster {*.hf2,*.hfz}}
-      {OziExplorer Image File {*.map}}
-      {Arc/Info Export E00 GRID {*.e00}}
-      {ZMap Plus Grid {*.zmap}}
-      {NOAA NGS Geoid Height Grids {*.bin}}
-      {MBTiles {*.mbtile}}
-      {IRIS data {*.ppi *.cappi *.rain1 *.rainn *.tops *.vil *.max}}}
+      {WMO GRIdded Binary GRIB1/GRIB2 {*.grb}}
+      {X11 Pixmap {*.xpm}}
+      {ZMap Plus Grid {*.zmap}}}
 
    set Data(WriteFormats) {
       { AAIGrid {*.grid}}
-      { GTiff {*.tif *.gtif}}
-      { HDF4 {*.hdf}}
-      { netCDF {*.cdf}}
-      { PDF {*.pdf}}
-      { PNG {*.png}}
-      { PNM {*.ppm}}
       { BMP {*.bmp}}
-      { JPEG {*.jpg}}
-      { JPEG2000 {*.jpg}}
       { DTED {*.dem}}
       { EHdr {*.hdr}}
       { ENVI {*.hdr}}
       { ERS  {*.ers}}
       { GMT  {*.cdf}}
+      { GTiff {*.tif *.gtif}}
+      { HDF4 {*.hdf}}
+      { JPEG {*.jpg}}
+      { JPEG2000 {*.jpg}}
+      { netCDF {*.cdf}}
+      { PDF {*.pdf}}
+      { PNG {*.png}}
+      { PNM {*.ppm}}
       { USGSDEM {*.dem}}
       { VRT {*.vrt}}
       { XYZ {*.xyz}}}

@@ -120,7 +120,7 @@ proc Mapper::Window { } {
          $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Medium) $GDefs(Lang)])" -variable Mapper::Data(PickSize) -value 5 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
          $Data(Tab1).head.mode.down.menu add radiobutton -label "[lindex $Lbl(Identify) $GDefs(Lang)] ([lindex $Lbl(Large) $GDefs(Lang)])"  -variable Mapper::Data(PickSize) -value 10 -command  { set Page::Data(ToolMode) Mapper; SPI::ToolMode $Page::Data(ToolMode) Data True $Mapper::Data(PickSize) }
 
-         button $Data(Tab1).head.open -image OPEN -bd 1 -relief flat -width 28 -anchor w -overrelief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[lsort -index 0 \[concat \[list \$FileBox::Type(ALL)\] \$Mapper::GDAL::Data(Formats) \$Mapper::OGR::Data(Formats)\]\]\]"
+         button $Data(Tab1).head.open -image OPEN -bd 1 -relief flat -width 28 -anchor w -overrelief raised -command "Mapper::Read \[FileBox::Create . \"\" LoadPath \[concat \[list \$FileBox::Type(ALL)\] \[lsort \[concat \$Mapper::GDAL::Data(Formats) \$Mapper::OGR::Data(Formats)\]\]\]\]"
          menubutton $Data(Tab1).head.open.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab1).head.open.down.menu
          place $Data(Tab1).head.open.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab1).head.open.down.menu

@@ -116,6 +116,8 @@ namespace eval Mapper { } {
    set Lbl(NoData)        { "Valeur NIL" "No data value" }
    set Lbl(Histo)         { "Histogramme" "Histogram" }
    set Lbl(Burn)          { "Persistance" "Persistance" }
+   set Lbl(Unit)          { "Unité" "Units" }
+   set Lbl(Desc)          { "Description" "Description" }
    set Lbl(Time)          { "Temps" "Time" }
    set Lbl(Pick)          { "Information sur l'object" "Feature info" }
    set Lbl(Project)       { "Reprojection" "Reprojecting" }

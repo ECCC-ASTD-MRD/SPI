@@ -42,6 +42,8 @@ namespace eval Mapper::OGR { } {
    set Data(Burn)        1
    set Data(MapAbove)      1              ;#Affichage de couleur au dessus du dernier interval
    set Data(MapBelow)      0              ;#Affichage de coule en dessous du premier interval
+   set Data(Unit)          ""             ;#Type d'unite
+   set Data(Desc)          ""             ;#Description
    set Data(Extr)        ""
    set Data(ExtrFactor)  1.0
    set Data(Dash)        ""
@@ -54,20 +56,25 @@ namespace eval Mapper::OGR { } {
    set Data(FieldTypes)  { Integer IntegerList Real RealList String StringList Time Date DateTime Binary }
 
    set Data(Formats) {
-      {Arc/Info Binary Coverage {*.bin}}      
+      {Aeronav FAA {*.txt}}
       {Arc/Info ASCII Coverage {*.e00}}      
-      {ESRI Shapefile {*.shp}}
+      {Arc/Info Binary Coverage {*.bin}}      
+      {EDIGEO {*.htf}}
       {ESRI ArcSDE {*.sde}}
       {ESRI Personal GeoDatabase {*.mdb}}
+      {ESRI Shapefile {*.shp}}
       {Géoconcept Export {*.gxt}}
       {Geography Markup Language {*.gml}}
       {GeoJSON {*.geojson}}
-      {GeoRSS {*.xml}}
       {GeoMedia {*.mdb}}
+      {GeoRSS {*.xml}}
       {GMT ASCII Vectors {*.gmt}}
       {GPS Exchange Format {*.gpx}}
       {GPSTrackMaker {*.gtm,*.gtz}}
       {GRASS 6+ {*}}
+      {Hydrographic Transfer Format {*.htf}}
+      {Idrisi {*.vct *.adc *.avl}}
+      {IHO S-57 {*.000}}
       {INTERLIS 1 {*.itf *.xml *.ili}}
       {Keyhole Markup Language {*.kml}}
       {MapInfo TAB and MIF/MID {*.mid *.mif *.tab *.dat *.map *.id *.ind}}
@@ -76,32 +83,27 @@ namespace eval Mapper::OGR { } {
       {PostgreSQL SQL dump {*.sql}}
       {SDTS {*.ddf}}
       {SQLite RDBMS {*.sql}}
+      {Spatial and Attribute Indexing {*.sbn *.sbx}}
       {Special Use Airspace {*.sua}}
       {OpenAir Special Use Airspace {*.txt}}
       {Planetary Data Systems {*.pds}}
-      {EDIGEO {*.htf}}
-      {IHO S-57 {*.000}}
-      {Hydrographic Transfer Format {*.htf}}
-      {UK National Transfer Format {*.ntf}}
       {U.S. Census TIGER/Line {*.rt*}}
-      {Aeronav FAA {*.txt}}
-      {Idrisi {*.vct *.adc *.avl}}
-      {Spatial and Attribute Indexing {*.sbn *.sbx}}
+      {UK National Transfer Format {*.ntf}}
       {Virtual Datasource {*.vrt}}
       {X-Plane/Flightgear aeronautical data {*.dat}}}
 
    set Data(WriteFormats) {
       {ESRI Shapefile {*.shp}}
-      {GeoJSON {*.geojson}}
       {Geoconcept {*.gxt}}
+      {GeoJSON {*.geojson}}
       {GeoRSS {*.xml}}
       {GML {*.gml}}
       {GMT {*.gmt}}
       {GPX {*.gpx}}
       {KML {*.kml}}
       {MapInfo File {*.mif}}
-      {PDF {*.pdf}} 
       {PGDump {*.sql}}
+      {PDF {*.pdf}} 
       {SQLite {*.sqlite}}}
    
    catch {
@@ -261,20 +263,34 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
                pack $Data(Frame2).inter.fld.lbl -side left 
                pack $Data(Frame2).inter.fld.val -side left -fill x -expand true
 
+           frame $Data(Frame2).inter.unit
+               label $Data(Frame2).inter.unit.lbl -text [lindex $Mapper::Lbl(Unit) $GDefs(Lang)] -width 13 -anchor w
+               entry $Data(Frame2).inter.unit.val -textvariable Mapper::OGR::Data(Unit) -bd 1 -bg $GDefs(ColorLight)
+               pack $Data(Frame2).inter.unit.lbl -side left
+               pack $Data(Frame2).inter.unit.val -side left -fill x -expand true
+               bind $Data(Frame2).inter.unit.val  <Any-KeyRelease> { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
+               
             frame $Data(Frame2).inter.desc
-               label $Data(Frame2).inter.desc.lbl -text [lindex $Mapper::Lbl(Interval) $GDefs(Lang)] -width 13 -anchor w
-               checkbutton $Data(Frame2).inter.desc.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable Mapper::OGR::Data(MapBelow) -onvalue 1 -offvalue 0 \
-                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor "" -width 10
-               checkbutton $Data(Frame2).inter.desc.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable Mapper::OGR::Data(MapAbove) -onvalue 1 -offvalue 0 \
-                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor ""  -width 10
-               ComboBox::Create $Data(Frame2).inter.desc.val Mapper::OGR::Data(Intervals) edit sorted nodouble -1 \
-                  "" 1 6 "Mapper::OGR::ParamsSet \$Mapper::Data(Object)"
-               pack $Data(Frame2).inter.desc.lbl -side left 
-               pack $Data(Frame2).inter.desc.bellow -side left -fill y
+               label $Data(Frame2).inter.desc.lbl -text [lindex $Mapper::Lbl(Desc) $GDefs(Lang)]  -width 13 -anchor w
+               entry $Data(Frame2).inter.desc.val -textvariable Mapper::OGR::Data(Desc) -bd 1 -bg $GDefs(ColorLight)
+               pack $Data(Frame2).inter.desc.lbl -side left
                pack $Data(Frame2).inter.desc.val -side left -fill x -expand true
-               pack $Data(Frame2).inter.desc.above -side left  -fill y
+               bind $Data(Frame2).inter.desc.val <Any-KeyRelease> { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
+               
+            frame $Data(Frame2).inter.list
+               label $Data(Frame2).inter.list.lbl -text [lindex $Mapper::Lbl(Interval) $GDefs(Lang)] -width 13 -anchor w
+               checkbutton $Data(Frame2).inter.list.bellow -bitmap @$GDefs(Dir)/share/bitmap/MDec.xbm -variable Mapper::OGR::Data(MapBelow) -onvalue 1 -offvalue 0 \
+                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor "" -width 10
+               checkbutton $Data(Frame2).inter.list.above -bitmap @$GDefs(Dir)/share/bitmap/MInc.xbm -variable Mapper::OGR::Data(MapAbove) -onvalue 1 -offvalue 0 \
+                     -relief sunken -bd 2 -overrelief raised -offrelief groove -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) } -indicatoron false -selectcolor ""  -width 10
+               ComboBox::Create $Data(Frame2).inter.list.val Mapper::OGR::Data(Intervals) edit sorted nodouble -1 \
+                  "" 1 6 "Mapper::OGR::ParamsSet \$Mapper::Data(Object)"
+               pack $Data(Frame2).inter.list.lbl -side left 
+               pack $Data(Frame2).inter.list.bellow -side left -fill y
+               pack $Data(Frame2).inter.list.val -side left -fill x -expand true
+               pack $Data(Frame2).inter.list.above -side left  -fill y
 
-            pack $Data(Frame2).inter.order $Data(Frame2).inter.map $Data(Frame2).inter.fld $Data(Frame2).inter.desc \
+            pack $Data(Frame2).inter.order $Data(Frame2).inter.map $Data(Frame2).inter.fld $Data(Frame2).inter.desc $Data(Frame2).inter.unit $Data(Frame2).inter.list \
                -side top -fill x -expand true -padx 5
          pack $Data(Frame2).shape $Data(Frame2).pos $Data(Frame2).inter -side top -padx 5 -pady 5 -ipady 2 -fill both
 
@@ -816,6 +832,8 @@ proc Mapper::OGR::ParamsGet { Object } {
    set Data(Size)        [ogrlayer configure $Object -size]
    set Data(LabelVar)    [ogrlayer configure $Object -labelvar]
    set Data(SizeVar)     [ogrlayer configure $Object -sizevar]
+   set Data(Desc)        [ogrlayer configure $Object -desc]
+   set Data(Unit)        [ogrlayer configure $Object -unit]
    set Data(MapVar)      [ogrlayer configure $Object -mapvar]
    set Data(MapAbove)    [ogrlayer configure $Object -mapabove]
    set Data(MapBelow)    [ogrlayer configure $Object -mapbelow]
@@ -930,9 +948,11 @@ proc Mapper::OGR::ParamsSet { Object } {
 #   ogrlayer configure $Object -font OGRFONT
 
    ogrlayer configure $Object -dash $Data(Dash) -colormap $Data(ColorMap) -outline $Data(Color) -activeoutline $Data(Highlight) \
-      -icon $Data(Icon) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -showmap $Data(ShowMap) -mapabove $Data(MapAbove) -mapbelow $Data(MapBelow) \
-      -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) -min $min -max $max -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) \
+      -icon $Data(Icon) -unit $Data(Unit) -desc $Data(Desc) -size $Data(Size) -sizevar $Data(SizeVar) -mapvar $Data(MapVar) -showmap $Data(ShowMap) \
+      -mapabove $Data(MapAbove) -mapbelow $Data(MapBelow) -width [expr $Data(Width)*$Data(Burn)] -transparency $Data(Tran) -min $min -max $max \
+      -intervals $inter -interlabels $label -value $Data(Order) $Data(Mantisse) \
       -topography $Data(Topo) -topographyfactor $Data(TopoFactor) -extrude $Data(Extr) -extrudefactor $Data(ExtrFactor) -labelvar $Data(LabelVar)
+      
 
    if { $Data(FillSel) } {
       ogrlayer configure $Object -fill $Data(Fill)
