@@ -39,10 +39,35 @@ namespace eval DataBar {
    global GDefs
    variable Data
    variable Param
+   variable Lbl
 
-   set Param(Title) "Title"
-   set Param(Full)  1
-   set Param(Font)  XFont12
+   set Param(Title)  "Title"
+   set Param(Full)   1
+   set Param(Font)   XFont12
+   
+   set Param(NOMVAR) True
+   set Param(DATEV)  True
+   set Param(DATEO)  False
+   set Param(ETIKET) False
+   set Param(IP1)    False
+   set Param(IP2)    False
+   set Param(IP3)    False
+   set Param(Desc)   True
+   set Param(Unit)   True
+   set Param(Level)  True
+   set Param(Range)  False
+
+   set Lbl(Desc)     { "Description" "Description" }
+   set Lbl(Unit)     { "Unité" "Unit" }
+   set Lbl(Level)    { "Niveau" "Level" }
+   set Lbl(Range)    { "Intervalle" "Interval" }
+   set Lbl(Valid)    { "valide à" "valid at" }
+   set Lbl(Run)      { "passe de" "run of" }
+   set Lbl(Between)  { "entre" "between" }
+   set Lbl(And)      { "et" "and" }
+   set Lbl(On)       { "sur" "on" }
+   set Lbl(Elements) { "éléments" "elements" }
+   
 
    image create photo DATABARLOGO -file $GDefs(Dir)/share/image/Symbol/Logo/Flag.gif
 }
@@ -96,8 +121,10 @@ proc DataBar::Active { Frame } {
 #-------------------------------------------------------------------------------
 
 proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
+   global GDefs
    variable Data
    variable Param
+   variable Lbl
 
    if { $Title!="" } {
       set Data(Title$VP) $Title
@@ -132,6 +159,25 @@ proc DataBar::Create { Frame VP X0 Y0 Width Height { Title "" } { Full "" } } {
 
    DataBar::Draw $Frame $VP $x0 $y0 $x1 $y1
 
+   if { ![winfo exists $Frame.page.canvas.bo$VP] } {
+      menubutton $Frame.page.canvas.bo$VP -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
+         -menu $Frame.page.canvas.bo$VP.menu
+      menu $Frame.page.canvas.bo$VP.menu -bg $GDefs(ColorFrame)
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label [lindex $Lbl(Desc) $GDefs(Lang)] -variable DataBar::Param(Desc)     -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label [lindex $Lbl(Unit) $GDefs(Lang)] -variable DataBar::Param(Unit)     -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label [lindex $Lbl(Level) $GDefs(Lang)] -variable DataBar::Param(Level)   -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label [lindex $Lbl(Range) $GDefs(Lang)] -variable DataBar::Param(Range)   -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label NOMAR -variable DataBar::Param(NOMVAR)  -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label ETIKET -variable DataBar::Param(ETIKET) -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label IP1 -variable DataBar::Param(IP1)       -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label IP2 -variable DataBar::Param(IP2)       -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label IP3 -variable DataBar::Param(IP3)       -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label DATEV -variable DataBar::Param(DATEV)   -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+         $Frame.page.canvas.bo$VP.menu add checkbutton -label DATEO -variable DataBar::Param(DATEO)   -onvalue True -offvalue False -command "DataBar::UpdateVP $Frame $VP"
+   }
+   $Frame.page.canvas create window [expr $x1-22] $y1 -window $Frame.page.canvas.bo$VP -anchor se -tags "BODB$VP NOPRINT"
+   $Frame.page.canvas bind DB$VP <Button-3> "tk_popup $Frame.page.canvas.bo$VP.menu %X %Y 0"
+               
    Shape::BindAllMove $Frame.page.canvas DB$VP "DataBar::Move $Frame $VP DB$VP"
    Shape::BindScale   $Frame.page.canvas DB$VP "DataBar::Scale $Frame $VP DB$VP"
    Shape::BindFull    $Frame.page.canvas DB$VP DataBar::Data(Full$VP) "DataBar::Full $Frame FRDB$VP $VP"
@@ -287,6 +333,7 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 { Title "" } { Full "" } } {
       $Frame.page.canvas create window $X1 $y           -window $Frame.page.canvas.up$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
       $Frame.page.canvas create window [expr $X1-13] $y -window $Frame.page.canvas.dn$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
       $Frame.page.canvas create window [expr $X1-26] $y -window $Frame.page.canvas.on$n -anchor se -tags "PAGE DB$VP UDDB$VP NOPRINT"
+      
       incr n
    }
 
@@ -317,21 +364,40 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 { Title "" } { Full "" } } {
 
 proc DataBar::IdField { Field } {
    global GDefs
+   variable Param
+   variable Lbl
 
-   set lbl [fstdfield define $Field -NOMVAR]
-   set desc [fstdfield configure $Field -desc]
-
-   if { $desc!="" && $desc!=$lbl } {
-      append lbl " - $desc"
+   if { $Param(NOMVAR) } { append lbl "[fstdfield define $Field -NOMVAR] - "  }
+   if { $Param(Desc) }   { append lbl "[fstdfield configure $Field -desc] " }
+   if { $Param(Unit) }   { append lbl "([fstdfield configure $Field -unit]) " }
+   if { $Param(Level) }  { append lbl "[lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1] " }
+   if { $Param(ETIKET) } { append lbl "ETIKET=[fstdfield define $Field -ETIKET] " }
+   if { $Param(IP1) }    { append lbl "IP1=[fstdfield define $Field -IP1] " }
+   if { $Param(IP2) }    { append lbl "IP2=[fstdfield define $Field -IP2] " }
+   if { $Param(IP3) }    { append lbl "IP3=[fstdfield define $Field -IP3] " }
+   if { $Param(DATEV) }  { append lbl "[lindex $Lbl(Valid) $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC] " }
+   if { $Param(DATEO) }  { append lbl "[lindex $Lbl(Run) $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEO]] -format "%H:%M %Y%m%d" -timezone :UTC] " }
+   if { $Param(Range) && [set ip3 [fstdfield define $Field -IP3]]>32768 }  { 
+      
+      set ip1 [lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1]
+      set ip2 [lrange [fstdgrid convip [fstdfield define $Field -IP2]] 0 1]
+      set ip3 [lrange [fstdgrid convip $ip3] 0 1]
+      
+      switch [lindex $ip3 1] {
+         m  -
+         sg -
+         mb -
+         -  -
+         m  -
+         hy -
+         th { append lbl "[lindex $Lbl(Between) $GDefs(Lang)] $ip1 [lindex $Lbl(And) $GDefs(Lang)] $ip3" }
+         nb {}
+         hr { append lbl "[lindex $Lbl(Between) $GDefs(Lang)] $ip3 [lindex $Lbl(And) $GDefs(Lang)] $ip2" }
+         i  { append lbl "[lindex $Lbl(On) $GDefs(Lang)] $ip2 ([lindex $ip3 0] [lindex $Lbl(Elements) $GDefs(Lang)])" }
+         x  {}
+         mp {}
+      }
    }
-
-   if { [set unit [fstdfield configure $Field -unit]]!="" } {
-      append lbl " ($unit)"
-   }
-
-   append lbl " ([lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1])"
-   append lbl " ([fstdfield define $Field -ETIKET])"
-   append lbl " [lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC]"
 
    return $lbl
 }
@@ -354,17 +420,12 @@ proc DataBar::IdField { Field } {
 proc DataBar::IdGrib { Field } {
    global GDefs
 
-   set lbl [gribfield define $Field -NOMVAR]
-
-   if { [set desc [fstdfield configure $Field -desc]]!="" } {
-      append lbl " $desc"
-   }
-   append lbl " ([lrange [fstdgrid convip [gribfield define $Field -IP1]] 0 1])"
-
-   if { [set unit [fstdfield configure $Field -unit]]!="" } {
-      append lbl " ($unit)"
-   }
-   append lbl " [lindex { "a" "at" } $GDefs(Lang)] [clock format [gribfield define $Field -DATEV] -format "%H:%M %Y%m%d" -timezone :UTC]"
+   if { $Param(NOMVAR) } { append lbl "[fstdfield define $Field -NOMVAR] - "  }
+   if { $Param(Desc) }   { append lbl "[fstdfield configure $Field -desc] " }
+   if { $Param(Unit) }   { append lbl "([fstdfield configure $Field -unit]) " }
+   if { $Param(Level) }  { append lbl "[lrange [fstdgrid convip [fstdfield define $Field -IP1]] 0 1] " }
+   if { $Param(DATEV) }  { append lbl "[lindex { "à" "at" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEV]] -format "%H:%M %Y%m%d" -timezone :UTC] " }
+   if { $Param(DATEO) }  { append lbl "[lindex { "passe de" "run of" } $GDefs(Lang)] [clock format [fstdstamp toseconds [fstdfield define $Field -DATEO]] -format "%H:%M %Y%m%d" -timezone :UTC]" }
 
    return $lbl
 }
@@ -756,14 +817,26 @@ proc DataBar::UpdateVP { Frame VP } {
 
 proc DataBar::Write { Frame File } {
    variable Data
+   variable Param
 
    puts $File "   #-----  Positionnement des DataBars"
    puts $File ""
    puts $File "   set DataBar::Data(Active\$Frame) 1"
+   puts $File "   set DataBar::Param(NOMVAR) $Param(NOMVAR)"
+   puts $File "   set DataBar::Param(DATEV)  $Param(DATEV)"
+   puts $File "   set DataBar::Param(DATEO)  $Param(DATEO)"
+   puts $File "   set DataBar::Param(ETIKET) $Param(ETIKET)"
+   puts $File "   set DataBar::Param(IP1)    $Param(IP1)"
+   puts $File "   set DataBar::Param(IP2)    $Param(IP2)"
+   puts $File "   set DataBar::Param(IP3)    $Param(IP3)"
+   puts $File "   set DataBar::Param(Desc)   $Param(Desc)"
+   puts $File "   set DataBar::Param(Unit)   $Param(Unit)"
+   puts $File "   set DataBar::Param(Level)  $Param(Level)"
+   puts $File "   set DataBar::Param(Range)  $Param(Range)"
 
    foreach vp [Page::Registered $Frame Viewport] {
       if { [info exists DataBar::Data($vp)] } {
-         puts $File "   set DataBar::Data(\$$Viewport::Data(Alias$vp)) \[list [lindex $DataBar::Data($vp) 0] [lindex $DataBar::Data($vp) 1] [lindex $DataBar::Data($vp) 2] [lindex $DataBar::Data($vp) 3] \"[lindex $DataBar::Data($vp) 4]\" [lindex $DataBar::Data($vp) 5]\]"
+         puts $File "   set DataBar::Data(\$$Viewport::Data(Alias$vp)) \[list [lindex $Data($vp) 0] [lindex $Data($vp) 1] [lindex $Data($vp) 2] [lindex $Data($vp) 3] \"[lindex $Data($vp) 4]\" [lindex $Data($vp) 5]\]"
       }
    }
    puts $File ""
