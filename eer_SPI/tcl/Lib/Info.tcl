@@ -312,11 +312,12 @@ proc Info::Decode { Var Info } {
    }
 
    if { [info exists var(AccSecs)] } {
-      set var(AccYear)  [clock format $var(AccSecs) -format "%Y" -timezone :UTC]
-      set var(AccMonth) [clock format $var(AccSecs) -format "%m" -timezone :UTC]
-      set var(AccDay)   [clock format $var(AccSecs) -format "%d" -timezone :UTC]
-      set var(AccHour)  [clock format $var(AccSecs) -format "%H" -timezone :UTC]
-      set var(AccMin)   [clock format $var(AccSecs) -format "%M" -timezone :UTC]
+      set secs [lindex $var(AccSecs) 0]
+      set var(AccYear)  [clock format $secs -format "%Y" -timezone :UTC]
+      set var(AccMonth) [clock format $secs -format "%m" -timezone :UTC]
+      set var(AccDay)   [clock format $secs -format "%d" -timezone :UTC]
+      set var(AccHour)  [clock format $secs -format "%H" -timezone :UTC]
+      set var(AccMin)   [clock format $secs -format "%M" -timezone :UTC]
    }
    if { [info exists var(SimSecs)] } {
       set var(SimYear)  [clock format $var(SimSecs) -format "%Y" -timezone :UTC]
@@ -447,7 +448,7 @@ proc Info::Format { Info { Length 0 } } {
          "Click" -
          "Sim0Secs" -
          "SimSecs" -
-         "AccSecs" { set val [clock format $val -timezone :UTC] }
+         "AccSecs" { set val [clock format [lindex $val 0] -timezone :UTC] }
       }
 
       #----- For scenario, only show the name (1st item)
