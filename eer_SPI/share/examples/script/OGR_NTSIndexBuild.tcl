@@ -28,7 +28,7 @@ Log::Start [info script] 0.1
 
 set res     [lindex $argv 0]
 set DBPath  [lindex $argv 1]
-set NTSPath /cnfs/ops/production/cmoe/geo/NTS
+set NTSPath $env(GEO_PATH)/NTS
 
 #----- Open original NTS index
 set layers  [ogrfile open LAYERFILE read $NTSPath/${res}kindex.shp]

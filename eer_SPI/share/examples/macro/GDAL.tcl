@@ -32,8 +32,7 @@ proc Macro::GDAL::Execute { } {
    variable Data
    variable Error
    
-#   set bands [gdalfile open FILE read DataIn/srtm_n045w074_badmedian3x3]
-   set bands [gdalfile open FILE read /cnfs/dev/cmoe/afsralx/National-SAR-Winds/sample/RS2_OK35806_PK347563_DK308097_SCWA_20121210_145447_VV_VH_SGF/RS2_OK35806_PK347563_DK308097_SCWA_20121210_145447_VV_VH_SGF_r.tif]
+   set bands [gdalfile open FILE read DataIn/srtm_n045w074_badmedian3x3]
    gdalband read BANDR [list [lindex $bands 0]]
    gdalband read BANDG [list [lindex $bands 1]]
    gdalband read BANDB [list [lindex $bands 2]]

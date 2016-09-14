@@ -136,6 +136,6 @@ ogrfile close SHAPE
 ogrlayer free LAYER
 
 #----- Merger everything in a single file
-#exec /cnfs/ops/cmoe/afsr005/Lib/Linux/gdal-1.7.1/bin/ogr2ogr -update -append Toronto.shp $File -nln Toronto
+#exec ogr2ogr -update -append Toronto.shp $File -nln Toronto
 
 Log::End

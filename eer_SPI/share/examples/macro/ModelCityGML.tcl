@@ -28,13 +28,13 @@ namespace eval Macro::ModelCityGML {} {
 }
 
 proc Macro::ModelCityGML::Execute { } {
-   global GDefs
+   global GDefs env
    variable Data
    variable Error
 
    Macro::Doing "Reading model data"
 
-   model read GML "/cnfs/ops/production/cmoe/geo/Vector/Cities/Montreal/CityGML_LOD2_20140115/VM09_2009.gml"
+   model read GML "$env(GEO_PATH)/Vector/Cities/Montreal/CityGML_LOD2_20140115/VM09_2009.gml"
 #   model read GML "/local/disk2/afsr005/PortMtl-quaiAlexandra/Port.gml"
 # { PROJCS["NAD_1983_CSRS_MTM_8",GEOGCS["GCS_North_American_1983_CSRS",DATUM["D_North_American_1983_CSRS",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["False_Easting",304800.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-73.5],PARAMETER["Scale_Factor",0.9999],PARAMETER["Latitude_Of_Origin",0.0],UNIT["Meter",1.0]],VERTCS["CGVD_1928",VDATUM["Canadian_Geodetic_Vertical_Datum_of_1928"],PARAMETER["Vertical_Shift",0.0],PARAMETER["Direction",1.0],UNIT["Meter",1.0]] }
 

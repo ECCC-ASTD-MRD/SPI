@@ -26,7 +26,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set Param(ModelPath) /cnfs/ops/production/cmoe/lam_torg8g20/gridpt/dbase/prog/lam/torg8g20.model/
+set Param(ModelPath) $env(CMCGRIDF)/prog/lam/torg8g20.model/
 set Param(ObsPath)   $env(CMCADE)/dbase/surface/metar
 set Param(Stations)  { CYVV CYQA CYBN CYKZ CYYZ CYTZ CYKF CYHM CYXU CYSN CYPQ CYTR CYGK KBUF KROC }
 set Param(Models)    { 15km 2.5km 1km }

@@ -26,7 +26,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set file  /cnfs/ops/production/cmoe/geo/HWSD/hwsd.bil
+set file  $env(GEO_PATH)/HWSD/hwsd.bil
 set types { tgrav tsand tsilt tclay tref toc sgrav ssand ssilt sclay sref soc }
 set idxs  { 2 3 4 5 6 7 8 9 10 11 12 13 }
 set wtile 1800
@@ -40,7 +40,7 @@ vector dim VECTOR { mu tgrav tsand tsilt tclay tref toc sgrav ssand ssilt sclay 
 vector mem VECTOR 20000
 
 puts "   Reading correspondance table"
-set f [open /cnfs/ops/production/cmoe/geo/HWSD/hwsd.csv]
+set f [open $env(GEO_PATH)/HWSD/hwsd.csv]
 
 gets $f line
 while { ![eof $f] } {
