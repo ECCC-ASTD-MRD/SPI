@@ -154,7 +154,7 @@ namespace eval FileBox {
 #----------------------------------------------------------------------------
 
 proc FileBox::GetContent { { Path "" } } {
-   global GDefs
+   global GDefs env
    variable Param
    variable Lbl
    variable Msg
@@ -162,7 +162,7 @@ proc FileBox::GetContent { { Path "" } } {
    if { $Path!="" } {
       set Param(Path) $Path
    }
-   set Param(Path)      [file normalize $Param(Path)]
+   eval set Param(Path) \[file normalize $Param(Path)\]
    set Param(Width)     [expr [winfo width .filebox.header.file]/[font measure [lindex [.filebox.header.file configure -font] 4] "m"]-2]
 
    if { $Param(Mode)!="Save" } {
