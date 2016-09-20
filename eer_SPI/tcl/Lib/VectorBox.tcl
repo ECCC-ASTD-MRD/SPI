@@ -186,7 +186,6 @@ proc VectorBox::Create { Parent Apply } {
    Bubble::Create $fr.speed      $Bubble(Animate)
 
    #----- Commandes
-
    frame .vecbox.cmd
       checkbutton .vecbox.cmd.real -image DOCSEL -bd 1 -relief raised \
          -variable VectorBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
@@ -202,6 +201,7 @@ proc VectorBox::Create { Parent Apply } {
 
    TabFrame::Select .vecbox.tab 0
 }
+
 
 #----------------------------------------------------------------------------
 # Nom      : <VectorBox::Lock>

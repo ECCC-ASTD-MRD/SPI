@@ -245,16 +245,17 @@ namespace eval Animator {
 }
 
 namespace eval NowCaster {
+   global env
    set Param(Geom) { 200x400+[winfo rootx .]+[winfo rooty .] }
    set Param(Dock) True
 
    namespace eval Radar {
-      set Param(Path)       /cnfs/ops/production/radar/rawdata
+      set Param(Path)       $env(CMCPROD)/hubs/radar/rawdata
    }
 
    namespace eval Obs {
-      set Param(PathsSurf)  { /data/ade/dbase/surface/drifter /data/ade/dbase/surface/metar /data/ade/dbase/surface/sa /data/ade/dbase/surface/ozone /data/ade/dbase/surface/pm25 /data/ade/dbase/surface/synop /data/ade/dbase/surface/shef }
-      set Param(PathsUpper) { /data/ade/dbase/uprair/radiosonde /data/ade/dbase/uprair/ads /data/ade/dbase/uprair/airep }
+      set Param(PathsSurf)  [list $env(CMCPROD)/hubs/ade/dbase/surface/metar $env(CMCPROD)/hubs/ade/dbase/surface/sa $env(CMCPROD)/hubs/ade/dbase/surface/rmcq $env(CMCPROD)/hubs/ade/dbase/surface/synop $env(CMCPROD)/hubs/ade/dbase/surface/shef $env(CMCPROD)/hubs/ade/dbase/surface/buoy $env(CMCPROD)/hubs/ade/dbase/surface/drifter $env(CMCPROD)/hubs/ade/dbase/surface/sst]
+      set Param(PathsUpper) [list $env(CMCPROD)/hubs/ade/dbase/uprair/radiosonde $env(CMCPROD)/hubs/ade/dbase/uprair/ads $env(CMCPROD)/hubs/ade/dbase/uprair/qnetwinds $env(CMCPROD)/hubs/ade/dbase/uprair/pirep $env(CMCPROD)/hubs/ade/dbase/uprair/airep]
    }
 }
 
