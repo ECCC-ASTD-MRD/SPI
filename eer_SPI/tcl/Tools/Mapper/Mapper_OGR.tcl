@@ -152,7 +152,7 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
       wm title     .mapperparams "[lindex $Mapper::Lbl(OGR) $GDefs(Lang)]"
       wm transient .mapperparams .
       wm geometry  .mapperparams =$pos
-      wm protocol  .mapperparams WM_DELETE_WINDOW { destroy .mapperparams }
+      wm protocol  .mapperparams WM_DELETE_WINDOW { Mapper::OGR::SelectClear $Mapper::Data(Object); Mapper::ParamsClose }
 
       TabFrame::Create .mapperparams.tab 1 ""
       pack .mapperparams.tab -side top -fill both -expand true -padx 2 -pady 2
@@ -458,7 +458,7 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
 
       frame .mapperparams.com
          button .mapperparams.com.apply  -text [lindex $Mapper::Lbl(Apply) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::ParamsSet $Mapper::Data(Object) }
-         button .mapperparams.com.cancel -text [lindex $Mapper::Lbl(Close) $GDefs(Lang)] -bd 1 -command { Mapper::ParamsClose }
+         button .mapperparams.com.cancel -text [lindex $Mapper::Lbl(Close) $GDefs(Lang)] -bd 1 -command { Mapper::OGR::SelectClear $Mapper::Data(Object); Mapper::ParamsClose }
          pack .mapperparams.com.cancel .mapperparams.com.apply -side right
       pack .mapperparams.com -side top -fill x -padx 2 -pady 2
 
