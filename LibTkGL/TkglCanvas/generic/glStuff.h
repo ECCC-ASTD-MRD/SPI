@@ -29,7 +29,7 @@
  *    Boston, MA 02111-1307, USA.
  *
  *==============================================================================
- */
+*/
 
 #ifndef _GLSTUFF_H
 #define _GLSTUFF_H
@@ -52,7 +52,7 @@
 #include "tr.h"
 
 #ifndef M_PI
-#define M_PI        3.14159265358979323846   /*Pi*/
+#define M_PI        3.14159265358979323846   // Pi
 #endif
 
 #define BITSWAP(b)  (b=(b<<7)|((b<<5)&0x40)|((b<<3)&0x20)|((b<<1)&0x10) | (b>>7)|((b>>5)&0x02)|((b>>3)&0x04)|((b>>1)&0x08))
@@ -97,71 +97,71 @@
 enum GLExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum GLVendor   { NVIDIA=0, ATI=1, MESA=2 };
 
-/* Structure pour OpenGL */
+// Structure pour OpenGL
 typedef struct GLParams  {
 
-   int    Resolution;           /*Qualite de l'affichage*/
-   double RenderTime;           /*Temps en seconds pour effectuer le rendue du viewport*/
-   int    ShaderAvailable;      /*Est-ce que l'implementation est capable de Shader*/
+   //Parametres Tk
+   Tk_Window    TkWin;                  // Current Tk window
+   Tk_Font      TkFont;                 // Current Tk Font
 
-   /*Parametres Tk*/
-   Tk_Window    TkWin;          /*Current Tk window*/
-   Tk_Font      TkFont;         /*Current Tk Font*/
+   //Parametres X
+   Colormap      XColormap;             // Window colormap
+   int           XMode;                 // Mode de rendue (Color index ou RGB)
+   int           XBatch;                // Mode de rendue en batch
+   Pixmap        XPix;                  // X Pixmap 
+   Display      *XDisplay;              // Current X Display
+   Screen       *XScreen;               // Current X Screen
+   int           XScreenNo;             // Current X Screen number
+   int           XExpose;               // Exposition flag fro refreshes
 
-   /*Parametres X*/
-   Colormap      XColormap;     /*Window colormap*/
-   int           XMode;         /*Mode de rendue (Color index ou RGB)*/
-   int           XBatch;        /*Mode de rendue en batch*/
-   Pixmap        XPix;          /*Pixmap X*/
-   Display      *XDisplay;
-   Screen       *XScreen;
-   int           XScreenNo;
-   int           XExpose;
-
-   /*Parametres OpenGL*/
-   TRcontext    *TRCon;         /*Contexte du Tile Renderer*/
+   //Parametres OpenGL
+   TRcontext    *TRCon;                 // Contexte du Tile Renderer
 
 #ifdef WIN32
-   HGLRC        GLCon;          /*Contexte OpenGL*/
-   int         *GLConfig;       /*Liste de configuration*/
+   HGLRC        GLCon;                  // Contexte OpenGL
+   int         *GLConfig;               // Liste de configuration
 #else
-   GLXContext   GLCon;          /*Contexte OpenGL*/
-   GLXContext   GLPCon;         /*Contexte OpenGL Pixmap/Pbuffer*/
-   GLXFBConfig *GLConfig;       /*Liste de configuration*/
-   int          GLConfigNb;     /*Nombre de configurations*/
-   GLXPbuffer   GLPBuf;         /*Pbuffer GL*/
-   GLXPixmap    GLPix;          /*Pixmap GL*/
+   GLXContext   GLCon;                  // Contexte OpenGL
+   GLXContext   GLPCon;                 // Contexte OpenGL Pixmap/Pbuffer
+   GLXFBConfig *GLConfig;               // Liste de configuration
+   int          GLConfigNb;             // Nombre de configurations
+   GLXPbuffer   GLPBuf;                 // Pbuffer GL
+   GLXPixmap    GLPix;                  // Pixmap GL
 #endif
 
-   GLfloat      *GLFeed;        /*Buffer pour le mode feedback*/
-   unsigned long GLFeedSize;    /*Dimension du buffer pour feedback*/
-   GLuint        GLPick[512];   /*Buffer pour le mode selection*/
+   GLfloat      *GLFeed;                // Buffer pour le mode feedback
+   unsigned long GLFeedSize;            // Dimension du buffer pour feedback
+   GLuint        GLPick[512];           // Buffer pour le mode selection
 
-   XVisualInfo *GLVis;          /*Visuel utilise*/
+   XVisualInfo *GLVis;                  // Visuel utilise
 
-   int GLDebug;                 /*Mode Debug*/
-   int GLDirect;                /*Direct rendering*/
-   int GLAlias;                 /*Anti Aliasing*/
-   int GLDither;                /*Dithering*/
-   int GLShade;                 /*Shading*/
-   int GLFilter;                /*Texture filtering*/
-   int GLZBuf;                  /*Utilisation du ZBuffer*/
-   int GLFSAA;                  /*Utilisation du Full Scene Anti-Aliasing*/
-   double GLLight;              /*Lightning - Positionnement du soleil (Date YYYYMMDDHHMMSS ou -1 pour courant)*/
-   GLUtesselator *GLTess;       /*Tessalation object */
-   GLUquadric    *GLQuad;       /*Quadric object*/
+   int GLDebug;                         // Mode Debug
+   int GLDirect;                        // Direct rendering
+   int GLAlias;                         // Anti Aliasing
+   int GLDither;                        // Dithering
+   int GLShade;                         // Shading
+   int GLFilter;                        // Texture filtering
+   int GLZBuf;                          // Utilisation du ZBuffer
+   int GLFSAA;                          // Utilisation du Full Scene Anti-Aliasing
+   double GLLight;                      // Lightning - Positionnement du soleil (Date YYYYMMDDHHMMSS ou -1 pour courant)
+   GLUtesselator *GLTess;               // Tessalation object
+   GLUquadric    *GLQuad;               // Quadric object
 
-   char           Soft;               /*Type de Renderer*/
-   int            UseThreads;         /*Use threads*/
-   int            Delay;              /*Delai des frames*/
-   GLboolean      Ext[32];            /*Liste des extensions*/
-   GLboolean      Set;                /*Liste des extensions*/
-   GLhandleARB    Prog[GL_MAXSHADER]; /*Liste des shaders*/
-   char          **Shaders,*ShaderPath;
-   int            ShaderNb;
-   int            Vendor;             /*Graphic driver vendor*/
+   int    Resolution;                   // Qualite de l'affichage
+   double RenderTime;                   // Temps en seconds pour effectuer le rendue du viewport
+   int    ShaderAvailable;              // Est-ce que l'implementation est capable de Shader
+   char           Soft;                 // Type de Renderer
+   int            UseThreads;           // Use threads
+   int            Delay;                // Delai des frames
+   Tcl_Obj       *DelayProc;            // Callback for delayed frames
+   GLboolean      Ext[32];              // Liste des extensions
+   GLboolean      Set;                  // Liste des extensions
+   GLhandleARB    Prog[GL_MAXSHADER];   // Liste des shaders
+   char          **Shaders,*ShaderPath; // Shader path an code
+   int            ShaderNb;             // Number of shaders
+   int            Vendor;               // Graphic driver vendor
 
-   double MagScale,MagX,MagY,MagD;   /*Magnifying paameters*/
+   double MagScale,MagX,MagY,MagD;      // Magnifying paameters
 } GLParams;
 
 typedef struct T_glBitmap {
@@ -178,7 +178,7 @@ typedef struct T_glFont {
   GLuint         list;
 } T_glFont;
 
-extern GLParams *GLRender;  /* Structure globale des parametres OpenGL */
+extern GLParams *GLRender;  // Structure globale des parametres OpenGL
 
 void  DataFlip(unsigned char *DataIn,unsigned char *DataOut,int Width,int Height,int Size);
 int   DashConvert(char *l,CONST char *p,int n,double width);

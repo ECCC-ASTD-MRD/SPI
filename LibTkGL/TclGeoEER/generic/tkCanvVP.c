@@ -1396,10 +1396,11 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
       // Take care of automated refresh handler
       load=vp->Loading;
-      Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
-      if (GLRender->Delay<GL_STOP)
-         ViewportRefresh(vp,GLRender->Delay);
-
+      if (!GLRender->TRCon) {
+         Tcl_DeleteTimerHandler(vp->Timer);vp->Timer=NULL;
+         if (GLRender->Delay<GL_STOP)
+            ViewportRefresh(vp,GLRender->Delay);
+      }
       load+=(proj->Loading=proj->Loading<0?0:proj->Loading);
 
       // Force update if rendering within PBuffer
@@ -1509,6 +1510,13 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
    ViewportLicense(NULL,vp,proj);
 
+   // If need saving animated frame
+   if (!GLRender->TRCon && GLRender->Delay<GL_STOP && GLRender->DelayProc) {
+      if (Tcl_EvalObjEx(((TkCanvas*)Canvas)->interp,GLRender->DelayProc,0x0)==TCL_ERROR) {
+         Tcl_BackgroundError(((TkCanvas*)Canvas)->interp);  
+      }      
+   }
+         
    // Loading data
    if (load && !GLRender->TRCon) {
       glMatrixMode(GL_PROJECTION);

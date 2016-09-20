@@ -405,9 +405,16 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->Delay));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&GLRender->Delay);
+               
+               if (Objc>3 && i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
+                  if (GLRender->DelayProc) {
+                     Tcl_DecrRefCount(GLRender->DelayProc);
+                  }
+                  GLRender->DelayProc=Tcl_DuplicateObj(Objv[++i]);
+                  Tcl_IncrRefCount(GLRender->DelayProc);
+               }
             }
             break;
-
 
          case USETHREADS:
             if (Objc==2) {
@@ -2026,6 +2033,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Soft            = 0;
    GLRender->UseThreads      = 1;
    GLRender->Delay           = GL_STOP;
+   GLRender->DelayProc       = NULL;
    GLRender->Shaders         = NULL;
    GLRender->ShaderPath      = NULL;
    GLRender->ShaderNb        = 0;
