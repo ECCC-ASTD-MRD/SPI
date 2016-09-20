@@ -1883,7 +1883,7 @@ int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *
                                break;
 
                case REF_PROJ : VertexLoc(GPos->Pos,Def,Stream[idx],X,Y,Z);
-                             break;
+                               break;
 
                case REF_GRID : Vect_Init(Stream[idx],X,Y,Z);
                                break;
@@ -1966,10 +1966,17 @@ int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *
       dn=Vect_Norm(d);
 
       // Check if the particle has moved enough
-      if (dn<ds) {
+      if (dn<ds)
          break;
-      }
 
+      // For U grids, we have to check the sub-grid switch at NJ/2
+      if (GPos->GRef->Grid[0]=='U' && !GPos->GRef->NId) {
+         idx=Def->Limits[1][1]>>1;
+         if ((Y<=idx && (Y+d[1])>idx) || (Y>=idx+1 && (Y+d[1])<idx+1)) {
+            break;
+         }
+      }
+      
       dr+=dn;
       X+=d[0];
       Y+=d[1];

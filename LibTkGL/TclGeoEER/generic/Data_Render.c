@@ -241,10 +241,6 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
                }
             }
 
-            if (Field->Spec->RenderVector==STREAMLINE) {
-               nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
-            }
-
             glEnable(GL_DEPTH_TEST);
             if (Field->Spec->RenderVector==STREAMLINE3D) {
                if (!Field->Def->Data[2] || Data_Grid3D(Field,Proj)) {
@@ -288,6 +284,12 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
       Field->Def=Field->SDef[Field->GRef->NId];
    }
 
+   if (Mode==GL_ALL || Mode==GL_RASTER) {
+      if (Field->Spec->RenderVector==STREAMLINE) {
+         nras+=Data_RenderStream(Field,VP,(Projection*)Proj);
+      }
+   }            
+   
    glDisable(GL_POLYGON_OFFSET_FILL);
    glPopName();
    glStencilMask(0xff);
@@ -1020,8 +1022,8 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
    }
    glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
 
-   // Animation step
-   if (GLRender->Delay<GL_STOP) {
+   // Animation step (if printing, keep last step)
+   if (GLRender->Delay<GL_STOP && !GLRender->TRCon) {
       Field->Spec->TexStep+=0.02;
    }
       
@@ -1141,8 +1143,8 @@ int Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj){
       }
       glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
       
-      // Animation step
-      if (GLRender->Delay<GL_STOP) {
+      // Animation step (if printing, keep last step)
+      if (GLRender->Delay<GL_STOP && !GLRender->TRCon) {
          Field->Spec->TexStep+=0.001;
       }
       glPushMatrix();

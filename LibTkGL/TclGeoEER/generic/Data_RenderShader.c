@@ -375,7 +375,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    // Do we need transparency
-   if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
+   if (Field->Spec->Map->Alpha || (Field->Spec->Alpha<100 && !Field->Spec->RenderVector>ARROW)) {
       glEnable(GL_BLEND);
    }
    glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);

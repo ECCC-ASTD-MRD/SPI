@@ -811,7 +811,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
                      if (!item) {
                         // Got an empty variable, will fill it with index
-                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1000*sizeof(float));
+                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float));
                         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
                         index[0]=DEF_INDEX_EMPTY;
                         obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
@@ -822,7 +822,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      }
                   }
 
-                  /*Check compatibility between source and destination*/
+                  // Check compatibility between source and destination
                   if (!Def_Compat(field0->Def,field1->Def)) {
                      field0->GRef=GeoRef_Find(GeoRef_Resize(field0->GRef,field0->Def->NI,field0->Def->NJ));
                   }
@@ -954,7 +954,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
                      if (!item) {
                         // Got an empty variable, will fill it with index
-                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*100*sizeof(float));
+                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float));
                         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
                         index[0]=DEF_INDEX_EMPTY;
                         obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
