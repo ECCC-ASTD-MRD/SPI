@@ -186,7 +186,7 @@ proc SPI::CommandLine { { Args {} }} {
 #----- Parcourir la liste des parametres pre-launch
 
 for { set i 0 } { $i < $argc } { incr i } {
-   switch -exact [string trimleft [lindex $argv $i] "-"] {
+   switch -glob [string trimleft [lindex $argv $i] "-"] {
       "valgrind"  { }
       "soft"      { }
       "hard"      { }
@@ -200,7 +200,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
       "default"   { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Default)"] }
-      "field"     { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
+      "field*"    { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
       "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 ""] }
@@ -2456,7 +2456,7 @@ if { [file exists $SPI::Param(Default)] } {
 
 #----- Parcourir la liste des parametres post-launch
 for { set i 0 } { $i < $argc } { incr i } {
-   switch -exact [string trimleft [lindex $argv $i] "-"] {
+   switch -glob [string trimleft [lindex $argv $i] "-"] {
       "valgrind"  { }
       "soft"      { }
       "hard"      { }
@@ -2470,9 +2470,9 @@ for { set i 0 } { $i < $argc } { incr i } {
       "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
       "default"   { set i [Args::ParseDo $argv $argc $i 1 1 ""] }
-      "field"     { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"\" \[list \$FileBox::Type(FSTD)\]"] }
-      "traj"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
-      "obs"       { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"\" \[list \$FileBox::Type(OBS)\]"] }
+      "field*"    { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(FSTD)\]"] }
+      "traj*"     { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
+      "obs*"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(OBS)\]"] }
       "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
       "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) Mapper; lappend SPI::Param(Geos)"] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
