@@ -2135,26 +2135,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             continue;
          }
 
-         // Get displacement component indexes
-         clat=clon=-1;
-         io=ia=ib=-1;
-         if (Obs->Format==MET_BURP) {
-            for(d=0;d<elem->NData;d++) {
-               cdata=elem->EData[d];
-               for(e=0;e<cdata->Ne;e++) {
-                  if (cdata->Code[e]->descriptor==5002 || cdata->Code[e]->descriptor==5001)       // Latitude coordinate
-                     clat=e;
-                  else if (cdata->Code[e]->descriptor==6002 || cdata->Code[e]->descriptor==6001)  // Longitude coordinate
-                     clon=e;
-                  else if (cdata->Code[e]->descriptor==5015)                                      // Latitude displacement
-                     ia=e;
-                  else if (cdata->Code[e]->descriptor==6015)                                      // Longitude displacement
-                     io=e;
-                  else if (cdata->Code[e]->descriptor==Obs->Model->Elev)                          // Height
-                     ib=e;
-               }
-            }
-         }
          glPushName(n);
 
          // Get station height
@@ -2179,16 +2159,26 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             for(d=0;d<elem->NData;d++) {
                data=elem->EData[d];
 
+               // Get displacement, elevation, component indexes
+               clat=clon=-1;
+               io=ia=ib=-1;
                cdir=-1;
-               if (spec->RenderVector) {
-                  for(e=0;e<data->Ne;e++) {
-                     if (data->Code[e]->descriptor==Obs->Model->Items[i].Code[1]) {
-                        cdir=e;
-                        break;
-                     }
+               for(e=0;e<data->Ne;e++) {
+                  if (spec->RenderVector && data->Code[e]->descriptor==Obs->Model->Items[i].Code[1]) {
+                     cdir=e;
                   }
+                  if (data->Code[e]->descriptor==5002 || data->Code[e]->descriptor==5001)       // Latitude coordinate
+                     clat=e;
+                  else if (data->Code[e]->descriptor==6002 || data->Code[e]->descriptor==6001)  // Longitude coordinate
+                     clon=e;
+                  else if (data->Code[e]->descriptor==5015)                                     // Latitude displacement
+                     ia=e;
+                  else if (data->Code[e]->descriptor==6015)                                     // Longitude displacement
+                     io=e;
+                  else if (data->Code[e]->descriptor==Obs->Model->Elev)                         // Height
+                     ib=e;
                }
-
+               
                // Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved
                flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
                if (Obs->Family && !(Obs->Family&flag)) {
@@ -2238,35 +2228,39 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            // Get height if specified
                            if (ib!=-1) {
                               k=MetObs_GetData(data,ib,v,0);
-                              
-                              // Compare with specified list
-                              if (Obs->Levels) {
-                                 Tcl_ListObjLength(Interp,Obs->Levels,&nl);
-                                 if (nl) {
-                                    for(l=0;l<nl;l++) {
-                                       Tcl_ListObjIndex(Interp,Obs->Levels,l,&obj);
-                                       Tcl_GetDoubleFromObj(Interp,obj,&dk);
-                                       if (k==dk) {
-                                          break;   
+                              if (MET_VALID(k,Obs->NoData)) {
+ 
+                                 // Compare with specified list
+                                 if (Obs->Levels) {
+                                    Tcl_ListObjLength(Interp,Obs->Levels,&nl);
+                                    if (nl) {
+                                       for(l=0;l<nl;l++) {
+                                          Tcl_ListObjIndex(Interp,Obs->Levels,l,&obj);
+                                          Tcl_GetDoubleFromObj(Interp,obj,&dk);
+                                          if (k==dk) {
+                                             break;   
+                                          }
+                                       }
+                                       if (l==nl) {
+                                          continue;
                                        }
                                     }
-                                    if (l==nl) {
-                                       continue;
-                                    }
                                  }
+                                 // Convert pressure level to meters
+                                 if (data->Code[ib]->unit[0]=='P' && data->Code[ib]->unit[1]=='A') {         
+                                    k=ZRef_Level2Meter(k/100.0f,LVL_PRES);
+                                 }
+                                 co.Elev=k;
                               }
-                              // Convert pressure level to meters
-                              if (data->Code[ib]->unit[0]=='P' && data->Code[ib]->unit[1]=='A') {         
-                                 k=ZRef_Level2Meter(k/100.0f,LVL_PRES);
-                              }
-                              co.Elev=k;
                            }
                           
                            // Get latlon displacement
                            dlat=dlon=0.0;
                            if (ia!=-1 && io!=-1) {
-                              co.Lat+=dlat=MetObs_GetData(data,ia,v,0);
-                              co.Lon+=dlon=MetObs_GetData(data,io,v,0);
+                              dlat=MetObs_GetData(data,ia,v,0);
+                              dlon=MetObs_GetData(data,io,v,0);
+                              if (MET_VALID(dlat,Obs->NoData)) co.Lat+=dlat;
+                              if (MET_VALID(dlon,Obs->NoData)) co.Lon+=dlon;
                            }
                            
                            // Get coordinates if per sample

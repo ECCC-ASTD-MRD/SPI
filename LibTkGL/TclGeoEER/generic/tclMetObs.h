@@ -43,8 +43,8 @@
 
 #include "tclMetDataset.h"
 
-#define MetObs_GetData(MD,E,V,T)   (MD->Data?(MD->Data[(T*MD->Nv+V)*MD->Ne+E]):-999.0f)
-#define MetObs_GetMarker(MD,E,V,T) (MD->Marker?(MD->Marker[(T*MD->Nv+V)*MD->Ne+E]):0)
+#define MetObs_GetData(MD,E,V,T)   ((E<MD->Ne && V<MD->Nv && T<MD->Nt && MD->Data)?(MD->Data[(T*MD->Nv+V)*MD->Ne+E]):-999.0f)
+#define MetObs_GetMarker(MD,E,V,T) ((E<MD->Ne && V<MD->Nv && T<MD->Nt && MD->Marker)?(MD->Marker[(T*MD->Nv+V)*MD->Ne+E]):0)
 #define MetObs_SetData(MD,E,V,T,O) (MD->Data[(T*MD->Nv+V)*MD->Ne+E]=O)
 #define MET_FLAG(OBS,FLAG) (!OBS->Family || (OBS->Family&FLAG))
 #define MET_VALID(V,N)  (V!=-979.0f && V!=-980.0f && V!=-999.0f && V!=N)

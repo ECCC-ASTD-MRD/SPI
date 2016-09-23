@@ -456,7 +456,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    float        *gz=NULL;
 
    if (!FSTD_FieldReadMesh(Field)) {
-      App_Log(WARNING,"%s: Could not find grid definition components",__func__);
+      App_Log(WARNING,"%s: Could not find grid definition components\n",__func__);
       return(NULL);
    }
 
@@ -470,7 +470,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
+         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location\n",__func__);
          return(NULL);
       }
    }
