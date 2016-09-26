@@ -278,6 +278,8 @@ proc DataBar::Draw { Frame VP X0 Y0 X1 Y1 { Title "" } { Full "" } } {
    }
 
    foreach data $datas {
+       set lbl ""
+
       if { [fstdfield is $data] }  {
          set id   [lindex $ids $i]
          incr i
