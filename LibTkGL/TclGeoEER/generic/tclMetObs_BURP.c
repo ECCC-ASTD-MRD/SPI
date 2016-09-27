@@ -158,6 +158,11 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          loc->Grid[1]=dy/10.0;
          loc->CodeType=codtyp;
       }
+      
+      // Dates earlier than 2000 need to be added 1900
+      if (yymmdd<1000000) {
+         yymmdd+=19000000;
+      }
       if ((time=System_DateTime2Seconds(yymmdd,hhmm*100,1))<0)
          continue;
 
