@@ -110,7 +110,7 @@ proc Drawing::Window { } {
 
       frame $Data(Tab).items
          frame $Data(Tab).items.def -relief sunken -bd 1
-            foreach type $Data(Type) img $Data(Image) {
+            foreach type $Param(Types) img $Param(Images) {
                button $Data(Tab).items.def.$type -image $img -relief flat -bd 0 -overrelief raised  -command "Drawing::ItemAdd \$Page::Data(Frame) $type"
                Bubble::Create $Data(Tab).items.def.$type $Bubble($type)
                pack $Data(Tab).items.def.$type -side top
@@ -173,7 +173,14 @@ proc Drawing::Window { } {
          pack .drawing.params.width.lbl -side left
          pack .drawing.params.width.opt -side right
 
-      frame .drawing.params.arrow
+      frame .drawing.params.dash
+         label .drawing.params.dash.lbl -text [lindex $Lbl(Dash) $GDefs(Lang)] -anchor w
+         IcoMenu::Create .drawing.params.dash.opt $GDefs(Dir)/share/bitmap $Resources(Dash) $Param(Dashes) \
+            Drawing::Current(Dash) "Drawing::SetDash \$Page::Data(Frame) \$Drawing::Current(Dash)" 0 -relief flat -bd 1
+         pack .drawing.params.dash.lbl -side left
+         pack .drawing.params.dash.opt -side right
+
+         frame .drawing.params.arrow
          label .drawing.params.arrow.lbl -text [lindex $Lbl(Arrow) $GDefs(Lang)] -anchor w
          IcoMenu::Create .drawing.params.arrow.opt $GDefs(Dir)/share/bitmap $Resources(Arrow) "none first last both" \
             Drawing::Current(Arrow) "Drawing::SetArrow \$Page::Data(Frame) \$Drawing::Current(Arrow)" 0 -relief flat -bd 1

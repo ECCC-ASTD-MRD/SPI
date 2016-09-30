@@ -33,6 +33,7 @@ namespace eval Drawing {
 
    set Lbl(Angle)    { " Angle   " " Angle   " }
    set Lbl(Color)    { " Couleur " " Color   " }
+   set Lbl(Dash)     { " Pointillé   " " Dash " }
    set Lbl(Fill)     { " Remplissage " " Fill " }
    set Lbl(Type)     { " Type    " " Type    " }
    set Lbl(Width)    { " Largeur " " Width   " }

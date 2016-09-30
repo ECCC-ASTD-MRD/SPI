@@ -25,7 +25,7 @@
 #   Drawing::DrawBitm     { Frame VP Vertex Color Bitmap Tag }
 #   Drawing::DrawDist     { Frame VP Vertex Color Width Font Mode Tag }
 #   Drawing::DrawHead     { Frame VP Vertex Color Width Font Tag }
-#   Drawing::DrawLine     { Frame VP Vertex Color Width Line Arrow Tag }
+#   Drawing::DrawLine     { Frame VP Vertex Color Width Line Dash Arrow Tag }
 #   Drawing::DrawOval     { Frame VP Vertex Color Width Pattern Fill Info Tag Fix }
 #   Drawing::DrawPoly     { Frame VP Vertex Color Width Line Pattern Fill Info Tag }
 #   Drawing::DrawRect     { Frame VP Vertex Color Width Pattern Fill Info Tag }
@@ -59,6 +59,7 @@
 #   Drawing::SetFill      { Frame }
 #   Drawing::SetLine      { Frame Line }
 #   Drawing::SetPattern   { Frame Pattern }
+#   Drawing::SetDash      { Frame Dash }
 #   Drawing::SetFont      { Frame Font }
 #   Drawing::SetText      { Frame Text }
 #   Drawing::SetValu      { Frame }
@@ -417,7 +418,7 @@ proc Drawing::Draw { Frame Params } {
       switch $mode {
         "imag" { Drawing::DrawImag   $Frame $vp $vertex $color $Data(Tag)$no }
         "bitm" { Drawing::DrawBitm   $Frame $vp $vertex $color $width $Data(Tag)$no }
-        "line" { Drawing::DrawLine   $Frame $vp $vertex $color $width $line $pattern $Data(Tag)$no }
+        "line" { Drawing::DrawLine   $Frame $vp $vertex $color $width $line $pattern $extra $Data(Tag)$no }
         "poly" { Drawing::DrawPoly   $Frame $vp $vertex $color $width $line $pattern $extra $info $Data(Tag)$no }
         "rect" { Drawing::DrawRect   $Frame $vp $vertex $color $width $pattern $extra $info $Data(Tag)$no }
         "oval" { Drawing::DrawOval   $Frame $vp $vertex $color $width $pattern $extra $info $Data(Tag)$no 0 }
@@ -428,7 +429,7 @@ proc Drawing::Draw { Frame Params } {
         "valu" { Drawing::DrawValu   $Frame $vp $vertex $color $width $line $pattern $extra $Data(Tag)$no }
         "strm" { Drawing::DrawStream $Frame $vp $vertex $color $width $line $pattern $Data(Tag)$no }
         "vert" { Drawing::DrawVert   $Frame $vp $vertex $color $width $line $Data(Tag)$no }
-        "strk" { Drawing::DrawStrk   $Frame $vp $vertex $color $width $Data(Tag)$no }
+        "strk" { Drawing::DrawStrk   $Frame $vp $vertex $color $width $pattern $Data(Tag)$no }
       }
    }
 
@@ -450,7 +451,7 @@ proc Drawing::Draw { Frame Params } {
 #  <Lat>     : Latitude du point
 #  <Lon>     : Longitude du point
 #  <Color>   : Couleur
-#  <Tags>     : Tag associe a l'item dans le canvas
+#  <Tags>    : Tag associe a l'item dans le canvas
 #
 # Retour:
 #
@@ -701,6 +702,7 @@ proc Drawing::DrawDist { Frame VP Vertex Color Width Font Mode Tag } {
 #  <Vertex>  : Liste des coordonnees
 #  <Color>   : Couleur
 #  <Width>   : Dimension de la police
+#  <Dash>    : Poointille
 #  <Tag>     : Tag associe a l'item dans le canvas
 #
 # Retour:
@@ -709,7 +711,7 @@ proc Drawing::DrawDist { Frame VP Vertex Color Width Font Mode Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
+proc Drawing::DrawStrk { Frame VP Vertex Color Width Dash Tag } {
    variable Current
    variable Data
 
@@ -726,15 +728,15 @@ proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
          set vr1 [lindex $vr 1]
 
          if { [llength $vr0]>2 } {
-            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr0 -fill \$Color -width $Width -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
 
          if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $vr1 -fill \$Color -width $Width -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
          }
       } else {
          if { [llength $seg]>2 } {
-            eval $Frame.page.canvas create line $seg -fill \$Color -width $Width -tags \"PAGE $Data(Tag) $Tag\"
+            eval $Frame.page.canvas create line $seg -fill \$Color -width $Width -dash \$Dash -tags \"PAGE $Data(Tag) $Tag\"
          }
       }
    }
@@ -752,6 +754,8 @@ proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
 #  <Vertex>  : Liste des coordonnees
 #  <Color>   : Couleur
 #  <Width>   : Dimension de la police
+#  <Line>    : Smouoth or not
+#  <Dash>    : Poointille
 #  <Arrow>   : Type de fleche
 #  <Tag>     : Tag associe a l'item dans le canvas
 #
@@ -761,7 +765,7 @@ proc Drawing::DrawStrk { Frame VP Vertex Color Width Tag } {
 #
 #----------------------------------------------------------------------------
 
-proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
+proc Drawing::DrawLine { Frame VP Vertex Color Width Line Dash Arrow Tag } {
    variable Data
    variable Current
 
@@ -780,14 +784,14 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Arrow Tag } {
       set vr1 [lindex $vr 1]
 
       if { [llength $vr0]>2 } {
-         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
       if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow $Arrow  -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
    } else {
       if { [llength $Vertex]>2 } {
-         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow $Arrow -tags \"PAGE $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow $Arrow  -dash \$Dash -tags \"PAGE $Data(Tag) $Tag\"
       }
    }
 }
@@ -1592,17 +1596,19 @@ proc Drawing::InitFont { Font } {
 
 proc Drawing::InitLine { } {
    variable Current
-   variable Data
+   variable Param
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Width)   [lindex $Current(Params) 5]
    set Current(Line)    [lindex $Current(Params) 6]
-   set Current(Arrow)   [lindex $Current(Params) 7]
+   set Current(Pattern) [lindex $Current(Params) 7]
+   set Current(Arrow)   [lindex $Current(Params) 8]
 
    .drawing.params.width.opt.menu  invoke $Current(Width)
    .drawing.params.type.opt.menu   invoke $Current(Line)
    .drawing.params.arrow.opt.menu  invoke [lsearch -exact "none first last both" $Current(Arrow)]
-   pack .drawing.params.color .drawing.params.arrow .drawing.params.width .drawing.params.type -side top -fill x
+   .drawing.params.dash.opt.menu   invoke [lsearch -exact $Param(Dashes) $Current(Pattern)]
+   pack .drawing.params.color .drawing.params.arrow .drawing.params.width .drawing.params.type .drawing.params.dash -side top -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1621,7 +1627,6 @@ proc Drawing::InitLine { } {
 
 proc Drawing::InitPoly { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Width)   [lindex $Current(Params) 5]
@@ -1652,7 +1657,6 @@ proc Drawing::InitPoly { } {
 
 proc Drawing::InitRect { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Width)   [lindex $Current(Params) 5]
@@ -1684,13 +1688,13 @@ proc Drawing::InitRect { } {
 
 proc Drawing::InitStrk { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Width)   [lindex $Current(Params) 5]
+   set Current(Dash)    [lindex $Current(Params) 7]
 
    .drawing.params.width.opt.menu  invoke $Current(Width)
-   pack .drawing.params.color .drawing.params.width -side top -fill x
+   pack .drawing.params.color .drawing.params.width .drawing.params.dash -side top -fill x
 }
 
 #----------------------------------------------------------------------------
@@ -1709,7 +1713,6 @@ proc Drawing::InitStrk { } {
 
 proc Drawing::InitText { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Text)    [lindex $Current(Params) 5]
@@ -1740,7 +1743,6 @@ proc Drawing::InitText { } {
 
 proc Drawing::InitValu { } {
    variable Current
-   variable Data
 
    set Current(Color) [lindex $Current(Params) 4]
    set Current(Date)  [lindex $Current(Params) 5]
@@ -1769,7 +1771,6 @@ proc Drawing::InitValu { } {
 
 proc Drawing::InitStream { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Width)   [lindex $Current(Params) 5]
@@ -1796,7 +1797,6 @@ proc Drawing::InitStream { } {
 
 proc Drawing::InitVert { } {
    variable Current
-   variable Data
 
    set Current(Color)   [lindex $Current(Params) 4]
    set Current(Text)    [lindex $Current(Params) 5]
@@ -1843,7 +1843,7 @@ proc Drawing::ItemAdd { Frame Type { Coords { } } } {
       "imag" { set params [list $Type $no $vp $Coords $Current(Image) ""] }
       "bitm" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Bitmap) ""] }
       "text" { set params [list $Type $no $vp $Coords $Current(Color) "" font$no $Current(Angle)] }
-      "line" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Arrow)] }
+      "line" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Dash)    $Current(Arrow)] }
       "poly" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill) $Current(Info)] }
       "rect" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
       "oval" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill)] }
@@ -1853,7 +1853,7 @@ proc Drawing::ItemAdd { Frame Type { Coords { } } } {
       "valu" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Date) font$no $Current(Grid) $Current(Coord)] }
       "strm" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) $Current(Step) $Current(Res) $Current(Coord)] }
       "vert" { set params [list $Type $no $vp $Coords $Current(Color) "0 10000" font$no] }
-      "strk" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width)] }
+      "strk" { set params [list $Type $no $vp $Coords $Current(Color) $Current(Width) "" $Current(Dash)] }
    }
    set Current(Vertex) $Coords
    lappend Data(Params) $params
@@ -1990,7 +1990,7 @@ proc Drawing::ItemSel { Frame } {
    }
 
    pack forget .drawing.params.color .drawing.params.angle .drawing.params.fill .drawing.params.width .drawing.params.font\
-      .drawing.params.text .drawing.params.line .drawing.params.arrow .drawing.params.pattern \
+      .drawing.params.text .drawing.params.line .drawing.params.dash .drawing.params.arrow .drawing.params.pattern \
       .drawing.params.type .drawing.params.bitmap .drawing.params.image .drawing.params.coord \
        .drawing.params.grid .drawing.params.date .drawing.params.nau .drawing.params.info
 
@@ -2341,6 +2341,34 @@ proc Drawing::SetPattern { Frame Pattern } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Drawing::SetDash>
+# Creation : Octobre 2016 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Changer le type de dash des lignese du dessin.
+#
+# Parametres :
+#  <Frame>  : Identificateur du canvas
+#  <Dash>   : Type de pointille
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Drawing::SetDash { Frame Dash } {
+   global   GDefs
+   variable Data
+   variable Current
+   variable Resources
+
+   Drawing::SetIndex $Frame 7 $Dash
+
+   catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -dash $Dash }
+   catch { $Frame.page.canvas itemconf VERTEXFOLLOW -dash $Dash }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Drawing::SetFont>
 # Creation : Juillet 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -2669,7 +2697,7 @@ proc Drawing::VertexFollow { Frame VP X Y Scan } {
      "bitm" { Drawing::DrawBitm $Frame $VP $tmp \
               $Current(Color) $Current(Bitmap) VERTEXFOLLOW }
      "line" { Drawing::DrawLine $Frame $VP $tmplist \
-              $Current(Color) $Current(Width) $Current(Line) $Current(Arrow) VERTEXFOLLOW }
+              $Current(Color) $Current(Width) $Current(Line) $Current(Dash) $Current(Arrow) VERTEXFOLLOW }
      "poly" { Drawing::DrawPoly $Frame $VP $tmplist \
               $Current(Color) $Current(Width) $Current(Line) $Current(Pattern) $Current(Fill) $Current(Info) VERTEXFOLLOW }
      "rect" { Drawing::DrawRect $Frame $VP $tmplist \

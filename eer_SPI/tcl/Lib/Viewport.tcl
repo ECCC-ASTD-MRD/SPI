@@ -2725,12 +2725,15 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
                projcam configure $Frame -up $cam(Up)
             }
 
+            #----- TODO PrintProc
+#            puts stderr "\{ $Map(Lat) $Map(Lon) $cam(Lens) \{$cam(From)\} \{$cam(To)\} \{$cam(Up)\} \}"
+
             #----- Rotate to new incremental position
             projection configure $Frame -location $Map(Lat) $Map(Lon)
             Page::Update $Frame
 
-            #----- Get the time
 
+            #----- Get the time
             set t [clock click -milliseconds]
             if { [set dt [expr double($t-$pdt)]]>0 } {
 
@@ -2741,7 +2744,6 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
             }
 
             #----- check if we should continue
-
             update
             if { ![projection is $Frame] || $Map(Grabbed)>$t0 } {
                break;

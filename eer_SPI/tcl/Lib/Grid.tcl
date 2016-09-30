@@ -53,7 +53,7 @@ namespace eval Grid {
    set Param(ResM)     10000                                                     ;# Grid resolution in meters
    set Param(ResMs)    { 1 5 10 100 1000 2000 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
    set Param(ResLL)    0.1                                                       ;# Grid resolution in degree
-   set Param(ResLLs)   { 0.01 0.1 0.5 1 2 }                                      ;# List of predefined resolution in degrees
+   set Param(ResLLs)   { 0.01 0.1 0.5 0.25 1 2 }                                 ;# List of predefined resolution in degrees
    set Param(NI)       0                                                         ;# Number of gridpoint in I
    set Param(NJ)       0                                                         ;# Number of gridpoint in J
    set Param(Lat0)     0                                                         ;# Latitude of first bbox corner
@@ -65,7 +65,7 @@ namespace eval Grid {
    set Param(PGSM)     ""                                                        ;# Grid description for PGSM
    set Param(GridInfo) ""                                                        ;# General grid description
    set Param(NIJWarn)  4000000                                                   ;# Warning grid size 2000x2000
-   set Param(SizeWarn) [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mdoe
+   set Param(SizeWarn) [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
    set Param(LL2M)     [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
 
    set Lbl(Grid)       { "Type de grille    " "Grid type         " }
@@ -76,7 +76,7 @@ namespace eval Grid {
    set Lbl(Yes)        { "Oui" "Yes" }
    set Lbl(No)         { "Non" "No" }
 
-   set Msg(Size)       { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
+   set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
    
    set Bubble(Types)     { "Sélection du type de grille:\n\tPS  : Polaire stéréographique\n\tPS_N: Polaire stéréographique centrée au pôle nord\n\tPS_S: Polaire stéréographique centrée au pôle sud\n\tLL  : LatLon traditionelle (GRTYP=L)\n\tLZ  : LatLon utilisant des ^^ << (GRTYP:Z)\n\tUTM : Universelle mercator transveralle (GRTYP=Z)"
                            "Grid type selection:\n\tPS  : Polar stereographic\n\tPS_N: Polar stereographic centered on north pole\n\tPS_S: Polar stereographic centered on south pole\n\tLL  : LatLon traditionnal (GRTYP=L)\n\tLZ  : LatLon using ^^ << (GRTYP:Z)\n\tUTM : Universal transverse mercator (GRTYP=Z)" }
@@ -144,9 +144,9 @@ proc Grid::Window { Frame } {
       return
    }
 
-   Option::Create $Frame.type [lindex $Lbl(Grid) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame"
-   Option::Create $Frame.reskm  [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create"
-   Option::Create $Frame.resll  [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create"
+   Option::Create $Frame.type  [lindex $Lbl(Grid) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame"
+   Option::Create $Frame.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create"
+   Option::Create $Frame.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create"
    frame  $Frame.dim
       label $Frame.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
       entry $Frame.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5
@@ -452,15 +452,13 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
 
    #----- For latlon grid, check for global case
    if { $Param(Type)=="LZ" || $Param(Type)=="LL" } {
-      set center True
       if { [expr ($Param(NI)*$Param(ResLL))>=(360-$Param(ResLL))] } {
           set Param(Lon0) -180
           set Param(Lon1) 180
           set Param(Lat0) -90
           set Param(Lat1) 90
-          set Lat 0.0
-          set Lon 0.0
       } else {
+          set center True
           set Param(Lon0) 0
           set Param(Lon1) [expr $Param(ResLL)*$Param(NI)]
           set Param(Lat0) 0
