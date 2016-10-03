@@ -192,4 +192,19 @@ int        DataSpec_Incr(TDataSpec *Spec);
 TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List);
 void   Icon_Free(TIcon *Icon);
 
+static inline int DataSpec_ColorSet(Tcl_Interp *Interp,TDataSpec *Spec,double Value) {
+   
+   unsigned int idc=-1;
+   
+   if (Spec && Spec->MapAll && Spec->Map) {
+      VAL2COL(idc,Spec,Value);
+      if (Interp) {
+         CMap_PostscriptColor(Interp,Spec->Map,idc);
+      } else {
+         glColor4ub(Spec->Map->Color[idc][0],Spec->Map->Color[idc][1],Spec->Map->Color[idc][2],Spec->Map->Color[idc][3]*Spec->Alpha*0.01);
+      }
+   }
+   return(idc);
+}
+
 #endif

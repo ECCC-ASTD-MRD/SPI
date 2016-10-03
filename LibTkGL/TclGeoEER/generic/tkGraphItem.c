@@ -2380,14 +2380,7 @@ void GraphItem_Display2DContour(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
       while(list) {
          array=(T3DArray*)list->Data;
 
-         if (Data->Spec->MapAll) {
-            VAL2COL(c,Data->Spec,array->Value);
-            if (Interp) {
-               CMap_PostscriptColor(Interp,Data->Spec->Map,c);
-            } else {
-               glColor4ubv(Data->Spec->Map->Color[c]);
-            }
-         }
+         DataSpec_ColorSet(NULL,Data->Spec,array->Value);
          glBegin(GL_LINE_STRIP);
          for(c=0;c<array->Size;c++) {
             GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,array->Data[c],v);
@@ -2622,7 +2615,7 @@ void GraphItem_Display2DStream(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
 */
 void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *AxisX,TGraphAxis *AxisY,TGraphAxis *AxisZ,TData *Data,int X0,int Y0,int X1,int Y1) {
 
-   int            n,c,delta;
+   int            n,delta;
    char           buf[256];
    double         th,dx,dy,d;
    TList         *list;
@@ -2670,14 +2663,7 @@ void GraphItem_Display2DLabel(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Ax
          DataSpec_Format(Data->Spec,array->Value,buf);
          dx=Tk_TextWidth(Data->Spec->Font,buf,strlen(buf));
 
-         if (Data->Spec->MapAll) {
-            VAL2COL(c,Data->Spec,array->Value);
-            if (Interp) {
-               CMap_PostscriptColor(Interp,Data->Spec->Map,c);
-            } else {
-               glColor4ubv(Data->Spec->Map->Color[c]);
-            }
-         }
+         DataSpec_ColorSet(NULL,Data->Spec,array->Value);
 
          /* Check if we need to caclulate this streamline. Will it be visible */
          GraphItem_VectorPlace(Data,AxisX,AxisY,AxisZ,X0,Y0,array->Data[0],p0);
@@ -2792,14 +2778,7 @@ void GraphItem_Display2DVector(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *A
             dir=-RAD2DEG(atan2(u,w));
          }
          if (len<=Data->Spec->Max && len>=Data->Spec->Min) {
-            if (Data->Spec->MapAll) {
-               VAL2COL(idx,Data->Spec,len);
-               if (Interp) {
-                  CMap_PostscriptColor(Interp,Data->Spec->Map,idx);
-               } else {
-                  glColor4ubv(Data->Spec->Map->Color[idx]);
-               }
-            }
+            DataSpec_ColorSet(NULL,Data->Spec,len);
 
             // Position vector
             pin[0]=i;

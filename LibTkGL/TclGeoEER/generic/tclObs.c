@@ -1887,8 +1887,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
    Vect3d pix[2];
    Coord  co;
-   double val;
-   int    i,idx;
+   int    i;
 
    glLineWidth(Obs->Spec->Width+1);
    glEnable(GL_DEPTH_TEST);
@@ -1939,16 +1938,14 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       for (i=0;i<Obs->Loc->Nb;i++) {
          if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
             continue;
-         }
-         val=((float*)Obs->Def->Data[0])[i];
-         VAL2COL(idx,Obs->Spec,val);
+         }         
+         DataSpec_ColorSet(NULL,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
          co.Lat=Obs->Loc->Coord[i].Lat;
          co.Lon=Obs->Loc->Coord[i].Lon;
          co.Elev=0.0;
 
          Proj->Type->Project(Proj,(GeoVect*)&Obs->Loc->Coord[i],(GeoVect*)&pix[0],1);
          Proj->Type->Project(Proj,(GeoVect*)&co,(GeoVect*)&pix[1],1);
-         glColor4ubv(Obs->Spec->Map->Color[idx]);
          glVertex3dv(pix[0]);
          glVertex3dv(pix[1]);
       }
@@ -1961,11 +1958,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
       }
-      val=((float*)Obs->Def->Data[0])[i];
-      VAL2COL(idx,Obs->Spec,val);
+      DataSpec_ColorSet(NULL,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
 
       Proj->Type->Project(Proj,(GeoVect*)&Obs->Loc->Coord[i],(GeoVect*)&pix[0],1);
-      glColor4ubv(Obs->Spec->Map->Color[idx]);
       glVertex3dv(pix[0]);
    }
    glEnd();
@@ -2176,7 +2171,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 */
 void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
 
-   int i,idc;
+   int i;
    Vect3d pix;
 
    extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
@@ -2208,14 +2203,7 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
       }
-      if (Obs->Spec->MapAll && Obs->Spec->Map) {
-         VAL2COL(idc,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
-         if (Interp) {
-            CMap_PostscriptColor(Interp,Obs->Spec->Map,idc);
-         } else {
-            glColor4ubv(Obs->Spec->Map->Color[idc]);
-         }
-      }
+      DataSpec_ColorSet(Interp,Obs->Spec,((float*)Obs->Def->Data[0])[i]);
 
       if (Obs->Spec->Flat) {
          glPushName(i);

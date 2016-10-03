@@ -379,6 +379,35 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *
  *----------------------------------------------------------------------------
 */
+
+float* FSTD_CkeckIndex(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
+   
+   Tcl_Obj *item=NULL;
+   float   *index=NULL;
+   
+   // Check for index array
+   if (*Obj) {
+      item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0);
+      if (!item) {
+         // Got an empty variable, will fill it with index
+         if ((item=Tcl_NewByteArrayObj(NULL,Size*sizeof(float)))) {
+            index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+            index[0]=DEF_INDEX_EMPTY;
+            *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+             Tcl_IncrRefCount(*Obj);
+         } else {
+            *Obj=NULL;
+            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+         }
+      } else {
+         // Got a filled variable, will use it's index
+         *Obj=NULL;
+         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+      }
+   }
+   return(index);
+}
+
 int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,halo,key,n,m,k,compress=0,nid,pnid;
@@ -807,14 +836,20 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
 
                   // Check for index array
+//                  index=FSTD_CkeckIndex(&obj,&item,field0->Def->NIJ*1024*);
+                  
                   if (obj) {
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
                      if (!item) {
                         // Got an empty variable, will fill it with index
-                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float));
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                        index[0]=DEF_INDEX_EMPTY;
-                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float)))) {  
+                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                           index[0]=DEF_INDEX_EMPTY;
+                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                        } else {
+                           obj=NULL;
+                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+                        }
                      } else {
                         // Got a filled variable, will use it's index
                         obj=NULL;
@@ -905,11 +940,15 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
                      if (!item) {
                         // Got an empty variable, will fill it with index
-                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*2*sizeof(float));
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                        index[0]=DEF_INDEX_EMPTY;
-                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                        Tcl_IncrRefCount(obj);
+                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*2*sizeof(float)))) {
+                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                           index[0]=DEF_INDEX_EMPTY;
+                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                           Tcl_IncrRefCount(obj);
+                        } else {
+                           obj=NULL;
+                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+                        }
                      } else {
                         // Got a filled variable, will use it's index
                         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
@@ -954,10 +993,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
                      if (!item) {
                         // Got an empty variable, will fill it with index
-                        item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float));
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                        index[0]=DEF_INDEX_EMPTY;
-                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float)))) {
+                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                           index[0]=DEF_INDEX_EMPTY;
+                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                        } else {
+                           obj=NULL;
+                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+                        }
                      } else {
                         // Got a filled variable, will use it's index
                         obj=NULL;
@@ -1056,10 +1099,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
                   if (!item) {
                      // Got an empty variable, will fill it with index
-                     item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*100*sizeof(float));
-                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                     index[0]=DEF_INDEX_EMPTY;
-                     obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                     if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*100*sizeof(float)))) {
+                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+                        index[0]=DEF_INDEX_EMPTY;
+                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
+                     } else {
+                        obj=NULL;
+                        App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+                     }
                   } else {
                      // Got a filled variable, will use it's index
                      obj=NULL;

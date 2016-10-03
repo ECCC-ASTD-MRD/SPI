@@ -452,7 +452,6 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int      c=0;
    char     buf[256];
    TList   *list;
    T3DArray *array;
@@ -518,12 +517,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
             glFeedbackInit(array->Size*6,GL_2D);
 
          if (Field->Spec->MapAll) {
-            VAL2COL(c,Field->Spec,array->Value);
-            if (Interp) {
-               CMap_PostscriptColor(Interp,Field->Spec->Map,c);
-            } else {
-               glColor4ubv(Field->Spec->Map->Color[c]);
-            }
+            DataSpec_ColorSet(Interp,Field->Spec,array->Value);
          }
                 
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,Field->GRef->Grid[0]=='M'?GL_LINES:GL_LINE_STRIP,array->Size,0,NULL,NULL);
@@ -583,7 +577,7 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
 */
 void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int  n,c,delta;
+   int  n,delta;
    char buf[256];
    double th,dx,dy,dnx,dny,d;
    TList *list;
@@ -648,12 +642,7 @@ void Data_RenderLabel(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
          dx=Tk_TextWidth(Field->Spec->Font,buf,strlen(buf));
 
          if (Field->Spec->MapAll) {
-            VAL2COL(c,Field->Spec,array->Value);
-            if (Interp) {
-               CMap_PostscriptColor(Interp,Field->Spec->Map,c);
-            } else {
-               glColor4ubv(Field->Spec->Map->Color[c]);
-            }
+            DataSpec_ColorSet(Interp,Field->Spec,array->Value);
          }
 
          /* Check if we need to caclulate this streamline. Will it be visible */
@@ -1847,14 +1836,13 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
  *
  *----------------------------------------------------------------------------
 */
-
 void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj) {
 
    float   size,theta,thetad,*ll,*xy;
    double  len,dir,u,v,uv,w,i0,j0,i1,j1;
    Vect3d  pix;
    Coord   coo;
-   int     n=0,mem,i,j,idx,idc,dz,dn,nn,mask;
+   int     n=0,mem,i,j,idx,dz,dn,nn,mask;
    char    buf[32],grtyp,*uu,*vv,*mm;
 
    if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
@@ -1914,14 +1902,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                      /*If the speed if between the defined range*/
                      Def_GetMod(Field->Def,idx,len);
                      if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                        if (Field->Spec->MapAll && Field->Spec->Map) {
-                           VAL2COL(idc,Field->Spec,len);
-                           if (Interp) {
-                              CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                           } else {
-                              glColor4ubv(Field->Spec->Map->Color[idc]);
-                           }
-                        }
+                        DataSpec_ColorSet(Interp,Field->Spec,len);
 
                         /*Get the components*/
                         Def_Get(Field->Def,0,idx,u);
@@ -1960,14 +1941,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   Def_GetMod(Field->Def,idx,len);
                   Field->GRef->Project(Field->GRef,i,j,&coo.Lat,&coo.Lon,1,1);
                   if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                     if (Field->Spec->MapAll && Field->Spec->Map) {
-                        VAL2COL(idc,Field->Spec,len);
-                        if (Interp) {
-                           CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                        } else {
-                           glColor4ubv(Field->Spec->Map->Color[idc]);
-                        }
-                     }
+                     DataSpec_ColorSet(Interp,Field->Spec,len);
+                     
                      Def_Get(Field->Def,0,idx,u);
                      if (Field->Def->Data[1]) {
                         Def_Get(Field->Def,1,idx,v);
@@ -2000,14 +1975,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   
                      if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
                         if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                           if (Field->Spec->MapAll && Field->Spec->Map) {
-                              VAL2COL(idc,Field->Spec,len);
-                              if (Interp) {
-                                 CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                              } else {
-                                 glColor4ubv(Field->Spec->Map->Color[idc]);
-                              }
-                           }
+                           DataSpec_ColorSet(Interp,Field->Spec,len);
                            size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                            if (Interp) glFeedbackInit(256,GL_2D);
                            Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
@@ -2025,14 +1993,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   
                      if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
                         if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
-                           if (Field->Spec->MapAll && Field->Spec->Map) {
-                              VAL2COL(idc,Field->Spec,len);
-                              if (Interp) {
-                                 CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                              } else {
-                                 glColor4ubv(Field->Spec->Map->Color[idc]);
-                              }
-                           }
+                           DataSpec_ColorSet(Interp,Field->Spec,len);
                            size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                            if (Interp) glFeedbackInit(256,GL_2D);
                            Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,coo.Lat,coo.Lon,ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
@@ -2151,14 +2112,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 
          while (dn--) {
             if (xy[dn+nn]<=Field->Spec->Max && xy[dn+nn]>=Field->Spec->Min) {
-               if (Field->Spec->MapAll && Field->Spec->Map) {
-                  VAL2COL(idc,Field->Spec,xy[dn+nn]);
-                  if (Interp) {
-                     CMap_PostscriptColor(Interp,Field->Spec->Map,idc);
-                  } else {
-                     glColor4ubv(Field->Spec->Map->Color[idc]);
-                  }
-               }
+               DataSpec_ColorSet(Interp,Field->Spec,xy[dn+nn]);
                size=VP->Ratio*VECTORSIZE(Field->Spec,xy[dn+nn]);
                dir=(!Field->Def->Data[1] || (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE))?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
                if (Interp) glFeedbackInit(256,GL_2D);
@@ -2198,7 +2152,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 */
 int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int i,idx,len;
+   int i,len;
    TList  *list,*end;
    T3DArray *array;
 
@@ -2261,8 +2215,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
             array=(T3DArray*)list->Data;
 
-            VAL2COL(idx,Field->Spec,array->Value);
-            glColor4ubv(Field->Spec->Map->Color[idx]);
+            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);
@@ -2276,8 +2229,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
             array=(T3DArray*)list->Data;
 
-            VAL2COL(idx,Field->Spec,array->Value);
-            glColor4ubv(Field->Spec->Map->Color[idx]);
+            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);
@@ -2292,8 +2244,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          while(list) {
             array=(T3DArray*)list->Data;
 
-            VAL2COL(idx,Field->Spec,array->Value);
-            glColor4ubv(Field->Spec->Map->Color[idx]);
+            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);

@@ -1404,7 +1404,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
       load+=(proj->Loading=proj->Loading<0?0:proj->Loading);
 
       // Force update if rendering within PBuffer
-      if (GLRender->TRCon) {
+      if (GLRender->Wait || GLRender->TRCon) {
 
          // Wait for everything to be loaded
          sec=clock();

@@ -242,8 +242,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-usethreads",NULL };
-   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,USETHREADS };
+   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-wait","-usethreads",NULL };
+   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,WAIT,USETHREADS };
 
    Tcl_ResetResult(Interp);
 
@@ -416,7 +416,15 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             }
             break;
 
-         case USETHREADS:
+         case WAIT:
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->Wait));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->Wait);
+            }
+            break;
+
+        case USETHREADS:
             if (Objc==2) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(GLRender->UseThreads));
             } else {
@@ -2032,6 +2040,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Set             = 1;
    GLRender->Soft            = 0;
    GLRender->UseThreads      = 1;
+   GLRender->Wait            = False;
    GLRender->Delay           = GL_STOP;
    GLRender->DelayProc       = NULL;
    GLRender->Shaders         = NULL;

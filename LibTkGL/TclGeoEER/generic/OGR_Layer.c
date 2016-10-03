@@ -2962,7 +2962,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       }
    }
    /*Read in data in another thread*/
-   g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->XBatch || GLRender->TRCon)?0:1);
+   g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->Wait || GLRender->XBatch || GLRender->TRCon)?0:1);
 
    // A feature might need refresh
    if (Layer->CFeature!=-1 && Layer->CFeature<Layer->GFeature) {

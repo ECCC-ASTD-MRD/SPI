@@ -375,7 +375,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
    // Do we need transparency
-   if (Field->Spec->Map->Alpha || (Field->Spec->Alpha<100 && !Field->Spec->RenderVector>ARROW)) {
+   if (Field->Spec->Map->Alpha || (Field->Spec->Alpha<100 && !(Field->Spec->RenderVector>ARROW))) {
       glEnable(GL_BLEND);
    }
    glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);
@@ -383,8 +383,13 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    min=Field->Spec->Min;
    rng=Field->Spec->Max-Field->Spec->Min;
    pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
-   idxk=FSIZE2D(Field->Def)*Field->Def->Level;
-   Def_PointerMode(Field->Def,idxk,ptr);
+   if (Field->GRef->Grid[0]=='U') {
+      idxk=FSIZE2D(Field->SDef[0])*Field->Def->Level+Field->Def->Idx;
+     Def_PointerMode(Field->SDef[0],idxk,ptr);
+   } else {
+      idxk=FSIZE2D(Field->Def)*Field->Def->Level;
+      Def_PointerMode(Field->Def,idxk,ptr);
+   }
 
 //   prog=GLShader_Load("/home/afsr/005/eer_Tools/LibTkGL/TclData","FieldTex");
    prog=GLRender->Prog[PROG_FIELDTEX];

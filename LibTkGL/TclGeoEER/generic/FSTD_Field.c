@@ -503,11 +503,11 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
             idx=j*Field->Def->NI+i;
             coord.Elev=0.0;
+            if (gz) coord.Elev=gz[idx];
 
             // Reproject coordinates if needed
             if (Field->GRef->Grid[1]=='Z') {
                Field->GRef->Project(Field->GRef,i,j,&coord.Lat,&coord.Lon,1,1);
-               if (gz) coord.Elev=gz[idx];
             } else if (Field->GRef->Grid[1]=='Y') {
                Field->GRef->Project(Field->GRef,i,j,&coord.Lat,&coord.Lon,1,1);
             } else {

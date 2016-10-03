@@ -152,6 +152,7 @@ typedef struct GLParams  {
    int    ShaderAvailable;              // Est-ce que l'implementation est capable de Shader
    char           Soft;                 // Type de Renderer
    int            UseThreads;           // Use threads
+   int            Wait;                 // Wait on all data
    int            Delay;                // Delai des frames
    Tcl_Obj       *DelayProc;            // Callback for delayed frames
    GLboolean      Ext[32];              // Liste des extensions
