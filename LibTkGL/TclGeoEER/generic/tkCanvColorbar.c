@@ -1064,7 +1064,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
                }
                COL2VAL(idx,Spec,value);
 
-               if (txt>=CB->tkm.linespace) {
+               if (txt>=CB->tkm.linespace<<1) {
 
                   DataSpec_Format(Spec,VAL2SPEC(Spec,value),buf);
 
