@@ -95,7 +95,7 @@
 }
 
 enum GLExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
-enum GLVendor   { NVIDIA=0, ATI=1, MESA=2 };
+enum GLVendor   { NVIDIA=0, ATI=1, VIRTUALGL=2, MESA=3 };
 
 // Structure pour OpenGL
 typedef struct GLParams  {

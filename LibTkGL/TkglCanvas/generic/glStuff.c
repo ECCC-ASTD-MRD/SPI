@@ -2103,6 +2103,9 @@ int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
    } else if (strstr(vendor,"ATI")) {
       GLRender->Vendor=ATI;
       GLRender->Soft=0;
+   } else if (strstr(vendor,"VirtualGL")) {
+      GLRender->Vendor=VIRTUALGL;
+      GLRender->Soft=0;
    } else {
       GLRender->Vendor=MESA;
       GLRender->Soft=1;
