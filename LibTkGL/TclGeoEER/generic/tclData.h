@@ -115,39 +115,37 @@ typedef struct TData {
 
 #include "Vertex.h"
 
-int      Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type);
+TDataVector  *Data_VectorTableCheck(char *Var,int *Idx);
+TDataVector  *Data_VectorTableAdd(void);
+int           Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type);
 
-void     Data_FromString(char *String,TDef *Def,int Comp,int Idx);
-Tcl_Obj *Data_Val2Obj(TDef *Def,double Val);
-
-void     Data_Clean(TData *Data,int Map,int Pos,int Seg);
-void     Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
-int      Data_Free(TData *Field);
-int      Data_FreeHash(Tcl_Interp *Interp,char *Name);
-TData*   Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias);
-int      Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC,int Comp);
-TData*   Data_Get(char *Name);
-TData*   Data_GetShell(Tcl_Interp *Interp,char *Name);
-int      Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List);
-Tcl_Obj* Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
-TData*   Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDef_Type Type);
-Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDef *Def,int X,int Y);
-int      Data_ValSet(TData *Field,double I,double J,double Val);
-void     Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip);
-int      Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *List);
-int      Data_Within(TData *Field,float Val);
-int      Data_WithinNb(TData *Field);
-void     Data_Wipe();
-void     Data_PreInit(TData *Data);
-int      Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
-int      Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
-
-void     Data_GetStat(TData *Field);
-void     Data_StatFree(TDataStat *Stat);
-
-TDataVector *Data_VectorTableCheck(char *Var,int *Idx);
-TDataVector *Data_VectorTableAdd(void);
-
-int       Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
+void          Data_FromString(char *String,TDef *Def,int Comp,int Idx);
+void          Data_Clean(TData *Data,int Map,int Pos,int Seg);
+void          Data_CleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
+int           Data_Free(TData *Field);
+int           Data_FreeHash(Tcl_Interp *Interp,char *Name);
+TData*        Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias);
+int           Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,int NbF,int NbC,int Comp);
+TData*        Data_Get(char *Name);
+TData*        Data_GetShell(Tcl_Interp *Interp,char *Name);
+int           Data_Sort(Tcl_Interp *Interp,Tcl_Obj *List);
+Tcl_Obj*      Data_HighLow(Tcl_Interp *Interp,TData *Field,int High,int Tile);
+TData*        Data_Valid(Tcl_Interp *Interp,char *Name,int NI,int NJ,int NK,int Dim,TDef_Type Type);
+Tcl_Obj*      Data_AppendValueObj(Tcl_Interp *Interp,TDef *Def,int X,int Y);
+Tcl_Obj *     Data_Val2Obj(TDef *Def,double Val);
+int           Data_ValSet(TData *Field,double I,double J,double Val);
+void          Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip);
+int           Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *List);
+int           Data_Within(TData *Field,float Val);
+int           Data_WithinNb(TData *Field);
+void          Data_Wipe();
+void          Data_PreInit(TData *Data);
+int           Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+int           Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+float*        Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size);
+unsigned long Data_IndexResize(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size);
+void          Data_GetStat(TData *Field);
+void          Data_StatFree(TDataStat *Stat);
+int           Data_DefSort(Tcl_Interp *Interp,Tcl_Obj *List);
 
 #endif

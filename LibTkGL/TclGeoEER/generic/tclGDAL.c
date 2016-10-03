@@ -105,7 +105,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    int            width=0,height=0,space=0,full=1,imode;
    float         *index=NULL;
    
-   Tcl_Obj       *obj,*sub,*item=NULL;
+   Tcl_Obj       *obj,*sub;
    int            idx,nidx,idxfi[4],i,k,n,ni,nj,nk,id,code,x0,y0,x1,y1,bd,m,npos;
    double         c0,c1,a;
    TData         *data;
@@ -359,20 +359,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
                
                // Check for index array
-               if (obj) {
-                  item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-                  if (!item) {
-                     // Got an empty variable, will fill it with index
-                     item=Tcl_NewByteArrayObj(NULL,band->Def->NIJ*100*sizeof(float));
-                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                     index[0]=DEF_INDEX_EMPTY;
-                     obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                  } else {
-                     // Got a filled variable, will use it's index
-                     obj=NULL;
-                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);                        
-                  }
-               }
+               index=Data_IndexInit(Interp,&obj,band->Def->NIJ*100);
 
                if (!(nk=Def_GridInterpConservative(band->GRef,band->Def,comb->GRef,comb->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
@@ -380,7 +367,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                }
                
                // Make index object persistent and of the right size
-               if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
+               Data_IndexResize(Interp,&obj,nk);
                
             } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
                if (Objc<5 || Objc>7) {

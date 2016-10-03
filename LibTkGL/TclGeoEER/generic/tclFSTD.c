@@ -380,34 +380,6 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
  *----------------------------------------------------------------------------
 */
 
-float* FSTD_CkeckIndex(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
-   
-   Tcl_Obj *item=NULL;
-   float   *index=NULL;
-   
-   // Check for index array
-   if (*Obj) {
-      item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0);
-      if (!item) {
-         // Got an empty variable, will fill it with index
-         if ((item=Tcl_NewByteArrayObj(NULL,Size*sizeof(float)))) {
-            index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-            index[0]=DEF_INDEX_EMPTY;
-            *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
-             Tcl_IncrRefCount(*Obj);
-         } else {
-            *Obj=NULL;
-            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
-         }
-      } else {
-         // Got a filled variable, will use it's index
-         *Obj=NULL;
-         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-      }
-   }
-   return(index);
-}
-
 int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,halo,key,n,m,k,compress=0,nid,pnid;
@@ -422,7 +394,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    OGR_Layer   *layer;
    GDAL_Band   *band,*bandt;
    T3DModel    *model;
-   Tcl_Obj     *obj,*item=NULL;
+   Tcl_Obj     *obj;
    TRPNFile    *file;
    TData       *field0,*field1,*fieldt;
    TDef_Type   type;
@@ -718,7 +690,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_WrongNumArgs(Interp,2,Objv,"fld { fldfrom1 fldfrom2 ... } { lat lon lat lon ... ... } [speed/dir]");
             return TCL_ERROR;
          } else {
-            Tcl_Obj *obj;
             TData  **fields=NULL;
             double  *lat=NULL,*lon=NULL;
             int      nbc,nbf,nc,ncc;
@@ -836,26 +807,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
 
                   // Check for index array
-//                  index=FSTD_CkeckIndex(&obj,&item,field0->Def->NIJ*1024*);
-                  
-                  if (obj) {
-                     item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-                     if (!item) {
-                        // Got an empty variable, will fill it with index
-                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float)))) {  
-                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                           index[0]=DEF_INDEX_EMPTY;
-                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                        } else {
-                           obj=NULL;
-                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
-                        }
-                     } else {
-                        // Got a filled variable, will use it's index
-                        obj=NULL;
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                     }
-                  }
+                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*1024);
 
                   // Check compatibility between source and destination
                   if (!Def_Compat(field0->Def,field1->Def)) {
@@ -871,7 +823,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
 
                   // Make index object persistent and of the right size
-                  if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
+                  Data_IndexResize(Interp,&obj,nk);
 
                } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
                   if (Objc<5 || Objc>7) {
@@ -934,26 +886,10 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   // Check for index array
                   index=NULL;
                   if (Objc==6) {
-
+                     // Check for index array
                      obj=Objv[5];
-                     item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-
-                     if (!item) {
-                        // Got an empty variable, will fill it with index
-                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*2*sizeof(float)))) {
-                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                           index[0]=DEF_INDEX_EMPTY;
-                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                           Tcl_IncrRefCount(obj);
-                        } else {
-                           obj=NULL;
-                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
-                        }
-                     } else {
-                        // Got a filled variable, will use it's index
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                     }
-                  }
+                     index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*2);
+                   }
                   ok=FSTD_FieldGridInterpolate(Interp,field0,field1,imode,index);
                }
                if (ok==TCL_ERROR) break;
@@ -989,24 +925,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
 
                   // Check for index array
-                  if (obj) {
-                     item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-                     if (!item) {
-                        // Got an empty variable, will fill it with index
-                        if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*1024*sizeof(float)))) {
-                           index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                           index[0]=DEF_INDEX_EMPTY;
-                           obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                        } else {
-                           obj=NULL;
-                           App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
-                        }
-                     } else {
-                        // Got a filled variable, will use it's index
-                        obj=NULL;
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                     }
-                  }
+                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*1024);
 
                   if (!(nk=Def_GridInterpConservative(field0->GRef,field0->Def,band->GRef,band->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
@@ -1015,8 +934,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
 
                   // Make index object persistent and of the right size
-                  if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
-
+                  Data_IndexResize(Interp,&obj,nk);
+                  
                } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
                   if (Objc<5 || Objc>7) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
@@ -1095,24 +1014,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                }
 
                // Check for index array
-               if (obj) {
-                  item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-                  if (!item) {
-                     // Got an empty variable, will fill it with index
-                     if ((item=Tcl_NewByteArrayObj(NULL,field0->Def->NIJ*100*sizeof(float)))) {
-                        index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                        index[0]=DEF_INDEX_EMPTY;
-                        obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-                     } else {
-                        obj=NULL;
-                        App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
-                     }
-                  } else {
-                     // Got a filled variable, will use it's index
-                     obj=NULL;
-                     index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-                  }
-               }
+               index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
 
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
@@ -1121,7 +1023,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                }
 
                // Make index object persistent and of the right size
-               if (obj) { Tcl_SetByteArrayLength(item,nk*sizeof(float)); Tcl_IncrRefCount(obj); }
+               Data_IndexResize(Interp,&obj,nk);
 
             } else if ((model=Model_Get(Tcl_GetString(Objv[3])))) {
 

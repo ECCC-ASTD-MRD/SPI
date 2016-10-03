@@ -3386,6 +3386,81 @@ Tcl_Obj* Data_AppendValueObj(Tcl_Interp *Interp,TDef *Def,int X,int Y) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Data_IndexInit>
+ * Creation : Octobre 2016 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Créer ou récupérer un index d'une variable Tcl
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Obj>     : Pointeur sur objet TCL contenant le nom de la variable
+ *  <Size>    : Dimension de l'index
+ *
+ * Retour     :
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
+   
+   Tcl_Obj *item=NULL;
+   float   *index=NULL;
+   
+   // Check for index array
+   if (*Obj) {
+      item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0);
+      if (!item) {
+         // Got an empty variable, will fill it with index
+         if ((item=Tcl_NewByteArrayObj(NULL,Size*sizeof(float)))) {
+            index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+            index[0]=DEF_INDEX_EMPTY;
+            *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+             Tcl_IncrRefCount(*Obj);
+         } else {
+            *Obj=NULL;
+            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+         }
+      } else {
+         // Got a filled variable, will use it's index
+         *Obj=NULL;
+         index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
+      }
+   }
+   return(index);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Data_IndexResize>
+ * Creation : Octobre 2016 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Redimensionner un index d'une variable Tcl
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL.
+ *  <Obj>     : Pointeur sur objet TCL contenant le nom de la variable
+ *  <Size>    : Dimension de l'index
+ *
+ * Retour     :
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+unsigned long Data_IndexResize(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
+
+   Tcl_Obj *item=NULL;
+
+   if (*Obj) {
+      if ((item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0))) {
+         Tcl_SetByteArrayLength(item,Size*sizeof(float));
+         return(Size);
+      }
+   }
+   return(0);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_Within>
  * Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
  *
