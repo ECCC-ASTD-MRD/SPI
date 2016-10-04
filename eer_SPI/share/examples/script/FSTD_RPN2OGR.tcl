@@ -78,7 +78,8 @@ proc RPN2OGR::Run { } {
 
    set n 0
    set outs {}
-   
+   set kmlfields {}
+
    fstdfield ip1mode NEW
    colormap create MAP -file $Param(Map)
 
@@ -88,13 +89,13 @@ proc RPN2OGR::Run { } {
    }
    
    foreach file $Param(Files) {
-      Log::Print INFO "Processign file $file"
+      Log::Print INFO "Processing file $file"
 
       fstdfile open FILEIN read $file
 
       foreach datev [fstdfile info FILEIN DATEV] {
 
-         set fields {}
+         set fields    {}
          set date [clock format $datev -format "%Y%m%d" -gmt True]
          set time [clock format $datev -format "%H%M" -gmt True]
          Log::Print INFO "   Found date $date $time"
@@ -153,7 +154,7 @@ proc RPN2OGR::Run { } {
       fstdfile close FILEIN
    }
 
-   if { $Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" } {
+   if { [llength $kmlfields] && $Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" } {
       Export::Vector::Export $Param(Out) $Param(Format) $kmlfields
       eval fstdfield free $kmlfields
       set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]
@@ -164,6 +165,10 @@ proc RPN2OGR::Run { } {
      Log::Print INFO "Zipping results to $name"
      eval exec zip -j -r $name.zip $outs
      eval file delete -force $outs
+   }
+   
+   if { ![llength $kmlfields] } {
+      Log::Print ERROR "No field(s) found"
    }
 }
 

@@ -53,7 +53,7 @@ namespace eval Grid {
    set Param(ResM)     10000                                                     ;# Grid resolution in meters
    set Param(ResMs)    { 1 5 10 100 1000 2000 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
    set Param(ResLL)    0.1                                                       ;# Grid resolution in degree
-   set Param(ResLLs)   { 0.01 0.1 0.5 0.25 1 2 }                                 ;# List of predefined resolution in degrees
+   set Param(ResLLs)   { 0.01 0.1 0.25 0.5 1 2 }                                 ;# List of predefined resolution in degrees
    set Param(NI)       0                                                         ;# Number of gridpoint in I
    set Param(NJ)       0                                                         ;# Number of gridpoint in J
    set Param(Lat0)     0                                                         ;# Latitude of first bbox corner
