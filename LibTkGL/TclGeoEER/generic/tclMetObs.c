@@ -2003,7 +2003,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
    TMetLoc      *loc;
    TMetElem     *elem;
-   TMetElemData *data,*cdata;
+   TMetElemData *data;
    TDataSpec    *spec;
    Tcl_Obj      *obj;
    int           ib,ia,io;
@@ -2054,9 +2054,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    if (Obs->Model->Elev) {
       glEnable(GL_DEPTH_TEST);
    }
-
-   io=ia=ib=0;
-   data=cdata=NULL;
 
    // Initialize rendering parameters per model items
    min[0]=min[1]=max[0]=max[1]=0;n=0;
@@ -2265,8 +2262,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            
                            // Get coordinates if per sample
                            if (clat!=-1 && clon!=-1) {
-                              co.Lat=MetObs_GetData(cdata,clat,loc->Grid[0]?0:v,t)+dlat;
-                              co.Lon=MetObs_GetData(cdata,clon,loc->Grid[0]?0:v,t)+dlon;
+                              co.Lat=MetObs_GetData(data,clat,loc->Grid[0]?0:v,t)+dlat;
+                              co.Lon=MetObs_GetData(data,clon,loc->Grid[0]?0:v,t)+dlon;
                            }
                            
                            if (!Projection_Pixel(Proj,VP,co,pix)) {
