@@ -789,19 +789,21 @@ int Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
 
    TGeoRef *ref;
    double   i,j;
-   int      valid=0;
+   int      valid=0,s=0;
    
    if ((ref=Proj->Ref)) {
 
-      /* Recuperer les parametres de deformations */
+      // Recuperer les parametres de deformation
       switch(ref->Grid[0]) {
+         case 'W':
+            s=ref->NX*(ref->NY-1);
          case 'Z':
             GeoRef_Expand(ref);
             Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
-            Proj->LJ=ref->AY[ref->Y1]-ref->AY[ref->Y0];
+            Proj->LJ=ref->AY[ref->Y1+s]-ref->AY[ref->Y0];
             valid=1;
             break;
-
+            
          case 'X':
          case 'Y':
             valid=0;
@@ -854,15 +856,18 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
    GeoVect *out;
    Coord    loc;
    double   d,r;
-   int      s;
+   int      s,ds;
    long     n,e=0;
 
    out=(Pix?Pix:Loc);
    r=Proj->Scale*Proj->ZFactor;
+   d=Proj->L*0.5;
 
    if (!(ref=Proj->Ref))
       return(0);
-
+ 
+   ds=ref->Grid[0]=='W'?ref->NX:1;
+   
    for(n=0;n<ABS(Nb);n++) {
 
       loc.Lat=Loc[n].C.Lat;
@@ -881,6 +886,7 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
          out[n].V[1]=loc.Lat;
       }
 
+      // Apply grid expansion
       if (ref->AX && ref->AY) {
          s=floor(out[n].V[0]);
          if (out[n].V[0]<0) {
@@ -893,23 +899,22 @@ unsigned long Grid_Project(const Projection* restrict const Proj,GeoVect *Loc,Ge
          out[n].V[0]-=ref->AX[ref->X0];
 
          s=floor(out[n].V[1]);
+
          if (out[n].V[1]<0) {
             out[n].V[1]=ref->AY[0]+out[n].V[1]*(ref->AY[1]-ref->AY[0]);
          } else if (out[n].V[1]>ref->Y1) {
             out[n].V[1]=ref->AY[ref->Y1]+(out[n].V[1]-ref->Y1)*(ref->AY[ref->Y1]-ref->AY[ref->Y1-1]);
          } else {
-            out[n].V[1]=ILIN(ref->AY[s],ref->AY[s+1],(out[n].V[1]-s));
+            out[n].V[1]=ILIN(ref->AY[s*ds],ref->AY[(s+1)*ds],(out[n].V[1]-s));
          }
          out[n].V[1]-=ref->AY[ref->Y0];
       }
-
-      d=Proj->L*0.5;
 
       out[n].V[0]=(out[n].V[0]-ref->X0)/d-Proj->LI;
       out[n].V[1]=(out[n].V[1]-ref->Y0)/d-Proj->LJ;
       out[n].V[2]=(loc.Elev==0.0)?1.0:1.0+loc.Elev*r;
 
-      /*Si en dehors du domain*/
+      // Si en dehors du domain
       if (Nb>0 && (out[n].V[0]<-Proj->LI || out[n].V[0]>Proj->LI || out[n].V[1]<-Proj->LJ || out[n].V[1]>Proj->LJ)) {
 //         out[e].V[2]=-999.0;
       } else {
@@ -943,7 +948,7 @@ int Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
    TGeoRef *ref;
    Vect3d   obj;
    double   x,y,d,depth=1.0;
-   int      s;
+   int      s,ds;
 
    Loc->Lat=-999.0;
    Loc->Lon=-999.0;
@@ -951,6 +956,8 @@ int Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
    if (!(ref=Proj->Ref))
       return(0);
 
+   ds=ref->Grid[0]=='W'?ref->NX:1;
+   
    gluUnProject(Pix[0],VP->Height-Pix[1],depth,VP->GLModR,VP->GLProj,VP->GLView,&obj[0],&obj[1],&obj[2]);
 
    if (Vect_InterPlane(VP->Cam->Basis,obj,1)) {
@@ -960,6 +967,7 @@ int Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
       x=(obj[0]+Proj->LI)*d+ref->X0;
       y=(obj[1]+Proj->LJ)*d+ref->Y0;
 
+      // Apply grid expansion
       if (ref->AX) {
          s=0;
          x=x+ref->AX[ref->X0];
@@ -972,9 +980,9 @@ int Grid_UnProject(ViewportItem *VP,Projection *Proj,Coord *Loc,Vect3d Pix) {
 
          s=0;
          y=y+ref->AY[ref->Y0];
-         while(s<=ref->Y1 && y>ref->AY[s]) s++;
+         while(s<=ref->Y1 && y>ref->AY[s*ds]) s++;
          if (s>0 && s<=ref->Y1) {
-            y=(y-ref->AY[s-1])/(ref->AY[s]-ref->AY[s-1])+s;
+            y=(y-ref->AY[(s-1)*ds])/(ref->AY[s*ds]-ref->AY[(s-1)*ds])+s;
          } else {
             y=0;
          }
