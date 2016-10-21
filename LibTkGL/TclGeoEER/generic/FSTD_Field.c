@@ -348,7 +348,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
 int FSTD_FieldReadMesh(TData *Field) {
 
    TRPNHeader *head=(TRPNHeader*)Field->Head;
-   int        key,ni,nj,nk,nijk=0;
+   int         key,ni,nj,nk,nijk=0;
 
    // !! -> NI==3
    if (!Field->GRef || Field->Def->NI<4 || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
@@ -417,14 +417,10 @@ int FSTD_FieldReadMesh(TData *Field) {
             FSTD_FieldReadVLevels(Field);
             break;
       }
-      FSTD_FileUnset(NULL,head->File);
-   }
+      FSTD_FileUnset(NULL,head->File);     
 
-   // Make sure longitude go from -180 - 180, unless WKT grid
-   if (Field->GRef->Grid[0]!='W') {
-      for(ni=0;ni<nijk;ni++) {
-         if (Field->GRef->AX[ni]>180) Field->GRef->AX[ni]-=360.0;
-      }
+      // Need to re-qualify to check AX order
+      GeoRef_Qualify(Field->GRef);
    }
 
    return(Field->GRef->AY && Field->GRef->AX);
@@ -448,7 +444,7 @@ int FSTD_FieldReadMesh(TData *Field) {
 */
 Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 
-   TRPNHeader *head=(TRPNHeader*)Field->Head;
+   TRPNHeader   *head=(TRPNHeader*)Field->Head;
    Coord         coord;
    int           i,j,k;
    unsigned long idx;
@@ -559,12 +555,12 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
 Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
 
    TRPNHeader *head=(TRPNHeader*)Field->Head;
-   TDef  *def;
-   Coord      coord;
-   float     *lat=NULL,*lon=NULL,*gz=NULL,flat,flon,fele;
-   int        i,j,idx,ni,nj,nk,ip1;
-   int        idxi;
-   char       tile;
+   TDef       *def;
+   Coord       coord;
+   float      *lat=NULL,*lon=NULL,*gz=NULL,flat,flon,fele;
+   int         i,j,idx,ni,nj,nk,ip1;
+   int         idxi;
+   char        tile;
 
    def=Field->SDef?Field->SDef[0]:Field->Def;
 
@@ -806,8 +802,8 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    char        *from,*to;
    int          i,ip1;
    TZRefInterp *interp;
-   TRPNHeader   *headto=(TRPNHeader*)FieldTo->Head;
-   TRPNHeader   *headfrom=(TRPNHeader*)FieldFrom->Head;
+   TRPNHeader  *headto=(TRPNHeader*)FieldTo->Head;
+   TRPNHeader  *headfrom=(TRPNHeader*)FieldFrom->Head;
 
    if (FieldFrom->Def->Type!=TD_Float32 || FieldTo->Def->Type!=TD_Float32) {
       Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid Field data type, must be Float32",(char*)NULL);
@@ -1028,7 +1024,7 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
 int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode,float *Index){
 
    double     val,dir,lat,lon,di,dj,dval;
-   int        ezto=1,ezfrom=1,ok=-1,idx,i,j,k,gotidx;
+   int        ezto=1,ezfrom=1,ok=-1,idx,i,j,k,gotidx,msk;
    void      *pf0,*pt0,*pf1,*pt1;
    float     *ip=NULL;
    
@@ -1045,6 +1041,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    Def_Compat(FieldTo->Def,FieldFrom->Def);
    ZRef_Free(FieldTo->ZRef);
    FieldTo->ZRef=ZRef_Define(FieldFrom->ZRef->Type,FieldFrom->ZRef->LevelNb,FieldFrom->ZRef->Levels);
+   msk=(((TRPNHeader*)FieldFrom->Head)->TYPVAR[0]=='@' && ((TRPNHeader*)FieldFrom->Head)->TYPVAR[1]=='@');
 
    // Checl for ezscint capability
    if (FieldFrom->Def->Type!=TD_Float32) {
@@ -1120,7 +1117,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
   } else { 
       idx=0;  
-      
+            
       for(k=0;k<FieldTo->Def->NK;k++) {
          ip=Index;
          gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
@@ -1152,9 +1149,9 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                   if (FieldTo->Def->Data[1]) {
                      // Have to reproject vector
                      dir=DEG2RAD(dir)+GeoRef_GeoDir(FieldTo->GRef,i,j);
-                     dval=-val*sin(dir);
+                     dval=msk?val!=0.0:-val*sin(dir);
                      Def_Set(FieldTo->Def,0,idx,dval);
-                     dval=-val*cos(dir);
+                     dval=msk?val!=0.0:-val*cos(dir);
                      Def_Set(FieldTo->Def,1,idx,dval); 
                   } else {
                      Def_Set(FieldTo->Def,0,idx,val);
@@ -2006,7 +2003,7 @@ int FSTD_FieldReadHead(Tcl_Interp *Interp,char *Id,int Key){
 */
 int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
 
-   TRPNHeader    head;
+   TRPNHeader   head;
    Tcl_Obj     *list,*obj,*tmp;
    int          nobj,nb,ni,nj,nk;
    int          yyyy,mm,dd,h,m,s;
@@ -2085,12 +2082,12 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
 
                sprintf(buf,"%-4s %-2s  ",head.NOMVAR,head.TYPVAR);
                
-               ZRef_IPFormat(&buf[strlen(buf)],head.IP1,False);
-               ZRef_IPFormat(&buf[strlen(buf)],head.IP2,True);
-               ZRef_IPFormat(&buf[strlen(buf)],head.IP3,True);
+               ZRef_IPFormat(strend(buf),head.IP1,False);
+               ZRef_IPFormat(strend(buf),head.IP2,True);
+               ZRef_IPFormat(strend(buf),head.IP3,True);
 
                System_StampDecode(head.DATEV,&yyyy,&mm,&dd,&h,&m,&s);
-               sprintf(buf,"%s %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",buf,head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
+               sprintf(strend(buf)," %-12s %04i%02i%02i%02i%02i %s %i %i %i %i fstdfield",head.ETIKET,yyyy,mm,dd,h,m,File->CId,head.KEY,head.IP1,head.IP2,head.IP3);
                Tcl_SetStringObj(obj,buf,-1);
                Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                break;
@@ -2239,7 +2236,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    TData       *field=NULL;
    TDataVector *uvw=NULL;
    TDef_Type    dtype;
-   TRPNHeader    h;
+   TRPNHeader   h;
    int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
    int          pni,pnj,ig1,ig2,ig3,ig4,*tmpi;
    float        lvl;
@@ -2572,7 +2569,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
 */
 int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double LevelFrom,double LevelTo,Tcl_Obj *List){
 
-   TRPNHeader   *head=(TRPNHeader*)Field->Head;
+   TRPNHeader  *head=(TRPNHeader*)Field->Head;
    TDataVector *uvw;
    Tcl_Obj     *obj;
    int          idxs[FSTD_NKMAX],tmp[FSTD_NKMAX],i,k,k2,idx,ok,idump,ni,nj,nk,type,ip1;
@@ -2794,7 +2791,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
 int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress){
 
    TRPNFile     *file;
-   TRPNHeader    *head=(TRPNHeader*)Field->Head;
+   TRPNHeader   *head=(TRPNHeader*)Field->Head;
    TDataVector  *uvw;
    int          ok=-1,ip1,datyp,nid;
    unsigned long k,idx;
@@ -2904,7 +2901,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress) {
 
    TRPNFile    *file;
-   TRPNHeader   *head=(TRPNHeader*)Field->Head;
+   TRPNHeader  *head=(TRPNHeader*)Field->Head;
    TDataVector *uvw;
    int          ok=0,datyp,nid;
    char         pvar[5];

@@ -482,6 +482,9 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                if (gref->Type&GRID_NUNORTH) {
                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NUNORTH",-1));
                }
+               if (gref->Type&GRID_NEGLON) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("NEGLON",-1));
+               }
                Tcl_SetObjResult(Interp,obj);
             } else {
                if (Tcl_ListObjLength(Interp,Objv[++i],&nidx)==TCL_ERROR) {
@@ -523,6 +526,9 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   if (strcmp(Tcl_GetString(obj),"NUNORTH")==0) {
                      gref->Type|=GRID_NUNORTH;
+                  }
+                  if (strcmp(Tcl_GetString(obj),"NEGLON")==0) {
+                     gref->Type|=GRID_NEGLON;
                   }
                }
             }

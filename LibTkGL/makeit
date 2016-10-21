@@ -93,7 +93,7 @@ fi
 
 DEF_PWD=$PWD
 
-#export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
+#export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
 
 printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
 
@@ -537,7 +537,7 @@ fi
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
-   export CFLAGS="-std=c99 -D_TK_SOURCE -fopenmp"   
+   export CFLAGS="-std=c99 -D_TK_SOURCE"   
    
    #System with no OpenGL
    #export LDFLAGS="-L$LIB_PATH/GL/lib"

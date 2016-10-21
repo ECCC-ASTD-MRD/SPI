@@ -792,7 +792,7 @@ void Data_RenderBoundary(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projec
    unsigned int *idx,i,j,sz;
    char buf[128];
 
-   if (!Field->GRef || !Field->GPos || !Field->Spec->Width || !Field->Spec->Outline)
+   if (!Field->GRef || !Field->GPos || Field->GRef->Type&GRID_SPARSE || !Field->Spec->Width || !Field->Spec->Outline)
       return;
 
    // Allocate index buffer
@@ -2152,7 +2152,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 */
 int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
-   int i,len;
+   int i,len,idx;
    TList  *list,*end;
    T3DArray *array;
 
@@ -2215,7 +2215,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
             array=(T3DArray*)list->Data;
 
-            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
+            VAL2COL(idx,Field->Spec,array->Value);
+            glColor4ubv(Field->Spec->Map->Color[idx]);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);
@@ -2229,7 +2230,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
 
             array=(T3DArray*)list->Data;
 
-            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
+            VAL2COL(idx,Field->Spec,array->Value);
+            glColor4ubv(Field->Spec->Map->Color[idx]);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);
@@ -2244,7 +2246,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
          while(list) {
             array=(T3DArray*)list->Data;
 
-            DataSpec_ColorSet(NULL,Field->Spec,array->Value);
+            VAL2COL(idx,Field->Spec,array->Value);
+            glColor4ubv(Field->Spec->Map->Color[idx]);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);

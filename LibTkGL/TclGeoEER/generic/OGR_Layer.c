@@ -2304,14 +2304,14 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
             }
 
             Data_Clean(field[f],0,0,1);
-            FFContour(Grid?REF_GRID:REF_COOR,field[f]->GPos,field[f]->Def,field[f]->Stat,NULL,1,&spec->Inter[n],3,1);
-            cont=OGR_G_CreateGeometry(wkbMultiLineString);
+            FFContour(Grid?REF_GRID:REF_COOR,field[f]->GPos,field[f]->Def,field[f]->Stat,NULL,1,&spec->Inter[n],3,spec->RenderTexture?1:0);
+            cont=OGR_G_CreateGeometry(spec->RenderTexture?wkbPolygon:wkbMultiLineString);
 
             list=field[f]->Def->Segments;
             while(list) {
                array=(T3DArray*)list->Data;
 
-               geom=OGR_G_CreateGeometry(wkbLineString);
+               geom=OGR_G_CreateGeometry(spec->RenderTexture?wkbLinearRing:wkbLineString);
                for(k=0;k<array->Size;k++) {
                   Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
                   OGR_G_AddPoint_2D(geom,x,y);
