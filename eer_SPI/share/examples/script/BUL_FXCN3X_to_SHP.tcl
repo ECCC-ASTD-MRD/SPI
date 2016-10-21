@@ -42,7 +42,7 @@ namespace eval Bulletin::FXCN3X {
 
    #----- General parameters
    set Param(Job)     [info script]   ;#Job name
-   set Param(Version) 0.2             ;#Job version
+   set Param(Version) 0.3             ;#Job version
 
    set Param(UncertaintyLUT) { 0.0 28.0 44.0 59.0 78.0 117.0 206.0 }    ;#Uncertainty lookup table
    set Param(ForecastHours)  { 0   12   24   36   48   72    120   }    ;#Forecats hours related to uncertainty
@@ -206,6 +206,7 @@ proc Bulletin::FXCN3X::Process { } {
    ogrlayer define POINTS -field STORMFORCE Integer
    ogrlayer define POINTS -field LAT        Real
    ogrlayer define POINTS -field LON        Real
+   ogrlayer define POINTS -field TIMESTAMP  String
    ogrlayer define POINTS -field VALIDTIME  String
    ogrlayer define POINTS -field TAU        Integer
    ogrlayer define POINTS -field MAXWIND    Integer
@@ -236,12 +237,15 @@ proc Bulletin::FXCN3X::Process { } {
    #----- Creation of radii layer and fields
    if { [llength $Data(Radii)] } {
       ogrlayer create FILE RADIIS "$Data(Filename).rad" LATLONREF
+      ogrlayer define RADIIS -field STORMNAME  String
       ogrlayer define RADIIS -field WINDFORCE Real
+      ogrlayer define RADIIS -field TIMESTAMP String
       ogrlayer define RADIIS -field VALIDTIME String
    }
 
    #----- Creation of the uncertainty cone layer and fields
    ogrlayer create FILE UNCERT "$Data(Filename).err" LATLONREF
+   ogrlayer define UNCERT -field STORMNAME String
 
    #----- Loop on the track points
    set nb 0
@@ -257,15 +261,11 @@ proc Bulletin::FXCN3X::Process { } {
       set time  [expr ("$apm"=="PM")?$time+12:$time]
       set sec   [clock scan "$month $date $time" -format "%b %d %H.%M" -timezone $Data(TZL)]
       set t0    [expr $t0==-1?$sec:$t0]
-      set valid [clock format $sec -format "%d/%H%M" -timezone :UTC]
       set tau   [expr ($sec-$t0)/3600]
 
       set lat [expr ("$latd"=="S")?-$lat:$lat]
       set lon [expr ("$lond"=="W")?-$lon:$lon]
       lappend track $lon $lat
-
-      #----- Determine issue date
-      set advdate [clock format $Data(Issued) -format "%y%m%d/%H%M" -timezone :UTC]
 
       #----- Determine type and scale number
       if { $kts>=136 } {
@@ -343,7 +343,8 @@ proc Bulletin::FXCN3X::Process { } {
       ogrlayer define POINTS -feature $no ADVDATE    [clock format $Data(Issued) -format "%y%m%d/%H%M" -timezone :UTC]
       ogrlayer define POINTS -feature $no LAT        $lat
       ogrlayer define POINTS -feature $no LON        $lon
-      ogrlayer define POINTS -feature $no VALIDTIME  $valid
+      ogrlayer define POINTS -feature $no TIMESTAMP  [clock format $sec -format "%Y-%m-%dT%H:%MZ" -timezone :UTC]
+      ogrlayer define POINTS -feature $no VALIDTIME  [clock format $sec -format "%d/%H%M" -timezone :UTC]
       ogrlayer define POINTS -feature $no TAU        $tau
       ogrlayer define POINTS -feature $no MAXWIND    $kts
       ogrlayer define POINTS -feature $no MSLP       $mslp
@@ -372,9 +373,9 @@ proc Bulletin::FXCN3X::Process { } {
 
          ogrlayer define POINTS -geometry $no False POINT
 
-         Bulletin::FXCN3X::ProcessRadii $lat $lon $valid 34 [lindex $radii 1] [lindex $radii 2]  [lindex $radii 3]  [lindex $radii 4]
-         Bulletin::FXCN3X::ProcessRadii $lat $lon $valid 48 [lindex $radii 5] [lindex $radii 6]  [lindex $radii 7]  [lindex $radii 8]
-         Bulletin::FXCN3X::ProcessRadii $lat $lon $valid 64 [lindex $radii 9] [lindex $radii 10] [lindex $radii 11] [lindex $radii 12]
+         Bulletin::FXCN3X::ProcessRadii $lat $lon $sec 34 [lindex $radii 1] [lindex $radii 2]  [lindex $radii 3]  [lindex $radii 4]
+         Bulletin::FXCN3X::ProcessRadii $lat $lon $sec 48 [lindex $radii 5] [lindex $radii 6]  [lindex $radii 7]  [lindex $radii 8]
+         Bulletin::FXCN3X::ProcessRadii $lat $lon $sec 64 [lindex $radii 9] [lindex $radii 10] [lindex $radii 11] [lindex $radii 12]
       }
    }
 
@@ -396,6 +397,7 @@ proc Bulletin::FXCN3X::Process { } {
    ogrgeometry define RING -points "$cone0 $cone1"
    ogrgeometry define POLY -geometry False RING
    ogrlayer define UNCERT -nb 1
+   ogrlayer define UNCERT -feature 0 STORMNAME  $Data(Name)
    ogrlayer define UNCERT -geometry 0 False POLY
 
    #----- Close files to make sure OGR's memory cache is flushed to files
@@ -418,7 +420,7 @@ proc Bulletin::FXCN3X::Process { } {
 # Parameters :
 #   <Lat>    : Latitude of forecast point
 #   <Lon>    : Longitude of forecast point
-#   <Valid>  : Time opf validity
+#   <Sec>    : Time op validity in seconds
 #   <Force>  : Wind force for this radii
 #   <NE>     : North east quadrant radius in nm
 #   <SE>     : South east quadrant radius in nm
@@ -430,7 +432,7 @@ proc Bulletin::FXCN3X::Process { } {
 # Remarks :
 #
 #----------------------------------------------------------------------------
-proc Bulletin::FXCN3X::ProcessRadii { Lat Lon Valid Force NE SE SW NW } {
+proc Bulletin::FXCN3X::ProcessRadii { Lat Lon Sec Force NE SE SW NW } {
    variable Data
    variable Param
 
@@ -465,8 +467,10 @@ proc Bulletin::FXCN3X::ProcessRadii { Lat Lon Valid Force NE SE SW NW } {
       set nb [ogrlayer define RADIIS -nb]
       ogrlayer define RADIIS -nb [incr nb]
       set no [expr $nb-1]
+      ogrlayer define RADIIS -feature $no STORMNAME $Data(Name)
       ogrlayer define RADIIS -feature $no WINDFORCE $Force
-      ogrlayer define RADIIS -feature $no VALIDTIME $Valid
+      ogrlayer define RADIIS -feature $no TIMESTAMP [clock format $Sec -format "%Y-%m-%dT%H:%MZ" -timezone :UTC]
+      ogrlayer define RADIIS -feature $no VALIDTIME [clock format $Sec -format "%d/%H%M" -timezone :UTC]
 
       ogrlayer define RADIIS -geometry $no False POLY
    }

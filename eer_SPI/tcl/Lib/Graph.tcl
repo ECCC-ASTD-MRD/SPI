@@ -1263,7 +1263,7 @@ proc Graph::ParamsItem { Parent } {
          label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
          IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/share/bitmap \
             { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm wind1.xbm } \
-            $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) } \
+            $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item); Graph::ItemConfigureData $Graph::Data(Graph) $Graph::Data(Type) } \
             0 -relief groove -bd 2
          scale $Parent.item.icon.size -from 1 -to 20 -resolution 1 -variable Graph::Item(Size) -showvalue false \
                -relief flat -bd 1 -orient horizontal -width 15 -sliderlength 10 -length 50 -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item); catch }
@@ -1620,6 +1620,15 @@ proc Graph::ItemPos { Frame VP Coords Desc Tag { Type POINT } { Marks {} } } {
 #
 #-------------------------------------------------------------------------------
 
+proc Graph::ItemConfigureData { Graph Type  } {
+   variable Data
+   global  GDefs
+
+   upvar #0 Graph::${Type}::${Type}${Graph}::Data data
+  
+   Graph::${Type}::ItemDefine $Graph $Data(Pos) $data(Coords$Data(Pos))
+}
+
 proc Graph::ItemConfigure { Graph Type Item } {
    variable Data
    global  GDefs
@@ -1641,7 +1650,7 @@ proc Graph::ItemConfigure { Graph Type Item } {
    if { $Graph::Item(Icon)!="BARB" } {
       set icon $Graph::Item(Icon)
    } else {
-      set icon ""
+      set icon "PLACE"
    }
 #   set Graph::Item(Bitmap) @$GDefs(Dir)/share/bitmap/CLEAR.xbm
 #   set Graph::Item(Image)  MODEL
@@ -1691,7 +1700,10 @@ proc Graph::ItemSelect { Item } {
    set Graph::Item(Image)       [graphitem configure $Item -image]
    set Graph::Item(Bitmap)      [graphitem configure $Item -bitmap]
    set Graph::Item(Stipple)     [graphitem configure $Item -stipple]
-
+  
+   if { $Graph::Item(Icon)=="PLACE" } {
+      set Graph::Item(Icon) BARB
+   }
    if { $Graph::Item(Outline)!="" } {
       $Data(Frame).item.line.col configure -fg $Graph::Item(Outline)
    }

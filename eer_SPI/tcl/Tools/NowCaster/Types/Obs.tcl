@@ -2119,14 +2119,14 @@ proc NowCaster::Obs::MoveInit { Frame VP } {
       set Data(InfoTag) [lindex $picked 2]
       set Data(InfoId)  [metobs define $Data(InfoObs) -ID $Data(InfoTag)]
       if { $Data(Flat$Data(InfoObs)) } {
+         set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoTag)]
+         set Data(X0) [lindex $xy 0]
+         set Data(Y0) [lindex $xy 1]
+      } else {
          set Data(X)  $Viewport::Data(X$VP)
          set Data(Y)  $Viewport::Data(Y$VP)
          set Data(X0) 0
          set Data(Y0) 0
-      } else {
-         set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoTag)]
-         set Data(X0) [lindex $xy 0]
-         set Data(Y0) [lindex $xy 1]
       }
    } else {
       set Data(InfoId)  ""
@@ -2141,6 +2141,7 @@ proc NowCaster::Obs::Move { Frame VP } {
    if { $Data(InfoId)!="" && $Data(InfoObs)!="" } {
       set xy [metobs define $Data(InfoObs) -PIXEL $Data(InfoTag)]
       metobs define $Data(InfoObs) -PIXEL $Data(InfoTag) [expr $Data(X0)+($Viewport::Map(X)-$Data(X))] [expr $Data(Y0)+($Viewport::Map(Y)-$Data(Y))]
+#      metobs define $Data(InfoObs) -PIXEL $Data(InfoTag) [expr $Data(X0)+($Viewport::Map(X)-$Data(X))] [expr $Data(Y0)+($Viewport::Map(Y)-$Data(Y))]
       Page::Update $Page::Data(Frame)
    }
 }

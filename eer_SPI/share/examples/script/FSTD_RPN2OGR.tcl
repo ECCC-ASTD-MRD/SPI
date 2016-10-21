@@ -52,7 +52,7 @@ namespace eval RPN2OGR { } {
 \t-var         : List of variables to process (Mandatory)
 \t-factor      : List of factors per variables
 \t-map         : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
-\t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR)
+\t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR POLYGON)
 \t-inter       : List of contour to use
 \t-fstd        : List of RPN files to process (Mandatory)
 \t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
@@ -122,6 +122,7 @@ proc RPN2OGR::Run { } {
                   "POINT"   { fstdfield configure DATA$n -rendergrid 1 }
                   "CELL"    { fstdfield configure DATA$n -rendertexture 1 }
                   "CONTOUR" { fstdfield configure DATA$n -rendercontour 1 -mapall True -width 2 }
+                  "POLYGON" { fstdfield configure DATA$n -rendertexture 1 -rendercontour 1 -mapall True -width 2 }
                }
 
                lappend fields DATA$n
@@ -131,7 +132,7 @@ proc RPN2OGR::Run { } {
             }
          }
 
-         if { [llength $fields] && $Param(Format)!="KMZ" && $Param(Mode)!="CONTOUR" } {
+         if { [llength $fields] && $Param(Format)!="KMZ" && $Param(Mode)!="CONTOUR" && $Param(Mode)!="POLYGON" } {
             Log::Print INFO "   Exporting [llength $fields] field(s)"
 
             ogrfile open FILE write $name $Param(Format)
@@ -154,7 +155,7 @@ proc RPN2OGR::Run { } {
       fstdfile close FILEIN
    }
 
-   if { [llength $kmlfields] && $Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" } {
+   if { [llength $kmlfields] && ($Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" || $Param(Mode)=="POLYGON") } {
       Export::Vector::Export $Param(Out) $Param(Format) $kmlfields
       eval fstdfield free $kmlfields
       set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]

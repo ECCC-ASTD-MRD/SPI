@@ -209,12 +209,8 @@ proc Locator::Format { Line } {
 
    # ----- Convertir les valeurs de la coordonnee en +/-
 
-   if { $latdir == "S" } {
-      set lat [expr -1 * $lat]
-   }
-   if { $londir == "W" } {
-      set lon [expr -1 * $lon]
-   }
+   set lat [expr {"$latdir"=="S"?-$lat:$lat}]
+   set lon [expr {"$londir"=="W"?-$lon:$lon}]
 
    #----- Initialiser les variables de recuperation
 

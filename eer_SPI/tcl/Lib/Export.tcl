@@ -157,7 +157,7 @@ namespace eval Export::Raster {
 namespace eval Export::Vector {
    variable Param
 
-   set Param(Modes)   { POINT CELL CONTOUR }
+   set Param(Modes)   { POINT CELL CONTOUR POLYGON }
    set Param(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
                        {GeoJSON  "GeoJSON" {*.json}}
                        {KML "KMZ" {*.kml}}
@@ -474,7 +474,7 @@ proc Export::Vector::Export { Path Format Fields } {
       set ip1     [fstdfield define $field -IP1]
       set ip2     [fstdfield define $field -IP2]
       set ip3     [fstdfield define $field -IP3]
-      set lvl     [fstdfield stats $field -level]
+      set lvl     [format "%.3f" [fstdfield stats $field -level]]
       set lvltype [fstdfield stats $field -leveltype]
       set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
       set sec1    [expr $sec0+[fstdfield define $field -DEET]]
@@ -483,7 +483,7 @@ proc Export::Vector::Export { Path Format Fields } {
       set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
 
       #----- Create filename 
-      set name    [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
+      set name   [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
 
       if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
          set name $name.[incr nb]
@@ -527,7 +527,7 @@ proc Export::Vector::Export { Path Format Fields } {
       </ScreenOverlay>
       <NetworkLink>
          <Link>
-            <href>[file tail ${name}${ext}]</href>
+            <href>[file tail ${name}.kml]</href>
          </Link>
       </NetworkLink>
    </Folder>\n"
@@ -549,8 +549,8 @@ proc Export::Vector::Export { Path Format Fields } {
       puts $f "</Document>\n</kml>"
       close $f
       file delete -force ${name}.kmz
-      eval exec zip -j ${name}.kmz ${name}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
-      eval file delete ${name}.kml $kmz
+      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
+      eval file delete ${file}.kml $kmz
    }
 
    Dialog::WaitDestroy
