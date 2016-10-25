@@ -107,7 +107,7 @@ proc Bulletin::FXCN3X::Read { File } {
             set issued         [string map { : . } [lrange $issued end-6 end]]
             set Data(TZ)       [lindex $issued 2]
             set Data(TZL)      [::tcl::clock::ConvertLegacyTimeZone [string tolower $Data(TZ)]]
-            set Data(Issued)   [clock scan $issued -format "%l.%M %p %Z %A %d %B %Y." -timezone :UTC]
+            set Data(Issued)   [clock scan $issued -format "%l.%M %p %Z %A %d %B %Y." -timezone :UTC]           
          }
 
          "1." {  ;#----- Process section 1
@@ -255,11 +255,11 @@ proc Bulletin::FXCN3X::Process { } {
       set type ""
 
       #----- Extract line values
-      scan $point "%s %02d %f %s %f%1s %f%1s %i %i %i %s" month date time apm lat latd lon lond mslp kts kmh type
+      scan $point "%s %02d %i.%i %s %f%1s %f%1s %i %i %i %s" month date hour min apm lat latd lon lond mslp kts kmh type
 
       #----- Make necessary conversions
-      set time  [expr ("$apm"=="PM")?$time+12:$time]
-      set sec   [clock scan "$month $date $time" -format "%b %d %H.%M" -timezone $Data(TZL)]
+      set hour  [expr ("$apm"=="PM")?$hour+12:$hour]
+      set sec   [clock scan "$month $date $hour $min" -format "%b %d %H %M" -timezone $Data(TZL)]
       set t0    [expr $t0==-1?$sec:$t0]
       set tau   [expr ($sec-$t0)/3600]
 

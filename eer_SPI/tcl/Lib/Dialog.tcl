@@ -784,9 +784,10 @@ proc Dialog::Text { Id Title File { Width 60 } { Height 20 } } {
       Bubble::Create $Id.search.fwd    $Bubble(SearchFWD)
       Bubble::Create $Id.search.bwd    $Bubble(SearchBWD)
 
-      bind $Id.search.txt <Any-KeyRelease> "$Id.file.text tag delete ISEARCH CSEARCH; set Dialog::Data(SearchPos) \[Dialog::TextSearch $Id.file.text -1 \$Dialog::Data(Search) ISEARCH -background yellow\]"
-      bind $Id.file.text <Any-KeyRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
-      bind $Id.file.text <Any-ButtonRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
+      bind $Id.search.txt <Any-KeyRelease>    "$Id.file.text tag delete ISEARCH CSEARCH; set Dialog::Data(SearchPos) \[Dialog::TextSearch $Id.file.text -1 \$Dialog::Data(Search) ISEARCH -background yellow\]"
+      bind $Id.search.txt <Return>            "$Id.search.fwd invoke"
+      bind $Id.file.text  <Any-KeyRelease>    "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
+      bind $Id.file.text  <Any-ButtonRelease> "set Dialog::Data(Cursor$Id) \[$Id.file.text index insert\]"
    }
 
    #----- Inclure le fichier texte si il existe
