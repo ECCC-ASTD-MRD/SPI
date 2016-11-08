@@ -3042,6 +3042,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
                // Point is inside
                if (f) {
                   f=FIDX2D(Field->Def,ni,nj);
+                  if (Field->Def->Mask && !Field->Def->Mask[f]) {
+                     fprintf(stderr,"sdlkjsdhfjksdf\n");
+                     continue;
+                  }
+                  
                   Def_GetMod(Field->Def,f,v);
                   nt++;
                   switch(Mode) {
