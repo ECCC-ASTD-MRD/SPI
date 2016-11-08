@@ -94,6 +94,7 @@ fi
 DEF_PWD=$PWD
 
 #export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
+#export CFLAGS="-lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm"
 
 printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
 

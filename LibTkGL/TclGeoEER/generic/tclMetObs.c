@@ -2256,17 +2256,21 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            if (ia!=-1 && io!=-1) {
                               dlat=MetObs_GetData(data,ia,v,0);
                               dlon=MetObs_GetData(data,io,v,0);
-                              if (MET_VALID(dlat,Obs->NoData)) co.Lat+=dlat;
-                              if (MET_VALID(dlon,Obs->NoData)) co.Lon+=dlon;
+                              if (!MET_VALID(dlat,Obs->NoData)) dlat=0.0;
+                              if (!MET_VALID(dlon,Obs->NoData)) dlon=0.0;
                            }
                            
                            // Get coordinates if per sample
                            if (clat!=-1 && clon!=-1) {
-                              co.Lat=MetObs_GetData(data,clat,loc->Grid[0]?0:v,t)+dlat;
-                              co.Lon=MetObs_GetData(data,clon,loc->Grid[0]?0:v,t)+dlon;
+                              co.Lat=MetObs_GetData(data,clat,loc->Grid[0]?0:v,t);
+                              co.Lon=MetObs_GetData(data,clon,loc->Grid[0]?0:v,t);
                            }
                            
-                           if (!Projection_Pixel(Proj,VP,co,pix)) {
+                           // Add displacement
+                           co.Lat+=dlat;
+                           co.Lon+=dlon;
+                           
+                            if (!Projection_Pixel(Proj,VP,co,pix)) {
                               continue;
                            }
                            
