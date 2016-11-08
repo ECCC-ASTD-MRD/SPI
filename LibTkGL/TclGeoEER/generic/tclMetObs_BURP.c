@@ -86,11 +86,11 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    dt=Obs->Time-60;
    dt=0;
 
-   /*Setup the API*/
+   // Setup the API
    c_mrfopc("MSGLVL","FATAL");
    c_mrfopr("MISSING",Obs->NoData);
 
-   /*Open the file*/
+   // Open the file
    err=c_fnom(Obs->FId,File,"RND",0);
    if (err<0) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable to link filename ",File,(char*)NULL);
@@ -106,7 +106,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       return(TCL_ERROR);
    }
 
-   /*Allocate enough words*/
+   // Allocate enough words
    sz=c_mrfmxl(Obs->FId)*4+1024000;
    buf=(int*)malloc(sz*4);
    if (!buf) {
@@ -140,24 +140,27 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          break;
       }
 
-      /*Skip if it is a resume or a header*/
+      // Skip if it is a resume or a header
       if (stnid[0]=='>')
          continue;
 
-      /*Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before*/
+      // Check if station already exists, unless this is a satobs file with multiple location for same id and station name is same as before
       strtrim(stnid,' ');
       loc=NULL;
       if (!multi || strcmp(previd,stnid)!=0)
          loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID,&multi);
 
       strcpy(previd,stnid);
-      /*Insert station in list if not already done*/
+      // Insert station in list if not already done
       if (!loc) {
          loc=TMetLoc_New(Obs,stnid,NULL,(blat-9000.0)/100.0,blon/100.0,hgt-400);
          loc->Grid[0]=dx/10.0;
          loc->Grid[1]=dy/10.0;
          loc->CodeType=codtyp;
       }
+      
+      // Assign current flags for the statiom
+      loc->Flag|=flag;
       
       // Dates earlier than 2000 need to be added 1900
       if (yymmdd<1000000) {
@@ -169,7 +172,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       Obs->Time0=(Obs->Time0<time && Obs->Time0!=0)?Obs->Time0:time;
       Obs->Time1=Obs->Time1>time?Obs->Time1:time;
 
-      /*Start reading the information blocs*/
+      // Start reading the information blocs
       blkno=0;
       while ((blkno=c_mrbloc(buf,-1,-1,-1,blkno))>0) {
          err=c_mrbprm(buf,blkno,&nelem,&nval,&nt,&bfam,&bdesc,&btyp,&nbit,&bit0,&datyp);
@@ -183,12 +186,12 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          bktyp=(btyp>>4)%0x7F;
          bkstp=(btyp)&0x0F;
 
-         /*Skip if empty*/
+         // Skip if empty
          if ((nelem*nval*nt)==0) {
             App_Log(WARNING,"%s: Found empty report\n",__func__);
             continue;
          }
-         /*Resize temporary buffers if needed*/
+         // Resize temporary buffers if needed
          if (nelem>sz1) {
             sz1=nelem;
             elems=(int*)realloc(elems,sz1*sizeof(int));
@@ -212,11 +215,11 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
          }
 
-         /*Extract info*/
+         // Extract info
          err=c_mrbxtr(buf,blkno,elems,tblval);
          err=c_mrbdcl(elems,codes,nelem);
 
-         /*Test for superobs ..... ta daaaaaaa*/
+         // Test for superobs ..... ta daaaaaaa
          if (stnid[0]=='^') {
             if (stnid[1]=='^') {
                App_Log(DEBUG,"%s: MetObs_LoadBURP: Found super duper obs\n",__func__);
@@ -225,7 +228,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
          }
 
-         /*If this is a marker bloc*/
+         // If this is a marker bloc
          mkr=0;
          if (bknat==0x3 || codes[0]>=200000) {
             mkr=nelem*nval*nt;
@@ -233,7 +236,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             err=c_mrbcvt(elems,tblval,tblvalf,nelem,nval,nt,0);
          }
 
-         /*Get the elements code list and cache it within obs object*/
+         // Get the elements code list and cache it within obs object
          c=0;
          for(e=0;e<nelem;e++) {
             if (mkr) {
@@ -255,7 +258,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
          }
 
-         /*if the elements where ok, add the dataset*/
+         // if the elements where ok, add the dataset
          if (c) TMetElem_Insert(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
       }
    }
@@ -268,7 +271,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    if (tblvalf) free(tblvalf);
    free(buf);
 
-   /*Close the file*/
+   // Close the file
    c_mrfcls(Obs->FId);
    c_fclos(Obs->FId);
    cs_fstunlockid(Obs->FId);

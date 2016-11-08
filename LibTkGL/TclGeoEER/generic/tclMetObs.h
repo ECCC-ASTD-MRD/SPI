@@ -63,7 +63,7 @@ struct TMetObs;
 typedef struct TMetModelItem {
    int        X,Y;
    int        Code[3];
-   TDataSpec *Spec;       /*Specification des donnees*/
+   TDataSpec *Spec;       // Specification des donnees
 } TMetModelItem;
 
 typedef struct TMetModel {
@@ -74,39 +74,40 @@ typedef struct TMetModel {
 
 typedef struct TMetElemData {
 
-   struct TMetObs  *Obs;             /*Provenance (Obs) de ce MetElemData quand detache*/
-   struct TMetLoc  *Loc;             /*Localisation de ce MetElemData quand detache*/
-   time_t           Time;            /*Date de validite*/
-   int              Nv,Nt,Ne;        /*Data dimensions*/
-   int              Family;          /*Data Family descriptor*/
-   int              Type,SType;      /*Data Type descriptor*/
-   int             *Marker;          /*Data markers*/
-   float           *Data;            /*Donnees temporelles et spatiales*/
-   EntryTableB    **Code;            /*Codes de la donnee*/
+   struct TMetObs  *Obs;           // Provenance (Obs) de ce MetElemData quand detache
+   struct TMetLoc  *Loc;           // Localisation de ce MetElemData quand detache
+   time_t           Time;          // Date de validite
+   int              Nv,Nt,Ne;      // Data dimensions
+   int              Family;        // Data Family descriptor
+   int              Type,SType;    // Data Type descriptor
+   int             *Marker;        // Data markers
+   float           *Data;          // Donnees temporelles et spatiales
+   EntryTableB    **Code;          // Codes de la donnee
 } TMetElemData;
 
 typedef struct TMetElem {
 
-   time_t         Time;      /*Date de validite*/
-   int            NData;     /*Nombre d'element pour ce temps*/
-   TMetElemData **EData;     /*Donnees des elements*/
+   time_t         Time;            // Date de validite
+   int            NData;           // Nombre d'element pour ce temps
+   TMetElemData **EData;           // Donnees des elements
 
-   struct TMetElem *Next;
+   struct TMetElem *Next;          // List pointer to next element
 } TMetElem;
 
 typedef struct TMetLoc {
 
-   char    *Id;             /*Identificateur*/
-   char    *No;             /*Numero*/
-   char     Tag[16];        /*Tag unique*/
-   char   **Info;           /*Autres informations*/
-   Coord    Coord;          /*Position (lat,lon,elevation)*/
-   Vect3d   Pix;            /*Pixel ou positioner la station statique*/
-   int      Grid[3];        /*Dimension de la grille pour les donnees regroupees*/
+   char    *Id;                   // Identificateur
+   char    *No;                   // Numero
+   char     Tag[16];              // Tag unique
+   char   **Info;                 // Autres informations
+   Coord    Coord;                // Position (lat,lon,elevation)
+   Vect3d   Pix;                  // Pixel ou positioner la station statique
+   int      Grid[3];              // Dimension de la grille pour les donnees regroupees
    int      Level;
-   unsigned char CodeType;  /*Data type*/
+   unsigned Flag;                 // Station markers (multiple flags will ber or-ed)
+   unsigned char CodeType;        // Data type
 
-   TMetElem *Elems;         /*Liste temporelle des donnees*/
+   TMetElem *Elems;               // Liste temporelle des donnees
 
    struct TMetLoc *Next;
 } TMetLoc;
@@ -120,21 +121,22 @@ typedef struct TMetObs {
 
    char    **Info;
    int      NbInfo;
-   time_t   Time,Time0,Time1;   /*Time ranges*/
-   time_t   Cache;              /*How long to keep in memory*/
-   time_t   Persistance;        /*How long before no valid*/
-   float    NoData;             /*No data value*/
-   long     Lag;                /*Data date selection looseness*/
-   int      NVal;               /*Specific Nv to use*/
-   int      Family;             /*Data family descriptor*/
-   int      Type,SType;         /*Data family descriptor*/
-   int      Marker;             /*Data marker descriptor*/
-   char     MarkerOp;           /*Data bit operators*/
-   int      CodeType;           /*Data type*/
+   time_t   Time,Time0,Time1;     // Time ranges
+   time_t   Cache;                // How long to keep in memory
+   time_t   Persistance;          // How long before no valid
+   float    NoData;               // No data value
+   long     Lag;                  // Data date selection looseness
+   int      NVal;                 // Specific Nv to use
+   int      Family;               // Data family descriptor
+   int      Type,SType;           // Data family descriptor
+   int      Marker;               // Data marker descriptor
+   char     MarkerOp;             // Data bit operators
+   int      CodeType;             // Data type
+   int      Flag;                 // Station flag
    int      FId;
 
-   TMetLoc    *Loc;             /*Liste des localisations (stations)*/
-   TMetModel  *Model;           /*Modele d'affichage*/
+   TMetLoc    *Loc;               // Liste des localisations (stations)
+   TMetModel  *Model;             // Modele d'affichage
 } TMetObs;
 
 int      TclMetObs_Init(Tcl_Interp *Interp);

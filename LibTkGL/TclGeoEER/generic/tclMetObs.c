@@ -445,8 +445,8 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
    double        val;
    char          search;
 
-   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-STATION","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-LEVELS","-CODETYPE","-FAMILY","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
-   enum                opt { INFO,ADDINFO,COORD,ID,STATION,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,LEVELS,CODETYPE,FAMILY,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
+   static CONST char *sopt[] = { "-INFO","-ADDINFO","-COORD","-ID","-STATION","-TAG","-NO","-ELEMENT","-REPORT","-NB","-DATE","-DATE0","-DATE1","-LAG","-VALID","-LEVELS","-FLAG","-CODETYPE","-FAMILY","-TYPE","-STYPE","-MARKER","-MARKEROP","-NVAL","-MODEL","-PERSISTANCE","-CACHE","-PIXEL",NULL };
+   enum                opt { INFO,ADDINFO,COORD,ID,STATION,TAG,NO,ELEMENT,REPORT,NB,DATE,DATE0,DATE1,LAG,VALID,LEVELS,FLAG,CODETYPE,FAMILY,TYPE,STYPE,MARKER,MARKEROP,NVAL,MODEL,PERSISTANCE,CACHE,PIXEL };
 
    obs=MetObs_Get(Name);
    if (!obs) {
@@ -1029,6 +1029,15 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case FLAG:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->Flag));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&e);
+               obs->Flag=e;
+            }
+            break;
+            
          case FAMILY:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(obs->Family));
@@ -1505,6 +1514,7 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    loc->Grid[0]=loc->Grid[1]=loc->Grid[2]=0;
    loc->Level=0;
    loc->CodeType=0;
+   loc->Flag=0x0;
    loc->Elems=NULL;
 
    sprintf(loc->Tag,"|%u",MetLocNo++);
@@ -2102,6 +2112,12 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
 
       // Check for data bktyp matching
       if (Obs->CodeType && Obs->CodeType!=loc->CodeType) {
+         loc=loc->Next;
+         continue;
+      }
+      
+      // Check for data flag matching
+      if (Obs->Flag && !(Obs->Flag&loc->Flag)) {
          loc=loc->Next;
          continue;
       }
@@ -2836,8 +2852,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-DATE","-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
-   enum                opt { DATE,CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
+   static CONST char *sopt[] = { "-DATE","-FLAG","-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
+   enum                opt { DATE,FLAG,CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2857,6 +2873,15 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_SetObjResult(Interp,Tcl_NewLongObj(data->Time));
             } else {
                Tcl_GetLongFromObj(Interp,Objv[++i],&data->Time);
+            }
+            break;
+
+         case FLAG:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->Loc->Flag));
+            } else {
+               Tcl_GetIntFromObj(Interp,Objv[++i],&mk);
+               data->Loc->Flag=mk;
             }
             break;
 
