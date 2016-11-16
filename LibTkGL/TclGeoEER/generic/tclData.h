@@ -142,6 +142,7 @@ void          Data_Wipe();
 void          Data_PreInit(TData *Data);
 int           Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 int           Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
+char**        Data_IndexInitPtr(Tcl_Interp *Interp,Tcl_Obj **Obj);
 float*        Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size);
 unsigned long Data_IndexResize(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size);
 void          Data_GetStat(TData *Field);

@@ -1495,7 +1495,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->InterNb) 
       dp>>=2;
    
-   dp=(dp<1 || Field->GRef->Grid[0]=='V' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+   dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
 
    /*Grille avec loop sur la longitude*/
    if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
@@ -1512,7 +1512,6 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       for(j=0;j<Field->Def->NJ-dp;j+=dp) {
-
          glBegin(GL_QUADS);
 
          for(i=0;i<(Field->Def->NI+dp);i+=dp) {

@@ -389,6 +389,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    double        tmpd,*table=NULL;
    double        c0,c1,a,x;
    float        *index=NULL;
+   char         **indexptr=NULL;
 
    TObs        *obs;
    OGR_Layer   *layer;
@@ -1148,11 +1149,19 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case VERTICALINTERP:
-         if(Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [GZTo | P0To] [GZFrom | P0From]");
+         if(Objc!=6 && Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [GZTo | P0To] [GZFrom | P0From] [Index]");
             return TCL_ERROR;
          }
-         return(FSTD_FieldVertInterpolate(Interp,Data_Get(Tcl_GetString(Objv[2])),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4])),Data_Get(Tcl_GetString(Objv[5]))));
+         
+         // Check for index array
+         indexptr=NULL;
+         if (Objc==7) {
+            obj=Objv[6];
+            indexptr=Data_IndexInitPtr(Interp,&obj);
+         }
+
+         return(FSTD_FieldVertInterpolate(Interp,Data_Get(Tcl_GetString(Objv[2])),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4])),Data_Get(Tcl_GetString(Objv[5])),indexptr));
          break;
 
       case TIMEINTERP:

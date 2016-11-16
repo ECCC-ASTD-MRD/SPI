@@ -797,7 +797,7 @@ int FSTD_DecodeRPNLevelParams(TData *Field) {
  *
  *----------------------------------------------------------------------------
  */
-int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom) {
+int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,char **Index) {
 
    char        *from,*to;
    int          i,ip1;
@@ -825,81 +825,87 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       return(TCL_ERROR);
    }
 
-   if (FieldFrom->ZRef->Type==LVL_GALCHEN || FieldFrom->ZRef->Type==LVL_MASL || FieldFrom->ZRef->Type==LVL_MAGL ||
-      FieldTo->ZRef->Type==LVL_GALCHEN || FieldTo->ZRef->Type==LVL_MASL ||  FieldTo->ZRef->Type==LVL_MAGL) {
-      if (!ZFieldFrom && FieldFrom->ZRef->Type!=LVL_MASL) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ source field data",(char*)NULL);
+   if (!Index || Index[0]==(char*)0x1) {
+
+      if (FieldFrom->ZRef->Type==LVL_GALCHEN || FieldFrom->ZRef->Type==LVL_MASL || FieldFrom->ZRef->Type==LVL_MAGL ||
+         FieldTo->ZRef->Type==LVL_GALCHEN || FieldTo->ZRef->Type==LVL_MASL ||  FieldTo->ZRef->Type==LVL_MAGL) {
+         if (!ZFieldFrom && FieldFrom->ZRef->Type!=LVL_MASL) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ source field data",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (!ZFieldTo && FieldTo->ZRef->Type!=LVL_MASL) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ destination field data",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      } else {
+         if (!ZFieldFrom && FieldFrom->ZRef->Type!=LVL_PRES) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 source field data",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (!ZFieldTo && FieldTo->ZRef->Type!=LVL_PRES) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 destination field data",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+
+      // Recuperer tout les niveaux disponibles
+      if (FieldFrom->ReadCube)
+         FieldFrom->ReadCube(Interp,FieldFrom,0,0.0,0.0,NULL);
+
+      if (ZFieldFrom) {
+         if (ZFieldFrom->Def->NI!=FieldFrom->Def->NI || ZFieldFrom->Def->NJ!=FieldFrom->Def->NJ) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid source Z field dimensions",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (ZFieldFrom->ReadCube)
+            ZFieldFrom->ReadCube(Interp,ZFieldFrom,0,0.0,0.0,NULL);
+      }
+
+      if (ZFieldTo) {
+         if (ZFieldTo->Def->NI!=FieldTo->Def->NI || ZFieldTo->Def->NJ!=FieldTo->Def->NJ) {
+            Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid destination Z field dimensions",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         if (ZFieldTo->ReadCube)
+            ZFieldTo->ReadCube(Interp,ZFieldTo,0,0.0,0.0,NULL);
+      }
+
+      // Decode RPN specific params
+      FSTD_DecodeRPNLevelParams(FieldFrom);
+
+      if (FieldFrom->ZRef->Type==LVL_UNDEF && ZFieldFrom->Def->NK==1) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for source Z field",(char*)NULL);
+         Tcl_MutexUnlock(&MUTEX_FSTDVI);
          return(TCL_ERROR);
       }
-      if (!ZFieldTo && FieldTo->ZRef->Type!=LVL_MASL) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid GZ destination field data",(char*)NULL);
+      if (FieldTo->ZRef->Type==LVL_UNDEF && ZFieldTo->Def->NK==1) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for destination Z field",(char*)NULL);
+         Tcl_MutexUnlock(&MUTEX_FSTDVI);
+         return(TCL_ERROR);
+      }
+
+      FieldFrom->ZRef->P0=ZFieldFrom?(float*)(ZFieldFrom->Def->Data[0]):NULL;
+      FieldTo->ZRef->P0=ZFieldTo?(float*)(ZFieldTo->Def->Data[0]):NULL;
+
+      if (!FSTD_DecodeRPNLevelParams(FieldTo)) {
+         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
+      }
+
+      // Initialize verticap interpolator
+      Tcl_MutexLock(&MUTEX_FSTDVI);
+      ZRefInterp_SetOption("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
+      ZRefInterp_SetOption("VERBOSE","NO");
+      
+      if (!(interp=ZRefInterp_Define(FieldTo->ZRef,FieldFrom->ZRef,FieldFrom->Def->NI,FieldFrom->Def->NJ))) {
+         Tcl_AppendResult(Interp,"Unable to initialize vertical dataset (ZRefInterp_Define)\n");
+         Tcl_MutexUnlock(&MUTEX_FSTDVI);
          return(TCL_ERROR);
       }
    } else {
-      if (!ZFieldFrom && FieldFrom->ZRef->Type!=LVL_PRES) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 source field data",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if (!ZFieldTo && FieldTo->ZRef->Type!=LVL_PRES) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid P0 destination field data",(char*)NULL);
-         return(TCL_ERROR);
-      }
+      Tcl_MutexLock(&MUTEX_FSTDVI);
+      interp=(TZRefInterp*)Index[0];
    }
-
-   // Recuperer tout les niveaux disponibles
-   if (FieldFrom->ReadCube)
-      FieldFrom->ReadCube(Interp,FieldFrom,0,0.0,0.0,NULL);
-
-   if (ZFieldFrom) {
-      if (ZFieldFrom->Def->NI!=FieldFrom->Def->NI || ZFieldFrom->Def->NJ!=FieldFrom->Def->NJ) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid source Z field dimensions",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if (ZFieldFrom->ReadCube)
-         ZFieldFrom->ReadCube(Interp,ZFieldFrom,0,0.0,0.0,NULL);
-   }
-
-   if (ZFieldTo) {
-      if (ZFieldTo->Def->NI!=FieldTo->Def->NI || ZFieldTo->Def->NJ!=FieldTo->Def->NJ) {
-         Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid destination Z field dimensions",(char*)NULL);
-         return(TCL_ERROR);
-      }
-      if (ZFieldTo->ReadCube)
-         ZFieldTo->ReadCube(Interp,ZFieldTo,0,0.0,0.0,NULL);
-   }
-
-   Tcl_MutexLock(&MUTEX_FSTDVI);
-   ZRefInterp_SetOption("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
-   ZRefInterp_SetOption("VERBOSE","NO");
-
-   // Decode RPN specific params
-   FSTD_DecodeRPNLevelParams(FieldFrom);
-
-   if (FieldFrom->ZRef->Type==LVL_UNDEF && ZFieldFrom->Def->NK==1) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for source Z field",(char*)NULL);
-      Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return(TCL_ERROR);
-   }
-   if (FieldTo->ZRef->Type==LVL_UNDEF && ZFieldTo->Def->NK==1) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: Invalid vertical dimension for destination Z field",(char*)NULL);
-      Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return(TCL_ERROR);
-   }
-
-   FieldFrom->ZRef->P0=ZFieldFrom?(float*)(ZFieldFrom->Def->Data[0]):NULL;
-   FieldTo->ZRef->P0=ZFieldTo?(float*)(ZFieldTo->Def->Data[0]):NULL;
-
-   if (!FSTD_DecodeRPNLevelParams(FieldTo)) {
-      Tcl_AppendResult(Interp,"FSTD_FieldVertInterpolate: (WARNING) Could not find destination hybrid definition field HY",(char*)NULL);
-   }
-
-   // Initialize verticap interpolator
-   if (!(interp=ZRefInterp_Define(FieldTo->ZRef,FieldFrom->ZRef,FieldFrom->Def->NI,FieldFrom->Def->NJ))) {
-      Tcl_AppendResult(Interp,"Unable to initialize vertical dataset (ZRefInterp_Define)\n");
-      Tcl_MutexUnlock(&MUTEX_FSTDVI);
-      return(TCL_ERROR);
-   }
-
+   
    // Inter ET/OU Extrapolation 
    for(i=0;i<3;i++) {
       if (FieldFrom->Def->Data[i]) {
@@ -927,6 +933,14 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          }
       }
    }
+   
+   if (Index) {
+      // A variable was provided for the index
+      if (Index[0]==(char*)0x1) Index[0]=(char*)interp;
+   } else {
+      // Free the index
+      ZRefInterp_Free(interp);
+   }
 
    FieldFrom->ZRef->P0=NULL;
    FieldTo->ZRef->P0=NULL;
@@ -934,14 +948,15 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    if (FieldTo->GRef->NbId!=FieldFrom->GRef->NbId) {
       FieldTo->GRef->Ids=(int*)realloc(FieldTo->GRef->Ids,FieldFrom->GRef->NbId*sizeof(int));
    }
-   if (FieldTo->GRef->Ids[FieldTo->GRef->NId]!=FieldFrom->GRef->Ids[FieldFrom->GRef->NId]) {
+
+   if (FieldTo->GRef->Ids && FieldTo->GRef->Ids[FieldTo->GRef->NId]!=FieldFrom->GRef->Ids[FieldFrom->GRef->NId]) {
+      memcpy(FieldTo->GRef->Ids,FieldFrom->GRef->Ids,FieldFrom->GRef->NbId*sizeof(int));
+      FieldTo->GRef->NId=FieldFrom->GRef->NId;
       FieldTo->GRef->Grid[0]=FieldFrom->GRef->Grid[0];
       FieldTo->GRef->Project=FieldFrom->GRef->Project;
       FieldTo->GRef->UnProject=FieldFrom->GRef->UnProject;
       FieldTo->GRef->Value=FieldFrom->GRef->Value;
       FieldTo->GRef->Type=FieldFrom->GRef->Type;
-      memcpy(FieldTo->GRef->Ids,FieldFrom->GRef->Ids,FieldFrom->GRef->NbId*sizeof(int));
-      FieldTo->GRef->NId=FieldFrom->GRef->NId;
    }
 
    ip1=((TRPNHeader*)FieldTo->Head)->IP1;

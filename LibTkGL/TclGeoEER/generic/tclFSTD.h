@@ -73,7 +73,7 @@ int    FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST 
 int    FSTD_FieldFind(Tcl_Interp *Interp,char *Id,int Max,int DateV,char* Eticket,int IP1,int IP2,int IP3,char* TypVar,char* NomVar);
 void   FSTD_FieldFree(TData *Field);
 int    FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode,float *Index);
-int    FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom);
+int    FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,TData *ZFieldTo,TData *ZFieldFrom,char **Index);
 int    FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Field0,TData *Field1);
 int    FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var);
 int    FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char *Eticket,int DIP1,int IP2,int IP3,char *TypVar,char *NomVar);

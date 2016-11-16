@@ -3434,6 +3434,34 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
    return(index);
 }
 
+char** Data_IndexInitPtr(Tcl_Interp *Interp,Tcl_Obj **Obj) {
+   
+   Tcl_Obj *item=NULL;
+   char   **index=NULL;
+   
+   // Check for index array
+   if (*Obj) {
+      item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0);
+      if (!item) {
+         // Got an empty variable, will fill it with index
+         if ((item=Tcl_NewByteArrayObj(NULL,sizeof(char*)))) {
+            index=(char**)Tcl_GetByteArrayFromObj(item,NULL);
+            index[0]=(char*)0x1;
+            *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+             Tcl_IncrRefCount(*Obj);
+         } else {
+            *Obj=NULL;
+            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+         }
+      } else {
+         // Got a filled variable, will use it's index
+         *Obj=NULL;
+         index=(char**)Tcl_GetByteArrayFromObj(item,NULL);
+      }
+   }
+   return(index);
+}
+
 /*----------------------------------------------------------------------------
  * Nom      : <Data_IndexResize>
  * Creation : Octobre 2016 - J.P. Gauthier - CMC/CMOE
