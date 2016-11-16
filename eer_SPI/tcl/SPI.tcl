@@ -2514,9 +2514,10 @@ SPI::IcoOpen $SPI::Param(Icons)
 #----- Inclusion du projet
 if { $SPI::Param(Project)!="" } {
    SPI::ProjectRead $SPI::Param(Project) True
-} else {
+}
 
-   #----- Selection du Layout pour la premiere page
+#----- Selection du Layout pour la premiere page
+if { $SPI::Param(Project)=="" || $layout!="SPI" } {
    SPI::Splash "Setting up initial layout"
    if { ![SPI::LayoutLoad [lindex $Page::Data(Frames) 0] $layout] } {
       SPI::Quit 1
