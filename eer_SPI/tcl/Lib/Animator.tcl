@@ -293,6 +293,9 @@ proc Animator::Window { { Parent .} } {
       pack .anim.params.frame .anim.params.idx0 .anim.params.idx1 -side top -fill x -expand true
    pack .anim.params -side top -fill x  -padx 2
 
+   bind .anim <ButtonPress-4> "Animator::Step 1"
+   bind .anim <ButtonPress-5> "Animator::Step -1"
+   
    frame .anim.info
       label .anim.info.lbl -relief raised -bd 1 -bg $GDefs(ColorLight) -textvariable Animator::Play(Label) -anchor w -width 23
       pack .anim.info.lbl -side left -fill both -expand true -ipady 2
