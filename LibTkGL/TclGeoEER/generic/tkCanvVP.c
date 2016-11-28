@@ -123,6 +123,7 @@ static const Tk_ConfigSpec configSpecs[] = {
    { TK_CONFIG_PIXELS, "-crowd", NULL, NULL, "0",Tk_Offset(ViewportItem,CrowdBuffer),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM, "-camera", NULL, NULL, NULL,Tk_Offset(ViewportItem,Cam),TK_CONFIG_NULL_OK,&CamOption },
    { TK_CONFIG_INT, "-frame", NULL, NULL, "-1",Tk_Offset(ViewportItem,Frame),TK_CONFIG_DONT_SET_DEFAULT },
+   { TK_CONFIG_INT, "-timeout", NULL, NULL, "-1",Tk_Offset(ViewportItem,TimeOut),TK_CONFIG_DONT_SET_DEFAULT },
    { TK_CONFIG_CUSTOM, "-tags", NULL, NULL, NULL,0,TK_CONFIG_NULL_OK,&tagsOption },
    { TK_CONFIG_END, NULL, NULL, NULL, NULL,0,0 }
 };
@@ -419,6 +420,7 @@ static int ViewportCreate(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Item,int 
    vp->Frame       = 0;
    vp->Ratio       = 0;
    vp->Secondary   = 0;
+   vp->TimeOut     = 60;
    
    vp->MaskWidth      = 10;
    vp->MaskItem.Array = NULL;
@@ -1408,8 +1410,8 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
 
          // Wait for everything to be loaded
          sec=clock();
-         while (((clock()-sec)<(60*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
-         if ((clock()-sec)>=(60*CLOCKS_PER_SEC)) {
+         while (((clock()-sec)<(vp->TimeOut*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
+         if ((clock()-sec)>=(vp->TimeOut*CLOCKS_PER_SEC)) {
             App_Log(WARNING,"%s: Waited too long for data, rendering anyway\n",__func__);
          }
          vp->Update=TRUE;
@@ -2151,8 +2153,8 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
 
    /*Wait for everything to be loaded*/
    sec=clock();
-   while (((clock()-sec)<(30*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
-   if ((clock()-sec)>=(30*CLOCKS_PER_SEC)) {
+   while (((clock()-sec)<(vp->TimeOut*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
+   if ((clock()-sec)>=(vp->TimeOut*CLOCKS_PER_SEC)) {
       App_Log(WARNING,"%s: Warning, waited too long for data, rendering anyway\n",__func__);
    }
 

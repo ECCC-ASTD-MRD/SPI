@@ -2104,7 +2104,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    nobs=0;
 
    glPushName(PICK_METOBS);
-
+   
    while(loc) {
 
       line=0;
@@ -2180,22 +2180,23 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   if (spec->RenderVector && data->Code[e]->descriptor==Obs->Model->Items[i].Code[1]) {
                      cdir=e;
                   }
-                  if (data->Code[e]->descriptor==5002 || data->Code[e]->descriptor==5001)       // Latitude coordinate
+                  if (data->Code[e]->descriptor==5002 || data->Code[e]->descriptor==5001) {      // Latitude coordinate
                      clat=e;
-                  else if (data->Code[e]->descriptor==6002 || data->Code[e]->descriptor==6001)  // Longitude coordinate
+                  } else if (data->Code[e]->descriptor==6002 || data->Code[e]->descriptor==6001) {  // Longitude coordinate
                      clon=e;
-                  else if (data->Code[e]->descriptor==5015)                                     // Latitude displacement
+                  } else if (data->Code[e]->descriptor==5015) {                                    // Latitude displacement
                      ia=e;
-                  else if (data->Code[e]->descriptor==6015)                                     // Longitude displacement
+                  } else if (data->Code[e]->descriptor==6015) {                                    // Longitude displacement
                      io=e;
-                  else if (data->Code[e]->descriptor==Obs->Model->Elev)                         // Height
+                  } else if (data->Code[e]->descriptor==Obs->Model->Elev) {                        // Height
                      ib=e;
+                  }
                }
-               
+
                // Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved
                flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
                if (Obs->Family && !(Obs->Family&flag)) {
-                     continue;
+                  continue;
                }
 
                // Check for data bktyp matching
@@ -2286,7 +2287,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            co.Lat+=dlat;
                            co.Lon+=dlon;
                            
-                            if (!Projection_Pixel(Proj,VP,co,pix)) {
+                           if (!Projection_Pixel(Proj,VP,co,pix)) {
                               continue;
                            }
                            
@@ -2508,7 +2509,6 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                         if (clat==-1 && ib==-1) {
                            break;
                         }
-
                      }
                      // TODO break if grouped data, until we can select the variables (ex:Per channel)
                      if (data->Nt>1)

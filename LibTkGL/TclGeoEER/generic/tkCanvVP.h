@@ -95,6 +95,7 @@ typedef struct ViewportItem  {
    int ForcePick;                 /*Indicateur de finalisation de pick*/
    double Ratio;                  /*Ratio de hauteur/largeur/Cam aspect*/
    int Secondary;                 /*Indicateur d'importance*/
+   int TimeOut;                   /*Time out delay (Waiting for data load before producing frame)*/
 
    int CrowdBuffer;               /*Crowd control buffering*/
    TList *CrowdList;              /*Crowd control list*/

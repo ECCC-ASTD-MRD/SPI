@@ -237,7 +237,6 @@ void glXFontFree(T_glFont *glfont) {
 */
 void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
 
-   Display      *dpy;
    Window        win;
    Pixmap        pixmap;
    GC            gc;
@@ -250,19 +249,18 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
    GLubyte      *bm;
    int           i;
 
-   dpy=glXGetCurrentDisplay();
-   if (!dpy)
+   if (!GLRender->XDisplay)
       return;   /* I guess glXMakeCurrent wasn't called */
       
-   win = RootWindow(dpy,DefaultScreen(dpy));
+   win = XRootWindow(GLRender->XDisplay,GLRender->XScreenNo);
 
-   fs = XQueryFont(dpy,font);
+   fs = XQueryFont(GLRender->XDisplay,font);
    if (!fs) {
       fprintf(stderr,"(ERROR) glXFontTexture: Couldn't get font structure information");
       return;
    }
 
-   /* Allocate a texture that can fit all characters.  */
+  /* Allocate a texture that can fit all characters.  */
    max_bm_width  = glTextureFit(fs->max_bounds.rbearing-fs->min_bounds.lbearing,0.0);
    max_bm_height = glTextureFit(fs->max_bounds.ascent+fs->max_bounds.descent,0.0);
 
@@ -274,12 +272,12 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
    }
 
    /* create X Resources */
-   pixmap = XCreatePixmap(dpy,win,max_bm_width,max_bm_height,1);
-   values.foreground = BlackPixel(dpy, DefaultScreen(dpy));
-   values.background = WhitePixel(dpy, DefaultScreen(dpy));
+   pixmap = XCreatePixmap(GLRender->XDisplay,win,max_bm_width,max_bm_height,1);
+   values.foreground = BlackPixel(GLRender->XDisplay, GLRender->XScreenNo);
+   values.background = WhitePixel(GLRender->XDisplay, GLRender->XScreenNo);
    values.font = fs->fid;
    valuemask = GCForeground | GCBackground | GCFont;
-   gc = XCreateGC(dpy, pixmap, valuemask, &values);
+   gc = XCreateGC(GLRender->XDisplay, pixmap, valuemask, &values);
 
    /* Save the current packing mode for bitmaps.  */
    glGetIntegerv(GL_UNPACK_SWAP_BYTES,&swapbytes);
@@ -322,7 +320,7 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
       if (valid && width>0 && height>0) {
 
          memset(bm,'\0',max_bm_width*max_bm_height);
-         glXFontFill(dpy,win,pixmap,gc,max_bm_width,max_bm_height,-ch->lbearing,ch->ascent,c,bm);
+         glXFontFill(GLRender->XDisplay,win,pixmap,gc,max_bm_width,max_bm_height,-ch->lbearing,ch->ascent,c,bm);
          glBindTexture(GL_TEXTURE_2D,tex[i]);
          glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
          glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -344,7 +342,7 @@ void glXFontTexture(Font font,int first,int count,int listbase,GLuint *tex) {
       glEndList();
    }
 
-   XFreePixmap(dpy,pixmap);
+   XFreePixmap(GLRender->XDisplay,pixmap);
    XFreeFontInfo(NULL,fs,1);
 
    /* Restore saved packing modes.  */
