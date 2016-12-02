@@ -790,17 +790,24 @@ int Grid_Setup(Tcl_Interp *Interp,Projection *Proj){
    TGeoRef *ref;
    double   i,j;
    int      valid=0,s=0;
-   
+
    if ((ref=Proj->Ref)) {
 
       // Recuperer les parametres de deformation
       switch(ref->Grid[0]) {
-         case 'W':
-            s=ref->NX*(ref->NY-1);
-         case 'Z':
+        case 'W':
+           s=ref->NX*(ref->NY-1);
+        case 'Z':
             GeoRef_Expand(ref);
-            Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
-            Proj->LJ=ref->AY[ref->Y1+s]-ref->AY[ref->Y0];
+            if (ref->AX) {
+               // This is a WZ grid
+               Proj->LI=ref->AX[ref->X1]-ref->AX[ref->X0];
+               Proj->LJ=ref->AY[ref->Y1+s]-ref->AY[ref->Y0];
+            } else {
+               // This is a "real" W (WKT) grid
+               Proj->LI=ref->X1-ref->X0;
+               Proj->LJ=ref->Y1-ref->Y0;   
+            }
             valid=1;
             break;
             
