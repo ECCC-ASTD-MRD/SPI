@@ -103,6 +103,7 @@ namespace eval Viewport {
    set Map(CoordDef)    10.0         ;#Intervale entre les latlon en degres
    set Map(CoordNum)    2            ;#Numerotation des latlon
    set Map(Crowd)       20           ;#Buffer de controle de supperposition (Crow control)
+   set Map(TimeOut)     60           ;#Timeout when waiting for thread data load
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
    set Map(Grabbed)     0            ;#Etat de la vue
@@ -1231,7 +1232,7 @@ proc Viewport::Create { Frame X0 Y0 Width Height Active Full { VP "" } } {
 
    Viewport::ConfigSet $Frame
 
-   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd $Resources(BD) -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
+   $Frame.page.canvas create viewport -x $X0 -y $Y0 -width $Width -height $Height -bd $Resources(BD) -timeout $Map(TimeOut) -crowd $Map(Crowd) -fg black -font $Resources(Font) -bg $Resources(Bkg) \
       -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
       -colorriver $Resources(River) -colorpolit $Resources(Polit) -coloradmin $Resources(Admin) -colorcity $Resources(City) \
       -colorroad $Resources(Road) -colorrail $Resources(Rail) -colorplace $Resources(Place) -colorcoord $Resources(Coord) -dashcoord $Resources(DashCoord) \
