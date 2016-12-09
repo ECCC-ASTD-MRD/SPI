@@ -55,6 +55,11 @@ namespace eval Info {
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                         ReflectionLevel EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius FFModule }
 
+   set Token(UrbanLS) { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs \
+                        Backward Order DurMin OutputTimeStepMin IsotropicK TurbSchmidt LimDetRey SVDLimit EscapeTest DetRC Alpha KC0 \
+                        DtSurTl ResetVeloc TolFactor NudgeWall NudgeGrnd NudgeCell ReleaseType WindDBGrid OutVars \
+                        WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
+
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
    set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD)]]
 
@@ -196,6 +201,32 @@ namespace eval Info {
    set Lbl(EmReleaseRates)       { "Taux de relâchement (unité/h)" "Release rate (unit/h)" }
 
    set Lbl(FFModule)             { "Scénario Incendie/Carburant" "Fire/Fuel Scenario" }
+
+   set Lbl(Order)                { "Ordre de la diffusion" "Diffusion order" }
+   set Lbl(IsotropicK)           { "K isotropique" "Isotropic K" }
+   set Lbl(TurbSchmidt)          { "Nombre de Schmidt" "Schmidt number" }
+   set Lbl(LimDetRey)            { "Limite déterminant Rey" "Rey determinant limit" }
+   set Lbl(SVDLimit)             { "Limite (DVS)" "Limit (SVD)" }
+   set Lbl(EscapeTest)           { "Seuil d'évasion" "Escape threshold" }
+   set Lbl(DetRC)                { "Cible déterminant Rey" "Rey determinant target"}
+   set Lbl(Alpha)                { "Alpha" "Alpha"}
+   set Lbl(KC0)                  { "Constante de Kolmogorov" "Kolmogorov constant"}
+
+   set Lbl(DtSurTl)              { "DT/TL" "DT/TL" }
+   set Lbl(ResetVeloc)           { "Correction vitesse" "Reset velocity" }
+   set Lbl(TolFactor)            { "Facteur de tolérance" "Tolerence factor" }
+   set Lbl(NudgeWall)            { "Ajustement (murs)" "Nudge (wall)"}
+   set Lbl(NudgeGrnd)            { "Ajustement (sol)" "Nudge (ground)"}
+   set Lbl(NudgeCell)            { "Ajustement (cellules)" "Nudge (cell)"}
+   set Lbl(ReleaseType)          { "Type de relâchement" "Release type" }
+
+   set Lbl(ClimatoGrid)          { "Grille climato" "Climato Grid" }
+   set Lbl(OutVars)              { "Variables" "Variables" }
+   set Lbl(WindHeight)           { "Hauteur du vent (m)" "Height (m)" }
+   set Lbl(WindSpd)              { "Vitesse du vent (m/s)" "Speed (m/s)" }
+   set Lbl(WindDir)              { "Direction (deg)" "Direction (deg)" }
+
+   set Lbl(EmDiffuse)            { "Diffuse" "Diffuse" }
 }
 
 #----------------------------------------------------------------------------
