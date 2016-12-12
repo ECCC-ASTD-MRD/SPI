@@ -2636,7 +2636,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                continue;
             }
             rt=n=rw=0;
-
+            
             // If this cell's area is valid
             if ((area=OGR_G_Area(cell))>0.0) {
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
