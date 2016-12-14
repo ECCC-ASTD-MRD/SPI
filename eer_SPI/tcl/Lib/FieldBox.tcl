@@ -1548,10 +1548,10 @@ proc FieldBox::Show { Field } {
    set var [fstdfield define $Field -NOMVAR]
    set title "$var [fstdfield define $Field -TYPVAR] [fstdfield define $Field -ETIKET]"
 
-   if { $var=="TEXT" || $var=="META" || $var=="PROJ" } {
-      Dialog::Text .infocode $title [MetData::TextDecode $Field] 100 50
-   } else {
+   if { ($var=="INFO" || $var=="OL") && [namespace exists ::Info] } {
       Dialog::Text .infocode $title [Info::Format [FSTD::Data $Field]] 100 50
+   } else {
+      Dialog::Text .infocode $title [MetData::TextDecode $Field] 100 50
    }
 }
 
