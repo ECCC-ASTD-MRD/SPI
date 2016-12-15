@@ -48,7 +48,7 @@ namespace eval Info {
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs Duration
-                        Backward Mode Meteo Delta Scale Grid DiffKernel OutputTimeStepMin ModelTimeStep IsoChain \
+                        Backward Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
                         SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
@@ -86,6 +86,7 @@ namespace eval Info {
    set Lbl(DurMin)               { "Durée de simulation (min)" "Simulation duration (min)" }
    set Lbl(TimeStep)             { "Pas de temps interne (s)" "Internal time step (s)" }
    set Lbl(DiffKernel)           { "Kernel de diffusion" "Diffusion kernel" }
+   set Lbl(CritAge)              { "Changement d'ordre (s)" "Order switch (s)" }
    set Lbl(Seed)                 { "Semence initiale" "Initial seed" }
    set Lbl(Aerosol)              { "Type d'aérosol" "Aerosol type" }
    set Lbl(WetScaMode)           { "Mode de lessivage humide" "Wet scavenging mode" }
