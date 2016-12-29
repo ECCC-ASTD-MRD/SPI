@@ -167,7 +167,7 @@ proc Graph::Profile::Coord { Frame GR X Y } {
       if { [llength $coords]==2  } {
           catch {
             set Page::Data(Coord) "[lindex $Graph::Lbl(Level) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
-            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 0]]"
+            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [FSTD::FieldFormat $data(Data) [lindex $coords 0]]"
          }
       }
    }

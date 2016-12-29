@@ -682,6 +682,10 @@ proc FSTD::IntervalSet { { Select 0 } } {
 proc FSTD::FieldFormat { Field Val } {
    variable Param
 
+   if { ![fstdfield is $Field] } {
+      return [format "%1.3e" $Val]
+   } 
+   
    set val      [fstdfield configure $Field -value]
    set order    [lindex $val 0]
    set mantisse [lindex $val 1]

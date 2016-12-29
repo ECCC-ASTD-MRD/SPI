@@ -167,7 +167,7 @@ proc Graph::Time::Coord { Frame GR X Y } {
 
       if { [llength $coords]==2 } {
          catch {
-            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [format "%1.3e" [lindex $coords 1]]"
+            set Page::Data(Value) "[lindex $Graph::Lbl(Val) $GDefs(Lang)]: [FSTD::FieldFormat [lindex $data(Tmp) 0] [lindex $coords 1]]"
 
             set sec [lindex $coords 0]
             set Page::Data(Coord) [DateStuff::StringDateFromSeconds [expr $sec>1e31?0:$sec<1e-32?0:$sec] $GDefs(Lang)]
