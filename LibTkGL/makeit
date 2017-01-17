@@ -537,6 +537,7 @@ fi
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
+   autoconf=(command -v autoconf2.50) || echo autoconf
    export CFLAGS="-std=c99 -D_TK_SOURCE"   
    
    #System with no OpenGL
@@ -548,7 +549,7 @@ if [[ $SPI -eq 1 ]]; then
    cd TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean
-      autoconf
+      $autoconf
       ./configure \
       --prefix=${LIB_PATH}/TCL \
       --exec-prefix=${LIB_PATH}/TCL \
@@ -564,7 +565,7 @@ if [[ $SPI -eq 1 ]]; then
    cd ../TkglCanvas
    if [[ $REC -eq 1 ]]; then
       make distclean
-      autoconf
+      $autoconf
       ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL/ \
@@ -579,9 +580,9 @@ if [[ $SPI -eq 1 ]]; then
 
    cd ../TclGeoEER
    if [[ $REC -eq 1 ]]; then
-         make distclean
-         autoconf
-         ./configure \
+      make distclean
+      $autoconf
+      ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL \
       --enable-threads \
@@ -603,9 +604,9 @@ if [[ $SPI -eq 1 ]]; then
 
    cd ../TclR
    if [[ $REC -eq 1 ]]; then
-         make distclean
-         autoconf
-         ./configure \
+      make distclean
+      $autoconf
+      ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL \
       --enable-threads \

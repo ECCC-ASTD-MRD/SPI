@@ -885,7 +885,6 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       GeoRef_Qualify(Field->GRef);
       Field->GRef->Type|=GRID_NUNORTH;
 
-//      if (OSRIsGeographic(ref))  Field->GRef->Type|=GRID_NOXNEG;
       App_Log(DEBUG,"%s: WKTString: '%s'\n",__func__,Field->GRef->String);
       App_Log(DEBUG,"%s: WKTMatrix: %f %f %f %f %f %f\n",__func__,mtx[0],mtx[1],mtx[2],mtx[3],mtx[4],mtx[5]);
    } else {
