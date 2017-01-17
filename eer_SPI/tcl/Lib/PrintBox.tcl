@@ -34,12 +34,12 @@ catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }
 
 #----- We don't load the whole img package because their png are washedout
 #package require Img
-package require img::tga
-package require img::pcx
-package require img::jpeg
-package require img::tiff
-package require img::bmp
-package require img::gif
+# package require img::tga
+# package require img::pcx
+# package require img::jpeg
+# package require img::tiff
+# package require img::bmp
+# package require img::gif
 
 package require FileBox
 package require ComboBox

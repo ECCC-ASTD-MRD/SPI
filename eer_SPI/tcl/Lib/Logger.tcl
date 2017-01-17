@@ -65,7 +65,7 @@ namespace eval Log { } {
    set Param(Proc)        False                 ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Keep)        24                    ;#Number of back log to keep
-   set Param(OCLog)       ""                    ;#Message to send to OCLOG on error
+   set Param(XFlow)       ""                    ;#Message to send to OPS xflow app
    set Param(Warning)     0                     ;#Number of warnings
    set Param(Error)       0                     ;#Number of errors
    set Param(Process)     ""                    ;#Process number
@@ -630,11 +630,11 @@ proc Log::Print { Type Message { Var "" } } {
       #----- If it is an error, print it on stderr
       if { $Type=="ERROR" && $Param(Out)!="stdout" } {
          puts stderr "${time}(${Type}) ${proc}${Message}"
-         if { $Param(OCLog)!=""  } {
-            set err [catch { exec oclog $Param(Job) x "$Param(OCLog)\n\n${time}(${Type}) ${proc}${Message}" } msg]
+         if { $Param(XFlow)!=""  } {
+            set err [catch { exec echo "nodelogger -n /default_mod -d [clock format [clock seconds] -format %Y%m%d%H%M%S0000] -m "$Param(XFlow)\n\n${time}(${Type}) ${proc}${Message}" -s info" | ssh -T -i ${HOME}/.ssh/rsa_nodelogger afsiops@castor 2>@1 } msg]
             if { $err } {
-               puts stderr "${time}(ERROR) Problems while calling oclog:\n\n\t$msg"
-               puts $Param(Out) "${cstart}${time}(ERROR) Problems while calling oclog:\n\n\t$msg${cend}"
+               puts stderr "${time}(ERROR) Problems while calling nodelogger:\n\n\t$msg"
+               puts $Param(Out) "${cstart}${time}(ERROR) Problems while calling nodelogger:\n\n\t$msg${cend}"
             }
          }
       }
