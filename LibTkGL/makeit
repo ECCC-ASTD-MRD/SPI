@@ -17,7 +17,8 @@ if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}
 fi
 
-SSM_NAME=${NAME}_${VERSION}${COMP}_${ORDENV_PLAT}
+SSM_VERSION=${VERSION}${COMP}
+SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
 SPI=0
 EXT=0
@@ -642,7 +643,7 @@ if [[ $SSM -eq 1 ]]; then
    cp .ssm.d/libSPI.sh ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d/${SSM_NAME}.sh
    
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
-   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${SSM_VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
 
