@@ -539,7 +539,7 @@ fi
 if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
-   autoconf=`command -v autoconf2.50` || echo autoconf
+   type -P autoconf2.50 && autoconf=autoconf2.50 || autoconf=autoconf
    export CFLAGS="-std=c99 -D_TK_SOURCE"   
    
    #System with no OpenGL
