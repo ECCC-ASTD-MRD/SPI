@@ -8,6 +8,7 @@ NAME="SPI"
 DESC="EER Visualisation, GIS, Processing and Modeling tool"
 VERSION="7.11.3"
 MAINTAINER="Jean-Philippe Gauthier"
+BUILDINFO=`git describe --always`
 
 SSM_NAME=${NAME}_${VERSION}_all
 
@@ -27,7 +28,7 @@ if [[ $arg = "-ssm" ]]; then
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -prune -exec rm -f -r {} \;
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -delete
-   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${VERSION}/" -e "s/PLATFORM/all/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/BUILDINFO/${BUILDINFO}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
    rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}   
 fi

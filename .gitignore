@@ -1,0 +1,11 @@
+#----- Compiled object/library files
+*.o
+*.a
+
+#----- Editor pattern
+*.sw[po]
+*~
+
+#----- Lib/bin directory at the root path
+/bin/
+/lib/
