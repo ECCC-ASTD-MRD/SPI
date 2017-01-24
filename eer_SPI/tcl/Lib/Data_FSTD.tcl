@@ -683,7 +683,11 @@ proc FSTD::FieldFormat { Field Val } {
    variable Param
 
    if { ![fstdfield is $Field] } {
-      return [format "%1.3e" $Val]
+      if { [string is double $Val] } {
+         return [format "%1.3e" $Val]
+      } else {
+         return "-"
+      }
    } 
    
    set val      [fstdfield configure $Field -value]
