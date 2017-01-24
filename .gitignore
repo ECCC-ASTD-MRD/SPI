@@ -1,6 +1,7 @@
 #----- Compiled object/library files
 *.o
 *.a
+*.so
 
 #----- Editor pattern
 *.sw[po]
@@ -9,3 +10,20 @@
 #----- Lib/bin directory at the root path
 /bin/
 /lib/
+
+#----- Lexer-generated files
+/LibTkGL/TclGeoEER/lex.vexpr_.c
+/LibTkGL/TclGeoEER/y.tab.c
+/LibTkGL/TclGeoEER/y.tab.h
+
+#----- Autoconf and other automatically generated files
+/LibTkGL/*/Makefile
+/LibTkGL/*/autom4te.cache/
+/LibTkGL/*/config.log
+/LibTkGL/*/config.status
+/LibTkGL/*/configure
+/LibTkGL/*/pkgIndex.tcl
+
+#----- To run the tests
+/eer_SPI/share/examples/script/DataIn
+/eer_SPI/share/examples/script/DataOut
