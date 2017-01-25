@@ -540,7 +540,7 @@ if [[ $SPI -eq 1 ]]; then
    cd $DEF_PWD
 
    type -P autoconf2.50 && autoconf=autoconf2.50 || autoconf=autoconf
-   export CFLAGS="-std=c99 -D_TK_SOURCE"   
+   export CFLAGS="-std=c99 -D_TK_SOURCE-Winline"   
    
    #System with no OpenGL
    #export LDFLAGS="-L$LIB_PATH/GL/lib"
