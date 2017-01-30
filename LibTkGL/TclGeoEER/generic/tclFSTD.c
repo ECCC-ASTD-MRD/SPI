@@ -1911,7 +1911,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                return(TCL_ERROR);
             }
          } else {
-            sprintf(file,"%s%s",getenv("AFSISIO"),"/datafiles/constants/stdf.variable_dictionary.xml");
+            sprintf(file,"%s%s",getenv("AFSISIO"),"/datafiles/constants/ops.variable_dictionary.xml");
             if (!Dict_Parse(file,DICT_UTF8)) {
                Tcl_AppendResult(Interp,"FSTD_DictCmd: Problems loading dictionnary",(char*)NULL);
                return(TCL_ERROR);
@@ -1966,6 +1966,7 @@ static int FSTD_DictCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             Tcl_WrongNumArgs(Interp,2,Objv,"[var]");
             return(TCL_ERROR);
          }
+         Dict_SetSearch(DICT_EXACT,DICT_ALL,NULL,-1,-1,-1,NULL);
 
          str=Tcl_GetString(Objv[2]);
          var=Dict_IterateVar(&iter,str);

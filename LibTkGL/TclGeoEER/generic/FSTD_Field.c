@@ -933,6 +933,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          }
       }
    }
+   FieldTo->Def->NC=FieldFrom->Def->NC;
    
    if (Index) {
       // A variable was provided for the index
