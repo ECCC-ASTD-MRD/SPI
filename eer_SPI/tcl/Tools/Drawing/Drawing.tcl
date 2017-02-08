@@ -397,6 +397,12 @@ proc Drawing::Draw { Frame Params } {
    set pattern [lindex $Params 7]
    set extra   [lindex $Params 8]
    set info    [lindex $Params 9]
+   
+   #----- Check for old version of line parameters
+   if  { $mode=="line" && [llength $Params]==8 } {
+      set extra $pattern
+      set pattern ""
+   }
 
    #----- Est-ce que le canvas existe toujours
    if { [catch { $Frame.page.canvas delete $Data(Tag)$no D$Data(Tag)$no VERTEXFOLLOW DVERTEXFOLLOW } ] } {
@@ -784,14 +790,14 @@ proc Drawing::DrawLine { Frame VP Vertex Color Width Line Dash Arrow Tag } {
       set vr1 [lindex $vr 1]
 
       if { [llength $vr0]>2 } {
-         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow $Arrow -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr0 -fill \$Color -smooth $Line -width $Width -arrow \$Arrow -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
       if { [llength $vr1]>2 && $Viewport::Map(Type$Page::Data(Frame)) != "orthographic" } {
-         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow $Arrow  -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $vr1 -fill \$Color -smooth $Line -width $Width -arrow \$Arrow  -dash \$Dash -tags \"PAGE$VP $Data(Tag) $Tag\"
       }
    } else {
       if { [llength $Vertex]>2 } {
-         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow $Arrow  -dash \$Dash -tags \"PAGE $Data(Tag) $Tag\"
+         eval $Frame.page.canvas create line $Vertex -fill \$Color -smooth $Line -width $Width -arrow \$Arrow  -dash \$Dash -tags \"PAGE $Data(Tag) $Tag\"
       }
    }
 }
