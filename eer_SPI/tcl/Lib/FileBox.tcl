@@ -107,7 +107,7 @@ namespace eval FileBox {
    #----- Definitions des Bulles
 
    set Bubble(Back)      { "Remonte dans l'arborescence"
-                           "Go up into the tree" }
+                           "Go up in the tree" }
 
    set Bubble(Mem)       { "Liste des répertoires usuels"
                            "Usual directory list" }
