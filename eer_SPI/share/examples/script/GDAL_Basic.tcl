@@ -33,18 +33,23 @@ puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier GTIF
 #set bands [gdalfile open GDAL read /fs/cetus/fs2/ops/cmoe/afsr002/DataIn/hrm_dsm_1m/z001003.adf]
-set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
+#set bands [gdalfile open GDAL read DataIn/srtm_n045w074_badmedian3x3]
 #set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
 #set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]
 #set bands [gdalfile open GDAL read DataIn/SAR.tif]
+set bands [gdalfile open GDAL read DataIn/2010081900_000024p.grb]
 
 puts "   found: $bands"
 
 #----- Affichage des mete-donnees
-puts "   Metadata: [gdalfile metadata GDAL]"
+puts "   Metadata          (file): [gdalfile metadata GDAL]"
 
 #----- Lecture des bandes
 gdalband read RASTER $bands
+
+puts "   Metadata original (band): [gdalband define RASTER -metadata]"
+gdalband define RASTER -metadata [list toto=123 titi=456]
+puts "   Metadata changed  (band): [gdalband define RASTER -metadata]"
 
 puts "   Min     : [gdalband stats RASTER -min]"
 puts "   Max     : [gdalband stats RASTER -max]"

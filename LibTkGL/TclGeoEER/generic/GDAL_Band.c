@@ -1699,15 +1699,16 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 */
 int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int         i,j,idx,nidx,order=1,c;
-   double      tra[6],inv[6],*tm=NULL,*im=NULL;
-   GDAL_Band  *band,*xband,*yband;
-   TGeoRef    *ref;
-   Tcl_Obj    *obj,*lst;
+   int          i,j,idx,nidx,order=1,c,n;
+   double       tra[6],inv[6],*tm=NULL,*im=NULL;
+    char **meta;
+   GDAL_Band   *band,*xband,*yband;
+   TGeoRef     *ref;
+   Tcl_Obj     *obj,*lst;
 
-   static CONST char *sopt[] = { "-date","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
+   static CONST char *sopt[] = { "-metadata","-date","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
                                  "-height","-nb","-type","-positional","-fid",NULL };
-   enum        opt {  DATE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
+   enum        opt {  METADATA,DATE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -1722,6 +1723,27 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
 
       switch ((enum opt)idx) {
+
+      case METADATA:
+         if (Objc==1) {
+            obj=Tcl_NewListObj(0,NULL);
+            meta=GDALGetMetadata(band->Band[0],NULL);
+            if (CSLCount(meta)) {
+               for (j=0;meta[j];j++) {
+                  strtrim(meta[j],' ');
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(meta[j],-1));
+               }
+            }
+            Tcl_SetObjResult(Interp,obj);
+        } else {
+            meta=NULL;
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[++i]),&n,(const char***)&meta)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   GDAL_BandCmd : Invalid list of metadata",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            GDALSetMetadata(band->Band[0],meta,NULL);
+         }
+         break;
 
          case DATE:
             if (Objc==1) {
