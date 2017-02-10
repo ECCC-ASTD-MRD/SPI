@@ -784,12 +784,12 @@ proc Log::CyclopeStart { } {
       set f [open $path/info.txt w 00644]
       puts $f  "Class     : $Param(JobClass)\nJob       : $Param(Job) $Param(JobVersion)"
 
+      set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
       if { [info exists env(SelfJobResubmit)] } {
          puts $f "Command   : $env(SelfJobResubmit)"
          puts $f "Kill      : $env(SelfJobKill)"
-         puts $f "ID        : JobID/$env(JOB_ID)"
+         puts $f "ID        : JobID/$host/$env(JOB_ID)"
       } else {
-         set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
          puts $f "Command   : ssh $host '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
          puts $f "Kill      : ssh $host kill [pid]"
          puts $f "ID        : PID/$host/[pid]"
