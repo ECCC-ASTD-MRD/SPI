@@ -957,18 +957,18 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
 
          /* If we need a colormap */
          if (gr->CB->NbData) {
-            gr->xg[1]     -= 90;
-            gr->CB->x      = gr->xg[1]+5;
-            gr->CB->y      = gr->yg[1];
-            gr->CB->Width  = 90;
-            gr->CB->Height = gr->yg[0]-gr->yg[1];
-            gr->CB->anchor = TK_ANCHOR_NW;
-            gr->CB->FGColor= gr->FGColor;
-            gr->CB->BGColor= gr->BGColor;
-            gr->CB->Font   = gr->Font;
-            gr->CB->Alpha  = gr->Alpha;
-
-            gr->CB->Data   = (char**)malloc(gr->CB->NbData*sizeof(char*));
+            gr->xg[1]         -= 90;
+            gr->CB->x          = gr->xg[1]+5;
+            gr->CB->y          = gr->yg[1];
+            gr->CB->Width      = 90;
+            gr->CB->Height     = gr->yg[0]-gr->yg[1];
+            gr->CB->anchor     = TK_ANCHOR_NW;
+            gr->CB->FGColor    = gr->FGColor;
+            gr->CB->BGColor    = gr->BGColor;
+            gr->CB->Font       = gr->Font;
+            gr->CB->Alpha      = gr->Alpha;
+            gr->CB->ShowFactor = 0;
+            gr->CB->Data       = (char**)malloc(gr->CB->NbData*sizeof(char*));
             memcpy(gr->CB->Data,data,gr->CB->NbData*sizeof(char*));
          }
 
