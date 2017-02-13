@@ -112,14 +112,14 @@ proc RPN2OGR::Run { } {
             foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
 
                fstdfield read DATA$n FILEIN $field
-               fstdfield configure DATA$n -desc ${var} -colormap MAP -min 1e-32 -intervals $Param(Intervals)
+               fstdfield configure DATA$n -desc ${var} -colormap MAP -min -1e32 -intervals $Param(Intervals)
                
                if { [llength $Param(Factors)] } {
                   fstdfield configure DATA$n -factor [lindex $Param(Factors) $v]
                }
                
                switch $Param(Mode) {
-                  "POINT"   { fstdfield configure DATA$n -rendergrid 1 }
+                  "POINT"   { if { [fstdfield define DATA$n -GRTYP]=="Y" } { fstdfield configure DATA$n -renderparticle 1 } else { fstdfield configure DATA$n -rendergrid 1 } }
                   "CELL"    { fstdfield configure DATA$n -rendertexture 1 }
                   "CONTOUR" { fstdfield configure DATA$n -rendercontour 1 -mapall True -width 2 }
                   "POLYGON" { fstdfield configure DATA$n -rendertexture 1 -rendercontour 1 -mapall True -width 2 }

@@ -680,7 +680,6 @@ void Data_GetStat(TData *Field){
             }
          }
       }
-
       if (n)
          Field->Stat->Avg/=n;
 
