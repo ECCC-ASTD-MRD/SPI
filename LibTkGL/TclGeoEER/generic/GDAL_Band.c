@@ -162,6 +162,9 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    GeoRef_Size(band->GRef,X0+BD,Y0+BD,X1-BD,Y1-BD,BD);
    GeoRef_Qualify(band->GRef);
 
+   // This is a pixel/line georef
+   band->GRef->Type|=GRID_CORNER;
+   
    /*Get the No Data Value*/
    dval=GDALGetRasterNoDataValue(hband,&i);
 
