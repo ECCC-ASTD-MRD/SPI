@@ -54,8 +54,8 @@ int                OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Laye
 
 OGRFieldDefnH      OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
 
-OGR_Layer*         OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type);
-OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef);
+OGR_Layer*         OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type,char **Options);
+OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef,char **Options);
 void               OGR_LayerClean(OGR_Layer *Layer,int Index);
 void               OGR_LayerCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg);
 int                OGR_LayerUpdate(OGR_Layer *Layer);

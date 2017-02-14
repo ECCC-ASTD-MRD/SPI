@@ -320,6 +320,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    float             *index;
    int                idx,idxfi,all,n;
    char               mode;
+   const char       **options=NULL;
    unsigned int       f;
    GDAL_Band         *band;
    TData             *field;
@@ -327,9 +328,9 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    OGRGeometryH       geom;
    OGRwkbGeometryType t;
    TGeoRef           *ref=NULL;
-   TDef          *def=NULL;
+   TDef              *def=NULL;
    TDataSpec         *spec=NULL;
-   Tcl_Obj           *lst,*obj,*item=NULL;
+   Tcl_Obj           *lst=NULL,*obj=NULL,*item=NULL;
    Tcl_WideInt        w;
    
    static CONST char *modepick[] = { "INTERSECT","INSIDE","OUTSIDE","NEAREST",NULL };
@@ -349,33 +350,42 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    switch ((enum opt)idx) {
       case CREATE:
-         if (Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"File Id layer [georef]");
+         if (Objc!=5 && Objc!=6 && Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"File Id layer [georef] [options]");
             return(TCL_ERROR);
          }
          
-         if (Objc==6) {
+         if (Objc>=6 && strlen(Tcl_GetString(Objv[5]))) {
             ref=GeoRef_Get(Tcl_GetString(Objv[5]));
             if (!ref) {
-               Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid georeference object",(char*)NULL);
+               Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Invalid georeference object",(char*)NULL);
                return(TCL_ERROR);
             }
          } else {
             ref=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
-         if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3]),NULL,wkbNone),Tcl_GetString(Objv[4]),ref)) {
+         
+         if (Objc>=7) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&n,&options)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   OOGR_LayerCmd: Invalid list of creation options",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         
+         if (!OGR_LayerInstanciate(OGR_FileGet(Interp,Tcl_GetString(Objv[2])),OGR_LayerCreate(Interp,Tcl_GetString(Objv[3]),NULL,wkbNone,NULL),Tcl_GetString(Objv[4]),ref,(char**)options)) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd : Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
+         Tcl_Free((char*)options);
          break;
 
       case NEW:
-         if (Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"Id layer geom [georef]");
+         if (Objc!=5 && Objc!=6 && Objc!=7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"Id layer geom [georef] [ options]");
             return(TCL_ERROR);
          }
          
-         if (Objc==6) {
+         if (Objc==6 && strlen(Tcl_GetString(Objv[5]))) {
             ref=GeoRef_Get(Tcl_GetString(Objv[5]));
             if (!ref) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: invalid georeference object",(char*)NULL);
@@ -384,16 +394,26 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          } else {
             ref=GeoRef_Find(GeoRef_WKTSetup(0,0,NULL,0,0,0,0,NULL,NULL,NULL,NULL));
          }
+         
+         if (Objc>=7) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&n,&options)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   OOGR_LayerCmd: Invalid list of creation options",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         }
+         
          t=OGR_GeometryNameToType(Tcl_GetString(Objv[4]));
          if (t==wkbNone) {
             Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Invalid geometry type, must be ",OGR_GEOMTYPES,(char*)NULL);
             return(TCL_ERROR);
          }
-         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),t))) {
+         if (!(layer=OGR_LayerCreate(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),t,(char**)options))) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerCmd: Unable to create layer",(char*)NULL);
             return(TCL_ERROR);
          }
 
+         Tcl_Free((char*)options);
+         
 //         layer->Data=OGR_Dr_CreateDataSource(OGRGetDriverByName("Memory"),Tcl_GetString(Objv[3]),NULL);
 //         layer->Layer=OGR_DS_CreateLayer(layer->Data,Tcl_GetString(Objv[3]),ref->Spatial,t,NULL);
          layer->Def=OGR_L_GetLayerDefn(layer->Layer);             
@@ -781,7 +801,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type) {
+OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type,char **Options) {
 
    OGR_Layer *layer;
 
@@ -815,8 +835,8 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
    layer->Select     = NULL;
 
    if (Desc) {
-      layer->Data    = GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,NULL);
-      layer->Layer   = GDALDatasetCreateLayer(layer->Data,Desc,NULL,Type,NULL);
+      layer->Data    = GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,Options);
+      layer->Layer   = GDALDatasetCreateLayer(layer->Data,Desc,NULL,Type,Options);
    } else {
       layer->Layer   = NULL;
       layer->Data    = NULL;  
@@ -856,9 +876,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef){
-
-   char **opt=NULL;
+OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef,char **Options) {
 
    if (!File || !Layer) {
       return(NULL);
@@ -871,7 +889,8 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
       } else {
          Layer->GRef=GeoRef_New();
       }
-      Layer->Layer=GDALDatasetCreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,opt);
+      
+      Layer->Layer=GDALDatasetCreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,Options);
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }
    return(Layer->Layer);
@@ -1164,7 +1183,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    int          n,idx,nidx=0,i,code;
    char        *driver=NULL;
-   const char **list=NULL;
+   const char **options=NULL;
 
    static CONST char *sopt[] = { "open","close","format","driver","filename",NULL };
    enum                opt { OPEN,CLOSE,FORMAT,DRIVER,FILENAME};
@@ -1190,14 +1209,14 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             driver=Tcl_GetString(Objv[5]);
 
          if (Objc==7) {
-            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&nidx,&list)==TCL_ERROR) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[6]),&nidx,&options)==TCL_ERROR) {
                Tcl_AppendResult(Interp,"\n   OGR_FileCmd : Invalid list of creation options",(char*)NULL);
                return(TCL_ERROR);
             }
          }
 
-         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)list);
-         Tcl_Free((char*)list);
+         code=OGR_FileOpen(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3])[0],Tcl_GetString(Objv[4]),driver,(char**)options);
+         Tcl_Free((char*)options);
          return(code);
          break;
 

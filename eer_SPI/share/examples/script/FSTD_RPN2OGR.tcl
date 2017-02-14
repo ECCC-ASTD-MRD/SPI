@@ -43,6 +43,7 @@ namespace eval RPN2OGR { } {
    set Param(Intervals) {}
    set Param(Vars)      {}
    set Param(Factors)   {}
+   set Param(Options)   {}
    set Param(Out)       ./export_%d-%t
 
    set Param(CommandInfo) "   Export RPN fields into OGR vectorial files as gridcell, gridpoint or contour."
@@ -60,6 +61,7 @@ namespace eval RPN2OGR { } {
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
 \t-etiket      : Etiket to use (${APP_COLOR_GREEN}\"$Param(Etiket)\"${APP_COLOR_RESET})
 \t-prj         : prj georeference file to use for output file (${APP_COLOR_GREEN}WGS84 latlon${APP_COLOR_RESET})
+\t-opt         : Format specific creation options (see: http://www.gdal.org/ogr_formats.html)
 \t-zip         : zip results into a single file
 \t-out         : Output file (${APP_COLOR_GREEN}$Param(Out)${APP_COLOR_RESET}). 
 \t                  Wildcards : %n nomvar, %l level, %h level type, %e etiket, %d date, %t time, %1 ip1, %2 ip2, %3 ip3
@@ -135,12 +137,12 @@ proc RPN2OGR::Run { } {
          if { [llength $fields] && $Param(Format)!="KMZ" && $Param(Mode)!="CONTOUR" && $Param(Mode)!="POLYGON" } {
             Log::Print INFO "   Exporting [llength $fields] field(s)"
 
-            ogrfile open FILE write $name $Param(Format)
+            ogrfile open FILE write $name $Param(Format) 
 
             if { [georef is REF] } {
-               ogrlayer create FILE LAYER ${date}_${time} REF
+               ogrlayer create FILE LAYER ${date}_${time} REF $Param(Options)
             } else {
-               ogrlayer create FILE LAYER ${date}_${time}
+               ogrlayer create FILE LAYER ${date}_${time} "" $Param(Options)
             }
 
             ogrlayer import LAYER $fields
@@ -156,7 +158,7 @@ proc RPN2OGR::Run { } {
    }
 
    if { [llength $kmlfields] && ($Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" || $Param(Mode)=="POLYGON") } {
-      Export::Vector::Export $Param(Out) $Param(Format) $kmlfields
+      Export::Vector::Export $Param(Out) $Param(Format) $kmlfields $Param(Options)
       eval fstdfield free $kmlfields
       set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]
    }
@@ -195,6 +197,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "inter"    { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Intervals)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Files)] }
          "prj"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(ProjFile)] }
+         "opt"      { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Options)] }
          "zip"      { set i [Args::Parse $gargv $gargc $i FLAG  RPN2OGR::Param(Zip)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }

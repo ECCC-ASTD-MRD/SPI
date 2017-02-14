@@ -70,6 +70,7 @@ set tests {
    GDAL_Basic.tcl
    GDAL_Functions.tcl
    GDAL_Slope.tcl
+   GDAL_CoordTest.tcl
    {GDAL_PixelCoord.tcl DataIn/srtm_n045w074_badmedian3x3 0 0 100 100}
    OBS_BUFR.tcl
    OBS_BURP.tcl

@@ -286,6 +286,8 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
 # Parametres :
 #  <Path>    : Repertoire de sauvegarde du fichier
 #  <Format>  : Format du fichier
+#  <Fields>  : Champs a exporter
+#  <Options> : Driver specific creation options
 #
 # Retour:
 #
@@ -294,7 +296,7 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Raster::Export { Path Format Mode Fields } {
+proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
    global   env
    variable Param
    variable Msg
@@ -434,6 +436,8 @@ proc Export::Raster::Export { Path Format Mode Fields } {
 # Parametres :
 #  <Path>    : Repertoire de sauvegarde du fichier
 #  <Format>  : Format du fichier
+#  <Fields>  : Champs a exporter
+#  <Options> : Driver specific creation options
 #
 # Retour:
 #
@@ -442,7 +446,7 @@ proc Export::Raster::Export { Path Format Mode Fields } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Vector::Export { Path Format Fields } {
+proc Export::Vector::Export { Path Format Fields { Options "" } } {
    global env
    variable Msg
 
@@ -539,7 +543,7 @@ proc Export::Vector::Export { Path Format Fields } {
          }
       }
   
-      ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ
+      ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ $Options
       ogrlayer import LAYER $field
       ogrfile close FILE
       ogrlayer free LAYER

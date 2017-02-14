@@ -487,7 +487,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,int NFeature) {
 
    OGR_Layer *layerres;
-   if (!(layerres=OGR_LayerCreate(Interp,Name,(char*)OGR_FD_GetName(From->Def),wkbUnknown))) {
+   if (!(layerres=OGR_LayerCreate(Interp,Name,(char*)OGR_FD_GetName(From->Def),wkbUnknown,NULL))) {
       Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to create operation layer",(char*)NULL);
       return(NULL);
    }
@@ -1909,7 +1909,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
       OGR_LayerDestroy(Interp,Name);
    }
 
-   if (!(layer=OGR_LayerCreate(Interp,Name,NULL,wkbNone))) {
+   if (!(layer=OGR_LayerCreate(Interp,Name,NULL,wkbNone,NULL))) {
       return(TCL_ERROR);
    }
 
@@ -1994,7 +1994,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
       return(TCL_ERROR);
    }
    
-   if (!(to=OGR_LayerCreate(Interp,To,(char*)OGR_FD_GetName(from->Def),wkbUnknown))) {
+   if (!(to=OGR_LayerCreate(Interp,To,(char*)OGR_FD_GetName(from->Def),wkbUnknown,NULL))) {
       Tcl_AppendResult(Interp,"OGR_LayerCopy: Unable to create layer",(char*)NULL);
       return(TCL_ERROR);
    }
@@ -2136,7 +2136,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       OGR_LayerDestroy(Interp,Name);
    }
 
-   if (!(layer=OGR_LayerCreate(Interp,Name,NULL,wkbNone))) {
+   if (!(layer=OGR_LayerCreate(Interp,Name,NULL,wkbNone,NULL))) {
       Tcl_AppendResult(Interp,"OGR_LayerSQLSelect: Could not create layer: ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
