@@ -2842,7 +2842,8 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          case TD_Float32: head->DATYP=5;head->NBITS=32;break;
          case TD_Float64: head->DATYP=5;head->NBITS=64;break;
          case TD_Unknown:
-         default: return(TCL_ERROR);
+         default: Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid data type",(char*)NULL);
+                  return(TCL_ERROR);
       }
    }
 

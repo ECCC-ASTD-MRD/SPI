@@ -436,7 +436,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                len=(long)key+strlen(key);
                if (key[0]=='(') {
                   // Check for specified type
-                  if (key[1]=='S') type=1;   // String
+                  if (key[1]=='S') type=1;   // Strings
                   if (key[1]=='I') type=2;   // Integer
                   if (key[1]=='R') type=3;   // Real
                   while(*(key++)!=')' && (size_t)key<len);
@@ -864,13 +864,13 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
       } else {
          grib_get_double(head->Handle,"iDirectionIncrementInDegrees",&mtx[1]);
          grib_get_double(head->Handle,"jDirectionIncrementInDegrees",&mtx[5]);
+         CLAMPLON(mtx[0]);
       }
 
       // Stored the direction of increment in other parameters and the i-j test are inversed ... so brainless
       inci=incj=0;
       grib_get_long(head->Handle,"iScansNegatively",&inci);
       grib_get_long(head->Handle,"jScansPositively",&incj);
-      CLAMPLON(mtx[0]);
       mtx[1]=inci?-mtx[1]:mtx[1];
       mtx[5]=incj?mtx[5]:-mtx[5];
 
