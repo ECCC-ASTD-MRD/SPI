@@ -1601,10 +1601,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&x0);
                Tcl_GetDoubleFromObj(Interp,Objv[++i],&y0);
 
-               x0=ROUND(x0);
-               y0=ROUND(y0);
-
                if (Objc>3) {
+                  x0=ROUND(x0);
+                  y0=ROUND(y0);
+
                   if (Objc>4) {
                      Tcl_GetIntFromObj(Interp,Objv[++i],&h);
                   } else {
@@ -1614,8 +1614,27 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                   Def_Set(band->Def,h,FIDX2D(band->Def,(int)x0,(int)y0),dval);
                } else {
                   if (band->Def->Data[0]) {
-                     Tcl_SetObjResult(Interp,Data_AppendValueObj(Interp,band->Def,x0,y0));
+                     obj=Tcl_NewListObj(0,NULL);
+                     if (band->Def->NC==2) {
+                        if (band->GRef->Value(band->GRef,band->Def,band->Spec->InterpDegree[0],0,x0,y0,band->Def->Level,&val,&val1)) {
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(band->Spec,val)));
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(val1));
+                        } else {
+                           Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
+                        }
+                     } else {
+                        for(n=0;n<band->Def->NC;n++) {
+                           if (band->GRef->Value(band->GRef,band->Def,band->Spec->InterpDegree[0],n,x0,y0,band->Def->Level,&val,&val1)) {
+                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(VAL2SPEC(band->Spec,val)));
+                           } else {
+                              Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj("-",-1));
+                           }
+                        }
+                     }
+                     Tcl_SetObjResult(Interp,obj);
                   } else {
+//                  if (band->Def->Data[0]) {
+//                     Tcl_SetObjResult(Interp,Data_AppendValueObj(Interp,band->Def,x0,y0));
                      Tcl_SetObjResult(Interp,GeoTex_AppendValueObj(Interp,&band->Tex,x0,y0));
                   }
               }

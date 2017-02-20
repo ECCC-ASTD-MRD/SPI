@@ -1101,7 +1101,7 @@ TGeoTexTile *GeoTex_Pick(TGeoTex *Tex,int Res,int *X,int *Y) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
+Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,double X,double Y) {
 
    int          c,t,nc,x,y;
    double       val=0.0;
@@ -1109,9 +1109,8 @@ Tcl_Obj* GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y) {
    Tcl_Obj     *obj;
 
    obj=Tcl_NewListObj(0,NULL);
-
-   x=X;
-   y=Y;
+   x=X+0.5;
+   y=Y+0.5;
 
    Tcl_MutexLock(&MUTEX_GEOTEX);
    tile=GeoTex_Pick(Tex,Tex->Res,&x,&y);
@@ -1173,8 +1172,8 @@ double GeoTex_ValueGet(TDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,do
       return(Def->NoData);
    }
 
-   x=px=floor(X);
-   y=py=floor(Y);
+   x=px=floor(X+0.5);
+   y=py=floor(Y+0.5);
    tile=GeoTex_Pick(Tex,Res,&x,&y);
 
    /*Check for data availability, might not be loaded yet*/

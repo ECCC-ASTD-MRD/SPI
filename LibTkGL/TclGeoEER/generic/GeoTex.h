@@ -93,7 +93,7 @@ Tcl_ThreadCreateType GeoTex_ThreadProc(ClientData clientData);
 void         GeoTex_Signal(TGeoTex *Tex,int Flags);
 void         GeoTex_Clear(TGeoTex *Tex,char Flags,int Res,int Nb);
 TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb);
-Tcl_Obj*     GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,int X,int Y);
+Tcl_Obj*     GeoTex_AppendValueObj(Tcl_Interp *Interp,TGeoTex *Tex,double X,double Y);
 double       GeoTex_ValueGet(TDef *Def,TGeoTex *Tex,int Res,int C,double X,double Y,double Z);
 int          GeoTex_Get(struct GDAL_Band *Band,TGeoTexTile *Tile);
 int          GeoTex_Texture(struct GDAL_Band *Band,TGeoTexTile *Tile);
