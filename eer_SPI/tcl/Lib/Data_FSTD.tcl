@@ -682,7 +682,7 @@ proc FSTD::IntervalSet { { Select 0 } } {
 proc FSTD::FieldFormat { Field Val } {
    variable Param
 
-   if { ![fstdfield is $Field] } {
+   if { ![fstdfield is $Field] && ![gribfield is $Field] } {
       if { [string is double $Val] } {
          return [format "%1.3e" $Val]
       } else {
