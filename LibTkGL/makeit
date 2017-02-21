@@ -152,7 +152,7 @@ if [[ $EXT -eq 1 ]]; then
    [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
    mkdir -p "${TMP_PATH}"
    echo "Temporary directory is : $TMP_PATH"
-   echo "Install diectory is    : $LIB_PATH"
+   echo "Install directory is   : $LIB_PATH"
 
    #----- The library we don't compile doesn't need to be copied, so link them to the original dir
 

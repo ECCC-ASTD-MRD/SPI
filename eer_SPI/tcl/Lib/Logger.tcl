@@ -411,6 +411,14 @@ proc Log::Start { Job Version { Input "" } } {
          set secs [file mtime $Input]
          Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
+    } elseif { [info exists env(PBS_JOBID)] } {
+      Log::Print MUST "Queue Method        : pbs"
+      catch { Log::Print MUST "   Queue               : $env(PBS_QUEUE)" }
+      catch { Log::Print MUST "   Job ID              : $env(PBS_JOBID)" }
+      if { [file exists $Input] } {
+         set secs [file mtime $Input]
+         Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
+      }
    }
    Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
