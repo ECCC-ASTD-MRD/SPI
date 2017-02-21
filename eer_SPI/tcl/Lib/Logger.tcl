@@ -400,7 +400,7 @@ proc Log::Start { Job Version { Input "" } } {
       catch { Log::Print MUST "   Queue            : $env(LOADL_STEP_CLASS)" }
       catch { Log::Print MUST "   Job ID           : $env(LOADL_STEP_ID)" }
       if { [file exists $Input] } {
-         set secs [file mtime $Input]
+         set secs [file mtime $Input] 
          Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
     } elseif { [info exists env(SGE_CELL)] } {

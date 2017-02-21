@@ -534,6 +534,7 @@ proc  Mapper::DepotWare::TreeSelect { Tree Branch Open { SQL "" } } {
                   Mapper::OGR::Read $path {}
                }
                }
+      "ROOT"  { }
       "URL*"  { }
       default { Mapper::DepotWare::${type}::Select $Tree $Branch $Open $SQL }
    }
