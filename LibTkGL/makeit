@@ -288,7 +288,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "Building ${TMP_PATH}/${EXPAT}/build.log"
    mkdir ${TMP_PATH}/${EXPAT}
    cd ${TMP_PATH}/${EXPAT}
-   (${EXT_SRC_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no
+   (${EXT_SRC_PATH}/${EXPAT}/configure --prefix=${LIB_PATH} --enable-shared=no --enable-static=yes CFLAGS="-fPIC $CFLAGS"
    make install) > ${TMP_PATH}/${EXPAT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- curl
