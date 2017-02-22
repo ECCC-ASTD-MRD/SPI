@@ -1520,9 +1520,17 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
          loc->NbInfo++;
       }
    }
+   
+   // Check if any data is found
+   if (!loc->Ref) {
+      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: No DATA column found",(char*)NULL);
+      fclose(stream);
+      return(TCL_ERROR);
+   }
+   
    Tcl_SetObjResult(Interp,obj);
 
-   /*Allocate variable information array*/
+   // Allocate variable information array
    loc->Head=(char**)calloc(loc->NbInfo,sizeof(char**));
    for(n=0;n<nb;n++) {
       loc->Info[n]=(char**)malloc(loc->NbInfo*sizeof(char*));
@@ -1542,14 +1550,14 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
             return(TCL_ERROR);
          }
 
-         /*Parse the tokens*/
+         // Parse the tokens
          hd=0;
          for(n=0;n<ntok;n++) {
-            if (strcmp(gtok[n],"LAT")==0) {                  /*Latitude information*/
+            if (strcmp(gtok[n],"LAT")==0) {                  // Latitude information
                loc->Coord[nb].Lat=atof(tok[n]);
-            } else if (strcmp(gtok[n],"LON")==0) {           /*Longitude information*/
+            } else if (strcmp(gtok[n],"LON")==0) {           // Longitude information
                loc->Coord[nb].Lon=atof(tok[n]);
-            } else if (strcmp(gtok[n],"ELEVTYPE")==0) {      /*Elevation type information*/
+            } else if (strcmp(gtok[n],"ELEVTYPE")==0) {      // Elevation type information
                if (isdigit(tok[n][0])) {
                   levtyp=atoi(tok[n]);
                } else {
@@ -1577,19 +1585,19 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                      break;
                   }
                }
-            } else if (strcmp(gtok[n],"ELEV")==0) {          /*Elevation information*/
+            } else if (strcmp(gtok[n],"ELEV")==0) {          // Elevation information
                loc->Coord[nb].Elev=atof(tok[n]);
-            } else if (strcmp(gtok[n],"NO")==0) {            /*Number information*/
+            } else if (strcmp(gtok[n],"NO")==0) {            // Number information
                loc->No[nb]=strdup(tok[n]);
-               /*Patch temporaire car le postscript niaise avec les paranthese non uniforme*/
+               // Patch temporaire car le postscript niaise avec les paranthese non uniforme
                strrep(loc->No[nb],'(',' ');
                strrep(loc->No[nb],')',' ');
-            } else if (strcmp(gtok[n],"ID")==0) {            /*Identificateur*/
+            } else if (strcmp(gtok[n],"ID")==0) {            // Identificateur
                loc->Id[nb]=strdup(tok[n]);
-               /*Patch temporaire car le postscript niaise avec les paranthese non uniforme*/
+               // Patch temporaire car le postscript niaise avec les paranthese non uniforme
                strrep(loc->Id[nb],'(',' ');
                strrep(loc->Id[nb],')',' ');
-            } else if (strcmp(gtok[n],"DATETIME")==0) {            /*date/time for location*/
+            } else if (strcmp(gtok[n],"DATETIME")==0) {      // date/time for location
                min=0;sec=0;dt=0;hh=0;
                ns=sscanf(tok[n],"%8d%02d%02d%02d%d",&dt,&hh,&min,&sec,&ms);
                if (ns==1) {
@@ -1598,7 +1606,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                   hh=hh*10000+min*100+sec;
                   loc->Date[nb]=System_DateTime2Seconds(dt,hh,1);
                }
-            } else if (strncmp(gtok[n],"DATA",4)==0) {       /*Values*/
+            } else if (strncmp(gtok[n],"DATA",4)==0) {       // Values
                sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
                obs=Obs_Get(name);
                obs->LevelType=levtyp;
@@ -1606,7 +1614,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                if (tok[n][0]=='-' && tok[n][1]=='\0') {
                   ((float*)obs->Def->Data[0])[nb]=obs->Def->NoData;
                } else {
-                  /* Split the list of values in case of vectorial data*/
+                  // Split the list of values in case of vectorial data
                   if ((err=Tcl_SplitList(Interp,tok[n],&nltok,(const char ***)&ltok))==TCL_OK) {
                      for(k=0;k<nltok;k++) {
                         if (!obs->Def->Data[k]) {
@@ -1624,7 +1632,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
                      Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Problems while reading data components",(char*)NULL);
                   }
                }
-            } else {                                         /*Information*/
+            } else {                                         // Information
                if (loc->Head) {
                   if (!loc->Head[hd])
                      loc->Head[hd]=strdup(gtok[n]);
@@ -1641,7 +1649,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
 
    fclose(stream);
 
-   /* Figure out the stats*/
+   // Figure out the stats
    for(n=0;n<ntok;n++) {
       sprintf(name,"%s.%i",&gtok[n][5],ObsNo+n);
       if ((obs=Obs_Get(name))) {
