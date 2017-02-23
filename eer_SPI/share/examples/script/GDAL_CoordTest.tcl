@@ -26,8 +26,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set grib  /data/aqli06/afsuair/cmaq/aqm.20160701/aqm.t12z.pm25.f01.148.grib2
-#set grib  DataIn/CMC_reg_PRES_SFC_0_ps60km_2011052500_P000.grib2
+#set grib  /data/aqli06/afsuair/cmaq/aqm.20160701/aqm.t12z.pm25.f01.148.grib2
+set grib  DataIn/CMC_reg_PRES_SFC_0_ps60km_2011052500_P000.grib2
 
 #----- Afficher la liste des formats reconnus
 set bands [gdalfile open GDAL read $grib]
