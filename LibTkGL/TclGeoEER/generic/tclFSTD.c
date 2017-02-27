@@ -806,7 +806,6 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc>7) {
                      obj=Objv[7];
                   }
-
                   // Check for index array
                   index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*1024);
 
@@ -817,6 +816,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   ZRef_Free(field0->ZRef);
                   field0->ZRef=ZRef_Define(field1->ZRef->Type,field1->ZRef->LevelNb,field1->ZRef->Levels);
                   FSTD_FieldSetTo(field0,field1);
+
                   if (!(nk=Def_GridInterpConservative(field0->GRef,field0->Def,field1->GRef,field1->Def,Tcl_GetString(Objv[4])[0],nj,ni,index))) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;

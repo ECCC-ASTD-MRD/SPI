@@ -3409,6 +3409,7 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
    
    Tcl_Obj *item=NULL;
    float   *index=NULL;
+   int      len=0;
    
    // Check for index array
    if (*Obj) {
@@ -3416,10 +3417,16 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
       if (!item) {
          // Got an empty variable, will fill it with index
          if ((item=Tcl_NewByteArrayObj(NULL,Size*sizeof(float)))) {
-            index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-            index[0]=DEF_INDEX_EMPTY;
-            *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
-             Tcl_IncrRefCount(*Obj);
+            index=(float*)Tcl_GetByteArrayFromObj(item,&len);
+             if (!index || !len) {
+               *Obj=NULL;
+               index=NULL;
+               App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+            } else {
+               index[0]=DEF_INDEX_EMPTY;
+               *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+                Tcl_IncrRefCount(*Obj);
+            }
          } else {
             *Obj=NULL;
             App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);

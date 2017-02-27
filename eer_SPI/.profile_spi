@@ -3,9 +3,9 @@ export TCL_VERSION=8.6
 
 export SPI_MAJOR=7
 export SPI_MINOR=11
-export SPI_PATCHLEVEL=3
+export SPI_PATCHLEVEL=4
 export SPI_STATE=""
-export SPI_DATE="2016/12/09"
+export SPI_DATE="2017/02/23"
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
@@ -23,3 +23,6 @@ fi
 export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
 export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
+
+#----- Internal logging
+export APP_VERBOSE=INFO
