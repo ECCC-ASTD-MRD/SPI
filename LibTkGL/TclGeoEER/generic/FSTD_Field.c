@@ -1330,7 +1330,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
       Tcl_AppendResult(Interp,"Invalid field",(char*)NULL);
       return TCL_ERROR;
    }
-
+   
    for(i=0;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
@@ -1580,6 +1580,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
          case GEOREF:
             if (Objc==1) {
                if (Field->GRef) {
+                  FSTD_FieldReadMesh(Field);
                   Tcl_SetObjResult(Interp,Tcl_NewStringObj(Field->GRef->Name,-1));
                   GeoRef_Incr(Field->GRef);
                }
