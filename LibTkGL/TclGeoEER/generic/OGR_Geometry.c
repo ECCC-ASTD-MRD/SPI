@@ -1241,7 +1241,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 // OGR_GeomNURBS(Geom);
    /*Tessellate polygon*/
    if (Layer && Layer->Space==3) {
-     glTessInitNr();
+      glTessInitNr();
       gluTessBeginPolygon(GLRender->GLTess,NULL);
       for(g=0,pnv=0;g<OGR_G_GetGeometryCount(Geom);g++) {
          geom=OGR_G_GetGeometryRef(Geom,g);
@@ -1375,6 +1375,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
    short         z=2;
+   char          td=0;
    unsigned int  n,nv=0;
    Vect3d        *pvr,*cvr=NULL;
    Coord         co;
@@ -1396,7 +1397,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
 
       /*Project vertices*/
       OGR_G_GetPoints(Geom,&pvr[0][0],sizeof(Vect3d),&pvr[0][1],sizeof(Vect3d),&pvr[0][2],sizeof(Vect3d));
-
+      
       for(n=0;n<nv;n++) {
          Ref->Project(Ref,pvr[n][0],pvr[n][1],&co.Lat,&co.Lon,1,0);
          CLAMPLAT(co.Lat);
@@ -1410,6 +1411,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          Ref->LLExtent.MaxY=Ref->LLExtent.MaxY<co.Lon?co.Lat:Ref->LLExtent.MaxY;
 
          co.Elev=pvr[n][2];
+         td+=pvr[n][2]!=0.0;
 
          if (Layer) {
             /*Apply topography*/
@@ -1430,6 +1432,10 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          pvr[n][1]=co.Lat;
          pvr[n][2]=co.Elev+Extrude;
          OGR_ArrayNr[(n+Size)]=&GDB_NMap[(int)co.Lat+90][(int)co.Lon+180];
+      }
+      
+      if (Layer->Space==3 && !td) {
+         Layer->Space=2;
       }
 
       /*If everything is outside the projection*/
