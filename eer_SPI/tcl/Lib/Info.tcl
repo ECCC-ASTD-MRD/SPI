@@ -38,20 +38,22 @@ namespace eval Info {
    variable Msg
    variable Token
 
-   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration \
+   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs MetSecs Duration \
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
-   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs Duration
+   set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs MetSecs Duration
                         Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
                         SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
                         EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist \
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs Duration
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
                         Backward Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
-                        SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario Aerosol WetScaMode DryDepMode }
+                        SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
+                        Aerosol WetScaMode DryDepMode
+                        OilFate OilBeach OilEntrainment OilEmulsion Depth WebTide }
 
-   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs DurMin \
+   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
                         ReflectionLevel EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius FFModule }
 
@@ -69,6 +71,7 @@ namespace eval Info {
    set Lbl(AccSecs)              { "Date de l'accident" "Accident date" }
    set Lbl(SimSecs)              { "Date de simulation" "Simulation date" }
    set Lbl(Sim0Secs)             { "Date de simulation initiale" "Initial simulation date" }
+   set Lbl(MetSecs)              { "Date initiale du modèle météo" "Initial meteorological model data" }
    set Lbl(Click)                { "Date de lancement" "Launch date" }
    set Lbl(Blame)                { "Lancé par" "Launch by" }
 
@@ -299,7 +302,7 @@ proc Info::Decode { Var Info } {
    set infos [split $Info :]
    set model [string trimright [lindex [split [lindex $infos 0] =] 1] 01]
 
-   #----- Force unset on coords for aftercheck (not all modesl have Coords array)
+   #----- Force unset on coords for aftercheck (not all models have Coords array)
    set var(Coords) {}
    set var(Lat)    {}
    set var(Lon)    {}
