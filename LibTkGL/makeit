@@ -543,7 +543,7 @@ if [[ $SPI -eq 1 ]]; then
    export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
    
    #System with no OpenGL
-   #export LDFLAGS="-L$LIB_PATH/GL/lib"
+   ldconfig -p | grep -q 'libGL\.so ' || export LDFLAGS="-L$LIB_PATH/GL/lib"
 
 
    printf -- "\n----- Making TclSystem Library  -----\n"
