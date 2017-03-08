@@ -560,7 +560,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-eer=${LIB_EER}
    fi
-   make install
+   make install || exit 1
 
    printf -- "\n----- Making TkglCanvas Library -----\n"
 
@@ -576,7 +576,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-tk=${LIB_PATH}/TCL/lib
    fi
-   make install
+   make install || exit 1
 
    printf -- "\n----- Making TclGeoEER Library -----\n"
 
@@ -600,7 +600,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-gdb=${EXT_LIB_PATH}/gdb \
       --with-urp=${EXT_LIB_PATH}/URP
    fi
-   make install
+   make install || exit 1
 
    printf -- "\n----- Making TclR Library -----\n"
 
@@ -616,7 +616,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-R=$(R RHOME)
    fi
-   make install
+   make install || exit 1
 
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
