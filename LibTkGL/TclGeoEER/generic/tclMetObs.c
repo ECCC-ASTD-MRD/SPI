@@ -1187,6 +1187,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
    obs->CodeType = 0x0;
+   obs->Flag     = 0x0;
    obs->Info     = NULL;
    obs->NbInfo   = 0;
    obs->NoData   = -999.0f;
