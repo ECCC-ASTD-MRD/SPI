@@ -798,8 +798,8 @@ proc Log::CyclopeStart { } {
          puts $f "Kill      : $env(SelfJobKill)"
          puts $f "ID        : JobID/$host/$env(JOB_ID)"
       } else {
-         puts $f "Command   : ssh $host '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
-         puts $f "Kill      : ssh $host kill [pid]"
+         puts $f "Command   : ssh $env(USER)@$host '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
+         puts $f "Kill      : ssh $env(USER)@$host kill [pid]"
          puts $f "ID        : PID/$host/[pid]"
       }
       puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
