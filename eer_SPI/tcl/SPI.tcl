@@ -148,31 +148,31 @@ proc SPI::CommandLine { { Args {} }} {
       Log::Print ERROR "Wrong arguments $Args.\n"
    }
    Log::Print MUST "Arguments list:\n
-   \[-tclsh ...\]                        : Launch a tcl script through SPI's environment (No Tk)
-   \[-soft\]                             : Force software OpenGL mode
-   \[-hard\]                             : Force hardware OpenGL mode
-   \[-nothreads\]                        : Don't use multithreading
-   \[-batch\]                            : Launch in batch mode (No screen rendering)
-   \[-setup\]                            : Force initial setup (~/.spi)
-   \[-default ... ...\]                  : Use the file specified as the default parameter definition
-   \[-lang 0|1\]                         : Select language (0 Francais, 1 English)
-   \[-nowindow\]                         : Does no open the main window (Use to only launch a tool)
-   \[-field ... ...\]                    : Open the specified standard files
-   \[-traj ... ...\]                     : Open the specified trajectory files
-   \[-obs ... ...\]                      : Open the specified observation files
-   \[-metobs ... ...\]                   : Open the specified BURP or BUFR observation files
-   \[-geo ... ...\]                      : Open the specified georeferenced data files (GDAL,OGR)
-   \[-icon ... ...\]                     : Open the specified icon files
-   \[-macro ... ...\]                    : Run the specified macro scripts
-   \[-args ... ...\]                     : Arguments to be used by the previously specified macro script
-   \[-layout ...\]                       : Use the specified layout
-   \[-project ...\]                      : Use the specified spi project file
-   \[-tool ... ...\]                     : Start a specific tool
-   \[-pane WxH ...\]                     : Dimensions of the secondary panes
-   \[-side left|right|top|bottom\]       : Side on wich to put the secondary panes
-   \[-geom WxH+X+Y\]                     : Global window size\n
-   \[-help\]                             : Help information (about SPI and macro)
-   \[-verbose ERROR,WARNING,INFO,DEBUG\] : Verbose level\n"
+   -tclsh ...                        : Launch a tcl script through SPI's environment (No Tk)
+   -soft                             : Force software OpenGL mode
+   -hard                             : Force hardware OpenGL mode
+   -nothreads                        : Don't use multithreading
+   -batch                            : Launch in batch mode (No screen rendering)
+   -setup                            : Force initial setup (~/.spi)
+   -default ... ...                  : Use the file specified as the default parameter definition
+   -lang 0|1                         : Select language (0 Francais, 1 English)
+   -nowindow                         : Does no open the main window (Use to only launch a tool)
+   -field ... ...                    : Open the specified standard files
+   -traj ... ...                     : Open the specified trajectory files
+   -obs ... ...                      : Open the specified observation files
+   -metobs ... ...                   : Open the specified BURP or BUFR observation files
+   -geo ... ...                      : Open the specified georeferenced data files (GDAL,OGR)
+   -icon ... ...                     : Open the specified icon files
+   -macro ... ...                    : Run the specified macro scripts
+   -args ... ...                     : Arguments to be used by the previously specified macro script
+   -layout ...                       : Use the specified layout
+   -project ...                      : Use the specified spi project file
+   -tool ... ...                     : Start a specific tool
+   -pane WxH ...                     : Dimensions of the secondary panes
+   -side left|right|top|bottom       : Side on wich to put the secondary panes
+   -geom WxH+X+Y                     : Global window size\n
+   -help                             : Help information (about SPI and macro)
+   -verbose ERROR,WARNING,INFO,DEBUG : Verbose level\n"
 
    catch {
       foreach script $SPI::Param(Script) {
