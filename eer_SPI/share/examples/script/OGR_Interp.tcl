@@ -78,6 +78,10 @@ ogrlayer write LAYER SHPFILE2
 ogrfile close SHPFILE SHPFILE2
 
 
+ogrfile open CSVFILE write DataOut/OGR_Interp2D.csv "CSV"
+ogrlayer write LAYER CSVFILE
+ogrfile close CSVFILE
+
 #----- Test Point interpolation
 
 

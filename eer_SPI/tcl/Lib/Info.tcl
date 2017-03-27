@@ -51,7 +51,7 @@ namespace eval Info {
                         Backward Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
                         SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion Depth WebTide }
+                        OilFate OilBeach OilEntrainment OilEmulsion WindCoeff CurrentCoeff Depth WebTide }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \

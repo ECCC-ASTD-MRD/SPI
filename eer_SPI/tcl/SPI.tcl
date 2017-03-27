@@ -568,7 +568,7 @@ proc SPI::Layout { Frame } {
    variable Title
    variable Data
 
-   wm title [winfo toplevel $Frame] "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) ($env(USER) $GDefs(Host))"
+   wm title [winfo toplevel $Frame] "[lindex $Title(SPI) $GDefs(Lang)] $GDefs(Version) ($GDefs(Host))"
 
    Page::Size $Frame 0 0
    Viewport::Create $Frame 1 1 1 1 1 1
