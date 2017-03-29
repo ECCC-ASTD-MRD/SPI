@@ -604,7 +604,7 @@ void Data_GetStat(TData *Field){
       FSTD_FieldReadMesh(Field);
 #endif
 
-   // Calculate vector module if needed (On Y grid, components are speed/dir)
+  // Calculate vector module if needed (On Y grid, components are speed/dir)
    if (def->NC>1 && !def->Dir && Field->GRef->Grid[0]!='Y') {
       if (!def->Mode || def->Mode==def->Data[0]) {
          def->Mode=(char*)malloc(FSIZE3D(def)*TDef_Size[def->Type]);
@@ -660,7 +660,7 @@ void Data_GetStat(TData *Field){
 
                Def_GetMod(def,idx,val);
 
-               if (val!=def->NoData) {
+               if (DEFVALID(def,val)) {
                   n++;
                   Field->Stat->Avg+=val;
 
@@ -1543,7 +1543,7 @@ int Data_GetImage(Tcl_Interp *Interp,TData *Field,char* Img){
             j=Field->Def->NJ-(double)y*incrj;
             nidx=j*Field->Def->NI+i;
             Def_GetMod(Field->Def,nidx,val);
-            if (val!=Field->Def->NoData) {
+            if (DEFVALID(Field->Def,val)) {
                VAL2COL(cidx,Field->Spec,val);
 
                data.pixelPtr[idx++]=Field->Spec->Map->Color[cidx][0];
@@ -2773,7 +2773,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case MASK:
-            if (Objc!=2) {
+            if (Objc==1) {
                Tcl_WrongNumArgs(Interp,2,Objv,"fld");
                return(TCL_ERROR);
             } else {

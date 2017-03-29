@@ -426,7 +426,7 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
                      }
                   }
                }
-               tl[j][2]=((isnan(tl[j][2]) || tl[j][2]==Band->Def->NoData)?0.0:tl[j][2]*Band->Spec->TopoFactor);
+               tl[j][2]=(!DEFVALID(Band->Def,tl[j][2])?0.0:tl[j][2]*Band->Spec->TopoFactor);
 
             }
             if (Tile->Nr)

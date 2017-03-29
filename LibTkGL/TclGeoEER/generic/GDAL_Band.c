@@ -328,7 +328,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
             val=Field->Def->NoData;
          }
 
-         if (val!=Field->Def->NoData) {
+         if (DEFVALID(Field->Def,val)) {
             VAL2COL(cidx,Field->Spec,val);
          } else {
             val=0.0;
@@ -823,7 +823,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
       for(n=0;n<scan.N;n++){
          // Get the value of the data field at this latlon coordinate
          val=scan.D[n];
-         if (!isnan(val) && val!=(float)Field->Def->NoData) {
+         if (DEFVALID(Field->Def,val)) {
 
             if (def)
                Def_Set(def,0,scan.V[n],val);
@@ -2254,7 +2254,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
                for (i=0;i<Band->Def->NI;i++) {
 
                   Def_Get(Band->Def,c,FIDX2D(Band->Def,i,j),val);
-                  if (!isnan(val) && val!=Band->Def->NoData) {
+                  if (DEFVALID(Band->Def,val)) {
                      n++;
                      Band->Stat[c].Avg+=val;
 

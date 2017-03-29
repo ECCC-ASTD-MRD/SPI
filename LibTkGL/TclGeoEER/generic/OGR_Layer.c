@@ -2593,7 +2593,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
             area=*(ip++);
 
             // Check for nodata value
-            if (!isnan(val1) && val1!=FromDef->NoData && Layer->Feature[f]) {
+            if (DEFVALID(FromDef,val1) && Layer->Feature[f]) {
                val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
 
                switch(Mode) {
@@ -2684,7 +2684,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                            rt+=r;
                            nt++;
                            
-                           if (!isnan(val1) && val1!=FromDef->NoData) {
+                           if (DEFVALID(FromDef,val1)) {
                               val0=OGR_F_GetFieldAsDouble(Layer->Feature[f],Field);
                               switch(Mode) {
                                  case 'N': accum[f]+=r;

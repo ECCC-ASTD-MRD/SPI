@@ -895,7 +895,6 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       Tcl_MutexLock(&MUTEX_FSTDVI);
       ZRefInterp_SetOption("INTERP_DEGREE",FieldTo->Spec->InterpDegree);
       ZRefInterp_SetOption("VERBOSE","NO");
-      
       if (!(interp=ZRefInterp_Define(FieldTo->ZRef,FieldFrom->ZRef,FieldFrom->Def->NI,FieldFrom->Def->NJ))) {
          Tcl_AppendResult(Interp,"Unable to initialize vertical dataset (ZRefInterp_Define)\n");
          Tcl_MutexUnlock(&MUTEX_FSTDVI);
@@ -934,7 +933,7 @@ int FSTD_FieldVertInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
    }
    FieldTo->Def->NC=FieldFrom->Def->NC;
-   
+  
    if (Index) {
       // A variable was provided for the index
       if (Index[0]==(char*)0x1) Index[0]=(char*)interp;
@@ -1142,7 +1141,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
             for(i=0;i<FieldTo->Def->NI;i++,idx++) {
 
                if (gotidx) {
-
                   // Got the index, use coordinates from it
                   di=*(ip++);
                   dj=*(ip++);
@@ -1152,7 +1150,6 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
 //                     return(TCL_ERROR);
 //                  }
                } else {
-
                   // No index, project coordinate and store in index if provided
                   FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
                   ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
@@ -1186,6 +1183,32 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       }
    }
 
+   // Interpolate mask if needed
+   if (FieldFrom->Def->Mask && FieldTo->Def->Mask) {
+            
+      idx=0;  
+      for(k=0;k<FieldTo->Def->NK;k++) {
+         ip=Index;
+         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
+
+         for(j=0;j<FieldTo->Def->NJ;j++) {
+            for(i=0;i<FieldTo->Def->NI;i++,idx++) {
+
+               if (gotidx) {
+                  // Got the index, use coordinates from it
+                  di=*(ip++);
+                  dj=*(ip++);
+               } else {
+                  // No index, project coordinate
+                  FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
+                  ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
+               }
+               FieldTo->Def->Mask[idx]=(di>=0.0)?FieldFrom->Def->Mask[k*FieldFrom->Def->NIJ+ROUND(dj)*FieldFrom->Def->NI+ROUND(di)]:0;
+            }
+         }
+      }     
+   }
+  
    // In case of vectorial field, we have to recalculate the module
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
@@ -2328,8 +2351,8 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    strtrim(h.TYPVAR,' ');
    strtrim(h.ETIKET,' ');
 
-   // Champs vectoriel ???
-   if ((uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
+   // Champs vectoriel (et non mask) ???
+   if (h.TYPVAR[0]!='@' && (uvw=Data_VectorTableCheck(h.NOMVAR,&idx)) && uvw->VV) {
       field=Data_Valid(Interp,Name,mni,mnj,mnk,(uvw->WW?3:2),dtype);
       if (!field) {
          FSTD_FileUnset(Interp,file);
@@ -2699,7 +2722,12 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       return(0);
    }
 
-   App_Log(DEBUG,"%s: found %i levels\n",__func__,Field->Def->NK);
+   // Check for mask (TYPVAR==@@) 
+   if (head->TYPVAR[0]!='@' && head->TYPVAR[1]=='@') {
+      if (!(Field->Def->Mask=(char*)realloc(Field->Def->Mask,ni*nj*nk))) {
+         App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
+      }
+   }
 
    val=0.0;
    uvw=Data_VectorTableCheck(head->NOMVAR,NULL);
@@ -2709,6 +2737,23 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       idx=FSIZE2D(Field->Def)*tmp[k];
       Def_Pointer(Field->Def,0,idx,p);
 
+      // Recuperer le data seulement
+      ok=cs_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
+         &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
+         &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
+      
+      // Load mask 
+      if (Field->Def->Mask) {
+         ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,"@@",head->NOMVAR);
+         if (cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump)<0) {
+            App_Log(WARNING,"%s: Could not read mask data (c_fstluk failed) ip1=%i",__func__,ip1);
+         } else {
+            for(i=0;i<ni*nj;i++) {
+               Field->Def->Mask[idx+i]=((int*)p)[i]!=0x0;
+            }
+         }
+      }
+
       // Recuperer les donnees du champs
       c_fst_data_length(TDef_Size[Field->Def->Type]);
       if (cs_fstlukt(p,head->File->Id,idxs[k],&tile,&ni,&nj,&idump)<0) {
@@ -2717,10 +2762,6 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          return(0);
       }
 
-      // Recuperer le data seulement
-      ok=cs_fstprm(idxs[k],&idump,&idump,&idump,&idump,&idump,&idump,&idump,
-         &idump,&ip1,&idump,&idump,cdump,cdump,cdump,cdump,&idump,&idump,
-         &idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump,&idump);
 
       // Champs vectoriel ???
       if (uvw) {
@@ -2764,9 +2805,9 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
          Tcl_AppendResult(Interp,"FSTD_FieldReadLevels: Something really wrong here (c_fstprm failed)",(char*)NULL);
          FSTD_FileUnset(Interp,head->File);
          return(0);
-      }
+      }      
    }
-
+   
    GeoPos_Free(Field->GPos);
    ZRef_Free(Field->ZRef);
    Field->ZRef=ZRef_Define(type==LVL_SIGMA?LVL_ETA:type,nk,levels);
@@ -2814,7 +2855,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    unsigned long k,idx;
    void         *p;
 
-   /*Verifier l'existence du champs*/
+   // Verifier l'existence du champs
    if (!Field) {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
       return(TCL_ERROR);
@@ -2853,7 +2894,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
    NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
 
-   /*Check for compression flag and adjust datyp accordingly*/
+   // Check for compression flag and adjust datyp accordingly
    if (Compress) {
       switch (head->DATYP) {
          case 2: datyp=130; break;
@@ -2869,22 +2910,22 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
 
-      /*If IP1 is set, use it otherwise, convert it from levels array*/
+      // If IP1 is set, use it otherwise, convert it from levels array
       if ((ip1=head->IP1)==-1 || Field->Def->NK>1) {
          ip1=ZRef_Level2IP(Field->ZRef->Levels[k],Field->ZRef->Type,DEFAULT);
       }
       
-      /*Inscription de l'enregistrement*/
+      // Ecriture de l'enregistrement
       Def_Pointer(Field->Def,0,idx,p);
       c_fst_data_length(TDef_Size[Field->Def->Type]);
       ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                   ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,head->ETIKET,
                   (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
 
-      /*Inscription des champs complementaires*/
+      // Ecriture des champs complementaires
       if (Field->Def->Data[1]) {
          if ((uvw=Data_VectorTableCheck(head->NOMVAR,NULL))) {
-            /*Inscription du champs complementaire 2D*/
+            // Ecriture du champs complementaire 2D
             if (uvw->VV) {
                Def_Pointer(Field->Def,1,idx,p);
                c_fst_data_length(TDef_Size[Field->Def->Type]);
@@ -2892,7 +2933,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
                            ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,
                            (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
             }
-            /*Inscription du champs complementaire 3D*/
+            // Ecriture du champs complementaire 3D
             if (Field->Def->Data[2] && uvw->WW) {
                Def_Pointer(Field->Def,2,idx,p);
                c_fst_data_length(TDef_Size[Field->Def->Type]);
@@ -2902,6 +2943,16 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
             }
          }
       }
+      
+      // Ecriture du mask
+      if (Field->Def->Mask) {
+         p=&Field->Def->Mask[idx];
+         c_fst_data_length(1);
+         ok=c_fstecr(p,NULL,-1,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
+                     ip1,head->IP2,head->IP3,"@@",head->NOMVAR,head->ETIKET,
+                     (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,2,Rewrite);                  
+      }
+      
    }
    RPN_FieldUnlock();
 
@@ -2975,18 +3026,18 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
 
    ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->GRef,Field->ZRef,0,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);
 
-   // Inscription des champs complementaires
+   // Ecriture des champs complementaires
    if (Field->Def->Data[1]) {
       if ((uvw=Data_VectorTableCheck(head->NOMVAR,NULL))) {
          strncpy(pvar,head->NOMVAR,4);
 
-         // Inscription du champs complementaire 2D
+         // Ecriture du champs complementaire 2D
          if (uvw->VV) {
             strncpy(head->NOMVAR,uvw->VV,4);
             ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->GRef,Field->ZRef,1,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);
          }
 
-         // Inscription du champs complementaire 3D
+         // Ecriture du champs complementaire 3D
          if (Field->Def->Data[2] && uvw->WW) {
             strncpy(head->NOMVAR,uvw->WW,4);
             ok=RPN_FieldTile(file->Id,Field->Def,(TRPNHeader*)Field->Head,Field->GRef,Field->ZRef,2,NI,NJ,Halo,datyp,NPack,Rewrite,Compress);

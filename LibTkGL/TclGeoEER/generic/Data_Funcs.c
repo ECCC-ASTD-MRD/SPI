@@ -271,7 +271,7 @@ double tcount(TDef *Res,TDef *Table,TDef *MB) {
 
          /*Increment result table at matrix value's index*/
          Def_Get(MB,0,idxi,vb);
-         if (vb!=MB->NoData) {
+         if (DEFVALID(MB,vb)) {
             k=vb;
             if (k>=0 && k<nt) {
                Def_Get(Res,0,k,va)
@@ -394,7 +394,7 @@ double fkernel(TDef *Res,TDef *MA,TDef *MB) {
                      va=vs[idx+di];
 
                      /*Check for nodata value*/
-                     if (va==MA->NoData) {
+                     if (!DEFVALID(MA,va)) {
                        dw+=vb;
                      } else {
                        s+=vb*va;
@@ -445,7 +445,7 @@ double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
                      Def_Get(MA,0,idx+di,va);
 
                      /*Check for nodata value*/
-                     if (va!=MA->NoData) {
+                     if (DEFVALID(MA,va)) {
                        vs[s++]=va;
                      }
                   }
@@ -1013,7 +1013,7 @@ void stat_core(TDef *MA,TDef *MB) {
    for(i=0;i<n;i++) {
       if (MA) {
          Def_Get(MA,0,i,va);
-         if (isnan(va) || va==MA->NoData) {
+         if (!DEFVALID(MA,va)) {
             Vna++;
             continue;
          }
@@ -1021,7 +1021,7 @@ void stat_core(TDef *MA,TDef *MB) {
 
       if (MB) {
          Def_Get(MB,0,i,vb);
-         if (isnan(vb) || vb==MB->NoData) {
+         if (!DEFVALID(MB,vb)) {
             Vna++;
             continue;
          }
@@ -1698,7 +1698,7 @@ double stat_med(TDef *M) {
    if ((v=(double*)malloc(nb*sizeof(double)))) {
       for(n=0;n<nb;n++) {
          Def_Get(M,0,n,v[t]);
-         if( !isnan(v[t]) && v[t]!=M->NoData )
+         if (DEFVALID(M,v[t]) )
             ++t;
       }
 
@@ -1722,7 +1722,7 @@ double stat_unique(TDef *M) {
    if ((v=(double*)malloc(nb*sizeof(double)))) {
       for(n=0;n<nb;n++) {
          Def_Get(M,0,n,v[t]);
-         if( !isnan(v[t]) && v[t]!=M->NoData )
+         if (DEFVALID(M,v[t]))
             ++t;
       }
 
@@ -1748,7 +1748,7 @@ double stat_sum(TDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      if( !isnan(v) && v!=M->NoData )
+      if (DEFVALID(M,v))
          sum+=v;
    }
    return sum;
@@ -1761,7 +1761,7 @@ double stat_min(TDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      if( !isnan(v) && v!=M->NoData && v<min )
+      if (DEFVALID(M,v) && v<min )
          min=v;
    }
    return min;
@@ -1774,7 +1774,7 @@ double stat_max(TDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      if( !isnan(v) && v!=M->NoData && v>max )
+      if (DEFVALID(M,v) && v>max)
          max=v;
    }
    return max;
@@ -1787,7 +1787,7 @@ double stat_avg(TDef *M) {
 
    for(i=0;i<FSIZE3D(M);i++) {
       Def_Get(M,0,i,v);
-      if( !isnan(v) && v!=M->NoData ) {
+      if (DEFVALID(M,v)) {
          sum+=v;
          ++n;
       }
