@@ -127,7 +127,7 @@ proc Macro::AutoDYO::Clean { } {
    fstdfield free DYOFLD
 }
 
-proc Macro::AutoTraj::Args { } {
+proc Macro::AutoDYO::Args { } {
    global argv argc
    variable Param
 

@@ -313,6 +313,7 @@ proc Info::Decode { Var Info } {
       set value [lindex $list 1]
       set found 0
 
+      #----- In the past we used the labels as tokens
       foreach { item descs } [array get Lbl] {
          foreach desc $descs {
 
@@ -328,6 +329,7 @@ proc Info::Decode { Var Info } {
          }
       }
 
+      #----- But bow we use the tokens
       if { !$found } {
          set var($token) $value
       }
