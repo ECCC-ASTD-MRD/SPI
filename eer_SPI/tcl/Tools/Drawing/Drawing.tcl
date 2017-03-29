@@ -2103,7 +2103,7 @@ proc Drawing::SetArrow { Frame Arrow } {
    variable Data
    variable Current
 
-   Drawing::SetIndex $Frame 7 $Arrow
+   Drawing::SetIndex $Frame 8 $Arrow
 
    catch { $Frame.page.canvas itemconf $Data(Tag)$Current(NoItem) -arrow $Arrow }
    catch { $Frame.page.canvas itemconf VERTEXFOLLOW -arrow $Arrow }
