@@ -556,10 +556,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    double        dist;
 
    static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-intersection","-union","-difference","-symmetricdifference",
+                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
-   enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,INTERSECTION,
+   enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
@@ -688,6 +688,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_ConvexHull(g0)));
          break;
 
+      case DISSOLVE:
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGRGeometry(GPC_UNION,g0)));
+         break;
+         
       case INTERSECTION:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"geometry");

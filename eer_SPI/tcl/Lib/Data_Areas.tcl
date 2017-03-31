@@ -111,15 +111,16 @@ proc Areas::CreateWidget { Parent } {
 
 proc Areas::Init { } {
    global GDefs
+   variable Data
 
-   Areas::Read $GDefs(Dir)/data/RSMC.shp                                         #AAAA00 #FFFF00
-   Areas::Read [list $GDefs(Dir)/data/VAAC.shp $GDefs(Dir)/data/VAAC_555km.shp ] #AA0000 #FF0000
-   Areas::Read $GDefs(Dir)/data/FIR.shp                                          #00AA00 #00FF00
-   Areas::Read $GDefs(Dir)/data/MWO.shp                                          #0000AA #0000FF
-   Areas::Read $GDefs(Dir)/data/Volcano.shp                                      #AA0000 #FF0000
-   Areas::Read $GDefs(Dir)/data/TimeZone.shp                                     #AAAA00 #FFFF00 TZ
-   Areas::Read $GDefs(Dir)/data/RADAR.shp                                        #AAAAAA #FFFFFF ID
-   Areas::Read $GDefs(Dir)/data/GEM.shp                                          #00C0CA #000000 NAME
+   Areas::Read $GDefs(Dir)/data/RSMC.shp                                         #AAAA00 #FFFF00 False True
+   Areas::Read [list $GDefs(Dir)/data/VAAC.shp $GDefs(Dir)/data/VAAC_555km.shp ] #AA0000 #FF0000 False True
+   Areas::Read $GDefs(Dir)/data/FIR.shp                                          #00AA00 #00FF00 False True
+   Areas::Read $GDefs(Dir)/data/MWO.shp                                          #0000AA #0000FF False True
+   Areas::Read $GDefs(Dir)/data/Volcano.shp                                      #AA0000 #FF0000 False True
+   Areas::Read $GDefs(Dir)/data/TimeZone.shp                                     #AAAA00 #FFFF00 False True TZ
+   Areas::Read $GDefs(Dir)/data/RADAR.shp                                        #AAAAAA #FFFFFF False True ID
+   Areas::Read $GDefs(Dir)/data/ModelDomain.shp                                  #00C0CA #000000 False False NAME
 }
 
 #----------------------------------------------------------------------------
@@ -140,7 +141,7 @@ proc Areas::Init { } {
 #
 #----------------------------------------------------------------------------
 
-proc Areas::Read { File Fill Line { Field "" } } {
+proc Areas::Read { File FillColor LineColor Id Fill { Field "" } } {
    global GDefs
    variable Data
 
@@ -148,9 +149,8 @@ proc Areas::Read { File Fill Line { Field "" } } {
       foreach layer [ogrfile open $file read $file] {
          set l [lindex $layer 2]
          eval ogrlayer read $l $layer
-         ogrlayer configure $l -width 4 -font XFont16 -activeoutline $Line -activefill $Fill -transparency 50
 
-         set Data(FillColor$l) $Fill
+         set Data(FillColor$l) $FillColor
 
          if { $Field!="" } {
             set Data(Field$l) $Field
@@ -159,9 +159,11 @@ proc Areas::Read { File Fill Line { Field "" } } {
          }
       }
       lappend layerid $l
+
+      ogrlayer configure $l -width 4 -font XFont16 -activeoutline $LineColor -activefill [expr {"$Fill"?"$FillColor":""}] -labelvar [expr {"$Id"?"$Data(Field$l)":""}] -transparency 50
    }
-   set Data(Id$layerid) False
-   set Data(Fill$layerid) True
+   set Data(Id$layerid) $Id
+   set Data(Fill$layerid) $Fill
 
    lappend Data(Layers) $layerid
 }
@@ -246,6 +248,24 @@ proc Areas::DisplayToggle { Type No } {
 
    set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $Type]
    if { ![llength $f] } {
+      set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
+   } elseif { $idx==-1 } {
+      lappend Viewport::Data(Data$Page::Data(Frame)) $Type
+   }
+   set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
+
+   projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Page::Data(Frame))
+   Page::Update $Page::Data(Frame)
+}
+
+proc Areas::DisplayList { Type List } {
+   global GDefs
+   variable Data
+
+   ogrlayer define $Type -featurehighlight $List
+
+   set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $Type]
+   if { ![llength $List] } {
       set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
    } elseif { $idx==-1 } {
       lappend Viewport::Data(Data$Page::Data(Frame)) $Type

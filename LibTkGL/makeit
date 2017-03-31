@@ -68,7 +68,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.1.4${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.2.1${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 EXT_LIB_PATH=${EXT_LIB_PATH}/${ORDENV_PLAT}
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
