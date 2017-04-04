@@ -34,17 +34,20 @@ set vars   {  P0     P0               P0           P0         GL      GL     WH 
 set subs   {  { "" } { "" }           { "" }       { "" }     { "" }  { "" } { arc eri gsl hur nat ont pac sup } { "" } { arctic9 hudson ne_pac4 nwatl sshelf h3o stle400 } }
 set models [list $ops/reghyb $ops/lam/nat.model $ops/lam/nord.model $ops/mach $ops/riops.native $ops/gsloce $ops/wamreg /fs/cetusops/fs1/prod/hubs/suites/ops/shop/gridpt/anal/shop/stlawrence/ $env(WEBTIDE_DATA)]
 
+set nb 0
+foreach s $subs { incr nb [llength $s] }
+
 #----- Open GEM index file
 eval file delete [glob -nocomplain DataOut/ModelDomain.*]
 ogrfile open INDEXFILE write DataOut/ModelDomain.shp "ESRI Shapefile"
 ogrlayer create INDEXFILE INDEX "Domain"
 
 ogrlayer define INDEX -field NAME String
-ogrlayer define INDEX -nb [llength $models]
+ogrlayer define INDEX -nb $nb
 
 #----- Initialiser la geometrie
 ogrgeometry create TIN   "Multi Polygon"
-ogrgeometry create MULTI "Multi Polygon"
+ogrgeometry create TRI   "Polygon"
 ogrgeometry create POLY  "Polygon"
 ogrgeometry create RING  "Linear Ring"
 ogrgeometry create MPOINT "Multi Point"
@@ -54,15 +57,10 @@ ogrgeometry create POINT "Point"
 set no 0
 foreach model $models sub $subs var $vars name $names {
 
-   ogrgeometry define MULTI  -geometry False {}
-   
    foreach s $sub {
    
       Log::Print INFO "Processing $model $s"
-      
-      ogrgeometry define MPOINT -geometry False {}
-      ogrgeometry define TIN    -geometry False {}
-      
+            
       #----- Pick the last file
       if { $name=="WEBTIDE"} {
          set file [glob -nocomplain $model/$s/*.fstd]
@@ -86,7 +84,7 @@ foreach model $models sub $subs var $vars name $names {
       set ni  [fstdfield define VAR -NI]
       set nj  [fstdfield define VAR -NJ]
       set gr  [fstdfield define VAR -GRTYP]
-
+   
       ogrgeometry define RING -points {}
 
       switch $gr {
@@ -94,6 +92,7 @@ foreach model $models sub $subs var $vars name $names {
             fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
             fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
             
+            ogrgeometry define MPOINT -geometry False {}
             for { set i 0 } { $i<$ni } { incr i } {
                set lat [fstdfield stats LAT -gridvalue $i 0]
                
@@ -106,13 +105,14 @@ foreach model $models sub $subs var $vars name $names {
                ogrgeometry define POINT -points [list $lon $lat]
                ogrgeometry define MPOINT -addgeometry False POINT
             }
-            ogrgeometry define MULTI -addgeometry False [ogrgeometry stats MPOINT -convexhull]
+            set geom [ogrgeometry stats MPOINT -convexhull]
          }
          "M" {
             fstdfield read IDX RPNFILE -1 "" -1 -1 -1 "" ##
             fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
             fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
             
+            ogrgeometry define TIN    -geometry False {}
             for { set i 0 } { $i<[fstdfield define IDX -NI] } { incr i 3 } {
                set i0 [fstdfield stats IDX -gridvalue $i          0]
                set i1 [fstdfield stats IDX -gridvalue [expr $i+1] 0]
@@ -126,12 +126,11 @@ foreach model $models sub $subs var $vars name $names {
                set la2 [fstdfield stats LAT -gridvalue $i2 0]
                
                ogrgeometry define RING -points [list $lo0 $la0 $lo1 $la1 $lo2 $la2 $lo0 $la0]
-               ogrgeometry define POLY -geometry False RING
-               ogrgeometry define TIN -addgeometry False POLY
+               ogrgeometry define TRI -geometry False RING
+               ogrgeometry define TIN -addgeometry False TRI
             }
-            #puts stderr [ogrgeometry define [ogrgeometry stats TIN -boundary] -wkt]
-            ogrgeometry define MULTI -addgeometry False [ogrgeometry stats TIN -dissolve]
-#            ogrgeometry define MULTI -addgeometry False [ogrgeometry stats TIN -convexhull]
+            set geom [ogrgeometry stats TIN -dissolve]
+#            set geom [ogrgeometry stats TIN -convexhull]
          }
          default {
             #----- Bottom
@@ -166,16 +165,20 @@ foreach model $models sub $subs var $vars name $names {
             set ll [fstdfield stats VAR -gridpoint 0 0]
             ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
             ogrgeometry define POLY -geometry False RING
-            ogrgeometry define MULTI -addgeometry False POLY
+            set geom POLY
          }
       }
 
       fstdfile close RPNFILE
+      
+      if { $s!="" } {
+         ogrlayer define INDEX -feature $no NAME "$name ($s)"
+      } else {
+         ogrlayer define INDEX -feature $no NAME $name
+      }
+      ogrlayer define INDEX -geometry $no False $geom
+      incr no
    }
-   ogrlayer define INDEX -feature $no NAME $name
-   ogrlayer define INDEX -geometry $no False MULTI
-
-   incr no
 }
 
 ogrfile close INDEXFILE
