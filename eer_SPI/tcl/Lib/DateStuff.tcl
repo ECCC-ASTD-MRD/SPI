@@ -372,9 +372,23 @@ proc DateStuff::StringTimeFromSeconds { Seconds { Zone Z } } {
 }
 
 proc DateStuff::SecsToHours { Secs } {
-    return [string trimright [format "%.4f" [expr {$Secs/3600.0}]] ".0"]
+
+    set hrs [expr {$Secs/3600.0}]
+    
+    if { [expr {$hrs-int($hrs)}]>0.0 } { 
+       return [format "%.4f" $hrs]
+    } else {
+       return [expr int($hrs)]
+    }
 }
 
 proc DateStuff::MinsToHours { Mins } {
-    return [string trimright [format "%.2f" [expr {$Mins/60.0}]] ".0"]
+
+    set mins [expr {$Mins/60.0}]
+    
+    if { [expr {$mins-int($mins)}]>0.0 } { 
+       return [format "%.2f" $mins]
+    } else {
+       return [expr int($mins)]
+    }
 }
