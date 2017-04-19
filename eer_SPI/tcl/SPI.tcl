@@ -113,15 +113,17 @@ proc SPI::Execute { Script } {
       namespace inscope :: source $Script
 
       #----- If Macro then execute it
-      set script [file rootname [file tail $Script]]
+      set macro [file rootname [file tail $Script]]
 
-      if { [namespace exists ::Macro::$script] } {
+      if { [namespace exists ::Macro::$macro] } {
          if { $Param(Help) } {
-            Macro::Desc $script
+            Macro::Desc $macro
          } else {
             set Macro::Param(Path) [file normalize [file dirname $Script]]
-            Macro::Run $script False
+            Macro::Run $macro False
          }
+      } else {
+         Log::Print WARNING "No Macro::$macro namespace found in the macro $Script"
       }
    }
 }
@@ -1565,7 +1567,7 @@ proc SPI::IcoDraw { Frame args } {
                   #----- Affchage du texte
                   if { $Param(IconId) && $id!=""  } {
                      $Frame.page.canvas create text [expr $x+$Param(IconDX)] [expr $y+$Param(IconDY)] -text "$id" -fill $col \
-                        -tags "$group TEXT$group" -anchor $Param(IconAnchor) -font XFontIcon
+                        -tags "$group TEXT$group" -anchor $Param(IconAnchor) -font $Param(IconFont)
                      $Frame.page.canvas bind $tag <Enter> ""
                      $Frame.page.canvas bind $tag <Leave> ""
                   } else {

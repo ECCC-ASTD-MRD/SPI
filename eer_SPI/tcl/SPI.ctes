@@ -55,10 +55,11 @@ namespace eval SPI {
    set Param(Icons)          {}           ;#Fichiers icones
    set Param(IconId)         False        ;#Affichage des descriptifs des icones
    set Param(IconImage)      True         ;#Affichage des icones des icones
-   set Param(IconCircle)     0            ;#Affichage d'un rayou autour d'une icone (en metres)
+   set Param(IconCircle)     0            ;#Affichage d'un rayon autour d'une icone (en metres)
    set Param(IconDX)         10           ;#Delta en X pour l'id de l'icone
    set Param(IconDY)        -10           ;#Delta en Y pour l'id de l'icone
    set Param(IconAnchor)     sw           ;#Point d'ancrage de l'id de l'icone
+   set Param(IconFont)       XFontIcon    ;#Police des icones
    set Param(Help)           False        ;#Print information
    
    #----- Definitions des variables internes
