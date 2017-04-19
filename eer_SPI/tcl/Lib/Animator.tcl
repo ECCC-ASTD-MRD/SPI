@@ -409,6 +409,9 @@ proc Animator::MiniWindow { Parent Frame } {
       pack $Parent.anim.frame -side left -fill y -expand true
 
    set Play(Cycle) 1
+   
+   bind $Parent.anim.frame <ButtonPress-4> "Animator::Step 1"
+   bind $Parent.anim.frame <ButtonPress-5> "Animator::Step -1"
 
    #----- Creation des bulles d'aides
 
@@ -660,7 +663,13 @@ proc Animator::GetPlayListField { } {
             set ip2     [fstdfield define $fld -IP2]
             set ip3     [fstdfield define $fld -IP3]
             set etiket  [fstdfield define $fld -ETIKET]
-            set date    [clock format [fstdstamp toseconds [fstdfield define $fld -DATEV]] -format "%Y%m%d%H%M" -timezone :UTC]
+            
+            #----- Sepcial case for secconds at 0
+            if { [set sec [fstdstamp toseconds [fstdfield define $fld -DATEV]]] } {
+               set date    [clock format $sec -format "%Y%m%d%H%M" -timezone :UTC]
+            } else {
+               set date 000000000000
+            }
          } elseif { [gribfield is $fld] } {
 
             set tags [gribfield stats $fld -tag]
@@ -689,9 +698,9 @@ proc Animator::GetPlayListField { } {
             "ETIKET"  { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
             "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
-
          set no 0
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+
             #----- Do not use masks
             if  { [string index [lindex $field 1] 0]=="@" } {
                continue
