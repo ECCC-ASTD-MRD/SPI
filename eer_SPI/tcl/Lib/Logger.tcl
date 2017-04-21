@@ -722,12 +722,12 @@ proc Log::Mail { Subject File { Address { } } } {
 
    if { [llength $address] } {
       if { ![file exists $File] || ![file readable $File] } {
-         set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address } msg]
+         set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle) - ${Subject} ($Param(JobId))\" $address } msg]
       } else {
-         set err [catch { eval exec mail -s \"$Param(MailTitle): ${Subject} ($Param(JobId))\" $address < $File } msg]
+         set err [catch { eval exec mail -s \"$Param(MailTitle) - ${Subject} ($Param(JobId))\" $address < $File } msg]
       }
       if { $err } {
-         Log::Print ERROR "Problems while mailing info to $address:\n\n\t"
+         Log::Print ERROR "Problems while mailing info to $address:\n\n\t$msg"
       }
    }
 }
