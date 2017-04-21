@@ -475,20 +475,20 @@ proc Log::End { { Status 0 } { Exit True } } {
       close $Param(Out)
    }
 
-   if { $Status==0 } {
+   if { $Param(JobClass)=="REPORT" } {
+      if { $Param(Error)>0 } {
+         Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
+      } elseif { $Param(Warning)>0 } {
+         Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
+      } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
+         Log::Mail "Job finished (NORMAL)" $Param(OutFile)
+      }
+   } elseif { $Status==0 } {
       if { $Param(JobClass)=="INTERACTIVE" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-      } elseif { $Param(JobClass)=="REPORT" } {
-         if { $Param(Error)>0 } {
-            Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
-         } elseif { $Param(Warning)>0 } {
-            Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
-         } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
-            Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-         }
       }
    } else {
-      Log::Mail "Job finished (ERROR)" $Param(OutFile)
+      Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
    }
 
    if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
