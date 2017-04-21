@@ -38,11 +38,12 @@ set nb 0
 foreach s $subs { incr nb [llength $s] }
 
 #----- Open GEM index file
-eval file delete [glob -nocomplain DataOut/ModelDomain.*]
+eval file delete [glob -nocomplain DataOut/ModelDomain*]
 ogrfile open INDEXFILE write DataOut/ModelDomain.shp "ESRI Shapefile"
 ogrlayer create INDEXFILE INDEX "Domain"
 
 ogrlayer define INDEX -field NAME String
+ogrlayer define INDEX -field ID   Integer
 ogrlayer define INDEX -nb $nb
 
 #----- Initialiser la geometrie
@@ -55,6 +56,8 @@ ogrgeometry create POINT "Point"
 
 #----- Loop on the models
 set no 0
+set mdl 0
+
 foreach model $models sub $subs var $vars name $names {
 
    foreach s $sub {
@@ -176,9 +179,11 @@ foreach model $models sub $subs var $vars name $names {
       } else {
          ogrlayer define INDEX -feature $no NAME $name
       }
+      ogrlayer define INDEX -feature $no ID $mdl
       ogrlayer define INDEX -geometry $no False $geom
       incr no
    }
+   incr mdl
 }
 
 ogrfile close INDEXFILE
