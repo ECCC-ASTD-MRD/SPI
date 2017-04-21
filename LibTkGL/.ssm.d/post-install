@@ -33,7 +33,7 @@ export GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
 
 #----- GDB data
 if [ -z "\${GDB_PATH}" ]; then
-   if [ -n "\${ORDENV_GROUP_PROFILE}" ]; then
+   if [ `domainname -d` = "science.gc.ca" ]; then
       #----- On the SCIENCE side
       export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
    else
@@ -67,7 +67,13 @@ setenv GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
 
 #----- GDB data
 if [ -z \${GDB_PATH} ]; then
-   setenv GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+   if [ `domainname -d` = "science.gc.ca" ]; then
+      #----- On the SCIENCE side
+      setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+   else
+      #----- On the EC side
+      setenv GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+   fi
 fi
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
