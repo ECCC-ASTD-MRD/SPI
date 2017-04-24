@@ -19,6 +19,8 @@
 #   Log::End      { { Status 0 } }
 #   Log::Print    { Type Message { Var "" } }
 #   Log::Mail     { Subject File { Address { } } }
+#   Log::Pager    { }
+#   Log::XFlow    { }
 #   Log::CheckSPI { Version }
 #   Log::Stack    { }
 #
@@ -71,7 +73,7 @@ namespace eval Log { } {
    set Param(Process)     ""                    ;#Process number
    set Param(SPI)         ""                    ;#SPI version requirement
    set Param(Vanish)      False                 ;#Disappear without leaving any trace (only applied if no error nor warning was encountered)
-
+   
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
    set Param(SecStart)    $Param(SecTime)       ;#Start time
@@ -80,6 +82,7 @@ namespace eval Log { } {
 
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
    set Param(MailTitle)   ""                    ;#Mail title
+   set Param(Pager)       ""                    ;#Pager address
 
    set Param(Cyclope)     False                 ;#Use Cyclope
    set Param(CyclopePath) $env(HOME)/.Cyclope   ;#Path to Cyclope
@@ -478,6 +481,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    if { $Param(JobClass)=="REPORT" } {
       if { $Param(Error)>0 } {
          Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
+         Log::Pager
       } elseif { $Param(Warning)>0 } {
          Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
       } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
@@ -489,6 +493,7 @@ proc Log::End { { Status 0 } { Exit True } } {
       }
    } else {
       Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
+      Log::Pager
    }
 
    if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
@@ -635,18 +640,6 @@ proc Log::Print { Type Message { Var "" } } {
          set cend ""
       }
 
-      #----- If it is an error, print it on stderr
-      if { $Type=="ERROR" && $Param(Out)!="stdout" } {
-         puts stderr "${time}(${Type}) ${proc}${Message}"
-         if { $Param(XFlow)!=""  } {
-            set err [catch { exec echo "nodelogger -n /default_mod -d [clock format [clock seconds] -format %Y%m%d%H%M%S0000] -m "$Param(XFlow)\n\n${time}(${Type}) ${proc}${Message}" -s info" | ssh -T -i ${HOME}/.ssh/rsa_nodelogger afsiops@castor 2>@1 } msg]
-            if { $err } {
-               puts stderr "${time}(ERROR) Problems while calling nodelogger:\n\n\t$msg"
-               puts $Param(Out) "${cstart}${time}(ERROR) Problems while calling nodelogger:\n\n\t$msg${cend}"
-            }
-         }
-      }
-
       if { $Type=="MUST" } {
          puts $Param(Out) "${Message}"
       } else {
@@ -728,6 +721,43 @@ proc Log::Mail { Subject File { Address { } } } {
       }
       if { $err } {
          Log::Print ERROR "Problems while mailing info to $address:\n\n\t$msg"
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::Pager>
+# Creation : Avril 2017 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Envoyer un message succint au pager.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+
+proc Log::Pager { } {
+   variable Param
+
+   if { $Param(Pager)!="" } {
+      set err [catch { eval exec echo -e \$Param(JobId) | mail -s \"$Param(MailTitle)\" $Param(Pager) } msg]
+      if { $err } {
+         Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
+      }
+   }
+}
+
+proc Log::XFlow { } {
+   variable Param
+
+   if { $Param(XFlow)!=""  } {
+      set err [catch { exec echo "nodelogger -n /default_mod -d [clock format [clock seconds] -format %Y%m%d%H%M%S0000] \
+         -m "$Param(MailTitle)\\n\n$Param(XFlow)" \
+         -s info" | ssh -T -i ${HOME}/.ssh/rsa_nodelogger afsiops@castor 2>@1 } msg]
+      if { $err } {
+         Log::Print ERROR "Problems while calling nodelogger:\n\n\t$msg"
       }
    }
 }
