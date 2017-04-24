@@ -80,6 +80,10 @@ namespace eval Mapper::DepotWare {
    set Bubble(Size)    { "Taille courante du cache" "Current cache size" }
 }
 
+if { [file exists $env(HOME)/.spi/Mapper] } {
+   source $env(HOME)/.spi/Mapper
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <Mapper::DepotWare::CacheClear>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
@@ -732,11 +736,6 @@ proc Mapper::DepotWare::Create { } {
    if { [llength [TREE children root]] } {
       return
    }
-
-   if { [file exists $env(HOME)/.spi/Mapper] } {
-      source $env(HOME)/.spi/Mapper
-   }
-
  
    foreach type $Lbl(Types) {
       set type [lindex $type 0]

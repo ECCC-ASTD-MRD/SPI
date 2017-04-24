@@ -401,9 +401,10 @@ proc  Mapper::DepotWare::TMS::Select { Tree Branch { Select True } { SQL "" } } 
 
 proc  Mapper::DepotWare::TMS::Load { Name { Res 2 } } {
    variable Param
+   variable Data
 
-   if { [set idx [lsearch -exact -index 0 $Param(Depots) $Name]]!=-1 } {
-      set xml [lindex [lindex $Param(Depots) $idx] 2]
+   if { [set idx [lsearch -exact -index 0 $Mapper::DepotWare::Data(Depots) $Name]]!=-1 } {
+      set xml [lindex [lindex $Mapper::DepotWare::Data(Depots) $idx] 2]
    } else {
       return
    }
