@@ -616,7 +616,7 @@ if [[ $SPI -eq 1 ]]; then
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-R=$(R RHOME)
    fi
-   make install || exit 1
+   make install || if [ ! "$ORDENV_DIST" = "sles" ]; then exit 1; fi
 
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
