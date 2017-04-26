@@ -275,7 +275,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
       return TCL_ERROR;
    }
 
-   /* Creer l'entree dans la liste table de fichiers standards */
+   // Creer l'entree dans la liste table de fichiers standards
    entry=TclY_CreateHashEntry(&Radar_FileTable,Id,&new);
    if (!new) {
       Tcl_AppendResult(Interp,"   Radar_FileOpen: File already opened, cannot reuse openned file identificator ",Id,(char*)NULL);
@@ -292,13 +292,13 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    Tcl_SetHashValue(entry,file);
 
-   /*Read in the data*/
+   // Read in the data
    if (!(buf=readFile(Name,&sz))) {
       Tcl_AppendResult(Interp,"   Radar_FileOpen: Invalid radar file",(char*)NULL);
       return(TCL_ERROR);
    }
 
-   /*Decode the data*/
+   // Decode the data
    if ((DecodeRadarData(buf,sz,&file->Data)==-1)) {
       Tcl_AppendResult(Interp,"   Radar_FileOpen: Unable to decode radar data",(char*)NULL);
       free(buf);
@@ -311,7 +311,10 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
       return(TCL_ERROR);
    }
 
-//   Radar_FileParse(&file->Data);
+   // In debug mode, print radar data
+   if (App_LogLevel(NULL)==DEBUG) 
+      Radar_FileParse(&file->Data);
+   
    for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            /*Loop on the Sweeps*/
       th[v]=file->Data.volScan[0]->sweep[v]->elevationAngle;
    }

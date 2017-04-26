@@ -777,7 +777,7 @@ proc Log::XFlow { } {
 # Remarques :
 #----------------------------------------------------------------------------
 
-proc Log::CyclopePing { {Delay -1} { Job "" } } {
+proc Log::CyclopePing { { Delay -1 } { Job "" } } {
    variable Param
 
    if { $Job=="" } {
