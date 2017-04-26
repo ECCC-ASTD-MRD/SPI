@@ -32,7 +32,7 @@ export GRIB_SAMPLES_PATH=\${SPI_LIB}/share/grib_api/samples
 export GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
 
 #----- GDB data
-if [ -z "\${GDB_PATH}" ]; then
+if [ ! -d "\${GDB_PATH}" ]; then
    if [ `domainname -d` = "science.gc.ca" ]; then
       #----- On the SCIENCE side
       export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data

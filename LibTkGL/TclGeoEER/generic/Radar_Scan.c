@@ -394,17 +394,16 @@ int Radar_Parse(TData *Rad) {
 
    vol=head->Data->volScan[head->Scan];
 
-   for (k=0;k<Rad->Def->NK;k++) {            /*Loop on the Sweeps*/
-      for (j=0;j<Rad->Def->NJ;j++) {            /*Loop on the Bins*/
-         for (i=0;i<Rad->Def->NI;i++) {           /*Loop on the Azimuths*/
+   for (k=0;k<Rad->Def->NK;k++) {            // Loop on the Sweeps
+      for (j=0;j<Rad->Def->NJ;j++) {            // Loop on the Bins
+         for (i=0;i<Rad->Def->NI;i++) {           // Loop on the Azimuths
 
             if (i==Rad->Def->NI-1) {
                Def_Get(Rad->Def,0,FIDX3D(Rad->Def,0,j,k),val);
                Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
             } else {
-               ray=vol->sweep[k]->rays[i];
-               val=((unsigned char*)ray->rangeBin)[j];
-               val=N_DBZ(val);
+               ray=vol->sweep[k]->rays[i];             
+               val=(j>=ray->numBins)?-32.0:N_DBZ(((unsigned char*)ray->rangeBin)[j]);
                Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
             }
          }
