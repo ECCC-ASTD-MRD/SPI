@@ -106,6 +106,7 @@ if [[ $EXT -eq 1 ]]; then
    #----- Package to be compiled / installed
    TCL_VERSION=8.6.6
    TCLLIB=1.18
+   TCLTLS=tcltls-1.7.12
    TKIMG=tkimg1.4.6
    TKTABLE=Tktable2.10
    TKDND=tkdnd2.8
@@ -232,6 +233,13 @@ if [[ $EXT -eq 1 ]]; then
    #----- Tcllib
    cd ${EXT_SRC_PATH}/Tcllib-${TCLLIB}
    ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/tcllib${TCLLIB} || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tcltls
+   echo "Building ${TMP_PATH}/${TCLTLS}/build.log"
+   mkdir ${TMP_PATH}/${TCLTLS}
+   cd ${TMP_PATH}/${TCLTLS}
+   (${EXT_SRC_PATH}/${TCLTLS}/configure --prefix=${LIB_PATH}/TCL --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TCLTLS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- TkImg
 #    if [[ $ARCH != "AIX" ]]; then
