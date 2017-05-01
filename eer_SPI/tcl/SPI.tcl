@@ -237,6 +237,7 @@ glrender -xbatch $SPI::Param(Batch) -usethreads $SPI::Param(Threads)
 package require Tktable
 package require tkdnd
 package require http
+package require tls; ::http::register https 443 ::tls::socket
 package require tdom
 package require struct::tree
 

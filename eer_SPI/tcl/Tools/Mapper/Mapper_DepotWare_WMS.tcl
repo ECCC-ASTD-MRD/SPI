@@ -559,6 +559,9 @@ proc Mapper::DepotWare::WMS::ReLoad { Layer { Style "" } { Time "" } } {
 proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
 
    if { $URL!="" } {
+   
+      set URL [string map { " " + } $URL]
+      
       #----- get the data from the url and save to tempdir
       set f [open /tmp/lg[pid] w]
       set req [http::geturl $URL -binary True -blocksize 1048580 -channel $f]
