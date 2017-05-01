@@ -216,15 +216,15 @@ int Tclgeoeer_Init(Tcl_Interp *Interp) {
 */
 int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type){
 
-   int          idx,n,bool;
+   int          idx,n,bool=0;
    TData       *field0,*field1;
    TDataSpec   *spec;
    TDataVector *uvw;
    Tcl_Obj     *obj;
    double       nd;
 
-   static CONST char *sopt[] = { "vector","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
-   enum                opt { VECTOR,COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "vector","alias","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
+   enum                opt { VECTOR,ALIAS,COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -272,15 +272,18 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          break;
          
+      case ALIAS:
+         bool=1;
+         
       case COPY:
          if (Objc!=4 && Objc!=5) {
             Tcl_WrongNumArgs(Interp,2,Objv,"idto idfrom [alias]");
             return(TCL_ERROR);
          }
-         bool=0;
          if (Objc==5) {
             Tcl_GetBooleanFromObj(Interp,Objv[4],&bool);
          }
+         
          if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,bool)) {
             return(TCL_ERROR);
          } else {
@@ -433,7 +436,6 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_WrongNumArgs(Interp,2,Objv,"fld");
             return(TCL_ERROR);
          }
-         bool=0;
          if (Objc>3) {
             Tcl_GetBooleanFromObj(Interp,Objv[3],&bool);
          }
@@ -760,8 +762,8 @@ int Data_Free(TData *Field) {
 
 TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 
-   TData    *field;
-   TDef *def;
+   TData *field;
+   TDef  *def;
    int    i,alias;
 
    if (!Field || !Field->Def)

@@ -162,8 +162,8 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
-   int    nras=0,u,u0,u1,udef;
-
+   int nras=0,u,a,u0,u1,udef;
+     
    // Verifier l'existence du champs
    if (!Field || !Field->GRef || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
