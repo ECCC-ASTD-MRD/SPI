@@ -920,7 +920,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
 
             pt0[0]=0;
             pt1[0]=vp->Width;
-            for(iy=0;iy<vp->Width;iy+=5) {
+            for(iy=0;iy<vp->Height;iy+=5) {
                pt0[1]=iy;
                pt1[1]=iy;
 

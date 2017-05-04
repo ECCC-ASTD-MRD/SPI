@@ -395,10 +395,10 @@ int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
       return(TCL_ERROR);
    }
 
-   /*Recuperer le handle de l'image specifie*/
+   // Recuperer le handle de l'image specifie
    handle=Tk_FindPhoto(Interp,Img);
 
-   /*Definir les parametres du bock de donnees*/
+   // Definir les parametres du bock de donnees
    if (Tk_PhotoSetSize(Interp,handle,Band->Def->NI,Band->Def->NJ)==TCL_ERROR) {
       return(TCL_ERROR);
    }
@@ -453,7 +453,7 @@ int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
       }
    }
 
-   /*Envoyer le data dans l'image Tk*/
+   // Envoyer le data dans l'image Tk
    if (Tk_PhotoPutBlock(Interp,handle,&data,0,0,Band->Def->NI,Band->Def->NJ,TK_PHOTO_COMPOSITE_SET)==TCL_ERROR) {
      free(data.pixelPtr);
      return(TCL_ERROR);
