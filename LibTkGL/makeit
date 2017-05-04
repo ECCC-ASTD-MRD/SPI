@@ -116,7 +116,7 @@ if [[ $EXT -eq 1 ]]; then
    TDOM=tdom-master
    EXPAT=expat-2.2.0
    CURL=curl-7.49.1
-   SQLITE=sqlite-3.6.23
+#   SQLITE=sqlite-3.6.23
    GEOS=geos-3.5.0
    GDAL=gdal-2.1.1
    MYSQL=mysql-5.1
@@ -313,13 +313,13 @@ if [[ $EXT -eq 1 ]]; then
    fi
 
    #----- sqlite
-   if [[ $ARCH != "AIX" ]]; then
-      echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
-      mkdir ${TMP_PATH}/${SQLITE}.1
-      cd ${TMP_PATH}/${SQLITE}.1
-      (${EXT_SRC_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
-      make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-   fi
+#    if [[ $ARCH != "AIX" ]]; then
+#       echo "Building ${TMP_PATH}/${SQLITE}.1/build.log"
+#       mkdir ${TMP_PATH}/${SQLITE}.1
+#       cd ${TMP_PATH}/${SQLITE}.1
+#       (${EXT_SRC_PATH}/${SQLITE}.1/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-threadsafe
+#       make install) > ${TMP_PATH}/${SQLITE}.1/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+#    fi
 
    #----- geos
    if [[ $ARCH != "AIX" ]]; then
