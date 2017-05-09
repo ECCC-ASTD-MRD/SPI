@@ -1175,8 +1175,8 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
    Coord  coord;
    Vect3d pix;
-   int    txtw,i,dx,dy,d0,d1,px,py;
-   float  db;
+   int    txtw,i,dx,dy,d0,d1;
+   float  db,min,max,lon;
    char   buf[16];
    double old=-1.0,cmod,tolerance;
 
@@ -1202,20 +1202,31 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
 
    Tk_GetFontMetrics(VP->tkfont,&tkm);
    tolerance=Proj->PixDist/16200.0;
+   db=GDB->Params.CoordNum*GDB->Params.CoordDef;
    
    // Latitudes
-   db=GDB->Params.CoordNum*GDB->Params.CoordDef;
-   px=py=-32768;
+   dx=Tk_TextWidth(VP->tkfont,"90N",3);
+   dy=-tkm.ascent/2;
    
-   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
-      coord.Lon=-180.0;
-      cmod=fmod(Proj->Ref->LLExtent.MinY,db);
-      d0=Proj->Ref->LLExtent.MinY-cmod;
-      d1=Proj->Ref->LLExtent.MaxY+db*0.5;
+   coord.Lat=0.0;
+   coord.Lon=Proj->Lon-179.9;
+   min=-90.0;
+   max=90.0;
+   
+   // If this is a pseudo grid (WKT) or cylindric but smaller than viewport, print coord outside of projection 
+   if ((Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) || (Proj->Type->Def==PROJCYLIN && (Projection_Pixel(Proj,VP,coord,pix) && pix[1]>dx))) {
+      if (Proj->Ref) {
+         coord.Lon=-180.0;
+         min=Proj->Ref->LLExtent.MinY;
+         max=Proj->Ref->LLExtent.MaxY;
+      } 
+      cmod=fmod(min,db);
+      d0=min-cmod;
+      d1=max+db*0.5;
       if (d0<-90) d0+=db;
       
       for(coord.Lat=d0;coord.Lat<d1;coord.Lat+=db){
-         if (Projection_Pixel(Proj,VP,coord,pix) && (pix[1]-py)>tkm.linespace) {
+         if (Projection_Pixel(Proj,VP,coord,pix)) {
             if (GDB->Params.CoordDef<1.0) {
                sprintf(buf,"%0.2f",ABS(coord.Lat));
             } else {
@@ -1230,11 +1241,8 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
                }
             }
 
-            dx=-Tk_TextWidth(VP->tkfont,buf,strlen(buf)+1);
-            dy=-tkm.ascent/2;
             if (coord.Lat>0) dy+=tkm.ascent/5;
-            glPrint(Interp,VP->canvas,buf,pix[0]+dx,pix[1]+dy,0);
-            py=pix[1];
+            glPrint(Interp,VP->canvas,buf,pix[0]-dx-5,pix[1]+dy,0);
          }
       }  
    } else {         
@@ -1275,36 +1283,43 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    }
    
    //Longitudes
-   if (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) {
-      coord.Lat=-90.0;
-      cmod=fmod(Proj->Ref->LLExtent.MinX,db);
-      d0=Proj->Ref->LLExtent.MinX-cmod;
-      d1=Proj->Ref->LLExtent.MaxX+db*0.5;
-      if (d0<-180) d0+=db;
+   coord.Lat=-89.9;
+   coord.Lon=Proj->Lon;
+   min=Proj->Lon-180.0;
+   max=Proj->Lon+180.0;
+   dy=tkm.ascent*1.5;
+
+   // If this is a pseudo grid (WKT) or cylindric but smaller than viewport, print coord outside of projection 
+   if ((Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) || (Proj->Type->Def==PROJCYLIN && (Projection_Pixel(Proj,VP,coord,pix) && pix[0]>tkm.linespace))) {
+      if (Proj->Ref) {
+         coord.Lat=-90.0;
+         min=Proj->Ref->LLExtent.MinX;
+         max=Proj->Ref->LLExtent.MaxX;
+      }
+      cmod=fmod(min,db);
+      d0=min-cmod;
+      d1=max+db*0.5;
       
       for(coord.Lon=d0;coord.Lon<d1;coord.Lon+=db){
+         lon=coord.Lon;
+         CLAMPLON(lon);
          if (Projection_Pixel(Proj,VP,coord,pix)) {
             if (GDB->Params.CoordDef<1.0) {
-               sprintf(buf,"%0.2f",ABS(coord.Lon));
+               sprintf(buf,"%0.2f",ABS(lon));
             } else {
-               sprintf(buf,"%i",(int)ABS(coord.Lon));
+               sprintf(buf,"%i",(int)ABS(lon));
             }
 
-            if (coord.Lon!=0.0) {
-               if (coord.Lon>0.0) {
+            if (lon!=0.0 && ABS(lon)!=180.0) {
+               if (lon>0.0) {
                   strcat(buf,"E");
                } else {
                   strcat(buf,"W");
                }
             }
 
-            dx=-Tk_TextWidth(VP->tkfont,buf,strlen(buf))>>1;
-            
-            if ((pix[0]+dx-px)>tkm.ascent>>1) {
-               dy=-tkm.ascent*1.5;
-               glPrint(Interp,VP->canvas,buf,pix[0]+dx,pix[1]+dy,0);
-               px=pix[0]-dx;
-            }
+            dx=-Tk_TextWidth(VP->tkfont,buf,strlen(buf))>>1;            
+            glPrint(Interp,VP->canvas,buf,pix[0]+dx,pix[1]-dy,0);
         }
       }  
    } else {         
