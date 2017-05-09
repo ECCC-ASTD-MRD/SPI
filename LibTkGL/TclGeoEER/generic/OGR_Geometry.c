@@ -555,13 +555,13 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    int           idx,nseg;
    double        dist;
 
-   static CONST char *sopt[] = { "-transform","-distance","-area","-centroid","-extent","-length","-boundary","-buffer",
+   static CONST char *sopt[] = { "-transform","-distance","-area","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
                                  "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
-                                 "-simplify","-segmentize","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
-   enum                opt { TRANSFORM,DISTANCE,AREA,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
+                                 "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
+   enum                opt { TRANSFORM,DISTANCE,AREA,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
-                             OVERLAP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
+                             OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
    if (!g0) {
@@ -618,6 +618,16 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case AREA:
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGR_G_Area(g0)));
          break;
+
+      case POINTONSURFACE:
+         if ((g1=OGR_G_PointOnSurface(g0))) {
+            lst=Tcl_NewListObj(0,NULL);
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetX(g1,0)));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetY(g1,0)));
+            Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(OGR_G_GetZ(g1,0)));
+            Tcl_SetObjResult(Interp,lst);
+            OGR_G_DestroyGeometry(g1);
+         }
 
       case CENTROID:
          g1=OGR_G_CreateGeometry(wkbPoint);
@@ -690,6 +700,19 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 
       case DISSOLVE:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGRGeometry(GPC_UNION,g0)));
+         break;
+         
+      case DELAUNAY:
+         if (Objc!=2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
+            return(TCL_ERROR);
+         }
+         Tcl_GetDoubleFromObj(Interp,Objv[1],&dist);
+         if (!(g1=OGR_G_DelaunayTriangulation(g0,dist,FALSE))) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryCmd: Problem calculating Delaunay triangulation",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,g1));
          break;
          
       case INTERSECTION:

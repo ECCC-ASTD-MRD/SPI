@@ -90,6 +90,9 @@ puts  "   Geom area           : [ogrgeometry stats $geom0 -area]"
 puts  "   Geom perimeter      : [ogrgeometry stats $geom0 -length]"
 puts  "   Geom centroid       : [ogrgeometry stats $geom0 -centroid]"
 
+set tri  [ogrgeometry stats $geom0 -delaunay 0.01]
+puts  "   Delaunay            : [ogrgeometry define $tri -wkt]"
+
 ogrgeometry stats $geom0 -segmentize 1.0
 puts  "   Geom segmentized    : [ogrgeometry define $sub -points]"
 
@@ -104,6 +107,8 @@ puts  "   Intersection area   : [ogrgeometry stats $inter -area]"
 
 set hull [ogrgeometry stats $geom0 -convexhull]
 puts  "   Convex hull area    : [ogrgeometry stats $hull -area]"
+
+puts  "   Point on surface    : [ogrgeometry stats $geom0 -pointonsurface]"
 
 #----- Let's create a polygon
 ogrgeometry create POLY "Polygon"
