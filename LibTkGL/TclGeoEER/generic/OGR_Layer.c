@@ -2989,8 +2989,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             for(nf=0;nf<Layer->NFeature;nf++) {
                if (Layer->Feature[nf]) {
                   val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fsize);
-                  spec->SizeMin=FMIN(spec->SizeMin,val);
-                  spec->SizeMax=FMAX(spec->SizeMax,val);
+                  spec->SizeMin=fmin(spec->SizeMin,val);
+                  spec->SizeMax=fmax(spec->SizeMax,val);
                }
             }
          }
@@ -3007,8 +3007,8 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          for(nf=0;nf<Layer->NFeature;nf++) {
             if (Layer->Feature[nf]) {
                val=OGR_F_GetFieldAsDouble(Layer->Feature[nf],fmap);
-               Layer->Min=FMIN(Layer->Min,val);
-               Layer->Max=FMAX(Layer->Max,val);
+               Layer->Min=fmin(Layer->Min,val);
+               Layer->Max=fmax(Layer->Max,val);
             }
          }
       }

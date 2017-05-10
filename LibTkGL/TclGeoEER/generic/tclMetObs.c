@@ -2076,11 +2076,11 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
             MetObs_GetStat(Obs,&Obs->Model->Items[i]);
 
          // Keep model limits
-         min[0]=FMIN(min[0],Obs->Model->Items[i].X);
-         min[1]=FMIN(min[1],Obs->Model->Items[i].Y);
-         max[0]=FMAX(max[0],Obs->Model->Items[i].X);
-         max[1]=FMAX(max[1],Obs->Model->Items[i].Y);
-         n=FMAX(n,Obs->Model->Items[i].Spec->Size);
+         min[0]=fmin(min[0],Obs->Model->Items[i].X);
+         min[1]=fmin(min[1],Obs->Model->Items[i].Y);
+         max[0]=fmax(max[0],Obs->Model->Items[i].X);
+         max[1]=fmax(max[1],Obs->Model->Items[i].Y);
+         n=fmax(n,Obs->Model->Items[i].Spec->Size);
 
          // Define rendering parameters
          DataSpec_Intervals(spec,spec->Min,spec->Max);

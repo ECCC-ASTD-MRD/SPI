@@ -1083,10 +1083,10 @@ int GDB_Loc(GDB_Box Box,Projection *Proj,float X0,float X1,float Y0,float Y1){
       return(GDB_OUT);
 
    /*Test for inclusion of focal point*/
-   lat[0]=FMIN(Box.Co[0].Lat,Box.Co[2].Lat);
-   lat[1]=FMAX(Box.Co[0].Lat,Box.Co[2].Lat);
-   lon[0]=FMIN(Box.Co[0].Lon,Box.Co[2].Lon);
-   lon[1]=FMAX(Box.Co[0].Lon,Box.Co[2].Lon);
+   lat[0]=fmin(Box.Co[0].Lat,Box.Co[2].Lat);
+   lat[1]=fmax(Box.Co[0].Lat,Box.Co[2].Lat);
+   lon[0]=fmin(Box.Co[0].Lon,Box.Co[2].Lon);
+   lon[1]=fmax(Box.Co[0].Lon,Box.Co[2].Lon);
 
    if (Proj->Lat>=lat[0] && Proj->Lat<=lat[1] && Proj->Lon>=lon[0] && Proj->Lon<=lon[1]) {
       return(GDB_VIS);

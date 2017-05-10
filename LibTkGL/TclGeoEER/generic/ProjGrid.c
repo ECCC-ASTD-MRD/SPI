@@ -191,10 +191,10 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
       loc.Elev=0.0;
       
       /*Longitudes*/
-      Vect_Init(prev,0.0,0.0,0.0);
       for(loc.Lon=floor(Proj->Ref->LLExtent.MinX/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lon<ceil(Proj->Ref->LLExtent.MaxX)+Proj->Geo->Params.CoordDef;loc.Lon+=Proj->Geo->Params.CoordDef){
          if (Interp) glFeedbackInit(MAXGEOSEG*4,GL_2D);
          glBegin(GL_LINE_STRIP);
+         Vect_Init(prev,0.0,0.0,0.0);
          for(loc.Lat=floor(Proj->Ref->LLExtent.MinY);loc.Lat<=ceil(Proj->Ref->LLExtent.MaxY);loc.Lat+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,Proj->LI,GL_LINE_STRIP);
@@ -209,10 +209,10 @@ void Grid_DrawFirst(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj){
 
       /*Latitudes*/
       di=Proj->Ref->Type&GRID_PSEUDO?0.01:Proj->LI;
-      Vect_Init(prev,0.0,0.0,0.0);
       for(loc.Lat=floor(Proj->Ref->LLExtent.MinY/Proj->Geo->Params.CoordDef)*Proj->Geo->Params.CoordDef;loc.Lat<ceil(Proj->Ref->LLExtent.MaxY)+Proj->Geo->Params.CoordDef;loc.Lat+=Proj->Geo->Params.CoordDef){
          if (Interp) glFeedbackInit(MAXGEOSEG*4,GL_2D);
          glBegin(GL_LINE_STRIP);
+         Vect_Init(prev,0.0,0.0,0.0);
          for(loc.Lon=floor(Proj->Ref->LLExtent.MinX);loc.Lon<=ceil(Proj->Ref->LLExtent.MaxX);loc.Lon+=1.0){
             if (Grid_Project(Proj,(GeoVect*)&loc,(GeoVect*)&pix,-1)) {
                Grid_Vertex(pix,prev,di,GL_LINE_STRIP);
@@ -405,6 +405,12 @@ static inline void Grid_Vertex(Vect3d Pix,Vect3d Prev,double Len,int Mode) {
    
    len=fabs(Pix[0]-Prev[0])<fabs(Len);
    
+   if ((Prev[0]>0.0 && fabs(Pix[0]-Prev[0])>1.0) || fabs(Pix[0])>10) {
+      fprintf(stderr,"----- %f %f\n",fabs(Pix[0]-Prev[0]),Len);
+      glEnd();
+      glBegin(Mode);
+return;      
+   }
 //   if ((((Pix[0]<=0.0 && Prev[0]<=0.0) || (Pix[0]>=0.0 && Prev[0]>=0.0)) && len)) {
    if (len) {
       glVertex3dv(Pix);

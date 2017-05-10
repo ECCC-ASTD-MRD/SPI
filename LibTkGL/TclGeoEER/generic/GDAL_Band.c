@@ -694,10 +694,10 @@ int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double A
       py=Poly[n+1]*Scale;
       poly[n]=X+(px*cosa-py*sina);
       poly[n+1]=Y+(px*sina+py*cosa);
-      minx=FMIN(minx,poly[n]);
-      miny=FMIN(miny,poly[n+1]);
-      maxx=FMAX(maxx,poly[n]);
-      maxy=FMAX(maxy,poly[n+1]);
+      minx=fmin(minx,poly[n]);
+      miny=fmin(miny,poly[n+1]);
+      maxx=fmax(maxx,poly[n]);
+      maxy=fmax(maxy,poly[n+1]);
    }
 
    // Render only if completely included

@@ -1058,8 +1058,8 @@ int Traj_Render(Tcl_Interp *Interp,TTraj *Traj,ViewportItem *VP,Projection *Proj
                case 4: val=Traj->Pr[i].Dist;  break;
                case 5: val=Traj->Pr[i].Speed; break;
             }
-            spec->SizeMin=FMIN(spec->SizeMin,val);
-            spec->SizeMax=FMAX(spec->SizeMax,val);
+            spec->SizeMin=fmin(spec->SizeMin,val);
+            spec->SizeMax=fmax(spec->SizeMax,val);
          }
       }
 

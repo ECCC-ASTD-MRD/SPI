@@ -903,17 +903,17 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                pt1[0]=ix;
 
                if (proj->Type->UnProject(vp,proj,&loc,pt0)) {
-                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
-                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
-                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
-                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  loc0.Lat=fmin(loc0.Lat,loc.Lat);
+                  loc0.Lon=fmin(loc0.Lon,loc.Lon);
+                  loc1.Lat=fmax(loc1.Lat,loc.Lat);
+                  loc1.Lon=fmax(loc1.Lon,loc.Lon);
                   n++;
                }
                if (proj->Type->UnProject(vp,proj,&loc,pt1)) {
-                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
-                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
-                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
-                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  loc0.Lat=fmin(loc0.Lat,loc.Lat);
+                  loc0.Lon=fmin(loc0.Lon,loc.Lon);
+                  loc1.Lat=fmax(loc1.Lat,loc.Lat);
+                  loc1.Lon=fmax(loc1.Lon,loc.Lon);
                   n++;
                }
             }
@@ -925,17 +925,17 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                pt1[1]=iy;
 
                if (proj->Type->UnProject(vp,proj,&loc,pt0)) {
-                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
-                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
-                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
-                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  loc0.Lat=fmin(loc0.Lat,loc.Lat);
+                  loc0.Lon=fmin(loc0.Lon,loc.Lon);
+                  loc1.Lat=fmax(loc1.Lat,loc.Lat);
+                  loc1.Lon=fmax(loc1.Lon,loc.Lon);
                   n++;
                }
                if (proj->Type->UnProject(vp,proj,&loc,pt1)) {
-                  loc0.Lat=FMIN(loc0.Lat,loc.Lat);
-                  loc0.Lon=FMIN(loc0.Lon,loc.Lon);
-                  loc1.Lat=FMAX(loc1.Lat,loc.Lat);
-                  loc1.Lon=FMAX(loc1.Lon,loc.Lon);
+                  loc0.Lat=fmin(loc0.Lat,loc.Lat);
+                  loc0.Lon=fmin(loc0.Lon,loc.Lon);
+                  loc1.Lat=fmax(loc1.Lat,loc.Lat);
+                  loc1.Lon=fmax(loc1.Lon,loc.Lon);
                   n++;
                }
             }
