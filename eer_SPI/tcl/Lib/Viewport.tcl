@@ -119,13 +119,13 @@ namespace eval Viewport {
 
    set Map(Types)       { "azimuthal equidistant" "azimuthal equal-area" "orthographic" "cylindric" "mercator" "grid" } ;#Type de projection geographique
 
-   set MapDef(PS_North)        { { PROJCS["North_PolarStereographic",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.01745329251994328]],UNIT["metre",1],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",60],PARAMETER["central_meridian",-100],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],AXIS["Easting",UNKNOWN],AXIS["Northing",UNKNOWN]] } -13000000 13000000 -13000000 13000000 } 
-   set MapDef(PS_South)        { { PROJCS["South_PolarStereographic",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.01745329251994328]],UNIT["metre",1],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",-60],PARAMETER["central_meridian",-100],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],AXIS["Easting",UNKNOWN],AXIS["Northing",UNKNOWN]] } -13000000 13000000 -13000000 13000000 } 
-   set MapDef(Robinson)        { { PROJCS["World_Robinson",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Robinson"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54030"]] } -18000000 18000000 -9000000 9000000 }
-   set MapDef(Mollweide)       { { PROJCS["World_Mollweide",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Mollweide"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54009"]] } -18000000 18000000 -9000000 9000000 }
-   set MapDef(Eckert_I)        { { PROJCS["World_Eckert_I",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_I"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54015"]] } -18000000 18000000 -9000000 9000000 }
-   set MapDef(Eckert_III)      { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } -18000000 18000000 -9000000 9000000 }
-   set MapDef(Eckert_V)        { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } -18000000 18000000 -9000000 9000000 }
+   set MapDef(PS_North)        { { PROJCS["North_PolarStereographic",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.01745329251994328]],UNIT["metre",1],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",60],PARAMETER["central_meridian",-100],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],AXIS["Easting",UNKNOWN],AXIS["Northing",UNKNOWN]] } {WRAP} -13000000 13000000 -13000000 13000000 } 
+   set MapDef(PS_South)        { { PROJCS["South_PolarStereographic",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.01745329251994328]],UNIT["metre",1],PROJECTION["Polar_Stereographic"],PARAMETER["latitude_of_origin",-60],PARAMETER["central_meridian",-100],PARAMETER["scale_factor",1],PARAMETER["false_easting",0],PARAMETER["false_northing",0],AXIS["Easting",UNKNOWN],AXIS["Northing",UNKNOWN]] } {WRAP} -13000000 13000000 -13000000 13000000 } 
+   set MapDef(Robinson)        { { PROJCS["World_Robinson",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Robinson"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54030"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Mollweide)       { { PROJCS["World_Mollweide",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Mollweide"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54009"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_I)        { { PROJCS["World_Eckert_I",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_I"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54015"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_III)      { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
+   set MapDef(Eckert_V)        { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
    set MapDef(HomolonsineTest) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -22000000 22000000 -9000000 9000000 }
 
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
@@ -659,6 +659,7 @@ proc Viewport::ConfigPut { Frame VP } {
 proc Viewport::ConfigSet { Frame } {
    variable Data
    variable Map
+   variable MapDef
    variable Resources
 
    if { ![projection is $Frame] } {
@@ -674,7 +675,7 @@ proc Viewport::ConfigSet { Frame } {
    if { [set def [lindex [split $Map(Type) :] 1]]!="" } {
       if { [info exists ::Viewport::MapDef($def)] } {
           catch { georef create $def }
-          georef define $def -type { WRAP PSEUDO }
+          georef define $def -type [lindex $MapDef($def) 1]
           if { $Map(GeoRef)!=$def } {
              set clean True
           }
@@ -1658,10 +1659,10 @@ proc Viewport::ParamProjSet { { Ref "" } { Def "" } } {
 
    if { [info exists ::Viewport::MapDef($Def)] } {
       set Map(GridProj) [lindex $MapDef($Def) 0]
-      set Map(GridMinX) [lindex $MapDef($Def) 1]
-      set Map(GridMaxX) [lindex $MapDef($Def) 2]
-      set Map(GridMinY) [lindex $MapDef($Def) 3]
-      set Map(GridMaxY) [lindex $MapDef($Def) 4]
+      set Map(GridMinX) [lindex $MapDef($Def) 2]
+      set Map(GridMaxX) [lindex $MapDef($Def) 3]
+      set Map(GridMinY) [lindex $MapDef($Def) 4]
+      set Map(GridMaxY) [lindex $MapDef($Def) 5]
       set Map(GridTrX) ""
       set Map(GridScX) ""
       set Map(GridRtX) ""
