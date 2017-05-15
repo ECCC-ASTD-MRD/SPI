@@ -168,11 +168,14 @@ proc PrintBox::FontMap { } {
       set i [string totitle [font configure $font -slant]]
 
       if { $i=="Italic" } {
-         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])*[tk scaling]]"
+#         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])*[tk scaling]]"
+         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])]"
       } else {
-         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])*[tk scaling]]"
+#         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])*[tk scaling]]"
+         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])]"
       }
    }
+
    return Print::Map
 }
 
