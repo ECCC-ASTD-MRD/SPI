@@ -124,11 +124,11 @@ set geom [ogrgeometry stats POLY -buffer 1.0 20]
 puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geometry] -points]"
 
 #----- Try some sql
-ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH="South America" }
+ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH = 'South America' }
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 set reqlayer Volcano
-ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN (\"South America\",\"Tau Ceti\")"
+ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN ('South America','Tau Ceti')"
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 eval file delete [glob DataOut/OGR_Functions*]
