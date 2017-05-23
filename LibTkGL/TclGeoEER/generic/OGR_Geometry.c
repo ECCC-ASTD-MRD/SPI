@@ -62,12 +62,12 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
    int            i,j,idx,n,t,v,err,d,dobj=0;
    char          *buf;
    unsigned char *bytes;
-   Vect3d         pt,ptp,vr,*ppt;
+   Vect3d         pt,*ppt;
    Tcl_Obj       *obj;
    TGeoRef       *ref;
 
-   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-delgeometry","-space","-dimension","-type","-nb","-nbsub","-sub","-name","-points","-addpoint","-setpoint","-inspoint","-delpoint","-pointdist","-segmentdist","-georef",NULL };
-   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,DELGEOMETRY,SPACE,DIMENSION,TYPE,NB,NBSUB,SUB,NAME,POINTS,ADDPOINT,SETPOINT,INSPOINT,DELPOINT,POINTDIST,SEGMENTDIST,GEOREF };
+   static CONST char *sopt[] = { "-wkt","-wkb","-gml","-kml","-json","-geometry","-addgeometry","-delgeometry","-space","-dimension","-type","-nb","-nbsub","-sub","-name","-points","-addpoint","-setpoint","-inspoint","-delpoint","-georef",NULL };
+   enum                opt { WKT,WKB,GML,KML,JSON,GEOMETRY,ADDGEOMETRY,DELGEOMETRY,SPACE,DIMENSION,TYPE,NB,NBSUB,SUB,NAME,POINTS,ADDPOINT,SETPOINT,INSPOINT,DELPOINT,GEOREF };
 
    geom=OGR_GeometryGet(Name);
    if (!geom) {
@@ -261,47 +261,6 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
                if (n>=0 && n<OGR_G_GetGeometryCount(geom)) {
                   OGR_G_RemoveGeometry(geom,n,TRUE);
                }
-            }
-            break;
-
-         case SEGMENTDIST:
-            if (Objc-dobj!=3 && Objc-dobj!=4) {
-               Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
-               return(TCL_ERROR);
-            } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[1]);
-               if (Objc-dobj==4)
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[2]);
-
-               obj=Tcl_NewListObj(0,NULL);
-               OGR_G_GetPoint(geom,0,&pt[0],&pt[1],&pt[2]);
-               for (n=1;n<OGR_G_GetPointCount(geom);n++) {
-                  OGR_G_GetPoint(geom,n,&ptp[0],&ptp[1],&ptp[2]);
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(OGM_SegmentDist(pt,ptp,vr)));
-                  Vect_Assign(pt,ptp);
-               }
-
-               Tcl_SetObjResult(Interp,obj);
-            }
-            break;
-
-         case POINTDIST:
-            if (Objc-dobj!=3 && Objc-dobj!=4) {
-               Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
-               return(TCL_ERROR);
-            } else {
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[0]);
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[1]);
-               if (Objc-dobj==4)
-                  Tcl_GetDoubleFromObj(Interp,Objv[++i],&vr[2]);
-
-               obj=Tcl_NewListObj(0,NULL);
-               for (n=0;n<OGR_G_GetPointCount(geom);n++) {
-                  OGR_G_GetPoint(geom,n,&pt[0],&pt[1],&pt[2]);
-                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(hypot(vr[0]-pt[0],vr[1]-pt[1])));
-               }
-               Tcl_SetObjResult(Interp,obj);
             }
             break;
 
@@ -551,15 +510,16 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    OGRGeometryH  g0,g1;
    OGREnvelope   env;
    TGeoRef      *ref,*ref0;
-   Tcl_Obj       *lst;
-   int           idx,nseg;
+   Tcl_Obj       *lst,*obj;
+   int           j,t,idx,n,nseg;
    double        dist;
+   Vect3d        pt,ptp,vr;
 
-   static CONST char *sopt[] = { "-transform","-distance","-area","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
+   static CONST char *sopt[] = { "-sub","-transform","-distance","-area","-anglemin","-pointdist","-segmentdist","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
                                  "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-isempty","-isvalid","-issimple","-isring",NULL };
-   enum                opt { TRANSFORM,DISTANCE,AREA,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
+   enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
@@ -573,8 +533,35 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       return(TCL_ERROR);
    }
 
-   switch ((enum opt)idx) {
+   if ((enum opt)idx==SUB) {
+      if (Tcl_ListObjLength(Interp,Objv[1],&n)==TCL_ERROR) {
+         return(TCL_ERROR);
+      }
+      if (n) {
+         // Find the subgeom
+         for(j=0;j<n;j++) {
+            Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
+            if (Tcl_GetIntFromObj(Interp,obj,&t)==TCL_ERROR) {
+               return(TCL_ERROR);
+            }
+            g0=OGR_G_GetGeometryRef(g0,t);
+         }
+         if (!g0) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid sub-geometry",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      }
+      Objc-=2;
+      Objv+=2;
+      if (Tcl_GetIndexFromObj(Interp,Objv[0],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+   }
 
+   switch ((enum opt)idx) {
+         
+      case SUB: break;
+      
       case TRANSFORM:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"[georeffrom] georefto");
@@ -617,6 +604,56 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 
       case AREA:
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGR_G_Area(g0)));
+         break;
+
+      case ANGLEMIN:
+         if (Objc!=1) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of parameters\"",(char*)NULL);
+            return(TCL_ERROR);
+         } else {
+            Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(OGM_AngleMin(g0)));
+         }
+         break;
+
+      case SEGMENTDIST:
+         if (Objc!=3 && Objc!=4) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
+            return(TCL_ERROR);
+         } else {
+            Tcl_GetDoubleFromObj(Interp,Objv[1],&vr[0]);
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&vr[1]);
+            if (Objc==4)
+               Tcl_GetDoubleFromObj(Interp,Objv[3],&vr[2]);
+
+            obj=Tcl_NewListObj(0,NULL);
+            OGR_G_GetPoint(g0,0,&pt[0],&pt[1],&pt[2]);
+            for (n=1;n<OGR_G_GetPointCount(g0);n++) {
+               OGR_G_GetPoint(g0,n,&ptp[0],&ptp[1],&ptp[2]);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(OGM_SegmentDist(pt,ptp,vr)));
+               Vect_Assign(pt,ptp);
+            }
+
+            Tcl_SetObjResult(Interp,obj);
+         }
+         break;
+
+      case POINTDIST:
+         if (Objc!=3 && Objc!=4) {
+            Tcl_AppendResult(Interp,"\n   OGR_GeometryDefine: Invalid number of coordinates\"",(char*)NULL);
+            return(TCL_ERROR);
+         } else {
+            Tcl_GetDoubleFromObj(Interp,Objv[1],&vr[0]);
+            Tcl_GetDoubleFromObj(Interp,Objv[2],&vr[1]);
+            if (Objc==4)
+               Tcl_GetDoubleFromObj(Interp,Objv[3],&vr[2]);
+
+            obj=Tcl_NewListObj(0,NULL);
+            for (n=0;n<OGR_G_GetPointCount(g0);n++) {
+               OGR_G_GetPoint(g0,n,&pt[0],&pt[1],&pt[2]);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(hypot(vr[0]-pt[0],vr[1]-pt[1])));
+            }
+            Tcl_SetObjResult(Interp,obj);
+         }
          break;
 
       case POINTONSURFACE:

@@ -113,10 +113,11 @@ puts  "   Point on surface    : [ogrgeometry stats $geom0 -pointonsurface]"
 #----- Let's create a polygon
 ogrgeometry create POLY "Polygon"
 ogrgeometry create RING "Linear Ring"
-ogrgeometry define RING -points { 10 10 11 11 20 11 10 10 }
+ogrgeometry define RING -points { 0 0 0 10 10 10 10 0 0 0 }
 ogrgeometry define POLY -geometry True RING
 puts  "   Obj area            : [ogrgeometry stats POLY -area]"
 puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geometry] -points]"
+puts  "   Obj minimum angle   : [ogrgeometry stats POLY -anglemin]"
 
 #----- Make a buffer around it
 set geom [ogrgeometry stats POLY -buffer 1.0 20]
