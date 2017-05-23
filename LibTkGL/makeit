@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.11.4"
+VERSION="7.12.0"
 MAINTAINER="Jean-Philippe Gauthier"
 BUILDINFO=`git describe --always`
 
@@ -115,10 +115,10 @@ if [[ $EXT -eq 1 ]]; then
    XML=libxml2-2.9.2
    TDOM=tdom-master
    EXPAT=expat-2.2.0
-   CURL=curl-7.49.1
+   CURL=curl-7.54.0
 #   SQLITE=sqlite-3.6.23
-   GEOS=geos-3.5.0
-   GDAL=gdal-2.1.1
+   GEOS=geos-3.6.1
+   GDAL=gdal-2.2.0
    MYSQL=mysql-5.1
    JASPER=jasper-1.900.1
    JPEG=jpeg-6b
@@ -127,11 +127,11 @@ if [[ $EXT -eq 1 ]]; then
    HDF5=hdf5-1.8.11
    POSTGRESQL=postgresql-8.4.1
    ODBC=unixODBC-2.3.0
-   GRIB=grib_api-1.15.0
+   GRIB=grib_api-1.21.0
    ECBUFR=libecbufr0.8.6
    OCI=instantclient_11_2
 #   FGDB=FileGDB_API
-   PROJ=proj-4.9.2
+   PROJ=proj-4.9.3
    MESA=mesa-13.0.2
    NETCDF=netcdf-4.3.3.1
    EZSCINT=ezscint
