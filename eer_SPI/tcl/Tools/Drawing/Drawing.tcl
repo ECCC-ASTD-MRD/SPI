@@ -1231,7 +1231,7 @@ proc Drawing::DrawStream { Frame VP Vertex Color Width Step Res Tag } {
                set ij [fstdfield stats $field -coordpoint $la $lo]
                if { [lindex $ij 0]!=-1 } {
                   set coords [fstdfield stats $field -coordstream [lindex $ij 0] [lindex $ij 1] 256 $Step 0 $Res]
-                  if { [llength $coords] && [llength [set path [lindex [$VP -projectline NONE $coords] 0]]>2] } {
+                  if { [llength $coords] && [llength [set path [lindex [$VP -projectline NONE $coords] 0]]]>2 } {
                      eval $Frame.page.canvas create line $path -fill \$Color -width $Width -tags \"PAGE$VP $Data(Tag) $Tag\" -arrow last
                   }
                }

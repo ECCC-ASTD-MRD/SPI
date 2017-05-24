@@ -1918,7 +1918,7 @@ void Model_Rasterize(TDef *Def,TGeoRef *Ref,Vect3d *Vr,int NVr,Vect3d *Ex,double
    for(v=0;v<NVr;v++) {
       x=lrint(Vr[v][0]);
       y=lrint(Vr[v][1]);
-      zmax=FMAX(Vr[v][2],zmax);
+      zmax=fmax(Vr[v][2],zmax);
       
       if (DEF2DIN(Def,x,y)) {
          i=FIDX2D(Def,x,y);

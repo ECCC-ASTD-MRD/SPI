@@ -515,7 +515,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderFace));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->RenderFace);
-               Spec->RenderFace=FMAX(Spec->RenderFace,0);
+               Spec->RenderFace=fmax(Spec->RenderFace,0);
             }
             break;
 

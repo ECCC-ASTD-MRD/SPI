@@ -2019,7 +2019,7 @@ float FFCellResolution(ViewportItem *VP,Projection *Proj,Vect3d G0,Vect3d G1) {
    dif[0]=ABS(dif[0]);
    dif[1]=ABS(dif[1]);
 
-   return(FMAX(dif[0],dif[1]));
+   return(fmax(dif[0],dif[1]));
 }
 
 /*----------------------------------------------------------------------------

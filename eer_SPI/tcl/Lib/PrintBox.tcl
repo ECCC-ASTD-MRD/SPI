@@ -69,6 +69,7 @@ namespace eval PrintBox {
    set Param(Quality)  75
    set Param(Smooth)   0
    set Param(Compress) none
+   set Param(Geo)      False
    
    
   #----- Recuperer les imprimantes
@@ -130,6 +131,7 @@ namespace eval PrintBox {
    set Bubble(Quality)  { "Spécifie le niveau de compression an pourcentage de qualité. Meilleure est la qualité, mon de compression il y aura.\nLes valeurs utiles sont de 5...95. Le défaut est 75." "Specifies the compression level as a quality percentage. The higher the quality, the less the compression.\nUseful values are in the range 5...95. The default value is 75." }
    set Bubble(Smooth)   { "Lissage de l'image avant la compression.\nDes valeurs entre 10...30 sont habituellement correcte. Le défaut est 0, pas de lissage." "Smooth the image before performing the compression.\nValues in the 10...30 are usually enough. The default is 0, i.e no smoothing." }
    set Bubble(Compress) { "Type de compression utilisée.\nLe défaut est none." "Type of compression to use.\nThe default is none." }
+   set Bubble(Geo)      { "Sauvegarder la géoréférence (seulement avec les projections cylindrique)" "Save georeference (only on cylindri projection)" }
 
     #----- Definitions des textes
    set Txt(Postscript) { "Génération du postscript pour le canvas" "Generating postscript for canvas" }
@@ -140,6 +142,7 @@ namespace eval PrintBox {
    set Error(Convert)  { "Il semble y avoir un problème avec le fichier postscript ou la conversion de celui-ci"
                          "There seems to be an error within the postscript file or while converting the file" }
    set Error(Path)     { "Ce répertoire n'est pas accessible" "This directory is not accessible" }
+   set Error(Geo)      { "Impossible de créer une géoréférence Les limites ne sont pas toutes géographiques" "Cannot create georeference. The limits are not all geographics." }
 }
 
 #----------------------------------------------------------------------------
@@ -165,11 +168,14 @@ proc PrintBox::FontMap { } {
       set i [string totitle [font configure $font -slant]]
 
       if { $i=="Italic" } {
-         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])*[tk scaling]]"
+#         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])*[tk scaling]]"
+         set Map($font) "-*-$f-$w-$i [expr abs([font configure $font -size])]"
       } else {
-         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])*[tk scaling]]"
+#         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])*[tk scaling]]"
+         set Map($font) "-*-$f-$w [expr abs([font configure $font -size])]"
       }
    }
+
    return Print::Map
 }
 
@@ -278,6 +284,7 @@ proc PrintBox::Create { Frame Mode args } {
    variable Type
    variable Titre
    variable Lbl
+   variable Bubble
 
    if { [winfo exist .printbox] } {
       destroy .printbox
@@ -285,7 +292,7 @@ proc PrintBox::Create { Frame Mode args } {
 
    toplevel     .printbox
    wm transient .printbox $Frame
-   wm geom      .printbox 335x250+[winfo rootx $Frame]+[winfo rooty $Frame]
+   wm geom      .printbox 350x250+[winfo rootx $Frame]+[winfo rooty $Frame]
    wm protocol  .printbox WM_DELETE_WINDOW { PrintBox::Destroy }
 
    .printbox configure -cursor left_ptr
@@ -348,29 +355,46 @@ proc PrintBox::Create { Frame Mode args } {
             label $Param(Frame).img.file.lbl -text [lindex $Lbl(File) $GDefs(Lang)] -width 9 -anchor w
             button $Param(Frame).img.file.sel -image OPEN -relief flat -bd 0 -overrelief raised \
                -command { PrintBox::FilePathDefine [FileBox::Create .printbox $PrintBox::Param(Path) Save [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] $PrintBox::Param(Filename)] [FileBox::GetType] }
-            entry $Param(Frame).img.file.name -width 30 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
+            entry $Param(Frame).img.file.name -width 10 -bg $GDefs(ColorLight) -textvariable PrintBox::Param(FullName) \
                -bd 1 -justify left
             $Param(Frame).img.file.name xview moveto 1
-            pack $Param(Frame).img.file.lbl $Param(Frame).img.file.name $Param(Frame).img.file.sel -side left -fill y
-         pack $Param(Frame).img.file -side top
+            pack $Param(Frame).img.file.lbl -side left 
+            pack $Param(Frame).img.file.name -side left -fill both -expand True
+            pack $Param(Frame).img.file.sel -side left -fill y
+         pack $Param(Frame).img.file -side top -fill x -expand True
 
          frame $Param(Frame).img.format
             label $Param(Frame).img.format.lbl -text [lindex $Lbl(Format) $GDefs(Lang)] -width 9 -anchor w
-            ComboBox::Create $Param(Frame).img.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Param(Formats) 31 5 PrintBox::SetDevice
-            pack $Param(Frame).img.format.lbl $Param(Frame).img.format.sel -side left
-         pack $Param(Frame).img.format -side top -pady 2
+            ComboBox::Create $Param(Frame).img.format.sel PrintBox::Param(Format) noedit unsorted nodouble -1 $Param(Formats) 10 5 PrintBox::SetDevice
+            checkbutton $Param(Frame).img.format.geo -variable PrintBox::Param(Geo) -text "Geo" -onvalue True -offvalue False -indicatoron 0 -relief sunken -bd 1 \
+               -overrelief raised -offrelief flat -selectcolor $GDefs(ColorLight) -state disabled
+            pack $Param(Frame).img.format.lbl -side left
+            pack $Param(Frame).img.format.sel -side left -fill both -expand True
+            pack $Param(Frame).img.format.geo -side left -fill y
+         pack $Param(Frame).img.format -side top -pady 2 -fill x -expand True
 
          frame $Param(Frame).img.web
             label $Param(Frame).img.web.lbl -text [lindex $Lbl(WEBSite) $GDefs(Lang)] -width 9 -anchor w
             ComboBox::Create $Param(Frame).img.web.sel PrintBox::Print(WEBSite) \
-               noedit sorted nodouble -1 $Param(WEBNameList) 31 5
+               noedit sorted nodouble -1 $Param(WEBNameList) 10 5
             ComboBox::Add $Param(Frame).img.web.sel ""
-            pack $Param(Frame).img.web.lbl $Param(Frame).img.web.sel -side left
-         pack $Param(Frame).img.web -side top
+            pack $Param(Frame).img.web.lbl -side left
+            pack $Param(Frame).img.web.sel -side left -fill x -expand True
+         pack $Param(Frame).img.web -side top -fill x -expand True
 
       bind  $Param(Frame).img.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
    }
 
+   Bubble::Create  $Param(Frame).img.format.geo  $Bubble(Geo)
+   
+   #---- Page might not have a projection defined
+   catch {
+      if { [projection configure $Frame -type]=="cylindric" } {
+         #----- If latlon projection, enable georeference option
+         $Param(Frame).img.format.geo configure -state normal
+      }
+   }
+   
    frame .printbox.par -relief raised -bd 1
    pack .printbox.par -side top -padx 5 -fill x
 
@@ -378,7 +402,6 @@ proc PrintBox::Create { Frame Mode args } {
    pack .printbox.job  -side top -fill x -pady 5 -padx 5
 
    #----- Determiner les fonctions extensibles
-
    set ext     [lindex $args 0]
    set command "PrintBox::PrintCommand"
 
@@ -706,7 +729,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
    } else {
       if { $Print(Device)!="ps" } {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Image) $GDefs(Lang)] $Frame"
-         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName) $Print(Device)       
+         PrintBox::Save $Frame $X $Y $Width $Height $Param(FullName) $Print(Device) $Param(Geo)      
       } else {
          InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Postscript) $GDefs(Lang)] $Frame"
          PrintBox::Postscript $Frame $Param(FullName) $X $Y $Width $Height
@@ -767,9 +790,10 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc PrintBox::Save { Frame X Y Width Height File Device } {
+proc PrintBox::Save { Frame X Y Width Height File Device { GeoRef False } } {
    variable Print
    variable Param
+   variable Error
 
    set device $Device 
    switch $Device {
@@ -785,7 +809,7 @@ proc PrintBox::Save { Frame X Y Width Height File Device } {
    image create photo TMPIMG
    $Frame.page.canvas buffer TMPIMG $X $Y $Width $Height
    
-   #----- PNGs sometime are corrupt, I raised a tocket for this, GIF need color resampling to have <=256 colors
+   #----- PNGs sometime are corrupt, I raised a ticket for this, GIF need color resampling to have <=256 colors
    #----- !@$@#$@# TkImg has problem with many format so force through ppm for all
    if { True || $device == "png" || $device == "gif" } {
       TMPIMG write "$File.ppm" -format ppm
@@ -798,6 +822,44 @@ proc PrintBox::Save { Frame X Y Width Height File Device } {
 #     eval TMPIMG write "$File.$Device " -format \{$device $opt\}
    }
    image delete TMPIMG
+   
+   if { $GeoRef } {
+      if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
+      
+         set bbox [$Frame.page.canvas bbox $vp]
+     
+         set ll0 [$vp -unproject [lindex $bbox 0] [lindex $bbox 1]]
+         set ll1 [$vp -unproject [lindex $bbox 2] [lindex $bbox 3]]         
+         set la1 [lindex $ll0 0]
+         set lo0 [lindex $ll0 1]
+         set la0 [lindex $ll1 0]
+         set lo1 [lindex $ll1 1]
+         
+         if { $la0!=-999 && $la1!=-999 } {
+                
+            set wp [expr [lindex $bbox 2]-[lindex $bbox 0]]
+            set hp [expr [lindex $bbox 3]-[lindex $bbox 1]]
+            set wl [expr $lo1-$lo0]
+            set hl [expr $la1-$la0]
+            
+            set rx  [expr double($wl/$wp)]
+            set ry  [expr double(-$hl/$hp)]
+            set dx  $lo0
+            set dy  $la1            
+            set ref "EPSG:4326"
+
+            exec echo "$rx\n0.0\n0.0\n$ry\n$dx\n$dy\n" > $File.wld
+            
+            #----- In case of tiff, we can encode within a geotiff
+            if { $device == "tiff" } { 
+               exec gdal_translate -a_srs $ref $File.$Device $File.gtif
+               file delete $File.wld $File.$Device
+            }
+         } else {
+            Dialog::Error . $Error(Geo) 
+         }
+      }
+   }
 }
 
 #----------------------------------------------------------------------------

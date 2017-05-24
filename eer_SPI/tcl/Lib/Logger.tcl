@@ -73,7 +73,8 @@ namespace eval Log { } {
    set Param(Process)     ""                    ;#Process number
    set Param(SPI)         ""                    ;#SPI version requirement
    set Param(Vanish)      False                 ;#Disappear without leaving any trace (only applied if no error nor warning was encountered)
-   
+   set Param(Retry)       0                     ;#Retry number
+
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
    set Param(SecStart)    $Param(SecTime)       ;#Start time
@@ -833,7 +834,7 @@ proc Log::CyclopeStart { } {
          puts $f "Kill      : ssh $env(USER)@$host kill [pid]"
          puts $f "ID        : PID/$host/[pid]"
       }
-      puts $f  "Path      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
+      puts $f "Retry     : $Param(Retry)\nPath      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
 
       close $f
       file attributes $path/info.txt  -permissions 00644

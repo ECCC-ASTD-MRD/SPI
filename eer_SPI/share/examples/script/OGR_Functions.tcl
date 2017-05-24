@@ -90,6 +90,9 @@ puts  "   Geom area           : [ogrgeometry stats $geom0 -area]"
 puts  "   Geom perimeter      : [ogrgeometry stats $geom0 -length]"
 puts  "   Geom centroid       : [ogrgeometry stats $geom0 -centroid]"
 
+set tri  [ogrgeometry stats $geom0 -delaunay 0.01]
+puts  "   Delaunay            : [ogrgeometry define $tri -wkt]"
+
 ogrgeometry stats $geom0 -segmentize 1.0
 puts  "   Geom segmentized    : [ogrgeometry define $sub -points]"
 
@@ -105,24 +108,27 @@ puts  "   Intersection area   : [ogrgeometry stats $inter -area]"
 set hull [ogrgeometry stats $geom0 -convexhull]
 puts  "   Convex hull area    : [ogrgeometry stats $hull -area]"
 
+puts  "   Point on surface    : [ogrgeometry stats $geom0 -pointonsurface]"
+
 #----- Let's create a polygon
 ogrgeometry create POLY "Polygon"
 ogrgeometry create RING "Linear Ring"
-ogrgeometry define RING -points { 10 10 11 11 20 11 10 10 }
+ogrgeometry define RING -points { 0 0 0 10 10 10 10 0 0 0 }
 ogrgeometry define POLY -geometry True RING
 puts  "   Obj area            : [ogrgeometry stats POLY -area]"
 puts  "   Obj points          : [ogrgeometry define [ogrgeometry define POLY -geometry] -points]"
+puts  "   Obj minimum angle   : [ogrgeometry stats POLY -anglemin]"
 
 #----- Make a buffer around it
 set geom [ogrgeometry stats POLY -buffer 1.0 20]
 puts  "   Obj buffered points : [ogrgeometry define [ogrgeometry define $geom -geometry] -points]"
 
 #----- Try some sql
-ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH="South America" }
+ogrlayer sqlselect LAYERRESULT FILE0 { SELECT * FROM Volcano WHERE ENGLISH = 'South America' }
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 set reqlayer Volcano
-ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN (\"South America\",\"Tau Ceti\")"
+ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN ('South America','Tau Ceti')"
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
 eval file delete [glob DataOut/OGR_Functions*]

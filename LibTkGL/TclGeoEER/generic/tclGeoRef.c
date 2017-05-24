@@ -302,11 +302,11 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
                lon1=DEG2RAD(lon1);
                x=DIST(EARTHRADIUS,lat0,lon0,lat0,lon1);
                dx=DIST(EARTHRADIUS,lat1,lon0,lat1,lon1);
-               dx=FMAX(x,dx);
+               dx=fmax(x,dx);
 
                y=DIST(EARTHRADIUS,lat0,lon0,lat1,lon0);
                dy=DIST(EARTHRADIUS,lat0,lon1,lat1,lon1);
-               dy=FMAX(y,dy);
+               dy=fmax(y,dy);
 
                lst=Tcl_NewListObj(0,NULL);
 
