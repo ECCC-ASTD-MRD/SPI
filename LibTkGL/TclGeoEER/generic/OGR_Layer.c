@@ -521,7 +521,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    OGREnvelope                   env,lim;
    OGRGeometryH                  geom,new,uni;
 
-   int           j,idx,n,nseg,fld=-1;
+   const char  **iopts;
+   int           j,idx,n,nseg,nopts,fld=-1;
    double        x,y,lat,lon,tol,val,min,max,area;
    unsigned int  y0,y1,fop;
    OGR_Layer    *layer,*layerop,*layerres=NULL;
@@ -530,9 +531,9 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    Tcl_WideInt   f;
    char          buf[32],*str;
 
-   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-invalid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-buffer","-difference","-intersection",
-                                 "-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,BUFFER,DIFFERENCE,INTERSECTION,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
+   static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-invalid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-lupdate","-lintersection","-lunion","-lsymdifference","-lidentity","-lclip","-lerase","-buffer","-difference","-intersection",
+                                 "-clip","-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull",NULL };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,LUPDATE,LINTERSECTION,LUNION,LSYMDIFFERENCE,LIDENTITY,LCLIP,LERASE,BUFFER,DIFFERENCE,INTERSECTION,CLIP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -863,6 +864,97 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(max));
          break;
 
+      case LINTERSECTION:
+      case LUNION:
+      case LSYMDIFFERENCE:
+      case LIDENTITY:
+      case LUPDATE:
+      case LCLIP:
+      case LERASE:
+         if (Objc!=3 && Objc!=4) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"layerop layerres [opts]");
+            return(TCL_ERROR);
+         }
+         
+         layerop=OGR_LayerGet(Tcl_GetString(Objv[1]));
+         if (!layerop) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Operator layer name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
+            return(TCL_ERROR);
+         }
+
+         if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+            return(TCL_ERROR);
+         }
+
+         if (Objc==4) {
+            if (Tcl_SplitList(Interp,Tcl_GetString(Objv[3]),&nopts,&iopts)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerStat : Invalid list of options",(char*)NULL);
+               return(TCL_ERROR);
+            }
+         } else {
+            iopts=NULL;
+         }
+         
+         switch ((enum opt)idx) {       
+            case LINTERSECTION:
+               if ((OGR_L_Intersection(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LUNION:
+               if ((OGR_L_Union(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LSYMDIFFERENCE:
+               if ((OGR_L_SymDifference(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LIDENTITY:
+               if ((OGR_L_Identity(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LUPDATE:
+               if ((OGR_L_Update(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LCLIP:
+               if ((OGR_L_Clip(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+               
+            case LERASE:        
+               if ((OGR_L_Erase(layer->Layer,layerop->Layer,layerres->Layer,(char**)iopts,NULL,NULL)!=OGRERR_NONE)) {
+                  Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Problem in OGR call OGR_L_Erase ",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               if (iopts) Tcl_Free((char*)iopts);
+               break;
+            default : break;  
+          }
+          break;
+          
       case DISSOLVE:
       case BOUNDARY:
       case CONVEXHULL:
@@ -1001,6 +1093,41 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          break;
 
+      case CLIP:
+         if (Objc!=2 && Objc!=3) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"geom [result]");
+            return(TCL_ERROR);
+         }
+         uni=OGR_GeometryGet(Tcl_GetString(Objv[1]));
+         if (!uni) {
+            Tcl_AppendResult(Interp,"\n   OGR_LayerStat: Geometry name unknown: \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
+            return(TCL_ERROR);
+         }
+
+         if (Objc==3) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[2]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f] && layer->Feature[f]) {
+               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  new=OGM_GPCOnOGR(GPC_INT,geom,uni);
+                  if  (new) {
+                     if (layerres && !OGR_G_IsEmpty(new)) {
+                        layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);                        
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
+                     } else {
+                        OGR_F_SetGeometryDirectly(layer->Feature[f],new);                        
+                        layer->Changed=1; 
+                     }
+                  }
+               }
+            }
+         }
+         break;
+         
       case SIMPLIFY:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance [result]");
