@@ -760,7 +760,7 @@ void Data_RenderGrid(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection
       glFeedbackProcess(Interp,GL_2D);
 
    if (Field->GRef->Grid[0]=='M') {
-      glPolygonMode(GL_FRONT,GL_LINE);
+      glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       glLineWidth(1.0);
       Proj->Type->Render(Proj,0,&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx],Field->GRef->Idx,NULL,NULL,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
    }

@@ -17,7 +17,7 @@
 #   MetData::Duration         { List Idx0 Idx1 }
 #   MetData::GetLatestRun     { Path }
 #   MetData::GetLatestStamp   { Path }
-#   MetData::GetClosestFile   { Path Sec { Max 3600 } }
+#   MetData::GetClosestFile   { Path Sec { Max 3600 } { Cache False } }
 #   MetData::StampFromFile    { File }
 #   MetData::SecFromFile      { File }
 #   MetData::StampModulo      { Stamp Sec }
@@ -196,7 +196,7 @@ proc MetData::GetLatestRun { Path } {
 
 proc MetData::GetLatestStamp { Path } {
 
-   set file  [lindex [lsort -dictionary [glob -tails -directory $Path \[1-2\]*_???]] end]
+   set file  [lindex [lsort -dictionary [-tails -directory $Path \[1-2\]*_???]] end]
    return [MetData::StampFromFile $file]
 }
 
@@ -230,11 +230,12 @@ proc MetData::SecFromFile { File } {
    return [clock add [clock scan "[string range $File 0 7] [string range $File 8 9]" -timezone :UTC] $hours hour]
 }
 
-proc MetData::GetClosestFile { Path Sec { Max 3600 } } {
+proc MetData::GetClosestFile { Path Sec { Max 3600 } { Cache False } } {
    variable Data
    
-   if { ![info exists ::EERWetDB::Data($Path)] } {
-      foreach file [lsort -dictionary -decreasing [glob $Path/??????????_\[0-9\]\[0-9\]\[0-9\]]] {
+   if { !$Cache || ![info exists ::MetData::Data($Path)] } {
+      set Data($Path) {}
+      foreach file [lsort -dictionary -decreasing [glob -nocomplain $Path/??????????_\[0-9\]\[0-9\]\[0-9\]]] {
          lappend Data($Path) [list $file [SecFromFile $file]]
       }
 #      set Data($Path) [lsort -decreasing -index 1 $Data($Path)]
