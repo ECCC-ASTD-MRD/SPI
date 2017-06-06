@@ -385,7 +385,7 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${GRIB}
       cd ${TMP_PATH}/${GRIB}
       (${EXT_SRC_PATH}/${GRIB}/configure --prefix=${LIB_PATH} --enable-shared=yes --enable-static=no --enable-pthread --with-png-support --with-jasper=${LIB_PATH} \
-         FCFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src -I${EXT_SRC_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src $CFLAGS"
+         --with-netcdf=${LIB_PATH}/lib FCFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src -I${EXT_SRC_PATH}/${GRIB}/fortran $FCFLAGS" CFLAGS="-I${EXT_SRC_PATH}/${GRIB}/src $CFLAGS -DHAVE_NETCDF"
 
       #----- Because the genius who developped the DEVEL_RULES mechanism never build outside his tree
       touch ${TMP_PATH}/${GRIB}/{src,definitions}/dummy.am

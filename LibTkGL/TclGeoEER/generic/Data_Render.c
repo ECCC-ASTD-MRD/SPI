@@ -162,7 +162,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
-   int nras=0,u,a,u0,u1,udef;
+   int nras=0,u,u0,u1,udef;
      
    // Verifier l'existence du champs
    if (!Field || !Field->GRef || !Field->Spec || !Field->Def->Data[0]) {
@@ -1900,7 +1900,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   if (!mask || Field->Def->Mask[idx]) {
                      /*If the speed if between the defined range*/
                      Def_GetMod(Field->Def,idx,len);
-                     if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                     if (VALWITHIN(Field->Spec,len)) {
                         DataSpec_ColorSet(Interp,Field->Spec,len);
 
                         /*Get the components*/
@@ -1939,7 +1939,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                if (!mask || Field->Def->Mask[idx]) {
                   Def_GetMod(Field->Def,idx,len);
                   Field->GRef->Project(Field->GRef,i,j,&coo.Lat,&coo.Lon,1,1);
-                  if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                  if (VALWITHIN(Field->Spec,len)) {
                      DataSpec_ColorSet(Interp,Field->Spec,len);
                      
                      Def_Get(Field->Def,0,idx,u);
@@ -1973,7 +1973,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   if (Field->GRef->UnProject(Field->GRef,&i0,&j0,coo.Lat,coo.Lon,1,1)) {
                   
                      if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
-                        if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                        if (VALWITHIN(Field->Spec,len)) {
                            DataSpec_ColorSet(Interp,Field->Spec,len);
                            size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                            if (Interp) glFeedbackInit(256,GL_2D);
@@ -1991,7 +1991,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   if (Field->GRef->Project(Field->GRef,i0,j0,&coo.Lat,&coo.Lon,1,1)) {
                   
                      if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
-                        if (len<=Field->Spec->Max && len>=Field->Spec->Min) {
+                        if (VALWITHIN(Field->Spec,len)) {
                            DataSpec_ColorSet(Interp,Field->Spec,len);
                            size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                            if (Interp) glFeedbackInit(256,GL_2D);
@@ -2110,12 +2110,13 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
 //         RPN_IntUnlock();
 
          while (dn--) {
-            if (xy[dn+nn]<=Field->Spec->Max && xy[dn+nn]>=Field->Spec->Min) {
-               DataSpec_ColorSet(Interp,Field->Spec,xy[dn+nn]);
-               size=VP->Ratio*VECTORSIZE(Field->Spec,xy[dn+nn]);
+            len=xy[dn+nn];
+            if (VALWITHIN(Field->Spec,len)) {
+               DataSpec_ColorSet(Interp,Field->Spec,len);
+               size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                dir=(!Field->Def->Data[1] || (Field->Spec->GridVector && Proj->Type->Def!=PROJPLANE))?xy[dn+n]:180+RAD2DEG(atan2(xy[dn],xy[dn+n]));
                if (Interp) glFeedbackInit(256,GL_2D);
-               Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,xy[dn+nn]),dir,size,Proj);
+               Data_RenderBarbule(Field->Spec->RenderVector,0,0.0,ll[dn],ll[mem+dn],ZRef_Level2Meter(Field->ZRef->Levels[Field->Def->Level],Field->ZRef->Type),VAL2SPEC(Field->Spec,len),dir,size,Proj);
                if (Interp) glFeedbackProcess(Interp,GL_2D);
             }
          }

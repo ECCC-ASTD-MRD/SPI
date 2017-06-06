@@ -3243,6 +3243,10 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Dat
    
    if (strcmp(Data->typePtr->name,"bytearray")==0) {
       data=Tcl_GetByteArrayFromObj(Data,&nobjj);
+      if (nobjj>(Field->Def->NIJ*TDef_Size[Field->Def->Type])) {
+         Tcl_AppendResult(Interp,"Data_ValPutMatrix: Array too big",(char*)NULL);
+         return(TCL_ERROR);             
+      }
       memcpy(Field->Def->Data[Component],data,nobjj);
    } else {
       // Extraire les nj lignes de donnees de la liste bidimensionnelle
@@ -3254,9 +3258,17 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Dat
          Tcl_ListObjIndex(Interp,Data,j,&objj);
          Tcl_ListObjLength(Interp,objj,&nobji);
 
+         if (!j) {
+            if (nobji*nobjj>Field->Def->NIJ) {
+               Tcl_AppendResult(Interp,"Data_ValPutMatrix: Too many values",(char*)NULL);
+               return(TCL_ERROR);             
+            }
+         }
+         
          // Assigner les valeurs ni de la nj ieme ligne
          for (i=0;i<nobji;i++){
             Tcl_ListObjIndex(Interp,objj,i,&obji);
+            
             Tcl_GetDoubleFromObj(Interp,obji,&value);
             value=SPEC2VAL(Field->Spec,value);
             Def_Set(Field->Def,Component,j*nobji+i,value);

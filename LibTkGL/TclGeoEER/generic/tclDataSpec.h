@@ -52,6 +52,7 @@
 #define VECTORSIZE(SPEC,VAL) (((SPEC->RenderVector==SPEAR || SPEC->RenderVector==ARROW)?SPEC->Size+SPEC->Size*SPEC->SizeRange*(SPEC->InterNb?((VAL-SPEC->Inter[0])/(SPEC->Inter[SPEC->InterNb-1]-SPEC->Inter[0])):((VAL-SPEC->Min)/(SPEC->Max-SPEC->Min))):SPEC->Size+2*SPEC->Width))
 #define SPEC2VAL(SPEC,VAL)    (SPEC?VAL/SPEC->ValFactor-SPEC->ValDelta:VAL)
 #define VAL2SPEC(SPEC,VAL)    (SPEC?(VAL+SPEC->ValDelta)*SPEC->ValFactor:VAL)
+#define VALWITHIN(SPEC,VAL)   ((VAL<=SPEC->Max || SPEC->MapAbove) && (VAL>=SPEC->Min || SPEC->MapBellow))
 
 #define COL2VAL(IDX,SPEC,VAL) {\
    if (SPEC->InterNb>0){\
