@@ -196,7 +196,7 @@ proc MetData::GetLatestRun { Path } {
 
 proc MetData::GetLatestStamp { Path } {
 
-   set file  [lindex [lsort -dictionary [-tails -directory $Path \[1-2\]*_???]] end]
+   set file  [lindex [lsort -dictionary [glob -tails -directory $Path \[1-2\]*_???]] end]
    return [MetData::StampFromFile $file]
 }
 
