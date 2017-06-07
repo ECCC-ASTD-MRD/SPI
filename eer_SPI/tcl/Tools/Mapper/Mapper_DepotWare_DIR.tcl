@@ -50,7 +50,7 @@ proc Mapper::DepotWare::DIR::Params { Frame } {
    frame $Frame.path
       label $Frame.path.lbl -anchor w -text [lindex $Lbl(Path) $GDefs(Lang)] -width 15
       button $Frame.path.open -image OPEN -bd 0 -relief flat -overrelief raised -relief raised \
-         -command  { set Mapper::DepotWare::DIR::Data(Path) [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::Data(GDALFormats) $Mapper::Data(OGRFormats)]] }
+         -command  { set Mapper::DepotWare::DIR::Data(Path) [FileBox::Create . "" LoadPath [concat [list $FileBox::Type(ALL)] $Mapper::GDAL::Data(Formats) $Mapper::OGR::Data(Formats)]] }
       entry $Frame.path.ent -width 1 -bd 1 -bg $GDefs(ColorLight) -textvariable Mapper::DepotWare::DIR::Data(Path)
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
