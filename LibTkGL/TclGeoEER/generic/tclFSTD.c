@@ -1202,8 +1202,8 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TRPNFile *file=NULL;
 
    static CONST char *types[] = { "NONE","SPI","ALL","NOMVAR","TYPVAR","DATEV","LEVEL","IP1","IP2","IP3","ETIKET","IG1","IG2","IG3","IG4","EXTENDED" };
-   static CONST char *sopt[] = { "is","open","close","link","unlink","filename","mode","info",NULL };
-   enum               opt { IS,OPEN,CLOSE,LINK,UNLINK,FILENAME,MODE,INFO };
+   static CONST char *sopt[] = { "is","open","close","flush","link","unlink","filename","mode","info",NULL };
+   enum               opt { IS,OPEN,CLOSE,FLUSH,LINK,UNLINK,FILENAME,MODE,INFO };
 
    Tcl_ResetResult(Interp);
 
@@ -1257,6 +1257,19 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          return(TCL_OK);
          break;
 
+      case FLUSH:
+         if(Objc<3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fileid");
+            return(TCL_ERROR);
+         }
+         if (!(file=FSTD_FileGet(Interp,Tcl_GetString(Objv[2])))) {
+            return(TCL_ERROR);
+         }
+         if (file->Open)
+            cs_fstflush(file->Id);
+         return(TCL_OK);
+         break;
+         
       case LINK:
          if(Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fileids");
