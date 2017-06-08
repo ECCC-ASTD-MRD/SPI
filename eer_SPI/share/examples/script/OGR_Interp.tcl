@@ -45,12 +45,15 @@ ogrlayer define LAYER -field PRES Real
 ogrlayer clear LAYER PRES 0.0
 
 #----- Open a file to save the index for future reuse for faster processing
-#      if the file is empty, it will be filled with the index
-#      otherwise, it will be used as an index
-#set f [open DataOut/OGR_InterpIdx.bin r]
-#fconfigure $f -encoding binary -translation binary
-#set index [read $f]
-#
+if { [file exists DataOut/OGR_InterpIdx.bin] } {
+   set f [open  DataOut/OGR_InterpIdx.bin { RDONLY BINARY }]
+   set index [read $f]
+   set gotindex True
+} else {
+   set f [open DataOut/OGR_InterpIdx.bin { WRONLY CREAT BINARY }]
+   set gotindex False
+}
+
 #----- Do the sum in conservative mode splitting the grid cell in 1 segment
 puts "   Interpolating field values into polygon layer"
 #ogrlayer interp LAYER DATAFIELD ZONE CONSERVATIVE 1 True $f
@@ -68,8 +71,10 @@ vexpr LAYER.HECTARES log(LAYER.PRES+100)
 #binary scan $index f* data
 #puts [llength $data]
 #puts $data
-#puts $f $index
-#close $f
+if { !$gotindex } {
+   puts $f $index
+   close $f
+}
 
 ogrfile open SHPFILE2 write DataOut/OGR_Interp2D.shp "ESRI Shapefile"
 ogrlayer write LAYER SHPFILE2
