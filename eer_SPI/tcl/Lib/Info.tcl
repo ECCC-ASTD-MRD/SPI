@@ -48,10 +48,10 @@ namespace eval Info {
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
-                        Backward Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
+                        Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
                         SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion WindCoeff CurrentCoeff Depth WebTide }
+                        OilFate OilBeach OilEntrainment OilEmulsion WindFetch WindCoeff CurrentCoeff Depth WebTide }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -483,6 +483,7 @@ proc Info::Format { Info { Length 0 } } {
 
       switch $tok {
          "Click" -
+         "MetSecs" -
          "Sim0Secs" -
          "SimSecs" -
          "AccSecs" { set val [clock format [lindex $val 0] -timezone :UTC] }
