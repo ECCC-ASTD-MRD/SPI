@@ -607,7 +607,7 @@ double dtangcurve(TDef *Res,TDef *Def) {
 double darea(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
-   double        mx,my;
+   float        *a=NULL;
    TGeoRef      *gref=NULL;
 
    extern TData     *GField;
@@ -619,18 +619,20 @@ double darea(TDef *Res,TDef *Def,int Mode) {
       case T_FLD : gref=GField->GRef; break;
    }
 
-   if (!gref) {
+   if (!gref) 
       return(0.0);
-   }
 
-   for(j=0;j<Def->NJ;j++) {
-      idx=j*Def->NI;
-      for(i=0;i<Def->NI;i++) {
-         mx=gref->Distance(gref,i-0.5,j,i+0.5,j);
-         my=gref->Distance(gref,i,j-0.5,i,j+0.5);
-         Def_Set(Res,0,idx+i,mx*my);
+   if ((a=(float*)malloc(FSIZE2D(Def)*sizeof(float)))) {
+      GeoRef_CellDims(gref,FALSE,NULL,NULL,a);
+
+      for(j=0;j<Def->NJ;j++) {
+         idx=j*Def->NI;
+         for(i=0;i<Def->NI;i++) {
+            Def_Set(Res,0,idx+i,a[idx+i]);
+         }
       }
    }
+   
    return(1.0);
 }
 
