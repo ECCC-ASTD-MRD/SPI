@@ -84,7 +84,8 @@ namespace eval Log { } {
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
    set Param(MailTitle)   ""                    ;#Mail title
    set Param(Pager)       ""                    ;#Pager address
-
+   set Param(PagerInfo)   ""                    ;#Info specifc for pager
+   
    set Param(Cyclope)     False                 ;#Use Cyclope
    set Param(CyclopePath) $env(HOME)/.Cyclope   ;#Path to Cyclope
 
@@ -743,7 +744,7 @@ proc Log::Pager { } {
    variable Param
 
    if { $Param(Pager)!="" } {
-      set err [catch { eval exec echo -e \$Param(JobId) | mail -s \"$Param(MailTitle)\" $Param(Pager) } msg]
+      set err [catch { eval exec echo -e \$Param(JobId) | mail -s \"$Param(MailTitle) ($Param(PagerInfo))\" $Param(Pager) } msg]
       if { $err } {
          Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
       }
