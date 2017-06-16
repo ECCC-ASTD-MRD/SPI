@@ -199,6 +199,7 @@ static inline int DataSpec_ColorSet(Tcl_Interp *Interp,TDataSpec *Spec,double Va
    
    if (Spec && Spec->MapAll && Spec->Map) {
       VAL2COL(idc,Spec,Value);
+      
       if (Interp) {
          CMap_PostscriptColor(Interp,Spec->Map,idc);
       } else {
