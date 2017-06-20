@@ -1132,8 +1132,8 @@ void Data_PreInit(TData *Data) {
    if (!Data->Stat)
       Data_GetStat(Data);
 
-   if (!(Data->Spec->MinMax&DATASPEC_MINSET)) Data->Spec->Min=Data->Stat->Min;
-   if (!(Data->Spec->MinMax&DATASPEC_MAXSET)) Data->Spec->Max=Data->Stat->Max;
+   if (!(Data->Spec->MinMax&DATASPEC_MINSET)) Data->Spec->Min=Data->Spec->InterNb?Data->Spec->Inter[0]:Data->Stat->Min;
+   if (!(Data->Spec->MinMax&DATASPEC_MAXSET)) Data->Spec->Max=Data->Spec->InterNb?Data->Spec->Inter[Data->Spec->InterNb-1]:Data->Stat->Max;
    if (!(Data->Spec->MinMax&DATASPEC_MINSET)) Data->Spec->Min=Data->Spec->Max<Data->Spec->Min?Data->Spec->Max:Data->Spec->Min;
 
    DataSpec_Define(Data->Spec);
