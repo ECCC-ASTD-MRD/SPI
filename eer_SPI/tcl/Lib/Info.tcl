@@ -486,7 +486,7 @@ proc Info::Format { Info { Length 0 } } {
          "MetSecs" -
          "Sim0Secs" -
          "SimSecs" -
-         "AccSecs" { set val [clock format [lindex $val 0] -timezone :UTC] }
+         "AccSecs" { if { $val!="" } { set val [clock format [lindex $val 0] -timezone :UTC] } }
       }
 
       #----- For scenario, only show the name (1st item)
