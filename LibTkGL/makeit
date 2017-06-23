@@ -132,7 +132,8 @@ if [[ $EXT -eq 1 ]]; then
    OCI=instantclient_11_2
 #   FGDB=FileGDB_API
    PROJ=proj-4.9.3
-   MESA=mesa-13.0.2
+ #  MESA=mesa-13.0.2
+   MESA=mesa-7.9.2
    NETCDF=netcdf-4.3.3.1
    EZSCINT=ezscint
    EZINTERPV=cezinterpv
@@ -197,7 +198,8 @@ if [[ $EXT -eq 1 ]]; then
       mkdir ${TMP_PATH}/${MESA}
       cd ${TMP_PATH}/${MESA}
       cp -r -p ${EXT_SRC_PATH}/${MESA}/ ${TMP_PATH}/
-      (./configure --prefix=${LIB_PATH}/GL --disable-driglx-direct --enable-glx=xlib -disable-dri --with-gallium-drivers=swrast --disable-egl
+#mesa-13+      ./configure --prefix=${LIB_PATH}/GL --disable-driglx-direct --enable-glx=xlib -disable-dri --with-gallium-drivers=swrast --disable-egl
+      (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct --disable-egl
       make 
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    
