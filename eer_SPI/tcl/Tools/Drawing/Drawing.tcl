@@ -303,6 +303,7 @@ proc Drawing::Insert { } {
             set mode georef
          }
          $Data(Tab).items.list.box insert end "[lindex $params 1] [lindex $params 0] $mode"
+         catch { $Data(Tab).items.list.box itemconfigure end -fg [lindex $params 4] }
       }
    }
 }
