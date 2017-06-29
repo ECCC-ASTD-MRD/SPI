@@ -117,6 +117,10 @@ set nok 0
 set n   0
 set nb  [llength $tests]
 
+set RED     "\x1b\[31m"
+set GREEN   "\x1b\[32m"
+set RESET   "\x1b\[0m"
+
 foreach test $tests {
 
    incr n
@@ -124,10 +128,10 @@ foreach test $tests {
    set s [clock seconds]
 
    if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll-$date.log }]  } {
-      puts -nonewline "Failed"
+      puts -nonewline "${RED}Failed${RESET}"
       incr nok
    } else {
-      puts -nonewline "Passed"
+      puts -nonewline "${GREEN}Passed${RESET}"
    }
 
    puts " ([expr [clock seconds]-$s]s)"
