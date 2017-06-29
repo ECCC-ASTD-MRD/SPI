@@ -482,10 +482,10 @@ proc Log::End { { Status 0 } { Exit True } } {
 
    if { $Param(JobClass)=="REPORT" } {
       if { $Param(Error)>0 } {
-         Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
+         Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
          Log::Pager
       } elseif { $Param(Warning)>0 } {
-         Log::Mail "Job finished (WARNING ($Param(Warning))" $Param(OutFile)
+         Log::Mail "Job finished (WARNING ($Param(Warning)))" $Param(OutFile)
       } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       }
@@ -494,7 +494,7 @@ proc Log::End { { Status 0 } { Exit True } } {
          Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       }
    } else {
-      Log::Mail "Job finished (ERROR ($Param(Error))" $Param(OutFile)
+      Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
       Log::Pager
    }
 
