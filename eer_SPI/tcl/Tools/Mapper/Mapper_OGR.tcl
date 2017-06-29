@@ -2120,7 +2120,7 @@ proc Mapper::OGR::Read { File { Index {} } { SQL "" } } {
    update idletasks;
 
    foreach idx $idxs {
-      set obj [lindex $idx 2]
+      set obj [string map { - _ + _ ^ _  % _} [lindex $idx 2]]
 
       if { $SQL!="" } {
          append obj _$Data(IdSQL)
