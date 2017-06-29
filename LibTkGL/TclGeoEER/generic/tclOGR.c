@@ -1092,9 +1092,10 @@ struct TDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 
       /*Get the data type of the field*/
       switch (OGR_Fld_GetType(OGR_FD_GetFieldDefn(Layer->Def,i))) {
-         case OFTInteger: type=TD_Int32; break;
-         case OFTReal   : type=TD_Float64; break;
-         default        : type=TD_Unknown;
+         case OFTInteger  : type=TD_Int32; break;
+         case OFTInteger64: type=TD_Int64; break;
+         case OFTReal     : type=TD_Float64; break;
+         default          : type=TD_Unknown;
       }
 
       /*If the field is not int or float, exit*/

@@ -1484,7 +1484,7 @@ proc Mapper::OGR::TableStat { Object } {
    
    set c 1
    foreach field $fields {
-      if { [catch { $Data(Frame5).pan.stat.table set 0,$c [vexpr NIL ssumx($Object.$field,$Object.$field)] }] } {
+      if { [catch { $Data(Frame5).pan.stat.table set 0,$c [vexpr NIL ssumx($Object.$field,$Object.$field)] } msg] } {
           $Data(Frame5).pan.stat.table set 0,$c ""
           $Data(Frame5).pan.stat.table set 1,$c ""
           $Data(Frame5).pan.stat.table set 2,$c ""
@@ -1493,6 +1493,7 @@ proc Mapper::OGR::TableStat { Object } {
           $Data(Frame5).pan.stat.table set 5,$c ""
           $Data(Frame5).pan.stat.table set 6,$c ""
           $Data(Frame5).pan.stat.table set 7,$c ""
+          Log::Print DEBUG "Cannot get stats for columd $field:\n\n\t$msg"
       } else {
          catch { $Data(Frame5).pan.stat.table set 1,$c [vexpr NIL sminx()] }          
          catch { $Data(Frame5).pan.stat.table set 2,$c [vexpr NIL smaxx()] }    
