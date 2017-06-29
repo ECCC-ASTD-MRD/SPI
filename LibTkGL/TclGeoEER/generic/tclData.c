@@ -3223,9 +3223,9 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
  *  <TCL_...> : Code d'erreur de TCL.
  *
  * Remarques :
- *   La matrice en question est une serie de listes imbriquees comprenant NJ listes
- *   de NI elements.
- *
+ *   La matrice en question peut etre:
+ *      - une serie de listes imbriquees comprenant NJ listes de NI elements (2D).
+ *      - un objet bytearray (2D ou 3D)
  *----------------------------------------------------------------------------
 */
 int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Data){
@@ -3243,7 +3243,7 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Dat
    
    if (strcmp(Data->typePtr->name,"bytearray")==0) {
       data=Tcl_GetByteArrayFromObj(Data,&nobjj);
-      if (nobjj>(Field->Def->NIJ*TDef_Size[Field->Def->Type])) {
+      if (nobjj>(FSIZE3D(Field->Def)*TDef_Size[Field->Def->Type])) {
          Tcl_AppendResult(Interp,"Data_ValPutMatrix: Array too big",(char*)NULL);
          return(TCL_ERROR);             
       }
