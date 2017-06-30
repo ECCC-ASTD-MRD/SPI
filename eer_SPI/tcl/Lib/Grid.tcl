@@ -61,7 +61,7 @@ namespace eval Grid {
    set Param(Lon0)     0                                                         ;# Longitude of first bbox corner
    set Param(Lon1)     0                                                         ;# Longitude of second bbox corner
    set Param(LatM)     0                                                         ;# Delta on latitute translating grid
-   set Param(LonM)     0                                                         ;# Delta on longitude whehn translating grid
+   set Param(LonM)     0                                                         ;# Delta on longitude when translating grid
    set Param(PGSM)     ""                                                        ;# Grid description for PGSM
    set Param(GridInfo) ""                                                        ;# General grid description
    set Param(NIJWarn)  4000000                                                   ;# Warning grid size 2000x2000
@@ -409,7 +409,7 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
 #    <Lon>   : Longitude centrale
 #
 # Retour:
-#
+#    <grid>  : Grid parameters
 # Remarques :
 #    Aucune.
 #
@@ -471,6 +471,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    } else {
       Grid::Create
    }
+   return $Param(GridInfo)
 }
 
 #----------------------------------------------------------------------------
