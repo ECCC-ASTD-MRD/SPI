@@ -1612,7 +1612,6 @@ proc Mapper::OGR::TableColumnCalc { Object Field Expr } {
    
    #----- Parcel expresion to add layer
    regsub -all {\.([A-Za-z])+} $Expr $Object& calc
-
    vexpr $Object.$Field $calc
 
    destroy .mappernew 

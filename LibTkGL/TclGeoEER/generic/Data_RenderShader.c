@@ -381,7 +381,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);
 
    min=Field->Spec->Min;
-   rng=Field->Spec->Max-Field->Spec->Min;
+   rng=fabsf(Field->Spec->Max-Field->Spec->Min);
    pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
    if (Field->GRef->Grid[0]=='U') {
       idxk=FSIZE2D(Field->SDef[0])*Field->Def->Level+Field->Def->Idx;
