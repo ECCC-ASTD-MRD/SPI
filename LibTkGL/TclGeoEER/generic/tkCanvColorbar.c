@@ -1046,7 +1046,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
             Colorbar_RenderText(CB,xt,Y2-5,CB->BarSide,buf,Spec);
          }
 
-         if (Spec->Min!=Spec->Max) {
+         if (Spec->Min<Spec->Max) {
 
             DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
             if (Interp) {
@@ -1312,7 +1312,7 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
          }
          txt=Tk_TextWidth(CB->UFont,buf,strlen(buf))+CB->tkm.linespace*2;
 
-         if (Spec->Min!=Spec->Max) {
+         if (Spec->Min<Spec->Max) {
             DataSpec_Format(Spec,VAL2SPEC(Spec,Spec->Max),buf);
             txtr=Tk_TextWidth(CB->UFont,buf,strlen(buf));
             if (Interp) {
