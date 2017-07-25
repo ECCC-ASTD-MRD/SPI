@@ -49,9 +49,9 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
                         Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
-                        SrcType OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
+                        SrcType FMLimit OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion WindFetch WindCoeff CurrentCoeff Depth WebTide }
+                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindDiffFactor WindFetch WindCoeff CurrentCoeff Depth WebTide }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -94,6 +94,7 @@ namespace eval Info {
    set Lbl(Aerosol)              { "Type d'aérosol" "Aerosol type" }
    set Lbl(WetScaMode)           { "Mode de lessivage humide" "Wet scavenging mode" }
    set Lbl(DryDepMode)           { "Mode de dépot sec" "Dry deposition mode" }
+   set Lbl(FMLimit)              { "Épaisseur de la couche inférieure (m)" "Lower layer thickness (m)" }
 
    set Lbl(Output)               { "Sortie (min)" "Output (min)" }
    set Lbl(ObsRough)             { "Rugosité (m)" "Roughness (m)" }
