@@ -65,9 +65,12 @@ namespace eval FSTD {
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
       
-   geodata vector { UU VV }
-   geodata vector { UP VP }
-   geodata vector { U V W }
+   geodata vector { UU   VV     }
+   geodata vector { UP   VP     }
+   geodata vector { UD   VD     }
+   geodata vector { UU2W VV2W   }
+   geodata vector { UUW  VVW    }
+   geodata vector { U    V    W }
 
    Viewport::FollowerAdd FSTD
 
