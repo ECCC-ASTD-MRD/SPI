@@ -606,8 +606,8 @@ void Data_GetStat(TData *Field){
       FSTD_FieldReadMesh(Field);
 #endif
 
-  // Calculate vector module if needed (On Y grid, components are speed/dir)
-   if (def->NC>1 && !def->Dir && Field->GRef->Grid[0]!='Y') {
+   // Calculate vector module if needed
+   if (def->NC>1 && !def->Dir) {
       if (!def->Mode || def->Mode==def->Data[0]) {
          def->Mode=(char*)malloc(FSIZE3D(def)*TDef_Size[def->Type]);
       } else {
