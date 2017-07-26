@@ -759,21 +759,19 @@ proc MetData::Profile { Stamp Var File Lat Lon { From 0 } { To end } } {
 proc MetData::Obukhov { Stamp File Lat Lon } {
 
    #----- Find inverse Obukhov length (aggregated value) [m-1] record.
-   set io [fstdfield find $File $Stamp "" 1195 -1 -1 "" IO]
    set ol 22856.0320937
 
-   if { [llength $io] } {
-
-      #----- Read inverse Obukhov length [m-1].
-      fstdfield read FLD $File $io
+   if { ![catch { fstdfield read OBIO $File $Stamp "" 1195 -1 -1 "" IO }] } {
 
       #----- Interpolate field at specific geographical coordinates.
-      set io [fstdfield stats FLD -coordvalue $Lat $Lon]
+      set io [fstdfield stats OBIO -coordvalue $Lat $Lon]
 
       if { [expr abs($io)]>1e-32 } {
          #----- Compute Obukhov length [m].
          set ol [expr 1.0/double($io)]
       }
+      
+      fstdfield free OBIO 
    } else {
       Log::Print WARNING "Missing inverse Obukhov length field 'IO'. Using a neutral atmosphere."
    }
@@ -809,24 +807,17 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
 
    #----- Calcul du 1/L.
 
-   set p0 [fstdfield find $File $Stamp "" -1 -1 -1 "" P0]
-   set fq [fstdfield find $File $Stamp "" -1 -1 -1 "" FQ]
-   set fc [fstdfield find $File $Stamp "" 1195 -1 -1 "" FC]
-   set tt [fstdfield find $File $Stamp "" 12000 -1 -1 "" TT]
+   set p0 [catch { fstdfield read OBP0 $File $Stamp "" -1 -1 -1 "" P0 }]
+   set fq [catch { fstdfield read OBFQ $File $Stamp "" -1 -1 -1 "" FQ }]
+   set fc [catch { fstdfield read OBFC $File $Stamp "" 1195 -1 -1 "" FC }]
+   set tt [catch { fstdfield read OBTT $File $Stamp "" 12000 -1 -1 "" TT }]
 
-   if { [llength $p0] && [llength $fq] && [llength $fc] && [llength $tt] } {
+   if { !$p0 && !$fq && !$fc && !$tt } {
 
-      fstdfield read OBVAR $File $p0
-      set p0 [fstdfield stats OBVAR -coordvalue $Lat $Lon]
-
-      fstdfield read OBVAR $File $fq
-      set fq [fstdfield stats OBVAR -coordvalue $Lat $Lon]
-
-      fstdfield read OBVAR $File $fc
-      set fc [fstdfield stats OBVAR -coordvalue $Lat $Lon]
-
-      fstdfield read OBVAR $File $tt
-      set tt [fstdfield stats OBVAR -coordvalue $Lat $Lon]
+      set p0 [fstdfield stats OBP0 -coordvalue $Lat $Lon]
+      set fq [fstdfield stats OBFQ -coordvalue $Lat $Lon]
+      set fc [fstdfield stats OBFC -coordvalue $Lat $Lon]
+      set tt [fstdfield stats OBTT -coordvalue $Lat $Lon]
 
       if { $p0!="-" && $fq!="-" && $fq!=0.0 && $fc!="-" && $tt!="-" } {
          set rho  [expr 100.0*$p0/($rgas*($tt+273.15))]
@@ -846,7 +837,6 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
          set L 22856.0320937
       }
 
-      fstdfield free OBVAR
    } else {
 
       Log::Print WARNING "MetData::ObukhovCalculate: Missing fields, will use default value"
@@ -854,5 +844,6 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
       #----- Si on ne peut calculer, mettre un atmosphere neurtre
       set L 22856.0320937
    }
+   fstdfield free OBP0 OBFQ OBFC OBTT
    return $L
 }
