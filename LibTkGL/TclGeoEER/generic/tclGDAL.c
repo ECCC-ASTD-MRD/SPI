@@ -987,18 +987,17 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
 int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
    GDAL_Band *band;
-
+ 
    if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
 
-      /*Wait for it's rendering thread to die*/
-      band->Tex.Res=0;
-      while(band->Tex.ThreadId) { sleep(1); };
+      // Wait for it's rendering thread to die
+      while(band->Tex.ThreadId) { band->Tex.Res=0; sleep(1); };
 
       if (band->Spec) {
          DataSpec_FreeHash(Interp,band->Spec->Name);
       }
 
-      /*Liberation de la memoire allouee pour les textures*/
+      // Liberation de la memoire allouee pour les textures
       GeoTex_Clear(&band->Tex,GEOTEX_CLRALL,0,0);
 
       if (band->Stat)      Data_StatFree(band->Stat);
@@ -1779,7 +1778,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
          if (band->GRef->Spatial) {
             OSRExportToWkt(band->GRef->Spatial,&str);
             GDALSetProjection(vds,str);
-            OGRFree(str);
+            CPLFree(str);
          }
       }
    }
