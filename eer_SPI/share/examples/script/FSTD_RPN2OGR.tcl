@@ -35,6 +35,7 @@ namespace eval RPN2OGR { } {
    set Param(Mode)      CELL
    set Param(Map)       "$env(HOME)/.spi/Colormap/REC_Col.std1.rgba"
    set Param(Etiket)    ""
+   set Param(TypVar)    ""
    set Param(IP1)       -1
    set Param(IP2)       -1
    set Param(IP3)       -1
@@ -56,6 +57,7 @@ namespace eval RPN2OGR { } {
 \t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR POLYGON)
 \t-inter       : List of contour to use
 \t-fstd        : List of RPN files to process (Mandatory)
+\t-typvar      : TYPVAR to use (${APP_COLOR_GREEN}\"$Param(TypVar)\"${APP_COLOR_RESET})
 \t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
 \t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
@@ -111,7 +113,7 @@ proc RPN2OGR::Run { } {
          set v 0
          foreach var $Param(Vars) {
             Log::Print INFO "   Checking for variable $var"
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" $Param(TypVar) $var] 0] {
 
                fstdfield read DATA$n FILEIN $field
                fstdfield configure DATA$n -desc ${var} -colormap MAP -min -1e32 -intervals $Param(Intervals)
@@ -200,6 +202,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "opt"      { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Options)] }
          "zip"      { set i [Args::Parse $gargv $gargc $i FLAG  RPN2OGR::Param(Zip)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Out)] }
+         "typvar"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(TypVar)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP1)] }
          "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP2)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(IP3)] }

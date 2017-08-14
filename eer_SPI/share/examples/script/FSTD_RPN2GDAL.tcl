@@ -33,6 +33,7 @@ namespace eval RPN2GDAL { } {
 
    set Param(Format)    "KMZ"
    set Param(Files)     {}
+   set Param(TypVar)    ""
    set Param(IP1)       -1
    set Param(IP2)       -1
    set Param(IP3)       -1
@@ -71,6 +72,7 @@ namespace eval RPN2GDAL { } {
 \t-min         : Minimum value
 \t-max         : Maximum value
 \t-fstd        : List of RPN files to process (Mandatory)
+\t-typvar      : TYPVAR to use (${APP_COLOR_GREEN}\"$Param(TypVar)\"${APP_COLOR_RESET})
 \t-ip1         : IP1 to use (${APP_COLOR_GREEN}$Param(IP1)${APP_COLOR_RESET})
 \t-ip2         : IP2 to use (${APP_COLOR_GREEN}$Param(IP2)${APP_COLOR_RESET})
 \t-ip3         : IP3 to use (${APP_COLOR_GREEN}$Param(IP3)${APP_COLOR_RESET})
@@ -118,7 +120,7 @@ proc RPN2GDAL::Run { } {
 
             Log::Print DEBUG "   Checking for variable $var"
 
-            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" "" $var] 0] {
+            foreach field [lindex [fstdfield find FILEIN [fstdstamp fromseconds $datev] $Param(Etiket) "$Param(IP1)" "$Param(IP2)" "$Param(IP3)" $Param(TypVar) $var] 0] {
                fstdfield read DATA$n FILEIN $field
 
                if { [llength $Param(BBox)]!=4 } {
@@ -185,6 +187,7 @@ proc RPN2GDAL::ParseCommandLine { } {
          "max"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Max)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2GDAL::Param(Files)] }
          "out"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Out)] }
+         "typvar"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(TypVar)] }
          "ip1"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP1)] }
          "ip2"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP2)] }
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
