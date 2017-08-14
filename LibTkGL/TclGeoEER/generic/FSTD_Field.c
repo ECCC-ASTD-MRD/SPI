@@ -1275,7 +1275,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
 
   /*Interpoler le champs*/
    for(i=0;i<FSIZE3D(Field0->Def);i++) {
-      for(n=0;n<3;n++) {
+      for(n=0;n<Field0->Def->NC;n++) {
          if (Field0->Def->Data[n]) {
             Def_Get(Field0->Def,n,idx,v0);
             Def_Get(Field1->Def,n,idx,v1);
