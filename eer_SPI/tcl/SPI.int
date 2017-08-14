@@ -742,6 +742,8 @@ proc SPI::WindowMenu { } {
          -command "Page::UpdateItems \$Page::Data(Frame)"
       .menu.disp.menu.icons add checkbutton -label [lindex $Lbl(Icon) $GDefs(Lang)] -variable SPI::Param(IconImage) -onvalue True -offvalue False\
          -command "Page::UpdateItems \$Page::Data(Frame)"
+      .menu.disp.menu.icons add checkbutton -label [lindex $Lbl(Area) $GDefs(Lang)] -variable SPI::Param(IconArea) -onvalue True -offvalue False\
+         -command "Page::UpdateItems \$Page::Data(Frame)"
       .menu.disp.menu.icons add separator
 
    menu .menu.window.menu

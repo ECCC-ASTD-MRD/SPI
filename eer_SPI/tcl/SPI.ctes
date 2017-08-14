@@ -54,6 +54,7 @@ namespace eval SPI {
    set Param(Bubble)         True         ;#Mode batch
    set Param(Icons)          {}           ;#Fichiers icones
    set Param(IconId)         False        ;#Affichage des descriptifs des icones
+   set Param(IconArea)       True         ;#Affichage des régions associées
    set Param(IconImage)      True         ;#Affichage des icones des icones
    set Param(IconCircle)     0            ;#Affichage d'un rayon autour d'une icone (en metres)
    set Param(IconDX)         10           ;#Delta en X pour l'id de l'icone

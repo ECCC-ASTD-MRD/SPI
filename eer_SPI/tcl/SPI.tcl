@@ -1539,7 +1539,7 @@ proc SPI::IcoDraw { Frame args } {
             
             foreach vp [Page::Registered $Frame Viewport] {
 
-              if { [llength $coords]>=4 } {
+              if { $Param(IconArea) [llength $coords]>=4 } {
                   Viewport::DrawArea $Frame $vp $coords "PAGE$vp $group $tag" "" "" $col "" False 2
                }
 
