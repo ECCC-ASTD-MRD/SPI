@@ -245,7 +245,6 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
    unsigned long k;
    int           n=0;
    double        v=0.0;
-   void          *pa0,*pa1,*pb0,*pb1;
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Called Calc_MatrixTo(A:%p,B:%p,Degree:%i)\n",(void*)A,(void*)B,Degree);
@@ -271,33 +270,8 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
          return(NULL);
       }
 
-      if (GField->GRef->Ids[GField->GRef->NId]<=-1 || GFieldP->GRef->Ids[GFieldP->GRef->NId]<=-1) {
-         if (!Def_GridInterp(GField->GRef,GData[GDataN],GFieldP->GRef,B,'L')) {
-            return(NULL);
-          }
-      } else {
-         switch(Degree) {
-            case 1:c_ezsetopt("INTERP_DEGREE","NEAREST");break;
-            case 2:c_ezsetopt("INTERP_DEGREE","LINEAR");break;
-            case 3:c_ezsetopt("INTERP_DEGREE","CUBIC");break;
-         }
-         c_ezsetopt("EXTRAP_DEGREE","NEUTRAL");
-         n=c_ezdefset(GField->GRef->Ids[GField->GRef->NId],GFieldP->GRef->Ids[GFieldP->GRef->NId]);
-
-         for(k=0;k<B->NK;k++) {
-            /*Interpolation vectorielle*/
-            Def_Pointer(GData[GDataN],0,k*FSIZE2D(GData[GDataN]),pa0);
-            Def_Pointer(B,0,k*FSIZE2D(B),pb0);
-            Def_Pointer(GData[GDataN],1,k*FSIZE2D(GData[GDataN]),pa1);
-            Def_Pointer(B,1,k*FSIZE2D(B),pb1);
-            if (B->Data[1]) {
-               /*Interpolation vectorielle*/
-               n=c_ezuvint(pa0,pa1,pb0,pb1);
-            } else{
-               /*Interpolation scalaire*/
-               n=c_ezsint(pa0,pb0);
-            }
-         }
+      if (!Def_GridInterp(GField->GRef,GData[GDataN],GFieldP->GRef,B,'L')) {
+         return(NULL);
       }
       GeoRef_Incr(GField->GRef);
    }

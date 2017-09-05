@@ -1036,13 +1036,15 @@ void FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom) {
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Mode,float *Index){
+int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom,int Degree,float *Index){
 
-   double     val,dir,lat,lon,di,dj,dval;
-   int        ezto=1,ezfrom=1,ok=-1,idx,i,j,k,gotidx,msk;
-   void      *pf0,*pt0,*pf1,*pt1;
+   double     val,lat,lon,di,dj;
+   int        ezto=1,ezfrom=1,idx,i,j,k,gotidx,msk,c;
    float     *ip=NULL;
-   
+   char      *interp;
+
+   extern const char *TDef_InterpRString[];
+  
    if (!FieldFrom || !FieldFrom->GRef) {
       Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Origin field not valid",(char*)NULL);
       return(TCL_ERROR);
@@ -1058,131 +1060,58 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    FieldTo->ZRef=ZRef_Define(FieldFrom->ZRef->Type,FieldFrom->ZRef->LevelNb,FieldFrom->ZRef->Levels);
    msk=(((TRPNHeader*)FieldFrom->Head)->TYPVAR[0]=='@' && ((TRPNHeader*)FieldFrom->Head)->TYPVAR[1]=='@');
 
-   // Checl for ezscint capability
-   if (FieldFrom->Def->Type!=TD_Float32) {
-      ezfrom=0;
-   }
-
-   if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='X' || FieldFrom->GRef->Grid[0]=='M') {
-      ezfrom=0;
-   }
-
-   if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='Y' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
-      ezto=0;
-   }
-
-   if (FieldFrom->GRef->Grid[0]!='R' && FieldTo->GRef->Grid[0]!='R') {
-      FSTD_FieldSetTo(FieldTo,FieldFrom);
-   }
-   
-   if (Mode==0) {
-      c_ezsetopt("INTERP_DEGREE","NEAREST");
-   } else if (Mode==1) {
-      c_ezsetopt("INTERP_DEGREE","LINEAR");
-   } else if (Mode==2) {
-      c_ezsetopt("INTERP_DEGREE","CUBIC");
-   } else {
-      c_ezsetopt("INTERP_DEGREE",(char*)FieldTo->Spec->InterpDegree);
-   }
-   if (FieldTo->Spec->ExtrapDegree[0]=='V') {
-      c_ezsetval("EXTRAP_VALUE",FieldTo->Def->NoData);
-   }
-   c_ezsetopt("EXTRAP_DEGREE",(char*)FieldTo->Spec->ExtrapDegree);
-   
-   // Use ezscint
-   if (ezto && ezfrom) {
-      RPN_IntLock();
-
-      ok=c_ezdefset(FieldTo->GRef->Ids[FieldTo->GRef->NId],FieldFrom->GRef->Ids[FieldFrom->GRef->NId]);
-
-      if (ok<0) {
-         Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, could not define gridset",(char*)NULL);
-         RPN_IntUnlock();
-         return(TCL_ERROR);
-      }
-
-      for(k=0;k<FieldTo->Def->NK;k++) {
-         // Effectuer l'interpolation selon le type de champs
-         if (FieldTo->Def->Data[1]) {
-            /*Interpolation vectorielle*/
-            Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
-            Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
-            Def_Pointer(FieldTo->Def,1,k*FSIZE2D(FieldTo->Def),pt1);
-            Def_Pointer(FieldFrom->Def,1,k*FSIZE2D(FieldFrom->Def),pf1);
-
-            // In case of Y grid, get the speed and dir instead of wind components
-            // since grid oriented components dont mean much
-            if (FieldTo->GRef->Grid[0]=='Y') {
-               ok=c_ezwdint(pt0,pt1,pf0,pf1);
-            } else {
-               ok=c_ezuvint(pt0,pt1,pf0,pf1);
-           }
-        } else{
-            // Interpolation scalaire
-            Def_Pointer(FieldTo->Def,0,k*FSIZE2D(FieldTo->Def),pt0);
-            Def_Pointer(FieldFrom->Def,0,k*FSIZE2D(FieldFrom->Def),pf0);
-            ok=c_ezsint(pt0,pf0);
-        }
-        FieldTo->ZRef->Levels[k]=FieldFrom->ZRef->Levels[k];
-      }
-      RPN_IntUnlock();
-      if (ok<0) {
-         Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT internal error, interpolation problem",(char*)NULL);
-         return(TCL_ERROR);
-      }
-  } else { 
-      idx=0;  
-            
-      for(k=0;k<FieldTo->Def->NK;k++) {
-         ip=Index;
-         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
-
-         for(j=0;j<FieldTo->Def->NJ;j++) {
-            for(i=0;i<FieldTo->Def->NI;i++,idx++) {
-
-               if (gotidx) {
-                  // Got the index, use coordinates from it
-                  di=*(ip++);
-                  dj=*(ip++);
-
-//                  if (di>=0.0 && !FIN2D(FieldFrom->Def,di,dj)) {
-//                     App_Log(ERROR,"%s: Wrong index, index coordinates (%f,%f)\n",__func__,di,dj);
-//                     return(TCL_ERROR);
-//                  }
-               } else {
-                  // No index, project coordinate and store in index if provided
-                  FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
-                  ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
-                  if (ip) {
-                     *(ip++)=di;
-                     *(ip++)=dj;
-                  }
-               }
-               if (di>=0.0 && FieldFrom->GRef->Value(FieldFrom->GRef,FieldFrom->Def,Mode==0?'N':'L',0,di,dj,k,&val,&dir)) {
-                  if (FieldTo->Def->Data[1]) {
-                     // Have to reproject vector
-                     dir=DEG2RAD(dir)+GeoRef_GeoDir(FieldTo->GRef,i,j);
-                     dval=msk?val!=0.0:-val*sin(dir);
-                     Def_Set(FieldTo->Def,0,idx,dval);
-                     dval=msk?val!=0.0:-val*cos(dir);
-                     Def_Set(FieldTo->Def,1,idx,dval); 
-                  } else {
-                     Def_Set(FieldTo->Def,0,idx,val);
-                  } 
-               } else {  
-                  Def_Set(FieldTo->Def,0,idx,FieldTo->Def->NoData);
-                  if (FieldTo->Def->Data[1]) {
-                     Def_Set(FieldTo->Def,1,idx,FieldTo->Def->NoData); 
-                  }
-               } 
-            }
+   // If same 2D grid
+   if (GeoRef_Equal(FieldTo->GRef,FieldFrom->GRef)) {
+      for(idx=0;idx<=FSIZE3D(FieldFrom->Def);idx++){
+         for(c=0;c<FieldFrom->Def->NC;c++){
+            Def_Get(FieldFrom->Def,c,idx,val);
+            Def_Set(FieldTo->Def,c,idx,val);
          }
+      }
+   } else {
+   
+      // Check for ezscint capability
+      if (FieldFrom->Def->Type!=TD_Float32) {
+         ezfrom=0;
+      }
+
+      if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='X' || FieldFrom->GRef->Grid[0]=='M') {
+         ezfrom=0;
+      }
+
+      if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='Y' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
+         ezto=0;
+      }
+
+      if (FieldFrom->GRef->Grid[0]!='R' && FieldTo->GRef->Grid[0]!='R') {
+         FSTD_FieldSetTo(FieldTo,FieldFrom);
+      }
+      
+      if (Degree==-1) {
+         interp=(char*)FieldTo->Spec->InterpDegree;
+      } else {
+         interp=(char*)TDef_InterpRString[Degree];
+      }
          
-         // Mark end of index
-//         if (!gotidx && ip) *(ip++)=DEF_INDEX_END;
+      // Use ezscint
+      if (ezto && ezfrom) {
+         if (!Def_EZInterp(FieldTo->Def,FieldFrom->Def,FieldTo->GRef,FieldFrom->GRef,interp,(char*)FieldTo->Spec->ExtrapDegree,msk,Index)) {
+            Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: EZSCINT interpolation problem",(char*)NULL);
+            return(TCL_ERROR);
+         }
+      } else { 
+         if (!Def_JPInterp(FieldTo->Def,FieldFrom->Def,FieldTo->GRef,FieldFrom->GRef,interp,(char*)FieldTo->Spec->ExtrapDegree,msk,Index)) {
+            Tcl_AppendResult(Interp,"FSTD_FieldGridInterpolate: Interpolation problem",(char*)NULL);
+            return(TCL_ERROR);
+         }
       }
    }
 
+   // Copy level info
+   for(k=0;k<FieldTo->Def->NK;k++) {
+      FieldTo->ZRef->Levels[k]=FieldFrom->ZRef->Levels[k];
+   }
+   
    // Interpolate mask if needed
    if (FieldFrom->Def->Mask && FieldTo->Def->Mask) {
             
@@ -1201,7 +1130,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
                } else {
                   // No index, project coordinate
                   FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
-                  ok=FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
+                  FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
                }
                FieldTo->Def->Mask[idx]=(di>=0.0)?FieldFrom->Def->Mask[k*FieldFrom->Def->NIJ+ROUND(dj)*FieldFrom->Def->NI+ROUND(di)]:0;
             }

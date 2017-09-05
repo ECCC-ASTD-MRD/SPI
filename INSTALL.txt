@@ -11,7 +11,6 @@ Documentation:
 Compatibility:
 - This package has been compiled on:
 
-   - gcc 4.6.3 (64bit) and tested on KUbuntu 12.0.4
    - gcc 4.8.4 (64bit) and tested on KUbuntu 14.0.4
 
 Assumptions:
