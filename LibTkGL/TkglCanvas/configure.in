@@ -90,6 +90,8 @@ TEA_ADD_SOURCES([generic/glFont.c \
                  generic/tr.c ])
 TEA_ADD_HEADERS([generic/tkglCanvas.h generic/tkglCanvText.h generic/glStuff.h generic/tr.h])
 TEA_ADD_INCLUDES([])
+#TEA_ADD_INCLUDES([-I/users/dor/afsr/ops/Links/devfs/Archive/mesa-13.0.2/include])
+#TEA_ADD_LIBS([-lGL -lGLU -lEGL])
 TEA_ADD_LIBS([-lGL -lGLU])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])

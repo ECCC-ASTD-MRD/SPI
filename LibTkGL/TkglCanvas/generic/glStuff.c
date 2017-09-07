@@ -2072,6 +2072,147 @@ void glInit(Tcl_Interp *Interp) {
  *
  *----------------------------------------------------------------------------
 */
+// #include <EGL/egl.h>
+// int glXCanvasInitEGL(Tcl_Interp *Interp,Tk_Window TkWin) {
+// 
+//    int        *attrTrue;
+//    const char *vendor;
+// 
+//    int attrHard[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
+//               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
+//               GLX_DEPTH_SIZE,1, GLX_STENCIL_SIZE,1, GLX_SAMPLE_BUFFERS_ARB,False, GLX_SAMPLES_ARB,0, None };
+// 
+//    int attrSoft[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
+//               GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
+//               GLX_DEPTH_SIZE,1, GLX_STENCIL_SIZE,1, None };
+// 
+//    int attrMin[]={ GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE,GLX_WINDOW_BIT,None };
+//    
+//    // Setup some useful pointers
+//    GLRender->TkWin    = TkWin;                    /* Tk window */
+//    GLRender->XDisplay = Tk_Display(TkWin);        /* Get the XDisplay of the main window */
+//    GLRender->XScreen  = Tk_Screen(TkWin);         /* Get the XID of the application */
+//    GLRender->XScreenNo= Tk_ScreenNumber(TkWin);   /* Get the screen number */
+// 
+//    EGLDisplay egl_dpy;
+//    EGLint     major,minor;
+//    EGLint     GLConfigNb;
+//    EGLConfig  eglCfg;
+//    EGLSurface egl_sfc;
+//    EGLContext egl_ctx;
+//    
+//    // Get display and initialize
+//    egl_dpy=eglGetDisplay(EGL_DEFAULT_DISPLAY);
+//    fprintf(stderr,"------ display = %p\n",egl_dpy);
+//    if (!eglInitialize(egl_dpy,&major,&minor)) {
+//       Tcl_AppendResult(Interp,"glXCanvasInit: Could not find EGL interface",(char*)NULL);
+//       return(TCL_ERROR);      
+//    }
+//    
+//    fprintf(stderr,"------ version = %i.%i\n",major,minor);
+// 
+//    // Check which implementation we are using
+//    vendor=eglQueryString(egl_dpy,EGL_VENDOR);
+//    fprintf(stderr,"------ vendor = %s\n",vendor);
+//    if (strstr(vendor,"NVIDIA")) {
+//       GLRender->Vendor=NVIDIA;
+//       GLRender->Soft=0;
+//    } else if (strstr(vendor,"ATI")) {
+//       GLRender->Vendor=ATI;
+//       GLRender->Soft=0;
+//    } else if (strstr(vendor,"VirtualGL")) {
+//       GLRender->Vendor=VIRTUALGL;
+//       GLRender->Soft=0;
+//    } else {
+//       GLRender->Vendor=MESA;
+//       GLRender->Soft=1;
+//    }
+// 
+//    // Check for full scene anti-aliasing (MESA breaks the stencil buffer when enabling FSAA)
+//    if (GLRender->Soft) {
+//       attrTrue=attrSoft;
+//    } else {
+//       attrTrue=attrHard;
+//       if (GLRender->Ext[ARB_multisample]) {
+//          attrTrue[19]=True;
+//          attrTrue[21]=GLRender->GLFSAA;
+//       }
+//    }
+// 
+//    if (!GLRender->GLCon) {
+//       
+//       static const EGLint configAttribs[] = {
+//                EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+//                EGL_BLUE_SIZE, 8,
+//                EGL_GREEN_SIZE, 8,
+//                EGL_RED_SIZE, 8,
+//                EGL_ALPHA_SIZE, 8,
+//                EGL_DEPTH_SIZE, 8,
+//                EGL_STENCIL_SIZE, 8,
+//                EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+//                EGL_NONE
+//       };    
+// 
+// //      static const int pbufferWidth = 9;
+// //      static const int pbufferHeight = 9;
+// 
+// //      static const EGLint pbufferAttribs[] = {
+// //            EGL_WIDTH, pbufferWidth,
+// //            EGL_HEIGHT, pbufferHeight,
+// //            EGL_NONE,
+// //      };
+// 
+// 
+//       // Select an appropriate configuration
+//       if ((eglChooseConfig(egl_dpy,configAttribs,&eglCfg,1,&GLConfigNb)==EGL_FALSE) || !GLConfigNb) {
+//          fprintf(stderr,"(WARNING) eglChooseConfig: Unable to select a standard configuration, trying for minimal\n");
+// //         GLRender->GLConfig=glXChooseFBConfig(GLRender->XDisplay,GLRender->XScreenNo,attrMin,&GLRender->GLConfigNb);
+// //         if (!GLRender->GLConfigNb) {
+// //            Tcl_AppendResult(Interp,"glXCanvasInit: Unable to select a minimal configuration",(char*)NULL);
+// //            return(TCL_ERROR);
+// //         }
+//       }
+// 
+//       // Create surface
+//       egl_sfc=eglCreateWindowSurface(egl_dpy,eglCfg,Tk_WindowId(TkWin),NULL);
+//       if (egl_sfc==EGL_NO_SURFACE) {
+//          Tcl_AppendResult(Interp,"glXCanvasInit: Could not create EGL window surface",(char*)NULL);
+//          return(TCL_ERROR);      
+//       }
+//    
+//    // 3. Create a surface
+// //      EGLSurface eglSurf = eglCreatePbufferSurface(egl_dpy, eglCfg,pbufferAttribs);
+//       // Bind the API
+//       eglBindAPI(EGL_OPENGL_API);
+// 
+//       // Create a context and make it current
+//       egl_ctx=eglCreateContext(egl_dpy, eglCfg, EGL_NO_CONTEXT, NULL);
+//       if (egl_ctx==EGL_NO_CONTEXT) {
+//          Tcl_AppendResult(Interp,"glXCanvasInit: Could not create EGL context",(char*)NULL);
+//          return(TCL_ERROR);      
+//       }
+//       
+//       eglMakeCurrent(egl_dpy,egl_sfc,egl_sfc,egl_ctx);
+//  GLRender->ShaderAvailable=1;
+//  
+// //      if ((GLRender->GLDirect=glXIsDirect(GLRender->XDisplay,GLRender->GLCon))) {
+// //         GLRender->ShaderAvailable=1;
+// //      } else {
+// //         GLRender->ShaderAvailable=0;
+// //      }
+//       if (GLRender->Soft) {
+//          GLRender->ShaderAvailable=0;
+//          GLRender->GLDirect=False;
+//       }
+// 
+//       /*Generer les primitives de base*/
+//       glGenCircle(0,360);
+//    }
+// 
+//    return(TCL_OK);
+// }
+
+
 int glXCanvasInit(Tcl_Interp *Interp,Tk_Window TkWin) {
 
    int         glmin,glmaj,gl;
