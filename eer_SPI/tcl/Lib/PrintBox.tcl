@@ -748,10 +748,10 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          if { $Print(WEBSite)=="WEB_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -timezone :UTC]
-            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitUser) $GDefs(TransmitHost) } MsgCatch ]
+            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitHost) } MsgCatch ]
 
             if { $ErrCatch != 0 } {
-               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitUser)@$GDefs(TransmitHost).\n\n$MsgCatch"
+               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitHost).\n\n$MsgCatch"
             }
 
          } else {
