@@ -51,7 +51,7 @@ namespace eval Info {
                         Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
                         SrcType FMLimit OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindDiffFactor WindFetch WindCoeff CurrentCoeff Depth WebTide }
+                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindDiffFactor WindFetch WindCoeff CurrentCoeff Depth Weteo }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
@@ -79,6 +79,7 @@ namespace eval Info {
    set Lbl(Backward)             { "Mode arrière" "Backward mode" }
    set Lbl(Mode)                 { "Mode" "Mode" }
    set Lbl(Meteo)                { "Modèle météorologique" "Meteorological model" }
+   set Lbl(Weteo)                { "Modèle océanographique" "Oceanographic model" }
    set Lbl(Delta)                { "Interval de temps des fichiers météo (h)" "Time interval of meteo files (h)" }
    set Lbl(Start)                { "Départ" "Start" }
    set Lbl(Arrival)              { "Arrivée" "Arrival" }
