@@ -1152,7 +1152,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
 
    TGRIBHeader  head,*table;
    Tcl_Obj     *list,*obj;
-   int          err=0,lvtyp,nb;
+   int          err=0,lvtyp=0,nb;
    size_t       len;
    long         date,time,step,unit,lval,ni=-1,nj=-1,nk=1,type;
    int          idate,itime;

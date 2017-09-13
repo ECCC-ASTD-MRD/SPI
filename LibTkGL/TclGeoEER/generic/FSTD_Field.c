@@ -1092,7 +1092,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
       } else {
          interp=(char*)TDef_InterpRString[Degree];
       }
-         
+ 
       // Use ezscint
       if (ezto && ezfrom) {
          if (!Def_EZInterp(FieldTo->Def,FieldFrom->Def,FieldTo->GRef,FieldFrom->GRef,interp,(char*)FieldTo->Spec->ExtrapDegree,msk,Index)) {
@@ -1202,7 +1202,7 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    dt=dt/delay;
    v0=v1=0.0;
 
-  /*Interpoler le champs*/
+   /*Interpoler le champs*/
    for(i=0;i<FSIZE3D(Field0->Def);i++) {
       for(n=0;n<Field0->Def->NC;n++) {
          if (Field0->Def->Data[n]) {
@@ -1232,9 +1232,11 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
    head0->DEET=0;
    head0->IP2=0;
 
-   if (field->GRef)
-      GeoRef_Destroy(Interp,field->GRef->Name);
+   if (field->GRef) GeoRef_Destroy(Interp,field->GRef->Name);
    field->GRef=GeoRef_Copy(Field0->GRef);
+
+   field->ZRef=ZRef_Copy(Field0->ZRef);
+   field->GPos=GeoPos_Copy(Field0->GPos);
 
    return(TCL_OK);
 }
