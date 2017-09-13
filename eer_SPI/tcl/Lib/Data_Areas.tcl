@@ -262,6 +262,8 @@ proc Areas::DisplayList { Type List } {
    global GDefs
    variable Data
 
+   set List [lsort -unique $List]
+   
    ogrlayer define $Type -featurehighlight $List
 
    set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $Type]
