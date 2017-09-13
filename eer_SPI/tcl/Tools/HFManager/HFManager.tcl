@@ -187,7 +187,7 @@ proc HFManager::FileCommand { Id Command } {
             if { [Dialog::Default .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
                if { [lindex $params 1]=="wget" } {
                   #----- send a file to pds
-                  set err [catch { exec $env(EER_DIRSCRIPT)/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitUser) } msg]
+                  set err [catch { exec $env(EER_DIRSCRIPT)/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitHost) } msg]
                   if { $err } {
                      Log::Print ERROR "Problems while calling HFdel.ksh :\n\n\t$msg"
                   }
