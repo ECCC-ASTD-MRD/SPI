@@ -331,11 +331,14 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
                if (layer->NSFeature) {
                   if ((layer->SFeature=(unsigned int*)malloc(layer->NSFeature*sizeof(unsigned int)))) {
+                     t=0;
                      for(f=0;f<layer->NSFeature;f++) {
                         Tcl_ListObjIndex(Interp,Objv[i],f,&obj);
-                        Tcl_GetWideIntFromObj(Interp,obj,&w);
-                        layer->SFeature[f]=w;
+                        if (Tcl_GetWideIntFromObj(Interp,obj,&w)!=TCL_ERROR) {
+                           layer->SFeature[t++]=w;
+                        }
                      }
+                     layer->NSFeature=t;
                   } else {
                      Tcl_AppendResult(Interp,"OGR_LayerDefine: Unable to allocate feature select buffer",(char*)NULL);
                      return(TCL_ERROR);                   

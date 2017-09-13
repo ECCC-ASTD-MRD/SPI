@@ -261,8 +261,6 @@ proc Areas::DisplayToggle { Type No } {
 proc Areas::DisplayList { Type List } {
    global GDefs
    variable Data
-
-   set List [lsort -unique $List]
    
    ogrlayer define $Type -featurehighlight $List
 
