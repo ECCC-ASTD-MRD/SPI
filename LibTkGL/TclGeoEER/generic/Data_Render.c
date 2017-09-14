@@ -2067,11 +2067,14 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
 
             n=0;
-            for(i=0;i<mem;i+=Field->Spec->Sample) {
-               if (!mask || Field->Def->Mask[i]) {
-                  ll[n]=ll[i];
-                  ll[mem+n]=ll[mem+i];
-                  n++;
+            for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
+               for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
+                  dz=FIDX2D(Field->Def,i,j);
+                  if (!mask || Field->Def->Mask[dz]) {
+                     ll[n]=ll[dz];
+                     ll[mem+n]=ll[mem+dz];
+                     n++;
+                  }
                }
             }
 
