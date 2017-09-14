@@ -572,6 +572,7 @@ static void glDisplayRectOval(
 {
    glRectOvalItem *rectOvalPtr = (glRectOvalItem *) itemPtr;
    short x1, y1, x2, y2;              /* Rectangle coordinates */
+   double h,w;
    T_glBitmap *stipple;            /* Stippling bitmap */
    XColor *color;
    Tk_State state = itemPtr->state;   /* Current item's state */
@@ -590,6 +591,9 @@ static void glDisplayRectOval(
    if (y2 <= y1)
       y2 = y1+1;
 
+   h=(y2-y1)/2.0;
+   w=(x2-x1)/2.0;
+   
    if (state == TK_STATE_NULL)
       state = Canvas(canvas)->canvas_state;
 
@@ -638,8 +642,8 @@ static void glDisplayRectOval(
 
          /* Translate & Scale */
          glPushMatrix();
-         glTranslated((x2-x1)/2.0+x1,(y2-y1)/2.0+y1,0.0);
-         glScaled((x2-x1)/2.0,(y2-y1)/2.0,0.0);
+         glTranslated(w+x1,h+y1,0.0);
+         glScaled(w,h,0.0);
          glDrawCircle(128,GL_POLYGON);
          glPopMatrix();
       }
@@ -667,8 +671,8 @@ static void glDisplayRectOval(
 
          /* Translate & Scale */
          glPushMatrix();
-         glTranslated((x2-x1)/2.0+x1,(y2-y1)/2.0+y1,0.0);
-         glScaled((x2-x1)/2.0,(y2-y1)/2.0,0.0);
+         glTranslated(w+x1,h+y1,0.0);
+         glScaled(w,h,0.0);
          glDrawCircle(128,GL_LINE_STRIP);
          glPopMatrix();
       }

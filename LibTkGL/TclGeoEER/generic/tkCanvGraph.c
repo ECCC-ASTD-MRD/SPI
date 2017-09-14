@@ -972,7 +972,7 @@ static void GraphDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable D
             memcpy(gr->CB->Data,data,gr->CB->NbData*sizeof(char*));
          }
 
-        /*Clear preprocess stage*/
+         /*Clear preprocess stage*/
          for(i=0;i<gr->NItem;i++) {
             item=GraphItem_Get(gr->Item[i]);
             if ((axisx=GraphAxis_Get(item->XAxis))) axisx->Done=NOTDONE;
@@ -1175,9 +1175,9 @@ void GraphSet(Tk_Canvas Canvas,GraphItem *GR,int Width,int Height,int PickX,int 
 
 void GraphUnSet(GraphItem *GR){
 
-   glMatrixMode(GL_MODELVIEW);
-   glPopMatrix();
    glMatrixMode(GL_PROJECTION);
+   glPopMatrix();
+   glMatrixMode(GL_MODELVIEW);
    glPopMatrix();
    glPopAttrib();
 }
