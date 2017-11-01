@@ -392,7 +392,6 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
                spd-=10.0;
                y+=0.25;
             }
-
             /*Vitesse >5*/
             if (spd>=5.0 || (Speed<5.0 && Speed>0.0)) {
 

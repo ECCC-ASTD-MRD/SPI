@@ -141,6 +141,7 @@ TGeoTexTile* GeoTex_ClearTile(TGeoTexTile *Tile,char Flags,int Res,int Nb) {
             Tile->Flag&=~GEOTEX_COOR;
             if (Tile->Tl)   free(Tile->Tl); Tile->Tl=NULL;
             if (Tile->Nr)   free(Tile->Nr); Tile->Nr=NULL;
+            Tile->Rx=Tile->Ry=0.0;
          }
 
          /*Clear band data*/
