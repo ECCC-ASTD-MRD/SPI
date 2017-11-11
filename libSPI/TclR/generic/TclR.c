@@ -59,6 +59,9 @@
 // To load FSTD functions
 #include <dlfcn.h>
 
+// TclRDevice include
+#include "TclRDevice.h"
+
 // Interface defines
 
 typedef enum TclR_TTrace {TCLR_TRACE_NONE,TCLR_TRACE_ALL,TCLR_TRACE_LAST} TclR_TTrace;
@@ -1909,6 +1912,9 @@ int Tclr_Init(Tcl_Interp *Interp) {
 
     // Initialize the R lib
     TclR_RInit();
+
+    // Install our home made graphical device
+    TCL_ASRT( TclRDevice_Install(Interp) );
 
     return TCL_OK;
 }
