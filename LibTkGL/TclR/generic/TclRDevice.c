@@ -7,6 +7,7 @@
 #include <Rinternals.h>
 #include <R_ext/GraphicsEngine.h>
 #include <R_ext/Parse.h>
+#include <R_ext/Rdynload.h>
 //#include <R_ext/GraphicsDevice.h>
 
 // Tcl includes
@@ -188,6 +189,13 @@ int TclRDevice_Install(Tcl_Interp *Interp) {
     ParseStatus pstatus;
     int err;
     const char *install_cmd = "TclRDevice <- function() {.Call(\"TclRDevice_Init\")}";
+
+    //----- Register the TclRDevice_Init function of the current DLL (shared object) as if it would have been if it was loaded by a module
+
+    R_CallMethodDef cdef[] = {{"TclRDevice_Init",(DL_FUNC)&TclRDevice_Init,0},{NULL,NULL,-1}};
+    R_registerRoutines(R_getEmbeddingDllInfo(),NULL,cdef,NULL,NULL);
+
+    //----- Install an R function so that a call to TclRDevice() in R calls TclRDevice_Init here
 
     // Put the string in an R vector string
     PROTECT( rcmd=allocVector(STRSXP,1) );
