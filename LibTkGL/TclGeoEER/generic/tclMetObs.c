@@ -270,8 +270,8 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
    long       code;
    char       table='\0';
 
-   static CONST char *sopt[] = { "-readcmc","-readmaster","-readlocal","-code","-desc","-unit","-insert",NULL };
-   enum                opt { READCMC,READMASTER,READLOCAL,CODE,DESC,UNIT,INSERT };
+   static CONST char *sopt[] = { "-readcmc","-readmaster","-readlocal","-code","-desc","-unit","-format","-insert",NULL };
+   enum                opt { READCMC,READMASTER,READLOCAL,CODE,DESC,UNIT,FORMAT,INSERT };
 
    /*Figure out which table we are talking about*/
    if (Objc>1) {
@@ -383,6 +383,23 @@ static int MetObs_Table(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
                eb->unit=strdup(Tcl_GetString(Objv[++i]));
             } else {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(eb->unit,-1));
+            }
+            break;
+
+         case FORMAT:
+            if(Objc!=2) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"code|desc");
+               return(TCL_ERROR);
+            }
+            if (!(eb=MetObs_BUFRFindTableCodeOrDesc(Interp,Objv[++i]))) {
+               Tcl_AppendResult(Interp,"\n   MetObs_Table: Could not find element",(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (eb->encoding.scale) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj("%g",-1));
+            } else {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj("%.0f",-1));
             }
             break;
 
@@ -1619,19 +1636,19 @@ TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time) {
    TMetElem    *new,*pre,*elem=Loc->Elems;
    int          n;
 
-   /*Look for a spot in the ordered list*/
+   // Look for a spot in the ordered list
    pre=NULL;
    while(elem && Time<elem->Time) {
       pre=elem;
       elem=elem->Next;
    }
 
-   /*If we already have this time*/
+   // If we already have this time
    if (elem && Time==elem->Time) {
       new=elem;
       for(n=elem->NData-1;n>=0;n--) {
          if (TMetElemData_Same(Data,elem->EData[n])) {
-            /*Check for markers/data*/
+            // Check for markers/data
             if (elem->EData[n]->Data) {
                if (!elem->EData[n]->Marker && Data->Marker) {
                   elem->EData[n]->Marker=Data->Marker;
@@ -1663,7 +1680,7 @@ TMetElemData *TMetElem_Add(TMetLoc *Loc,TMetElemData *Data,time_t Time) {
       }
    }
 
-   /*Create a new data bloc*/
+   // Create a new data bloc
    new->EData=(TMetElemData**)realloc(new->EData,new->NData*sizeof(TMetElemData*));
    new->EData[new->NData-1]=Data;
 
@@ -1691,52 +1708,84 @@ void TMetElem_Clean(TMetLoc *Loc,time_t Time) {
    }
 }
 
-// TODO: only works for one code at at time
 TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Codes) {
 
-   TMetElem *elem;
+   TMetElem     *elem;
    TMetElemData *data=NULL;
-   int nb,d;
-
+   int           nb,d,e,vt;
+  
    // Check if an element exist at this time
    if (!(elem=TMetElem_Find(Loc,Time,0)) || elem->Time!=Time) {
-       data=TMetElem_Insert(Loc,Min,Time,Fam,Type,SType,Ne,Nv,Nt,Data,Marker,Codes);
+       data=TMetElem_Insert(Loc,Min,Time,Fam,Type,SType,Ne,Nv,Nt,Data,Marker,Codes);    
     } else {
       // If so,append to the first element data
-      data=elem->EData[0];
+      for(d=0;d<elem->NData;d++) {
+         // If the dimemsion of the packet is the same
+         if (elem->EData[d]->Nv==Nv && elem->EData[d]->Nt==Nt) {
+            data=elem->EData[d];
+            break;
+         }
+      }
+      
+      if (!data) {
+         // Create a new data bloc
+         data=TMetElem_Insert(Loc,Min,Time,Fam,Type,SType,Ne,Nv,Nt,Data,Marker,Codes);
+         return(data);
+      }
+      
+       // Expand arrays for new items
+      if (!Marker || !(data->Ne*data->Nv*data->Nt)) {
+         nb=(data->Ne+Ne)*data->Nv*data->Nt;      
+         data->Code=(EntryTableB**)realloc(data->Code,(data->Ne+Ne)*sizeof(EntryTableB*));
+         memcpy(&data->Code[data->Ne],Codes,Ne*sizeof(EntryTableB*));
+      }
+      
+      // Add the new values
+      if (Data) {
+         float *dptr,*dold,*dnew,*new,*mkr;
+         
+         new=(float*)malloc(nb*sizeof(float));
+         dold=data->Data;
+         dnew=Data;
+         dptr=new;
+     
+         for(vt=0;vt<data->Nv*data->Nt;vt++) {
+            for(e=0;e<data->Ne;e++,dptr++,dold++) {
+               *dptr=*dold;
+            }
+            for(e=0;e<Ne;e++,dptr++,dnew++) {
+               *dptr=*dnew;
+            }
+         }
+         free(data->Data);
+         data->Data=new;
+         data->Ne+=Ne;
+      }
+      
+      if (Marker) {
+         int *dptr,*dold,*dnew,*new;
+         
+         new=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
+         dold=data->Marker;
+         dnew=Marker;
+         dptr=new;
+
+         for(vt=0;vt<data->Nv*data->Nt;vt++) {
+            for(e=0;e<data->Ne-Ne;e++,dptr++,dold++) {
+               *dptr=*dold;
+            }
+            for(e=0;e<Ne;e++,dptr++,dnew++) {
+               *dptr=*dnew;
+            }
+         }
+         free(data->Marker);
+         data->Marker=new;
+      }
+      
       data->Family=Fam;
       data->Type=Type;
       data->SType=SType;
       data->Time=Time;
-
-      // If the dimemsion of the packet is not the same
-      if (data->Nv!=Nv || data->Nt!=Nt) {
-         return(NULL);
-      }
-      nb=data->Ne*data->Nv*data->Nt;
-
-      // Check if this data element already exists
-      for(d=0;d<nb;d++) {
-        if (data->Code[d]->descriptor==Codes[0]->descriptor) {
-            break;
-         }
-      }
-
-      // If not, expand arrays for new items
-      if (d==nb) {
-         data->Ne+=Ne;
-         nb=data->Ne*data->Nv*data->Nt;
-         if (Marker)
-            data->Marker=(int*)realloc(data->Marker,nb*sizeof(int));
-         data->Data=(float*)realloc(data->Data,nb*sizeof(float));
-         data->Code=(EntryTableB**)realloc(data->Code,nb*sizeof(EntryTableB*));
-      }
-
-      // Add the new values
-      if (Marker && data->Marker)
-         memcpy(&data->Marker[d],Marker,Ne*data->Nv*data->Nt*sizeof(int));
-      memcpy(&data->Code[d],Codes,Ne*sizeof(EntryTableB*));
-      memcpy(&data->Data[d],Data,Ne*data->Nv*data->Nt*sizeof(float));
    }
 
    return(data);
@@ -2181,9 +2230,9 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                   if (spec->RenderVector && data->Code[e]->descriptor==Obs->Model->Items[i].Code[1]) {
                      cdir=e;
                   }
-                  if (data->Code[e]->descriptor==5002 || data->Code[e]->descriptor==5001) {      // Latitude coordinate
+                  if (data->Code[e]->descriptor==5002 || data->Code[e]->descriptor==5001) {        // Latitude coordinate
                      clat=e;
-                  } else if (data->Code[e]->descriptor==6002 || data->Code[e]->descriptor==6001) {  // Longitude coordinate
+                  } else if (data->Code[e]->descriptor==6002 || data->Code[e]->descriptor==6001) { // Longitude coordinate
                      clon=e;
                   } else if (data->Code[e]->descriptor==5015) {                                    // Latitude displacement
                      ia=e;
@@ -2280,8 +2329,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                            
                            // Get coordinates if per sample
                            if (clat!=-1 && clon!=-1) {
-                              co.Lat=MetObs_GetData(data,clat,loc->Grid[0]?0:v,t);
-                              co.Lon=MetObs_GetData(data,clon,loc->Grid[0]?0:v,t);
+                              co.Lat=MetObs_GetData(data,clat,(loc->Grid[0]?0:v),t);
+                              co.Lon=MetObs_GetData(data,clon,(loc->Grid[0]?0:v),t);
                            }
                            
                            // Add displacement
@@ -2853,8 +2902,8 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    float        *valf;
    double        val;
 
-   static CONST char *sopt[] = { "-DATE","-FLAG","-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-VALUE",NULL };
-   enum                opt { DATE,FLAG,CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,VALUE };
+   static CONST char *sopt[] = { "-DATE","-FLAG","-CODETYPE","-FAMILY","-TYPE","-STYPE","-ELEMENT","-DESC","-UNIT","-CODE","-FORMAT","-VALUE",NULL };
+   enum                opt { DATE,FLAG,CODETYPE,FAMILY,TYPE,STYPE,ELEMENT,DESC,UNIT,CODE,FORMAT,VALUE };
 
    data=MetReport_Get(Name);
    if (!data) {
@@ -2945,6 +2994,31 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case FORMAT:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(e=0;e<data->Ne;e++) {
+                  sub=Tcl_NewListObj(0,NULL);
+                  for(v=(data->Obs->NVal<=-1?0:data->Obs->NVal);v<(data->Obs->NVal<=-1?data->Nv:((data->Obs->NVal+1)>data->Nv?data->Nv:(data->Obs->NVal+1)));v++) {
+                     subsub=Tcl_NewListObj(0,NULL);
+                     for(t=0;t<data->Nt;t++) {
+                        mk=MetObs_GetMarker(data,e,v,t);
+                        if (!data->Obs || !data->Obs->Marker || (data->Obs->MarkerOp=='O' && (mk&data->Obs->Marker)) || (data->Obs->MarkerOp=='A' && (mk==data->Obs->Marker))) {
+                           if (data->Code[e]->encoding.scale) {
+                              Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewStringObj("%g",-1));
+                           } else {
+                              Tcl_ListObjAppendElement(Interp,subsub,Tcl_NewStringObj("%.0f",-1));
+                           }
+                        }
+                     }
+                     Tcl_ListObjAppendElement(Interp,sub,subsub);
+                  }
+                  Tcl_ListObjAppendElement(Interp,obj,sub);
+               }
+               Tcl_SetObjResult(Interp,obj);
+            }
+            break;
+
          case CODE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -2957,7 +3031,7 @@ static int MetReport_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(data->Code[ne]->descriptor));
             }
             break;
-
+            
          case VALUE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);

@@ -68,7 +68,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int      e,sz1=0,sz2=0,c;
 
-   int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0,mkr=0;;
+   int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0,mkr=0;
    int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
    char     stnid[10],previd[10];
    int     *elems=NULL,*tblval=NULL,*codes=NULL;
@@ -120,7 +120,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    obj=Tcl_NewStringObj("",0);
 
-  /*Start reading reports*/
+   // Start reading reports
    handle=0;
    while((handle=c_mrfloc(Obs->FId,handle,"*********",-1,-1,-1,-1,-1,-1,0))>0) {
 
@@ -221,6 +221,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          // Test for superobs ..... ta daaaaaaa
          if (stnid[0]=='^') {
+            App_Log(DEBUG,"%s: MetObs_LoadBURP: Found grouped obs %i (%i x %i x %i)\n",__func__,bknat,nelem,nval,nt);
             if (stnid[1]=='^') {
                App_Log(DEBUG,"%s: MetObs_LoadBURP: Found super duper obs\n",__func__);
             } else {
@@ -231,7 +232,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          // If this is a marker bloc
          mkr=0;
          if (bknat==0x3 || codes[0]>=200000) {
-            mkr=nelem*nval*nt;
+            mkr=1;
          } else {
             err=c_mrbcvt(elems,tblval,tblvalf,nelem,nval,nt,0);
          }
@@ -259,9 +260,15 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          }
 
          // if the elements where ok, add the dataset
-         if (c) TMetElem_Insert(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
+         if (c) {           
+            if (stnid[0]=='^') {
+               TMetElem_Merge(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
+            } else {
+               TMetElem_Insert(loc,dt,time,bfam,bktyp,bkstp,nelem,nval,nt,mkr?NULL:tblvalf,mkr?tblval:NULL,eb);
+            }
+         }
       }
-   }
+  }
 
    Tcl_DecrRefCount(obj);
    if (elems)   free(elems);
