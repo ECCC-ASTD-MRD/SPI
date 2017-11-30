@@ -982,7 +982,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                } else if (imode==IR_SUBNEAREST || imode==IR_SUBLINEAR) {
                   if (Objc<6) {
-                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom Type Sampling");
                      ok=TCL_ERROR; break;
                   }
                   if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
