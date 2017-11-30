@@ -2084,6 +2084,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   } else {
                      band->GRef=GeoRef_Find(GeoRef_WKTSetup(band->Def->NI,band->Def->NJ,NULL,0,0,0,0,NULL,tm,im,NULL));
                   }
+                  GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
             }
             break;
@@ -2398,7 +2399,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       App_Log(ERROR,"%s: Invalid georeference\n",__func__);
       return(0);
    }
-
+   
    /*Calculer les statistiques si elle ne le sont pas deja*/
    if (!Band->Stat)
       GDAL_BandGetStat(Band);

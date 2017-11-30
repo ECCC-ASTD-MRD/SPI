@@ -3429,10 +3429,10 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
    if (*Obj) {
       item=Tcl_ObjGetVar2(Interp,*Obj,NULL,0x0);
       if (!item) {
-         // Got an empty variable, will fill it with index
-         if ((item=Tcl_NewByteArrayObj(NULL,Size*sizeof(float)))) {
+         // Got an empty variable, will fill it with index (Tcl's max is 2Gb so clamp to this value and pray it's enough)
+         if ((item=Tcl_NewByteArrayObj(NULL,FMIN(Size*sizeof(float),INT_MAX>>1)))) {
             index=(float*)Tcl_GetByteArrayFromObj(item,&len);
-             if (!index || !len) {
+            if (!index || !len) {
                *Obj=NULL;
                index=NULL;
                App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);

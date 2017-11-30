@@ -179,7 +179,7 @@ if [[ $EXT -eq 1 ]]; then
    cp -frd $EXT_LIB_PATH/$RMN/include/* $LIB_PATH/include
    mkdir -p $LIB_PATH/share/rmn
    cd $AFSISIO/datafiles/constants/
-   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.0.dtd iso-lat1.ent $LIB_PATH/share/rmn
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.1.dtd iso-lat1.ent $LIB_PATH/share/rmn
 
    #----- EZSCINT, copies libs
    echo "Copying precompiled $EZSCINT"

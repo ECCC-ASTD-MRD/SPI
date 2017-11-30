@@ -60,7 +60,7 @@ namespace eval Info {
    set Token(UrbanLS) { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs \
                         Backward Order DurMin OutputTimeStepMin IsotropicK TurbSchmidt LimDetRey SVDLimit EscapeTest DetRC Alpha KC0 \
                         DtSurTl ResetVeloc TolFactor NudgeWall NudgeGrnd NudgeCell ReleaseType WindDBGrid OutVars \
-                        WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
+                        WindDate WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
    set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD)]]
@@ -228,6 +228,7 @@ namespace eval Info {
 
    set Lbl(ClimatoGrid)          { "Grille climato" "Climato Grid" }
    set Lbl(OutVars)              { "Variables" "Variables" }
+   set Lbl(WindDate)             { "Dates d'observation" "Observation dates" }
    set Lbl(WindHeight)           { "Hauteur du vent (m)" "Height (m)" }
    set Lbl(WindSpd)              { "Vitesse du vent (m/s)" "Speed (m/s)" }
    set Lbl(WindDir)              { "Direction (deg)" "Direction (deg)" }

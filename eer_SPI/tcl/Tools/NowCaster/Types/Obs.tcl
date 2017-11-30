@@ -1964,12 +1964,12 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
          foreach report [metobs define $Obs -REPORT $Tag $date] {
             .nowcasterinfo.tab.frame0.info.text insert end "\n---------------------------------------------------------------\n"
             .nowcasterinfo.tab.frame0.info.text insert end [NowCaster::Obs::InfoBKType $report]\n\n
-            foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT] values [metreport define $report -VALUE] {
+            foreach code [metreport define $report -CODE] desc [metreport define $report -DESC] unit [metreport define $report -UNIT] values [metreport define $report -VALUE] formats [metreport define $report -FORMAT] {
                .nowcasterinfo.tab.frame0.info.text insert end [format "%06i %-43s (%-10s): " $code $desc $unit]
                set l 0
-               foreach value $values {
-                  foreach v $value {
-                     catch { .nowcasterinfo.tab.frame0.info.text insert end [format "%g " $v] }
+               foreach value $values format $formats {
+                  foreach v $value f $format {
+                     .nowcasterinfo.tab.frame0.info.text insert end [format "$f " $v]
                   }
                   if { [incr l]<[llength $values] } {
                      .nowcasterinfo.tab.frame0.info.text insert end [format "%-66s" "\n"]
@@ -1987,6 +1987,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
       set elems [metobs define $Obs -ELEMENT $Tag]
       foreach elem $elems {
          set info [metobs table -desc $elem]
+         set f    [metobs table -format $elem]
          .nowcasterinfo.tab.frame1.info.text insert end  "[format %06i $elem] [lindex $info 0] ([lindex $info 1])\n"
          .nowcasterinfo.tab.frame1.info.text insert end "---------------------------------------------------------------\n"
          foreach date $dates {
@@ -1996,7 +1997,7 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             foreach value $values {
                foreach v $value {
                   if { $v!="" } {
-                     .nowcasterinfo.tab.frame1.info.text insert end " [format "%g " $v]"
+                     .nowcasterinfo.tab.frame1.info.text insert end " [format "$f " $v]"
                   }
                }
                if { [incr l]<[llength $values] } {
