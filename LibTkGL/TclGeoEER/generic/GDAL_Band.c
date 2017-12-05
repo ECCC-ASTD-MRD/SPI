@@ -778,7 +778,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
    TDef *def=NULL;
    Vect3d    p0,p1;
 
-   extern TIcon IconList[14];
+   extern TIcon IconList[15];
 
    if (!Band) {
       Tcl_AppendResult(Interp,"GDAL_BandFSTDImport: Invalid band",(char*)NULL);
@@ -947,7 +947,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
                      ddir=COURSE(lat,lon,latd,lond);
                      dir+=RAD2DEG(ddir)+180;
                   }
-                  Murphy_Polygon(&m,IconList[13].Co,IconList[13].Nb,x,y,VECTORSIZE(Field->Spec,val),dir,TRUE);
+                  Murphy_Polygon(&m,IconList[14].Co,IconList[14].Nb,x,y,VECTORSIZE(Field->Spec,val),dir,TRUE);
                }
             }
          }
