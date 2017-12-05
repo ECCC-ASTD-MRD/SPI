@@ -535,7 +535,7 @@ proc ColorBar::Update { Frame { State -1 } } {
                   }
                }
             } elseif { [gdalband is $field] } {
-               if { [gdalbandr configure $field -active] && [gdalband configure $field -showmap] && [gdalband configure $field -colormap]!="" && [gdalband define $field -nb]==1  } {
+               if { [gdalband configure $field -active] && [gdalband configure $field -showmap] && [gdalband configure $field -colormap]!="" && [gdalband define $field -nb]==1  } {
                   lappend fields $field
                   if { !$Param(Single) } {
                      lappend lst [ColorBar::Set $Frame $vp [incr i] $field $field]
