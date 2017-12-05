@@ -105,6 +105,8 @@ namespace eval FieldBox {
                             "This file is not a standard file or it is empty." }
    set Error(Exist)       { "Ce fichier n'existe pas."
                             "This file does not exist." }
+   set Error(Invalid)     { "Fichier invalide:"
+                            "Invalid file:" }
    #----Bulles d'aides
 
    set Bubble(Files)      { "Selection des fichiers standards" "Standard file selection" }
@@ -561,6 +563,8 @@ proc FieldBox::FileOpen { No File } {
          } else {
             lappend data(TypeList) gribfield
          }
+      } else {
+         Dialog::Error .fieldbox$No $Error(Invalid) "\n\n$file"   
       }
 
       if { $index=="" } {

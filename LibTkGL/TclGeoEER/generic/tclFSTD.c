@@ -980,6 +980,23 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      ok=TCL_ERROR;
                      break;
                   }
+               } else if (imode==IR_SUBNEAREST || imode==IR_SUBLINEAR) {
+                  if (Objc<6) {
+                     Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom Type Sampling");
+                     ok=TCL_ERROR; break;
+                  }
+                  if (Tcl_GetIntFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
+                     ok=TCL_ERROR; break;
+                  }
+                  if (ni!=field0->Def->SubSample && field0->Def->Sub) {
+                     free(field0->Def->Sub); field0->Def->Sub=NULL;
+                  }
+                  field0->Def->SubSample=ni;
+                  if (!Def_GridInterpSub(field0->GRef,field0->Def,band->GRef,band->Def,IR_SUBNEAREST?'N':'L')) {
+                     Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
+                     ok=TCL_ERROR;
+                     break;
+                  }
                } else {
                   if (!Def_GridInterp(field0->GRef,field0->Def,band->GRef,band->Def,Objv[4]?Tcl_GetString(Objv[4])[0]:'L')) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);

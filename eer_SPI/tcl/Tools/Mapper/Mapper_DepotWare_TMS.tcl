@@ -40,8 +40,8 @@ namespace eval Mapper::DepotWare::TMS {
    <BlockSizeX>256</BlockSizeX>
    <BlockSizeY>256</BlockSizeY>
    <BandsCount>3</BandsCount>
-</GDAL_WMS>}             
-}
+</GDAL_WMS>} }
+
       { OpenStreetMap TMS { <GDAL_WMS>
    <Service name="TMS">
        <ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png</ServerUrl>
