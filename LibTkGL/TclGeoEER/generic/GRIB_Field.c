@@ -1349,8 +1349,8 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
    OGRSpatialReferenceH ref;
    int    err,opt=0;
    size_t len=64;
-   char   gridType[64],buf[32];
-   double lat,lon,lat1,lon1,scale,scale2;
+   char   gridType[64],buf[256];
+   double lat,lon,lat1,lon1,lats,lons,rot,scale,scale2;
    long   gribVer,lval;
 
    enum gridOpt { REGULAR_LL,REDUCED_LL,ROTATED_LL,STRETCHED_LL,STRETCHED_ROTATED_LL,MERCATOR,POLAR_STEREOGRAPHIC,LAMBERT,ALBERS,REGULAR_GG,REDUCED_GG,ROTATED_GG,STRETCHED_GG,STRETCHED_ROTATED_GG,SH,ROTATED_SH,STRETCHED_SH,STRETCHED_ROTATED_SH,SPACE_VIEW,TRIANGULAR_GRID,EQUATORIAL_AZIMUTHAL_EQUIDISTANT,AZIMUTH_RANGE,IRREGULAR_LATLON,LAMBERT_AZIMUTHAL_EQUAL_AREA,CROSS_SECTION,HOVMOLLER,TIME_SECTION,UNKNOWN,UNKNOWN_PLPRESENT };
@@ -1384,9 +1384,28 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
 
    switch(opt) {
       case REDUCED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
-      case ROTATED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
       case STRETCHED_LL :           /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
       case STRETCHED_ROTATED_LL :   /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case ROTATED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+         if (grib_get_double(Handle,"angleOfRotationInDegrees",&rot)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get angleOfRotationInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"latitudeOfSouthernPoleInDegrees",&lats)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get latitudeOfSouthernPoleInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         if (grib_get_double(Handle,"longitudeOfSouthernPoleInDegrees",&lons)!=GRIB_SUCCESS) {
+            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfSouthernPoleInDegrees",(char*)NULL);
+            return(NULL);
+         }
+         lats=-80;lons=90;
+         sprintf(buf,"LOCAL_CS[\"DUMMY\",LOCAL_DATUM[\"DUMMY\",0],UNIT[\"Meter\",1.0],AXIS[\"xaxis\",EAST],AXIS[\"yaxis\",NORTH],EXTENSION=[\"PROJ4\",\"+proj=ob_tran +o_proj=latlon +o_lon_p=%f +o_lat_p=%f +lon_0=180\"]]",lons+180,-lats);
+         OSRSetFromUserInput(ref,buf);
+         //const char * "EXTENSION="+proj=ob_tran +o_proj=eqc +lon_0=-40 +o_lat_p=22 +x_0=639367 +y_0=1473324 +a=6371000 +b=6371000 +wktext")
+         fprintf(stderr,"%s\n",buf);
+         break;
+         
       case REGULAR_LL :
           /* Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)*/
          if (grib_get_double(Handle,"latitudeOfFirstGridPointInDegrees",&lat)!=GRIB_SUCCESS) {
