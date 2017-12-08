@@ -1106,10 +1106,6 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          
       case 'L':
          f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
-        
-         xg[3]=RPN->GRef->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
-         while(xg[3]<0)    xg[3]+=360;
-         while(xg[3]>360 ) xg[3]-=360;
          
          len=10;
          grib_set_string(head->Handle,"gridType","regular_ll",&len);
