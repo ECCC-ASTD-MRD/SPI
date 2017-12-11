@@ -1025,7 +1025,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                idx=(Field[0]->Def->NK>1)?(k*NbF*NbC+n*NbF+f):(f*NbC+n);
 
                // Convert level to pressure
-               if (p && cut->GRef->Hgt) {
+               if (p && cut->GRef->Hgt && Field[f]->Def->Pres) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
                   cut->GRef->Hgt[idx]=ZRef_K2Pressure(Field[f]->ZRef,p0,k);
                }
