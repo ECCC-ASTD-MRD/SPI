@@ -519,7 +519,7 @@ proc Mapper::Params { { Display False } { Object "" } } {
          set Data(Object) $Object
 
          if { [gdalband is $Data(Object)] } {
-            Mapper::GDAL::ParamsGet $Data(Object)
+           Mapper::GDAL::ParamsGet $Data(Object)
             Mapper::GDAL::Params $Data(Object)
          } elseif { [ogrlayer is $Data(Object)] } {
             Mapper::OGR::ParamsGet $Data(Object)
