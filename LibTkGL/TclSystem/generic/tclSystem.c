@@ -34,8 +34,12 @@
 #include "tclSystem.h"
 #include "tclUtils.h"
 
-static Tcl_Obj    *System_SignalTable[128];    // Tcl Command to call on each signal
-static Tcl_Interp *System_Interp[128];         // Interpreter on which to call the command
+#define MAXSIG 128
+
+static Tcl_Obj          *System_SignalTable[MAXSIG];     // Tcl Command to call on each signal
+static Tcl_Interp       *System_Interp[MAXSIG];          // Interpreter on which to call the command
+static Tcl_AsyncHandler System_AsyncHandler;             // Handler called to proces the signal once the interp is in a safe state
+static unsigned int     System_SignalsReceived[MAXSIG];  // List of signal received
 
 static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
@@ -46,6 +50,9 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Usage(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
 static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]);
+
+static int System_AsyncProcessSignal(int SigNum);
+static int System_AsyncProcessSignals(ClientData CData,Tcl_Interp *Interp,int CmdResultCode);
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclSystem_Init>
@@ -67,16 +74,23 @@ int Tclsystem_Init(Tcl_Interp *Interp) {
    if (!Tcl_InitStubs(Interp, "8.6", 0)) {
       return(TCL_ERROR);
    }
-   
+
    if (Tcl_PkgRequire(Interp, "Tcl", "8.6", 0) == NULL) {
       return(TCL_ERROR);
    }
-   
+
    if (Tcl_PkgProvide(Interp,PACKAGE_NAME,PACKAGE_VERSION)!=TCL_OK) {
       return(TCL_ERROR);
    }
- 
+
    Tcl_CreateObjCommand(Interp,"system",System_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc *)NULL);
+
+
+   for (int idx=0; idx<MAXSIG; idx++) {
+       System_SignalsReceived[idx] = 0;
+   }
+
+   System_AsyncHandler = Tcl_AsyncCreate(System_AsyncProcessSignals,(ClientData)NULL);
 
    return(TCL_OK);
 }
@@ -119,7 +133,7 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    }
 
    switch ((enum opt)idx) {
-         
+
       case PROCESS:
          return(System_Process(Interp,Objc-2,Objv+2));
          break;
@@ -140,13 +154,13 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             Tcl_GetIntFromObj(Interp,Objv[2],&status);
          exit(status);
          break;
-         
+
       case WAIT:
          if(Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"?pid?");
             return(TCL_ERROR);
          }
-         
+
          pid=-1;
          if (Objc==3) {
             Tcl_GetIntFromObj(Interp,Objv[2],&pid);
@@ -154,7 +168,7 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
          waitpid(pid,&status,0);
          return(TCL_OK);
          break;
-         
+
       case SIGNAL:
          return(System_Signal(Interp,Objc-2,Objv+2));
          break;
@@ -162,7 +176,7 @@ static int System_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case SOCKET:
          return(System_Socket(Interp,Objc-2,Objv+2));
          break;
-         
+
       case USAGE:
          return(System_Usage(Interp,Objc-2,Objv+2));
          break;
@@ -234,9 +248,33 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
 /*----------------------------------------------------------------------------
  * Nom      : <System_SignalProcess>
- * Creation : Octobre 2013 - J.P. Gauthier - CMC/CMOE
+ * Creation : Décembre 2017 - Johany Camirand - CMC/CMOE
  *
- * But      : Call the Tcl commmand assigned to a signal
+ * But      : Trap handler for UNIX signals, saves the signal number in the
+ *            array and calls the asynchronous handler
+ *
+ * Parametres     :
+ *  <SigNum>      : Signal number
+ *
+ * Retour:
+ *
+ *----------------------------------------------------------------------------
+ */
+void System_SignalProcess(int SigNum) {
+   // Increment the number of signal received since last processing of signals
+   System_SignalsReceived[SigNum]++;
+
+   // Signal tcl to process the signals as soon as the interp is in a safe state
+   Tcl_AsyncMark(System_AsyncHandler);
+}
+
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_AsyncProcessSignal>
+ * Creation : Décembre 2017 - Johany Camirand - CMC/CMOE
+ *
+ * But      : Call the Tcl commmand assigned to a signal as many times as
+ *            the signal has been received by the handler
  *
  * Parametres     :
  *  <SigNum>      : Signal number
@@ -247,17 +285,70 @@ static int System_Deamon(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
  *   - the signal number is appended to the Tcl command before calling it
  *   - Background error are returned to the interpreter
  *----------------------------------------------------------------------------
-*/
-void System_SignalProcess(int SigNum) {
-
+ */
+static int System_AsyncProcessSignal(int SigNum) {
    Tcl_Obj *obj;
-   
-   obj=Tcl_DuplicateObj(System_SignalTable[SigNum]);
-   Tcl_AppendObjToObj(obj,Tcl_ObjPrintf(" %i",SigNum));
-   
-   if (Tcl_EvalObjEx(System_Interp[SigNum],obj,0x0)==TCL_ERROR) {
-      Tcl_BackgroundError(System_Interp[SigNum]);  
+   int result = TCL_OK;
+
+   // Save current state of the interp
+   Tcl_InterpState state = Tcl_SaveInterpState(System_Interp[SigNum], Tcl_GetErrno());
+
+   // Call the handler as many times as the number of times we received that signal
+   while( System_SignalsReceived[SigNum]-- ) {
+      // Append the signal to the trap handler
+      obj = Tcl_DuplicateObj(System_SignalTable[SigNum]);
+      Tcl_AppendObjToObj(obj,Tcl_ObjPrintf(" %i",SigNum));
+
+      // Call the handler
+      result = Tcl_EvalObjEx(System_Interp[SigNum],obj,0x0);
+      if (result == TCL_ERROR) {
+         Tcl_BackgroundError(System_Interp[SigNum]);
+         break;
+      }
    }
+
+   // restore the previous state of the interp
+   Tcl_RestoreInterpState(System_Interp[SigNum], state);
+
+   return result;
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <System_AsyncProcessSignal>
+ * Creation : Décembre 2017 - Johany Camirand - CMC/CMOE
+ *
+ * But      : Procedure to invoke to handle an asynchronous event.
+ *
+ * Parametres     :
+ *  <CData>       : One-word value to pass to proc.
+ *  <Interp>      : Tcl interpreter in which command was being evaluated when handler was invoked
+ *  <CmdResultCode> : Completion code from command that just completed in Interp
+ *
+ * Retour:
+ *  <CmdResultCode> : Completion code from command that just completed in Interp
+ *----------------------------------------------------------------------------
+ */
+static int System_AsyncProcessSignals(ClientData CData,Tcl_Interp *Interp,int CmdResultCode) {
+   int sigNum;
+
+   // Process all the signals that we received since the last time we processed them
+   for (sigNum=1; sigNum<MAXSIG; sigNum++) {
+      if (System_SignalsReceived[sigNum]) {
+         if (System_AsyncProcessSignal(sigNum) == TCL_ERROR)
+            break;
+      }
+   }
+
+   // Check if we received other signals since we started processing the signals we already had
+   for (sigNum=1; sigNum<MAXSIG; sigNum++) {
+      if (System_SignalsReceived[sigNum]) {
+         if (System_AsyncHandler)
+            Tcl_AsyncMark(System_AsyncHandler);
+         break;
+      }
+   }
+
+   return CmdResultCode ;
 }
 
 /*----------------------------------------------------------------------------
@@ -282,27 +373,27 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int              i,idx,pid;
    struct sigaction new,old,*pnew;
-   
+
    static CONST char *sopt[] = { "-trap","-default","-ignore","-send",NULL };
    enum               opt { TRAP,DEFAULT,IGNORE,SEND };
-    
-   static CONST char *ssig[] = { "SIGILL","SIGSEGV","SIGBUS","SIGABRT","SIGIOT","SIGTRAP","SIGSYS","SIGTERM","SIGINT","SIGQUIT","SIGKILL", 
+
+   static CONST char *ssig[] = { "SIGILL","SIGSEGV","SIGBUS","SIGABRT","SIGIOT","SIGTRAP","SIGSYS","SIGTERM","SIGINT","SIGQUIT","SIGKILL",
       "SIGHUP","SIGALRM","SIGVTALRM","SIGPROF","SIGIO","SIGURG","SIGPOLL","SIGCHLD","SIGCLD","SIGCONT","SIGSTOP","SIGTSTP","SIGTTIN","SIGTTOU",
       "SIGPIPE","SIGXCPU","SIGXFSZ","SIGUSR1","SIGUSR2","SIGWINCH",NULL };
-   int isig,sig[]={ SIGILL,SIGSEGV,SIGBUS,SIGABRT,SIGIOT,SIGTRAP,SIGSYS,SIGTERM,SIGINT,SIGQUIT,SIGKILL, 
+   int isig,sig[]={ SIGILL,SIGSEGV,SIGBUS,SIGABRT,SIGIOT,SIGTRAP,SIGSYS,SIGTERM,SIGINT,SIGQUIT,SIGKILL,
       SIGHUP,SIGALRM,SIGVTALRM,SIGPROF,SIGIO,SIGURG,SIGPOLL,SIGCHLD,SIGCLD,SIGCONT,SIGSTOP,SIGTSTP,SIGTTIN,SIGTTOU,
       SIGPIPE,SIGXCPU,SIGXFSZ,SIGUSR1,SIGUSR2,SIGWINCH };
 
    if (Tcl_GetIndexFromObj(Interp,Objv[0],ssig,"value",TCL_EXACT,&isig)!=TCL_OK) {
       return(TCL_ERROR);
    }
-   
+
    new.sa_sigaction=NULL;
    new.sa_restorer=NULL;
    new.sa_flags=0x0;
-   sigemptyset (&new.sa_mask);   
+   sigemptyset(&new.sa_mask);
    pnew=NULL;
-   
+
    for(i=1;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
@@ -317,11 +408,11 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             }
             kill(pid,sig[isig]);
             break;
-            
+
          case TRAP:
             if (Objc==2) {
                if (System_SignalTable[sig[isig]]) {
-                  Tcl_SetObjResult(Interp,System_SignalTable[sig[isig]]);            
+                  Tcl_SetObjResult(Interp,System_SignalTable[sig[isig]]);
                }
                return(TCL_OK);
             } else {
@@ -335,23 +426,23 @@ static int System_Signal(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             pnew=&new;
             new.sa_handler=System_SignalProcess;
             break;
-            
+
          case DEFAULT:
             if (System_SignalTable[sig[isig]]) {
                Tcl_DecrRefCount(System_SignalTable[sig[isig]]);
                System_SignalTable[sig[isig]]=NULL;
             }
             pnew=&new;
-            new.sa_handler=SIG_DFL;            
+            new.sa_handler=SIG_DFL;
             break;
-            
+
          case IGNORE:
             if (System_SignalTable[sig[isig]]) {
                Tcl_DecrRefCount(System_SignalTable[sig[isig]]);
                System_SignalTable[sig[isig]]=NULL;
             }
             pnew=&new;
-            new.sa_handler=SIG_IGN;            
+            new.sa_handler=SIG_IGN;
             break;
          }
    }
@@ -393,10 +484,10 @@ static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    int      i,idx,in,out;
    Tcl_Obj *obj;
-   
+
    static CONST char *sopt[] = { "-timeout",NULL };
    enum               opt { TIMEOUT };
-    
+
    for(i=1;i<Objc;i++) {
 
       if (Tcl_GetIndexFromObj(Interp,Objv[i],sopt,"option",TCL_EXACT,&idx)!=TCL_OK) {
@@ -421,7 +512,7 @@ static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
                 Tcl_GetIntFromObj(Interp,Objv[++i],&in);
                 Tcl_GetIntFromObj(Interp,Objv[++i],&out);
-              
+
                 if (TclY_SocketTimeOut(Interp,Objv[0],&in,&out)==TCL_ERROR) {
                   return(TCL_ERROR);
                }
@@ -429,7 +520,7 @@ static int System_Socket(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
            break;
       }
    }
-   
+
    return(TCL_OK);
 }
 
@@ -599,7 +690,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
       }
 
       switch ((enum opt)idx) {
- 
+
          case VMEM:
             if (Objc==1) {
                System_LimitGet(Interp,RLIMIT_AS,1024);
@@ -680,7 +771,7 @@ static int System_Limit(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
             } else {
             }
             break;
-	    
+
          case LOCKS:
          case MSGQUEUE:
 	 case RTPRIO:
@@ -1036,7 +1127,7 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
          case TTYIOCHAR:
 //            Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(prusage.pr_ioch)); break;
             break;
-	    
+
          /*PIOCSTATUS*/
          }
    }
@@ -1062,9 +1153,9 @@ static int System_Process(Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
  * Remarques :
  *
  *----------------------------------------------------------------------------
-*/    
+*/
 int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *LockFile) {
-   
+
    pid_t pid,sid,child;
    int   lfp=-1,status,init=1;
    char  buf[32];
@@ -1082,11 +1173,11 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *Lock
                      Tcl_AppendResult(Interp,"System_Daemonize: Unable to fork off parent process",(char*)NULL);
                      return(TCL_ERROR);
                      break;
-                     
+
             case  0: // We're the child
                      Respawn=0;
                      break;
-                     
+
             default: // We're the parent and the child is runnning
                      if (Respawn) {
                         // Keep master process to check for respawn
@@ -1101,7 +1192,7 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *Lock
 
          }
       }
-     
+
       /*Create a new SID for the child process*/
       sid=setsid();
       if (sid<0) {
