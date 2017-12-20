@@ -198,6 +198,11 @@ namespace eval FieldCalc {
       { say(A,B)    "Région de valeurs no-bulle pour B" "Area covered by non-null values in field B" }
    }
 
+   set Param(Misc) {
+      { (141.5/(A)-131.5)     "Conversion de la gravité spécifique à l'indice API" "Conversion from Specific Gravity to API index" }
+      { (141.5/((A)+131.5))   "Conversion de l'indice API à la gravité spécifique" "Conversion from API Index to Specific Gravity" }
+   }
+
    set Param(Distance) {
       { m    1.0           "mètre"              "meter" }
       { in   0.0254        "pouce"              "inch" }
@@ -365,7 +370,8 @@ namespace eval FieldCalc {
       { "Logiques"      "Logical" }
       { "Dérivatifs"    "Derivative" }
       { "Satistiques"   "Statistical" }
-      { "Tables"        "Table" } }
+      { "Tables"        "Table" }
+      { "Divers"        "Misc" } }
 
    set Lbl(Converts) {
       { "Distance"  "Distance" }
@@ -1061,7 +1067,7 @@ proc FieldCalc::WidgetFunc { Frame } {
    set Data(FuncType) [lindex [lindex $Lbl(Operators) 0] $GDefs(Lang)]
 
    frame  $Frame.type
-      ComboBox::Create $Frame.type.sel FieldCalc::Data(FuncType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Operators) {lindex $lbl $GDefs(Lang)}] 9 6 "FieldCalc::FuncList $Frame"
+      ComboBox::Create $Frame.type.sel FieldCalc::Data(FuncType) noedit unsorted nodouble -1 [lmap lbl $Lbl(Operators) {lindex $lbl $GDefs(Lang)}] 9 7 "FieldCalc::FuncList $Frame"
       entry $Frame.type.search -bg $GDefs(ColorLight) -textvariable FieldCalc::Param(Search) -width 10 -relief sunken -bd 1
       pack  $Frame.type.sel -side left -fill x -expand True
       pack  $Frame.type.search -side left
