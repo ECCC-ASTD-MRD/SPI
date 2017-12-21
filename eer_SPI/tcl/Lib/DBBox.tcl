@@ -63,7 +63,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    variable Param
 
    CheckDB $DB
-
+   
    $Parent config -cursor X_cursor
    update idletasks
 
@@ -209,6 +209,16 @@ proc DBBox::ReadDB { DB } {
             } else {
                lappend lst [join [lrange $line {*}[split $idx @]]]
             }
+         }
+
+         #----- Check for oil DB and replace -999 with N/A, SQRT with refined, LOG with crude
+         if  { $DB == "Oil" } {
+            set tmplst {}
+            foreach el $lst {
+               set new_el [string map {"-999" "N/A"} [string map {"LOG" "Crude"} [string map {"SQRT" "Refined"} $el]]]
+               lappend tmplst $new_el
+            }
+            set lst $tmplst
          }
          lappend data $lst
       }
