@@ -281,10 +281,11 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    Tcl_Obj  *obj;
    TData    *fld;
    FILE     *fid;
+   double    tmpd;
    float     val,dx,dy,la0,lo0;
    short     tmps;
    int       tmpi;
-   int       n,nb,yyyy,mm,dd,h,m,s;
+   int       n,nb,yyyy,mm,dd,h,m,s,stamp;
    int       i,j,sz;
    int       endian;
 
@@ -347,7 +348,8 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    tmps=nb;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=0;     SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
 
-   System_StampDecode(((TRPNHeader*)fld->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
+   stamp=((TRPNHeader*)fld->Head)->DATEV;
+   System_StampDecode(stamp,&yyyy,&mm,&dd,&h,&m,&s);
    tmps=yyyy;  SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=mm;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
    tmps=dd;    SYS_IFSWAP2(SYS_LITTLE_ENDIAN,endian,tmps); fwrite(&tmps,sizeof(short),1,fid);
@@ -357,12 +359,25 @@ int WIX_Export(Tcl_Interp *Interp,Tcl_Obj *Fields,char *File,int I0,int J0,int I
    tmpi=0;     SYS_IFSWAP4(SYS_LITTLE_ENDIAN,endian,tmpi); fwrite(&tmpi,sizeof(int),1,fid);
 
    for(n=0;n<nb;n++) {
+      /*Get the field*/
+      Tcl_ListObjIndex(Interp,Fields,n,&obj);
+      fld=Data_Get(Tcl_GetString(obj));
+      if (!fld) {
+         Tcl_AppendResult(Interp,"WIX_Export: Invalid field \"",Tcl_GetString(obj),"\"",(char*)NULL);
+         return TCL_ERROR;
+      }
+
+      /*Get the time increment*/
+      f77name(difdatr)(&((TRPNHeader*)fld->Head)->DATEV,&stamp,&tmpd);
+
+      /*Write field header*/
       tmpi=WIX_NUM_HEADER_RECORDS+nb+sz*n+1;  SYS_IFSWAP4(SYS_LITTLE_ENDIAN,endian,tmpi); fwrite(&tmpi,sizeof(int),1,fid);
-      val=n;                                  SYS_IFSWAP4(SYS_LITTLE_ENDIAN,endian,val);  fwrite(&val,sizeof(float),1,fid);
+      val=(float)tmpd;                        SYS_IFSWAP4(SYS_LITTLE_ENDIAN,endian,val);  fwrite(&val,sizeof(float),1,fid);
    }
 
    /*Loop on fields*/
    for(n=0;n<nb;n++) {
+      /*Get the field*/
       Tcl_ListObjIndex(Interp,Fields,n,&obj);
       fld=Data_Get(Tcl_GetString(obj));
       if (!fld) {
