@@ -96,9 +96,9 @@ typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,T
  *
  * Parametres   :
  *
- * Retour       : 
+ * Retour       :
  *
- * Remarques    : 
+ * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
@@ -123,9 +123,9 @@ static void TclR_RInit() {
  *
  * Parametres   :
  *
- * Retour       : 
+ * Retour       :
  *
- * Remarques    : 
+ * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
@@ -144,7 +144,7 @@ static void TclR_RRelease() {
  *
  * Retour       : Un string représentant le type de variable R
  *
- * Remarques    : 
+ * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
@@ -249,7 +249,7 @@ static const char* TclR_RTypeName(SEXP RObj) {
  *
  * Retour       : Variable R
  *
- * Remarques    : 
+ * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
@@ -368,7 +368,7 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                 // generic vectors (Could be anything, we'll mostly let recursion sort it out)
                 SEXP        rattr,rnames=R_NilValue;
                 R_len_t     i;
-                
+
                 len=LENGTH(RVar);
 
                 // Add all the attributes (if available)
@@ -584,7 +584,7 @@ static Tcl_Obj* TclR_R2Tcl(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                         Tcl_DecrRefCount(obj);
                         return NULL;
                     }
-                    
+
                     // Add that value to the list
                     if( Tcl_DictObjPut(Interp,obj,name,elem) != TCL_OK ) {
                         Tcl_AppendResult(Interp,"Could not add key/value pair to dict",NULL);
@@ -768,7 +768,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
     const char  *str;
     TclY_TType  type = TclY_GetObjType(TclVar);
     Tcl_Obj     **tclvals = NULL;
-    
+
     // Check if we can transform some types into more friendlier ones
     switch( type ) {
         case TCLY_LIST:
@@ -1046,7 +1046,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
         SET_STRING_ELT(rtmp,i,Rf_mkChar(Tcl_GetString(content[i])));
     }
     setAttrib(rdf,R_NamesSymbol,rtmp);
-    
+
     // Get the number of rows
     CHKTCL( Tcl_ListObjGetElements(Interp,members[1],&nrows,&content),"The second element of the tcl list should be a list of column rows.\n",help );
 
@@ -1288,7 +1288,7 @@ static Tcl_Obj* TclR_RDF2TclLst(Tcl_Interp *Interp,TclR_Context *Context,SEXP RV
     // Make sure we are not missing a mandatory attribute
     if( i )
         ENDERR("At least one of the mandatory attributes is missing : is this a data.frame?");
-    
+
     // Get the number of rows
     if( !(robj=VECTOR_ELT(RVar,0)) )
         ENDERR("Could not get the number of rows from the data.frame. This should NOT happen...");
@@ -1414,7 +1414,7 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     // Allocate the memory for the data and copy it
     if( !strcmp(typebuf,"float")
             || !strcmp(typebuf,"double")
-            || !strcmp(typebuf,"unsigned long long") 
+            || !strcmp(typebuf,"unsigned long long")
             || !strcmp(typebuf,"long long")
             || !strcmp(typebuf,"unsigned int") ) {
         R_PROTECT( rvar=allocVector(REALSXP,n) );
@@ -1432,7 +1432,7 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
         }
     } else {
         ENDERR("Unsupported type : [",typebuf,"]");
-    } 
+    }
 
     // Allocate the rest of the R memory
     R_PROTECT( rdim=allocVector(INTSXP,2) );
@@ -1864,9 +1864,9 @@ static int TclR_Cmd(ClientData CData,Tcl_Interp *Interp,int Objc,Tcl_Obj *const 
  * Parametres   :
  *   <CData>    : Donnée client
  *
- * Retour       : 
+ * Retour       :
  *
- * Remarques    : 
+ * Remarques    :
  *
  *---------------------------------------------------------------------------------------------------------------
 */
