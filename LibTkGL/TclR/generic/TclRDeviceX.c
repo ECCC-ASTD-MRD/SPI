@@ -107,27 +107,20 @@ static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restr
     int r=(int)round(R),x=(int)round(X)-r,y=ctx->H-(int)round(Y)+r,d=r*2;
 
     printf("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
-    TclRDeviceX_GCLine(ctx,GEC);
-    // Check if we have a fill color
-    if( GEC->fill != Dev->startfill ) {
+    // Check if we need to fill the circle
+    if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
         XFillArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
-        // If the fill color is not the same as the contour, we also need to trace that contour
-        if( GEC->fill != GEC->col ) {
-            TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-            XDrawArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
-        }
-    } else {
-        // No fill color, just the surrounding
+    }
+    // Check if we need to draw the borders
+    if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
+        TclRDeviceX_GCLine(ctx,GEC);
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
         XDrawArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
     }
-
-    TclRDeviceX_Redraw(Dev);
 }
 static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc Dev) {
     printf("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
-    TclRDeviceX_Redraw(Dev);
 }
 static void TclRDeviceX_Free(pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
@@ -160,7 +153,6 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)round(X0),ctx->H-(int)round(Y0),(int)round(X1),ctx->H-(int)round(Y1));
 
-    RDeviceItem_SignalRedraw(ctx->Item);
 }
 static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *Ascent,double *Descent,double *Width,pDevDesc Dev) {
     *Ascent = 0.0;
@@ -169,7 +161,10 @@ static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *A
 }
 static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
     printf("Mode set to %d\n",Mode);
-    TclRDeviceX_Redraw(Dev);
+    // Device stopped drawing, signal a refresh
+    if( Mode == 0 ) {
+        TclRDeviceX_Redraw(Dev);
+    }
 }
 static void TclRDeviceX_Clear(const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
@@ -177,8 +172,6 @@ static void TclRDeviceX_Clear(const pGEcontext restrict GEC,pDevDesc Dev) {
     printf("CLEAR\n");
     TclRDeviceX_GCColor(ctx,R_TRANWHITE);
     XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,0,0,ctx->W,ctx->H);
-
-    TclRDeviceX_Redraw(Dev);
 }
 static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
@@ -193,26 +186,20 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
             xp[i].x = (short)round(X[i]);
             xp[i].y = (short)ctx->H - (short)round(Y[i]);
         }
-
-        // Draw the lines
-        TclRDeviceX_GCLine(ctx,GEC);
-        // Check if we have a fill color
-        if( GEC->fill != Dev->startfill ) {
+        
+        // Check if we need to fill the polygon
+        if( GEC->fill != NA_INTEGER ) {
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
             XFillPolygon(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,Convex,CoordModeOrigin);
-            // If the fill color is not the same as the contour, we also need to trace that contour
-            if( GEC->fill != GEC->col ) {
-                TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-                XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
-            }
-        } else {
-            // No fill color, just the surrounding
+        }
+        // Check if we need to draw the borders
+        if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
+            TclRDeviceX_GCLine(ctx,GEC);
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
             XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
         }
 
         free(xp);
-        TclRDeviceX_Redraw(Dev);
     }
 }
 static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
@@ -235,7 +222,6 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
         XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
 
         free(xp);
-        TclRDeviceX_Redraw(Dev);
     }
 }
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
@@ -244,23 +230,17 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
     unsigned int    w=(unsigned int)round(X1-X0),h=(unsigned int)round(Y1-Y0);
 
     printf("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
-    TclRDeviceX_GCLine(ctx,GEC);
-    // Check if we have a fill color
-    if( GEC->fill != Dev->startfill ) {
+    // Check if we need to fill the rectangle
+    if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
         XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);
-        // If the fill color is not the same as the contour, we also need to trace that contour
-        if( GEC->fill != GEC->col ) {
-            TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-            XDrawRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);
-        }
-    } else {
-        // No fill color, just the surrounding
+    }
+    // Check if we need to draw the borders
+    if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
+        TclRDeviceX_GCLine(ctx,GEC);
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
         XDrawRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);
     }
-
-    TclRDeviceX_Redraw(Dev);
 }
 //static void (*path)(double *x,double *y,int npoly,int *nper,Rboolean winding,const pGEcontext restrict GEC,pDevDesc Dev);
 //static void (*raster)(unsigned int *raster,int w,int h,double x,double y,double width,double height,double rot,Rboolean interpolate,const pGEcontext restrict GEC,pDevDesc Dev);
@@ -272,7 +252,6 @@ static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC
 }
 static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double HAdj,const pGEcontext restrict GEC,pDevDesc Dev) {
     printf("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
-    TclRDeviceX_Redraw(Dev);
 }
 //static void (*onExit)(pDevDesc Dev);
 //static SEXP (*getEvent)(SEXP,const char *);
