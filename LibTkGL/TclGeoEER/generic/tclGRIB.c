@@ -374,7 +374,7 @@ int GRIB_FileOpen(Tcl_Interp *Interp,char* Id,char Mode,char* Name,int Index){
    TGRIBFile *file;
    FILE      *fi;
    char      mode[2];
-   
+
   if (GRIB_FileGet(Interp,Id)) {
       Tcl_AppendResult(Interp,"GRIB_FileOpen: Cannot reuse openned file identificator ",Id,(char*)NULL);
       return TCL_ERROR;

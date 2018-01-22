@@ -114,7 +114,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
       default    { set title [lindex $Type $GDefs(Lang)];          set icon DIALOG_QUESTION; set Type QUESTION }
    }
 
-   uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print $Type [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return -1
@@ -193,7 +193,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
    global button
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print ERROR [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -255,7 +255,7 @@ proc Dialog::ErrorListing { Master Text List } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]\}"
+   uplevel 1 [list Log::Print ERROR [lindex $Text $GDefs(Lang)]]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -325,7 +325,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -387,7 +387,7 @@ proc Dialog::Job { Id Text { Extra "" } { Percent 0 } { CancelCommand "" } } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -452,7 +452,7 @@ proc Dialog::JobDestroy { Id } {
 proc Dialog::Wait { Master Text { Extra "" } { Append True } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -541,7 +541,7 @@ proc Dialog::WaitDestroy { { Ask False } } {
 proc Dialog::Message { Master Text { Extra "" } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -871,4 +871,131 @@ proc Dialog::TextSearch { Widget Pos String Tag args } {
       $Widget see $cur
    }
    return $cur
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Dialog::CmdOutput>
+# Creation : Decembre 2017 - E. Legault-Ouellet - CMC/CMOE -
+#
+# But      : Ouvrir une fenetre contenant un fichier texte.
+#
+# Parametres  :
+#    <Master> : Fenetre toplevel auquel l'aide est reliee.
+#    <Title>  : Titre de la fenetre
+#    <Cmd>    : Commande à exécuter et dont on va afficher la sortie
+#    <Width>  : Largenu du widget text
+#    <Height> : Hauteur du widget text
+#
+# Retour    : 0 si la commande réussie, son code d'erreur sinon
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+proc Dialog::CmdOutput { Master Title Cmd {Width 110} {Height 40} } {
+   global GDefs
+   variable Bubble
+   variable Data
+   variable Lbl
+
+   set dlg .dlgcmdout
+   set st ::Dialog::Data(Status$dlg)
+   unset -nocomplain $st
+
+   if { ![winfo exists $dlg] } {
+
+      toplevel $dlg -class Dialog
+
+      frame $dlg.msg -relief raised -bd 1
+         label $dlg.msg.bitmap -image DIALOG_INFO
+         message $dlg.msg.txt -width 320 -justify center
+         pack $dlg.msg.bitmap -side left -ipadx 10 -ipady 10
+         pack $dlg.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
+      pack $dlg.msg -side top -fill x -expand True
+
+      frame $dlg.out -relief raised -bd 1
+         text $dlg.out.text -relief sunken -bd 1 -yscrollcommand "$dlg.out.scrolly set"  -xscrollcommand "$dlg.out.scrollx set" \
+            -width $Width  -height $Height -bg $GDefs(ColorLight) -wrap none -state disabled
+         scrollbar $dlg.out.scrolly -relief sunken -command "$dlg.out.text yview" -bd 1 -width 10
+         scrollbar $dlg.out.scrollx -relief sunken -command "$dlg.out.text xview" -bd 1 -width 10 -orient horizontal
+
+         pack $dlg.out.scrollx -side bottom -fill x -anchor s
+         pack $dlg.out.text -side left -expand true -fill both
+         pack $dlg.out.scrolly -side left -fill y
+      pack $dlg.out -side top -fill both -expand true
+
+      frame $dlg.cmd
+         button $dlg.cmd.ok -text [lindex $Lbl(Ok) $GDefs(Lang)] -command [list destroy $dlg] -bd 1 -foreground green
+         pack $dlg.cmd.ok -side left -fill x  -expand True
+      pack $dlg.cmd -side top -fill x
+   }
+
+   wm title $dlg  [lindex $Title $GDefs(Lang)]
+   wm deiconify $dlg
+   wm transient $dlg $Master
+   wm geom $dlg +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
+
+   $dlg.out.text delete 0.0 end
+   $dlg.msg.txt configure -text [lindex $Title $GDefs(Lang)]
+   $dlg.cmd.ok configure -state disabled
+   $dlg configure -cursor watch
+   focus $dlg.out
+   update idletasks
+
+   #----- Run the command
+   set pfd [open [list | </dev/null {*}$Cmd] r]
+   fconfigure $pfd -blocking 0 -buffering line
+   fileevent $pfd readable [list ::Dialog::CmdOutputAppend $dlg $pfd $st]
+
+   vwait $st
+   return [set $st]
+}
+
+proc Dialog::CmdOutputAppend { Dlg Pfd StVar } {
+   #----- Read available lines
+   set lines ""
+   while { [gets $Pfd line] >= 0 } {
+      append lines $line \n
+   }
+
+   #----- Update the dialog
+   if { $lines != "" } {
+      set txt $Dlg.out.text
+
+      #------ Check if we see the end of the screen
+      set end [expr {[lindex [$txt yview] 1]==1.0}]
+
+      #----- Insert the text in the dialog window
+      $txt configure -state normal
+      $txt insert end $lines
+      $txt configure -state disabled
+
+      #----- Scroll to the end if we saw the end ealier
+      if { $end } {
+         $txt yview moveto 1.0
+      }
+
+      update idletasks
+   }
+
+   #----- Check if the process ended
+   if { [eof $Pfd] } {
+      #----- Close the process file descriptor
+      fconfigure $Pfd -blocking 1
+      if { [catch {close $Pfd} msg opts] } {
+         set st [dict get $opts -errorcode]
+         Log::Print ERROR "Cmd returned an error when closing the channel ($st) : $msg"
+         set code [expr {[lindex $st 0]=="CHILDSTATUS" ? [lindex $st 2] : 1}]
+      } else {
+         set st 0
+      }
+
+      #----- Allow the window to be closed
+      $Dlg.cmd.ok configure -state normal
+      $Dlg configure -cursor left_ptr
+      update idletasks
+
+      #----- Set the variable to the exit status
+      set $StVar $st
+   }
 }

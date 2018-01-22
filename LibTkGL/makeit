@@ -521,7 +521,7 @@ if [[ $EXT -eq 1 ]]; then
 
    cd $SRC_PATH
 
-   #----- Copy local share definitions 
+   #----- Copy local share definitions (GRIB adjustment for ARGOS GRIB1)
    cp -rp share ${LIB_PATH}
 
    rm -f -r ${TMP_PATH}

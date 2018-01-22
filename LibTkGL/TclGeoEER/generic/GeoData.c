@@ -1288,7 +1288,7 @@ void GDB_CoordRender(Tcl_Interp *Interp,ViewportItem *VP,Projection *Proj,GDB_Da
    min=Proj->Lon-180.0;
    max=Proj->Lon+180.0;
    dy=tkm.ascent*1.5;
-
+   
    // If this is a pseudo grid (WKT) or cylindric but smaller than viewport, print coord outside of projection 
    if ((Proj->Ref && Proj->Ref->Type&GRID_PSEUDO) || (Proj->Type->Def==PROJCYLIN && (Projection_Pixel(Proj,VP,coord,pix) && pix[0]>tkm.linespace))) {
       if (Proj->Ref) {

@@ -919,7 +919,7 @@ proc Mapper::AsProject { File } {
 
       if { [winfo exists .mapperparams] } {
          puts $File "Mapper::Params True $Mapper::Data(Object)"
-         puts $File "wm geometry .mapperparams =[wm geometry .mapperparams]"
+         puts $File "catch { wm geometry .mapperparams =[wm geometry .mapperparams] }"
          puts $File "TabFrame::Select .mapperparams.tab [TabFrame::Current .mapperparams.tab]\n"
       }
    }
