@@ -215,7 +215,7 @@ proc DBBox::ReadDB { DB } {
          if  { $DB == "Oil" } {
             set tmplst {}
             foreach el $lst {
-               set new_el [string map {"-999" "N/A"} [string map {"LOG" "Crude"} [string map {"SQRT" "Refined"} $el]]]
+               set new_el [string map {"-999" "N/A"} $el]
                lappend tmplst $new_el
             }
             set lst $tmplst
