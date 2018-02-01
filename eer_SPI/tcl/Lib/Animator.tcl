@@ -390,6 +390,8 @@ proc Animator::MiniWindow { Parent Frame } {
       scale $Parent.anim.frame -from 0 -to 0 -resolution 1 -variable Animator::Play(Idx) -relief flat -bd 1 \
          -relief flat -orient horizontal -width 19 -sliderlength 10 -command "Animator::StepTo" -showvalue False
 
+      button $Parent.anim.rewind -image VCRREWIND -bd 1 -relief flat -overrelief raised \
+         -command { set Animator::Play(Idx) $Animator::Play(Idx0) ; set Animator::Play(Stop) 1 ; Animator::Play }
       button $Parent.anim.stop -image VCRSTOP -relief flat -bd 1 -overrelief raised \
          -command { set Animator::Play(Stop) 1 }
       button $Parent.anim.stepback -image VCRFRAMEB -relief flat -bd 1 -overrelief raised \
@@ -398,7 +400,9 @@ proc Animator::MiniWindow { Parent Frame } {
          -command "Animator::MiniSelect $Parent $Frame; Animator::Step 1"
       radiobutton $Parent.anim.playforward -image VCRPLAYF -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Animator::Play(Dir) -indicatoron False -value 1  -selectcolor ""\
          -command "Animator::MiniSelect $Parent $Frame; set Animator::Play(Stop) 0; Animator::Play"
-      pack $Parent.anim.stepback  $Parent.anim.stop $Parent.anim.stepforward $Parent.anim.playforward -side left
+      button $Parent.anim.forwind -image VCRFORWIND -bd 1 -relief flat -overrelief raised \
+         -command { set Animator::Play(Idx) $Animator::Play(Idx1) ; set Animator::Play(Stop) 1 ; Animator::Play }
+      pack $Parent.anim.rewind $Parent.anim.stepback $Parent.anim.stop $Parent.anim.stepforward $Parent.anim.playforward $Parent.anim.forwind -side left
 
        #----- If the web animator script is available
        if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
@@ -422,6 +426,8 @@ proc Animator::MiniWindow { Parent Frame } {
    Bubble::Create $Parent.anim.playforward $Bubble(PlayForward)
    Bubble::Create $Parent.anim.playweb     $Bubble(PlayWeb)
    Bubble::Create $Parent.anim.frame       $Bubble(Scroll)
+   Bubble::Create $Parent.anim.forwind     $Bubble(Forwind)
+   Bubble::Create $Parent.anim.rewind      $Bubble(Rewind)
 
    Animator::MiniSelect $Parent $Frame
    
