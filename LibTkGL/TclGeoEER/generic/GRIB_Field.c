@@ -526,10 +526,18 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
    float  lvl;
 
    if ((err=grib_get_long(Head->Handle,"vertical.level",&lval))) {
+//      if ((err=grib_get_long(Head->Handle,"scaledValueOfFirstFixedSurface",&lval))) {
+//         return(0);
+//      }
+//      if ((err=grib_get_long(Head->Handle,"scaleFactorOfFirstFixedSurface",&lval2))) {
+//         return(0);
+//      }
+//      lval*=pow(10,-lval2);
+      
       return(0);
    }
    lvl=lval;
-
+   
    if (Head->Version==1) {
       err=grib_get_long(Head->Handle,"indicatorOfTypeOfLevel",&lval2);
       switch(lval2) {
@@ -552,9 +560,9 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
          case 128: lval2=LVL_SIGMA; lvl=1.1-lvl/1000.0;   break;
          case 109:
          case 110: lval2=LVL_HYBRID; break;
-         case 113:
-         case 114: lval2=LVL_THETA;  break;
-         case 119: lval2=LVL_ETA;  lvl/=10000.0; break;
+         case 113: lval2=LVL_THETA; break;
+         case 114: lval2=LVL_THETA; lvl=475.0-lvl;  break;
+         case 119: lval2=LVL_ETA;  lvl/=1000.0; break;
          case 120: lval2=LVL_ETA;  lvl/=100.0; break;
          default: lval2=LVL_UNDEF;
       }
@@ -563,7 +571,7 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
       if (!lval2)
          err=grib_get_long(Head->Handle,"typeOfFirstFixedSurface",&lval2);
 
-      switch(lval2) {
+     switch(lval2) {
          case   1:
          case 103:
          case 106: lval2=LVL_MAGL; break;
