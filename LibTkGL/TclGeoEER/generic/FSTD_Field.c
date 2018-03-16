@@ -2987,4 +2987,121 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
    }
 }
 
+/*----------------------------------------------------------------------------
+ * Nom      : <FSTD_FieldDataCopy>
+ * Creation : 
+ *
+ * But      : copier les valeurs d'un champs vers l'autre
+ *
+ * Parametres  :
+ *  <Interp>   : Interpreteur TCL
+ *  <Field0>   : Champs destination
+ *  <Field1>   : Champs patron
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int FSTD_FieldDataCopy
+   (Tcl_Interp *Interp, TData *Field2, TData *Field0) 
+   {
+
+   int    i,j, pos;
+   double msngval;
+   float  val0, val1, val2, vgval;
+   long    offset, offset2;
+   int    insert_mode;
+   double p1[2];
+   double  pi1, pj1;
+   int     i1, j1;
+   int     nthreads, nprocs;
+   int     sNI,sNJ;
+   int     tNI,tNJ;
+   int     cnt;
+   int     tid;
+   int     dx=0, dy=0;
+
+#if 0
+   nthreads = omp_get_num_threads();
+   fprintf( stderr, "Number of threads = %d\n", nthreads );
+   omp_set_num_threads( nthreads );
+#endif
+   nprocs = omp_get_num_procs();
+//   fprintf( stderr, "Number of processors = %d\n", nprocs );
+
+   if ((Field2->Def->NJ > Field0->Def->NJ)||(Field2->Def->NI > Field0->Def->NI))
+      insert_mode = 1;
+   else
+      insert_mode = 0;
+
+   sNI = Field0->Def->NI;
+   sNJ = Field0->Def->NJ;
+
+   tNI = Field2->Def->NI;
+   tNJ = Field2->Def->NJ;
+
+   cnt = 0;
+   if (insert_mode)
+      {
+#pragma omp parallel \
+      shared(sNI,sNJ,Field0,Field2,dx,dy) \
+      private(i,j,p1,pi1,pj1,offset,val0,tid,i1,j1,offset2)
+{
+      tid = omp_get_thread_num();
+      if (tid == 0)
+      {
+         nthreads = omp_get_num_threads();
+//         fprintf( stderr, "Number of Threads = %d\n", nthreads );
+      }
+#pragma omp for schedule(static)
+      for (j=0;j<sNJ;j++) 
+         {
+         tid = omp_get_thread_num();
+         offset = sNI * j;
+         for (i=0;i<sNI;i++) 
+            {
+            Field0->GRef->Project(Field0->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
+            if (Field2->GRef->UnProject(Field2->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
+               {
+               Def_Get(Field0->Def,0,offset+i,val0);
+               i1 = (int)(pi1 + 0.5 + dx );
+               j1 = (int)(pj1 + 0.5 + dy );
+               if ((i1 < 0)||(i1 >= tNI)) continue;
+               if ((j1 < 0)||(j1 >= tNJ)) continue;
+               offset2 = tNI * j1 + i1;
+               Def_Set(Field2->Def,0, offset2, val0);
+               cnt += 1;
+               }
+            }
+         }
+}
+      }
+   else
+      {
+      for (j=0;j<Field2->Def->NJ;j++) 
+         {
+         offset = Field2->Def->NI * j;
+         for (i=0;i<Field2->Def->NI;i++) 
+            {
+            Field2->GRef->Project(Field2->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
+            if (Field0->GRef->UnProject(Field0->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
+               {
+               i1 = (int)(pi1 + 0.5 + dx );
+               j1 = (int)(pj1 + 0.5 + dy );
+               if ((i1 < 0)||(i1 >= Field0->Def->NI)) continue;
+               if ((j1 < 0)||(j1 >= Field0->Def->NJ)) continue;
+               offset2 = Field0->Def->NI * j1 + i1;
+               Def_Get(Field0->Def,0,offset2,val0);
+               Def_Set(Field2->Def,0, offset+i, val0);
+               }
+            }
+         }
+      }
+   return TCL_OK;
+   }
+
+
 #endif

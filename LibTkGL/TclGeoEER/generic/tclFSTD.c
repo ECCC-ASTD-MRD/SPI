@@ -412,8 +412,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *sopt[]   = { "version","ip1mode","autountile","hide","read","readcube","head","find","write","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
-                                   "timeinterp",NULL };
-   enum                opt { VERSION,IP1MODE,AUTOUNTILE,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP };
+                                   "timeinterp", "fromband", NULL };
+   enum                opt { VERSION,IP1MODE,AUTOUNTILE,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,FROMBAND };
 
    Tcl_ResetResult(Interp);
 
@@ -1033,12 +1033,13 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
                // Check for index array
                index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
-
+fprintf( stderr,"### DEBUG: before Def_GridInterpOGR\n" );
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   ok=TCL_ERROR;
                   break;
                }
+fprintf( stderr,"### DEBUG: after Def_GridInterpOGR\n" );
 
                // Make index object persistent and of the right size
                Data_IndexResize(Interp,&obj,nk);
@@ -1188,6 +1189,40 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          Tcl_GetIntFromObj(Interp,Objv[5],&id);
          return(FSTD_FieldTimeInterpolate(Interp,id,Tcl_GetString(Objv[2]),Data_Get(Tcl_GetString(Objv[3])),Data_Get(Tcl_GetString(Objv[4]))));
+         break;
+
+      case FROMBAND :
+         if (Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom bandIJ Type");
+            return(TCL_ERROR);
+         } else {
+            int  mode=0;
+            field0=Data_Get(Tcl_GetString(Objv[2]));
+            if (!field0) {
+               Tcl_AppendResult(Interp,"invalid field: ",Tcl_GetString(Objv[2]),(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            bandt=GDAL_BandGet(Tcl_GetString(Objv[3]));
+            band=GDAL_BandGet(Tcl_GetString(Objv[4]));
+            if (!bandt) {
+               Tcl_AppendResult(Interp,"invalid band: ",Tcl_GetString(Objv[3]),(char*)NULL);
+               return(TCL_ERROR);
+            }
+            if (!band) {
+               Tcl_AppendResult(Interp,"invalid band: ",Tcl_GetString(Objv[4]),(char*)NULL);
+               return(TCL_ERROR);
+            }
+
+            if (strcmp(Tcl_GetString(Objv[5]), "MINIMUM") == 0)
+               mode = -1;
+            else if (strcmp(Tcl_GetString(Objv[5]), "MAXIMUM") == 0)
+               mode = 1;
+            else
+               mode = 0;
+
+            GDAL_BandToFieldWithPos(Interp,field0,bandt,band, mode );
+         }
          break;
    }
 

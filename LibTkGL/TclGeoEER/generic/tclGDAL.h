@@ -113,5 +113,7 @@ int        GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,
 int        GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List);
 int        GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max);
 int        GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band);
+int        GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field );
+int        GDAL_BandToFieldWithPos (Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand, GDAL_Band *PosBand, int Mode);
 
 #endif

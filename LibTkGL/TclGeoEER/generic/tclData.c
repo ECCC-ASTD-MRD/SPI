@@ -1696,9 +1696,9 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    extern int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
    static CONST char *sopt[] = { "-tag","-size","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
-      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef","-poff",NULL };
+      "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef","-poff","-datacopy", NULL };
    enum        opt {  TAG,SIZE,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
-      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVELINDEX,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF,POFF };
+      GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVELINDEX,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF,POFF,DATACOPY };
 
    if (!Field ) {
       return(TCL_OK);
@@ -2817,6 +2817,19 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
+         case DATACOPY :
+            if (Objc!=2) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"fldfrom");
+               return TCL_ERROR;
+            } else {
+               TData *field0=Data_Get(Tcl_GetString(Objv[++i]));
+               if (!field0) {
+                  Tcl_AppendResult(Interp,"invalid field: ",Tcl_GetString(Objv[i]),(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               return FSTD_FieldDataCopy( Interp, Field, field0 );
+            }
+         break;
 #ifdef HAVE_RMN
          case POFF:
             if (Objc==1) {

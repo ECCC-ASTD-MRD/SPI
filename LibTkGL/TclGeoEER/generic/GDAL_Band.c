@@ -39,6 +39,29 @@
 extern int GDAL_Type[];
 extern int TD2GDAL[];
 
+
+typedef struct
+{
+   unsigned long  key;
+   float  fld;
+   int    acc;
+} DiscreetGridPoint;
+
+typedef struct 
+{
+   Tcl_HashTable      table;
+   DiscreetGridPoint *lastUsed;
+   int                nk;
+   int                nij;
+} DiscreetGrid;
+
+static int get_num_threads(void);
+
+static DiscreetGrid      *dscg_create(int nk, int nij);
+static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int *new );
+static void               dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double toNodata, int Mode );
+static void               dscg_free_grid( DiscreetGrid  *dscg );
+
 /*----------------------------------------------------------------------------------------------------------
  * Nom          : <GDAL_BandRead>
  * Creation     : Juin 2004 J.P. Gauthier - CMC/CMOE
@@ -1107,8 +1130,8 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    static CONST char *stretchs[] = { "MIN_MAX","PERCENT_CLIP","HISTOGRAM_EQUALIZED","STANDARD_DEV","RANGE",NULL };
    static CONST char *bands[] = { "red","green","blue","alpha",NULL };
    static CONST char *sopt[] = { "-tag","-component","-image","-nodata","-max","-min","-avg","-grid","-gridlat","-gridlon","-gridpoint","-coordpoint",
-      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch","-approx",NULL };
-   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH,APPROX };
+      "-gridvalue","-coordvalue","-project","-unproject","-extent","-llextent","-histogram","-celldim","-stretch","-approx","-grid2grid", NULL };
+   enum        opt {  TAG,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,GRID,GRIDLAT,GRIDLON,GRIDPOINT,COORDPOINT,GRIDVALUE,COORDVALUE,PROJECT,UNPROJECT,EXTENT,LLEXTENT,HISTOGRAM,CELLDIM,STRETCH,APPROX,GRID2GRID };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -1712,6 +1735,20 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(band->Def->CellDim));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&band->Def->CellDim);
+            }
+            break;
+         case GRID2GRID:
+            if (Objc==1) {
+               Tcl_WrongNumArgs(Interp,1,Objv,"gridto");
+               return(TCL_ERROR);
+            } else {
+               TData *data=Data_Get(Tcl_GetString(Objv[++i]));
+               if (data == NULL) {
+                  Tcl_AppendResult(Interp,"\n   GDAL_BandStat: field name unknown: \"",
+                     Tcl_GetString(Objv[i]),"\"",(char *)NULL);
+                  return(TCL_ERROR);
+               }
+               return GDAL_BandToGridXY( Interp, band, data );
             }
             break;
       }
@@ -2582,3 +2619,556 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
    return(1);
 }
 
+/*----------------------------------------------------------------------------------------------------------
+ * Nom          : <GDAL_BandToGridXY>
+ * Creation     : March 2018 Vanh Souvanlasy - CMC/CMDS
+ *
+ * But          : creer une bande raster contenant la coordonnee grille de chacun des pixels dans le raster
+ *                afin d'eviter de la recalculer pour l'agregation 
+ *
+ * Parametres   :
+ *   <Interp>   : L'interpreteur Tcl
+ *   <Band>     : Bande raster
+ *   <Field>    : Champs RPN
+ *
+ * Retour       : Code d'erreur standard TCL
+ *
+ * Remarques    :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
+   {
+   char     buf[256];
+   int      i, j;
+   int      offset;
+   double   nodata, nodata2;
+   int      sNI, sNJ;
+   int      dNI, dNJ;
+   TGeoRef   *FromRef, *ToRef;
+   TDef     *FromDef, *ToDef;
+   double    *Transform;
+   double    x0, y0;
+   float      x, y;
+   int        xi, yi;
+   int        nthreads, nmemalloc;
+   int        nprocs;
+   int        tid;
+
+   int        cnt;
+   int        ToRefId;
+
+   double     **TscanX, **TscanY;
+   double     *scanX, *scanY;
+   float      **Tflt_X, **Tflt_Y;
+   float      *flt_X, *flt_Y;
+   char       buffer[256];
+
+   OGRCoordinateTransformationH  *Tctf;
+   OGRSpatialReferenceH          *TsrcSR;
+   OGRSpatialReferenceH          *TdstSR;
+   OGRSpatialReferenceH           srcSR, dstSR;
+
+   if (band == NULL)
+      {
+      Tcl_AppendResult(Interp, "band null",(char*)NULL);
+      return TCL_ERROR;
+      }
+
+   
+   FromRef = band->GRef;
+   FromDef = band->Def;
+   ToRef   = field->GRef;
+   ToDef   = field->Def;
+
+   if (ToRef->NId > 1)
+      {
+      Tcl_AppendResult(Interp, "subgrids not supported",(char*)NULL);
+      return TCL_ERROR;
+      }
+   ToRefId = ToRef->Ids[ToRef->NId];
+
+
+   if (FromRef->Grid[0]!='W') 
+      {
+      Tcl_AppendResult(Interp, "Error, bad band",(char*)NULL);
+      return  TCL_ERROR;
+      }
+
+   Transform =  FromRef->Transform;
+   if (Transform == NULL)
+      {
+      Tcl_AppendResult(Interp, "Error, No transform",(char*)NULL);
+      return  TCL_ERROR;
+      }
+
+   nthreads = get_num_threads();
+   omp_set_num_threads( nthreads );
+
+   dNI = ToDef->NI;
+   dNJ = ToDef->NJ;
+   sNI = FromDef->NI;
+   sNJ = FromDef->NJ;
+   nodata = FromDef->NoData;
+
+   nprocs = omp_get_num_procs();
+#if DEBUG
+   fprintf( stderr, "Number of processes = %d\n", nprocs );
+#endif
+
+   cnt = 0;
+/*
+ * allocate memory for each thread ahead
+ */
+   nmemalloc = nthreads;
+   TscanX  = (double **)malloc( nthreads*sizeof(double *));
+   TscanY  = (double **)malloc( nthreads*sizeof(double *));
+   Tflt_X  = (float **) malloc( nthreads*sizeof(float *));
+   Tflt_Y  = (float **) malloc( nthreads*sizeof(float *));
+
+   Tctf    = (OGRCoordinateTransformationH *) malloc( nthreads*sizeof(OGRCoordinateTransformationH));
+   TsrcSR  = (OGRSpatialReferenceH *) malloc( nthreads*sizeof(OGRSpatialReferenceH));
+   TdstSR  = (OGRSpatialReferenceH *) malloc( nthreads*sizeof(OGRSpatialReferenceH));
+
+   for (i = 0; i < nthreads ; i++)
+      {
+      TscanX[i] = (double *)malloc(sNI*sizeof(double));
+      TscanY[i] = (double *)malloc(sNI*sizeof(double));
+      Tflt_X[i] = (float *)malloc(sNI*sizeof(float));
+      Tflt_Y[i] = (float *)malloc(sNI*sizeof(float));
+      if ( FromRef->Spatial )
+         {
+         srcSR = TsrcSR[i] = OSRClone(FromRef->Spatial);
+         dstSR = TdstSR[i] = OSRCloneGeogCS(srcSR);
+         Tctf[i]   = OCTNewCoordinateTransformation( srcSR, dstSR );
+         }
+      else
+         {
+         TsrcSR[i] = NULL;
+         TdstSR[i] = NULL;
+         Tctf[i]   = NULL;
+         }
+      }
+
+
+#pragma omp parallel \
+   shared(band,sNI,sNJ,dNI,dNJ,nodata,Transform,ToRefId,TscanX,TscanY,Tflt_X,Tflt_Y,Tctf,FromDef)\
+   private(tid,i,j,offset,x0,y0,x,y,xi,yi,scanX,scanY,flt_X,flt_Y)\
+   reduction(+:cnt)
+{
+#if DEBUG
+   tid = omp_get_thread_num();
+   if (tid == 0)
+      {
+      nthreads = omp_get_num_threads();
+      fprintf( stderr, "Number of Threads = %d\n", nthreads );
+      }
+#endif
+#pragma omp for schedule(static)
+   for (j = 0; j < sNJ ; j++)
+      {
+      tid = omp_get_thread_num();
+/*
+ * each thread use its own part of allocated memory
+ */
+      scanX = TscanX[tid];
+      scanY = TscanY[tid];
+      flt_X = Tflt_X[tid];
+      flt_Y = Tflt_Y[tid];
+
+      offset = j*sNI;
+      y0 = j;
+      for (i = 0; i < sNI ; i++)
+         {
+         x0 = i;
+         scanX[i]=Transform[0]+Transform[1]*x0+Transform[2]*y0;
+         scanY[i]=Transform[3]+Transform[4]*x0+Transform[5]*y0;
+         }
+
+      if (Tctf[tid]) 
+         OCTTransform(Tctf[tid],sNI,scanX,scanY,NULL);
+
+         /*RPN functions go from 0 to 360 instead of -180 to 180*/
+      for( i=0 ; i< sNI ; i++ )
+         {
+         x = scanX[i];
+         flt_X[i] = x<0?x+360:x;
+         flt_Y[i] = scanY[i];
+         }
+
+      c_gdxyfll(ToRefId,flt_X,flt_Y,flt_Y,flt_X,sNI);
+
+      for( i=0 ; i< sNI ; i++ )
+         {
+         x = flt_X[i] - 0.5;
+         y = flt_Y[i] - 0.5;
+
+         if ((x < 0.0)||(x > dNI)||(y < 0.0)||(y > dNJ))
+            {
+            xi = (int)nodata;
+            yi = (int)nodata;
+            }
+         else
+            {
+            xi = (int)x;
+            yi = (int)y;
+            cnt += 1;
+            }
+         Def_Set( FromDef, 0, offset+i, xi );
+         Def_Set( FromDef, 1, offset+i, yi );
+         }
+      }
+}
+
+/* free up allocated memory */
+
+   for (i = 0; i < nmemalloc ; i++)
+      {
+      free( TscanX[i] );
+      free( TscanY[i] );
+      free( Tflt_X[i] );
+      free( Tflt_Y[i] );
+      OCTDestroyCoordinateTransformation( Tctf[i] );
+      OSRDestroySpatialReference( TsrcSR[i] );
+      OSRDestroySpatialReference( TdstSR[i] );
+      }
+
+   free( TdstSR );
+   free( TsrcSR );
+   free( Tctf );
+   free( TscanX );
+   free( TscanY );
+   free( Tflt_X );
+   free( Tflt_Y );
+
+   sprintf( buf, "%d", cnt );
+   Tcl_AppendResult(Interp, buf,(char*)NULL );
+   return TCL_OK;
+   }
+
+
+/*----------------------------------------------------------------------------
+ * Nom      : <GDAL_BandToFieldWithPos>
+ * Creation : 
+ *
+ * But      : Effectue l'interpolation par moyennage minimum ou maximum
+ *
+ * Parametres  :
+ *  <Interp>   : Interpreteur TCL
+ *  <ToRef>    : Reference du champs destination
+ *  <ToDef>    : Description du champs destination
+ *  <FromRef>  : Reference du champs source
+ *  <FromDef>  : Description du champs source
+ *  <PosRef>   : Reference du champs source
+ *  <PosDef>   : Description du champs source
+ *  <Table>    : Table de donnees a verifier
+ *  <TmpDef>   : Description du champs de precalcul (ex: pour VARIANCE, moyenne)
+ *  <Mode>     : Mode d'interpolation
+ *
+ * Retour:
+ *  <TCL_...> : Code d'erreur de TCL.
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int GDAL_BandToFieldWithPos
+   (Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand, GDAL_Band *PosBand, int Mode)
+   {
+
+   double        val,vx,di[4],dj[4],*fld, fldInitValue;
+   int          *acc=NULL;
+   unsigned long idxt,idxk,nijk,nij;
+   unsigned long x, t;
+   unsigned int  ndi,ndj;
+   int           sNI,sNJ,toNK;
+   int           i, j, k;
+   unsigned long offset, offseti;
+   double        dxi, dyi;
+   double        posNodata;
+   double        srcNodata;
+   double        toNodata;
+   int           tid;
+   int           nthreads, nmemalloc;
+   DiscreetGrid  **Tdsgrid, *dsgrid;
+   DiscreetGridPoint  *dgp;
+   int             new;
+   TDef          *ToDef, *PosDef, *FromDef;
+   TGeoRef       *ToRef;
+   char          buffer[256];
+
+   if ((FromBand->Def->NI != PosBand->Def->NI)||(FromBand->Def->NJ != PosBand->Def->NJ))
+      {
+      Tcl_AppendResult(Interp,"GDAL_Band_GridAverage: source and position tile differs",(char*)NULL);
+      return TCL_ERROR;
+      }
+
+   if (ToGrid->GRef->NId > 1)
+      {
+      Tcl_AppendResult(Interp, "subgrids not supported",(char*)NULL);
+      return TCL_ERROR;
+      }
+
+   ToDef = ToGrid->Def;
+   ToRef = ToGrid->GRef;
+   PosDef = PosBand->Def;
+   FromDef = FromBand->Def;
+
+   nij=FSIZE2D(ToDef);
+   nijk=FSIZE3D(ToDef);
+
+
+      /*In case of average, we need an accumulator*/
+   if (!ToDef->Accum) 
+      {
+      ToDef->Accum=calloc(nij,sizeof(int));
+      if (!ToDef->Accum) 
+         {
+         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate accumulation buffer",(char*)NULL);
+         return(TCL_ERROR);
+         }
+      }
+
+   posNodata = PosDef->NoData;
+   srcNodata = FromBand->Def->NoData;
+   toNodata = ToDef->NoData;
+
+   sprintf( buffer, "To NoData: %f, src NoData: %f  pos NoData: %f\n", toNodata, srcNodata, posNodata );
+   Tcl_AppendResult(Interp, buffer,(char*)NULL);
+   if (!ToDef->Buffer) 
+      {
+      ToDef->Buffer=calloc(nijk,sizeof(double));
+      if (!ToDef->Buffer) 
+         {
+         Tcl_AppendResult(Interp,"Data_GridAverage: Unable to allocate buffer",(char*)NULL);
+         return(TCL_ERROR);
+         }
+      fld=ToDef->Buffer;
+      for(x=0;x<nijk;x++)
+         fld[x]=toNodata;
+      }
+
+   acc=ToDef->Accum;
+   fld=ToDef->Buffer;
+
+   sNI = FromDef->NI;
+   sNJ = FromDef->NJ;
+   toNK = ToDef->NK;
+
+   if (Mode==0)
+     fldInitValue = 0.0;
+   else
+      {
+     fldInitValue = (Mode>0?-HUGE_VAL:HUGE_VAL);
+      }
+
+   nthreads = get_num_threads();
+   omp_set_num_threads( nthreads );
+/*
+ * each thread have to maintain its own output grid to avoid stepping on each other
+ */
+   nmemalloc = nthreads;
+   Tdsgrid  = (DiscreetGrid **)malloc( nmemalloc*sizeof(DiscreetGrid *));
+   for (i = 0; i < nmemalloc ; i++)
+      {
+      Tdsgrid[i] = dscg_create(toNK,nij);
+      }
+
+#pragma omp parallel \
+   shared(sNI,sNJ,posNodata,srcNodata,PosDef,ToDef,Mode,Tdsgrid)\
+   private(tid,i,j,offset,dxi,dyi,ndi,ndj,idxt,vx,dsgrid,new,dgp)
+{
+#ifdef DEBUG
+   tid = omp_get_thread_num();
+   if (tid == 0)
+      {
+      nthreads = omp_get_num_threads();
+      fprintf( stderr, "Number of Threads = %d\n", nthreads );
+      }
+#endif
+#pragma omp for schedule(static)
+   for (j = 0; j < sNJ ; j++)
+      {
+      tid = omp_get_thread_num();
+      dsgrid = Tdsgrid[tid];
+      offset = j*sNI;
+      for (i = 0; i < sNI ; i++)
+         {
+         Def_Get(PosDef,0,offset+i,dxi);
+         Def_Get(PosDef,1,offset+i,dyi);
+
+         if (posNodata == dxi) continue;
+         if (posNodata == dyi) continue;
+
+         /*Skip if no data*/
+         Def_Get(FromDef,0,offset+i,vx);
+         if (vx==srcNodata) continue;
+
+         ndi = dxi;
+         ndj = dyi;
+         if ((ndi < 0)||(ndi >= ToDef->NI)) continue;
+         if ((ndj < 0)||(ndj >= ToDef->NJ)) continue;
+         idxt = ndj*ToDef->NI + ndi;
+
+         /*Skip if no mask*/
+         if (ToDef->Mask && !ToDef->Mask[idxt]) continue;
+
+         dgp = dscg_fetch( dsgrid , idxt, &new );
+         /*If the previous value is nodata, initialize the counter*/
+         if (new)
+            {
+            dgp->fld = fldInitValue;
+            dgp->acc = 0;
+            }
+
+         if (Mode == 0)
+            {
+            dgp->acc += 1;
+            dgp->fld += vx;
+            }
+         else if (Mode < 0)
+            {
+            if (vx < dgp->fld) dgp->fld = vx;
+            }
+         else 
+            {
+            if (vx > dgp->fld) dgp->fld = vx;
+            }
+         }
+      }
+}
+
+/*
+ * now gather grids from all threads
+ */
+   for (i = 0; i < nmemalloc ; i++)
+      {
+      dscg_reduce_sum( Interp, Tdsgrid[i], fld, acc, fldInitValue, toNodata, Mode );
+      dscg_free_grid( Tdsgrid[i] );
+      }
+   free( Tdsgrid );
+   return(TCL_OK);
+   }
+
+static int get_num_threads(void)
+   {
+   int nthreads;
+   int nprocs;
+
+   char *env = getenv("OMP_NUM_THREADS");
+   if (env)
+      {
+      nthreads = atoi(env);
+      }
+   else
+      {
+/*
+ * default to 4 threads
+ */
+      nthreads = 4;
+      }
+/*
+ * cannot exceed max available CPU
+ */
+   nprocs = omp_get_num_procs();
+   if (nthreads > nprocs) nthreads = nprocs;
+   return nthreads;
+   }
+
+static DiscreetGrid      *dscg_create(int nk, int nij)
+   {
+   DiscreetGrid *dscg;
+
+   dscg = (DiscreetGrid *)malloc( sizeof(DiscreetGrid) );
+   dscg->lastUsed = NULL;
+   dscg->nk = nk;
+   dscg->nij = nij;
+   Tcl_InitHashTable( &(dscg->table), TCL_ONE_WORD_KEYS );
+   return dscg;
+   }
+
+static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int *new )
+   {
+   Tcl_HashEntry      *entry;
+   DiscreetGridPoint  *dgp;
+   if (dscg->lastUsed)
+      {
+      if (dscg->lastUsed->key == key) return dscg->lastUsed;
+      }
+
+   entry = Tcl_FindHashEntry( &(dscg->table), (char *)key );
+   if (entry == NULL)
+      {
+      entry = Tcl_CreateHashEntry( &(dscg->table), (char *)key, new );
+      dgp = (DiscreetGridPoint *)malloc( sizeof(DiscreetGridPoint) );
+      dgp->fld = 0.0;
+      dgp->acc = 0;
+      dgp->key   = key;
+      Tcl_SetHashValue( entry, dgp );
+      }
+   else
+      {
+      *new = 0;
+      dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
+      if (dgp->key != key)
+         {
+         fprintf( stderr, "dscg_fetch: keys differs %ld != %ld\n", dgp->key, key );
+         }
+      }
+   dscg->lastUsed = dgp;
+   return dgp;
+   }
+
+static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double Nodata, int Mode )
+   {
+   DiscreetGridPoint  *dgp;
+   Tcl_HashEntry      *entry;
+   Tcl_HashSearch     searchPtr;
+   unsigned long      idxt, idxk;
+   int                k;
+   int                tot_acc=0;
+   char               buffer[256];
+
+   entry = Tcl_FirstHashEntry( &(dscg->table), &searchPtr );
+   while ( entry )
+      {
+      dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
+      idxt = dgp->key;
+      if (fld[idxt] == Nodata) fld[idxt] = initValue;
+      if (Mode == 0)
+         {
+         fld[idxt] += dgp->fld;
+         acc[idxt] += dgp->acc;
+         if (dgp->fld == 0)
+            tot_acc += dgp->acc;
+         }
+      else if (Mode < 0)
+         {
+         if ( fld[idxt] > dgp->fld ) fld[idxt] = dgp->fld ;
+         }
+      else
+         {
+         if ( fld[idxt] < dgp->fld ) fld[idxt] = dgp->fld ;
+         }
+      entry = Tcl_NextHashEntry( &searchPtr );
+      }
+
+   Tcl_AppendResult(Interp, buffer,(char*)NULL);
+   }
+
+static void dscg_free_grid( DiscreetGrid  *dscg )
+   {
+   DiscreetGridPoint  *dgp;
+   Tcl_HashEntry      *entry;
+   Tcl_HashSearch     searchPtr;
+
+   entry = Tcl_FirstHashEntry( &(dscg->table), &searchPtr );
+   while ( entry )
+      {
+      dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
+      free( dgp );
+      entry = Tcl_NextHashEntry( &searchPtr );
+      }
+   Tcl_DeleteHashTable( &(dscg->table) );
+   free( dscg );
+   }

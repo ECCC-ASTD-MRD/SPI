@@ -90,6 +90,7 @@ void   FSTD_FieldSet(TData *Data);
 int    FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType);
 int    FSTD_FieldSubBuild(TData *Field);
 int    FSTD_FieldSubSelect(TData *Field,int N);
+int    FSTD_FieldDataCopy(Tcl_Interp *Interp, TData *Field2, TData *Field0);
 
 int       FSTD_DecodeRPNLevelParams(TData *Field);
 Vect3d*   FSTD_Grid(TData *Field,void *Proj,int Level);
