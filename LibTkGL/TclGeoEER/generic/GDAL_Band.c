@@ -2703,7 +2703,9 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
       }
 
    nthreads = get_num_threads();
+#ifdef _OPENMP
    omp_set_num_threads( nthreads );
+#endif //_OPENMP
 
    dNI = ToDef->NI;
    dNJ = ToDef->NJ;
@@ -2711,8 +2713,12 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    sNJ = FromDef->NJ;
    nodata = FromDef->NoData;
 
-   nprocs = omp_get_num_procs();
 #if DEBUG
+#ifdef _OPENMP
+   nprocs = omp_get_num_procs();
+#else //_OPENMP
+   nprocs = 1;
+#endif //_OPENMP
    fprintf( stderr, "Number of processes = %d\n", nprocs );
 #endif
 
@@ -2757,17 +2763,29 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    reduction(+:cnt)
 {
 #if DEBUG
+#ifdef _OPENMP
    tid = omp_get_thread_num();
+#else
+   tid = 0;
+#endif
    if (tid == 0)
       {
+#ifdef _OPENMP
       nthreads = omp_get_num_threads();
+#else
+      nthreads = 1;
+#endif
       fprintf( stderr, "Number of Threads = %d\n", nthreads );
       }
 #endif
 #pragma omp for schedule(static)
    for (j = 0; j < sNJ ; j++)
       {
+#ifdef _OPENMP
       tid = omp_get_thread_num();
+#else
+      tid = 0;
+#endif
 /*
  * each thread use its own part of allocated memory
  */
@@ -2979,17 +2997,29 @@ int GDAL_BandToFieldWithPos
    private(tid,i,j,offset,dxi,dyi,ndi,ndj,idxt,vx,dsgrid,new,dgp)
 {
 #ifdef DEBUG
+#ifdef _OPENMP
    tid = omp_get_thread_num();
+#else //_OPENMP
+   tid = 0;
+#endif //_OPENMP
    if (tid == 0)
       {
+#ifdef _OPENMP
       nthreads = omp_get_num_threads();
+#else //_OPENMP
+      nthreads = 1;
+#endif //_OPENMP
       fprintf( stderr, "Number of Threads = %d\n", nthreads );
       }
 #endif
 #pragma omp for schedule(static)
    for (j = 0; j < sNJ ; j++)
       {
+#ifdef _OPENMP
       tid = omp_get_thread_num();
+#else //_OPENMP
+      tid = 0;
+#endif //_OPENMP
       dsgrid = Tdsgrid[tid];
       offset = j*sNI;
       for (i = 0; i < sNI ; i++)
@@ -3052,6 +3082,7 @@ int GDAL_BandToFieldWithPos
 
 static int get_num_threads(void)
    {
+#ifdef _OPENMP
    int nthreads;
    int nprocs;
 
@@ -3073,6 +3104,9 @@ static int get_num_threads(void)
    nprocs = omp_get_num_procs();
    if (nthreads > nprocs) nthreads = nprocs;
    return nthreads;
+#else //_OPENMP
+   return 1;
+#endif //_OPENMP
    }
 
 static DiscreetGrid      *dscg_create(int nk, int nij)
