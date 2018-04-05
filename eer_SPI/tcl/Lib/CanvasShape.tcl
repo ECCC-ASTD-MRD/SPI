@@ -2709,6 +2709,56 @@ proc CVTree::SelectionGet { Canvas Tree } {
     }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <CVTree::ScrollTo>
+# Creation : Février 2018 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : S'assure que la branche donnée est visible et scroll si ce n'est
+#            pas le cas
+#
+# Parametres :
+#  <Canvas>      : Canvas où est affiché l'arbre
+#  <Tree>        : Arbre des données
+#  <Branch>      : Branche à rendre visible
+#
+# Retour    :
+#
+# Remarque :
+#   -Ceci est une extension au package ::struct::tree
+#
+#-------------------------------------------------------------------------------
+proc CVTree::ScrollTo { Canvas Tree Branch } {
+    variable Data
+
+    #----- Get the bounding box for the branch
+
+    lassign [$Canvas bbox $Branch] x0 y0 x1 y1
+    if { $x0 != "" } {
+        #----- Get the scrollregion's dimensions
+        lassign [$Canvas cget -scrollregion] cx0 cy0 cx1 cy1
+        set w [expr {$cx1-$cx0}]
+        set h [expr {$cy1-$cy0}]
+
+        #----- Calculate where we are in that region
+        set px0 [expr {double($x0-$cx0)/$w}]
+        set px1 [expr {double($x1-$cx0)/$w}]
+        set py0 [expr {double($y0-$cy0)/$h}]
+        set py1 [expr {double($y1-$cy0)/$h}]
+
+        #----- Get the scroll's current view percentage
+        lassign [$Canvas xview] sx0 sx1
+        lassign [$Canvas yview] sy0 sy1
+
+        #----- Check if the item is already seen completely and show it in the center if not
+        if { $px0<$sx0 || $px1>$sx1 } {
+            $Canvas xview moveto [expr {max($px0-($sx1-$sx0)/2.0,0.0)}]
+        }
+        if { $py0<$sy0 || $py1>$sy1 } {
+            $Canvas yview moveto [expr {max($py0-($sy1-$sy0)/2.0,0.0)}]
+        }
+    }
+}
+
 namespace eval Shape {
    variable Data
 

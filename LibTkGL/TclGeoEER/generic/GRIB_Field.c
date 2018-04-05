@@ -840,7 +840,8 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
 
    OGRSpatialReferenceH         ref,llref=NULL;;
    OGRCoordinateTransformationH func;
-
+   TRotationTransform           *rt=NULL;
+   
    long        i,inci,incj;
    double      mtx[6],inv[6];
    
@@ -853,7 +854,7 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
    // Fix for matrix transformation to work correclty
    if (mtx[0]==180.0) mtx[0]=-180;
    
-   if ((ref=GRIB_WKTProjCS(Interp,head->Handle))) {
+   if ((ref=GRIB_WKTProjCS(Interp,head->Handle,&rt))) {
       if (OSRIsProjected(ref)) {
          if ((llref=OSRCloneGeogCS(ref))) {
             if ((func=OCTNewCoordinateTransformation(llref,ref))) {
@@ -886,6 +887,7 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
          App_Log(WARNING,"%s: Unable to create inverse transform function\n",__func__);
       }
       Field->GRef=GeoRef_Find(GeoRef_WKTSetup(NI,NJ,NULL,0,0,0,0,NULL,mtx,inv,ref));
+      Field->GRef->RotTransform=rt;
       Field->ZRef=ZRef_Define(LVL_MASL,NK,NULL);
       Field->ZRef->Levels[0]=ZRef_IP2Level(head->IP1,&Field->ZRef->Type);
 
@@ -1348,7 +1350,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
  *
  *----------------------------------------------------------------------------
  */
-OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
+OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRotationTransform **RT) {
 
    OGRSpatialReferenceH ref;
    int    err,opt=0;
@@ -1387,10 +1389,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
    ref=OSRNewSpatialReference(NULL);
 
    switch(opt) {
-      case REDUCED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
-      case STRETCHED_LL :           /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
-      case STRETCHED_ROTATED_LL :   /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
-      case ROTATED_LL :             /* same as REGULAR_LL, but extra parameters are unsupported at the moment */
+      case ROTATED_LL :             
          if (grib_get_double(Handle,"angleOfRotationInDegrees",&rot)!=GRIB_SUCCESS) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get angleOfRotationInDegrees",(char*)NULL);
             return(NULL);
@@ -1403,11 +1402,21 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get longitudeOfSouthernPoleInDegrees",(char*)NULL);
             return(NULL);
          }
-         lats=-80;lons=90;
-         sprintf(buf,"LOCAL_CS[\"DUMMY\",LOCAL_DATUM[\"DUMMY\",0],UNIT[\"Meter\",1.0],AXIS[\"xaxis\",EAST],AXIS[\"yaxis\",NORTH],EXTENSION=[\"PROJ4\",\"+proj=ob_tran +o_proj=latlon +o_lon_p=%f +o_lat_p=%f +lon_0=180\"]]",lons+180,-lats);
-         OSRSetFromUserInput(ref,buf);
-         //const char * "EXTENSION="+proj=ob_tran +o_proj=eqc +lon_0=-40 +o_lat_p=22 +x_0=639367 +y_0=1473324 +a=6371000 +b=6371000 +wktext")
-         fprintf(stderr,"%s\n",buf);
+         *RT=(TRotationTransform*)malloc(sizeof(TRotationTransform));
+         (*RT)->Lat=lats;
+         (*RT)->Lon=lons;
+         (*RT)->Angle=rot;
+         lats=DEG2RAD(90.0+lats);
+         lons=DEG2RAD(lons);
+         (*RT)->SinTheta=sin(lats);
+         (*RT)->CosTheta=cos(lats);
+         (*RT)->SinPhi=sin(lons);
+         (*RT)->CosPhi=cos(lons);
+//         lats=-80;lons=90;
+//         sprintf(buf,"LOCAL_CS[\"DUMMY\",LOCAL_DATUM[\"DUMMY\",0],UNIT[\"Meter\",1.0],AXIS[\"xaxis\",EAST],AXIS[\"yaxis\",NORTH],EXTENSION=[\"PROJ4\",\"+proj=ob_tran +o_proj=latlon +o_lon_p=%f +o_lat_p=%f +lon_0=180\"]]",lons+180,-lats);
+//         OSRSetFromUserInput(ref,buf);
+//         //const char * "EXTENSION="+proj=ob_tran +o_proj=eqc +lon_0=-40 +o_lat_p=22 +x_0=639367 +y_0=1473324 +a=6371000 +b=6371000 +wktext")
+//         fprintf(stderr,"%s\n",buf);
          break;
          
       case REGULAR_LL :
@@ -1432,8 +1441,8 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          break;
 
       case MERCATOR :
-         /* Mercator 1SP (ESPG:9804) or Transverse Mercator (ESPG:9807) */
-        if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
+         // Mercator 1SP (ESPG:9804) or Transverse Mercator (ESPG:9807)
+         if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
             return(NULL);
          }
@@ -1469,7 +1478,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          break;
 
       case POLAR_STEREOGRAPHIC :
-         /* Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)*/
+         // Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)
          if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
             return(NULL);
@@ -1486,6 +1495,9 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
          OSRSetPS(ref,lat,lon,scale,0.0,0.0);
       break;
 
+      case REDUCED_LL :             // same as REGULAR_LL, but extra parameters are unsupported at the moment 
+      case STRETCHED_LL :           // same as REGULAR_LL, but extra parameters are unsupported at the moment 
+      case STRETCHED_ROTATED_LL :   // same as REGULAR_LL, but extra parameters are unsupported at the moment 
       case ALBERS :
       case REGULAR_GG :
       case REDUCED_GG :
@@ -1525,14 +1537,14 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
       }
 
       switch(lval) {
-         case 1 :  /* User defined (w/ scale factor); earth is spherical (1/f=1.0) */
+         case 1 :  // User defined (w/ scale factor); earth is spherical (1/f=1.0) 
          case 0 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","Sphere",6367470.0,0.0,NULL,0.0,NULL,0.0);
             break;
          case 3 :
-            /* User defined major+minor axis IN KM (1/f = 1/((major-minor)/major) */
+            // User defined major+minor axis IN KM (1/f = 1/((major-minor)/major)
          case 7 :
-            /* User defined major+minor axis IN M (1/f = 1/((major-minor)/major) */
+            // User defined major+minor axis IN M (1/f = 1/((major-minor)/major) 
          case 2 :
             OSRSetGeogCS(ref,"Coordinate System imported from GRIB","Unknown","IAU 1965",6378160.0,297.0,NULL,0.0,NULL,0.0);
             break;
@@ -1553,7 +1565,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle) {
             return(NULL);
       }
    }
-
    return(ref);
 }
 

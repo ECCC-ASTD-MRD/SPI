@@ -31,8 +31,11 @@
  *==============================================================================
  */
 
-#include <math.h>
+#ifdef HAVE_OPENMP
+#include <omp.h>
+#endif //HAVE_OPENMP
 
+#include <math.h>
 #include "App.h"
 #include "Data_Funcs.h"
 #include "Data_Calc.h"
@@ -206,6 +209,16 @@ TFuncDef FuncM[] = {
   { NULL    , (TFunc*)NULL  , 0 , TD_Unknown }
 };
 
+typedef struct
+{
+   double b;
+   double c;
+} LUTentry;
+
+static int compare_lutE ( const void *va, const void *vb );
+
+static TGeoRef *GetCurrentRef(void);
+
 /**
  * @author Jean-Philippe Gauthier
  * @brief Finds a symbol in the function matrix symbol table
@@ -264,6 +277,10 @@ double tcount(TDef *Res,TDef *Table,TDef *MB) {
    }
 
    /*Parse matrix*/
+#pragma omp parallel for \
+      private( j,i,idx,idxi,v,va,vb,k ) \
+      shared( MB, Res,nt ) \
+      schedule(static)
    for(j=0;j<MB->NJ;j++) {
       idx=j*MB->NI;
       for(i=0;i<MB->NI;i++) {
@@ -293,6 +310,10 @@ double fpeel(TDef *Res,TDef *MA) {
    v=va=0.0;
 
    /*Parse the matrix*/
+#pragma omp parallel for \
+      private( j,i,idx,idxi,v,va,t ) \
+      shared( MA, Res ) \
+      schedule(static)
    for(j=0;j<MA->NJ;j++) {
       idx=j*MA->NI;
       for(i=0;i<MA->NI;i++) {
@@ -379,6 +400,10 @@ double fkernel(TDef *Res,TDef *MA,TDef *MB) {
       }
 
       /*Parse the matrix*/
+#pragma omp parallel for \
+         private(j,i,idxf,idx,dj,di,fj,fi,va,dw,vb,s) \
+         shared(MA,MB,Res,vs,w) \
+         schedule(static)
       for(j=0;j<MA->NJ;j++) {
          for(i=0;i<MA->NI;i++) {
 
@@ -432,6 +457,10 @@ double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
       vc=vc<0?0:vc>1.0?1.0:vc;
 
       /*Parse the matrix*/
+#pragma omp parallel for \
+         private(j,i,idx,dj,di,fj,fi,va,s) \
+         shared(MA,MB,MC,Res,vs,vb,vc,dm) \
+         schedule(static)
       for(j=0;j<MA->NJ;j++) {
          for(i=0;i<MA->NI;i++) {
 
@@ -470,7 +499,10 @@ double in(TDef *Res,TDef *MA,TDef *MB) {
    unsigned long i,n;
 
    va=vb=0.0;
-
+#pragma omp parallel for \
+      private(i,n,va,vr,vb) \
+      shared(MA,MB,Res) \
+      schedule(static)
    for(i=0;i<FSIZE2D(MA);i++) {
       Def_Get(MA,0,i,va);
       vr=0.0;
@@ -493,6 +525,10 @@ double win(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    va=vb=vc=0.0;
    
+#pragma omp parallel for \
+      private( j,i,va,vb,vc,n ) \
+      shared( MA,MB,MC,Res ) \
+      schedule(static)
    for(i=0;i<FSIZE2D(MA);i++) {
       Def_Get(MA,0,i,va);
       Def_Get(MB,0,i,vb);
@@ -518,6 +554,10 @@ double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    n=FSIZE2D(MC);
    m=i<n?i:n;
 
+#pragma omp parallel for \
+      private(i,i0,i1,n,va,vb,vc) \
+      shared(MA,MB,MC,Res,m) \
+      schedule(static)
    for(i=0;i<FSIZE2D(MA);i++) {
       Def_Get(MA,0,i,va);
 
@@ -539,18 +579,69 @@ double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
+static int compare_lutE ( const void *va, const void *vb )
+{
+   LUTentry **ppa = (LUTentry **)va;
+   LUTentry **ppb = (LUTentry **)vb;
+   LUTentry  *pa  = *ppa;
+   LUTentry  *pb  = *ppb;
+
+   if (pa->b < pb->b ) return -1;
+   if (pa->b > pb->b ) return 1;
+   return  0;
+}
+
+
 double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        va,vb,vc;
+   double        last_va;
    unsigned long i,n,m;
+   LUTentry      *table, **ptrtable, lute, *ptr, **pptr;
+   int            szptr;
+   int            szMA;
+   int            tid;
 
    va=vb=vc=0.0;
    i=FSIZE2D(MB);
    n=FSIZE2D(MC);
    m=i<n?i:n;
+   szMA=FSIZE2D(MA);
 
-   for(i=0;i<FSIZE2D(MA);i++) {
+/* create a sorted LUT and use bsearch to make things faster */
+   szptr = sizeof(LUTentry *);
+   table = (LUTentry *)malloc( sizeof(LUTentry) * m );
+   ptrtable = (LUTentry **)malloc( szptr * m );
+   for(n=0;n<m;n++) {
+      Def_Get(MB,0,n,vb);
+      Def_Get(MC,0,n,vc);
+      table[n].b = vb;
+      table[n].c = vc;
+      ptrtable[n] = &(table[n]);
+   }
+   qsort( ptrtable, m, szptr, compare_lutE );
+
+   last_va = NAN;
+   ptr = NULL;
+
+#pragma omp parallel shared(Res,ptrtable,table,MA,szMA,MB,szptr,m) \
+   private(i,last_va,va,lute,ptr,pptr,tid)
+   {
+#pragma omp for schedule(static)
+   for(i=0;i<szMA;i++) {
       Def_Get(MA,0,i,va);
+#if 1
+      if (last_va != va) {
+         lute.b = va;
+         ptr = &lute;
+         pptr = (LUTentry **)bsearch( &ptr, ptrtable, m, szptr, compare_lutE );
+         ptr = (pptr != NULL) ? *pptr : NULL;
+         last_va = va;
+      }
+      if (ptr) {
+         Def_Set(Res,0,i, ptr->c );
+      }
+#else
       for(n=0;n<m;n++) {
          Def_Get(MB,0,n,vb);
          if (va==vb) {
@@ -559,6 +650,10 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
             break;
          }
       }
+#endif
+   }
+   free( table );
+   free( ptrtable );
    }
    return(0.0);
 }
@@ -625,6 +720,10 @@ double darea(TDef *Res,TDef *Def,int Mode) {
    if ((a=(float*)malloc(FSIZE2D(Def)*sizeof(float)))) {
       GeoRef_CellDims(gref,FALSE,NULL,NULL,a);
 
+#pragma omp parallel for \
+      private( j,i,idx ) \
+      shared( Def,Res,a ) \
+      schedule(static)
       for(j=0;j<Def->NJ;j++) {
          idx=j*Def->NI;
          for(i=0;i<Def->NI;i++) {
@@ -655,6 +754,10 @@ double dangle(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
    }
 
+#pragma omp parallel for \
+      private( j,i,idx,lat,lon,d ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
@@ -690,6 +793,10 @@ double dlat(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
    }
 
+#pragma omp parallel for \
+      private( j,i,idx,lat,lon ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
@@ -719,6 +826,10 @@ double dlon(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
    }
 
+#pragma omp parallel for \
+      private( j,i,idx,lat,lon ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
@@ -748,6 +859,10 @@ double ddx(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
    }
 
+#pragma omp parallel for \
+      private( j,i,idx,d ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
@@ -777,6 +892,10 @@ double ddy(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
    }
 
+#pragma omp parallel for \
+      private( j,i,idx,d ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
@@ -811,6 +930,10 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
    /*check for wrap around*/
    d=gref->Type&GRID_WRAP?0:1;
 
+#pragma omp parallel for \
+      private( j,i,idx,d,b,mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv ) \
+      shared( gref,Def,Res ) \
+      schedule(static)
    for(j=1;j<Def->NJ-1;j++) {
       for(i=d;i<Def->NI-d;i++) {
          idx=j*Def->NI+i;

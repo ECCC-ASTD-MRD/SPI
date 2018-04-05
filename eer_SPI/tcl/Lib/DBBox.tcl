@@ -63,7 +63,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    variable Param
 
    CheckDB $DB
-
+   
    $Parent config -cursor X_cursor
    update idletasks
 
@@ -91,7 +91,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    set b .dbbox.body
    frame $b
       listbox $b.box -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
-         -yscrollcommand "$b.scroll set" -height 25 -width 100 -background $GDefs(ColorLight)
+         -yscrollcommand "$b.scroll set" -height 25 -width 170 -background $GDefs(ColorLight)
       pack $b.box -side left -expand true -fill both
 
       scrollbar $b.scroll -command "$b.box yview" -bd 1 -width 10  -highlightthickness 0
@@ -209,6 +209,16 @@ proc DBBox::ReadDB { DB } {
             } else {
                lappend lst [join [lrange $line {*}[split $idx @]]]
             }
+         }
+
+         #----- Check for oil DB and replace -999 with N/A, SQRT with refined, LOG with crude
+         if  { $DB == "Oil" } {
+            set tmplst {}
+            foreach el $lst {
+               set new_el [string map {"-999" "N/A"} $el]
+               lappend tmplst $new_el
+            }
+            set lst $tmplst
          }
          lappend data $lst
       }

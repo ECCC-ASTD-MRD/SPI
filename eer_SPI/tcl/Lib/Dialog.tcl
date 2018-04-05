@@ -114,7 +114,7 @@ proc  Dialog::Default { Master Width Type Text Extra Default args } {
       default    { set title [lindex $Type $GDefs(Lang)];          set icon DIALOG_QUESTION; set Type QUESTION }
    }
 
-   uplevel 1 "Log::Print $Type \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print $Type [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return -1
@@ -193,7 +193,7 @@ proc Dialog::Error { Master Text { Extra "" } } {
    global button
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print ERROR [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -255,7 +255,7 @@ proc Dialog::ErrorListing { Master Text List } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print ERROR \{[lindex $Text $GDefs(Lang)]\}"
+   uplevel 1 [list Log::Print ERROR [lindex $Text $GDefs(Lang)]]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -325,7 +325,7 @@ proc Dialog::Info { Master Text { Extra "" } } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -387,7 +387,7 @@ proc Dialog::Job { Id Text { Extra "" } { Percent 0 } { CancelCommand "" } } {
    global GDefs
    variable Lbl
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -452,7 +452,7 @@ proc Dialog::JobDestroy { Id } {
 proc Dialog::Wait { Master Text { Extra "" } { Append True } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return
@@ -541,7 +541,7 @@ proc Dialog::WaitDestroy { { Ask False } } {
 proc Dialog::Message { Master Text { Extra "" } } {
    global GDefs
 
-   uplevel 1 "Log::Print INFO \{[lindex $Text $GDefs(Lang)]$Extra\}"
+   uplevel 1 [list Log::Print INFO [lindex $Text $GDefs(Lang)]$Extra]
 
    if { ![info exists ::tk_version] || ([info exists SPI::Param(Batch)] && $SPI::Param(Batch)) } {
       return

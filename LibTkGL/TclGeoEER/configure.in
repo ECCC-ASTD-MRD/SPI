@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([TclGeoEER], [7.12.1])
+AC_INIT([TclGeoEER], [7.12.2])
 
 PKG_CFLAGS="-D_GNU_SOURCE -D_BSD_SOURCE"
 
@@ -101,7 +101,7 @@ fi
 
 # ---------------------------------------------------------------------------
 # Check for EER
-# ---------------------------------------- -----------------------------------
+# ---------------------------------------------------------------------------
 
 AX_LIB_EER()
  
@@ -109,6 +109,15 @@ if test "$HAVE_EER" = "yes"; then
    PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
 fi
+
+
+# ---------------------------------------------------------------------------
+# Check for OpenMP
+# ---------------------------------------------------------------------------
+AX_OPENMP([
+   PKG_LIBS="$PKG_LIBS $OPENMP_CFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_OPENMP $OPENMP_CFLAGS"
+])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.

@@ -77,7 +77,7 @@ int     GRIB_GetData(TGRIBHeader *Head,TDef *Def,int Idx,double Factor);
 
 int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 
-OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle);
+OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRotationTransform **RT);
 
 #endif
 #endif

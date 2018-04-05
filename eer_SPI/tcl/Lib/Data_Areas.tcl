@@ -118,6 +118,7 @@ proc Areas::Init { } {
    Areas::Read $GDefs(Dir)/data/FIR.shp                                          #00AA00 #00FF00 False True
    Areas::Read $GDefs(Dir)/data/MWO.shp                                          #0000AA #0000FF False True
    Areas::Read $GDefs(Dir)/data/Volcano.shp                                      #AA0000 #FF0000 False True
+   Areas::Read $GDefs(Dir)/data/ISTOP_Regions.shp                                #AA0000 #FF0000 False True RegionDesc
    Areas::Read $GDefs(Dir)/data/TimeZone.shp                                     #AAAA00 #FFFF00 False True TZ
    Areas::Read $GDefs(Dir)/data/RADAR.shp                                        #AAAAAA #FFFFFF False True ID
    Areas::Read $GDefs(Dir)/data/ModelDomain.shp                                  #00C0CA #000000 False False NAME

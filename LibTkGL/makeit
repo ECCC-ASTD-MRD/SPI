@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.12.1"
+VERSION="7.12.2"
 MAINTAINER="Jean-Philippe Gauthier"
 BUILDINFO=`git describe --always`
 
@@ -507,7 +507,7 @@ if [[ $EXT -eq 1 ]]; then
       --with-msg=yes \
       --with-jasper=${LIB_PATH} \
       --with-mysql=${EXT_LIB_PATH}/${MYSQL}/bin/mysql_config \
-      --with-sqlite3=no \
+      --with-sqlite3=yes \
       --with-expat=${LIB_PATH} \
       --with-curl=${LIBCURL_PATH}/bin/curl-config \
       --with-geos=${LIB_PATH}/bin/geos-config \
