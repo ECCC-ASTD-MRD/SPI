@@ -632,7 +632,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               for(d=0;d<elem->NData;d++) {
                                  data=elem->EData[d];
                                  // Check for selected family
-                                 flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                                 flag=data->Family&0x38;
                                  if (MET_FLAG(obs,flag)) {
                                     // Check for data bktyp matching
                                     if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
@@ -780,7 +780,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected family*/
-                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                           flag=data->Family&0x38;
                            if (MET_FLAG(obs,flag)) {
                               /*Check for data bktyp matching*/
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
@@ -812,7 +812,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                         for(d=0;d<elem->NData;d++) {
                            data=elem->EData[d];
                            /*Check for selected state*/
-                           flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                           flag=data->Family&0x38;
                            if (MET_FLAG(obs,flag)) {
                               if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
                                  for(e=0;e<data->Ne;e++) {
@@ -900,7 +900,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                               for(d=0;d<elem->NData;d++) {
                                  data=elem->EData[d];
                                  /*Check for selected family*/
-                                 flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                                 flag=data->Family&0x38;
                                  if (MET_FLAG(obs,flag)) {
                                     /*Check for data bktyp matching*/
                                     if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
@@ -923,7 +923,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                            for(d=0;d<elem->NData;d++) {
                               data=elem->EData[d];
                               /*Check for selected family*/
-                              flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
+                              flag=data->Family&0x38;
                               if (MET_FLAG(obs,flag)) {
                                  /*Check for data bktyp matching*/
                                  if (obs->Type==-1 || (data->Type>>6&0x1)==obs->Type) {
@@ -1200,7 +1200,7 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    obs->NVal     = -1;
    obs->Type     = -1;
    obs->SType    = -1;
-   obs->Family   = 0x0;
+   obs->Family   = -1;
    obs->Marker   = 0x0;
    obs->MarkerOp = 'O';
    obs->CodeType = 0x0;
@@ -2244,8 +2244,8 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
                }
 
                // Check for data family matching (bit 3-5, 000=new,001=corrected,010=repeat,011=human corrected,100=reserved
-               flag=(data->Family&0x7)==0?data->Family|0x20:data->Family;
-               if (Obs->Family && !(Obs->Family&flag)) {
+               flag=data->Family&0x38;
+               if (Obs->Family>-1 && Obs->Family!=flag) {
                   continue;
                }
 

@@ -26,7 +26,7 @@ namespace eval NowCaster::Obs { } {
    variable Param
    variable Tephi
 
-   font create TEPHIFONT  -family arial  -size -10
+   catch { font create TEPHIFONT  -family arial  -size -10 }
 
    set Param(Title)      { "Observation" "Observation" }
 
@@ -85,9 +85,12 @@ namespace eval NowCaster::Obs { } {
       { 21  QC    { "Inconsistance détectée par un processus de CQ" "Inconsistency detected by QC process" } } }
 
    set Param(Familys) {
-      { 3 8  { "Bulletin corrigé" "Corrected bulletin" } }
-      { 4 16 { "Bulletin répété" "Repeated bulletin" } }
-      { 5 32 { "Bulletin nouveau" "New bulletin" } } }
+      { -1 { "Tous les bulletins" "All bulletin" } }
+      { 0  { "Bulletin nouveau" "New bulletin" } } 
+      { 8  { "Bulletin corrigé" "Corrected bulletin" } }
+      { 16 { "Bulletin répété" "Repeated bulletin" } }
+      { 24 { "Bulletin corrigé par intervention humaine" "Corrected bulletin by human intervention" } } 
+      { 32 { "Réservé" "Reserved" } } }
 
    set Param(Types) {
       { - -1 { "Toutes les données" "All data" } }
@@ -688,9 +691,8 @@ proc NowCaster::Obs::Window { Frame } {
          menu $Frame.flags.bfam.sel.menu -tearoff 1
          foreach family $Param(Familys) {
             set i [lindex $family 0]
-            set NowCaster::Obs::Data(Family$i) 0
-            $Frame.flags.bfam.sel.menu add checkbutton -offvalue 0 -onvalue [expr 1<<$i] -label [lindex [lindex $family 1] $GDefs(Lang)] \
-               -variable NowCaster::Obs::Data(Family$i) -command { NowCaster::Obs::UpdateFlags False }
+            $Frame.flags.bfam.sel.menu add radiobutton -value [lindex $family 0] -label [lindex [lindex $family 1] $GDefs(Lang)] \
+               -variable NowCaster::Obs::Data(Family) -command { NowCaster::Obs::UpdateFlags False }
          }
          pack $Frame.flags.bfam.lbl $Frame.flags.bfam.sel -side left -fill y
          pack $Frame.flags.bfam.ent -side left -fill x -expand True
@@ -1294,13 +1296,6 @@ proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
          set Data(Marker[lindex $marker 0]) [expr $Data(Marker)&$bit]
          set bit [expr $bit<<1]
       }
-
-      set bit 0x1
-      foreach family $Param(Familys) {
-         set Data(Family[lindex $family 0]) [expr $Data(Family)&$bit]
-         set bit [expr $bit<<1]
-      }
-
    } else {
       set Data(Flag) 0x00
       set i 0
@@ -1312,11 +1307,6 @@ proc NowCaster::Obs::UpdateFlags { Manual { Obs {} } } {
       set Data(Marker) 0x00
       foreach marker $Param(Markers) {
          set Data(Marker) [expr $Data(Marker)|$Data(Marker[lindex $marker 0])]
-      }
-
-      set Data(Family) 0x00
-      foreach family $Param(Familys) {
-         set Data(Family) [expr $Data(Family)|$Data(Family[lindex $family 0])]
       }
    }
 
@@ -1908,10 +1898,9 @@ proc NowCaster::Obs::InfoBKType { Report } {
    set stype [metreport define $Report -STYPE]
 
    set no  [expr $bfam&0x7]
-   set fam [expr $bfam>>3&0x07]
-   set fam [expr $fam==0?2:$fam==1?0:1]
-
-   set fam [lindex $Param(Familys) $fam]
+   set fam [expr $bfam-$no]
+ 
+   set fam [lindex $Param(Familys) [lsearch -index 0 $Param(Familys) $fam]]
    set alt [lindex $Param(Types)   [expr ($type>>6)+1]]
    set bk  [lindex $Param(BKTypes) [expr $type&0x3F]]
    set st  [lindex $Param(BKSTypes[expr ($type>>6)]-[expr $type&0x3F]) $stype]
