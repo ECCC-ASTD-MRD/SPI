@@ -174,6 +174,7 @@ int FSTD_FieldSubBuild(TData *Field) {
                Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
                Field->SDef[i]->Level=Field->Def->Level;
                Field->SDef[i]->Mode=Field->SDef[i]->Data[0];
+               Field->SDef[i]->Mask=&Field->Def->Mask[dij];
                
               // Increment after global grid
                dij+=ni*nj;
