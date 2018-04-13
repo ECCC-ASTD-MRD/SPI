@@ -1713,7 +1713,7 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
    TMetElem     *elem;
    TMetElemData *data=NULL;
    int           nb,d,e,vt;
-  
+
    // Check if an element exist at this time
    if (!(elem=TMetElem_Find(Loc,Time,0)) || elem->Time!=Time) {
        data=TMetElem_Insert(Loc,Min,Time,Fam,Type,SType,Ne,Nv,Nt,Data,Marker,Codes);    
@@ -1736,7 +1736,9 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
        // Expand arrays for new items
       if (!Marker || !(data->Ne*data->Nv*data->Nt)) {
          nb=(data->Ne+Ne)*data->Nv*data->Nt;      
-         data->Code=(EntryTableB**)realloc(data->Code,(data->Ne+Ne)*sizeof(EntryTableB*));
+         if (!(data->Code=(EntryTableB**)realloc(data->Code,(data->Ne+Ne)*sizeof(EntryTableB*)))) {
+            return(NULL);
+         }
          memcpy(&data->Code[data->Ne],Codes,Ne*sizeof(EntryTableB*));
       }
       
@@ -1744,14 +1746,18 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
       if (Data) {
          float *dptr,*dold,*dnew,*new,*mkr;
          
-         new=(float*)malloc(nb*sizeof(float));
+         if (!(new=(float*)malloc(nb*sizeof(float)))) {
+            return(NULL);            
+         }
          dold=data->Data;
          dnew=Data;
          dptr=new;
      
          for(vt=0;vt<data->Nv*data->Nt;vt++) {
-            for(e=0;e<data->Ne;e++,dptr++,dold++) {
-               *dptr=*dold;
+            if (dold) {
+               for(e=0;e<data->Ne;e++,dptr++,dold++) {
+                  *dptr=*dold;
+               }
             }
             for(e=0;e<Ne;e++,dptr++,dnew++) {
                *dptr=*dnew;
@@ -1765,14 +1771,18 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
       if (Marker) {
          int *dptr,*dold,*dnew,*new;
          
-         new=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
+         if (!(new=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int)))) {
+            return(NULL);            
+         }
          dold=data->Marker;
          dnew=Marker;
          dptr=new;
 
          for(vt=0;vt<data->Nv*data->Nt;vt++) {
-            for(e=0;e<data->Ne-Ne;e++,dptr++,dold++) {
-               *dptr=*dold;
+            if (dold) {
+               for(e=0;e<data->Ne-Ne;e++,dptr++,dold++) {
+                  *dptr=*dold;
+               }
             }
             for(e=0;e<Ne;e++,dptr++,dnew++) {
                *dptr=*dnew;
