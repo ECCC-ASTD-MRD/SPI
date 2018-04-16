@@ -1935,9 +1935,15 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
    variable Data
    variable Lbl
 
-   if { [metobs is $Obs] } {
+   if { [metobs is $Obs] } {      
       NowCaster::Obs::InfoWindow "$Obs (Station:$Id)"
 
+      set cursor [lindex [$Page::Data(Canvas) config -cursor] 4]
+      $Page::Data(Canvas) config -cursor watch
+      . config -cursor watch
+      .nowcasterinfo config -cursor watch
+      update idletasks
+      
       set datev [metobs define $Obs -VALID]
 
       if { $All } {
@@ -2056,6 +2062,10 @@ proc NowCaster::Obs::Info { Obs Id Tag { All False } } {
             catch { .nowcasterinfo.tab.frame2.info.text insert end [format "%6.1f   %5.1f     %5.1f\n" $pres $spd $dir] }
          }
       }
+      $Page::Data(Canvas) config -cursor $cursor
+      . config -cursor left_ptr
+      .nowcasterinfo config -cursor left_ptr
+      update idletasks
    }
 }
 

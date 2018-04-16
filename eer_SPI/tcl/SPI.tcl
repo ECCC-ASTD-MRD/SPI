@@ -1349,7 +1349,7 @@ proc SPI::DrawTrajLegend { Frame } {
 proc SPI::Clear { } {
    variable Param
 
-   . config -cursor left_ptr
+   . config -cursor watch
    update idletasks
 
    SPI::IcoClear
