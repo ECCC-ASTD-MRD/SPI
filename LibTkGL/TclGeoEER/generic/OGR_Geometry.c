@@ -512,15 +512,15 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    TGeoRef      *ref,*ref0;
    Tcl_Obj       *lst,*obj;
    int           j,t,idx,n,nseg;
-   double        dist;
+   double        dist,x0,y0,x1,y1;
    Vect3d        pt,ptp,vr;
 
    static CONST char *sopt[] = { "-sub","-transform","-distance","-area","-anglemin","-pointdist","-segmentdist","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference",
+                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference","-intersectionpts",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-clean","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
-                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
+                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECTIONPTS,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,CLEAN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
@@ -802,6 +802,21 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          }
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_XOR,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_SymmetricDifference(g0,g1)));
+         break;
+
+      case INTERSECTIONPTS:
+         if (Objc!=5) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"pt0x pt0y pt1x pt1y");
+            return(TCL_ERROR);
+         }
+         if (Tcl_GetDoubleFromObj(Interp,Objv[1],&x0)!=TCL_OK
+               || Tcl_GetDoubleFromObj(Interp,Objv[2],&y0)!=TCL_OK
+               || Tcl_GetDoubleFromObj(Interp,Objv[3],&x1)!=TCL_OK
+               || Tcl_GetDoubleFromObj(Interp,Objv[4],&y1)!=TCL_OK ) {
+            Tcl_AppendResult(Interp,"Invalid segment coordinates\n",(char*)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_IntersectionPts(g0,x0,y0,x1,y1,NULL)));
          break;
 
       case INTERSECT:
