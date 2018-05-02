@@ -816,7 +816,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
             Tcl_AppendResult(Interp,"Invalid segment coordinates\n",(char*)NULL);
             return(TCL_ERROR);
          }
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_IntersectionPts(g0,x0,y0,x1,y1,NULL)));
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_IntersectionPts(g0,x0,y0,x1,y1)));
          break;
 
       case INTERSECT:
