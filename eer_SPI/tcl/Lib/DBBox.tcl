@@ -129,6 +129,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
 
    set prevgrab [grab current]
    grab .dbbox
+   focus .dbbox.head.[lindex $Param(${DB}Lst) 0].search
    set Data(Result) ""
    tkwait variable DBBox::Data(Result)
 
