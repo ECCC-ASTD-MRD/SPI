@@ -618,12 +618,19 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    }
    qsort( ptrtable, m, szptr, compare_lutE );
 
-   last_va = NAN;
-   ptr = NULL;
-
 #pragma omp parallel shared(Res,ptrtable,table,MA,szMA,MB,szptr,m) \
    private(i,last_va,va,lute,ptr,pptr,tid)
    {
+#if 0
+   tid = omp_get_thread_num();
+   if (tid == 0)
+      {
+      int nthreads = omp_get_num_threads();
+      fprintf( stdout, "lut: Number of threads = %d\n", nthreads);
+      }
+#endif
+   ptr = NULL;
+   last_va = NAN;
 #pragma omp for schedule(static)
    for(i=0;i<szMA;i++) {
       Def_Get(MA,0,i,va);
@@ -649,9 +656,9 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
       }
 #endif
    }
+   }
    free( table );
    free( ptrtable );
-   }
    return(0.0);
 }
 
