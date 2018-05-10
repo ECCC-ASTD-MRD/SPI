@@ -31,8 +31,11 @@
  *==============================================================================
  */
 
-#include <math.h>
+#ifdef HAVE_OPENMP
 #include <omp.h>
+#endif //HAVE_OPENMP
+
+#include <math.h>
 #include "App.h"
 #include "Data_Funcs.h"
 #include "Data_Calc.h"

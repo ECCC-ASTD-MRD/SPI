@@ -48,10 +48,10 @@ namespace eval Styles { } {
    set Msg(Del)   { "Voulez-vous vraiment supprimer ce style ?"
                     "Do you really want to delete this style ?" }
 
-   set Msg(Exist)    { "Ce style déja, voulez-vous l'écraser ?" "This style already exists do you wish to overwrite it ?" }
-   set Msg(Save)     { "Sauvegarder le style courant"           "Save the current style" }
-   set Msg(Name)     { "Nom du style:"                           "Style name: " }
-   set Msg(NotValid) { "Ce style n'est pas valide"              "This is not a valid style" }
+   set Msg(Exist)    { "Ce style existe déjà, voulez-vous l'écraser ?"  "This style already exists do you wish to overwrite it ?" }
+   set Msg(Save)     { "Sauvegarder le style courant"                   "Save the current style" }
+   set Msg(Name)     { "Nom du style:"                                  "Style name: " }
+   set Msg(NotValid) { "Ce style n'est pas valide"                      "This is not a valid style" }
    
    set Bubble(Style) { "Styles définissant les paramêtres de rendue des données" "Styles defining the rendering parameters of the data" }
 }

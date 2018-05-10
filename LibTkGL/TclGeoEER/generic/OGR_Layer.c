@@ -3264,7 +3264,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                }
                glLineWidth(ABS(spec->Width));
                glPointSize(ABS(spec->Width));
-               if (idx>=0 && !spec->Fill) {
+               if (idx>=0) {
                   glColor4ub(spec->Map->Color[idx][0],spec->Map->Color[idx][1],spec->Map->Color[idx][2],spec->Map->Color[idx][3]*alpha*0.01);
                } else {
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*655.35);

@@ -91,7 +91,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    set b .dbbox.body
    frame $b
       listbox $b.box -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
-         -yscrollcommand "$b.scroll set" -height 25 -width 100 -background $GDefs(ColorLight)
+         -yscrollcommand "$b.scroll set" -height 25 -width 170 -background $GDefs(ColorLight)
       pack $b.box -side left -expand true -fill both
 
       scrollbar $b.scroll -command "$b.box yview" -bd 1 -width 10  -highlightthickness 0
@@ -129,6 +129,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
 
    set prevgrab [grab current]
    grab .dbbox
+   focus .dbbox.head.[lindex $Param(${DB}Lst) 0].search
    set Data(Result) ""
    tkwait variable DBBox::Data(Result)
 

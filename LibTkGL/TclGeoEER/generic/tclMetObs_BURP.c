@@ -282,7 +282,6 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    c_mrfcls(Obs->FId);
    c_fclos(Obs->FId);
    cs_fstunlockid(Obs->FId);
-
    Tcl_MutexUnlock(&MUTEX_BURPFILE);
    return(code);
 }
