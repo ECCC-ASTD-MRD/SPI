@@ -3007,7 +3007,7 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
  *----------------------------------------------------------------------------
 */
 int FSTD_FieldDataCopy
-   (Tcl_Interp *Interp, TData *Field2, TData *Field0) 
+   (Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) 
    {
 
    int    i,j, pos;
@@ -3088,6 +3088,13 @@ int FSTD_FieldDataCopy
                j1 = (int)(pj1 + 0.5 + dy );
                if ((i1 < 0)||(i1 >= tNI)) continue;
                if ((j1 < 0)||(j1 >= tNJ)) continue;
+               if (delta > 0)
+                  {
+                  if ((i1 >= delta)&&(i-delta)<0) continue;
+                  if ((i1 < (tNI-delta))&&(i>=(sNI-delta))) continue;
+                  if ((j1 >= delta)&&(j-delta)<0) continue;
+                  if ((j1 < (tNJ-delta))&&(j>=(sNJ-delta))) continue;
+                  }
                offset2 = tNI * j1 + i1;
                Def_Set(Field2->Def,0, offset2, val0);
                cnt += 1;
