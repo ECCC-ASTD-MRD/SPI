@@ -938,8 +938,8 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
    d=gref->Type&GRID_WRAP?0:1;
 
 #pragma omp parallel for \
-      private( j,i,idx,d,b,mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv ) \
-      shared( gref,Def,Res ) \
+      private( j,i,idx,b,mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv ) \
+      shared( gref,Def,Res,d ) \
       schedule(static)
    for(j=1;j<Def->NJ-1;j++) {
       for(i=d;i<Def->NI-d;i++) {
