@@ -2818,16 +2818,20 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             break;
 
          case DATACOPY :
-            if (Objc!=2) {
+            if (Objc<2) {
                Tcl_WrongNumArgs(Interp,1,Objv,"fldfrom");
                return TCL_ERROR;
             } else {
+               int  delta=0;
                TData *field0=Data_Get(Tcl_GetString(Objv[++i]));
                if (!field0) {
                   Tcl_AppendResult(Interp,"invalid field: ",Tcl_GetString(Objv[i]),(char*)NULL);
                   return(TCL_ERROR);
                }
-               return FSTD_FieldDataCopy( Interp, Field, field0 );
+               if (Objc==3) {
+                  Tcl_GetIntFromObj(Interp,Objv[++i],&delta);
+               }
+               return FSTD_FieldDataCopy( Interp, Field, field0, delta );
             }
          break;
 #ifdef HAVE_RMN
