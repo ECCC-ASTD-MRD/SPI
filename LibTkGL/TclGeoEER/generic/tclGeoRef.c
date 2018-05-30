@@ -119,6 +119,7 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
             gref0->Grid[0]='W';
             gref0->Grid[1]=gref0->Grid[2]='\0';
          }
+                 
          if (!GeoRef_Put(Interp,Tcl_GetString(Objv[2]),gref0)) {
             Tcl_AppendResult(Interp,"\n   GeoRef_Cmd: Unable to create georef",(char*)NULL);
             return(TCL_ERROR);
@@ -393,12 +394,12 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
    int          i,j,idx,nidx;
-   double       tra[6],inv[6],*tm,*im;
+   double       tra[6],inv[6],*tm,*im,dx,dy,lat0,lon0,lat1,lon1;
    TGeoRef     *gref;
    Tcl_Obj     *obj;
 
-   static CONST char *sopt[] = { "-projection","-transform","-invtransform","-extent","-location","-type","-border","-grid",NULL };
-   enum        opt { PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER,GRID };
+   static CONST char *sopt[] = { "-rpn","-projection","-transform","-invtransform","-extent","-location","-type","-border","-grid",NULL };
+   enum        opt { RPN,PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER,GRID };
 
    gref=GeoRef_Get(Name);
    if (!gref) {
@@ -414,7 +415,28 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
 
       switch ((enum opt)idx) {
 
-        case GRID:
+         case RPN:
+            if(Objc!=9) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"ni nj dx dy lat0 lon0 lat1 lon1");
+               return(TCL_ERROR);
+            }
+            Tcl_GetIntFromObj(Interp,Objv[1],&i);
+            Tcl_GetIntFromObj(Interp,Objv[2],&j);
+            Tcl_GetDoubleFromObj(Interp,Objv[3],&dx);
+            Tcl_GetDoubleFromObj(Interp,Objv[4],&dy);
+            Tcl_GetDoubleFromObj(Interp,Objv[5],&lat0);
+            Tcl_GetDoubleFromObj(Interp,Objv[6],&lon0);
+            Tcl_GetDoubleFromObj(Interp,Objv[7],&lat1);
+            Tcl_GetDoubleFromObj(Interp,Objv[8],&lon1);
+
+            if (GeoRef_RPNGridZE(gref,i,j,dx,dy,0.0,180.0,4,lat0,lon0,lat1,lon1)) {
+               return(TCL_OK);
+            } else {
+               return(TCL_ERROR);
+            }
+            break;
+
+         case GRID:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(gref->NId));
             } else {

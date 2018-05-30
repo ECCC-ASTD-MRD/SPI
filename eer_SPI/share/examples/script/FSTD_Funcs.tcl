@@ -31,6 +31,15 @@ fstdfield ip1mode NEW
 file delete DataOut/FSTD_Funcs.fstd
 fstdfile open OUT write DataOut/FSTD_Funcs.fstd
 
+georef create ZTEST
+georef define ZTEST -rpn 80 60 0.5 0.5 40.0 -170.0 60.0 -150.0
+
+set ll [georef project ZTEST 10 10]
+puts "Testing rpn georef creation (xy=10,10)"
+puts "   project   : $ll"
+set xy [georef unproject ZTEST [lindex $ll 0] [lindex $ll 1]]
+puts "   unproject : $xy"
+
 set secs [clock seconds]
 puts "Testing stamp functions for [clock format $secs]"
 puts "   seconds : $secs"
