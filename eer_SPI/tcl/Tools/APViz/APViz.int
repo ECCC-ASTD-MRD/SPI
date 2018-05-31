@@ -1,0 +1,201 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.ctes
+# Creation : Mai 2018
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Description des interfaces
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::Window>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Initialise le package de l'outil et son interface
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::Window { } { 
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Bubble
+   variable Param
+
+   set Data(Active) 1
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
+   set Param(Window) .visualizer
+
+   if { ![winfo exists .APViz] } {
+
+      if { $Param(Dock) } {
+         frame .visualizer
+         SPI::Dock .visualizer
+      } else {
+         toplevel         .visualizer
+         wm title         .visualizer "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)]] $Param(Version))"
+         eval wm geometry .visualizer $Param(Geom)
+         wm resizable     .visualizer 1 1
+         wm protocol      .visualizer WM_DELETE_WINDOW { APViz::Close }
+
+         if { $SPI::Param(Window) } { wm transient .visualizer . }
+      }
+
+      TabFrame::Create .visualizer.tab 1 ""
+      set Data(Tab) [TabFrame::Add .visualizer.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .visualizer.tab -side top -fill both -expand true
+      
+      #----- Outils
+      frame $Data(Tab).head
+         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue APViz -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         button $Data(Tab).head.param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params }
+         button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised
+         button $Data(Tab).head.refresh -image ZOOMBACK -bd 1 -relief flat -overrelief raised
+         pack $Data(Tab).head.mode $Data(Tab).head.param $Data(Tab).head.save $Data(Tab).head.refresh -side left -padx 2
+      pack $Data(Tab).head -side top -fill x
+      
+      # PanedWindow pour ajuster taille de chaque section
+      panedwindow $Data(Tab).vis -orient vertical -showhandle False -opaqueresize True -bd 0
+      pack $Data(Tab).vis -side top -fill x
+      
+      #----- Options
+      labelframe $Data(Tab).opt -text [lindex $Lbl(Options) $GDefs(Lang)]
+      
+       #--------- Geography
+      frame $Data(Tab).opt.geo
+	label $Data(Tab).opt.geo.lbl -text [lindex $Lbl(Geography) $GDefs(Lang)] -width 12 -anchor w
+	ComboBox::Create $Data(Tab).opt.geo.val APViz::Data(GeoRegion) noedit sorted nodouble -1 $APViz::Data(GeoRegions) 1 5 { }
+	pack $Data(Tab).opt.geo.lbl -side left
+	pack $Data(Tab).opt.geo.val -side left -fill x -expand True
+      pack $Data(Tab).opt.geo -side top -fill x -expand True
+      
+      #--------- Category
+      frame $Data(Tab).opt.cat
+	label $Data(Tab).opt.cat.lbl -text [lindex $Lbl(Category) $GDefs(Lang)] -width 12 -anchor w
+	ComboBox::Create $Data(Tab).opt.cat.val APViz::Data(MacroCategory) noedit sorted nodouble -1 $APViz::Data(MacroCategories) 1 7 { APViz::MacroCategory }
+	pack $Data(Tab).opt.cat.lbl -side left
+	pack $Data(Tab).opt.cat.val -side left -fill x -expand True
+      pack $Data(Tab).opt.cat -side top -fill x -expand True
+      
+      #--------- Type
+      frame $Data(Tab).opt.type
+	listbox $Data(Tab).opt.type.lst -relief sunken -bd 1 -yscrollcommand "$Data(Tab).opt.type.scrollbar set" -bg white -listvariable APViz::Data(MacroTypes) -exportselection False
+	set Data(TypeListBox) $Data(Tab).opt.type.lst
+	scrollbar $Data(Tab).opt.type.scrollbar -relief sunken -command "$Data(Tab).opt.type.lst yview" -bd 1 -width 10
+	pack $Data(Tab).opt.type.lst -side left -fill both -expand true
+	pack $Data(Tab).opt.type.scrollbar -side left -fill y
+      pack $Data(Tab).opt.type -side top -fill x -expand True
+      
+      pack $Data(Tab).opt -side bottom -fill x -padx 2 -pady 2
+      
+      #--------- Description
+      labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
+	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
+	pack $Data(Tab).desc.message -side top -fill x -expand true
+      pack $Data(Tab).desc -side bottom -fill both -expand True
+
+      #--------- Range
+      labelframe $Data(Tab).range -text [lindex $Lbl(Variables) $GDefs(Lang)]
+	set Data(RangeSection) $Data(Tab).range
+	label $Data(Tab).range.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
+	pack $Data(Tab).range.message -side top -fill x -expand true
+      pack $Data(Tab).range -side bottom -fill both -expand True
+      
+      # Ajouter les sections au panedwindow
+      $Data(Tab).vis add $Data(Tab).opt $Data(Tab).desc $Data(Tab).range
+      
+      #--------- Dock
+      frame .visualizer.dock -relief raised -bd 1
+         button .visualizer.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
+         button .visualizer.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
+         entry .visualizer.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 50 -bd 1
+         pack .visualizer.dock.sel .visualizer.dock.del -side left
+         pack .visualizer.dock.coo -side left -fill both -expand true
+      pack .visualizer.dock -side bottom -fill x
+
+      Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.param $Bubble(Param)
+      Bubble::Create $Data(Tab).head.save $Bubble(Save)
+      Bubble::Create $Data(Tab).head.refresh $Bubble(Refresh)
+      
+      bind $Data(Tab).opt.type.lst <ButtonRelease> "APViz::UpdateRange"
+   }
+   raise  .visualizer
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::UpdateRange>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Mise a jour de la section Range de l'interface pour le type Analysis
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::UpdateRange { } { 
+   global GDefs
+   variable Data
+
+   puts "===== Range update ====="
+   # APViz::InitializeVariables $Data(Tab).range	; #Deselect buttons
+   
+   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
+   switch $Data(MacroCategory) {
+      "SATELLITE" 	{ puts "Satellite" }
+      "ANALYSIS"  	{ APViz::CreateRangeInterface [split $Data(AnalysisTypes)] $selection Analysis }
+      "FORECASTS" 	{ puts "Forecasts" }
+      "VERIFICATIONS"	{ APViz::CreateRangeInterface [split $Data(VerificationTypes)] $selection Verifications }
+      "DIAGNOSTIC"  	{ puts "Diagnostic" }
+      "VAAC"  		{ puts "Vaac" }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRangeInterface>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Creer l'onterface des variables ranges
+#
+# Parametres	:
+#	<Lst>  	: Liste des differents AnalysisTypes
+#	<Index>	: Index de l'item choisir
+#	<Dir>	: Dossier dans lequel se trouve le fichier de config
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateRangeInterface { Lst Index Dir } {
+  global GDefs
+  variable Data
+  
+  set selected [lindex $Lst $Index]
+  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/Operational/$Dir/$selected.tcl"
+  APViz::Source $filepath $Data(Tab)
+}

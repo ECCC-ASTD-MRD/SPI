@@ -1,0 +1,49 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.txt
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Description des divers textes et messages
+#
+#===============================================================================
+
+namespace eval APViz {
+   variable Lbl
+   variable Msg
+   variable Bubble
+   
+   set Lbl(Description)		{ "Description" "Description" }
+   set Lbl(DescriptionMSG)	{ "Le produit généré sera décrit ici. \nInformations prises de la base de données." "The generated product will be described here." }
+   set Lbl(Category)		{ "Catégorie" "Category" }
+   set Lbl(Geography)		{ "Géographie" "Geography" }
+   set Lbl(Hour)		{ "Heure" "Hour" }
+   set Lbl(Level)		{ "Niveau" "Level"}	
+   set Lbl(Model)		{ "Modèle" "Model" }
+   set Lbl(Options)		{ "Options" "Options" }
+   set Lbl(Source)		{ "Source" "Source" }
+   set Lbl(Run)			{ "Run" "Run" }
+   set Lbl(Type)		{ "Type" "Type" }
+   set Lbl(Variable)		{ "Variable" "Variable" }
+   set Lbl(Variables)		{ "Variables" "Variables"}
+   set Lbl(Visibility)		{ "Visibilité" "Visibility" }
+   
+   #----- Messages
+
+   set Msg(Test)    { "Ceci est un message" "This is a message" }
+
+   #----- Bulles d'aides
+
+   set Bubble(Mode)    	{ "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Param)	{ "Modifier les paramètres" "Modify Parameters" }
+   set Bubble(Save)	{ "Enregistrer sous" "Save As" }
+   set Bubble(Refresh)	{ "Mise à jour" "Refresh" }
+}

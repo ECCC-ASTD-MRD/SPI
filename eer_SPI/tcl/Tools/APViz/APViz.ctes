@@ -1,0 +1,79 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.ctes
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Descriptions des variables internes du module
+#
+#===============================================================================
+
+namespace eval APViz {
+   variable Data
+   variable Param
+   #variable Value
+
+   set Param(Title)   { "APVIZ" "APVIZ" }
+   set Param(Version) 1.0
+   set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Icon)    EYE
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+
+   set Data(Active) 0        ;#Flag d'activation de l'outils
+   set Data(Canvas) ""       ;#Canvas Actif
+   set Data(Frame)  ""       ;#Frame actif
+   set Data(VP)     ""       ;#Viewport actif
+
+   set Data(Lat0)   0        ;#Coordonnees de la boite de selection
+   set Data(Lon0)   0
+   set Data(Lat1)   0
+   set Data(Lon1)   0
+   
+   set Data(ModelType)		Model1
+   set Data(ModelTypes)		{ Model1 Model2 Model3 }
+   set Data(Product)		""
+   
+   set Data(TypeDropdown)	""	; #ComboBox listant les types de macro (level 2)
+   set Data(TypeListBox)	""	; #Boite listant les choix de types de la macro
+   set Data(RangeSection)	""	; #Section des variables
+   
+   set Data(GeoRegion)		""
+   set Data(GeoRegions)		{ CANADA "WRN-CANADA" "CENTRAL-CANADA" "ERN-CANADA" "ARTIC" }	
+   
+   #----- LEVEL 1
+   set Data(MacroCategory)	""
+   set Data(MacroCategories)	{ SATELLITE ANALYSIS FORECASTS VERIFICATIONS DIAGNOSTIC VAAC }	; #Si changement de valeurs, changer dans APViz::MacroCategory aussi (dans le switch)
+   
+   #----- LEVEL 2
+   set Data(MacroType)		""
+   set Data(MacroTypes)		{ "" }
+   set Data(AnalysisType)	""
+   set Data(AnalysisTypes)	{Trial_Fields Increments Tephigrams Snow_Analysis Ice_Analysis Ocean_Temperature_Analysis Soil_Moisture}
+   set Data(ForecastsTypes)	{PROGS Progs_Comparison" Vigilance_Products GUI}
+   set Data(VerificationTypes)	{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
+   set Data(DiagnosticTypes)	{Dyonisos TVE TSH WIND Temperatures Latent_Heat Clouds}
+   set Data(VAACTypes)		{ASH}
+   
+   #----- LEVEL 3
+   set Data(SnowVariables)	{"Map of SD" "Map of SDNO" "Map of Snowpack Moisture"}
+   set Data(IceVariables)	{"Map of GL and LG" "Map of Soil Ice Content" "Map of Sea Ice Thickness"}
+   set Data(OceanTempVariables)	{"Map of TM"}
+   set Data(SoilVariables)	{"Map of Soil Moisture" "Map of Water on Vegetation"}
+   
+   set comment {
+   set Value(Models)	""
+   set Value(Vars)	""
+   set Value(Levels)	""
+   set Value(Sources)	""
+   set Value(Runs)	""
+   set Value(Hours)	""   
+   }
+}
