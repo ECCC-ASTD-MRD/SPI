@@ -1033,13 +1033,11 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
                // Check for index array
                index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
-fprintf( stderr,"### DEBUG: before Def_GridInterpOGR\n" );
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   ok=TCL_ERROR;
                   break;
                }
-fprintf( stderr,"### DEBUG: after Def_GridInterpOGR\n" );
 
                // Make index object persistent and of the right size
                Data_IndexResize(Interp,&obj,nk);

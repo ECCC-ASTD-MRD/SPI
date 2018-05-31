@@ -512,15 +512,15 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    TGeoRef      *ref,*ref0;
    Tcl_Obj       *lst,*obj;
    int           j,t,idx,n,nseg;
-   double        dist;
+   double        dist,line[4];
    Vect3d        pt,ptp,vr;
 
    static CONST char *sopt[] = { "-sub","-transform","-distance","-area","-anglemin","-pointdist","-segmentdist","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference",
+                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference","-segintersectionpts",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-clean","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
-                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
+                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,SEGINTERSECTIONPTS,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,CLEAN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
@@ -802,6 +802,40 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          }
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGR(GPC_XOR,g0,g1)));
 //         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGR_G_SymmetricDifference(g0,g1)));
+         break;
+
+      case SEGINTERSECTIONPTS:
+         if (Objc==5) {
+            // We have inline coordinates
+            for(j=0; j<4; ++j) {
+               if (Tcl_GetDoubleFromObj(Interp,Objv[j+1],&line[j])!=TCL_OK) {
+                  Tcl_AppendResult(Interp,"Invalid line coordinates, expected a real value\n",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+         } else if( Objc==2 ) {
+            // We have a list of coordinates
+            if (Tcl_ListObjLength(Interp,Objv[1],&n)==TCL_ERROR) {
+               Tcl_AppendResult(Interp,"Invalid list of line coordinates\n",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            if( n != 4 ) {
+               Tcl_AppendResult(Interp,"The coordinate list must contain 4 coordinates to define the line (x0 y0 x1 y1)\n",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            for(j=0; j<4; ++j) {
+               Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
+               if (Tcl_GetDoubleFromObj(Interp,obj,&line[j])!=TCL_OK) {
+                  Tcl_AppendResult(Interp,"Invalid line coordinates, expected a real value\n",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+         } else {
+            Tcl_WrongNumArgs(Interp,0,Objv,"list|x0 y0 x1 y1");
+            return(TCL_ERROR);
+         }
+
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_SegIntersectionPts(g0,line[0],line[1],line[2],line[3])));
          break;
 
       case INTERSECT:
