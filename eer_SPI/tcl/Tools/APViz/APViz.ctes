@@ -17,9 +17,10 @@
 #===============================================================================
 
 namespace eval APViz {
+   global env
    variable Data
    variable Param
-   #variable Value
+   variable DataSrc
 
    set Param(Title)   { "APVIZ" "APVIZ" }
    set Param(Version) 1.0
@@ -56,8 +57,10 @@ namespace eval APViz {
    set Data(MacroType)		""
    set Data(MacroTypes)		{ "" }
    set Data(AnalysisType)	""
+   
+   # TODO: Fasire les listes dynamiquement en allant chercher le contenu de chaque dossier 
    set Data(AnalysisTypes)	{Trial_Fields Increments Tephigrams Snow_Analysis Ice_Analysis Ocean_Temperature_Analysis Soil_Moisture}
-   set Data(ForecastsTypes)	{PROGS Progs_Comparison" Vigilance_Products GUI}
+   set Data(ForecastsTypes)	{PROGS Progs_Comparison Vigilance_Products GUI}
    set Data(VerificationTypes)	{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
    set Data(DiagnosticTypes)	{Dyonisos TVE TSH WIND Temperatures Latent_Heat Clouds}
    set Data(VAACTypes)		{ASH}
@@ -68,12 +71,13 @@ namespace eval APViz {
    set Data(OceanTempVariables)	{"Map of TM"}
    set Data(SoilVariables)	{"Map of Soil Moisture" "Map of Water on Vegetation"}
    
-   set comment {
-   set Value(Models)	""
-   set Value(Vars)	""
-   set Value(Levels)	""
-   set Value(Sources)	""
-   set Value(Runs)	""
-   set Value(Hours)	""   
-   }
+   #----- Data Sources
+   set mirrorgrid 		$env(CMCPROD)/hubs/suites
+   set mirrorsat 		$env(CMCPROD)/hubs/sat
+   set mirrorradar 		$env(CMCPROD)/hubs/radar/post
+   set DataSrc(RDPS,pres)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/pres
+   set DataSrc(RDPS,diag)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/diag
+   set DataSrc(RDPS,eta)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/eta
+   set DataSrc(RDPS,hyb)	$mirrorgrid/ops/rdps/r1/gridpt/prog/hyb
+
 }

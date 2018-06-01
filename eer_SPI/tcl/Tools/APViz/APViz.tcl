@@ -383,7 +383,6 @@ proc APViz::AddToListBox { lst } {
 
 proc APViz::Source { Path Widget } {
    variable Data
-   
    set product [file rootname [file tail $Path]]
 
    #----- Create product namespace
@@ -447,7 +446,7 @@ proc APViz::Source { Path Widget } {
 	set no 0
 	foreach layer $Layers {
 	  #----- Extract layer parts
-	  lassign [split $layer :] toggle model var level hour interval run dataSource
+	  lassign [split $layer :] toggle model var level hour interval run dataSrc
 	  
 	  #----- Toggle On/Off
 	  checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Toggle($no)
@@ -458,12 +457,12 @@ proc APViz::Source { Path Widget } {
 	  }
 	  
 	  # CreateRangeWidget { Style Path Index Options IsSpinBox }
-	  CreateRangeWidget $Product $model $Widget.range.variableGrid.layer${no}_model $no Models true		; #Range names have to be the same in all config files
-	  CreateRangeWidget $Product $var $Widget.range.variableGrid.layer${no}_var $no Vars false
-	  CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels true
-	  CreateRangeWidget $Product $hour $Widget.range.variableGrid.layer${no}_hour $no Hours true
-	  CreateRangeWidget $Product $run $Widget.range.variableGrid.layer${no}_run $no Runs true
-	  CreateRangeWidget $Product $dataSource $Widget.range.variableGrid.layer${no}_dataSource $no Sources true
+	  CreateRangeWidget $Product $model 	$Widget.range.variableGrid.layer${no}_model 	$no Models true		; #Range names have to be the same in all config files
+	  CreateRangeWidget $Product $var 	$Widget.range.variableGrid.layer${no}_var 	$no Vars false
+	  CreateRangeWidget $Product $level	$Widget.range.variableGrid.layer${no}_level 	$no Levels true
+	  CreateRangeWidget $Product $hour 	$Widget.range.variableGrid.layer${no}_hour 	$no Hours true
+	  CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true
+	  CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false
 	  
 	  button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised
 	  button $Widget.range.variableGrid.layer${no}_param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params }
@@ -476,7 +475,7 @@ proc APViz::Source { Path Widget } {
 	  grid $Widget.range.variableGrid.layer${no}_level	-column 3 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_run	-column 4 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_hour	-column 5 -row [expr $no + 1] -padx 0.1
-	  grid $Widget.range.variableGrid.layer${no}_dataSource	-column 6 -row [expr $no + 1] -padx 0.1
+	  grid $Widget.range.variableGrid.layer${no}_dataSrc	-column 6 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_param	-column 7 -row [expr $no + 1] -padx 0.1	
 	  grid $Widget.range.variableGrid.layer${no}_delete	-column 8 -row [expr $no + 1] -padx 0.1	
 
@@ -493,11 +492,18 @@ proc APViz::Source { Path Widget } {
 	  if $IsSpinBox {
 	    spinbox $Path -values $Range($Options) -width 5 -textvariable APViz::${Product}::Value($Options,$Index) -command "APViz::DisplayVariable $Product $Options $Index"	; #-var APViz::${Product}::Range(Variables) 
 	  } else {
-	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($Options) 5 8 "APViz::DisplayVariable $Product $Options $Index" 
+	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($Options) 5 8 "APViz::DisplayVariable $Product $Options $Index"
 	  }
+	  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($Options)] 0]	; # On prend le premier element de la liste (fonctionne si aucun espace avant le premier elem de la liste)
+	  eval set val \$APViz::${Product}::Value($Options,$Index)
 	} else {
-	    label $Path -width 5 -text $Style
+	    label $Path -width 5 -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
+	    set APViz::${Product}::Value($Options,$Index) $Style
 	}
+      }
+      
+      proc GetValue { } {
+	
       }
    }
    
@@ -510,9 +516,11 @@ proc APViz::Source { Path Widget } {
 #
 # But      : Ajouter (afficher) une liste d'elements a la liste
 #
-# Parametres 	:
-#	<lst>	: Liste d'elements a ajouter dans la listBox 
-#
+# Parametres 		:
+#	<Product>	: Le nom du produit selecitonne (aussi le namespace) 
+#	<Option>	: Nom de la colonne de la couche choisie (Models, Vars, Runs, Hours, Sources)
+#	<Index>		: Index de la couche 
+#	
 # Retour:
 #
 # Remarques :
@@ -521,9 +529,43 @@ proc APViz::Source { Path Widget } {
 
 proc APViz::DisplayVariable { Product Option Index } {
   variable Data
-  variable Value
+  variable DataSrc
+  variable ${Product}::Value
   
-  eval set tog \$APViz::${Product}::Toggle(0)
-  eval set val \$APViz::${Product}::Value($Option,$Index)
-  puts "Display: $val , $tog"
+  #----- Get layer values
+  set model	$Value(Models,$Index)
+  set var	$Value(Vars,$Index)
+  set lev	$Value(Levels,$Index)
+  set run	$Value(Runs,$Index)
+  set hour	$Value(Hours,$Index)
+  set src	$Value(Sources,$Index)
+  set date	[clock format [clock seconds] -format %Y%m%d]	; # Today's date in format AAAAMMDD
+  
+  #----- TODO: Verifier que toutes les informations sont non nulles - idee: mettre des valeurs par defaut
+  
+  puts "Selection on $date: $Option -  $Value($Option,$Index)"
+  
+  if {[ APViz::AreValuesFilled $model $var $lev $run $hour $src $date ]} {	; # Verifier si tous les champs sont remplis
+    set filepath $DataSrc($model,$src)/${date}${run}_$hour			; # Format: AAAAMMDDRR_HHH
+		    
+    if {[fstdfile is $filepath]} {						; # Verifier la validite du fichier standard
+      puts "STANDARD FILE!!!"
+      fstdfile open FILE read $filepath
+      fstdfield read FLD FILE -1 "" $lev -1 -1 "" $var
+      puts "fstdfield: [fstdfield define FLD -NOMVAR]"
+      Viewport::Assign $Data(Frame) $Viewport::Data(VP) FLD
+    }
+  } else {
+    puts "Missing values"
+  }
+}
+
+proc APViz::AreValuesFilled { Model Var Level Run Hour Source Date } {
+  set valueList [list $Model $Var $Level $Run $Hour $Source $Date]
+  foreach value $valueList {
+    if {$value eq ""} {
+      return false
+    }
+  }
+  return true
 }
