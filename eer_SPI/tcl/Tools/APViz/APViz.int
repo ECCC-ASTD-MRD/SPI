@@ -127,7 +127,7 @@ proc APViz::Window { } {
       frame .visualizer.dock -relief raised -bd 1
          button .visualizer.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .visualizer.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .visualizer.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 50 -bd 1
+         entry .visualizer.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 52 -bd 1
          pack .visualizer.dock.sel .visualizer.dock.del -side left
          pack .visualizer.dock.coo -side left -fill both -expand true
       pack .visualizer.dock -side bottom -fill x
@@ -142,60 +142,3 @@ proc APViz::Window { } {
    raise  .visualizer
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <APViz::UpdateRange>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Mise a jour de la section Range de l'interface pour le type Analysis
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::UpdateRange { } { 
-   global GDefs
-   variable Data
-
-   puts "===== Range update ====="
-   # APViz::InitializeVariables $Data(Tab).range	; #Deselect buttons
-   
-   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
-   switch $Data(MacroCategory) {
-      "SATELLITE" 	{ puts "Satellite" }
-      "ANALYSIS"  	{ APViz::CreateRangeInterface [split $Data(AnalysisTypes)] $selection Analysis }
-      "FORECASTS" 	{ puts "Forecasts" }
-      "VERIFICATIONS"	{ APViz::CreateRangeInterface [split $Data(VerificationTypes)] $selection Verifications }
-      "DIAGNOSTIC"  	{ puts "Diagnostic" }
-      "VAAC"  		{ puts "Vaac" }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::CreateRangeInterface>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : 	Creer l'onterface des variables ranges
-#
-# Parametres	:
-#	<Lst>  	: Liste des differents AnalysisTypes
-#	<Index>	: Index de l'item choisir
-#	<Dir>	: Dossier dans lequel se trouve le fichier de config
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::CreateRangeInterface { Lst Index Dir } {
-  global GDefs
-  variable Data
-  
-  set selected [lindex $Lst $Index]
-  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/Operational/$Dir/$selected.tcl"
-  APViz::Source $filepath $Data(Tab)
-}

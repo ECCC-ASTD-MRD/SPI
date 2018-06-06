@@ -349,32 +349,6 @@ proc APViz::AddToListBox { lst } {
 # Parametres 	:
 #	<Path>	: Path vers le fichier de config
 #	<Widget>: Nom du widget parent dans lequel afficher l'interface
-##-------------------------------------------------------------------------------
-# Nom      : <APViz::AddToListBox>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Ajouter (afficher) une liste d'elements a la liste
-#
-# Parametres 	:
-#	<lst>	: Liste d'elements a ajouter dans la listBox 
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AddToListBox { lst } {
-  variable Data
-  
-  # Vider et repopuler la liste
-  $Data(TypeListBox) delete 0 end
-  set index 0
-  foreach item $lst {
-    $Data(TypeListBox) insert $index $item
-    incr index
-  }
-}
 # Retour:
 #
 # Remarques :
@@ -391,7 +365,6 @@ proc APViz::Source { Path Widget } {
       variable Range
       variable Label
       variable Value
-      variable Toggle
       
       set Label(Hour)		{ "Heure" "Hour" }
       set Label(Level)		{ "Niveau" "Level"}	
@@ -407,10 +380,14 @@ proc APViz::Source { Path Widget } {
       set Value(Sources)	""
       set Value(Runs)		""
       set Value(Hours)		""  
+      set Value(Toggle)		""
+      set Value(NbLayers)	0
       
       proc Load { Path Product Widget } {
 	global GDefs
 	variable Label
+	variable Value
+	
 	#----- Default Geography parameters
 	set Map(Cameras)    {}
 	set Map(Projection) Orthographic
@@ -443,29 +420,67 @@ proc APViz::Source { Path Widget } {
 	grid $Widget.range.variableGrid.hour 	-column 5 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.src 	-column 6 -row 0 -padx 0.2
 	
-	set no 0
+	CreateLayers $Product $Layers $Widget	; # Creation des couches
+	pack $Widget.range -side bottom -fill both -expand True
+      }
+      
+      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox } {
+	variable Range
+	variable Value
+	
+	if { [string index $Style 0] eq "<" } {
+	  set rangeType [string trim $Style {< >}]
+	  if $IsSpinBox {
+	    spinbox $Path -values $Range($rangeType) -width 5 -textvariable APViz::${Product}::Value($Options,$Index) \
+	      -command "APViz::DisplayVariable $Product $Index"	; #-var APViz::${Product}::Range(Variables) 
+	  } else {
+	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) 5 8 \
+	      "APViz::DisplayVariable $Product $Index"
+	  }
+	  
+	  set ranges [split $Range($rangeType)]
+	  if { [lindex $ranges 0] ne "" } {
+	    set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 0]
+	  } else {
+	    set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]	; # In case first elem in Ranges (after split)is a space
+	  }
+	  
+	  eval set val \$APViz::${Product}::Value($Options,$Index)
+	} else {
+	    label $Path -width 5 -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
+	    set APViz::${Product}::Value($Options,$Index) $Style
+	}
+      }
+      
+      proc CreateLayers { Product Layers Widget {IsAddedLayer False} } {
+	variable Value
+	
+	set no $Value(NbLayers)
 	foreach layer $Layers {
 	  #----- Extract layer parts
 	  lassign [split $layer :] toggle model var level hour interval run dataSrc
 	  
 	  #----- Toggle On/Off
-	  checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Toggle($no)
-	  if {$toggle} {
-	    $Widget.range.variableGrid.layer${no}_toggle select
-	  } else {
+	  checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
+	    -command "APViz::Check $Product $no"
+	  if {!$toggle} {
 	    $Widget.range.variableGrid.layer${no}_toggle deselect
+	  } elseif {!$IsAddedLayer} {
+	    $Widget.range.variableGrid.layer${no}_toggle select
 	  }
 	  
-	  # CreateRangeWidget { Style Path Index Options IsSpinBox }
-	  CreateRangeWidget $Product $model 	$Widget.range.variableGrid.layer${no}_model 	$no Models true		; #Range names have to be the same in all config files
+	  # CreateRangeWidget { Product Style Path Index Options IsSpinBox }
+	  CreateRangeWidget $Product $model 	$Widget.range.variableGrid.layer${no}_model 	$no Models true
 	  CreateRangeWidget $Product $var 	$Widget.range.variableGrid.layer${no}_var 	$no Vars false
 	  CreateRangeWidget $Product $level	$Widget.range.variableGrid.layer${no}_level 	$no Levels true
 	  CreateRangeWidget $Product $hour 	$Widget.range.variableGrid.layer${no}_hour 	$no Hours true
 	  CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true
 	  CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false
 	  
-	  button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised
+	  button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no"
 	  button $Widget.range.variableGrid.layer${no}_param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params }
+	  button $Widget.range.variableGrid.layer${no}_add -image PLUS -bd 1 -relief flat -overrelief raised \
+	    -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
 	  
 	  
 	  #----- Place widgets in grid	
@@ -477,37 +492,36 @@ proc APViz::Source { Path Widget } {
 	  grid $Widget.range.variableGrid.layer${no}_hour	-column 5 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_dataSrc	-column 6 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_param	-column 7 -row [expr $no + 1] -padx 0.1	
-	  grid $Widget.range.variableGrid.layer${no}_delete	-column 8 -row [expr $no + 1] -padx 0.1	
+	  grid $Widget.range.variableGrid.layer${no}_add	-column 8 -row [expr $no + 1] -padx 0.1	
+	  grid $Widget.range.variableGrid.layer${no}_delete	-column 9 -row [expr $no + 1] -padx 0.1	
 
 	  incr no
 	}
-	pack $Widget.range -side bottom -fill both -expand True
+	set Value(NbLayers) $no
       }
       
-      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox } {
-	variable Range
-	variable Value
+      proc DeleteLayer { Widget Index } {
+	APViz::RemoveVariableFromVP $Index	; # Enlever variable du Viewport
 	
-	if { [string index $Style 0] eq "<" } {
-	  if $IsSpinBox {
-	    spinbox $Path -values $Range($Options) -width 5 -textvariable APViz::${Product}::Value($Options,$Index) -command "APViz::DisplayVariable $Product $Options $Index"	; #-var APViz::${Product}::Range(Variables) 
-	  } else {
-	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($Options) 5 8 "APViz::DisplayVariable $Product $Options $Index"
-	  }
-	  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($Options)] 0]	; # On prend le premier element de la liste (fonctionne si aucun espace avant le premier elem de la liste)
-	  eval set val \$APViz::${Product}::Value($Options,$Index)
-	} else {
-	    label $Path -width 5 -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
-	    set APViz::${Product}::Value($Options,$Index) $Style
+	if [winfo exists $Widget.range.variableGrid] {
+	  puts "Destroying layer $Index"
+	  destroy $Widget.range.variableGrid.layer${Index}_toggle	
+	  destroy $Widget.range.variableGrid.layer${Index}_model	
+	  destroy $Widget.range.variableGrid.layer${Index}_var	
+	  destroy $Widget.range.variableGrid.layer${Index}_level	
+	  destroy $Widget.range.variableGrid.layer${Index}_run	
+	  destroy $Widget.range.variableGrid.layer${Index}_hour	
+	  destroy $Widget.range.variableGrid.layer${Index}_dataSrc	
+	  destroy $Widget.range.variableGrid.layer${Index}_param	
+	  destroy $Widget.range.variableGrid.layer${Index}_add	
+	  destroy $Widget.range.variableGrid.layer${Index}_delete	
 	}
-      }
-      
-      proc GetValue { } {
-	
       }
    }
    
    ${product}::Load $Path $product $Widget
+   
+   APViz::InitializeVars $product
 }
 
 #-------------------------------------------------------------------------------
@@ -518,7 +532,6 @@ proc APViz::Source { Path Widget } {
 #
 # Parametres 		:
 #	<Product>	: Le nom du produit selecitonne (aussi le namespace) 
-#	<Option>	: Nom de la colonne de la couche choisie (Models, Vars, Runs, Hours, Sources)
 #	<Index>		: Index de la couche 
 #	
 # Retour:
@@ -527,40 +540,66 @@ proc APViz::Source { Path Widget } {
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::DisplayVariable { Product Option Index } {
+proc APViz::DisplayVariable { Product Index } {
+  variable FileNb
   variable Data
   variable DataSrc
   variable ${Product}::Value
-  
-  #----- Get layer values
-  set model	$Value(Models,$Index)
-  set var	$Value(Vars,$Index)
-  set lev	$Value(Levels,$Index)
-  set run	$Value(Runs,$Index)
-  set hour	$Value(Hours,$Index)
-  set src	$Value(Sources,$Index)
-  set date	[clock format [clock seconds] -format %Y%m%d]	; # Today's date in format AAAAMMDD
-  
-  #----- TODO: Verifier que toutes les informations sont non nulles - idee: mettre des valeurs par defaut
-  
-  puts "Selection on $date: $Option -  $Value($Option,$Index)"
-  
-  if {[ APViz::AreValuesFilled $model $var $lev $run $hour $src $date ]} {	; # Verifier si tous les champs sont remplis
-    set filepath $DataSrc($model,$src)/${date}${run}_$hour			; # Format: AAAAMMDDRR_HHH
-		    
-    if {[fstdfile is $filepath]} {						; # Verifier la validite du fichier standard
-      puts "STANDARD FILE!!!"
-      fstdfile open FILE read $filepath
-      fstdfield read FLD FILE -1 "" $lev -1 -1 "" $var
-      puts "fstdfield: [fstdfield define FLD -NOMVAR]"
-      Viewport::Assign $Data(Frame) $Viewport::Data(VP) FLD
+
+  if {$Value(Toggle,$Index)} {								; # Appliquer les changements ssi le toggle est active
+    #----- Get layer values
+    set model	$Value(Models,$Index)
+    set var	$Value(Vars,$Index)
+    set lev	$Value(Levels,$Index)
+    set run	$Value(Runs,$Index)
+    set hour	$Value(Hours,$Index)
+    set src	$Value(Sources,$Index)
+    set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
+    
+    if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
+      set filepath $DataSrc($model,$src)/${date}${run}_$hour				; # Format: AAAAMMDDRR_HHH
+		      
+      if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
+	fstdfile open FILE$FileNb read $filepath
+	lappend Data(OpenedFiles) FILE$FileNb
+	puts "STANDARD FILE - Opening FILE$FileNb	$filepath"
+	
+	set levelType [ APViz::GetLevelType $src ]
+	fstdfield read FLD$Index FILE$FileNb -1 "" [subst {$lev $levelType}] -1 -1 "" $var	; # fstdfield read fieldid fileid date eticket ip1 ip2 ip3 typevar nomvar
+	lappend Data(Fields) FLD$Index
+	
+	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $Data(Fields) 1
+	puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
+	incr FileNb
+      } else {
+	puts "File $filepath not available."
+      }
+    } else {
+      puts "Missing values"
     }
-  } else {
-    puts "Missing values"
   }
 }
 
-proc APViz::AreValuesFilled { Model Var Level Run Hour Source Date } {
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::AreFieldsFilled>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Verifier si tous les champs ont ete remplis
+#
+# Parametres 	  :
+#	<Model>	  : Nom du modele meteorologique
+#	<Var>	  : Variable meteorologique
+#	<Level>	  : Niveau
+#	<Run>	  : Le numero de la run
+#	<Source>  : La provenance des donnees
+#	<Date>	  : La date de validite
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::AreFieldsFilled { Model Var Level Run Hour Source Date } {
   set valueList [list $Model $Var $Level $Run $Hour $Source $Date]
   foreach value $valueList {
     if {$value eq ""} {
@@ -569,3 +608,181 @@ proc APViz::AreValuesFilled { Model Var Level Run Hour Source Date } {
   }
   return true
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::Check>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Permet d'ajouter ou d'enlever une variable du Viewport  
+#
+# Parametres 	 :
+#	<Source> : Provenance des donnees
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::Check { Product Index } {
+  variable ${Product}::Value
+  variable Data
+  
+  puts "Checkbutton value: $Value(Toggle,$Index)"
+  
+  if {$Value(Toggle,$Index)} {
+    # Ajouter au Viewport
+    APViz::DisplayVariable $Product $Index
+  } else {
+    APViz::RemoveVariableFromVP $Index
+    puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
+  }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::CloseFiles>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Fermer les FILES contenant les fichiers standards et reinitialiser 
+ #		le FileNb (utilise pour creer des nouveaux id)
+#
+# Parametres :
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::CloseFiles { } {
+  global FileNb
+  variable Data
+  
+  puts "$Data(OpenedFiles)"
+  foreach FILE $Data(OpenedFiles) {
+    if { $FILE ne "" } {
+      fstdfile close $FILE
+    }
+  }
+  
+  set $Data(OpenedFiles) {}
+  set FileNb 0
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRangeInterface>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Creer l'onterface des variables ranges
+#
+# Parametres	:
+#	<Lst>  	: Liste des differents AnalysisTypes
+#	<Index>	: Index de l'item choisir
+#	<Dir>	: Dossier dans lequel se trouve le fichier de config
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateRangeInterface { Lst Index Dir } {
+  global GDefs
+  variable Data
+  
+  set selected [lindex $Lst $Index]
+  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/Operational/$Dir/$selected.tcl"
+  APViz::Source $filepath $Data(Tab)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetLevelType>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Retourner le type de niveau correspondant 
+#
+# Parametres 	 :
+#	<Source> : Provenance des donnees
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::GetLevelType { Source } {
+  switch $Source {
+    "pres"	{ return PRESSURE }
+    "eta"	{ return ETA }
+    "hyb"	{ return HYBRID }
+  }
+  
+  puts "Cannot determine level with source $Source."
+  return ""	; # Format non reconnu
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::InitializeVars>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Verifier si tous les champs ont ete remplis
+#
+# Parametres 	  :
+#	<Product> : Le nom du produit selecitonne (aussi le namespace) 
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::InitializeVars { Product } {
+  variable ${Product}::Value
+  variable Data
+  
+  puts "INITIALIZING. ====> Layers detected: $Value(NbLayers)"
+  for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
+    if {$Value(Toggle,$idx)} {
+      puts "Displaying layer $idx"
+      APViz::DisplayVariable $Product $idx
+    }
+  } 
+
+}
+
+proc APViz::RemoveVariableFromVP { Index } {
+  variable Data
+  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) FLD$Index	; # Enlever variable du viewport
+  if {[set idx [lsearch -exact $Data(Fields) FLD$Index]] != -1} {
+    set Data(Fields) [lreplace $Data(Fields) $idx $idx]
+  }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::UpdateRange>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Mise a jour de la section Range de l'interface pour le type Analysis
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::UpdateRange { } { 
+   global GDefs
+   variable Data
+
+   puts "===== Range update ====="
+   # APViz::InitializeVariables $Data(Tab).range	; #Deselect buttons
+   
+   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
+   switch $Data(MacroCategory) {
+      "SATELLITE" 	{ puts "Satellite" }
+      "ANALYSIS"  	{ APViz::CreateRangeInterface [split $Data(AnalysisTypes)] $selection Analysis }
+      "FORECASTS" 	{ puts "Forecasts" }
+      "VERIFICATIONS"	{ APViz::CreateRangeInterface [split $Data(VerificationTypes)] $selection Verifications }
+      "DIAGNOSTIC"  	{ puts "Diagnostic" }
+      "VAAC"  		{ puts "Vaac" }
+   }
+}
+

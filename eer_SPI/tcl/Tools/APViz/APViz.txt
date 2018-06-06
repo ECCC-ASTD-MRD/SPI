@@ -22,19 +22,12 @@ namespace eval APViz {
    variable Bubble
    
    set Lbl(Description)		{ "Description" "Description" }
-   set Lbl(DescriptionMSG)	{ "Le produit généré sera décrit ici. \nInformations prises de la base de données." "The generated product will be described here." }
+   set Lbl(DescriptionMSG)	{ "Le produit généré sera décrit ici." "The generated product will be described here." }
    set Lbl(Category)		{ "Catégorie" "Category" }
    set Lbl(Geography)		{ "Géographie" "Geography" }
-   set Lbl(Hour)		{ "Heure" "Hour" }
-   set Lbl(Level)		{ "Niveau" "Level"}	
-   set Lbl(Model)		{ "Modèle" "Model" }
    set Lbl(Options)		{ "Options" "Options" }
-   set Lbl(Source)		{ "Source" "Source" }
-   set Lbl(Run)			{ "Run" "Run" }
    set Lbl(Type)		{ "Type" "Type" }
-   set Lbl(Variable)		{ "Variable" "Variable" }
    set Lbl(Variables)		{ "Variables" "Variables"}
-   set Lbl(Visibility)		{ "Visibilité" "Visibility" }
    
    #----- Messages
 
