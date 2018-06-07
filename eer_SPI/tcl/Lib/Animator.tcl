@@ -69,6 +69,7 @@ namespace eval Animator {
    set Play(Mode)         ""              ;#Current mode of animation, empty if not animating
    set Play(Cache)        0               ;#Cache des pixmaps de frame
    set Play(IP3)          1               ;#Validation du IP3 en recherche de champs
+   set Play(Typvar)       1               ;#Validation du typvar en recherche de champs
    set Play(Cycle)        0               ;#Bouclage de l'animation
    set Play(Stop)         1               ;#Variable de surveillance de l'evenement d'arret
    set Play(Frame)        0               ;#Liste des frames temporel
@@ -113,7 +114,7 @@ namespace eval Animator {
    set Lbl(Stop)           { "Pause" "Stop" }
    set Lbl(Print)          { "Impression" "Printing" }
    set Lbl(Read)           { "Lecture" "Reading" }
-   set Lbl(IP3)            { "Valider IP3" "Validate IP3" }
+   set Lbl(Validate)       { "Valider" "Validate" }
    set Lbl(Data)           { "Données" "Data" }
    set Lbl(Fly)            { "Survol" "Flyby" }
    set Lbl(On)             { "Animer selon" "Animate on" }
@@ -217,11 +218,14 @@ proc Animator::Window { { Parent .} } {
    set Data(Tab1) [TabFrame::Add .anim.tab 1 [lindex $Lbl(Data) $GDefs(Lang)] False ""]
 
       frame $Data(Tab1).lbl
-         label $Data(Tab1).lbl.lbl0 -text "[lindex $Lbl(On) $GDefs(Lang)] ("
-         checkbutton $Data(Tab1).lbl.ip3 -indicatoron true -variable Animator::Play(IP3) -text [lindex $Lbl(IP3) $GDefs(Lang)] -onvalue 1 \
+         label $Data(Tab1).lbl.lbl0 -text "[lindex $Lbl(On) $GDefs(Lang)] ([lindex $Lbl(Validate) $GDefs(Lang)] "
+         checkbutton $Data(Tab1).lbl.ip3 -variable Animator::Play(IP3) -text IP3 -onvalue 1 \
             -offvalue 0 -command "Animator::EmptyPlayList" -indicatoron false -relief flat -bd 1 -overrelief raised
-         label $Data(Tab1).lbl.lbl1 -text ")"
-         pack $Data(Tab1).lbl.lbl0 $Data(Tab1).lbl.ip3 $Data(Tab1).lbl.lbl1 -side left
+         label $Data(Tab1).lbl.lbl1 -text "|"
+         checkbutton $Data(Tab1).lbl.tvar -variable Animator::Play(Typvar) -text Typvar -onvalue 1 \
+            -offvalue 0 -command "Animator::EmptyPlayList" -indicatoron false -relief flat -bd 1 -overrelief raised
+         label $Data(Tab1).lbl.lbl2 -text ")"
+         pack $Data(Tab1).lbl.lbl0 $Data(Tab1).lbl.ip3 $Data(Tab1).lbl.lbl1 $Data(Tab1).lbl.tvar $Data(Tab1).lbl.lbl2 -side left
 
       labelframe $Data(Tab1).type -labelwidget $Data(Tab1).lbl
       frame  $Data(Tab1).type.f -relief sunken -bd 1
@@ -665,6 +669,7 @@ proc Animator::GetPlayListField { } {
             #----- On recupere les parametres du champs selectionne
 
             set var     [fstdfield define $fld -NOMVAR]
+            set tvar    [fstdfield define $fld -TYPVAR]
             set ip1     [fstdfield define $fld -IP1]
             set ip2     [fstdfield define $fld -IP2]
             set ip3     [fstdfield define $fld -IP3]
@@ -684,6 +689,7 @@ proc Animator::GetPlayListField { } {
             #----- On recupere les parametres du champs selectionne
 
             set var     [fstdfield define $fld -NOMVAR]
+            set tvar    .+
             set ip1     [fstdfield define $fld -IP1]
             set ip2     \\d+
             set ip3     \\d+
@@ -696,13 +702,16 @@ proc Animator::GetPlayListField { } {
          if { !$Play(IP3) } {
             set ip3 \\d+
          }
+         if { !$Play(Typvar) } {
+             set tvar .+
+         }
 
          switch $Play(Type) {
-            "IP1"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 $ip3 .+field$" }
-            "IP2"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
-            "IP3"     { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 \\d+ .+field$" }
-            "ETIKET"  { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
-            "DATE"    { set str "^$var\\s+.+\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
+            "IP1"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 $ip3 .+field$" }
+            "IP2"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
+            "IP3"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 \\d+ .+field$" }
+            "ETIKET"  { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
+            "DATE"    { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
          }
          set no 0
          foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
