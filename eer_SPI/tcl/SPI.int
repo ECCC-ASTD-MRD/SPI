@@ -189,6 +189,8 @@ proc SPI::DockTool { Tool { Command "" } } {
 # But      : Definitions de la fenetres des option .
 #
 # Parametres :
+#	<Frame>	: Frame transcient
+#	<Tab>	: Onglet a ouvrir a l'ouverture
 #
 # Retour:
 #
@@ -196,7 +198,7 @@ proc SPI::DockTool { Tool { Command "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc SPI::Params { { Frame . } } {
+proc SPI::Params { { Frame . } { Tab 0 } } {
    global GDefs
    variable Lbl
 
@@ -227,8 +229,8 @@ proc SPI::Params { { Frame . } } {
       Trajectory::ParamFrame .params.tab .params.command.apply
       Page::ParamFrame       .params.tab .params.command.apply
       OpenGL::ParamFrame     .params.tab .params.command.apply
-
-      TabFrame::Select .params.tab 0
+      
+      TabFrame::Select .params.tab $Tab
    } else {
       if { ![winfo ismapped .params] } {
          .params.command.apply configure -state disabled
@@ -242,6 +244,8 @@ proc SPI::Params { { Frame . } } {
 
       #----- Check for out of SPI configured fields
       FSTD::ParamOwnership
+      
+      TabFrame::Select .params.tab $Tab
    }
 }
 

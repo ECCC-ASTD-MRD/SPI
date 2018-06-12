@@ -40,6 +40,16 @@ proc APViz::Window { } {
    set Data(Active) 1
    set Data(Canvas) $Page::Data(Canvas)
    set Data(Frame)  $Page::Data(Frame)
+   set ::FSTD::Param(Mode) FLD
+   
+   foreach vp [Page::Registered $Data(Frame) Viewport] {
+      $Data(Frame).page.canvas itemconfigure $vp -colorcoast black -colorlake black -colorfillcoast beige -colorfilllake LightSkyBlue1
+   }
+   
+   set ::Viewport::Ressources(Coast)	beige
+   set ::Viewport::Ressources(Lake)	LightSkyBlue1
+   set ::Viewport::Ressources(FillCoast	beige
+   set ::Viewport::Ressources(FillLake	LightSkyBlue1
 
    set Param(Window) .visualizer
 
@@ -67,7 +77,7 @@ proc APViz::Window { } {
          checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue APViz -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab).head.param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params }
+         button $Data(Tab).head.param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params . 1 }
          button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised
          button $Data(Tab).head.refresh -image ZOOMBACK -bd 1 -relief flat -overrelief raised
          pack $Data(Tab).head.mode $Data(Tab).head.param $Data(Tab).head.save $Data(Tab).head.refresh -side left -padx 2

@@ -57,6 +57,19 @@ proc APViz::Close { } {
    }
 
    #----- Cleanup de l'outils
+   APViz::CloseFiles
+   set i 0
+   set fieldsToUnAssign ""
+   foreach fld $Data(Fields) {
+     if {$fld ne "FLD$i"} {
+	lappend fieldsToUnAssign $fld 
+	fstdfield free $fld
+     }
+     incr i
+   }
+   Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $fieldsToUnAssign 1
+   
+   set Data(Fields) ""
 
    set Data(Active) 0
 
@@ -365,7 +378,10 @@ proc APViz::Source { Path Widget } {
       variable Range
       variable Label
       variable Value
+      variable Params
       
+      set Label(AddCalculation)	{ "Ajouter une couche de calcul" "Add calculation layer"}
+      set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer"}
       set Label(Hour)		{ "Heure" "Hour" }
       set Label(Level)		{ "Niveau" "Level"}	
       set Label(Model)		{ "Modèle" "Model" }
@@ -421,7 +437,31 @@ proc APViz::Source { Path Widget } {
 	grid $Widget.range.variableGrid.src 	-column 6 -row 0 -padx 0.2
 	
 	CreateLayers $Product $Layers $Widget	; # Creation des couches
-	pack $Widget.range -side bottom -fill both -expand True
+	pack $Widget.range -side top -fill x -anchor nw
+ 
+	menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
+	
+	menu $Widget.add.menu
+	  set no 0
+	  foreach layer $Layers {
+	    if {[string index $layer 0] eq "T"} {
+	      regsub True: $layer "" desc
+	    } else { 
+	      regsub False: $layer "" desc
+	    }
+	    
+	    $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
+	    incr no
+	  }
+	  $Widget.add.menu add separator
+	  $Widget.add.menu add cascade -label [lindex $Label(AddCalculation) $GDefs(Lang)] -menu $Widget.add.menu.calcMenu
+	  
+	menu $Widget.add.menu.calcMenu
+	  $Widget.add.menu.calcMenu add command -label "Calcul manuel"
+	  $Widget.add.menu.calcMenu add command -label "Calcul prédéfini"
+	  
+	
+	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
       }
       
       proc CreateRangeWidget { Product Style Path Index Options IsSpinBox } {
@@ -477,10 +517,10 @@ proc APViz::Source { Path Widget } {
 	  CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true
 	  CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false
 	  
-	  button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no"
-	  button $Widget.range.variableGrid.layer${no}_param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params }
-	  button $Widget.range.variableGrid.layer${no}_add -image PLUS -bd 1 -relief flat -overrelief raised \
-	    -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
+	  button $Widget.range.variableGrid.layer${no}_delete 	-image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no"
+	  button $Widget.range.variableGrid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command { SPI::Params . 1 }
+	  #button $Widget.range.variableGrid.layer${no}_add 	-image PLUS -bd 1 	-relief flat -overrelief raised \
+	  #  -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
 	  
 	  
 	  #----- Place widgets in grid	
@@ -492,12 +532,17 @@ proc APViz::Source { Path Widget } {
 	  grid $Widget.range.variableGrid.layer${no}_hour	-column 5 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_dataSrc	-column 6 -row [expr $no + 1] -padx 0.1
 	  grid $Widget.range.variableGrid.layer${no}_param	-column 7 -row [expr $no + 1] -padx 0.1	
-	  grid $Widget.range.variableGrid.layer${no}_add	-column 8 -row [expr $no + 1] -padx 0.1	
+	  #grid $Widget.range.variableGrid.layer${no}_add	-column 8 -row [expr $no + 1] -padx 0.1	
 	  grid $Widget.range.variableGrid.layer${no}_delete	-column 9 -row [expr $no + 1] -padx 0.1	
-
+	  
+	  if {$IsAddedLayer} {
+	    APViz::AddFieldLayer
+	  }
+	  
 	  incr no
 	}
 	set Value(NbLayers) $no
+
       }
       
       proc DeleteLayer { Widget Index } {
@@ -514,9 +559,9 @@ proc APViz::Source { Path Widget } {
 	  destroy $Widget.range.variableGrid.layer${Index}_dataSrc	
 	  destroy $Widget.range.variableGrid.layer${Index}_param	
 	  destroy $Widget.range.variableGrid.layer${Index}_add	
-	  destroy $Widget.range.variableGrid.layer${Index}_delete	
+	  destroy $Widget.range.variableGrid.layer${Index}_delete
 	}
-      }
+      }      
    }
    
    ${product}::Load $Path $product $Widget
@@ -541,10 +586,15 @@ proc APViz::Source { Path Widget } {
 #-------------------------------------------------------------------------------
 
 proc APViz::DisplayVariable { Product Index } {
+  global env
   variable FileNb
   variable Data
   variable DataSrc
   variable ${Product}::Value
+  variable ${Product}::Params
+  
+  #set ::Viewport::Ressources(Coast) white
+  #Viewport::ConfigPut $Data(Frame) $Viewport::Data(VP)
 
   if {$Value(Toggle,$Index)} {								; # Appliquer les changements ssi le toggle est active
     #----- Get layer values
@@ -557,18 +607,43 @@ proc APViz::DisplayVariable { Product Index } {
     set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
     
     if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
-      set filepath $DataSrc($model,$src)/${date}${run}_$hour				; # Format: AAAAMMDDRR_HHH
+      set timestamp ${date}${run}_$hour	
+      set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
 		      
       if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
 	fstdfile open FILE$FileNb read $filepath
 	lappend Data(OpenedFiles) FILE$FileNb
 	puts "STANDARD FILE - Opening FILE$FileNb	$filepath"
 	
-	set levelType [ APViz::GetLevelType $src ]
-	fstdfield read FLD$Index FILE$FileNb -1 "" [subst {$lev $levelType}] -1 -1 "" $var	; # fstdfield read fieldid fileid date eticket ip1 ip2 ip3 typevar nomvar
-	lappend Data(Fields) FLD$Index
+	if {[fstdfield is [lindex $Data(Fields) $Index]]} {
+	  APViz::RemoveVariableFromVP $Index						; # Enlever la variable courante du VP pour cette couche
+	}
 	
-	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $Data(Fields) 1
+	set levelType [ APViz::GetLevelType $src ]
+	set Data(Fields) [lreplace $Data(Fields) $Index $Index FLD${Index}-${var}_$timestamp]
+	fstdfield read FLD${Index}-${var}_$timestamp FILE$FileNb -1 "" [subst {$lev $levelType}] -1 -1 "" $var
+	
+	if { [info exist Params($var)] } {
+	  #catch { 
+	    eval fstdfield configure FLD${Index}-${var}_$timestamp $Params($var) 
+	  #}
+	} elseif { [info exist Params(${var}$lev)] } {
+	  #catch { 
+	    eval fstdfield configure FLD${Index}-${var}_$timestamp $Params(${var}$lev) 
+	  #}
+	}
+	
+	#---- Assigner seulement si valeur nest pas une valeur par defaut
+	set i 0
+	set fieldsToAssign ""
+	foreach fld $Data(Fields) {
+	  if {$fld ne "FLD$i"} {
+	    lappend fieldsToAssign $fld 
+	  }
+	  incr i
+	}
+	
+	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldsToAssign 1
 	puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
 	incr FileNb
       } else {
@@ -578,6 +653,26 @@ proc APViz::DisplayVariable { Product Index } {
       puts "Missing values"
     }
   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::AddFieldLayer>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Ajouter un identifiant fld par defaut
+#
+# Parametres 	  :
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc APViz::AddFieldLayer { } {
+  variable Data
+  
+  set nbLayers [llength $Data(Fields)]
+  lappend Data(Fields) FLD$nbLayers
 }
 
 #-------------------------------------------------------------------------------
@@ -627,14 +722,11 @@ proc APViz::Check { Product Index } {
   variable ${Product}::Value
   variable Data
   
-  puts "Checkbutton value: $Value(Toggle,$Index)"
-  
   if {$Value(Toggle,$Index)} {
     # Ajouter au Viewport
     APViz::DisplayVariable $Product $Index
   } else {
     APViz::RemoveVariableFromVP $Index
-    puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
   }
 }
 
@@ -655,8 +747,7 @@ proc APViz::Check { Product Index } {
 proc APViz::CloseFiles { } {
   global FileNb
   variable Data
-  
-  puts "$Data(OpenedFiles)"
+
   foreach FILE $Data(OpenedFiles) {
     if { $FILE ne "" } {
       fstdfile close $FILE
@@ -736,22 +827,22 @@ proc APViz::InitializeVars { Product } {
   variable ${Product}::Value
   variable Data
   
-  puts "INITIALIZING. ====> Layers detected: $Value(NbLayers)"
   for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
+    lappend Data(Fields) FLD$idx
     if {$Value(Toggle,$idx)} {
-      puts "Displaying layer $idx"
       APViz::DisplayVariable $Product $idx
     }
-  } 
-
+  }
+  
+  puts "Initialized Data(Fields): $Data(Fields)"
 }
 
 proc APViz::RemoveVariableFromVP { Index } {
   variable Data
-  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) FLD$Index	; # Enlever variable du viewport
-  if {[set idx [lsearch -exact $Data(Fields) FLD$Index]] != -1} {
-    set Data(Fields) [lreplace $Data(Fields) $idx $idx]
-  }
+  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $Data(Fields) $Index]	; # Enlever variable du viewport
+  fstdfield free [lindex $Data(Fields) $Index]
+  
+  set Data(Fields) [lreplace $Data(Fields) $Index $Index FLD$Index]
 }
 
 #----------------------------------------------------------------------------
