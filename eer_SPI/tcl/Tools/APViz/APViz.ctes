@@ -85,5 +85,7 @@ namespace eval APViz {
    set Data(OpenedFiles)	""
    set Data(Fields)		""
    
+   set Data(Calcul)		{Difference Abs_Difference Diff_of_Abs Sum Average Deviation_from_average}
+   
 
 }

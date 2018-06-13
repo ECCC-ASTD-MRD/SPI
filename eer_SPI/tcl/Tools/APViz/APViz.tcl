@@ -383,6 +383,7 @@ proc APViz::Source { Path Widget } {
       
       set Label(AddCalculation)	{ "Ajouter une couche de calcul" "Add calculation layer"}
       set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer"}
+      set Label(Calcul)		{ "Couches de calcul" "Calculation Layers"}
       set Label(Hour)		{ "Heure" "Hour" }
       set Label(Level)		{ "Niveau" "Level"}	
       set Label(Model)		{ "Modèle" "Model" }
@@ -399,6 +400,8 @@ proc APViz::Source { Path Widget } {
       set Value(Hours)		""  
       set Value(Toggle)		""
       set Value(NbLayers)	0
+      set Value(NbDispLayers)	0
+      set Value(NbCalcLayers)	0
       
       set RowID(Adjustment)	0
       set RowID(Total)		0
@@ -474,14 +477,14 @@ proc APViz::Source { Path Widget } {
 	    incr no
 	  }
 	  $Widget.add.menu add separator
-	  $Widget.add.menu add cascade -label [lindex $Label(AddCalculation) $GDefs(Lang)] -menu $Widget.add.menu.calcMenu
-	  
-	menu $Widget.add.menu.calcMenu
-	  $Widget.add.menu.calcMenu add command -label "Calcul manuel"
-	  $Widget.add.menu.calcMenu add command -label "Calcul prédéfini"
-	  
+	  $Widget.add.menu add command -label "Ajouter calcul manuel" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
+	  $Widget.add.menu add command -label "Ajouter calcul prédéfini" -command "APViz::${Product}::AddCalcLayer $Product $Widget False"
+	  #$Widget.add.menu add cascade -label [lindex $Label(AddCalculation) $GDefs(Lang)] -menu $Widget.add.menu.calcMenu 
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
+	
+	labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
+	pack $Widget.calc -side bottom -fill both -expand True
       }
       
       #-------------------------------------------------------------------------------
@@ -595,8 +598,11 @@ proc APViz::Source { Path Widget } {
 	  }
 	  
 	  incr no
+	  incr Value(NbDispLayers)
 	}
 	set Value(NbLayers) $no
+	
+	AdjustSpinboxMaxValue $Widget
       }
 
       #-------------------------------------------------------------------------------
@@ -626,7 +632,7 @@ proc APViz::Source { Path Widget } {
 	
 	set itemList [list toggle model var level run hour dataSrc param delete]
 	  
-	#---- Adjust all rowIds below 
+	#---- Adjust all rowIds below range.variableGrid.layer${no}_toggle
 	for {set i 0} {$i < $Value(NbLayers)} {incr i} {
 	  if {$RowID($i) > $RowID($Index)} {
 	    if {[winfo exists $Widget.range.variableGrid.layer${i}_rowID]} {
@@ -641,20 +647,88 @@ proc APViz::Source { Path Widget } {
 	    }
 	  }
 	}
-	
 	set RowID($Index) -1
 	
+	#---- Detruire les widgets
 	if [winfo exists $Widget.range.variableGrid] {	  
 	  foreach item $itemList {
 	    destroy $Widget.range.variableGrid.layer${Index}_$item
 	  }
 	}
-      }
-      
-      proc AddManualCalcLayer {} {
+	
+	incr Value(NbDispLayers) -1
+	AdjustSpinboxMaxValue $Widget
 	
       }
       
+      proc AdjustSpinboxMaxValue { Widget } {
+	variable Value
+	
+	#--- Ajuster la valeur max des spinbox pour les couches de calcul 
+	for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+	  if {[winfo exists $Widget.calc.$i]} {
+	    $Widget.calc.$i.varA configure -to [expr $Value(NbDispLayers) - 1]
+	    $Widget.calc.$i.varB configure -to [expr $Value(NbDispLayers) - 1]
+	  }
+	}
+      }
+
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AddManualCalcLayer>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajouter une couche de calcul manuel
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #		<Index>	   : L'index de la couche a supprimer
+      #		<Product>  : Produit a afficher (aussi le namespace)
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AddCalcLayer { Product Widget {IsManual True} } {
+	variable Value
+	set no $Value(NbCalcLayers)
+	puts "Adding calc layer$no"
+	frame $Widget.calc.$no
+	  checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no)
+	  label $Widget.calc.$no.lbl -text "Formule:"	-width 7
+	  
+	  if {$IsManual} {
+	    entry $Widget.calc.$no.formula -textvariable APViz::${Product}::Value(Formula,$no) -width 20
+	  } else {
+	    ComboBox::Create $Widget.calc.$no.formula APViz::${Product}::Value(Formula,$no) editclose unsorted nodouble -1 ${::APViz::Data(Calcul)} 20 10 {}
+	  }
+	  
+	  label $Widget.calc.$no.lblA	-text "A:"
+	  spinbox $Widget.calc.$no.varA	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2
+	  label $Widget.calc.$no.lblB	-text "B:"
+	  spinbox $Widget.calc.$no.varB	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2
+	  button $Widget.calc.$no.delete -image DELETE -bd 1 -relief flat -overrelief raised ;#-command "APViz::${Product}::DeleteCalcLayer $Widget $no $Product"
+	  pack $Widget.calc.$no.check $Widget.calc.$no.lbl $Widget.calc.$no.formula $Widget.calc.$no.lblA $Widget.calc.$no.varA \
+	    $Widget.calc.$no.lblB $Widget.calc.$no.varB $Widget.calc.$no.delete -side left -fill x -expand true
+	pack $Widget.calc.$no -side top -fill x
+	incr Value(NbCalcLayers)
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AddPredefinedCalcLayer>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajouter une couche de calcul predefini
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #		<Index>	   : L'index de la couche a supprimer
+      #		<Product>  : Produit a afficher (aussi le namespace)
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
       proc AddPredefinedCalcLayer { Widget } {
 	
       }
@@ -710,7 +784,7 @@ proc APViz::DisplayVariable { Product Index } {
       if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
 	fstdfile open FILE$FileNb read $filepath
 	lappend Data(OpenedFiles) FILE$FileNb
-	#puts "STANDARD FILE - Opening FILE$FileNb	$filepath"
+	puts "STANDARD FILE - Opening FILE$FileNb	$filepath"
 	
 	if {[fstdfield is [lindex $Data(Fields) $Index]]} {
 	  APViz::RemoveVariableFromVP $Index						; # Enlever la variable courante du VP pour cette couche
