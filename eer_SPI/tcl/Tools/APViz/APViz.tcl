@@ -59,14 +59,7 @@ proc APViz::Close { } {
    #----- Cleanup de l'outils
    APViz::CloseFiles
    set i 0
-   set fieldsToUnAssign ""
-   foreach fld $Data(Fields) {
-     if {$fld ne "FLD$i"} {
-	lappend fieldsToUnAssign $fld 
-	fstdfield free $fld
-     }
-     incr i
-   }
+   set fieldsToUnAssign [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)]
    Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $fieldsToUnAssign 1
    
    set Data(Fields) ""
@@ -767,62 +760,62 @@ proc APViz::DisplayVariable { Product Index } {
   #set ::Viewport::Ressources(Coast) white
   #Viewport::ConfigPut $Data(Frame) $Viewport::Data(VP)
 
-  if {$Value(Toggle,$Index)} {								; # Appliquer les changements ssi le toggle est active
-    #----- Get layer values
-    set model	$Value(Models,$Index)
-    set var	$Value(Vars,$Index)
-    set lev	$Value(Levels,$Index)
-    set run	$Value(Runs,$Index)
-    set hour	$Value(Hours,$Index)
-    set src	$Value(Sources,$Index)
-    set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
-    
-    if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
-      set timestamp ${date}${run}_$hour	
-      set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
-		      
-      if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
-	fstdfile open FILE$FileNb read $filepath
-	lappend Data(OpenedFiles) FILE$FileNb
-	puts "STANDARD FILE - Opening FILE$FileNb	$filepath"
-	
-	if {[fstdfield is [lindex $Data(Fields) $Index]]} {
-	  APViz::RemoveVariableFromVP $Index						; # Enlever la variable courante du VP pour cette couche
-	}
-	
-	set levelType [ APViz::GetLevelType $src ]
-	set Data(Fields) [lreplace $Data(Fields) $Index $Index FLD$RowID($Index)-${var}_$timestamp]
-	fstdfield read FLD$RowID($Index)-${var}_$timestamp FILE$FileNb -1 "" [subst {$lev $levelType}] -1 -1 "" $var
-	
-	if { [info exist Params($var)] } {
-	  #catch { 
-	    eval fstdfield configure FLD$RowID($Index)-${var}_$timestamp $Params($var) 
-	  #}
-	} elseif { [info exist Params(${var}$lev)] } {
-	  #catch { 
-	    eval fstdfield configure FLD$RowID($Index)-${var}_$timestamp $Params(${var}$lev) 
-	  #}
-	}
-	
-	#---- Assigner seulement si valeur nest pas une valeur par defaut
-	set i 0
-	set fieldsToAssign ""
-	foreach fld $Data(Fields) {
-	  if {$fld ne "FLD$i"} {
-	    lappend fieldsToAssign $fld 
-	  }
-	  incr i
-	}
-	
-	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldsToAssign 1
-	puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
-	incr FileNb
+  #----- Get layer values
+  set model	$Value(Models,$Index)
+  set var	$Value(Vars,$Index)
+  set lev	$Value(Levels,$Index)
+  set run	$Value(Runs,$Index)
+  set hour	$Value(Hours,$Index)
+  set src	$Value(Sources,$Index)
+  set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
+  
+  if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
+    set timestamp ${date}${run}_$hour	
+    set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
+    set fileID FILE_${model}_${src}_$timestamp
+		    
+    if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
+      if {[catch { fstdfile open $fileID read $filepath }]} {
+	puts "File already opened"
       } else {
-	puts "File $filepath not available."
+	lappend Data(OpenedFiles) $fileID
+	puts "STANDARD FILE - Opening $fileID	$filepath"
+	puts "New file opened, added to Data(OpenedFiles) : $Data(OpenedFiles)"
       }
+      
+      if {[fstdfield is [lindex $Data(Fields) $Index]]} {
+	APViz::RemoveVariableFromVP $Index						; # Enlever la variable courante du VP pour cette couche
+      }
+      
+      set levelType [ APViz::GetLevelType $src ]
+      set fieldID FLD$RowID($Index)-${var}_$timestamp
+      set Data(Fields) [lreplace $Data(Fields) $Index $Index $fieldID]
+      fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var
+      
+      if { [info exist Params($var)] } {
+	#catch { 
+	  eval fstdfield configure $fieldID $Params($var) 
+	#}
+      } elseif { [info exist Params(${var}$lev)] } {
+	#catch { 
+	  eval fstdfield configure $fieldID $Params(${var}$lev) 
+	#}
+      }      
+      
+      fstdfield configure $fieldID -active $Value(Toggle,$Index)
+      
+      #---- Assigner seulement si n'est pas assigne
+      if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
+	puts "Assigner la variable"
+	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldID 1
+      }
+      puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
+      
     } else {
-      puts "Missing values"
+      puts "File $filepath not available."
     }
+  } else {
+    puts "Missing values"
   }
 }
 
@@ -896,14 +889,14 @@ proc APViz::Check { Product Index } {
   variable ${Product}::Value
   variable Data
   
-  if {$Value(Toggle,$Index)} {
-    # Ajouter au Viewport
-    APViz::DisplayVariable $Product $Index
-  } else {
-    APViz::RemoveVariableFromVP $Index
+  set fieldID [lindex $Data(Fields) $Index] 
+  if {[fstdfield is $fieldID]} {
+    fstdfield configure $fieldID -active $Value(Toggle,$Index)
+    Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
   }
   
   puts "DATAFIELDS: $Data(Fields)"
+  puts "Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP) ]"
 }
 
 #-------------------------------------------------------------------------------
@@ -1007,10 +1000,7 @@ proc APViz::InitializeVars { Product } {
   variable Data
   
   for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
-    lappend Data(Fields) FLD$idx
-    if {$Value(Toggle,$idx)} {
-      APViz::DisplayVariable $Product $idx
-    }
+    APViz::DisplayVariable $Product $idx
   }
   
   puts "Initialized Data(Fields): $Data(Fields)"
