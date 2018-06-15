@@ -47,9 +47,6 @@ namespace eval APViz {
    set Data(TypeListBox)	""	; #Boite listant les choix de types de la macro
    set Data(RangeSection)	""	; #Section des variables
    
-   set Data(GeoRegion)		""
-   set Data(GeoRegions)		{ CANADA "WRN-CANADA" "CENTRAL-CANADA" "ERN-CANADA" "ARTIC" }	
-   
    #----- LEVEL 1
    set Data(MacroCategory)	""
    set Data(MacroCategories)	{ SATELLITE ANALYSIS FORECASTS VERIFICATIONS DIAGNOSTIC VAAC }	; #Si changement de valeurs, changer dans APViz::MacroCategory aussi (dans le switch)
@@ -62,7 +59,7 @@ namespace eval APViz {
    # TODO: Fasire les listes dynamiquement en allant chercher le contenu de chaque dossier 
    set Data(AnalysisTypes)	{Trial_Fields Increments Tephigrams Snow_Analysis Ice_Analysis Ocean_Temperature_Analysis Soil_Moisture}
    set Data(ForecastsTypes)	{PROGS Progs_Comparison Vigilance_Products GUI}
-   set Data(VerificationTypes)	{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
+   set Data(VerificationTypes)	{RDPS REPS GDPS}						;#{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
    set Data(DiagnosticTypes)	{Dyonisos TVE TSH WIND Temperatures Latent_Heat Clouds}
    set Data(VAACTypes)		{ASH}
    
@@ -71,16 +68,7 @@ namespace eval APViz {
    set Data(IceVariables)	{"Map of GL and LG" "Map of Soil Ice Content" "Map of Sea Ice Thickness"}
    set Data(OceanTempVariables)	{"Map of TM"}
    set Data(SoilVariables)	{"Map of Soil Moisture" "Map of Water on Vegetation"}
-   
-   #----- Data Sources
-   set mirrorgrid 		$env(CMCPROD)/hubs/suites
-   set mirrorsat 		$env(CMCPROD)/hubs/sat
-   set mirrorradar 		$env(CMCPROD)/hubs/radar/post
-   set DataSrc(RDPS,pres)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/pres
-   set DataSrc(RDPS,diag)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/diag
-   set DataSrc(RDPS,eta)	$mirrorgrid/ops/rdps/r1/gridpt.usr/prog/eta
-   set DataSrc(RDPS,hyb)	$mirrorgrid/ops/rdps/r1/gridpt/prog/hyb
-   
+
    set FileNb			0
    set Data(OpenedFiles)	""
    set Data(Fields)		""

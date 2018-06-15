@@ -30,6 +30,7 @@
 
 #----- Lire les sources d'execution
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
+source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
@@ -440,10 +441,7 @@ proc APViz::Source { Path Widget } {
 	::Viewport::ConfigPut ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
     
 	#----- Build product layer interface
-	if [winfo exists $Widget.range] {
-	  eval destroy [winfo children $Widget.range]
-	  destroy $Widget.range
-	}
+	::APViz::DeleteWidget $Widget.range	; # Liberer le widget
 	
 	frame $Widget.range
 	frame $Widget.range.variableGrid	; #Frame pour le grid
@@ -466,7 +464,9 @@ proc APViz::Source { Path Widget } {
 	
 	CreateLayers $Product $Layers $Widget	; # Creation des couches
 	pack $Widget.range -side top -fill x -anchor nw
- 
+
+	::APViz::DeleteWidget $Widget.add	; # Liberer le widget
+	
 	menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
 	
 	menu $Widget.add.menu
@@ -486,6 +486,8 @@ proc APViz::Source { Path Widget } {
 	  $Widget.add.menu add command -label "Ajouter calcul prédéfini" -command "APViz::${Product}::AddCalcLayer $Product $Widget False"
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
+	
+	::APViz::DeleteWidget $Widget.calc	; # Liberer le widget
 	
 	labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
 	pack $Widget.calc -side bottom -fill both -expand True
@@ -836,6 +838,7 @@ proc APViz::AssignVariable { Product Index } {
   variable FileNb
   variable Data
   variable DataSrc
+  variable Lbl
   variable ${Product}::Value
   variable ${Product}::Params
   variable ${Product}::RowID
@@ -873,7 +876,10 @@ proc APViz::AssignVariable { Product Index } {
       set levelType [ APViz::GetLevelType $src ]
       set fieldID FLD$RowID($Index)_${var}
       set Data(Fields) [lreplace $Data(Fields) $Index $Index $fieldID]
-      fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var
+      if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+	::Dialog::Info . $Lbl(InvalidField)
+	return
+      }
       
       if { [info exist Params($var)] } {
 	#catch { 
@@ -1069,6 +1075,28 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
   APViz::Source $filepath $Data(Tab)
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::DeleteWidget>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Supprime le widget et ses enfants
+#
+# Parametres	:
+#	<Widget>  	: Widget a supprimer
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::DeleteWidget { Widget } {
+  if [winfo exists $Widget] {
+    eval destroy [winfo children $Widget]
+    destroy $Widget
+  }
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::GetLevelType>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
@@ -1089,6 +1117,7 @@ proc APViz::GetLevelType { Source } {
     "pres"	{ return PRESSURE }
     "eta"	{ return ETA }
     "hyb"	{ return HYBRID }
+    "diag"	{ return PRESSURE }
   }
   
   puts "Cannot determine level with source $Source."
@@ -1195,10 +1224,13 @@ proc APViz::SetParam { Index } {
   
   set field [lindex $Data(Fields) $Index]
   if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $field] ne -1} {
+    ::FSTD::ParamUpdate $field
+    set comment {
     set ::FSTD::Param(Spec) $field
     ::FSTD::ParamSet $field
     ::FSTD::ParamGet $field
     ::FSTD::ParamPut True
+    }
   }
 }
 

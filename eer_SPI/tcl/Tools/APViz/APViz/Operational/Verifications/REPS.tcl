@@ -37,12 +37,12 @@ variable Range
 set Range(Levels) 	{1000 850 700 500 250}
 set Range(Vars)   	{GZ HU TT UU}
 set Range(Vars_Lev0)	{PN PR}
-set Range(Hours)  	{000 024 036 048}
+set Range(Hours)  	{000 024 036 048 060 072 084}
 set Range(Runs)   	{00 06 12 28}
-set Range(Sources)	{pres diag eta hyb}
+set Range(Sources)	{pres model diag}
 
 #Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
 set Layers {
-   True:RDPS:<Vars>:<Levels>:<Hours>:-:<Runs>:<Sources>
-   False:RDPS:PN:0.0:<Hours>:-:<Runs>:<Sources>
+   True:GDPS:<Vars>:<Levels>:<Hours>:-:<Runs>:<Sources>
+   False:GDPS:PN:0.0:<Hours>:-:<Runs>:<Sources>
 }

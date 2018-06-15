@@ -28,6 +28,7 @@ namespace eval APViz {
    set Lbl(Options)		{ "Options" "Options" }
    set Lbl(Type)		{ "Type" "Type" }
    set Lbl(Variables)		{ "Variables" "Variables"}
+   set Lbl(InvalidField)	{ "Choix de champ invalide" "Invalid field choice" }
    
    #----- Messages
 
