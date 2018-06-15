@@ -108,7 +108,7 @@ proc APViz::Draw { Frame VP } {
 
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
-   set Data(VP)     $VP
+   set Data(VP)     $VP			; # Data(VP)
 
    APViz::UpdateItems $Frame
 }
@@ -169,7 +169,7 @@ proc APViz::Move { Frame VP } {
 
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
-   set Data(VP)     $VP
+   set Data(VP)     $VP			; # Data(VP)
 
    APViz::UpdateItems $Frame
 }
@@ -220,8 +220,8 @@ proc APViz::UpdateItems { Frame } {
 
    $Data(Canvas) delete APVIZ
 
-   if { $Data(VP)!="" } {
-      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red
+   if { $Data(VP)!="" } {		; # Data(VP)
+      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red	; # Data(VP)
    }
 }
 
@@ -428,6 +428,16 @@ proc APViz::Source { Path Widget } {
 
 	#----- Source product definition
 	source $Path
+	
+	eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
+ 
+	foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
+	  eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
+	}
+	
+	#----- Refleter les valeurs dans l'interface de configuration des parametres
+	::Viewport::ConfigGet ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
+	::Viewport::ConfigPut ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
     
 	#----- Build product layer interface
 	if [winfo exists $Widget.range] {
@@ -474,7 +484,6 @@ proc APViz::Source { Path Widget } {
 	  $Widget.add.menu add separator
 	  $Widget.add.menu add command -label "Ajouter calcul manuel" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
 	  $Widget.add.menu add command -label "Ajouter calcul prédéfini" -command "APViz::${Product}::AddCalcLayer $Product $Widget False"
-	  #$Widget.add.menu add cascade -label [lindex $Label(AddCalculation) $GDefs(Lang)] -menu $Widget.add.menu.calcMenu 
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
 	
@@ -637,7 +646,7 @@ proc APViz::Source { Path Widget } {
 		Bubble::Create $Widget.range.variableGrid.layer${i}_$item $RowID($i)
 	      }
 	      #$Widget.range.variableGrid.layer${i}_rowID configure -text $RowID($i)
-	      APViz::Check $Product $i		; # Verifier si le champs est selectionne, si oui, creer un nouveau field avec le bon rowID
+	      APViz::AssignVariable $Product $i
 	    }
 	  }
 	}
@@ -1127,7 +1136,7 @@ proc APViz::InitializeVars { Product } {
 
 proc APViz::RemoveVariableFromVP { Index } {
   variable Data
-  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $Data(Fields) $Index]	; # Enlever variable du viewport
+  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $Data(Fields) $Index]	; # Enlever variable du viewport ---- was Viewport::Data(VP)
   fstdfield free [lindex $Data(Fields) $Index]
   
   set Data(Fields) [lreplace $Data(Fields) $Index $Index FLD$Index]

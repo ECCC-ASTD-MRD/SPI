@@ -42,35 +42,26 @@ proc APViz::Window { } {
    set Data(Frame)  $Page::Data(Frame)
    set ::FSTD::Param(Mode) FLD
    
-   foreach vp [Page::Registered $Data(Frame) Viewport] {
-      $Data(Frame).page.canvas itemconfigure $vp -colorcoast black -colorlake black -colorfillcoast beige -colorfilllake LightSkyBlue1
-   }
-   
-   set ::Viewport::Ressources(Coast)	beige
-   set ::Viewport::Ressources(Lake)	LightSkyBlue1
-   set ::Viewport::Ressources(FillCoast	beige
-   set ::Viewport::Ressources(FillLake	LightSkyBlue1
-
-   set Param(Window) .visualizer
+   set Param(Window) .apviz
 
    if { ![winfo exists .APViz] } {
 
       if { $Param(Dock) } {
-         frame .visualizer
-         SPI::Dock .visualizer
+         frame .apviz
+         SPI::Dock .apviz
       } else {
-         toplevel         .visualizer
-         wm title         .visualizer "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)]] $Param(Version))"
-         eval wm geometry .visualizer $Param(Geom)
-         wm resizable     .visualizer 1 1
-         wm protocol      .visualizer WM_DELETE_WINDOW { APViz::Close }
+         toplevel         .apviz
+         wm title         .apviz "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)]] $Param(Version))"
+         eval wm geometry .apviz $Param(Geom)
+         wm resizable     .apviz 1 1
+         wm protocol      .apviz WM_DELETE_WINDOW { APViz::Close }
 
-         if { $SPI::Param(Window) } { wm transient .visualizer . }
+         if { $SPI::Param(Window) } { wm transient .apviz . }
       }
 
-      TabFrame::Create .visualizer.tab 1 ""
-      set Data(Tab) [TabFrame::Add .visualizer.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
-      pack .visualizer.tab -side top -fill both -expand true
+      TabFrame::Create .apviz.tab 1 ""
+      set Data(Tab) [TabFrame::Add .apviz.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .apviz.tab -side top -fill both -expand true
       
       #----- Outils
       frame $Data(Tab).head
@@ -89,14 +80,6 @@ proc APViz::Window { } {
       
       #----- Options
       labelframe $Data(Tab).opt -text [lindex $Lbl(Options) $GDefs(Lang)]
-      
-       #--------- Geography
-      frame $Data(Tab).opt.geo
-	label $Data(Tab).opt.geo.lbl -text [lindex $Lbl(Geography) $GDefs(Lang)] -width 12 -anchor w
-	ComboBox::Create $Data(Tab).opt.geo.val APViz::Data(GeoRegion) noedit sorted nodouble -1 $APViz::Data(GeoRegions) 1 5 { }
-	pack $Data(Tab).opt.geo.lbl -side left
-	pack $Data(Tab).opt.geo.val -side left -fill x -expand True
-      pack $Data(Tab).opt.geo -side top -fill x -expand True
       
       #--------- Category
       frame $Data(Tab).opt.cat
@@ -134,13 +117,13 @@ proc APViz::Window { } {
       $Data(Tab).vis add $Data(Tab).opt $Data(Tab).desc $Data(Tab).range
       
       #--------- Dock
-      frame .visualizer.dock -relief raised -bd 1
-         button .visualizer.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
-         button .visualizer.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .visualizer.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 52 -bd 1
-         pack .visualizer.dock.sel .visualizer.dock.del -side left
-         pack .visualizer.dock.coo -side left -fill both -expand true
-      pack .visualizer.dock -side bottom -fill x
+      frame .apviz.dock -relief raised -bd 1
+         button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
+         button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
+         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 52 -bd 1
+         pack .apviz.dock.sel .apviz.dock.del -side left
+         pack .apviz.dock.coo -side left -fill both -expand true
+      pack .apviz.dock -side bottom -fill x
 
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
       Bubble::Create $Data(Tab).head.param $Bubble(Param)
@@ -149,6 +132,6 @@ proc APViz::Window { } {
       
       bind $Data(Tab).opt.type.lst <ButtonRelease> "APViz::UpdateRange"
    }
-   raise  .visualizer
+   raise  .apviz
 }
 
