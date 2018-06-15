@@ -28,6 +28,8 @@ set Params(TT) "-colormap CM2 -color black -font XFont12 -width 2 -rendercontour
 set Params(HU) "-colormap CM1 -color black -font XFont12 -width 2 -rendertexture 1 "
 set Params(UU) "-colormap CM3 -color grey -font XFont12 -width 1 -rendervector BARB -mapall False -intervals \{ -150 -100 -80 -50 -30 -20 -15 -10 0 10 15 20 30 50 80 100 150 \}"
 set Params(PN) "-colormap CM4 -color black -font XFont12 -width 2 -rendercontour 1 -intervalmode INTERVAL 4"
+set Params(CanvasConfigs)	"-colorcoast black -colorlake black -colorfillcoast beige -colorfilllake LightSkyBlue1"
+set Params(ProjectionConfigs)	""
 
 #Ranges
 variable Range
