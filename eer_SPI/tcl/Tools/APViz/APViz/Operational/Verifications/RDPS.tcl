@@ -7,6 +7,7 @@ set Map(Projection) Orthographic
 #Styles
 variable Params
 
+#Colormap creation
 colormap create CM0
 colormap create CM1
 colormap create CM2
@@ -20,7 +21,7 @@ colormap read CM3 $env(HOME)/.spi/Colormap/COB_Seq_MHue_RdPu.rgba
 colormap read CM4 $env(HOME)/.spi/Colormap/COB_Seq_MHue_BuPu.rgba
 
 #Variable configurations
-set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall True -intervalmode INTERVAL 6"
+set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
 set Params(TT) "-colormap CM2 -color black -font XFont12 -width 2 -rendercontour 1 -mapall True -intervalmode INTERVAL 5"
 set Params(HU) "-colormap CM1 -color black -font XFont12 -width 2 -rendertexture 1 "
 set Params(UU) "-colormap CM3 -color grey  -font XFont12 -width 1 -rendervector BARB -mapall False -intervals \{ -150 -100 -80 -50 -30 -20 -15 -10 0 10 15 20 30 50 80 100 150 \}"

@@ -46,4 +46,6 @@ namespace eval APViz {
    
    set Data(Calcul)		{Difference Abs_Difference Diff_of_Abs Sum Average Deviation_from_average}
    
+   set Data(Colors)		{black pink blue green red}
+   
 }
