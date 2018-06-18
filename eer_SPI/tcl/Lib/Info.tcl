@@ -60,10 +60,10 @@ namespace eval Info {
    set Token(UrbanLS) { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs
                         Backward Order DurMin OutputTimeStepMin IsotropicK TurbSchmidt LimDetRey SVDLimit EscapeTest DetRC Alpha KC0
                         DtSurTl ResetVeloc TolFactor NudgeWall NudgeGrnd NudgeCell ReleaseType WindDBGrid OutVars
-                        WindDate WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
+                        Meteo WindDate WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
-   set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD)]]
+   set Token(ALL)     [lsort -unique [concat $Token(TRAJECT) $Token(MLDP) $Token(MLDPn) $Token(MLCD) $Token(UrbanLS)]]
 
    set Msg(Info)                 { "Impossible de lire l'enregistrement d'informations de la simulation"
                                    "Could not read simulation information record" }
