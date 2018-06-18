@@ -47,11 +47,11 @@ namespace eval Info {
                         EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
-   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
-                        Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain
-                        SrcType FMLimit OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
+   set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Gauss Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
+                        Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge ModelTimeStep DtMin DtOverTl WindDiffFactor
+                        VarMesoscale Timescale SrcType FMLimit OutputTimeStepMin OutDT OutGrid OutCV OutAV OutVar ReflectionLevel Seed Scenario IsoChain
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindDiffFactor WindFetch WindCoeff CurrentCoeff Depth Weteo }
+                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindFetch WindCoeff CurrentCoeff Depth Weteo }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma
@@ -234,6 +234,23 @@ namespace eval Info {
    set Lbl(WindDir)              { "Direction (deg)" "Direction (deg)" }
 
    set Lbl(EmDiffuse)            { "Diffuse" "Diffuse" }
+
+   set Lbl(OilFate)              { "Devenir" "Fate" }
+   set Lbl(OilBeach)             { "Beaching" "Beaching" }
+   set Lbl(OilEntrainment)       { "Entrainement" "Entrainment" }
+   set Lbl(OilEmulsion)          { "Émulsion" "Emulsion" }
+   set Lbl(OilEvaporation)       { "Évaporation" "Evaporation" }
+   set Lbl(WindFetch)            { "Etendue vent (m)" "Wind fetch (m)" }
+   set Lbl(WindCoeff)            { "Facteur vent" "Wind factor" }
+   set Lbl(CurrentCoeff)         { "Facteur courant" "Current factor" }
+   set Lbl(Depth)                { "Profondeur max (m)" "Max depth (m)" }
+
+   set Lbl(AdvectType)           { "Méthode d'advection" "Advection method" }
+   set Lbl(DtMin)                { "Valeur minimum du temps de diffusion (s)" "Diffusion time step min value (s)" }
+   set Lbl(DtOverTl)             { "Temps de diffusion sur le temps Lagrangien" "Diffusion time step over Lagrangian time scale" }
+   set Lbl(WindDiffFactor)       { "Facteur de diffusion" "Diffusion factor" }
+   set Lbl(OutDT)                { "Delta fichiers de sortie" "Output file delta" }
+   set Lbl(OutGrid)              { "Grille(s) de sortie" "Output grid(s)" }
 }
 
 #----------------------------------------------------------------------------
