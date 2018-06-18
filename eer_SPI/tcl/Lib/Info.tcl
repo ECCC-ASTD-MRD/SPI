@@ -38,28 +38,28 @@ namespace eval Info {
    variable Msg
    variable Token
 
-   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs MetSecs Duration \
+   set Token(TRAJECT) { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs MetSecs Duration
                         Backward Mode Meteo Delta Level LevelUnit TimeStep BatchStart }
 
    set Token(MLDP)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs SimSecs MetSecs Duration
-                        Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin \
-                        SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles \
-                        EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist \
+                        Backward Mode Meteo Delta Scale Grid OutputTimeStepMin ModelTimeStepMin
+                        SrcType VerticalLevels VarMesoscale Timescale ReflectionLevel EmNumberParticles
+                        EmDensity EmHeight EmMass EmMassMode EmRadius EmSizeDist EmVerticalDist
                         EmScenario EmNbIntervals EmTotalDuration EmEffectiveDuration EmNbIso EmIsoSymbol EmIsoQuantity }
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
-                        Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain \
+                        Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge OutputTimeStepMin ModelTimeStep IsoChain
                         SrcType FMLimit OutVar OutCV OutAV VarMesoscale Timescale ReflectionLevel Seed Scenario 
                         Aerosol WetScaMode DryDepMode
                         OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindDiffFactor WindFetch WindCoeff CurrentCoeff Depth Weteo }
 
-   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin \
-                        Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma \
+   set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin
+                        Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma
                         ReflectionLevel EmNumberParticles EmMass EmIsoName EmDepVel EmHalfLife EmWetScav EmDurationMin EmBottom EmTop EmRadius FFModule }
 
-   set Token(UrbanLS) { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs \
-                        Backward Order DurMin OutputTimeStepMin IsotropicK TurbSchmidt LimDetRey SVDLimit EscapeTest DetRC Alpha KC0 \
-                        DtSurTl ResetVeloc TolFactor NudgeWall NudgeGrnd NudgeCell ReleaseType WindDBGrid OutVars \
+   set Token(UrbanLS) { Model State NoExp NoSim NoPrev NameExp Name Coords Event By Blame Click AccSecs
+                        Backward Order DurMin OutputTimeStepMin IsotropicK TurbSchmidt LimDetRey SVDLimit EscapeTest DetRC Alpha KC0
+                        DtSurTl ResetVeloc TolFactor NudgeWall NudgeGrnd NudgeCell ReleaseType WindDBGrid OutVars
                         WindDate WindHeight WindSpd WindDir EmNumberParticles EmMass EmDepVel EmDurationMin EmBottom EmTop EmRadius EmDiffuse }
 
    set Token(NONE)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Coords }
