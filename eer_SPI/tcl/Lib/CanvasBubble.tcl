@@ -48,6 +48,10 @@ namespace eval CanvasBubble {
    set Data(TagList)      ""          ;#Liste des tags ayant une bulle
    set Data(TagCurrent)   ""          ;#Tag courant
    set Data(State)        1           ;#Etat d'activation des bulles
+
+   #----- Definition des écrans physiques
+   set Data(ScreenRes)  ""
+   catch {set Data(ScreenRes) [regexp -inline -all {(\d+)x(\d+)\+(\d+)\+(\d+)} [exec xrandr --nograb]]}
 }
 
 #----------------------------------------------------------------------------
@@ -201,7 +205,52 @@ proc CanvasBubble::Show { Canvas Tag X Y } {
 
       .canvasbubble.hlp configure -text [lindex $Data(InfoList$Canvas) $idx]
 
-      wm geometry .canvasbubble +[expr $X+10]+[expr $Y+10]
+      #----- Get window and screen dimensions
+      update
+      set w    [winfo width .canvasbubble.hlp]
+      set h    [winfo height .canvasbubble.hlp]
+      set sw   [winfo screenwidth .canvasbubble.hlp]
+      set sh   [winfo screenheight .canvasbubble.hlp]
+      set sdx  0
+      set sdy  0
+      set adj  10
+
+      #----- Fix for multiple screen with different resolutions
+      foreach {res resx resy dx dy} $Data(ScreenRes) {
+         #----- Check if we are in that current physical screen
+         if { $dx<=$X && $X<=$dx+$resx && $dy<=$Y && $Y<=$dy+$resy } {
+            set sw   $resx
+            set sh   $resy
+            set sdx  $dx
+            set sdy  $dy
+
+            #----- Substract the screen delta
+            incr X -$dx
+            incr Y -$dy
+
+            break
+         }
+      }
+
+      #----- Adjust origin in X depending on whether there is enough space on the right or on which side there is more space
+      if { $X+$adj+$w>$sw && $sw-$X-$adj-$w<$X-$adj-$w } {
+         set X [expr $X-$adj-$w]
+      } else {
+         set X [expr $X+$adj]
+      }
+
+      #----- Adjust origin in Y, trying to fit everything
+      if { $Y+$h > $sh } {
+         set Y [expr {max($sh-$h-10,0)}]
+      } else {
+         set Y [expr $Y+$adj]
+      }
+
+      #----- Add the screen delta
+      incr X $sdx
+      incr Y $sdy
+
+      wm geometry .canvasbubble +$X+$Y
       wm state .canvasbubble normal
       raise .canvasbubble
    }
