@@ -21,11 +21,7 @@ colormap read CM3 $env(HOME)/.spi/Colormap/COB_Seq_MHue_RdPu.rgba
 colormap read CM4 $env(HOME)/.spi/Colormap/COB_Seq_MHue_BuPu.rgba
 
 #Variable configurations
-set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
-set Params(TT) "-colormap CM2 -color black -font XFont12 -width 2 -rendercontour 1 -mapall True -intervalmode INTERVAL 5"
-set Params(HU) "-colormap CM1 -color black -font XFont12 -width 2 -rendertexture 1 "
-set Params(UU) "-colormap CM3 -color grey  -font XFont12 -width 1 -rendervector BARB -mapall False -intervals \{ -150 -100 -80 -50 -30 -20 -15 -10 0 10 15 20 30 50 80 100 150 \}"
-set Params(PN) "-colormap CM4 -color black -font XFont12 -width 2 -rendercontour 1 -intervalmode INTERVAL 4"
+set Params(PR) "-colormap CM3 -color grey  -font XFont12 -width 1 -rendercontour 1 -mapall True -intervals \{ 0 1 5 10 25 40 75 100 150 \}"
 
 set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 1 -mappolit 1 -mapadmin 1 \
   -mapcity 0 -maproad  0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10 2 -minsize 5 }
@@ -37,7 +33,6 @@ set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #0000
 variable Range
 set Range(Levels) 	{250 500 700 850 1000}
 set Range(Vars)   	{GZ HU TT UU}
-set Range(Vars_Lev0)	{PN PR}
 set Range(Hours)  	{000 024 036 048}
 set Range(Runs)   	{00 06 12 28}
 set Range(Sources)	{pres diag eta hyb}
@@ -48,6 +43,6 @@ set Range(Models)	{RDPS GDPS HRDPS}
 #Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
 #   False:<ObsTypes>:<Obs>:0.0:-:-:<Runs>:BURP
 set Layers {
-   True:<Models>:<Vars>:<Levels>:<Hours>:-:<Runs>:<Sources>
+   True:RDPS:PR:0.0:<Hours>:-:<Runs>:<Sources>
    False:SYNOP:<Obs>:SFC:-:-:<Runs>:BURP
 }

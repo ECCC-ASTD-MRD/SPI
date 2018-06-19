@@ -579,8 +579,14 @@ proc APViz::Source { Path Widget } {
 	  CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true 5
 	  set defaultSrc [CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false 5]
 	  
+	  #---- Definir le numero de tab a ouvrir dans la fenetre de configuration
+	  set tab 1					; # 1: Tab Champs
+	  if {[expr {"$defaultSrc" eq "BURP"}]} {
+	    set tab 2					; # 2: Tab Observations
+	  }
+	  
 	  button $Widget.range.variableGrid.layer${no}_delete 	-image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
-	  button $Widget.range.variableGrid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . 1"
+	  button $Widget.range.variableGrid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
 	  
 	  set RowID($no) [expr $no - $RowID(Adjustment)]
 	  #label $Widget.range.variableGrid.layer${no}_rowID	-text $RowID($no)
@@ -899,12 +905,13 @@ proc APViz::AssignVariable { Product Index } {
       set obsID OBS$RowID($Index)_${var}
       
       metobs create $obsID $filepath
-      #metobs define $obsID -VALID $valid 0
       dataspec create $obsID
       dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
 	-mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }
-      metmodel define [metobs define $obsID -MODEL] -items { { 0 0 13023 { } } } -spacing 10
-      metmodel configure [metobs define $obsID -MODEL] 13023 -dataspec $obsID
+
+      set lst [list [list 0 0 $var { }]]
+      metmodel define [metobs define $obsID -MODEL] -items $lst -spacing 10
+      metmodel configure [metobs define $obsID -MODEL] $var -dataspec $obsID
       set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $obsID]
       
       set comment {
@@ -923,10 +930,8 @@ proc APViz::AssignVariable { Product Index } {
 	set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $obsID]
       }
       }
-      
-      #TODO: Configure metmodel here
-      metmodel configure [metobs define $obsID -MODEL] 13023 -active $Value(Toggle,$Index)
-      #metobs define $obsID -active $Value(Toggle,$Index)
+
+      metmodel configure [metobs define $obsID -MODEL] $var -active $Value(Toggle,$Index)
       
       if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $obsID] eq -1} {
 	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $obsID 1
@@ -1340,12 +1345,7 @@ proc APViz::SetParam { Index Product } {
   set field [lindex $Data(Fields) $RowID($Index)]
   if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $field] ne -1} {
     ::FSTD::ParamUpdate $field
-    set comment {
-    set ::FSTD::Param(Spec) $field
-    ::FSTD::ParamSet $field
-    ::FSTD::ParamGet $field
-    ::FSTD::ParamPut True
-    }
+    ::Obs::ParamUpdate $field
   }
 }
 
