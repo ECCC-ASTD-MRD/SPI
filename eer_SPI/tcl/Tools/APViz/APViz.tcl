@@ -69,7 +69,7 @@ proc APViz::Close { } {
 
    $Data(Canvas) delete APVIZ
 
-   destroy .visualizer
+   destroy .apviz
 
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
@@ -379,8 +379,9 @@ proc APViz::Source { Path Widget } {
       set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer"}
       set Label(Calcul)		{ "Couches de calcul" "Calculation Layers"}
       set Label(Hour)		{ "Heure" "Hour" }
+      set Label(Layer)		{ "Couches" "Layers"}
       set Label(Level)		{ "Niveau" "Level"}	
-      set Label(Model)		{ "Modèle" "Model" }
+      set Label(Model)		{ "Données" "Data" }
       set Label(Source)		{ "Source" "Source" }
       set Label(Run)		{ "Run" "Run" }
       set Label(Type)		{ "Type" "Type" }
@@ -390,8 +391,8 @@ proc APViz::Source { Path Widget } {
       set Value(NbDispLayers)	0	; # Nombre de couches affichees
       set Value(NbCalcLayers)	0	; # Nombre de couches de calcul
       
-      set Value(Formula)	""	; # Nom de la formule (textvariable du entry pour la selection de formule)
-      set Value(FormulaName)	""	; # Formule correspondante au nom de formule
+      set Value(Formula)	""	; # Formule de la couche de calcul (textvariable du entry pour la selection de formule)
+      set Value(UneditedFormula) ""	; # Formule sans remplacement de variable
       
       set RowID(Adjustment)	0
       
@@ -436,11 +437,11 @@ proc APViz::Source { Path Widget } {
 	#----- Build product layer interface
 	::APViz::DeleteWidget $Widget.range	; # Liberer le widget
 	
-	frame $Widget.range
+	labelframe $Widget.range -text [lindex $Label(Layer) $GDefs(Lang)]
 	frame $Widget.range.variableGrid	; #Frame pour le grid
 	
 	#----- Column titles
-	label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)] 	-width 7
+	label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)] 	-width 8
 	label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)] 	-width 7
 	label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 	-width 7
 	label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)] 	-width 7
@@ -476,7 +477,7 @@ proc APViz::Source { Path Widget } {
 	  }
 	  $Widget.add.menu add separator
 	  $Widget.add.menu add command -label "Ajouter calcul manuel" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
-	  $Widget.add.menu add command -label "Ajouter calcul prédéfini" -command "APViz::${Product}::AddCalcLayer $Product $Widget False"
+	  $Widget.add.menu add command -label "Ajouter calcul prédéfini" -command "APViz::${Product}::AddCalcLayer_grid $Product $Widget"
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
 	
@@ -499,7 +500,7 @@ proc APViz::Source { Path Widget } {
       #		<Options>   : Option (Colonne)
       #		<IsSpinbox> : Boolean indiquant si on cree un spinbox 
       #		<Width>	    : Width of the widget
-      # Retour:
+      # Retour: La valeur par defaut
       #
       # Remarques :
       #
@@ -513,10 +514,11 @@ proc APViz::Source { Path Widget } {
 	  set rangeType [string trim $Style {< >}]
 	  if $IsSpinBox {
 	    spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
-	      -command "APViz::AssignVariable $Product $Index"	; #-var APViz::${Product}::Range(Variables) 
+	      -command "APViz::AssignVariable $Product $Index" 
 	  } else {
+	    regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
 	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 8 \
-	      "APViz::AssignVariable $Product $Index"
+	      "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget"
 	  }
 	  
 	  set ranges [split $Range($rangeType)]
@@ -525,12 +527,12 @@ proc APViz::Source { Path Widget } {
 	  } else {
 	    set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]	; # In case first elem in Ranges (after split)is a space
 	  }
-	  
-	  #eval set val \$APViz::${Product}::Value($Options,$Index)
 	} else {
 	    label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
 	    set APViz::${Product}::Value($Options,$Index) $Style
 	}
+	eval set defaultValue \$APViz::${Product}::Value($Options,$Index)
+	return $defaultValue
       }
       
       #-------------------------------------------------------------------------------
@@ -571,24 +573,25 @@ proc APViz::Source { Path Widget } {
 	  
 	  # CreateRangeWidget { Product Style Path Index Options IsSpinBox }
 	  CreateRangeWidget $Product $model 	$Widget.range.variableGrid.layer${no}_model 	$no Models true 5
-	  CreateRangeWidget $Product $var 	$Widget.range.variableGrid.layer${no}_var 	$no Vars false 5
+	  set defaultVar [CreateRangeWidget $Product $var $Widget.range.variableGrid.layer${no}_var $no Vars false 5]
 	  CreateRangeWidget $Product $level	$Widget.range.variableGrid.layer${no}_level 	$no Levels true 5
 	  CreateRangeWidget $Product $hour 	$Widget.range.variableGrid.layer${no}_hour 	$no Hours true 5
 	  CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true 5
-	  CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false 5
+	  set defaultSrc [CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false 5]
 	  
-	  button $Widget.range.variableGrid.layer${no}_delete 	-image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product"
+	  button $Widget.range.variableGrid.layer${no}_delete 	-image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
 	  button $Widget.range.variableGrid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . 1"
 	  
 	  set RowID($no) [expr $no - $RowID(Adjustment)]
-	  label $Widget.range.variableGrid.layer${no}_rowID	-text $RowID($no)
+	  #label $Widget.range.variableGrid.layer${no}_rowID	-text $RowID($no)
 	  
 	  #----- Place widgets in grid	
 	  set itemList [list toggle model var level run hour dataSrc param delete]
 	  set colNb 0
 	  foreach item $itemList {
 	    grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -padx 0.1
-	    Bubble::Create $Widget.range.variableGrid.layer${no}_$item $RowID($no)
+	    set fieldIDTemp FLD$RowID($no)_$defaultVar
+	    Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
 	    incr colNb
 	  }
 	  
@@ -601,7 +604,7 @@ proc APViz::Source { Path Widget } {
 	}
 	set Value(NbLayers) $no
 	
-	AdjustSpinboxMaxValue $Widget
+	AdjustSpinboxValues $Widget
       }
 
       #-------------------------------------------------------------------------------
@@ -620,11 +623,11 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc DeleteLayer { Widget Index Product } {
+      proc DeleteLayer { Widget Index Product Src } {
 	variable RowID
 	variable Value
-	puts "DELETING LAYER [lindex ${::APViz::Data(Fields)} $Index]+++++++++++++++++++++++++++++"
-	APViz::RemoveVariableFromVP $RowID($Index)	; # Enlever variable du Viewport
+
+	APViz::RemoveVariableFromVP $RowID($Index) [expr {"$Src" ne "BURP"}]	; # Enlever variable du Viewport
 	#---- Ajuster le rowID
 	incr RowID(Adjustment)
 	
@@ -633,16 +636,10 @@ proc APViz::Source { Path Widget } {
 	#---- Adjust all rowIds below range.variableGrid.layer${no}_toggle
 	for {set i 0} {$i < $Value(NbLayers)} {incr i} {
 	  if {$RowID($i) > $RowID($Index)} {
-	    if {[winfo exists $Widget.range.variableGrid.layer${i}_rowID]} {
-	      set oldRowID $RowID($i)
-	      set RowID($i) [expr $RowID($i) - 1]
-	      #---- Change row id in bubble
-	      foreach item $itemList {
-		Bubble::Create $Widget.range.variableGrid.layer${i}_$item $RowID($i)
-	      }
-	      #$Widget.range.variableGrid.layer${i}_rowID configure -text $RowID($i)
-	      APViz::AssignVariable $Product $i
-	    }
+	    set RowID($i) [expr $RowID($i) - 1]
+	    #$Widget.range.variableGrid.layer${i}_rowID configure -text $RowID($i)
+	    APViz::AssignVariable $Product $i
+	    AdjustIDBubble $Widget.range.variableGrid.layer${i} $i	; # Change row id in bubble
 	  }
 	}
 
@@ -662,20 +659,62 @@ proc APViz::Source { Path Widget } {
 	}
 	
 	incr Value(NbDispLayers) -1
-	AdjustSpinboxMaxValue $Widget
-	
-	puts "AFTER_DELETE  : ${::APViz::Data(Fields)}"
+	AdjustSpinboxValues $Widget
 	
       }
       
-      proc AdjustSpinboxMaxValue { Widget } {
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustIDBubble>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster le message dans la bulle d'aide pour que le bon fieldID soit affiche
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #		<Index>	   : L'index de la couche
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustIDBubble { Widget Index } {
+	variable RowID
+	
+	set itemList [list toggle model var level run hour dataSrc param delete]	
+	set Widget [lindex [split $Widget _] 0]
+
+	foreach item $itemList {
+	  if {[winfo exists ${Widget}_$item]} {
+	    Bubble::Create ${Widget}_$item [lindex ${::APViz::Data(Fields)} $RowID($Index)]
+	  }
+	}
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustSpinboxValues>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster les valeurs de la spinbox pour afficher les bons fieldIDs
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustSpinboxValues { Widget } {
 	variable Value
 	
 	#--- Ajuster la valeur max des spinbox pour les couches de calcul 
 	for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
 	  if {[winfo exists $Widget.calc.$i]} {
-	    $Widget.calc.$i.varA configure -to [expr $Value(NbDispLayers) - 1]
-	    $Widget.calc.$i.varB configure -to [expr $Value(NbDispLayers) - 1]
+	    $Widget.calc.$i.varA configure -value ${::APViz::Data(Fields)}
+	    $Widget.calc.$i.varB configure -value ${::APViz::Data(Fields)}
 	  }
 	}
       }
@@ -696,32 +735,26 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc AddCalcLayer { Product Widget {IsManual True} } {
+      proc AddCalcLayer { Product Widget } {
 	variable Value
+	
 	set no $Value(NbCalcLayers)
-	puts "Adding calc layer$no"
 	frame $Widget.calc.$no
 	  checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no)
 	  
-	  set formulaNames [list Difference Abs_difference Sum]
-	  set formulas [list A-B abs(A-B) A+B]
+	  Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 22 ${::APViz::Data(FormulaNames)} \
+	    "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no" ${::APViz::Data(Formulas)}
 	  
-	  Option::Create $Widget.calc.$no.formula "Formule:" "::APViz::${Product}::Value(FormulaName) APViz::${Product}::Value(Formula)" 1 15 $formulaNames "APViz::${Product}::SetFormula $Widget.calc.$no.formula" $formulas 
-	  
-	  set comment {
-	  if {$IsManual} {
-	    entry $Widget.calc.$no.formula -textvariable APViz::${Product}::Value(Formula,$no) -width 12
-	  } else {
-	    ComboBox::Create $Widget.calc.$no.formula APViz::${Product}::Value(Formula,$no) editclose unsorted nodouble -1 ${::APViz::Data(Calcul)} 10 10 {}
-	  }
-	  }
+	  catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
 	  
 	  label $Widget.calc.$no.lblA	-text "A:"
 	  label $Widget.calc.$no.lblB	-text "B:"
 	  
-	  spinbox $Widget.calc.$no.varA	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2 -textvariable Value(VarA,$no)
-	  spinbox $Widget.calc.$no.varB	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2 -textvariable Value(VarB,$no)
+	  spinbox $Widget.calc.$no.varA	-values ${::APViz::Data(Fields)} -width 7 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True -command "APViz::${Product}::SetFormula $no"
+	  spinbox $Widget.calc.$no.varB	-values ${::APViz::Data(Fields)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True -command "APViz::${Product}::SetFormula $no"
 	  
+	  Bubble::Create $Widget.calc.$no.varA "VarA"
+	  Bubble::Create $Widget.calc.$no.varB "VarB"
 	  button $Widget.calc.$no.param -image PARAMS -bd 1 	-relief flat -overrelief raised ;#-command "APViz::${Product}::DeleteCalcLayer $Widget $no $Product"
 	  button $Widget.calc.$no.delete -image DELETE -bd 1 	-relief flat -overrelief raised ;#-command "APViz::${Product}::DeleteCalcLayer $Widget $no $Product"
 	  
@@ -732,13 +765,45 @@ proc APViz::Source { Path Widget } {
 	incr Value(NbCalcLayers)
       }
       
-      proc SetFormula { Widget } {
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::SetFormula>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Remplace les variables A et B par les valeurs correspondantes
+      # Parametres 	 :
+      #		<Index>	 : L'index de la couche de calcul
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc SetFormula { Index } {
 	variable Value
-	
-	set Value(FormulaName) $Value(Formula)
+	#---- Value(Formula,$Index) est la textvariable associee au entry du widget Option de calcul
+	if {[info exists Value(UneditedFormula,$Index)]} {					; # Verifier si un calcul a ete selectionne
+	  regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)
+	  regsub B $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)
+	}
       }
       
-      proc AddCalcLayer_grid { Product Widget {IsManual True} } {
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AddCalcLayer_grid>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajouter une couche de calcul en grid
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #		<Index>	   : L'index de la couche a supprimer
+      #		<Product>  : Produit a afficher (aussi le namespace)
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      proc AddCalcLayer_grid { Product Widget } {
 	variable Value
 	set no $Value(NbCalcLayers)
 	
@@ -748,28 +813,22 @@ proc APViz::Source { Path Widget } {
 	  label $Widget.calc.grid.form -text "Formule" 	; #-width 7
 	  label $Widget.calc.grid.varA -text "A" 	; #-width 7
 	  label $Widget.calc.grid.varB -text "B" 	; #-width 7
-	  label $Widget.calc.grid.const -text "Const" 	; #-width 7
 	  
 	  grid $Widget.calc.grid 	-column 0 -row 0 -padx 0.2
 	  grid $Widget.calc.grid.form 	-column 1 -row 0 -padx 0.2
 	  grid $Widget.calc.grid.varA 	-column 2 -row 0 -padx 0.2
 	  grid $Widget.calc.grid.varB	-column 3 -row 0 -padx 0.2
-	  grid $Widget.calc.grid.const	-column 4 -row 0 -padx 0.2
 	  
 	}
 	
 	checkbutton $Widget.calc.grid.layer${no}_check -anchor w -var APViz::${Product}::Value(CalcToggle,$no)
 	
-	if {$IsManual} {
-	  entry $Widget.calc.grid.layer${no}_formula -textvariable APViz::${Product}::Value(Formula,$no) -width 22
-	} else {
-	  ComboBox::Create $Widget.calc.grid.layer${no}_formula APViz::${Product}::Value(Formula,$no) editclose unsorted nodouble -1 ${::APViz::Data(Calcul)} 20 10 {}
-	}
+	Option::Create $Widget.calc.grid.layer${no}_formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 24 ${::APViz::Data(FormulaNames)} \
+	    "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no" ${::APViz::Data(Formulas)}
 	
-	spinbox $Widget.calc.grid.layer${no}_varA	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2
-	spinbox $Widget.calc.grid.layer${no}_varB	-from 0 -to [expr $Value(NbDispLayers) - 1] -increment 1 -width 2
+	spinbox $Widget.calc.grid.layer${no}_varA	-values ${::APViz::Data(Fields)} -width 8 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True
+	spinbox $Widget.calc.grid.layer${no}_varB	-values ${::APViz::Data(Fields)} -width 8 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True
 	
-	button $Widget.calc.grid.layer${no}_apply 	-image CALC -bd 1 -relief flat -overrelief raised ;#-command "APViz::${Product}::DeleteCalcLayer $Widget $no $Product"
 	button $Widget.calc.grid.layer${no}_delete 	-image DELETE -bd 1 -relief flat -overrelief raised ;#-command "APViz::${Product}::DeleteCalcLayer $Widget $no $Product"
 	button $Widget.calc.grid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . 1"
 	
@@ -777,14 +836,8 @@ proc APViz::Source { Path Widget } {
 	grid $Widget.calc.grid.layer${no}_formula	-column 1 -row [expr $no + 1] -padx 1.0
 	grid $Widget.calc.grid.layer${no}_varA		-column 2 -row [expr $no + 1] -padx 1.0
 	grid $Widget.calc.grid.layer${no}_varB		-column 3 -row [expr $no + 1] -padx 1.0
-	grid $Widget.calc.grid.layer${no}_apply		-column 5 -row [expr $no + 1] -padx 0.2
 	grid $Widget.calc.grid.layer${no}_param		-column 6 -row [expr $no + 1] -padx 0.2
 	grid $Widget.calc.grid.layer${no}_delete	-column 7 -row [expr $no + 1] -padx 0.2
-	
-	if {!$IsManual} {
-	  entry $Widget.calc.grid.layer${no}_const -width 3
-	  grid $Widget.calc.grid.layer${no}_const -column 4 -row [expr $no + 1] -padx 1.0
-	}
 
 	incr Value(NbCalcLayers)
       }
@@ -831,51 +884,102 @@ proc APViz::AssignVariable { Product Index } {
   set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
   
   if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
-    set timestamp ${date}${run}_$hour	
-    set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
-    set fileID FILE_${model}_${src}_$timestamp
-		    
-    if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
-      if {[catch { fstdfile open $fileID read $filepath }] == 0} {
-	lappend Data(OpenedFiles) $fileID
-	puts "STANDARD FILE - Opening $fileID	$filepath"
+  
+    if {$src eq "BURP"} {
+      set timestamp ${date}${run}_
+      regsub stamp $DataSrc(OBS,$model) $timestamp filepath
+      puts "BURP Filepath for $var: $filepath"
+      
+      #---- Liberer l'observation
+      #TODO: changer le nom de Data(Fields)
+      if {[metobs is [lindex $Data(Fields) $RowID($Index)]]} {
+	APViz::RemoveVariableFromVP $RowID($Index) False
       }
+
+      set obsID OBS$RowID($Index)_${var}
       
-      if {[fstdfield is [lindex $Data(Fields) $RowID($Index)]]} {
-	APViz::RemoveVariableFromVP $RowID($Index)						; # Enlever la variable courante du VP pour cette couche
-      }
+      metobs create $obsID $filepath
+      #metobs define $obsID -VALID $valid 0
+      dataspec create $obsID
+      dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
+	-mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }
+      metmodel define [metobs define $obsID -MODEL] -items { { 0 0 13023 { } } } -spacing 10
+      metmodel configure [metobs define $obsID -MODEL] 13023 -dataspec $obsID
+      set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $obsID]
       
-      set levelType [ APViz::GetLevelType $src ]
-      set fieldID FLD$RowID($Index)_${var}
-      
-      if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+      set comment {
+      if {[catch {metobs create $obsID $filepath}]} {
 	::Dialog::Info . $Lbl(InvalidField)
 	return
       } else {
-	set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $fieldID]
+	#metobs define $obsID -VALID $valid 0
+	dataspec create VERIF_$obsID
+	dataspec configure VERIF_$obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
+	  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }
+	  
+	metmodel define [metobs define $obsID -MODEL] -items { { 0 0 13023 { } } } -spacing 10
+	metmodel configure [metobs define $obsID -MODEL] 13023 -dataspec VERIF_$obsID
+	
+	set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $obsID]
+      }
       }
       
-      #TODO: Cleanup
-      if { [info exist Params($var)] } {
-	catch { 
-	  eval fstdfield configure $fieldID $Params($var) 
-	}
-      } elseif { [info exist Params(${var}$lev)] } {
-	catch { 
-	  eval fstdfield configure $fieldID $Params(${var}$lev) 
-	}
-      }      
+      #TODO: Configure metmodel here
+      metmodel configure [metobs define $obsID -MODEL] 13023 -active $Value(Toggle,$Index)
+      #metobs define $obsID -active $Value(Toggle,$Index)
       
-      fstdfield configure $fieldID -active $Value(Toggle,$Index)
-      
-      AttributeColor $var $fieldID							; # Changer la couleur si la variable a deja ete assignee
-      
-      #---- Assigner seulement si n'est pas assigne
-      if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
-	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldID 1
+      if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $obsID] eq -1} {
+	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $obsID 1
       }      
     } else {
-      puts "File $filepath not available."
+      #----- Pas un fichier BURP
+      set timestamp ${date}${run}_$hour	
+      set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
+      set fileID FILE_${model}_${src}_$timestamp
+		      
+      if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
+	if {[catch { fstdfile open $fileID read $filepath }] == 0} {
+	  lappend Data(OpenedFiles) $fileID
+	  puts "STANDARD FILE - Opening $fileID	$filepath"
+	}
+	
+	if {[fstdfield is [lindex $Data(Fields) $RowID($Index)]]} {
+	  APViz::RemoveVariableFromVP $RowID($Index)					; # Enlever la variable courante du VP pour cette couche
+	}
+	
+	set levelType [ APViz::GetLevelType $src ]
+	set fieldID FLD$RowID($Index)_${var}
+	
+	if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+	  ::Dialog::Info . $Lbl(InvalidField)
+	  return
+	} else {
+	  set Data(Fields) [lreplace $Data(Fields) $RowID($Index) $RowID($Index) $fieldID]
+	}
+	
+	#TODO: Cleanup
+	if { [info exist Params($var)] } {
+	  catch { 
+	    eval fstdfield configure $fieldID $Params($var) 
+	  }
+	} elseif { [info exist Params(${var}$lev)] } {
+	  catch { 
+	    eval fstdfield configure $fieldID $Params(${var}$lev) 
+	  }
+	}      
+	
+	fstdfield configure $fieldID -active $Value(Toggle,$Index)
+	AttributeColor $var $fieldID							; # Changer la couleur si la variable a deja ete assignee
+	
+	#---- Assigner seulement si n'est pas assigne
+	if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
+	  Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldID 1
+	}
+
+      } else {
+	puts "File $filepath not available."
+      }
+    
     }
   } else {
     puts "Missing values"
@@ -934,28 +1038,23 @@ proc APViz::AttributeColor { Var FieldID } {
   
   #----- Verifier si un autre field du meme type est assigned
   set varList [eval lsearch -glob -all \$Data(Fields) *$Var]
-  puts "======== NEW FOR $FieldID ========"
-  puts "Number of $Var present: [llength $varList]"
+
   if {[llength $varList] > 1} {
     set i [string index $FieldID 3]
 
     set index [lsearch -exact $varList $i]		; # Le nieme var dans la liste
-    puts "DATAFIELDS : $Data(Fields)"
-    puts "Varlist: $varList, index: $index"
     if {$index >= 0} {
       set nbColors [llength [split $Data(Colors)]]
       set index [expr $index % $nbColors]
-      
-      puts "Getting color # $index : [lindex $Data(Colors) $index]"
       fstdfield configure $FieldID -color [lindex $Data(Colors) $index]
     }
-    
-    puts "======== END FOR $FieldID ========"
   }
 }
 
 proc APViz::CalculateExpression { Expr Index} {
   variable Data
+  
+  puts "Calculating Expr: $Expr"
   
   #---- Creer un id unique
   set resultFieldID CALC$Index
@@ -965,6 +1064,11 @@ proc APViz::CalculateExpression { Expr Index} {
       fstdfield free resultFieldID
     }
     vexpr resultFieldID $Expr
+  }
+  
+  #---- Assigner au ViewPort
+  if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $resultFieldID] eq -1} {
+    Viewport::Assign $Data(Frame) $Viewport::Data(VP) $resultFieldID 1
   }
 }
 
@@ -981,7 +1085,7 @@ proc APViz::TranslateExpression { Product Expr Index} {
     set charIndex [lsearch -exact $alphaValues [string index $Expr $i]]
     if {charIndex >= 0} {
       set var [lindex alphaValues charIndex]
-      set fieldID [lindex $Data(Fields) $Value(Var$var,$Index)]
+      set fieldID $Value(Var$var,$Index)
       puts "Field selected for $var : $fieldID"
       
       set translatedExpr [lreplace $translatedExpr $i $i $fieldID]
@@ -1155,6 +1259,7 @@ proc APViz::InitializeVars { Product } {
 #
 # Parametres 	    :
 #	<Index>	    : Indice de rangee (RowID) de la variable a enlever 
+#	<IsFSTDField> : Bool indiquant s'il s'agit d'un fstdfield
 #
 # Retour:
 #
@@ -1162,13 +1267,22 @@ proc APViz::InitializeVars { Product } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::RemoveVariableFromVP { Index } {
+proc APViz::RemoveVariableFromVP { Index {IsFSTDField True} } {
   variable Data
 
-  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $Data(Fields) $Index]	; # Enlever variable du viewport ---- was Viewport::Data(VP)
-  fstdfield free [lindex $Data(Fields) $Index]
-
-  set Data(Fields) [lreplace $Data(Fields) $Index $Index FLD$Index]
+  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $Data(Fields) $Index]	; # Enlever variable du viewport
+  set dataType ""
+  
+  if {$IsFSTDField} {
+    fstdfield free [lindex $Data(Fields) $Index]
+    set dataType FLD
+  } else {
+    puts "Freed [lindex $Data(Fields) $Index]"
+    metobs free [lindex $Data(Fields) $Index]
+    set dataType OBS
+  }
+  
+  set Data(Fields) [lreplace $Data(Fields) $Index $Index ${dataType}$Index]
 }
 
 #----------------------------------------------------------------------------

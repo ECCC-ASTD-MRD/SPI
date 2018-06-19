@@ -59,7 +59,7 @@ namespace eval APViz {
    # TODO: Fasire les listes dynamiquement en allant chercher le contenu de chaque dossier 
    set Data(AnalysisTypes)	{Trial_Fields Increments Tephigrams Snow_Analysis Ice_Analysis Ocean_Temperature_Analysis Soil_Moisture}
    set Data(ForecastsTypes)	{PROGS Progs_Comparison Vigilance_Products GUI}
-   set Data(VerificationTypes)	{RDPS REPS GDPS}						;#{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
+   set Data(VerificationTypes)	{RDPS REPS GDPS QPF_Verifications}						;#{RDPS REPS GDPS GEPS REDS-WAM GDPS-WAM QPF_Verifications Clouds Air_Quality}
    set Data(DiagnosticTypes)	{Dyonisos TVE TSH WIND Temperatures Latent_Heat Clouds}
    set Data(VAACTypes)		{ASH}
    

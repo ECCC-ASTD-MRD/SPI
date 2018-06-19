@@ -20,6 +20,12 @@ namespace eval APViz {
    global env
    variable Data
    variable DataSrc
+   
+   #----- Donnees pour les couches de calcul
+   set Data(FormulaNames) 	[list Difference Abs_difference Sum]		; # Nom des formules
+   set Data(Formulas)		[list A-B abs(A-B) A+B]				; # Formules correspondantes
+   
+   set Data(Colors)		{black pink blue green red}			; # Couleurs pour chaque variable additionnelle pour chaque type (GZ, HU, TT et UU)
 
    #----- Data Sources
    set mirrorgrid 		$env(CMCPROD)/hubs/suites
@@ -44,8 +50,9 @@ namespace eval APViz {
    set DataSrc(GEPS,model)	$mirrorgrid/ops/geps/e1/gridpt/prog/ens.glbclim/refcst/model
    set DataSrc(GEPS,diag)	$mirrorgrid/ops/geps/e1/gridpt/prog/ens.glbclim/refcst/diag
    
-   set Data(Calcul)		{Difference Abs_Difference Diff_of_Abs Sum Average Deviation_from_average}
-   
-   set Data(Colors)		{black pink blue green red}
-   
+   #----- Observations
+   set DataSrc(OBS,SHEF)	$env(CMCADE)/dbase/surface/shef/stamp	; # Remplacer le stamp avec regsub avant utilisation - stamp avec format : AAAAMMJJRR_
+   set DataSrc(OBS,SYNOP)	$env(CMCADE)/dbase/surface/synop/stamp	; # Remplacer le stamp avec regsub avant utilisation
+   set DataSrc(OBS,DERISFC)	$env(CMCADE)/banco/derisfc/g3/stamp	; # Remplacer le stamp avec regsub avant utilisation
+
 }

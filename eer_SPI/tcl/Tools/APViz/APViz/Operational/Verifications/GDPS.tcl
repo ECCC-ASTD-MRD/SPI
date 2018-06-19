@@ -34,7 +34,7 @@ set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #0000
 
 #Ranges
 variable Range
-set Range(Levels) 	{1000 850 700 500 250}
+set Range(Levels) 	{250 500 700 850 1000}
 set Range(Vars)   	{GZ HU TT UU}
 set Range(Vars_Lev0)	{PN PR}
 set Range(Hours)  	{000 024 036 048 060 072 084 096 120 144 168 192 216 240}
