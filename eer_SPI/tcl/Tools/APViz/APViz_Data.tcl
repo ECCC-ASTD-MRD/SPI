@@ -5,12 +5,10 @@
 # Dorval, Quebec
 #
 # Projet   : Package d'interface pour SPI
-# Fichier  : APViz.ctes
-# Creation : Juin 2003
+# Fichier  : APViz_Data.tcl
+# Creation : Juin 2018
 #
 # Description:
-#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
-#    a l'interface SPI
 #
 #    Descriptions des variables internes du module
 #
