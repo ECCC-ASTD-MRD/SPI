@@ -49,7 +49,7 @@ namespace eval Info {
 
    set Token(MLDPn)   { Model State NoExp NoSim NoPrev NameExp Name Coords Height Gauss Event By Blame Click AccSecs SimSecs Sim0Secs MetSecs Duration
                         Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge ModelTimeStep DtMin DtOverTl WindDiffFactor
-                        VarMesoscale Timescale SrcType FMLimit OutputTimeStepMin OutDT OutGrid OutCV OutAV OutVar ReflectionLevel Seed Scenario IsoChain
+                        VarMesoscale Timescale SrcType FMLimit OutputTimeStepMin OutDT OutCV OutAV OutVar ReflectionLevel Seed Scenario IsoChain
                         Aerosol WetScaMode DryDepMode
                         OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindFetch WindCoeff CurrentCoeff Depth Weteo }
 
@@ -250,7 +250,6 @@ namespace eval Info {
    set Lbl(DtOverTl)             { "Temps de diffusion sur le temps Lagrangien" "Diffusion time step over Lagrangian time scale" }
    set Lbl(WindDiffFactor)       { "Facteur de diffusion" "Diffusion factor" }
    set Lbl(OutDT)                { "Delta fichiers de sortie" "Output file delta" }
-   set Lbl(OutGrid)              { "Grille(s) de sortie" "Output grid(s)" }
 }
 
 #----------------------------------------------------------------------------
