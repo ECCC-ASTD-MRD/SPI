@@ -22,7 +22,7 @@ namespace eval APViz {
    variable Param
    variable DataSrc
 
-   set Param(Title)   { "APVIZ" "APVIZ" }
+   set Param(Title)   { "APViz" "APViz" }
    set Param(Version) 1.0
    set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)    EYE
@@ -69,10 +69,6 @@ namespace eval APViz {
    set Data(SoilVariables)	{"Map of Soil Moisture" "Map of Water on Vegetation"}
 
    set Data(OpenedFiles)	""
-   set Data(Fields)		""
+   set Data(LayerIDs)		""
    set Data(CalcIDs)		""
-   
-   set Data(Calcul)		{Difference Abs_Difference Diff_of_Abs Sum Average Deviation_from_average}
-   
-
 }

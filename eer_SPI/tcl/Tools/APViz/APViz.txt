@@ -25,6 +25,7 @@ namespace eval APViz {
    set Lbl(DescriptionMSG)	{ "Le produit généré sera décrit ici." "The generated product will be described here." }
    set Lbl(Category)		{ "Catégorie" "Category" }
    set Lbl(Geography)		{ "Géographie" "Geography" }
+   set Lbl(MissingFields)	{ "Aucun champs inclus dans la formule." "No fields included in formula." }
    set Lbl(Options)		{ "Options" "Options" }
    set Lbl(Type)		{ "Type" "Type" }
    set Lbl(Variables)		{ "Variables" "Variables"}
