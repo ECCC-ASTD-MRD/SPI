@@ -373,12 +373,12 @@ proc APViz::Source { Path Widget } {
       variable Params
       variable RowID
       
-      set Label(AddCalculation)	{ "Ajouter une couche de calcul" "Add calculation layer"}
-      set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer"}
-      set Label(Calcul)		{ "Couches de calcul" "Calculation Layers"}
+      set Label(AddCalculation)	{ "Ajouter une couche de calcul" "Add calculation layer" }
+      set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer" }
+      set Label(Calcul)		{ "Couches de calcul" "Calculation Layers" }
       set Label(Hour)		{ "Heure" "Hour" }
-      set Label(Layer)		{ "Couches" "Layers"}
-      set Label(Level)		{ "Niveau" "Level"}	
+      set Label(Layer)		{ "Couches" "Layers" }
+      set Label(Level)		{ "Niveau" "Level" }	
       set Label(Model)		{ "Données" "Data" }
       set Label(Source)		{ "Source" "Source" }
       set Label(Run)		{ "Run" "Run" }
@@ -662,7 +662,6 @@ proc APViz::Source { Path Widget } {
 	}
 
 	AdjustSpinboxValues $Widget
-	
       }
       
       #-------------------------------------------------------------------------------
@@ -914,24 +913,6 @@ proc APViz::AssignVariable { Product Index } {
       metmodel configure [metobs define $obsID -MODEL] $var -dataspec $obsID
       set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $obsID]
       
-      set comment {
-      if {[catch {metobs create $obsID $filepath}]} {
-	::Dialog::Info . $Lbl(InvalidField)
-	return
-      } else {
-	dataspec create VERIF_$obsID
-	dataspec configure VERIF_$obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
-	  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }
-	  
-	metmodel define [metobs define $obsID -MODEL] -items { { 0 0 13023 { } } } -spacing 10
-	metmodel configure [metobs define $obsID -MODEL] 13023 -dataspec VERIF_$obsID
-	
-	set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $obsID]
-      }
-      }
-
-      #metmodel configure [metobs define $obsID -MODEL] $var -active $Value(Toggle,$Index)
-      
       if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $obsID] eq -1} {
 	Viewport::Assign $Data(Frame) $Viewport::Data(VP) $obsID 1
       }      
@@ -1073,6 +1054,7 @@ proc APViz::AttributeColor { Var FieldID } {
 
 proc APViz::CalculateExpression { Product Index} {
   variable Data
+  variable Lbl
   variable ${Product}::Value
   variable ${Product}::RowID
   
@@ -1084,12 +1066,12 @@ proc APViz::CalculateExpression { Product Index} {
       APViz::RemoveVariableFromVP $Data(CalcIDs) $RowID(Calc$Index)		; # Enlever la variable courante du VP pour cette couche
     }
     
-    #set fldIDS	; # TODO
+    #----- Validate IDs in expression
+    set hasValidFlds [CheckExpression $expression FLD]
+    set hasValidObs [CheckExpression $expression OBS]
+    
     #----- Verifier la presence de field ou de metobs dans l'expression
-    if {([string first FLD $expression] >= 0) || ([string first OBS $expression] >= 0)} {
-      
-      #TODO: Valider les FLDID
-      
+    if {[expr $hasValidFlds || $hasValidObs]} {
       #----- Creer un id unique
       set formulaName ""
       set formulaID [lsearch -exact $Data(Formulas) $Value(UneditedFormula,$Index)]
@@ -1142,7 +1124,6 @@ proc APViz::Check { Product Index {IsCalc False}} {
   variable Data
   
   if {$IsCalc} {
-    puts "IS CALC! : $Value(CalcToggle,$Index)"
     set fieldID [lindex $Data(CalcIDs) $RowID(Calc$Index)] 
     set isActivated $Value(CalcToggle,$Index)
   } else {
@@ -1154,6 +1135,73 @@ proc APViz::Check { Product Index {IsCalc False}} {
     fstdfield configure $fieldID -active $isActivated
     Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::Check>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Permet d'ajouter ou d'enlever une variable du Viewport  
+#
+# Parametres 	 :
+#	<Source> : Provenance des donnees
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::CheckExpression { Expr VarType } {
+
+  set IDCount [regexp -all $VarType $Expr]
+  puts "------------- Found $IDCount $VarType"
+  
+  if { $IDCount <= 0 } {
+    puts "No $VarType found"
+    return False
+  }
+  
+  set offset 0
+  set IDList { }
+  
+  while { [llength $IDList] < $IDCount } {
+    set firstIndex [string first $VarType $Expr $offset]
+    puts "FirstIndex : $firstIndex"
+    #----- Verify if more than 1 digit (usual case: FLD#_VV)
+    if {$firstIndex >= 0} {
+      set lastIndex [expr $firstIndex + 6]			; # Max of 3 digits: FLD###_VV
+      while {$lastIndex < [string length $Expr]} {
+	set c [string index $Expr [expr $lastIndex + 1]]
+	puts "Evaluating $c"
+	
+	if {[string is alpha $c]} {
+	  incr lastIndex
+	  puts "Incrementing lastIndex"
+	} else {
+	  break
+	}
+      }
+      lappend IDList [string range $Expr $firstIndex $lastIndex]      
+      set offset [expr $firstIndex + 1]
+    } else {
+      puts "Not all IDs found"
+      break
+    }
+  }
+  
+  puts "FOUND IDS: $IDList"
+  
+  if {[llength $IDList] > 0} {
+    foreach ID $IDList {
+      puts "Verifying $ID"
+      if {![fstdfield is $ID]} {
+	return False
+      }
+    }
+  }
+  
+  return True
 }
 
 #-------------------------------------------------------------------------------
