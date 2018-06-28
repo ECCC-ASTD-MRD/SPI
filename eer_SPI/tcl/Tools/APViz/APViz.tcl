@@ -219,8 +219,8 @@ proc APViz::UpdateItems { Frame } {
 
    $Data(Canvas) delete APVIZ
 
-   if { $Data(VP)!="" } {		; # Data(VP)
-      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red	; # Data(VP)
+   if { $Data(VP)!="" } {
+      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red
    }
 }
 
@@ -784,12 +784,14 @@ proc APViz::Source { Path Widget } {
 	      
 	      #TODO: Gerer pour 2 digits
 	      foreach value $values var $vars {
-		#----- If value points to deleted var, set value to first of layerIDs	      
-		if {[regexp $DeletedPrevRowID $value]} {
+	      
+		#----- If value points to deleted var, set value to first of layerIDs
+		if {[string match \[A-Z\]+${DeletedPrevRowID}_\[A-Z\]+ $value]} {
 		  set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} 0]
 		} else {
 		  #----- Value will be affected only if rowNb is higher than deleted's
-		  set rowNb [string index $value 3]
+		  set lastIndex [expr [string first _ $value] - 1]
+		  set rowNb [string range $value 3 $lastIndex]
 		  if {$rowNb > $DeletedPrevRowID} {
 		    set newRowID [expr $rowNb - 1]
 		    if {$newRowID >= 0} {
@@ -880,7 +882,8 @@ proc APViz::Source { Path Widget } {
       proc SetFormula { Index } {
 	variable Value
 	#----- Value(Formula,$Index) est la textvariable associee au entry du widget Option de calcul
-	if {[info exists Value(UneditedFormula,$Index)]} {					; # Verifier si un calcul a ete selectionne
+	#----- Verifier si un calcul a ete selectionne
+	if {[info exists Value(UneditedFormula,$Index)]} {
 	  regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)
 	  regsub B $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)
 	}
@@ -926,7 +929,8 @@ proc APViz::AssignVariable { Product Index } {
   set src	$Value(Sources,$Index)
   set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
   
-  if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {		; # Verifier si tous les champs sont remplis
+  #----- Verifier si tous les champs sont remplis
+  if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {
   
     if {$src eq "BURP"} {
       set timestamp ${date}${run}_
@@ -958,8 +962,9 @@ proc APViz::AssignVariable { Product Index } {
       set timestamp ${date}${run}_$hour	
       set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
       set fileID FILE_${model}_${src}_$timestamp
-		      
-      if {[fstdfile is $filepath]} {							; # Verifier la validite du fichier standard
+      
+      #----- Verifier la validite du fichier standard
+      if {[fstdfile is $filepath]} {
 	if {[catch { fstdfile open $fileID read $filepath }] == 0} {
 	  lappend Data(OpenedFiles) $fileID
 	  puts "STANDARD FILE - Opening $fileID	$filepath"
@@ -1423,8 +1428,6 @@ proc APViz::ReinitializeVP { } {
 
 proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   variable Data
-  puts "Removing [lindex $IDList $Index]"
-  puts "BEFORE ------ Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)]"
   
   Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $IDList $Index]	; # Enlever variable du viewport
   set dataType ""
@@ -1442,8 +1445,6 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   } else {
     set Data(LayerIDs) [lreplace $IDList $Index $Index ${dataType}$Index]
   }
-  
-  puts "AFTER  ------ Assigned: [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)]"
 }
 
 #----------------------------------------------------------------------------
