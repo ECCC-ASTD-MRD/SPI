@@ -884,7 +884,9 @@ proc APViz::Source { Path Widget } {
 	#----- Value(Formula,$Index) est la textvariable associee au entry du widget Option de calcul
 	#----- Verifier si un calcul a ete selectionne
 	if {[info exists Value(UneditedFormula,$Index)]} {
-	  regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)
+	  if {![regexp ALL $Value(UneditedFormula,$Index)]} {
+	     regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)		; # TODO: Gerer le cas ou presence de ALL et A
+	  }
 	  regsub B $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)
 	}
       }
@@ -1104,8 +1106,17 @@ proc APViz::CalculateExpression { Product Index} {
   puts "-------------- Calculating Expr: $expression"
 
   if {$expression ne ""} {
+  
+    #----- Substitute expressions
+    puts "transformed expr: [set expression [TranslateExpression $Product $expression]]"
+    
     if {[fstdfield is [lindex $Data(CalcIDs) $RowID(Calc$Index)]]} {
       APViz::RemoveVariableFromVP $Data(CalcIDs) $RowID(Calc$Index)		; # Enlever la variable courante du VP pour cette couche
+    }
+    
+    if {[regexp const $expression]} {
+      ::Dialog::Info . $Lbl(MissingConst)
+      return
     }
     
     #----- Validate IDs in expression
@@ -1142,6 +1153,89 @@ proc APViz::CalculateExpression { Product Index} {
       return
     }
   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::TranslateExpression>
+# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Calculer une expression de fields et l'afficher sur le VP
+#
+# Parametres 	  :
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#	<Index>	  : Index de la couche 
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::TranslateExpression { Product Expr } {
+  variable Data
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  
+  set totalLayerIDs [llength $Data(LayerIDs)]
+  if {$totalLayerIDs <= 0} { set totalLayerIDs 1 }
+  
+  set totalCheckedLayerIDs 0
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
+      incr totalCheckedLayerIDs
+    }
+  }
+  
+  if {[regexp {sum\(ALL\)} $Expr]} 	{ regsub -all {sum\(ALL\)} $Expr 	[GetAllFieldsWithOp $Product +] Expr }
+  if {[regexp {sum\(CHECKED\)} $Expr]} 	{ regsub -all {sum\(CHECKED\)} $Expr 	[GetAllFieldsWithOp $Product + True] Expr }
+  if {[regexp {avg\(ALL\)} $Expr]} 	{ regsub -all {avg\(ALL\)} $Expr	\([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
+  if {[regexp {avg\(CHECKED\)} $Expr]} 	{ regsub -all {avg\(CHECKED\)} $Expr	\([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
+  
+  return $Expr
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetAllFieldsWithOp>
+# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Calculer une expression de fields et l'afficher sur le VP
+#
+# Parametres 	      :
+#	<Operator>    : L'operateur de calcul (+-*/)
+#	<OnlyChecked> : Bool indiquand si on n'inclut que les variables selectionnees 
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
+  variable Data
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  
+  set fieldString ""
+  
+  if {!$OnlyChecked} {
+    foreach ID $Data(LayerIDs) {
+      if {[fstdfield is $ID]} { 
+	set fieldString [string cat $fieldString $ID$Operator] 
+      }
+    }
+  } else {
+    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
+	set ID [lindex $Data(LayerIDs) $RowID(Layer$i)]
+	if {[fstdfield is $ID]} {
+	  set fieldString [string cat $fieldString $ID$Operator]
+	}
+      }
+    }
+  }
+  
+  set fieldString [string range $fieldString 0 [expr [string length $fieldString] - 2]]
+  return $fieldString
 }
 
 #-------------------------------------------------------------------------------
@@ -1199,7 +1293,6 @@ proc APViz::Check { Product Index {IsCalc False}} {
 proc APViz::CheckExpression { Expr VarType } {
 
   set IDCount [regexp -all $VarType $Expr]
-  puts "------------- Found $IDCount $VarType"
   
   if { $IDCount <= 0 } {
     puts "No $VarType found"
@@ -1211,17 +1304,14 @@ proc APViz::CheckExpression { Expr VarType } {
   
   while { [llength $IDList] < $IDCount } {
     set firstIndex [string first $VarType $Expr $offset]
-    puts "FirstIndex : $firstIndex"
     #----- Verify if more than 1 digit (usual case: FLD#_VV)
     if {$firstIndex >= 0} {
       set lastIndex [expr $firstIndex + 6]			; # Max of 3 digits: FLD###_VV
       while {$lastIndex < [string length $Expr]} {
 	set c [string index $Expr [expr $lastIndex + 1]]
-	puts "Evaluating $c"
-	
+
 	if {[string is alpha $c]} {
 	  incr lastIndex
-	  puts "Incrementing lastIndex"
 	} else {
 	  break
 	}
@@ -1234,11 +1324,8 @@ proc APViz::CheckExpression { Expr VarType } {
     }
   }
   
-  puts "FOUND IDS: $IDList"
-  
   if {[llength $IDList] > 0} {
     foreach ID $IDList {
-      puts "Verifying $ID"
       if {![fstdfield is $ID]} {
 	return False
       }
