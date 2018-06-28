@@ -517,7 +517,7 @@ proc APViz::Source { Path Widget } {
 	  } else {
 	    regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
 	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 8 \
-	      "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget"
+	      "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget False"
 	  }
 	  
 	  set ranges [split $Range($rangeType)]
@@ -608,7 +608,7 @@ proc APViz::Source { Path Widget } {
 	}
 	set Value(NbLayers) $no
 	
-	AdjustSpinboxValues $Widget
+	AdjustSpinboxValues $Widget False
       }
 
       #-------------------------------------------------------------------------------
@@ -651,6 +651,7 @@ proc APViz::Source { Path Widget } {
 	if {$lastIndex != $RowID(Layer$Index)} {
 	  APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $lastIndex [expr {"$Src" ne "BURP"}]		; # Unassign ssi l'index a supprimer n'est pas la derniere rangee
 	}
+	set oldRowID $RowID(Layer$Index)
 	set RowID(Layer$Index) -1							; # Index supprime, n'est plus affiche
 	set ::APViz::Data(LayerIDs) [lreplace ${::APViz::Data(LayerIDs)} $lastIndex $lastIndex ]
 	
@@ -661,7 +662,7 @@ proc APViz::Source { Path Widget } {
 	  }
 	}
 
-	AdjustSpinboxValues $Widget
+	AdjustSpinboxValues $Widget True $oldRowID
       }
       
       #-------------------------------------------------------------------------------
@@ -756,14 +757,50 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc AdjustSpinboxValues { Widget } {
+      proc AdjustSpinboxValues { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } } {
 	variable Value
+	variable RowID
 	
-	#----- Ajuster la valeur max des spinbox pour les couches de calcul 
+	#----- Ajuster la valeur des spinbox pour les couches de calcul 
 	for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
 	  if {[winfo exists $Widget.calc.$i]} {
+	  
+	    #----- Recuperer les valeurs avant l'ajustement
+	    set a $Value(VarA,$i)
+	    set b $Value(VarB,$i)
+	    
 	    $Widget.calc.$i.varA configure -value ${::APViz::Data(LayerIDs)}
 	    $Widget.calc.$i.varB configure -value ${::APViz::Data(LayerIDs)}
+	    
+	    if {!$IsDueToLayerDeletion} {
+	      #----- Values stay the same
+	      set Value(VarA,$i) $a
+	      set Value(VarB,$i) $b
+	    } else {
+	      #----- Values only change if RowID of selected var has changed
+	      
+	      set values [list $a $b] 
+	      set vars 	 [list A B]
+	      
+	      #TODO: Gerer pour 2 digits
+	      foreach value $values var $vars {
+		#----- If value points to deleted var, set value to first of layerIDs	      
+		if {[regexp $DeletedPrevRowID $value]} {
+		  set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} 0]
+		} else {
+		  #----- Value will be affected only if rowNb is higher than deleted's
+		  set rowNb [string index $value 3]
+		  if {$rowNb > $DeletedPrevRowID} {
+		    set newRowID [expr $rowNb - 1]
+		    if {$newRowID >= 0} {
+		      set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} $newRowID]
+		    }
+		  } else {
+		    set Value(Var${var},$i) $value
+		  }
+		}
+	      }
+	    }
 	  }
 	}
       }
@@ -1138,17 +1175,19 @@ proc APViz::Check { Product Index {IsCalc False}} {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::Check>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+# Nom      : <APViz::CheckExpression>
+# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
 #
-# But      : 	Permet d'ajouter ou d'enlever une variable du Viewport  
+# But      : 	Verifier si des IDs de type VarType est contenu dans l'expression 
+#		et s'ils sont valides 
 #
-# Parametres 	 :
-#	<Source> : Provenance des donnees
+# Parametres  :
+#   <Expr>    : Expression a evaluer
+#   <VarType> : Type de variable (FLD ou OBS)
 #	
-# Retour:
+# Retour: 	Booleen indiquant si des ID de ce type contenus dans l'expression sont valides
 #
-# Remarques :
+# Remarques : 	Le nom des ID (fstdfield et metobs) commencent par FLD ou OBS
 #
 #-------------------------------------------------------------------------------
 
