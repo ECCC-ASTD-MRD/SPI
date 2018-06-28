@@ -727,8 +727,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
 
       if (Field->GRef->Ids && Field->GRef->Ids[0]>-1) {
-         free(lat);
-         free(lon);
+         if (lat) free(lat);
+         if (lon) free(lon);
       }
    }
 

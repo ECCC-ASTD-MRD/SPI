@@ -393,13 +393,13 @@ static int GeoRef_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 */
 static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
-   int          i,j,idx,nidx;
+   int          i,j,ni,nj,idx,nidx;
    double       tra[6],inv[6],*tm,*im,dx,dy,lat0,lon0,lat1,lon1;
    TGeoRef     *gref;
    Tcl_Obj     *obj;
 
-   static CONST char *sopt[] = { "-rpn","-projection","-transform","-invtransform","-extent","-location","-type","-border","-grid",NULL };
-   enum        opt { RPN,PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,LOCATION,TYPE,BORDER,GRID };
+   static CONST char *sopt[] = { "-rpn","-projection","-transform","-invtransform","-extent","-size","-location","-type","-border","-grid",NULL };
+   enum        opt { RPN,PROJECTION,TRANSFORM,INVTRANSFORM,EXTENT,SIZE,LOCATION,TYPE,BORDER,GRID };
 
    gref=GeoRef_Get(Name);
    if (!gref) {
@@ -420,16 +420,15 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                Tcl_WrongNumArgs(Interp,2,Objv,"ni nj dx dy lat0 lon0 lat1 lon1");
                return(TCL_ERROR);
             }
-            Tcl_GetIntFromObj(Interp,Objv[1],&i);
-            Tcl_GetIntFromObj(Interp,Objv[2],&j);
-            Tcl_GetDoubleFromObj(Interp,Objv[3],&dx);
-            Tcl_GetDoubleFromObj(Interp,Objv[4],&dy);
-            Tcl_GetDoubleFromObj(Interp,Objv[5],&lat0);
-            Tcl_GetDoubleFromObj(Interp,Objv[6],&lon0);
-            Tcl_GetDoubleFromObj(Interp,Objv[7],&lat1);
-            Tcl_GetDoubleFromObj(Interp,Objv[8],&lon1);
-
-            if (GeoRef_RPNGridZE(gref,i,j,dx,dy,0.0,180.0,4,lat0,lon0,lat1,lon1)) {
+            Tcl_GetIntFromObj(Interp,Objv[++i],&ni);
+            Tcl_GetIntFromObj(Interp,Objv[++i],&nj);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dx);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&dy);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat0);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon0);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lat1);
+            Tcl_GetDoubleFromObj(Interp,Objv[++i],&lon1);
+            if (GeoRef_RPNGridZE(gref,ni,nj,dx,dy,0.0,180.0,4,lat0,lon0,lat1,lon1)) {
                return(TCL_OK);
             } else {
                return(TCL_ERROR);
@@ -680,6 +679,28 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                Tcl_ListObjIndex(Interp,Objv[i],3,&obj);
                Tcl_GetDoubleFromObj(Interp,obj,&tra[3]);
                GeoRef_Size(gref,tra[0],tra[1],tra[2],tra[3],gref->BD);
+            }
+            break;
+
+        case SIZE:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(gref->NX));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(gref->NY));
+               Tcl_SetObjResult(Interp,obj);
+            } else {
+               if (Tcl_ListObjLength(Interp,Objv[++i],&nidx)==TCL_ERROR) {
+                  return(TCL_ERROR);
+               }
+               if (nidx!=2) {
+                  Tcl_AppendResult(Interp,"\n   GeoRef_Define: Invalid number of values, must be 4 \"",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+               Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
+               Tcl_GetIntFromObj(Interp,obj,&tra[0]);
+               Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
+               Tcl_GetIntFromObj(Interp,obj,&tra[1]);
+               GeoRef_Size(gref,0,0,tra[0]-1,tra[1]-1,gref->BD);
             }
             break;
 
