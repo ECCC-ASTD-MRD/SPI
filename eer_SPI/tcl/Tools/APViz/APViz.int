@@ -42,6 +42,9 @@ proc APViz::Window { } {
    set Data(Frame)  $Page::Data(Frame)
    set ::FSTD::Param(Mode) FLD
    
+   #----- Close FieldBox
+   ::FieldBox::CloseAll
+   
    set Param(Window) .apviz
 
    if { ![winfo exists .APViz] } {
