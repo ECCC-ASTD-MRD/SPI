@@ -20,8 +20,8 @@ namespace eval APViz {
    variable DataSrc
    
    #----- Donnees pour les couches de calcul
-   set Data(FormulaNames) 	[list Difference Abs_difference Sum Sum_All Sum_Checked Average_All Average_Checked Multiply_by_factor]		; # Nom des formules
-   set Data(Formulas)		[list A-B abs(A-B) A+B sum(ALL) sum(CHECKED) avg(ALL) avg(CHECKED) A*const]					; # Formules correspondantes
+   set Data(FormulaNames) 	[list Difference Abs_difference Sum Sum_All Sum_Checked Average_All Average_Checked]		; # Nom des formules
+   set Data(Formulas)		[list A-B abs(A-B) A+B sum(ALL) sum(CHECKED) avg(ALL) avg(CHECKED)]				; # Formules correspondantes
    
    set Data(Colors)		{black pink blue green red}		; # Couleurs pour chaque variable additionnelle pour chaque type (GZ, HU, TT et UU)
 

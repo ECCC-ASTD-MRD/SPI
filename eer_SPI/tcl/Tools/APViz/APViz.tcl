@@ -832,13 +832,14 @@ proc APViz::Source { Path Widget } {
 	  checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
 	  
 	  Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 22 ${::APViz::Data(FormulaNames)} \
-	    "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no" \
+	    "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no True ; APViz::CalculateExpression $Product $no" \
 	    ${::APViz::Data(Formulas)}
 	  
 	  set Value(UneditedFormula,$no) ""
 	  catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
 	  
-	  bind $Widget.calc.$no.formula.e <Return> "APViz::CalculateExpression $Product $no"	; # Calculer l'expression lorsque Return
+	  bind $Widget.calc.$no.formula.e <Return> "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ;\
+	    APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"	; # Calculer l'expression lorsque Return
 	  
 	  label $Widget.calc.$no.lblA	-text "A:"
 	  label $Widget.calc.$no.lblB	-text "B:"
@@ -879,15 +880,43 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc SetFormula { Index } {
+      proc SetFormula { Index {IsInit False}} {
 	variable Value
-	#----- Value(Formula,$Index) est la textvariable associee au entry du widget Option de calcul
 	#----- Verifier si un calcul a ete selectionne
 	if {[info exists Value(UneditedFormula,$Index)]} {
-	  if {![regexp ALL $Value(UneditedFormula,$Index)]} {
-	     regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)		; # TODO: Gerer le cas ou presence de ALL et A
+	  #----- Verifier si on initialise la formule a partir de formules predefinies
+	  if {$IsInit} {
+	    if {![regexp ALL $Value(UneditedFormula,$Index)]} {
+	      regsub A $Value(UneditedFormula,$Index) $Value(VarA,$Index) Value(Formula,$Index)		; # TODO: Gerer le cas ou presence de ALL et A
+	    }
+	    regsub B $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)
+	  } else {
+	    #----- Ordre : A toujours avant B
+	    set IDRegExpr \(\(FLD\)|\(OBS\)\)\[0-9\]+\(_\)\[A-Z\]+
+	    set IDCount [regexp -all $IDRegExpr $Value(Formula,$Index)]
+	    set subFormula ""
+	    
+	    #----- On tient compte de 2 variables slmnt : A et B
+	    if {$IDCount >= 1} {
+	      #----- Remplacer le A
+	      regsub $IDRegExpr $Value(Formula,$Index) $Value(VarA,$Index) Value(Formula,$Index)
+	      
+	      #----- Recuperer les indices de A et retirer A de la formule pour trouver les indices de B
+	      regexp -indices $IDRegExpr $Value(Formula,$Index) indexesA
+	      set subFormula [string range $Value(Formula,$Index) [lindex $indexesA 1] [string length $Value(Formula,$Index)]]
+	    }
+	    
+	    if {$IDCount == 2} {
+	      if {$subFormula ne ""} {
+		#----- Trouver les indices de B
+		regexp -indices $IDRegExpr $subFormula indexesB
+		set startIndex [expr [lindex $indexesB 0] + [lindex $indexesA 1]]
+		
+		#----- Remplacer B dans la formule complete
+		regsub -start $startIndex $IDRegExpr $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)	 
+	      }
+	    }
 	  }
-	  regsub B $Value(Formula,$Index) $Value(VarB,$Index) Value(Formula,$Index)
 	}
       }
    }
@@ -1291,11 +1320,11 @@ proc APViz::Check { Product Index {IsCalc False}} {
 #-------------------------------------------------------------------------------
 
 proc APViz::CheckExpression { Expr VarType } {
+  variable Data
 
   set IDCount [regexp -all $VarType $Expr]
   
   if { $IDCount <= 0 } {
-    puts "No $VarType found"
     return False
   }
   
@@ -1326,7 +1355,7 @@ proc APViz::CheckExpression { Expr VarType } {
   
   if {[llength $IDList] > 0} {
     foreach ID $IDList {
-      if {![fstdfield is $ID]} {
+      if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $ID] eq -1} {
 	return False
       }
     }
