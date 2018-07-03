@@ -1340,17 +1340,22 @@ proc APViz::Check { Product Index {IsCalc False}} {
   variable Data
   
   if {$IsCalc} {
-    set fieldID [lindex $Data(CalcIDs) $RowID(Calc$Index)] 
+    set ID [lindex $Data(CalcIDs) $RowID(Calc$Index)] 
     set isActivated $Value(CalcToggle,$Index)
   } else {
-    set fieldID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
+    set ID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
     set isActivated $Value(Toggle,$Index)
   }
   
-  if {[fstdfield is $fieldID]} {
-    fstdfield configure $fieldID -active $isActivated
-    Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
+  if {[fstdfield is $ID]} {
+    fstdfield configure $ID -active $isActivated
+  } elseif {[metobs is $ID]} {
+    set startIndex [expr [string first _ $ID] + 1]
+    set var [string range $ID $startIndex [string length $ID]]
+    metmodel configure [metobs define $ID -MODEL] $var -active $isActivated 
   }
+  
+  Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
 }
 
 #-------------------------------------------------------------------------------

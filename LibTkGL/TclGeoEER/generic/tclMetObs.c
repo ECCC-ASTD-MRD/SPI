@@ -2129,6 +2129,10 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    min[0]=min[1]=max[0]=max[1]=0;n=0;
    for(i=0;i<Obs->Model->NItem;i++) {
       if ((spec=Obs->Model->Items[i].Spec)) {
+	
+	if (!spec->Active) {
+	  return 0;
+	}
 
          // Get value limits
          if (isnan(spec->Min) || isnan(spec->Max) || spec->Min==spec->Max)
