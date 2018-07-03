@@ -445,16 +445,26 @@ proc APViz::Source { Path Widget } {
 	label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)] 	-width 7
 	label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 	-width 7
 	label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)] 	-width 7
-	label $Widget.range.variableGrid.run 	-text [lindex $Label(Run) $GDefs(Lang)] 	-width 7
-	label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	-width 7
+	label $Widget.range.variableGrid.run 	-text [lindex $Label(Run) $GDefs(Lang)] 	-width 4
+	label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	-width 5
+	
+	checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
+            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { puts "----- RUNLOCK:" }
+            
+        checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
+            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { puts "----- HOURLOCK:" }
 	
 	grid $Widget.range.variableGrid 	-column 0 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.mod 	-column 1 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.run 	-column 2 -row 0 -padx 0.2
-	grid $Widget.range.variableGrid.hour 	-column 3 -row 0 -padx 0.2
-	grid $Widget.range.variableGrid.src 	-column 4 -row 0 -padx 0.2
-	grid $Widget.range.variableGrid.var 	-column 5 -row 0 -padx 0.2
-	grid $Widget.range.variableGrid.lev 	-column 6 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.runLock -column 3 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.hour 	-column 4 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.hrLock 	-column 5 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.src 	-column 6 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.var 	-column 7 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid.lev 	-column 8 -row 0 -padx 0.2
 	
 	CreateLayers $Product $Layers $Widget	; # Creation des couches
 	pack $Widget.range -side top -fill x -anchor nw
@@ -513,7 +523,7 @@ proc APViz::Source { Path Widget } {
 	  set rangeType [string trim $Style {< >}]
 	  if $IsSpinBox {
 	    spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
-	      -command "APViz::AssignVariable $Product $Index" 
+	      -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
 	  } else {
 	    regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
 	    ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 8 \
@@ -594,7 +604,12 @@ proc APViz::Source { Path Widget } {
 	  set itemList [list toggle model run hour dataSrc var level param delete]
 	  set colNb 0
 	  foreach item $itemList {
-	    grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -padx 0.1
+	    if {($item eq "run") || ($item eq "hour")} {
+	      grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -columnspan 2 -padx 0.1
+	      incr colNb
+	    } else {
+	      grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -padx 0.1
+	    }
 	    set fieldIDTemp FLD$RowID(Layer$no)_$defaultVar
 	    Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
 	    incr colNb
@@ -738,6 +753,43 @@ proc APViz::Source { Path Widget } {
 	foreach item $itemList {
 	  if {[winfo exists ${Widget}_$item]} {
 	    Bubble::Create ${Widget}_$item [lindex ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)]
+	  }
+	}
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustLockedValues>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster le message dans la bulle d'aide pour que le bon fieldID soit affiche
+      #
+      # Parametres 	   :
+      #		<Widget>   : Path vers le widget
+      #		<Index>	   : L'index de la couche
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustLockedValues { Option Index Product } {
+	variable Value
+      
+	switch $Option {
+	  "Runs" 	{ set lockType Run }
+	  "Hours"	{ set lockType Hour }
+	  default 	{ return }
+	}
+	
+	if {$Value(${lockType}Lock)} {
+	  set newValue $Value($Option,$Index)
+	  #----- Change all other values
+	  for {set i 0} {($i < $Value(NbLayers))} {incr i} {
+	    if {$i != $Index} {
+	      set Value($Option,$i) $newValue
+	      APViz::AssignVariable $Product $i
+	    }
 	  }
 	}
       }
