@@ -136,7 +136,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
    att0=GLShader_AttribGet(prog,"Vd");
 
-   /*Projeter les particules*/
+  /*Projeter les particules*/
    glEnable(GL_TEXTURE_2D);
    glBegin(GL_POINTS);
    for(n=0;n<FSIZE2D(Field->Def);n++) {

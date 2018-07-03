@@ -132,6 +132,7 @@ proc Option::Create { Frame Label Var Edit Width List Cmd args } {
    set Data(Var$Frame)   $Var
    set Data(Cmd$Frame)   $Cmd
    set Data(Check$Frame) [expr $Edit==-1?1:0]
+   set Data(Pre$Frame)   ""
 
    frame $Frame
       if { $Label!="" } {
@@ -256,7 +257,7 @@ proc Option::Set { Frame List { ListVal {} } } {
             }
          } else {
             $Frame.b.m add command -label $item -columnbreak $columnbreak \
-               -command "set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
+               -command "eval set Option::Data(Pre$Frame) \$$Data(Var$Frame); set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
          }
       }
       incr noitem

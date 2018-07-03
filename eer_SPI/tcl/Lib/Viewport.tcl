@@ -1445,6 +1445,7 @@ proc Viewport::DrawArea { Frame VP Coords Tags SingleTag Color Outline Stipple S
 #  <Tags>    : Identificateur de la ligne
 #  <Color>   : Couleur.
 #  <BD>      : Epaisseur de la ligne en pixel.
+#  <Mode>    : Mode de projection (ONE,COORD,TRUE)
 #
 # Retour:
 #
@@ -1452,13 +1453,13 @@ proc Viewport::DrawArea { Frame VP Coords Tags SingleTag Color Outline Stipple S
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::DrawLine { Frame VP Coords Tags Color BD } {
+proc Viewport::DrawLine { Frame VP Coords Tags Color BD { Mode COORD }} {
    variable Data
    variable Map
 
    #----- Verifier le type de projection pour les parametres et les couleurs
 
-   set l  [$VP -projectline COORD $Coords]
+   set l  [$VP -projectline $Mode $Coords]
    set l0 [lindex $l 0]
    set l1 [lindex $l 1]
 

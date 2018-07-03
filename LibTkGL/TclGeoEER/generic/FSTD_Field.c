@@ -174,7 +174,8 @@ int FSTD_FieldSubBuild(TData *Field) {
                Field->SDef[i]->NIJ=Field->Def->NI*Field->Def->NJ;
                Field->SDef[i]->Level=Field->Def->Level;
                Field->SDef[i]->Mode=Field->SDef[i]->Data[0];
-               Field->SDef[i]->Mask=&Field->Def->Mask[dij];
+               if (Field->Def->Mask)
+                  Field->SDef[i]->Mask=&Field->Def->Mask[dij];
                
               // Increment after global grid
                dij+=ni*nj;
@@ -193,7 +194,7 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
    int ni,nj,ig;
    char grtyp[2];
    
-   // If the subgrid index is different from thte current
+   // If the subgrid index is different from the current
    if (Field->GRef->Grid[0]=='U' && N!=Field->GRef->NId && N<=Field->GRef->NbId) {
       // Clean positionnal data
       Data_Clean(Field,1,0,1);
@@ -727,8 +728,8 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       }
 
       if (Field->GRef->Ids && Field->GRef->Ids[0]>-1) {
-         free(lat);
-         free(lon);
+         if (lat) free(lat);
+         if (lon) free(lon);
       }
    }
 
@@ -2513,7 +2514,6 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    FSTD_FileUnset(Interp,file);
-
    return(TCL_OK);
 }
 
