@@ -449,12 +449,10 @@ proc APViz::Source { Path Widget } {
 	label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	-width 5
 	
 	checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
-            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command { puts "----- RUNLOCK:" }
+            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
             
         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
-            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command { puts "----- HOURLOCK:" }
+            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
 	
 	grid $Widget.range.variableGrid 	-column 0 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.mod 	-column 1 -row 0 -padx 0.2
@@ -761,11 +759,12 @@ proc APViz::Source { Path Widget } {
       # Nom      : <APViz::$product::AdjustLockedValues>
       # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
       #
-      # But      : Ajuster le message dans la bulle d'aide pour que le bon fieldID soit affiche
+      # But      : Ajuster les runs et les heures si ces-derniers sont locked
       #
       # Parametres 	   :
-      #		<Widget>   : Path vers le widget
+      #		<Option>   : Path vers le widget
       #		<Index>	   : L'index de la couche
+      #		<Product>  : Produit a afficher (aussi le namespace)
       #
       # Retour:
       #
@@ -1030,7 +1029,7 @@ proc APViz::AssignVariable { Product Index } {
       metobs create $obsID $filepath
       dataspec create $obsID
       dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
-	-mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }
+	-mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
 
       set lst [list [list 0 0 $var { }]]
       metmodel define [metobs define $obsID -MODEL] -items $lst -spacing 10

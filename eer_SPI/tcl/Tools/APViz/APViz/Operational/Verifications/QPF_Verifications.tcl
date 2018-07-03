@@ -31,5 +31,5 @@ set Range(Models)	{RDPS GDPS HRDPS}
 #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
 set Layers {
    True:RDPS:PR:0.0:<Hours>:-:<Runs>:<Sources>
-   True:SYNOP:<Obs>:SFC:-:-:<Runs>:BURP
+   False:SYNOP:<Obs>:SFC:-:-:<Runs>:BURP
 }
