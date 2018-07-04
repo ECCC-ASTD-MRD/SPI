@@ -286,37 +286,13 @@ proc APViz::AsProject { File } {
 
 proc APViz::MacroCategory { } {
    variable Data
-   # Selon les valeurs de Data(MacroCategories)
    
-   switch $Data(MacroCategory) {
-      "SATELLITE" 	{ puts "Satellite"
-			  set Data(MacroTypes) {}
-			  APViz::AddToListBox {}
-			  APViz::UpdateRange  ; #Appel de la fonction, car pas de choix dans la listBox
-			}
-      "ANALYSIS"  	{ puts "Analysis"
-			  # Remplacer la liste des options au niveau 2
-			  set $Data(MacroTypes) $Data(AnalysisTypes)
-			  APViz::AddToListBox $Data(AnalysisTypes)
-			}
-      "FORECASTS" 	{ puts "Forecasts"
-			  set Data(MacroTypes) [list $Data(ForecastsTypes)]
-			  APViz::AddToListBox $Data(ForecastsTypes)
-			}
-      "VERIFICATIONS"	{ puts "Verifications"
-			  set Data(MacroTypes) $Data(VerificationTypes)
-			  APViz::AddToListBox $Data(VerificationTypes)
-			}
-      "DIAGNOSTIC"  	{ puts "Diagnostic"
-			  set Data(MacroTypes) $Data(DiagnosticTypes)
-			  APViz::AddToListBox $Data(DiagnosticTypes)
-			}
-      "VAAC"  		{ puts "Vaac"
-			  set Data(MacroTypes) $Data(VAACTypes)
-			  APViz::AddToListBox $Data(VAACTypes)
-			}
+   set macroCategory $Data(MacroCategory)
+   if {[info exists Data($macroCategory,Files)]} {
+    set Data(MacroTypes) $Data($macroCategory,Files)
    }
 }
+
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::AddToListBox>
@@ -335,14 +311,8 @@ proc APViz::MacroCategory { } {
 
 proc APViz::AddToListBox { lst } {
   variable Data
-  
-  # Vider et repopuler la liste
-  $Data(TypeListBox) delete 0 end
-  set index 0
-  foreach item $lst {
-    $Data(TypeListBox) insert $index $item
-    incr index
-  }
+
+  set Data(MacroTypes) [split $lst]
 }
 
 #-------------------------------------------------------------------------------
@@ -696,7 +666,7 @@ proc APViz::Source { Path Widget } {
 	variable Value
 	
 	#----- Remove calc var from VP
-	APViz::RemoveVariableFromVP ${::APViz::Data(CalcIDs)} $RowID(Layer$Index)	; # Enlever variable du Viewport
+	APViz::RemoveVariableFromVP ${::APViz::Data(CalcIDs)} $RowID(Calc$Index)	; # Enlever variable du Viewport
 	
 	incr RowID(CalcAdjustment)							; # Ajuster le rowID
 	  
@@ -1452,8 +1422,8 @@ proc APViz::CloseFiles { } {
 # But      : 	Creer l'onterface des variables ranges
 #
 # Parametres	:
-#	<Lst>  	: Liste des differents AnalysisTypes
-#	<Index>	: Index de l'item choisir
+#	<Lst>  	: Liste des differents Types
+#	<Index>	: Index de l'item choisi
 #	<Dir>	: Dossier dans lequel se trouve le fichier de config
 #
 # Retour:
@@ -1470,6 +1440,7 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
   APViz::CloseFiles
   
   set selected [lindex $Lst $Index]
+  #TODO: Change filepath if needed
   set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/Operational/$Dir/$selected.tcl"
   APViz::Source $filepath $Data(Tab)
 }
@@ -1494,6 +1465,54 @@ proc APViz::DeleteWidget { Widget } {
     eval destroy [winfo children $Widget]
     destroy $Widget
   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FetchConfigFiles>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Construire les listes pour les fichiers de configuration
+#
+# Parametres	:
+#	<Widget>  	: Widget a supprimer
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::FetchConfigFiles { } {
+  global GDefs
+  variable Data
+  
+  set dir APViz
+  set path $GDefs(Dir)/tcl/Tools/APViz/
+  
+  APViz::FetchFiles $path $dir
+}
+
+proc APViz::FetchFiles { Path Name } {
+  variable Data
+  
+  set Data($Name,Files)   {}
+  set Data($Name,Folders) {}
+  set Path ${Path}${Name}/
+  set fileList [glob -nocomplain -tails -path $Path *]
+  
+  foreach file $fileList {
+    if {[file isdirectory ${Path}$file]} {
+      lappend Data($Name,Folders) $file
+      
+      #----- Appel recursif
+      APViz::FetchFiles $Path $file
+    } else {
+      lappend Data($Name,Files) [lindex [split $file .] 0]
+    }
+  }
+  puts "=============== $Name ===================== "
+  puts "Files of $Name : $Data($Name,Files)"
+  puts "Folders of $Name: $Data($Name,Folders)"
 }
 
 #-------------------------------------------------------------------------------
@@ -1577,6 +1596,7 @@ proc APViz::ReinitializeVP { } {
     }
   }
   
+  #----- Liberer les ID de couches de calcul
   foreach calcID $Data(CalcIDs) {
     if {[fstdfield is $calcID]} {
       fstdfield free $calcID
@@ -1605,7 +1625,7 @@ proc APViz::ReinitializeVP { } {
 #
 # Parametres 	    :
 #	<Index>	    : Indice de rangee (RowID) de la variable a enlever 
-#	<IsFSTDField> : Bool indiquant s'il s'agit d'un fstdfield
+#	<IsFSTDField> : Bool indiquant s'il s'agit d'un fstdfield (pour differencier des Observations)
 #
 # Retour:
 #
@@ -1616,18 +1636,20 @@ proc APViz::ReinitializeVP { } {
 proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   variable Data
   
-  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) [lindex $IDList $Index]	; # Enlever variable du viewport
+  set ID [lindex $IDList $Index]
+  
+  Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $ID	; # Enlever variable du viewport
   set dataType ""
   
   if {$IsFSTDField} {
-    fstdfield free [lindex $IDList $Index]
+    fstdfield free $ID
     set dataType FLD
   } else {
-    metobs free [lindex $IDList $Index]
+    metobs free $ID
     set dataType OBS
   }
   
-  if {[string equal -length 4 [lindex $IDList 0] CALC]} {
+  if {[regexp CALC $ID]} {
     set Data(CalcIDs) [lreplace $IDList $Index $Index CALC$Index]
   } else {
     set Data(LayerIDs) [lreplace $IDList $Index $Index ${dataType}$Index]
@@ -1649,19 +1671,15 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
 #----------------------------------------------------------------------------
 
 proc APViz::UpdateRange { } { 
-   global GDefs
    variable Data
    
    set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
-   switch $Data(MacroCategory) {
-      "SATELLITE" 	{ puts "Satellite" }
-      "ANALYSIS"  	{ APViz::CreateRangeInterface [split $Data(AnalysisTypes)] $selection Analysis }
-      "FORECASTS" 	{ puts "Forecasts" }
-      "VERIFICATIONS"	{ APViz::CreateRangeInterface [split $Data(VerificationTypes)] $selection Verifications }
-      "DIAGNOSTIC"  	{ puts "Diagnostic" }
-      "VAAC"  		{ puts "Vaac" }
+   set macroCategory $Data(MacroCategory)
+   if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
+    APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
    }
 }
+
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::SetParam>

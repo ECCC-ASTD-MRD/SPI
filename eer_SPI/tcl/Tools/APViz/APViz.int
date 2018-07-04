@@ -61,6 +61,14 @@ proc APViz::Window { } {
 
          if { $SPI::Param(Window) } { wm transient .apviz . }
       }
+      
+      #----- Fetch config files and folders and populate lists
+      APViz::FetchConfigFiles
+      
+      if {[info exists APViz::Data(Operational,Folders)]} {
+	set Data(MacroCategories) $APViz::Data(Operational,Folders)
+	puts "!!!!!! $APViz::Data(Operational,Folders)"
+      }
 
       TabFrame::Create .apviz.tab 1 ""
       set Data(Tab) [TabFrame::Add .apviz.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
