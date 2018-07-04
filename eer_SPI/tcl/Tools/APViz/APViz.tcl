@@ -474,11 +474,8 @@ proc APViz::Source { Path Widget } {
 	menu $Widget.add.menu
 	  set no 0
 	  foreach layer $Layers {
-	    if {[string equal -length 4 $layer True]} {
-	      regsub True: $layer "" desc
-	    } else { 
-	      regsub False: $layer "" desc
-	    }
+	    #----- Layer description
+	    regsub \(True:|False:\) $layer "" desc
 	    
 	    $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
 	    incr no
@@ -762,7 +759,7 @@ proc APViz::Source { Path Widget } {
       # But      : Ajuster les runs et les heures si ces-derniers sont locked
       #
       # Parametres 	   :
-      #		<Option>   : Path vers le widget
+      #		<Option>   : Nom de la colonne
       #		<Index>	   : L'index de la couche
       #		<Product>  : Produit a afficher (aussi le namespace)
       #
@@ -774,6 +771,7 @@ proc APViz::Source { Path Widget } {
       
       proc AdjustLockedValues { Option Index Product } {
 	variable Value
+	variable RowID
       
 	switch $Option {
 	  "Runs" 	{ set lockType Run }
@@ -785,7 +783,7 @@ proc APViz::Source { Path Widget } {
 	  set newValue $Value($Option,$Index)
 	  #----- Change all other values
 	  for {set i 0} {($i < $Value(NbLayers))} {incr i} {
-	    if {$i != $Index} {
+	    if {($i != $Index) && ($RowID(Layer$i) >= 0)} {
 	      set Value($Option,$i) $newValue
 	      APViz::AssignVariable $Product $i
 	    }
@@ -972,6 +970,7 @@ proc APViz::Source { Path Widget } {
       }
    }
    
+   set Data(CurrentProduct) $product
    ${product}::Load $Path $product $Widget
    
    APViz::InitializeVars $product
@@ -1570,16 +1569,32 @@ proc APViz::ReinitializeVP { } {
   Viewport::UnAssign $Data(Frame) $Viewport::Data(VP)	; # Enlever toutes les variables du viewport
   
   #----- Liberer les ID
-  foreach field $Data(LayerIDs) {
-    if {[string equal -length 3 $field FLD]} {
-      fstdfield free $field
+  foreach ID $Data(LayerIDs) {
+    if {[regexp FLD $ID]} {
+      fstdfield free $ID
     } else {
-      metobs free $field
+      metobs free $ID
+    }
+  }
+  
+  foreach calcID $Data(CalcIDs) {
+    if {[fstdfield is $calcID]} {
+      fstdfield free $calcID
+    }
+  }
+  
+  set product $Data(CurrentProduct)
+  if {$product ne ""} {
+    variable ${product}::Value
+    #----- Reinitialiser les textvariables pour calcul
+    for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      set Value(Formula,$i) ""
     }
   }
 
   set Data(LayerIDs) {}
   set Data(CalcIDs) {}
+  set Data(CurrentProduct) ""
 }
 
 #----------------------------------------------------------------------------

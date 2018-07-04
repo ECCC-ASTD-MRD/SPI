@@ -71,4 +71,6 @@ namespace eval APViz {
    set Data(OpenedFiles)	""
    set Data(LayerIDs)		""
    set Data(CalcIDs)		""
+   
+   set Data(CurrentProduct)	""
 }
