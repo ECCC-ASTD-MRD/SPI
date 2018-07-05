@@ -1441,7 +1441,7 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
   
   set selected [lindex $Lst $Index]
   #TODO: Change filepath if needed
-  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/Operational/$Dir/$selected.tcl"
+  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/${Data(Folder)}/$Dir/$selected.tcl"
   APViz::Source $filepath $Data(Tab)
 }
 
@@ -1657,10 +1657,10 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::UpdateRange>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+# Nom      : <APViz::SelectFolder>
+# Creation : July 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : Mise a jour de la section Range de l'interface pour le type Analysis
+# But      : Selectionner le dossier et afficher les choix de macro categories correspondantes
 #
 # Parametres :
 #
@@ -1670,14 +1670,14 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::UpdateRange { } { 
-   variable Data
-   
-   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
-   set macroCategory $Data(MacroCategory)
-   if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
-    APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
-   }
+proc APViz::SelectFolder { } {
+  variable Data
+  set selectedFolder $Data(Folder)
+  if {[info exists Data($selectedFolder,Folders)]} {
+    set APViz::Data(MacroCategories) $Data($selectedFolder,Folders)
+    ComboBox::DelAll $Data(MacroCatDropdown)
+    ComboBox::AddList $Data(MacroCatDropdown) $Data($selectedFolder,Folders)
+  }
 }
 
 
@@ -1716,3 +1716,27 @@ proc APViz::SetParam { Index Product {IsCalcLayer False}} {
   }
 }
 
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::UpdateRange>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Mise a jour de la section Range de l'interface pour le type Analysis
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::UpdateRange { } { 
+   variable Data
+   
+   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
+   set macroCategory $Data(MacroCategory)
+   if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
+    APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
+   }
+}

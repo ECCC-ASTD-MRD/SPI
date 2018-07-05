@@ -67,7 +67,10 @@ proc APViz::Window { } {
       
       if {[info exists APViz::Data(Operational,Folders)]} {
 	set Data(MacroCategories) $APViz::Data(Operational,Folders)
-	puts "!!!!!! $APViz::Data(Operational,Folders)"
+      }
+      
+      if {[info exists APViz::Data(APViz,Folders)]} {
+	set Data(Folders) $APViz::Data(APViz,Folders)
       }
 
       TabFrame::Create .apviz.tab 1 ""
@@ -92,10 +95,20 @@ proc APViz::Window { } {
       #----- Options
       labelframe $Data(Tab).opt -text [lindex $Lbl(Options) $GDefs(Lang)]
       
+      #--------- Folder
+      frame $Data(Tab).opt.folder
+	label $Data(Tab).opt.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
+	ComboBox::Create $Data(Tab).opt.folder.val APViz::Data(Folder) noedit sorted nodouble -1 $APViz::Data(Folders) 1 7 { APViz::SelectFolder }
+	set APViz::Data(Folder) [lindex $APViz::Data(Folders) 0]
+	pack $Data(Tab).opt.folder.lbl -side left
+	pack $Data(Tab).opt.folder.val -side left -fill x -expand True
+      pack $Data(Tab).opt.folder -side top -fill x -expand True
+      
       #--------- Category
       frame $Data(Tab).opt.cat
 	label $Data(Tab).opt.cat.lbl -text [lindex $Lbl(Category) $GDefs(Lang)] -width 12 -anchor w
 	ComboBox::Create $Data(Tab).opt.cat.val APViz::Data(MacroCategory) noedit sorted nodouble -1 $APViz::Data(MacroCategories) 1 7 { APViz::MacroCategory }
+	set Data(MacroCatDropdown) $Data(Tab).opt.cat.val
 	pack $Data(Tab).opt.cat.lbl -side left
 	pack $Data(Tab).opt.cat.val -side left -fill x -expand True
       pack $Data(Tab).opt.cat -side top -fill x -expand True
