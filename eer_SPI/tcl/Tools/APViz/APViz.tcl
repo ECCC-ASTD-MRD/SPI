@@ -447,8 +447,8 @@ proc APViz::Source { Path Widget } {
 	label $Widget.range.dateConfig.lbl -text "Date: " -width 40 -anchor e 
 	ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 $dateList 14 5 "APViz::InitializeVars $Product"
 	set APViz::${Product}::Value(Date) [lindex $dateList [expr [llength $dateList] - 1]]
-	
-	bind $Widget.range.dateConfig.cb.select <Return> "eval APViz::ValidateDate $Product \${APViz::${Product}::Value(Date)}"
+
+	bind $Widget.range.dateConfig.cb.select <Return> "APViz::DateBinding $Product"
 	
 	grid $Widget.range.dateConfig 		-column 0 -row 0 -padx 1
 	grid $Widget.range.dateConfig.lbl 	-column 1 -row 0 -padx 1
@@ -998,7 +998,10 @@ proc APViz::AssignVariable { Product Index } {
   #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
   
   set date $Value(Date)
-  puts "Date: $date"
+
+  if {![APViz::ValidateDate $Product $date]} {
+    return
+  }
   
   #----- Verifier si tous les champs sont remplis
   if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {
@@ -1077,6 +1080,8 @@ proc APViz::AssignVariable { Product Index } {
 
       } else {
 	puts "File $filepath not available."
+	
+	#----- Concatener le path du fichier au message d'erreur
 	set messages {}
 	foreach msg $Lbl(InvalidFile) {
 	  lappend messages ${msg}$filepath
@@ -1433,6 +1438,30 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::DateBinding>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Valider la date et initialiser les variables si valide
+#
+# Parametres :
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::DateBinding { Product } {
+  variable ${Product}::Value
+  
+  set result [APViz::ValidateDate $Product $Value(Date)] 
+  if {$result} {
+    APViz::InitializeVars $Product
+  }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::DeleteWidget>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
@@ -1536,7 +1565,6 @@ proc APViz::FetchDates { Product Model Src } {
   variable ${Product}::Value
   
   set path $DataSrc(${Model},${Src})/
-  puts "Fetching dates for $path"
   
   set fileList [glob -nocomplain -tails -path $path *]
   set dateList {}
@@ -1544,7 +1572,6 @@ proc APViz::FetchDates { Product Model Src } {
   foreach file $fileList {
     if {![file isdirectory ${path}$file]} {
       set date [string range $file 0 7]		; # Format nomFichier: AAAAMMDDRR_HHH
-      #----- TODO: pour fichier BURP
       if {[lsearch -exact $dateList $date] eq -1} {
 	lappend dateList $date
       }
@@ -1817,17 +1844,31 @@ proc APViz::UpdateRange { } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ValidateDate>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Valider la date
+#
+# Parametres :
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#	<Date>	  : La date a valider
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::ValidateDate { Product Date } {
   variable Lbl
   variable ${Product}::Value
-  
-  puts "VALIDATING DATE"
+
   set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
-  puts "Validating if $Date    is in     $Value(Dates)          : $result"
   
   if {!$result} {
     ::Dialog::Info . $Lbl(WrongDate)
   }
   
-  return result
+  return $result
 }
