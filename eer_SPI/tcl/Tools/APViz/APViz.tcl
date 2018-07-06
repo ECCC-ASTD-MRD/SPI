@@ -34,8 +34,6 @@ source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
-puts "IN APVIZ.TCL"
-
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::Close>
 # Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE -
@@ -441,7 +439,7 @@ proc APViz::Source { Path Widget } {
 	pack $Widget.range -side top -fill x -anchor nw
 	
 	#----- Configurable date
-	set dateList [lsort [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]]
+	set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
 	
 	frame $Widget.range.dateConfig
 	label $Widget.range.dateConfig.lbl -text "Date: " -width 40 -anchor e 
@@ -959,6 +957,8 @@ proc APViz::Source { Path Widget } {
    
    set Data(CurrentProduct) $product
    ${product}::Load $Path $product $Widget
+      
+   APViz::UpdateAvailableDates $product
    
    APViz::InitializeVars $product
 }
@@ -1577,7 +1577,7 @@ proc APViz::FetchDates { Product Model Src } {
       }
     }
   }
-  set Value(Dates) $dateList
+  set Value(Dates) [lsort $dateList]
 }
 
 #-------------------------------------------------------------------------------
@@ -1871,4 +1871,36 @@ proc APViz::ValidateDate { Product Date } {
   }
   
   return $result
+}
+
+proc APViz::UpdateAvailableDates { Product } {
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  variable DataSrc
+
+  puts "UPDATE CHECK"
+  
+  #----- Recuperer le premier index qui na pas ete supprime
+  set i 0
+  while {$RowID(Layer$i) == -1 } {
+    incr i
+  }
+  
+  set model $Value(Models,$i)
+  set src $Value(Sources,$i)
+  set path $DataSrc($model,$src)
+  
+  #----- Verifier s'il y a eu des changements dans le dossier
+  set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
+  
+  puts "$lastModifiedDate"
+  
+  if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
+    puts "Updating dates   || old date: [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]"
+    APViz::FetchDates $Product $model $src
+  }
+  
+  after [expr {1000*60}] APViz::UpdateAvailableDates $Product
+  
+  puts "FINISHED CHECKING"
 }
