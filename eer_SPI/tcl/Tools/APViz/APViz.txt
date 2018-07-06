@@ -32,6 +32,8 @@ namespace eval APViz {
    set Lbl(Type)		{ "Type" "Type" }
    set Lbl(Variables)		{ "Variables" "Variables"}
    set Lbl(InvalidField)	{ "Choix de champ invalide" "Invalid field choice" }
+   set Lbl(WrongDate)		{ "Veuillez choisir parmi les dates disponibles" "Please select an available date" }
+   set Lbl(InvalidFile)		{ "Fichier non disponible : " "File not available : "}
    
    #----- Messages
 

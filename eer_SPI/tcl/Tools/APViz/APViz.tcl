@@ -107,7 +107,7 @@ proc APViz::Draw { Frame VP } {
 
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
-   set Data(VP)     $VP			; # Data(VP)
+   set Data(VP)     $VP
 
    APViz::UpdateItems $Frame
 }
@@ -168,7 +168,7 @@ proc APViz::Move { Frame VP } {
 
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
-   set Data(VP)     $VP			; # Data(VP)
+   set Data(VP)     $VP
 
    APViz::UpdateItems $Frame
 }
@@ -360,6 +360,8 @@ proc APViz::Source { Path Widget } {
       
       set Value(Formula)	 ""	; # Formule de la couche de calcul (textvariable du entry pour la selection de formule)
       set Value(UneditedFormula) ""	; # Formule sans remplacement de variable
+      set Value(Date)		 ""
+      set Value(HardcodedDate)	 {20180704 20180705 20180706}	; #TODO: FETCH DATES FROM FOLDER
       
       set RowID(LayerAdjustment)	0	; # Ajustement pour le calcul du rowID pour les couches
       set RowID(CalcAdjustment)		0	; # Ajustement pour le calcul du rowID pour les couches de calcul
@@ -408,6 +410,7 @@ proc APViz::Source { Path Widget } {
 	::APViz::DeleteWidget $Widget.range	; # Liberer le widget
 	
 	labelframe $Widget.range -text [lindex $Label(Layer) $GDefs(Lang)]
+	
 	frame $Widget.range.variableGrid	; #Frame pour le grid
 	
 	#----- Column titles
@@ -424,7 +427,7 @@ proc APViz::Source { Path Widget } {
         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
             -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
 	
-	grid $Widget.range.variableGrid 	-column 0 -row 0 -padx 0.2
+	grid $Widget.range.variableGrid 	-column 0 -row 1 -padx 0.2
 	grid $Widget.range.variableGrid.mod 	-column 1 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.run 	-column 2 -row 0 -padx 0.2
 	grid $Widget.range.variableGrid.runLock -column 3 -row 0 -padx 0.2
@@ -436,6 +439,20 @@ proc APViz::Source { Path Widget } {
 	
 	CreateLayers $Product $Layers $Widget	; # Creation des couches
 	pack $Widget.range -side top -fill x -anchor nw
+	
+	#----- Configurable date
+	set dateList [lsort [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]]
+	
+	frame $Widget.range.dateConfig
+	label $Widget.range.dateConfig.lbl -text "Date: " -width 40 -anchor e 
+	ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 $dateList 14 5 "APViz::InitializeVars $Product"
+	set APViz::${Product}::Value(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+	
+	bind $Widget.range.dateConfig.cb.select <Return> "eval APViz::ValidateDate $Product \${APViz::${Product}::Value(Date)}"
+	
+	grid $Widget.range.dateConfig 		-column 0 -row 0 -padx 1
+	grid $Widget.range.dateConfig.lbl 	-column 1 -row 0 -padx 1
+	grid $Widget.range.dateConfig.cb 	-column 2 -row 0 -padx 1
 
 	::APViz::DeleteWidget $Widget.add	; # Liberer le widget
 	
@@ -978,14 +995,17 @@ proc APViz::AssignVariable { Product Index } {
   set run	$Value(Runs,$Index)
   set hour	$Value(Hours,$Index)
   set src	$Value(Sources,$Index)
-  set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
+  #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
+  
+  set date $Value(Date)
+  puts "Date: $date"
   
   #----- Verifier si tous les champs sont remplis
   if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {
   
     if {$src eq "BURP"} {
       set timestamp ${date}${run}_
-      regsub stamp $DataSrc(OBS,$model) $timestamp filepath
+      set filepath $DataSrc(OBS,$model)/$timestamp
       puts "BURP Filepath for $var: $filepath"
       
       #----- Liberer l'observation
@@ -995,6 +1015,7 @@ proc APViz::AssignVariable { Product Index } {
 
       set obsID OBS$RowID(Layer$Index)_${var}
       
+      #TODO: move to config files
       metobs create $obsID $filepath
       dataspec create $obsID
       dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
@@ -1056,6 +1077,11 @@ proc APViz::AssignVariable { Product Index } {
 
       } else {
 	puts "File $filepath not available."
+	set messages {}
+	foreach msg $Lbl(InvalidFile) {
+	  lappend messages ${msg}$filepath
+	}
+	::Dialog::Info . $messages
       }
     
     }
@@ -1202,45 +1228,6 @@ proc APViz::CalculateExpression { Product Index} {
       return
     }
   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::TranslateExpression>
-# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : 	Calculer une expression de fields et l'afficher sur le VP
-#
-# Parametres 	  :
-#	<Product> : Le nom du produit selectionne (aussi le namespace) 
-#	<Index>	  : Index de la couche 
-#	
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::TranslateExpression { Product Expr } {
-  variable Data
-  variable ${Product}::Value
-  variable ${Product}::RowID
-  
-  set totalLayerIDs [llength $Data(LayerIDs)]
-  if {$totalLayerIDs <= 0} { set totalLayerIDs 1 }
-  
-  set totalCheckedLayerIDs 0
-  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-    if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
-      incr totalCheckedLayerIDs
-    }
-  }
-  
-  if {[regexp {sum\(ALL\)} $Expr]} 	{ regsub -all {sum\(ALL\)} $Expr 	[GetAllFieldsWithOp $Product +] Expr }
-  if {[regexp {sum\(CHECKED\)} $Expr]} 	{ regsub -all {sum\(CHECKED\)} $Expr 	[GetAllFieldsWithOp $Product + True] Expr }
-  if {[regexp {avg\(ALL\)} $Expr]} 	{ regsub -all {avg\(ALL\)} $Expr	\([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
-  if {[regexp {avg\(CHECKED\)} $Expr]} 	{ regsub -all {avg\(CHECKED\)} $Expr	\([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
-  
-  return $Expr
 }
 
 #-------------------------------------------------------------------------------
@@ -1492,6 +1479,22 @@ proc APViz::FetchConfigFiles { } {
   APViz::FetchFiles $path $dir
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FetchFiles>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Construire les listes pour les fichiers de configuration de facon recursive
+#
+# Parametres	:
+#	<Path>  : Path du parent du dossier
+#	<Name>	: Nom du dossier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::FetchFiles { Path Name } {
   variable Data
   
@@ -1510,9 +1513,44 @@ proc APViz::FetchFiles { Path Name } {
       lappend Data($Name,Files) [lindex [split $file .] 0]
     }
   }
-  puts "=============== $Name ===================== "
-  puts "Files of $Name : $Data($Name,Files)"
-  puts "Folders of $Name: $Data($Name,Folders)"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FetchDates>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : 	Construire la liste de dates disponibles pour afficher dans l'interface
+#
+# Parametres	:
+#	<Path>  : Path du parent du dossier
+#	<Name>	: Nom du dossier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::FetchDates { Product Model Src } {
+  variable DataSrc
+  variable ${Product}::Value
+  
+  set path $DataSrc(${Model},${Src})/
+  puts "Fetching dates for $path"
+  
+  set fileList [glob -nocomplain -tails -path $path *]
+  set dateList {}
+  
+  foreach file $fileList {
+    if {![file isdirectory ${path}$file]} {
+      set date [string range $file 0 7]		; # Format nomFichier: AAAAMMDDRR_HHH
+      #----- TODO: pour fichier BURP
+      if {[lsearch -exact $dateList $date] eq -1} {
+	lappend dateList $date
+      }
+    }
+  }
+  set Value(Dates) $dateList
 }
 
 #-------------------------------------------------------------------------------
@@ -1716,6 +1754,44 @@ proc APViz::SetParam { Index Product {IsCalcLayer False}} {
   }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::TranslateExpression>
+# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Calculer une expression de fields et l'afficher sur le VP
+#
+# Parametres 	  :
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#	<Index>	  : Index de la couche 
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::TranslateExpression { Product Expr } {
+  variable Data
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  
+  set totalLayerIDs [llength $Data(LayerIDs)]
+  if {$totalLayerIDs <= 0} { set totalLayerIDs 1 }
+  
+  set totalCheckedLayerIDs 0
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
+      incr totalCheckedLayerIDs
+    }
+  }
+  
+  if {[regexp {sum\(ALL\)} $Expr]} 	{ regsub -all {sum\(ALL\)} $Expr 	[GetAllFieldsWithOp $Product +] Expr }
+  if {[regexp {sum\(CHECKED\)} $Expr]} 	{ regsub -all {sum\(CHECKED\)} $Expr 	[GetAllFieldsWithOp $Product + True] Expr }
+  if {[regexp {avg\(ALL\)} $Expr]} 	{ regsub -all {avg\(ALL\)} $Expr	\([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
+  if {[regexp {avg\(CHECKED\)} $Expr]} 	{ regsub -all {avg\(CHECKED\)} $Expr	\([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
+  
+  return $Expr
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::UpdateRange>
@@ -1739,4 +1815,19 @@ proc APViz::UpdateRange { } {
    if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
     APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
    }
+}
+
+proc APViz::ValidateDate { Product Date } {
+  variable Lbl
+  variable ${Product}::Value
+  
+  puts "VALIDATING DATE"
+  set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
+  puts "Validating if $Date    is in     $Value(Dates)          : $result"
+  
+  if {!$result} {
+    ::Dialog::Info . $Lbl(WrongDate)
+  }
+  
+  return result
 }

@@ -49,8 +49,8 @@ namespace eval APViz {
    set DataSrc(GEPS,diag)	$mirrorgrid/ops/geps/e1/gridpt/prog/ens.glbclim/refcst/diag
    
    #----- Observations
-   set DataSrc(OBS,SHEF)	$env(CMCADE)/dbase/surface/shef/stamp	; # Remplacer le stamp avec regsub avant utilisation - stamp avec format : AAAAMMJJRR_
-   set DataSrc(OBS,SYNOP)	$env(CMCADE)/dbase/surface/synop/stamp	; # Remplacer le stamp avec regsub avant utilisation
-   set DataSrc(OBS,DERISFC)	$env(CMCADE)/banco/derisfc/g3/stamp	; # Remplacer le stamp avec regsub avant utilisation
+   set DataSrc(OBS,SHEF)	$env(CMCADE)/dbase/surface/shef
+   set DataSrc(OBS,SYNOP)	$env(CMCADE)/dbase/surface/synop
+   set DataSrc(OBS,DERISFC)	$env(CMCADE)/banco/derisfc/g3
 
 }
