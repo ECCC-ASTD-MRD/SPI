@@ -60,6 +60,11 @@ proc APViz::Close { } {
    #----- Cleanup de l'outils
    APViz::CloseFiles
    APViz::ReinitializeVP
+   
+   if {$Data(AutoUpdateEventID) ne ""} {
+    after cancel $Data(AutoUpdateEventID)
+    set Data(AutoUpdateEventID) ""
+   }
 
    set Data(Active) 0
 
@@ -439,11 +444,13 @@ proc APViz::Source { Path Widget } {
 	pack $Widget.range -side top -fill x -anchor nw
 	
 	#----- Configurable date
-	set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
+	
 	
 	frame $Widget.range.dateConfig
 	label $Widget.range.dateConfig.lbl -text "Date: " -width 40 -anchor e 
-	ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 $dateList 14 5 "APViz::InitializeVars $Product"
+	ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars $Product"
+	set APViz::Data(DateCBWidget) $Widget.range.dateConfig.cb
+	set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
 	set APViz::${Product}::Value(Date) [lindex $dateList [expr [llength $dateList] - 1]]
 
 	bind $Widget.range.dateConfig.cb.select <Return> "APViz::DateBinding $Product"
@@ -1431,6 +1438,11 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
   APViz::ReinitializeVP
   APViz::CloseFiles
   
+  if {$Data(AutoUpdateEventID) ne ""} {
+    after cancel $Data(AutoUpdateEventID)
+    set Data(AutoUpdateEventID) ""
+  }
+  
   set selected [lindex $Lst $Index]
   #TODO: Change filepath if needed
   set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/${Data(Folder)}/$Dir/$selected.tcl"
@@ -1561,10 +1573,15 @@ proc APViz::FetchFiles { Path Name } {
 #----------------------------------------------------------------------------
 
 proc APViz::FetchDates { Product Model Src } {
+  variable Data
   variable DataSrc
   variable ${Product}::Value
   
-  set path $DataSrc(${Model},${Src})/
+  if {$Src eq "BURP"} {
+    set path $DataSrc(OBS,$Model)/
+  } else {
+    set path $DataSrc(${Model},${Src})/
+  }
   
   set fileList [glob -nocomplain -tails -path $path *]
   set dateList {}
@@ -1577,6 +1594,12 @@ proc APViz::FetchDates { Product Model Src } {
       }
     }
   }
+  if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
+    ComboBox::DelAll $Data(DateCBWidget)
+    ComboBox::AddList $Data(DateCBWidget) $dateList
+    puts "UPDATING CB"
+  }
+  
   set Value(Dates) [lsort $dateList]
 }
 
@@ -1873,10 +1896,30 @@ proc APViz::ValidateDate { Product Date } {
   return $result
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::UpdateAvailableDates>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Mise a jour automatique de la liste de dates disponibles et de la 
+#	     date la plus courante
+#
+# Parametres :
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::UpdateAvailableDates { Product } {
+  global GDefs
+
   variable ${Product}::Value
   variable ${Product}::RowID
+  variable Data
   variable DataSrc
+  variable Lbl
 
   puts "UPDATE CHECK"
   
@@ -1886,9 +1929,15 @@ proc APViz::UpdateAvailableDates { Product } {
     incr i
   }
   
+  #----- Recuperer le path de la source
+  #TODO: Quelle source prendre? En ce moment: Celle de la premiere rangee
   set model $Value(Models,$i)
   set src $Value(Sources,$i)
-  set path $DataSrc($model,$src)
+  if {$src eq "BURP"} {
+    set path $DataSrc(OBS,$model)
+  } else {
+    set path $DataSrc($model,$src)
+  }
   
   #----- Verifier s'il y a eu des changements dans le dossier
   set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
@@ -1897,10 +1946,19 @@ proc APViz::UpdateAvailableDates { Product } {
   
   if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
     puts "Updating dates   || old date: [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]"
+    .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
     APViz::FetchDates $Product $model $src
+    after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
   }
   
-  after [expr {1000*60}] APViz::UpdateAvailableDates $Product
+  if {$Value(Date) ne $lastModifiedDate} {
+    set Value(Date) $lastModifiedDate
+    .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
+    after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
+    APViz::InitializeVars $Product
+  }
+  
+  set Data(AutoUpdateEventID) [after [expr {1000*30}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 3hrs
   
   puts "FINISHED CHECKING"
 }
