@@ -38,10 +38,11 @@ namespace eval APViz {
    set Lbl(FetchingDates)	{ "Mise à jour des dates disponibles" "Updating available dates"}
    
    
-   set Lbl(Save)       	{ "Sauvegarder" "Save" }
-   set Lbl(File)       	{ "Fichier" "File" }
-   set Lbl(Close)      	{ "Fermer" "Close" }
-   set Lbl(FileName)	{ "Nom fichier" "File name"}
+   set Lbl(Save)       		{ "Sauvegarder" "Save" }
+   set Lbl(File)       		{ "Fichier" "File" }
+   set Lbl(Close)      		{ "Fermer" "Close" }
+   set Lbl(FileName)		{ "Nom fichier" "File name"}
+   set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first"}
    
    #----- Messages
 

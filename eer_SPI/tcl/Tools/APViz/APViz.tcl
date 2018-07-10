@@ -473,9 +473,9 @@ proc APViz::Source { Path Widget } {
 	    incr no
 	  }
 	  $Widget.add.menu add separator
-	  #$Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
-	  set fdg "$GDefs(Dir)/tcl/Tools/APViz/Config/Operational/Verifications/test.tcl"
-	  $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::GenerateConfigFile $fdg"
+	  $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
+	  #set fdg "$GDefs(Dir)/tcl/Tools/APViz/Config/Operational/Verifications/test.tcl"
+	  #$Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::GenerateConfigFile $fdg"
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
 	
@@ -1757,8 +1757,16 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   }
 }
 
-proc APViz::SaveConfigFile { } {
-  puts "Generating config file"
+proc APViz::SaveConfigFile { Path } {
+  variable Data
+  variable Lbl
+  
+  #----- Verify if product selected
+  if {$Data(CurrentProduct) eq ""} {
+    ::Dialog::Info . $Lbl(SelectProduct)
+  } else {
+    APViz::GenerateConfigFile $Path
+  }
 }
 
 
@@ -1833,6 +1841,7 @@ proc APViz::GenerateConfigFile { Path } {
 
 proc APViz::SelectFolder { } {
   variable Data
+  
   set selectedFolder $Data(Folder)
   if {[info exists Data($selectedFolder,Folders)]} {
     set APViz::Data(MacroCategories) $Data($selectedFolder,Folders)

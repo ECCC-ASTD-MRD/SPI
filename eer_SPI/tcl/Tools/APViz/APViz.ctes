@@ -28,9 +28,12 @@ namespace eval APViz {
    set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)    EYE
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+   
+   #----- For FileBox
+   set Param(InitPath)	$GDefs(Dir)/tcl/Tools/APViz/Config/
    set Param(Path)	$GDefs(Dir)/tcl/Tools/APViz/Config/
    set Param(FileName)	config
-   set Param(FullName)	$APViz::Param(Path)/$APViz::Param(FileName)
+   set Param(FullName)	$APViz::Param(Path)$APViz::Param(FileName)
    set Param(Formats) 	{{Tcl {*.tcl}}}
 
    set Data(Active) 0        ;#Flag d'activation de l'outils
