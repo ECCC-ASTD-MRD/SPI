@@ -1615,6 +1615,7 @@ proc APViz::FilePathDefine { Path } {
   set Param(Path)     [file dirname $Path]
   set Param(Filename) [file tail $Path]
   set Param(FullName) $Path
+  puts "========= PATH DEFINE $Param(FullName)    $APViz::Param(FullName)"
 }
 
 
@@ -1760,15 +1761,19 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   }
 }
 
-proc APViz::SaveConfigFile { Path } {
+proc APViz::SaveConfigFile { } {
   variable Data
   variable Lbl
-  
+  variable Param
+
   #----- Verify if product selected
   if {$Data(CurrentProduct) eq ""} {
     ::Dialog::Info . $Lbl(SelectProduct)
   } else {
-    APViz::GenerateConfigFile $Path
+    if {![regexp "tcl" [file tail $Param(FullName)]]} {
+      set Param(FullName) $Param(FullName).tcl
+    }
+    APViz::GenerateConfigFile $Param(FullName)
   }
 }
 
@@ -1801,24 +1806,29 @@ proc APViz::GenerateConfigFile { Path } {
     #TEMPO: copy all settings before layers
     for {set i 0} {$i < $layersIndex} {incr i} {
       lappend fileContent [lindex $origData $i]
-      puts $fileID [lindex $origData $i]
+      puts $fileID \t[lindex $origData $i]
     }
     
     puts $fileID "set Layers \{"
     #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
     for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {$RowID(Layer$i) >= 0} {
-	#----- Ajouter Layer
-	set checked 	[expr {$Value(Toggle,$i)?True:False}]
-	set model 	$Value(Models,$i)
-	set var		$Value(Vars,$i)
-	set lev		$Value(Levels,$i)
-	set run		$Value(Runs,$i)
-	set hour	$Value(Hours,$i)
-	set src		$Value(Sources,$i)
-	
-	set layer "\t$checked:$model:$var:$lev:$hour:-:$run:$src"
-	puts $fileID $layer
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+	if {$Data(SaveRangeC,$rowID)} {
+	  puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
+	} else {
+	  #----- Ajouter Layer
+	  set checked 	[expr {$Value(Toggle,$i)?True:False}]
+	  set model 	$Value(Models,$i)
+	  set var	$Value(Vars,$i)
+	  set lev	$Value(Levels,$i)
+	  set run	$Value(Runs,$i)
+	  set hour	$Value(Hours,$i)
+	  set src	$Value(Sources,$i)
+	  
+	  set layer "\t$checked:$model:$var:$lev:$hour:-:$run:$src"
+	  puts $fileID $layer
+	}
+
       }
     }
     puts $fileID "\}"

@@ -32,8 +32,8 @@ namespace eval APViz {
    #----- For FileBox
    set Param(InitPath)	$GDefs(Dir)/tcl/Tools/APViz/Config/
    set Param(Path)	$GDefs(Dir)/tcl/Tools/APViz/Config/
-   set Param(FileName)	config
-   set Param(FullName)	$APViz::Param(Path)$APViz::Param(FileName)
+   set Param(Filename)	config
+   set Param(FullName)	$APViz::Param(Path)$APViz::Param(Filename)
    set Param(Formats) 	{{Tcl {*.tcl}}}
 
    set Data(Active) 0        ;#Flag d'activation de l'outils
