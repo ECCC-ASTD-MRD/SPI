@@ -273,7 +273,7 @@ proc APViz::SaveAsWindow { } {
   pack .saveAsBox.par -side top -padx 5 -fill x
 
   frame .saveAsBox.command
-    button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile"
+    button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile ; APViz::DeleteWidget .saveAsBox"
     button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
     pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
   pack .saveAsBox.command -side top -fill x -pady 5 -padx 5

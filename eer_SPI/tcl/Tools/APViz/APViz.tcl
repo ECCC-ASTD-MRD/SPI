@@ -1610,14 +1610,102 @@ proc APViz::FetchDates { Product Model Src } {
   set Value(Dates) $dateList
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FilePathDefine>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Definir le path du fichier
+#
+# Parametres 	:
+#	<Path>	: Path du fichier a sauvegarder
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::FilePathDefine { Path } {
   variable Param
   set Param(Path)     [file dirname $Path]
   set Param(Filename) [file tail $Path]
   set Param(FullName) $Path
-  puts "========= PATH DEFINE $Param(FullName)    $APViz::Param(FullName)"
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::GenerateConfigFile>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Generer un fichier de configuration
+#
+# Parametres 	:
+#	<Path>	: Path du fichier a sauvegarder
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::GenerateConfigFile { Path } {
+  variable Data
+  
+  if {$Data(CurrentProduct) ne ""} {
+    variable $Data(CurrentProduct)::Value
+    variable $Data(CurrentProduct)::RowID
+    #----- Parcourir les ROWID, si >= 0, ajouter au fichier
+    set fileContent {}		; #Each element is a line in the file 
+    
+    set filename [file tail $Path]
+    puts "PATH: $Path"
+    set fileID [open $Path w]
+    
+    #TODO: fetch all current data
+    #----- Geography section
+    #----- Colormap creation
+    #----- Variable Style Configs     -> what to do when several vars of same type?
+    #----- Ranges
+    set origFileID [open $Data(ConfigPath) r]
+    set origFileData [read $origFileID]
+    close $origFileID
+    
+    set origData [split $origFileData "\n"]
+    set layersIndex [lsearch -exact $origData "set Layers \{"]
+    
+    #TEMPO: copy all settings before layers
+    for {set i 0} {$i < $layersIndex} {incr i} {
+      lappend fileContent [lindex $origData $i]
+      puts $fileID \t[lindex $origData $i]
+    }
+    
+    puts $fileID "set Layers \{"
+    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+	if {$Data(SaveRangeC,$rowID)} {
+	  puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
+	} else {
+	  #----- Ajouter Layer
+	  set checked 	[expr {$Value(Toggle,$i)?True:False}]
+	  set model 	$Value(Models,$i)
+	  set var	$Value(Vars,$i)
+	  set lev	$Value(Levels,$i)
+	  set run	$Value(Runs,$i)
+	  set hour	$Value(Hours,$i)
+	  set src	$Value(Sources,$i)
+	  
+	  set layer "\t$checked:$model:$var:$lev:$hour:$run:$src"
+	  puts $fileID $layer
+	}
+      }
+    }
+    puts $fileID "\}"
+    
+    close $fileID
+    
+    APViz::UpdateProductInterface
+  }
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::GetLevelType>
@@ -1761,6 +1849,20 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
   }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveConfigFile>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Sauvegarder un fichier de configuration
+#
+# Parametres 	    :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::SaveConfigFile { } {
   variable Data
   variable Lbl
@@ -1776,67 +1878,6 @@ proc APViz::SaveConfigFile { } {
     APViz::GenerateConfigFile $Param(FullName)
   }
 }
-
-
-proc APViz::GenerateConfigFile { Path } {
-  variable Data
-  
-  if {$Data(CurrentProduct) ne ""} {
-    variable $Data(CurrentProduct)::Value
-    variable $Data(CurrentProduct)::RowID
-    #----- Parcourir les ROWID, si >= 0, ajouter au fichier
-    set fileContent {}		; #Each element is a line in the file 
-    
-    set filename [file tail $Path]
-    puts "PATH: $Path"
-    set fileID [open $Path w]
-    
-    #TODO: fetch all current data
-    #----- Geography section
-    #----- Colormap creation
-    #----- Variable Style Configs     -> what to do when several vars of same type?
-    #----- Ranges
-    set origFileID [open $Data(ConfigPath) r]
-    set origFileData [read $origFileID]
-    close $origFileID
-    
-    set origData [split $origFileData "\n"]
-    set layersIndex [lsearch -exact $origData "set Layers \{"]
-    
-    #TEMPO: copy all settings before layers
-    for {set i 0} {$i < $layersIndex} {incr i} {
-      lappend fileContent [lindex $origData $i]
-      puts $fileID \t[lindex $origData $i]
-    }
-    
-    puts $fileID "set Layers \{"
-    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
-    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {[set rowID $RowID(Layer$i)] >= 0} {
-	if {$Data(SaveRangeC,$rowID)} {
-	  puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
-	} else {
-	  #----- Ajouter Layer
-	  set checked 	[expr {$Value(Toggle,$i)?True:False}]
-	  set model 	$Value(Models,$i)
-	  set var	$Value(Vars,$i)
-	  set lev	$Value(Levels,$i)
-	  set run	$Value(Runs,$i)
-	  set hour	$Value(Hours,$i)
-	  set src	$Value(Sources,$i)
-	  
-	  set layer "\t$checked:$model:$var:$lev:$hour:-:$run:$src"
-	  puts $fileID $layer
-	}
-
-      }
-    }
-    puts $fileID "\}"
-    
-    close $fileID
-  }
-}
-
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::SelectFolder>
@@ -1939,10 +1980,32 @@ proc APViz::TranslateExpression { Product Expr } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::UpdateProductInterface>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Mise a jour de l'interface
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::UpdateProductInterface { } { 
+  variable Data
+  puts "UPDATING INTERFACE"
+  #----- Mise a jour des listes
+  APViz::FetchConfigFiles
+  APViz::MacroCategory
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::UpdateRange>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : Mise a jour de la section Range de l'interface pour le type Analysis
+# But      : Mise a jour de la section Range de l'interface
 #
 # Parametres :
 #
