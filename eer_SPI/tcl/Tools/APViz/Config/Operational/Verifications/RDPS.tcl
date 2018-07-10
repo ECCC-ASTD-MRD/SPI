@@ -32,8 +32,8 @@ set Range(Sources)	{pres diag eta hyb}
 set Range(Obs)		{13023 13193}
 set Range(ObsTypes)	{SHEF SYNOP DERISFC}
 
-#----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+#----- Layers (On:Model:Var:Level:Hour:Run:Source)
 set Layers {
-   True:RDPS:<Vars>:<Levels>:<Hours>:-:<Runs>:<Sources>
-   False:RDPS:PN:0.0:<Hours>:-:<Runs>:<Sources>
+   True:RDPS:<Vars>:<Levels>:<Hours>:<Runs>:<Sources>
+   False:RDPS:PN:0.0:<Hours>:<Runs>:<Sources>
 }

@@ -163,22 +163,28 @@ proc APViz::SaveAsWindow { } {
   variable Param
   variable Lbl
   variable Data
+  variable Bubble
   
   if {$Data(CurrentProduct) eq ""} {
     ::Dialog::Info . $Lbl(SelectProduct)
     return
   }
   
+  variable $Data(CurrentProduct)::Value
+  variable $Data(CurrentProduct)::RowID
+  
   APViz::DeleteWidget .saveAsBox
   
   toplevel .saveAsBox
   wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
   wm transient .saveAsBox $Data(Frame)
-  wm geom      .saveAsBox 400x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+  wm geom      .saveAsBox 425x300+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
   
   .saveAsBox configure -cursor left_ptr
   
   set Param(Frame) ""
+  
+  #----- Set path according to user selections
   set Param(Path) $Param(InitPath)$Data(Folder)/$Data(MacroCategory)/
   set Param(FullName) $Param(Path)$Param(FileName)
   
@@ -202,16 +208,70 @@ proc APViz::SaveAsWindow { } {
     pack $Param(Frame).config.folder.sel -side left -fill y
   pack $Param(Frame).config.folder -side top -fill x -expand True
   
+  labelframe $Param(Frame).ranges -text "Ranges grid"
+  pack $Param(Frame).ranges -side top -fill x -padx 5 -ipady 2 -anchor n
+  
+  frame $Param(Frame).ranges.grid
+  grid $Param(Frame).ranges.grid 	-column 0 -row 0 -padx 0.25
   set comment {
-  frame $Param(Frame).config.file
-    label $Param(Frame).config.file.lbl -text [lindex $Lbl(FileName) $GDefs(Lang)] -width 12 -anchor w
-    entry $Param(Frame).config.file.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FileName)
-    $Param(Frame).config.file.name xview moveto 1
-    pack $Param(Frame).config.file.lbl -side left 
-    pack $Param(Frame).config.file.name -side left -fill both -expand True
-  pack $Param(Frame).config.file -side top -fill x -expand True
+  label $Param(Frame).ranges.grid.keep	-text "Keep"
+  label $Param(Frame).ranges.grid.rowID -text RowID
+  label $Param(Frame).ranges.grid.type 	-text "Layer description"
+  
+  grid $Param(Frame).ranges.grid.keep 	-column 0 -row 0 -padx 0.25
+  grid $Param(Frame).ranges.grid.rowID 	-column 1 -row 0 -padx 0.25
+  grid $Param(Frame).ranges.grid.type 	-column 2 -row 0 -padx 0.25
+  }
+  
+  #----- Display rows
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if {$RowID(Layer$i) >= 0} {
+      set layer [lindex $Data(Layers) $Value(LayerType,$i)]
+      regsub \(True:|False:\) $layer "" desc
+      
+      checkbutton $Param(Frame).ranges.grid.check$i -variable Data(SaveRange,$i) -onvalue True -offvalue False
+      $Param(Frame).ranges.grid.check$i deselect
+      label $Param(Frame).ranges.grid.row$i -text "Row$RowID(Layer$i): "
+      label $Param(Frame).ranges.grid.lbl$i -text $desc
+      
+      grid $Param(Frame).ranges.grid.check$i	-column 0 -row [expr $RowID(Layer$i) + 1] -padx 0.25
+      grid $Param(Frame).ranges.grid.row$i 	-column 1 -row [expr $RowID(Layer$i) + 1] -padx 0.25
+      grid $Param(Frame).ranges.grid.lbl$i 	-column 2 -row [expr $RowID(Layer$i) + 1] -padx 0.25
+    }
+  }
+  
+  labelframe $Param(Frame).rangesC -text "Ranges pack"
+  pack $Param(Frame).rangesC -side top -fill x -padx 5 -ipady 2 -anchor n
+  
+  label $Param(Frame).rangesC.desc -text [lindex $Lbl(RangeDesc) $GDefs(Lang)] -justify left -wraplength 410
+  pack $Param(Frame).rangesC.desc -side top -anchor w
+  
+  Bubble::Create $Param(Frame).rangesC.desc $Bubble(SaveRange) 40
+  
+  #----- Display rows (pack)
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if {$RowID(Layer$i) >= 0} {
+      frame $Param(Frame).rangesC.row$i
+	set model 	$Value(Models,$i)
+	set var		$Value(Vars,$i)
+	set lev		$Value(Levels,$i)
+	set run		$Value(Runs,$i)
+	set hour	$Value(Hours,$i)
+	set src		$Value(Sources,$i)
+	set date	$Value(Date)
+	set layer "$var, $lev"
+	
+	set layerDesc [lindex $Data(Layers) $Value(LayerType,$i)]
+	regsub \(True:|False:\) $layerDesc "" layerDesc
+	
+	label $Param(Frame).rangesC.row$i.lbl -text "Row$i: $layer"
+	checkbutton $Param(Frame).rangesC.row$i.check -variable Data(SaveRangeC,$i) -onvalue True -offvalue False
+	$Param(Frame).rangesC.row$i.check deselect
 
-  bind  $Param(Frame).config.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
+	pack $Param(Frame).rangesC.row$i.check $Param(Frame).rangesC.row$i.lbl -side left -fill x -expand True
+      pack $Param(Frame).rangesC.row$i -side top -anchor w
+      Bubble::Create $Param(Frame).rangesC.row$i $layerDesc
+    }
   }
   
   frame .saveAsBox.par -relief raised -bd 1

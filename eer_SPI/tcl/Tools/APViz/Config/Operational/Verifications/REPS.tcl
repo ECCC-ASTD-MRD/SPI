@@ -32,8 +32,8 @@ set Range(Hours)  	{000 024 036 048 060 072 084}
 set Range(Runs)   	{00 06 12 28}
 set Range(Sources)	{pres model diag}
 
-#----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+#----- Layers (On:Model:Var:Level:Hour:Run:Source)
 set Layers {
-   True:GDPS:<Vars>:<Levels>:<Hours>:-:<Runs>:<Sources>
-   False:GDPS:PN:0.0:<Hours>:-:<Runs>:<Sources>
+   True:REPS:<Vars>:<Levels>:<Hours>:<Runs>:<Sources>
+   False:REPS:PN:0.0:<Hours>:<Runs>:<Sources>
 }

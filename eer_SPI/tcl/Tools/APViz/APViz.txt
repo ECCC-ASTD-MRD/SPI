@@ -41,8 +41,10 @@ namespace eval APViz {
    set Lbl(Save)       		{ "Sauvegarder" "Save" }
    set Lbl(File)       		{ "Fichier" "File" }
    set Lbl(Close)      		{ "Fermer" "Close" }
-   set Lbl(FileName)		{ "Nom fichier" "File name"}
-   set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first"}
+   set Lbl(FileName)		{ "Nom fichier" "File name" }
+   set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first" }
+   set Lbl(RangeDesc)		{ "Sélectionner les rangées pour lesquelles les options de valeurs variables doivent être conservées." "Select the rows for which to save the range configurations." }
+
    
    #----- Messages
 
@@ -50,7 +52,9 @@ namespace eval APViz {
 
    #----- Bulles d'aides
 
-   set Bubble(Mode)    	{ "Mode de sélection de l'outils" "Tool selection mode" }
-   set Bubble(Param)	{ "Modifier les paramètres" "Modify Parameters" }
-   set Bubble(Save)	{ "Enregistrer sous" "Save As" }
+   set Bubble(Mode)    		{ "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Param)		{ "Modifier les paramètres" "Modify Parameters" }
+   set Bubble(Save)		{ "Enregistrer sous" "Save As" }
+   set Bubble(SaveRange)	{ "Les rangées non sélectionnées conserveront leur valeur exacte dans le nouveau fichier de configuration." \
+				  "Unchecked rows with keep their exact value in the new configuration files." }
 }

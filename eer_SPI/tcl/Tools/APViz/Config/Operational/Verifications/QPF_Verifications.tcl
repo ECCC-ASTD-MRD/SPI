@@ -28,8 +28,8 @@ set Range(Obs)		{13023 13193}
 set Range(ObsTypes)	{SHEF SYNOP DERISFC}
 set Range(Models)	{RDPS GDPS HRDPS}
 
-#----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+#----- Layers (On:Model:Var:Level:Hour:Run:Source)
 set Layers {
-   True:RDPS:PR:0.0:<Hours>:-:<Runs>:<Sources>
-   False:SYNOP:<Obs>:SFC:-:-:<Runs>:BURP
+   True:RDPS:PR:0.0:<Hours>:<Runs>:<Sources>
+   False:SYNOP:<Obs>:SFC:-:<Runs>:BURP
 }

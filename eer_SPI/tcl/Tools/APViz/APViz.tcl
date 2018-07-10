@@ -441,6 +441,7 @@ proc APViz::Source { Path Widget } {
 	grid $Widget.range.variableGrid.lev 	-column 8 -row 0 -padx 0.2
 	
 	CreateLayers $Product $Layers $Widget	; # Creation des couches
+
 	pack $Widget.range -side top -fill x -anchor nw
 	
 	#----- Configurable date
@@ -468,14 +469,12 @@ proc APViz::Source { Path Widget } {
 	  foreach layer $Layers {
 	    #----- Layer description
 	    regsub \(True:|False:\) $layer "" desc
-	    
-	    $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True"
+	    $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True $no"
+	    lappend ::APViz::Data(Layers) $layer		; #save layer configs
 	    incr no
 	  }
 	  $Widget.add.menu add separator
 	  $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
-	  #set fdg "$GDefs(Dir)/tcl/Tools/APViz/Config/Operational/Verifications/test.tcl"
-	  #$Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::GenerateConfigFile $fdg"
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
 	
@@ -551,14 +550,14 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc CreateLayers { Product Layers Widget {IsAddedLayer False} } {
+      proc CreateLayers { Product Layers Widget {IsAddedLayer False} {LayerType 0}} {
 	variable Value
 	variable RowID
 	
 	set no $Value(NbLayers)
 	foreach layer $Layers {
 	  #----- Extract layer parts
-	  lassign [split $layer :] toggle model var level hour interval run dataSrc
+	  lassign [split $layer :] toggle model var level hour run dataSrc
 	  
 	  #----- Toggle On/Off
 	  checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -606,6 +605,9 @@ proc APViz::Source { Path Widget } {
 	  
 	  if {$IsAddedLayer} {
 	    APViz::AssignVariable $Product $no
+	    set APViz::${Product}::Value(LayerType,$no) $LayerType
+	  } else {
+	    set APViz::${Product}::Value(LayerType,$no) [expr $no - $Value(NbLayers)]
 	  }
 	  
 	  incr no
@@ -1716,6 +1718,7 @@ proc APViz::ReinitializeVP { } {
   set Data(LayerIDs) {}
   set Data(CalcIDs) {}
   set Data(CurrentProduct) ""
+  set APViz::Data(Layers) {}
 }
 
 #----------------------------------------------------------------------------
